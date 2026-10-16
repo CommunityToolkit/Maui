@@ -8,9 +8,9 @@ using AWindow = Android.Views.Window;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// A dialog fragment with a content view, like the toolkit's popups: <c>AndroidWindowExtensions.GetCurrentWindow</c> only returns the
-/// window of a dialog fragment that is added, showing and visible, and a fragment without a view is never visible.
-/// Every member must be called on the UI thread.
+/// <c>AndroidWindowExtensions.GetCurrentWindow</c> only returns the window of a dialog fragment that is added, showing and visible, and a
+/// fragment without a view is never visible, so this one has a content view, like the toolkit's popups. Every member must be called on the
+/// UI thread.
 /// </summary>
 public sealed class TestDialogFragment : DialogFragment
 {
@@ -22,7 +22,6 @@ public sealed class TestDialogFragment : DialogFragment
 	public override AView? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState) =>
 		new Android.Widget.TextView(RequireContext()) { Text = nameof(TestDialogFragment) };
 
-	/// <summary>Adds the fragment to the current activity as a dialog. The dialog is created when the transaction runs.</summary>
 	public static TestDialogFragment Show(string tag)
 	{
 		var fragment = new TestDialogFragment();
@@ -32,10 +31,7 @@ public sealed class TestDialogFragment : DialogFragment
 		return fragment;
 	}
 
-	/// <summary>
-	/// Adds the fragment to the activity's content view as an ordinary fragment (a dialog fragment that is added to a container
-	/// does not create a dialog): the fragment is visible, its <c>Dialog</c> is <see langword="null"/>.
-	/// </summary>
+	// A dialog fragment that is added to a container does not create a dialog: the fragment is visible, its Dialog is null.
 	public static TestDialogFragment Embed(string tag)
 	{
 		var activity = AndroidSystemBars.Activity;
@@ -49,23 +45,19 @@ public sealed class TestDialogFragment : DialogFragment
 		return fragment;
 	}
 
-	/// <summary>The window of the fragment's dialog.</summary>
 	public AWindow DialogWindow => Dialog?.Window ?? throw new InvalidOperationException("The dialog fragment has no dialog window yet.");
 
-	/// <summary>True once the fragment passes the test that GetCurrentWindow applies: its dialog is showing and its view is attached to a window.</summary>
+	// The test that GetCurrentWindow applies to a dialog fragment.
 	public bool IsShowingAndVisible => Dialog is { IsShowing: true, Window: not null } && IsVisible;
 
-	/// <summary>Hides the dialog window itself (Dialog.Hide): <c>IsShowing</c> turns false while the fragment stays visible.</summary>
 	public void HideDialog() => Dialog?.Hide();
 
-	/// <summary>Hides the fragment with a transaction: <c>IsVisible</c> turns false while the dialog keeps showing.</summary>
 	public void HideFragment()
 	{
 		ActivityFragmentManager().BeginTransaction().Hide(this)?.Commit();
 		ActivityFragmentManager().ExecutePendingTransactions();
 	}
 
-	/// <summary>Removes the fragment (and the container of an embedded one) again.</summary>
 	public void Remove()
 	{
 		if (IsAdded)
@@ -82,7 +74,6 @@ public sealed class TestDialogFragment : DialogFragment
 		AndroidSystemBars.Activity.GetFragmentManager() ?? throw new InvalidOperationException("The current activity has no fragment manager.");
 }
 
-/// <summary>A fragment without a view: it is in the fragment manager's list but is not a dialog fragment.</summary>
 public sealed class TestPlainFragment : AndroidX.Fragment.App.Fragment
 {
 	public static TestPlainFragment Add(string tag)

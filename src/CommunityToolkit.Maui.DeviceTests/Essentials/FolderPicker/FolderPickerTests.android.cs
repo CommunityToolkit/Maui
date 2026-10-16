@@ -7,8 +7,6 @@ using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: FolderPicker launches ACTION_OPEN_DOCUMENT_TREE through ActivityResultManager and turns the tree URI that the picker returns
-// into a physical path. The picker is a FilesFakePickerActivity (see ActivityResultManagerTests); the path conversion is the real one.
 public partial class FolderPickerTests
 {
 	const string externalStorageProviderAuthority = "com.android.externalstorage.documents";
@@ -77,9 +75,9 @@ public partial class FolderPickerTests
 
 		if (expectedDocumentId.Length is 0)
 		{
-			// An empty expected id: the app's private storage, like a path that only starts like a storage folder (/sdcard2 is not in
-			// /sdcard), is on no volume that the document picker shows, so no document id can name it, and the picker is left to choose
-			// where it starts (DocumentsContract.EXTRA_INITIAL_URI is absent), as the system does when it cannot find the initial location.
+			// The app's private storage, and a path that only starts like a storage folder (/sdcard2 is not in /sdcard), are on no volume
+			// that the document picker shows, so no document id can name them and the picker is left to choose where it starts
+			// (DocumentsContract.EXTRA_INITIAL_URI is absent).
 			Assert.Null(launch.Intent.GetParcelableExtra(DocumentsContract.ExtraInitialUri));
 		}
 		else
@@ -248,7 +246,6 @@ public partial class FolderPickerTests
 		Assert.Contains(uri, exception.Message, StringComparison.Ordinal);
 	}
 
-	// Every overload reaches the same picker; the one with an initial path puts it in the intent.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -336,7 +333,6 @@ public partial class FolderPickerTests
 		return Task.CompletedTask;
 	}
 
-	// Starts FolderPicker.Default.PickAsync on the UI thread (with the initial path when there is one) and returns it with the launch it made.
 	static async Task<(Task<FolderPickerResult> Operation, FilesFakePickerLaunch Launch)> StartPickAsync(FilesPickerSession session, string? initialPath = null, CancellationToken token = default)
 	{
 		var operation = await StartOnMainThreadAsync(() => initialPath is null
@@ -346,7 +342,6 @@ public partial class FolderPickerTests
 		return (operation, await session.WaitForLaunchAsync());
 	}
 
-	// Answers the picker as a person who closes it, and waits for the pick to report it.
 	static async Task CancelPickerAsync(FilesPickerSession session, FilesFakePickerLaunch launch, Task<FolderPickerResult> operation)
 	{
 		await session.DeliverAsync(launch, Result.Canceled);

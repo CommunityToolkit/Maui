@@ -8,16 +8,11 @@ using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the touch recognizer's delegate, touches without a location, the hover recognizer states, and the one-way
-// cancellation of a touch that left the view.
 public partial class TouchBehaviorInputTests
 {
-	// A tap on a Button or an ImageButton with a TouchBehavior, delivered through UIKit as a finger's: the UIButton raises Pressed, Released
-	// and Clicked (and runs its Command) once, the behavior completes its gesture once, and the button takes the next tap as well. Before the
-	// behavior is added, the same tap shows that it reaches the button.
-	// Catches: the behavior's recognizer holding the button's ended touches back (UIKit's delaysTouchesEnded, while the recognizer stays
-	// Possible: no TouchUpInside, no Released, and the button takes no further touch), the behavior raising Clicked next to the UIButton's own
-	// (IButtonController.SendClicked).
+	// The behavior's recognizer must not hold the button's ended touches back (UIKit's delaysTouchesEnded, while the recognizer stays
+	// Possible: no TouchUpInside, no Released, and the button takes no further touch), and the behavior must not raise Clicked next to the
+	// UIButton's own (IButtonController.SendClicked).
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -72,11 +67,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A tap on a CheckBox with a TouchBehavior, delivered through UIKit as a finger's, toggles it, and so does the next tap; the behavior
-	// completes its gesture for each. MAUI's platform check box is a UIButton, which toggles when a touch ends inside it: the end of the touch
-	// must reach a view with the behavior, not only a Button or an ImageButton.
-	// Catches: the behavior's recognizer holding the ended touches back from the view (UIKit's delaysTouchesEnded, while the recognizer stays
-	// Possible): the check box never toggles and takes no further touch.
+	// MAUI's platform check box is a UIButton, which toggles when a touch ends inside it: the behavior's recognizer must not hold the end of
+	// the touch back (UIKit's delaysTouchesEnded) from any view, not only a Button or an ImageButton.
 	[Fact]
 	public async Task TapOnACheckBoxTogglesItEveryTime()
 	{
@@ -101,8 +93,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the recognizer cancelling for a touch that left the view and then restarting it when the touch comes back
-	// (isCanceled latches for the rest of the touch on Apple platforms; Android restarts, see the Android partial).
+	// isCanceled latches for the rest of the touch on Apple platforms; Android restarts (see the Android partial).
 	[Fact]
 	public async Task TouchReturningToTheViewDoesNotRestartACancelledPress()
 	{
@@ -126,8 +117,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A touch that left the view and then ended must complete the interaction (Android does).
-	// Catches: the recognizer's isCanceled latch, set when the touch left the view, swallowing the HandleUserInteraction(Completed) of
+	// The recognizer's isCanceled latch, set when the touch left the view, must not swallow the HandleUserInteraction(Completed) of
 	// TouchesEnded.
 	[Fact]
 	public async Task ReleasingAfterLeavingTheViewCompletesTheInteraction()
@@ -146,8 +136,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the recognizer not allowing other recognizers at the same time (it must return true), a pan that began not cancelling the
-	// touch (ShouldRecognizeSimultaneously), any other recognizer or a pan that has not begun cancelling it.
 	[Fact]
 	public async Task RecognizerCancelsTheTouchWhenAPanBeginsAndAllowsSimultaneousRecognition()
 	{
@@ -166,12 +154,10 @@ public partial class TouchBehaviorInputTests
 			NativePress(handler);
 			AssertTouchNow(behavior, TouchStatus.Started, TouchState.Pressed, TouchInteractionStatus.Started, "after the press");
 
-			// A pan that has not begun, and a recognizer that is not a pan: nothing happens.
 			Assert.True(recognizerDelegate.ShouldRecognizeSimultaneously(recognizer, pan));
 			Assert.True(recognizerDelegate.ShouldRecognizeSimultaneously(recognizer, tap));
 			AssertTouchNow(behavior, TouchStatus.Started, TouchState.Pressed, TouchInteractionStatus.Started, "while the pan has not begun");
 
-			// A pan that began takes the touch over.
 			pan.State = UIGestureRecognizerState.Began;
 			Assert.True(recognizerDelegate.ShouldRecognizeSimultaneously(recognizer, pan));
 			AssertTouchNow(behavior, TouchStatus.Canceled, TouchState.Default, TouchInteractionStatus.Completed, "after the pan began");
@@ -180,7 +166,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: ShouldRecognizeSimultaneously cancelling when the first argument is not the behavior's recognizer.
 	[Fact]
 	public async Task DelegateIgnoresRecognizersThatAreNotTheBehaviorsOwn()
 	{
@@ -204,8 +189,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the recognizer taking touches meant for a descendant that has its own gestures, or refusing touches on the view, on an
-	// ancestor, or on a descendant without gestures (ShouldReceiveTouch), or taking touches of unrelated views.
 	[Fact]
 	public async Task RecognizerReceivesTouchesOnTheViewItsAncestorsAndPlainDescendantsOnly()
 	{
@@ -253,7 +236,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: a touch without a location (GetTouchPoint returning null) being treated as inside the view, or breaking the start.
 	[Fact]
 	public async Task TouchesWithoutALocationStartTheGestureAndCancelOnMove()
 	{
@@ -264,6 +246,7 @@ public partial class TouchBehaviorInputTests
 		await RunAttachedAsync(CreateHost(), behavior, handler =>
 		{
 			var recognizer = GetTapRecognizer(GetPlatformView(handler));
+			// An empty touch set has no location: GetTouchPoint returns null for it.
 			using var touches = new NSSet();
 
 			using var touchEvent = CreateObject<UIEvent>("UIEvent");
@@ -278,8 +261,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the hover recognizer's Changed state not reporting Entered again, and a cancelled hover reporting Entered. (Whether a
-	// cancelled hover must end the hover is HoverCancelledBySystemEndsTheHover.)
 	[Fact]
 	public async Task HoverChangedReportsEnteredAgainAndACancelledHoverDoesNotEnter()
 	{
@@ -292,7 +273,7 @@ public partial class TouchBehaviorInputTests
 			await NativeHoverEnterAsync(handler);
 			await WaitUntilAsync(() => behavior.CurrentHoverStatus == HoverStatus.Entered, "The hover did not enter.");
 
-			// Flip the status behind the recognizer's back, then let the recognizer report a hover that is still going on.
+			// The status is reset behind the recognizer's back, so that only the Changed state of the ongoing hover can report Entered again.
 			behavior.HandleHover(HoverStatus.Exited);
 			await NativeHoverMoveAsync(handler);
 			await WaitUntilAsync(() => behavior.CurrentHoverStatus == HoverStatus.Entered, "A changed hover must report Entered.");
@@ -304,8 +285,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A hover that the system cancels (the pointer left the app, the view went away) must end the hover like an ended one.
-	// Catches: OnHover ignoring the Cancelled state (the behavior would stay Entered / Hovered with the hovered effects applied).
 	[Fact]
 	public async Task HoverCancelledBySystemEndsTheHover()
 	{
@@ -330,10 +309,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// The touch recognizer's HandleTouch is also reached from its delegate (a pan that began cancels the touch); a disabled behavior must
-	// ignore that path too. (Every Touches* override returns before HandleTouch for a disabled behavior, so the delegate is the only way
-	// to reach the IsEnabled operand of HandleTouch's guard.)
-	// Catches: HandleTouch's !behavior.IsEnabled operand missing: the interaction would be completed for a disabled behavior.
+	// Every Touches* override returns before HandleTouch for a disabled behavior, so the recognizer's delegate (a pan that began cancels the
+	// touch) is the only way to reach the IsEnabled operand of HandleTouch's guard.
 	[Fact]
 	public async Task DisabledBehaviorIgnoresAPanThatBeganWhilePressed()
 	{
@@ -362,9 +339,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// UIKit sends nothing for a touch after it ended; the recognizer still latches isCanceled at the end of TouchesEnded, so a stray
-	// Moved or Cancelled for the ended touch changes nothing.
-	// Catches: the latch at the end of TouchesEnded missing (a stray Cancelled would turn the completed touch into a cancelled one).
+	// UIKit sends nothing for a touch after it ended, so the stray Moved and Cancelled are fed to the recognizer directly: it still latches
+	// isCanceled at the end of TouchesEnded, so they change nothing.
 	[Fact]
 	public async Task EventsForATouchThatEndedAreIgnored()
 	{
@@ -399,10 +375,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	/// <summary>
-	/// A pan recognizer whose state the test controls: UIKit only accepts state changes for recognizers that are tracking real
-	/// touches, but the touch recognizer's delegate only reads <see cref="UIGestureRecognizer.State"/> of the other recognizer.
-	/// </summary>
+	// UIKit only accepts state changes for recognizers that are tracking real touches, but the touch recognizer's delegate only reads the
+	// State of the other recognizer.
 	sealed class StatefulPanGestureRecognizer : UIPanGestureRecognizer
 	{
 		UIGestureRecognizerState state = UIGestureRecognizerState.Possible;

@@ -10,15 +10,15 @@ public partial class IconTintColorBehavior
 	// The states whose title color MAUI sets on a UIButton (ButtonHandler). A title without a color of its own follows the tint color.
 	static readonly UIControlState[] titleColorStates = [UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled];
 
-	// What the behavior changed to tint the platform view, put back when the tint is removed. Null while the view is not tinted.
+	// Null while the view is not tinted.
 	OriginalTint? originalTint;
 
-	// Watches the image of a Button's UIButton. MAUI gives the button the image of a new ImageSource once it has loaded it, as AlwaysOriginal,
-	// and unlike Image and ImageButton, a Button has no IsLoading that tells when.
+	// MAUI gives the button the image of a new ImageSource once it has loaded it, as AlwaysOriginal, and unlike Image and ImageButton, a Button
+	// has no IsLoading that tells when.
 	IDisposable? buttonImageObserver;
 
-	// The image view that buttonImageObserver watches. The observer only holds a weak reference to the managed UIImageView, and cannot remove
-	// the observation once that is collected: it is kept for as long as the observation.
+	// The observer only holds a weak reference to the managed UIImageView, and cannot remove the observation once that is collected: the image
+	// view is kept for as long as the observation.
 	UIImageView? observedButtonImageView;
 
 	/// <inheritdoc/>
@@ -79,7 +79,7 @@ public partial class IconTintColorBehavior
 
 	// UIKit dims the tint color of the views behind an alert, an action sheet or a popover (TintAdjustmentMode Dimmed), and a button reports
 	// its tint color, and the title colors that follow it, dimmed meanwhile. The colors the behavior keeps, compares and puts back are the
-	// ones without the dimming: the view is undimmed while it runs the action, then gets its mode back.
+	// ones without the dimming.
 	static void RunUndimmed(UIView view, Action action)
 	{
 		if (view.TintAdjustmentMode is not UIViewTintAdjustmentMode.Dimmed)
@@ -132,8 +132,8 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	// MAUI has given the button the tint color and the title colors of its TextColor: they are the colors to put back from now on, and the
-	// icon is tinted again. MAUI leaves the tint color alone when it styles the button through its UIButtonConfiguration (Mac idiom).
+	// MAUI has given the button the tint color and the title colors of its TextColor: they are the colors to put back from now on. MAUI leaves
+	// the tint color alone when it styles the button through its UIButtonConfiguration (Mac idiom).
 	void OnButtonTextColorMapped()
 	{
 		if (originalTint is null || TintColor is not Color tintColor || View is not Button view || view.Handler?.PlatformView is not UIButton button)
@@ -184,7 +184,7 @@ public partial class IconTintColorBehavior
 
 	void ClearUIButtonTintColor(UIButton button)
 	{
-		// CurrentImage is the image the behavior tints (SetUIButtonTintColor): it is null for an image that comes from a UIButtonConfiguration.
+		// CurrentImage is null for an image that comes from a UIButtonConfiguration, which the behavior does not tint (SetUIButtonTintColor).
 		if (button.CurrentImage is UIImage currentImage)
 		{
 			var originalImage = currentImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
@@ -201,7 +201,7 @@ public partial class IconTintColorBehavior
 		// MAUI never sets the tint color of the button's image view: it follows the button's again.
 		button.ImageView.TintColor = null;
 
-		// The title colors the behavior set are removed, unless the button got other title colors in the meantime.
+		// SetUIButtonTintColor set these title colors to keep the title out of the tint; a title color the button got in the meantime stays.
 		foreach (var (state, titleColor) in originalTint.TitleColors)
 		{
 			if (titleColor.Equals(button.TitleColor(state)))
@@ -278,8 +278,6 @@ public partial class IconTintColorBehavior
 		imageView.TintColor = color.ToPlatform();
 	}
 
-	// The tint color of a UIButton before the behavior tinted it (MAUI maps Button.TextColor to it), and the title colors the behavior set on
-	// the button to keep its title out of the tint. An image view has neither.
 	sealed class OriginalTint(UIColor? tintColor)
 	{
 		public UIColor? TintColor { get; } = tintColor;

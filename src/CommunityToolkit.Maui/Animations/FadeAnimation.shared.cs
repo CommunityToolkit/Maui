@@ -16,8 +16,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// </remarks>
 public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Length)
 {
-	// Every FadeAnimation fades a view with FadeToAsync, and a new FadeToAsync replaces the one running on the view, so the fades of a view are
-	// tracked per view, whichever FadeAnimation started them
+	// A new FadeToAsync replaces the one running on the view, so the fades of a view are tracked per view, whichever FadeAnimation started them
 	static readonly ConditionalWeakTable<VisualElement, ViewFades> viewFades = new();
 
 	/// <summary>
@@ -43,8 +42,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 			await view.FadeToAsync(Opacity, Length, Easing).WaitAsync(token);
 #endif
 
-			// A newer animation started fading the view while this one faded it out. The newer animation returns the view to its original
-			// opacity, and fading it back here would interrupt it.
+			// A newer animation started fading the view meanwhile and returns it to its original opacity: fading it back here would interrupt it.
 			if (!fades.IsLatest(fadeId))
 			{
 				return;
@@ -62,7 +60,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		}
 	}
 
-	// The fades of one view. Animate can start, and continue after an await, on any thread.
+	// Animate can start, and continue after an await, on any thread.
 	sealed class ViewFades
 	{
 		readonly Lock fadesLock = new();
@@ -71,7 +69,6 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		double originalOpacity;
 		double? opacityLeftByLastFade;
 
-		// Returns the ID of the new fade and the opacity it returns the view to
 		public (int FadeId, double OriginalOpacity) Start(double currentOpacity)
 		{
 			lock (fadesLock)

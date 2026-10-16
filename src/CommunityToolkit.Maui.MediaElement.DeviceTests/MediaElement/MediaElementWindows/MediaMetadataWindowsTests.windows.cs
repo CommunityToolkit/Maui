@@ -9,12 +9,7 @@ using Windows.Media.Playback;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Primitives/Metadata.windows.cs and MediaManager.UpdateMetadata: what the toolkit publishes to the system media transport controls (the
-// overlay with the title, the artist and the artwork), when it switches them on, and what it publishes to the player's poster. The native
-// DisplayUpdater of the player's SystemMediaTransportControls is read back; the artwork is served by a loopback server
-// (RandomAccessStreamReference.CreateFromUri accepts http, https, ms-appx and ms-appdata only) and the thumbnail is read back byte by byte.
-// The media-key handlers (ButtonPressed) are driven through the system media session of the app, and with the real keys from the visual
-// runner (RequiresUserInteraction).
+// The artwork is served by a loopback server because RandomAccessStreamReference.CreateFromUri accepts http, https, ms-appx and ms-appdata only.
 [Category(TestCategory.MediaMetadataWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaMetadataWindowsTests : WinMediaTestBase
@@ -30,7 +25,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 	static Uri ArtworkUri(WinMediaHttpServer server) => server.UriFor(WinMediaAssets.ArtworkServerPath);
 
-	// The thumbnail the system media overlay would show: it must deliver the artwork's bytes, fetched from the server.
 	static async Task AssertThumbnailIsTheArtworkAsync(WinMediaManagerFixture fixture, WinMediaHttpServer server)
 	{
 		byte[] bytes;
@@ -86,8 +80,8 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 			var updater = fixture.Player!.SystemMediaTransportControls.DisplayUpdater;
 			Assert.Equal(MediaPlaybackType.Music, updater.Type);
-			// Which of the two properties holds which text is the next test; here both texts must reach the updater. Both sides are sorted the
-			// same way (ordinal), so the comparison holds for either assignment and for no other pair of texts.
+			// Which property holds which text is the next test. Both sides are sorted the same way, so the comparison holds for either assignment
+			// and for no other pair of texts.
 			Assert.Equal(new[] { title, artist }.Order(StringComparer.Ordinal), new[] { updater.MusicProperties.Title, updater.MusicProperties.Artist }.Order(StringComparer.Ordinal));
 		});
 	}
@@ -144,9 +138,8 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// Absolute urls whose scheme RandomAccessStreamReference.CreateFromUri does not support (http, https, ms-appx and ms-appdata only): a file
-	// path (the Android MediaElement takes one as the artwork) and other schemes cannot be the thumbnail. SetMetadata runs inside the async void
-	// MediaOpened handler, where an exception ends the app: such a url is ignored, and the rest of the metadata is still published.
+	// RandomAccessStreamReference.CreateFromUri accepts http, https, ms-appx and ms-appdata only, and the Android MediaElement takes a file path as
+	// the artwork. SetMetadata runs inside the async void MediaOpened handler, where an exception ends the app.
 	[Theory]
 	[InlineData(@"C:\Users\Public\Pictures\cover.png")]
 	[InlineData("file:///C:/Users/Public/Pictures/cover.png")]
@@ -235,7 +228,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 		await UpdateMetadataAsync(fixture);
 
-		// The first call creates the Metadata helper; IsDispatchRequired == false, so the poster is set inline and nothing is queued.
 		Assert.Equal(0, fixture.Dispatcher!.DispatchCount);
 		var metadata = WinMediaReflection.GetField<object?>(fixture.Manager, "metadata");
 		Assert.NotNull(metadata);
@@ -247,7 +239,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 			Assert.Equal(ArtworkUri(server).AbsoluteUri, poster.UriSource.AbsoluteUri, ignoreCase: true);
 		});
 
-		// The second call reuses it.
 		await UpdateMetadataAsync(fixture);
 		Assert.Same(metadata, WinMediaReflection.GetField<object?>(fixture.Manager, "metadata"));
 	}
@@ -260,7 +251,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 		await using var server = WinMediaAssets.StartArtworkServer();
 
-		// The dispatcher reports IsDispatchRequired although this is the UI thread: the dispatching arm queues the poster update.
 		var fixture = await CreateManagerAsync(view => view.MetadataArtworkUrl = ArtworkUri(server).AbsoluteUri, dispatchRequired: true);
 
 		await UpdateMetadataAsync(fixture);
@@ -281,7 +271,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		await using var server = WinMediaAssets.StartArtworkServer();
 		var fixture = await CreateManagerAsync(view => view.MetadataArtworkUrl = ArtworkUri(server).AbsoluteUri);
 
-		// IsDispatchRequired == true: BitmapImage is a XAML object, so only the dispatched arm can create it.
+		// BitmapImage is a XAML object, so only the dispatched arm can create it.
 		await Task.Run(async () => await (ValueTask)WinMediaReflection.Invoke(fixture.Manager, "UpdateMetadata")!);
 
 		await WaitUntilOnUiAsync(() => fixture.Element!.PosterSource is BitmapImage { UriSource: not null }, "The poster was never set from the background-thread UpdateMetadata.");
@@ -384,8 +374,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		Assert.Equal(token, (await WinMediaMediaSessions.Bounded(session.TryGetMediaPropertiesAsync())).Title);
 	}
 
-	// The system media transport controls are off until media with metadata opens (MediaManager.CreatePlatformView): MediaOpened publishes the
-	// metadata (OpeningMediaPublishesTheMetadata), and switches the controls on for media with metadata only.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -411,7 +399,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		Assert.Equal(hasMetadata, controls.IsEnabled);
 	}
 
-	// Any one of the three is metadata.
 	[Theory]
 	[InlineData(nameof(MediaElement.MetadataTitle))]
 	[InlineData(nameof(MediaElement.MetadataArtist))]
@@ -450,7 +437,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// Blank texts are no metadata. The controls that the previous media, which had metadata, switched on go off again.
 	[Theory]
 	[InlineData("")]
 	[InlineData("   ")]
@@ -476,8 +462,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// Without media there is nothing for a system media session to show or to control: taking the media out of the player switches the controls
-	// that its metadata switched on off again.
 	[Theory]
 	[InlineData("no source")]
 	[InlineData("a source that cannot be applied")]
@@ -529,7 +513,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		fixture.View.PlayRequested += (_, _) => played.TrySetResult(Environment.CurrentManagedThreadId);
 		fixture.View.PauseRequested += (_, _) => paused.TrySetResult(Environment.CurrentManagedThreadId);
 
-		// ButtonPressed arrives on a system thread, where IsDispatchRequired is true: the request is queued and runs on the UI thread.
 		Assert.True(await WinMediaMediaSessions.Bounded(session.TryPauseAsync()), "The system refused the pause command.");
 		Assert.Equal(uiThread, await paused.Task.WaitAsync(TimeSpan.FromSeconds(15)));
 		Assert.False(played.Task.IsCompleted);
@@ -547,8 +530,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		await RequireMediaPlayerAsync();
 		var token = $"test-{Guid.NewGuid():N}";
 
-		// The dispatcher says that no dispatch is required (no media is opened here, so no native media event can take that arm by mistake):
-		// the media-key handler then calls Play() and Pause() on the thread that raised ButtonPressed, which is not the UI thread.
 		var fixture = await CreateManagerAsync(view =>
 		{
 			view.MetadataTitle = token;
@@ -591,8 +572,8 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		};
 		fixture.View.PauseRequested += (_, _) => Interlocked.Increment(ref pauseRequests);
 
-		// Next is handled by neither branch. The play command that follows is the fence: ButtonPressed events are raised in order, so once the
-		// play request arrived, a request caused by Next would have arrived before it.
+		// The play command that follows is the fence: ButtonPressed events are raised in order, so once the play request arrived, a request caused by
+		// Next would have arrived before it.
 		Assert.True(await WinMediaMediaSessions.Bounded(session.TrySkipNextAsync()), "The system refused the next-track command.");
 		fixture.Player!.SystemMediaTransportControls.PlaybackStatus = MediaPlaybackStatus.Paused;
 		Assert.True(await WinMediaMediaSessions.Bounded(session.TryPlayAsync()), "The system refused the play command.");
@@ -604,8 +585,8 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	}
 
 	// The same handlers with the real keys: nothing in the app can press them, so the tests below wait for a person. They run only when the app
-	// is started without arguments (visual runner). The player's command manager is switched off (manual control of the system media
-	// transport controls): otherwise it would act on the keys itself and the tests would pass without the toolkit's handler.
+	// is started without arguments (visual runner). The player's command manager is switched off: otherwise it would act on the keys itself and
+	// the tests would pass without the toolkit's handler.
 	async Task<(MediaElement View, MediaPlayer Player)> StartPlaybackForButtonTestAsync()
 	{
 		SetupWindowsBuilder();

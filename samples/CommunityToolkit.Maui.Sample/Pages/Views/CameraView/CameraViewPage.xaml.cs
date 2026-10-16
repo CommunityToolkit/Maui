@@ -155,7 +155,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	{
 		try
 		{
-			// OnMediaCaptured shows the captured image
+			// OnMediaCaptured shows the captured image, so the returned stream is not needed
 			await Camera.CaptureImage(CancellationToken.None);
 		}
 		catch (Exception ex)

@@ -2,8 +2,8 @@ using CommunityToolkit.Maui.Alerts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// A minimal application handler. The toolkit reads Application.Current.Handler.MauiContext.Services (for example IFontManager),
-// which the headless runner's application does not provide on Apple platforms and which a test-owned application never has.
+// The toolkit reads Application.Current.Handler.MauiContext.Services (for example IFontManager), which the headless runner's application
+// does not provide on Apple platforms and which a test-owned application never has.
 sealed class StubApplicationHandler(IMauiContext? mauiContext) : IElementHandler
 {
 	public object? PlatformView => this;
@@ -32,8 +32,8 @@ sealed class StubApplicationHandler(IMauiContext? mauiContext) : IElementHandler
 	}
 }
 
-// A minimal view handler: Controls views only accept an IViewHandler. Its platform view is the handler itself, which is not a native
-// view on any platform, so code that casts the platform view of an anchor or of a modal page to a native view gets null.
+// Controls views only accept an IViewHandler. This handler's platform view is the handler itself, which is not a native view on any
+// platform, so code that casts the platform view of an anchor or of a modal page to a native view gets null.
 sealed class StubViewHandler(IMauiContext? mauiContext) : IViewHandler
 {
 	public object PlatformView => this;
@@ -82,7 +82,7 @@ sealed class StubViewHandler(IMauiContext? mauiContext) : IViewHandler
 	}
 }
 
-// A view that is not a Controls view (Controls views require a platform view handler as soon as one is set): only its handler matters.
+// Not a Controls view: Controls views require a platform view handler as soon as one is set.
 sealed class StubView : IView
 {
 	public IViewHandler? Handler { get; set; }
@@ -180,10 +180,9 @@ sealed class StubView : IView
 	}
 }
 
-// Records the static Snackbar.Shown and Snackbar.Dismissed events. The toolkit keeps its handlers in a WeakEventManager, so the
-// handlers are instance methods of this object, and the test keeps the recorder alive until it is disposed.
-// afterDismissed runs inside the Dismissed handler, after the event was recorded (for example to cancel a token while Show is
-// dismissing the snackbar that is shown).
+// The toolkit keeps the handlers of the static Snackbar.Shown and Snackbar.Dismissed events in a WeakEventManager, so they are instance
+// methods of this object, and the test keeps the recorder alive until it is disposed.
+// afterDismissed runs inside the Dismissed handler, for example to cancel a token while Show is dismissing the snackbar that is shown.
 sealed class SnackbarEventRecorder : IDisposable
 {
 	readonly Action? afterDismissed;

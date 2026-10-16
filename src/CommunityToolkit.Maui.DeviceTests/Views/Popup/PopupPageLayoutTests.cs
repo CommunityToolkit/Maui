@@ -2,12 +2,8 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of the layout of a displayed Popup (PopupPage.PopupPageLayout, PopupPage.shared.cs): the Popup's Border keeps Popup.Margin to
-// the edges of the PopupPage, also when the Popup's WidthRequest or HeightRequest is larger than the page, and the Popup's platform view is
-// resized to the space that is left. The PopupPage is hosted as a page: showing it modally needs a Window, which the headless runners do not
-// have, and the layout of the PopupPage does not depend on how the page is presented. The shared tests read the frames .NET MAUI arranged; the
-// platform files read the size of the Popup's platform view. The space the PopupPageLayout arranges its children in is the frame of its
-// gesture overlay, which fills the layout's only cell: it excludes the safe area that the layout keeps free (iOS: the home indicator).
+// The PopupPage is hosted as a page: showing it modally needs a Window, which the headless runners do not have, and the layout of the
+// PopupPage does not depend on how the page is presented.
 [Category(TestCategory.PopupPageLayout)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
@@ -96,8 +92,8 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 		await AttachAndRun(popupPage, async _ =>
 		{
 			var layoutArea = await WaitForLayout(popupPage);
-			var expectedX = layoutArea.X + Align(alignment, layoutArea.Width, popupSize);
-			var expectedY = layoutArea.Y + Align(alignment, layoutArea.Height, popupSize);
+			var expectedX = layoutArea.X + GetBorderOffset(alignment, layoutArea.Width, popupSize);
+			var expectedY = layoutArea.Y + GetBorderOffset(alignment, layoutArea.Height, popupSize);
 
 			await AssertBorderFrame(popupPage, new Rect(expectedX, expectedY, popupSize, popupSize));
 			await AssertPopupSize(popup, new Size(popupSize, popupSize));
@@ -123,16 +119,16 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 		_ => throw new NotSupportedException($"{alignment} is not supported")
 	};
 
-	// The position of a Border of the given size, aligned with the default margin in a layout of the given length
-	static double Align(PopupAlignment alignment, double layoutLength, double length) => alignment switch
+	static double GetBorderOffset(PopupAlignment alignment, double layoutLength, double borderLength) => alignment switch
 	{
 		PopupAlignment.Start => defaultMargin,
-		PopupAlignment.Center => (layoutLength - length) / 2,
-		PopupAlignment.End => layoutLength - defaultMargin - length,
+		PopupAlignment.Center => (layoutLength - borderLength) / 2,
+		PopupAlignment.End => layoutLength - defaultMargin - borderLength,
 		_ => throw new NotSupportedException($"{alignment} is not supported")
 	};
 
-	// Returns the space the PopupPageLayout arranges the popup's Border in
+	// The space the PopupPageLayout arranges its children in is the frame of its gesture overlay, which fills the layout's only cell: it
+	// excludes the safe area that the layout keeps free (iOS: the home indicator).
 	static async Task<Rect> WaitForLayout(PopupPage popupPage)
 	{
 		var popupPageLayout = popupPage.Content;

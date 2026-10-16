@@ -8,17 +8,10 @@ using ICameraProvider = CommunityToolkit.Maui.Core.ICameraProvider;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraManager on Android: construction, connecting the camera, starting and stopping the preview, switching cameras,
-/// disposing. Every test that opens a camera grants the runtime permission first and asserts what CameraX reports natively
-/// (camera state, bound use cases, preview stream state).
-/// </summary>
 [Category(TestCategory.CameraManagerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 {
-	// ---- construction -------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public void ConstructorThrowsCameraExceptionWhenTheMauiContextHasNoAndroidContext()
 	{
@@ -44,8 +37,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		Assert.NotNull(manager);
 	}
 
-	// ---- CreatePlatformView -------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task CreatePlatformViewReturnsAFitCenterPreviewViewInTheActivity()
 	{
@@ -69,13 +60,12 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 		var session = await CreateSessionAsync();
 
-		// OrientationEventListener.enable registers the accelerometer with the sensor service...
 		await AssertionExtensions.AssertEventuallyAsync(async () => await CountOrientationListenersOfThisAppAsync() == registeredBefore + 1, 10000, 100,
 			"CreatePlatformView never registered an orientation listener with the sensor service.");
 
 		await InvokeOnMainThreadAsync(session.Manager.Dispose);
 
-		// ... and disable removes it again (disposing the managed listener alone would leave the Java listener registered).
+		// Disposing the managed listener alone would leave the Java listener registered, so disable has to remove it.
 		await AssertionExtensions.AssertEventuallyAsync(async () => await CountOrientationListenersOfThisAppAsync() == registeredBefore, 10000, 100,
 			"Dispose left the orientation listener registered with the sensor service.");
 	}
@@ -104,8 +94,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		Assert.Contains("main thread", exception.Message);
 	}
 
-	// ---- ConnectCamera ------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task ConnectCameraBindsPreviewAndImageCaptureAndOpensTheSelectedCamera()
 	{
@@ -124,7 +112,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.Native<Preview>("cameraPreview")!));
 			Assert.True(await IsNativelyBoundAsync(session.Native<ImageCapture>("imageCapture")!));
 			Assert.False(await IsNativelyBoundAsync(session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!));
-			// The recorder asks CameraX for the highest quality the camera offers (the emulators offer one quality, so a recording cannot show it).
+			// The emulators offer only one quality, so a recording can not show that the recorder asks CameraX for the highest one.
 			Assert.Contains("name=HIGHEST", session.Native<AndroidX.Camera.Video.Recorder>("videoRecorder")!.QualitySelector.ToString());
 			foreach (var other in session.Provider.AvailableCameras!.Where(camera => camera.DeviceId != selected.DeviceId))
 			{
@@ -297,8 +285,8 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await connect.WaitAsync(CameraTimeout);
 			Assert.Empty(errors.Errors);
 
-			// The listener still runs, with the cancelled token: it ends the cancelled connection without letting anything escape (an
-			// escape fails the test when it ends; see ConnectCameraCancelledWhileConnectingDoesNotLetAnExceptionEscapeFromTheCameraXListener).
+			// The listener still runs, with the cancelled token, and must not let anything escape: an escape fails the test when it ends
+			// (see ConnectCameraCancelledWhileConnectingDoesNotLetAnExceptionEscapeFromTheCameraXListener).
 			await SettleUiThreadAsync();
 		}, provider);
 	}
@@ -324,11 +312,9 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		}, provider);
 	}
 
-	// A precondition of the use cases is missing when the CameraX listener of ConnectCamera builds and binds them: the capture
-	// resolution (CameraViewHandler maps it before the camera connects), the camera executor (CreatePlatformView creates it) or a
-	// Context that is a LifecycleOwner (CameraX binds the camera to one). ConnectCamera has to report the exception of the missing
-	// precondition through ErrorOccurred instead of letting it escape from the listener. The guards themselves are tested in
-	// CameraManagerGuardAndroidTests.
+	// The preconditions of the use cases are the capture resolution (CameraViewHandler maps it before the camera connects), the camera
+	// executor (CreatePlatformView creates it) and a Context that is a LifecycleOwner (CameraX binds the camera to one). The guards
+	// themselves are tested in CameraManagerGuardAndroidTests.
 	[Theory]
 	[InlineData("resolutionSelector")]
 	[InlineData("cameraExecutor")]
@@ -447,8 +433,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- StartCameraPreview / StopCameraPreview / UpdateCurrentCamera -------------------------------------------------
-
 	[Fact]
 	public async Task StopCameraPreviewUnbindsTheUseCasesAndClosesTheCamera()
 	{
@@ -543,13 +527,12 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.False(await IsNativelyBoundAsync(session.CameraPreview));
 			await AssertEveryCameraIsClosedAsync();
 
-			// The preview is still stopped: selecting a camera (which only restarts a running preview) does not open it.
+			// Selecting a camera only restarts a running preview, so it does not open the stopped one.
 			await session.Manager.UpdateCurrentCamera(session.View.SelectedCamera, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
 			await SettleUiThreadAsync();
 			Assert.Equal(loadedBefore, session.LoadedCount);
 			await AssertEveryCameraIsClosedAsync();
 
-			// The cancelled start changed nothing: the next start opens the camera.
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
@@ -600,9 +583,9 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// Every preview start asks CameraX to focus and meter at the center of the preview. CameraX runs one such action per camera and
-	// fails the running one as soon as another one starts ("Cancelled by another startFocusAndMetering()"), which is how the test sees
-	// the toolkit's request: its own action, started right before StartCameraPreview, is cancelled by the toolkit's action.
+	// CameraX runs one focus and metering action per camera and fails the running one as soon as another one starts
+	// ("Cancelled by another startFocusAndMetering()"), which is how the test sees the toolkit's request: its own action, started right
+	// before StartCameraPreview, is cancelled by the toolkit's action.
 	[Fact]
 	public async Task StartCameraPreviewStartsAFocusAndMeteringActionOnTheCamera()
 	{
@@ -629,9 +612,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	/// <summary>
-	/// Completes with null when a CameraX future succeeds, or with the cause of its failure (its listener runs on the UI thread).
-	/// </summary>
 	static Task<Java.Lang.Throwable?> ObserveFailureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
 	{
 		var outcome = new TaskCompletionSource<Java.Lang.Throwable?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -886,8 +866,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- Dispose ------------------------------------------------------------------------------------------------------
-
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -984,10 +962,10 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
 			await AssertionExtensions.AssertEventually(() => streamState.Value?.ToString() == "IDLE", 30000, 100, "The preview kept streaming after Dispose.");
 
-			// The manager releases every native object it holds, and disposes the ones it created itself. CameraX's ProcessCameraProvider,
-			// camera and camera control are shared: every manager that binds to the same LifecycleOwner gets the same managed peers, so
-			// they are only released (that they stay usable is asserted by DisposeLeavesTheProcessCameraProviderThatEveryManagerSharesUsable,
-			// DisposingOneManagerDoesNotBreakAnotherManager and DisposingOneManagerDoesNotBreakTheZoomAndTorchOfAnotherManager).
+			// CameraX's ProcessCameraProvider, camera and camera control are shared: every manager that binds to the same LifecycleOwner gets the
+			// same managed peers, so they are only released (that they stay usable is asserted by
+			// DisposeLeavesTheProcessCameraProviderThatEveryManagerSharesUsable, DisposingOneManagerDoesNotBreakAnotherManager and
+			// DisposingOneManagerDoesNotBreakTheZoomAndTorchOfAnotherManager).
 			Assert.All(nativeObjects.Where(entry => !IsSharedCameraXObject(entry.Key)), entry => Assert.True(entry.Value!.Handle == IntPtr.Zero, $"{entry.Key} was not disposed."));
 			Assert.All(nativeObjects.Keys, name => Assert.Null(GetPrivateField<object>(session.Manager, name)));
 		});
@@ -1046,7 +1024,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 		await RunWithStreamingSessionAsync(async session =>
 		{
-			// The process-wide provider, as every other CameraManager and the CameraProvider of the app get it from CameraX.
 			var shared = await GetNativeCameraProviderAsync();
 
 			session.Manager.Dispose();
@@ -1069,7 +1046,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await first.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitForStreamingAsync(first.PreviewView!);
 
-			// A second CameraView on the same camera binds to the same LifecycleOwner, and its page is closed again.
+			// A second CameraView on the same camera binds to the same LifecycleOwner, so both managers share the camera objects.
 			await second.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitForStreamingAsync(second.PreviewView!);
 			second.Manager.Dispose();
@@ -1096,12 +1073,11 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await first.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitForStreamingAsync(first.PreviewView!);
 
-			// A second CameraView (for example on the next page) takes the camera over, and its page is closed again.
+			// A second CameraView, for example on the next page, takes the camera over, so the first one has to start its preview again.
 			await second.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitForStreamingAsync(second.PreviewView!);
 			second.Manager.Dispose();
 
-			// The first CameraView can still start its preview again and be disposed completely.
 			await first.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.True(await IsNativelyBoundAsync(first.ImageCapture));
 			Assert.True(await IsNativelyBoundAsync(first.CameraPreview));
@@ -1112,7 +1088,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		}, first.PreviewView!, second.PreviewView!);
 	}
 
-	/// <summary>The objects that CameraX shares between every CameraManager of the process (or of the same LifecycleOwner and camera).</summary>
 	internal static bool IsSharedCameraXObject(string field) => field is "processCameraProvider" or "camera" or "cameraControl";
 
 	static bool IsExecutorShutdown(IntPtr executor)

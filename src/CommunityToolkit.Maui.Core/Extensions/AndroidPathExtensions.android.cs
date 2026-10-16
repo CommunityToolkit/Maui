@@ -43,7 +43,7 @@ public static class AndroidPathExtensions
 				: null;
 		}
 
-		// The volume, and the path in it, which may itself hold a colon
+		// The path in the volume may itself hold a colon
 		var pathSplit = path.Split(':', 2);
 		if (pathSplit.Length < 2)
 		{
@@ -68,38 +68,21 @@ public static class AndroidPathExtensions
 		return Environment.ExternalStorageDirectory?.Path ?? "/storage/emulated/0";
 	}
 
-	/// <summary>
-	/// Convert an absolute path (<see cref="string"/>) to the <see cref="Uri"/> of its document in the documents provider of the device's
-	/// storage volumes, which a document picker can start in (<see cref="DocumentsContract.ExtraInitialUri"/>). A relative path is a path in
-	/// the primary storage, and the root of the file system is the root of the primary storage.
-	/// It returns <see langword="null"/> if no storage volume holds the path, such as a path in the app's private storage.
-	/// </summary>
 	internal static Uri? ToExternalStorageDocumentUri(string path)
 	{
 		var documentId = GetExternalStorageDocumentId(path);
 		return documentId is null ? null : DocumentsContract.BuildDocumentUri(AndroidStorageConstants.ExternalStorageDocumentsAuthority, documentId);
 	}
 
-	/// <summary>
-	/// Whether the <see cref="Uri"/> is a document of the Downloads provider that is named by the number of its download in the
-	/// DownloadManager, an id that holds no path.
-	/// </summary>
 	internal static bool IsDownloadManagerDocument(this Uri uri) =>
 		AndroidStorageConstants.DownloadsDocumentsAuthority.Equals(uri.Authority, StringComparison.Ordinal)
 		&& uri.PathSegments is ["document", { Length: > 0 } documentId]
 		&& documentId.All(char.IsAsciiDigit);
 
-	/// <summary>
-	/// Convert a document that the Downloads provider created in its root for a document picker (<c>ACTION_CREATE_DOCUMENT</c>) to the
-	/// absolute path of its file, from the display name and the summary that the provider reports for the document.
-	/// It returns <see langword="null"/> for any other document.
-	/// </summary>
-	/// <remarks>
-	/// The provider creates the file in the public Download folder and registers it with the DownloadManager under the file's name, as both the
-	/// title (the display name) and the description (the summary) of the download, whose number is the id of the document. That name can differ
-	/// from the one that the picker was given: the provider makes it unique ("report (1).txt") and fits it to the file system. Any other download
-	/// has a title, a description and a folder of its own, and the provider does not report the folder.
-	/// </remarks>
+	// The Downloads provider creates the file in the public Download folder and registers it with the DownloadManager under the file's name,
+	// as both the title (the display name) and the description (the summary) of the download, whose number is the id of the document. That
+	// name can differ from the one that the picker was given: the provider makes it unique ("report (1).txt") and fits it to the file system.
+	// Any other download has a title, a description and a folder of its own, and the provider does not report the folder.
 	internal static string? ToPathOfDocumentCreatedInDownloads(this Uri uri, string? displayName, string? summary)
 	{
 		if (!uri.IsDownloadManagerDocument()
@@ -115,8 +98,6 @@ public static class AndroidPathExtensions
 		return $"{GetExternalDirectory()}/{downloadFolder}/{displayName}";
 	}
 
-	// The document id is the volume and the path in it, the reverse of ToPhysicalPath: /storage/emulated/0/DCIM is primary:DCIM, and
-	// /storage/1B0B-0B1C/DCIM is 1B0B-0B1C:DCIM.
 	static string? GetExternalStorageDocumentId(string path)
 	{
 		if (!path.StartsWith("/", StringComparison.Ordinal))
@@ -131,7 +112,7 @@ public static class AndroidPathExtensions
 			return $"{AndroidStorageConstants.PrimaryStorage}:";
 		}
 
-		// The primary storage, under its own path or under one of its aliases
+		// /sdcard and /storage/self/primary are aliases of the primary storage
 		foreach (var primaryStoragePath in new[] { GetExternalDirectory(), "/sdcard", "/storage/self/primary" })
 		{
 			if (GetPathInFolder(path, primaryStoragePath) is string pathInPrimaryStorage)
@@ -151,11 +132,10 @@ public static class AndroidPathExtensions
 			}
 		}
 
-		// The app's private storage, for example
+		// No storage volume holds the path, such as one in the app's private storage
 		return null;
 	}
 
-	// The path of a path in a folder without its separators (an empty string for the folder itself), or null if the path is not in the folder
 	static string? GetPathInFolder(string path, string folder)
 	{
 		if (!path.StartsWith(folder, StringComparison.Ordinal))

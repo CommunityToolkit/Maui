@@ -5,9 +5,9 @@ using Microsoft.Maui.Devices;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// On Mac Catalyst and Windows StatusBarBehavior has no platform code: it is the BasePlatformBehavior and nothing else (its attach, detach
-// and property-change overrides are not compiled). There is no status bar to change, and nothing in the behavior may reach StatusBar,
-// whose implementations on these platforms throw NotSupportedException. Every test below fails if the behavior called StatusBar.
+// On Mac Catalyst and Windows StatusBarBehavior is the BasePlatformBehavior and nothing else (its attach, detach and property-change
+// overrides are not compiled). StatusBar throws NotSupportedException on these platforms, so every test below fails if the behavior
+// reaches StatusBar.
 public partial class StatusBarBehaviorTests
 {
 	[Fact]
@@ -50,10 +50,10 @@ public partial class StatusBarBehaviorTests
 
 		await AttachPageAndRun(page, _ =>
 		{
-			Assert.True(behavior.IsAttached); // attaching (ApplyOn = OnBehaviorAttachedTo) would have called SetColor and thrown
+			Assert.True(behavior.IsAttached);
 
-			StatusBarEventRaisers.RaiseNavigatedTo(page); // the behavior does not listen to NavigatedTo here
-			StatusBarEventRaisers.RaiseMainDisplayInfoChanged(); // nor to display changes
+			StatusBarEventRaisers.RaiseNavigatedTo(page);
+			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
 			Assert.True(behavior.IsAttached);
 			return Task.CompletedTask;

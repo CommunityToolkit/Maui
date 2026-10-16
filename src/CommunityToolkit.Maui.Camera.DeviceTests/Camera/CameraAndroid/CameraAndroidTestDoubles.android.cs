@@ -11,12 +11,10 @@ using ICameraProvider = CommunityToolkit.Maui.Core.ICameraProvider;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>An ICameraProvider the tests control completely (the real one asks CameraX).</summary>
 sealed class StubCameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; set; }
 
-	/// <summary>What <see cref="RefreshAvailableCameras"/> publishes. Null leaves <see cref="AvailableCameras"/> as it is.</summary>
 	public IReadOnlyList<CameraInfo>? CamerasAfterRefresh { get; set; }
 
 	public int RefreshCount { get; private set; }
@@ -42,10 +40,7 @@ sealed class StubCameraProvider : ICameraProvider
 	}
 }
 
-/// <summary>
-/// Forwards to a real Context (the runner's activity) but lets a test deny permissions and hide the PackageManager, and is a
-/// LifecycleOwner like the activity, so that CameraX can still bind to it.
-/// </summary>
+// Implements ILifecycleOwner like the runner's activity, so that CameraX can still bind to it.
 sealed class ConfigurableContext : ContextWrapper, ILifecycleOwner
 {
 	readonly ILifecycleOwner lifecycleOwner;
@@ -59,13 +54,10 @@ sealed class ConfigurableContext : ContextWrapper, ILifecycleOwner
 
 	public bool HidePackageManager { get; set; }
 
-	/// <summary>When set, <see cref="CacheDir"/> returns this directory instead of the real cache directory.</summary>
 	public Java.IO.File? CacheDirectoryOverride { get; set; }
 
-	/// <summary>
-	/// When set, the context is its own application Context. Code that keeps <c>getApplicationContext()</c> of the Context it was
-	/// given (CameraX's PendingRecording does, through ContextUtil.getApplicationContext) then still sees the denied permissions.
-	/// </summary>
+	// Lets code that keeps getApplicationContext() of the Context it was given (CameraX's PendingRecording does, through
+	// ContextUtil.getApplicationContext) still see the denied permissions.
 	public bool IsItsOwnApplicationContext { get; set; }
 
 	public Lifecycle Lifecycle => lifecycleOwner.Lifecycle;
@@ -83,7 +75,6 @@ sealed class ConfigurableContext : ContextWrapper, ILifecycleOwner
 		permission is not null && DeniedPermissions.Contains(permission) ? Permission.Denied : base.CheckSelfPermission(permission);
 }
 
-/// <summary>An IMauiContext with a chosen Android Context (null models a MauiContext without one).</summary>
 sealed class TestMauiContext(IMauiContext inner, Context? context) : IMauiContext
 {
 	public IServiceProvider Services => inner.Services;
@@ -93,7 +84,6 @@ sealed class TestMauiContext(IMauiContext inner, Context? context) : IMauiContex
 	public Context? Context => context;
 }
 
-/// <summary>A platform application that serves the services of the test, to steer what CameraViewHandler and CameraView resolve.</summary>
 sealed class StubPlatformApplication(IServiceProvider services, IApplication application) : IPlatformApplication
 {
 	public IServiceProvider Services => services;
@@ -101,7 +91,6 @@ sealed class StubPlatformApplication(IServiceProvider services, IApplication app
 	public IApplication Application => application;
 }
 
-/// <summary>An IImageProxy (a Java interface) over a chosen android.media.Image that counts how often it is closed.</summary>
 sealed class FakeImageProxy(AImage? image) : Java.Lang.Object, IImageProxy
 {
 	public int CloseCount { get; private set; }
@@ -123,7 +112,7 @@ sealed class FakeImageProxy(AImage? image) : Java.Lang.Object, IImageProxy
 	public IImageProxyPlaneProxy[] GetPlanes() => [];
 }
 
-/// <summary>Produces real android.media.Image objects through an ImageReader/ImageWriter pair (Image can not be subclassed).</summary>
+// android.media.Image can not be subclassed, so real images are produced through an ImageReader/ImageWriter pair.
 sealed class ImageSource : IDisposable
 {
 	readonly ImageReader reader;
@@ -139,10 +128,8 @@ sealed class ImageSource : IDisposable
 
 	public static ImageSource Create(ImageFormatType format, int size = 8) => new(format, size);
 
-	/// <summary>Queues one image whose first plane (when it has planes) is filled with <paramref name="fill"/> and returns the reader's copy.</summary>
 	public Task<AImage> NextAsync(sbyte fill) => NextAsync(_ => fill);
 
-	/// <summary>Queues one image whose first plane (when it has planes) holds <c>pattern(index)</c> at every index and returns the reader's copy.</summary>
 	public async Task<AImage> NextAsync(Func<int, sbyte> pattern)
 	{
 		var input = writer.DequeueInputImage()!;
@@ -173,7 +160,6 @@ sealed class ImageSource : IDisposable
 	}
 }
 
-/// <summary>Records the values a CameraX LiveData publishes (for example the camera state transitions of a camera).</summary>
 sealed class LiveDataRecorder : Java.Lang.Object, IObserver
 {
 	readonly List<string> values = [];
@@ -216,7 +202,6 @@ sealed class LiveDataRecorder : Java.Lang.Object, IObserver
 	public void Stop() => liveData.RemoveObserver(this);
 }
 
-/// <summary>A writable stream that can not seek (like a network or pipe stream), forwarding to an inner stream.</summary>
 sealed class NonSeekableStream(System.IO.Stream inner) : System.IO.Stream
 {
 	public System.IO.Stream Inner => inner;

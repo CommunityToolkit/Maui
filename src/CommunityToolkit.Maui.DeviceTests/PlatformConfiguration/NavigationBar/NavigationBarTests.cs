@@ -4,11 +4,8 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific.NavigationBar: the page handler mappings that
-// UseMauiCommunityToolkit registers on Android (NavigationBar.android.cs), and the empty registration of every other platform.
-// The attached properties and the extension methods of the platform configuration are plain logic, the same on every platform: their
-// tests are unit tests (CommunityToolkit.Maui.UnitTests, PlatformConfiguration/NavigationBarTests.cs). The Android partial drives the
-// mappings and reads the native window (navigation bar color, overlay view, light/dark icons).
+// The attached properties and the extension methods of the platform configuration are plain logic, the same on every platform: their tests
+// are unit tests (CommunityToolkit.Maui.UnitTests, PlatformConfiguration/NavigationBarTests.cs).
 [Category(TestCategory.NavigationBar)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class NavigationBarTests : StatusBarTestBase
@@ -16,8 +13,6 @@ public partial class NavigationBarTests : StatusBarTestBase
 	static ContentPage CreatePage() => new() { Content = new Label { Text = nameof(NavigationBarTests) } };
 
 #if !ANDROID
-	// NavigationBar.RemapForControls does nothing outside of Android: the page handler keeps its mappings, and a page that has the
-	// attached properties set is created without anything reacting to them.
 	[Fact]
 	public async Task RemapForControlsRegistersNoMappingsOutsideOfAndroid()
 	{

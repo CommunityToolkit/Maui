@@ -11,9 +11,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of IconTintColorBehavior (IconTintColorBehavior.android.cs, .macios.cs, .windows.cs). Every test hosts the view in the
-// runner's window, because MAUI attaches a PlatformBehavior when the view is Loaded and detaches it when the view is Unloaded or the
-// behavior is removed. The native state is read through the platform partials (IconTintColorBehaviorTests.android/macios/windows.cs).
+// The tests host the view in the runner's window, because MAUI attaches a PlatformBehavior when the view is Loaded and detaches it when
+// the view is Unloaded or the behavior is removed.
 [Category(TestCategory.IconTintColorBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBase
@@ -159,7 +158,6 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		await InvokeOnMainThreadAsync(() => AssertEventually(() => IsNativeUntinted(hostedHandler.PlatformView!), timeout: 3000, message: $"The native view is still tinted after it left the window: {DescribeNativeTint(hostedHandler.PlatformView!)}"));
 	}
 
-	// Nothing changes while the view is out of the window: only the attach that comes with the next Loaded can tint the view again.
 	[Theory]
 	[InlineData(IconKind.Image)]
 	[InlineData(IconKind.ImageButton)]
@@ -198,9 +196,8 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		});
 	}
 
-	// A TintColor set while the view is out of the window is the one used when the behavior attaches again. Whether that change tints
-	// the detached view right away is TintColorChangesAfterTheBehaviorDetachedDoNotTintTheView's subject, so the native tint is reset
-	// after the change: only the next attach can tint the view.
+	// Whether a TintColor change tints the detached view right away is TintColorChangesAfterTheBehaviorDetachedDoNotTintTheView's subject, so
+	// the native tint is reset after the change: only the next attach can tint the view.
 	[Theory]
 	[InlineData(IconKind.Image)]
 	[InlineData(IconKind.ImageButton)]
@@ -349,7 +346,6 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		});
 	}
 
-	// The behavior unsubscribes from the tint color when it detaches.
 	[Theory]
 	[InlineData(IconKind.Image)]
 	[InlineData(IconKind.ImageButton)]
@@ -396,7 +392,6 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 			await AssertTintedAsync(handler, kind, Colors.Blue);
 			var imageBefore = GetNativeImageIdentity(handler.PlatformView!);
 
-			// MAUI loads the new image asynchronously and reports it through IsLoading: once it is shown, the tint must cover it again.
 			await ChangeImageSourceAndWaitForTheImageAsync(view, greenSource);
 
 			Assert.False(ReferenceEquals(imageBefore, GetNativeImageIdentity(handler.PlatformView!)), $"The view does not show a new image: {DescribeNativeTint(handler.PlatformView!)}");
@@ -451,7 +446,6 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		{
 			await image.OnLoadedAsync();
 
-			// There is no image yet when the behavior attaches.
 			Assert.Equal(1, behavior.AttachedCount);
 			Assert.False(HasNativeImage(handler.PlatformView!));
 
@@ -462,7 +456,6 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		});
 	}
 
-	// There is no icon to tint (a text-only Button): the behavior has to cope with it when it attaches and when it detaches.
 	[Fact]
 	public async Task ButtonWithoutAnImageAttachesAndDetachesWithoutAnException()
 	{
@@ -582,8 +575,8 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		}
 	}
 
-	// Changes the source of an Image or ImageButton and returns once MAUI reports that the new image has loaded (IsLoading goes true,
-	// then false). The behavior subscribed to the view before this method did, so it has handled the change when this returns.
+	// MAUI loads the new image asynchronously and reports it through IsLoading (true, then false). The behavior subscribed to the view
+	// before this method did, so it has handled the change when this returns.
 	static async Task ChangeImageSourceAndWaitForTheImageAsync(View view, string source)
 	{
 		var imageLoaded = new TaskCompletionSource();
@@ -634,8 +627,8 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 	static Task WaitForNativeImageAsync(IPlatformViewHandler handler) =>
 		AssertEventually(() => HasNativeImage(handler.PlatformView!), timeout: 3000, message: $"The platform view never showed its image: {DescribeNativeTint(handler.PlatformView!)}");
 
-	// The native state says the tint is applied. With checkPixels (Image, ImageButton), the rendered pixels also show the tint
-	// instead of the icon's own color: the native state of an Android ImageView does not tell which color the filter has.
+	// With checkPixels the rendered pixels must also show the tint instead of the icon's own color: the native state of an Android ImageView
+	// does not tell which color the filter has.
 	async Task AssertTintedAsync(IPlatformViewHandler handler, IconKind kind, Color tint, bool checkPixels = false)
 	{
 		await AssertEventually(() => IsNativeTinted(handler.PlatformView!, tint), timeout: 3000, message: $"The native view is not tinted {tint}: {DescribeNativeTint(handler.PlatformView!)}");
@@ -646,8 +639,6 @@ public partial class IconTintColorBehaviorTests : CommunityToolkitHandlerTestBas
 		}
 	}
 
-	// The native state says there is no tint. With checkPixels (Image, ImageButton), the rendered pixels also show the icon's own
-	// color again.
 	async Task AssertUntintedAsync(IPlatformViewHandler handler, IconKind kind, bool checkPixels = false)
 	{
 		await AssertEventually(() => IsNativeUntinted(handler.PlatformView!), timeout: 3000, message: $"The native view is still tinted: {DescribeNativeTint(handler.PlatformView!)}");

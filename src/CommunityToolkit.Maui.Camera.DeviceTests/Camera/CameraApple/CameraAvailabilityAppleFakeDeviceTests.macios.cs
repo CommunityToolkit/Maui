@@ -4,9 +4,8 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraViewExtensions.UpdateAvailability (macios) and CameraViewHandler.MapIsAvailable on iOS and Mac Catalyst with a scripted default
-// video device (AppleDefaultDeviceStub): both answers of AVCaptureDevice.GetDefaultDevice(Video) run on every machine, with or without a
-// camera. CameraViewExtensionsAppleTests checks the same code against the real devices of the machine.
+// AppleDefaultDeviceStub scripts both answers of AVCaptureDevice.GetDefaultDevice(Video), so the code for each runs on every machine, with
+// or without a camera. CameraViewExtensionsAppleTests checks the same code against the real devices of the machine.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraAvailabilityAppleFakeDeviceTests : CameraHandlerTestBase
@@ -99,7 +98,6 @@ public class CameraAvailabilityAppleFakeDeviceTests : CameraHandlerTestBase
 			((ICameraView)view).IsAvailable = false;
 			Assert.True(view.IsAvailable);
 
-			// The camera disappears.
 			stub.Video = null;
 			((ICameraView)view).IsAvailable = false;
 			((ICameraView)view).IsAvailable = true;

@@ -89,8 +89,8 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 		var cameraView = VirtualView;
 
-		// An exception that escapes this async void method would terminate the app. ConnectCamera reports a camera that cannot be connected
-		// itself; what fails before it gets that far (for example the camera discovery) is reported the same way
+		// ConnectCamera reports a camera that cannot be connected itself; what fails before it gets that far (for example the camera
+		// discovery) is reported the same way
 		try
 		{
 			await CameraManager.ConnectCamera(CancellationToken.None);
@@ -136,7 +136,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 #if ANDROID
 		cameraView.UpdateAvailability(handler.Context);
 #elif WINDOWS
-		// An exception that escapes this async void method would terminate the app, for example a failure of the camera enumeration
 		try
 		{
 			await cameraView.UpdateAvailability(CancellationToken.None);
@@ -156,7 +155,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	static async void MapImageCaptureResolution(CameraViewHandler handler, ICameraView view)
 	{
-		// An exception that escapes this async void method would terminate the app
 		try
 		{
 			await handler.CameraManager.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None);
@@ -169,7 +167,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
 	{
-		// An exception that escapes this async void method would terminate the app, for example when the selected camera cannot be opened
 		try
 		{
 			await handler.CameraManager.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None);
@@ -180,9 +177,9 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		}
 	}
 
-	// Work that the handler starts on its own runs in async void methods, which no caller awaits: their failures are reported through the
-	// view's ErrorOccurred event instead. A failure after the handler was disconnected (the view is gone, for example because its page closed
-	// while the camera connected) is only traced
+	// Work that the handler starts on its own runs in async void methods: no caller awaits them, and an exception that escaped from one would
+	// terminate the app, so their failures are reported through the view's ErrorOccurred event instead. A failure after the handler was
+	// disconnected (the view is gone, for example because its page closed while the camera connected) is only traced
 	void ReportError(ICameraView view, string work, Exception exception)
 	{
 		Trace.TraceError($"{nameof(CameraViewHandler)}: unable to {work}: {exception}");

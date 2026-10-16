@@ -51,7 +51,7 @@ public interface IDrawingView : IView
 	/// <param name="desiredWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="desiredWidth"/> or <paramref name="desiredHeight"/> is NaN, or when both are positive infinity.</exception>
 	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) => GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
 
@@ -62,7 +62,7 @@ public interface IDrawingView : IView
 	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="imageOutputOption">The <see cref="DrawingViewOutputOption"/> to determine the bounds and the contents of the resulting image.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="desiredWidth"/> or <paramref name="desiredHeight"/> is NaN, or when both are positive infinity.</exception>
 	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, DrawingViewOutputOption imageOutputOption, CancellationToken token = default);
 

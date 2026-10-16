@@ -108,62 +108,48 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenMinimumCharacterTypeCountChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var (entry, behavior) = CreateEntryWithTypedText("12");
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 
-		// Act
 		behavior.MinimumCharacterTypeCount = 5;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		behavior.MinimumCharacterTypeCount = 2;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 	}
 
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenCharacterTypeChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var (entry, behavior) = CreateEntryWithTypedText("ab");
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		behavior.CharacterType = CharacterType.Letter;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 	}
 
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenARuleChangesAfterTheViewIsFocusedAgain()
 	{
-		// Arrange
 		var (entry, behavior) = CreateEntryWithTypedText("12");
 		((IView)entry).IsFocused = false;
 		((IView)entry).IsFocused = true;
 
-		// Act
 		behavior.MinimumCharacterTypeCount = 5;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 	}
 
 	[Fact]
 	public void IsValid_ShouldNotValidate_WhenARuleChangesBeforeTheFirstValidation()
 	{
-		// Arrange
 		var behavior = new CharactersValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnUnfocused,
@@ -177,16 +163,12 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		((IView)entry).IsFocused = true;
 		entry.Text = "1";
 
-		// Act
 		behavior.MinimumCharacterTypeCount = 5;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 
-		// Act
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 	}
 
@@ -222,7 +204,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 		Assert.Equal(CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, charactersValidationBehavior.MinimumCharacterTypeCount);
 	}
 
-	// The settings of the Sample's CharactersValidationBehaviorPage, whose rules are bound to other controls: changing a rule there takes the focus from the Entry
+	// Mirrors the Sample's CharactersValidationBehaviorPage, whose rules are bound to other controls, so changing a rule there takes the focus from the Entry.
 	static (Entry Entry, CharactersValidationBehavior Behavior) CreateEntryWithTypedText(string text)
 	{
 		var behavior = new CharactersValidationBehavior

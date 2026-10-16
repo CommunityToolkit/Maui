@@ -10,10 +10,6 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// A <see cref="StatusBarBehavior"/> that records the calls MAUI makes (attach, detach, view property changes) and can raise
-/// <see cref="BindableObject.OnPropertyChanged"/> for any property name, which the toolkit's behavior otherwise only receives for its own properties.
-/// </summary>
 public sealed class RecordingStatusBarBehavior : StatusBarBehavior
 {
 	public int AttachedCount { get; private set; }
@@ -24,11 +20,11 @@ public sealed class RecordingStatusBarBehavior : StatusBarBehavior
 
 	public PlatformView? AttachedPlatformView { get; private set; }
 
-	/// <summary>The protected <c>View</c> of the base class: the page while attached, <see langword="null"/> otherwise.</summary>
 	public Page? AttachedPage => View;
 
 	public List<(Page Sender, string? PropertyName)> ViewPropertyChanges { get; } = [];
 
+	// The toolkit's behavior otherwise only receives OnPropertyChanged for its own properties.
 	public void RaisePropertyChanged(string? propertyName) => OnPropertyChanged(propertyName);
 
 	protected override void OnAttachedTo(Page page, PlatformView platformView)

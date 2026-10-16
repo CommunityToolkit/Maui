@@ -8,8 +8,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiSemanticOrderView : ContentPanel
 {
-	// The views that the last update ordered, with the tab index it gave them: the next update gives a view that is no longer in the order
-	// its default tab index back, unless that tab index was changed since
+	// The next update gives a view that is no longer in the order its default tab index back, unless its tab index was changed since
 	readonly List<(FrameworkElement View, int TabIndex)> orderedViews = [];
 
 	ISemanticOrderView? virtualView;

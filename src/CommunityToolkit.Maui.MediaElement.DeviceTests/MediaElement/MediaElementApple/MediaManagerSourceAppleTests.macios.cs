@@ -9,8 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs PlatformUpdateSource: how every kind of MediaSource becomes an AVPlayerItem, what is reported for
-// media that cannot be opened, and the media dimensions. The native AVPlayer / AVPlayerItem / AVAsset are what the tests read.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
@@ -236,8 +234,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// A kind of MediaSource that the manager does not know cannot be applied: it replaces the previous media and is reported through MediaFailed,
-	// with the message of a NotSupportedException (as on Android), not as a source without data (None).
+	// As on Android, an unknown kind of source fails with the message of a NotSupportedException instead of being treated as a source without
+	// data (None).
 	[Fact]
 	public async Task UnknownMediaSourceIsReportedAsFailedAndClearsThePlayerItem()
 	{
@@ -265,7 +263,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// A source without data empties the player and reports None, like a null Source, on every platform; it is not a failure.
+	// Not a failure: like a null Source, a source without data reports None on every platform.
 	[Theory]
 	[InlineData("a Uri source without Uri")]
 	[InlineData("a file source without path")]
@@ -430,7 +428,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			Assert.Null(await SetSourceAsync(mediaElement, handler, ResourceSource(TracklessResource)));
 
 			// A well-formed file without any track: AVFoundation has nothing to play (AVAsset.Playable is false) and never makes the item
-			// ReadyToPlay, so the media was not opened. It must be reported as failed, without a media size.
+			// ReadyToPlay, so the media is not opened and must be reported as failed.
 			var item = handler.Manager.NativePlayerItem!;
 			Assert.Empty(item.Asset.Tracks);
 			Assert.False(item.Asset.Playable);
@@ -589,8 +587,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		}
 	}
 
-	// Only a source that cannot be applied or played is reported through MediaFailed. An exception that an event handler throws while the source
-	// changes is not a failure of the source: the update of iOS and Mac Catalyst runs synchronously, so it propagates to the code that sets Source.
+	// The update of iOS and Mac Catalyst runs synchronously, so an exception that an event handler throws while the source changes propagates
+	// to the code that sets Source: it is not a failure of the source.
 	[Fact]
 	public async Task ExceptionOfAnEventHandlerDuringASourceChangePropagatesAndIsNotReportedAsMediaFailed()
 	{
@@ -617,8 +615,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
 
-			// A failure of the source raises MediaFailed. CurrentState cannot show one here: MAUI applies no change of CurrentState after a StateChanged
-			// handler threw (BindableObject queues the changes of a property while it is being set, and the exception never ends that set)
+			// CurrentState cannot show a failure here: MAUI applies no change of CurrentState after a StateChanged handler threw
+			// (BindableObject queues the changes of a property while it is being set, and the exception never ends that set).
 			Assert.Empty(events.Failures);
 		});
 	}
@@ -663,9 +661,9 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// The part of the update whose failures are failures of the source ends with the creation of the asset and its item. The events raised after it
-	// are not in it, here None once a source without data has taken the previous media out of the player: an exception of its handler propagates to
-	// the code that sets Source, and is not reported as MediaFailed.
+	// The part of the update whose failures are failures of the source ends with the creation of the asset and its item. None is raised after it,
+	// once a source without data has taken the previous media out of the player, so an exception of its handler propagates to the code that sets
+	// Source.
 	[Fact]
 	public async Task ExceptionOfANoneHandlerAfterTheSourceIsAppliedPropagatesAndIsNotReportedAsMediaFailed()
 	{

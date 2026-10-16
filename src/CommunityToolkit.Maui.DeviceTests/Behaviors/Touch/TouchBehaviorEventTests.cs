@@ -3,17 +3,13 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// The events, commands and state properties of an attached <see cref="TouchBehavior"/>, driven through the internal
-/// <c>HandleTouch</c>, <c>HandleHover</c> and <c>HandleUserInteraction</c> that every platform implementation calls, so they run on every
-/// platform including Windows.
-/// </summary>
+// The tests drive the behavior through the internal HandleTouch, HandleHover and HandleUserInteraction that every platform implementation
+// calls, so that they run on every platform including Windows.
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public class TouchBehaviorEventTests : TouchBehaviorTestBase
 {
-	// Catches: any of the seven events not being raised (or raised with the wrong value or sender), unsubscribing not working (the
-	// add/remove accessors share one WeakEventManager, so a mix-up of event names is caught as well).
+	// The add/remove accessors share one WeakEventManager, so unsubscribing every handler also catches a mix-up of event names.
 	[Fact]
 	public async Task EveryEventIsRaisedWithItsValueUntilTheHandlerIsRemoved()
 	{
@@ -59,7 +55,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 			Assert.Equal("tap", Assert.Single(tapCompleted.Items).TouchCommandParameter);
 			Assert.Equal("long", Assert.Single(longPressCompleted.Items).LongPressCommandParameter);
 
-			// The gesture events come from the element, the state events from the behavior.
 			Assert.Same(host, Assert.Single(tapCompleted.Senders));
 			Assert.Same(host, Assert.Single(longPressCompleted.Senders));
 			foreach (var senders in new[] { touchStatus.Senders, touchState.Senders, interaction.Senders, hoverStatus.Senders, hoverState.Senders })
@@ -67,7 +62,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 				Assert.All(senders, sender => Assert.Same(behavior, sender));
 			}
 
-			// Unsubscribed handlers stay quiet.
 			behavior.CurrentTouchStatusChanged -= touchStatus.Handle;
 			behavior.CurrentTouchStateChanged -= touchState.Handle;
 			behavior.InteractionStatusChanged -= interaction.Handle;
@@ -93,9 +87,8 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The state events must carry the state of the change they report, in the order of the changes.
-	// Catches: RaiseCurrentTouchStateChanged reading CurrentTouchState again after awaiting the state update and the long press timer (a tap
-	// shorter than LongPressDuration then reports Default twice), or the events of two quick changes overtaking each other.
+	// The event must carry the state of the change it reports: reading CurrentTouchState again after awaiting the state update and the long
+	// press timer would report Default twice for a tap shorter than LongPressDuration.
 	[Fact]
 	public async Task TouchStateChangedReportsPressedForAQuickTap()
 	{
@@ -115,9 +108,8 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Same for the hover state.
-	// Catches: RaiseHoverStateChanged reading CurrentHoverState again after awaiting the state update (a hover that starts and ends before
-	// the first change was reported then reports Default twice).
+	// Reading CurrentHoverState again after awaiting the state update would report Default twice for a hover that starts and ends before the
+	// first change was reported.
 	[Fact]
 	public async Task HoverStateChangedReportsHoveredForAShortHover()
 	{
@@ -139,10 +131,8 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A handler of a state event reads the status of the same change: the behavior updates the status before the state, for a hover as for
-	// a touch. A HoverStatusChanged handler therefore still reads the previous hover state.
-	// Catches: HandleHover updating CurrentHoverState before CurrentHoverStatus (a HoverStateChanged handler then reads the status of the
-	// previous hover), UpdateStatusAndState updating CurrentTouchState before CurrentTouchStatus.
+	// The behavior updates the status before the state, for a hover as for a touch, so a HoverStatusChanged handler still reads the
+	// previous hover state.
 	[Fact]
 	public async Task StateChangedHandlersReadTheStatusOfTheSameChange()
 	{
@@ -169,8 +159,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: RaiseTouchGestureCompleted / RaiseLongPressCompleted running without an element (the early returns): a behavior that was
-	// removed from its view must neither execute its commands nor raise its events, whether they are raised directly or through a gesture.
 	[Fact]
 	public async Task DetachedBehaviorRaisesNeitherEventsNorCommands()
 	{
@@ -202,8 +190,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a command that cannot execute being executed, or the event being suppressed together with it (the two commands are checked
-	// with CanExecute, the events are raised either way).
 	[Fact]
 	public async Task CommandsThatCannotExecuteAreSkippedButTheEventsAreStillRaised()
 	{
@@ -237,9 +223,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The long press, driven through the internal handlers so that it runs on every platform (Windows included): with a LongPressCommand
-	// of its own the long press consumes the tap, without one the tap still completes after the long press.
-	// Catches: OnTappedCompleted's LongPressCommand / interaction check (either operand).
 	[Fact]
 	public async Task LongPressWithItsOwnCommandSuppressesTheTap()
 	{
@@ -265,12 +248,10 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 			Assert.Equal(0, tapCommand.ExecuteCount);
 			Assert.Equal(0, tapLog.Count);
 
-			// A plain tap with the same behavior still completes: only a completed long press consumes it.
 			SimulatePress(behavior);
 			SimulateRelease(behavior);
 			Assert.Equal(1, tapCommand.ExecuteCount);
 
-			// Without a LongPressCommand, the tap after a long press completes.
 			behavior.LongPressCommand = null;
 			SimulatePress(behavior);
 			await longPressLog.NextAsync();
@@ -281,11 +262,9 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Neither a state change nor an explicit update of a detached behavior may touch the view it was removed from, or start a state
-	// update at all. The view alone cannot show ForceUpdateState's Element guard: without it GestureManager.ChangeStateAsync skips the
-	// visual state and RunAnimationTask returns at once (both check the element too), but it first replaces the animation token source
-	// that the detach released, with nothing left to animate.
-	// Catches: ForceUpdateState's Element guard missing (a new animation token source appears), effects reaching the detached view.
+	// The view alone cannot show ForceUpdateState's Element guard: without it GestureManager.ChangeStateAsync skips the visual state and
+	// RunAnimationTask returns at once (both check the element too), but ChangeStateAsync first replaces the animation token source that the
+	// detach released, with nothing left to animate. So the test checks the token source.
 	[Fact]
 	public async Task ForceUpdateStateOfADetachedBehaviorLeavesTheViewAlone()
 	{
@@ -311,12 +290,11 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// ForceUpdateState swallows the cancellation of its token: with a state animation in flight, aborting it awaits the cancellation of
-	// the animation's token source (CancelAsync runs the token's callbacks on the thread pool), and an already cancelled token cancels
-	// that wait, which throws TaskCanceledException out of GestureManager.ChangeStateAsync before it replaced the token source.
-	// The wait only throws while the callbacks are still running, so the test holds one callback of its own until ForceUpdateState
-	// returned: otherwise a fast thread pool (or a slow UI thread) finishes them first and the call goes through without the catch.
-	// Catches: the catch of ForceUpdateState missing (the exception would escape to the caller).
+	// With a state animation in flight, aborting it awaits the cancellation of the animation's token source (CancelAsync runs the token's
+	// callbacks on the thread pool), and an already cancelled token cancels that wait with a TaskCanceledException out of
+	// GestureManager.ChangeStateAsync. The wait only throws while the callbacks are still running, so the test holds one callback of its own
+	// until ForceUpdateState returned: otherwise a fast thread pool (or a slow UI thread) finishes them first and the call goes through
+	// without the catch.
 	[Fact]
 	public async Task ForceUpdateStateWithAnAlreadyCancelledTokenIsSwallowed()
 	{
@@ -359,8 +337,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the opacity properties accepting values outside 0..1 (the ArgumentOutOfRangeException of HandleDefaultOpacityChanging,
-	// HandleHoveredOpacityChanging, HandlePressedOpacityChanging) and the view being touched by a rejected value.
 	[Theory]
 	[InlineData("Default", -0.1)]
 	[InlineData("Default", 1.1)]
@@ -384,7 +360,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the borders 0 and 1 being rejected (the comparisons must be strict).
 	[Theory]
 	[InlineData("Default", 0.0)]
 	[InlineData("Default", 1.0)]
@@ -405,7 +380,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// NaN is not between 0 and 1 and must be rejected like any other value outside that range.
 	[Theory]
 	[InlineData("Default")]
 	[InlineData("Hovered")]
@@ -425,7 +399,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A nullable opacity can be set back to null ("not configured").
 	[Theory]
 	[InlineData("Default")]
 	[InlineData("Hovered")]
@@ -447,8 +420,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the current-state properties not being settable from a binding source (they are OneWayToSource): the bound view model
-	// has to receive the state the behavior reaches.
 	[Fact]
 	public async Task CurrentStatePropertiesFlowToTheBindingSource()
 	{
@@ -475,9 +446,6 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The defaults of a new behavior, and what they mean for the view it is attached to: touches are taken (IsEnabled), the children are
-	// made input transparent on the platform view (ShouldMakeChildrenInputTransparent), and no effect changes the view's look.
-	// Catches: a changed default (TouchBehaviorDefaults or the bindable property declarations) of any property.
 	[Fact]
 	public async Task DefaultsOfANewBehaviorTakeEffectOnTheAttachedView()
 	{

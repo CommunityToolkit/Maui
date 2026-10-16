@@ -262,7 +262,6 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 	[InlineData(TextDecorationFlags.Trim, " email @example.com ", false)]
 	public async Task IsValid_DecorationFlagsAreAppliedBeforeValidation(TextDecorationFlags flags, string value, bool expectedValue)
 	{
-		// Arrange
 		var behavior = new EmailValidationBehavior
 		{
 			DecorationFlags = flags
@@ -274,10 +273,8 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 		entry.Behaviors.Add(behavior);
 
-		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
 

@@ -5,14 +5,11 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// UIViewExtensions (iOS + Mac Catalyst): each Safe*Anchor returns the matching anchor of the view's SafeAreaLayoutGuide, not the
-// anchor of the view itself. The tests pin a probe view to the returned anchor with Auto Layout and read where UIKit puts it. The host
-// view controller adds safe-area insets that differ on every edge, so the safe area and the plain view edges give different frames.
 [Category(TestCategory.UIViewExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class UIViewExtensionsTests : TestBase
 {
-	// top, left, bottom, right: different on every edge so that a swapped anchor is detected.
+	// Different on every edge, so that a swapped anchor is detected, and non-zero, so that the safe area differs from the view's own edges.
 	static readonly UIEdgeInsets additionalInsets = new(11, 13, 17, 19);
 
 	const double probeSize = 10;
@@ -143,7 +140,7 @@ public class UIViewExtensionsTests : TestBase
 		{
 			var guide = host.SafeAreaLayoutGuide;
 
-			// UIKit hands out one native anchor object per native anchor, so the managed wrappers compare by reference.
+			// UIKit hands out one native anchor object per native anchor, so the same anchor has the same handle.
 			NSObject actual = anchor switch
 			{
 				SafeAnchor.Top => host.SafeTopAnchor(),
@@ -182,7 +179,7 @@ public class UIViewExtensionsTests : TestBase
 	{
 		var insets = host.SafeAreaInsets;
 
-		// The additional insets of the host view controller are part of the safe area, so every edge is inset.
+		// The additional insets are part of the safe area, so every edge is inset by at least that much.
 		Assert.True(insets.Top >= additionalInsets.Top, $"top inset {insets.Top}");
 		Assert.True(insets.Left >= additionalInsets.Left, $"left inset {insets.Left}");
 		Assert.True(insets.Bottom >= additionalInsets.Bottom, $"bottom inset {insets.Bottom}");
@@ -200,7 +197,7 @@ public class UIViewExtensionsTests : TestBase
 		return probe;
 	}
 
-	// Pins the probe to the anchor under test and fully determines the rest of its frame with plain anchors.
+	// The rest of the probe's frame is pinned with plain anchors, so that only the anchor under test depends on the safe area.
 	static NSLayoutConstraint[] CreateConstraints(UIView host, UIView probe, SafeAnchor anchor) => anchor switch
 	{
 		SafeAnchor.Top =>
@@ -276,8 +273,6 @@ public class UIViewExtensionsTests : TestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(anchor), anchor, null),
 	};
 
-	// Hosts a view controller whose view has extra safe-area insets in the runner's window, so UIKit lays the view out with real
-	// safe-area insets, and runs the action on the UI thread.
 	static Task RunInSafeAreaHost(UISemanticContentAttribute direction, Action<UIView> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{

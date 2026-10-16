@@ -67,8 +67,8 @@ sealed class StreamDataSourceFactory : Java.Lang.Object, IDataSourceFactory
 			}
 			else if (dataSpec.Position > 0)
 			{
-				// A stream that cannot seek cannot be read at another position, for example after a seek outside of what the player has buffered.
-				// A position out of range is a failure that ExoPlayer does not retry
+				// This happens, for example, after a seek outside of what the player has buffered. A position out of range is a failure that ExoPlayer
+				// does not retry.
 				throw new DataSourceException("Cannot open a non-seekable stream at a non-zero position.", PlaybackException.ErrorCodeIoReadPositionOutOfRange);
 			}
 

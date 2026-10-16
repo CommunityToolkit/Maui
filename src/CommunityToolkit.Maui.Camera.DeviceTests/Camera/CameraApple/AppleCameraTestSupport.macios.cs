@@ -10,10 +10,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Shared helpers of the iOS/Mac Catalyst camera tests (AVFoundation).
-//
 // Where the tests can run:
-//  - iOS simulator: no capture device at all (AVCaptureDevice.GetDefaultDevice(Video) is null), so every camera-bound test skips visibly.
+//  - iOS simulator: no capture device at all (AVCaptureDevice.GetDefaultDevice(Video) is null), so every camera-bound test skips.
 //  - Mac Catalyst on a Mac with a camera: devices are discovered and can be configured (zoom, active format) without permission,
 //    but opening a capture input needs the user's consent (a prompt that a headless run cannot answer), so those tests skip
 //    unless the permission was already granted.
@@ -29,14 +27,13 @@ static class AppleCameraEnvironment
 
 	public static bool IsCameraAuthorized => CameraAuthorizationStatus is AVAuthorizationStatus.Authorized;
 
-	// What UIDevice posts when the physical orientation changes; CameraManager observes it to update the video orientation.
+	// CameraManager observes UIDevice.OrientationDidChangeNotification to update the video orientation.
 	public static void PostOrientationDidChangeNotification() =>
 		NSNotificationCenter.DefaultCenter.PostNotificationName(UIDevice.OrientationDidChangeNotification, null);
 
 	public static string DescribeCameraAccess() =>
 		$"camera authorization is {CameraAuthorizationStatus}, video capture device present: {HasVideoCaptureDevice}, simulator: {IsSimulator}";
 
-	// How long a probe session may take to start before the machine counts as unable to start a capture session promptly.
 	static readonly TimeSpan captureSessionStartTimeout = TimeSpan.FromSeconds(5);
 
 	static readonly Lazy<Task<string?>> captureSessionStartProblem = new(ProbeCaptureSessionStartAsync);
@@ -45,9 +42,8 @@ static class AppleCameraEnvironment
 	// shows, as CameraManager.CreatePlatformView builds them (an empty session does not start at all): on the iOS 27 simulator StartRunning
 	// and StopRunning each take about 9 s, on either thread, so such a test blocks the UI thread for about 27 s; on a Mac with a camera they
 	// take milliseconds. On a Mac without a camera, such as a CI virtual machine, they were never tried, and a hang there would block the UI
-	// thread and the whole test run until its timeout. So the first such test starts the same kind of session on a background thread and
-	// waits for it a bounded time; when it does not start in time, every such test skips. A probe session that starts late is stopped on the
-	// thread pool; one that never starts is abandoned (never touched again).
+	// thread and the whole test run until its timeout, so one probe session on a background thread decides, within a bounded time, whether
+	// these tests run. A probe that never starts is never touched again.
 	public static async Task SkipUnlessCaptureSessionsStartPromptlyAsync()
 	{
 		Skip.If(IsSimulator, "On the iOS simulator AVCaptureSession.StartRunning and StopRunning of a session shown by a preview layer each take about 9 s (measured on iOS 27), which would block the UI thread for about 27 s per test.");
@@ -89,7 +85,6 @@ static class AppleCameraEnvironment
 		}
 	}
 
-	// Discovers the cameras the way the toolkit does (CameraProvider.macios.cs), so tests use exactly the devices the toolkit sees.
 	public static async Task<IReadOnlyList<CameraInfo>> DiscoverCamerasAsync()
 	{
 		var provider = new CameraProvider();
@@ -196,12 +191,10 @@ sealed class CameraManagerAccessor(CameraManager manager)
 		set => Set("motionManager", value);
 	}
 
-	// The callback the handler passes to the manager; the manager invokes it when the camera preview has started.
 	public Action OnLoaded => Get<Action>("onLoaded");
 
 	public object? OrientationDidChangeObserver => Get<object?>("orientationDidChangeObserver");
 
-	// The private PreviewView (a UIView backed by an AVCaptureVideoPreviewLayer) that CreatePlatformView returned.
 	public UIView? PreviewView
 	{
 		get => Get<UIView?>("previewView");
@@ -227,7 +220,6 @@ sealed class CameraManagerAccessor(CameraManager manager)
 	public static bool MatchesResolution(AVCaptureDeviceFormat format, Size resolution) =>
 		(bool)GetStaticMethod("MatchesResolution").Invoke(null, [format, resolution])!;
 
-	// The nested private AVCapturePhotoCaptureDelegateWrapper: returns the wrapper (an AVCapturePhotoCaptureDelegate) and its Task.
 	public static AVCapturePhotoCaptureDelegate CreatePhotoCaptureDelegateWrapper()
 	{
 		var wrapperType = typeof(CameraManager).GetNestedType("AVCapturePhotoCaptureDelegateWrapper", BindingFlags.NonPublic)
@@ -269,10 +261,8 @@ sealed class CameraManagerAccessor(CameraManager manager)
 	void Set(string name, object? value) => GetField(name).SetValue(manager, value);
 }
 
-// The private static members of CameraProvider (macios).
 static class CameraProviderAccessor
 {
-	// The device types that every discovery asks for, computed once by the type initializer.
 	public static AVCaptureDeviceType[] CaptureDevices
 	{
 		get
@@ -284,7 +274,6 @@ static class CameraProviderAccessor
 		}
 	}
 
-	// Computes the device types for the current OS version again (the method behind CaptureDevices).
 	public static AVCaptureDeviceType[] InitializeCaptureDevices()
 	{
 		var method = typeof(CameraProvider).GetMethod("InitializeCaptureDevices", BindingFlags.Static | BindingFlags.NonPublic)
@@ -298,20 +287,18 @@ static class CameraProviderAccessor
 		System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CameraProvider).TypeHandle);
 }
 
-// CameraInfo objects backed by FakeCaptureDevice (see AppleNativeFakes.macios.cs).
 static class AppleFakeCameras
 {
 	public static CameraInfo Create(FakeCaptureDevice device, CameraPosition position = CameraPosition.Rear, params AVCaptureDeviceFormat[] formats) =>
 		new(device.Name, device.Identifier, position, device.FlashIsAvailable, (float)device.MinimumZoomFactor, (float)device.MaximumZoomFactor,
 			[.. formats.Select(format => format is FakeCaptureDeviceFormat fake ? new Size(fake.Width, fake.Height) : Size.Zero)], device, formats);
 
-	// A camera whose CameraInfo has no AVCaptureDevice: PlatformStartCameraPreview fails on it with "No Camera found".
+	// PlatformStartCameraPreview fails on this camera with "No Camera found".
 	public static CameraInfo WithoutCaptureDevice(string deviceId = "fake-no-device", CameraPosition position = CameraPosition.Rear) =>
 		new("Camera without capture device", deviceId, position, false, 1f, 4f, [new Size(640, 480)], null!, []);
 }
 
-// Records what an ICameraProvider publishes through AvailableCamerasChanged. CameraProvider raises the event through a WeakEventManager,
-// so the recorder must stay referenced by the test.
+// CameraProvider raises AvailableCamerasChanged through a WeakEventManager, so the recorder must stay referenced by the test.
 sealed class AppleCameraListRecorder
 {
 	public AppleCameraListRecorder(ICameraProvider provider)
@@ -324,7 +311,6 @@ sealed class AppleCameraListRecorder
 	void OnAvailableCamerasChanged(object? sender, IReadOnlyList<CameraInfo>? cameras) => Lists.Add(cameras);
 }
 
-// A CameraManager with its own CameraView and a fake provider, disposed together.
 sealed class AppleCameraManagerScope : IDisposable
 {
 	public AppleCameraManagerScope(IMauiContext mauiContext, ICameraProvider? provider = null)
@@ -345,7 +331,6 @@ sealed class AppleCameraManagerScope : IDisposable
 
 	public int LoadedCount { get; private set; }
 
-	// The preview view that Manager.CreatePlatformView returned, when the test stored it here.
 	public UIView? PlatformView { get; set; }
 
 	public void Dispose()
@@ -355,7 +340,6 @@ sealed class AppleCameraManagerScope : IDisposable
 	}
 }
 
-// ICameraProvider test double: RefreshAvailableCameras publishes CamerasAfterRefresh (an empty list by default).
 sealed class AppleFakeCameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; set; }
@@ -382,11 +366,9 @@ sealed class AppleFakeCameraProvider : ICameraProvider
 	}
 }
 
-// The real CameraViewHandler connects the camera from an `async void` ConnectHandler. On a device without a camera it only traces the
-// CameraException of the connection, which no test can await or assert, and with a camera it opens a capture session and shows the
-// system permission prompt, which a headless run cannot answer.
-// This handler keeps everything else (platform view creation, property mapping, disconnect and dispose) and skips only the automatic
-// camera connection, so the tests start and stop the preview explicitly.
+// The real CameraViewHandler connects the camera from an `async void` ConnectHandler, which no test can await, and with a camera it opens
+// a capture session and shows the system permission prompt, which a headless run cannot answer. Skipping the automatic connection lets the
+// tests start and stop the preview explicitly.
 sealed class AppleNoConnectCameraViewHandler : CameraViewHandler
 {
 	protected override void ConnectHandler(UIView platformView)
@@ -395,7 +377,7 @@ sealed class AppleNoConnectCameraViewHandler : CameraViewHandler
 }
 
 // Calls the protected members of CameraViewHandler that the framework never calls in an unusual state: CreatePlatformView without a
-// MauiContext and Dispose(false). Like AppleNoConnectCameraViewHandler it does not connect the camera when a platform view is attached.
+// MauiContext and Dispose(false). Like AppleNoConnectCameraViewHandler it does not connect the camera.
 sealed class AppleCreateViewCameraViewHandler : CameraViewHandler
 {
 	public UIView CallCreatePlatformView() => CreatePlatformView();
@@ -407,8 +389,7 @@ sealed class AppleCreateViewCameraViewHandler : CameraViewHandler
 	}
 }
 
-// Built through either constructor of CameraViewHandler (the one with custom mappers falls back to the handler's own mappers for null).
-// Like AppleNoConnectCameraViewHandler it does not connect the camera when a platform view is attached.
+// Like AppleNoConnectCameraViewHandler it does not connect the camera.
 sealed class AppleMapperCameraViewHandler : CameraViewHandler
 {
 	public AppleMapperCameraViewHandler()
@@ -424,7 +405,7 @@ sealed class AppleMapperCameraViewHandler : CameraViewHandler
 	}
 }
 
-// A provider whose refresh never publishes a list (AvailableCameras stays null), to reach the "still no camera after refreshing" checks.
+// AvailableCameras stays null after a refresh, to reach the "still no camera after refreshing" checks.
 sealed class AppleNeverPublishingCameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras => null;
@@ -448,9 +429,8 @@ sealed class AppleNeverPublishingCameraProvider : ICameraProvider
 	}
 }
 
-// CameraViewHandler and CameraView resolve ICameraProvider from IPlatformApplication.Current.Services (the runner's app). This override
-// makes them resolve the given provider (or no provider, or makes IPlatformApplication.Current null) until it is disposed, so a test can
-// connect the real handler to a scripted provider. Keep it short: the runner reads IPlatformApplication.Current too.
+// CameraViewHandler and CameraView resolve ICameraProvider from IPlatformApplication.Current.Services (the runner's app), so a test connects
+// the real handler to a scripted provider by overriding that lookup. Keep it short: the runner reads IPlatformApplication.Current too.
 sealed class AppleCameraProviderOverride : IDisposable
 {
 	readonly IPlatformApplication? previous = IPlatformApplication.Current;
@@ -464,7 +444,6 @@ sealed class AppleCameraProviderOverride : IDisposable
 
 	public static AppleCameraProviderOverride With(ICameraProvider provider) => new(provider, keepPlatformApplication: true);
 
-	// A platform application whose services do not know ICameraProvider, like an app that never called UseMauiCommunityToolkitCamera.
 	public static AppleCameraProviderOverride WithoutCameraProvider() => new(null, keepPlatformApplication: true);
 
 	public static AppleCameraProviderOverride WithoutPlatformApplication() => new(null, keepPlatformApplication: false);
@@ -484,10 +463,9 @@ sealed class AppleCameraProviderOverride : IDisposable
 	}
 }
 
-// Records the callbacks that are posted to it instead of running them. An `async void` method (CameraViewHandler.ConnectHandler,
-// MapSelectedCamera, MapImageCaptureResolution) delivers an exception that escapes it to the SynchronizationContext that was current when
-// it started; in an app that is the UI context, which rethrows it and terminates the app. With this context installed, a test sees the
-// exception as a posted callback instead.
+// An `async void` method (CameraViewHandler.ConnectHandler, MapSelectedCamera, MapImageCaptureResolution) delivers an exception that
+// escapes it to the SynchronizationContext that was current when it started; in an app that is the UI context, which rethrows it and
+// terminates the app. With this context installed, a test sees the exception as a posted callback instead.
 sealed class AppleRecordingSynchronizationContext : SynchronizationContext
 {
 	readonly List<(SendOrPostCallback Callback, object? State)> posted = [];
@@ -504,7 +482,6 @@ sealed class AppleRecordingSynchronizationContext : SynchronizationContext
 
 	public override SynchronizationContext CreateCopy() => this;
 
-	// Makes this the context of the current thread until the result is disposed.
 	public IDisposable Install()
 	{
 		var previous = Current;
@@ -513,8 +490,6 @@ sealed class AppleRecordingSynchronizationContext : SynchronizationContext
 		return new Restore(previous);
 	}
 
-	// Runs the posted callbacks (and the ones they post) with this context installed and returns what they threw: the exceptions that the
-	// async void methods could not deliver to a caller.
 	public IReadOnlyList<Exception> Drain()
 	{
 		var exceptions = new List<Exception>();
@@ -554,7 +529,7 @@ sealed class AppleRecordingSynchronizationContext : SynchronizationContext
 	}
 }
 
-// A writable stream that is not seekable (PlatformStopVideoRecording only rewinds seekable streams).
+// PlatformStopVideoRecording only rewinds seekable streams.
 sealed class NonSeekableWriteStream : Stream
 {
 	readonly MemoryStream inner = new();
@@ -596,9 +571,8 @@ sealed class NonSeekableWriteStream : Stream
 	}
 }
 
-// A MemoryStream that runs an action when the first bytes are written to it, before it writes them: a test can dispose the camera manager
-// while PlatformStopVideoRecording copies the movie (the manager's Dispose disposes this stream, so the write then throws
-// ObjectDisposedException).
+// Lets a test dispose the camera manager while PlatformStopVideoRecording copies the movie: the manager's Dispose disposes this stream,
+// so the write then throws ObjectDisposedException.
 sealed class StreamThatRunsAnActionOnTheFirstWrite(Action action) : MemoryStream
 {
 	public bool ActionRan { get; private set; }

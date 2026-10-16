@@ -2,9 +2,6 @@ using CommunityToolkit.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Badge on a device. BadgeImplementation has one implementation per platform: Android hands the count to a provider that is chosen by
-// the launcher (BadgeFactory), iOS/Mac Catalyst call UNUserNotificationCenter, and Windows updates the app's tile badge. The platform partials
-// (BadgeTests.android.cs, .macios.cs, .windows.cs) assert what the system shows or receives; this file holds what is the same everywhere.
 [Category(TestCategory.Badge)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class BadgeTests : FilesTestBase

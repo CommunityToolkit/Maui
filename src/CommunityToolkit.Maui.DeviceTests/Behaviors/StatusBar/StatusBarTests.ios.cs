@@ -15,8 +15,6 @@ public partial class StatusBarTests
 	const string windowsUnknownMessage = "Unable to set the Status Bar Style because the windows of the app are unknown: call UseMauiCommunityToolkit() in MauiProgram.cs";
 #endif
 
-	// UIApplication.Windows lists the windows of the app's connected scenes, and the runner has the one scene of the main screen, whose
-	// StatusBarManager exists. A scene without one (an external display, CarPlay) only exists on a device that has such a screen.
 	const string sceneWithoutStatusBarManagerMissing = "Needs a UIWindowScene without a StatusBarManager (the scene of an external display or CarPlay screen); the runner's only scene is the main screen's, which has one. SetColorSkipsListedWindowsWithoutASceneAndColorsTheOthers runs the same arm with a window that reports no scene.";
 
 	static string UnsupportedStyleMessage => "StatusBarStyle 42 is not yet supported on iOS";
@@ -170,8 +168,7 @@ public partial class StatusBarTests
 		});
 	}
 
-	// A window that UIApplication.Windows lists but that has no status bar frame (its scene has no StatusBarManager, or here: the window reports
-	// no scene) gets no status bar view, and the windows after it still get theirs.
+	// A window that reports no scene stands in for one whose scene has no StatusBarManager: neither has a status bar frame.
 	[Fact]
 	public async Task SetColorSkipsListedWindowsWithoutASceneAndColorsTheOthers()
 	{
@@ -325,7 +322,6 @@ public partial class StatusBarTests
 			Assert.Same(statusBarView, Assert.Single(IosStatusBarViews.TaggedSubviews(window)));
 			IosStatusBarViews.AssertColor(Colors.Red, statusBarView.BackgroundColor);
 
-			// SetBarSize found the existing view and brought it to the front again; it did not add a view of its own next to it.
 			Assert.Same(statusBarView, window.Subviews[^1]);
 			Assert.Equal(subviewCount, window.Subviews.Length);
 		});
@@ -350,7 +346,6 @@ public partial class StatusBarTests
 
 			StatusBar.SetBarSize(false);
 
-			// It keeps the first status bar view (the one that has the color) and moves it to the front.
 			Assert.Same(statusBarView, Assert.Single(IosStatusBarViews.TaggedSubviews(window)));
 			Assert.Same(statusBarView, window.Subviews[^1]);
 			IosStatusBarViews.AssertColor(Colors.Red, statusBarView.BackgroundColor);
@@ -403,9 +398,7 @@ public partial class StatusBarTests
 	}
 
 #if NET11_0_OR_GREATER
-	// .NET 11: SetStyle sets Window.StatusBarTheme of the app's windows, and UIKit takes the style from the view
-	// controllers of .NET MAUI, which return the style of their window's theme. Each step changes the style that the step before set: LightContent
-	// after Default and after DarkContent, DarkContent after LightContent, Default after LightContent.
+	// Each step sets a style that differs from the one before, so every assertion proves a change.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
 	[InlineData(StatusBarWindowPage.NavigationPage)]
@@ -463,7 +456,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The style is set on the windows that the app has at the time of the call: a window that opens afterwards keeps its own theme.
 	[Fact]
 	public async Task SetStyleLeavesAWindowThatOpensAfterTheCallAtItsOwnTheme()
 	{
@@ -483,7 +475,7 @@ public partial class StatusBarTests
 	}
 
 	// Only CommunityToolkit.Maui (UseMauiCommunityToolkit) can connect StatusBar, which is in CommunityToolkit.Maui.Core, to the windows of
-	// Microsoft.Maui.Controls. Without it SetStyle cannot reach a window, and says so.
+	// Microsoft.Maui.Controls.
 	[Fact]
 	public async Task SetStyleWithoutUseMauiCommunityToolkitTracesAndLeavesTheStatusBarAlone()
 	{
@@ -510,8 +502,8 @@ public partial class StatusBarTests
 		}
 	}
 
-	// The runner's MauiProgram already called UseMauiCommunityToolkit: the test takes the connection away first, and building the test's MauiApp
-	// (UseMauiCommunityToolkit) has to make it again.
+	// The runner's MauiProgram already called UseMauiCommunityToolkit, so the test takes the connection away first and lets SetupBuilder,
+	// which calls UseMauiCommunityToolkit, make it again.
 	[Fact]
 	public void UseMauiCommunityToolkitConnectsSetStyleToTheWindowsOfTheApp()
 	{
@@ -548,8 +540,7 @@ public partial class StatusBarTests
 	}
 
 	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to false
-	// (with false it shows the style of the whole app, which the runner ignores): SetStyle still sets the theme of the windows, and says that UIKit
-	// ignores the style only for false.
+	// (with false it shows the style of the whole app, which the runner ignores).
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -656,7 +647,6 @@ public partial class StatusBarTests
 		});
 	}
 
-	// What SetStyle reads is the key of the app's Info.plist, which the runner does not set: its style changes are not reported as ignored.
 	[Fact]
 	public async Task SetStyleReadsViewControllerBasedStatusBarAppearanceFromTheInfoPlistOfTheApp()
 	{
@@ -725,8 +715,8 @@ public partial class StatusBarTests
 		await AssertUpdatesTheStatusBarAppearanceAsync(static () => StatusBar.SetBarSize(false));
 	}
 
-	// The status bar code asks each window's own root view controller (not the app's current one) to update the status bar appearance. On .NET 11
-	// SetStyle leaves that to the WindowHandler of each .NET MAUI window, whose StatusBarTheme it sets.
+	// On .NET 11 SetStyle leaves the update to the WindowHandler of each .NET MAUI window, whose StatusBarTheme it sets, so it is not in the list
+	// below.
 	[Fact]
 	public async Task StatusBarCallsAskTheRootViewControllerOfEveryWindow()
 	{
@@ -875,12 +865,10 @@ public partial class StatusBarTests
 			?? throw new InvalidOperationException("StatusBar no longer has a private static TryUpdateStatusBarAppearance(UIWindow?).");
 		var updatedWithViewController = false;
 
-		// With a view controller on screen, which has to be found without a window to take the root view controller from.
 		await AssertUpdatesTheStatusBarAppearanceAsync(() => updatedWithViewController = (bool)tryUpdateWindow.Invoke(null, [null])!);
 
 		Assert.True(updatedWithViewController);
 
-		// Without any view controller the failure is traced and reported, not thrown.
 		var result = await InvokeOnMainThreadAsync(() =>
 		{
 			var window = TestWindow.PlatformWindow;
@@ -926,7 +914,6 @@ public partial class StatusBarTests
 		Assert.DoesNotContain(appearanceUpdateFailedMessage, listener.Messages);
 	}
 
-	// Adds a window that reports no scene while the action runs, followed by an ordinary window of the runner's scene, and removes both again.
 	static void WithAWindowWithoutSceneBeforeAnotherWindow(Action<UIWindow, UIWindow> action)
 	{
 		var windowWithoutScene = new SceneHidingWindow(IosStatusBarViews.RunnerScene) { Frame = new CGRect(0, 0, 100, 100), Hidden = false };
@@ -952,8 +939,6 @@ public partial class StatusBarTests
 		}
 	}
 
-	// Puts a small view with the status bar tag into the page area of the runner's window (inside the root view controller's view), as an app
-	// view could carry the same tag, runs the action and removes the view again.
 	static void WithANestedAppViewWithTheStatusBarTag(Action<UIWindow, UIView, UIView> action)
 	{
 		var window = TestWindow.PlatformWindow;

@@ -2,14 +2,9 @@ using Microsoft.Maui.Graphics;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// An <see cref="ITextInput"/> that is a view (a plain <see cref="VisualElement"/>), so that giving it any handler does not set up
-/// gesture managers or other platform plumbing that expects a real platform view.
-/// </summary>
-/// <remarks>
-/// Used by the KeyboardExtensions tests. It is a top-level type, not a nested one, because the toolkit's TextColorTo source generator generates code for every
-/// <see cref="ITextStyle"/> view and cannot reference nested types.
-/// </remarks>
+// Derives from the plain VisualElement, so that giving it any handler does not set up gesture managers or other platform plumbing that
+// expects a real platform view. It is a top-level type, not a nested one, because the toolkit's TextColorTo source generator generates
+// code for every ITextStyle view and cannot reference nested types.
 sealed class TextInputStub : VisualElement, ITextInput
 {
 	public string Text { get; set; } = string.Empty;

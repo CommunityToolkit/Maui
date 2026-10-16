@@ -4,17 +4,15 @@ using Windows.Media.SpeechRecognition;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows online recognizer (Windows.Media.SpeechRecognition.SpeechRecognizer). Starting it for real needs an installed speech
-// language, a microphone, the "online speech recognition" privacy setting and, for a packaged app, the system's microphone consent
-// dialog (which blocks the start until a person answers it), so no test starts a recognition session. A recognizer that is created
-// but never started is Idle, which is what most tests below use. The WinRT event arguments that drive OnCompleted and
-// ResultGenerated have no public constructors: only a running session can create them.
-// What only a running session produces is checked by hand in the Sample (SpeechToText page, Essentials): the listening states, the partial
-// and the final results, the status of the completed session, the PermissionException of a declined online speech privacy statement, the
-// microphone consent and StopListenAsync with a canceled token while the recognizer listens.
+// Starting a recognizer for real needs an installed speech language, a microphone, the "online speech recognition" privacy setting and,
+// for a packaged app, the system's microphone consent dialog (which blocks the start until a person answers it), so no test starts a
+// recognition session: most tests use a recognizer that is created but never started (Idle). The WinRT event arguments that drive
+// OnCompleted and ResultGenerated have no public constructors, so only a running session can create them.
+// What only a running session produces is checked by hand in the SpeechToText page of the Sample (Essentials): the listening states, the
+// partial and the final results, the status of the completed session, the PermissionException of a declined online speech privacy
+// statement, the microphone consent and StopListenAsync with a canceled token while the recognizer listens.
 public sealed partial class SpeechToTextTests
 {
-	/// <summary>A real recognizer for <paramref name="languageTag"/>, never started (Idle); skips when this machine cannot create one.</summary>
 	static async Task<SpeechRecognizer> CreateIdleRecognizerOrSkipAsync(string languageTag = "en-US")
 	{
 		try
@@ -45,8 +43,6 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// CurrentState maps the recognizer's own state: an idle recognizer is Stopped (the default arm), and stopping it releases it
-	// (StopRecording skips StopAsync because the recognizer is idle).
 	[Fact]
 	public async Task IdleRecognizerIsStoppedAndStopListenAsyncReleasesIt()
 	{
@@ -65,7 +61,7 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// The token is only checked for a recognizer that is not idle: an idle one is released even by a cancelled stop.
+	// The token is only checked for a recognizer that is not idle.
 	[Fact]
 	public async Task StopListenAsyncWithACancelledTokenStillReleasesAnIdleRecognizer()
 	{
@@ -83,7 +79,6 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// DisposeAsync runs the same clean-up as a stop, with CancellationToken.None.
 	[Fact]
 	public async Task DisposeAsyncReleasesAnIdleRecognizer()
 	{
@@ -97,9 +92,8 @@ public sealed partial class SpeechToTextTests
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 	}
 
-	// Initialize creates the recognizer for the culture's IETF tag, silences its UI (no audible prompt, no read-back, no
-	// confirmation) and subscribes to its state, then checks the token before it compiles the constraints. Calling it with a
-	// cancelled token keeps the recognizer in the field, so its options can be read back; StopListenAsync then releases it.
+	// Initialize checks the token before it compiles the constraints, so calling it with a cancelled token keeps the recognizer in the
+	// field and its options can be read back.
 	[Fact]
 	public async Task InitializeCreatesASilentRecognizerAndStopListenAsyncReleasesIt()
 	{
@@ -127,10 +121,9 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// Initialize checks the token after the recognizer was created and before it compiles its constraints. The culture's tag is read
-	// while the recognizer is created, after the first check of StartListenAsync, so cancelling there is deterministic. The catch block
-	// of StartListenAsync then releases the recognizer that Initialize created and rethrows. The machine's ability to create an en-US
-	// recognizer is established first, so any other exception is a failure.
+	// The culture's tag is read while the recognizer is created, after the first token check of StartListenAsync and before the one of
+	// Initialize, so cancelling there is deterministic. The probe establishes first that this machine can create an en-US recognizer, so
+	// any other exception is a failure.
 	[Fact]
 	public async Task StartListenAsyncCancelledWhileTheRecognizerIsCreatedReleasesItAndRethrows()
 	{
@@ -152,9 +145,7 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// The recognizer's StateChanged handler reads neither its sender nor its arguments: it announces CurrentState. Called the way the
-	// recognizer calls it, without a recognizer (Stopped through the null arm) and with an idle one (the default arm). The listening
-	// states need a running session; the SpeechToText page of the Sample shows them while a person speaks.
+	// The handler reads neither its sender nor its arguments (it announces CurrentState), so the test passes none.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -177,11 +168,10 @@ public sealed partial class SpeechToTextTests
 		Assert.Null(GetRecognizer(speech));
 	}
 
-	// A machine with a speech language and a microphone, where a person answers the consent dialog: the start configures the
-	// continuous session with the toolkit's timeout and starts it (the recognizer leaves Idle); StopListenAsync stops and releases it.
-	// Every start with the default options passes TimeSpan.MaxValue ("auto-stop disabled", long.MaxValue ticks) to the WinRT session:
-	// the setter must accept it, and the session must not end by itself after WinRT's own default timeout (20 s). For that row the
-	// person stays silent for 25 seconds after the start.
+	// Needs a machine with a speech language and a microphone, where a person answers the consent dialog. Every start with the default
+	// options passes TimeSpan.MaxValue ("auto-stop disabled", long.MaxValue ticks) to the WinRT session: the setter must accept it, and the
+	// session must not end by itself after WinRT's own default timeout (20 s), so for that row the person stays silent for 25 seconds
+	// after the start.
 	[Theory]
 	[Category(TestCategory.RequiresUserInteraction)]
 	[InlineData(false)]
@@ -221,7 +211,6 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// A person has to answer the system dialog: run it from the visual runner.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task RequestPermissionsReturnsTheDecisionOfTheUser()

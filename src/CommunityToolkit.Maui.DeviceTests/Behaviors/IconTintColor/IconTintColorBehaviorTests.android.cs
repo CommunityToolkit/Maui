@@ -13,9 +13,6 @@ using PorterDuffColorFilter = Android.Graphics.PorterDuffColorFilter;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: an ImageView (Image, ImageButton) is tinted with a PorterDuffColorFilter (SrcIn), a MaterialButton (Button) through
-// IconTint + IconTintMode, and a plain Android.Widget.Button by tinting its compound drawables. The binding does not expose the
-// color of a PorterDuffColorFilter, so the color of an ImageView is verified through the rendered pixels (see the shared tests).
 public partial class IconTintColorBehaviorTests
 {
 	static bool CanAssertTintPixels => true;
@@ -25,7 +22,7 @@ public partial class IconTintColorBehaviorTests
 
 	static bool CanAssertPlatformViewIsCollected => false;
 
-	// The object that stands for the image the platform view shows: a new image source gives a new drawable.
+	// A new image source gives a new drawable.
 	static object? GetNativeImageIdentity(PlatformView platformView) => platformView switch
 	{
 		AImageView imageView => imageView.Drawable,
@@ -40,6 +37,8 @@ public partial class IconTintColorBehaviorTests
 		_ => false
 	};
 
+	// The binding does not expose the color of a PorterDuffColorFilter, so the shared tests verify the color of an ImageView through the
+	// rendered pixels.
 	static bool IsNativeTinted(PlatformView platformView, Color color) => platformView switch
 	{
 		AImageView imageView => imageView.ColorFilter is PorterDuffColorFilter,
@@ -59,7 +58,6 @@ public partial class IconTintColorBehaviorTests
 		_ => false
 	};
 
-	// Puts the native view into the state of a view that was never tinted, without going through the behavior.
 	static void ResetNativeTint(PlatformView platformView)
 	{
 		switch (platformView)
@@ -205,9 +203,9 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// OnElementPropertyChanged is subscribed to the PropertyChanged event of the view the behavior is attached to. MAUI always raises that
-	// event with the view as its sender, and a view whose handler is removed unloads, which detaches the behavior before the handler
-	// guard can matter. The two guards are defensive: the private handler is called directly to reach them.
+	// MAUI always raises the PropertyChanged event of the view with the view as its sender, and a view whose handler is removed unloads,
+	// which detaches the behavior before the handler guard can matter. Both guards are defensive, so the private handler is called
+	// directly to reach them.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -227,7 +225,6 @@ public partial class IconTintColorBehaviorTests
 
 			ResetNativeTint(handler.PlatformView!);
 
-			// A Source change that does not come from a view, or that comes from a view without a handler: nothing to tint.
 			object sender = senderIsAView ? new Image { Source = greenSource } : new object();
 			InvokeElementPropertyChanged(behavior, sender, nameof(Image.Source));
 
@@ -250,7 +247,6 @@ public partial class IconTintColorBehaviorTests
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// Both ApplyTintColor and ClearTintColor swallow the ObjectDisposedException of a platform view that was disposed.
 			var imageView = new AImageView(MauiContext.Context!);
 			imageView.Dispose();
 			var attachException = Record.Exception(() => probe.AttachTo(image, imageView));
@@ -287,7 +283,6 @@ public partial class IconTintColorBehaviorTests
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// ApplyTintColor and ClearTintColor return when they have no platform view to work on.
 			var attachException = Record.Exception(() => probe.AttachTo(image, null!));
 			var detachException = Record.Exception(() => probe.DetachFrom(image, null!));
 
@@ -338,8 +333,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// Whatever color the icons get when the TintColor is cleared (see PlainButtonCompoundDrawablesShowTheirOriginalColorWhenTheTintColorIsNull),
-	// the behavior has to keep them on the button, and clearing the tint of a button that has all four drawables must not throw.
 	[Fact]
 	public async Task PlainButtonKeepsItsCompoundDrawablesWhenTheTintColorIsNull()
 	{
@@ -459,8 +452,8 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The detach side of PlainButtonWithMissingCompoundDrawablesCanBeTinted: ClearTintColor walks getCompoundDrawables() too, and catches
-	// only ObjectDisposedException. The behavior detaches without attaching first, so that the attach path cannot hide a failure of this one.
+	// Like ApplyTintColor, ClearTintColor walks getCompoundDrawables() and catches only ObjectDisposedException. The behavior detaches
+	// without attaching first, so that the attach path cannot hide a failure of this one.
 	[Fact]
 	public async Task PlainButtonWithMissingCompoundDrawablesDetachesWithoutAnException()
 	{
@@ -480,7 +473,6 @@ public partial class IconTintColorBehaviorTests
 
 			Assert.Null(exception);
 
-			// The button keeps its one drawable, and its other sides stay empty.
 			var drawables = button.GetCompoundDrawables();
 			Assert.NotNull(drawables[0]);
 			Assert.All(drawables.Skip(1), static side => Assert.Null(side));
@@ -532,9 +524,8 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The color filter (PorterDuff SrcIn) replaces the colors of the image and keeps its shape. behavior_disc.png is an opaque red disc with
-	// transparent corners: with a half-transparent tint, the disc shows the tint with its alpha and none of the red (SrcAtop would blend the
-	// two), and the corners stay transparent (Src would fill them).
+	// behavior_disc.png is an opaque red disc with transparent corners: with PorterDuff SrcIn and a half-transparent tint, the disc shows the
+	// tint with its alpha and none of the red (SrcAtop would blend the two), and the corners stay transparent (Src would fill them).
 	[Fact]
 	public async Task HalfTransparentTintReplacesTheColorsOfTheImageAndKeepsItsShape()
 	{
@@ -553,7 +544,7 @@ public partial class IconTintColorBehaviorTests
 			var expected = tint.ToPlatform();
 			int center = 0, corner = 0;
 
-			// The image loads and is laid out asynchronously: wait until the disc is drawn.
+			// The image loads and is laid out asynchronously.
 			await AssertEventually(() =>
 			{
 				(center, corner) = DrawCenterAndCorner(platformView);
@@ -565,7 +556,7 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The pixel in the middle of the view (inside the disc) and the one in its top left corner (outside the disc), as non-premultiplied ARGB.
+	// The middle of the view is inside the disc and its top left corner outside it; both pixels are non-premultiplied ARGB.
 	static (int Center, int Corner) DrawCenterAndCorner(PlatformView platformView)
 	{
 		if (platformView.Width <= 0 || platformView.Height <= 0)
@@ -589,9 +580,9 @@ public partial class IconTintColorBehaviorTests
 		&& Math.Abs(Android.Graphics.Color.GetGreenComponent(pixel) - expected.G) <= 3
 		&& Math.Abs(Android.Graphics.Color.GetBlueComponent(pixel) - expected.B) <= 3;
 
-	// The behavior keeps the platform view it attached to in a field. A detached behavior that is still referenced (a shared instance, a
-	// StaticResource, a view model) must not keep that platform view, and with it the Activity, alive. The field is read directly: when a
-	// Java peer is collected is up to the Java garbage collector, so waiting for the platform view to be collected proves nothing here.
+	// A detached behavior that is still referenced (a shared instance, a StaticResource, a view model) must not keep its platform view, and
+	// with it the Activity, alive. The behavior's field is read directly: when a Java peer is collected is up to the Java garbage collector,
+	// so waiting for the platform view to be collected proves nothing here.
 	[Fact]
 	public async Task DetachedBehaviorReleasesItsPlatformView()
 	{
@@ -640,7 +631,6 @@ public partial class IconTintColorBehaviorTests
 		return button;
 	}
 
-	// Raises PropertyChanged on an Image without a property name, which OnElementPropertyChanged has to ignore.
 	sealed class NamelessPropertyChangedImage : Image
 	{
 		public void RaisePropertyChangedWithoutAName() => OnPropertyChanged(null);

@@ -1,4 +1,4 @@
-# Vendored from dotnet/maui (see README.md). Treated as generated code so the repository's style analyzers do not
-# rewrite upstream code, which keeps it diffable against dotnet/maui. Compiler diagnostics still apply.
+# Vendored from dotnet/maui (see ../CommunityToolkit.Maui.DeviceTests.Runners/README.md). Treated as generated code so the repository's
+# style analyzers do not rewrite upstream code, which keeps it diffable against dotnet/maui.
 [*.cs]
 generated_code = true

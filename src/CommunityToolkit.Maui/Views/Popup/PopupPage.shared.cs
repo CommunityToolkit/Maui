@@ -399,7 +399,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		protected override ILayoutManager CreateLayoutManager() => new PopupPageLayoutManager(this);
 
-		// Limits the explicit size of the Popup to the space this layout arranges the PopupBorder in, minus the PopupBorder's Margin (Popup.Margin), Padding and stroke
 		void SetPopupMaximumDisplaySize(double widthConstraint, double heightConstraint)
 		{
 			var inset = Padding + PopupBorder.Margin + PopupBorder.Padding + PopupBorder.StrokeThickness;
@@ -427,12 +426,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			}
 		}
 
-		// Measures PopupPageLayout like a Grid, after giving the Popup the size it can be displayed at: the constraints are the space the
-		// layout arranges its children in (without the safe area it keeps free), so a Popup larger than the window keeps Popup.Margin to its edges
 		sealed class PopupPageLayoutManager(PopupPageLayout popupPageLayout) : GridLayoutManager(popupPageLayout)
 		{
 			public override Size Measure(double widthConstraint, double heightConstraint)
 			{
+				// The constraints are the space the layout arranges its children in (without the safe area it keeps free),
+				// so a Popup larger than the window keeps Popup.Margin to its edges
 				popupPageLayout.SetPopupMaximumDisplaySize(widthConstraint, heightConstraint);
 				return base.Measure(widthConstraint, heightConstraint);
 			}

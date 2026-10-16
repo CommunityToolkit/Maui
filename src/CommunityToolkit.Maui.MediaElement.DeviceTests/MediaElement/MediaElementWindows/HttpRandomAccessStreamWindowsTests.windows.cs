@@ -5,9 +5,6 @@ using HttpClient = Windows.Web.Http.HttpClient;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Primitives/HttpRandomAccessStream.windows.cs: the read-only IRandomAccessStream over HTTP Range requests. A WinMediaHttpServer on the loopback
-// interface serves the bundled clip (and misbehaving variants of it) and records every request, so each branch of ReadAsync and CreateAsync
-// is asserted on the bytes returned and on the request the stream really sent. No media is decoded.
 [Category(TestCategory.HttpRandomAccessStreamWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class HttpRandomAccessStreamWindowsTests : WinMediaTestBase
@@ -208,7 +205,7 @@ public class HttpRandomAccessStreamWindowsTests : WinMediaTestBase
 	[Fact]
 	public async Task ReadAsyncAcceptsAContentRangeUnitInAnotherCase()
 	{
-		// HTTP range units are case-insensitive (RFC 9110): "BYTES 0-15/n" answers a request for bytes 0-15.
+		// HTTP range units are case-insensitive (RFC 9110).
 		await using var server = StartServer(request => request.Method is "HEAD"
 			? ServeContent(request)
 			: new WinMediaResponse { StatusCode = 206, ReasonPhrase = "Partial Content", Headers = [("Content-Range", $"BYTES 0-15/{content.Length}")], Body = content[..16] });
@@ -252,7 +249,7 @@ public class HttpRandomAccessStreamWindowsTests : WinMediaTestBase
 
 		var exception = await Assert.ThrowsAnyAsync<Exception>(() => ReadBytesAsync(stream, 16));
 
-		// EnsureSuccessStatusCode comes first: the range checks (InvalidOperationException) never ran.
+		// The range checks throw InvalidOperationException, so any other exception proves they never ran.
 		Assert.IsNotType<InvalidOperationException>(exception);
 		Assert.Equal(HttpStatusHResult(500), exception.HResult);
 		Assert.Equal(0UL, stream.Position);
@@ -284,7 +281,6 @@ public class HttpRandomAccessStreamWindowsTests : WinMediaTestBase
 		Assert.Same(stream, input);
 		Assert.Equal(20UL, stream.Position);
 
-		// A read starts where the position is.
 		var bytes = await ReadBytesAsync(stream, 4);
 		Assert.Equal(content[20..24], bytes);
 		Assert.Equal("bytes=20-23", server.Requests.Last(request => request.Method is "GET").Header("Range"));
@@ -313,7 +309,7 @@ public class HttpRandomAccessStreamWindowsTests : WinMediaTestBase
 
 		stream.Dispose();
 
-		// The client belongs to the caller (the manager reuses it for the next source): another stream over it must still work.
+		// The client belongs to the caller: the manager reuses it for the next source.
 		using var second = await CreateStreamAsync(server, client);
 		Assert.Equal((ulong)content.Length, second.Size);
 	}

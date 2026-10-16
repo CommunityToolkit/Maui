@@ -9,10 +9,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// A PlatformBehavior that records when MAUI attaches and detaches it (dotnet/maui's PlatformBehaviorTests probe). MAUI attaches
-/// a PlatformBehavior when the view is Loaded, i.e. in a window, and detaches it when the view is Unloaded or the behavior removed.
-/// </summary>
+// Based on the probe in dotnet/maui's PlatformBehaviorTests. MAUI attaches a PlatformBehavior only once the view is Loaded (in a
+// window), and detaches it when the view is Unloaded or the behavior is removed.
 public sealed class CountingPlatformBehavior<TView> : PlatformBehavior<TView, PlatformView>
 	where TView : VisualElement
 {

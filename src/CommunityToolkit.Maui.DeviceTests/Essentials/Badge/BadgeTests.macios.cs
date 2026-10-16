@@ -5,19 +5,16 @@ using UserNotifications;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: BadgeImplementation asks UNUserNotificationCenter for badge authorization and then sets the badge count (from iOS 17,
-// which includes every Mac Catalyst version of this app) or the application icon badge number (below iOS 17). Both system calls answer through
-// a callback, and the toolkit writes an error that the system reports to Trace. Which answer a system gives depends on the app's notification
-// settings there: the iOS simulator accepts badge counts without consent, a device needs the person's consent, and a Mac Catalyst app that may
-// not send notifications gets "Notifications are not allowed for this application" for the authorization request (and, depending on the Mac,
-// for the badge count too). So each test first asks the system itself, then asserts what the toolkit does for that answer; the other answer is a
-// visible skip.
+// The system's answer to the badge authorization request and to the badge count depends on the app's notification settings: the iOS
+// simulator accepts badge counts without consent, a device needs the person's consent, and a Mac Catalyst app that may not send
+// notifications gets "Notifications are not allowed for this application" for the authorization request (and, depending on the Mac, for
+// the badge count too). So each test first asks the system itself, then asserts what the toolkit does for that answer; the other answer is
+// a visible skip.
 //
 // On iOS every call of SetCount also asks for notification authorization, which shows the system's "Would Like to Send You Notifications"
 // prompt until someone answers it. A headless run cannot answer it (simctl cannot pre-grant notifications), and the unanswered prompt makes
 // the app inactive, which breaks every later test of the launch that hosts a view. So on iOS the tests that call SetCount need a person
-// (RequiresUserInteraction), which a headless run does not run; the Badge page of the Sample shows the prompt and the badge by hand. Mac Catalyst
-// shows no prompt, so there they all run headless.
+// (RequiresUserInteraction), which a headless run does not run. Mac Catalyst shows no prompt, so there they all run headless.
 public partial class BadgeTests
 {
 	const string authorizationError = "Error Requesting Authorization to Set Badge Count";
@@ -57,7 +54,6 @@ public partial class BadgeTests
 	static NSError CreateError(string description) =>
 		new(new NSString("CommunityToolkit.Maui.DeviceTests"), 1, NSDictionary.FromObjectAndKey(new NSString(description), NSError.LocalizedDescriptionKey));
 
-	// With a description: one line that starts with the prefix and carries the description. Without: no line with the prefix.
 	static void AssertTraced(FilesTraceCapture trace, string prefix, string? description)
 	{
 		if (description is null)
@@ -241,10 +237,7 @@ public partial class BadgeTests
 		Assert.Equal(6, await GetBadgeNumberAsync());
 	}
 
-	/// <summary>
-	/// Asks the system whether it accepts a badge count from this app (UNUserNotificationCenter.SetBadgeCount with 0, which answers without
-	/// an error when it does). The badge is put back to zero when the test ends.
-	/// </summary>
+	// SetBadgeCount with 0 answers without an error when the system accepts badge counts from this app.
 	async Task<bool> AcceptsBadgesAsync()
 	{
 		AddCleanup(ResetBadgeAsync);
@@ -254,7 +247,6 @@ public partial class BadgeTests
 	async Task RequireAcceptedBadgesAsync() =>
 		Skip.IfNot(await AcceptsBadgesAsync(), "The system rejects badge counts for this app (UNErrorDomain 1, notifications are not allowed): showing one needs the user's consent, which a headless run cannot give. SetCountTracesTheErrorThatTheSystemGivesForTheBadgeCount covers this system.");
 
-	/// <summary>UNUserNotificationCenter.SetBadgeCount called directly: the error that the system answers with, or null.</summary>
 	static Task<NSError?> SystemSetBadgeCountAsync(nint count)
 	{
 		if (!OperatingSystem.IsIOSVersionAtLeast(16))
@@ -267,12 +259,9 @@ public partial class BadgeTests
 		return answer.Task.WaitAsync(TimeSpan.FromSeconds(10));
 	}
 
-	/// <summary>
-	/// UNUserNotificationCenter.RequestAuthorization for badges called directly: the error that the system answers with, or null. The
-	/// system answers only once the notification permission prompt that it may show is answered. On iOS the callers are
-	/// RequiresUserInteraction tests and wait for a person (two minutes). Mac Catalyst runs them headless: there a request that is not
-	/// answered within 10 seconds is waiting for macOS's permission prompt, which a headless run cannot answer, so the test skips visibly.
-	/// </summary>
+	// The system answers only once the notification permission prompt that it may show is answered. On iOS the callers are
+	// RequiresUserInteraction tests and wait for a person (two minutes). Mac Catalyst runs them headless: there a request that is not
+	// answered within 10 seconds is waiting for macOS's permission prompt, which a headless run cannot answer, so the test skips visibly.
 	static async Task<NSError?> SystemRequestBadgeAuthorizationAsync()
 	{
 		var answer = new TaskCompletionSource<NSError?>(TaskCreationOptions.RunContinuationsAsynchronously);

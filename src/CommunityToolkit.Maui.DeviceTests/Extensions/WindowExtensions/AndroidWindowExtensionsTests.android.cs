@@ -6,9 +6,6 @@ using AWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of AndroidWindowExtensions.GetCurrentWindow, which StatusBar and NavigationBar use to find the window they change:
-// the window of the topmost dialog fragment that is added, showing and visible, otherwise the activity's window. It also puts the
-// window in the state the system bar colors need (no translucent status bar, system bar backgrounds drawn).
 [Category(TestCategory.AndroidWindowExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class AndroidWindowExtensionsTests : StatusBarTestBase
@@ -99,7 +96,7 @@ public class AndroidWindowExtensionsTests : StatusBarTestBase
 				isWindowHidden = dialogs[1].Dialog?.IsShowing is false;
 				if (isWindowHidden)
 				{
-					Assert.True(dialogs[1].IsVisible); // the dialog's window is hidden while its fragment is still visible
+					Assert.True(dialogs[1].IsVisible);
 
 					AssertIsWindow(dialogs[0].DialogWindow, AndroidSystemBars.Activity.GetCurrentWindow());
 				}
@@ -120,7 +117,7 @@ public class AndroidWindowExtensionsTests : StatusBarTestBase
 			await InvokeOnMainThreadAsync(() =>
 			{
 				dialogs[1].HideFragment();
-				Assert.True(dialogs[1].Dialog?.IsShowing); // the dialog is still showing while its fragment is hidden
+				Assert.True(dialogs[1].Dialog?.IsShowing);
 				Assert.False(dialogs[1].IsVisible);
 
 				AssertIsWindow(dialogs[0].DialogWindow, AndroidSystemBars.Activity.GetCurrentWindow());
@@ -299,7 +296,7 @@ public class AndroidWindowExtensionsTests : StatusBarTestBase
 
 		await InvokeOnMainThreadAsync(static () =>
 		{
-			// An activity that is not a FragmentActivity has no fragment manager, so there is no dialog fragment to look for.
+			// An activity that is not a FragmentActivity has no fragment manager.
 			using var unshown = new UnshownWindow();
 			unshown.Window.AddFlags(WindowManagerFlags.TranslucentStatus);
 			unshown.Window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
@@ -330,7 +327,6 @@ public class AndroidWindowExtensionsTests : StatusBarTestBase
 		Assert.Equal("Window cannot be null", exception.Message);
 	}
 
-	// Shows one dialog fragment per tag (the first tag is the bottom one), waits until every one is visible, runs the action and removes them.
 	async Task WithDialogsAsync(string[] tags, Func<TestDialogFragment[], Task> action)
 	{
 		var dialogs = new List<TestDialogFragment>();

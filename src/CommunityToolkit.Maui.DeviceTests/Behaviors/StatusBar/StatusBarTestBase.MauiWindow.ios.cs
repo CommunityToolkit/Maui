@@ -12,19 +12,15 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // empty), so the style tests show their page in one.
 public abstract partial class StatusBarTestBase
 {
-	/// <summary>What the toolkit traces when it sets the style while the app's Info.plist sets UIViewControllerBasedStatusBarAppearance to false.</summary>
 	protected const string styleIgnoredByUIKitMessage = "Unable to apply the Status Bar Style because Info.plist sets UIViewControllerBasedStatusBarAppearance to false: remove the key from Info.plist";
 
 	static readonly TimeSpan pageLoadTimeout = TimeSpan.FromSeconds(10);
 
-	/// <summary>A red page: the status bar shows its white or black content over it, which the tests read from the screen.</summary>
+	// Red because the tests read the status bar's white or black content from the screen, and the background must be neither.
 	protected static ContentPage CreateStyleTestPage() => new() { Title = "Status bar style", BackgroundColor = Colors.Red };
 
-	/// <summary>
-	/// Runs <paramref name="action"/> as if the app's Info.plist set UIViewControllerBasedStatusBarAppearance to <paramref name="value"/> (as if it had
-	/// no such key when <see langword="null"/>) and returns what the toolkit traced meanwhile. The runner's Info.plist has no such key, and UIKit reads
-	/// the real one at launch: only what the toolkit reads is replaced.
-	/// </summary>
+	// The runner's Info.plist has no UIViewControllerBasedStatusBarAppearance key, and UIKit reads the real one at launch, so only the value that
+	// the toolkit reads is replaced.
 	private protected static CapturingTraceListener CaptureTraceWithViewControllerBasedStatusBarAppearance(bool? value, Action action)
 	{
 		var readViewControllerBasedStatusBarAppearance = StatusBar.ReadViewControllerBasedStatusBarAppearance;
@@ -67,13 +63,6 @@ public abstract partial class StatusBarTestBase
 		}
 	}
 
-	/// <summary>
-	/// Shows <paramref name="page"/> in a .NET MAUI window the way an app does and runs <paramref name="action"/> on the UI thread once the page is
-	/// loaded: a test application (Application.Current until the end) creates the window, the window's own handler shows it in a new full-screen
-	/// UIWindow over the runner's window, and the window is created and activated. <paramref name="kind"/> puts the page into a NavigationPage,
-	/// Shell, TabbedPage or FlyoutPage, or presents it modally over another page; their bars are red like the page. Afterwards the window is
-	/// deactivated and destroyed, and the runner's window is the key window of the scene again.
-	/// </summary>
 	protected Task RunInMauiWindowAsync(StatusBarWindowPage kind, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
@@ -113,7 +102,7 @@ public abstract partial class StatusBarTestBase
 				}
 
 				// What .NET MAUI's scene delegate does when the scene disconnects: Destroying disconnects the window's handler and takes the window
-				// out of the application
+				// out of the application.
 				if (window is not null && isActivated)
 				{
 					((IWindow)window).Deactivated();
@@ -132,17 +121,12 @@ public abstract partial class StatusBarTestBase
 				Application.Current = previousApplication;
 
 				// Only once UIKit no longer asks the view controllers of the pages: with the page's handler disconnected, the view controller of a
-				// NavigationPage (MAUI 11 RC1) answers ChildViewControllerForStatusBarHidden with itself, which UIKit follows until the stack overflows
+				// NavigationPage (MAUI 11 RC1) answers ChildViewControllerForStatusBarHidden with itself, which UIKit follows until the stack overflows.
 				root.DisconnectHandlers();
 				page.DisconnectHandlers();
 			}
 		});
 
-	/// <summary>
-	/// Asserts the status bar style that the window shows: the view controller that UIKit asks returns <paramref name="expected"/>, UIKit applies
-	/// it to the status bar of the scene, and with LightContent or DarkContent the status bar content on the screen is white or black. Default
-	/// is not read from the screen: UIKit chooses its color itself (on iOS 27 the content kept its previous color over the same page).
-	/// </summary>
 	protected static async Task AssertStatusBarStyleAsync(HostedMauiWindow mauiWindow, UIStatusBarStyle expected)
 	{
 		var provider = IosStatusBarStyle.StyleProvider(mauiWindow.PlatformWindow);
@@ -153,6 +137,7 @@ public abstract partial class StatusBarTestBase
 		var isApplied = await AssertHelpers.Wait(() => statusBarManager.StatusBarStyle == expected, timeout: 3000, interval: 20);
 		Assert.True(isApplied, $"UIKit shows {IosStatusBarStyle.Name(statusBarManager.StatusBarStyle)} in the status bar of the scene instead of {IosStatusBarStyle.Name(expected)}.");
 
+		// Default is not read from the screen: UIKit chooses its color itself (on iOS 27 the content kept its previous color over the same page).
 		if (expected is UIStatusBarStyle.LightContent or UIStatusBarStyle.DarkContent)
 		{
 			var isLight = expected is UIStatusBarStyle.LightContent;
@@ -177,18 +162,16 @@ public abstract partial class StatusBarTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown page kind.")
 	};
 
-	/// <summary>A .NET MAUI window that <see cref="RunInMauiWindowAsync"/> shows, the application that created it, and its UIWindow.</summary>
 	protected sealed record HostedMauiWindow(MauiWindowTestApplication Application, Window Window, UIWindow PlatformWindow)
 	{
 		public UIWindowScene Scene => PlatformWindow.WindowScene ?? throw new InvalidOperationException("The window left its scene.");
 	}
 
-	/// <summary>The application of the windows that the tests show (Application.Current while they run).</summary>
 	protected sealed class MauiWindowTestApplication : Application
 	{
 		Page? pageOfTheNextWindow;
 
-		/// <summary>Creates a window of the application for <paramref name="page"/> the way .NET MAUI does for a new scene (IApplication.CreateWindow).</summary>
+		// Through IApplication.CreateWindow, the way .NET MAUI creates the window of a new scene.
 		public Window CreateWindowFor(Page page)
 		{
 			pageOfTheNextWindow = page;
@@ -206,8 +189,8 @@ public abstract partial class StatusBarTestBase
 			new(pageOfTheNextWindow ?? throw new InvalidOperationException($"Create the windows of the test application with {nameof(CreateWindowFor)}."));
 	}
 
-	// The MauiContext of the shown window: the test's services and handlers, and the window's own UIWindow (WindowHandler takes its platform view
-	// from it, as from the window scope of an app).
+	// WindowHandler takes its platform view from the MauiContext, as from the window scope of an app, so this context adds the window's own
+	// UIWindow to the test's services and handlers.
 	sealed class PlatformWindowMauiContext(IMauiContext context, UIWindow platformWindow) : IMauiContext, IServiceProvider
 	{
 		public IServiceProvider Services => this;

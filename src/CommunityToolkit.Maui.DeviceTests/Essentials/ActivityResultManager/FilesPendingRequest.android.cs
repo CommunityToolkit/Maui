@@ -12,9 +12,8 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// Reaches the private state of <c>ActivityResultManager</c> (its table of pending requests and its nested <c>PendingRequest</c>
-/// class) with reflection. The class has no public surface besides <c>StartAsync</c>, and its remaining branches (a launcher that
-/// was never registered, a request that is failed or disposed, a request registered twice) cannot be reached through it.
+/// <c>ActivityResultManager</c> has no public surface besides <c>StartAsync</c>, so its table of pending requests and its nested
+/// <c>PendingRequest</c> class are reached with reflection.
 /// </summary>
 public static class FilesActivityResultManagerState
 {
@@ -31,7 +30,6 @@ public static class FilesActivityResultManagerState
 	{
 	}
 
-	/// <summary>The type of the manager's nested PendingRequest class.</summary>
 	public static Type PendingRequestType { get; } = managerType.GetNestedType("PendingRequest", BindingFlags.NonPublic)
 		?? throw new InvalidOperationException("ActivityResultManager.PendingRequest was not found.");
 
@@ -39,7 +37,6 @@ public static class FilesActivityResultManagerState
 		(System.Collections.IDictionary)(managerType.GetField("pendingRequests", anyMember)?.GetValue(null)
 			?? throw new InvalidOperationException("ActivityResultManager.pendingRequests was not found."));
 
-	/// <summary>The registry keys of the requests that the manager is tracking.</summary>
 	public static IReadOnlyList<string> PendingKeys
 	{
 		get
@@ -53,7 +50,6 @@ public static class FilesActivityResultManagerState
 
 	public static int PendingCount => PendingKeys.Count;
 
-	/// <summary>The activity that each tracked request is registered with (null for a request without an activity).</summary>
 	public static IReadOnlyList<ComponentActivity?> RegisteredActivities
 	{
 		get
@@ -69,7 +65,6 @@ public static class FilesActivityResultManagerState
 		(Lock)(managerType.GetField("pendingRequestsLock", anyMember)?.GetValue(null)
 			?? throw new InvalidOperationException("ActivityResultManager.pendingRequestsLock was not found."));
 
-	/// <summary>Adds a request to the manager's table under <paramref name="key"/> (without launching anything).</summary>
 	public static void Track(string key, FilesPendingRequest request)
 	{
 		using (PendingLock.EnterScope())
@@ -78,7 +73,6 @@ public static class FilesActivityResultManagerState
 		}
 	}
 
-	/// <summary>Removes whatever the manager tracks under <paramref name="key"/>.</summary>
 	public static void Untrack(string key)
 	{
 		using (PendingLock.EnterScope())
@@ -87,7 +81,6 @@ public static class FilesActivityResultManagerState
 		}
 	}
 
-	/// <summary>The request that the manager tracks under <paramref name="key"/>.</summary>
 	public static object GetTracked(string key)
 	{
 		using (PendingLock.EnterScope())
@@ -97,8 +90,8 @@ public static class FilesActivityResultManagerState
 	}
 
 	/// <summary>
-	/// Calls the manager's handler of <c>Platform.ActivityStateChanged</c> with this activity and state, as MAUI does when an
-	/// activity's lifecycle changes. A test uses it for an activity that the framework never runs (one whose registry cannot be used).
+	/// Calls the manager's handler of <c>Platform.ActivityStateChanged</c> directly, so a test can raise lifecycle events in an order that
+	/// it chooses, or for an activity that the framework never runs (one whose registry cannot be used).
 	/// </summary>
 	public static void RaiseActivityStateChanged(Activity activity, ActivityState state)
 	{
@@ -123,7 +116,6 @@ public static class FilesActivityResultManagerState
 	}
 }
 
-/// <summary>A <c>PendingRequest</c> created directly, so its methods can be called one by one.</summary>
 public sealed class FilesPendingRequest
 {
 	const BindingFlags anyMember = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
@@ -134,28 +126,22 @@ public sealed class FilesPendingRequest
 
 	FilesPendingRequest(object instance) => Instance = instance;
 
-	/// <summary>The request that <c>StartAsync</c> created and the manager tracks under <paramref name="key"/>.</summary>
 	public static FilesPendingRequest FromTracked(string key) => new(FilesActivityResultManagerState.GetTracked(key));
 
 	public object Instance { get; }
 
-	/// <summary>The AndroidX callback that the request registers with an activity's ActivityResultRegistry.</summary>
 	public Java.Lang.Object Callback => (Java.Lang.Object?)Field("callback") ?? throw new InvalidOperationException("PendingRequest.callback is null.");
 
-	/// <summary>True once the request released (disposed) its callback's Java peer.</summary>
 	public bool IsCallbackReleased => Callback.Handle == IntPtr.Zero;
 
 	public string Key => (string)Get(nameof(Key));
 
 	public Task<Intent> Task => (Task<Intent>)Get(nameof(Task));
 
-	/// <summary>The activity the request is registered with, or null.</summary>
 	public ComponentActivity? RegisteredActivity => (ComponentActivity?)Field("activity");
 
-	/// <summary>The launcher the request holds, or null.</summary>
 	public ActivityResultLauncher? Launcher => (ActivityResultLauncher?)Field("launcher");
 
-	/// <summary>Pending, Canceled or Completed.</summary>
 	public string State => Field("state")?.ToString() ?? throw new InvalidOperationException("PendingRequest.state is null.");
 
 	public void Register(ComponentActivity activity) => Invoke(nameof(Register), activity);
@@ -170,13 +156,9 @@ public sealed class FilesPendingRequest
 
 	public void RegisterCancellation() => Invoke(nameof(RegisterCancellation));
 
-	/// <summary>The private Cancel() that the registration of the request's token calls.</summary>
 	public void Cancel() => Invoke(nameof(Cancel));
 
-	/// <summary>
-	/// Hands <paramref name="result"/> to the request's callback, as an ActivityResultRegistry does when it dispatches a result to the
-	/// request's key. The registry always passes an ActivityResult; any other object, or null, is what only a direct call can pass.
-	/// </summary>
+	// The registry always passes an ActivityResult; any other object, or null, is what only a direct call can pass.
 	public void DeliverToCallback(Java.Lang.Object? result) => ((IActivityResultCallback)Callback).OnActivityResult(result);
 
 	object Get(string property) =>
@@ -203,14 +185,13 @@ public sealed class FilesPendingRequest
 }
 
 /// <summary>
-/// Reads which keys an activity's AndroidX <c>ActivityResultRegistry</c> still has a callback for, which is the native state that
-/// proves a launcher was unregistered (the registry holds the toolkit's callback until then).
+/// The native state that proves a launcher was unregistered: an activity's AndroidX <c>ActivityResultRegistry</c> holds the toolkit's
+/// callback for a key until then.
 /// </summary>
 public static class FilesActivityResultRegistry
 {
 	const string callbackTableName = "keyToCallback";
 
-	/// <summary>The keys that have a registered callback.</summary>
 	public static IReadOnlyList<string> RegisteredKeys(ComponentActivity activity)
 	{
 		var registryClass = Java.Lang.Class.FromType(typeof(ActivityResultRegistry));

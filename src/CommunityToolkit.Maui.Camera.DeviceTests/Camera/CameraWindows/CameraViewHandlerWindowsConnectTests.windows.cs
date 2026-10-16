@@ -6,11 +6,9 @@ using Windows.Media.Capture;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The `async void` members of CameraViewHandler on Windows: ConnectHandler (the real handler, not WindowsNoConnectCameraViewHandler, which
-// connects the camera as soon as it gets a platform view), MapSelectedCamera and MapImageCaptureResolution, and the provider lookup of the
-// handler. The provider is a scripted one without cameras (WindowsCameraProviderOverride), so the connection fails before any MediaCapture
-// exists (no camera and no Media Foundation needed), and WindowsRecordingSynchronizationContext receives the exception that the async void
-// method could not deliver. The same shared code is run on iOS and Mac Catalyst by CameraViewHandlerAppleConnectTests.
+// ConnectHandler is tested on the real handler because WindowsNoConnectCameraViewHandler skips connecting the camera. The provider is a
+// scripted one without cameras (WindowsCameraProviderOverride), so the connection fails before any MediaCapture exists (no camera and no
+// Media Foundation needed), and WindowsRecordingSynchronizationContext receives the exception that an `async void` method could not deliver.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
@@ -51,13 +49,11 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// MapSelectedCamera without a camera (Media Foundation is needed for the stand-in MediaCapture): the manager looks started (a preview
-	// source, an uninitialized MediaCapture, isInitialized) and the view selects a camera that no device has. UpdateCurrentCamera stops the
-	// running preview before it opens the new camera, so when the property setter returns, the preview source is gone and the running capture
-	// is closed: had the new camera been opened first, its first await (or its failure) would come before the stop. Opening the unknown camera
-	// may have failed by then already, because Media Foundation can refuse an unknown device ID at once (0x80070490, element not found, on
-	// Windows 11 26200 with cameras), and the manager then holds no capture; what the restart ends with is
-	// ChangingTheSelectedCameraToOneThatCannotBeOpenedRaisesNoUnhandledException.
+	// MapSelectedCamera calls UpdateCurrentCamera, which stops the running preview before it opens the new camera, so when the property setter
+	// returns, the preview source is gone and the running capture is closed: had the new camera been opened first, its first await (or its
+	// failure) would come before the stop. Opening the unknown camera may have failed by then already, because Media Foundation can refuse an
+	// unknown device ID at once (0x80070490, element not found, on Windows 11 26200 with cameras), and the manager then holds no capture; what
+	// the restart ends with is ChangingTheSelectedCameraToOneThatCannotBeOpenedRaisesNoUnhandledException.
 	[Fact]
 	public async Task ChangingTheSelectedCameraWhileThePreviewRunsStopsItBeforeOpeningTheNewCamera()
 	{
@@ -107,7 +103,7 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 	}
 
 	// ConnectHandler is `async void`, so an exception of ConnectCamera reaches no caller: nothing may escape, which terminates the app on a
-	// machine without a camera (the same shared code runs on iOS and Mac Catalyst in CameraViewHandlerAppleConnectTests).
+	// machine without a camera.
 	[Fact]
 	public async Task ConnectingTheHandlerWithoutAnyCameraRaisesNoUnhandledException()
 	{
@@ -130,10 +126,9 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// MapSelectedCamera is `async void` (the same shared code runs on iOS and Mac Catalyst in
-	// CameraViewHandlerAppleConnectTests.ChangingTheSelectedCameraToOneThatCannotStartRaisesNoUnhandledException). The Windows trigger: the
-	// restart of the preview cannot open a camera that no device has, which PlatformStartCameraPreview reports through ErrorOccurred. Nothing
-	// may escape the mapper: an exception there reaches no caller and terminates the app.
+	// MapSelectedCamera is `async void`, so nothing may escape the mapper: an exception there reaches no caller and terminates the app. The
+	// trigger is the restart of the preview, which cannot open a camera that no device has: PlatformStartCameraPreview reports that through
+	// ErrorOccurred.
 	[Fact]
 	public async Task ChangingTheSelectedCameraToOneThatCannotBeOpenedRaisesNoUnhandledException()
 	{
@@ -169,10 +164,9 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// MapImageCaptureResolution is `async void` (the same shared code runs on iOS and Mac Catalyst): when
-	// SetMediaStreamPropertiesAsync fails, the exception reaches no caller, so the handler must not let it escape, which terminates the app. The
-	// trigger without a camera is a manager that looks started with a MediaCapture that was never initialized; that Media Foundation refuses the
-	// photo properties there (or VideoDeviceController throws) is expected but unverified.
+	// MapImageCaptureResolution is `async void`: when SetMediaStreamPropertiesAsync fails, the exception reaches no caller, so the handler must
+	// not let it escape, which terminates the app. The trigger without a camera is a manager that looks started with a MediaCapture that was
+	// never initialized; that Media Foundation refuses the photo properties there (or VideoDeviceController throws) is expected but unverified.
 	[Fact]
 	public async Task ChangingTheResolutionWhenTheCaptureCannotApplyItRaisesNoUnhandledException()
 	{
@@ -209,10 +203,10 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// MapIsAvailable is `async void`: it sets IsAvailable from the video capture devices that DeviceInformation finds,
-	// and an exception of that update reaches no caller, so the handler must not let it escape, which terminates the app. The device
-	// enumeration cannot be made to fail, so the trigger is a listener of the view that throws when the handler sets IsAvailable to the state
-	// of the devices: the view starts out with the opposite state, so the update of the new handler changes it.
+	// MapIsAvailable is `async void`: an exception of its update reaches no caller, so the handler must not let it escape, which terminates the
+	// app. The DeviceInformation enumeration of the update cannot be made to fail, so the trigger is a listener of the view that throws when the
+	// handler sets IsAvailable to the state of the devices: the view starts out with the opposite state, so the update of the new handler
+	// changes it.
 	//
 	// The view gets that state before it has a handler. Set later, the change would run MapIsAvailable from inside the test's own SetValue, and
 	// where the enumeration completes synchronously (the Windows Server CI runner, which has no camera) the handler's write is nested in that
@@ -260,8 +254,7 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// The failure of the `async void` MapIsAvailable reaches no caller (see AnAvailabilityUpdateThatFailsRaisesNoUnhandledException): the view
-	// reports it through ErrorOccurred.
+	// The failure of the `async void` MapIsAvailable reaches no caller, so the view reports it through ErrorOccurred.
 	[Fact]
 	public async Task AnAvailabilityUpdateThatFailsRaisesErrorOccurred()
 	{
@@ -305,8 +298,6 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// A view without a handler whose IsAvailable is the opposite of the state of the devices, so that the availability update of the handler
-	// it gets changes IsAvailable (no mapper runs for a view without a handler).
 	static CameraView CreateViewWithTheOppositeAvailability(bool hasCamera)
 	{
 		var view = new CameraView();
@@ -315,8 +306,7 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		return view;
 	}
 
-	// What a started preview leaves in the manager, without a camera: a preview source on the platform view, a MediaCapture (never
-	// initialized; Media Foundation is needed to create it) and isInitialized.
+	// Without a camera the MediaCapture is never initialized, and Media Foundation is needed to create it.
 	static (MediaPlayerElement MediaElement, MediaCapture Capture) SeedARunningPreview(WindowsCameraManagerAccessor access)
 	{
 		var mediaElement = access.MediaElement ?? throw new InvalidOperationException("The handler created no platform view.");
@@ -335,8 +325,6 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		view.Dispose();
 	}
 
-	// Creates the real handler for a new CameraView with the given provider and the recording SynchronizationContext installed, and runs the
-	// test with what the async void methods could not deliver and with what the view reported through ErrorOccurred.
 	async Task ConnectAsync(ICameraProvider provider, Action<CameraView, CameraViewHandler, IReadOnlyList<Exception>, IReadOnlyList<Exception>> test)
 	{
 		SetupBuilder();

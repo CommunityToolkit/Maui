@@ -5,8 +5,6 @@ using PlatformView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS: showing the keyboard makes the platform view the first responder, hiding resigns it, and IsSoftKeyboardShowing is
-// UIResponder.IsFirstResponder.
 public partial class KeyboardExtensionsTests
 {
 	[Theory]
@@ -147,14 +145,12 @@ public partial class KeyboardExtensionsTests
 
 			var hidden = await input.HideKeyboardAsync();
 
-			// There was no keyboard to hide: UIKit's ResignFirstResponder returns false for a view that is not the first responder.
+			// UIKit's ResignFirstResponder returns false for a view that is not the first responder.
 			Assert.False(hidden);
 			Assert.False(input.IsSoftKeyboardShowing());
 		}));
 	}
 
-	// Calls made off the UI thread (an app's background task) behave as on the UI thread: the toolkit makes its UIKit calls (the Focus
-	// command, BecomeFirstResponder, ResignFirstResponder, IsFirstResponder) on the UI thread.
 	[Theory]
 	[InlineData(KeyboardCall.Show)]
 	[InlineData(KeyboardCall.Hide)]
@@ -171,7 +167,6 @@ public partial class KeyboardExtensionsTests
 			var platformView = Assert.IsType<UIView>(handler.PlatformView, exactMatch: false);
 			if (call is not KeyboardCall.Show)
 			{
-				// Hide and IsShowing are called while the keyboard shows (shown from the UI thread).
 				Assert.True(await input.ShowKeyboardAsync());
 				Assert.True(platformView.IsFirstResponder);
 			}
@@ -184,8 +179,6 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// The focused path from a background thread: a focused view skips the Focus command, and the platform view is asked directly, on the
-	// UI thread.
 	[Fact]
 	public async Task ShowKeyboardAsyncOfAFocusedViewFromABackgroundThreadShowsTheKeyboardWithoutSendingTheFocusCommand()
 	{
@@ -205,7 +198,6 @@ public partial class KeyboardExtensionsTests
 		}));
 	}
 
-	// A hide cancelled while it waits for the UI thread does not resign the first responder when the UI thread gets to its work later.
 	[Fact]
 	public async Task HideKeyboardAsyncCancelledWhileWaitingForTheUIThreadKeepsTheFirstResponder()
 	{
@@ -224,12 +216,11 @@ public partial class KeyboardExtensionsTests
 			cancellationTokenSource.Cancel();
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelledHide.WaitAsync(callTimeout));
 
-			// The UI thread now runs the work that was queued before the cancellation.
 			dispatcher.Run();
 
 			Assert.True(textField.IsFirstResponder, "The cancelled hide resigned the first responder when the UI thread ran its work.");
 
-			// The same hide, not cancelled, resigns it.
+			// The same hide, not cancelled, does resign it: the cancellation is what kept the first responder.
 			var hide = input.HideKeyboardAsync().AsTask();
 			dispatcher.Run();
 
@@ -240,7 +231,6 @@ public partial class KeyboardExtensionsTests
 
 	static PlatformView CreateExpectedPlatformView() => new UITextField();
 
-	// A text field that counts the requests to show the keyboard (BecomeFirstResponder).
 	static (PlatformView PlatformView, Func<int> ShowRequests) CreatePlatformViewThatCountsShowRequests()
 	{
 		var textField = new TextFieldThatCountsShowRequests();

@@ -2,9 +2,7 @@ using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: FileSaver shows the system's save dialog (Windows.Storage.Pickers.FileSavePicker attached to the process's main window, or the
-// Windows App SDK picker from .NET 11) and writes the stream to the file that the person picks with WriteStream (FileSaverWriteStreamTests).
-// A test cannot answer the dialog, so everything from the dialog on needs a person (RequiresUserInteraction); the check before it, that the
+// A test cannot answer the save dialog, so everything from the dialog on needs a person (RequiresUserInteraction); the check before it, that the
 // process has a main window to attach the dialog to, runs headless with the app's windows hidden.
 public partial class FileSaverTests
 {
@@ -12,7 +10,6 @@ public partial class FileSaverTests
 
 	static readonly byte[] content = Enumerable.Range(0, 10_000).Select(i => (byte)(i % 251)).ToArray();
 
-	// Every overload reaches the check of the main window before it shows anything, so nothing is read from the stream.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -57,8 +54,7 @@ public partial class FileSaverTests
 		Assert.Equal(100, progress.Values[^1]);
 	}
 
-	// The overloads with an initial path (0 without, 2 with a progress report). The .NET 10 build hands the dialog no folder to start in
-	// (only the .NET 11 arm sets SuggestedFolder), so the person may save anywhere.
+	// The .NET 10 build hands the dialog no folder to start in (only the .NET 11 arm sets SuggestedFolder), so the person may save anywhere.
 	[Theory]
 	[Category(TestCategory.RequiresUserInteraction)]
 	[InlineData(0)]
@@ -131,7 +127,7 @@ public partial class FileSaverTests
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task SaveAsyncClosesTheSaveDialogAndReturnsACanceledResultWhenTheTokenIsCanceled()
 	{
-		// Shows the real dialog and closes it through the token; the person only watches.
+		// Person: only watch; the token closes the real dialog.
 		using var cancellation = new CancellationTokenSource();
 		var stream = new FilesScriptedStream([1, 2, 3]);
 		var operation = await StartOnMainThreadAsync(() => FileSaver.Default.SaveAsync("files-test-token.txt", stream, cancellation.Token));
@@ -145,7 +141,6 @@ public partial class FileSaverTests
 		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The save dialog is still open after the token was canceled.");
 	}
 
-	// A save that is not asked about must never show a dialog.
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static Task AssertNoPickerWasStartedAsync()

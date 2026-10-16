@@ -222,7 +222,7 @@ public partial class DrawingView : View, IDrawingView
 	// While the DrawingView is out of the window, its handler does not listen to the platform view and to Lines (#420), so that the platform view and
 	// the Lines, which the app may keep, do not keep each other alive. The DrawingView keeps its handler: MAUI needs it to remove the DrawingView from its
 	// layout (LayoutHandler.Remove) while its page is away. The DrawingView keeps listening, as it can leave the window again.
-	// A handler of another type is disconnected, as before.
+	// A handler of another type has no StopListeningUntilLoaded: it is disconnected, as before.
 	void OnDrawingViewUnloaded(object? sender, EventArgs e)
 	{
 		if (Handler is DrawingViewHandler drawingViewHandler)
@@ -235,8 +235,8 @@ public partial class DrawingView : View, IDrawingView
 		}
 	}
 
-	// The handler listens again once the DrawingView is back in a window (its page is shown again). DrawingViewHandler also does this when its platform view
-	// is in a window again; Loaded also covers an Unloaded that arrives after that (MAUI then raises Loaded right after it).
+	// DrawingViewHandler also listens again when its platform view is in a window again; Loaded also covers an Unloaded that arrives after that
+	// (MAUI then raises Loaded right after it).
 	void OnDrawingViewLoaded(object? sender, EventArgs e)
 	{
 		if (Handler is DrawingViewHandler drawingViewHandler)

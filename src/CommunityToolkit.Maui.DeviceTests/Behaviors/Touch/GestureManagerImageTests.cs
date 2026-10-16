@@ -6,11 +6,6 @@ using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// <c>GestureManager.SetImageSource</c> through <see cref="ImageTouchBehavior"/>: the image source and aspect of each state on an
-/// <see cref="Image"/> and an <see cref="ImageButton"/>, the delay until the end of the animation, and the elements the behavior cannot
-/// serve. The platform image view is read for its aspect and for the colour of the decoded image (touch_red/green/blue.png).
-/// </summary>
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public class GestureManagerImageTests : TouchBehaviorTestBase
@@ -23,8 +18,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 
 	static ImageSource Blue => ImageSource.FromFile("touch_blue.png");
 
-	// Catches: any state choosing the wrong source or aspect (SetImageSource's switch), pressed not winning over hovered, a state not being
-	// left, the native image view not showing the image or the aspect that MAUI was told.
 	[Fact]
 	public async Task ImageSourceAndAspectFollowEachState()
 	{
@@ -59,7 +52,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the hovered and pressed states not falling back to the default source and aspect when they have none of their own.
 	[Fact]
 	public async Task StatesWithoutTheirOwnImageUseTheDefaultImage()
 	{
@@ -81,7 +73,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the source and aspect being applied independently (a state with only a source keeps the default aspect and the other way round).
 	[Fact]
 	public async Task SourceAndAspectOfAStateAreIndependent()
 	{
@@ -108,7 +99,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: ImageButton not being supported by the behavior (the ImageButton arm of the final switch).
 	[Fact]
 	public async Task ImageButtonSourceAndAspectFollowTheState()
 	{
@@ -135,7 +125,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: ShouldSetImageOnAnimationEnd being ignored (the image must change only after the animation duration).
 	[Fact]
 	public async Task ImageIsSetAfterTheAnimationWhenRequested()
 	{
@@ -163,7 +152,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the image changing at once although it must wait for the end of the animation (and without the option it must not wait).
 	[Fact]
 	public async Task ImageIsSetImmediatelyWithoutTheOption()
 	{
@@ -184,7 +172,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a state change that aborts the pending image change not being honoured (the cancelled Task.Delay of SetImageSource).
 	[Fact]
 	public async Task StateChangeBeforeTheAnimationEndedCancelsThePendingImageChange()
 	{
@@ -206,16 +193,14 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 			SimulatePress(behavior);
 			SimulateRelease(behavior);
 
-			// Past the end of the cancelled delay the pressed image must still not have been applied.
+			// Past the end of the cancelled delay.
 			await Task.Delay(700);
 
 			Assert.Equal("touch_red.png", Assert.IsType<FileImageSource>(image.Source).File);
 		});
 	}
 
-	// A release that a hover overtakes while the release still waits for the cancellation of the pressed state's token: CancelAsync runs
-	// the cancellation callbacks on the thread pool, which the test keeps busy until both changes are made. The pressed image that the
-	// pressed state only sets at the end of its animation must not come back in the hovered state.
+	// BlockThreadPool holds the cancellation callbacks back, so the release is still waiting for them when the hover overtakes it.
 	// Catches: the overtaking state change disposing the token source whose cancellation the release requested before the callbacks ran
 	// (Dispose drops them, so the pending image change is never cancelled).
 	[Fact]
@@ -248,7 +233,7 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 					behavior.HandleHover(HoverStatus.Entered);
 				}
 
-				// Past the end of the pressed state's delay
+				// Past the end of the pressed state's delay.
 				await Task.Delay(1200);
 
 				Assert.True(image.Source is FileImageSource { File: "touch_green.png" }, $"Round {round}: the hovered state shows {DescribeSource(image.Source)} instead of the hovered image.");
@@ -259,8 +244,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The end of the pressed state's delay can come while the UI thread is busy: SetImageSource then continues only after the state changes
-	// that the busy UI thread makes next, here a release and a hover.
 	// Catches: SetImageSource setting the image of its state without checking that its token was cancelled meanwhile.
 	[Fact]
 	public async Task PendingPressedImageWhoseDelayEndedRightBeforeAStateChangeIsNotSet()
@@ -297,8 +280,7 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A behavior removed right after a release must not put the pressed image of the ended touch on the view later: the release is still
-	// waiting for the cancellation callbacks (the test keeps the thread pool busy) when the detach aborts the animations again.
+	// BlockThreadPool holds the cancellation callbacks back, so the release is still waiting for them when the detach aborts the animations.
 	// Catches: the detach disposing the token source whose cancellation the release requested before the callbacks ran.
 	[Fact]
 	public async Task BehaviorRemovedRightAfterAReleaseDoesNotSetThePendingPressedImageLater()
@@ -327,15 +309,15 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 				image.Behaviors.Remove(behavior);
 			}
 
-			// Past the end of the pressed state's delay
+			// Past the end of the pressed state's delay.
 			await Task.Delay(1000);
 
 			Assert.True(image.Source is FileImageSource { File: "touch_red.png" }, $"The removed behavior put {DescribeSource(image.Source)} on the view.");
 		});
 	}
 
-	// Disposing the gesture manager (what TouchBehavior.Dispose does first) right after a release must not leave the pending pressed image
-	// to be set later: the release is still waiting for the cancellation callbacks (the test keeps the thread pool busy).
+	// TouchBehavior.Dispose disposes the gesture manager first. BlockThreadPool holds the cancellation callbacks back, so the release is
+	// still waiting for them when the gesture manager is disposed.
 	// Catches: Dispose disposing the token source whose cancellation the release requested before the callbacks ran.
 	[Fact]
 	public async Task DisposingTheGestureManagerRightAfterAReleaseDoesNotSetThePendingPressedImageLater()
@@ -364,17 +346,15 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 				GetGestureManager(behavior).Dispose();
 			}
 
-			// Past the end of the pressed state's delay
+			// Past the end of the pressed state's delay.
 			await Task.Delay(1000);
 
 			Assert.True(image.Source is FileImageSource { File: "touch_red.png" }, $"The disposed gesture manager put {DescribeSource(image.Source)} on the view.");
 		});
 	}
 
-	// Catches: TryGetBindableImageTouchBehaviorElement refusing the Image or ImageButton the behavior is attached to, or still serving the
-	// element after the behavior was removed from it; and accepting an element that is not an image. The platform attach refuses every
-	// element but Image and ImageButton, so those are handed to the behavior directly. (MAUI's Button implements IImage, so this check
-	// accepts it; SetImageSource rejects it later.)
+	// The platform attach refuses every element but Image and ImageButton, so the other elements are handed to the behavior directly.
+	// MAUI's Button implements IImage, so this check accepts it; SetImageSource rejects it later.
 	[Fact]
 	public async Task OnlyImageElementsCanBeServed()
 	{
@@ -412,8 +392,6 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		Assert.IsType<Button>(button);
 	}
 
-	// Catches: SetImageSource silently accepting an ImageTouchBehavior whose element is not an image (InvalidOperationException), a plain
-	// TouchBehavior doing image work (it must return), and an image type it cannot set (NotSupportedException).
 	// Valid attach paths cannot reach these arms: the platform OnAttachedTo of ImageTouchBehavior only accepts Image and ImageButton.
 	[Fact]
 	public async Task SetImageSourceRejectsElementsItCannotServe()
@@ -426,18 +404,17 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
-			// A plain TouchBehavior has no image to set.
+			// A plain TouchBehavior has no image to set: the call must just return.
 			arguments[0] = new TouchBehavior();
 			await (Task)setImageSource.Invoke(null, arguments)!;
 
 			arguments[0] = behavior;
 
-			// Not an image at all.
 			behavior.Use(new Label());
 			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => (Task)setImageSource.Invoke(null, arguments)!);
 			Assert.Contains("Image", exception.Message);
 
-			// An IImage that is neither an Image nor an ImageButton (a Button is one).
+			// MAUI's Button implements IImage but is neither an Image nor an ImageButton.
 			behavior.Use(new Button());
 			await Assert.ThrowsAsync<NotSupportedException>(() => (Task)setImageSource.Invoke(null, arguments)!);
 
@@ -446,14 +423,12 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		});
 	}
 
-	// ---- helpers
-
 	async Task AssertImageAsync(Image image, IPlatformViewHandler handler, string expectedFile, Aspect expectedAspect, Color expectedColor, string step)
 	{
 		await WaitUntilAsync(() => image.Source is FileImageSource source && source.File == expectedFile && image.Aspect == expectedAspect, $"{step}: expected {expectedFile} with {expectedAspect} but the image has {(image.Source as FileImageSource)?.File} with {image.Aspect}.");
 		await WaitUntilAsync(() => GetNativeImageAspect(handler) == expectedAspect, $"{step}: the platform image view shows the image with {GetNativeImageAspect(handler)}, expected {expectedAspect}.");
 
-		// The platform decodes the file asynchronously: wait until the pixels have the colour of the file.
+		// The platform decodes the file asynchronously.
 		var platformView = GetPlatformView(handler);
 		await AssertionExtensions.AssertEventuallyAsync(async () =>
 		{
@@ -478,10 +453,8 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		_ => source.ToString() ?? source.GetType().Name
 	};
 
-	/// <summary>
-	/// Keeps every thread-pool worker busy until the returned scope is disposed (2 s at most), so that work queued meanwhile waits until
-	/// then: the state changes made inside the scope all run before the cancellation callbacks that <c>CancelAsync</c> queues for them.
-	/// </summary>
+	// CancelAsync queues the cancellation callbacks to the thread pool, so keeping its workers busy makes the state changes inside the scope
+	// run before those callbacks (for 2 s at most).
 	static IDisposable BlockThreadPool()
 	{
 		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -511,13 +484,11 @@ public class GestureManagerImageTests : TouchBehaviorTestBase
 		public void Dispose() => release.TrySetResult();
 	}
 
-	/// <summary>An ImageTouchBehavior whose element can be set directly, without attaching it to a platform view.</summary>
 	sealed class ForeignViewImageTouchBehavior : ImageTouchBehavior
 	{
 		public void Use(VisualElement? element) => View = element;
 	}
 
-	/// <summary>A view that claims to be an image but is neither an <see cref="Image"/> nor an <see cref="ImageButton"/>.</summary>
 	sealed class ForeignImageView : View, Microsoft.Maui.IImage
 	{
 		public Aspect Aspect => Aspect.AspectFit;

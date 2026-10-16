@@ -159,11 +159,10 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 		Assert.False(confirmPasswordBehavior.IsValid);
 	}
 
-	// RequiredString bound to the text of the password Entry: typing a new password takes the focus from the confirmation Entry
+	// RequiredString is bound to the text of the password Entry, and typing a new password takes the focus from the confirmation Entry.
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenRequiredStringChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var passwordEntry = new Entry
 		{
 			Text = "123456"
@@ -182,26 +181,20 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 		confirmPasswordEntry.Text = "123456";
 		((IView)confirmPasswordEntry).IsFocused = false;
 
-		// Assert
 		Assert.True(confirmPasswordBehavior.IsValid);
 
-		// Act
 		passwordEntry.Text = "1234567";
 
-		// Assert
 		Assert.False(confirmPasswordBehavior.IsValid);
 
-		// Act
 		passwordEntry.Text = "123456";
 
-		// Assert
 		Assert.True(confirmPasswordBehavior.IsValid);
 	}
 
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenExactMatchChanges()
 	{
-		// Arrange
 		var behavior = new RequiredStringValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnValueChanged,
@@ -214,19 +207,14 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 		((IView)entry).IsFocused = true;
 		entry.Text = "123456";
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		behavior.ExactMatch = false;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 
-		// Act
 		behavior.ExactMatch = true;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 	}
 

@@ -18,8 +18,7 @@ using CommunityToolkit.Maui.DeviceTests.Runners;
 namespace CommunityToolkit.Maui.DeviceTests
 {
 	/// <summary>
-	/// The <see cref="IMauiContext"/> of a test's own <see cref="Microsoft.Maui.Hosting.MauiApp"/> (see <see cref="HandlerTestBasement.EnsureHandlerCreated"/>).
-	/// Platform views created with it belong to the runner's real window/activity, so they can be attached with AttachAndRun.
+	/// Platform views created with this context belong to the runner's real window/activity, so they can be attached with AttachAndRun.
 	/// </summary>
 	public class DeviceTestMauiContext : IMauiContext, IServiceProvider
 	{
@@ -113,9 +112,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if ANDROID
-		/// <summary>
-		/// The runner's activity, so platform views can be added to its content view.
-		/// </summary>
 		public global::Android.Content.Context? Context =>
 			MauiProgramDefaults.DefaultContext ?? Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
 #endif

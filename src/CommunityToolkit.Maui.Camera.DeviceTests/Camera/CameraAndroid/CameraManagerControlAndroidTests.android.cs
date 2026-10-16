@@ -12,11 +12,6 @@ using Runnable = Java.Lang.Runnable;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraManager on Android: the controls of a running camera (flash mode, torch, zoom, capture resolution, device orientation and
-/// the CameraX extension mode). Every assertion reads what CameraX reports natively (use case state, camera state, torch and zoom
-/// state, negotiated resolutions, bound use cases).
-/// </summary>
 [Category(TestCategory.CameraManagerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerControlAndroidTests : CameraAndroidTestBase
@@ -51,14 +46,9 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		return await completion.Task.WaitAsync(CameraTimeout);
 	}
 
-	/// <summary>
-	/// The SessionProcessor of the camera that CameraX bound: a camera bound through an extension-enabled CameraSelector carries the
-	/// vendor extension's SessionProcessor in its extended config, a camera bound through a plain selector has none.
-	/// </summary>
+	// A camera bound through an extension-enabled CameraSelector carries the vendor extension's SessionProcessor, a plain one has none.
 	static AndroidX.Camera.Core.Impl.ISessionProcessor? GetSessionProcessorOfTheBoundCamera(ManagerSession session) =>
 		(session.Native<ICamera>("camera") ?? throw new InvalidOperationException("The manager has no bound camera.")).ExtendedConfig.GetSessionProcessor(null);
-
-	// ---- flash mode ---------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task UpdateFlashModeBeforeConnectingDoesNotChangeTheFlashModeOfTheCameraThatConnectsLater()
@@ -123,8 +113,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- torch --------------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task UpdateIsTorchOnBeforeConnectingDoesNothing()
 	{
@@ -167,8 +155,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			var nativeInfo = await GetNativeCameraInfoAsync(camera.DeviceId);
 			Assert.False(nativeInfo.HasFlashUnit);
 
-			// CameraX answers the request with a failed future ("No flash unit") that the toolkit does not observe: nothing may
-			// throw and nothing may change.
+			// CameraX answers the request with a failed future ("No flash unit") that the toolkit does not observe.
 			var exception = Record.Exception(() => session.Manager.UpdateIsTorchOn(true));
 			await SettleUiThreadAsync();
 
@@ -176,8 +163,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.False(IsNativeTorchOn(await GetNativeCameraInfoAsync(camera.DeviceId)));
 		}, view: new CameraView { SelectedCamera = camera });
 	}
-
-	// ---- zoom ---------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task UpdateZoomBeforeConnectingDoesNothing()
@@ -200,7 +185,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 		await RunWithStreamingSessionAsync(async session =>
 		{
-			// A camera starts at a zoom ratio of 1.
 			await WaitForNativeZoomAsync(camera.DeviceId, 1f);
 
 			session.Manager.UpdateZoom(ratio);
@@ -259,8 +243,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- capture resolution -------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task UpdateCaptureResolutionAppliesTheLargestSizeThatFitsToTheNativeUseCases()
 	{
@@ -278,7 +260,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.Equal(SmallSize, session.CaptureResolution);
 			Assert.Equal(SmallSize, session.PreviewResolution);
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
-			// A higher resolution wins over the capture rate (the emulators list no high-resolution sizes, so the sizes cannot show it).
+			// The mode is asserted directly because the emulators list no high-resolution sizes, so the sizes cannot show it.
 			Assert.Equal(AndroidX.Camera.Core.ResolutionSelector.ResolutionSelector.PreferHigherResolutionOverCaptureRate,
 				session.Native<AndroidX.Camera.Core.ResolutionSelector.ResolutionSelector>("resolutionSelector")!.AllowedResolutionMode);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
@@ -341,8 +323,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		}, view: new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
 	}
 
-	// The app changes the capture resolution twice in one UI-thread message: the second change replaces (and disposes) the use cases that
-	// the first one built before CameraX answered the first one. Both changes complete, and the use cases of the last resolution are bound.
+	// The second change replaces (and disposes) the use cases that the first one built before CameraX answered the first one.
 	[Fact]
 	public async Task UpdateCaptureResolutionTwiceInOneUiThreadMessageBindsTheUseCasesOfTheLastResolution()
 	{
@@ -383,7 +364,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.Equal(0, session.LoadedCount);
 			await AssertEveryCameraIsClosedAsync();
 
-			// ConnectAsync maps the view's resolution (the same size) again, which changes nothing, then connects.
+			// ConnectAsync maps the view's resolution (the same size) again, which changes nothing.
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
 
@@ -410,7 +391,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.Equal(unrestricted, session.CaptureResolution);
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
 
-			// The same size again is ignored.
 			var imageCapture = session.ImageCapture;
 			await session.Manager.UpdateCaptureResolution(Size.Zero, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
 			Assert.Same(imageCapture, session.ImageCapture);
@@ -499,8 +479,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
 		}, view: new CameraView { SelectedCamera = camera });
 	}
-
-	// ---- orientation --------------------------------------------------------------------------------------------------
 
 	// Android's OrientationEventListener reports the device rotation clockwise in degrees; CameraX wants the opposite
 	// Surface rotation (the mapping of the CameraX documentation).
@@ -605,7 +583,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		var session = await CreateSessionAsync();
 		var onOrientationChanged = typeof(CameraManager).GetMethod("OnOrientationChanged", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-		// No use case exists yet: every null-conditional assignment is skipped.
 		var beforeConnect = await InvokeOnMainThreadAsync(() => Record.Exception(() => onOrientationChanged.Invoke(session.Manager, [90])));
 		Assert.Null(beforeConnect);
 
@@ -614,8 +591,6 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		var afterDispose = await InvokeOnMainThreadAsync(() => Record.Exception(() => onOrientationChanged.Invoke(session.Manager, [90])));
 		Assert.Null(afterDispose);
 	}
-
-	// ---- extension mode -----------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task SetExtensionModeBeforeConnectingDoesNotOpenAnyCamera()
@@ -792,14 +767,12 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.SetExtensionMode(extensionMode, CancellationToken.None).WaitAsync(CameraTimeout);
 
-			// Only a camera bound through the extension-enabled selector carries the vendor extension's SessionProcessor.
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.Equal(camera.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.NotNull(GetSessionProcessorOfTheBoundCamera(session));
 			await WaitForStreamingAsync(session.PreviewView!);
 
-			// Without the extension the camera is bound through the plain selector again.
 			await session.Manager.SetExtensionMode(ExtensionMode.None, CancellationToken.None).WaitAsync(CameraTimeout);
 
 			Assert.Null(GetSessionProcessorOfTheBoundCamera(session));

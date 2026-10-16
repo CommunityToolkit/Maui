@@ -104,7 +104,7 @@ public static partial class DrawingViewService
 		var points = lines.SelectMany(static x => x.Points).ToList();
 		if (points.Count is 0)
 		{
-			// nothing to draw (no lines, or lines without points): Stream.Null, as on every platform (Max() below needs a line)
+			// Max() below needs a line, and every platform returns Stream.Null when there is nothing to draw
 			return null;
 		}
 

@@ -6,8 +6,8 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Smoke tests of the device-test infrastructure. Every run reports two Skipped tests from this class on purpose:
-// RuntimeSkipIsReportedAsSkipped and one row of RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
+// Every run reports two Skipped tests from this class on purpose: RuntimeSkipIsReportedAsSkipped and one row of
+// RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
 [Category(TestCategory.DeviceTestsInfrastructure)]
 [Collection(TestCollections.DisableParallelization)]
 public class DeviceTestsInfrastructureTests : MediaElementHandlerTestBase
@@ -55,7 +55,6 @@ public class DeviceTestsInfrastructureTests : MediaElementHandlerTestBase
 
 		if (previousRowServices is not null)
 		{
-			// The previous row's teardown (HandlerTestBasement.DisposeAsync) disposed its MauiApp and undid its option changes.
 			Assert.Throws<ObjectDisposedException>(() => previousRowServices.GetService(typeof(IMauiHandlersFactory)));
 			Assert.Equal(original, (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType));
 		}
@@ -79,8 +78,7 @@ public class DeviceTestsInfrastructureTests : MediaElementHandlerTestBase
 		Assert.True(violations.Count is 0, string.Join(Environment.NewLine, violations));
 	}
 
-	// The capabilities that a CI job declares missing or required (DeviceTestCapabilities) must be ones the tests know: a misspelled name
-	// would silently skip or require nothing.
+	// A misspelled capability name in a CI job would silently skip or require nothing.
 	[Fact]
 	public void DeclaredCapabilitiesAreValid()
 	{

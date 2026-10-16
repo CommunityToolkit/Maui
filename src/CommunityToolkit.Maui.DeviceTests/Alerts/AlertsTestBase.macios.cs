@@ -11,8 +11,8 @@ public abstract partial class AlertsTestBase
 	// Apple platforms need no setup: the headless runner's key window hosts the alert views (see AlertsApple).
 	protected static Task PreparePlatformAsync() => Task.CompletedTask;
 
-	// Gives the runner's application a handler whose MauiContext has this test's services, as in a real app (the headless Apple runner
-	// has none): the toolkit then resolves IFontManager through it. CleanUpAlertsAsync puts the previous handler back.
+	// The headless Apple runner's application has no handler, unlike a real app's: the toolkit resolves IFontManager through the handler's
+	// MauiContext, which here has this test's services. CleanUpAlertsAsync puts the previous handler back.
 	protected void InstallApplicationHandler()
 	{
 		applicationWithTestHandler = Application.Current ?? throw new InvalidOperationException("The runner has no Application.");

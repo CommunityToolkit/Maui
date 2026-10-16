@@ -5,11 +5,11 @@ using Microsoft.UI.Xaml;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: the pointer handlers of the behavior. WinUI's PointerRoutedEventArgs cannot be constructed and real pointer input cannot be
-// injected into the test window (WinUI's InputInjector needs the restricted inputInjectionBrokered capability, which the test app's
-// manifest does not declare), so the handlers are invoked through reflection with null arguments and the touch status they act on is
-// prepared with the internal HandleTouch. Entered, exited, canceled and capture lost never read their arguments; OnPointerReleased reads
-// them only at its end (e.Handled) and OnPointerPressed right after its guard (e.Pointer), so their decisions up to that point are run.
+// WinUI's PointerRoutedEventArgs cannot be constructed and real pointer input cannot be injected into the test window (WinUI's
+// InputInjector needs the restricted inputInjectionBrokered capability, which the test app's manifest does not declare), so the handlers
+// are invoked through reflection with null arguments and the touch status they act on is prepared with the internal HandleTouch. Entered,
+// exited, canceled and capture lost never read their arguments; OnPointerReleased reads them only at its end (e.Handled) and
+// OnPointerPressed right after its guard (e.Pointer), so their decisions up to that point are run.
 public partial class TouchBehaviorInputTests
 {
 	const string pointerPressed = "OnPointerPressed";
@@ -24,8 +24,6 @@ public partial class TouchBehaviorInputTests
 
 	// OnPointerReleased decides about the touch before it reads its arguments (e.Handled = true is its last statement but two), so its
 	// three arms run with null arguments; the NullReferenceException at e.Handled is expected, everything before it has happened.
-	// Catches: a release of a pressed, hovered pointer not completing the touch; a release away from the element (not pressed but still
-	// hovered) not cancelling it; a release after the pointer left (hover Exited) changing the touch; the interaction not being completed.
 	[Theory]
 	[InlineData(true, HoverStatus.Entered, TouchStatus.Completed)]
 	[InlineData(false, HoverStatus.Entered, TouchStatus.Canceled)]
@@ -59,8 +57,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: OnPointerPressed acting for a sender that is not a FrameworkElement (its guard returns before the arguments are read), or
-	// starting the touch before it captured the pointer.
 	[Fact]
 	public async Task PointerPressedIgnoresASenderThatIsNotAnElement()
 	{
@@ -92,7 +88,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: Entered not reporting the hover, a pointer that re-enters while pressed not restarting the touch (isPressed branch).
 	[Fact]
 	public async Task PointerEnteredReportsHoverAndRestartsAPressedTouch()
 	{
@@ -109,7 +104,6 @@ public partial class TouchBehaviorInputTests
 			Assert.Equal(HoverState.Hovered, behavior.CurrentHoverState);
 			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
 
-			// Pressed and left, then back inside: the touch starts again.
 			SetPrivateField(behavior, isPressedField, true);
 			behavior.HandleTouch(TouchStatus.Canceled);
 			InvokePointerHandler(behavior, pointerEntered, view);
@@ -121,7 +115,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: Exited not ending the hover, a pressed touch surviving the pointer leaving the element (isPressed branch).
 	[Fact]
 	public async Task PointerExitedCancelsAPressedTouchAndEndsTheHover()
 	{
@@ -134,12 +127,10 @@ public partial class TouchBehaviorInputTests
 			var view = GetPlatformView(handler);
 			InvokePointerHandler(behavior, pointerEntered, view);
 
-			// Not pressed: only the hover ends.
 			InvokePointerHandler(behavior, pointerExited, view);
 			Assert.Equal(HoverStatus.Exited, behavior.CurrentHoverStatus);
 			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
 
-			// Pressed: the touch is cancelled as well.
 			InvokePointerHandler(behavior, pointerEntered, view);
 			SetPrivateField(behavior, isPressedField, true);
 			behavior.HandleUserInteraction(TouchInteractionStatus.Started);
@@ -154,7 +145,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: Canceled leaving the touch, the interaction or the hover running, or isPressed staying set.
 	[Fact]
 	public async Task PointerCanceledEndsTheTouchTheInteractionAndTheHover()
 	{
@@ -180,8 +170,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: a capture that the behavior released itself being treated as a lost capture (isIntentionalCaptureLoss), a stolen capture not
-	// cancelling the touch, the interaction and the hover, and a capture lost after those ended raising them again.
 	[Fact]
 	public async Task PointerCaptureLostCancelsOnlyWhenItWasNotIntentional()
 	{
@@ -201,14 +189,12 @@ public partial class TouchBehaviorInputTests
 			behavior.HandleUserInteraction(TouchInteractionStatus.Started);
 			behavior.HandleTouch(TouchStatus.Started);
 
-			// The behavior released the capture itself (after a pointer release): nothing to do.
 			SetPrivateField(behavior, isIntentionalCaptureLossField, true);
 			InvokePointerHandler(behavior, pointerCaptureLost, view);
 			Assert.Equal(TouchStatus.Started, behavior.CurrentTouchStatus);
 			Assert.Equal(HoverStatus.Entered, behavior.CurrentHoverStatus);
 			Assert.True(GetPrivateField<bool>(behavior, isPressedField));
 
-			// Somebody else took the capture: everything is cancelled.
 			SetPrivateField(behavior, isIntentionalCaptureLossField, false);
 			InvokePointerHandler(behavior, pointerCaptureLost, view);
 			Assert.Equal(TouchStatus.Canceled, behavior.CurrentTouchStatus);
@@ -216,7 +202,6 @@ public partial class TouchBehaviorInputTests
 			Assert.Equal(HoverStatus.Exited, behavior.CurrentHoverStatus);
 			Assert.False(GetPrivateField<bool>(behavior, isPressedField));
 
-			// Losing it again changes nothing: the touch is already cancelled and the hover already exited.
 			var statusEvents = statusLog.Count;
 			var hoverEvents = hoverLog.Count;
 			InvokePointerHandler(behavior, pointerCaptureLost, view);
@@ -225,7 +210,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: a disabled behavior reacting to pointer handlers, a detached behavior (Element null) reacting to them.
 	[Fact]
 	public async Task PointerHandlersDoNothingWhileDisabledOrDetached()
 	{
@@ -248,7 +232,6 @@ public partial class TouchBehaviorInputTests
 			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
 			Assert.False(GetPrivateField<bool>(behavior, isPressedField));
 
-			// Enabled again but detached: no element, no reaction.
 			behavior.IsEnabled = true;
 			host.Behaviors.Remove(behavior);
 			foreach (var name in new[] { pointerEntered, pointerExited, pointerCanceled, pointerCaptureLost, pointerPressed, pointerReleased })
@@ -261,8 +244,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: Name not being generated for an unnamed element, or overwritten for a named one; existing storyboards not being reused
-	// and replaced by new ones; the storyboards not targeting the element.
 	// Everything that touches WinUI runs on the UI thread (the test body runs on an xUnit worker thread): the storyboards are
 	// DependencyObjects, and adding the behavior to an element that already has a handler makes MAUI read the platform element
 	// (VisualElement.Loaded += wires FrameworkElement.IsLoaded / Loaded).
@@ -302,7 +283,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: a second attach (reload) creating new storyboards instead of reusing its own, the generated name changing between attaches.
 	[Fact]
 	public async Task ReloadReusesTheGeneratedNameAndStoryboards()
 	{
@@ -335,10 +315,9 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A detach must always undo the attach, also for a disabled behavior.
-	// Catches: OnDetachedFrom returning early for a disabled behavior, which leaves the six pointer handlers subscribed to the element (the
-	// behavior stays reachable from the element) and isPressed set. Event subscriptions cannot be observed on a WinUI element; the
-	// reachable symptom is isPressed.
+	// A detach that returns early for a disabled behavior would leave the six pointer handlers subscribed to the element (the behavior
+	// stays reachable from the element) and isPressed set. Event subscriptions cannot be observed on a WinUI element; the reachable
+	// symptom is isPressed.
 	[Fact]
 	public async Task DetachingADisabledBehaviorStillResetsItsPointerState()
 	{
@@ -358,7 +337,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: OnDetachedFrom not resetting isPressed and Element for an enabled behavior.
 	[Fact]
 	public async Task DetachingAnEnabledBehaviorResetsItsPointerState()
 	{

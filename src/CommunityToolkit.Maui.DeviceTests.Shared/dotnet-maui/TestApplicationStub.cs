@@ -11,10 +11,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests
 {
-	/// <summary>
-	/// The <see cref="IApplication"/> of a test's own MauiApp. It is not a Controls Application, so creating it does not
-	/// replace Application.Current (the runner's application).
-	/// </summary>
+	// Not a Controls Application, so creating it does not replace Application.Current (the runner's application).
 	public class TestApplicationStub : IApplication
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();

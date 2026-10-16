@@ -72,7 +72,6 @@ public static partial class DrawingViewService
 		}
 	}
 
-	// Resizes the image proportionally to fit into the desired size (at least 1x1 pixel), as GetMaximumBitmap (Android) and GetMaximumUIImage (iOS, Mac Catalyst) do
 	static CanvasRenderTarget GetMaximumCanvasRenderTarget(CanvasRenderTarget sourceImage, Size maxSize)
 	{
 		var sourceSize = sourceImage.Size;
@@ -118,13 +117,13 @@ public static partial class DrawingViewService
 		var strokePoints = points.Select(p => new Point(p.X - offset.Width, p.Y - offset.Height)).ToList();
 		if (strokePoints.Count is 0)
 		{
-			// a line without points has nothing to draw (and InkStrokeBuilder.CreateStroke needs points)
+			// InkStrokeBuilder.CreateStroke needs points
 			return;
 		}
 
 		if (strokePoints.Count is 1)
 		{
-			// a single point (a tap) is a dot of the line width, as MauiDrawingView draws it (DrawInk only draws segments between two points)
+			// DrawInk only draws segments between two points, so a single point (a tap) is filled as a dot of the line width, as MauiDrawingView draws it
 			session.FillCircle(new Vector2((float)strokePoints[0].X, (float)strokePoints[0].Y), lineWidth / 2, lineColor.ToWindowsColor());
 			return;
 		}
@@ -247,7 +246,7 @@ public static partial class DrawingViewService
 						gradientStops[index] = new CanvasGradientStop(gradientStop.Offset, gradientStop.Color.ToWindowsColor());
 					}
 
-					// as in MAUI's canvas, a circle whose radius is relative to the larger side of the image; a radius of 0 spans the diagonal of the image,
+					// As in MAUI's canvas, a circle whose radius is relative to the larger side of the image; a radius of 0 spans the diagonal of the image,
 					// as on Android, iOS and Mac Catalyst
 					var radius = radialGradientBrush.Radius * Math.Max(size.Width, size.Height);
 					if (radius is not > 0)

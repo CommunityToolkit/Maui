@@ -5,8 +5,8 @@ using Microsoft.Maui.Devices;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// Raises the events that StatusBarBehavior listens to and that .NET MAUI only raises while a page is navigated to or the display
-/// changes. Neither happens in the headless runners (no MAUI window, no navigation, no rotation), and MAUI raises both from internal code.
+/// .NET MAUI raises the events that StatusBarBehavior listens to from internal code, while a page is navigated to or the display changes.
+/// Neither happens in the headless runners (no MAUI window, no navigation, no rotation), so the tests raise them by reflection.
 /// </summary>
 static class StatusBarEventRaisers
 {
@@ -14,25 +14,18 @@ static class StatusBarEventRaisers
 
 	static int displayInfoChanges;
 
-	/// <summary>
-	/// Raises <see cref="Page.NavigatedTo"/> like a NavigationPage, Shell or modal navigation does (<c>Page.SendNavigatedTo</c>).
-	/// MAUI ignores a second NavigatedTo until the page was navigated from, so this resets the page first.
-	/// </summary>
 	public static void RaiseNavigatedTo(Page page)
 	{
+		// MAUI ignores a second NavigatedTo until the page was navigated from.
 		Invoke(page, "SendNavigatedFrom", Create<NavigatedFromEventArgs>(null, NavigationType.Push), false);
 		Invoke(page, "SendNavigatedTo", CreateNavigatedToEventArgs());
 	}
 
-	/// <summary>The arguments of a NavigatedTo event (MAUI creates them in internal code only).</summary>
 	public static NavigatedToEventArgs CreateNavigatedToEventArgs() => Create<NavigatedToEventArgs>(null, NavigationType.Push);
 
-	/// <summary>
-	/// Raises <see cref="DeviceDisplay.MainDisplayInfoChanged"/> with metrics that differ from the last ones (MAUI only raises the
-	/// event when the metrics changed), like a rotation or window resize does. MAUI remembers the metrics of the last change to compare
-	/// the next one with; they are put back afterwards, so that the made-up metrics do not outlive the call: otherwise the platform's next
-	/// real check would report a change back to the real metrics to whoever still listens, later in the app run.
-	/// </summary>
+	// The metrics are made up because MAUI only raises MainDisplayInfoChanged when they differ from the last ones. Those last metrics are put
+	// back afterwards: otherwise the platform's next real check would report a change back to the real metrics to whoever still listens,
+	// later in the app run.
 	public static void RaiseMainDisplayInfoChanged()
 	{
 		var display = DeviceDisplay.Current;
@@ -57,10 +50,8 @@ static class StatusBarEventRaisers
 		}
 	}
 
-	/// <summary>
-	/// Calls a private member of <see cref="CommunityToolkit.Maui.Behaviors.StatusBarBehavior"/> that no public path can reach (a handler whose
-	/// argument checks or early returns guard against states MAUI never produces). <paramref name="target"/> is <see langword="null"/> for a static member.
-	/// </summary>
+	// For the private members of StatusBarBehavior that no public path reaches, such as a handler whose argument checks or early returns guard
+	// against states MAUI never produces.
 	public static void InvokeBehaviorMember(object? target, string methodName, params object?[] arguments)
 	{
 		var flags = (target is null ? BindingFlags.Static : BindingFlags.Instance) | BindingFlags.NonPublic;

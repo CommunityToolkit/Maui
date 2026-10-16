@@ -7,8 +7,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: WinUI cannot raise pointer events from code, so touch and hover call the behavior's internal HandleTouch and HandleHover,
-// which its pointer handlers call too. The aspect is read from Image.Stretch of the Image (or of the Image inside the Button).
+// WinUI cannot raise pointer events from code, so touch and hover call the behavior's internal HandleTouch and HandleHover,
+// which its pointer handlers call too.
 public partial class ImageTouchBehaviorTests
 {
 	// Not verified on a device: the WinUI element is only reachable through COM wrappers, so the toolkit-owned managed objects are what the leak tests require.

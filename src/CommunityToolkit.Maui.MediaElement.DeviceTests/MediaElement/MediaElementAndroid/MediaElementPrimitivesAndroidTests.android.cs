@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// PlayerViewChangedEventArgs.android.cs and the Android part of AppBuilderExtensions.shared.cs (UseMauiCommunityToolkitMediaElement).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaElementPrimitivesAndroidTests : MediaElementAndroidTestBase
@@ -34,7 +33,7 @@ public class MediaElementPrimitivesAndroidTests : MediaElementAndroidTestBase
 		SetupProbeBuilder(configureBuilder: builder => services = builder.Services);
 
 		// The container is not asked for the service: a MediaControlsService made by the container would be a service object that the
-		// system never attached. The registration is what the Android block of UseMauiCommunityToolkitMediaElement adds.
+		// system never attached.
 		var descriptor = Assert.Single(services!, registration => registration.ServiceType == typeof(MediaControlsService));
 		Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
 		Assert.Equal(typeof(MediaControlsService), descriptor.ImplementationType);

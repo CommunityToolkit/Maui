@@ -5,10 +5,9 @@ using CommunityToolkit.Maui.Services;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// BoundServiceConnection.android.cs and BoundServiceBinder.android.cs: the glue between MediaManager and MediaControlsService. The
-// connection is driven with a MediaControlsService object that the test creates itself and that the system never starts, so no real
-// service is involved (MediaControlsServiceAndroidTests runs the real service). Such an object can raise TaskRemoved, which is all
-// the connection listens to. The service objects are not disposed: an object that was never attached to the system cannot leave the
+// The connection is driven with a MediaControlsService object that the test creates itself and that the system never starts, so no real
+// service is involved (MediaControlsServiceAndroidTests runs the real service). Such an object can raise TaskRemoved, which is all the
+// connection listens to. The service objects are not disposed: an object that was never attached to the system cannot leave the
 // foreground (MediaControlsService.Dispose asks the ActivityManager to), and it is garbage collected with the test.
 [Category(TestCategory.MediaElementAndroid)]
 public class BoundServiceConnectionAndroidTests
@@ -143,7 +142,6 @@ public class BoundServiceConnectionAndroidTests
 		AsServiceConnection(connection).OnServiceDisconnected(null);
 		service.OnTaskRemoved(null);
 
-		// The connection unhooked itself from the service: only the first notification was forwarded.
 		Assert.Equal(1, subscriber.Count);
 		GC.KeepAlive(subscriber);
 	}

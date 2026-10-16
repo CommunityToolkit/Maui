@@ -9,9 +9,6 @@ using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Uri.ToPhysicalPath(), the path of a document that the Downloads provider created (Uri.ToPathOfDocumentCreatedInDownloads()),
-// AndroidPathExtensions.GetExternalDirectory(), AndroidStorageConstants and AndroidRequestCode (Android only): the helpers that turn what
-// the document picker returns into the path that FileSaver and FolderPicker report.
 [Category(TestCategory.AndroidStorageHelpers)]
 public class AndroidStorageHelpersTests : FilesTestBase
 {
@@ -65,7 +62,7 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Equal($"{ExternalStorage}/DCIM/Sub", physicalPath);
 	}
 
-	// The folder that the root of a volume resolves to; that the path does not end with a separator is the test below.
+	// The trailing separator is ignored here: the test below checks that there is none.
 	[Fact]
 	public void ToPhysicalPathResolvesTheRootOfAVolume()
 	{
@@ -88,8 +85,8 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Equal(expectedPath.Replace("{external}", ExternalStorage, StringComparison.Ordinal), physicalPath);
 	}
 
-	// The Downloads provider names a file or folder that it serves from the storage, such as one in a folder of the Download folder, by its
-	// absolute path after "raw:": the path is that one, not a folder of a storage volume named "raw".
+	// The Downloads provider names a file or folder that it serves from the storage by its absolute path after "raw:", so the path is
+	// that one, not a folder of a storage volume named "raw".
 	[Theory]
 	[InlineData(downloads + "document/raw%3A%2Fstorage%2Femulated%2F0%2FDownload%2Fsub%2Freport.txt", "/storage/emulated/0/Download/sub/report.txt")]
 	[InlineData(downloads + "document/raw%3A%2Fstorage%2Femulated%2F0%2FDownload%2FMy%20Docs%2Fa%3Ab.txt", "/storage/emulated/0/Download/My Docs/a:b.txt")]
@@ -100,9 +97,7 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Equal(expectedPath, AndroidUri.Parse(uri)!.ToPhysicalPath());
 	}
 
-	// Any other id of the Downloads provider holds no path: the number of a download (such as a file that the provider created in its root),
-	// msf: or msd: and the MediaStore id of a file or folder that MediaStore indexed (in any folder of the Download folder), the root of the
-	// provider, and "raw:" without an absolute path. None of them is a folder of a storage volume named "msf".
+	// An id such as "msf:1545" must not be read as a folder of a storage volume named "msf".
 	[Theory]
 	[InlineData(downloads + "document/19")]
 	[InlineData(downloads + "document/msf%3A1545")]
@@ -116,9 +111,9 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Null(AndroidUri.Parse(uri)!.ToPhysicalPath());
 	}
 
-	// A document that the Downloads provider created in its root for a document picker is a file of the public Download folder, which the
-	// provider registered with the DownloadManager under the file's name as both the title (the display name) and the description (the summary)
-	// of the download. The name is the one that the provider gave the file, which it can have made unique.
+	// A document that the Downloads provider created in its root for a document picker is a file of the public Download folder. The
+	// provider registered it with the DownloadManager under the file's name (which it can have made unique) as both the title (the display
+	// name) and the description (the summary) of the download.
 	[Theory]
 	[InlineData("19", "report.txt")]
 	[InlineData("20", "report (1).txt")]
@@ -130,9 +125,7 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Equal($"{ExternalStorage}/Download/{fileName}", path);
 	}
 
-	// Any other document has no path that this tells: a download that the provider did not create for a picker (its title, its description and
-	// its folder are its own), a document with an empty name or with a name that is no file name, a file that MediaStore indexed (msf:, in any
-	// folder of the Download folder), a raw: document (ToPhysicalPath reads its path from its id) and a document of another provider.
+	// A raw: document is left to ToPhysicalPath, which reads its path from its id.
 	[Theory]
 	[InlineData(downloads + "document/19", "Invoice March", "Sent by the mail app")]
 	[InlineData(downloads + "document/19", "report.txt", "")]
@@ -147,7 +140,6 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Null(AndroidUri.Parse(uri)!.ToPathOfDocumentCreatedInDownloads(displayName, summary));
 	}
 
-	// A provider that reports no display name or no summary (a null column) describes no document that it created for a picker.
 	[Fact]
 	public void ToPathOfDocumentCreatedInDownloadsIsNullWithoutADisplayNameOrASummary()
 	{
@@ -158,9 +150,7 @@ public class AndroidStorageHelpersTests : FilesTestBase
 		Assert.Null(uri.ToPathOfDocumentCreatedInDownloads(null, "report.txt"));
 	}
 
-	// The document that a document picker starts in (DocumentsContract.ExtraInitialUri) for the initial path of FileSaver and FolderPicker: a folder of
-	// the primary storage under its own path or one of its aliases, a folder of another volume under /storage/<volume>, a relative path (in the primary
-	// storage) and the root of the file system (the root of the primary storage).
+	// A relative path is in the primary storage, and the root of the file system is taken as the root of the primary storage.
 	[Theory]
 	[InlineData("{external}/DCIM", "primary:DCIM")]
 	[InlineData("{external}", "primary:")]

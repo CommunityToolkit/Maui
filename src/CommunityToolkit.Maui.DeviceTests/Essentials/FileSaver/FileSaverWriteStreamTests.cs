@@ -5,9 +5,8 @@ using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// FileSaverImplementation.WriteStream (shared file) copies the stream to a file. iOS and Mac Catalyst use it to write the temporary copy that
-// the document picker exports, and Windows uses it to write the file that the user chose; Android writes through its content resolver
-// instead. It is private, so these tests call it by reflection, on the device's own file system.
+// WriteStream is private, so these tests call it by reflection. Android writes through its content resolver instead, so they are not
+// built for it.
 [Category(TestCategory.FileSaver)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class FileSaverWriteStreamTests : FilesTestBase

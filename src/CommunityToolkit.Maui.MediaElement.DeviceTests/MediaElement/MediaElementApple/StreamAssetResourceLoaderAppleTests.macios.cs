@@ -5,8 +5,7 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// StreamAssetResourceLoader.macios.cs: the AVAssetResourceLoader delegate that serves a .NET Stream to AVFoundation. AVFoundation creates
-// the loading requests itself, so the tests hand the loader subclasses of the three request types and read what it set and responded.
+// AVFoundation creates the loading requests itself, so the tests hand the loader subclasses of the three request types.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
@@ -132,7 +131,6 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, first));
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, second));
 
-		// Sequential requests of a stream that cannot seek are served by reading on.
 		Assert.Equal(Bytes(100)[..10], Assert.Single(first.Responses));
 		Assert.Equal(Bytes(100)[10..20], Assert.Single(second.Responses));
 	}
@@ -149,7 +147,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, first));
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), secondRequest);
 
-		// The stream cannot seek to offset 50: the request must not be answered with the bytes at offset 10 (where the stream is).
+		// The stream is at offset 10 and cannot seek to 50, so reading on would answer the request with the bytes at offset 10.
 		Assert.DoesNotContain(second.Responses, static response => response.SequenceEqual(Bytes(100)[10..20]));
 		Assert.Equal(1, secondRequest.TotalFinishCount);
 	}
@@ -168,7 +166,6 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), otherRequest);
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, next));
 
-		// The bytes at offset 50 cannot be read: the request fails without reading the stream, so the next offset is still served.
 		Assert.Equal(1, otherRequest.FinishWithErrorCount);
 		Assert.Equal(0, otherRequest.FinishCount);
 		Assert.Empty(other.Responses);
@@ -237,7 +234,6 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), request);
 
-		// Stream.Read may return fewer bytes than requested before the end of the stream.
 		Assert.Equal(Bytes(100)[10..30], data.Responses.SelectMany(static response => response).ToArray());
 		Assert.Equal(1, request.FinishCount);
 	}
@@ -342,10 +338,9 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 	{
 		using var stream = new MemoryStream(Bytes(100));
 		var loader = new StreamAssetResourceLoader(stream);
-		var dispose = typeof(StreamAssetResourceLoader).GetMethod("Dispose", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(bool)])!;
+		var finalizerDispose = typeof(StreamAssetResourceLoader).GetMethod("Dispose", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, [typeof(bool)])!;
 
-		// What the finalizer does.
-		dispose.Invoke(loader, [false]);
+		finalizerDispose.Invoke(loader, [false]);
 
 		Assert.True(stream.CanRead);
 		loader.Dispose();

@@ -5,9 +5,6 @@ using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Tests of the platform view (MauiDrawingView) on its own: the platform's touch input, the gesture state machine in
-// MauiDrawingView.shared.cs, and what it renders. The view is created directly (no handler) and hosted in the runner's window.
-// Every test reads native state: events raised by real platform input, the Lines collection, and the pixels the view draws.
 [Category(TestCategory.DrawingView)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
@@ -16,7 +13,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 	static readonly Color blue = Colors.Blue;
 	static readonly Color white = Colors.White;
 
-	// Catches: OnStart stops raising DrawingStarted or reports a different point
 	[Fact]
 	public Task TouchDownRaisesDrawingStartedWithTheTouchPoint() => WithView(view =>
 	{
@@ -30,7 +26,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Equal(0, recorder.Cancelled);
 	});
 
-	// Catches: OnMoving stops raising Drawing, reports the wrong point or drops points
 	[Fact]
 	public Task TouchMovesRaiseDrawingForEachPointInOrder() => WithView(view =>
 	{
@@ -48,7 +43,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(recorder.Completed);
 	});
 
-	// Catches: OnMoving no longer returns when no gesture was started
 	[Fact]
 	public Task TouchMoveBeforeTouchDownIsIgnored() => WithView(view =>
 	{
@@ -63,7 +57,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(view.Lines);
 	});
 
-	// Catches: a Move without a started gesture extends the in-progress path (Android adds the point to the path before OnMoving checks that a gesture is active)
+	// Android's Move handler extends the in-progress path itself, before OnMoving checks that a gesture is active.
 	[Fact]
 	public Task MovesOutsideAGestureDoNotDrawAnything() => WithViewAsync(async view =>
 	{
@@ -78,7 +72,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(image, red, because: "no gesture was started, so nothing is drawn");
 	});
 
-	// Catches: OnFinish does not complete the line, or the line loses its start point or a moved point
 	[Fact]
 	public Task TouchUpCompletesTheLineWithTheStartAndEveryMovedPoint() => WithView(view =>
 	{
@@ -96,7 +89,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		AssertPoint(50, 60, line.Points[2]);
 	});
 
-	// Catches: a default LineColor or LineWidth of the view is not the default of the completed line
 	[Fact]
 	public Task CompletedLineUsesTheDefaultLineColorAndLineWidth() => WithView(view =>
 	{
@@ -109,7 +101,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Equal(5f, line.LineWidth);
 	});
 
-	// Catches: the completed event is raised before the line is in Lines, or carries another line than the one stored
 	[Fact]
 	public Task CompletedLineIsStoredInLinesWhenTheEventIsRaised() => WithView(view =>
 	{
@@ -122,7 +113,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Same(line, Assert.Single(linesWhenRaised));
 	});
 
-	// Catches: the line is cleared (or never stored) when the gesture finishes although ShouldClearOnFinish is off
 	[Fact]
 	public Task LineStaysInLinesAfterTheGestureFinishesByDefault() => WithView(view =>
 	{
@@ -133,7 +123,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Same(Assert.Single(recorder.Completed), Assert.Single(view.Lines));
 	});
 
-	// Catches: OnFinish completes a line although no gesture was started
 	[Fact]
 	public Task TouchUpWithoutTouchDownDoesNotCompleteALine() => WithView(view =>
 	{
@@ -145,7 +134,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(view.Lines);
 	});
 
-	// Catches: OnCancel keeps the line, forgets the event or does not discard the in-progress line
 	[Fact]
 	public Task TouchCancelRaisesDrawingCancelledAndDiscardsTheLine() => WithView(view =>
 	{
@@ -159,13 +147,11 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(recorder.Completed);
 		Assert.Empty(view.Lines);
 
-		// the cancelled line is gone: a later Up has nothing to complete
 		DrawingViewTestPlatform.TouchUp(view, 30, 30);
 		Assert.Empty(recorder.Completed);
 		Assert.Empty(view.Lines);
 	});
 
-	// Catches: OnCancel only raises the event while a gesture is active
 	[Fact]
 	public Task TouchCancelWithoutTouchDownStillRaisesDrawingCancelled() => WithView(view =>
 	{
@@ -177,7 +163,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(view.Lines);
 	});
 
-	// Catches: OnFinish leaves the view in the drawing state
 	[Fact]
 	public Task TouchMoveAfterTouchUpIsIgnored() => WithView(view =>
 	{
@@ -194,7 +179,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Equal(2, view.Lines[0].Points.Count);
 	});
 
-	// Catches: OnCancel leaves the view in the drawing state
 	[Fact]
 	public Task TouchMoveAfterTouchCancelIsIgnored() => WithView(view =>
 	{
@@ -219,7 +203,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Equal(1, recorder.Cancelled);
 	});
 
-	// Catches: DrawingCancelled reports another point than the start of the cancelled drawing (its args are the declared MauiDrawingStartedEventArgs)
 	[Fact]
 	public Task DrawingCancelledReportsThePointWhereTheCancelledDrawingStarted() => WithView(view =>
 	{
@@ -232,7 +215,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		AssertPoint(10, 20, Assert.Single(recorder.Points));
 	});
 
-	// Catches: a remove accessor does not remove (the weak event manager keeps invoking the handler)
 	[Theory]
 	[InlineData(nameof(MauiDrawingView.DrawingStarted))]
 	[InlineData(nameof(MauiDrawingView.Drawing))]
@@ -263,7 +245,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		}
 	});
 
-	// Catches: single-line mode keeps the previous line
 	[Fact]
 	public Task SingleLineModeKeepsOnlyTheLatestLine() => WithView(view =>
 	{
@@ -278,7 +259,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Single(recorder.LinesWhenCompleted[1]);
 	});
 
-	// Catches: multi-line mode clears the previous line
 	[Fact]
 	public Task MultiLineModeKeepsEveryLine() => WithView(view =>
 	{
@@ -292,7 +272,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		AssertPoint(10, 50, view.Lines[1].Points[0]);
 	});
 
-	// Catches: the previous line is cleared when the gesture finishes instead of when the next one starts
 	[Fact]
 	public Task StartingAnotherLineInSingleLineModeClearsThePreviousLineAtOnce() => WithView(view =>
 	{
@@ -304,7 +283,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(view.Lines);
 	});
 
-	// Catches: ShouldClearOnFinish ignored, or the lines are cleared before the completed event
 	[Fact]
 	public Task ShouldClearOnFinishRemovesTheLinesAfterTheCompletedEvent() => WithViewAsync(async view =>
 	{
@@ -322,7 +300,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(image, Colors.Black, because: "Lines and the in-progress path were cleared.");
 	});
 
-	// Catches: the line takes the color or width from the view at the end of the gesture instead of the start
 	[Fact]
 	public Task LineColorAndWidthAreCapturedWhenTheGestureStarts() => WithView(view =>
 	{
@@ -341,7 +318,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Equal(7f, line.LineWidth);
 	});
 
-	// Catches: default Paint is not LightGray, or the background is not filled
 	[Fact]
 	public Task RenderingFillsTheViewWithTheDefaultLightGrayBackground() => WithViewAsync(async view =>
 	{
@@ -352,7 +328,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 197, 97, Colors.LightGray);
 	});
 
-	// Catches: the Paint setter does not store the value
 	[Theory]
 	[InlineData(0xFF, 0x00, 0x00)]
 	[InlineData(0x00, 0x80, 0x00)]
@@ -368,7 +343,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 3, 3, color);
 	});
 
-	// Catches: gradient paints are not forwarded to the canvas
 	[Fact]
 	public Task GradientPaintIsRenderedAsTheBackground() => WithViewAsync(async view =>
 	{
@@ -382,8 +356,8 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.NotColorAtUnits(image, 100, 50, blue, tolerance: 60);
 	});
 
-	// Catches: the lines are painted with the background gradient instead of their own color, which hides them. MAUI's Android canvas
-	// (Microsoft.Maui.Graphics 10.0.70 and later) strokes a path with the fill paint while that paint is a gradient.
+	// MAUI's Android canvas (Microsoft.Maui.Graphics 10.0.70 and later) strokes a path with the fill paint while that paint is a gradient, which
+	// paints the lines with the gradient instead of their own color and hides them.
 	[Theory]
 	[InlineData("linear")]
 	[InlineData("radial")]
@@ -405,7 +379,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 197, 50, Colors.Yellow, tolerance: 60, because: "the gradient is still the background");
 	});
 
-	// Catches: the paths that the DrawAction strokes are painted with the background gradient (see StoredLinesAndTheInProgressPathKeepTheirColorAboveAGradientBackground)
+	// The gradient quirk described on StoredLinesAndTheInProgressPathKeepTheirColorAboveAGradientBackground also applies to the paths that a DrawAction strokes.
 	[Fact]
 	public Task DrawActionPathsKeepTheirStrokeColorAboveAGradientBackground() => WithViewAsync(async view =>
 	{
@@ -426,7 +400,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 197, 50, Colors.Yellow, tolerance: 60, because: "the gradient is still the background");
 	});
 
-	// Catches: DrawAction is not invoked with the canvas and the view's bounds
 	[Fact]
 	public Task DrawActionIsInvokedWithTheCanvasAndTheViewBounds()
 	{
@@ -441,7 +414,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		}, view => view.DrawAction = counter.Draw);
 	}
 
-	// Catches: DrawAction is drawn after the lines (covering them) or before the background
 	[Fact]
 	public Task DrawActionPaintsAboveTheBackgroundAndBelowTheLines() => WithViewAsync(async view =>
 	{
@@ -460,7 +432,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 150, 50, white);
 	});
 
-	// Catches: a null DrawAction is dereferenced or the cleared action is still invoked
 	[Fact]
 	public Task NullDrawActionIsSkippedAndAClearedActionStopsDrawing()
 	{
@@ -481,7 +452,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		}, view => view.DrawAction = counter.Draw);
 	}
 
-	// Assigning DrawAction must repaint the view with the new action, as assigning Paint does
 	[Fact]
 	public Task AssigningDrawActionRedrawsTheView()
 	{
@@ -498,7 +468,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		}, view => view.DrawAction = first.Draw);
 	}
 
-	// Catches: stored lines ignore their own color/width or are not redrawn when added
 	[Fact]
 	public Task StoredLinesAreRenderedWithTheirOwnColorAndWidth() => WithViewAsync(async view =>
 	{
@@ -517,7 +486,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 100, 50, white);
 	});
 
-	// A stored line with a single point (what a tap produces) is rendered as a dot of its line width: a zero-length segment with round caps
+	// A stored line with a single point is what a tap produces.
 	[Fact]
 	public Task StoredSinglePointLineIsRenderedAsADot() => WithViewAsync(async view =>
 	{
@@ -530,9 +499,8 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 100, 60, white, because: "the dot has the line width (10) as its diameter");
 	});
 
-	// Gradient paints that a platform gradient API rejects (one stop, zero radius) are still rendered as the background, without an error.
-	// The color is MAUI's business, not the toolkit's: Apple draws the gradient, while MAUI's Android canvas catches the Android exception and falls back to a
-	// blended color (white for these paints). The image export of the same paints is DrawingViewServiceTests.DegenerateGradientBackgroundsStillProduceAnImage.
+	// A platform gradient API rejects these paints. The test only checks that the background is filled, because the color is MAUI's business, not the toolkit's:
+	// Apple draws the gradient, while MAUI's Android canvas catches the Android exception and falls back to a blended color (white for these paints).
 	[Theory]
 	[InlineData("linear-1-stop")]
 	[InlineData("radial-1-stop")]
@@ -547,7 +515,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.True(center.A is 255, $"The background was not filled with the {kind} paint: found {center} at the center.");
 	});
 
-	// Catches: a line without points breaks rendering of the other lines
 	[Fact]
 	public Task LineWithoutPointsIsSkippedWhenRendering() => WithViewAsync(async view =>
 	{
@@ -561,7 +528,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(image, red);
 	});
 
-	// Catches: removing lines does not repaint the view
 	[Fact]
 	public Task ClearingLinesRemovesThemFromTheRenderedView() => WithViewAsync(async view =>
 	{
@@ -574,7 +540,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(await RenderAsync(view), red);
 	});
 
-	// Catches: the in-progress path is not drawn, ignores LineWidth or does not follow moves
 	[Fact]
 	public Task InProgressPathIsRenderedWithTheViewLineColorAndWidth() => WithViewAsync(async view =>
 	{
@@ -593,7 +558,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 100, 41, white);
 	});
 
-	// Catches: finishing a line leaves the in-progress path (drawn with the current color) on top of the stored line
 	[Fact]
 	public Task FinishedLineReplacesTheInProgressPath() => WithViewAsync(async view =>
 	{
@@ -614,7 +578,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(afterGesture, blue, because: "the in-progress path was replaced by the stored line");
 	});
 
-	// Catches: cancelling leaves the in-progress stroke visible
 	[Fact]
 	public Task CancelRemovesTheInProgressStroke() => WithViewAsync(async view =>
 	{
@@ -630,7 +593,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(await RenderAsync(view), red);
 	});
 
-	// Catches: ShouldSmoothPathWhenDrawn is ignored (or always/never smoothed)
 	[Fact]
 	public Task SmoothedLinesFollowTheSplineAndUnsmoothedLinesTheRawPoints() => WithViewAsync(async view =>
 	{
@@ -652,7 +614,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(rawImage, probe.X, probe.Y, red, because: "the unsmoothed line follows the raw segment");
 	});
 
-	// Catches: Initialize does not assign the native drawable
 	[Fact]
 	public Task InitializeAssignsTheNativeDrawable() => WithViewAsync(async view =>
 	{
@@ -662,7 +623,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Null(DrawingViewTestPlatform.GetDrawable(uninitialized));
 	});
 
-	// Catches: Initialize does not subscribe to Lines changes (no redraw)
 	[Fact]
 	public Task AddingALineRequestsARedraw()
 	{
@@ -673,7 +633,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 			view => view.DrawAction = counter.Draw);
 	}
 
-	// Catches: the Paint setter does not request a redraw
 	[Fact]
 	public Task SettingPaintRequestsARedraw()
 	{
@@ -684,7 +643,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 			view => view.DrawAction = counter.Draw);
 	}
 
-	// Catches: a gesture step does not request a redraw
 	[Fact]
 	public Task EveryGestureStepRequestsARedraw()
 	{
@@ -698,7 +656,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		}, view => view.DrawAction = counter.Draw);
 	}
 
-	// Catches: CleanUp does not unsubscribe from Lines changes (a changed Lines collection would still clear the in-progress path)
 	[Fact]
 	public Task CleanUpStopsLineChangesFromClearingTheInProgressPath() => WithViewAsync(async view =>
 	{
@@ -714,9 +671,9 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.DoesNotContainColor(await RenderAsync(view), red, because: "control: the changed Lines cleared the in-progress path");
 		DrawingViewTestPlatform.TouchCancel(view, 180, 50);
 
-		// after CleanUp (twice: it is idempotent) the same change leaves the in-progress path alone
 		DrawingViewTestPlatform.TouchDown(view, 20, 50);
 		DrawingViewTestPlatform.TouchMove(view, 180, 50);
+		// Twice, because CleanUp must be idempotent.
 		view.CleanUp();
 		view.CleanUp();
 		view.Lines.Add(new MauiDrawingLine { Points = [] });
@@ -724,7 +681,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ContainsColor(await RenderAsync(view), red, because: "CleanUp unsubscribed from the Lines changes");
 	});
 
-	// Catches: strokes are not drawn with round caps (butt or square caps) or round joins (miter or bevel joins)
 	[Fact]
 	public Task StoredLineCapsAndJoinsAreRounded() => WithViewAsync(async view =>
 	{
@@ -763,7 +719,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.SegmentHasColor(image, (20, 75), (180, 75), blue, samples: 15, because: "the in-progress path is solid");
 	}, view => view.DrawAction = (canvas, _) => canvas.StrokeDashPattern = [5f, 15f]);
 
-	// Catches: the lines are painted with a gradient that the DrawAction left as the fill paint (see StoredLinesAndTheInProgressPathKeepTheirColorAboveAGradientBackground)
+	// The gradient quirk described on StoredLinesAndTheInProgressPathKeepTheirColorAboveAGradientBackground also applies when a DrawAction leaves a gradient as the fill paint.
 	[Fact]
 	public Task StoredLinesAndTheInProgressPathKeepTheirColorWhenTheDrawActionLeavesAGradientFillPaint() => WithViewAsync(async view =>
 	{
@@ -787,7 +743,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 197, 50, Colors.Yellow, tolerance: 60, because: "the DrawAction's gradient band is drawn");
 	});
 
-	// Catches: OnMoving dereferences a null current line (defensive branch, forced with reflection because input cannot reach it)
+	// Defensive branch of OnMoving that input cannot reach, so isDrawing is set through reflection.
 	[Fact]
 	public Task MoveWhileDrawingWithoutACurrentLineStillReportsThePoint() => WithView(view =>
 	{
@@ -800,7 +756,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(recorder.Completed);
 	});
 
-	// Catches: CleanUp does not dispose the in-progress path, so the native path that the platform canvas cached in PathF.PlatformPath is never released
 	[Fact]
 	public async Task CleanUpDisposesTheInProgressPath()
 	{
@@ -820,7 +775,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The view must not stay reachable after use and CleanUp
 	[Fact]
 	public async Task PlatformViewDoesNotLeak()
 	{
@@ -846,7 +800,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 
 	// AttachedToWindow keeps its subscribers weakly, like the other events of the view: while a DrawingView is unloaded its platform view stays in the view
 	// hierarchy of the page, and it must not keep the handler that waits for the event alive. A subscriber that is kept elsewhere still receives the event.
-	// Catches: AttachedToWindow keeping a strong reference to its subscribers.
 	[Fact]
 	public async Task AttachedToWindowDoesNotKeepItsSubscriberAlive()
 	{
@@ -874,8 +827,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 			return Task.CompletedTask;
 		}, configure);
 
-	// Creates and initializes a view, lets the test configure it, hosts it in the runner's window and runs the body on the UI thread.
-	// Properties that are set before hosting (DrawAction) are in effect for the view's first draw.
+	// The configure action runs before the view is hosted, so the properties it sets (DrawAction) are in effect for the view's first draw.
 	async Task WithViewAsync(Func<MauiDrawingView, Task> body, Action<MauiDrawingView>? configure = null, double width = DrawingViewTestPlatform.DefaultWidth, double height = DrawingViewTestPlatform.DefaultHeight)
 	{
 		SetupBuilder();
@@ -937,11 +889,10 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		await AssertionExtensions.AssertEventually(() => counter.Count > before, timeout: 3000, message: message);
 	}
 
-	// The view's in-progress path (private MauiDrawingView.currentPath).
 	static PathF GetCurrentPath(MauiDrawingView view) =>
 		(PathF)typeof(MauiDrawingView).GetField("currentPath", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(view)!;
 
-	// A gradient in colors that no line in these tests uses: white at the left edge to yellow at the right edge (along y = 50 for both kinds)
+	// Colors that no line in these tests uses. Along y = 50, both kinds run from white at the left edge to yellow at the right edge.
 	static Paint CreateWhiteToYellowGradient(string kind) => kind switch
 	{
 		"linear" => new LinearGradientPaint([new PaintGradientStop(0, white), new PaintGradientStop(1, Colors.Yellow)], new Point(0, 0.5), new Point(1, 0.5)),
@@ -1027,7 +978,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		void OnDrawingCancelled(object? sender, EventArgs e) => Cancelled++;
 	}
 
-	// Counts the AttachedToWindow events of a view (a plain instance method as the handler: the view keeps its subscribers weakly).
+	// A plain instance method is the handler because the view keeps its subscribers weakly.
 	sealed class AttachedToWindowRecorder
 	{
 		public AttachedToWindowRecorder(MauiDrawingView view) => view.AttachedToWindow += OnAttachedToWindow;
@@ -1037,7 +988,6 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		void OnAttachedToWindow(object? sender, EventArgs e) => Count++;
 	}
 
-	// A DrawingCancelled handler that uses the event's declared signature.
 	sealed class TypedCancelRecorder
 	{
 		public TypedCancelRecorder(MauiDrawingView view) => view.DrawingCancelled += OnDrawingCancelled;

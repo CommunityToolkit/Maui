@@ -43,7 +43,7 @@ public static class AppBuilderExtensions
 #if ANDROID
 		NavigationBar.RemapForControls();
 #elif IOS && NET11_0_OR_GREATER
-		// StatusBar.SetStyle sets the StatusBarTheme of the app's windows, which only Microsoft.Maui.Controls.Window can change
+		// StatusBar.SetStyle can only set the StatusBarTheme through Microsoft.Maui.Controls.Window, which Core does not reference
 		Core.Platform.StatusBar.SetStatusBarThemeOfEveryWindow = Behaviors.StatusBarBehavior.SetStatusBarThemeOfEveryWindow;
 #endif
 		return builder;

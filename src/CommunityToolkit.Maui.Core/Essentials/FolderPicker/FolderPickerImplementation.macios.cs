@@ -10,12 +10,11 @@ namespace CommunityToolkit.Maui.Storage;
 [SupportedOSPlatform("MacCatalyst14.0")]
 public sealed partial class FolderPickerImplementation : IFolderPicker
 {
-	// How long a call that the token canceled waits at most for its picker to be off the screen (the dismissal takes under a second)
+	// The dismissal takes under a second: the timeout only bounds a dismissal that UIKit never reports done
 	static readonly TimeSpan dismissalTimeout = TimeSpan.FromSeconds(3);
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
-		// No initial folder: the picker starts in the folder that the system chooses
 		return InternalPickAsync(string.Empty, cancellationToken);
 	}
 
@@ -34,8 +33,8 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		using var picker = new UIDocumentPickerViewController([UTTypes.Folder]);
 		picker.AllowsMultipleSelection = false;
-		// A path is made a file URL (NSUrl.FromString would give a URL without a scheme, which the picker ignores); a file URL string
-		// ("file:///..."), the form that worked before paths did, is still taken as the URL it is. An empty path leaves the folder to the picker.
+		// NSUrl.FromString would give a URL without a scheme, which the picker ignores, so a path is made a file URL; a file URL string
+		// ("file:///..."), the form that worked before paths did, is still taken as the URL it is.
 		picker.DirectoryUrl = string.IsNullOrEmpty(initialPath)
 			? null
 			: initialPath.StartsWith("file:", StringComparison.OrdinalIgnoreCase) ? NSUrl.FromString(initialPath) : NSUrl.CreateFileUrl(initialPath, true);

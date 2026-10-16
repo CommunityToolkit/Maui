@@ -12,7 +12,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 static partial class DrawingViewTestPlatform
 {
-	/// <summary>The view's parent in the tests: records every RequestDisallowInterceptTouchEvent call the drawing view makes.</summary>
 	internal sealed class RecordingFrameLayout(Context context) : FrameLayout(context)
 	{
 		public List<bool> DisallowInterceptRequests { get; } = [];
@@ -32,7 +31,6 @@ static partial class DrawingViewTestPlatform
 		return view;
 	}
 
-	/// <summary>Adds the view to a <see cref="RecordingFrameLayout"/> and attaches that to the activity's content view.</summary>
 	internal static Task<T> HostAsync<T>(MauiDrawingView view, IMauiContext mauiContext, Func<Task<T>> body) =>
 		TestDispatcher.Current.DispatchAsync(async () =>
 		{
@@ -61,7 +59,7 @@ static partial class DrawingViewTestPlatform
 
 	internal static bool TouchCancel(MauiDrawingView view, double x, double y) => Send(view, MotionEventActions.Cancel, x * TouchDensity, y * TouchDensity);
 
-	/// <summary>Sends an action with raw pixel coordinates (exact boundary values) straight to OnTouchEvent.</summary>
+	/// <summary>Takes raw pixel coordinates, so tests can hit exact boundary values.</summary>
 	internal static bool Send(MauiDrawingView view, MotionEventActions action, double xPixels, double yPixels)
 	{
 		var now = SystemClock.UptimeMillis();
@@ -76,7 +74,7 @@ static partial class DrawingViewTestPlatform
 		}
 	}
 
-	/// <summary>Draws the view into a software bitmap (UI thread). The view must have been laid out.</summary>
+	// UI thread only.
 	internal static async Task<DrawingPixelImage> RenderAsync(MauiDrawingView view, IMauiContext mauiContext)
 	{
 		await AssertionExtensions.AssertEventually(() => view.Width > 0 && view.Height > 0, timeout: 3000, message: "The drawing view was not laid out.");

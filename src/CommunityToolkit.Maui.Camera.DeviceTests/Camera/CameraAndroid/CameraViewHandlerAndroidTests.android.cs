@@ -9,18 +9,11 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraViewHandler on Android: the real handler hosts a CameraView in the runner's window, creates the CameraX PreviewView,
-/// connects the camera, maps the view's properties and releases everything when it disconnects. Every assertion reads the
-/// native CameraX state (camera state, torch, zoom, flash mode, negotiated resolution, bound use cases) or the PreviewView.
-/// </summary>
 [Category(TestCategory.CameraViewHandlerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 {
 	static Task WaitUntilAsync(Func<bool> condition, string message) => AssertionExtensions.AssertEventually(condition, 30000, 50, message);
-
-	// ---- creating the handler ---------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task HandlerCreatesAFitCenterPreviewViewAndOpensTheFirstNativeCamera()
@@ -230,14 +223,11 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			host.View.CameraFlashMode = CameraFlashMode.On;
 
-			// The custom mapping replaced the default one: it saw the change and the native flash mode did not follow.
 			Assert.Equal(new[] { CameraFlashMode.On }, mappedFlashModes);
 			Assert.Equal(ImageCapture.FlashModeOff, host.Native<ImageCapture>("imageCapture")!.FlashMode);
 			return Task.CompletedTask;
 		}, view);
 	}
-
-	// ---- mapping the properties of the view --------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task FlashModeOfTheViewReachesTheNativeImageCapture()
@@ -395,8 +385,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// The app selects another camera while it records: the switch waits for the recording, which keeps its camera and runs on (CameraX would
-	// finalize it if its use cases were bound to another camera), and once the recording is stopped the view shows the selected camera.
+	// CameraX would finalize the recording if its use cases were bound to another camera, so the switch waits until the recording is stopped.
 	[Fact]
 	public async Task SelectedCameraOfTheViewSwitchesTheNativeCameraOnceTheRecordingStops()
 	{
@@ -435,10 +424,9 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// The app clears SelectedCamera while it records and then selects the camera of the recording again, as the same CameraInfo or as another
-	// instance of it (for example a Picker whose items are replaced). That is no camera switch: the recording runs on, and the preview shows
-	// the camera once the recording is stopped. The manager used to take the change for StopCameraPreview (SelectedCamera equalled the camera
-	// it last started), unbind the use cases and so make CameraX end the recording without telling the app.
+	// Another instance of the same camera is what a Picker selects when its items are replaced. The manager used to take the change for
+	// StopCameraPreview (SelectedCamera equalled the camera it last started), unbind the use cases and so make CameraX end the recording
+	// without telling the app.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -471,7 +459,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			Assert.Same(stream, await host.View.StopVideoRecording().WaitAsync(CameraTimeout));
 
-			// The camera of the recording is bound again for the photo session, so CameraX does not publish its OPEN state again
+			// The camera of the recording is bound again for the photo session, so CameraX does not publish its OPEN state again.
 			Assert.True(ReadVideoInfo(stream.ToArray()).HasVideo, "Android does not find a video track in the recording.");
 			Assert.Equal(first.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera")!));
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!), "The ImageCapture of the camera is not bound.");
@@ -479,8 +467,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
 		}, includeRecordAudio: true);
 	}
-
-	// ---- Init: what the handler applies again whenever the camera (re)loads --------------------------------------------------
 
 	[Fact]
 	public async Task LoadingTheCameraAgainAppliesTheFlashModeToTheRebuiltImageCaptureAndResetsTheZoomFactor()
@@ -534,8 +520,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		}, new CameraView { SelectedCamera = camera });
 	}
 
-	// ---- properties that were set while the view had no handler ------------------------------------------------------------------
-
 	[Fact]
 	public async Task FlashModeAndTorchSetBeforeTheViewIsHostedAreAppliedWhenTheCameraLoads()
 	{
@@ -546,7 +530,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 		await RunWithCameraViewAsync(async host =>
 		{
-			// The mappings ran while the handler had no camera and did nothing; the handler applies them again when the camera loads.
 			Assert.Equal(ImageCapture.FlashModeOn, host.Native<ImageCapture>("imageCapture")!.FlashMode);
 			await WaitForNativeTorchAsync(camera.DeviceId, true);
 		}, view);
@@ -562,7 +545,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 		await RunWithCameraViewAsync(host =>
 		{
-			// The first use cases the handler builds already have the resolution of the view.
 			Assert.Equal(SmallSize, GetNativeResolution(host.Native<ImageCapture>("imageCapture")!.ResolutionInfo));
 			Assert.Equal(SmallSize, GetNativeResolution(host.Native<Preview>("cameraPreview")!.ResolutionInfo));
 			return Task.CompletedTask;
@@ -595,8 +577,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		}, view);
 	}
-
-	// ---- disconnecting and disposing -------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task DisconnectHandlerClosesTheCameraAndReleasesTheManager()
@@ -670,8 +650,8 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
 
-			// The manager releases every native object and disposes the ones it created itself; CameraX's shared ProcessCameraProvider,
-			// camera and camera control are only released (see CameraManagerConnectionAndroidTests.DisposeClosesTheCameraAndReleasesTheNativeObjects).
+			// CameraX's shared ProcessCameraProvider, camera and camera control are only released, not disposed (see
+			// CameraManagerConnectionAndroidTests.DisposeClosesTheCameraAndReleasesTheNativeObjects).
 			Assert.All(nativeObjects.Where(entry => !CameraManagerConnectionAndroidTests.IsSharedCameraXObject(entry.Key)), entry => Assert.True(entry.Value!.Handle == IntPtr.Zero, $"{entry.Key} was not disposed."));
 			Assert.All(nativeObjects.Keys, name => Assert.Null(GetPrivateField<object>(manager, name)));
 			var exception = Assert.Throws<InvalidOperationException>(() => host.Handler.CameraManager);
@@ -737,8 +717,8 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		{
 			var valid = host.View.SelectedCamera!;
 
-			// MapSelectedCamera (async void) tries to bind the use cases to the selected camera, which CameraX can not do. The CameraX
-			// futures it waits for completed when the camera was connected, so their listeners run within a few UI-thread messages.
+			// MapSelectedCamera is async void, and the CameraX futures it waits for completed when the camera was connected, so their listeners
+			// run within a few UI-thread messages.
 			host.View.SelectedCamera = CreateCameraThatCanNotBeBound();
 			for (var i = 0; i < 10 && UnhandledAsyncVoidExceptions.Count is 0; i++)
 			{
@@ -747,7 +727,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			Assert.Empty(UnhandledAsyncVoidExceptions);
 
-			// The app selects a camera that exists again: the view shows its preview.
 			host.View.SelectedCamera = valid;
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
 			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
@@ -755,8 +734,8 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// The camera switch of the async void MapSelectedCamera fails (CameraX cannot bind the selected camera): no caller can catch that, so
-	// the view reports it through ErrorOccurred (the handler used to only trace it, so the app never learned why the preview stopped).
+	// No caller can catch a failure of the async void MapSelectedCamera (CameraX cannot bind the selected camera), so the view reports it
+	// through ErrorOccurred. The handler used to only trace it, so the app never learned why the preview stopped.
 	[Fact]
 	public async Task SelectingACameraThatCanNotBeBoundRaisesErrorOccurred()
 	{
@@ -776,8 +755,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// The page closes right after the user switched the camera (or the app changed the capture resolution): the async void mapper
-	// is still binding the camera again when the handler disconnects and disposes the manager.
 	[Theory]
 	[InlineData(nameof(CameraView.SelectedCamera))]
 	[InlineData(nameof(CameraView.ImageCaptureResolution))]
@@ -794,8 +771,8 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		{
 			var selected = host.View.SelectedCamera!;
 
-			// One UI-thread message: the mapper starts the rebind, which waits for the CameraX futures of EnableModes, and then the
-			// handler disconnects.
+			// One UI-thread message: the mapper starts the rebind, which waits for the CameraX futures of EnableModes, and then the handler
+			// disconnects and disposes the manager.
 			if (property is nameof(CameraView.SelectedCamera))
 			{
 				host.View.SelectedCamera = cameras.First(camera => camera.DeviceId != selected.DeviceId);
@@ -891,8 +868,6 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.Throws<InvalidOperationException>(() => handler.CameraManager);
 		}, view, disconnectWhenDone: false);
 	}
-
-	// ---- leaks -----------------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task ViewHandlerAndPreviewViewAreCollectedAfterTheHandlerWasDisconnected()

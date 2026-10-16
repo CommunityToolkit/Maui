@@ -106,7 +106,6 @@ public partial class StatusBarTests
 
 		await InvokeOnMainThreadAsync(() => StatusBar.SetColor(Colors.Green));
 
-		// AssertStatusBarShowsAsync asserts a single overlay; from Android 15 on it is the one the first call added.
 		await AssertStatusBarShowsAsync(Colors.Green);
 		await InvokeOnMainThreadAsync(() => Assert.Same(firstOverlay, AndroidSystemBars.FindOverlay(AndroidSystemBars.ActivityWindow, AndroidSystemBars.StatusBarOverlayTag)));
 	}
@@ -202,7 +201,6 @@ public partial class StatusBarTests
 			await InvokeOnMainThreadAsync(static () => StatusBar.SetColor(Colors.Red));
 			await InvokeOnMainThreadAsync(static () => AndroidSystemBars.FlushPostedActions(AndroidSystemBars.ActivityWindow));
 
-			// The app's view keeps its own color, and the status bar gets an overlay of its own.
 			await InvokeOnMainThreadAsync(() => Assert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
 			await AssertStatusBarShowsAsync(Colors.Red);
 		}
@@ -244,9 +242,8 @@ public partial class StatusBarTests
 		});
 	}
 
-	// StatusBar.IsSupported is false only on Android 5 (API 21-22), which no pool device runs (see the skipped test above). These tests switch
-	// the support flag off (UnsupportedAndroidVersion) and run the guard arms that SetColor, SetStyle and UpdateBarSize take there; every
-	// call has to leave the native window exactly as ResetNativeStateAsync put it.
+	// StatusBar.IsSupported is false only on Android 5 (API 21-22), which no pool device runs (see the skipped test above), so these tests
+	// switch the support flag off (UnsupportedAndroidVersion) to reach the guard arms of SetColor, SetStyle and UpdateBarSize.
 	[Fact]
 	public async Task SetColorDoesNothingWhileTheStatusBarIsMarkedUnsupported()
 	{
@@ -318,7 +315,7 @@ public partial class StatusBarTests
 		SetupBuilder();
 		await ResetNativeStateAsync();
 
-		// Android 15 adds the overlay synchronously (no post) and sizes it from the status_bar_height dimen.
+		// Android 15 adds the overlay synchronously (no post), so there is nothing to wait for.
 		await InvokeOnMainThreadAsync(static () =>
 		{
 			StatusBar.SetColor(Colors.Red);
@@ -337,7 +334,7 @@ public partial class StatusBarTests
 		SetupBuilder();
 		await ResetNativeStateAsync();
 
-		// Android 15 adds the overlay synchronously (no post): the second call finds it and only changes its color.
+		// Android 15 adds the overlay synchronously (no post), so there is nothing to wait for.
 		await InvokeOnMainThreadAsync(static () =>
 		{
 			StatusBar.SetColor(Colors.Red);
@@ -501,8 +498,7 @@ public partial class StatusBarTests
 		}
 	}
 
-	// UpdateBarSize looks the overlay up like SetColor does: an app view in the page that carries the overlay's tag is not the overlay. The
-	// toolkit's overlay exists before the app view is added, so only UpdateBarSize's own lookup is under test (SetColor's is
+	// The toolkit's overlay exists before the app view is added, so only UpdateBarSize's own lookup of the overlay is under test (SetColor's is
 	// SetColorDoesNotTakeOverAnAppViewThatCarriesTheOverlayTag).
 	[Fact]
 	public async Task UpdateBarSizeDoesNotResizeAnAppViewThatCarriesTheOverlayTag()
@@ -594,7 +590,7 @@ public partial class StatusBarTests
 			using var unshown = new UnshownWindow();
 			var overlay = new AView(AndroidSystemBars.Activity) { Tag = AndroidSystemBars.StatusBarOverlayTag, LayoutParameters = new Android.Widget.FrameLayout.LayoutParams(1, 1) };
 			unshown.DecorView.AddView(overlay);
-			Assert.Null(unshown.DecorView.RootWindowInsets); // the decor view is not attached to the window manager yet: the window has no insets
+			Assert.Null(unshown.DecorView.RootWindowInsets);
 
 			AndroidSystemBars.WithCurrentActivity(unshown.Activity, static () =>
 			{
@@ -602,7 +598,7 @@ public partial class StatusBarTests
 				return true;
 			});
 
-			Assert.Equal(overlayHeightPadding, overlay.LayoutParameters?.Height); // no insets: a status bar height of 0 plus the padding
+			Assert.Equal(overlayHeightPadding, overlay.LayoutParameters?.Height);
 		});
 	}
 
@@ -685,10 +681,8 @@ public partial class StatusBarTests
 		}
 	}
 
-	// The width and height (pixels) of the view that AddAppViewToTheContent adds.
 	internal const int AppViewSize = 10;
 
-	// Adds a small blue view with the given tag to the activity's content (the app's views live there), as an app could have one.
 	internal static AView AddAppViewToTheContent(string tag)
 	{
 		var content = AndroidSystemBars.Activity.FindViewById<Android.Widget.FrameLayout>(Android.Resource.Id.Content) ?? throw new InvalidOperationException("The activity has no content view.");

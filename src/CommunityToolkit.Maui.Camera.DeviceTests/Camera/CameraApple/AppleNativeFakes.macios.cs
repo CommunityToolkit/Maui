@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // Managed subclasses of AVFoundation classes ("native fakes"). Neither the iOS simulator nor a CI Mac has a camera, and the Mac that
 // runs these tests cannot grant the camera permission headlessly, so CameraManager's device configuration, photo capture and
 // connection code could never run. CameraManager only talks to these classes through virtual members, so a subclass that overrides
-// them runs the real toolkit code against scripted native behavior and records what the toolkit asked the native API to do.
+// them runs the real toolkit code against scripted native behavior.
 //
 // The fakes that derive from classes without a public constructor (AVCaptureDevice, AVCaptureDeviceFormat, AVCapturePhoto,
 // AVCaptureConnection, AVCaptureDeviceRotationCoordinator, AVCaptureDeviceInput) are allocated without being initialized
@@ -28,7 +28,7 @@ sealed class FakeCaptureDevice : AVCaptureDevice
 		DangerousRetain();
 	}
 
-	// Dispose() releases the managed wrapper; the extra native retain keeps Handle non-zero, so disposal is recorded here.
+	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
 
 	protected override void Dispose(bool disposing)
@@ -45,7 +45,6 @@ sealed class FakeCaptureDevice : AVCaptureDevice
 
 	public override int GetHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 
-	// What a discovery session reports about the device (CameraProvider.macios.cs reads these).
 	public AVCaptureDevicePosition DevicePosition { get; set; } = AVCaptureDevicePosition.Back;
 
 	public AVCaptureDeviceFormat[] DeviceFormats { get; set; } = [];
@@ -56,7 +55,7 @@ sealed class FakeCaptureDevice : AVCaptureDevice
 
 	public bool FlashIsAvailable { get; set; }
 
-	// When set, every call is also appended here with a "device:" prefix, to check its order against a FakeCaptureSession's calls.
+	// Share one list with a FakeCaptureSession to check the order of the calls across both fakes.
 	public List<string>? Timeline { get; set; }
 
 	public bool TorchIsAvailable { get; set; }
@@ -71,7 +70,6 @@ sealed class FakeCaptureDevice : AVCaptureDevice
 
 	public AVCaptureDeviceFormat? CurrentFormat { get; set; }
 
-	// When not null, LockForConfiguration fails with this error (the device is locked by another client).
 	public NSError? LockError { get; set; }
 
 	// AVFoundation documents that -[AVCaptureDevice setActiveFormat:] raises NSInvalidArgumentException for a format that is not in the
@@ -84,7 +82,6 @@ sealed class FakeCaptureDevice : AVCaptureDevice
 
 	public int UnlockCount { get; private set; }
 
-	// Every write to the device in the order it happened: "lock", "unlock", "torch=On", "zoom=2", "format=1280x720".
 	public IReadOnlyList<string> Calls => calls;
 
 	// A property write outside a lock/unlock pair is a bug against the AVCaptureDevice contract, which raises NSGenericException.
@@ -210,7 +207,7 @@ sealed class FakeCaptureDeviceFormat : AVCaptureDeviceFormat
 
 	public int Height { get; }
 
-	// Dispose() releases the managed wrapper; the extra native retain keeps Handle non-zero, so disposal is recorded here.
+	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
 
 	protected override void Dispose(bool disposing)
@@ -225,23 +222,20 @@ sealed class FakeCaptureDeviceFormat : AVCaptureDeviceFormat
 		format is FakeCaptureDeviceFormat fake ? $"{fake.Width}x{fake.Height}" : "real-format";
 }
 
-// An AVCapturePhotoOutput (a real native output: its constructor is public) whose capture is scripted. CameraManager.PlatformTakePicture
-// asks it for the supported flash modes and the video connection, hands it the photo settings and the delegate, and waits for the delegate.
+// AVCapturePhotoOutput has a public constructor, so this fake is a real native output.
 [Register("DeviceTestsFakePhotoOutput")]
 sealed class FakePhotoOutput : AVCapturePhotoOutput
 {
 	public AVCaptureFlashMode[] FlashModes { get; set; } = [AVCaptureFlashMode.Off, AVCaptureFlashMode.On, AVCaptureFlashMode.Auto];
 
-	// What ConnectionFromMediaType returns: null means that the output has no video connection (it is not attached to a camera).
-	// A photo output that captures needs one, so the default is a connection that supports nothing.
+	// A photo output that captures needs a video connection, so the default is a connection that supports nothing.
 	public AVCaptureConnection? VideoConnection { get; set; } = new FakeCaptureConnection();
 
-	// The photo pixel formats that the output reports for any file type (-supportedPhotoPixelFormatTypesForFileType:). The toolkit must never ask:
-	// the capture format comes from the requested resolution or from the session preset, never from the photo output. The tests
-	// script an output that supports some formats, so that a toolkit that asked it would choose differently, and check RequestedFileTypes.
+	// The toolkit must never ask the output for its photo pixel formats (-supportedPhotoPixelFormatTypesForFileType:): the capture format
+	// comes from the requested resolution or from the session preset. The tests script an output that supports some formats, so that a
+	// toolkit that asked it would choose differently, and check RequestedFileTypes.
 	public NSNumber[] SupportedPixelFormats { get; set; } = [];
 
-	// Called by CapturePhoto with the delegate that the toolkit waits for. Leave it null to never finish the capture.
 	public Action<FakePhotoOutput, AVCapturePhotoCaptureDelegate>? OnCapture { get; set; }
 
 	public List<string> RequestedMediaTypes { get; } = [];
@@ -250,16 +244,13 @@ sealed class FakePhotoOutput : AVCapturePhotoOutput
 
 	public int CaptureCount { get; private set; }
 
-	// Captures that the output refused because it had no active and enabled video connection.
 	public int RejectedCaptureCount { get; private set; }
 
-	// The flash mode of the AVCapturePhotoSettings that the toolkit passed (a native property of the real settings object).
 	public AVCaptureFlashMode? FlashModeAtCapture { get; private set; }
 
-	// The format of the AVCapturePhotoSettings that the toolkit passed (AVVideo.CodecKey names the codec of the photo).
 	public NSDictionary<NSString, NSObject>? FormatAtCapture { get; private set; }
 
-	// The connection state when the capture started, to prove that the connection was configured first.
+	// Proves that the connection was configured before the capture started.
 	public bool? MirroredAtCapture { get; private set; }
 
 	public override AVCaptureFlashMode[] SupportedFlashModes => FlashModes;
@@ -298,7 +289,6 @@ sealed class FakePhotoOutput : AVCapturePhotoOutput
 	}
 }
 
-// An AVCapturePhoto whose file data (or the failure to produce it) is scripted.
 [Register("DeviceTestsFakeCapturePhoto")]
 sealed class FakeCapturePhoto : AVCapturePhoto
 {
@@ -310,7 +300,7 @@ sealed class FakeCapturePhoto : AVCapturePhoto
 		this.fileData = fileData;
 	}
 
-	// Dispose() releases the managed wrapper; the extra native retain keeps Handle non-zero, so disposal is recorded here.
+	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
 
 	protected override void Dispose(bool disposing)
@@ -330,7 +320,6 @@ sealed class FakeCapturePhoto : AVCapturePhoto
 	public override NSData FileDataRepresentation => fileData()!;
 }
 
-// An AVCaptureConnection that records what CameraManager.TryConfigureAVCaptureConnection writes to it.
 [Register("DeviceTestsFakeCaptureConnection")]
 sealed class FakeCaptureConnection : AVCaptureConnection
 {
@@ -341,7 +330,7 @@ sealed class FakeCaptureConnection : AVCaptureConnection
 		DangerousRetain();
 	}
 
-	// Dispose() releases the managed wrapper; the extra native retain keeps Handle non-zero, so disposal is recorded here.
+	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
 
 	protected override void Dispose(bool disposing)
@@ -409,7 +398,6 @@ sealed class FakeCaptureConnection : AVCaptureConnection
 	}
 }
 
-// An AVCaptureDeviceRotationCoordinator (iOS 17+) that reports a scripted horizon-level capture angle.
 [Register("DeviceTestsFakeRotationCoordinator")]
 sealed class FakeRotationCoordinator : AVCaptureDeviceRotationCoordinator
 {
@@ -421,7 +409,7 @@ sealed class FakeRotationCoordinator : AVCaptureDeviceRotationCoordinator
 		this.captureAngle = captureAngle;
 	}
 
-	// Dispose() releases the managed wrapper; the extra native retain keeps Handle non-zero, so disposal is recorded here.
+	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
 
 	protected override void Dispose(bool disposing)
@@ -441,7 +429,6 @@ sealed class FakeRotationCoordinator : AVCaptureDeviceRotationCoordinator
 	public override nfloat VideoRotationAngleForHorizonLevelCapture => (nfloat)captureAngle;
 }
 
-// A stand-in for the AVCaptureDeviceInput that PlatformStartCameraPreview creates for the camera; only its release is observable.
 [Register("DeviceTestsFakeCaptureDeviceInput")]
 sealed class FakeCaptureDeviceInput : AVCaptureDeviceInput
 {
@@ -450,7 +437,7 @@ sealed class FakeCaptureDeviceInput : AVCaptureDeviceInput
 		DangerousRetain();
 	}
 
-	// Dispose() releases the managed wrapper; the extra native retain keeps Handle non-zero, so disposal is recorded here.
+	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
 
 	protected override void Dispose(bool disposing)
@@ -468,7 +455,7 @@ sealed class FakeCaptureDeviceInput : AVCaptureDeviceInput
 	public override int GetHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 }
 
-// Collects what code under test writes to System.Diagnostics.Trace (CameraManager traces lock failures and connection warnings).
+// CameraManager traces lock failures and connection warnings through System.Diagnostics.Trace.
 sealed class TraceRecorder : System.Diagnostics.TraceListener
 {
 	readonly List<string> lines = [];
@@ -512,9 +499,10 @@ sealed class TraceRecorder : System.Diagnostics.TraceListener
 	}
 }
 
-// An AVCaptureSession (a real native session: its constructor is public) that records every call CameraManager makes and never
-// touches a camera. A real session needs a camera input to configure, and on the iOS simulator its StartRunning and StopRunning each take
-// about 9 s (measured with a preview layer), so the real session cannot be used to test the start/stop logic everywhere. Inputs and outputs are kept in managed lists: the fake never forwards them to AVFoundation.
+// An AVCaptureSession (a real native session: its constructor is public) that never touches a camera. A real session needs a camera
+// input to configure, and on the iOS simulator its StartRunning and StopRunning each take about 9 s (measured with a preview layer), so
+// the real session cannot be used to test the start/stop logic everywhere. Inputs and outputs are kept in managed lists: the fake never
+// forwards them to AVFoundation.
 [Register("DeviceTestsFakeCaptureSession")]
 sealed class FakeCaptureSession : AVCaptureSession
 {
@@ -522,24 +510,21 @@ sealed class FakeCaptureSession : AVCaptureSession
 	readonly List<AVCaptureInput> inputs = [];
 	readonly List<AVCaptureOutput> outputs = [];
 
-	// Every call in the order it happened: "begin", "commit", "add-input", "remove-input", "add-output", "remove-output", "start", "stop".
 	public IReadOnlyList<string> Calls => calls;
 
-	// When set, every call is also appended here with a "session:" prefix, to check its order against a FakeCaptureDevice's calls.
+	// Share one list with a FakeCaptureDevice to check the order of the calls across both fakes.
 	public List<string>? Timeline { get; set; }
 
 	public bool CanAddInputResult { get; set; } = true;
 
 	public bool CanAddOutputResult { get; set; } = true;
 
-	// Calls that raise this exception instead of changing the session, keyed by their name in Calls ("add-input", "remove-input",
-	// "add-output", "remove-output"). AVFoundation raises NSInvalidArgumentException for an input or output that the session cannot take,
-	// which the binding surfaces as ObjCException.
+	// AVFoundation raises NSInvalidArgumentException for an input or output that the session cannot take, which the binding surfaces as
+	// ObjCException.
 	public Dictionary<string, Exception> Failures { get; } = [];
 
 	public bool IsRunning { get; set; }
 
-	// True between BeginConfiguration and CommitConfiguration.
 	public bool IsConfiguring { get; private set; }
 
 	public List<AVCaptureInput> RemovedInputs { get; } = [];
@@ -652,8 +637,7 @@ sealed class FakeCaptureSession : AVCaptureSession
 	}
 }
 
-// An AVCaptureDeviceDiscoverySession (no public initializer) that reports scripted devices. AppleDiscoveryStub hands it to the toolkit
-// in place of the session that +[AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:mediaType:position:] creates.
+// AVCaptureDeviceDiscoverySession has no public initializer.
 [Register("DeviceTestsFakeDeviceDiscoverySession")]
 sealed class FakeDeviceDiscoverySession : AVCaptureDeviceDiscoverySession
 {
@@ -676,8 +660,8 @@ sealed class FakeDeviceDiscoverySession : AVCaptureDeviceDiscoverySession
 	public override AVCaptureDevice[] Devices => devices;
 }
 
-// A CMMotionManager (a real native object: its initializer is public) that records the accelerometer calls of CameraManager and reports
-// a scripted reading. The simulator and Macs have no accelerometer, so the real manager never has a reading.
+// CMMotionManager has a public initializer, so this fake is a real native object. The simulator and Macs have no accelerometer, so the
+// real manager never has a reading.
 [Register("DeviceTestsFakeMotionManager")]
 sealed class FakeMotionManager : CMMotionManager
 {
@@ -702,7 +686,7 @@ sealed class FakeMotionManager : CMMotionManager
 	}
 }
 
-// A CMAccelerometerData (no public initializer) with a scripted acceleration.
+// CMAccelerometerData has no public initializer.
 [Register("DeviceTestsFakeAccelerometerData")]
 sealed class FakeAccelerometerData : CMAccelerometerData
 {

@@ -14,8 +14,6 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaElementHandler.android.cs, the Android blocks of MediaElementHandler.shared.cs and the textureview.xml layout: what the handler
-// builds, how it maps MediaElement properties and commands onto the ExoPlayer/PlayerView, and how it tears them down.
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
@@ -66,8 +64,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The TextureView player is inflated from Platforms/Android/Resources/layout/textureview.xml (surface_type texture_view,
-	// white shutter, id texture_view_media_element): the resource attributes show up on the native PlayerView.
+	// The shutter color and the id come from Platforms/Android/Resources/layout/textureview.xml, which the handler inflates for a TextureView.
 	[Fact]
 	public async Task HandlerInflatesTextureViewLayoutWhenAndroidViewTypeIsTextureView()
 	{
@@ -131,7 +128,6 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync();
 
-		// The handler needs the UI thread's dispatcher; a thread-pool thread has none.
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => Task.Run(() =>
 		{
 			var handler = new AndroidMediaElementProbeHandler();
@@ -200,7 +196,6 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			DisposePlatformViewThenHandler(mediaElement, handler);
 			Assert.Null(handler.Manager);
 
-			// Catches: MediaManager?.UpdateShouldLoopPlayback() turned into MediaManager!.UpdateShouldLoopPlayback()
 			var exception = Record.Exception(() => MediaElementHandler.ShouldLoopPlayback(handler, mediaElement));
 
 			Assert.Null(exception);
@@ -253,7 +248,6 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		AndroidMediaElementProbeHandler? disconnectedHandler = null;
 		await WithHandlerAsync(mediaElement, handler => disconnectedHandler = handler);
 
-		// The element still has its (disconnected) handler, which has no MediaManager any more.
 		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() =>
 		{
 			mediaElement.Aspect = Aspect.Fill;
@@ -308,7 +302,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 	}
 
 	// MAUI's IElementHandler.DisconnectHandler calls the toolkit's DisconnectHandler(platformView) only while the handler has a platform view,
-	// so it never runs twice through MAUI. Called twice directly, the second run finds the view disposed and the manager gone, and does nothing.
+	// so it never runs twice through MAUI: the test calls it twice directly.
 	[Fact]
 	public async Task DisconnectHandlerCalledTwiceDoesNotThrow()
 	{
@@ -364,7 +358,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 			firstManager = handler.Manager;
 		});
-		// HostAsync disconnected the handler. The MediaElement keeps its Source, and a new handler gets a new manager and player.
+		// HostAsync disconnected the handler.
 
 		await HostAsync(mediaElement, async handler =>
 		{
@@ -451,7 +445,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(PlayerConsts.StateIdle, player.PlaybackState);
 			Assert.Equal(0, player.CurrentPosition);
 			Assert.Equal(TimeSpan.Zero, mediaElement.Position);
-			// ExoPlayer reports the idle player through OnPlayerStateChanged: the loaded (paused) MediaElement stops.
+			// The MediaElement stops when ExoPlayer reports the idle player through OnPlayerStateChanged.
 			await WaitForStateAsync(mediaElement, MediaElementState.Stopped);
 		});
 	}
@@ -541,7 +535,6 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// MapSeekRequested is documented to do nothing when its arguments are not MediaSeekRequestedEventArgs: no exception and no seek.
 	[Fact]
 	public async Task SeekRequestWithWrongArgumentsDoesNothing()
 	{
@@ -574,15 +567,14 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			var seekCompleted = ((IMediaElement)mediaElement).SeekCompletedTCS;
 			Assert.False(seekCompleted.Task.IsCompleted);
 
-			// No MediaManager any more: the null-conditional Seek is replaced by a completed task, and the awaiting SeekTo is released.
 			MediaElementHandler.MapSeekRequested(handler, mediaElement, new MediaSeekRequestedEventArgs(TimeSpan.FromSeconds(1)));
 
 			await seekCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 		});
 	}
 
-	// MapSeekRequested completes the task of the SeekTo that requested the seek: it takes that task before it waits for the seek. A SeekTo whose
-	// token ended its wait is replaced by the next SeekTo, and the answer to its seek, which comes later, must not complete the next SeekTo.
+	// MapSeekRequested takes the task of the SeekTo that requested the seek before it waits for the seek, so the late answer to a cancelled
+	// SeekTo does not complete the next one.
 	[Fact]
 	public async Task SeekToCancelledByItsTokenDoesNotCompleteTheNextSeekTo()
 	{
@@ -603,7 +595,6 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			var second = mediaElement.SeekTo(TimeSpan.FromSeconds(2));
 			Assert.False(second.IsCompleted);
 
-			// The player answers the first seek, which the manager still waits for: that ends the first seek only.
 			handler.Manager!.OnPlaybackStateChanged(PlayerConsts.StateReady);
 
 			Assert.False(await AssertHelpers.Wait(() => second.IsCompleted, timeout: 1000), "The answer to the first seek completed the second SeekTo, whose own seek had not been answered.");
@@ -627,7 +618,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
 		{
 			// The handler's exception comes wrapped (MAUI's WeakEventManager invokes handlers through reflection): the text of the whole exception
-			// holds the unique message
+			// holds the unique message.
 			if (e.Exception.ToString().Contains(failureMessage, StringComparison.Ordinal))
 			{
 				unobservedFailures.Enqueue(e.Exception);
@@ -656,12 +647,11 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 					await Assert.ThrowsAnyAsync<OperationCanceledException>(() => seek);
 				}
 
-				// The player answers the seek, which the manager still waits for: the seek ends, and its SeekCompleted handler fails it.
 				handler.Manager!.OnPlaybackStateChanged(PlayerConsts.StateReady);
 				await AssertionExtensions.AssertEventually(() => seekEnded, timeout: 5000, message: "The seek never ended.");
 			});
 
-			// Collecting the task of the seek request runs the finalizer that reports an exception nothing observed
+			// Collecting the task of the seek request runs the finalizer that reports an exception nothing observed.
 			await AssertionExtensions.WaitForGC(seekRequestTask!);
 			GC.WaitForPendingFinalizers();
 
@@ -686,7 +676,6 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		handler.InvokeDispose(true);
 	}
 
-	// The PlayerView is created by the handler; the ids and colors come from the XML resources, so they are read through the resources.
 	static int GetResourceId(PlayerView playerView, string name) =>
 		playerView.Context!.Resources!.GetIdentifier(name, "id", playerView.Context.PackageName);
 

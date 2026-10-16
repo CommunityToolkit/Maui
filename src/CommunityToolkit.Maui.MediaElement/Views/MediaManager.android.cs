@@ -606,8 +606,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				return;
 			}
 
-			// The source cannot be applied. Like a source that cannot be played, it replaced the previous media, which must not keep playing nor
-			// report its end for this source, and it is reported through MediaFailed (which also resets the duration)
+			// Like a source that cannot be played, a source that cannot be applied replaced the previous media, which must not keep playing nor
+			// report its end for this source. It is reported through MediaFailed, which also resets the duration.
 			Player.Stop();
 			Player.ClearMediaItems();
 
@@ -756,7 +756,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		// We're going to mute state. Capture the current volume first so we can restore later.
-		// It is the MediaElement's: the player's is not set yet when the handler connects to a MediaElement that is muted already
+		// That volume is the MediaElement's: the player's is not set yet when the handler connects to a MediaElement that is muted already
 		if (MediaElement.ShouldMute)
 		{
 			volumeBeforeMute = (float)MediaElement.Volume;
@@ -847,10 +847,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				var response = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
 				stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 			}
-			// Absolute File Path or file URI
 			else if (uri is not null && uri.Scheme == Uri.UriSchemeFile)
 			{
-				// A file URI names its file by its local path, an absolute path is the path itself
+				// An absolute path parses as a file URI too: a file URI names its file by its local path, an absolute path is the path itself
 				var normalizedFilePath = url.StartsWith($"{Uri.UriSchemeFile}:", StringComparison.OrdinalIgnoreCase) ? uri.LocalPath : NormalizeFilePath(url);
 
 				stream = File.OpenRead(normalizedFilePath);
@@ -976,7 +975,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
 		}
 
-		// The source has no data: there is no media item to play
 		return null;
 	}
 

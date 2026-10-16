@@ -10,10 +10,8 @@ using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Views/MediaManager.windows.cs: UriMediaSource with HTTP headers (SetUriSourceWithHeaders, OnAdaptiveMediaSourceDownloadRequested, the
-// HttpClient and AdaptiveMediaSource lifetime). A WinMediaHttpServer on the loopback interface answers and records every request, so the tests
-// assert what actually went over the wire. Whether the platform plays the local HLS streams at all is decided by probes on a plain
-// MediaPlayer / AdaptiveMediaSource before the toolkit is touched, so a toolkit failure always fails the test.
+// Whether the platform plays the local HLS streams at all is decided by probes on a plain MediaPlayer / AdaptiveMediaSource before the toolkit is
+// touched, so a toolkit failure always fails the test.
 [Category(TestCategory.MediaManagerSourceWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerNetworkWindowsTests : WinMediaTestBase
@@ -29,14 +27,14 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 				: WinMediaResponse.NotFound(),
 		}.Start();
 
-	// The VOD playlist with a segment that is not playable media: enough for every test that looks only at the requests.
 	static WinMediaHttpServer StartHlsServer(Func<WinMediaResponse> segmentResponse) =>
 		WinMediaHls.StartServer(WinMediaHls.VodPlaylist, request => request.Path == "/hls/seg0.ts" ? segmentResponse() : null);
 
+	// Not playable media, which is enough for every test that looks only at the requests.
 	static WinMediaResponse DummySegment() => new() { Body = [0, 1, 2, 3] };
 
-	// The VOD playlist, whose manifest is held back from the toolkit (from the requests that carry the test header) until releaseManifest is set.
-	// A plain AdaptiveMediaSource (RequireAdaptiveManifestAsync) gets it at once.
+	// Only the toolkit's requests (the ones that carry the test header) are held back, so that the plain AdaptiveMediaSource of
+	// RequireAdaptiveManifestAsync gets the manifest at once.
 	static WinMediaHttpServer StartHlsServerThatHoldsTheManifestBack(ManualResetEventSlim releaseManifest) =>
 		WinMediaHls.StartServer(WinMediaHls.VodPlaylist, request =>
 		{
@@ -60,7 +58,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 
 	static Task UpdateSourceAsync(WinMediaManagerFixture fixture) => InvokeOnMainThreadAsync(async () => await fixture.Manager.UpdateSource());
 
-	// The platform decides whether it accepts the playlist; probe it with a plain AdaptiveMediaSource so that a toolkit regression cannot become a skip.
 	static async Task RequireAdaptiveManifestAsync(Uri playlistUri)
 	{
 		AdaptiveMediaSourceCreationResult result;
@@ -90,11 +87,9 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 
 		await UpdateSourceAsync(fixture);
 
-		// The player opens the stream (or fails to, without a decoder) through the manager's requests; the test looks at them once that open has
-		// ended, which also keeps it from ending while the open is in flight.
+		// The player opens the stream (or fails to, without a decoder) through the manager's requests: the test looks at them once that open has ended.
 		await opens.UntilOpensEndedAsync(1);
 
-		// A plain MP4 is no adaptive manifest: after the attempt the manager measures it with a HEAD request and reads it with Range requests.
 		var requests = server.Requests;
 		Assert.NotEmpty(requests);
 		Assert.All(requests, request => Assert.Equal(headerValue, request.Header(headerName)));
@@ -118,9 +113,8 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		await WaitUntilAsync(() => fixture.View.MediaWidth == WinMediaAssets.VideoWidth, "The clip streamed over HTTP never reported its natural width.");
 	}
 
-	// A source that cannot be applied is reported through MediaFailed, and UpdateSource does not throw: here HttpRandomAccessStream.CreateAsync
-	// measures the resource with a HEAD request, which the server refuses. The message is the one of the exception of that request (the oracle
-	// makes the same request once the manager is done), whose HResult carries the HTTP status: 0x80190000 + 405.
+	// The expected message is the one of the exception that the refused HEAD request raises (the oracle makes the same request once the manager is
+	// done); its HResult carries the HTTP status: 0x80190000 + 405.
 	[Fact]
 	public async Task HeaderSourceWhoseServerRejectsHeadRaisesMediaFailedWithTheMessageOfTheHttpError()
 	{
@@ -152,8 +146,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		Assert.Equal(expected.Message, failure.ErrorMessage);
 	}
 
-	// The app replaces a header source while that source is still opening (its HEAD request is held back by the server). The newer source is
-	// applied completely; when the older one finishes opening, it must not take the player back.
 	[Fact]
 	public async Task SourceChangedWhileAHeaderSourceIsStillOpeningKeepsTheNewerSource()
 	{
@@ -189,7 +181,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 			releaseHead.Set();
 			await olderUpdate.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 
-			// Whichever source the player ends up with, its open must end before the test does.
 			await opens.UntilOpensEndedAsync(1);
 
 			await InvokeOnMainThreadAsync(() => Assert.Same(newerNativeSource, fixture.Element!.Source));
@@ -200,8 +191,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		}
 	}
 
-	// The same race when the older header source then fails to open (its server rejects the HEAD request it held back): that failure concerns a
-	// source the MediaElement no longer has, so the older update ends without throwing and without MediaFailed, and the newer source stays.
 	[Fact]
 	public async Task FailureOfAHeaderSourceThatWasReplacedWhileOpeningIsNeitherThrownNorReported()
 	{
@@ -240,7 +229,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 			releaseHead.Set();
 			var failure = await Record.ExceptionAsync(() => olderUpdate.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds)));
 
-			// The newer source's open must end before the test does.
 			await opens.UntilOpensEndedAsync(1);
 
 			Assert.Null(failure);
@@ -253,9 +241,8 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		}
 	}
 
-	// The adaptive (HLS) counterpart of SourceChangedWhileAHeaderSourceIsStillOpeningKeepsTheNewerSource: the server holds the manifest back, so the
-	// older update is still in AdaptiveMediaSource.CreateFromUriAsync when the newer source is applied. Once the manifest arrives, the older update
-	// must neither keep the adaptive source it created (the manager would answer its downloads) nor give it to the player.
+	// Once the manifest arrives, the older update must neither keep the adaptive source it created (the manager would answer its downloads) nor
+	// give it to the player.
 	[Fact]
 	public async Task HeaderHlsSourceReplacedWhileItsManifestLoadsKeepsTheNewerSource()
 	{
@@ -280,7 +267,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 			releaseManifest.Set();
 			var failure = await Record.ExceptionAsync(() => olderUpdate.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds)));
 
-			// The newer source's open must end before the test does.
 			await opens.UntilOpensEndedAsync(1);
 
 			Assert.Null(failure);
@@ -294,8 +280,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		}
 	}
 
-	// The handler disconnects (Dispose) while the manifest of a header HLS source loads: when it arrives, the update must apply nothing, keep
-	// nothing and end without an exception.
 	[Fact]
 	public async Task DisposeWhileAHeaderHlsSourceLoadsItsManifestAppliesNothing()
 	{
@@ -327,8 +311,7 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		}
 	}
 
-	// The second check of SetUriSourceWithHeaders, on the UI thread: the manifest has loaded and the adaptive source is on its way to the player
-	// when a newer source is applied. The adaptive source of the older update must not reach the player.
+	// Covers the version check that SetUriSourceWithHeaders repeats on the UI thread.
 	[Fact]
 	public async Task HeaderHlsSourceReplacedOnItsWayToThePlayerIsNotApplied()
 	{
@@ -339,14 +322,13 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 
 		var (fixture, _) = await ReplaceAHeaderHlsSourceOnItsWayToThePlayerAsync(server);
 
-		// The player has the newer (stream) source, not a MediaSource around the adaptive source of the older update.
 		await InvokeOnMainThreadAsync(() => Assert.Null(Assert.IsType<WinMediaSource>(fixture.Element!.Source).AdaptiveMediaSource));
 		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "adaptiveMediaSource"));
 		Assert.DoesNotContain(server.Requests, request => request.Path == "/hls/seg0.ts");
 	}
 
-	// The same race: nothing uses the adaptive source of the superseded update any more (the newer update has unsubscribed it), so the update
-	// closes it, and the MediaSource it created around it, instead of leaving their resources to the garbage collector.
+	// Nothing uses the adaptive source of the superseded update any more (the newer update has unsubscribed it), so the update closes it, and the
+	// MediaSource it created around it, instead of leaving their resources to the garbage collector.
 	[Fact]
 	public async Task HeaderHlsSourceReplacedOnItsWayToThePlayerIsClosed()
 	{
@@ -362,10 +344,9 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		Assert.True(WinMediaClosed.IsClosed(() => superseded.IsLive), "The adaptive source of the superseded update was not closed.");
 	}
 
-	// Applies a header HLS source and, at the moment the manager hands the adaptive source of that update to the UI thread (its manifest has
-	// loaded, the version check under the lock has passed), a newer stream source: the dispatcher starts the newer update on the UI thread and
-	// waits until its synchronous part (the new version) has run before it queues the older update's work. Returns once both updates have ended
-	// and the newer source's open has ended, with the adaptive source of the superseded update.
+	// At the moment the manager hands the adaptive source of the older update to the UI thread (its manifest has loaded, the version check under the
+	// lock has passed), the dispatcher starts the update to a newer stream source on the UI thread and waits until its synchronous part (the new
+	// version) has run before it queues the older update's work.
 	async Task<(WinMediaManagerFixture Fixture, AdaptiveMediaSource Superseded)> ReplaceAHeaderHlsSourceOnItsWayToThePlayerAsync(WinMediaHttpServer server)
 	{
 		// Registered before the fixture, so that it is disposed after the player that reads it is released (cleanups run last registered first).
@@ -414,7 +395,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		await newerUpdate.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 		await FlushDispatcherAsync();
 
-		// The newer source's open must end before the test does.
 		await opens.UntilOpensEndedAsync(1);
 		return (fixture, superseded);
 	}
@@ -431,8 +411,8 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		var clientAfterFirstSource = WinMediaReflection.GetField<object?>(fixture.Manager, "headerHttpClient");
 		Assert.NotNull(clientAfterFirstSource);
 
-		// Each source is opened to its end (opened, or failed without a decoder), so no open is in flight when the next step or the test's end
-		// comes, and the second source's requests below include those of its open.
+		// Each source is opened to its end (opened, or failed without a decoder), so no open is in flight when the next step comes, and the second
+		// source's requests below include those of its open.
 		await opens.UntilOpensEndedAsync(1);
 		await SetSourceAsync(fixture.View, HeaderSource(server.UriFor("b.mp4"), "X-Device-Test-B", "2"), fixture.Manager);
 		await opens.UntilOpensEndedAsync(2);
@@ -462,7 +442,7 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		var fixture = await CreateManagerAsync();
 		var opens = new WinMediaOpenWatcher(fixture.Player!);
 
-		// More header sources than the six connections of a host, one after another, each opened to its end
+		// More header sources than the six connections of a host.
 		const int sources = 8;
 		for (var i = 1; i <= sources; i++)
 		{
@@ -489,8 +469,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		await WaitUntilAsync(() => fixture.View.CurrentState is MediaElementState.Opening, "The manager did not report the Opening state.");
 	}
 
-	// A header the platform refuses cannot be applied either: MediaFailed, with the message of the manager's InvalidOperationException, which names
-	// the header. UpdateSource does not throw, and no request is made.
 	[Fact]
 	public async Task HeaderWithAnIllegalNameRaisesMediaFailedThatNamesTheHeader()
 	{
@@ -583,7 +561,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		await RequireDecoderAsync();
 		await RequireStarvationBufferingAsync();
 
-		// The second segment never arrives, so playback runs dry after the first one and the player waits for data.
 		await using var server = WinMediaHls.StartServer(WinMediaHls.StarvingPlaylist);
 		var fixture = await CreateManagerAsync();
 		await OpenAsync(fixture.View, HeaderSource(server.UriFor(WinMediaHls.PlaylistPath)), fixture.Manager);
@@ -595,9 +572,8 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 	}
 
 	// After Stop() (or the end of the media) the player can buffer before it settles, for example while a network source loads the position Stop()
-	// rewound to: that Buffering must not overwrite Stopped, until Play() starts playback again. The manager's handler gets the session of a player
-	// that really is buffering (the second segment never arrives) while the manager is in the state Stop() leaves it in; Stop() itself is not
-	// called, because its pause would end the buffering.
+	// rewound to. The manager's handler gets the session of a player that really is buffering (the second segment never arrives) while the manager
+	// is in the state Stop() leaves it in; Stop() itself is not called, because its pause would end the buffering.
 	[Fact]
 	public async Task NativeBufferingAfterStopKeepsReportingStoppedUntilPlay()
 	{
@@ -610,21 +586,19 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		await InvokeOnMainThreadAsync(() => fixture.Manager.Play());
 		await WaitUntilAsync(() => fixture.Player!.PlaybackSession.PlaybackState is MediaPlaybackState.Buffering, "The native player did not enter Buffering while the second segment was withheld.", 15000);
 
-		// Reported: the manager's own handler for that native state change has run.
+		// Reported: the manager's own handler for that native change has run, so it cannot overwrite the state the test sets below.
 		await WaitUntilAsync(() => fixture.View.CurrentState is MediaElementState.Buffering, "The manager did not report the Buffering state.");
 
 		await InvokeOnMainThreadAsync(() =>
 		{
 			var session = fixture.Player!.PlaybackSession;
 
-			// What Stop() and the end of the media leave behind: Stopped reported, and the native states the player settles through held back.
 			((IMediaElement)fixture.View).CurrentStateChanged(MediaElementState.Stopped);
 			WinMediaReflection.SetField(fixture.Manager, "keepReportingStopped", true);
 
 			WinMediaReflection.Invoke(fixture.Manager, "OnPlaybackSessionPlaybackStateChanged", session, null);
 			Assert.Equal(MediaElementState.Stopped, fixture.View.CurrentState);
 
-			// Play() starts playback again: its native states are reported as they come, the Buffering of the withheld segment first.
 			fixture.Manager.Play();
 			WinMediaReflection.Invoke(fixture.Manager, "OnPlaybackSessionPlaybackStateChanged", session, null);
 			Assert.Equal(MediaElementState.Buffering, fixture.View.CurrentState);
@@ -659,11 +633,8 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 
 		await UpdateSourceAsync(fixture);
 
-		// The platform asks the app for every download (DownloadRequested). The manager answered the segment request itself (it supplied the
-		// InputStream; without its handler the platform downloads the segment and InputStream stays null) ...
 		Assert.True(await probe.FirstSegmentAnsweredByTheManager.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds)), "The manager did not supply the downloaded segment (AdaptiveMediaSourceDownloadResult.InputStream) within 10 s.");
 
-		// ... with its header-carrying client.
 		var segmentRequests = server.Requests.Skip(baseline).Where(request => request.Path == "/hls/seg0.ts").ToList();
 		Assert.NotEmpty(segmentRequests);
 		Assert.All(segmentRequests, request => Assert.Equal(headerValue, request.Header(headerName)));
@@ -704,16 +675,16 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 
 		await WaitUntilAsync(() => server.Requests.Any(request => request.Method is "GET" && request.Path == "/hls/media.ts"), "The byte-range segment was never requested.");
 
-		// The segment is real media, so the player may open it: that open must end before the test does (or skips).
+		// The segment is real media, so the player may open it.
 		await opens.UntilOpensEndedAsync(1);
 		var request = server.Requests.First(request => request.Method is "GET" && request.Path == "/hls/media.ts");
 		Assert.Equal(headerValue, request.Header(headerName));
 		Assert.Equal(WinMediaHls.ExpectedByteRange(segmentLength), request.Header("Range"));
 	}
 
-	// The byte-range counterpart of AdaptiveSegmentDownloadedByTheToolkitIsPlayed. The manager fetches only the range of media.ts that the playlist
-	// names and supplies that part as the download, leaving the result's byte range as the platform set it, so the platform must take the stream
-	// as exactly that range: had it applied the offset to the stream again, the segment would be cut and would not play.
+	// The manager fetches only the range of media.ts that the playlist names and supplies that part as the download, leaving the result's byte range
+	// as the platform set it, so the platform must take the stream as exactly that range: had it applied the offset to the stream again, the segment
+	// would be cut and would not play.
 	[Fact]
 	public async Task ByteRangeSegmentDownloadedByTheToolkitIsPlayed()
 	{
@@ -748,7 +719,6 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 
 		await UpdateSourceAsync(fixture);
 
-		// The segment answers 500: the catch block reports it with Trace.WriteLine and completes the deferral.
 		await WaitUntilAsync(() => listener.Messages.Any(message => message.Contains("DownloadRequested failed for", StringComparison.Ordinal) && message.Contains("seg0.ts", StringComparison.Ordinal)),
 			"The failed segment download was not traced.");
 	}
@@ -804,8 +774,8 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		GC.KeepAlive(adaptiveSource);
 	}
 
-	// Opens a header source on a manager that only this method references, optionally replaces the source, disposes the manager and returns
-	// the adaptive source (strongly) and the manager (weakly). Not inlined, and the manager is never captured by a lambda that outlives it.
+	// Only this method references the manager (the caller gets it weakly): the method is not inlined, and the manager is never captured by a lambda
+	// that outlives it.
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	async Task<(AdaptiveMediaSource AdaptiveSource, WeakReference Manager)> OpenAHeaderSourceThenAsync(WinMediaHttpServer server, bool replaceTheSourceBeforeDisposing)
 	{
@@ -886,7 +856,7 @@ public class MediaManagerNetworkWindowsTests : WinMediaTestBase
 		var opens = new WinMediaOpenWatcher(fixture.Player!);
 		await UpdateSourceAsync(fixture);
 
-		// No open may be in flight when the manager is disposed or the test ends.
+		// No open may be in flight when the manager is disposed.
 		await opens.UntilOpensEndedAsync(1);
 		var client = WinMediaReflection.GetField<HttpClient>(fixture.Manager, "headerHttpClient");
 		Assert.False(WinMediaClosed.IsClosed(() => client.DefaultRequestHeaders), "Precondition: the live client answers.");

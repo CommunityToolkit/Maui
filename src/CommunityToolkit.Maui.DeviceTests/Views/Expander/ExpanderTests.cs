@@ -4,12 +4,6 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of Expander. The platform work is in the header tap handler (Expander.shared.cs `ResizeExpanderInItemsView`):
-// inside a ListView it makes the platform list recompute the row (iOS and Mac Catalyst reload the UITableView, Windows asks the
-// Cell to update its size, Android needs nothing), inside a CollectionView on Windows it resizes the realized item containers
-// (Expander.windows.cs). The shared tests run on every platform and read the native state: the platform visibility of the
-// content and the height of the row the platform list gives the Expander. The platform files hold the accessors and the
-// tests of the platform-only branches.
 [Category(TestCategory.Expander)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class ExpanderTests : CommunityToolkitHandlerTestBase
@@ -63,7 +57,6 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 
 			GetExpander(listView, 0).HandleHeaderTap(new TappedEventArgs(null));
 
-			// The row grows by the height of the content, and the next row moves down with it.
 			await AssertionExtensions.AssertEventually(() => GetRowHeight(listView, 0) >= collapsedHeight + contentHeight - 1, timeout: 5000,
 				message: $"The row should have grown by {contentHeight} from {collapsedHeight} but is {GetRowHeight(listView, 0)}.");
 			Assert.True(GetRowTop(listView, 1) >= secondRowTop + contentHeight - 1, "The second row should have moved down with the first row's growth.");
@@ -104,7 +97,6 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 		SetupBuilder();
 		var listView = CreateListView(itemCount: 1);
 
-		// The ListView has no handler, so there is no platform list to refresh. The cell is realized without one.
 		var expander = GetExpander(listView, 0);
 		Assert.Null(listView.Handler);
 		Assert.Same(listView, expander.Parent!.Parent);
@@ -122,7 +114,6 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 		var listView = new ListView();
 		var expander = new Expander { Header = new Label { Text = "Header" }, Content = new Label { Text = "Content" } };
 
-		// A ListView is the parent, but the Expander is not a Cell, so there is no row to update.
 		expander.Parent = listView;
 
 		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() => expander.HandleHeaderTap(new TappedEventArgs(null))));
@@ -198,8 +189,7 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 		await AssertionExtensions.WaitForGC(expanderReference, headerReference, handlerReference, platformViewReference);
 	}
 
-	// The Expander the ListView realized for the row (the template can also run for row measurement, so not every Expander the
-	// template created is on screen).
+	// The template can also run for row measurement, so not every Expander it created is on screen.
 	static Expander GetExpander(ListView listView, int row) =>
 		Assert.IsType<Expander>(Assert.IsType<ViewCell>(((ITemplatedItemsView<Cell>)listView).TemplatedItems[row]).View);
 

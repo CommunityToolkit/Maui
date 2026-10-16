@@ -4,9 +4,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the avatar is a ContentView whose subview is a UIImageView or a UILabel (inside a WrapperView while it has a
-// clip). The toolkit builds no clip geometry here (UIKit clips the content to the border shape), so a missing stroke shape leaves the
-// image without a clip.
+// The avatar's subview (a UIImageView or a UILabel) is inside a WrapperView while it has a clip. The toolkit builds no clip geometry here
+// (UIKit clips the content to the border shape), so a missing stroke shape leaves the image without a clip.
 public partial class AvatarViewTests
 {
 	static bool BuildsFallbackClipGeometry => false;

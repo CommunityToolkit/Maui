@@ -638,7 +638,6 @@ public class PopupPageTests : BaseViewTest
 	[InlineData(RootPageType.NavigationPage)]
 	public async Task OpenedEvent_ShouldNotBeRaisedAgain_WhenPopupAboveItIsClosed(RootPageType rootPageType)
 	{
-		// Arrange
 		var navigation = SetRootPage(rootPageType);
 
 		var lowerPopup = new Popup();
@@ -648,25 +647,19 @@ public class PopupPageTests : BaseViewTest
 		var lowerPopupPage = new PopupPage(lowerPopup, PopupOptions.Empty);
 		var upperPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
 
-		// Act
 		await lowerPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
 		await upperPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal(1, lowerPopupOpenedCount);
 		Assert.Equal(2, navigation.ModalStack.Count);
 
-		// Act
 		await upperPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Same(lowerPopupPage, Assert.Single(navigation.ModalStack));
 		Assert.Equal(1, lowerPopupOpenedCount);
 
-		// Act
 		await lowerPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Empty(navigation.ModalStack);
 		Assert.Equal(1, lowerPopupOpenedCount);
 
@@ -679,27 +672,22 @@ public class PopupPageTests : BaseViewTest
 	[InlineData(RootPageType.NavigationPage)]
 	public async Task OpenedEvent_ShouldBeRaisedOncePerShow_WhenTheSamePopupIsShownAgain(RootPageType rootPageType)
 	{
-		// Arrange
 		var navigation = SetRootPage(rootPageType);
 
 		var popup = new Popup();
 		var openedCount = 0;
 		popup.Opened += HandlePopupOpened;
 
-		// Act
 		var firstPopupPage = new PopupPage(popup, PopupOptions.Empty);
 		await firstPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
 		await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal(1, openedCount);
 
-		// Act
 		var secondPopupPage = new PopupPage(popup, PopupOptions.Empty);
 		await secondPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
 		await secondPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal(2, openedCount);
 
 		void HandlePopupOpened(object? sender, EventArgs e) => openedCount++;

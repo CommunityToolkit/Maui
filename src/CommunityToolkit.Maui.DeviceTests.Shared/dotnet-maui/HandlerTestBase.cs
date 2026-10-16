@@ -17,10 +17,6 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.DeviceTests
 {
-	/// <summary>
-	/// Base class for device tests of .NET MAUI Controls (xUnit creates one instance, and so one MauiApp, per test).
-	/// Each device-test app derives its own base class from this one that adds its toolkit package to the MauiApp.
-	/// </summary>
 	public class HandlerTestBase : HandlerTestBasement
 	{
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
@@ -35,9 +31,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			return CreateHandler<THandler>(view, MauiContext);
 		}
 
-		/// <summary>
-		/// Creates <typeparamref name="THandler"/> for <paramref name="view"/> on the UI thread, measured and arranged but not in a window.
-		/// </summary>
 		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
@@ -80,15 +73,9 @@ namespace CommunityToolkit.Maui.DeviceTests
 			});
 		}
 
-		/// <summary>
-		/// Waits for <see cref="VisualElement.Loaded"/> (default timeout 2 s, as dotnet/maui).
-		/// </summary>
 		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null) =>
 			frameworkElement.OnLoadedAsync(timeOut);
 
-		/// <summary>
-		/// Waits for <see cref="VisualElement.Unloaded"/> (default timeout 2 s, as dotnet/maui).
-		/// </summary>
 		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null) =>
 			frameworkElement.OnUnloadedAsync(timeOut);
 	}

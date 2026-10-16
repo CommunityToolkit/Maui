@@ -42,7 +42,7 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-    <!-- CameraView: packaged apps record audio only when the microphone capability is declared. -->
+    <!-- Packaged apps record audio only when the microphone capability is declared. -->
     <DeviceCapability Name="microphone" />
     <DeviceCapability Name="webcam" />
   </Capabilities>

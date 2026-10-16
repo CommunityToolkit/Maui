@@ -124,8 +124,8 @@ function Get-ManifestPublisher {
 }
 
 function Get-SigningCertificateThumbprint {
-    # Reuses or creates a self-signed code-signing certificate for the MSIX, like dotnet/maui's GenerateMsixCert task.
-    # Its subject must equal the manifest Publisher. Trusting it in LocalMachine\TrustedPeople needs admin once.
+    # The certificate is made the way dotnet/maui's GenerateMsixCert task makes it. Its subject must equal the manifest Publisher,
+    # and trusting it in LocalMachine\TrustedPeople needs admin once.
     param([string]$Subject)
 
     $certificate = Get-ChildItem -Path 'Cert:\CurrentUser\My' |
@@ -178,7 +178,7 @@ function Get-WindowsBuildProperties {
 }
 
 function Find-AppPackage {
-    # The app's MSIX under AppPackages (dotnet/maui: **/AppPackages/*/*.msix), never one of its Dependencies.
+    # A recursive search also finds the framework packages under Dependencies, which dotnet/maui's **/AppPackages/*/*.msix does not reach.
     param($Project)
 
     $packages = @(Get-ChildItem -LiteralPath $Project.Directory -Recurse -Filter '*.msix' -File -ErrorAction SilentlyContinue |
@@ -192,7 +192,7 @@ function Find-AppPackage {
 }
 
 function Get-PackageIdentityName {
-    # Reads Identity/@Name from the MSIX's AppxManifest.xml; MAUI derives it from ApplicationIdGuid or ApplicationId.
+    # MAUI derives the package identity from ApplicationIdGuid or ApplicationId, so it is read from the MSIX's AppxManifest.xml.
     param([string]$PackagePath)
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -220,8 +220,6 @@ function Get-PackageIdentityName {
 }
 
 function Invoke-WindowsProcess {
-    # Starts a process with an exact command line, waits up to the timeout (killing it after that) and returns
-    # its exit code and output.
     param(
         [string]$FilePath,
         [string]$Arguments,
@@ -283,8 +281,6 @@ function Invoke-WindowsProcess {
 }
 
 function Invoke-AppLaunch {
-    # Launches the app once with the given app arguments. Returns Status (ok, timeout, launch-failure, exited-at-launch) and
-    # the app's exit code when it is known.
     param($Run, [string]$AppArguments, [int]$TimeoutSeconds, [string]$Name)
 
     $logPrefix = Join-Path $Run.Output "launch-$Name"
@@ -342,7 +338,7 @@ function Get-AppExitDescription {
 }
 
 function Enable-CrashDumps {
-    # Windows Error Reporting LocalDumps for the app's exe (needs admin; skipped otherwise).
+    # Needs admin; the dumps are skipped without it.
     param([string]$ExecutableName, [string]$Folder)
 
     $key = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\$ExecutableName"
@@ -395,7 +391,6 @@ function Save-WindowsDiagnostics {
 }
 
 function Install-AppPackage {
-    # Installs the MSIX's framework dependencies and the app; returns $null or an error message.
     param($Run, [string]$Architecture)
 
     Import-AppxCmdlets
@@ -450,9 +445,9 @@ function Install-AppPackage {
 }
 
 function Select-TestCategories {
-    # Applies the TestFilter to the discovered categories with the semantics of dotnet/maui's
-    # DeviceTestSharedHelpers.GetExcludedTestCategories (case-sensitive names). The human-only category is never
-    # selected: a category launch skips only the other discovered categories, not the app's own headless skip list.
+    # Follows the semantics of dotnet/maui's DeviceTestSharedHelpers.GetExcludedTestCategories (case-sensitive names).
+    # The human-only category is never selected: a category launch skips only the other discovered categories, not the
+    # app's own headless skip list.
     param([string[]]$Categories, [string]$Filter)
 
     $runnable = @($Categories | Where-Object { $_ -cne $script:HumanOnlyTestCategory })
@@ -466,7 +461,6 @@ function Select-TestCategories {
 }
 
 function Invoke-WindowsAttempt {
-    # One complete run of an app: install (packaged), launch it, then return the gated verdict.
     param($Context, $Run, [int]$Attempt, [string]$Architecture)
 
     $outcome = New-Object PSObject -Property @{
@@ -527,11 +521,10 @@ function Test-ResultsWritten {
 }
 
 function Get-RunLogDiagnosis {
-    # What the run log says about a launch that ended without results: the test that started last, the unhandled exceptions
-    # and the last exception thrown after that test started (a failing WinRT callback, such as a DispatcherQueue handler, ends
-    # the app with a stowed exception that no unhandled-exception event reports). The app writes the log next to its results
-    # file, written through at once (TestRunLog in the runner project's HeadlessRunner/windows), so it survives a crash and
-    # exists for packaged runs too. Returns '' when there is nothing to add.
+    # The last exception thrown is reported because a failing WinRT callback, such as a DispatcherQueue handler, ends the app
+    # with a stowed exception that no unhandled-exception event reports. The app writes the log next to its results file,
+    # written through at once (TestRunLog in the runner project's HeadlessRunner/windows), so it survives a crash and exists
+    # for packaged runs too.
     param([string]$ResultsPath)
 
     $logPath = [System.IO.Path]::ChangeExtension($ResultsPath, '.log')
@@ -572,9 +565,6 @@ function Get-RunLogDiagnosis {
 }
 
 function Add-LaunchOutcome {
-    # Records what one launch means for the verdict: a timeout (70), a launch failure (83) or missing results (no results
-    # file, or the empty file that an app which died during the run leaves), which are a crash (80) when the app's exit code
-    # says so or the app was gone right after activation, and missing results (94) otherwise.
     param($Outcome, $Launch, [string]$ExpectedResults, [string]$What, [int]$TimeoutSeconds)
 
     if ($Launch.Status -eq 'timeout') {
@@ -617,7 +607,6 @@ function Get-ResultsArgument {
 }
 
 function Invoke-WholeRun {
-    # App.exe "<results.xml>": HeadlessTestRunner runs every test the app does not skip.
     param($Context, $Run, $Outcome)
 
     $launch = Invoke-AppLaunch -Run $Run -AppArguments (Get-ResultsArgument $Run) -TimeoutSeconds $Context.TimeoutSeconds -Name 'all'
@@ -625,8 +614,7 @@ function Invoke-WholeRun {
 }
 
 function Invoke-CategoryRuns {
-    # dotnet/maui's category protocol (ControlsHeadlessTestRunner): App.exe "<results.xml>" -1 lists the categories in
-    # devicetestcategories.txt, then App.exe "<results.xml>" <index> runs one category into <results>_<Category>.xml.
+    # dotnet/maui's category protocol (ControlsHeadlessTestRunner): -1 lists the categories, an index runs one category.
     param($Context, $Run, $Outcome)
 
     $deadline = (Get-Date).AddSeconds($Context.TimeoutSeconds)

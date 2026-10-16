@@ -5,13 +5,9 @@ using CommunityToolkit.Maui.Media;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Records every event of an <see cref="ISpeechToText"/> in the order it was raised, as text such as
-/// <c>StateChanged:Listening</c>, <c>Updated:hello</c>, <c>Completed:Success:hello world</c> and <c>Completed:Failed:message</c>.
-/// Events can arrive on any thread (the Speech framework and the Android recognizer call back on their own queues).
-/// </summary>
 public sealed class SpeechEventRecorder
 {
+	// Events can arrive on any thread (the Speech framework and the Android recognizer call back on their own queues).
 	readonly object gate = new();
 	readonly List<string> entries = [];
 	readonly List<object?> senders = [];
@@ -70,14 +66,11 @@ public sealed class SpeechEventRecorder
 		}
 	}
 
-	/// <summary>Asserts the exact sequence of events raised so far.</summary>
 	public void AssertEntries(params string[] expected) => Assert.Equal(expected, Entries);
 
-	/// <summary>Waits (polling, no fixed delay) until at least <paramref name="count"/> events were recorded.</summary>
 	public Task WaitForCountAsync(int count, int timeoutMilliseconds = 5000) =>
 		AssertionExtensions.AssertEventually(() => Count >= count, timeoutMilliseconds, 25, $"Expected at least {count} speech events but got: {string.Join(", ", Entries)}");
 
-	/// <summary>Unsubscribes from all three events.</summary>
 	public void Detach()
 	{
 		speech.StateChanged -= OnStateChanged;
@@ -110,11 +103,8 @@ public sealed class SpeechEventRecorder
 	}
 }
 
-/// <summary>
-/// A culture whose <see cref="Name"/> cancels a token when it is read for the <paramref name="cancelOnRead"/>-th time. The toolkit reads
-/// the culture name while it starts, after its first cancellation check and before the later ones, so a test can cancel a start at a
-/// precise point without a race. <see cref="Reads"/> tells how far the start got.
-/// </summary>
+// The toolkit reads the culture name while it starts, after its first cancellation check and before the later ones, so a test can cancel
+// a start at a precise point without a race.
 public sealed class SpeechCancellingCulture(string name, CancellationTokenSource cancellation, int cancelOnRead = 1) : CultureInfo(name)
 {
 	int reads;
@@ -135,7 +125,7 @@ public sealed class SpeechCancellingCulture(string name, CancellationTokenSource
 	}
 }
 
-/// <summary>An event subscriber that tests drop to prove that the implementation holds its handlers weakly.</summary>
+// Tests drop it to prove that the implementation holds its handlers weakly.
 sealed class ShortLivedSpeechSubscriber
 {
 	public void OnStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
@@ -151,11 +141,9 @@ sealed class ShortLivedSpeechSubscriber
 	}
 }
 
-/// <summary>
-/// Reaches the private members of <c>SpeechToTextImplementation</c> and <c>OfflineSpeechToTextImplementation</c> (both classes use
-/// the same member names). The platform recognizers raise their callbacks from the OS, and a test cannot make the OS do that on demand,
-/// so the tests call the toolkit's own callback entry points and fields directly, with real platform objects as arguments.
-/// </summary>
+// The platform recognizers raise their callbacks from the OS, which a test cannot trigger on demand, so the tests reach the private
+// callback entry points and fields of SpeechToTextImplementation and OfflineSpeechToTextImplementation (which use the same member names)
+// by reflection.
 static class SpeechInternals
 {
 	const BindingFlags instanceMembers = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;

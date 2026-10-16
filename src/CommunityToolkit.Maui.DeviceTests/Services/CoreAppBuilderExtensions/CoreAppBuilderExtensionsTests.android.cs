@@ -7,14 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The `#if ANDROID` block of UseMauiCommunityToolkitCore: with the option on, it registers IDialogFragmentService and an Android
-// OnCreate lifecycle event that registers a FragmentLifecycleManager on the activity's FragmentManager. The OnCreate delegate is
-// invoked the way MauiAppCompatActivity would (the headless runner's activity is not a MauiAppCompatActivity), with activities
-// that are never attached, and with a host fragment's child FragmentManager so that nothing is left registered on the runner.
+// The OnCreate delegate is invoked the way MauiAppCompatActivity would (the headless runner's activity is not a MauiAppCompatActivity),
+// with activities that are never attached, and with a host fragment's child FragmentManager so that nothing is left registered on the runner.
 public partial class CoreAppBuilderExtensionsTests
 {
-	// ---- the completion event, which UseMauiCommunityToolkitCore raises after the platform block
-
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -124,7 +120,7 @@ public partial class CoreAppBuilderExtensionsTests
 			enableBuilder.UseMauiCommunityToolkitCore(options => options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true));
 			Assert.Equal(1, raisedCount);
 
-			// A second call without an options callback must not reset the option: the platform block runs again and the event is raised again.
+			// The option is still on, so the platform block runs again and the event is raised again.
 			var builder = MauiApp.CreateBuilder();
 			var returned = builder.UseMauiCommunityToolkitCore(null);
 
@@ -138,8 +134,6 @@ public partial class CoreAppBuilderExtensionsTests
 			snapshot.Restore();
 		}
 	}
-
-	// ---- the registrations of the platform block
 
 	[Fact]
 	public void EnabledOptionRegistersTheDialogFragmentServiceAsSingleton()
@@ -287,12 +281,11 @@ public partial class CoreAppBuilderExtensionsTests
 					onCreate(new SpyActivity { SpyFragmentManager = childManager }, null);
 				}
 
-				// The registered FragmentLifecycleManager forwards to the service of IPlatformApplication.Current (not the builder's)...
 				childManager.BeginTransaction().Add(child, "test-child").CommitNow();
 				Assert.Contains(nameof(IDialogFragmentService.OnFragmentStarted), runningAppService.CallsFor(child));
 				Assert.Contains(nameof(IDialogFragmentService.OnFragmentResumed), runningAppService.CallsFor(child));
 
-				// ...and it is registered without recursion: fragments nested one level deeper are not reported.
+				// The manager is registered without recursion: fragments nested one level deeper are not reported.
 				child.ChildFragmentManager.BeginTransaction().Add(grandchild, "test-grandchild").CommitNow();
 				Assert.Empty(runningAppService.CallsFor(grandchild));
 
@@ -311,8 +304,6 @@ public partial class CoreAppBuilderExtensionsTests
 		SetupBuilder(configureToolkitOptions: options => options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true));
 		var onCreate = GetToolkitOnCreateDelegates().Single();
 		var host = new PlainFragment();
-		// A real dialog that starts out different from the activity: status bar color is read back before Android 15,
-		// light status bar appearance from Android 11 on (see DialogFragmentServiceTests for why).
 		var dialogFragment = new ProbeDialogFragment
 		{
 			DialogFactory = context =>
@@ -337,7 +328,6 @@ public partial class CoreAppBuilderExtensionsTests
 						onCreate(new SpyActivity { SpyFragmentManager = childManager }, null);
 					}
 
-					// Starting the dialog runs the registered FragmentLifecycleManager -> DialogFragmentService.OnFragmentStarted.
 					dialogFragment.ShowNow(childManager, "test-dialog");
 					AssertDialogTookOverTheStatusBarOfTheActivity(dialogFragment.Dialog!.Window!);
 				});
@@ -361,7 +351,7 @@ public partial class CoreAppBuilderExtensionsTests
 	// (ModalFragment.OnCreateDialog calls WindowExtensions.ConfigureTranslucentSystemBars from Android 11 on: Microsoft.Maui.Controls and
 	// Microsoft.Maui 10.0.90, decompiled). A page whose StatusBarBehavior shows light content (light icons on a dark status bar) has
 	// cleared that appearance on the activity, so the dialog has to lose it too: otherwise its status bar shows dark icons on the dark
-	// color it copied from the activity. That is every day-mode modal page of such an app.
+	// color it copied from the activity.
 	[Fact]
 	public async Task OnCreateWiresTheRealServiceSoTheLightStatusBarsMauiGaveAModalDialogAreClearedWhenTheActivityHasNone()
 	{
@@ -373,7 +363,7 @@ public partial class CoreAppBuilderExtensionsTests
 		{
 			DialogFactory = context =>
 			{
-				// What ConfigureTranslucentSystemBars does to the dialog window of a modal page in day mode.
+				// Mimics what ConfigureTranslucentSystemBars does to the dialog window of a modal page in day mode.
 				var dialog = new AppCompatDialog(context);
 				var window = dialog.Window!;
 				var controller = WindowCompat.GetInsetsController(window, window.DecorView) ?? throw new InvalidOperationException("The dialog window has no insets controller.");
@@ -389,7 +379,6 @@ public partial class CoreAppBuilderExtensionsTests
 			{
 				await InvokeOnMainThreadAsync(() =>
 				{
-					// StatusBarBehavior with StatusBarStyle.LightContent: light icons, so the activity has no light status bars.
 					SetAppearance(HostActivity.Window!, 0, lightStatusBarsBit);
 					Assert.False(Capture(HostActivity.Window!).HasLightStatusBars);
 

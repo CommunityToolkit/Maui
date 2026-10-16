@@ -28,7 +28,7 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
-	<!-- The iOS 27 SDK (Xcode 27) terminates apps that do not adopt the UIScene life cycle; SceneDelegate serves both runners. -->
+	<!-- The iOS 27 SDK (Xcode 27) terminates apps that do not adopt the UIScene life cycle. -->
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

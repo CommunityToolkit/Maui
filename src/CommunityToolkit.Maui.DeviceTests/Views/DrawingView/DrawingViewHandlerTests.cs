@@ -9,9 +9,6 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Tests of DrawingViewHandler with a real DrawingView hosted in the runner's window: property mapping to the platform view
-// (MauiDrawingView), the events relayed from the platform view to the DrawingView, the synchronization of the two Lines collections,
-// connect/disconnect/unload, and leaks. Gestures are produced by the platform's own input path (see DrawingViewTestPlatform).
 [Category(TestCategory.DrawingView)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
@@ -31,7 +28,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 	static readonly FieldInfo? loadedField = typeof(VisualElement).GetField("_loaded", BindingFlags.Instance | BindingFlags.NonPublic);
 
-	// Catches: ConnectHandler does not initialize the platform view (no drawable)
 	[Fact]
 	public Task HandlerCreatesAnInitializedMauiDrawingViewForTheDrawingView()
 	{
@@ -46,7 +42,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: UseMauiCommunityToolkit does not register DrawingViewHandler for DrawingView
 	[Fact]
 	public async Task DrawingViewResolvesTheHandlerThatTheToolkitRegisters()
 	{
@@ -64,7 +59,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: a default DrawingView value is not what the platform view uses
 	[Fact]
 	public Task DefaultDrawingViewValuesReachThePlatformView()
 	{
@@ -85,8 +79,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: an initial property is not applied, or the preloaded lines
-	// are trimmed to one line although the DrawingView is in multi-line mode (MapLines reads the mode from the DrawingView, so the order of the mappers no longer matters)
+	// MapLines reads the multi-line mode from the DrawingView, so whether preloaded lines are trimmed to one line does not depend on the order of the mappers.
 	[Fact]
 	public Task InitialPropertyValuesAreAppliedToThePlatformViewWithLinesMappedLast()
 	{
@@ -108,7 +101,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		{
 			Assert.Equal(3, platformView.Lines.Count);
 			AssertLine(platformView.Lines[1], blue, 6, (10, 50), (90, 50));
-			// mapping the lines to the platform view leaves DrawingView.Lines as it is
 			Assert.Equal(3, drawingView.Lines.Count);
 
 			DrawingViewTestPlatform.Stroke(platformView, (100, 90), (140, 90));
@@ -124,7 +116,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: ShouldClearOnFinish changes are not forwarded to the platform view
 	[Fact]
 	public Task ShouldClearOnFinishChangesAreAppliedToThePlatformView()
 	{
@@ -150,7 +141,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: IsMultiLineModeEnabled changes are not forwarded to the platform view
 	[Fact]
 	public Task IsMultiLineModeEnabledChangesAreAppliedToThePlatformView()
 	{
@@ -173,7 +163,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: LineColor/LineWidth changes are not forwarded to the platform view
 	[Fact]
 	public Task LineColorAndLineWidthChangesAreAppliedToNewLines()
 	{
@@ -199,7 +188,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: DrawAction changes are not forwarded to the platform view
 	[Fact]
 	public Task DrawActionChangesAreAppliedToThePlatformView()
 	{
@@ -232,7 +220,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Assigning DrawingView.DrawAction must repaint the platform view with the new action (MapDrawAction only assigns it)
 	[Fact]
 	public Task AssigningDrawActionOnTheDrawingViewRedrawsThePlatformView()
 	{
@@ -247,12 +234,11 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 			drawingView.DrawAction = second.Draw;
 
-			Assert.Same(second, platformView.DrawAction?.Target); // precondition: MapDrawAction forwarded the new action
+			Assert.Same(second, platformView.DrawAction?.Target);
 			await AssertionExtensions.AssertEventually(() => second.Count > 0, timeout: 3000, message: "The new DrawAction was never invoked: assigning DrawingView.DrawAction did not redraw the platform view.");
 		});
 	}
 
-	// Catches: Background changes are ignored, or a missing background is not replaced by LightGray (DrawingViewDefaults.BackgroundColor)
 	[Fact]
 	public Task BackgroundChangesAreAppliedAndNullFallsBackToLightGray()
 	{
@@ -269,27 +255,26 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			DrawingPixelAssert.ColorAtUnits(gradient, 3, 50, blue, tolerance: 60);
 			DrawingPixelAssert.ColorAtUnits(gradient, 197, 50, white, tolerance: 60);
 
-			// Background = null with the BackgroundColor that the DrawingView constructor sets (LightGray): IView.Background returns that color as a brush
+			// IView.Background returns the BackgroundColor that the DrawingView constructor sets (LightGray) as a brush, so it is not null here.
 			drawingView.Background = null;
 			Assert.NotNull(((IView)drawingView).Background);
 			DrawingPixelAssert.ColorAtUnits(await RenderAsync(platformView), 100, 50, Colors.LightGray);
 
-			// neither Background nor BackgroundColor: IView.Background is null and MapDrawingViewBackground must fall back to DrawingViewDefaults.BackgroundColor
+			// With no BackgroundColor either, IView.Background is null and MapDrawingViewBackground falls back to DrawingViewDefaults.BackgroundColor.
 			drawingView.Background = new SolidColorBrush(red); // a different color first, so the fallback has to repaint the view
 			drawingView.BackgroundColor = null;
 			drawingView.Background = null;
-			Assert.Null(((IView)drawingView).Background); // precondition: MapDrawingViewBackground received null
+			Assert.Null(((IView)drawingView).Background);
 			DrawingPixelAssert.ColorAtUnits(await RenderAsync(platformView), 100, 50, Colors.LightGray);
 		});
 	}
 
-	// Catches: a custom mapper/command mapper is ignored in favor of the defaults (or the defaults are dropped when null is passed)
 	[Fact]
 	public async Task CustomMappersReplaceTheDefaultMappersAndNullSelectsTheDefaults()
 	{
 		SetupBuilder();
 		// Which command mapper a handler uses has no native observable without focus or window setup, so it is read from the internal readonly
-		// field that MAUI keeps it in (ElementHandler._commandMapper, Microsoft.Maui 10.0.90): a null command mapper must select DrawingViewCommandMapper.
+		// field that MAUI keeps it in (ElementHandler._commandMapper, Microsoft.Maui 10.0.90).
 		var commandMapperField = typeof(ElementHandler).GetField("_commandMapper", BindingFlags.Instance | BindingFlags.NonPublic);
 		Skip.If(commandMapperField is null, "MAUI's ElementHandler no longer keeps the command mapper in the _commandMapper field.");
 		var mappedLineColors = new List<Color>();
@@ -333,7 +318,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: a platform event is not relayed to the DrawingView (or relayed with the wrong data)
 	[Fact]
 	public Task PlatformGestureEventsAreRelayedToTheDrawingViewEvents()
 	{
@@ -362,7 +346,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: a DrawingView command is not executed with the event data, or a command that cannot execute is executed
 	[Fact]
 	public Task DrawingViewCommandsAreExecutedWithTheEventData()
 	{
@@ -389,7 +372,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			Assert.Equal(2, Assert.Single(completed).Points.Count);
 			Assert.Equal(1, cancelled);
 
-			// commands that report CanExecute == false are not executed
 			drawingView.DrawingLineStartedCommand = new Command<PointF>(_ => blockedExecutions++, _ => false);
 			drawingView.PointDrawnCommand = new Command<PointF>(_ => blockedExecutions++, _ => false);
 			drawingView.DrawingLineCompletedCommand = new Command<IDrawingLine>(_ => blockedExecutions++, _ => false);
@@ -401,7 +383,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: the default adapter loses a property when it converts the platform line
 	[Fact]
 	public Task CompletedLinesAreConvertedWithTheDefaultAdapter()
 	{
@@ -428,7 +409,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: SetDrawingLineAdapter is ignored
 	[Fact]
 	public Task CustomAdapterConvertsCompletedAndSynchronizedLines()
 	{
@@ -448,9 +428,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The line that DrawingLineCompleted reports (and DrawingLineCompletedCommand receives) should be the instance in DrawingView.Lines
-	// so that an app can act on the line it is told about, for example an undo with drawingView.Lines.Remove(e.LastDrawingLine).
-	// MauiDrawingView does this for its own Lines (CompletedLineIsStoredInLinesWhenTheEventIsRaised); DrawingLine has reference equality.
+	// An app must be able to act on the line it is told about, for example an undo with drawingView.Lines.Remove(e.LastDrawingLine), and DrawingLine has reference equality.
 	[Fact]
 	public Task CompletedLineIsTheInstanceStoredInDrawingViewLines()
 	{
@@ -473,8 +451,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// In multi-line mode every stroke copies the platform lines to DrawingView.Lines again;
-	// the lines reported for the earlier strokes must still be the instances in DrawingView.Lines afterwards
+	// In multi-line mode every stroke copies the platform lines to DrawingView.Lines again, which could replace the instances reported for earlier strokes.
 	[Fact]
 	public Task CompletedLinesStayTheInstancesInDrawingViewLinesAfterLaterStrokes()
 	{
@@ -499,8 +476,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// An undo stack of the reported lines (drawingView.Lines.Remove(e.LastDrawingLine)) removes every stroke in multi-line mode,
-	// not only the last one
 	[Fact]
 	public Task CompletedLinesCanBeRemovedOneByOneInMultiLineMode()
 	{
@@ -524,7 +499,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: platform line changes are not synchronized to the DrawingView.Lines
 	[Fact]
 	public Task PlatformLinesAreSynchronizedToTheDrawingViewLines()
 	{
@@ -551,7 +525,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: DrawingView.Lines changes (Add, Remove, Replace, Clear) are not synchronized to the platform view
 	[Fact]
 	public Task DrawingViewLinesAreSynchronizedToThePlatformView()
 	{
@@ -581,7 +554,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			drawingView.Lines.Remove(first);
 			Assert.Equal(blue, Assert.Single(platformView.Lines).LineColor);
 
-			drawingView.Lines[0] = CreateLine(red, 9, (10, 30), (90, 30)); // Replace, not Add or Remove
+			drawingView.Lines[0] = CreateLine(red, 9, (10, 30), (90, 30));
 			AssertLine(Assert.Single(platformView.Lines), red, 9, (10, 30), (90, 30));
 
 			drawingView.Clear();
@@ -590,7 +563,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: in single-line mode several platform lines are all copied to DrawingView.Lines instead of only the last one
 	[Fact]
 	public Task PlatformLinesBeyondOneAreTrimmedToTheLastLineInSingleLineMode()
 	{
@@ -609,7 +581,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: single-line mode keeps every virtual line on the platform view
 	[Fact]
 	public Task SingleLineModeKeepsOnlyTheLastDrawingViewLineOnThePlatformView()
 	{
@@ -626,7 +597,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Lines that the app adds to DrawingView.Lines should stay in the collection
 	[Fact]
 	public Task LinesAddedByTheAppKeepTheirIdentityInDrawingViewLines()
 	{
@@ -647,8 +617,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// In multi-line mode a stroke copies the platform lines to DrawingView.Lines again; the lines that the app
-	// put there (of the app's own IDrawingLine type) must stay in the collection instead of being replaced by DrawingLine conversions of their platform copies
+	// A stroke in multi-line mode copies the platform lines to DrawingView.Lines again, which could replace the lines that the app put there (of the app's own IDrawingLine type)
+	// with DrawingLine conversions of their platform copies.
 	[Fact]
 	public Task LinesAddedByTheAppKeepTheirIdentityAfterAStroke()
 	{
@@ -673,8 +643,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// In single-line mode the platform view shows only the last of the lines that DrawingView.Lines holds when the handler
-	// connects, so DrawingView.Lines keeps only that line (the app's instance), and the image that DrawingView.GetImageStream exports shows what the view shows
 	[Fact]
 	public Task PreloadedLinesAreTrimmedToTheLastAppLineInSingleLineMode()
 	{
@@ -697,8 +665,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A collection the app assigns to DrawingView.Lines keeps the app's line instances, of the app's own IDrawingLine type,
-	// while MapLines copies them to the platform view
 	[Fact]
 	public Task LinesOfAnAssignedLinesCollectionKeepTheirIdentity()
 	{
@@ -718,8 +684,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: after DrawingView.Lines is replaced, lines added to the new collection do not reach the platform view
-	// (MapLines moves the handler's subscription to the new collection).
 	[Fact]
 	public Task LinesAddedToAReplacementLinesCollectionReachThePlatformView()
 	{
@@ -737,7 +701,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// After DrawingView.Lines is replaced, changes of the old collection must no longer reach the platform view
 	[Fact]
 	public Task ChangesOfAReplacedLinesCollectionDoNotReachThePlatformView()
 	{
@@ -756,8 +719,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A handler that is reused for another DrawingView (IElementHandler.SetVirtualView without DisconnectHandler)
-	// must stop observing the Lines of the previous DrawingView, whose changes would otherwise rewrite the platform lines, and observe the Lines of the new one
+	// A handler is reused by IElementHandler.SetVirtualView without DisconnectHandler: it must stop observing the Lines of the previous DrawingView,
+	// whose changes would otherwise rewrite the platform lines.
 	[Fact]
 	public Task AReusedHandlerStopsObservingTheLinesOfThePreviousDrawingView()
 	{
@@ -780,7 +743,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// An app that replaced DrawingView.Lines and later changes the old collection (after the page is gone) must not get an exception
 	[Fact]
 	public async Task AReplacedLinesCollectionCanBeChangedAfterDisconnect()
 	{
@@ -801,8 +763,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A replaced Lines collection that the app keeps (for example in a view model) must not keep the disconnected handler alive.
-	// UsedHandlerViewAndPlatformViewDoNotLeakAfterDisconnect is the control: the same objects are collected when Lines is not replaced.
+	// UsedHandlerViewAndPlatformViewDoNotLeakAfterDisconnect is the control for this test: the same objects are collected when Lines is not replaced.
 	[Fact]
 	public async Task AReplacedLinesCollectionDoesNotKeepTheHandlerAlive()
 	{
@@ -832,7 +793,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// Catches: DisconnectHandler leaves a platform event subscription, which would throw once the virtual view is gone
 	[Fact]
 	public Task DisconnectHandlerStopsRelayingPlatformEvents()
 	{
@@ -855,7 +815,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: DisconnectHandler leaves a Lines subscription: a line added to either side would be mirrored (or throw)
 	[Fact]
 	public Task DisconnectHandlerStopsSynchronizingLines()
 	{
@@ -875,7 +834,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: DisconnectHandler does not clean up the platform view (a changed Lines collection would still clear its in-progress path)
 	[Fact]
 	public Task DisconnectHandlerCleansUpThePlatformView()
 	{
@@ -897,7 +855,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: DisconnectHandler leaves the DrawingView connected, so later property changes still reach the platform view
 	[Fact]
 	public Task PropertyChangesAfterDisconnectDoNotReachThePlatformView()
 	{
@@ -921,7 +878,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: a second handler for the same DrawingView does not take over (or the first one keeps relaying)
 	[Fact]
 	public async Task NewHandlerForTheSameDrawingViewTakesOverAfterDisconnect()
 	{
@@ -961,7 +917,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: disconnecting twice throws (the DrawingView disconnects on Unloaded and apps/MAUI may disconnect again)
 	[Fact]
 	public Task DisconnectingTheHandlerTwiceDoesNotThrow()
 	{
@@ -976,10 +931,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: the DrawingView disconnects its handler when it leaves the window (MAUI then cannot remove it from its layout while its page is away),
-	// keeps its handler listening (its platform view and the Lines that the app keeps then keep each other alive, the leak that #420 fixed),
-	// or handles Unloaded more than once
-	// The host raises Unloaded when the view leaves the window (Android; the headless iOS and Mac Catalyst host does not, see the next test).
+	// Keeping the handler listening after Unloaded lets its platform view and the Lines that the app keeps keep each other alive: the leak that #420 fixed.
 	[Fact]
 	public async Task UnloadingTheDrawingViewStopsItsHandlerListening()
 	{
@@ -1002,8 +954,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		await InvokeOnMainThreadAsync(() => AssertHandlerStoppedListening(drawingView, handler!, platformView!));
 	}
 
-	// Catches: the DrawingView disconnects its handler on Unloaded, keeps it listening, or stops listening to Unloaded after handling it,
-	// so that it would not stop its handler listening the next time it leaves the window
 	// The event is raised through the delegate that MAUI's VisualElement keeps in its private _unloaded field, so the DrawingView's own subscriber runs on every
 	// platform, including iOS and Mac Catalyst, where the headless runner never raises Unloaded for a view that leaves the window.
 	[Fact]
@@ -1024,10 +974,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Loaded makes the handler listen again: MAUI raises it when the DrawingView is in a window again, also right after an Unloaded that arrived when the platform
-	// view was already in a window again (on Android and Windows MAUI's Loaded is the only signal; the platform view raises AttachedToWindow on iOS and Mac Catalyst).
-	// The DrawingView is in the window throughout, so only Loaded can make its handler listen again here.
-	// Catches: Loaded not making the handler listen again, or the lines added meanwhile not reaching the platform view.
+	// MAUI raises Loaded right after an Unloaded that arrives while the platform view is in a window, as here, and on Android and Windows Loaded is the only
+	// signal that makes the handler listen again (the platform view raises AttachedToWindow on iOS and Mac Catalyst).
 	[Fact]
 	public Task LoadedEventMakesTheHandlerListenAgain()
 	{
@@ -1040,7 +988,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			Skip.If(loadedField is null, loadedFieldMissingReason);
 			RaiseUnloaded(drawingView);
 			drawingView.Lines.Add(CreateLine(red, 4, (10, 20), (190, 20)));
-			Assert.Empty(platformView.Lines); // precondition: the handler stopped listening
+			Assert.Empty(platformView.Lines);
 
 			RaiseLoaded(drawingView);
 
@@ -1053,7 +1001,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Unloaded while the DrawingView has no handler (never connected, or already disconnected) does not create one, and the DrawingView keeps listening
 	[Fact]
 	public async Task UnloadedWithoutAHandlerKeepsTheDrawingViewListening()
 	{
@@ -1073,9 +1020,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The DrawingView must still work when its page is attached to the window again (a tab switch, navigating back).
-	// While the page is away the DrawingView keeps its handler, which stops listening (#420); once the DrawingView is loaded again the same handler listens again
-	// to the same platform view, which is the one in the window, and drawing on it reaches the DrawingView
 	[Fact]
 	public async Task DrawingViewStillHasAHandlerWhenItsPageIsAttachedAgain()
 	{
@@ -1093,7 +1037,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			platformView = handler.PlatformView;
 		});
 		await WaitUntilTheDrawingViewLeftTheWindowAsync(page, drawingView, unloaded, unloadedBefore: 0);
-		await InvokeOnMainThreadAsync(() => AssertHandlerStoppedListening(drawingView, handler!, platformView!)); // kept, but not listening while its page is away
+		await InvokeOnMainThreadAsync(() => AssertHandlerStoppedListening(drawingView, handler!, platformView!));
 
 		await AttachAndRun(page, async _ =>
 		{
@@ -1109,9 +1053,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Each time its page leaves the window the DrawingView's handler stops listening again, and each time the DrawingView is loaded again the handler
-	// listens again with the DrawingView's current state: a line added while the page was away reaches the platform view once the page is back,
-	// a line color set while the page was away reaches it right away (the handler stays connected), and drawing reaches the DrawingView
+	// While the page is away the handler stays connected, so a line color set then reaches the platform view right away, but it does not listen to the Lines,
+	// so a line added then reaches the platform view only once the DrawingView is loaded again.
 	[Fact]
 	public async Task DrawingViewKeepsWorkingEachTimeItsPageIsAttachedAgain()
 	{
@@ -1136,14 +1079,14 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			await WaitUntilTheDrawingViewLeftTheWindowAsync(page, drawingView, unloaded, unloadedBeforeVisit);
 			await InvokeOnMainThreadAsync(() =>
 			{
-				Assert.Same(handler, drawingView.Handler); // kept while its page is away
+				Assert.Same(handler, drawingView.Handler);
 				var platformLineCount = handler!.PlatformView.Lines.Count;
 
 				drawingView.LineColor = colorSetWhileAway;
 				drawingView.Lines.Add(CreateLine(colorSetWhileAway, 4, (10, 50), (190, 50)));
 
 				Assert.Equal(colorSetWhileAway, handler.PlatformView.LineColor);
-				Assert.Equal(platformLineCount, handler.PlatformView.Lines.Count); // the handler does not listen to the Lines while its page is away
+				Assert.Equal(platformLineCount, handler.PlatformView.Lines.Count);
 			});
 
 			unloadedBeforeVisit = unloaded.Count;
@@ -1166,9 +1109,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// While its page is away the DrawingView's platform view is still in the platform view of its layout. An app that removes the DrawingView from that
-	// layout in the meantime (a page that is rebuilt while it is not shown) must not fail. MAUI's LayoutHandler.Remove finds the platform view of a child
-	// through its handler (ElementExtensions.ToPlatform), so the DrawingView keeps its handler while its page is away.
+	// MAUI's LayoutHandler.Remove finds the platform view of a child through its handler (ElementExtensions.ToPlatform), so the DrawingView keeps its handler while its page is away.
 	// Catches: the DrawingView disconnecting its handler on Unloaded (#420), which made this throw InvalidOperationException ('MauiContext should have been set on parent.').
 	[Fact]
 	public async Task DrawingViewCanBeRemovedFromItsLayoutWhileItsPageIsAway()
@@ -1184,7 +1125,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			var handler = Assert.IsType<DrawingViewHandler>(drawingView.Handler); // precondition: kept while its page is away
+			var handler = Assert.IsType<DrawingViewHandler>(drawingView.Handler);
 			var layoutPlatformView = ((IElementHandler)layout.Handler!).PlatformView!;
 			Assert.True(DrawingViewTestPlatform.IsChildOf(handler.PlatformView, layoutPlatformView), "Precondition: the platform view of the DrawingView is not in the platform view of its layout while its page is away.");
 
@@ -1193,13 +1134,10 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			Assert.Null(exception);
 			Assert.Empty(layout);
 			Assert.False(DrawingViewTestPlatform.IsChildOf(handler.PlatformView, layoutPlatformView), "MAUI did not remove the platform view of the DrawingView from the platform view of its layout.");
-			Assert.Null(DrawingViewTestPlatform.GetParent(handler.PlatformView)); // MAUI removed the platform view from the layout's platform view
+			Assert.Null(DrawingViewTestPlatform.GetParent(handler.PlatformView));
 		});
 	}
 
-	// A DrawingView that the app removes from its layout while its page is away can be added to another page (a page that is rebuilt while it is not shown):
-	// there it shows the lines that were added while it was away, and drawing reaches it.
-	// Catches: the removal throwing (the handler was disconnected on Unloaded), or the handler not listening again in the other page.
 	[Fact]
 	public async Task DrawingViewRemovedWhileItsPageIsAwayWorksInAnotherPage()
 	{
@@ -1244,10 +1182,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// DrawingViews created by an item template (BindableLayout) whose items change while their page is away (a view model that reloads its data):
-	// removing an item removes its DrawingView from the layout, which needs the DrawingView's handler, and a DrawingView that is reused for another item
-	// (its BindingContext changes, as a recycling item template does) shows that item's lines once the page is back, and drawing reaches that item.
-	// Catches: the removal throwing (the handler was disconnected on Unloaded), or the reused DrawingView not mapping the Lines it got while its page was away.
+	// Removing an item removes its DrawingView from the layout, which needs the DrawingView's handler. Changing the BindingContext of a DrawingView
+	// stands for a recycling item template that reuses it for another item.
 	[Fact]
 	public async Task DrawingViewsOfAnItemTemplateWorkAfterTheItemsChangeWhileTheirPageIsAway()
 	{
@@ -1299,10 +1235,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// While the handler waits to be loaded again (StopListeningUntilLoaded), MAUI or the app may give the DrawingView another handler: MAUI then disconnects
-	// the waiting handler, which neither listens again nor relays drawing on its old platform view when that platform view is in a window again or the DrawingView
-	// is loaded again.
-	// Catches: the waiting handler listening again (relaying the old platform view's drawing to the DrawingView) although the DrawingView has another handler.
 	[Fact]
 	public async Task WaitingHandlerLeavesTheDrawingViewToAHandlerThatConnectedMeanwhile()
 	{
@@ -1314,10 +1246,10 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			var waitingHandler = CreateHandler<DrawingViewHandler>(drawingView);
 			var oldPlatformView = waitingHandler.PlatformView;
 			waitingHandler.StopListeningUntilLoaded();
-			Assert.Same(waitingHandler, drawingView.Handler); // precondition: kept while it waits
+			Assert.Same(waitingHandler, drawingView.Handler);
 
 			var newHandler = new DrawingViewHandler();
-			InitializeViewHandler(drawingView, newHandler); // sets DrawingView.Handler, as MAUI does when it creates a handler
+			InitializeViewHandler(drawingView, newHandler); // sets DrawingView.Handler, as MAUI does when it creates a handler; MAUI then disconnects the waiting handler
 			oldPlatformView.RaiseAttachedToWindow();
 			waitingHandler.ListenAgain();
 
@@ -1336,11 +1268,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A waiting handler listens again to its own platform view when that platform view is in a window again (AttachedToWindow, which iOS and Mac Catalyst raise):
-	// the lines added to DrawingView.Lines while it waited reach the platform view, and drawing and later changes of the Lines are relayed again.
-	// It keeps its platform view, the one in the window: a PlatformViewFactory is not asked for another one.
-	// Catches: AttachedToWindow not making the handler listen again, the lines added meanwhile not reaching the platform view, or the handler
-	// creating another platform view.
+	// AttachedToWindow is what the platform view raises on iOS and Mac Catalyst when it is in a window again; the test raises it itself, so it runs on every platform.
 	[Fact]
 	public async Task WaitingHandlerListensAgainWhenItsPlatformViewIsInAWindowAgain()
 	{
@@ -1354,7 +1282,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			var platformView = handler.PlatformView;
 			handler.StopListeningUntilLoaded();
 			drawingView.Lines.Add(CreateLine(red, 4, (10, 20), (190, 20)));
-			Assert.Empty(platformView.Lines); // precondition: the handler stopped listening
+			Assert.Empty(platformView.Lines);
 
 			var previousFactory = DrawingViewHandler.PlatformViewFactory;
 			var platformViewsCreatedByTheFactory = 0;
@@ -1386,9 +1314,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// While the handler waits to be loaded again, a Lines collection that replaces DrawingView.Lines is neither copied to the platform view nor observed
-	// (an app that keeps that collection would keep the handler alive); once the handler listens again, the platform view shows that collection and follows its changes.
-	// Catches: MapLines observing or copying a Lines collection that is set while the DrawingView is unloaded.
+	// A Lines collection that replaces DrawingView.Lines while the handler waits is not observed, because an app that keeps that collection would keep the handler alive.
 	[Fact]
 	public async Task LinesReplacedWhileTheHandlerWaitsAreMappedWhenItListensAgain()
 	{
@@ -1406,7 +1332,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			drawingView.Lines = replacingLines;
 			replacingLines.Add(CreateLine(blue, 6, (10, 40), (190, 40)));
 
-			Assert.Same(handler, drawingView.Handler); // the DrawingView keeps its handler while it waits
+			Assert.Same(handler, drawingView.Handler);
 			Assert.Empty(platformView.Lines);
 
 			platformView.RaiseAttachedToWindow();
@@ -1420,9 +1346,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// MAUI disconnects a handler that waits to be loaded again (a page that is popped is disconnected by MAUI's HandlerDisconnectPolicy, or the app disconnects
-	// it): it stops waiting, so neither the DrawingView's Loaded nor its old platform view being in a window again makes it listen again.
-	// Catches: a disconnected handler listening again (relaying the platform view's drawing to the DrawingView it no longer belongs to).
+	// MAUI's HandlerDisconnectPolicy disconnects the handler of a page that is popped, also while the handler waits to be loaded again.
 	[Fact]
 	public async Task DisconnectingAWaitingHandlerStopsItWaiting()
 	{
@@ -1449,11 +1373,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A handler listens to both Lines collections again whatever its mapper maps, as it does when it connects: with a custom mapper without the Lines mapping
-	// (see CustomMappersReplaceTheDefaultMappersAndNullSelectsTheDefaults), drawing after the DrawingView is loaded again reaches DrawingView.Lines, and a change
-	// of DrawingView.Lines reaches the platform view. DrawingView makes its handler listen again on Loaded, the platform view on AttachedToWindow (iOS, Mac Catalyst).
-	// Catches: ListenAgain subscribing to the Lines collections only through the Lines mapping, which left the Lines of such a handler out of sync after the
-	// DrawingView's first unload.
+	// Catches: ListenAgain subscribing to the Lines collections only through the Lines mapping.
 	[Theory]
 	[InlineData(ListenAgainSignal.Loaded)]
 	[InlineData(ListenAgainSignal.AttachedToWindow)]
@@ -1475,7 +1395,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			InitializeViewHandler(drawingView, handler);
 			var platformView = handler.PlatformView;
 			DrawingViewTestPlatform.Stroke(platformView, (10, 10), (190, 10));
-			var firstLine = Assert.Single(drawingView.Lines); // precondition: before the unload, drawing reaches DrawingView.Lines
+			var firstLine = Assert.Single(drawingView.Lines);
 
 			RaiseUnloaded(drawingView);
 			if (signal is ListenAgainSignal.Loaded)
@@ -1501,11 +1421,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// After the handler listens again it relays each change of the Lines once, as after it connects: ListenAgain subscribes to both Lines collections, and then
-	// the Lines mapping subscribes again in place of those subscriptions.
-	// Catches: a second subscription to the platform view's Lines or to DrawingView.Lines when the handler listens again: a stroke then replaced the content
-	// of DrawingView.Lines twice (twice the change notifications for the app), and a change of DrawingView.Lines that another subscriber observes threw
-	// InvalidOperationException, because the second subscription copied the platform lines back to DrawingView.Lines during its CollectionChanged event.
+	// Catches: a second subscription to the platform view's Lines or to DrawingView.Lines when the handler listens again: a change of DrawingView.Lines that another
+	// subscriber observes then threw InvalidOperationException, because the second subscription copied the platform lines back to DrawingView.Lines during its CollectionChanged event.
 	[Fact]
 	public Task HandlerThatListensAgainRelaysEachChangeOfTheLinesOnce()
 	{
@@ -1525,7 +1442,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 			Assert.Equal(changesBefore, DrawAndAddALine(60));
 
-			// Counts the changes of DrawingView.Lines that a stroke makes, then the changes of the platform view's Lines that adding a line to DrawingView.Lines makes
 			(int StrokeChanges, int AddChanges) DrawAndAddALine(float y)
 			{
 				var drawingViewLinesChanges = new CollectionChangeCounter(drawingView.Lines);
@@ -1542,11 +1458,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 	}
 
 	// MAUI sets DrawingView.Handler before ConnectHandler when a handler is given its DrawingView handler-first (IElementHandler.SetVirtualView), and raises
-	// Unloaded in between (VisualElement.OnHandlerChangedCore) when the DrawingView was loaded and the new platform view is not in a window yet. The handler then
-	// waits like a handler that stopped listening, and listens once the DrawingView is loaded, relaying each gesture once. Unloaded is raised from HandlerChanged,
-	// which MAUI raises in the same OnHandlerChangedCore call, because the runner has no MAUI Window.
-	// Catches: ConnectHandler listening although the DrawingView was unloaded meanwhile, which relayed drawing while the DrawingView was unloaded and every
-	// gesture twice after it was loaded.
+	// Unloaded in between (VisualElement.OnHandlerChangedCore) when the DrawingView was loaded and the new platform view is not in a window yet. The runner has
+	// no MAUI Window, so Unloaded is raised from HandlerChanged, which MAUI raises in the same OnHandlerChangedCore call.
 	[Fact]
 	public async Task UnloadedBeforeTheHandlerConnectsMakesItWaitUntilTheDrawingViewIsLoaded()
 	{
@@ -1582,8 +1495,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A handler of the DrawingView that is not a DrawingViewHandler (an app's own handler) is disconnected on Unloaded, without waiting to be loaded again.
-	// Catches: DrawingView.OnDrawingViewUnloaded leaving a handler of another type connected.
 	[Fact]
 	public async Task UnloadedDisconnectsAHandlerThatIsNotADrawingViewHandler()
 	{
@@ -1602,7 +1513,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The handler, the DrawingView and the platform view are collected after the handler is disconnected
 	[Fact]
 	public async Task HandlerViewAndPlatformViewDoNotLeak()
 	{
@@ -1623,18 +1533,17 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
-	// The handler subscribes to the Lines collections and the platform events; after use and disconnect nothing may keep them alive
 	[Fact]
 	public async Task UsedHandlerViewAndPlatformViewDoNotLeakAfterDisconnect()
 	{
 		SetupBuilder();
 		WeakReference viewReference = null!, handlerReference = null!, platformViewReference = null!, recorderReference = null!;
-		ObservableCollection<IDrawingLine> externalLines = null!;
+		ObservableCollection<IDrawingLine> linesKeptByTheApp = null!;
 
 		await InvokeOnMainThreadAsync(() =>
 		{
 			var view = new DrawingView { IsMultiLineModeEnabled = true };
-			externalLines = view.Lines; // the app (a view model) keeps the collection alive
+			linesKeptByTheApp = view.Lines;
 			var handler = CreateHandler<DrawingViewHandler>(view);
 			var recorder = new DrawingViewRecorder(view);
 			view.Lines.Add(CreateLine(red, 6, (10, 20), (90, 20)));
@@ -1649,11 +1558,9 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference, recorderReference);
-		GC.KeepAlive(externalLines);
+		GC.KeepAlive(linesKeptByTheApp);
 	}
 
-	// A DrawingView that was hosted in the window and left it (on Android its Unloaded handler also made the handler stop listening
-	// until the DrawingView is loaded again) is collectable
 	[Fact]
 	public async Task HostedAndUnloadedHandlerAndPlatformViewDoNotLeak()
 	{
@@ -1662,7 +1569,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 		await HostAndDropAsync();
 
-		// a hosted Android view is released on wall-clock time (Java GC bridge, next frame), so the references are polled
 		await DrawingViewTestPlatform.WaitUntilCollectedAsync(handlerReference, platformViewReference);
 
 		async Task HostAndDropAsync()
@@ -1678,7 +1584,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// A DrawingView that was drawn on inside a MAUI ScrollView (a signature pad in a scrolling form) must be collectable once its page left the window.
 	// The same page without a gesture is checked first as a control, so a failure of the second part is caused by the gesture (the Apple scroll-view cache), not by the hosting.
 	[Fact]
 	public async Task DrawingViewInAScrollViewIsCollectableAfterAGesture()
@@ -1714,9 +1619,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// A DrawingView whose page left the window for good, with its handler waiting for the DrawingView to be loaded again,
-	// is collectable together with that handler and its platform view, on every platform (Unloaded is raised the way MAUI does
-	// where the headless host does not raise it)
 	[Fact]
 	public async Task DrawingViewWaitingToBeLoadedAgainDoesNotLeak()
 	{
@@ -1745,9 +1647,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// A page that never returns: while the app keeps the DrawingView's Lines (a view model's collection, which the handler observed while the page
-	// was shown), the page, the DrawingView, its handler (which the DrawingView keeps while its page is away) and the platform view are collectable.
-	// This is the leak that #420 fixed by disconnecting the handler on Unloaded.
+	// The leak that #420 fixed: the app keeps the DrawingView's Lines (a view model's collection, which the handler observed while the page was shown).
 	// Catches: the handler still observing the app's Lines, or the platform view still holding the handler, after the DrawingView was unloaded.
 	[Fact]
 	public async Task DrawingViewWhosePageNeverReturnsIsCollectedWhileTheAppKeepsItsLines()
@@ -1783,7 +1683,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// The DrawingView image APIs render what was drawn through the handler
 	[Fact]
 	public Task GetImageStreamRendersTheLinesDrawnOnTheHostedView()
 	{
@@ -1808,7 +1707,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			DrawingPixelAssert.SizeIs(linesImage, 172, 12);
 			DrawingPixelAssert.NotColorAtUnits(linesImage, 86, 6, white);
 
-			// the overload without an output option and the static overload produce the same lines-only image
 			using var defaultStream = await drawingView.GetImageStream(172, 12);
 			DrawingPixelAssert.SameImage(linesImage, await DecodeAsync(defaultStream));
 			using var staticStream = await DrawingView.GetImageStream(ImageLineOptions.JustLines(drawingView.Lines.ToList(), new Size(172, 12), new SolidPaint(white)));
@@ -1816,8 +1714,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A DrawingView without lines exports Stream.Null
-	// with either output option, also when it is laid out, so that its FullCanvas export has a canvas of the view's size
 	[Theory]
 	[InlineData(DrawingViewOutputOption.Lines)]
 	[InlineData(DrawingViewOutputOption.FullCanvas)]
@@ -1847,7 +1743,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		Points = new ObservableCollection<PointF>(points.Select(point => new PointF(point.X, point.Y)))
 	};
 
-	// Hosts the DrawingView in the window (creating its handler), waits until it is loaded and runs the body on the UI thread.
 	async Task RunAsync(DrawingView drawingView, Func<DrawingViewHandler, MauiDrawingView, Task> body)
 	{
 		SetupBuilder();
@@ -1856,8 +1751,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		{
 			await drawingView.OnLoadedAsync();
 #if WINDOWS
-			// A view that AttachAndRun hosts on its own is laid out by InitializeViewHandler before it is hosted, but on Windows it cannot measure a
-			// view that is not loaded, so the arrange leaves an empty Frame (centered, 0x0) and no MAUI parent lays it out later: it is laid out here.
+			// A view that AttachAndRun hosts on its own is laid out by InitializeViewHandler before it is hosted, but on Windows a view that is not loaded cannot be measured,
+			// so that arrange leaves an empty Frame (centered, 0x0) and no MAUI parent lays it out later.
 			var size = ((IView)drawingView).Measure(drawingView.WidthRequest, drawingView.HeightRequest);
 			((IView)drawingView).Arrange(new Rect(0, 0, size.Width, size.Height));
 #endif
@@ -1878,27 +1773,25 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 	Task<DrawingPixelImage> RenderAsync(MauiDrawingView platformView) => DrawingViewTestPlatform.RenderAsync(platformView, MauiContext);
 
-	// Invokes the Unloaded subscribers of the element, as MAUI does when the element leaves the window (UI thread).
+	// UI thread only.
 	static void RaiseUnloaded(VisualElement element)
 	{
 		var field = unloadedField ?? throw new InvalidOperationException(unloadedFieldMissingReason);
 		((EventHandler?)field.GetValue(element))?.Invoke(element, EventArgs.Empty);
 	}
 
-	// Invokes the Loaded subscribers of the element, as MAUI does when the element is in a window again (UI thread).
+	// UI thread only.
 	static void RaiseLoaded(VisualElement element)
 	{
 		var field = loadedField ?? throw new InvalidOperationException(loadedFieldMissingReason);
 		((EventHandler?)field.GetValue(element))?.Invoke(element, EventArgs.Empty);
 	}
 
-	// Whether the DrawingView itself is among the Unloaded subscribers that MAUI keeps in VisualElement._unloaded (UI thread).
+	// UI thread only.
 	static bool IsListeningToUnloaded(DrawingView drawingView) =>
 		((Delegate?)unloadedField?.GetValue(drawingView))?.GetInvocationList().Any(subscriber => ReferenceEquals(subscriber.Target, drawingView)) is true;
 
-	// After DrawingView.OnDrawingViewUnloaded ran, the DrawingView keeps its handler and the handler keeps its platform view, but the handler stopped
-	// listening (#420) (UI thread): drawing on the platform view, which stays in its place in the view hierarchy, reaches nothing, and a line added to
-	// DrawingView.Lines does not reach the platform view, whose lines stay the same instances (the line is removed again).
+	// UI thread only.
 	static void AssertHandlerStoppedListening(DrawingView drawingView, DrawingViewHandler handler, MauiDrawingView platformView)
 	{
 		Assert.Same(handler, drawingView.Handler);
@@ -1920,9 +1813,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		drawingView.Lines.Remove(line);
 	}
 
-	// AttachAndRun let the page leave the window: waits for the page's Unloaded and returns once the DrawingView handled Unloaded. The headless iOS and Mac Catalyst
-	// host has no MAUI Window and does not raise Unloaded for the DrawingView, so there it is raised the way MAUI does. unloadedBefore is the count of Unloaded
-	// events before AttachAndRun hosted the page.
+	// The headless iOS and Mac Catalyst host has no MAUI Window and does not raise Unloaded for the DrawingView, so there it is raised the way MAUI does.
 	static async Task WaitUntilTheDrawingViewLeftTheWindowAsync(ContentPage page, DrawingView drawingView, UnloadedRecorder unloaded, int unloadedBefore)
 	{
 		await page.OnUnloadedAsync();
@@ -1932,7 +1823,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			await InvokeOnMainThreadAsync(() => RaiseUnloaded(drawingView));
 		}
 
-		Assert.NotEqual(unloadedBefore, unloaded.Count); // precondition: the DrawingView received Unloaded
+		Assert.NotEqual(unloadedBefore, unloaded.Count);
 	}
 
 	static async Task<DrawingPixelImage> DecodeAsync(Stream stream)
@@ -1959,7 +1850,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// What makes a DrawingViewHandler that stopped listening listen again: the DrawingView's Loaded event, or its platform view's AttachedToWindow event.
 	public enum ListenAgainSignal
 	{
 		Loaded,
@@ -1994,7 +1884,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		void OnCancelled(object? sender, EventArgs e) => Cancelled++;
 	}
 
-	// Counts the CollectionChanged events of a collection.
 	sealed class CollectionChangeCounter
 	{
 		public CollectionChangeCounter(INotifyCollectionChanged collection) => collection.CollectionChanged += OnCollectionChanged;
@@ -2004,8 +1893,6 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => Count++;
 	}
 
-	// Counts the Unloaded events that the host raises for the DrawingView.
-	// A handler of a DrawingView that is not a DrawingViewHandler.
 	sealed class OtherDrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>
 	{
 		public OtherDrawingViewHandler() : base(ViewHandler.ViewMapper)

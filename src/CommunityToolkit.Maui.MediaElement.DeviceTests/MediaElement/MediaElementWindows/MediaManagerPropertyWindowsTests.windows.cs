@@ -5,9 +5,6 @@ using Stretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Views/MediaManager.windows.cs: the property and command mapping of the manager (aspect, controls, loop, volume, mute, keep-screen-on, the
-// "no platform view" guards). The manager is created without a handler and driven through its public Update*/Play/Pause/Stop methods;
-// every assertion reads the native WinUI/Windows.Media object. None of these tests decodes media.
 [Category(TestCategory.MediaManagerWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPropertyWindowsTests : WinMediaTestBase
@@ -27,8 +24,8 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 			Assert.Same(fixture.Element.MediaPlayer, fixture.Player);
 			Assert.Same(fixture.Element, fixture.Manager.PlayerElement);
 
-			// CreatePlatformView switches the player's system media transport controls off (the MediaPlayer default is on): only media with
-			// metadata switches them on (MediaMetadataWindowsTests.OpeningMediaSwitchesTheSystemMediaControlsOnOnlyForMediaWithMetadata).
+			// The system controls are on by default in a MediaPlayer; only media with metadata switches them on
+			// (MediaMetadataWindowsTests.OpeningMediaSwitchesTheSystemMediaControlsOnOnlyForMediaWithMetadata).
 			Assert.False(fixture.Player.SystemMediaTransportControls.IsEnabled);
 		});
 	}
@@ -157,7 +154,6 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 		SetupWindowsBuilder();
 		await RequireMediaPlayerAsync();
 
-		// The dispatcher reports IsDispatchRequired although this is the UI thread: the dispatching arm queues the write.
 		var fixture = await CreateManagerAsync(view => view.Volume = 0.25, dispatchRequired: true);
 
 		await InvokeOnMainThreadAsync(() =>
@@ -183,7 +179,6 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 		{
 			fixture.Manager.UpdateVolume();
 
-			// IsDispatchRequired == false: the write is inline, so it is visible right away and nothing was queued.
 			Assert.Equal(0.25, fixture.Player!.Volume, 3);
 			Assert.Equal(0, fixture.Dispatcher!.DispatchCount);
 		});
@@ -230,15 +225,12 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 				view.Dispose();
 			});
 
-			// Connecting: MapShouldMute queues the write.
 			manager.UpdateShouldMute();
 			var queuedWrite = Assert.Single(dispatcher.TakeQueued());
 
-			// Disconnecting before the queue runs: MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
 			manager.Dispose();
 			platformView.Dispose();
 
-			// The queued write runs after that; there is no player left to mute, so it must do nothing.
 			Assert.Null(Record.Exception(queuedWrite));
 		});
 	}
@@ -266,11 +258,10 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 			manager.UpdateVolume();
 			var queuedWrite = Assert.Single(dispatcher.TakeQueued());
 
-			// Disconnecting before the queue runs: MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
+			// MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
 			manager.Dispose();
 			platformView.Dispose();
 
-			// There is no player left to change, so the queued write must do nothing.
 			Assert.Null(Record.Exception(queuedWrite));
 		});
 	}
@@ -283,7 +274,6 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 
 		var fixture = await CreateManagerAsync();
 
-		// What the transport controls' mute button does.
 		fixture.Player!.IsMuted = true;
 		await WaitUntilAsync(() => fixture.View.ShouldMute, "ShouldMute did not follow the native mute.");
 
@@ -299,15 +289,13 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 
 		var fixture = await CreateManagerAsync();
 
-		// What the transport controls' volume slider does.
 		fixture.Player!.Volume = 0.25;
 
 		await WaitUntilAsync(() => Math.Abs(fixture.View.Volume - 0.25) < 0.001, "Volume did not follow the native volume.");
 	}
 
-	// WinMediaDispatcher counts the updates that the player's VolumeChanged and IsMutedChanged events queue apart from the manager's own dispatches,
-	// by the names of MediaManager's handler lambdas, so the tests that expect no dispatch do not count an event that arrives late. This test fails
-	// when those names stop matching, before the tests that count dispatches turn flaky again.
+	// WinMediaDispatcher counts the updates these events queue apart from the manager's own dispatches by the names of MediaManager's handler
+	// lambdas. This test fails when those names stop matching, before the tests that count dispatches turn flaky again.
 	[Fact]
 	public async Task PlayerVolumeAndMuteEventsAreCountedApart()
 	{
@@ -317,7 +305,6 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 		var fixture = await CreateManagerAsync(recordDispatches: true);
 		var playerEventsBefore = fixture.Dispatcher!.PlayerEventDispatchCount;
 
-		// What the transport controls' volume slider and mute button do.
 		fixture.Player!.Volume = fixture.Player.Volume > 0.5 ? 0.25 : 0.75;
 		await WaitUntilAsync(() => fixture.Dispatcher.PlayerEventDispatchCount > playerEventsBefore, "The update queued by the player's VolumeChanged was not counted as a player event.");
 
@@ -342,14 +329,14 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 			fixture.Manager.Play();
 			AssertDisplayRequest(fixture.Manager, active: true);
 
-			// Requests are cumulative on Windows: a second Play must not add a second request (the native count stays 1).
+			// Requests are cumulative on Windows, so a second Play must not add a second one.
 			fixture.Manager.Play();
 			AssertDisplayRequest(fixture.Manager, active: true);
 
 			fixture.Manager.Pause();
 			AssertDisplayRequest(fixture.Manager, active: false);
 
-			// A second Pause has nothing left to release (and must not try: RequestRelease without a request throws).
+			// RequestRelease without a request throws, so a second Pause must not release again.
 			fixture.Manager.Pause();
 			AssertDisplayRequest(fixture.Manager, active: false);
 		});
@@ -395,7 +382,7 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 			Assert.Equal(MediaElementState.Stopped, fixture.View.CurrentState);
 			Assert.Equal(TimeSpan.Zero, fixture.Player!.Position);
 
-			// A second Stop has no display request left to release.
+			// RequestRelease without a request throws, so a second Stop must not release again.
 			fixture.Manager.Stop();
 			AssertDisplayRequest(fixture.Manager, active: false);
 		});
@@ -425,16 +412,15 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 			fixture.Manager.UpdateShouldKeepScreenOn();
 			AssertDisplayRequest(fixture.Manager, expectedRequest);
 
-			// A repeated update neither toggles nor stacks the request (the native count stays at 1 or 0).
+			// A repeated update neither toggles nor stacks the request.
 			fixture.Manager.UpdateShouldKeepScreenOn();
 			AssertDisplayRequest(fixture.Manager, expectedRequest);
 
-			// Switching the option off releases an active request whatever the state is ...
 			fixture.View.ShouldKeepScreenOn = false;
 			fixture.Manager.UpdateShouldKeepScreenOn();
 			AssertDisplayRequest(fixture.Manager, active: false);
 
-			// ... and there is nothing to release the second time.
+			// RequestRelease without a request throws, so a second update must not release again.
 			fixture.Manager.UpdateShouldKeepScreenOn();
 			AssertDisplayRequest(fixture.Manager, active: false);
 		});
@@ -482,7 +468,6 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 		SetupWindowsBuilder();
 		await RequireMediaPlayerAsync();
 
-		// The dispatcher reports IsDispatchRequired: the guard (media that can seek) comes before the dispatcher decision, so nothing may be queued.
 		var fixture = await CreateManagerAsync(dispatchRequired: true);
 		// A MediaPlayer without media reports CanSeek on Windows 11 (26200), so the guard also needs a playback state other than None.
 		Assert.Equal(MediaPlaybackState.None, fixture.Player!.PlaybackSession.PlaybackState);
@@ -526,7 +511,6 @@ public class MediaManagerPropertyWindowsTests : WinMediaTestBase
 		{
 			var manager = fixture.Manager;
 
-			// Every Platform* method guards "Player is null" (or "Player?."): none may throw and none may touch the MediaElement.
 			manager.UpdateAspect();
 			manager.UpdateSpeed();
 			manager.UpdateShouldShowPlaybackControls();

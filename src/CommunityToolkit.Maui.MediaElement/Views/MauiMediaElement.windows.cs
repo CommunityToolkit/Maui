@@ -113,15 +113,13 @@ public partial class MauiMediaElement : Grid, IDisposable
 		return AppWindow.GetFromWindowId(id);
 	}
 
-	// The window that hosts this element. The foreground window can be another one: another window of the app (or of another app) is in front
-	// when the button is pressed from the keyboard or by assistive technology.
+	// The foreground window can be another one than this element's: another window of the app (or of another app) is in front when the
+	// button is pressed from the keyboard or by assistive technology.
 	AppWindow? GetAppWindowOfThisElement() =>
 		XamlRoot?.ContentIslandEnvironment is Microsoft.UI.Content.ContentIslandEnvironment environment && environment.AppWindowId.Value is not 0
 			? AppWindow.GetFromWindowId(environment.AppWindowId)
 			: null;
 
-	// The page whose navigation bar full screen hides: the current page of the application's window that is shown in appWindow, or of the first
-	// window (CurrentPage) when none of them is
 	static Page GetCurrentPageOfWindow(AppWindow appWindow) =>
 		Application.Current?.Windows.FirstOrDefault(window => window.Handler?.PlatformView is Microsoft.UI.Xaml.Window platformWindow && platformWindow.AppWindow.Id == appWindow.Id)?.Page is Page page
 			? PageExtensions.GetCurrentPage(page)
@@ -195,8 +193,8 @@ public partial class MauiMediaElement : Grid, IDisposable
 		var appWindow = GetAppWindowOfThisElement() ?? GetAppWindowForCurrentWindow();
 		var currentPage = GetCurrentPageOfWindow(appWindow);
 
-		// The window can also enter or leave full screen without this button (F11, the app, the user): the element is moved, and the
-		// navigation bar hidden or restored, only when the element is not already where the new presenter needs it
+		// The window can also enter or leave full screen without this button (F11, the app, the user), so the element and the navigation bar
+		// are only changed when they are not already as the new presenter needs them.
 		var isElementInFullScreenPopup = fullScreenGrid.Children.Contains(mediaPlayerElement);
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)

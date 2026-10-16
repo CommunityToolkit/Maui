@@ -88,7 +88,7 @@ public static partial class DrawingViewService
 		var points = lines.SelectMany(x => x.Points).ToList();
 		if (points.Count is 0)
 		{
-			// nothing to draw (no lines, or lines without points): Stream.Null, as on every platform (Max() below needs a line)
+			// Max() below needs a line, and every platform returns Stream.Null when there is nothing to draw
 			return null;
 		}
 
@@ -158,7 +158,7 @@ public static partial class DrawingViewService
 		var pointsCount = points.Count;
 		if (pointsCount is 1)
 		{
-			// a single point (a tap) is a dot of the line width, as MauiDrawingView draws it: with the round cap, DrawPoint draws a circle of the stroke width
+			// A single point (a tap) has no segment to draw: with the round cap, DrawPoint draws a circle of the stroke width, as MauiDrawingView draws a tap
 			var point = points.First();
 			canvas.DrawPoint(point.X - offset.Width, point.Y - offset.Height, paint);
 		}
@@ -233,7 +233,7 @@ public static partial class DrawingViewService
 						positions[index] = gradientStop.Offset;
 					}
 
-					// as in MAUI's canvas, the radius is relative to the larger side of the image, and a radius of 0 spans the diagonal of the image
+					// As in MAUI's canvas, the radius is relative to the larger side of the image, and a radius of 0 spans the diagonal of the image
 					// (Android's RadialGradient needs a positive radius)
 					var radius = (float)radialGradientBrush.Radius * Math.Max(canvas.Width, canvas.Height);
 					if (radius is not > 0)

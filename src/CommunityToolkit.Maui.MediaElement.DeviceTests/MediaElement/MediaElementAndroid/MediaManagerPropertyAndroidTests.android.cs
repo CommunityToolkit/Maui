@@ -6,8 +6,6 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The Update* members of MediaManager (MediaManager.android.cs) behind the property mapper of MediaElementHandler: each MediaElement
-// property is checked on the native ExoPlayer or PlayerView, not on a cached field.
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
@@ -95,10 +93,10 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Each member returns at its Player or PlayerView guard. The MediaElement is set up so that the guard is the only thing that stops the member
-	// from using the missing object: it has a Source (Play, Pause and Stop return without one), it is not muted (UpdateVolume and
-	// UpdateShouldMute take another path while muted), it has a duration (UpdateStatus does nothing without one), a positive speed and an Aspect
-	// that has no resize mode. Without a guard the member throws (NullReferenceException, or NotSupportedException for the Aspect).
+	// The MediaElement is set up so that the Player or PlayerView guard is the only thing that stops each member from using the missing
+	// object: it has a Source (Play, Pause and Stop return without one), it is not muted (UpdateVolume and UpdateShouldMute take another path
+	// while muted), it has a duration (UpdateStatus does nothing without one), a positive speed and an Aspect that has no resize mode.
+	// Without its guard a member throws (NullReferenceException, or NotSupportedException for the Aspect).
 	[Fact]
 	public async Task UpdatesWithoutAPlayerViewOrPlayerAreIgnored()
 	{
@@ -119,7 +117,6 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// The manager has not created its platform view: Player and PlayerView are null.
 			using var manager = new AndroidMediaManagerProbe(MauiContext, mediaElement, TestDispatcher.Current);
 			var members = new Dictionary<string, Action>
 			{
@@ -204,7 +201,6 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 
 			mediaElement.Volume = 0.9;
 
-			// Still silent: only the volume to come back to changed.
 			Assert.Equal(0f, player.Volume, tolerance);
 
 			mediaElement.ShouldMute = false;
@@ -212,9 +208,8 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// When the handler connects, Volume is mapped before ShouldMute (MediaManager.android.cs, PlatformUpdateShouldMute). The unmuted branch
-	// compares volumeBeforeMute (a field that starts at 1) with the player volume through AreFloatingPointNumbersEqual and keeps the player
-	// volume when they differ, so the MediaElement's volume is not reset to 1 (it was while the helper was inverted).
+	// When the handler connects, Volume is mapped before ShouldMute, whose unmuted branch compares the player volume with volumeBeforeMute
+	// (which starts at 1): the volume was reset to 1 while AreFloatingPointNumbersEqual was inverted (#3327).
 	[Fact]
 	public async Task VolumeSetBeforeTheHandlerConnectsSurvivesTheConnection()
 	{
@@ -230,7 +225,7 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The same comparison: evaluating ShouldMute again while not muted (UpdateShouldMute is public) keeps the current volume.
+	// The same comparison, reached by calling the public UpdateShouldMute again while not muted.
 	[Fact]
 	public async Task UpdateShouldMuteWhileUnmutedKeepsTheCurrentVolume()
 	{
@@ -249,8 +244,8 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// When the MediaElement starts muted, UpdateVolume only records the volume to restore and leaves the player alone; UpdateShouldMute then
-	// records the MediaElement's volume (not the player's, still 1) as the volume to restore, so unmuting brings back the chosen volume.
+	// When the MediaElement starts muted, the player is still at its default volume of 1 when ShouldMute records the volume to restore, so
+	// that volume must come from the MediaElement.
 	[Fact]
 	public async Task MediaElementThatStartsMutedUnmutesToItsVolume()
 	{
@@ -271,9 +266,6 @@ public class MediaManagerPropertyAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(0.4f, player.Volume, tolerance);
 		});
 	}
-
-	// MediaManager.AreFloatingPointNumbersEqual (MediaManager.shared.cs), which the mute code above relies on, is pure logic: its own test is in
-	// CommunityToolkit.Maui.UnitTests (MediaManagerFloatingPointTests). These tests show what it does to the Android player.
 
 	[Fact]
 	public async Task SpeedMapsToThePlaybackSpeedOfThePlayer()

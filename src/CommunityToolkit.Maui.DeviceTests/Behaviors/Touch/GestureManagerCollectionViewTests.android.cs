@@ -3,11 +3,9 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android only: GestureManager.HandleCollectionViewSelection and its search for the CollectionView are compiled for Android only.
 public partial class GestureManagerCollectionViewTests
 {
-	// Catches: an unsupported selection mode being swallowed instead of reported (the NotSupportedException default arm). A mode outside
-	// the enum can only reach the method directly; a touch of the platform view goes through the same HandleTouch.
+	// HandleTouch is called directly, as the platform's touch handler calls it, so that the NotSupportedException is thrown to the test.
 	[Fact]
 	public async Task UnsupportedSelectionModeIsReported()
 	{
@@ -27,11 +25,8 @@ public partial class GestureManagerCollectionViewTests
 		});
 	}
 
-	// The search for a CollectionView walks up the element's parents and must stop at the first one that is not a VisualElement: here the
-	// Window above the page, which ends the search without a CollectionView, and the tap completes as usual. Hosted headless under a Window
-	// that has no handler, the label's behavior never received the native touches (Android API 36), so the tree is not hosted: the behavior
-	// gets its element directly and the touch comes through the internal handlers that the platform listener calls.
-	// Catches: the search failing on an ancestor that is not a VisualElement (its "Parent as VisualElement" step), or selecting anyway.
+	// Hosted headless under a Window that has no handler, the label's behavior never received the native touches (Android API 36), so the tree
+	// is not hosted: the behavior gets its element directly and the touch comes through the internal handlers that the platform listener calls.
 	[Fact]
 	public async Task SearchForTheCollectionViewEndsAtAnAncestorThatIsNotAVisualElement()
 	{

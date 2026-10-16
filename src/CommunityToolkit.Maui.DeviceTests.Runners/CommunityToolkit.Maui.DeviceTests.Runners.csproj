@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- dotnet/maui's device-test runner (headless XHarness runner + visual runner), vendored: see README.md. -->
+  <!-- dotnet/maui's device-test runner, vendored: see README.md. -->
 
   <PropertyGroup>
     <!-- No plain $(NetVersion) target (the code needs a platform): on Linux, where the Apple workloads do not exist, only Android. -->

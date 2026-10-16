@@ -4,9 +4,6 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of the validation behaviors (ValidationBehavior and the behaviors built on it) on an Entry, with the settings of the
-// Sample's validation pages: the ValidStyle or InvalidStyle that the behavior applies for its result must reach the platform view.
-// The platform partials read the native text color.
 [Category(TestCategory.ValidationBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
@@ -14,7 +11,6 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 	static readonly Color validTextColor = Colors.Green;
 	static readonly Color invalidTextColor = Colors.Red;
 
-	// EmailValidationBehaviorPage: DecorationFlags="Trim" validates the text without its leading and trailing white space.
 	[Fact]
 	public async Task TextIsValidatedWithoutLeadingAndTrailingWhiteSpaceWhenDecorationFlagsIsTrim()
 	{
@@ -41,14 +37,13 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 			entry.Text = " user@example.com ";
 			await AssertValidationResultAsync(entry, handler, behavior, isValid: true, validStyle, invalidStyle);
 
-			// White space inside the text is not removed
 			entry.Text = " user @example.com ";
 			await AssertValidationResultAsync(entry, handler, behavior, isValid: false, validStyle, invalidStyle);
 		});
 	}
 
-	// CharactersValidationBehaviorPage: Flags="ValidateOnValueChanged", and the rules are bound to other controls. Changing a rule there
-	// takes the focus from the Entry (the Entry of a count does, and so does the Picker on iOS), and the new rule must still apply to its text.
+	// CharactersValidationBehaviorPage binds the rules to other controls, and changing one takes the focus from the Entry (the Entry of a
+	// count does, and so does the Picker on iOS).
 	[Fact]
 	public async Task TextIsValidatedAgainWhenARuleChangesAfterTheEntryLostTheFocus()
 	{
@@ -79,14 +74,12 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 
 			await UnfocusAsync(entry);
 
-			// "12" has fewer than 5 digits
 			behavior.MinimumCharacterTypeCount = 5;
 			await AssertValidationResultAsync(entry, handler, behavior, isValid: false, validStyle, invalidStyle);
 
 			behavior.MinimumCharacterTypeCount = 2;
 			await AssertValidationResultAsync(entry, handler, behavior, isValid: true, validStyle, invalidStyle);
 
-			// "12" has no letter
 			behavior.CharacterType = CharacterType.Letter;
 			await AssertValidationResultAsync(entry, handler, behavior, isValid: false, validStyle, invalidStyle);
 		});

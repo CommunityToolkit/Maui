@@ -12,7 +12,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class SnackbarTests
 {
-	// The action button of the native snackbar can be activated from a test.
 	static string? ActionCannotBeClickedReason => null;
 
 	// Disposing a snackbar that is shown only unsubscribes its action button here: nothing has to be taken off screen first.
@@ -38,7 +37,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// The default duration (3 s) comes from the constructor for an initializer and from Make for Make; it becomes the NSTimer interval.
+	// The default duration (3 s) comes from the constructor for an initializer and from Make for Make.
 	[Fact]
 	public async Task DefaultDurationOfThreeSecondsReachesThePlatformSnackbar()
 	{
@@ -80,7 +79,7 @@ public partial class SnackbarTests
 			AlertsApple.AssertColor(10 / 255d, 20 / 255d, 200 / 255d, 1, label.TextColor);
 			Assert.Equal("Courier", label.Font.FamilyName);
 			Assert.Equal(22, (double)label.Font.PointSize);
-			// The amount of kerning is pinned by CharacterSpacingKernsTheMessageBy100TimesTheValueOverThePointSize: here only that it is applied.
+			// The amount of kerning is pinned by CharacterSpacingKernsTheMessageBy100TimesTheValueOverThePointSize.
 			var attributes = label.AttributedText!.GetCoreTextAttributes(0, out _);
 			Assert.True(attributes!.KerningAdjustment > 0, $"The message is not spaced: KerningAdjustment is {attributes.KerningAdjustment}.");
 			var button = alertView.GetActionButton()!;
@@ -90,8 +89,8 @@ public partial class SnackbarTests
 		});
 	}
 
-	// SnackbarOptions.CharacterSpacing kerns the message by 100 * CharacterSpacing / the point size of the message font, in points: the unit
-	// documented on SnackbarOptions.CharacterSpacing (a MAUI Label with the same CharacterSpacing is kerned by CharacterSpacing points instead).
+	// The expected values follow the unit documented on SnackbarOptions.CharacterSpacing; a MAUI Label with the same CharacterSpacing is
+	// kerned by CharacterSpacing points instead.
 	[Theory]
 	[InlineData(3.0, 24.0, 12.5)]
 	[InlineData(3.0, 12.0, 25.0)]
@@ -232,8 +231,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// A message taller than the screen: the view stays between the top and the bottom of the safe area (AlertView keeps its top at least
-	// 10 points below the top of the safe area) instead of growing upwards off screen.
+	// AlertView keeps its top at least 10 points below the top of the safe area instead of growing upwards off screen.
 	[Fact]
 	public async Task VeryLongSnackbarStaysWithinTheSafeArea()
 	{
@@ -265,8 +263,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// iOS and Mac Catalyst keep the (padded) action button of a snackbar whose action text is empty, while Android hides the action
-	// (SnackbarTests.EmptyActionButtonTextHidesTheActionButton): the platforms differ for this input.
+	// Android hides the action for this input (SnackbarTests.EmptyActionButtonTextHidesTheActionButton): the platforms differ.
 	[Fact]
 	public async Task EmptyActionButtonTextKeepsAnEmptyActionButton()
 	{
@@ -285,8 +282,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// UIKit only accepts calls from the main thread (the binding checks it in Debug builds): Show called from a background thread fails
-	// before anything is created or shown.
+	// UIKit only accepts calls from the main thread (the binding checks it in Debug builds).
 	[Fact]
 	public async Task ShowOffTheUiThreadThrowsUIKitThreadAccessExceptionAndShowsNothing()
 	{
@@ -303,7 +299,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Dismiss fails the same way off the UI thread (Alert.Dismiss removes the view through UIKit), and the snackbar stays shown.
+	// Alert.Dismiss removes the view through UIKit, which fails off the UI thread the same way.
 	[Fact]
 	public async Task DismissOffTheUiThreadThrowsUIKitThreadAccessExceptionAndKeepsTheSnackbar()
 	{
@@ -573,7 +569,6 @@ public partial class SnackbarTests
 		await AssertionExtensions.WaitForGC(snackbarReference, platformReference, alertViewReference);
 	}
 
-	// A snackbar that dismissed itself (its timer fired) is not kept alive either: the toolkit forgets and disposes it.
 	[Fact]
 	public async Task SnackbarDoesNotLeakAfterItDismissedItself()
 	{

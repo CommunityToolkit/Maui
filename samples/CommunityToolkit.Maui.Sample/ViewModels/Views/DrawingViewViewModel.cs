@@ -87,7 +87,7 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 			await using var stream = await DrawingView.GetImageStream(options, cancellationToken);
 
-			// GetImageStream returns Stream.Null when there is nothing to draw (no lines, or no line with points)
+			// GetImageStream returns Stream.Null when there is nothing to draw (no lines, or no line with points).
 			if (stream == Stream.Null)
 			{
 				await Toast.Make("Save Failed: No Lines Drawn").Show(cancellationToken);

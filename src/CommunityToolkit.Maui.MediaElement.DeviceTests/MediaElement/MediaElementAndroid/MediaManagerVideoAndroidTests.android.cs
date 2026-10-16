@@ -5,9 +5,6 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// What the video of a MediaElement looks like on Android: the surface of the PlayerView that ExoPlayer renders into (TextureView shows
-// the frames in the view hierarchy, so its bitmap can be read) and how the Aspect resizes it (PlatformUpdateAspect sets the resize
-// mode of the AspectRatioFrameLayout that holds the surface). The video is the 64x48 H.264 test pattern (4:3, many colors).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerVideoAndroidTests : MediaElementAndroidTestBase
@@ -62,7 +59,6 @@ public class MediaManagerVideoAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The video is 4:3. Fit and Center keep it inside the player view, AspectFill covers the player view, Fill stretches it to the player view.
 	static bool IsSizedFor(Aspect aspect, PlayerView playerView, AspectRatioFrameLayout contentFrame)
 	{
 		const double videoRatio = 64.0 / 48;

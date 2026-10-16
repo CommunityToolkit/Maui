@@ -169,7 +169,6 @@ public class MauiMediaElement : CoordinatorLayout
 		SetSystemBarsVisibility(saveSystemBarsVisibility: e.P0);
 	}
 
-	// saveSystemBarsVisibility: full screen is entered, so the visibility of the system bars is saved for leaving it again
 	void SetSystemBarsVisibility(bool saveSystemBarsVisibility)
 	{
 		var currentWindow = CurrentPlatformContext.CurrentWindow;
@@ -232,8 +231,7 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		else
 		{
-			// Restores the system bars of before full screen and their behavior: bars that the app had hidden stay hidden. The behavior comes
-			// first: before Android 11 it is applied through the system UI flags, which are then restored exactly
+			// The behavior is restored first: before Android 11 it is applied through the system UI flags, which are then restored exactly.
 			if (windowInsetsControllerCompat is not null)
 			{
 				windowInsetsControllerCompat.SystemBarsBehavior = defaultSystemBarsBehavior;

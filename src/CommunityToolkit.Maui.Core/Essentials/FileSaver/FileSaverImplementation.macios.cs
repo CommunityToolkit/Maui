@@ -8,12 +8,11 @@ namespace CommunityToolkit.Maui.Storage;
 [SupportedOSPlatform("MacCatalyst14.0")]
 public sealed partial class FileSaverImplementation : IFileSaver
 {
-	// How long a call that the token canceled waits at most for its picker to be off the screen (the dismissal takes under a second)
+	// The dismissal takes under a second: the timeout only bounds a dismissal that UIKit never reports done
 	static readonly TimeSpan dismissalTimeout = TimeSpan.FromSeconds(3);
 
 	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
-		// No initial folder: the picker starts in the folder that the system chooses
 		return InternalSaveAsync(string.Empty, fileName, stream, progress, cancellationToken);
 	}
 
@@ -66,8 +65,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			tcs.TrySetCanceled(cancellationToken));
 
 		using var picker = new UIDocumentPickerViewController([fileUrl], true);
-		// A path is made a file URL (NSUrl.FromString would give a URL without a scheme, which the picker ignores); a file URL string
-		// ("file:///..."), the form that worked before paths did, is still taken as the URL it is. An empty path leaves the folder to the picker.
+		// NSUrl.FromString would give a URL without a scheme, which the picker ignores, so a path is made a file URL; a file URL string
+		// ("file:///..."), the form that worked before paths did, is still taken as the URL it is.
 		picker.DirectoryUrl = string.IsNullOrEmpty(initialPath)
 			? null
 			: initialPath.StartsWith("file:", StringComparison.OrdinalIgnoreCase) ? NSUrl.FromString(initialPath) : NSUrl.CreateFileUrl(initialPath, true);

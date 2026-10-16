@@ -22,7 +22,6 @@ public abstract class BaseViewTest : BaseTest
 
 	protected IServiceProvider ServiceProvider { get; }
 
-	// Sets the Page of the application's Window and returns the INavigation that displays popups on it
 	protected static INavigation SetRootPage(RootPageType rootPageType)
 	{
 		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");

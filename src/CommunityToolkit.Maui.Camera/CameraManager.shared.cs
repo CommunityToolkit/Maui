@@ -25,10 +25,6 @@ sealed partial class CameraManager(
 	/// <summary>
 	/// Connects to the camera.
 	/// </summary>
-	/// <remarks>
-	/// A camera that cannot be connected is reported through <see cref="ICameraView.OnErrorOccurred(Exception)"/> instead of an exception:
-	/// no camera is available, or the platform cannot start the selected camera. A cancelled connection ends quietly.
-	/// </remarks>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public async Task ConnectCamera(CancellationToken token)
 	{
@@ -84,8 +80,7 @@ sealed partial class CameraManager(
 	/// <param name="stream">The output stream for video recording</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
-	/// <exception cref="CameraException">Thrown when the recording cannot start (iOS and Mac Catalyst: for example without the camera permission).
-	/// Exceptions propagate to the caller.</exception>
+	/// <exception cref="CameraException"></exception>
 	public Task StartVideoRecording(Stream stream, CancellationToken token)
 	{
 		return PlatformStartVideoRecording(stream, token);
@@ -96,8 +91,6 @@ sealed partial class CameraManager(
 	/// </summary>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
-	/// <exception cref="CameraException">Thrown when the platform reports that the recording failed and wrote no usable video (Android, iOS and Mac
-	/// Catalyst). A recording that the platform ended early with a usable video returns that video. Exceptions propagate to the caller.</exception>
 	public Task<Stream> StopVideoRecording(CancellationToken token) => PlatformStopVideoRecording(token);
 
 	/// <summary>
@@ -113,12 +106,6 @@ sealed partial class CameraManager(
 	/// <remarks>
 	/// If the <see cref="CameraManager"/> is initialized the old camera preview will be stopped
 	/// and the new camera preview will be started.
-	/// When the new camera cannot be started (for example because another app uses it), the failure propagates as an exception (Android, iOS
-	/// and Mac Catalyst) or is reported through <see cref="ICameraView.OnErrorOccurred(Exception)"/> (Windows), and the preview stays stopped,
-	/// but the <see cref="CameraManager"/> stays initialized: the next camera change starts the preview with that camera.
-	/// On Android, while a video recording runs, the switch waits until <see cref="StopVideoRecording(CancellationToken)"/> or a new
-	/// <see cref="StartVideoRecording(Stream, CancellationToken)"/> ends the recording, because unbinding the use cases of the recording would
-	/// make CameraX end it at the switch (see <see cref="ICameraView.SelectedCamera"/>).
 	/// </remarks>
 	/// <returns>A <see cref="ValueTask"/> that can be awaited.</returns>
 	public async ValueTask UpdateCurrentCamera(CameraInfo? cameraInfo, CancellationToken token)
@@ -139,8 +126,8 @@ sealed partial class CameraManager(
 			catch (Exception ex) when (ex is not OperationCanceledException)
 			{
 				// The preview was started before the switch: it stays started, so that selecting another camera opens that camera instead of
-				// being ignored (a stopped manager does not follow SelectedCamera). Android also keeps the preview started when CameraX cannot
-				// bind the selected camera. A cancelled switch leaves the preview stopped, like a cancelled StartCameraPreview
+				// being ignored (a stopped manager does not follow SelectedCamera). A cancelled switch leaves the preview stopped, like a
+				// cancelled StartCameraPreview
 				isInitialized = true;
 				throw;
 			}
@@ -207,10 +194,6 @@ sealed partial class CameraManager(
 	/// </summary>
 	private partial void PlatformStopCameraPreview();
 
-	/// <summary>
-	/// Stops the preview from the camera so that <see cref="UpdateCurrentCamera(CameraInfo?, CancellationToken)"/> can start it again for the
-	/// selected camera, at the platform-specific level.
-	/// </summary>
 	private partial void PlatformStopCameraPreviewForCameraSwitch();
 
 	/// <summary>

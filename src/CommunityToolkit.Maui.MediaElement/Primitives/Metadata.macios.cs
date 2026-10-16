@@ -21,7 +21,6 @@ sealed class Metadata : IDisposable
 		Artwork = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage)
 	};
 
-	// The instance whose media the shared MPNowPlayingInfoCenter shows, if any
 	static Metadata? nowPlayingInfoPublisher;
 
 	readonly PlatformMediaElement player;
@@ -100,9 +99,6 @@ sealed class Metadata : IDisposable
 		PublishNowPlayingInfo();
 	}
 
-	/// <summary>
-	/// Shows <see cref="NowPlayingInfo"/> on the shared <see cref="MPNowPlayingInfoCenter"/> (lock screen and Control Center).
-	/// </summary>
 	public void PublishNowPlayingInfo()
 	{
 		nowPlayingInfoPublisher = this;
@@ -110,8 +106,8 @@ sealed class Metadata : IDisposable
 	}
 
 	/// <summary>
-	/// Removes the targets that this instance registered on the shared <see cref="MPRemoteCommandCenter"/>, so that the commands no
-	/// longer reach a player that is gone and this instance can be collected, and clears the Now Playing info if it is this instance's.
+	/// Unregisters from the shared <see cref="MPRemoteCommandCenter"/>, which would otherwise keep this instance alive and keep
+	/// sending it commands for a player that is gone.
 	/// </summary>
 	public void Dispose()
 	{

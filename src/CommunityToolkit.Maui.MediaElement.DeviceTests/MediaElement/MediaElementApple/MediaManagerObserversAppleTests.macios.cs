@@ -8,10 +8,8 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs: the key-value observers and notification handlers that copy native player changes to the MediaElement
-// (volume, muted, status, time control status, errors). Real changes of the AVPlayer drive the volume and muted observers. Status
-// values the real player will not produce on demand (a failed player, an unknown status) are driven by swapping the manager's
-// Player for a test double and poking the key-value observers of the real one (willChangeValue / didChangeValue).
+// The real player will not produce some status values on demand (a failed player, an unknown status): the tests swap the manager's
+// Player for a test double and poke the key-value observers of the real one (willChangeValue / didChangeValue).
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerObserversAppleTests : AppleMediaElementTestBase
@@ -494,7 +492,6 @@ public class MediaManagerObserversAppleTests : AppleMediaElementTestBase
 			var player = manager.NativePlayer!;
 			manager.NativePlayer = new AppleFakeAVPlayer { UseCurrentItemOverride = true, CurrentItemOverride = failedItem };
 
-			// The notification names an item of another player.
 			NSNotificationCenter.DefaultCenter.PostNotificationName(GetErrorNotification(notificationKey), new AVPlayerItem(asset));
 
 			manager.NativePlayer = player;

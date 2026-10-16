@@ -12,13 +12,10 @@ using AWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of DialogFragmentService (Core, Android): OnFragmentStarted copies the activity's status bar color and appearance
-// to the dialog window of a started DialogFragment (what a modal page's dialog needs), every other lifecycle callback is a no-op.
-//
 // Where the framework lets the state be observed, it is read back from the real native window (StatusBarColor, window flags and
 // WindowInsetsController appearance). From Android 15 on, the status bar color APIs are ignored for apps that target API 35 or newer
 // (their getter always returns 0), and a real window always has an insets controller, so the remaining branches are driven through
-// SpyWindow, which records what the service writes to the dialog window. Each test says which kind it is.
+// SpyWindow, which records what the service writes to the dialog window.
 [Category(TestCategory.DialogFragmentService)]
 [Collection(TestCollections.DisableParallelization)]
 public class DialogFragmentServiceTests : FragmentTestBase
@@ -26,8 +23,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	const int transparentColor = 0;
 
 	const string androidStatusBarColorIgnoredReason = "Window.StatusBarColor is ignored for apps that target Android 15 (API 35) or newer: the getter always returns 0.";
-
-	// ---- the 12 callbacks that do nothing (real windows)
 
 	[Theory]
 	[InlineData(nameof(IDialogFragmentService.OnFragmentAttached))]
@@ -54,13 +49,10 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 			InvokeCallback(service, callback, activity, fragment);
 
-			// OnFragmentStarted would have changed this window (see the Started tests), so an unchanged window proves that this callback does nothing.
 			Assert.Equal(before, Capture(dialogWindow));
 			return Task.CompletedTask;
 		}));
 	}
-
-	// ---- OnFragmentStarted: guards (real windows)
 
 	[Fact]
 	public async Task StartedIgnoresFragmentsThatAreNotDialogFragments()
@@ -68,8 +60,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		var service = new DialogFragmentService();
 		var fragment = new PlainFragment();
 
-		// A fragment that is no DialogFragment has no dialog window to change: the service has to return before it looks for one (a
-		// service that went on would fail on the missing dialog).
+		// A service that did not return early would fail on the missing dialog.
 		await WithActivityStatusBarAsync(distinctOpaqueColor, () => InvokeOnMainThreadAsync(() =>
 		{
 			using (new CurrentActivityScope(HostActivity))
@@ -175,7 +166,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 			try
 			{
-				// The dialog exists but reports no window, only while the service looks at it: the framework has to keep seeing the real one.
+				// The dialog reports no window only while the service looks at it: the framework has to keep seeing the real one.
 				dialog.ReportsNoWindow = true;
 				using (new CurrentActivityScope(HostActivity))
 				{
@@ -191,8 +182,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 		Assert.Equal("Dialog window cannot be null", exception.Message);
 	}
-
-	// ---- OnFragmentStarted: Android 14 and older, real windows (the status bar color APIs still work there)
 
 	[Theory]
 	[InlineData(0xFF336699u)]
@@ -236,8 +225,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		}));
 	}
 
-	// ---- OnFragmentStarted: Android 10 and older, real windows (window flags)
-
 	[Fact]
 	public async Task StartedDrawsTheSystemBarBackgroundForAnOpaqueStatusBarOnAndroid10AndOlder()
 	{
@@ -247,7 +234,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		await WithActivityStatusBarAsync(distinctOpaqueColor, () => WithShownDialogFragmentAsync((activity, fragment) =>
 		{
 			var dialogWindow = fragment.Dialog!.Window!;
-			// The opposite of the expected outcome, so each flag has to be flipped by the service.
 			dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 			dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
 			var before = Capture(dialogWindow);
@@ -316,8 +302,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		}));
 	}
 
-	// ---- OnFragmentStarted: Android 11 and newer, real windows (WindowInsetsController appearance)
-
 	[Fact]
 	public async Task StartedMirrorsTheLightStatusBarsAppearanceOfTheActivityOnAndroid11AndNewer()
 	{
@@ -346,7 +330,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 		await WithActivityStatusBarAsync(distinctOpaqueColor, () => WithShownDialogFragmentAsync((activity, fragment) =>
 		{
-			// The activity shows light status bar icons on a dark status bar, the dialog window was given the opposite.
 			SetAppearance(activity.Window!, 0, lightStatusBarsBit);
 			var dialogWindow = fragment.Dialog!.Window!;
 			SetAppearance(dialogWindow, lightStatusBarsBit, lightStatusBarsBit);
@@ -360,8 +343,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		}));
 	}
 
-	// ---- OnFragmentStarted: Android 11 and newer, spy windows (states a real window cannot be in)
-
 	[Fact]
 	public async Task StartedKeepsTheDialogUntouchedWhenItsWindowHasNoInsetsController()
 	{
@@ -373,7 +354,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		{
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
-			// Nothing was written to the dialog window: neither the color, nor the decor, nor the appearance of the activity's controller.
 			Assert.Empty(scenario.DialogWindow.StatusBarColorCalls);
 			Assert.Empty(scenario.DialogWindow.DecorFitsSystemWindowsCalls);
 			Assert.Empty(scenario.ActivityController!.AppearanceCalls);
@@ -383,8 +363,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		Assert.Contains("WindowInsetsController is null, cannot set system bars appearance.", trace.Messages);
 	}
 
-	// The appearance the activity reports (bit 8 = light status bars, bit 16 = light navigation bars) and whether the dialog window starts with light
-	// status bars: afterwards the dialog has to show light status bars exactly when the activity does.
+	// The activity's appearance is a bit mask: 8 = light status bars, 16 = light navigation bars.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(0, true)]
@@ -499,8 +478,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		await AssertDecorFitsSystemWindowsAsync(transparent);
 	}
 
-	// ---- OnFragmentStarted: Android 10 and older, spy windows
-
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -531,8 +508,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 			return Task.CompletedTask;
 		});
 	}
-
-	// ---- leak
 
 	// The toolkit registers a FragmentLifecycleManager, which holds the service, on the FragmentManager of every activity it creates
 	// (OnCreate of UseMauiCommunityToolkitCore) and never unregisters it: that registration has to go away with the FragmentManager, and
@@ -570,7 +545,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 					onCreate(activity, null);
 				}
 
-				// The registered manager hands the started dialog to the service, which takes over the status bar of the activity.
 				dialogFragment.ShowNow(host.ChildFragmentManager, "test-leak-dialog");
 				AssertDialogTookOverTheStatusBarOfTheActivity(dialogFragment.Dialog!.Window!);
 				dialogFragment.DismissNow();
@@ -591,12 +565,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		await AssertionExtensions.WaitForGC(serviceReference, dialogFragmentReference, activityReference, hostReference);
 	}
 
-	// ---- helpers
-
-	// The service reads the activity window (Platform.CurrentActivity) and writes the dialog window of the fragment. Both are
-	// spy windows here, so the test sees exactly what is read and written; the dialog itself is shown for real. The dialog
-	// reports its spy window only while the body runs: framework (Java) code that asks the dialog for its window while the dialog
-	// is created, shown or dismissed must get the real one.
 	sealed record SpyScenario(SpyActivity Activity, SpyWindow ActivityWindow, SpyInsetsController? ActivityController, ProbeDialogFragment Fragment, SpyWindow DialogWindow, SpyInsetsController? DialogController);
 
 	static Task WithSpyScenarioAsync(int activityStatusBarColor, int? activityAppearance, bool dialogHasInsetsController, Func<SpyScenario, Task> body, int dialogAppearance = 0) =>
@@ -614,6 +582,8 @@ public class DialogFragmentServiceTests : FragmentTestBase
 			var dialog = (SpyDialog)fragment.Dialog!;
 			try
 			{
+				// The dialog reports its spy window only while the body runs: framework (Java) code that asks the dialog for its window while the dialog
+				// is created, shown or dismissed must get the real one.
 				dialog.SpyWindow = dialogWindow;
 				using (new CurrentActivityScope(spyActivity))
 				{

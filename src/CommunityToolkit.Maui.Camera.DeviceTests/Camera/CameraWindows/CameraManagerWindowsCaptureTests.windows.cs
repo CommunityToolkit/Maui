@@ -7,11 +7,6 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The capture paths of CameraManager.windows.cs that need a camera: starting the preview, taking a photo, recording an MP4, zoom and
-// capture resolution, switching cameras and the real CameraViewHandler. They skip visibly on machines without a camera, or when the
-// Windows privacy settings deny the app access to it. The CI runners have no camera, so these tests only run on a Windows machine
-// that has one.
-//
 // Device IDs are compared ignoring case: they are device interface paths, which Windows treats case-insensitively, and MediaCapture reports
 // the ID it opened in lower case (\\?\usb#vid_...), while DeviceInformation and MediaFrameSourceGroup list it in upper case (\\?\USB#VID_...).
 [Category(TestCategory.CameraWindows)]
@@ -173,8 +168,8 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 
 	// UpdateZoom divides by ZoomControl.Step without a guard (CameraManager.windows.cs:83-90): for a supported zoom control that reports a step
 	// of 0, `zoomLevel % 0` and `Math.Ceiling(zoomLevel / 0) * 0` are NaN, so the manager would write NaN to ZoomControl.Value. Whether a camera
-	// driver reports such a step is unknown (the step tests above skip on one), so this test only runs on such a camera; there it expects the
-	// requested factor, which fails if the missing guard matters.
+	// driver reports such a step is unknown (the step tests above skip on one), so this test only runs on such a camera, where it fails if the
+	// missing guard matters.
 	[Fact]
 	public async Task UpdateZoomWithACameraThatReportsNoZoomStepAppliesTheRequestedFactor()
 	{
@@ -425,7 +420,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 
 	// A StartVideoRecording that fails during a recording (AsRandomAccessStream refuses a stream that cannot seek) keeps the earlier
 	// LowLagMediaRecording, so it must keep its stream too: the next StopVideoRecording stops the earlier recording and must return its stream,
-	// rewound and with the movie, not the refused one (needs a camera).
+	// rewound and with the movie, not the refused one.
 	[Fact]
 	public async Task StartVideoRecordingThatFailsDuringARecordingKeepsTheStreamOfTheRunningRecording()
 	{
@@ -443,8 +438,8 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
-	// A stop ends the recording, as on Android, iOS and Mac Catalyst: a second StopVideoRecording finds no recording and returns Stream.Null.
-	// CameraManager.windows.cs used to stop the stopped LowLagMediaRecording again, which throws COMException ("The op is invalid. RecordState").
+	// A stop ends the recording, as on Android, iOS and Mac Catalyst. CameraManager.windows.cs used to stop the stopped LowLagMediaRecording
+	// again, which throws COMException ("The op is invalid. RecordState").
 	[Fact]
 	public async Task StopVideoRecordingAfterTheRecordingStoppedReturnsTheNullStream()
 	{
@@ -475,7 +470,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			Assert.Same(destination, scope.Access.VideoCaptureStream);
 			// Exception to the house rule against fixed-time waits: the recording needs a moment of footage, and nothing reports when it has
 			// some (LowLagMediaRecording and MediaCapture raise no progress event, and the MP4 sink may only write the movie when the recording
-			// stops, so the stream cannot be watched either). This test needs a camera, so it does not run in CI.
+			// stops, so the stream cannot be watched either).
 			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
 			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
 			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
@@ -507,9 +502,6 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
-	// A switch to a camera that cannot be opened keeps the manager initialized (see
-	// CameraManagerWindowsTests.UpdateCurrentCameraAfterASwitchThatFailedOpensTheNextSelectedCamera), so selecting the real camera again
-	// opens it and the preview runs again.
 	[Fact]
 	public async Task UpdateCurrentCameraBackToTheCameraAfterASwitchThatFailedStartsItAgain()
 	{
@@ -566,7 +558,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
-	// The value of a zoom control, or the type of the exception that reading it throws (an unsupported control may not report one).
+	// An unsupported control may not report a value, so the type of the exception that reading it throws stands in for it.
 	static string ReadZoomValue(Windows.Media.Devices.ZoomControl zoomControl)
 	{
 		try
@@ -579,7 +571,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		}
 	}
 
-	// The Enabled value of a flash or torch control, or the type of the exception that reading it throws (an unsupported control refuses it).
+	// An unsupported flash or torch control refuses to report Enabled, so the type of the exception that reading it throws stands in for it.
 	static string ReadControlState(Func<bool> readEnabled)
 	{
 		try
@@ -609,7 +601,6 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		}
 	}
 
-	// Starts a recording into a MemoryStream on the connected camera, runs the test, and stops the recording if the test left it running.
 	async Task RunWithRecordingAsync(Func<WindowsCameraManagerScope, MemoryStream, Task> test)
 	{
 		await RunWithConnectedCameraAsync(async (scope, _) =>
@@ -678,7 +669,6 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
-	// A writable stream that cannot seek, such as a network or pipe stream.
 	sealed class NonSeekableStream : Stream
 	{
 		public override bool CanRead => false;

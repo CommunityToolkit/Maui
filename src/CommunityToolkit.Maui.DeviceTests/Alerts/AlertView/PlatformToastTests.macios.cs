@@ -50,8 +50,7 @@ public class PlatformToastTests : AlertsTestBase
 		});
 	}
 
-	// The amount of kerning is pinned by CharacterSpacingKernsTheMessageBy100TimesTheValueOverThePointSize: here only that the kerning covers
-	// the whole message and spaces it.
+	// The amount of kerning is pinned by CharacterSpacingKernsTheMessageBy100TimesTheValueOverThePointSize.
 	[Fact]
 	public async Task CharacterSpacingIsAppliedToTheWholeMessageAsKerning()
 	{
@@ -69,8 +68,8 @@ public class PlatformToastTests : AlertsTestBase
 		});
 	}
 
-	// A font without a point size (UIFont.SystemFontOfSize(0)) takes the other arm of the conversion, which must neither fail nor divide by
-	// the zero size (an infinite kerning).
+	// A font without a point size (UIFont.SystemFontOfSize(0)) takes the other arm of the conversion, since dividing by the zero size would
+	// give an infinite kerning.
 	[Fact]
 	public async Task CharacterSpacingWithAFontWithoutAPointSizeKeepsTheMessage()
 	{
@@ -93,8 +92,8 @@ public class PlatformToastTests : AlertsTestBase
 		});
 	}
 
-	// PlatformToast kerns the message by 100 * CharacterSpacing / the point size of its font, in points, and not at all with a font without a
-	// point size: the unit documented on PlatformToast.CharacterSpacing (a MAUI Label is kerned by CharacterSpacing points instead).
+	// The expected values follow the unit documented on PlatformToast.CharacterSpacing; a MAUI Label is kerned by CharacterSpacing points
+	// instead.
 	[Theory]
 	[InlineData(20.0, 25.0)]
 	[InlineData(10.0, 50.0)]
@@ -159,8 +158,6 @@ public class PlatformToastTests : AlertsTestBase
 		});
 	}
 
-	// Dispose(true) disposes the managed peer of the message label. The native label stays in the AlertView (UIKit retains it, the handle
-	// stays valid), so the disposal shows only in the disposed flag of the peer (AlertsApple.IsManagedPeerDisposed).
 	[Fact]
 	public async Task DisposeDisposesTheManagedPeerOfTheMessageLabelAndLeavesTheNativeLabelInTheAlertView()
 	{
@@ -202,8 +199,7 @@ public class PlatformToastTests : AlertsTestBase
 		});
 	}
 
-	// Dispose(false), the finalizer's path, leaves the label alone but marks the toast disposed: a later Dispose() then does nothing, so
-	// the label is still not disposed (without the isDisposed guard, that Dispose() would dispose it).
+	// Without the isDisposed guard, the later Dispose() would dispose the label.
 	[Fact]
 	public async Task DisposeWithoutDisposingManagedStateDoesNotThrowAndALaterDisposeIsANoOp()
 	{
@@ -272,7 +268,6 @@ public class PlatformToastTests : AlertsTestBase
 	static void CreateFinalizableToast(StrongBox<int> finalizerCalls) =>
 		_ = new FinalizableToast(finalizerCalls);
 
-	// Counts the Dispose(false) calls that come from the finalizer of PlatformToast.
 	sealed class FinalizableToast(StrongBox<int> finalizerCalls)
 		: PlatformToast("finalizer", UIColor.White, CGRect.Empty, UIColor.Black, UIFont.SystemFontOfSize(14)!, 0, 0)
 	{

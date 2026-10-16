@@ -25,7 +25,7 @@ partial class CameraProvider
 			{
 				if (!await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token))
 				{
-					// Media Foundation could not open that camera, and the VideoDeviceController of a MediaCapture that is not initialized throws
+					// The VideoDeviceController, read below, throws for a MediaCapture that is not initialized
 					continue;
 				}
 			}

@@ -12,8 +12,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public partial class UseMauiCommunityToolkitTests
 {
 	// PageHandler.Mapper is process-wide and the runner's own UseMauiCommunityToolkit call has already mapped the properties, so the test
-	// first replaces the mapping with a sentinel. Building the test's MauiApp (SetupBuilder) runs UseMauiCommunityToolkit again: the
-	// mapping that is in place afterwards must be the toolkit's, which sets the light/dark appearance of the real navigation bar.
+	// first replaces the mapping with a sentinel. Building the test's MauiApp (SetupBuilder) runs UseMauiCommunityToolkit again, which must
+	// replace the sentinel with the toolkit's mapping.
 	[Fact]
 	public async Task UseMauiCommunityToolkitRemapsTheNavigationBarStyleOntoThePageHandler()
 	{
@@ -93,7 +93,6 @@ public partial class UseMauiCommunityToolkitTests
 				}
 				finally
 				{
-					// Removes the overlay (API 35+), and puts back the navigation bar color, the decor's fitting and the window flags.
 					AndroidSystemBars.Restore(runnerWindow, runnerWindowBefore);
 				}
 			});

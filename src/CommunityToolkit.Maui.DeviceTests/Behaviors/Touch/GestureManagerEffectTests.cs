@@ -3,16 +3,8 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// What <c>GestureManager</c> does to the platform view for each touch/hover state: opacity, scale, translation, rotation, x and y
-/// rotation, background colour and the timing of the change. Every assertion reads the native view (Android View, UIView/CALayer,
-/// WinUI FrameworkElement), not the MAUI property the toolkit wrote.
-/// <para>
-/// The states are driven through the behavior's internal <c>HandleTouch</c>, <c>HandleHover</c> and <c>HandleUserInteraction</c>, which
-/// is what every platform implementation calls, so these tests run on every platform including Windows. The platform implementations
-/// themselves are covered by <c>TouchBehaviorInputTests</c>.
-/// </para>
-/// </summary>
+// The states are driven through the behavior's internal HandleTouch, HandleHover and HandleUserInteraction, which every platform implementation
+// calls, so these tests run on every platform including Windows. TouchBehaviorInputTests covers the platform implementations.
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public class GestureManagerEffectTests : TouchBehaviorTestBase
@@ -99,8 +91,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 	static Task AssertEffectAsync(EffectCase effect, IPlatformViewHandler handler, double expected, string step) =>
 		AssertNativeValueAsync(() => effect.ReadNative(handler), expected, $"{effect.Name} {step}", effect.Tolerance);
 
-	// Catches: any of the three states (default, hovered, pressed) applying the wrong value, the priority of pressed over hovered
-	// being lost, or a state not being left again (SetOpacity, SetScale, SetTranslation, SetRotation, SetRotationX, SetRotationY).
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -136,7 +126,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the hovered branch not falling back to the default value (else-if DefaultX is not null) in each effect.
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -161,8 +150,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the pressed branch not keeping the default value when no pressed value is set (for translation: the default of the same
-	// axis, see also GestureManagerStateTests.TranslationFallsBackToTheDefaultOfTheSameAxis).
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -187,7 +174,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the pressed value not being applied when only it is configured (SetX early-return guard), or not being reverted on release.
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -215,7 +201,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the hovered value not being applied when only it is configured, or not being reverted when the hover ends.
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -243,8 +228,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: an effect touching the element although no value for it was configured (the guard at the top of each SetX): the element
-	// has a value of its own, which the effect would overwrite with the neutral default.
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -275,8 +258,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the animated branch (duration > 0: FadeToAsync, Animate, TranslateToAsync, RotateToAsync, RotateXToAsync, RotateYToAsync)
-	// never reaching the target value, or a duration of 0 on the way back not being immediate.
 	[Theory]
 	[InlineData("Opacity")]
 	[InlineData("Scale")]
@@ -299,13 +280,11 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 			SimulatePress(behavior);
 			await AssertNativeValueAsync(() => effect.ReadNative(handler), effect.PressedValue, $"{effect.Name} after the pressed animation", effect.Tolerance, 6000);
 
-			// Default animation duration 0: going back is immediate.
 			SimulateRelease(behavior);
 			await AssertEffectAsync(effect, handler, effect.Neutral, "right after release");
 		});
 	}
 
-	// Catches: IsEnabled being ignored by RunAnimationTask (a disabled behavior must not apply state effects).
 	[Fact]
 	public async Task EffectsAreNotAppliedWhileTheBehaviorIsDisabled()
 	{
@@ -316,7 +295,7 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		{
 			behavior.IsEnabled = false;
 
-			// A state change that does not go through the (disabled) touch handling: the animation task must not touch the view.
+			// Set directly, because the disabled touch handling would ignore a press before the animation task is reached.
 			behavior.CurrentTouchState = TouchState.Pressed;
 			await SettleAsync();
 
@@ -329,9 +308,8 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a detached behavior (Element null) still applying effects, or still starting a state update: without ForceUpdateState's
-	// Element guard the view stays alone as well (ChangeStateAsync and RunAnimationTask check the element too), but ChangeStateAsync
-	// replaces the animation token source that the detach released.
+	// Catches: ForceUpdateState's Element guard missing. The view stays alone anyway (ChangeStateAsync and RunAnimationTask check the
+	// element too), but ChangeStateAsync replaces the animation token source that the detach released.
 	[Fact]
 	public async Task EffectsStopWhenTheBehaviorIsRemoved()
 	{
@@ -346,7 +324,6 @@ public class GestureManagerEffectTests : TouchBehaviorTestBase
 			Assert.Null(behavior.Element);
 			await WaitUntilAsync(() => GetAnimationTokenSource(manager) is null, "The detach must release the animation token source of the attach's state update.");
 
-			// A state change after the behavior detached must not touch the view.
 			behavior.CurrentTouchState = TouchState.Pressed;
 			await SettleAsync();
 

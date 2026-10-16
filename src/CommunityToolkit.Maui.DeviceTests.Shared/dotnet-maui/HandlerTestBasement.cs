@@ -42,10 +42,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 		bool _isCreated;
 		bool _isDisposed;
 
-		/// <summary>
-		/// Builds this test's own <see cref="MauiApp"/> (once per test class instance, i.e. once per test).
-		/// <see cref="ConfigureBuilder"/> runs first, then <paramref name="additionalCreationActions"/>.
-		/// </summary>
 		public void EnsureHandlerCreated(Action<MauiAppBuilder>? additionalCreationActions = null)
 		{
 			if (_isCreated)
@@ -75,9 +71,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			_mauiContext = new DeviceTestMauiContext(_servicesProvider);
 		}
 
-		/// <summary>
-		/// True once this test's MauiApp was built (by <see cref="EnsureHandlerCreated"/> or the first use of <see cref="MauiContext"/>).
-		/// </summary>
 		protected bool IsHandlerCreated => _isCreated;
 
 		protected ILogger? TestRunnerLogger => MauiContext.Services.GetService<ILoggerFactory>()?.CreateLogger(GetType().FullName ?? GetType().Name);
@@ -211,9 +204,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		}
 
-		/// <summary>
-		/// Renders the view's platform view and asserts that <paramref name="color"/> appears in it.
-		/// </summary>
 		protected Task ValidateHasColor(
 			IView view,
 			Color color,
@@ -261,11 +251,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			return AttachAndRun<T>(view, boop);
 		}
 
-		/// <summary>
-		/// Creates the view's handler with this test's <see cref="MauiContext"/> (unless it already has one), adds its platform
-		/// view to the runner's real window, runs <paramref name="action"/> on the UI thread and removes the view again.
-		/// The view raises Loaded/Unloaded, so PlatformBehaviors attach and detach.
-		/// </summary>
 		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, Task<T>> action)
 		{
 			return view.AttachAndRun<T, IPlatformViewHandler>((handler) =>
@@ -310,12 +295,9 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		Task IAsyncLifetime.InitializeAsync() => Task.CompletedTask;
 
-		// xUnit v2 calls this after every test (and still reports a failure it throws); it never calls IAsyncDisposable.DisposeAsync.
+		// xUnit v2 calls this after every test; it never calls IAsyncDisposable.DisposeAsync.
 		Task IAsyncLifetime.DisposeAsync() => DisposeAsync().AsTask();
 
-		/// <summary>
-		/// Ends the test: disposes this test's <see cref="MauiApp"/> and runs <see cref="DisposeAsyncCore"/> once.
-		/// </summary>
 		public async ValueTask DisposeAsync()
 		{
 			if (_isDisposed)
@@ -329,7 +311,7 @@ namespace CommunityToolkit.Maui.DeviceTests
 		}
 
 		/// <summary>
-		/// Per-test teardown. Overrides call the base first and then restore the global state their test base changed.
+		/// Overrides call the base first and then restore the global state their test base changed.
 		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{

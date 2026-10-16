@@ -3,8 +3,6 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The IOS/MACCATALYST blocks of CameraInfo.shared.cs: the constructor parameters and the internal CaptureDevice and
-// SupportedFormats properties that CameraManager.macios.cs uses.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraInfoAppleTests : CameraHandlerTestBase

@@ -2,10 +2,7 @@ using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// One non-premultiplied pixel (0-255 per channel). The platform partials of <see cref="DrawingViewTestPlatform"/> convert
-/// Bitmap, UIImage and CanvasBitmap into <see cref="DrawingPixelImage"/>s so the pixel assertions are written once.
-/// </summary>
+/// <summary>One non-premultiplied pixel, 0-255 per channel.</summary>
 readonly record struct DrawingRgba(int R, int G, int B, int A)
 {
 	public const int DefaultTolerance = 8;
@@ -24,8 +21,8 @@ readonly record struct DrawingRgba(int R, int G, int B, int A)
 }
 
 /// <summary>
-/// Pixels of a rendered view or of a decoded PNG. <see cref="Scale"/> is the number of pixels per logical unit
-/// (dp on Android, points on Apple platforms, DIPs on Windows), so assertions use the same coordinates as the touches.
+/// <see cref="Scale"/> is the number of pixels per logical unit (dp on Android, points on Apple platforms, DIPs on Windows),
+/// so assertions use the same coordinates as the touches.
 /// </summary>
 sealed class DrawingPixelImage(int width, int height, DrawingRgba[] pixels, double scale)
 {
@@ -68,7 +65,6 @@ sealed class DrawingPixelImage(int width, int height, DrawingRgba[] pixels, doub
 	int ToPixel(double units, int limit) => Math.Clamp((int)Math.Round(units * Scale), 0, limit - 1);
 }
 
-/// <summary>Assertions over <see cref="DrawingPixelImage"/>s. Every failure message names the coordinates, the expected and the found color.</summary>
 static class DrawingPixelAssert
 {
 	public static void ColorAtUnits(DrawingPixelImage image, double x, double y, Color expected, int tolerance = DrawingRgba.DefaultTolerance, string? because = null)
@@ -91,7 +87,6 @@ static class DrawingPixelAssert
 		}
 	}
 
-	/// <summary>Samples <paramref name="samples"/> points strictly between the two end points (units) and expects each to have the color.</summary>
 	public static void SegmentHasColor(DrawingPixelImage image, (double X, double Y) from, (double X, double Y) to, Color expected, int samples = 5, int tolerance = DrawingRgba.DefaultTolerance, string? because = null)
 	{
 		for (var i = 1; i <= samples; i++)
@@ -118,7 +113,6 @@ static class DrawingPixelAssert
 		}
 	}
 
-	/// <summary>Both images have the same size and every pixel of one is near the pixel of the other.</summary>
 	public static void SameImage(DrawingPixelImage expected, DrawingPixelImage actual, int tolerance = DrawingRgba.DefaultTolerance, string? because = null)
 	{
 		if (expected.Width != actual.Width || expected.Height != actual.Height)

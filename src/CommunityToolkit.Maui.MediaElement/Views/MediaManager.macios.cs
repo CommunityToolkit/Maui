@@ -13,7 +13,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : IDisposable
 {
-	// The AVAsset keys that tell media without any track (see PlayerItemStatusChanged)
 	const string playableKey = "playable";
 	const string tracksKey = "tracks";
 
@@ -21,9 +20,6 @@ public partial class MediaManager : IDisposable
 	StreamAssetResourceLoader? streamResourceLoader;
 	CancellationTokenSource? playerItemCancellationTokenSource;
 
-	// Setting AVPlayer.Rate starts playback, so a Speed update changes the rate only while the media plays (see PlatformUpdateSpeed).
-	// When ShouldAutoPlay=True, the Speed is applied once the AVPlayerItem reaches ReadyToPlay.
-	// The previous Speed tells whether a positive Speed follows a Speed of 0, which resumes playback (as on Android and Windows).
 	float? previousSpeed;
 
 	bool hasMediaOpened;
@@ -143,8 +139,7 @@ public partial class MediaManager : IDisposable
 
 	protected virtual partial void PlatformPlay()
 	{
-		// The playhead of media that played to its end is at the end, where nothing is left to play: Play() starts the media again from its start,
-		// as on Android
+		// Media that played to its end has nothing left to play: Play() starts it again from its start, as on Android.
 		if (Player is not null && PlayerItem is not null && Player.CurrentTime == PlayerItem.Duration)
 		{
 			Player.Seek(CMTime.Zero);
@@ -174,8 +169,8 @@ public partial class MediaManager : IDisposable
 			throw new InvalidOperationException($"{nameof(AVPlayer)}.{nameof(AVPlayer.Status)} must first be set to {AVPlayerStatus.ReadyToPlay}");
 		}
 
-		// A position outside of the media is clamped to the media (IMediaElement.SeekTo). AVPlayer moves the playhead to a nearby key frame, which
-		// for the end of the media is one before the end: the end is sought without a tolerance before it, so SeekTo(Duration) goes to the end
+		// AVPlayer moves the playhead to a nearby key frame, which for the end of the media is one before the end: the end is sought without a
+		// tolerance before it, so SeekTo(Duration) goes to the end.
 		var (seekToTime, isEnd) = ClampToSeekableTimeRanges(Player.CurrentItem, position);
 		Player.Seek(seekToTime, isEnd ? CMTime.Zero : CMTime.PositiveInfinity, CMTime.PositiveInfinity, _ =>
 		{
@@ -323,10 +318,9 @@ public partial class MediaManager : IDisposable
 		var previous = previousSpeed;
 		previousSpeed = speed;
 
-		// Play(), auto play and the remote commands start playback at the Speed (PlayAtSpeed). The playback controls of the AVPlayerViewController
-		// call AVPlayer.Play(), which starts at the default rate, so they use the Speed too; setting the default rate does not start playback.
-		// Before iOS 16 and Mac Catalyst 16 there is no default rate: the playback controls start playback at a rate of 1, which RateChanged
-		// reports as the Speed
+		// The playback controls of the AVPlayerViewController call AVPlayer.Play(), which starts at the default rate, so the default rate follows
+		// the Speed (setting it does not start playback). Before iOS 16 and Mac Catalyst 16 there is no default rate: the playback controls start
+		// playback at a rate of 1, which RateChanged reports as the Speed.
 		if (speed > 0 && (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16)))
 		{
 			player.DefaultRate = speed;
@@ -342,7 +336,7 @@ public partial class MediaManager : IDisposable
 		}
 
 		// Setting the rate starts playback: it changes while the media plays (a Speed of 0 pauses it), and a positive Speed that
-		// follows a Speed of 0 resumes playback; any other change waits for the next start of playback
+		// follows a Speed of 0 resumes playback, as on Android and Windows; any other change waits for the next start of playback.
 		if (player.Rate is not 0)
 		{
 			player.Rate = speed;
@@ -445,7 +439,7 @@ public partial class MediaManager : IDisposable
 	{
 		if (disposing)
 		{
-			// Before Pause(), which raises the time control status observer even for a player that is already paused: it would publish this
+			// Disposed before Pause(), which raises the time control status observer even for a player that is already paused: it would publish this
 			// player's Now Playing info again, and Metadata.Dispose would then clear it while another MediaElement's media is shown
 			metaData?.Dispose();
 			metaData = null;
@@ -498,8 +492,6 @@ public partial class MediaManager : IDisposable
 		}
 	}
 
-	// The asset of the Source, or null for a source without data (a null Source too). It throws when the asset of the source cannot be created, and
-	// for a kind of MediaSource that it does not know (NotSupportedException, as on Android)
 	AVAsset? CreateAsset()
 	{
 		AVAsset? asset = null;
@@ -570,8 +562,7 @@ public partial class MediaManager : IDisposable
 				// Create an AVURLAsset with the custom scheme
 				var urlAsset = new AVUrlAsset(streamUrl);
 
-				// Create and set up the resource loader. A stream that cannot be read throws here: the new source fails instead of the previous
-				// media staying in the player
+				// A stream that cannot be read throws here: the new source fails instead of the previous media staying in the player.
 				streamResourceLoader?.Dispose();
 				streamResourceLoader = null;
 				streamResourceLoader = new StreamAssetResourceLoader(streamMediaSource.Stream, GetStreamContentType(streamMediaSource.Stream));
@@ -593,7 +584,7 @@ public partial class MediaManager : IDisposable
 
 	static string GetStreamContentType(Stream stream)
 	{
-		// Try to detect content type from magic bytes (the 12-byte file type header)
+		// The file type header is 12 bytes long.
 		if (stream is not { CanSeek: true, Length: >= 12 })
 		{
 			return StreamAssetResourceLoader.DefaultContentType;
@@ -636,9 +627,8 @@ public partial class MediaManager : IDisposable
 
 	static TimeSpan ConvertTime(CMTime cmTime) => TimeSpan.FromSeconds(double.IsNaN(cmTime.Seconds) ? 0 : cmTime.Seconds);
 
-	// The seekable time ranges span the media, or the window of a live stream: a position before them goes to their start, one after them to their
-	// end (so SeekTo(Duration) goes to the end of the media), and a position inside them is kept. Without a seekable time range, only a position
-	// before the start of the media is clamped, to the start. IsEnd tells a time at the end of the seekable time ranges
+	// The seekable time ranges span the media, or the window of a live stream. Without any, only a position before the start of the media can
+	// be clamped, to the start.
 	static (CMTime Time, bool IsEnd) ClampToSeekableTimeRanges(AVPlayerItem item, TimeSpan position)
 	{
 		var time = new CMTime(Convert.ToInt64(position.TotalMilliseconds), 1000);

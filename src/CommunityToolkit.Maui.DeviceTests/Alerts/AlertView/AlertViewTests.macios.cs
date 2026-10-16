@@ -122,7 +122,6 @@ public class AlertViewTests : AlertsTestBase
 			Assert.False(alertView.TranslatesAutoresizingMaskIntoConstraints);
 			Assert.Same(alertView.ContainerView, Assert.Single(alertView.Subviews));
 
-			// The background goes behind the children, not on top of them.
 			Assert.Equal(2, alertView.ContainerView.Subviews.Length);
 			Assert.Same(child, alertView.ContainerView.Subviews[1]);
 			var background = Assert.IsType<RoundedView>(alertView.ContainerView.Subviews[0]);
@@ -164,7 +163,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(shouldFillAndExpandHorizontally);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var safeArea = AlertsApple.KeyWindow.SafeAreaLayoutGuide.LayoutFrame;
 
 				if (shouldFillAndExpandHorizontally)
@@ -195,7 +194,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 
 				var container = alertView.ContainerView.Frame;
 				AlertsApple.AssertClose(defaultSpacing, container.Left);
@@ -220,7 +219,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var safeArea = AlertsApple.KeyWindow.SafeAreaLayoutGuide.LayoutFrame;
 
 				AlertsApple.AssertClose(safeArea.Bottom - defaultSpacing, alertView.Frame.Bottom);
@@ -233,8 +232,7 @@ public class AlertViewTests : AlertsTestBase
 		});
 	}
 
-	// The anchor sits at the top of a host view that is itself near the top of the window, like a MAUI view in a page: the view is
-	// placed just below the anchor because there is no room for it above.
+	// The anchor sits at the top of a host view that is itself near the top of the window, like a MAUI view in a page.
 	[Fact]
 	public async Task AnchorNearTheTopOfTheWindowPlacesTheViewBelowTheAnchor()
 	{
@@ -249,7 +247,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var anchorBottom = anchor.ConvertRectToView(anchor.Bounds, AlertsApple.KeyWindow).Bottom;
 
 				AlertsApple.AssertClose(anchorBottom + defaultSpacing, alertView.Frame.Top);
@@ -275,7 +273,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var anchorTop = anchor.ConvertRectToView(anchor.Bounds, AlertsApple.KeyWindow).Top;
 
 				AlertsApple.AssertClose(anchorTop, alertView.Frame.Bottom);
@@ -289,8 +287,7 @@ public class AlertViewTests : AlertsTestBase
 	}
 
 	// The view fits above the anchor when the anchor's top is at least the height of the view below the top of the safe area. That height
-	// is the container plus the view's own spacing above and below it, so an anchor a few points less than that below the top of the safe
-	// area gets the view below it, and one a few points more gets it above.
+	// is the container plus the view's own spacing above and below it, so an offset of a few points either way flips the placement.
 	[Theory]
 	[InlineData(-4, true)]
 	[InlineData(4, false)]
@@ -304,7 +301,7 @@ public class AlertViewTests : AlertsTestBase
 			var measuredView = CreateAlertView(false);
 			try
 			{
-				await LayOutAsync(measuredView);
+				await AddToKeyWindowAndLayOutAsync(measuredView);
 				viewHeight = measuredView.ContainerView.Frame.Height + (nfloat)(2 * defaultSpacing);
 			}
 			finally
@@ -318,7 +315,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var anchorFrame = anchor.ConvertRectToView(anchor.Bounds, AlertsApple.KeyWindow);
 
 				if (isPlacedBelowTheAnchor)
@@ -338,8 +335,7 @@ public class AlertViewTests : AlertsTestBase
 		});
 	}
 
-	// Every layout pass decides the placement again, but the constraints are only replaced when the placement changes: constraints added on
-	// every pass pile up and contradict each other.
+	// Constraints added on every layout pass would pile up and contradict each other, so they are only replaced when the placement changes.
 	[Fact]
 	public async Task LayoutPassThatKeepsThePlacementKeepsTheVerticalConstraints()
 	{
@@ -352,7 +348,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var constraints = GetVerticalConstraints(alertView);
 
 				alertView.SetNeedsLayout();
@@ -386,7 +382,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				AlertsApple.AssertClose(anchor.Frame.Bottom + defaultSpacing, alertView.Frame.Top);
 				var constraintsBelow = GetVerticalConstraints(alertView);
 
@@ -411,8 +407,7 @@ public class AlertViewTests : AlertsTestBase
 		});
 	}
 
-	// UIKit throws when it activates a constraint between views without a common ancestor, so a view that is not in the key window is not
-	// constrained.
+	// UIKit throws when it activates a constraint between views without a common ancestor.
 	[Fact]
 	public async Task LayoutOfAViewThatIsNotInTheKeyWindowAddsNoConstraints()
 	{
@@ -441,7 +436,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 
 				anchor.RemoveFromSuperview();
 				var exception = Record.Exception(() => AlertsApple.KeyWindow.LayoutIfNeeded());
@@ -457,7 +452,7 @@ public class AlertViewTests : AlertsTestBase
 
 	// A page transition while a Snackbar anchored to a view of the page is shown (https://github.com/CommunityToolkit/Maui/issues/2827): the
 	// page's view leaves the window with the anchor still in it, so the anchor keeps its superview but no longer has a common ancestor with
-	// the alert view. The layout must not constrain the alert view to the anchor any more: it places the view as if it had no anchor.
+	// the alert view. The layout then places the view as if it had no anchor.
 	[Fact]
 	public async Task AnchorWhosePageLeavesTheWindowWhileTheViewIsShownDoesNotCrashTheLayout()
 	{
@@ -472,7 +467,7 @@ public class AlertViewTests : AlertsTestBase
 			var alertView = CreateAlertView(false, anchor);
 			try
 			{
-				await LayOutAsync(alertView);
+				await AddToKeyWindowAndLayOutAsync(alertView);
 				var anchoredBottom = alertView.Frame.Bottom;
 
 				page.RemoveFromSuperview();
@@ -508,8 +503,7 @@ public class AlertViewTests : AlertsTestBase
 		return alertView;
 	}
 
-	// Adds the view to the key window, sets it up and waits for its first layout pass.
-	static async Task LayOutAsync(TestAlertView alertView)
+	static async Task AddToKeyWindowAndLayOutAsync(TestAlertView alertView)
 	{
 		var window = AlertsApple.KeyWindow;
 		window.AddSubview(alertView);

@@ -7,8 +7,7 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: the avatar is a ContentViewGroup whose child is an ImageView or a TextView (inside a WrapperView while it has a clip). Without
-// a stroke shape the toolkit clips the image with a RoundRectangleGeometry.
+// The avatar's child (an ImageView or a TextView) is inside a WrapperView while it has a clip.
 public partial class AvatarViewTests
 {
 	static bool BuildsFallbackClipGeometry => true;
@@ -42,7 +41,6 @@ public partial class AvatarViewTests
 		};
 	}
 
-	// The geometry starts at the image's origin and has the size of the image and the avatar's corner radius.
 	static void AssertFallbackClip(AvatarView avatar, Image image, double imageWidth, double imageHeight)
 	{
 		var geometry = Assert.IsType<RoundRectangleGeometry>(image.Clip);

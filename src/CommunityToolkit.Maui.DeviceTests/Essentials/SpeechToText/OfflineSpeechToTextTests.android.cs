@@ -6,11 +6,10 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android on-device recognizer: Android 14+ and an on-device recognition service. On older versions, and on devices without such a
-// service, StartListenAsync must say so with a FeatureNotSupportedException; this class is run on the API 28 and API 36 emulators so
-// that both sides of the OS-version check are executed by the device that takes them. Every wait for the real on-device service is
-// bounded: the test's own question to the service skips visibly when it gets no answer, and once the service has answered, a
-// StartListenAsync that does not complete fails (a toolkit hang must never look like a device limitation).
+// This class runs on the API 28 and API 36 emulators so that both sides of the OS-version check are executed by the device that takes
+// them. Every wait for the real on-device service is bounded: the test's own question to the service skips visibly when it gets no
+// answer, and once the service has answered, a StartListenAsync that does not complete fails (a toolkit hang must never look like a
+// device limitation).
 public sealed partial class OfflineSpeechToTextTests
 {
 	static bool IsAndroid14OrNewer => OperatingSystem.IsAndroidVersionAtLeast(34);
@@ -19,7 +18,6 @@ public sealed partial class OfflineSpeechToTextTests
 
 	protected override async Task<SpeechToTextOptions> GetStartableOptionsAsync() => new() { Culture = new CultureInfo(await GetInstalledLanguageAsync()) };
 
-	/// <summary>A language that the on-device recognizer has installed and that .NET knows under the same name (skips otherwise).</summary>
 	static async Task<string> GetInstalledLanguageAsync()
 	{
 		Skip.IfNot(IsOnDeviceRecognitionAvailable, "Needs Android 14 or newer with an on-device recognition service.");
@@ -63,8 +61,8 @@ public sealed partial class OfflineSpeechToTextTests
 		await AssertStartListenAsyncThrowsFeatureNotSupported();
 	}
 
-	// "fo-FO" (Faroese) is not offered by the on-device recognizer: neither installed nor downloadable, so no download is started.
-	// The recognizer that the start created was never started; the clean-up stops and destroys it (not observable from outside).
+	// "fo-FO" (Faroese) is not offered by the on-device recognizer: neither installed nor downloadable, so no download is started. The
+	// clean-up of the recognizer that the start created is not observable from outside.
 	[Fact]
 	public async Task StartListenAsyncThrowsNotSupportedForACultureThatTheOnDeviceRecognizerDoesNotOffer()
 	{
@@ -103,8 +101,7 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// An installed language needs no download: the recognizer and the listener are created and StartListening runs. Without
-	// RECORD_AUDIO the service has nothing to listen to; everything is read, and the recognition stopped, in the turn of the start.
+	// Without RECORD_AUDIO the service has nothing to listen to; everything is read, and the recognition stopped, in the turn of the start.
 	[Fact]
 	public async Task StartListenAsyncWithAnInstalledLanguageStartsTheOnDeviceRecognizer()
 	{
@@ -140,10 +137,8 @@ public sealed partial class OfflineSpeechToTextTests
 		Assert.Equal(IntPtr.Zero, started.Listener.Handle);
 	}
 
-	// ISpeechToText.StartListenAsync: the token "provides the ability to cancel the starting process". The on-device start waits for
-	// the service's answer to CheckRecognitionSupport with the token, so a token cancelled while it waits ends the start with an
-	// OperationCanceledException (the shared catch block cleans up) instead of going on to StartListening. The token is cancelled when
-	// the intent reads the culture name, before the check is asked, so the wait observes a cancelled token whatever the service does.
+	// ISpeechToText.StartListenAsync: the token "provides the ability to cancel the starting process". The token is cancelled when the
+	// intent reads the culture name, before the check is asked, so the wait observes a cancelled token whatever the service does.
 	[Fact]
 	public async Task StartListenAsyncCancelledWhileWaitingForTheRecognitionSupportThrowsAndStartsNothing()
 	{
@@ -165,11 +160,10 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// StopListenAsync or DisposeAsync while the on-device start waits for the service's answer to CheckRecognitionSupport ends the
-	// session and the wait: the start returns without an exception and goes no further. It neither checks the languages (where a
-	// language that is not installed would trigger the model download, which a destroyed recognizer starts again from Android 12 on, or
-	// reach the disposed recognizer) nor starts listening, and it does not wait for an answer that a destroyed recognizer may never
-	// give. The culture counts the reads of its name: the intent reads it once, the language check a second time.
+	// After the session ended, the start must not check the languages: for a language that is not installed, the check would trigger the
+	// model download, which a destroyed recognizer starts again from Android 12 on, or reach the disposed recognizer. Nor may it wait for
+	// an answer that a destroyed recognizer may never give. The culture counts the reads of its name: the intent reads it once, the
+	// language check a second time.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -183,7 +177,7 @@ public sealed partial class OfflineSpeechToTextTests
 
 		var (waitedForTheService, startException) = await InvokeOnMainThreadAsync(async () =>
 		{
-			// The service answers on the main thread, so the start is still waiting in this turn
+			// The service answers on the main thread, so the start is still waiting in this turn.
 			var start = speech.StartListenAsync(options);
 			var isWaiting = !start.IsCompleted;
 			if (dispose)
@@ -207,7 +201,7 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// A person approves the language-pack download that the platform offers; the start then continues once the download finished.
+	// A person has to approve the language-pack download that the platform offers.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task StartListenAsyncDownloadsALanguageThatIsSupportedButNotInstalled()
@@ -228,10 +222,6 @@ public sealed partial class OfflineSpeechToTextTests
 		await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
 		await speech.DisposeAsync();
 	}
-
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// The toolkit's Java callbacks of the on-device start, driven directly.
-	// ---------------------------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task ExecutorRunsTheCommandOnTheCallingThread()
@@ -332,8 +322,8 @@ public sealed partial class OfflineSpeechToTextTests
 	}
 
 	// android.speech.ModelDownloadListener.onScheduled: "Called when RecognitionService scheduled the download, but won't satisfy it
-	// immediately. There will be no further updates on this listener." The start that waits for the download must not wait forever:
-	// the wait fails with the platform's error for a supported language that is not available yet (ERROR_LANGUAGE_UNAVAILABLE).
+	// immediately. There will be no further updates on this listener." The start that waits for the download must not wait forever, so
+	// the wait fails with ERROR_LANGUAGE_UNAVAILABLE, the platform's error for a supported language that is not available yet.
 	[Fact]
 	public async Task ModelDownloadListenerScheduledEndsTheWait()
 	{
@@ -348,32 +338,21 @@ public sealed partial class OfflineSpeechToTextTests
 		Assert.Equal(nameof(SpeechRecognizerError.LanguageUnavailable), exception.Message);
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// The platform's answer to CheckRecognitionSupport, read with the same call the toolkit makes.
-	// ---------------------------------------------------------------------------------------------------------------------------
-
-	// The on-device languages, asked once (the download test asks again): every question creates and destroys a recognizer, and a recognizer destroyed
-	// right before a test starts its session can unbind the connection to the recognition service that the app's recognizers share under the new
-	// session (see SetPreviousSessionAside in OfflineSpeechToTextImplementation). StartListenAsyncAfterStopListenAsyncReplacesTheStoppedSession failed
-	// that way once in a full run: its start threw "11" (ERROR_SERVER_DISCONNECTED) right after GetStartableOptionsAsync. Only an answer is kept.
+	// Asked once (the download test asks again): every question creates and destroys a recognizer, and a recognizer destroyed right
+	// before a test starts its session can unbind the connection to the recognition service that the app's recognizers share under the
+	// new session (see SetPreviousSessionAside in OfflineSpeechToTextImplementation).
+	// StartListenAsyncAfterStopListenAsyncReplacesTheStoppedSession failed that way once in a full run: its start threw "11"
+	// (ERROR_SERVER_DISCONNECTED) right after GetStartableOptionsAsync.
 	static (string[] Installed, string[] Supported)? onDeviceLanguages;
 
 	static async Task<(string[] Installed, string[] Supported)> GetOnDeviceLanguagesAsync()
 	{
-		// A run that declares the service missing (a CI emulator image whose service may never answer, so that every question waits 30 s)
-		// skips without asking.
+		// A CI emulator image may have a service that never answers, so that every question waits 30 s.
 		DeviceTestCapabilities.SkipIfDeclaredMissing(DeviceTestCapabilities.OnDeviceSpeech);
 		onDeviceLanguages ??= await QueryOnDeviceLanguagesAsync();
 		return onDeviceLanguages.Value;
 	}
 
-	/// <summary>
-	/// The languages that the on-device recognizer has installed and the ones it could download. Skips visibly when the service does
-	/// not answer within 30 s (seen only with the service package disabled) or answers the check with an error (an image whose
-	/// configuration names an on-device service that cannot check its support, for example ERROR_CANNOT_CHECK_SUPPORT): the toolkit's
-	/// own start fails the same way there, so this device cannot run the test. The callback and the executor are not disposed: the
-	/// service may still call them after a timeout.
-	/// </summary>
 	static async Task<(string[] Installed, string[] Supported)> QueryOnDeviceLanguagesAsync()
 	{
 		var recognizer = await InvokeOnMainThreadAsync(() => SpeechRecognizer.CreateOnDeviceSpeechRecognizer(AppContext))
@@ -383,6 +362,7 @@ public sealed partial class OfflineSpeechToTextTests
 			var completion = new TaskCompletionSource<RecognitionSupport>(TaskCreationOptions.RunContinuationsAsynchronously);
 			using var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
 			intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
+			// The callback and the executor are not disposed: the service may still call them after a timeout.
 			var callback = new RecognitionSupportCallback(completion);
 			var executor = new Executor();
 			await InvokeOnMainThreadAsync(() => recognizer.CheckRecognitionSupport(intent, executor, callback));
@@ -394,10 +374,13 @@ public sealed partial class OfflineSpeechToTextTests
 			}
 			catch (TimeoutException)
 			{
+				// Seen only with the service package disabled.
 				throw new SkipException("The on-device recognition service did not answer CheckRecognitionSupport within 30 s (it cannot be bound or is not ready), so this device cannot run the test.");
 			}
 			catch (Exception exception)
 			{
+				// An image whose configuration names an on-device service that cannot check its support (for example
+				// ERROR_CANNOT_CHECK_SUPPORT): the toolkit's own start fails the same way there.
 				throw new SkipException($"The on-device recognition service answered CheckRecognitionSupport with error {exception.Message} (it cannot check its support on this device), so this device cannot run the test.");
 			}
 
@@ -410,7 +393,7 @@ public sealed partial class OfflineSpeechToTextTests
 		}
 	}
 
-	/// <summary>The first language tag in <paramref name="tags"/> that .NET knows under the same name (the toolkit compares CultureInfo.Name with the platform's tags).</summary>
+	// The toolkit compares CultureInfo.Name with the platform's tags, so a tag that .NET knows under a different name cannot be used.
 	static string? FirstKnownCulture(IEnumerable<string> tags)
 	{
 		foreach (var tag in tags)

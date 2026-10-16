@@ -93,10 +93,9 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	{
 #if IOS || MACCATALYST
 		// UIKit delivers the keystrokes that are still pending inside the setter of UITextField.Text and then stores the value it was given,
-		// so a mask written later, from the dispatcher, dropped the characters typed in between. Applied while this Text change is handled,
-		// the mask reaches the UITextField before UIKit handles the next keystroke. The masked text that this ApplyMask writes raises this
-		// handler again only after the current change completes (.NET MAUI defers setting a property while that property is being set),
-		// when ApplyMask has already released its semaphore.
+		// so a mask written later, from the dispatcher, dropped the characters typed in between: the mask must reach the UITextField before
+		// UIKit handles the next keystroke. The masked text that ApplyMask writes raises this handler again only after the current change
+		// completes (.NET MAUI defers setting a property while that property is being set), when ApplyMask has already released its semaphore.
 		return ApplyMask(View?.Text, token);
 #else
 		// Android does not play well when we update the Text inside the TextChanged event. 

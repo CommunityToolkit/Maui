@@ -4,10 +4,10 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// A <see cref="TouchBehavior"/> inside the item template of a <see cref="CollectionView"/>. On Android a completed touch selects the
-/// item through the toolkit (<c>GestureManager.HandleCollectionViewSelection</c>, compiled for Android only); on the other platforms the
-/// touch is the platform's business, so the toolkit must leave the selection alone (on iOS and Mac Catalyst the collection view selects the
-/// item for a tap that UIKit delivers, see the macios partial).
+/// On Android a completed touch of a <see cref="TouchBehavior"/> in the item template of a <see cref="CollectionView"/> selects the item through
+/// the toolkit (<c>GestureManager.HandleCollectionViewSelection</c>, compiled for Android only); on the other platforms the touch is the
+/// platform's business, so the toolkit must leave the selection alone (on iOS and Mac Catalyst the collection view selects the item for a tap
+/// that UIKit delivers, see the macios partial).
 /// </summary>
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
@@ -22,8 +22,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		false;
 #endif
 
-	// Catches: Single selection not selecting the tapped item on Android (SelectionMode.Single arm), and the Android-only selection code
-	// running on the other platforms.
 	[Fact]
 	public async Task TappedItemIsSelectedWhenSelectionIsSingle()
 	{
@@ -45,7 +43,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: Multiple selection not toggling the tapped item (SelectionMode.Multiple arm: add, then remove when it is selected already).
 	// The last step resets the selection the way an app does (SelectedItems = null): MAUI coerces null into a new, empty selection, so the
 	// toolkit's "SelectedItems?.ToList() ?? []" fallback for a null list cannot be reached; the next tap starts a new selection.
 	[Fact]
@@ -76,7 +73,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: SelectionMode.None selecting anyway.
 	[Fact]
 	public async Task TappedItemIsNotSelectedWhenSelectionIsNone()
 	{
@@ -96,8 +92,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the search for the item stopping at the first parent (the loop that walks up to the CollectionView): the behavior is on
-	// a label inside a grid inside the item template, so the item is the grid and its binding context the data item.
 	[Fact]
 	public async Task ItemIsFoundWhenTheBehaviorIsNestedInsideTheTemplate()
 	{
@@ -115,8 +109,6 @@ public partial class GestureManagerCollectionViewTests : TouchBehaviorTestBase
 			AssertSelection(collectionView, selectsThroughTheToolkit ? items[0] : null);
 		});
 	}
-
-	// ---- helpers
 
 	(CollectionView CollectionView, List<Label> Labels, Item[] Items) CreateCollectionView(SelectionMode selectionMode, bool nested)
 	{

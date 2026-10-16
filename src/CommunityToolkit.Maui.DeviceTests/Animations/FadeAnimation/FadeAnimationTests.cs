@@ -5,10 +5,9 @@ using CommunityToolkit.Maui.Behaviors;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of FadeAnimation (Animations/FadeAnimation.shared.cs) started while it runs, as AnimationBehavior does when it is triggered
-// again during its animation (a second tap): it cancels the running animation and starts a new one, and the cancelled animation continues on
-// the UI thread from inside that cancellation. The tests run on the platform's animation ticker and UI thread, with the view in the
-// runner's window, and read the platform view's opacity through the platform partials (FadeAnimationTests.android/macios/windows.cs).
+// An AnimationBehavior triggered again during its animation (a second tap) cancels the running animation and starts a new one, and the
+// cancelled animation continues on the UI thread from inside that cancellation. So the tests need the platform's own animation ticker and
+// UI thread.
 [Category(TestCategory.FadeAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
@@ -17,14 +16,13 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 	const double fadedOpacity = 0.2;
 	const double opacityTolerance = 0.001;
 
-	// Each of the two fades of an animation (out, then back) lasts this long: long enough to start the next animation in the middle of either
-	// fade on a slow emulator.
+	// Each fade (out, then back) lasts long enough to start the next animation in the middle of it, even on a slow emulator.
 	const uint fadeLength = 800;
 
 	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(10);
 
-	// Catches: an animation started while the previous one fades the view out returning the view to the partially faded opacity it started
-	// from instead of its original opacity, so the view stays dim, also after every later animation.
+	// An animation started mid-fade must not take the partially faded opacity as the one to return to: the view would stay dim, also after
+	// every later animation.
 	[Fact]
 	public async Task AnimationBehaviorTriggeredWhileFadingOutReturnsToOriginalOpacity()
 	{
@@ -47,7 +45,6 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: the same while the previous animation fades the view back.
 	[Fact]
 	public async Task AnimationBehaviorTriggeredWhileFadingBackReturnsToOriginalOpacity()
 	{
@@ -70,8 +67,8 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Catches: a FadeAnimation started on a view that another FadeAnimation is fading (without AnimationBehavior, nothing cancels the running
-	// animation first) returning the view to the partially faded opacity, or the replaced animation fading the view back over the new one.
+	// Without AnimationBehavior nothing cancels the running animation first; the replaced animation must also not fade the view back over
+	// the new one.
 	[Fact]
 	public async Task FadeAnimationStartedWhileAnotherFadesTheViewReturnsToOriginalOpacity()
 	{
@@ -99,8 +96,6 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Runs after every test: the base class disposes the test's MauiApp first, then the platform partial undoes what the test changed
-	// (Android: the in-process animator duration scale).
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -113,7 +108,6 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// Triggers the behavior while its animation runs, then once more after both animations ended
 	static async Task TriggerAgainAndAssertOriginalOpacityAsync(IPlatformViewHandler handler, VisualElement view, AnimationBehavior behavior, ObservedFadeAnimation animation)
 	{
 		var fadedAgain = WaitForOpacityAsync(view, opacity => opacity <= fadedOpacity + opacityTolerance);
@@ -155,9 +149,8 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 		Assert.True(Math.Abs(nativeOpacity - expected) <= opacityTolerance, $"The platform view's opacity is {nativeOpacity} {when}, expected {expected}.");
 	}
 
-	// Completes once the opacity of the view, as it changes, has met each condition in turn. The test continues after the animation frame
-	// that met the last condition, as it would after a tap.
-	static Task WaitForOpacityAsync(VisualElement view, params Func<double, bool>[] conditions)
+	// Continuations run asynchronously: the test continues after the animation frame that met the last condition, as it would after a tap.
+	static Task WaitForOpacityAsync(VisualElement view, params Func<double, bool>[] conditionsInOrder)
 	{
 		var conditionsMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var nextCondition = 0;
@@ -168,7 +161,7 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(VisualElement.Opacity) && conditions[nextCondition](view.Opacity) && ++nextCondition == conditions.Length)
+			if (e.PropertyName == nameof(VisualElement.Opacity) && conditionsInOrder[nextCondition](view.Opacity) && ++nextCondition == conditionsInOrder.Length)
 			{
 				view.PropertyChanged -= HandlePropertyChanged;
 				conditionsMet.SetResult();
@@ -176,7 +169,7 @@ public partial class FadeAnimationTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// Counts its animations that ended, however they ended: AnimationBehavior starts them without handing out their Task
+	// AnimationBehavior starts animations without handing out their Task, so the animation reports each end itself, however it ended.
 	sealed class ObservedFadeAnimation : FadeAnimation
 	{
 		readonly Channel<bool> endedAnimations = Channel.CreateUnbounded<bool>();

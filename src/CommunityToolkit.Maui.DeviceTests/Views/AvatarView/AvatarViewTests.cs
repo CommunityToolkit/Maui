@@ -6,16 +6,11 @@ using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// AvatarView (Android, iOS, Mac Catalyst, Windows): a Border that shows a label, or an image once ImageSource is set. Whenever the size,
-// stroke or padding change, RefreshAvatarImage sizes the image to the area inside the stroke and the padding and clips it. How the clip is
-// built depends on the platform: without a stroke shape Android and Windows clip the image with a RoundRectangleGeometry that starts at the
-// image's origin, the Apple platforms build no geometry at all. The platform partials read the native state: the size of the native image,
-// which native view is the content, the pixels, and the clip geometry that is expected on that platform.
 [Category(TestCategory.AvatarView)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 {
-	// A 16x16 solid red PNG (generated once, no network and no asset files).
+	// A 16x16 solid red PNG, embedded so that the tests need neither the network nor an asset file.
 	const string redPngBase64 = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFklEQVR42mP4z8BAEmIY1TCqYfhqAACQ+f8B8u7oVwAAAABJRU5ErkJggg==";
 
 	const double avatarSize = 100;
@@ -26,8 +21,8 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 	// Android lays views out in whole pixels, so sizes differ from the requested ones by up to a pixel (0.4 dip at density 2.6).
 	const double sizeTolerance = 1;
 
-	// The image and pixel states below are produced by asynchronous decoding and layout passes: generous polling timeouts keep slow CI
-	// machines green without hiding a wrong state (the assertion still fails once the timeout is over).
+	// Image decoding and layout passes are asynchronous: a generous polling timeout keeps slow CI machines green without hiding a wrong state
+	// (the assertion still fails once it is over).
 	const int layoutTimeout = 5000;
 
 	// A size that no avatar computes: only a refresh of the image replaces it.
@@ -71,7 +66,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 	public enum StyleKind
 	{
 		Explicit,
-		// An implicit Style in the avatar's own resources.
 		Implicit,
 	}
 
@@ -138,7 +132,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			AssertionExtensions.CloseEnough(avatarSize - 8 - 5 - 11, expectedWidth, sizeTolerance, "expected width");
 			AssertionExtensions.CloseEnough(avatarSize - 8 - 7 - 13, expectedHeight, sizeTolerance, "expected height");
 
-			// The native image is laid out with that size.
 			await AssertNativeSizeAsync(image, expectedWidth, expectedHeight);
 		});
 	}
@@ -174,7 +167,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// Creates the native view without measuring or arranging it (CreateHandler would lay the avatar out).
+			// Not CreateHandler, which would lay the avatar out.
 			var handler = new BorderHandler();
 			handler.SetMauiContext(MauiContext);
 			handler.SetVirtualView(avatar);
@@ -184,12 +177,10 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 			avatar.ImageSource = CreateRedImage();
 
-			// Not laid out yet (the size is still -1): the image still has the size requests it copies from the avatar.
 			var image = Assert.IsType<Image>(avatar.Content, exactMatch: false);
 			Assert.Equal(avatarSize, image.WidthRequest);
 			Assert.Equal(avatarSize, image.HeightRequest);
 
-			// The first layout (a view is arranged with the size it measured) sizes the image.
 			var measured = avatar.Measure(avatarSize, avatarSize);
 			AssertionExtensions.CloseEnough(avatarSize, measured.Width, sizeTolerance, "measured width");
 			AssertionExtensions.CloseEnough(avatarSize, measured.Height, sizeTolerance, "measured height");
@@ -203,8 +194,8 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// MAUI sets Width before Height in a layout pass, so a first layout never has a negative width together with a valid height; a frame
-	// whose side is negative (-1 is the size of a view that was never laid out) must not size the image to a negative area.
+	// MAUI sets Width before Height in a layout pass, so a first layout never has a negative width together with a valid height (-1 is the size
+	// of a view that was never laid out).
 	[Theory]
 	[InlineData(FrameSide.Width)]
 	[InlineData(FrameSide.Height)]
@@ -219,7 +210,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			PerturbImageSize(image);
 			var frame = avatar.Frame;
 
-			// Only that side changes, so its property change is the only trigger, and the other side is a valid size.
+			// Only that side changes, so its property change is the only trigger.
 			avatar.Frame = negativeSide is FrameSide.Width ? frame with { Width = -1 } : frame with { Height = -1 };
 
 			Assert.Equal(negativeSide is FrameSide.Width ? -1 : frame.Width, avatar.Width);
@@ -229,7 +220,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A layout that changes one side only raises the property change of that side alone: each side is a trigger of its own.
 	[Theory]
 	[InlineData(FrameSide.Width)]
 	[InlineData(FrameSide.Height)]
@@ -254,8 +244,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Only the size, the padding, the border width, the corner radius, the stroke thickness and the stroke shape refresh the image: other
-	// properties leave it as it is.
 	[Fact]
 	public async Task OtherPropertyChangesDoNotRefreshTheImage()
 	{
@@ -298,7 +286,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			avatar.ImageSource = null;
 			Assert.IsType<Label>(avatar.Content);
 
-			// Without an image source nothing is refreshed: the (detached) image keeps the size it had.
 			avatar.Padding = new Thickness(20);
 			avatar.BorderWidth = 9;
 
@@ -326,8 +313,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// An image source that fails to load leaves the image empty (MAUI's Image shows nothing): the avatar shows its text instead, as it does
-	// without an image source.
+	// MAUI's Image shows nothing when its source fails to load.
 	[Fact]
 	public async Task TextIsShownWhenTheImageSourceFailsToLoad()
 	{
@@ -347,7 +333,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The image replaces the text once another image source loads.
 	[Fact]
 	public async Task ImageIsShownWhenAnotherImageSourceIsSetAfterAFailure()
 	{
@@ -370,7 +355,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// An image source that loads keeps the image, without the text: the text would show through the transparent parts of an image.
+	// The text would show through the transparent parts of an image.
 	[Fact]
 	public async Task ImageThatLoadsIsShownWithoutTheText()
 	{
@@ -394,7 +379,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		var avatar = await CreateAvatarViewAsync(strokeThickness: 3, padding: new Thickness(5, 7, 11, 13), withImage: true, static avatar =>
 		{
 			avatar.CornerRadius = new CornerRadius(10, 20, 30, 40);
-			// No stroke shape to take a clip from (setting the corner radius creates one, so this comes last).
+			// Setting the corner radius creates a stroke shape, so clearing it comes last.
 			avatar.StrokeShape = null;
 		});
 
@@ -403,13 +388,11 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			await LoadedAndLaidOutAsync(avatar);
 			var image = Assert.IsType<Image>(avatar.Content, exactMatch: false);
 
-			// The first layout refreshes the image: it is clipped with the geometry of the platform.
 			var (expectedWidth, expectedHeight) = ExpectedImageSize(avatar);
 			AssertionExtensions.CloseEnough(avatarSize - 6 - 5 - 11, expectedWidth, sizeTolerance, "expected width");
 			AssertionExtensions.CloseEnough(avatarSize - 6 - 7 - 13, expectedHeight, sizeTolerance, "expected height");
 			AssertFallbackClip(avatar, image, expectedWidth, expectedHeight);
 
-			// Android and Windows: the native image is clipped by that geometry. Apple: the native image gets no clip.
 			var nativeClipIsTheImageClip = await AssertHelpers.Wait(
 				() => ReferenceEquals(NativeClipOf(image), image.Clip) && (NativeClipOf(image) is not null) == BuildsFallbackClipGeometry,
 				timeout: layoutTimeout);
@@ -460,7 +443,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 				avatar.StrokeThickness = 6;
 			}
 
-			// Whatever the toolkit sets is replaced by a size that is wrong for every avatar: only a refresh puts the right size back.
 			PerturbImageSize(image);
 
 			switch (change)
@@ -489,8 +471,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The whole image area is visible, only the rounded corners are cut: a clip geometry offset by the stroke and the padding in the
-	// coordinates of the image itself would cut off its left and top parts.
+	// A clip geometry offset by the stroke and the padding, in the coordinates of the image itself, would cut off its left and top parts.
 	[Fact]
 	public async Task ImageWithoutAStrokeShapeIsNotCutOff()
 	{
@@ -527,7 +508,6 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		{
 			await LoadedAndLaidOutAsync(avatar);
 
-			// A circle: red image inside, the blue stroke on the edge, nothing in the corners outside the circle.
 			await AssertPixelAsync(handler, 50, 50, Colors.Red);
 			await AssertPixelAsync(handler, 30, 40, Colors.Red);
 			await AssertPixelAsync(handler, 70, 60, Colors.Red);
@@ -565,15 +545,12 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 			avatar.StrokeShape = CreateShape(shapeKind, clip);
 			avatar.Padding = new Thickness(4);
 
-			// The shape's own clip is the clip of the image (never the platform's fallback geometry), and the native image is clipped by it.
 			Assert.Same(clip, image.Clip);
 			var nativeImageIsClipped = await AssertHelpers.Wait(() => ReferenceEquals(NativeClipOf(image), clip), timeout: layoutTimeout);
 			Assert.True(nativeImageIsClipped, $"The native image is not clipped by the clip of the stroke shape: native clip {Describe(NativeClipOf(image))}.");
 		});
 	}
 
-	// The image takes its clip from the stroke shape (ImageUsesTheClipOfTheStrokeShape), so replacing the stroke shape must replace the
-	// image's clip, as the size, padding and stroke changes do; otherwise the image keeps the previous shape's clip.
 	[Fact]
 	public async Task ChangingTheStrokeShapeRefreshesTheClipOfTheImage()
 	{
@@ -602,9 +579,9 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		await AssertionExtensions.WaitForGC(references);
 	}
 
-	// Creates the handlers of an avatar with an image, lets the image load and disconnects the handlers, as when a page that showed the avatar goes
-	// away. Disconnected while its image still loads, the avatar stays alive until the load has completed, which is no leak: on Windows (11 26200)
-	// the forced collections of WaitForGC ended first, while after the load nothing stayed alive. Only weak references leave this method.
+	// The image loads before the handlers are disconnected: while it still loads, the avatar stays alive until the load has completed, which is
+	// no leak (on Windows 11 26200 the forced collections of WaitForGC ended first, while after the load nothing stayed alive). Only weak
+	// references leave this method.
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	async Task<WeakReference[]> CreateLoadAndDisconnectAnAvatarAsync()
 	{
@@ -662,10 +639,9 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 	static ImageSource CreateRedImage() => ImageSource.FromStream(() => new MemoryStream(Convert.FromBase64String(redPngBase64)));
 
-	// Bytes that no platform decodes as an image, as when a server answers the request for an avatar with an error page (no network: the bytes are local).
+	// Simulates a server that answers the request for an avatar with an error page, without a network.
 	static ImageSource CreateUndecodableImage() => ImageSource.FromStream(() => new MemoryStream("<html><body>403 Forbidden</body></html>"u8.ToArray()));
 
-	// The image source loads asynchronously, so the native content is polled until it is the expected one.
 	static async Task AssertNativeContentAsync(IPlatformViewHandler handler, NativeContent expected)
 	{
 		var hasExpectedContent = await AssertHelpers.Wait(() => NativeContentOf(handler) == expected, timeout: layoutTimeout);
@@ -673,8 +649,7 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		Assert.True(hasExpectedContent, $"The native content of the avatar is {NativeContentOf(handler)}, expected {expected}.");
 	}
 
-	// Creates the native view of the avatar and lays the avatar out with the size it measures, outside any window: no platform layout pass
-	// runs afterwards, so a frame or a size that a test sets stays as it set it. Returns the image, sized by that first layout.
+	// Outside any window no platform layout pass runs afterwards, so a frame or a size that a test sets stays as it set it.
 	Task<Image> LayOutWithoutAWindowAsync(AvatarView avatar) =>
 		InvokeOnMainThreadAsync(() =>
 		{
@@ -700,9 +675,9 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		image.HeightRequest = perturbedHeight;
 	}
 
-	// The expected sizes are computed from the avatar's Width and Height, so it must be laid out. A view that AttachAndRun hosts on its own is laid
-	// out by InitializeViewHandler, which measures and arranges it before it is hosted; on Windows it cannot measure a view that is not loaded,
-	// so the arrange leaves an empty Frame (centered, 0x0) and no MAUI parent lays it out later. There it is laid out once it is loaded.
+	// A view that AttachAndRun hosts on its own is laid out by InitializeViewHandler before it is hosted. On Windows that cannot measure a view
+	// that is not loaded, so the arrange leaves an empty Frame (centered, 0x0) and no MAUI parent lays it out later: there it is laid out once
+	// it is loaded.
 	static async Task LoadedAndLaidOutAsync(AvatarView avatar)
 	{
 		await avatar.OnLoadedAsync();
@@ -716,14 +691,12 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// The area inside the stroke and the padding, as the toolkit computes it from the size the view was laid out with.
 	static (double Width, double Height) ExpectedImageSize(AvatarView avatar) =>
 		(avatar.Width - (avatar.StrokeThickness * 2) - avatar.Padding.Left - avatar.Padding.Right,
 		avatar.Height - (avatar.StrokeThickness * 2) - avatar.Padding.Top - avatar.Padding.Bottom);
 
 	static bool IsCloseTo(double actual, double expected) => Math.Abs(actual - expected) <= 0.01;
 
-	// The native view follows the requested size after the next layout pass, rounded to whole pixels.
 	static async Task AssertNativeSizeAsync(IView view, double expectedWidth, double expectedHeight)
 	{
 		var resized = await AssertHelpers.Wait(
@@ -734,9 +707,8 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		Assert.True(resized, $"The native {view.GetType().Name} is {nativeSize.Width}x{nativeSize.Height}, expected {expectedWidth}x{expectedHeight}.");
 	}
 
-	// The clip that the native image is drawn with: MAUI wraps a native view that has a clip in a container view (WrapperView) and hands it
-	// the view's clip, which the container applies. Null while there is no container or the container applies no clip. The container alone
-	// is no oracle: on Windows MAUI wraps every AspectFill image (the avatar's image) in a WrapperView, with or without a clip.
+	// MAUI wraps a native view that has a clip in a container view (WrapperView), which applies the view's clip. The container alone is no
+	// oracle: on Windows MAUI wraps every AspectFill image (the avatar's image) in a WrapperView, with or without a clip.
 	static IShape? NativeClipOf(IView view) =>
 		(view.Handler as IViewHandler)?.ContainerView is Microsoft.Maui.Platform.WrapperView wrapper ? wrapper.Clip : null;
 
@@ -759,8 +731,8 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
 	};
 
-	// Reads the color of the rendered avatar at a point (in device independent units, relative to the avatar). The image is decoded and
-	// drawn asynchronously and the clip is applied by the next layout pass, so the pixel is polled until it has the expected color.
+	// The image is decoded and drawn asynchronously and the clip is applied by the next layout pass, so the pixel is polled until it has the
+	// expected color.
 	static async Task AssertPixelAsync(IPlatformViewHandler handler, double x, double y, Color expected)
 	{
 		var actual = Colors.Transparent;

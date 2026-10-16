@@ -10,13 +10,9 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs since #3281: PlatformUpdateSource observes the new AVPlayerItem's "status", and the observer queues
-// PlayerItemStatusChanged on the main queue. For ReadyToPlay it opens the media once (video track, media size, position, auto play at the
-// configured Speed, state, MediaOpened, poster); for Failed it raises MediaFailed. Every item has a cancellation token that a newer source
-// or Dispose cancels, so the handler of a replaced item stops, also when an event handler of the opening replaces it. The tests use the real
-// observer where AVFoundation produces the state, and run the handler directly with test doubles where it cannot (a failed item without an
-// error, a track load that fails or is still running, a player state at an exact moment). Together with the MediaOpened tests of
-// MediaManagerSourceAppleTests they verify the fix of #3249: MediaOpened is raised only once the item is ReadyToPlay.
+// The real observer is used where AVFoundation produces the state; test doubles run the handler directly where it cannot (a failed item
+// without an error, a track load that fails or is still running, a player state at an exact moment). Together with the MediaOpened tests
+// of MediaManagerSourceAppleTests they verify the fix of #3249: MediaOpened is raised only once the item is ReadyToPlay.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
@@ -37,7 +33,6 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 	static UIView Overlay(AppleMediaElementHandler handler) => handler.Manager!.NativePlayerViewController!.ContentOverlayView!;
 
-	/// <summary>Puts a <see cref="AppleFakeAVPlayer"/> in place of the manager's player and gives the real one back afterwards (Dispose needs it).</summary>
 	static async Task WithFakePlayerAsync(AppleMediaManager manager, AppleFakeAVPlayer fake, Func<Task> action)
 	{
 		var player = manager.NativePlayer;
@@ -48,6 +43,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 		}
 		finally
 		{
+			// Dispose needs the real player.
 			manager.NativePlayer = player;
 			fake.AfterNextReplace = fake.AfterPlay = fake.AfterRateSet = null;
 			fake.Pause();
@@ -69,7 +65,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
 			Assert.Equal(1, events.Opened);
 
-			// The item reports ReadyToPlay again (for example after it has buffered): the media is open already.
+			// The item can report ReadyToPlay again, for example after it has buffered.
 			await manager.RunItemStatusHandler(manager.NativePlayerItem!, CancellationToken.None);
 
 			Assert.Equal(1, events.Opened);
@@ -224,7 +220,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 				await manager.RunItemStatusHandler(item, CancellationToken.None);
 
 				// Setting the rate starts playback at the configured speed: one rate change and no Play(), which would start at the default rate
-				// first, so that RateChanged, which copies the player's rate into Speed, would see two rates (#3327).
+				// first, so RateChanged (which copies the player's rate into Speed) would see two rates (#3327).
 				Assert.Equal(0, fake.PlayCount);
 				Assert.Equal(new[] { 1.5f }, fake.RatesSet);
 				Assert.Equal(1.5f, fake.Rate);
@@ -257,7 +253,6 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 				await manager.RunItemStatusHandler(item, CancellationToken.None);
 
-				// Playback is started once, at the speed; nothing starts the player again after the pause.
 				Assert.Equal(0, fake.PlayCount);
 				Assert.Equal(new[] { 1.5f }, fake.RatesSet);
 				Assert.Equal(0f, fake.Rate);
@@ -323,7 +318,6 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => manager.RunItemStatusHandler(item, replaced.Token));
 
-				// Auto play starts playback with one rate change at the speed (no Play())
 				Assert.Equal(0, fake.PlayCount);
 				Assert.Equal(replacedOn is "Duration" ? 0 : 1, fake.RatesSet.Count);
 				Assert.Equal(replacedOn is "State" ? MediaElementState.Playing : MediaElementState.Opening, mediaElement.CurrentState);
@@ -439,7 +433,6 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			var item = new AppleFakeAVPlayerItem(asset) { StatusOverride = AVPlayerItemStatus.ReadyToPlay };
 			using var replaced = new CancellationTokenSource();
 
-			// The track load never finishes; the token of the item is cancelled while the handler waits for it.
 			var opening = manager.RunItemStatusHandler(item, replaced.Token);
 			Assert.Equal(1, asset.TrackLoads);
 			replaced.Cancel();

@@ -2,10 +2,6 @@ using System.Diagnostics;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Collects what the toolkit writes with <c>Trace.WriteLine</c> (it reports problems that it survives, such as a launcher without
-/// badge support) for as long as the object lives. Dispose it to stop listening.
-/// </summary>
 public sealed class FilesTraceCapture : TraceListener
 {
 	readonly Lock gate = new();
@@ -47,7 +43,7 @@ public sealed class FilesTraceCapture : TraceListener
 	}
 }
 
-/// <summary>Records every value reported to it, in order, synchronously (Progress&lt;T&gt; would post to a context).</summary>
+// Records synchronously, because Progress<T> would post the values to a context.
 public sealed class FilesRecordingProgress : IProgress<double>
 {
 	readonly Lock gate = new();
@@ -64,10 +60,7 @@ public sealed class FilesRecordingProgress : IProgress<double>
 		}
 	}
 
-	/// <summary>
-	/// Runs after each value was recorded, on the thread that reported it. A test cancels a token from here: the toolkit reports a block
-	/// after writing it and before it reads the next one.
-	/// </summary>
+	// A test cancels a token from here: the toolkit reports a block after writing it and before it reads the next one.
 	public Action<double>? OnReport { get; init; }
 
 	public void Report(double value)

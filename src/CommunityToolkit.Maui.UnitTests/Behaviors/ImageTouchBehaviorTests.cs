@@ -309,8 +309,7 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
 	}
 
-	// Image sources that arrive after the attach, as a binding that resolves later sets them: from then on the default state shows the
-	// behavior's image with the built-in aspect, before the first touch as well as after it (not the view's own aspect until the first touch).
+	// A binding that resolves later sets the image sources after the behavior is attached.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]

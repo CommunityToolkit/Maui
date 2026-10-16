@@ -5,11 +5,9 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The successful start of the camera preview (CameraManager.PlatformStartCameraPreview, macios), which a real AVFoundation session only
-// reaches with a camera and the camera permission. Here the session is a FakeCaptureSession, the camera a FakeCaptureDevice, and the
-// device input and the rotation coordinator come from AppleDeviceInputStub and AppleRotationCoordinatorStub, so every step of the start
-// (and of a restart, a camera switch, a rejected or failed input) runs on any machine. CameraManagerAppleCaptureTests runs the real start
-// where a camera is authorized.
+// A real AVFoundation session only reaches the successful start of the camera preview with a camera and the camera permission. The session, the
+// camera, the device input and the rotation coordinator are fakes and stubs, so every step of the start runs on any machine.
+// CameraManagerAppleCaptureTests runs the real start where a camera is authorized.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerApplePreviewTests : CameraHandlerTestBase
@@ -161,8 +159,8 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// The default ImageCaptureResolution (Size.Zero) fits no format: the start leaves the format that the session preset (AVCaptureSessionPresetPhoto)
-	// gives the camera, whatever photo pixel formats the photo output reports. Real iPhones start this way since #2941 (#2920, #3037).
+	// The default ImageCaptureResolution, Size.Zero, fits no format. Real iPhones start this way since #2941 (#2920, #3037), whatever photo
+	// pixel formats the photo output reports.
 	[Fact]
 	public async Task StartCameraPreviewWithTheDefaultImageCaptureResolutionKeepsTheFormatOfTheSessionPreset()
 	{
@@ -185,10 +183,9 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// The raise of setActiveFormat (FakeCaptureDevice's strict mode, after Apple's documentation) inside PlatformStartCameraPreview (see
-	// CameraManagerAppleFakeDeviceTests.UpdateCaptureResolutionThatTheDeviceRejectsStillUnlocksTheDevice) must neither leave the session's
-	// configuration block open nor the device locked. Here the camera's formats are not the device's formats, as with a CameraInfo that the
-	// app built.
+	// The raise of setActiveFormat comes from FakeCaptureDevice's strict mode (see
+	// CameraManagerAppleFakeDeviceTests.UpdateCaptureResolutionThatTheDeviceRejectsStillUnlocksTheDevice): the camera's formats are not the
+	// device's formats, as with a CameraInfo that the app built.
 	[Fact]
 	public async Task StartCameraPreviewWithAFormatThatTheDeviceRejectsClosesTheConfigurationAndUnlocksTheDevice()
 	{
@@ -285,8 +282,8 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// A camera switch that fails leaves the session stopped but the manager initialized, like on Android: the next camera change starts the
-	// preview with that camera. Before, the manager counted as stopped and ignored every later SelectedCamera until StartCameraPreview.
+	// A failed camera switch leaves the session stopped but the manager initialized, like on Android. Before, the manager counted as stopped and
+	// ignored every later SelectedCamera until StartCameraPreview.
 	[Theory]
 	[InlineData("noCaptureDevice")]
 	[InlineData("inputCannotBeCreated")]
@@ -328,7 +325,6 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// The manager that a failed switch left initialized still stops: after StopCameraPreview a camera change does not start the preview.
 	[Fact]
 	public async Task StopCameraPreviewAfterASwitchThatFailedKeepsThePreviewStoppedWhenAnotherCameraIsSelected()
 	{
@@ -354,9 +350,8 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// A switch that is cancelled is not a camera that cannot be started: like a cancelled StartCameraPreview it leaves the manager stopped, so a
-	// later camera change does not start the preview. The start awaits nothing here that observes the token, so the cancellation is scripted
-	// as the session's answer to adding the camera input.
+	// A cancelled switch is not a camera that cannot be started: like a cancelled StartCameraPreview it leaves the manager stopped. The start awaits
+	// nothing here that observes the token, so the cancellation is scripted as the session's answer to adding the camera input.
 	[Fact]
 	public async Task UpdateCurrentCameraThatIsCancelledLeavesThePreviewStopped()
 	{
@@ -460,8 +455,6 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// Runs the test on the UI thread with a manager whose session is a FakeCaptureSession and whose provider offers one fake camera, with the
-	// device input and the rotation coordinator stubbed. Everything is released afterwards.
 	async Task RunAsync(Func<PreviewHarness, Task> test, bool createPlatformView = true)
 	{
 		SetupBuilder();

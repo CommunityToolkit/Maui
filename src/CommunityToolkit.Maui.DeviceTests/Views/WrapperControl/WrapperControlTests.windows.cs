@@ -9,13 +9,6 @@ using WTextBlock = Microsoft.UI.Xaml.Controls.TextBlock;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of WrapperControl (Windows): the WinUI Panel that hosts the platform view of a MAUI view. Its layout code is driven
-// directly (Measure and Arrange on the panel) against a spy platform view that records what the panel asks of it and returns a
-// size the test chooses, so every number the panel computes is observable. The two behaviors that need a live visual tree (the
-// Loaded handler and the MeasureInvalidated subscription) run in a real window.
-//
-// The MAUI view of those tests has its own handler (ProbeView, ProbeViewHandler) that ignores InvalidateMeasure: the panel then
-// only learns about an invalidation through the event it subscribed to, and not through the platform view of the handler.
 [Category(TestCategory.WrapperControl)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
@@ -23,8 +16,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 	static readonly WSize spyDesiredSize = new(80, 20);
 
 	static void RegisterProbe(MauiAppBuilder builder) => builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<ProbeView, ProbeViewHandler>());
-
-	// ---- constructor
 
 	[Fact]
 	public async Task ConstructorThrowsForANullView()
@@ -84,8 +75,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// ---- MeasureOverride
-
 	[Fact]
 	public async Task MeasureOfAFillViewWithAFiniteWidthTakesTheAvailableWidthAndTheHeightOfTheChild()
 	{
@@ -97,9 +86,7 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 
 			wrapper.Measure(new WSize(300, 100));
 
-			// The child is measured with exactly the space the panel got...
 			Assert.Equal(new WSize(300, 100), spy.MeasuredWith.Last());
-			// ...and the panel is as wide as that space, but only as high as the child wants to be.
 			Assert.Equal(new WSize(300, spyDesiredSize.Height), wrapper.DesiredSize);
 			wrapper.CleanUp();
 		});
@@ -183,8 +170,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// ---- ArrangeOverride
-
 	[Fact]
 	public async Task ArrangeSetsTheFrameOfTheMauiViewAndArrangesTheChildAndKeepsThePanelVisible()
 	{
@@ -221,12 +206,10 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 
 			MeasureAndArrange(wrapper, width, height);
 
-			// The panel must not overlap its siblings when it has nothing to show.
 			Assert.Equal(0.0, wrapper.Opacity);
-			// The panel gives its child the whole slot it got. The slot is what the panel decides, not the size the child's
-			// ArrangeOverride receives: WinUI raises that size to the child's own desired size (80 x 20 here) when the slot is smaller
-			// (FrameworkElement::ArrangeCore in microsoft-ui-xaml), and it does not arrange a child that is not dirty in the slot that
-			// child already has (a child never measured, as in the 0 x 0 row, has the slot 0, 0, 0, 0).
+			// The slot is what the panel decides, not the size the child's ArrangeOverride receives: WinUI raises that size to the child's own
+			// desired size (80 x 20 here) when the slot is smaller (FrameworkElement::ArrangeCore in microsoft-ui-xaml), and it does not arrange a
+			// child that is not dirty in the slot that child already has (a child never measured, as in the 0 x 0 row, has the slot 0, 0, 0, 0).
 			Assert.Equal(new WRect(0, 0, width, height), WLayoutInformation.GetLayoutSlot(spy));
 			Assert.Equal(width, view.Width);
 			Assert.Equal(height, view.Height);
@@ -252,8 +235,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// ---- Loaded handler and MeasureInvalidated subscription (a live visual tree)
-
 	[Fact]
 	public async Task LoadingThePlatformViewInvalidatesTheMeasureOfThePanelAgain()
 	{
@@ -265,8 +246,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 
 			return wrapper.AttachAndRun(async () =>
 			{
-				// The first measure happens before the platform view is loaded. Its Loaded handler invalidates the panel, and the second
-				// measure then runs with every control in a consistent, loaded state.
 				await AssertionExtensions.AssertEventually(() => wrapper.MeasureCount >= 2, timeout: 5000, message: $"The panel was measured {wrapper.MeasureCount} time(s); it should be measured again once its platform view is loaded.");
 				wrapper.CleanUp();
 			}, MauiContext);
@@ -289,7 +268,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 				wrapper.UpdateLayout();
 				var measuredBeforeInvalidation = wrapper.MeasureCount;
 
-				// The handler of ProbeView ignores InvalidateMeasure, so only the subscription of the panel can reach it.
 				view.RaiseMeasureInvalidated();
 				wrapper.UpdateLayout();
 
@@ -327,8 +305,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// ---- leak
-
 	[Fact]
 	public async Task PanelMauiViewAndPlatformViewAreCollectedAfterCleanUp()
 	{
@@ -352,9 +328,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		await AssertionExtensions.WaitForGC(wrapperReference, viewReference, platformViewReference);
 	}
 
-	// ---- helpers
-
-	// A panel around a ProbeView whose platform view returns spyDesiredSize and records what the panel passes to it.
 	(WrapperControl Wrapper, ProbeView View, SpyPanel Spy) CreateWrapper(LayoutOptions horizontalOptions)
 	{
 		var view = new ProbeView { HorizontalOptions = horizontalOptions };
@@ -362,11 +335,11 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		return (wrapper, view, Assert.IsType<SpyPanel>(Assert.Single(wrapper.Children)));
 	}
 
-	// Lays the panel out as its parent would: Measure, then Arrange in (0, 0, width, height). The panel is in no window, so WinUI lays
-	// it out with the layout manager of the app's main visual tree, whose root also holds every window of the app, and an Arrange does
-	// nothing while that tree waits for a measure, e.g. after an earlier test closed its window (CUIElement::Arrange in
-	// microsoft-ui-xaml: the loop stops on CLayoutManager::GetRequiresMeasure). UpdateLayout of an element outside the tree runs that
-	// pending layout of the app's windows first and leaves the panel alone; Measure has no such check.
+	// UpdateLayout comes between the two calls because the panel is in no window: WinUI lays it out with the layout manager of the app's main
+	// visual tree, whose root also holds every window of the app, and an Arrange does nothing while that tree waits for a measure, e.g. after
+	// an earlier test closed its window (CUIElement::Arrange in microsoft-ui-xaml: the loop stops on CLayoutManager::GetRequiresMeasure).
+	// UpdateLayout of an element outside the tree runs that pending layout of the app's windows first and leaves the panel alone; Measure has
+	// no such check.
 	static void MeasureAndArrange(WrapperControl wrapper, double width, double height)
 	{
 		wrapper.Measure(new WSize(width, height));
@@ -374,7 +347,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		wrapper.Arrange(new WRect(0, 0, width, height));
 	}
 
-	// Counts the measure passes of the panel, which is what its Loaded handler and its MeasureInvalidated subscription cause.
 	sealed partial class SpyWrapperControl(View view, IMauiContext mauiContext) : WrapperControl(view, mauiContext)
 	{
 		public int MeasureCount { get; private set; }
@@ -386,7 +358,6 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// A platform view that records the sizes the panel measures and arranges it with, and returns a size the test chooses.
 	sealed partial class SpyPanel : WPanel
 	{
 		public WSize DesiredToReturn { get; set; } = spyDesiredSize;
@@ -413,8 +384,8 @@ public partial class WrapperControlTests : CommunityToolkitHandlerTestBase
 		public void RaiseMeasureInvalidated() => InvalidateMeasure();
 	}
 
-	// A handler without property mappings (nothing the panel does to the MAUI view reaches the platform view) whose InvalidateMeasure
-	// command does nothing, unlike the handler of every MAUI control.
+	// Unlike the handler of every MAUI control, this one ignores InvalidateMeasure, so the panel can learn about an invalidation only through
+	// the event it subscribed to. It has no property mappings either: nothing the panel does to the MAUI view reaches the platform view.
 	sealed class ProbeViewHandler : ViewHandler<ProbeView, SpyPanel>
 	{
 		static readonly PropertyMapper<ProbeView, ProbeViewHandler> probeMapper = new();

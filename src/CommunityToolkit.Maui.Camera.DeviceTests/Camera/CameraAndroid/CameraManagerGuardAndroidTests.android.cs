@@ -4,11 +4,8 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraManager on Android: the defensive guards of its private helpers that no public call reaches, because every caller checks
-/// the same preconditions first (white box: the helpers are called through reflection, on a real manager and the real camera).
-/// The public paths through the same helpers are tested in the other CameraManager test classes.
-/// </summary>
+// No public call reaches most of these guards, because every caller checks the same preconditions first, so the tests call the private
+// helpers of CameraManager through reflection.
 [Category(TestCategory.CameraManagerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
@@ -29,15 +26,12 @@ public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 	static Task InvokePrivateAsync(CameraManager manager, string method) =>
 		(Task)InvokePrivate(manager, method, CancellationToken.None)!;
 
-	// ---- IsPhotoSessionBound / IsVideoSessionBound ------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task SessionIsNotBoundBeforeTheManagerIsConnected()
 	{
 		SetupBuilder();
 		var session = await CreateSessionAsync();
 
-		// No ProcessCameraProvider yet.
 		var (photo, video) = await InvokeOnMainThreadAsync(() => ((bool)InvokePrivate(session.Manager, "IsPhotoSessionBound")!, (bool)InvokePrivate(session.Manager, "IsVideoSessionBound")!));
 
 		Assert.False(photo);
@@ -76,8 +70,6 @@ public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 			}
 		});
 	}
-
-	// ---- BindPhotoSessionAsync / BindVideoSessionAsync ------------------------------------------------------------------------
 
 	[Theory]
 	[InlineData("BindPhotoSessionAsync", "processCameraProvider")]
@@ -122,7 +114,6 @@ public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 				}
 			}
 
-			// Nothing was bound and the manager kept its camera.
 			Assert.False(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.False(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture));
@@ -130,17 +121,16 @@ public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- RebuildCameraPreview / BindCamera --------------------------------------------------------------------------------------
-	// ConnectCamera runs them in its CameraX listener and fails with their exceptions (asserted by
-	// CameraManagerConnectionAndroidTests.ConnectCameraWithoutAPreconditionOfTheUseCasesFailsWithItsExceptionAndLetsNothingEscape); their
-	// guards are called directly here.
+	// ConnectCamera runs RebuildCameraPreview and BindCamera in its CameraX listener and reports their exceptions through ErrorOccurred
+	// (asserted by CameraManagerConnectionAndroidTests.ConnectCameraWithoutAPreconditionOfTheUseCasesReportsItsExceptionAndLetsNothingEscape);
+	// their guards are called directly here.
 
 	[Fact]
 	public async Task RebuildCameraPreviewWithoutAnExecutorThrowsArgumentNullException()
 	{
 		SetupBuilder();
 
-		// CreatePlatformView, which creates the executor, was never called; UpdateCaptureResolution created the ResolutionSelector.
+		// Without CreatePlatformView there is no executor; UpdateCaptureResolution creates the ResolutionSelector.
 		var session = await CreateSessionAsync(createPlatformView: false);
 		await session.Manager.UpdateCaptureResolution(Size.Zero, CancellationToken.None);
 
@@ -155,7 +145,7 @@ public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 	{
 		SetupBuilder();
 
-		// UpdateCaptureResolution, which creates the ResolutionSelector, was never called; CreatePlatformView created the executor.
+		// Without UpdateCaptureResolution there is no ResolutionSelector; CreatePlatformView creates the executor.
 		var session = await CreateSessionAsync();
 
 		var exception = await InvokeOnMainThreadAsync(() => Assert.Throws<ArgumentNullException>(() => InvokePrivate(session.Manager, "RebuildCameraPreview")));
@@ -185,14 +175,11 @@ public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 		await AssertEveryCameraIsClosedAsync();
 	}
 
-	// ---- RebuildImageCapture / PlatformTakePicture ----------------------------------------------------------------------------
-
 	[Fact]
 	public async Task RebuildImageCaptureWithoutAResolutionSelectorThrowsArgumentNullException()
 	{
 		SetupBuilder();
 
-		// UpdateCaptureResolution was never called, so there is no ResolutionSelector.
 		var session = await CreateSessionAsync();
 
 		var exception = await InvokeOnMainThreadAsync(() => Assert.Throws<ArgumentNullException>(() => InvokePrivate(session.Manager, "RebuildImageCapture")));

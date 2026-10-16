@@ -2,8 +2,6 @@ using CommunityToolkit.Maui.Media;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// OfflineSpeechToTextImplementation: the on-device recognizers (Android on-device SpeechRecognizer, SFSpeechRecognizer with
-// RequiresOnDeviceRecognition, System.Speech on Windows). The tests that every implementation shares are in the base class.
 [Category(TestCategory.OfflineSpeechToText)]
 [Collection(TestCollections.DisableParallelization)]
 public sealed partial class OfflineSpeechToTextTests : SpeechImplementationTestsBase
@@ -12,7 +10,7 @@ public sealed partial class OfflineSpeechToTextTests : SpeechImplementationTests
 
 	protected override bool IsOffline => true;
 
-	// On net the same API resolves to a stub that throws NotSupportedException; on a device it must be the platform implementation.
+	// On net the same API resolves to a stub that throws NotSupportedException.
 	[Fact]
 	public async Task StaticDefaultIsThePlatformImplementation()
 	{

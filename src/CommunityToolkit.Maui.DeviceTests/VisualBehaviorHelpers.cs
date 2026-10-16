@@ -14,13 +14,10 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Helpers of the IconTintColorBehavior, SelectAllTextBehavior and ImageTouchBehavior tests (WaitForGCAsync also of the SemanticOrderView
-// leak test), at the app root because tests of several folders use them.
+// At the app root because tests of several folders use these helpers.
 static class VisualBehaviorHelpers
 {
-	/// <summary>
-	/// Renders the platform view until it contains the expected color and none of the unexpected ones (an image loads asynchronously).
-	/// </summary>
+	// The pixels are polled because an image loads asynchronously.
 	public static Task WaitForPixelsAsync(PlatformView platformView, IMauiContext mauiContext, Color expected, params Color[] unexpected) =>
 		AssertEventually(() => ShowsAsync(platformView, mauiContext, expected, unexpected), timeout: 3000, message: $"The rendered view does not show {expected}{(unexpected.Length is 0 ? string.Empty : $" without {string.Join(", ", unexpected)}")}.");
 
@@ -49,7 +46,7 @@ static class VisualBehaviorHelpers
 		return Task.FromResult(Contains(pixels, expected) && unexpected.All(color => !Contains(pixels, color)));
 	}
 
-	// The same tolerance as the other pixel assertions (one step per channel).
+	// The same tolerance as the other pixel assertions.
 	static bool Contains(int[] pixels, Color color)
 	{
 		var expected = color.ToPlatform();
@@ -81,10 +78,7 @@ static class VisualBehaviorHelpers
 	}
 #endif
 
-	/// <summary>
-	/// Fails if the condition becomes true within the observation window. Use it only for "nothing happens" assertions, which have
-	/// no event to wait for: every positive wait uses AssertEventually.
-	/// </summary>
+	// Only for "nothing happens" assertions, which have no event to wait for: every positive wait uses AssertEventually.
 	public static async Task AssertStaysFalseAsync(Func<bool> condition, string message, int windowMilliseconds = 300, int intervalMilliseconds = 25)
 	{
 		for (var elapsed = 0; elapsed <= windowMilliseconds; elapsed += intervalMilliseconds)
@@ -98,21 +92,17 @@ static class VisualBehaviorHelpers
 		}
 	}
 
-	// A forced collection frees what nothing holds at once; the leak tests of the behaviors give it this long only so that a busy machine does not
-	// turn into a failure. What something holds stays alive whatever the time, so the wait hides no leak.
+	// A forced collection frees what nothing holds at once; the timeout only keeps a busy machine from turning into a failure. What something
+	// holds stays alive whatever the time, so the wait hides no leak.
 	static readonly TimeSpan collectionTimeout = TimeSpan.FromSeconds(15);
 
-	/// <summary>
-	/// <see cref="AssertionExtensions.WaitForGC"/> for the leak tests of the behaviors, hardened against two things that are no leak.
-	/// <list type="bullet">
-	/// <item>The Mono runtime of Android, iOS and Mac Catalyst scans the stacks of its threads conservatively, and the stack of the collecting thread
-	/// includes the frames of the collector itself. On iOS the whole test runs on the main thread, which hosts the views and then runs the
-	/// collections, so a stale slot left there by the code that touched a view can keep that one object alive (seen once: the Image survived 40
-	/// collections, its behavior and its native view did not). So every round collects on a thread of its own, whose stack has never held a view.</item>
-	/// <item>On Android the managed peer of a native view lives until the Java side was collected too, which takes a moment. The rounds go on for
-	/// <see cref="collectionTimeout"/>, and <see cref="AssertionExtensions.WaitForGC"/> then decides and names what is still alive.</item>
-	/// </list>
-	/// </summary>
+	// AssertionExtensions.WaitForGC, hardened against two things that are no leak:
+	// - The Mono runtime of Android, iOS and Mac Catalyst scans the stacks of its threads conservatively, and the stack of the collecting thread
+	//   includes the frames of the collector itself. On iOS the whole test runs on the main thread, which hosts the views and then runs the
+	//   collections, so a stale slot left there by the code that touched a view can keep that one object alive (seen once: the Image survived 40
+	//   collections, its behavior and its native view did not). So every round collects on a thread of its own, whose stack has never held a view.
+	// - On Android the managed peer of a native view lives until the Java side was collected too, which takes a moment. The rounds go on for
+	//   collectionTimeout, and AssertionExtensions.WaitForGC then decides and names what is still alive.
 	public static async Task WaitForGCAsync(params WeakReference[] references)
 	{
 		Assert.NotEmpty(references);

@@ -9,10 +9,10 @@ using Bundle = Android.OS.Bundle;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android half of the shared tests. SpeechToTextImplementation and OfflineSpeechToTextImplementation contain the same listener, the
-// same intent builder and the same state machine, so every test here runs against both. The Android recognizer service calls the
-// listener back from the OS; a test cannot ask the OS for a recognition result without a microphone and consent, so the tests build
-// the toolkit's own listener with real android.os.Bundle objects, call it, and observe the events and CurrentState.
+// SpeechToTextImplementation and OfflineSpeechToTextImplementation contain the same listener, the same intent builder and the same
+// state machine, so every test here runs against both. A test cannot ask the OS for a recognition result without a microphone and
+// consent, so the tests build the toolkit's own listener with real android.os.Bundle objects and call it as the recognizer service
+// would.
 public abstract partial class SpeechImplementationTestsBase
 {
 	protected static Context AppContext => Android.App.Application.Context;
@@ -21,21 +21,16 @@ public abstract partial class SpeechImplementationTestsBase
 
 	protected partial object[] GetNativeObjects(ISpeechToText speech) => [];
 
-	/// <summary>
-	/// The options of a start that reaches the real recognition service of this device: the online class needs a recognition
-	/// service, the offline class Android 14, an on-device service and an installed language. Skips visibly when the device lacks it.
-	/// </summary>
+	/// <summary>The options of a start that reaches the real recognition service of this device. Skips visibly when the device cannot.</summary>
 	protected abstract Task<SpeechToTextOptions> GetStartableOptionsAsync();
 
 	protected static SpeechRecognizer? GetRecognizer(ISpeechToText speech) => SpeechInternals.GetField<SpeechRecognizer>(speech, "speechRecognizer");
 
 	protected static Java.Lang.Object? GetListener(ISpeechToText speech) => SpeechInternals.GetField<Java.Lang.Object>(speech, "listener");
 
-	/// <summary>
-	/// A recognizer that was started without RECORD_AUDIO answers on the main looper with ERROR_INSUFFICIENT_PERMISSIONS (measured:
-	/// 28 to 44 ms after the start). A recognizer that the toolkit stopped and destroyed never answers. This waits 2 s for an answer
-	/// that must not come.
-	/// </summary>
+	// A recognizer that was started without RECORD_AUDIO answers on the main looper with ERROR_INSUFFICIENT_PERMISSIONS (measured: 28 to
+	// 44 ms after the start). A recognizer that the toolkit stopped and destroyed never answers, so 2 s is long enough to see that no
+	// answer comes.
 	protected static async Task AssertNoLateRecognitionServiceAnswerAsync(SpeechEventRecorder events)
 	{
 		var answered = await AssertHelpers.Wait(() => events.Count > 0, 2000, 25);
@@ -43,12 +38,9 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.False(answered, $"The recognition service answered a session that the toolkit should have destroyed: {string.Join(", ", events.Entries)}");
 	}
 
-	/// <summary>
-	/// Starts on the main thread; the online start completes in that turn, the offline start after the service's answer to
-	/// CheckRecognitionSupport, also on the main thread. <paramref name="sameTurn"/> then runs in the same main-looper turn as the
-	/// toolkit's StartListening, before the service can answer. A start that does not complete within 30 s is a toolkit hang (every
-	/// caller first made sure that the service answers) and fails the test.
-	/// </summary>
+	// The online start completes in the turn of the call, the offline start after the service's answer to CheckRecognitionSupport; either
+	// way sameTurn runs in the same main-looper turn as the toolkit's StartListening, before the service can answer. A start that does not
+	// complete within 30 s is a toolkit hang (every caller first made sure that the service answers), so it fails the test.
 	protected static async Task<T> StartOnMainThreadAsync<T>(ISpeechToText speech, SpeechToTextOptions options, Func<Exception?, Task<T>> sameTurn, CancellationToken cancellationToken = default)
 	{
 		try
@@ -81,11 +73,6 @@ public abstract partial class SpeechImplementationTestsBase
 
 	readonly List<ISpeechToText> disconnectedSessions = [];
 
-	/// <summary>
-	/// Creates the implementation (<see cref="CreateSpeech"/>), runs <paramref name="start"/> (which starts a session that the real recognition
-	/// service answers) and waits for the session's first event. Repeats with a new implementation while the platform reports that it lost
-	/// the connection to the recognition service before the service answered (see <see cref="realSessionAttempts"/>).
-	/// </summary>
 	protected async Task<(ISpeechToText Speech, SpeechEventRecorder Events, T Started)> StartRealSessionAsync<T>(Func<ISpeechToText, SpeechEventRecorder, Task<T>> start)
 	{
 		var speech = CreateSpeech();
@@ -124,10 +111,7 @@ public abstract partial class SpeechImplementationTestsBase
 		}
 	}
 
-	/// <summary>
-	/// The toolkit's private recognition listener, wired the way <c>InternalStartListening</c> wires it (the three callbacks call the
-	/// implementation's own handlers). Dispose it at the end of the test.
-	/// </summary>
+	// The toolkit's private recognition listener, wired the way InternalStartListening wires it.
 	protected sealed class ListenerScope(ISpeechToText speech) : IDisposable
 	{
 		public IRecognitionListener Listener { get; } = CreateListener(speech);
@@ -189,7 +173,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// CurrentState's setter only raises StateChanged when the value changes.
 	[Fact]
 	public async Task RepeatedStateDoesNotRaiseStateChangedAgain()
 	{
@@ -222,7 +205,6 @@ public abstract partial class SpeechImplementationTestsBase
 
 		scope.Listener.OnError(error);
 
-		// The failure is reported first, then the state falls back to Stopped.
 		events.AssertEntries("StateChanged:Listening", $"Completed:Failed:Failure in speech engine - {error}", "StateChanged:Stopped");
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 		var result = Assert.Single(events.Results);
@@ -285,7 +267,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// SendResults returns without calling back when the bundle is missing, has no recognition list or the list is empty.
 	[Theory]
 	[InlineData(NoResultsKind.NullBundle, true)]
 	[InlineData(NoResultsKind.NullBundle, false)]
@@ -346,7 +327,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// StartListenAsync returns at once when CurrentState is not Stopped; without the guard it would start a second recognition.
 	[Fact]
 	public async Task StartListenAsyncIsIgnoredWhileListening()
 	{
@@ -397,7 +377,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The cancelled token is checked before anything is stopped, so a cancelled stop leaves the recognition running.
 	[Fact]
 	public async Task CancelledStopListenAsyncLeavesTheStateUntouched()
 	{
@@ -420,7 +399,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// DisposeAsync releases the Java peers: a disposed Java.Lang.Object has no JNI handle any more.
+	// A disposed Java.Lang.Object has no JNI handle any more.
 	[Fact]
 	public async Task DisposeAsyncDisposesTheRecognizerAndTheListener()
 	{
@@ -470,7 +449,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The .NET culture name is converted to the Java language tag and used for all three language extras.
 	[Theory]
 	[InlineData("en-US", "en-US")]
 	[InlineData("de-DE", "de-DE")]
@@ -491,7 +469,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// AutoStopSilenceTimeout defaults to TimeSpan.MaxValue, which means "never stop on silence": no silence extras are sent.
+	// The default AutoStopSilenceTimeout is TimeSpan.MaxValue, which means "never stop on silence".
 	[Fact]
 	public async Task SpeechIntentOmitsTheSilenceExtrasForTheDefaultTimeout()
 	{
@@ -505,7 +483,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// Any timeout below the default is sent, in milliseconds, as both "complete" and "possibly complete" silence length.
 	[Theory]
 	[InlineData(1, 1L)]
 	[InlineData(1500, 1500L)]
@@ -523,7 +500,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// One tick below TimeSpan.MaxValue is still "below the default", so it is sent (the double is truncated to whole milliseconds).
+	// One tick below TimeSpan.MaxValue is still below the default; the double is truncated to whole milliseconds.
 	[Fact]
 	public async Task SpeechIntentSendsTheLargestTimeoutBelowTheDefault()
 	{
@@ -537,15 +514,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// The real recognizer of the device (started without RECORD_AUDIO, so nothing is recorded).
-	// ---------------------------------------------------------------------------------------------------------------------------
-
-	// The start hands three callbacks to the listener it creates (Error, PartialResults, Results). Each test below drives the listener
-	// that a real start created and checks that its callback reaches the right event. The test destroys the recognizer in the same
-	// main-thread turn, so the service cannot call the listener first (StopListenAsync would not do: the stopped session still reports
-	// its outcome), and the session stays the toolkit's running session. The offline start creates its own listener after the
-	// on-device CheckRecognitionSupport.
 	[Fact]
 	public async Task StartedListenerReportsResultsAsACompletedSuccess()
 	{
@@ -606,6 +574,8 @@ public abstract partial class SpeechImplementationTestsBase
 		var listener = await StartOnMainThreadAsync(speech, options, startException =>
 		{
 			Assert.Null(startException);
+			// Destroyed in the same main-thread turn as the start, so the service cannot call the listener first (StopListenAsync would not do:
+			// the stopped session still reports its outcome), and the session stays the toolkit's running session.
 			GetRecognizer(speech)!.Destroy();
 			return Task.FromResult((IRecognitionListener)GetListener(speech)!);
 		});
@@ -641,7 +611,6 @@ public abstract partial class SpeechImplementationTestsBase
 	// recognizer and of its listener in a message posted after those (RunAfterQueuedMainLooperMessagesAsync); disposed peers would end the app
 	// ("Unable to activate instance of type ...SpeechRecognitionListener"). The recognizer is destroyed first, as in StartAndDestroyTheRealRecognizer,
 	// so that the service never answers this session: only the message that the test queues runs.
-	// Catches: ReleaseRecognizer disposing the peers at once on Android 15 and later.
 	[Fact]
 	public async Task DisposeAsyncOnAndroid15AndLaterDisposesThePeersAfterTheMessagesThatAreAlreadyQueued()
 	{
@@ -657,7 +626,7 @@ public abstract partial class SpeechImplementationTestsBase
 			var recognizer = GetRecognizer(speech) ?? throw new InvalidOperationException("The started session has no recognizer.");
 			recognizer.Destroy();
 
-			// Stands for a callback of the recognition service that is queued before DisposeAsync runs
+			// Stands for a callback of the recognition service that is queued before DisposeAsync runs.
 			using var handler = new Android.OS.Handler(Android.OS.Looper.MainLooper!);
 			handler.Post(() => peersAliveWhenTheQueuedMessageRan.TrySetResult(listener.Handle != IntPtr.Zero && recognizer.Handle != IntPtr.Zero));
 
@@ -669,7 +638,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// DisposeAsync on the main thread completes without waiting for the main looper, so a caller that blocks the main thread on it (for
-	// example a synchronous Dispose that waits for DisposeAsync) does not deadlock. The wait is bounded to 3 s here.
+	// example a synchronous Dispose that waits for DisposeAsync) does not deadlock.
 	[Fact]
 	public async Task DisposeAsyncOnTheMainThreadCompletesWhileTheMainThreadBlocksOnIt()
 	{
@@ -690,7 +659,7 @@ public abstract partial class SpeechImplementationTestsBase
 	// SpeechRecognizer may only be used from the main thread. A stopped session reports its outcome there and then destroys its
 	// recognizer, so a DisposeAsync from another thread as soon as the outcome is raised destroyed the same recognizer at the same time:
 	// up to Android 11 the second unbindService threw IllegalArgumentException "Service not registered" (in 9 to 15 of 20 sessions on
-	// API 28). DisposeAsync releases the session on the main thread. Every exception of 20 sessions is listed.
+	// API 28). DisposeAsync releases the session on the main thread.
 	[Fact]
 	public async Task DisposeAsyncFromAnotherThreadRightAfterAStoppedSessionReportedItsOutcomeDoesNotThrow()
 	{
@@ -705,7 +674,7 @@ public abstract partial class SpeechImplementationTestsBase
 			EventHandler<SpeechToTextRecognitionResultCompletedEventArgs> onOutcome = (_, _) => outcome.TrySetResult();
 			speech.RecognitionResultCompleted += onOutcome;
 
-			// DisposeAsync runs on the thread pool as soon as the outcome is raised, while the main thread goes on in the listener's callback
+			// DisposeAsync runs on the thread pool as soon as the outcome is raised, while the main thread goes on in the listener's callback.
 			var disposed = outcome.Task.ContinueWith(_ => speech.DisposeAsync().AsTask(), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default).Unwrap();
 
 			await StartOnMainThreadAsync(speech, options, async startException =>
@@ -718,7 +687,7 @@ public abstract partial class SpeechImplementationTestsBase
 			var exception = await Record.ExceptionAsync(() => disposed.WaitAsync(TimeSpan.FromSeconds(10)));
 			if (exception is TimeoutException)
 			{
-				// The service did not answer this session: it is not the case under test
+				// The service did not answer this session: it is not the case under test.
 				await speech.DisposeAsync();
 			}
 			else
@@ -787,9 +756,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// After StopListenAsync the session's listener reports the outcome of the session once (a later onError, for example the service's
-	// ERROR_CLIENT answer to the stop, or a later onResults is not reported) and no speech boundaries: CurrentState stays Stopped. The
-	// recognizer is destroyed by the test, so only the callbacks that the test makes reach the listener.
+	// A later onError (for example the service's ERROR_CLIENT answer to the stop) or onResults is not reported.
 	[Fact]
 	public async Task StoppedSessionReportsOnlyItsFirstOutcomeAndNoSpeechBoundaries()
 	{
@@ -809,9 +776,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A start after StopListenAsync does not wait for the outcome of the stopped session: it cancels that session (whose recognizer is destroyed
-	// once the new session is in progress or ended), and what the stopped session's listener receives afterwards is not reported. Both
-	// recognizers are destroyed by the test, so only the callbacks that the test makes reach a listener.
+	// A start after StopListenAsync cancels the stopped session instead of waiting for its outcome. Both recognizers are destroyed by the
+	// test, so only the callbacks that the test makes reach a listener.
 	[Fact]
 	public async Task StartListenAsyncAfterStopListenAsyncReplacesTheStoppedSession()
 	{
@@ -844,7 +810,6 @@ public abstract partial class SpeechImplementationTestsBase
 	// thread before it releases its recognizer: the ended session must release only its own recognizer, not the one of the session that the app
 	// just started. The new session uses the real recognizer, which the recognition service answers (ERROR_INSUFFICIENT_PERMISSIONS without
 	// RECORD_AUDIO): that answer only arrives while its recognizer was not destroyed.
-	// Catches: OnRecognitionSessionEnded releasing the current recognizer for a session that is not the current one.
 	[Fact]
 	public async Task StartListenAsyncFromTheCompletedEventOfAnEndedSessionKeepsTheNewSession()
 	{
@@ -865,15 +830,13 @@ public abstract partial class SpeechImplementationTestsBase
 
 	const int immediateRestarts = 20;
 
-	// An app that restarts the recognition at once, with StopListenAsync and StartListenAsync in one turn or from RecognitionResultCompleted (continuous
-	// listening), gets a new session that the recognition service answers. Android shares one connection to the recognition service between an app's
-	// recognizers and unbinds it when a recognizer is destroyed while no session is in progress on it, also under a recognizer that has just connected to
-	// it. Destroying the replaced recognizer right before the new session connected made about half of these restarts fail on API 36: the on-device start
-	// threw "11" (ERROR_SERVER_DISCONNECTED) or never completed, or the new session ended with ERROR_SERVER_DISCONNECTED. Without RECORD_AUDIO the service
-	// answers every session at once with ERROR_INSUFFICIENT_PERMISSIONS, which ends it, so a restart from that answer also needs the ended session's
-	// recognizer to stay until the new session is in progress or ended. The race does not hit every restart, so the test restarts 20 times.
-	// Catches: StartListenAsync destroying the recognizer of the session that it replaces, or an ended session destroying the recognizers of the sessions
-	// that it replaced while the app starts a new session from its outcome, before the new session is in progress or ended.
+	// Android shares one connection to the recognition service between an app's recognizers and unbinds it when a recognizer is
+	// destroyed while no session is in progress on it, also under a recognizer that has just connected to it. Destroying the replaced
+	// recognizer right before the new session connected made about half of the immediate restarts fail on API 36: the on-device start
+	// threw "11" (ERROR_SERVER_DISCONNECTED) or never completed, or the new session ended with ERROR_SERVER_DISCONNECTED. Without
+	// RECORD_AUDIO the service answers every session at once with ERROR_INSUFFICIENT_PERMISSIONS, which ends it, so a restart from that
+	// answer also needs the ended session's recognizer to stay until the new session is in progress or ended. The race does not hit every
+	// restart, so the test restarts 20 times.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -908,7 +871,7 @@ public abstract partial class SpeechImplementationTestsBase
 			{
 				for (var restart = 1; restart <= immediateRestarts; restart++)
 				{
-					// The stopped session is replaced before the service answered it, so it reports nothing
+					// The stopped session is replaced before the service answered it, so it reports nothing.
 					var restartException = await InvokeOnMainThreadAsync(async () =>
 					{
 						await speech.StartListenAsync(options);
@@ -930,7 +893,6 @@ public abstract partial class SpeechImplementationTestsBase
 			await speech.DisposeAsync();
 		}
 
-		// Each answer restarts once more, on the main thread, until the last restart was answered
 		void RestartFromTheAnswer(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
 		{
 			if (restarts.Count < immediateRestarts)
@@ -940,10 +902,8 @@ public abstract partial class SpeechImplementationTestsBase
 		}
 	}
 
-	/// <summary>
-	/// Calls StopListenAsync on a new thread (never the main thread) and blocks the caller until it returned. Called from the
-	/// main-thread turn of a start, it stops from another thread before the recognition service can answer that start.
-	/// </summary>
+	// Blocks until the stop returned: called from the main-thread turn of a start, it stops from another thread before the recognition
+	// service can answer that start.
 	static Exception? StopListenAsyncOnAnotherThread(ISpeechToText speech)
 	{
 		Exception? exception = null;
@@ -966,11 +926,11 @@ public abstract partial class SpeechImplementationTestsBase
 
 	// android.speech.SpeechRecognizer may only be used from the main thread, and StopListenAsync does not marshal (StartListenAsync
 	// neither, see StartListenAsyncFromABackgroundThreadFailsAndStaysStopped): StopListening throws the platform's RuntimeException
-	// before Destroy() and before CurrentState is set, so the call stops nothing (see the next test). The implementation stays
-	// usable: the main-thread stop afterwards succeeds. Pinned platform behaviour: the Apple implementation hops to the main thread
-	// for its timer and stops on any thread; whether the toolkit should marshal here is not decided by its contract. The stop runs on
-	// another thread while the main thread is still in the turn of the start, so the session cannot have reported its outcome yet (a
-	// session that did has nothing left to stop: see StopListenAsyncAfterTheSessionEndedDoesNothingOnAnyThread).
+	// before Destroy() and before CurrentState is set, so the call stops nothing (see
+	// StopListenAsyncFromABackgroundThreadLeavesTheRecognitionRunning). Pinned platform behaviour: the Apple implementation hops to the
+	// main thread for its timer and stops on any thread; whether the toolkit should marshal here is not decided by its contract. The stop
+	// runs on another thread while the main thread is still in the turn of the start, so the session cannot have reported its outcome yet
+	// (a session that did has nothing left to stop: see StopListenAsyncAfterTheSessionEndedDoesNothingOnAnyThread).
 	[Fact]
 	public async Task StopListenAsyncFromABackgroundThreadFailsWithThePlatformMainThreadException()
 	{
@@ -993,10 +953,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A session that reported its outcome is over: StopListenAsync then has nothing to stop and makes no SpeechRecognizer call, so it
-	// neither throws on another thread nor raises StateChanged (the outcome returned CurrentState to Stopped, also after onResults). The
-	// recognizer is destroyed by the test, so only the callbacks that the test makes reach the listener; they run on the main thread,
-	// where the platform calls them.
+	// A session that reported its outcome is over: StopListenAsync then has nothing to stop and makes no SpeechRecognizer call. The
+	// callbacks run on the main thread, where the platform calls them.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -1033,9 +991,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A session that ends with its results is over, as one that ends with an error: CurrentState returns to Stopped, so the next
-	// StartListenAsync starts a new session (the start guard ignored it while CurrentState stayed at Silence, so every recognition
-	// needed a StopListenAsync before the next start).
+	// The results used to leave CurrentState at Silence, so the start guard ignored the next start and every recognition needed a
+	// StopListenAsync before it.
 	[Fact]
 	public async Task StartListenAsyncAfterASessionEndedWithResultsStartsANewSession()
 	{
@@ -1067,9 +1024,9 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The failed stop leaves the recognition running: the started service still answers afterwards (without RECORD_AUDIO with an
-	// engine error, on the main looper), and the toolkit reports it. The stop runs on another thread while the main thread is still in
-	// the turn of the start, so the answer cannot have arrived before the stop failed. A stop from the main thread then ends it.
+	// The started service still answers after the failed stop (without RECORD_AUDIO with an engine error, on the main looper), and the
+	// toolkit reports it. The stop runs on another thread while the main thread is still in the turn of the start, so the answer cannot
+	// have arrived before the stop failed.
 	[Fact]
 	public async Task StopListenAsyncFromABackgroundThreadLeavesTheRecognitionRunning()
 	{
@@ -1093,7 +1050,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A person grants the microphone and says something: the recognizer reports the speech boundaries and the transcription.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task StartListenAsyncRecognizesWhatAPersonSays()
@@ -1125,7 +1081,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// RequestPermissions asks Essentials for the microphone. Essentials only shows its dialog on the main thread and throws a
+	// Essentials, which RequestPermissions asks for the microphone, only shows its dialog on the main thread and throws a
 	// PermissionException anywhere else, before any dialog is shown.
 	[Fact]
 	public async Task RequestPermissionsFromABackgroundThreadThrowsWhenTheMicrophoneIsNotGranted()
@@ -1151,7 +1107,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A person has to answer the system dialog: run it from the visual runner.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task RequestPermissionsReturnsTheDecisionOfTheUser()

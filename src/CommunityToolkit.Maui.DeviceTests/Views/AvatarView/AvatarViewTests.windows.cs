@@ -7,17 +7,15 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: the avatar is a ContentPanel. Its children are the border path that MAUI's BorderHandler always adds first (a
-// Microsoft.UI.Xaml.Shapes.Path, MAUI 10.0.90 BorderHandler.Windows UpdateContent) and the content: an Image or a TextBlock, each inside a
-// WrapperView (MAUI wraps every AspectFill image, and every label whose VerticalTextAlignment is not Start). Without a stroke shape the
-// toolkit clips the image with a RoundRectangleGeometry whose origin is (0, 0), the image's origin, as on Android.
+// MAUI's BorderHandler always adds the border path first (a Microsoft.UI.Xaml.Shapes.Path, MAUI 10.0.90 BorderHandler.Windows UpdateContent),
+// and wraps every AspectFill image and every label whose VerticalTextAlignment is not Start in a WrapperView.
 public partial class AvatarViewTests
 {
 	static bool BuildsFallbackClipGeometry => true;
 
-	// The size the native image was laid out with: the layout slot that its parent (the WrapperView, whose Width and Height carry the size
-	// request) arranged it in. The rendered size (ActualWidth/ActualHeight) is no oracle: a 16x16 bitmap with Stretch UniformToFill renders
-	// square in a slot that is not, and the layout clip cuts the part outside the slot.
+	// The layout slot that the parent (the WrapperView, whose Width and Height carry the size request) arranged the image in, not its rendered
+	// size (ActualWidth/ActualHeight): a 16x16 bitmap with Stretch UniformToFill renders square in a slot that is not, and the layout clip cuts
+	// the part outside the slot.
 	static Size NativeSizeOf(IView view)
 	{
 		var platformView = (FrameworkElement)view.Handler!.PlatformView!;
@@ -27,7 +25,6 @@ public partial class AvatarViewTests
 
 	static NativeContent NativeContentOf(IPlatformViewHandler handler)
 	{
-		// The border path is not content: the content is the other child.
 		var child = ((Panel)handler.PlatformView!).Children.FirstOrDefault(static element => element is not Microsoft.UI.Xaml.Shapes.Path);
 		if (child is WrapperView wrapper)
 		{

@@ -18,7 +18,7 @@ public partial class TouchBehavior
 {
 	static readonly MColor defaultNativeAnimationColor = MColor.FromRgba(128, 128, 128, 64);
 
-	// The press and release handling that a Button gets in the place of its handler's own, once per platform view (see ButtonTouchHandler)
+	// Once per platform view: the handler stays on the view when the behavior is removed (see AddButtonTouchHandler)
 	static readonly ConditionalWeakTable<AView, ButtonTouchHandler> buttonTouchHandlers = new();
 
 	bool isHoverSupported;
@@ -158,12 +158,11 @@ public partial class TouchBehavior
 		accessibilityManager = null;
 	}
 
-	// The click listener carries the gesture in touch exploration (TalkBack) mode only, where the touch listener ignores raw touches; otherwise
-	// the view keeps its click listener to itself. Android has one click listener per view, and the behavior's (the shared .NET Click event)
-	// would take the place of a listener the view's handler installed for good. So in touch exploration mode the behavior takes the slot
-	// only from a view without a click listener of its own, or shares it with another TouchBehavior of the element. A view with one (a
-	// Button, an ImageButton, a Picker, a DatePicker, a TimePicker) keeps it, and a Button or ImageButton completes the gesture through
-	// Clicked then (OnElementClicked); TalkBack's click on another such view is the view's alone.
+	// The click listener carries the gesture in touch exploration (TalkBack) mode only, where the touch listener ignores raw touches. Android has
+	// one click listener per view, and the behavior's (the shared .NET Click event) would take the place of a listener the view's handler
+	// installed for good, so the behavior takes the slot only from a view without a click listener of its own, or shares it with another
+	// TouchBehavior of the element. A view with one (a Button, an ImageButton, a Picker, a DatePicker, a TimePicker) keeps it, and a Button or
+	// ImageButton completes the gesture through Clicked then (OnElementClicked); TalkBack's click on another such view is the view's alone.
 	void UpdateClickHandler()
 	{
 		if (view is null || !view.IsPeerAlive())
@@ -431,8 +430,7 @@ public partial class TouchBehavior
 
 	partial void PlatformDispose()
 	{
-		// A disposed behavior takes no more input: its listeners leave the view (unless somebody else released the view's wrapper, through
-		// which they could be removed).
+		// Somebody else may have released the view's wrapper, through which the listeners are removed.
 		if (view is not null && view.IsPeerAlive())
 		{
 			RemoveListeners(view);

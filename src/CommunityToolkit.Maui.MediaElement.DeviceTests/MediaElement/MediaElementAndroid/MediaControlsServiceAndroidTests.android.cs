@@ -18,11 +18,8 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaControlsService (MediaControlsService.android.cs, BoundServiceBinder.android.cs) and the service glue of MediaManager
-// (StartService, StopService, UpdateNotifications, the TaskRemoved subscription). With the foreground service enabled the manager
-// starts and binds the real service; the tests read what the system reports about it (ActivityManager, NotificationManager) and call the
-// service's public lifecycle methods the way the system would. The notification and foreground-type branches depend on the Android
-// version: each device checks the branch that its version takes (the CI matrix runs API 36 and API 28).
+// The notification and foreground-type branches depend on the Android version: each device checks the branch that its version takes (the CI
+// matrix runs API 36 and API 28).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
@@ -30,12 +27,12 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	static readonly FieldInfo playerNotificationManagerField = typeof(MediaControlsService).GetField("playerNotificationManager", BindingFlags.Instance | BindingFlags.NonPublic)!;
 	static readonly FieldInfo notificationBuilderField = typeof(MediaControlsService).GetField("notificationBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-	// Hosts the element and waits until its MediaManager is bound to the service (the system connects it on a later turn of the UI thread).
 	async Task HostBoundAsync(MediaElement mediaElement, Func<AndroidMediaElementProbeHandler, BoundServiceConnection, Task> test)
 	{
 		await HostAsync(mediaElement, async handler =>
 		{
 			var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+			// The system connects the manager to the service on a later turn of the UI thread.
 			await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
 			await test(handler, connection);
 		});
@@ -158,8 +155,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Before Android 13 the PlayerNotificationManager posts its own notification under the same id and replaces the one StartForegroundServices
-	// built: both have the content intent (CreateActivityPendingIntent), so tapping the media notification opens the app on every version.
+	// Before Android 13 the PlayerNotificationManager replaces the notification that StartForegroundServices built with its own, under the same
+	// id: both have the content intent (CreateActivityPendingIntent), so whichever one the test reads opens the app.
 	[Fact]
 	public async Task NotificationOpensTheAppWhenTapped()
 	{
@@ -236,7 +233,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			Assert.Same(handler.Manager, connection.Activity);
 			Assert.Same(service, connection.Binder.Service);
 			Assert.True(FindMediaControlsService()!.Foreground);
-			// A source loaded while the service runs refreshes its notification (PlatformUpdateSource calls UpdateNotifications).
 			await WaitUntilAsync(() => GetServiceNotificationPostTime() > postedBefore, "Loading the second source did not post the notification again.");
 		});
 	}
@@ -255,14 +251,13 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			connection = serviceConnection;
 			await WaitForForegroundNotificationAsync();
 		});
-		// HostAsync disconnected the handler, which disposed the manager: it stops and unbinds the service.
+		// HostAsync disconnected the handler, which disposed the manager.
 
 		await WaitForMediaControlsServiceToStopAsync();
 
 		Assert.Null(FindMediaControlsService());
 		Assert.Empty(GetActiveNotifications());
 		Assert.Null(GetServiceConnection(manager!));
-		// The connection is a Java peer: disposing it released its JNI reference.
 		Assert.Equal(IntPtr.Zero, connection!.Handle);
 	}
 
@@ -292,9 +287,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Before Android 13 the service's notification is the legacy PlayerNotificationManager's, and its Play action (a broadcast to that manager's
-	// receiver) controls the player. When the task is removed the service detaches the manager from the player (SetPlayer(null)): the same tap,
-	// which reached the player before, no longer does.
+	// The Play action of the legacy PlayerNotificationManager (a broadcast to that manager's receiver) controls the player while the manager is
+	// attached to it, so sending it shows whether OnTaskRemoved detached the manager (SetPlayer(null)).
 	[Fact]
 	public async Task TaskRemovedDetachesTheLegacyNotificationFromThePlayer()
 	{
@@ -320,9 +314,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// OnTaskRemoved and OnDestroy cancel every notification of the app (NotificationManager.CancelAll). The foreground service's own notification
-	// cannot be cancelled by the app while the service runs, so a notification that the test posts shows whether the call was made. From
-	// Android 13 the app needs the POST_NOTIFICATIONS permission to post it: the headless runner grants it through the test instrumentation.
 	[Fact]
 	public async Task TaskRemovedCancelsEveryNotificationOfTheApp()
 	{
@@ -374,9 +365,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		}
 	}
 
-	// Before Android 13 OnDestroy also takes the service out of the foreground itself (StopForeground) and detaches the legacy PlayerNotificationManager
-	// from the player. The system calls OnDestroy only after it stopped the service, when neither can be seen any more, so the test calls it on the
-	// running service, which the manager is still bound to: the binding keeps the service alive through OnDestroy's StopSelf.
+	// The system calls OnDestroy (which leaves the foreground and detaches the legacy PlayerNotificationManager) only after it stopped the service,
+	// when neither effect can be seen any more, so the test calls it on the running service, which the manager is still bound to: the binding
+	// keeps the service alive through OnDestroy's StopSelf.
 	[Fact]
 	public async Task DestroyingTheServiceEndsItsForegroundAndDetachesTheLegacyNotification()
 	{
@@ -412,8 +403,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// StartForegroundServices (run by OnCreate and OnRebind) asks the base context for the system's NotificationManager. A service object that
-	// gets a base context whose notification service is something else reaches the guard.
 	[Fact]
 	public void ServiceWhoseContextHasNoNotificationManagerFailsToStart()
 	{
@@ -434,11 +423,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		Player,
 	}
 
-	// UpdateNotifications only talks to the service while the manager is bound to it, has the foreground service switched on, and has a media
-	// session and a player to show. The notification is taken away first (a plain StopForeground), so that only a post by the update under test
-	// could bring it back; the same update with everything in place afterwards shows that the wait for "nothing" is not vacuous. Before Android 13
-	// the legacy PlayerNotificationManager also posts the notification, on every playback event of the player: the source is loaded first, and the
-	// legacy manager is detached from the player for the wait (the update with everything in place attaches it again).
+	// The notification is taken away first (a plain StopForeground), so that only a post by the update under test could bring it back; the same
+	// update with everything in place afterwards shows that the wait for "nothing" is not vacuous. The source is loaded first and the legacy
+	// manager is detached for the wait: before Android 13 it posts the notification on every playback event of the player.
 	[Theory]
 	[InlineData(MissingPiece.ForegroundServiceFlag)]
 	[InlineData(MissingPiece.Session)]
@@ -481,10 +468,10 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The first guard of UpdateNotifications also returns when the binder of the connection has no service. The system only ever hands the manager
-	// the binder that MediaControlsService.OnBind created with the service itself, so only internal misuse gets there: a BoundServiceBinder made
-	// without a service and given to the connection's OnServiceConnected, which keeps it and then fails at Binder.Service.TaskRemoved. The manager
-	// has everything else that UpdateNotifications needs, so without this guard the call would go to the missing service and throw.
+	// The system only ever hands the manager the binder that MediaControlsService.OnBind created with the service itself, so only internal misuse
+	// reaches the guard for a binder without a service: a BoundServiceBinder made without one and given to the connection's OnServiceConnected,
+	// which keeps it and then fails at Binder.Service.TaskRemoved. The manager has everything else that UpdateNotifications needs, so without the
+	// guard the call would go to the missing service and throw.
 	[Fact]
 	public async Task UpdatingNotificationsDoesNothingWhenTheConnectedBinderHasNoService()
 	{
@@ -664,8 +651,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			("BoundServiceConnection", connectionReference), ("ExoPlayer", playerReference));
 	}
 
-	// The service forgets only the session of the element that disconnects: the notification of the element that posted it last keeps its media
-	// style (the service builds its next foreground notification from the same builder, for example when a client binds again).
+	// The service builds its next foreground notification from the same builder (for example when a client binds again), so the builder has to
+	// keep the media style of the element that posted the notification.
 	[Fact]
 	public async Task ElementDisconnectingKeepsTheMediaStyleOfTheElementThatPostedTheNotification()
 	{
@@ -687,9 +674,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	// Before Android 13 the notification is the legacy PlayerNotificationManager's, which controls the player of the element that updated the
-	// notifications last. An element that disconnects must leave it on that player when it is another element's: the Play action of the
-	// notification still reaches the player of the element that is still bound.
-	// Catches: ForgetSession detaching the legacy notification from the player of another element.
+	// notifications last: ForgetSession of another element must not detach it from that player.
 	[Fact]
 	public async Task ElementDisconnectingLeavesTheLegacyNotificationOnThePlayerOfTheElementThatPostedIt()
 	{
@@ -716,7 +701,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Creates the element's handler (without a window) and waits until its MediaManager is bound to the service.
 	async Task<BoundServiceConnection> ConnectToTheServiceAsync(MediaElement mediaElement)
 	{
 		var connection = await InvokeOnMainThreadAsync(() =>
@@ -800,9 +784,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			CancelSentinelNotification();
 		}
 
-		// Its managed object is still around, which is when Dispose is safe. OnDestroy runs on the UI thread and was running when the notification
-		// disappeared, so a Dispose posted to the UI thread runs after it returned. Disposing earlier crashes the app: OnDestroy's StopSelf then
-		// throws ObjectDisposedException.
+		// OnDestroy runs on the UI thread and was running when the notification disappeared, so a Dispose posted to the UI thread runs after it
+		// returned. Disposing earlier crashes the app: OnDestroy's StopSelf then throws ObjectDisposedException.
 		Assert.NotNull(service);
 		await InvokeOnMainThreadAsync(service.Dispose);
 
@@ -812,7 +795,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		var again = Record.Exception(service.Dispose);
 		Assert.Null(again);
 
-		// Without a NotificationManager the service cannot update its notification.
 		MediaSession session = null!;
 		IExoPlayer player = null!;
 		var exception = Assert.Throws<ArgumentNullException>(() => service.UpdateNotifications(session, player));
@@ -882,9 +864,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		Assert.Null(playerNotificationManagerField.GetValue(service));
 	}
 
-	// OnDestroy and Dispose leave the foreground before Android 13 (StopForeground), which an object that the system never attached cannot do:
-	// it has no ActivityManager and the call throws a NullPointerException. The real service covers that branch (the two tests that follow
-	// the system destroying it, DisposingTheHandlerStopsTheServiceAndRemovesItsNotification and the dispose test above).
+	// Before Android 13 OnDestroy and Dispose call StopForeground, which throws a NullPointerException on a service object that the system never
+	// attached: it has no ActivityManager. The real service covers that branch (DisposingTheHandlerStopsTheServiceAndRemovesItsNotification and
+	// ServiceKeepsItsObjectsUntilItIsDisposedAndDisposingAfterTheSystemDestroyedItIsSafe).
 	[Fact]
 	public void DestroyingAServiceThatNeverStartedDoesNothingOnAndroid13AndLater()
 	{
@@ -942,7 +924,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			"Needs the POST_NOTIFICATIONS permission, which only the headless runner can grant without a person (Android 13 and later).");
 	}
 
-	// A notification that is not the foreground service's, for CancelAll to cancel.
+	// The foreground service's own notification cannot be cancelled by the app while the service runs, so a notification of the test shows
+	// whether CancelAll was called.
 	static async Task PostSentinelNotificationAsync()
 	{
 		var context = Microsoft.Maui.ApplicationModel.Platform.AppContext;
@@ -969,8 +952,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	static void CancelSentinelNotification() =>
 		NotificationManagerCompat.From(Microsoft.Maui.ApplicationModel.Platform.AppContext)!.Cancel(sentinelNotificationId);
 
-	// The Play action of the legacy PlayerNotificationManager's notification (before Android 13), once the manager has shown it for the paused
-	// player. Sending its PendingIntent is what a tap on the action does.
+	// The legacy PlayerNotificationManager shows the Play action while the player is paused. Sending its PendingIntent is what a tap on the
+	// action does.
 	static async Task<PendingIntent> GetLegacyPlayActionAsync()
 	{
 		var context = Microsoft.Maui.ApplicationModel.Platform.AppContext;
@@ -981,7 +964,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		return play!.ActionIntent ?? throw new InvalidOperationException("The Play action has no intent.");
 	}
 
-	// Removes one of the things UpdateNotifications needs from the manager (private state, set through reflection) and returns the way back.
 	static Action TakeAway(MediaManager manager, MissingPiece missing)
 	{
 		const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -1006,7 +988,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		}
 	}
 
-	// A context whose system services are strings: GetSystemService(Context.NotificationService) is not a NotificationManager.
 	sealed class ContextWithoutNotificationManager(Context baseContext) : ContextWrapper(baseContext)
 	{
 		public override Java.Lang.Object? GetSystemService(string? name) => new Java.Lang.String("not a NotificationManager");

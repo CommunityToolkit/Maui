@@ -3,9 +3,8 @@ using Windows.Media.Capture;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.windows.cs and the shared CameraManager.shared.cs members on Windows, on machines without a camera: the manager is
-// driven through its MediaPlayerElement and an uninitialized MediaCapture, and the state that a started camera would set up
-// (initialized preview) is seeded through WindowsCameraManagerAccessor.
+// These tests run without a camera, so the state that a started camera would set up (initialized preview) is seeded through
+// WindowsCameraManagerAccessor.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerWindowsTests : CameraHandlerTestBase
@@ -141,7 +140,6 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 			Assert.Null(created.Access.MediaCapture);
 			Assert.False(created.Access.IsInitialized);
 
-			// The second Dispose finds nothing left to release.
 			Assert.Null(Record.Exception(created.Manager.Dispose));
 			Assert.Null(mediaElement.Source);
 			Assert.Null(created.Access.MediaCapture);
@@ -161,7 +159,6 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 		{
 			using var scope = new WindowsCameraManagerScope(MauiContext);
 			// A MediaCapture that was never initialized: past the isInitialized guard the manager would read its VideoDeviceController.
-			// CameraManagerWindowsCaptureTests.UpdateFlashModeIsIgnoredWhileTheCameraIsNotInitialized checks the same guard on a real camera.
 			var mediaCapture = WindowsCameraEnvironment.CreateMediaCapture();
 			scope.Access.MediaCapture = mediaCapture;
 
@@ -336,7 +333,7 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 			scope.Access.MediaCapture = WindowsCameraEnvironment.CreateMediaCapture();
 			scope.Access.IsInitialized = true;
 
-			// With no photo size to choose from the manager must not touch the VideoDeviceController of the (uninitialized) capture.
+			// The capture is not initialized, so an access to its VideoDeviceController would throw.
 			await scope.Manager.UpdateCaptureResolution(new Size(640, 480), CancellationToken.None);
 			await scope.Manager.UpdateCaptureResolution(Size.Zero, CancellationToken.None);
 
@@ -355,7 +352,7 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 			using var scope = new WindowsCameraManagerScope(MauiContext);
 			var recorder = new WindowsMediaRecorder(scope.View);
 
-			// How the manager reports the missing MediaCapture is TakePictureWithoutAMediaCaptureReportsTheFailure.
+			// How the manager reports the missing MediaCapture is not checked here: see TakePictureWithoutAMediaCaptureReportsTheFailure.
 			await Record.ExceptionAsync(async () => await scope.Manager.TakePicture(CancellationToken.None));
 
 			Assert.Empty(recorder.Captured);
@@ -404,8 +401,8 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 		});
 	}
 
-	// The capture fails (CapturePhotoToStreamAsync on a MediaCapture that was never initialized): TakePicture reports the reason through
-	// MediaCaptureFailed and returns, like on Android, iOS and Mac Catalyst, so that CaptureImage throws its CameraException
+	// When CapturePhotoToStreamAsync fails, TakePicture reports the reason through MediaCaptureFailed and returns, like on Android, iOS and
+	// Mac Catalyst, so that CaptureImage throws its CameraException
 	// (CameraViewHandlerWindowsTests.CaptureImageWhenTheCaptureFailsThrowsCameraExceptionWithTheReason).
 	[Fact]
 	public async Task TakePictureWithAnUninitializedMediaCaptureReportsTheFailure()
@@ -634,7 +631,6 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 			Assert.Null(mediaElement.Source);
 			Assert.Equal(0, scope.LoadedCount);
 
-			// The manager still counts as started: it tries to open the next camera (which fails the same way here) instead of ignoring it.
 			scope.View.SelectedCamera = next;
 			await scope.Manager.UpdateCurrentCamera(next, CancellationToken.None);
 

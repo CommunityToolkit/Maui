@@ -14,34 +14,23 @@ using WWebView2 = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Support for the Windows map tests (MapHandlerWindows, UseMauiCommunityToolkitMaps, the page messages).
-//
 // MapHandlerWindows renders https://www.bing.com/api/maps/mapcontrol in a WebView2, which needs the network and a Bing Maps key. The tests
 // run the handler's real map page without either: the network state is faked (Connectivity), and the request for the map control is
-// answered with BingControlStub, a small stand-in for the Bing control that logs everything the page asks the map to do and raises the
-// map events on request. So the C# the handler builds and the JavaScript of its page both run for real, and the tests read the effect
-// from the stub's log.
-
-/// <summary>Base of the Windows map tests: a test MauiApp with the Windows map handler, and a faked network.</summary>
+// answered with BingControlStub, a stand-in for the Bing control.
 public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 {
 	protected const string mapsTestKey = "device-test-maps-key";
 
 	protected static readonly TimeSpan pageTimeout = TimeSpan.FromSeconds(20);
 
-	/// <summary>The skip reason of every test that creates the handler's WebView2 (MapHandlerWindows.CreatePlatformView).</summary>
 	protected const string webView2RuntimeMissingReason = "The WebView2 Runtime is not installed, so the WebView2 of the map handler cannot be created.";
 
 	StaticPropertySnapshot? mapHandlerSnapshot;
 	ConnectivityScope? connectivityScope;
 
-	/// <summary>The network state the map handler sees. Offline until the test changes it, so no test loads the real Bing control.</summary>
+	// Offline until a test changes it, so that no test loads the real Bing control.
 	protected FakeConnectivity Network { get; } = new(NetworkAccess.None);
 
-	/// <summary>
-	/// Builds the test's MauiApp with UseMauiCommunityToolkitMaps(<paramref name="key"/>) and installs the faked network. The handler
-	/// registration, and with it the key, only run when MAUI creates the handler factory, so this resolves it.
-	/// </summary>
 	protected void SetupMapBuilder(string? key = mapsTestKey, Action<MauiAppBuilder>? configureBuilder = null)
 	{
 		mapHandlerSnapshot = new StaticPropertySnapshot().Capture(typeof(MapHandlerWindows));
@@ -53,13 +42,13 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 			configureBuilder?.Invoke(builder);
 		});
 
+		// The handler registration, and with it the key, only run when MAUI creates the handler factory.
 		_ = MauiContext.Handlers;
 	}
 
-	/// <summary>
-	/// Skips the test (visibly) when the WebView2 Runtime is not installed; fails instead in a run that requires
-	/// <see cref="DeviceTestCapabilities.WebView2"/> (the Windows CI jobs), so that a runner without it cannot turn the map tests into skips.
-	/// </summary>
+	// Fails instead of skipping in a run that requires DeviceTestCapabilities.WebView2 (the Windows CI jobs), so that a runner without it
+	// cannot turn the map tests into skips. Tests that only create the handler need the Runtime too: its mappings call
+	// EnsureCoreWebView2Async from async void lambdas, which would fail on the UI thread without it.
 	protected static void RequireWebView2Runtime(string unavailableReason = webView2RuntimeMissingReason) =>
 		DeviceTestCapabilities.Require(DeviceTestCapabilities.WebView2, IsWebView2RuntimeInstalled(), unavailableReason);
 
@@ -75,16 +64,6 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// Hosts <paramref name="map"/> in a window with the handler's real WebView2, installs the Bing control stand-in and, unless
-	/// <paramref name="loadPage"/> is false, lets the handler load its map page (it only does so when the network is up, so the
-	/// network goes up now). <paramref name="body"/> runs on the UI thread once the page and its stub are ready.
-	/// </summary>
-	/// <remarks>
-	/// Bing loads its modules asynchronously (Microsoft.Maps.loadModule calls back once the module script has arrived), and so does the
-	/// stand-in: a page that was loaded here first gets the properties the handler sends when the page has loaded, and only then its
-	/// Traffic module (window.__loadModules). What the handler sends before the module is there reaches a page without a TrafficManager.
-	/// </remarks>
 	protected async Task WithMapPageAsync(Map map, Func<MapHandlerWindows, LoadedMapPage, Task> body, bool loadPage = true)
 	{
 		RequireWebView2Runtime();
@@ -106,7 +85,9 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 				Network.Change(NetworkAccess.Internet);
 				await pageLoaded;
 
-				// The handler sends the properties of the map when the page has loaded; the Traffic module arrives after them.
+				// Bing loads its modules asynchronously, and so does the stand-in: the handler sends the properties of the map when the page has
+				// loaded, and only then does the Traffic module arrive. What the handler sends before the module is there reaches a page without a
+				// TrafficManager.
 				await page.SettleAsync();
 				Assert.Equal(1, await page.LoadModulesAsync());
 			}
@@ -154,7 +135,6 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	/// <summary>The log entries of one kind (see BingControlStub), parsed.</summary>
 	protected static IReadOnlyList<JsonElement> Entries(IEnumerable<string> log, string kind)
 	{
 		var entries = new List<JsonElement>();
@@ -204,25 +184,19 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		return stream;
 	}
 
-	/// <summary>The map page that the handler loaded into its WebView2, and what the tests do with it.</summary>
 	public sealed class LoadedMapPage(MauiWebView webView)
 	{
 		public MauiWebView WebView { get; } = webView;
 
-		/// <summary>Whether the test closed the WebView2 (CloseWebView).</summary>
 		public bool IsClosed { get; private set; }
 
-		/// <summary>Closes the WebView2 of the handler (WebView2.Close), as WinUI does when the window of the map goes away.</summary>
+		// Mirrors what WinUI does when the window of the map goes away.
 		public void CloseWebView()
 		{
 			WebView.Close();
 			IsClosed = true;
 		}
 
-		/// <summary>
-		/// Completes when a page that was loaded from a string (the handler's map page) has loaded, including its body onload. A timeout names
-		/// the navigations that completed meanwhile.
-		/// </summary>
 		public async Task WaitForPageLoadedAsync()
 		{
 			var loaded = new TaskCompletionSource();
@@ -261,7 +235,7 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		static bool IsPageLoadedFromAString(string source) =>
 			source.StartsWith("data:", StringComparison.Ordinal) || source.Equals("about:blank", StringComparison.Ordinal);
 
-		/// <summary>Completes when the WebView2 delivered the next message of the page to the handlers that subscribed before this call.</summary>
+		// The handler subscribed to the WebView2 before this does, so once this completes it has handled everything it does without awaiting.
 		public Task WaitForNextMessageAsync()
 		{
 			var received = new TaskCompletionSource();
@@ -278,16 +252,10 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 
 		public async Task<string> ExecuteAsync(string script) => await WebView.ExecuteScriptAsync(script);
 
-		/// <summary>Runs a script that returns a string.</summary>
 		public async Task<string?> ExecuteForStringAsync(string script) => JsonSerializer.Deserialize<string>(await ExecuteAsync(script));
 
-		/// <summary>Empties the log of the page, e.g. to leave out what the page did while it loaded.</summary>
 		public async Task ClearLogAsync() => await ExecuteAsync("window.__mapLog.length = 0;");
 
-		/// <summary>
-		/// Posts <paramref name="message"/> (the source of a JavaScript value) to the handler the way the page does, and completes when the
-		/// handler has received it. The handler subscribed before this call, so it has handled everything it does without awaiting by then.
-		/// </summary>
 		public async Task PostMessageAsync(string message)
 		{
 			var delivered = WaitForNextMessageAsync();
@@ -295,7 +263,6 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 			await delivered;
 		}
 
-		/// <summary>Runs a script of the stub that raises a map event whose page handler posts a message, and completes once it was delivered.</summary>
 		public async Task RaiseMapEventAsync(string script)
 		{
 			var delivered = WaitForNextMessageAsync();
@@ -305,14 +272,12 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 
 		public async Task<int> ExecuteForCountAsync(string script) => int.Parse(await ExecuteAsync(script), System.Globalization.CultureInfo.InvariantCulture);
 
-		/// <summary>Lets the stand-in deliver the modules the page asked for (Bing loads them asynchronously); returns how many it delivered.</summary>
 		public Task<int> LoadModulesAsync() => ExecuteForCountAsync("window.__loadModules()");
 
-		/// <summary>What the page asked the map to do so far, one JSON object per entry, in the order it happened.</summary>
 		public async Task<IReadOnlyList<string>> GetLogAsync() =>
 			JsonSerializer.Deserialize<string[]>(await ExecuteAsync("window.__mapLog.map(function (entry) { return JSON.stringify(entry); })")) ?? [];
 
-		/// <summary>Waits until the log satisfies <paramref name="condition"/>, and returns the log. The handler runs its scripts in the background.</summary>
+		// Polls because the handler runs its scripts in the background.
 		public async Task<IReadOnlyList<string>> WaitForLogAsync(Func<IReadOnlyList<string>, bool> condition, string message)
 		{
 			IReadOnlyList<string> log = [];
@@ -333,7 +298,7 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 			return log;
 		}
 
-		/// <summary>Runs two scripts the way the handler does, behind everything it has queued, so that no call of the handler is in flight.</summary>
+		// Runs two scripts the way the handler does, behind everything it has queued, so that no call of the handler is in flight.
 		public async Task SettleAsync()
 		{
 			for (var i = 0; i < 2; i++)
@@ -356,7 +321,6 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	/// <summary>An IConnectivity whose network state, and the event, the test controls.</summary>
 	public sealed class FakeConnectivity(NetworkAccess networkAccess) : IConnectivity
 	{
 		EventHandler<ConnectivityChangedEventArgs>? connectivityChanged;
@@ -371,7 +335,6 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 			remove => connectivityChanged -= value;
 		}
 
-		/// <summary>How many handlers listen to the network state.</summary>
 		public int SubscriberCount => connectivityChanged?.GetInvocationList().Length ?? 0;
 
 		public void Change(NetworkAccess networkAccess)
@@ -381,10 +344,8 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// Replaces Connectivity.Current for the lifetime of the scope. .NET MAUI has no public way to do that (Connectivity.SetCurrent is
-	/// internal), so it goes through reflection and fails with a clear message if .NET MAUI changed.
-	/// </summary>
+	// .NET MAUI has no public way to replace Connectivity.Current (Connectivity.SetCurrent is internal), so this goes through reflection
+	// and fails with a clear message if .NET MAUI changed.
 	public sealed class ConnectivityScope : IDisposable
 	{
 		static readonly MethodInfo setCurrent = typeof(Connectivity).GetMethod("SetCurrent", BindingFlags.Static | BindingFlags.NonPublic)
@@ -404,13 +365,11 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 		public void Dispose() => setCurrent.Invoke(null, [previous]);
 	}
 
-	/// <summary>A map handler whose platform view is no WebView2, so its map mappings have no page to talk to.</summary>
 	protected sealed partial class NoWebViewMapHandler : MapHandlerWindows
 	{
 		protected override Microsoft.UI.Xaml.FrameworkElement CreatePlatformView() => new WGrid();
 	}
 
-	// A stand-in for the Bing control (see the comment at the top of the file).
 	public const string BingControlStub = """
 		// Stand-in for https://www.bing.com/api/maps/mapcontrol: the device tests serve this script instead of the real control, so the map page
 		// of MapHandlerWindows runs offline. It keeps a log of everything the page asks the map to do (window.__mapLog), lets a test raise

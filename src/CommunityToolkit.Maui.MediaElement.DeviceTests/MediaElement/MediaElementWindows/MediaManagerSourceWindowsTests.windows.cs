@@ -8,14 +8,10 @@ using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>A MediaSource subclass the Windows manager does not know.</summary>
 public sealed class WinMediaUnknownMediaSource : MediaSource;
 
-// Views/MediaManager.windows.cs, PlatformUpdateSource: every source type, blank/missing inputs and the reset that precedes them. Which arm
-// ran is read from what the platform did: the MediaOpened / MediaFailed events of the player, the request a loopback server saw, and the
-// Source of the player for the arms that set it through MediaPlayerElement.Source (the Set*Source methods of the player are not required
-// to be reflected by MediaPlayer.Source, so no test relies on that). Tests that need a real open skip visibly where Media Foundation cannot
-// decode the clip.
+// The Set*Source methods of the player are not required to be reflected by MediaPlayer.Source, so no test relies on that: the arms that use them
+// are read from what the platform did (the MediaOpened / MediaFailed events of the player, the request a loopback server saw).
 [Category(TestCategory.MediaManagerSourceWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerSourceWindowsTests : WinMediaTestBase
@@ -37,7 +33,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 
 		await UpdateSourceAsync(fixture);
 
-		// The platform opens the URI itself; the server answers 404, which is all it takes to see which URI was requested.
 		await WaitUntilAsync(() => server.Requests.Any(request => request.Path == "/clip.mp4?token=abc"), "The native player never requested the URI of the source.");
 		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "headerHttpClient"));
 		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "adaptiveMediaSource"));
@@ -99,8 +94,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Null(fixture.Player!.Source);
 	}
 
-	// A source that cannot be applied is reported like a source that cannot be played: MediaFailed with the message of the platform's exception,
-	// here the FileNotFoundException of StorageFile.GetFileFromPathAsync (the oracle opens the same path itself). UpdateSource does not throw it.
 	[Fact]
 	public async Task FileSourceWithMissingFileRaisesMediaFailedWithTheMessageOfTheFileNotFoundException()
 	{
@@ -119,9 +112,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Null(fixture.Player!.Source);
 	}
 
-	// A source that cannot be applied replaces the previous media, as a source that cannot be played does: the update reports MediaFailed, and the
-	// previous media, which was playing, has left the player. The previous media is a stream here: a stream source is set through
-	// MediaPlayerElement.Source, where the media of the player can be seen. A kind of MediaSource the platform does not know cannot be applied either.
 	[Theory]
 	[InlineData("a missing file")]
 	[InlineData("a kind of source the platform does not know")]
@@ -149,9 +139,8 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 			"The previous media is still in the player after MediaFailed.");
 	}
 
-	// The player reports the closing of the media that a failed source update took out of it on its own thread, so these states can arrive after
-	// the source mapping reported Failed: they must not overwrite it, and the next source update reports the native states again. The manager's
-	// handler gets the real session of a player without media.
+	// The player reports the closing of the media that a failed source update took out of it on its own thread, so these states can arrive after the
+	// source mapping reported Failed. The manager's handler gets the real session of a player without media.
 	[Fact]
 	public async Task NativeStatesAfterAFailedSourceUpdateDoNotOverwriteFailedUntilTheNextSourceUpdate()
 	{
@@ -171,7 +160,7 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 			WinMediaReflection.Invoke(fixture.Manager, "OnPlaybackSessionPlaybackStateChanged", session, null);
 			Assert.Equal(MediaElementState.Failed, fixture.View.CurrentState);
 
-			// A source without a path is enough: the update starts, and gives the player no media (it reports None itself).
+			// A source without a path is enough to run the update, which gives the player no media (it reports None itself).
 			fixture.View.Source = new FileMediaSource { Path = string.Empty };
 			await fixture.Manager.UpdateSource();
 
@@ -208,7 +197,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 
 		var resolved = (string)WinMediaReflection.InvokeStatic(typeof(CommunityToolkit.Maui.Core.Views.MediaManager), "GetFullAppPackageFilePath", path)!;
 
-		// Both separators become the platform separator, and the result lives in the folder AppPackageService reports.
 		Assert.Equal(Path.Combine([WinMediaPackaging.ExpectedPackageFilePath, .. path.Split('/', '\\')]), resolved, ignoreCase: true);
 	}
 
@@ -269,7 +257,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 
 		await OpenAsync(fixture.View, MediaSource.FromStream(stream), fixture.Manager);
 
-		// The stream is wrapped as a random-access stream and handed over with the MIME type sniffed from its first bytes (video/mp4).
 		var native = Assert.IsType<WinMediaSource>(fixture.Player!.Source);
 		Assert.Null(native.Uri);
 		await WaitUntilAsync(() => fixture.View.MediaHeight == WinMediaAssets.VideoHeight, "The opened stream never reported its natural height.");
@@ -306,7 +293,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Null(fixture.Player!.Source);
 	}
 
-	// A kind of MediaSource the platform does not know cannot be applied: MediaFailed, as on Android, with the message of the NotSupportedException.
 	[Fact]
 	public async Task UnknownSourceTypeRaisesMediaFailedAndSetsNoNativeSource()
 	{
@@ -323,8 +309,7 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Null(fixture.Player!.Source);
 	}
 
-	// A source that cannot be applied is also logged, as an error with the exception that says why (as the Android manager logs it), so that the
-	// stack trace of a missing file or a refused header is not lost.
+	// The exception is logged with the error, as the Android manager does, so that the stack trace of a missing file or a refused header is not lost.
 	[Fact]
 	public async Task SourceThatCannotBeAppliedIsLoggedAsAnErrorWithItsException()
 	{
@@ -344,8 +329,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.IsType<FileNotFoundException>(entry.Exception, exactMatch: false);
 	}
 
-	// Play() asks Windows to keep the screen on while ShouldKeepScreenOn is set. A source update that takes the media out of the player ends that
-	// request, as Pause() and Stop() do: without media, nothing plays.
 	[Theory]
 	[InlineData("no source")]
 	[InlineData("a source without data")]
@@ -374,7 +357,6 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		await InvokeOnMainThreadAsync(() => AssertDisplayRequest(fixture.Manager, active: false));
 	}
 
-	// A source without data loads nothing, like a null Source: the media that was playing stops and leaves the player, and the state is None.
 	[Theory]
 	[InlineData("a Uri source without a Uri")]
 	[InlineData("a File source with a blank path")]
@@ -401,9 +383,8 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Empty(failures);
 	}
 
-	// The update raises the events of the MediaElement (here PropertyChanged of the Duration it resets) before it gives the player the new source.
-	// An exception of the app's handler propagates from UpdateSource: it is not a failure of the source (no MediaFailed, no Failed state), and the
-	// update stops there, so the media that was playing stays in the player and its states are still reported.
+	// The update raises the events of the MediaElement (here PropertyChanged of the Duration it resets) before it gives the player the new source,
+	// so an exception of the app's handler stops the update in between; it is not a failure of the source (no MediaFailed, no Failed state).
 	[Fact]
 	public async Task ExceptionOfAnAppEventHandlerDuringTheSourceUpdatePropagatesAndLeavesThePlayingMedia()
 	{
@@ -481,13 +462,13 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(source), source, null),
 	};
 
-	// Opens the clip as a looping stream source (set through MediaPlayerElement.Source, where the media of the player can be seen) and plays it.
+	// A stream source is used because it is set through MediaPlayerElement.Source, where the media of the player can be seen.
 	async Task<WinMediaManagerFixture> OpenAndPlayStreamAsync()
 	{
 		await RequireVideoRenderingAsync();
 
 		// Registered before the cleanup of the manager, so that the stream is disposed after the player that reads it was released (the cleanups
-		// run last registered first)
+		// run last registered first).
 		var stream = new MemoryStream(WinMediaAssets.ReadVideoBytes());
 		RegisterCleanup(stream.Dispose);
 		var fixture = await CreateManagerAsync(view => view.ShouldLoopPlayback = true);
@@ -522,8 +503,8 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 			fixture.Element.Height = 120;
 		});
 
-		// MediaPlayerElement passes AutoPlay on to its MediaPlayer only while it is in a live visual tree, so the element is on screen (as in an
-		// app). The opposite value is set first, through the element, so that each row needs the manager's update to reach the native player.
+		// MediaPlayerElement passes AutoPlay on to its MediaPlayer only while it is in a live visual tree, so the element is on screen. The opposite
+		// value is set first, through the element, so that each row needs the manager's update to reach the native player.
 		await HostAsync(fixture.Element!, async _ =>
 		{
 			fixture.Element!.AutoPlay = !shouldAutoPlay;
@@ -570,8 +551,8 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 
 		await SetSourceAsync(fixture.View, null, fixture.Manager);
 
-		// What the player reports once the media is gone. A file source is handed to the player with SetFileSource, never through
-		// MediaPlayerElement.Source, whose Source is then still null: assigning null to it again is no property change and reaches no player.
+		// A file source is handed to the player with SetFileSource, never through MediaPlayerElement.Source, which is then still null: assigning null
+		// to it again is no property change and reaches no player. So the release of the media is read from what the player reports.
 		await AssertHelpers.Wait(() => fixture.Player!.PlaybackSession.NaturalDuration == TimeSpan.Zero, timeout: 5000, interval: 50);
 
 		Assert.Equal(TimeSpan.Zero, fixture.Player!.PlaybackSession.NaturalDuration);

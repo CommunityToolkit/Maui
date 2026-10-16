@@ -67,9 +67,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			return allCollected; // Only true if all references are collected
 		}
 
-		/// <summary>
-		/// Forces up to 40 garbage collections per reference and fails, listing the survivors, unless every reference was collected.
-		/// </summary>
 		public static async Task WaitForGC(params WeakReference[] references)
 		{
 			Assert.NotEmpty(references);
@@ -138,10 +135,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			return view.AttachAndRun<T, THandler>(boop, mauiContext, createHandler);
 		}
 
-		/// <summary>
-		/// Creates the handler, adds the platform view to the runner's real window for the duration of <paramref name="action"/>,
-		/// then removes it. Runs on the UI thread.
-		/// </summary>
 		public static Task<T> AttachAndRun<T, THandler>(this IView view, Func<THandler, Task<T>> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
 			where THandler : IPlatformViewHandler
 		{
@@ -175,10 +168,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 		public static Task FocusView(this IView view, IMauiContext mauiContext, int timeout = 1000) =>
 			view.ToPlatform(mauiContext).FocusView(timeout);
 
-		/// <summary>
-		/// True when the element's platform view is part of a window (Android: attached to window, iOS/Mac Catalyst: has a UIWindow,
-		/// Windows: FrameworkElement.IsLoaded).
-		/// </summary>
 		public static bool IsLoadedOnPlatform(this IElement element)
 		{
 			if (element.Handler is not IPlatformViewHandler pvh || pvh.PlatformView is null)
@@ -187,9 +176,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			return pvh.PlatformView.IsLoadedOnPlatform();
 		}
 
-		/// <summary>
-		/// Waits until <paramref name="element"/> raised <see cref="VisualElement.Loaded"/> and its platform view is in a window.
-		/// </summary>
 		public static async Task OnLoadedAsync(this VisualElement element, TimeSpan? timeOut = null)
 		{
 			timeOut ??= TimeSpan.FromSeconds(2);
@@ -224,9 +210,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			await WaitForLoadedStateAsync(source.Task, timeOut.Value, () => element.IsLoaded && element.IsLoadedOnPlatform(), $"{element} did not raise Loaded within {timeOut.Value}.");
 		}
 
-		/// <summary>
-		/// Waits until <paramref name="element"/> raised <see cref="VisualElement.Unloaded"/> and its platform view left the window.
-		/// </summary>
 		public static async Task OnUnloadedAsync(this VisualElement element, TimeSpan? timeOut = null)
 		{
 			timeOut ??= TimeSpan.FromSeconds(2);
@@ -261,9 +244,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			await WaitForLoadedStateAsync(source.Task, timeOut.Value, () => !element.IsLoaded && !element.IsLoadedOnPlatform(), $"{element} did not raise Unloaded within {timeOut.Value}.");
 		}
 
-		/// <summary>
-		/// Same as <see cref="OnLoadedAsync"/>.
-		/// </summary>
 		public static Task WaitForLoaded(this VisualElement element, TimeSpan? timeOut = null) =>
 			element.OnLoadedAsync(timeOut);
 
@@ -282,9 +262,6 @@ namespace CommunityToolkit.Maui.DeviceTests
 			}
 		}
 
-		/// <summary>
-		/// Polls <paramref name="assertion"/> every <paramref name="interval"/> ms until it returns true or <paramref name="timeout"/> ms elapsed.
-		/// </summary>
 		public static async Task AssertEventually(this Func<bool> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
 		{
 			do

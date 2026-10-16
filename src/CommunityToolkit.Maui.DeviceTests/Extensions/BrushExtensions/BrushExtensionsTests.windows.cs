@@ -11,8 +11,6 @@ using WinSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// BrushExtensions (Windows only): ToColor turns a WinUI SolidColorBrush into the MAUI Color of its color (alpha included) and
-// returns null for every other kind of brush.
 [Category(TestCategory.BrushExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class BrushExtensionsTests : CommunityToolkitHandlerTestBase

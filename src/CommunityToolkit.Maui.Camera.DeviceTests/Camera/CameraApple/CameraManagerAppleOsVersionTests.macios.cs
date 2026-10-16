@@ -4,10 +4,8 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The iOS 16-and-older branches of CameraManager.macios.cs: before iOS 17 there is no AVCaptureDeviceRotationCoordinator, so the manager starts
-// the accelerometer of a CMMotionManager when it creates the platform view and orients the capture connection from its reading. The pools
-// only offer iOS 27 and Mac Catalyst 27, so the OS version is overridden (AppleSystemVersionOverride) and the motion manager is a
-// FakeMotionManager with a scripted reading (simulators and Macs have no accelerometer).
+// The branches for iOS 16 and older run through AppleSystemVersionOverride because the pools only offer iOS 27 and Mac Catalyst 27, and the motion
+// manager is a FakeMotionManager with a scripted reading because simulators and Macs have no accelerometer.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleOsVersionTests : CameraHandlerTestBase

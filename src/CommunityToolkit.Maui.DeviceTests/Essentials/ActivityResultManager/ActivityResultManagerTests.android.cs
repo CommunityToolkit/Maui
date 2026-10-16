@@ -10,9 +10,6 @@ using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// ActivityResultManager (Android only) launches an Intent through the AndroidX ActivityResultRegistry of the current activity and
-// yields the result. The tests put a FilesFakePickerActivity in front: a real ComponentActivity whose last step is replaced, so the
-// registry, the lifecycle events and the toolkit's request tracking all run for real and only the system picker is faked.
 [Category(TestCategory.ActivityResultManager)]
 [Collection(TestCollections.DisableParallelization)]
 public class ActivityResultManagerTests : FilesTestBase
@@ -198,7 +195,7 @@ public class ActivityResultManagerTests : FilesTestBase
 	public async Task StartAsyncRethrowsTheLaunchFailureAndReleasesTheRequest()
 	{
 		// No fake picker here: the runner's own activity launches an intent that no app can handle, as a device without a document
-		// picker would for FileSaver and FolderPicker, and the framework throws ActivityNotFoundException from Launch.
+		// picker would for FileSaver and FolderPicker.
 		var current = Assert.IsType<ComponentActivity>(Platform.CurrentActivity, exactMatch: false);
 
 		var exception = await Assert.ThrowsAsync<ActivityNotFoundException>(() => InvokeOnMainThreadAsync(() =>
@@ -364,8 +361,6 @@ public class ActivityResultManagerTests : FilesTestBase
 		RequestSnapshot? beforeDelivery = null;
 		var completedByDelivery = false;
 		Exception? hookFailure = null;
-		// CreatedBehavior runs after the base OnCreate, where the toolkit heard of the new instance and registered the request with it,
-		// so the answer reaches the request's callback through the registry's normal dispatch.
 		FilesFakePicker.CreatedBehavior = (activity, restored) =>
 		{
 			if (!restored)
@@ -409,10 +404,10 @@ public class ActivityResultManagerTests : FilesTestBase
 		RequestSnapshot? beforeDelivery = null, afterDelivery = null;
 		var completedByDelivery = true;
 		Exception? hookFailure = null;
-		// The new instance gets the answer while it is being created, after its registry restored the launched key and before the
-		// lifecycle event that makes the toolkit register the request with it. The registry has no callback for the key yet, so it keeps
-		// the answer as a pending result and hands it to the callback inside Register: the request completes before Register stored its
-		// launcher, and Register releases the launcher that it has just created.
+		// ContextAvailableBehavior runs after the new instance's registry restored the launched key and before the toolkit registers the
+		// request with it, so the registry has no callback for the key yet: it keeps the answer as a pending result and hands it to the
+		// callback inside Register. The request then completes before Register stored its launcher, so Register must release the launcher
+		// that it has just created.
 		FilesFakePicker.ContextAvailableBehavior = (activity, restored) =>
 		{
 			if (!restored)
@@ -439,8 +434,6 @@ public class ActivityResultManagerTests : FilesTestBase
 		Assert.Null(hookFailure);
 		Assert.NotNull(beforeDelivery);
 		Assert.NotNull(afterDelivery);
-		// The path this test is about: when the answer arrived, the request had no activity and no launcher, and the new registry had no
-		// callback for it, so nothing could dispatch it yet.
 		Assert.True(!beforeDelivery.HasActivity && !beforeDelivery.HasLauncher && !beforeDelivery.NewRegistryHasTheCallback && beforeDelivery.State == "Pending", $"The request was already registered with the new activity: {beforeDelivery}.");
 		Assert.True(!completedByDelivery && afterDelivery.State == "Pending", $"The answer was dispatched when it was delivered: {afterDelivery}.");
 		Assert.Equal("content://files.test/early", result.Data?.ToString());
@@ -460,11 +453,9 @@ public class ActivityResultManagerTests : FilesTestBase
 		await session.WaitForLaunchAsync();
 		var front = await session.StartAnotherAsync();
 
-		// The system destroys the activity behind (not finishing) and creates its new instance, which stays behind the front one.
 		var recreated = await session.RecreateAsync(host, waitForResumed: false);
 
-		// Whichever live activity the request is registered with now, it is not the destroyed instance, and the request still waits for
-		// its result instead of being canceled with the activity.
+		// Whichever live activity the request is registered with now, it is not the destroyed instance.
 		var registeredWith = Assert.Single(FilesActivityResultManagerState.RegisteredActivities);
 		Assert.NotNull(registeredWith);
 		Assert.NotSame(host, registeredWith);
@@ -509,10 +500,9 @@ public class ActivityResultManagerTests : FilesTestBase
 		Assert.Equal("content://files.test/answer", (await task).Data?.ToString());
 	}
 
-	// The same rule when another ComponentActivity (here the runner's activity, of another type) is created after the activity that
-	// started the request was destroyed without finishing and before its new instance: the request waits for the new instance (the same
-	// type in the same task), which Android hands the result to, instead of registering with the other activity. The lifecycle events
-	// are raised as MAUI raises them, with the host standing in for its own new instance.
+	// Android hands the result to the requester's new instance (the same type in the same task), so a request whose activity was destroyed
+	// without finishing waits for it instead of registering with a ComponentActivity created before it (here the runner's activity, of
+	// another type). The lifecycle events are raised as MAUI raises them, with the host standing in for its own new instance.
 	[Fact]
 	public async Task ARequestWhoseActivityWasDestroyedIsNotTakenByAnotherActivityCreatedBeforeItsNewInstance()
 	{
@@ -524,7 +514,7 @@ public class ActivityResultManagerTests : FilesTestBase
 		Assert.NotEqual(host.GetType(), runnerActivity.GetType());
 		var key = Assert.Single(FilesActivityResultManagerState.PendingKeys);
 
-		// A request that the runner's activity took keeps its callback in that registry, which later tests check: release it in any case
+		// A request that the runner's activity took keeps its callback in that registry, which later tests check: release it in any case.
 		AddCleanup(() => InvokeOnMainThreadAsync(() =>
 		{
 			if (FilesActivityResultManagerState.PendingKeys.Contains(key))
@@ -549,9 +539,8 @@ public class ActivityResultManagerTests : FilesTestBase
 		Assert.Equal(0, FilesActivityResultManagerState.PendingCount);
 	}
 
-	// An activity of the requester's type in another task (another window of the app, a document opened in its own task) is not the new instance
-	// of a destroyed requester either: Android hands the result to the requester's task, so the request waits for the new instance there.
-	// Catches: a pending request registering with any activity of the requester's type, whatever its task.
+	// Android hands the result to the requester's task, so an activity of the requester's type in another task (another window of the app, a
+	// document opened in its own task) is not the new instance of a destroyed requester, and the request waits for the new instance there.
 	[Fact]
 	public async Task ARequestWhoseActivityWasDestroyedIsNotTakenByAnActivityOfTheSameTypeInAnotherTask()
 	{
@@ -564,7 +553,7 @@ public class ActivityResultManagerTests : FilesTestBase
 		Assert.NotEqual(host.TaskId, other.TaskId);
 		var key = Assert.Single(FilesActivityResultManagerState.PendingKeys);
 
-		// A request that the other activity took keeps its callback in that registry, which later tests check: release it in any case
+		// A request that the other activity took keeps its callback in that registry, which later tests check: release it in any case.
 		AddCleanup(() => InvokeOnMainThreadAsync(() =>
 		{
 			if (FilesActivityResultManagerState.PendingKeys.Contains(key))
@@ -645,8 +634,8 @@ public class ActivityResultManagerTests : FilesTestBase
 		await AssertionExtensions.WaitForGC(callbackTarget);
 	}
 
-	// PendingRequest, one method at a time. StartAsync always registers, launches and tracks in one go, so these cover what it cannot:
-	// a request that was never registered, one that is failed or disposed, one registered twice, and the guard of the tracking table.
+	// These call PendingRequest one method at a time because StartAsync always registers, launches and tracks in one go: it cannot reach a
+	// request that was never registered, one that is failed or disposed, one registered twice, or the guard of the tracking table.
 
 	[Fact]
 	public async Task LaunchingARequestThatWasNeverRegisteredThrows()
@@ -1079,8 +1068,8 @@ public class ActivityResultManagerTests : FilesTestBase
 		var expected = Record.Exception(() => { _ = unusable.ActivityResultRegistry; });
 		Assert.NotNull(expected);
 
-		// A request without an activity registers with a ComponentActivity that is created (this one, built without StartAsync, does not
-		// know the activity that started it, so any activity may take it; a request of StartAsync waits for the new instance of its own).
+		// This request, built without StartAsync, does not know the activity that started it, so any ComponentActivity that is created may
+		// take it (a request of StartAsync waits for the new instance of its own).
 		await InvokeOnMainThreadAsync(() => FilesActivityResultManagerState.RaiseActivityStateChanged(unusable, ActivityState.Created));
 
 		var failure = await Record.ExceptionAsync(() => waiting.Task.WaitAsync(operationTimeout));
@@ -1112,7 +1101,6 @@ public class ActivityResultManagerTests : FilesTestBase
 		Assert.DoesNotContain(key, FilesActivityResultManagerState.PendingKeys);
 	}
 
-	// What a pending request looks like from an activity that is being created (read on the UI thread, inside its OnCreate).
 	sealed record RequestSnapshot(bool HasActivity, bool RegisteredWithTheNewActivity, bool HasLauncher, bool NewRegistryHasTheCallback, string State)
 	{
 		public static RequestSnapshot Of(FilesPendingRequest request, ComponentActivity activity) => new(

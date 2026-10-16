@@ -10,11 +10,10 @@ using System.Threading;
 
 namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner;
 
-// A copy of what the headless runner writes to the console, in a file next to the results file, written through at once:
-// "<results>.log" for a whole run and "<results>_<Category>.log" for a category launch. It keeps what was logged before a crash of the
-// app, and packaged runs get a log at all (package activation starts the app, so nothing reads its standard output). It also names each
-// test as it starts (XHarness writes [STRT] lines when XHARNESS_LOG_TEST_START is true), every unhandled exception and every exception as
-// it is thrown, so that eng/devices/windows.ps1 can report the test that was running when the app died and what was thrown last.
+// The runner's console output is copied to a file next to the results file and written through at once, so that a crash of the app keeps
+// what was logged, and packaged runs get a log at all: package activation starts the app, so nothing reads its standard output. The log
+// also records each test as it starts (XHarness writes [STRT] lines when XHARNESS_LOG_TEST_START is true) and every unhandled or thrown
+// exception, so that eng/devices/windows.ps1 can report the test that was running when the app died and what was thrown last.
 static class TestRunLog
 {
 	static readonly object gate = new();
@@ -45,7 +44,7 @@ static class TestRunLog
 			Console.SetOut(new ConsoleCopy(Console.Out));
 
 			// Logging only: neither handler marks the exception handled, so the app still ends the way it would without them, and nothing
-			// may escape from them. The log is written directly, before the exception is described.
+			// may escape from them.
 			AppDomain.CurrentDomain.UnhandledException += (sender, e) => Log("AppDomain.UnhandledException", () => $"{e.ExceptionObject}");
 			Microsoft.UI.Xaml.Application.Current.UnhandledException += (sender, e) => Log("Application.UnhandledException", () => $"{e.Message} {e.Exception}");
 
@@ -67,7 +66,7 @@ static class TestRunLog
 		try
 		{
 			var exception = e.Exception;
-			// The frames of the exception dispatch itself (EH, InternalCalls, ExceptionDispatchInfo, CsWinRT's ExceptionHelpers) come first.
+			// The frames of the exception dispatch itself (CsWinRT's ExceptionHelpers among them) come first.
 			var callers = new StackTrace(1, false).GetFrames()
 				.Select(static frame => frame.GetMethod())
 				.Where(static method => method?.DeclaringType is Type type && type != typeof(TestRunLog) && !IsExceptionDispatch(type))

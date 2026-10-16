@@ -4,8 +4,6 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.CreateMediaItem, CreateMediaItemFromStream and GetBytesFromMetadataArtworkUrl (MediaManager.android.cs): the title, artist
-// and artwork of the MediaElement end up in the MediaMetadata of the MediaItem that ExoPlayer (and the media session) hold.
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
@@ -52,7 +50,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			var metadata = GetPlayer(mediaElement).CurrentMediaItem!.MediaMetadata!;
 			Assert.Equal("A stream title", metadata.Title?.ToString());
 			Assert.Equal("A stream artist", metadata.Artist?.ToString());
-			// No MetadataArtworkUrl: no artwork on the metadata.
 			Assert.Empty(GetArtwork(mediaElement));
 		});
 	}
@@ -99,14 +96,12 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Empty(GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/missing.png"));
-			// A 404 is not an exception: the media item is built without artwork and nothing is traced.
+			// A 404 is not an exception, so nothing is traced.
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
 			Assert.Empty(recorder.FailureMessages);
 		});
 	}
 
-	// A server that sends no Content-Length (chunked responses, many CDNs): the length of the HEAD response only sizes the artwork buffer at
-	// first, the buffer grows with the body.
 	[Fact]
 	public async Task ArtworkFromAServerThatSendsNoContentLengthIsDownloaded()
 	{
@@ -129,7 +124,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A HEAD response without Content-Length and an empty body: there is no artwork and no error.
 	[Fact]
 	public async Task EmptyArtworkFromAServerThatSendsNoContentLengthIsLeftOutWithoutAnError()
 	{
@@ -154,7 +148,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// An https URL goes through the same request path as http: nothing listens on the port, so the request fails, which is traced.
 	[Fact]
 	public async Task ArtworkFromAnHttpsUrlThatCannotBeReachedIsLeftOutAndTraced()
 	{
@@ -178,7 +171,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// An absolute URI that is not http, https or a file matches none of the loading branches: no artwork, and no error either.
 	[Fact]
 	public async Task ArtworkWithAnUnsupportedSchemeIsLeftOutWithoutAnError()
 	{
@@ -224,7 +216,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A file URI ("file:///data/...") is read from the file it names (its local path), like a plain absolute path.
 	[Fact]
 	public async Task ArtworkFromAFileUriIsReadFromTheFile()
 	{
@@ -270,8 +261,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The relative path is looked up in the APK's assets. NormalizeFilePath turns the backslashes into the platform's separator first,
-	// so both spellings find the asset: only an asset that was found has the asset's number of bytes.
+	// NormalizeFilePath turns the backslashes into the platform's separator, so both spellings find the asset.
 	[Theory]
 	[InlineData("exoplayer/art.png")]
 	[InlineData("exoplayer\\art.png")]
@@ -316,7 +306,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// An empty asset (empty.png, 0 bytes) is found but has nothing to copy: no artwork and no error (a missing asset is traced, see below).
 	[Fact]
 	public async Task ArtworkFromAnEmptyAssetIsLeftOutWithoutAnError()
 	{
@@ -405,7 +394,6 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// What the open file descriptors of this process point to (/proc/self/fd holds one symbolic link per descriptor).
 	static string[] GetOpenFileTargets() =>
 		Directory.GetFiles("/proc/self/fd")
 			.Select(descriptor =>

@@ -1,23 +1,15 @@
-# Code coverage of the toolkit assemblies during device test runs: android.ps1, ios.ps1 and catalyst.ps1 with -Coverage (see
-# eng/devices/README.md, "Code coverage"). Dot-source it after devices-shared.ps1; it does nothing on its own. PowerShell 7 only:
-# the Windows device tests collect no coverage.
+# Used by android.ps1, ios.ps1 and catalyst.ps1 with -Coverage (see eng/devices/README.md, "Code coverage"). Dot-source it after
+# devices-shared.ps1. PowerShell 7 only: the Windows device tests collect no coverage.
 #
 # coverlet (pinned in .config/dotnet-tools.json) instruments assemblies on disk, and writes its report once the command it started
-# (its target) exits. The apps run on a device in between:
-# 1. Start-DeviceTestCoverage copies the toolkit assemblies that the apps reference, and everything the apps reference (which coverlet
-#    needs to read them), into a staging folder and starts coverlet on it in the background. Once coverlet has instrumented them it
-#    starts its target, which only waits until this script is done. The instrumented assemblies then replace the toolkit's build
-#    outputs, and the apps are packaged again with them (BuildProjectReferences=false keeps the toolkit projects from being rebuilt).
-# 2. Each app runs with CTM_COVERAGE_DIRECTORY (Get-DeviceTestCoverageArguments). The headless runners write the hits files there
-#    when the tests have run (CoverageRecorder in CommunityToolkit.Maui.DeviceTests.Runners); on Android xharness copies them from
-#    the device to the host before it uninstalls the app.
-# 3. Complete-DeviceTestCoverage adds the hits files of every app into the ones coverlet reads, ends the target, waits for coverlet's
-#    Cobertura report (<Results>/coverage/<results folder name>.cobertura.xml), and puts the original toolkit assemblies back. The
-#    packaged apps keep the instrumented assemblies until the apps are built again: that build packages the original ones
-#    (Restore-DeviceTestCoverageAssemblies).
+# (its target) exits. The apps run on a device in between, so the target only waits until this script is done with them. The instrumented
+# assemblies replace the toolkit's build outputs, and the apps are packaged again with them (BuildProjectReferences=false keeps the toolkit
+# projects from being rebuilt). The packaged apps keep the instrumented assemblies until the apps are built again: that build packages the
+# original ones (Restore-DeviceTestCoverageAssemblies).
+# The headless runners write the hits files when the tests have run (CoverageRecorder in CommunityToolkit.Maui.DeviceTests.Runners); on
+# Android xharness copies them from the device to the host before it uninstalls the app.
 # Coverage never changes a run's exit code: a run whose coverage fails reports a warning and has no coverage report.
 
-# The shipped toolkit assemblies that coverage runs instrument when an app references them.
 $script:DeviceTestCoverageAssemblies = @(
     'CommunityToolkit.Maui'
     'CommunityToolkit.Maui.Core'
@@ -26,23 +18,20 @@ $script:DeviceTestCoverageAssemblies = @(
     'CommunityToolkit.Maui.Maps'
 )
 
-# Instrumentation argument (Android) or environment variable (iOS, Mac Catalyst) naming the folder that receives the hits files:
-# CoverageRecorder.DirectoryVariable.
+# Must match CoverageRecorder.DirectoryVariable, which the headless runners read.
 $script:DeviceTestCoverageVariable = 'CTM_COVERAGE_DIRECTORY'
 
 # A hits file of coverlet: <assembly name>_<instrumentation identifier>, int32 count and int32[count] hits, little-endian.
 $script:DeviceTestCoverageHitsFilePattern = '^(?<assembly>.+)_[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$'
 
-function Get-DeviceTestCoverageDirectory {
-    # The folder of an app's results that receives its hits files (on Android, xharness copies the device folder there).
+function Get-DeviceTestCoverageHitsDirectory {
+    # On Android, xharness copies the device folder (--device-out-folder) into the app's results folder, so both folder names must match.
     param([Parameter(Mandatory = $true)]$Context, [Parameter(Mandatory = $true)]$Project)
 
     return Join-Path (Join-Path $Context.Results $Project.Name) 'coverage'
 }
 
 function Get-DeviceTestReferences {
-    # Returns the assemblies a device test app compiles against (its ReferencePath items), without building it. FullPath is the
-    # assembly; a project reference's CopyUpToDateMarker is a file in the referenced project's IntermediateOutputPath.
     param(
         [Parameter(Mandatory = $true)]$Project,
         [Parameter(Mandatory = $true)][string]$TargetFramework,
@@ -68,21 +57,20 @@ function Get-DeviceTestReferences {
 }
 
 function Copy-DeviceTestAssembly {
-    # Copies an assembly and its .pdb, when it has one (CI builds embed it), to a folder.
     param([Parameter(Mandatory = $true)][string]$Path, [Parameter(Mandatory = $true)][string]$Destination)
 
     Copy-Item -LiteralPath $Path -Destination $Destination -Force
     $symbols = [System.IO.Path]::ChangeExtension($Path, '.pdb')
+    # CI builds embed the symbols in the assembly, so a .pdb file may not exist.
     if (Test-Path -LiteralPath $symbols -PathType Leaf) {
         Copy-Item -LiteralPath $symbols -Destination $Destination -Force
     }
 }
 
 function Restore-DeviceTestCoverageAssemblies {
-    # Puts the original toolkit assemblies (and .pdb files) back where the instrumented ones replaced them, and gives them and the toolkit
-    # projects' intermediate assemblies (obj) the current time. The next build of the apps packages the original assemblies again only
-    # when they are newer than the apps' instrumented copies, and the toolkit projects' part of that build copies each intermediate
-    # assembly over the restored one with the intermediate assembly's time.
+    # The restored assemblies and the toolkit projects' intermediate assemblies (obj) get the current time. The next build of the apps
+    # packages the original assemblies again only when they are newer than the apps' instrumented copies, and the toolkit projects' part of
+    # that build copies each intermediate assembly over the restored one with the intermediate assembly's time.
     param([Parameter(Mandatory = $true)]$Session)
 
     foreach ($assembly in $Session.Assemblies) {
@@ -111,7 +99,6 @@ function Restore-DeviceTestCoverageAssemblies {
 }
 
 function Stop-DeviceTestCoverageProcess {
-    # Lets coverlet's target exit and waits for coverlet; returns $true when it exited with 0 in time.
     param([Parameter(Mandatory = $true)]$Session, [int]$TimeoutSeconds = 600)
 
     if ($null -eq $Session.Process) {
@@ -146,7 +133,6 @@ function Stop-DeviceTestCoverageProcess {
 }
 
 function Close-DeviceTestCoverage {
-    # Ends a coverage session: stops coverlet if it still runs, restores the toolkit assemblies and deletes the staging folder.
     param([Parameter(Mandatory = $true)]$Session)
 
     try {
@@ -164,11 +150,7 @@ function Close-DeviceTestCoverage {
 }
 
 function Start-DeviceTestCoverage {
-    # Instruments the toolkit assemblies that the apps reference with coverlet and packages the apps again with them. Returns the
-    # session for Get-DeviceTestCoverageArguments and Complete-DeviceTestCoverage, or $null (after a warning) when coverage could not
-    # start; the apps are then tested as they were built. An app that fails to package is recorded as a build failure. The caller completes
-    # the session it gets; a session that is not returned is closed here, which puts the original toolkit assemblies back and deletes the
-    # staging folder, also when the run is stopped (Ctrl+C).
+    # The caller completes the session it gets with Complete-DeviceTestCoverage.
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)][string]$Platform,
@@ -235,7 +217,8 @@ function Start-DeviceTestCoverage {
         $includes = @()
         foreach ($name in $toolkit.Keys) {
             $path = [string]$toolkit[$name].FullPath
-            # The toolkit project's intermediate assembly, for Restore-DeviceTestCoverageAssemblies: IntermediateOutputPath/<file name>.
+            # A project reference's CopyUpToDateMarker is in the project's IntermediateOutputPath, beside the intermediate assembly that
+            # Restore-DeviceTestCoverageAssemblies gives the current time.
             $intermediate = $null
             $marker = [string]$toolkit[$name].CopyUpToDateMarker
             if ($marker) {
@@ -307,9 +290,6 @@ function Start-DeviceTestCoverage {
 }
 
 function Get-DeviceTestCoverageArguments {
-    # The xharness arguments that make an app write its hits files: an instrumentation argument and the device folder for xharness
-    # to copy (Android), or an environment variable naming a folder on this machine (iOS simulator, Mac Catalyst). None without a
-    # session.
     param($Session, [Parameter(Mandatory = $true)]$Project, [string]$ApplicationId)
 
     if ($null -eq $Session) {
@@ -322,7 +302,7 @@ function Get-DeviceTestCoverageArguments {
         return , @("--arg=$script:DeviceTestCoverageVariable=$deviceFolder", "--device-out-folder=$deviceFolder")
     }
 
-    return , @("--set-env=$script:DeviceTestCoverageVariable=$(Get-DeviceTestCoverageDirectory -Context $Session.Context -Project $Project)")
+    return , @("--set-env=$script:DeviceTestCoverageVariable=$(Get-DeviceTestCoverageHitsDirectory -Context $Session.Context -Project $Project)")
 }
 
 function Read-DeviceTestCoverageHits {
@@ -344,7 +324,6 @@ function Read-DeviceTestCoverageHits {
 }
 
 function Add-DeviceTestCoverageHits {
-    # Adds the hits of one hits file to the file of the same name in coverlet's folder (the temporary folder), creating it.
     param([Parameter(Mandatory = $true)][string]$Path, [Parameter(Mandatory = $true)][string]$Destination)
 
     $hits = Read-DeviceTestCoverageHits -Path $Path
@@ -372,8 +351,6 @@ function Add-DeviceTestCoverageHits {
 }
 
 function Complete-DeviceTestCoverage {
-    # Hands the hits files of every app to coverlet, waits for its Cobertura report and restores the toolkit assemblies. Missing hits
-    # (an app that crashed, hung or was not run) and coverlet failures are warnings.
     param($Session)
 
     if ($null -eq $Session) {
@@ -385,7 +362,7 @@ function Complete-DeviceTestCoverage {
         $assemblyNames = @($Session.Assemblies | ForEach-Object { $_.Name })
         $coverletFolder = [System.IO.Path]::GetTempPath()
         foreach ($entry in $Session.Projects) {
-            $folder = Get-DeviceTestCoverageDirectory -Context $Session.Context -Project $entry.Project
+            $folder = Get-DeviceTestCoverageHitsDirectory -Context $Session.Context -Project $entry.Project
             $files = @()
             if (Test-Path -LiteralPath $folder -PathType Container) {
                 $files = @(Get-ChildItem -LiteralPath $folder -File | Where-Object {

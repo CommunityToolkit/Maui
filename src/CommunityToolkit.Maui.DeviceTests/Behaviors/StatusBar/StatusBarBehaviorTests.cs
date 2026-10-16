@@ -5,9 +5,7 @@ using Microsoft.Maui.Devices;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of StatusBarBehavior (and the BasePlatformBehavior it derives from): the behavior is attached to a page that is hosted in
-// the runner's real window, so MAUI raises Loaded/Unloaded and attaches/detaches the PlatformBehavior like in an app. The behavior's
-// platform code only exists on Android and iOS; on Mac Catalyst and Windows it is the BasePlatformBehavior and nothing else.
+// The page is hosted in the runner's real window, so MAUI raises Loaded/Unloaded and attaches/detaches the PlatformBehavior like in an app.
 [Category(TestCategory.StatusBarBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class StatusBarBehaviorTests : StatusBarTestBase
@@ -166,8 +164,7 @@ public partial class StatusBarBehaviorTests : StatusBarTestBase
 		await AssertionExtensions.WaitForGC(behaviorReference, pageReference, platformViewReference);
 	}
 
-	// Creates the page and the behavior in this method only (no caller local keeps them alive), hosts the page until it unloads and
-	// disconnects its handler, like the leak test pattern in the README.
+	// The page and the behavior live in this method only, so no caller local keeps them alive (the leak test pattern in the README).
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 	async Task<(WeakReference Behavior, WeakReference Page, WeakReference PlatformView)> HostAndDetachNewBehaviorAsync()
 	{

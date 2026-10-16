@@ -6,10 +6,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: FileSaver writes a temporary copy of the stream in a new folder of the temporary directory, presents a
-// UIDocumentPickerViewController that exports it, and reports what the delegate says. The picker is the real one, and the tests answer it
-// through its delegate, as UIKit does for a person. The native state that they read back is the picker (mode, directory, event handlers),
-// the temporary folder on disk, and whether the picker is still on screen.
 public partial class FileSaverTests
 {
 	static readonly byte[] sample = Enumerable.Range(0, 10_000).Select(i => (byte)(i % 251)).ToArray();
@@ -26,7 +22,6 @@ public partial class FileSaverTests
 		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// No initial path: no directory, so the picker opens where the system chooses
 			Assert.Equal(UIDocumentPickerMode.ExportToService, picker.DocumentPickerMode);
 			Assert.Null(picker.DirectoryUrl);
 			Assert.False(picker.AllowsMultipleSelection);
@@ -99,8 +94,6 @@ public partial class FileSaverTests
 		Assert.Equal(TemporaryRoot, path);
 	}
 
-	// Every overload reaches the same picker; the ones with an initial path set its directory (the others give it none), and the ones with a
-	// progress report to it.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -369,7 +362,6 @@ public partial class FileSaverTests
 
 		var result = await InvokeOnMainThreadAsync(() => FileSaver.Default.SaveAsync(fileName, stream, cancellation.Token)).WaitAsync(operationTimeout);
 
-		// The copy was complete when the token was canceled, so the picker is never presented and the temporary folder is cleaned up.
 		Assert.True(result.IsCancelled);
 		Assert.Equal(2, stream.ReadCalls);
 		Assert.False(await FilesApplePicker.IsPickerPresentedAsync());
@@ -493,8 +485,7 @@ public partial class FileSaverTests
 		AddCleanup(() => fileManager.SetAttributes(new NSFileAttributes { PosixPermissions = original }, temporaryRoot, out _));
 		Assert.True(fileManager.SetAttributes(new NSFileAttributes { PosixPermissions = Convert.ToInt16("555", 8) }, temporaryRoot, out var error), error?.LocalizedDescription);
 
-		// What the file system answers for a new folder there: the toolkit creates a folder named by a GUID, so the name in the message
-		// is matched as a GUID.
+		// The toolkit creates a folder named by a GUID, so the name in the message is matched as a GUID.
 		var probeName = $"files-probe-{Guid.NewGuid():N}";
 		Assert.False(fileManager.CreateDirectory(fileManager.GetTemporaryDirectory().Append(probeName, true), true, null, out var systemError), "The temporary folder accepts new folders although it is read-only.");
 		Assert.NotNull(systemError);
@@ -580,7 +571,6 @@ public partial class FileSaverTests
 		await AssertionExtensions.WaitForGC(references);
 	}
 
-	// A save that is not asked about must never leave a picker on screen.
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static async Task AssertNoPickerWasStartedAsync() =>
@@ -597,7 +587,6 @@ public partial class FileSaverTests
 		return folders;
 	}
 
-	// Starts FileSaver.Default.SaveAsync on the UI thread (the overload follows from the arguments) and waits for the picker it presents.
 	async Task<(Task<FileSaverResult> Operation, UIDocumentPickerViewController Picker, object PickerDelegate)> StartSaveAsync(string fileName, Stream stream, IProgress<double>? progress = null, string? initialPath = null, CancellationToken token = default)
 	{
 		var operation = await StartOnMainThreadAsync(() => (initialPath, progress) switch
@@ -612,7 +601,6 @@ public partial class FileSaverTests
 		return (operation, picker, await FilesApplePicker.GetDelegateAsync(picker));
 	}
 
-	// Takes the root view controller away from every window, so that MAUI has no view controller to present from. The cleanup puts them back.
 	async Task RemoveRootViewControllersAsync()
 	{
 		var removed = await InvokeOnMainThreadAsync(() =>
@@ -636,11 +624,8 @@ public partial class FileSaverTests
 		}));
 	}
 
-	/// <summary>
-	/// The folders that FileSaver creates in the temporary directory: a folder named by a GUID that holds the file. On Mac Catalyst the
-	/// temporary directory is shared with the rest of the machine, so only folders that did not exist before, and hold nothing but this
-	/// test's file, count.
-	/// </summary>
+	// On Mac Catalyst the temporary directory is shared with the rest of the machine, so only folders that did not exist before, and hold
+	// nothing but this test's file, count.
 	sealed class TemporaryFolders
 	{
 		readonly string fileName;
@@ -652,10 +637,8 @@ public partial class FileSaverTests
 			existing = Snapshot();
 		}
 
-		/// <summary>The folder that holds this test's file, or null.</summary>
 		public string? FolderWithFile() => Snapshot().FirstOrDefault(folder => File.Exists(Path.Combine(folder, fileName)));
 
-		/// <summary>New folders that are empty or hold only this test's file.</summary>
 		public IReadOnlyList<string> Created() => [.. Snapshot().Where(folder => !existing.Contains(folder) && HoldsOnlyTheFile(folder))];
 
 		public void DeleteCreated()

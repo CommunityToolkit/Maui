@@ -14,10 +14,10 @@ public sealed partial class SpeechToTextImplementation
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
 
-	// The sessions that a newer session replaced: their recognizers are destroyed once a newer session is in progress or ended (see SetPreviousSessionAside)
+	// The recognizers of replaced sessions are destroyed once a newer session is in progress or ended (see SetPreviousSessionAside)
 	readonly List<(SpeechRecognizer Recognizer, SpeechRecognitionListener? Listener)> replacedSessions = [];
 
-	// The life of a recognition session: its outcome (onResults or onError) also arrives after StopListening, and only the first one is reported
+	// The outcome (onResults or onError) of a session also arrives after StopListening, and only the first one is reported
 	enum RecognitionPhase
 	{
 		Starting,
@@ -40,7 +40,7 @@ public sealed partial class SpeechToTextImplementation
 		}
 	} = SpeechToTextState.Stopped;
 
-	// CurrentState stays Stopped until speech begins: a session is active from its start until it is stopped or reports its outcome
+	// CurrentState stays Stopped until speech begins, so it cannot tell whether a session is active
 	bool IsListeningSessionActive => listener?.Phase is RecognitionPhase.Starting or RecognitionPhase.Listening;
 
 	/// <inheritdoc />
@@ -84,7 +84,6 @@ public sealed partial class SpeechToTextImplementation
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
-	// Runs the action on the main looper after every message that is queued there at the time of the call
 	static Task RunAfterQueuedMainLooperMessagesAsync(Action action)
 	{
 		var actionCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -182,9 +181,9 @@ public sealed partial class SpeechToTextImplementation
 
 	void OnRecognitionSessionEnded(SpeechRecognitionListener endedListener)
 	{
-		// The session reported its outcome. When it is still the current session (the app did not start a new one from the outcome), no session needs the
-		// connection to the recognition service any longer: its recognizer and those of the sessions that it replaced are released (the peers of its
-		// recognizer are released with the next session or by DisposeAsync). A session started from the outcome has set this one aside instead.
+		// When the session that reported its outcome is still the current session (the app did not start a new one from the outcome), no session needs
+		// the connection to the recognition service any longer: its recognizer and those of the sessions that it replaced are released (the peers of
+		// its recognizer are released with the next session or by DisposeAsync). A session started from the outcome has set this one aside instead.
 		if (ReferenceEquals(endedListener, listener))
 		{
 			speechRecognizer?.Destroy();
@@ -192,8 +191,7 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	// A new session replaces the previous one, which may have been stopped without reporting its outcome yet: the previous session ends (it reports nothing)
-	// and its recognition is canceled, but its recognizer is destroyed only once the new session is in progress, or ended while it was the current session
+	// The recognizer of the previous session is destroyed only once the new session is in progress, or ended while it was the current session
 	// (OnRecognitionSessionInProgress, OnRecognitionSessionEnded). An app's recognizers share one connection to the recognition service, which Android
 	// unbinds when a recognizer is destroyed while no session is in progress on it, also under a recognizer that has just connected to it: a session started
 	// right after the previous recognizer was destroyed then ended with ERROR_SERVER_DISCONNECTED.
@@ -214,8 +212,8 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	// The listener's session is in progress at the recognition service, so it holds the connection that the sessions share: when it is the current session,
-	// the recognizers of the sessions that it replaced are released without unbinding that connection under it
+	// A session that is in progress at the recognition service holds the connection that the sessions share: when it is the current session, the
+	// recognizers of the sessions that it replaced are released without unbinding that connection under it
 	void OnRecognitionSessionInProgress(SpeechRecognitionListener listenerInProgress)
 	{
 		if (ReferenceEquals(listenerInProgress, listener))
@@ -224,8 +222,6 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	// Releases the recognizers of the sessions that a newer session replaced, on the main thread. The returned task completes once their Java peers and
-	// those of their listeners are disposed.
 	Task ReleaseReplacedSessions()
 	{
 		if (replacedSessions.Count is 0)
@@ -243,8 +239,6 @@ public sealed partial class SpeechToTextImplementation
 		return Task.WhenAll(releases);
 	}
 
-	// Ends the current session and releases its recognizer and those of the sessions that it replaced, on the main thread, in DisposeAsync. The returned
-	// task completes once the Java peers of the recognizers and of their listeners are disposed.
 	Task ReleaseRecognizer()
 	{
 		var recognizer = speechRecognizer;
@@ -255,8 +249,6 @@ public sealed partial class SpeechToTextImplementation
 		return Task.WhenAll(ReleaseSession(recognizer, recognitionListener), ReleaseReplacedSessions());
 	}
 
-	// Ends a session and releases its recognizer, on the main thread. The returned task completes once the Java peers of the recognizer and of its listener
-	// are disposed.
 	static Task ReleaseSession(SpeechRecognizer? recognizer, SpeechRecognitionListener? recognitionListener)
 	{
 		// A released session reports nothing
@@ -360,7 +352,6 @@ public sealed partial class SpeechToTextImplementation
 				return;
 			}
 
-			// The session is over, as after an error: CurrentState returns to Stopped
 			Phase = RecognitionPhase.Ended;
 			SendResults(results, Results);
 			speechToText.CurrentState = SpeechToTextState.Stopped;

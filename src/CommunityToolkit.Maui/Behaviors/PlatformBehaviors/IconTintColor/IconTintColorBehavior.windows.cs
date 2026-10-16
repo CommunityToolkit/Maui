@@ -23,7 +23,7 @@ public partial class IconTintColorBehavior
 	BitmapSource? blankImage;
 	WImageSource? originalImage;
 
-	// Removes the ImageOpened or SizeChanged handler of a tint that waits for its image, so that a tint that was removed is not applied.
+	// A tint that was removed must not be applied when its image later opens or gets its size.
 	Action? cancelPendingTint;
 
 	/// <inheritdoc/>
@@ -307,7 +307,7 @@ public partial class IconTintColorBehavior
 		originalImage = image.Source;
 		image.Source = blankImage;
 
-		// The mask is loaded from the stream once the tint is in place: LoadSurfaceMaskAsync removes the tint when the stream cannot be read.
+		// The tint must be in place first: LoadSurfaceMaskAsync removes it when the stream cannot be read.
 		if (openMaskStream is not null)
 		{
 			LoadSurfaceMaskAsync(image, surfaceMask, openMaskStream).SafeFireAndForget(static ex => Trace.WriteLine(ex));

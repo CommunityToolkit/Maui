@@ -3,13 +3,10 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the selection is the collection view's own, from a tap that UIKit delivers.
 public partial class GestureManagerCollectionViewTests
 {
-	// A tap that UIKit delivers to an item whose template has a TouchBehavior selects the item, as a tap selects it without the behavior, and
-	// completes the behavior's gesture: the behavior's recognizer never recognizes, so it never takes a touch away from the views.
-	// Catches: the behavior's recognizer taking the tap for itself (recognizing it and cancelling the touches of the views, as a
-	// UITapGestureRecognizer does): the collection view never selects the item.
+	// The behavior's recognizer never recognizes, so it never takes a touch away from the views: a recognizer that recognized the tap would
+	// cancel the touches of the views, as a UITapGestureRecognizer does, and the collection view would never select the item.
 	[Theory]
 	[InlineData(SelectionMode.Single)]
 	[InlineData(SelectionMode.Multiple)]

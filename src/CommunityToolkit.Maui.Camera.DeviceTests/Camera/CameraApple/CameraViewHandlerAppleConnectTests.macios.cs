@@ -5,12 +5,10 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The real CameraViewHandler (not AppleNoConnectCameraViewHandler): it connects the camera from its `async void` ConnectHandler as soon as it
-// gets a platform view, and its property mappers for SelectedCamera and ImageCaptureResolution are `async void` too. The camera provider is a
-// scripted one (AppleCameraProviderOverride), so the handler never opens a real camera or the permission prompt, and
-// AppleRecordingSynchronizationContext receives what the async void methods could not deliver to a caller (in an app such an exception
-// terminates it), so the tests at the end check that nothing escapes them. The connection fails on every machine here (no capture device):
-// ConnectCamera reports that through the view's ErrorOccurred event.
+// The real CameraViewHandler (not AppleNoConnectCameraViewHandler) connects the camera from its `async void` ConnectHandler as soon as it gets a
+// platform view, and its property mappers for SelectedCamera and ImageCaptureResolution are `async void` too. In an app an exception there
+// reaches no caller and terminates it, so AppleRecordingSynchronizationContext receives what they could not deliver and the tests check that
+// nothing escapes. The camera provider is scripted (AppleCameraProviderOverride), so the handler never opens a real camera or the permission prompt.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
@@ -96,8 +94,8 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 
 			context.Drain();
 
-			// The old preview was stopped and the restart failed on the camera without a capture device. The manager stays initialized, so that
-			// the next SelectedCamera starts the preview (SelectingACameraAfterOneThatCannotStartStartsThePreviewWithIt).
+			// The manager stays initialized so that the next SelectedCamera starts the preview
+			// (SelectingACameraAfterOneThatCannotStartStartsThePreviewWithIt).
 			Assert.Equal(["stop", "begin"], session.Calls.Take(2));
 			Assert.True(access.IsInitialized);
 			Assert.False(session.IsRunning);
@@ -106,8 +104,7 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 	}
 
 	// A camera switch that fails (here on a camera without a capture device, as for one that another app uses) used to leave the manager
-	// stopped, and the handler then ignored every later SelectedCamera: the preview stayed black until the app called StartCameraPreview. The
-	// session, the camera input and the rotation coordinator are fakes and stubs, so the start of the valid camera runs without a camera.
+	// stopped, and the handler then ignored every later SelectedCamera: the preview stayed black until the app called StartCameraPreview.
 	[Fact]
 	public async Task SelectingACameraAfterOneThatCannotStartStartsThePreviewWithIt()
 	{
@@ -312,8 +309,8 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// The CameraException of a camera switch that fails reaches no caller of the `async void` MapSelectedCamera: the view reports it through
-	// ErrorOccurred (the handler used to only trace it, so the app never learned why the preview stopped).
+	// The CameraException of a camera switch that fails reaches no caller of the `async void` MapSelectedCamera. The handler used to only trace
+	// it, so the app never learned why the preview stopped.
 	[Fact]
 	public async Task ChangingTheSelectedCameraToOneThatCannotStartRaisesErrorOccurred()
 	{
@@ -385,7 +382,6 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 	// The device rejects the format that the resolution selects (FakeCaptureDevice's strict mode, after Apple's documentation of
 	// -[AVCaptureDevice setActiveFormat:]: NSInvalidArgumentException for a format that is not one of the device's), so UpdateCaptureResolution
 	// raises: the `async void` MapImageCaptureResolution must not let that escape, it would terminate the app.
-	// Catches: MapImageCaptureResolution without its try/catch.
 	[Fact]
 	public async Task ChangingTheResolutionToAFormatThatTheDeviceRejectsRaisesNoUnhandledException()
 	{
@@ -421,8 +417,7 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// The device rejects the format that the resolution selects (see ChangingTheResolutionToAFormatThatTheDeviceRejectsRaisesNoUnhandledException):
-	// the view reports the NSInvalidArgumentException of the `async void` MapImageCaptureResolution through ErrorOccurred.
+	// The device rejects the format as in ChangingTheResolutionToAFormatThatTheDeviceRejectsRaisesNoUnhandledException.
 	[Fact]
 	public async Task ChangingTheResolutionToAFormatThatTheDeviceRejectsRaisesErrorOccurred()
 	{
@@ -458,10 +453,7 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// Creates the real handler for a new CameraView (optionally with a camera selected first) with the given provider and the recording
-	// SynchronizationContext installed, and runs the test with what the async void methods could not deliver and with what the view reported
-	// through ErrorOccurred. Afterwards it disconnects the handler (the manager's Dispose stops the session, which raises if a failed start left
-	// its configuration block open).
+	// Disconnecting the handler at the end disposes the manager, whose session stop raises if a failed start left its configuration block open.
 	async Task ConnectAsync(ICameraProvider provider, Action<CameraView, CameraViewHandler, IReadOnlyList<Exception>, IReadOnlyList<Exception>> test, CameraInfo? selectedCamera = null)
 	{
 		SetupBuilder();

@@ -4,8 +4,8 @@ using ParentWindow = CommunityToolkit.Maui.Extensions.PageExtensions.ParentWindo
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-// The fifth state of ParentWindow.Exists next to ParentWindowTests: the last window of the application has no page. MediaManager's status timer
-// (MediaManager.windows.cs PlatformUpdatePosition) asks ParentWindow.Exists on every tick to stop updating once its window is gone.
+// The fifth state of ParentWindow.Exists, next to ParentWindowTests. MediaManager's status timer (MediaManager.windows.cs PlatformUpdatePosition)
+// asks ParentWindow.Exists on every tick to stop updating once its window is gone.
 public class ParentWindowWithoutPageTests : BaseViewTest
 {
 	[Fact]

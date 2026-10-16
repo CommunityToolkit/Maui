@@ -5,8 +5,8 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Smoke tests of the device-test infrastructure. Every run reports two Skipped tests from this class on purpose:
-// RuntimeSkipIsReportedAsSkipped and one row of RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
+// Every run reports two Skipped tests from this class on purpose: RuntimeSkipIsReportedAsSkipped and one row of
+// RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
 // None of them creates a CameraView platform view: connecting it starts a camera session (and a permission prompt).
 [Category(TestCategory.DeviceTestsInfrastructure)]
 [Collection(TestCollections.DisableParallelization)]
@@ -44,7 +44,6 @@ public class DeviceTestsInfrastructureTests : CameraHandlerTestBase
 
 		if (previousRowServices is not null)
 		{
-			// The previous row's teardown (HandlerTestBasement.DisposeAsync) disposed its MauiApp.
 			Assert.Throws<ObjectDisposedException>(() => previousRowServices.GetService(typeof(IMauiHandlersFactory)));
 		}
 
@@ -61,8 +60,7 @@ public class DeviceTestsInfrastructureTests : CameraHandlerTestBase
 		Assert.True(violations.Count is 0, string.Join(Environment.NewLine, violations));
 	}
 
-	// The capabilities that a CI job declares missing or required (DeviceTestCapabilities) must be ones the tests know: a misspelled name
-	// would silently skip or require nothing.
+	// A misspelled capability name in a CI job would silently skip or require nothing.
 	[Fact]
 	public void DeclaredCapabilitiesAreValid()
 	{
@@ -103,8 +101,8 @@ public class DeviceTestsInfrastructureTests : CameraHandlerTestBase
 
 		await AttachAndRun(label, async _ =>
 		{
-			// OnLoadedAsync returns once the view is loaded, which can come before MAUI raises Loaded (CI run 38100792354, Android API 28):
-			// wait for the counted event as well
+			// OnLoadedAsync returns once the view is loaded, which can come before MAUI raises Loaded (CI run 38100792354, Android API 28), so
+			// wait for the counted event as well.
 			await loaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
 			await label.OnLoadedAsync();
 

@@ -4,11 +4,10 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android online recognizer (android.speech.SpeechRecognizer). A device normally has a recognition service (Google), but it needs
-// RECORD_AUDIO, a microphone and often the network, so the tests cover what happens without them and drive the wired listener.
-// The real recognizer is started without RECORD_AUDIO: the service then answers with an engine error on the main looper (on the local
-// google_apis_playstore images ERROR_INSUFFICIENT_PERMISSIONS, 28 to 44 ms later), which lets a test tell a recognizer that the toolkit
-// destroyed (no answer) from one it left running.
+// The recognition service needs RECORD_AUDIO, a microphone and often the network, so the tests cover what happens without them and
+// drive the wired listener. The real recognizer is started without RECORD_AUDIO: the service then answers with an engine error on the
+// main looper (on the local google_apis_playstore images ERROR_INSUFFICIENT_PERMISSIONS, 28 to 44 ms later), which lets a test tell a
+// recognizer that the toolkit destroyed (no answer) from one it left running.
 public sealed partial class SpeechToTextTests
 {
 	static bool IsRecognitionAvailable => SpeechRecognizer.IsRecognitionAvailable(AppContext);
@@ -37,9 +36,8 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// android.speech.SpeechRecognizer may only be used from the main thread. StartListenAsync does not marshal, so the platform
-	// exception of CreateSpeechRecognizer reaches the caller, and the clean-up in the shared catch block leaves the implementation
-	// stopped with nothing created.
+	// android.speech.SpeechRecognizer may only be used from the main thread, and StartListenAsync does not marshal, so the platform
+	// exception of CreateSpeechRecognizer reaches the caller.
 	[Fact]
 	public async Task StartListenAsyncFromABackgroundThreadFailsAndStaysStopped()
 	{
@@ -58,12 +56,9 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// End to end through the toolkit's listener: without RECORD_AUDIO the recognition service answers the started session with an
-	// engine error, which the listener reports as a failed result. The local google_apis_playstore images answer
-	// ERROR_INSUFFICIENT_PERMISSIONS; another image's service (CI's google_apis image was not exercised) may report another error,
-	// so only the toolkit's part is asserted: one failed result with the engine's error, and no state change. (The text of every
-	// error is asserted by ErrorCompletesWithTheEngineFailureAndThenStops.) A session that the platform disconnected before the service
-	// answered is started again (StartRealSessionAsync).
+	// The local google_apis_playstore images answer ERROR_INSUFFICIENT_PERMISSIONS; another image's service (CI's google_apis image was not
+	// exercised) may report another error, so only the toolkit's part is asserted: one failed result with the engine's error, and no state
+	// change. The text of every error is asserted by ErrorCompletesWithTheEngineFailureAndThenStops.
 	[Fact]
 	public async Task StartListenAsyncWithoutRecordAudioCompletesWithTheEngineFailure()
 	{
@@ -86,9 +81,8 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// StartListenAsync checks the token once more after StartListening: a start that was cancelled meanwhile stops and destroys the
-	// recognizer it has just started (the shared catch block) and rethrows. The culture name is read while the intent is built, after
-	// the first check and before the second, so cancelling there is deterministic. The destroyed session never answers.
+	// The culture name is read while the intent is built, between the two token checks of StartListenAsync, so cancelling there is
+	// deterministic.
 	[Fact]
 	public async Task StartListenAsyncCancelledWhileStartingStopsTheRecognizerAndRethrows()
 	{
@@ -117,8 +111,8 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// The start and the stop raise no event themselves. The stopped session reports its outcome afterwards, at any time after this turn
-	// (see StopListenAsyncSurfacesTheOutcomeOfTheStoppedSession), so the events are read in the turn.
+	// The stopped session reports its outcome at any time after this turn (see StopListenAsyncSurfacesTheOutcomeOfTheStoppedSession), so the
+	// events are read in the turn.
 	[Fact]
 	public async Task StartListenAsyncCreatesTheRecognizerAndTheListenerAndDisposeReleasesThem()
 	{

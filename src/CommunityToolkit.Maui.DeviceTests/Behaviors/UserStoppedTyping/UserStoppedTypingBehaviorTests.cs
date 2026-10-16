@@ -3,9 +3,6 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of UserStoppedTypingBehavior.ShouldDismissKeyboardAutomatically: a focused Entry in the window gets text that its platform
-// view enters, and the user then stops typing. Dismissing the keyboard removes the focus on every platform; on Android it also hides the
-// soft keyboard (see the .android.cs partial). The test base is Behaviors/KeyboardDismissalTestBase.cs.
 [Category(TestCategory.UserStoppedTypingBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
@@ -40,7 +37,7 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 		});
 	}
 
-	// The Command runs once the user stopped typing (100 ms), after the behavior dismissed the keyboard.
+	// The behavior dismisses the keyboard before it runs the Command, so the tests can assert the focus once the Command has run.
 	static (Entry Entry, Task<string> CommandExecuted) CreateEntryWithBehavior(bool shouldDismissKeyboardAutomatically)
 	{
 		var commandTCS = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);

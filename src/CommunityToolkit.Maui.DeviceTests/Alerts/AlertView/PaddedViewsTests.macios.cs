@@ -120,7 +120,6 @@ public class PaddedLabelTests : AlertsTestBase
 			var padded = Render(label, new CGSize(width, height));
 			var plain = Render(new UILabel(), new CGSize(width, height));
 
-			// The padding and the rest of the label as (left, top, right, bottom) in points
 			var (paddingArea, textArea) = side switch
 			{
 				"Top" => ((0, 0, width, padding), (0, padding, width, height)),
@@ -166,10 +165,8 @@ public class PaddedLabelTests : AlertsTestBase
 		return new UIGraphicsImageRenderer(label.Frame.Size).CreateImage(context => label.Layer.RenderInContext(context.CGContext));
 	}
 
-	// True when a pixel in the column range [from, to) (points) is not white.
 	static bool HasInk(UIImage image, int from, int to) => HasInk(image, (from, 0, to, int.MaxValue));
 
-	// True when a pixel in the area [left, right) x [top, bottom) (points) is not white.
 	static bool HasInk(UIImage image, (int Left, int Top, int Right, int Bottom) area)
 	{
 		var (pixels, width, height) = AlertsApple.ReadPixels(image);

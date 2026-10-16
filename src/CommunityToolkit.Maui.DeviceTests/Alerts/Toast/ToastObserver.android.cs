@@ -9,16 +9,15 @@ using Toast = Android.Widget.Toast;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// What the system reports about one toast: Android sends an accessibility event for every toast it displays. The event carries the
-// text the app passed to Toast.makeText, including its spans, and the package of the app.
+// Android sends an accessibility event for every toast it displays; it carries the text passed to Toast.makeText, including its spans,
+// and the package of the app.
 public sealed record ToastEvent(string Text, string ClassName, string PackageName, IReadOnlyList<ToastSizeSpan> SizeSpans);
 
-// An AbsoluteSizeSpan of the toast text: its size, its unit and the range of the text it covers.
 public sealed record ToastSizeSpan(int Size, bool IsDip, int Start, int End);
 
-// A toast the toolkit created, with what the platform says about its lifetime: Toast.Callback on Android 11 and later, and the
-// attachment of the toast's view to the window before that (older toasts own a real view, newer ones have none). Both keep working
-// after a test disposed the Java peer of the toast: the callback and the view are Java objects of their own.
+// The lifetime of a toast comes from Toast.Callback on Android 11 and later, and from the attachment of the toast's view to the window
+// before that (older toasts own a real view, newer ones have none). Both keep working after a test disposed the Java peer of the toast,
+// because the callback and the view are Java objects of their own.
 public sealed class ObservedToast
 {
 	readonly Android.Views.View? legacyView;
@@ -96,17 +95,8 @@ public sealed class ToastObserver : IDisposable
 		}
 	}
 
-	/// <summary>
-	/// Switches off the accessibility service that connecting the instrumentation's UiAutomation switched on (see <see cref="Create"/>), so that
-	/// the tests that run later, of every area, see no accessibility service, like the device before the first Toast test. From API 33 the
-	/// connection is remade without accessibility (<c>UiAutomationFlags.DontUseAccessibility</c>): the same UiAutomation object stays, with the
-	/// shared listener, and the next plain request reconnects it with accessibility. Before API 33 the only way is the hidden
-	/// <c>UiAutomation.destroy()</c>; the next request creates a new UiAutomation, on which <see cref="Create"/> installs the listener again.
-	/// </summary>
-	/// <returns>
-	/// False when the app still reports an accessibility service 5 s after the release. True otherwise, also when this Android version refuses
-	/// the hidden destroy() (only possible before API 33): the service then stays on, as it did before this release existed.
-	/// </returns>
+	// Returns true even when the platform refuses the hidden destroy() (before API 33): the service then stays on, as it did before this
+	// method existed.
 	public static async Task<bool> ReleaseAccessibilityServiceAsync(AccessibilityManager accessibilityManager)
 	{
 		if (MauiTestInstrumentation.Current is not MauiTestInstrumentation instrumentation)
@@ -146,12 +136,14 @@ public sealed class ToastObserver : IDisposable
 		}
 		catch (Java.Lang.Throwable)
 		{
-			// The platform refuses the hidden method (hidden API restrictions): the accessibility service stays on (see the return value above).
+			// The platform refuses the hidden method (hidden API restrictions): the accessibility service stays on, which
+			// ReleaseAccessibilityServiceAsync accepts.
 			return false;
 		}
 	}
 
-	// Starts observing a toast the toolkit has just shown, and returns once the system displays it and has reported its text.
+	// Call it right after the toolkit showed the toast: the accessibility event of the toast is taken to be the first one after the
+	// current count of events.
 	public async Task<ObservedToast> WaitForDisplayAsync(Toast platformToast)
 	{
 		var observed = new ObservedToast(platformToast);
@@ -171,8 +163,7 @@ public sealed class ToastObserver : IDisposable
 	}
 
 	// A toast whose Java peer a test disposed while it was displayed cannot be cancelled: the system displays it until it times out
-	// (3.5 s for a long toast) and queues every later toast behind it. Waits (up to 10 s) until such a toast is hidden, so that the next
-	// test starts with nothing on screen, and returns whether there was one.
+	// (3.5 s for a long toast) and queues every later toast behind it, so the next test would start with it still on screen.
 	public async Task<bool> WaitForToastsThatCannotBeCancelledAsync()
 	{
 		var stuck = toasts.Where(toast => toast.Platform.Handle == IntPtr.Zero && toast.IsDisplayed).ToList();

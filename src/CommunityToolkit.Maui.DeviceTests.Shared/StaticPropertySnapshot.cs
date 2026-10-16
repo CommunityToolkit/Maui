@@ -6,8 +6,8 @@ using System.Reflection;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// Captures the static properties of option types (the toolkit's Options classes keep their values in static properties)
-/// so a test that changes them can put the app-wide values back when it ends.
+/// Static properties, such as those of the toolkit's Options classes, hold app-wide values that outlive the test that changes them,
+/// so that test has to put them back when it ends.
 /// </summary>
 public sealed class StaticPropertySnapshot
 {
@@ -15,9 +15,6 @@ public sealed class StaticPropertySnapshot
 
 	readonly List<(PropertyInfo Property, object? Value)> values = [];
 
-	/// <summary>
-	/// Records the current value of every settable static property declared by <paramref name="type"/>, whatever its accessibility.
-	/// </summary>
 	public StaticPropertySnapshot Capture([DynamicallyAccessedMembers(staticProperties)] Type type)
 	{
 		foreach (var property in type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
@@ -31,14 +28,8 @@ public sealed class StaticPropertySnapshot
 		return this;
 	}
 
-	/// <summary>
-	/// Number of properties captured.
-	/// </summary>
 	public int Count => values.Count;
 
-	/// <summary>
-	/// Writes the captured values back.
-	/// </summary>
 	public void Restore()
 	{
 		foreach (var (property, value) in values)

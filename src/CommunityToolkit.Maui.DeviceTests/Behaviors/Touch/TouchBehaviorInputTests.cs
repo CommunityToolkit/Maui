@@ -3,12 +3,8 @@ using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// What the platform implementations of <see cref="TouchBehavior"/> do with real native input: Android <c>MotionEvent</c>s sent to the
-/// view's touch listener, UIKit touches and hover states delivered to the behavior's gesture recognizers (iOS and Mac Catalyst).
-/// Windows cannot be fed pointer input (see <see cref="TouchBehaviorTestBase.NativePointerInputUnavailableReason"/>), so these tests
-/// are skipped there; the Windows handlers that can run without event arguments are covered in the Windows partial.
-/// </summary>
+// Windows cannot be fed pointer input (see TouchBehaviorTestBase.NativePointerInputUnavailableReason), so these tests are skipped there;
+// the Windows handlers that can run without event arguments are covered in the Windows partial.
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
@@ -19,8 +15,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		Vertical
 	}
 
-	// Catches: press not reaching Started/Pressed/Started, release inside not reaching Completed/Default/Completed, the command not
-	// executed with its parameter, the completed event or the status events missing or out of order.
 	[Fact]
 	public async Task PressAndReleaseInsideCompletesTheGesture()
 	{
@@ -54,7 +48,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a cancelled touch being reported as completed (Android OnTouchCancel, iOS TouchesCancelled), the command running anyway.
 	[Fact]
 	public async Task CancelledTouchCancelsTheGesture()
 	{
@@ -77,8 +70,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: moving outside the view, beside it or below it, not cancelling the touch (Android viewRect check, iOS Bounds.Contains), a
-	// release after leaving the view completing the gesture.
 	[Theory]
 	[InlineData(DragAxis.Horizontal)]
 	[InlineData(DragAxis.Vertical)]
@@ -105,9 +96,7 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A touch that left the view and is then cancelled by the system (an alert, a call, the view going away) has ended as well: the interaction
-	// completes, as when that touch is released, and the command does not run.
-	// Catches: iOS / Mac Catalyst's isCanceled latch, set when the touch left the view, swallowing the completion in TouchesCancelled.
+	// The isCanceled latch of iOS / Mac Catalyst, set when the touch left the view, must not swallow the completion in TouchesCancelled.
 	[Fact]
 	public async Task CancellingATouchThatLeftTheViewCompletesTheInteraction()
 	{
@@ -131,13 +120,11 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// While the behavior is disabled no native input may reach it: not one status event, and on Android no hover tracking either. The final
-	// statuses alone cannot show it: GestureManager.HandleTouch / HandleHover ignore a disabled behavior as well, and the interaction status
-	// (which they do not guard) ends Completed whichever way, so the test records the events. On Android the hover goes to the touch
-	// listener directly (the only way a hover reaches it, see HoverEnterAndExitUpdateTheHoverStatus): without the listener's guard it would
-	// switch on the hover tracking, and a touch moving inside the view after the behavior is enabled again would then report a hover.
-	// Catches: IsEnabled being ignored by a platform handler (Android OnTouch, iOS TouchesBegan/Moved/Ended/Cancelled and OnHover); on
-	// iOS / Mac Catalyst the recognizer's HandleTouch and GestureManager guard the same calls again, so there it takes both guards missing.
+	// The final statuses alone cannot show that no native input reached the disabled behavior: GestureManager.HandleTouch / HandleHover
+	// ignore a disabled behavior as well, and the interaction status (which they do not guard) ends Completed whichever way, so the test
+	// records the events. On Android the hover goes to the touch listener directly (the only way a hover reaches it, see
+	// HoverEnterAndExitUpdateTheHoverStatus): without the listener's guard it would switch on the hover tracking, and a touch moving inside
+	// the view after the behavior is enabled again would then report a hover.
 	[Fact]
 	public async Task DisabledBehaviorIgnoresTouchAndHover()
 	{
@@ -181,7 +168,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			Assert.Equal(HoverState.Default, behavior.CurrentHoverState);
 			Assert.Equal(0, command.ExecuteCount);
 
-			// Enabling it again makes the same view respond, and nothing of the hover that arrived while it was disabled is left.
 			behavior.IsEnabled = true;
 			NativePress(handler);
 			NativeMove(handler, HostCenter + 5, HostCenter);
@@ -193,7 +179,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a command that cannot execute still starting or completing the gesture (GestureManager.HandleTouch's canExecute checks).
 	[Fact]
 	public async Task CommandThatCannotExecuteBlocksTheGesture()
 	{
@@ -207,7 +192,7 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		{
 			NativePress(handler);
 
-			// The touch status and state ignore the press; the interaction status is not guarded.
+			// CanExecute does not guard the interaction status, so only the touch status and state show that the press was ignored.
 			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
 			Assert.Equal(TouchState.Default, behavior.CurrentTouchState);
 
@@ -218,7 +203,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			Assert.Equal(0, command.ExecuteCount);
 			Assert.True(command.CanExecuteCount > 0, "The behavior must ask the command whether it can execute.");
 
-			// Once the command can execute, the same view works.
 			command.CanExecuteResult = true;
 			NativePress(handler);
 			AssertTouchNow(behavior, TouchStatus.Started, TouchState.Pressed, TouchInteractionStatus.Started, "after the press");
@@ -228,8 +212,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the long press timer not starting on press, the long press event or command not running, the tap still running after a
-	// long press that has its own command (OnTappedCompleted's LongPressCommand check).
 	[Fact]
 	public async Task LongPressRaisesTheLongPressAndSuppressesTheTapWhenItHasItsOwnCommand()
 	{
@@ -271,7 +253,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the tap being dropped after a long press that has no command of its own.
 	[Fact]
 	public async Task LongPressWithoutALongPressCommandStillCompletesTheTap()
 	{
@@ -293,7 +274,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the long press firing although the touch ended first (the cancelled Task.Delay of HandleLongPress).
 	[Fact]
 	public async Task ReleasingBeforeTheLongPressDurationDoesNotRaiseTheLongPress()
 	{
@@ -320,9 +300,8 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: hover entering or leaving not updating the hover status and state (iOS / Mac Catalyst UIHoverGestureRecognizer), the hover
-	// events missing. On Android the hover is delivered as Android delivers it (a generic motion event from the mouse, which never reaches a
-	// touch listener): the behavior must take it from the view's generic motion listener.
+	// On Android a mouse hover is a generic motion event, which never reaches a touch listener, so the behavior must take it from the
+	// view's generic motion listener.
 	[Fact]
 	public async Task HoverEnterAndExitUpdateTheHoverStatus()
 	{
@@ -352,8 +331,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The threshold applies to the larger of the horizontal and the vertical distance from the start of the touch.
-	// Catches: a drag within the threshold cancelling the touch, a drag beyond it (still inside the view) along either axis not cancelling it.
 	[Theory]
 	[InlineData(DragAxis.Horizontal)]
 	[InlineData(DragAxis.Vertical)]
@@ -385,8 +362,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: moves that follow a touch the threshold cancelled restarting it (Android: OnTouchMove's IsCanceled check; iOS / Mac Catalyst:
-	// the recognizer's isCanceled check), and the release of such a touch completing the gesture.
 	[Fact]
 	public async Task MovesAfterTheThresholdCancelledTheTouchAreIgnored()
 	{
@@ -405,7 +380,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			AssertTouchNow(behavior, TouchStatus.Canceled, TouchState.Default, TouchInteractionStatus.Completed, "after a drag beyond the threshold");
 			var events = statusLog.Count;
 
-			// Back to where the touch started and around inside the view: nothing may restart the touch.
 			NativeMove(handler, 30, HostCenter);
 			NativeMove(handler, 35, HostCenter);
 			AssertTouchNow(behavior, TouchStatus.Canceled, TouchState.Default, TouchInteractionStatus.Completed, "after moving back");
@@ -417,7 +391,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a threshold of 0 (the default, "no threshold") cancelling a drag that stays inside the view.
 	[Fact]
 	public async Task DragInsideTheViewWithoutAThresholdKeepsTheGesture()
 	{
@@ -438,9 +411,6 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A tap delivered to a Button's platform view as a finger's (on iOS and Mac Catalyst through UIKit, so that the UIButton sees it too).
-	// Catches: a Button that has the behavior not being clicked by the tap, or being clicked twice (once by the behavior, once by the
-	// platform button).
 	[Fact]
 	public async Task CompletedGestureOnAButtonRaisesClicked()
 	{
@@ -457,13 +427,12 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			await NativeTapAsync(handler);
 			await WaitUntilAsync(() => clicks == 1, "The completed gesture did not click the Button.");
 
-			// Nothing clicks it a second time (the platform button handles the same touch).
+			// The platform button handles the same touch, so the behavior must not click the Button as well.
 			await SettleAsync();
 			Assert.Equal(1, clicks);
 		});
 	}
 
-	// Catches: a second finger/press while pressed leaving the gesture stuck; a new press after a completed one not starting again.
 	[Fact]
 	public async Task TheGestureCanBeRepeated()
 	{
@@ -486,11 +455,10 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The point on the horizontal or vertical line through the center of the host that is "along" points from the host's left or top edge.
-	static (double X, double Y) PointOn(DragAxis axis, double along) => axis switch
+	static (double X, double Y) PointOn(DragAxis axis, double distanceFromLeftOrTopEdge) => axis switch
 	{
-		DragAxis.Horizontal => (along, HostCenter),
-		DragAxis.Vertical => (HostCenter, along),
+		DragAxis.Horizontal => (distanceFromLeftOrTopEdge, HostCenter),
+		DragAxis.Vertical => (HostCenter, distanceFromLeftOrTopEdge),
 		_ => throw new ArgumentOutOfRangeException(nameof(axis), axis, null)
 	};
 }

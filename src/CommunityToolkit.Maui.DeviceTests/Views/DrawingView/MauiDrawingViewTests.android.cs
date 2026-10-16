@@ -6,14 +6,12 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class MauiDrawingViewTests
 {
-	// Catches: the view ignores the context it is constructed with
 	[Fact]
 	public Task ViewIsCreatedWithTheGivenContext() => WithView(view =>
 	{
 		Assert.Same(MauiProgramDefaults.DefaultContext, view.Context);
 	});
 
-	// Catches: Down/Up/Cancel do not ask the parent to (stop) intercepting, or ask with the wrong value
 	[Fact]
 	public Task DownAsksTheParentNotToInterceptTouchesAndUpOrCancelAllowsItAgain() => WithView(view =>
 	{
@@ -33,7 +31,6 @@ public partial class MauiDrawingViewTests
 		Assert.Equal(new[] { true, false, true, false }, parent.DisallowInterceptRequests);
 	});
 
-	// Catches: a view without a parent throws, or handled actions do not return true
 	[Fact]
 	public async Task TouchEventsWithoutAParentAreHandledAndDoNotThrow()
 	{
@@ -57,7 +54,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: actions other than Down/Move/Up/Cancel are handled
 	[Theory]
 	[InlineData(MotionEventActions.PointerDown)]
 	[InlineData(MotionEventActions.PointerUp)]
@@ -76,14 +72,12 @@ public partial class MauiDrawingViewTests
 		Assert.Equal(0, recorder.Cancelled);
 	});
 
-	// Catches: a null MotionEvent is not rejected with ArgumentNullException
 	[Fact]
 	public Task NullMotionEventThrowsArgumentNullException() => WithView(view =>
 	{
 		Assert.Throws<ArgumentNullException>(() => view.OnTouchEvent(null));
 	});
 
-	// Catches: touch pixels are not divided by the display density
 	[Fact]
 	public Task TouchPixelsAreReportedInDeviceIndependentUnits() => WithView(view =>
 	{
@@ -97,7 +91,6 @@ public partial class MauiDrawingViewTests
 		AssertPoint(210 / density, 105 / density, Assert.Single(recorder.Points));
 	});
 
-	// Catches: any of the four bounds comparisons of the Move case is dropped, or the out-of-bounds point is not reported
 	[Theory]
 	[InlineData("left")]
 	[InlineData("top")]
@@ -109,15 +102,15 @@ public partial class MauiDrawingViewTests
 		view.LineColor = red;
 		view.LineWidth = 10;
 		var recorder = new GestureRecorder(view);
-		double width = view.Width, height = view.Height; // pixels
+		double widthInPixels = view.Width, heightInPixels = view.Height;
 		DrawingViewTestPlatform.TouchDown(view, 100, 50);
 
 		var (x, y) = edge switch
 		{
-			"left" => (0d, height / 2),
-			"top" => (width / 2, 0d),
-			"right" => (width, height / 2),
-			"bottom" => (width / 2, height),
+			"left" => (0d, heightInPixels / 2),
+			"top" => (widthInPixels / 2, 0d),
+			"right" => (widthInPixels, heightInPixels / 2),
+			"bottom" => (widthInPixels / 2, heightInPixels),
 			_ => throw new ArgumentOutOfRangeException(nameof(edge))
 		};
 		DrawingViewTestPlatform.Send(view, MotionEventActions.Move, x, y);
@@ -127,7 +120,6 @@ public partial class MauiDrawingViewTests
 		DrawingPixelAssert.DoesNotContainColor(await RenderAsync(view), red, because: $"the {edge} edge is not inside the view, so the in-progress path is not extended");
 	});
 
-	// Catches: a move just inside the edges is ignored
 	[Fact]
 	public Task MoveJustInsideTheEdgesExtendsThePath() => WithViewAsync(async view =>
 	{
@@ -141,7 +133,6 @@ public partial class MauiDrawingViewTests
 		DrawingPixelAssert.SegmentHasColor(await RenderAsync(view), (20, 50), (80, 50), red);
 	});
 
-	// Catches: points are not clamped (or clamped to the wrong bound) before the line is drawn
 	[Theory]
 	[InlineData("left", 150, 90, -100, 50, 75, 70, 75, 78)]
 	[InlineData("right", 100, 90, 300, 50, 150, 70, 150, 80)]
@@ -158,7 +149,6 @@ public partial class MauiDrawingViewTests
 		DrawingPixelAssert.NotColorAtUnits(image, unclampedProbeX, unclampedProbeY, red, because: $"{side}: the unclamped line would pass here");
 	});
 
-	// Catches: a line without points breaks the Android normalization
 	[Fact]
 	public Task EmptyStoredLineIsNormalizedWithoutError() => WithViewAsync(async view =>
 	{
@@ -168,7 +158,6 @@ public partial class MauiDrawingViewTests
 		DrawingPixelAssert.DoesNotContainColor(await RenderAsync(view), red);
 	});
 
-	// Catches: points moved outside the view during a gesture are dropped from the stored line instead of clamped when drawn
 	[Fact]
 	public Task LineDrawnBeyondTheViewKeepsItsPointsAndIsClampedWhenRendered() => WithViewAsync(async view =>
 	{
@@ -190,7 +179,6 @@ public partial class MauiDrawingViewTests
 		DrawingPixelAssert.NotColorAtUnits(image, 50, 55, red, because: "the unclamped line would pass here");
 	});
 
-	// Catches: Dispose(true) does not dispose the in-progress path.
 	// The Handle checks are preconditions, not evidence: Java.Lang.Object.Dispose() releases the peer itself and Java.Lang.Object.Dispose(bool)
 	// is empty (Mono.Android 36), so the product's base.Dispose(disposing) call has no observable effect on Android.
 	[Fact]
@@ -213,7 +201,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: the finalizer path (Dispose(false)) disposes the in-progress path (a managed resource)
 	[Fact]
 	public async Task DisposeWithoutDisposingKeepsTheNativePeer()
 	{

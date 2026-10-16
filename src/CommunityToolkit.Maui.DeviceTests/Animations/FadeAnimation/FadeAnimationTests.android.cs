@@ -11,17 +11,10 @@ public partial class FadeAnimationTests
 
 	static double GetNativeOpacity(IPlatformViewHandler handler) => ((AView)(handler.ContainerView ?? handler.PlatformView!)).Alpha;
 
-	/// <summary>
-	/// Makes MAUI animate in this process, as TouchBehaviorTestBase.EnableAnimationsAsync does. The pool emulators (like CI's) run with the
-	/// global animator duration scale at 0, and MAUI then jumps to the end of every animation (it asks <c>ValueAnimator.AreAnimatorsEnabled</c>),
-	/// so no animation could start while another one runs.
-	/// <para>
-	/// The scale is switched on for this process only, through <c>ValueAnimator.setDurationScale</c> (a hidden API on the unsupported-app-usage
-	/// list), and never through the global setting: nothing outlives the test process. <see cref="PlatformDisposeAsync"/> puts the previous
-	/// scale back. MAUI's ticker learns about the change through its duration scale listener (API 33+) or, before that, through its energy
-	/// saver callback, which re-reads the same API.
-	/// </para>
-	/// </summary>
+	// Same approach as TouchBehaviorTestBase.EnableAnimationsAsync. The pool emulators (like CI's) run with the global animator duration scale
+	// at 0, and MAUI then jumps to the end of every animation (it asks ValueAnimator.AreAnimatorsEnabled), so no animation could start while
+	// another one runs. The scale is switched on for this process only, through ValueAnimator.setDurationScale (a hidden API on the
+	// unsupported-app-usage list), and never through the global setting: nothing outlives the test process.
 	async Task EnableAnimationsAsync(IPlatformViewHandler handler)
 	{
 		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(26), "ValueAnimator.DurationScale and AreAnimatorsEnabled need API 26: animations cannot be switched on in-process here.");
@@ -39,6 +32,8 @@ public partial class FadeAnimationTests
 				}
 			}
 
+			// The ticker learns about the new scale through its duration scale listener (API 33+) or, before that, through its energy saver
+			// callback, which re-reads it.
 			(handler.MauiContext?.Services.GetService(typeof(ITicker)) as IEnergySaverListener)?.OnStatusUpdated(false);
 		});
 

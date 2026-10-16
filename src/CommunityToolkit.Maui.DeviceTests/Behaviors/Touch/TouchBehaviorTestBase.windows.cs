@@ -9,8 +9,9 @@ using Stretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The native readers follow what MAUI 10.0.90's Windows handlers write (TransformationExtensions.UpdateTransformation): without a x/y rotation the RenderTransform is a
-// CompositeTransform (rotation, scale, translation); with one it is a ScaleTransform and a PlaneProjection (rotations, translation).
+// The native readers follow what MAUI 10.0.90's Windows handlers write (TransformationExtensions.UpdateTransformation): without an x/y
+// rotation the RenderTransform is a CompositeTransform (rotation, scale, translation); with one it is a ScaleTransform and a
+// PlaneProjection (rotations, translation).
 public abstract partial class TouchBehaviorTestBase
 {
 	public const string PointerDownAnimationKey = "PointerDownAnimation";
@@ -24,9 +25,6 @@ public abstract partial class TouchBehaviorTestBase
 
 	protected static FrameworkElement GetPlatformView(IPlatformViewHandler handler) => (FrameworkElement)handler.PlatformView!;
 
-	// ---- lifecycle accessors (used by the shared lifecycle tests)
-
-	/// <summary>The behavior named the element and added the pointer-down and pointer-up storyboards to its resources.</summary>
 	protected static void AssertNativeHooksAttached(FrameworkElement view)
 	{
 		Assert.False(string.IsNullOrEmpty(view.Name), "The behavior must give the element a name (the storyboards target it).");
@@ -40,19 +38,18 @@ public abstract partial class TouchBehaviorTestBase
 		Assert.Equal(view.Name, Storyboard.GetTargetName(upAnimation));
 	}
 
-	/// <summary>Windows: the behavior changes nothing about how the element takes input (it only names it and adds storyboards).</summary>
+	// The behavior changes nothing about how an element takes input on Windows (it only names the element and adds storyboards).
 	protected static string GetNativeInteractionState(IPlatformViewHandler handler) =>
 		$"IsHitTestVisible={GetPlatformView(handler).IsHitTestVisible}";
 
-	/// <summary>No-op on Windows: managed objects with a native peer are released by the normal collections.</summary>
+	// Managed objects with a native peer are released by the normal collections.
 	protected static Task ReleaseNativeReferencesAsync() => Task.CompletedTask;
 
-	/// <summary>No-op on Windows: MAUI's Windows ticker animates whatever the system's animation setting (not read by MAUI 10).</summary>
+	// MAUI's Windows ticker animates whatever the system's animation setting (MAUI 10 does not read it).
 	protected Task EnableAnimationsAsync(IPlatformViewHandler handler) => Task.CompletedTask;
 
 	ValueTask PlatformDisposeAsync() => ValueTask.CompletedTask;
 
-	/// <summary>A test-built platform view (a Grid inside a Grid) for <see cref="DirectTouchBehavior"/>.</summary>
 	protected static (FrameworkElement Parent, FrameworkElement Child) CreateDetachedPlatformViews()
 	{
 		var parent = new Microsoft.UI.Xaml.Controls.Grid();
@@ -61,7 +58,6 @@ public abstract partial class TouchBehaviorTestBase
 		return (parent, child);
 	}
 
-	/// <summary>How the platform's image element stretches its image, as a MAUI <see cref="Aspect"/>.</summary>
 	protected static Aspect GetNativeImageAspect(IPlatformViewHandler handler) =>
 		((Microsoft.UI.Xaml.Controls.Image)handler.PlatformView!).Stretch switch
 		{
@@ -72,9 +68,6 @@ public abstract partial class TouchBehaviorTestBase
 			var other => throw new InvalidOperationException($"Unexpected stretch {other}.")
 		};
 
-	// ---- native state
-
-	/// <summary>True when MAUI made the element's platform view ignore pointer input (<c>InputTransparent</c> maps to hit testing).</summary>
 	protected static bool IsNativeInputTransparent(VisualElement element) =>
 		!((FrameworkElement)((IPlatformViewHandler)element.Handler!).PlatformView!).IsHitTestVisible;
 
@@ -112,16 +105,13 @@ public abstract partial class TouchBehaviorTestBase
 	protected static double GetNativeRotationY(IPlatformViewHandler handler) =>
 		GetPlatformView(handler).Projection is PlaneProjection projection ? -projection.RotationY : 0;
 
-	/// <summary>The colour the platform view paints as its background; <see langword="null"/> when it has none.</summary>
 	protected static Color? GetNativeBackgroundColor(IPlatformViewHandler handler) =>
 		GetPlatformView(handler) is Panel { Background: SolidColorBrush brush }
 			? Color.FromRgba(brush.Color.R, brush.Color.G, brush.Color.B, brush.Color.A)
 			: null;
 
-	/// <summary>
-	/// The colour the platform view shows at its centre, with its alpha: what the view looks like there, also when it paints its background
-	/// in another way than a Panel's SolidColorBrush (a Button's).
-	/// </summary>
+	// Unlike GetNativeBackgroundColor, this also works when the view paints its background in another way than a Panel's
+	// SolidColorBrush (a Button's).
 	protected static async Task<Color> GetNativeCenterColorAsync(IPlatformViewHandler handler)
 	{
 		using var bitmap = await GetPlatformView(handler).ToBitmap(handler.MauiContext!);
@@ -130,8 +120,6 @@ public abstract partial class TouchBehaviorTestBase
 		return Color.FromRgba(color.R, color.G, color.B, color.A);
 	}
 
-	// ---- native input
-	//
 	// WinUI cannot construct PointerRoutedEventArgs and a headless/CI desktop cannot be relied on to deliver injected pointer input, so
 	// there is no way to feed real pointer events to the platform view. Tests that need a pointer sequence call
 	// RequireNativePointerInput first and are skipped visibly.
@@ -163,9 +151,8 @@ public abstract partial class TouchBehaviorTestBase
 	}
 
 	/// <summary>
-	/// Invokes one of the behavior's private pointer handlers (declared <c>(object? sender, PointerRoutedEventArgs e)</c>) with
-	/// <see langword="null"/> event arguments. Only the handlers that never read <c>e</c> can be driven this way:
-	/// <c>OnPointerEntered</c>, <c>OnPointerExited</c>, <c>OnPointerCanceled</c> and <c>OnPointerCaptureLost</c>.
+	/// The handlers are invoked with <see langword="null"/> event arguments, so each runs only up to where it reads them:
+	/// <c>OnPointerEntered</c>, <c>OnPointerExited</c>, <c>OnPointerCanceled</c> and <c>OnPointerCaptureLost</c> never do.
 	/// </summary>
 	protected static void InvokePointerHandler(TouchBehavior behavior, string handlerName, FrameworkElement sender)
 	{
@@ -185,13 +172,9 @@ public abstract partial class TouchBehaviorTestBase
 		typeof(TouchBehavior).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
 			?? throw new MissingFieldException(nameof(TouchBehavior), fieldName);
 
-	/// <summary>Disposes an attached <see cref="DirectTouchBehavior"/> the way an app does (<c>Dispose()</c> without a detach first).</summary>
 	protected static void DisposeWhileAttached(DirectTouchBehavior behavior) => behavior.DisposeDirect(true);
 
-	/// <summary>
-	/// A TouchBehavior that can be attached to a platform view that MAUI knows nothing about: the native element is built by the
-	/// test, so the test controls its resources and name.
-	/// </summary>
+	// The native element is built by the test, so the test controls its resources and name.
 	protected sealed class DirectTouchBehavior : TouchBehavior
 	{
 		public void AttachDirect(VisualElement bindable, FrameworkElement platformView) => OnAttachedTo(bindable, platformView);

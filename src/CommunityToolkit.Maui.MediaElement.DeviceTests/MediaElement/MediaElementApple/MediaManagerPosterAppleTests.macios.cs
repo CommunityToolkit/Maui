@@ -7,16 +7,14 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs SetPoster: audio-only media can show the MetadataArtworkUrl image in the player's content overlay.
-// The UIKit view hierarchy of AVPlayerViewController.ContentOverlayView is what the tests read. Before #3281 the source update adds the
-// poster; since #3281 the handler of the item's ReadyToPlay status adds it right after MediaOpened, so the tests wait for the media to open.
+// Since #3281 the handler of the item's ReadyToPlay status adds the poster right after MediaOpened, so the tests wait for the media to open.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPosterAppleTests : AppleMediaElementTestBase
 {
 	static UIView Overlay(AppleMediaElementHandler handler) => handler.Manager!.NativePlayerViewController!.ContentOverlayView!;
 
-	/// <summary>Runs SetPoster (before #3281: SetPoster(), which reads PlayerItem; since #3281: SetPoster(in AVPlayerItem)).</summary>
+	// Before #3281 SetPoster() reads PlayerItem; since #3281 it is SetPoster(in AVPlayerItem).
 	static async Task SetPosterAsync(MediaManager manager, AVPlayerItem item)
 	{
 		var setPoster = typeof(MediaManager).GetMethod("SetPoster", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -46,7 +44,6 @@ public class MediaManagerPosterAppleTests : AppleMediaElementTestBase
 			Assert.True(poster.ClipsToBounds);
 			Assert.False(poster.TranslatesAutoresizingMaskIntoConstraints);
 
-			// Centered in the overlay and never larger than it...
 			var constraints = overlay.Constraints.Where(constraint => constraint.FirstItem == poster).ToList();
 			Assert.All(constraints, constraint => Assert.True(constraint.Active));
 			Assert.Equivalent(
@@ -59,7 +56,6 @@ public class MediaManagerPosterAppleTests : AppleMediaElementTestBase
 				},
 				constraints.Select(constraint => (constraint.FirstAttribute, constraint.Relation)));
 
-			// ...and keeping the aspect ratio of the image (40 x 30).
 			var aspectRatio = Assert.Single(poster.Constraints, constraint => constraint.SecondItem is not null);
 			Assert.Equal((NSLayoutAttribute.Width, NSLayoutAttribute.Height, NSLayoutRelation.Equal), (aspectRatio.FirstAttribute, aspectRatio.SecondAttribute, aspectRatio.Relation));
 			Assert.Equal(40.0 / 30.0, (double)aspectRatio.Multiplier, precision: 3);
@@ -379,7 +375,6 @@ public class MediaManagerPosterAppleTests : AppleMediaElementTestBase
 		{
 			await HostAsync(mediaElement, async handler =>
 			{
-				// An artwork URL that cannot be read, or a file that is not an image: there is no image to show.
 				await LoadAsync(mediaElement, handler, ResourceSource(AudioResource));
 				await DrainMainQueueAsync();
 

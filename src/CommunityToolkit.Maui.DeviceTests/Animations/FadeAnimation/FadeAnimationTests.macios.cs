@@ -6,7 +6,7 @@ public partial class FadeAnimationTests
 {
 	static double GetNativeOpacity(IPlatformViewHandler handler) => ((UIView)(handler.ContainerView ?? handler.PlatformView!)).Alpha;
 
-	// No-op on Apple platforms: Core Animation always animates (there is no system switch that makes MAUI skip animations).
+	// Nothing to enable: Core Animation always animates, and no system switch makes MAUI skip animations.
 	static Task EnableAnimationsAsync(IPlatformViewHandler handler) => Task.CompletedTask;
 
 	static ValueTask PlatformDisposeAsync() => ValueTask.CompletedTask;

@@ -7,8 +7,8 @@ using PlatformView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: touch and hover are sent to the platform view as MotionEvents, which reach the View.Touch listener of the behavior
-// (the behavior also treats HoverEnter and HoverExit that arrive there). The aspect is read from the ImageView's scale type.
+// The tests send hover through DispatchTouchEvent too: the behavior also handles the HoverEnter and HoverExit that reach its View.Touch
+// listener.
 public partial class ImageTouchBehaviorTests
 {
 	static bool CanAssertPlatformViewIsCollected => false;
@@ -72,7 +72,6 @@ public partial class ImageTouchBehaviorTests
 		return Task.CompletedTask;
 	}
 
-	// The behavior removed its touch listener when it detached: nothing may react to these events.
 	static Task TouchAfterDetachAsync(IPlatformViewHandler handler, TouchBehavior behavior)
 	{
 		Send(handler, MotionEventActions.Down);

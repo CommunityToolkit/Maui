@@ -5,15 +5,9 @@ using System.Text;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// A tiny HTTP server that listens on the device's loopback interface only (127.0.0.1, random port), so tests of HTTP behavior
-/// (custom request headers, artwork download) never touch a real network. Serves fixed bodies at fixed paths and records the
-/// raw request header block of every request.
-/// </summary>
-/// <remarks>
-/// Android blocks cleartext HTTP unless the app allows it: the MediaElement device-test app sets <c>android:usesCleartextTraffic</c>
-/// in its AndroidManifest.xml for this server.
-/// </remarks>
+// Listens on the loopback interface only, so tests of HTTP behavior (custom request headers, artwork download) never touch a real network.
+// Android blocks cleartext HTTP unless the app allows it: the MediaElement device-test app sets android:usesCleartextTraffic in its
+// AndroidManifest.xml for this server.
 public sealed class LoopbackHttpServer : IDisposable
 {
 	readonly TcpListener listener = new(IPAddress.Loopback, 0);
@@ -23,8 +17,6 @@ public sealed class LoopbackHttpServer : IDisposable
 	readonly ConcurrentQueue<string> requests = new();
 	readonly ConcurrentDictionary<string, TaskCompletionSource> heldPaths = new();
 
-	/// <param name="routes">The body and content type served at each path; any other path answers 404.</param>
-	/// <param name="pathsWithoutContentLength">Paths whose responses carry no Content-Length header (the end of the body is the end of the connection).</param>
 	public LoopbackHttpServer(IReadOnlyDictionary<string, (byte[] Body, string ContentType)> routes, IReadOnlySet<string>? pathsWithoutContentLength = null)
 	{
 		this.routes = routes;
@@ -33,7 +25,6 @@ public sealed class LoopbackHttpServer : IDisposable
 		_ = Task.Run(AcceptLoop);
 	}
 
-	/// <summary>The request header blocks received so far, one entry per request (request line and headers, CRLF kept).</summary>
 	public IReadOnlyCollection<string> Requests => requests;
 
 	public int Port => ((IPEndPoint)listener.LocalEndpoint).Port;
@@ -52,7 +43,6 @@ public sealed class LoopbackHttpServer : IDisposable
 		cancellationTokenSource.Dispose();
 	}
 
-	/// <summary>The value of <paramref name="headerName"/> in the first request for <paramref name="path"/> with the given method, or null.</summary>
 	public string? GetRequestHeader(string method, string path, string headerName)
 	{
 		var prefix = $"{method} {path} ";
@@ -76,10 +66,7 @@ public sealed class LoopbackHttpServer : IDisposable
 
 	public bool HasRequest(string method, string path) => requests.Any(r => r.StartsWith($"{method} {path} ", StringComparison.Ordinal));
 
-	/// <summary>
-	/// Holds back the answer to every request for <paramref name="path"/> (the request is recorded at once) until the returned source is
-	/// completed: a slow server, without a delay that a test would have to guess.
-	/// </summary>
+	// Stands in for a slow server, without a delay that a test would have to guess.
 	public TaskCompletionSource HoldResponses(string path) =>
 		heldPaths.GetOrAdd(path, static _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
 

@@ -4,9 +4,8 @@ using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: FolderPicker shows the system's folder dialog (Windows.Storage.Pickers.FolderPicker attached to the process's main window, or the
-// Windows App SDK picker from .NET 11) and turns the folder that the person picks into a Folder. A test cannot answer the dialog, so everything
-// from the dialog on needs a person (RequiresUserInteraction); the checks before it (the token, a main window to attach to) run headless.
+// A test cannot answer the folder dialog, so everything from the dialog on needs a person (RequiresUserInteraction); the checks before it (the
+// token, a main window to attach to) run headless.
 public partial class FolderPickerTests
 {
 	const string noWindowMessage = "Cannot present folder picker: No active window found. Ensure the app is active with a visible window.";
@@ -90,7 +89,7 @@ public partial class FolderPickerTests
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task PickAsyncClosesTheFolderDialogAndReturnsACanceledResultWhenTheTokenIsCanceled()
 	{
-		// Shows the real dialog and closes it through the token; the person only watches.
+		// Person: only watch; the token closes the real dialog.
 		using var cancellation = new CancellationTokenSource();
 		var operation = await StartOnMainThreadAsync(() => FolderPicker.Default.PickAsync(cancellation.Token));
 		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() > 0, timeout: 15000, message: "The folder dialog did not open.");
@@ -102,7 +101,6 @@ public partial class FolderPickerTests
 		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The folder dialog is still open after the token was canceled.");
 	}
 
-	// A pick that is not asked about must never show a dialog.
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static Task AssertNoPickerWasStartedAsync()

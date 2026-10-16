@@ -80,7 +80,6 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenUriKindChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var behavior = new UriValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnValueChanged,
@@ -94,13 +93,10 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		entry.Text = "microsoft/xamarin/news";
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		behavior.UriKind = UriKind.Relative;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 	}
 

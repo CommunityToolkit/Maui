@@ -12,13 +12,12 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 
 	const string errorDomain = "CommunityToolkit.Maui.MediaElement.StreamAssetResourceLoader";
 
-	// The most bytes read for one response: a request can be for much more (the rest of a large resource, even beyond int.MaxValue)
+	// One request can be for the rest of a large resource, even beyond int.MaxValue bytes, so it is answered in responses of at most this length.
 	const int maximumResponseLength = 1024 * 1024;
 
 	readonly Stream stream;
 	readonly string contentType;
 
-	// How far the loader has read a stream that cannot seek: AVFoundation's offset of the next byte that it can serve
 	long nonSeekableStreamOffset;
 
 	public StreamAssetResourceLoader(Stream stream, string contentType = DefaultContentType)
@@ -37,7 +36,6 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 
 		if (loadingRequest.DataRequest is not null && FillDataRequest(loadingRequest.DataRequest) is NSError error)
 		{
-			// The requested data could not be read: AVFoundation must not take the request as answered
 			loadingRequest.FinishLoadingWithError(error);
 			return true;
 		}
@@ -65,7 +63,6 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 		contentInformationRequest.ByteRangeAccessSupported = stream.CanSeek;
 	}
 
-	// Answers the data request from the stream; returns the error to finish the request with when the stream cannot be read
 	NSError? FillDataRequest(AVAssetResourceLoadingDataRequest dataRequest)
 	{
 		try
@@ -90,7 +87,6 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 				return CreateError($"The stream cannot seek to offset {requestedOffset}.");
 			}
 
-			// Read the requested data, in responses of at most maximumResponseLength bytes, until the end of the stream
 			var buffer = new byte[Math.Min(requestedLength, maximumResponseLength)];
 			while (requestedLength > 0)
 			{
@@ -105,8 +101,8 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 					nonSeekableStreamOffset += bytesRead;
 				}
 
-				// AVFoundation keeps what it needs of a response: released right away, a response does not hold its native memory until a
-				// garbage collection, which a request for the rest of a large stream would otherwise do with thousands of them
+				// AVFoundation keeps what it needs of a response, so each one is disposed right away: its native memory would otherwise wait for a
+				// garbage collection, and a request for the rest of a large stream makes thousands of responses.
 				using var data = NSData.FromArray(buffer[..bytesRead]);
 				dataRequest.Respond(data);
 				requestedLength -= bytesRead;
@@ -116,7 +112,7 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 		}
 		catch (Exception ex)
 		{
-			// Log the error but don't throw: AVFoundation gets it with the request
+			// Don't throw: AVFoundation gets the error with the request.
 			System.Diagnostics.Debug.WriteLine($"Error reading stream data: {ex.Message}");
 			return CreateError(ex.Message);
 		}

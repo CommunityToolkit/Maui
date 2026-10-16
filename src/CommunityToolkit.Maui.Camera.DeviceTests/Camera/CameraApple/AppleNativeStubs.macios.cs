@@ -7,14 +7,12 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Scripted answers for the static and initializer calls of AVFoundation and UIKit that the toolkit makes (see ObjCMethodReplacement in
-// AppleObjCSwizzle.macios.cs for the rules). Each stub replaces its Objective-C methods while it is alive: create it in a `using` on the
-// UI thread, around the synchronous toolkit call under test. The stubs record what the toolkit asked, so tests can check the arguments;
-// a replaced method can also be called by AVFoundation or UIKit on another thread, so the records are guarded by a lock.
+// Each stub replaces its Objective-C methods while it is alive (see ObjCMethodReplacement in AppleObjCSwizzle.macios.cs for the rules):
+// create it in a `using` on the UI thread, around the synchronous toolkit call under test. AVFoundation or UIKit can also call a replaced
+// method on another thread, so what a stub records is guarded by a lock.
 
 static class AppleMediaTypes
 {
-	// AVMediaTypeVideo ("vide") and AVMediaTypeAudio ("soun").
 	public static string Video { get; } = AVMediaTypes.Video.GetConstant()!.ToString();
 
 	public static string Audio { get; } = AVMediaTypes.Audio.GetConstant()!.ToString();
@@ -45,7 +43,6 @@ static class AppleNativeHandles
 	}
 }
 
-// +[AVCaptureDevice defaultDeviceWithMediaType:]: what AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video / Audio) returns.
 sealed class AppleDefaultDeviceStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;
@@ -87,7 +84,6 @@ sealed class AppleDefaultDeviceStub : IDisposable
 	}
 }
 
-// +[AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:mediaType:position:]: the session that CameraProvider enumerates.
 sealed class AppleDiscoveryStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;
@@ -100,7 +96,6 @@ sealed class AppleDiscoveryStub : IDisposable
 			new ObjCImplementationObjectObjectObjectInteger(CreateSession));
 	}
 
-	// The session that the next discovery returns; replace it to change the devices between two refreshes.
 	public FakeDeviceDiscoverySession Session { get; set; }
 
 	public IReadOnlyList<(string[] DeviceTypes, string MediaType, AVCaptureDevicePosition Position)> Requests
@@ -130,14 +125,13 @@ sealed class AppleDiscoveryStub : IDisposable
 	}
 }
 
-// +[AVCaptureDevice requestAccessForMediaType:completionHandler:]: the answer of the permission prompt, without a prompt.
 sealed class AppleRequestAccessStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;
 	readonly List<string> requestedMediaTypes = [];
 	readonly List<IntPtr> pendingCompletions = [];
 
-	// true or false answers at once; null never answers (Dispose releases the completion handler without calling it).
+	// null never answers: Dispose releases the completion handler without calling it.
 	public AppleRequestAccessStub(bool? videoAnswer, bool? audioAnswer = true)
 	{
 		VideoAnswer = videoAnswer;
@@ -211,10 +205,10 @@ sealed class AppleRequestAccessStub : IDisposable
 	}
 }
 
-// -[AVCaptureDeviceInput initWithDevice:error:]: the device input of the camera (created with AVCaptureDeviceInput.FromDevice, whose
-// +deviceInputWithDevice:error: initializes through this method) and of the microphone. Native AVFoundation must never see a
-// FakeCaptureDevice, so the stub never calls the real initializer: it either returns the allocated input uninitialized (kept alive for the
-// life of the process; only managed code and FakeCaptureSession use it), or returns nil and reports an error like a camera in use does.
+// AVCaptureDeviceInput.FromDevice (the camera input, through +deviceInputWithDevice:error:) and the constructor (the microphone input)
+// both initialize through -[AVCaptureDeviceInput initWithDevice:error:]. Native AVFoundation must never see a FakeCaptureDevice, so the
+// stub never calls the real initializer: it either returns the allocated input uninitialized (kept alive for the life of the process; only
+// managed code and FakeCaptureSession use it), or returns nil and reports an error like a camera in use does.
 sealed class AppleDeviceInputStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;
@@ -226,7 +220,6 @@ sealed class AppleDeviceInputStub : IDisposable
 		replacement = ObjCMethodReplacement.OfInstanceMethod(typeof(AVCaptureDeviceInput), "initWithDevice:error:", new ObjCImplementationObjectObjectObject(Initialize));
 	}
 
-	// The error of a failed initialization, per device; null creates the input.
 	public Func<AVCaptureDevice?, NSError?> FailureFor { get; set; } = static _ => null;
 
 	public IReadOnlyList<AVCaptureDevice?> Devices
@@ -284,8 +277,7 @@ sealed class AppleDeviceInputStub : IDisposable
 	}
 }
 
-// -[AVCaptureDeviceRotationCoordinator initWithDevice:previewLayer:] (iOS 17+): the coordinator that CameraManager creates for a camera.
-// Like AppleDeviceInputStub it never lets native code see the (fake) device: the allocated coordinator is returned uninitialized.
+// Like AppleDeviceInputStub, the stub never lets native code see the (fake) device: the allocated coordinator is returned uninitialized.
 sealed class AppleRotationCoordinatorStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;
@@ -322,9 +314,9 @@ sealed class AppleRotationCoordinatorStub : IDisposable
 	}
 }
 
-// -[AVCaptureOutput connectionWithMediaType:] and -[AVCaptureOutput connections] of movie outputs: the movie output that StartVideoRecording
-// creates is attached to a FakeCaptureSession, so it never gets a native connection. A real movie output in a session with a camera has a
-// video connection, and AVFoundation also connects it to the microphone input of its session (an audio connection).
+// The movie output that StartVideoRecording creates is attached to a FakeCaptureSession, so it never gets a native connection. A real
+// movie output in a session with a camera has a video connection, and AVFoundation also connects it to the microphone input of its
+// session (an audio connection).
 sealed class AppleMovieOutputConnectionStub : IDisposable
 {
 	readonly ObjCMethodReplacement connectionWithMediaTypeReplacement;
@@ -353,7 +345,6 @@ sealed class AppleMovieOutputConnectionStub : IDisposable
 		set => videoConnection = ResolvableFromArrays(value);
 	}
 
-	// The audio connection, reported while HasAudioInput is true (the session holds the microphone input).
 	public AVCaptureConnection? AudioConnection
 	{
 		get => audioConnection;
@@ -362,7 +353,7 @@ sealed class AppleMovieOutputConnectionStub : IDisposable
 
 	public Func<bool> HasAudioInput { get; set; } = static () => false;
 
-	// Whether a movie output is attached to the session: an output that is not attached has no connection, so -connections reports none.
+	// An output that is not attached to the session has no connection, so -connections reports none.
 	public Func<AVCaptureMovieFileOutput, bool> IsAttached { get; set; } = static _ => true;
 
 	public IReadOnlyList<string> RequestedMediaTypes
@@ -479,9 +470,7 @@ sealed class AppleMovieOutputConnectionStub : IDisposable
 	}
 }
 
-// -[AVCaptureFileOutput startRecordingToOutputFileURL:recordingDelegate:] and -[AVCaptureFileOutput stopRecording] of movie outputs. A real
-// recording needs a running session with a camera. The stub records the file and the delegate that the toolkit passes, writes MovieBytes
-// to that file and, when the recording stops, reports the end to the toolkit's delegate like AVFoundation does.
+// A real recording needs a running session with a camera.
 sealed class AppleMovieRecordingStub : IDisposable
 {
 	readonly ObjCMethodReplacement start;
@@ -495,10 +484,8 @@ sealed class AppleMovieRecordingStub : IDisposable
 		stop = ObjCMethodReplacement.OfInstanceMethod(typeof(AVCaptureMovieFileOutput), "stopRecording", new ObjCImplementationVoid(StopRecording));
 	}
 
-	// The movie that the recording writes; null writes no file (a recording that failed before writing anything).
 	public byte[]? MovieBytes { get; set; } = [0x00, 0x00, 0x00, 0x14, 0x66, 0x74, 0x79, 0x70, 0x71, 0x74, 0x20, 0x20, 0x01, 0x02, 0x03, 0x04];
 
-	// false keeps the end of the recording pending until Finish is called, like a movie output that is still writing.
 	public bool FinishWhenStopped { get; set; } = true;
 
 	public IReadOnlyList<Recording> Recordings
@@ -614,7 +601,6 @@ sealed class AppleInterfaceOrientationStub : IDisposable
 
 	public UIInterfaceOrientation StatusBarOrientation { get; set; }
 
-	// true makes UIApplication report no connected scene, as before the first scene connects.
 	public bool HideScenes { get; set; }
 
 	public void Dispose()
@@ -629,8 +615,8 @@ sealed class AppleInterfaceOrientationStub : IDisposable
 		HideScenes ? AppleNativeHandles.Of(noScenes) : originalConnectedScenes(self, selector);
 }
 
-// -[AVCaptureVideoPreviewLayer connection] of one preview layer: the connection exists only once a camera input is in the session, so the
-// preview orientation code (PreviewView.UpdatePreviewVideoOrientation) needs a scripted one without a camera.
+// The connection of a preview layer exists only once a camera input is in the session, so the preview orientation code
+// (PreviewView.UpdatePreviewVideoOrientation) needs a scripted one without a camera.
 sealed class ApplePreviewLayerConnectionStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;

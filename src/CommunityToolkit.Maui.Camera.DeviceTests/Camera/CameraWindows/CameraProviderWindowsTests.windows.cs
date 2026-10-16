@@ -8,9 +8,6 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraProvider.windows.cs: the discovery of video capture devices through DeviceInformation and MediaFrameSourceGroup, and the
-// mapping to CameraInfo. The tests that need a camera skip visibly on machines without one, so the camera-less runs of CI only execute
-// the empty-list test.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraProviderWindowsTests : CameraHandlerTestBase
@@ -35,10 +32,10 @@ public class CameraProviderWindowsTests : CameraHandlerTestBase
 		GC.KeepAlive(changes);
 	}
 
-	// The token of PlatformRefreshAvailableCameras (CameraProvider.windows.cs, `.AsTask(token)`). RefreshAvailableCameras never passes its
-	// caller's token to the platform method (CameraProvider.shared.cs: the refresh is shared between callers, so it runs without a token and
-	// each caller's token only ends that caller's wait), so the platform method is called directly. A WinRT operation that completes before
-	// AsTask registers the cancellation (or that ignores Cancel) ends the refresh normally, which skips the test visibly.
+	// RefreshAvailableCameras never passes its caller's token to the platform method (the refresh is shared between callers, so it runs without
+	// a token and each caller's token only ends that caller's wait), so the test calls PlatformRefreshAvailableCameras directly. A WinRT
+	// operation that completes before AsTask registers the cancellation (or that ignores Cancel) ends the refresh normally, which skips the
+	// test visibly.
 	[Fact]
 	public async Task PlatformRefreshWithACancelledTokenThrowsAndPublishesNothing()
 	{
@@ -185,11 +182,10 @@ public class CameraProviderWindowsTests : CameraHandlerTestBase
 		GC.KeepAlive(changes);
 	}
 
-	// While another capture holds a camera exclusively, the refresh completes and lists exactly the cameras that InitializeCameraForCameraView
-	// can open. Windows 11 still opens a camera that another capture holds (idle or streaming, in this app or in another one), so that camera
-	// stays listed there. Where Windows refuses the second capture, InitializeCameraForCameraView returns false and the refresh must leave the
-	// camera out: it used to read the VideoDeviceController of the MediaCapture that was never initialized, whose getter throws a
-	// COMException, so the whole refresh failed. The held camera is listed again once it is free.
+	// Windows 11 still opens a camera that another capture holds (idle or streaming, in this app or in another one), so that camera stays listed
+	// there. Where Windows refuses the second capture, InitializeCameraForCameraView returns false and the refresh must leave the camera out: it
+	// used to read the VideoDeviceController of the MediaCapture that was never initialized, whose getter throws a COMException, so the whole
+	// refresh failed.
 	[Fact]
 	public async Task RefreshWhileAnotherCaptureHoldsACameraListsExactlyTheCamerasThatCanBeOpened()
 	{
@@ -253,7 +249,6 @@ public class CameraProviderWindowsTests : CameraHandlerTestBase
 		}
 	}
 
-	// Opens the camera like an app that uses it, with exclusive control.
 	static async Task HoldExclusivelyOrSkipAsync(MediaCapture holder, CameraInfo camera)
 	{
 		try
@@ -275,7 +270,6 @@ public class CameraProviderWindowsTests : CameraHandlerTestBase
 		}
 	}
 
-	// The check that the refresh makes for each camera: whether InitializeCameraForCameraView opens it now.
 	static async Task<bool> CanBeOpenedAsync(CameraInfo camera)
 	{
 		using var probe = new MediaCapture();

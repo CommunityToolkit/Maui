@@ -14,10 +14,6 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: inside a ListView the header tap asks the Cell to update its size, inside a CollectionView it sets the Height of the
-// realized item containers (`#if WINDOWS` in Expander.ResizeExpanderInItemsView and Expander.windows.cs). The containers' Height
-// property is what the toolkit writes, so it is read back from the native ListViewItem / GridViewItem; positions come from a
-// TappedEventArgs whose GetPosition is overridden (MAUI only fills it from a real pointer tap).
 public partial class ExpanderTests
 {
 	const double collectionViewWidth = 400;
@@ -25,11 +21,8 @@ public partial class ExpanderTests
 
 	static readonly TimeSpan windowsLayoutTimeout = TimeSpan.FromSeconds(5);
 
-	// ---- accessors for the shared tests
-
 	static bool IsPlatformViewVisible(IView view) => ((WFrameworkElement)view.Handler!.PlatformView!).Visibility == WVisibility.Visible;
 
-	// The row's size in device-independent units (the unit MAUI uses). 0 while the row is not realized.
 	static double GetRowHeight(ListView listView, int row) => GetListViewItem(listView, row)?.ActualHeight ?? 0;
 
 	static double GetRowTop(ListView listView, int row) =>
@@ -41,8 +34,6 @@ public partial class ExpanderTests
 
 	static double GetTop(WFrameworkElement element, WFrameworkElement relativeTo) =>
 		element.TransformToVisual(relativeTo).TransformPoint(new WPoint(0, 0)).Y;
-
-	// ---- ListView: Cell.ForceUpdateSize
 
 	[Fact]
 	public async Task HeaderTapInsideAListViewAsksTheCellOfTheTappedExpanderToUpdateItsSize()
@@ -68,8 +59,6 @@ public partial class ExpanderTests
 			Assert.Equal(0, otherCellRequests);
 		});
 	}
-
-	// ---- CollectionView with a vertical list layout (Expander.ForceUpdateCellSize, PlatformListView branch)
 
 	[Fact]
 	public async Task HeaderTapInsideACollectionViewResizesOnlyTheItemContainerThatWasTapped()
@@ -156,7 +145,6 @@ public partial class ExpanderTests
 			var heightsBefore = Enumerable.Range(0, 3).Select(index => GetItemContainer(native, index).Height).ToArray();
 			var expander = GetExpanderOfItem(expanders, 1);
 
-			// A TappedEventArgs created in code has no pointer position.
 			var args = new TappedEventArgs(null);
 			Assert.Null(args.GetPosition(collectionView));
 			expander.HandleHeaderTap(args);
@@ -182,7 +170,6 @@ public partial class ExpanderTests
 			var expander = GetExpanderOfItem(expanders, 0);
 			var tapY = GetItemContainer(native, 0).ActualHeight / 2;
 
-			// ContainerFromItem is null for the virtualized items: the loop skips them instead of failing.
 			var exception = Record.Exception(() => expander.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, tapY))));
 
 			Assert.Null(exception);
@@ -190,12 +177,10 @@ public partial class ExpanderTests
 		});
 	}
 
-	// ---- the container of the tapped item in a horizontal list, after a collapse and in a scrolled list
-	//
-	// The ListView branch of ForceUpdateCellSize used to compare the Y of the tap with offsets that it summed from the heights of the realized
-	// item containers (moving the offset by the new height of a container it resized), which resized the wrong container in a horizontal list,
-	// after a collapse whose tap lies below the new height of the container, and in a scrolled list. It now compares the tap with the bounds
-	// of each container where the list shows it, like the GridView branch.
+	// The ListView branch of ForceUpdateCellSize used to compare the tap with offsets summed from the heights of the realized item containers
+	// (a container it resized moved the offsets by its new height), which resized the wrong container in a horizontal list, after a collapse whose
+	// tap lies below the new height of the container, and in a scrolled list. It now compares the tap with the bounds of each container where the
+	// list shows it, like the GridView branch.
 
 	[Fact]
 	public async Task HeaderTapInAHorizontalCollectionViewResizesTheContainerOfTheTappedItem()
@@ -221,10 +206,9 @@ public partial class ExpanderTests
 		});
 	}
 
-	// Items 0 and 1 are expanded, then the header of item 0 is tapped to collapse it. With ExpandDirection.Up the header is the bottom of
-	// the container, so the tap lies below the collapsed height and also inside the range the loop computes for container 1 after the
-	// resize; with Down that happens only for a tap on the bottom edge of the header (the range test includes both ends). The tap in the
-	// middle of a Down header is the control row.
+	// With ExpandDirection.Up the header is the bottom of the container, so the tap lies below the collapsed height and also inside the range
+	// that the summed offsets gave container 1 after the resize; with Down that happens only for a tap on the bottom edge of the header (that
+	// range included both ends). The tap in the middle of a Down header is the control row.
 	[Theory]
 	[InlineData(ExpandDirection.Up, 0.5)]
 	[InlineData(ExpandDirection.Down, 1.0)]
@@ -241,7 +225,6 @@ public partial class ExpanderTests
 			var first = GetExpanderOfItem(expanders, 0);
 			var second = GetExpanderOfItem(expanders, 1);
 
-			// Expand both, each with a tap in the middle of its container, and let the list lay out the new heights.
 			first.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, GetTop(GetItemContainer(native, 0), native) + GetItemContainer(native, 0).ActualHeight / 2)));
 			await WaitForContainerHeightAsync(native, 0, headerHeight + contentHeight);
 			second.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, GetTop(GetItemContainer(native, 1), native) + GetItemContainer(native, 1).ActualHeight / 2)));
@@ -250,7 +233,6 @@ public partial class ExpanderTests
 			Assert.True(second.IsExpanded);
 			var heightsBefore = GetItemContainerHeights(native, 3);
 
-			// The tap on the header of item 0, which collapses it.
 			var container = GetItemContainer(native, 0);
 			var headerTop = GetTop(container, native) + (direction == ExpandDirection.Up ? container.ActualHeight - headerHeight : 0);
 			first.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, headerTop + tapInHeader * headerHeight)));
@@ -299,8 +281,6 @@ public partial class ExpanderTests
 		});
 	}
 
-	// ---- CollectionView with a grid layout (Expander.ForceUpdateCellSize, PlatformGridView branch, IterateItemsInRow)
-
 	[Fact]
 	public async Task HeaderTapInAGridCollectionViewResizesEveryContainerOfTheTappedRow()
 	{
@@ -314,7 +294,6 @@ public partial class ExpanderTests
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height).ToArray();
 			var expander = GetExpanderOfItem(expanders, 3);
 
-			// Item 3 is the second item of the second row: the row is items 2 and 3.
 			expander.HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetGridItemContainer(native, 3), native)));
 
 			var expandedHeight = expander.Measure(double.PositiveInfinity, double.PositiveInfinity).Height;
@@ -340,7 +319,7 @@ public partial class ExpanderTests
 			var heightsBefore = Enumerable.Range(0, 3).Select(index => GetGridItemContainer(native, index).Height).ToArray();
 			var expander = GetExpanderOfItem(expanders, 2);
 
-			// The last row only holds item 2, while the span is 2: IterateItemsInRow stops at the end of the items.
+			// The last row only holds item 2 while the span is 2, so IterateItemsInRow must stop at the end of the items.
 			var exception = Record.Exception(() => expander.HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetGridItemContainer(native, 2), native))));
 
 			Assert.Null(exception);
@@ -457,8 +436,6 @@ public partial class ExpanderTests
 		});
 	}
 
-	// ---- CollectionView whose platform view is no list (Expander.ForceUpdateCellSize, neither branch)
-
 	[Fact]
 	public async Task HeaderTapInACollectionViewWithoutAHandlerTogglesAndDoesNotThrow()
 	{
@@ -496,9 +473,7 @@ public partial class ExpanderTests
 		Assert.True(expander.IsExpanded);
 	}
 
-	// ---- helpers
-
-	// A CollectionView handler whose platform view is a plain Grid, to reach the branches for a platform view that is neither a ListView nor a GridView.
+	// A plain Grid as platform view reaches the branches for a platform view that is neither a ListView nor a GridView.
 	sealed class NonListCollectionViewHandler : ViewHandler<CollectionView, WGrid>
 	{
 		public NonListCollectionViewHandler() : base(ViewMapper)
@@ -508,7 +483,7 @@ public partial class ExpanderTests
 		protected override WGrid CreatePlatformView() => new();
 	}
 
-	// A TappedEventArgs with a pointer position, which MAUI only provides for a real pointer tap.
+	// MAUI only provides a pointer position for a real pointer tap.
 	sealed class PositionedTappedEventArgs(Point position) : TappedEventArgs(null)
 	{
 		public override Point? GetPosition(Element? relativeTo) => position;
@@ -539,8 +514,8 @@ public partial class ExpanderTests
 		return (collectionView, expanders);
 	}
 
-	// The Expander the CollectionView realized for the item (the template also runs while MAUI measures, so not every Expander it
-	// created is on screen): the realized one has the item as its binding context and a handler.
+	// The template also runs while MAUI measures, so not every Expander it created is on screen: the realized one has the item as its
+	// binding context and a handler.
 	static Expander GetExpanderOfItem(List<Expander> expanders, int index) =>
 		expanders.Last(expander => expander.Handler is not null && Equals(expander.BindingContext, $"Item {index}"));
 
@@ -552,7 +527,7 @@ public partial class ExpanderTests
 
 	static WListViewItem GetItemContainer(WListView native, int index) => Assert.IsType<WListViewItem>(native.ContainerFromIndex(index), exactMatch: false);
 
-	// The Height property of the first item containers: what the Expander writes (NaN until it wrote one; compare with Equals).
+	// Height is the property the Expander writes: it is NaN until it wrote one, so compare with Equals.
 	static double[] GetItemContainerHeights(WListView native, int count) => [.. Enumerable.Range(0, count).Select(index => GetItemContainer(native, index).Height)];
 
 	static Task WaitForContainerHeightAsync(WListView native, int index, double atLeast) =>
@@ -563,7 +538,7 @@ public partial class ExpanderTests
 
 	static WGridViewItem GetGridItemContainer(WGridView native, int index) => Assert.IsType<WGridViewItem>(native.ContainerFromIndex(index), exactMatch: false);
 
-	// The center of the container, in the coordinates of the platform list: the coordinates the Expander compares the tap with.
+	// The Expander compares the tap with coordinates in the platform list.
 	static Point CenterOf(WFrameworkElement container, WFrameworkElement list)
 	{
 		var topLeft = container.TransformToVisual(list).TransformPoint(new WPoint(0, 0));

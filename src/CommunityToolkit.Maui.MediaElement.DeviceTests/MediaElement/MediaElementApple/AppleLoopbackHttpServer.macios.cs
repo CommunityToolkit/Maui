@@ -4,11 +4,6 @@ using System.Text;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// A minimal HTTP/1.1 server on the loopback interface (no network traffic leaves the machine). It serves byte arrays by path,
-/// honours <c>Range</c> requests the way AVFoundation issues them, and records every request so tests can assert what the
-/// platform player actually sent (for example the custom HTTP headers of <c>UriMediaSource.HttpHeaders</c>).
-/// </summary>
 sealed class AppleLoopbackHttpServer : IDisposable
 {
 	readonly TcpListener listener = new(IPAddress.Loopback, 0);
@@ -133,6 +128,7 @@ sealed class AppleLoopbackHttpServer : IDisposable
 				var end = content.Length - 1;
 				var status = "200 OK";
 				var extra = string.Empty;
+				// AVFoundation reads media with Range requests.
 				if (headers.TryGetValue("Range", out var range) && range.StartsWith("bytes=", StringComparison.OrdinalIgnoreCase))
 				{
 					var parts = range["bytes=".Length..].Split('-');
@@ -190,5 +186,4 @@ sealed class AppleLoopbackHttpServer : IDisposable
 	}
 }
 
-/// <summary>One request received by <see cref="AppleLoopbackHttpServer"/>.</summary>
 sealed record AppleHttpRequest(string Method, string Path, IReadOnlyDictionary<string, string> Headers);

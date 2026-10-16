@@ -21,10 +21,6 @@ using AWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Test doubles and hosting helpers shared by the Android fragment tests (DialogFragmentService, FragmentLifecycleManager and the
-// Android block of Core's AppBuilderExtensions).
-
-/// <summary>A DialogFragment that creates a real dialog, or the dialog its factory returns.</summary>
 public class ProbeDialogFragment : ADialogFragment
 {
 	public ProbeDialogFragment()
@@ -41,7 +37,7 @@ public class ProbeDialogFragment : ADialogFragment
 		DialogFactory?.Invoke(RequireContext()) ?? new AppCompatDialog(RequireContext());
 }
 
-/// <summary>A real dialog whose Window property (what managed code reads) is the given spy window, or null.</summary>
+// The overridden Window is what managed code reads: the framework (Java) still has its real window.
 public sealed class SpyDialog : AppCompatDialog
 {
 	public SpyDialog(Context context) : base(context)
@@ -50,13 +46,12 @@ public sealed class SpyDialog : AppCompatDialog
 
 	public AWindow? SpyWindow { get; set; }
 
-	/// <summary>Makes the Window property that managed code reads return null (the framework still has its window).</summary>
 	public bool ReportsNoWindow { get; set; }
 
 	public override AWindow? Window => ReportsNoWindow ? null : SpyWindow ?? base.Window;
 }
 
-/// <summary>A fragment (not a DialogFragment) with a view, so every lifecycle callback fires.</summary>
+// Has a view, so that every lifecycle callback fires.
 public class PlainFragment : AFragment
 {
 	public PlainFragment()
@@ -70,7 +65,7 @@ public class PlainFragment : AFragment
 	public override AView OnCreateView(Android.Views.LayoutInflater inflater, Android.Views.ViewGroup? container, Bundle? savedInstanceState) => new(RequireContext());
 }
 
-/// <summary>A plain android.app.Activity (not an AppCompatActivity) that was never attached; only the members the toolkit reads are usable.</summary>
+// Never attached to the framework, so only the members the toolkit reads are usable.
 public sealed class PlainActivity : Android.App.Activity
 {
 	public PlainActivity()
@@ -80,10 +75,7 @@ public sealed class PlainActivity : Android.App.Activity
 	public override string LocalClassName => "Test.PlainActivity";
 }
 
-/// <summary>
-/// An AppCompatActivity that was never attached to the framework, whose Window and SupportFragmentManager are whatever the test says.
-/// The toolkit only reads those two members, from managed code, so the overrides are what it sees.
-/// </summary>
+// Never attached to the framework: the toolkit only reads Window and SupportFragmentManager, from managed code, so the overrides are all it sees.
 public sealed class SpyActivity : AppCompatActivity
 {
 	public SpyActivity()
@@ -101,7 +93,6 @@ public sealed class SpyActivity : AppCompatActivity
 	public override string LocalClassName => "Test.SpyActivity";
 }
 
-/// <summary>An IDialogFragmentService that records every call with its arguments.</summary>
 public sealed class RecordingDialogFragmentService : IDialogFragmentService
 {
 	readonly List<(string Name, object?[] Arguments)> calls = [];
@@ -155,7 +146,6 @@ public sealed class RecordingDialogFragmentService : IDialogFragmentService
 	}
 }
 
-/// <summary>An IDialogFragmentService whose every member throws, to show that FragmentLifecycleManager does not swallow exceptions.</summary>
 public sealed class ThrowingDialogFragmentService : IDialogFragmentService
 {
 	public void OnFragmentAttached(AFragmentManager fm, AFragment f, Context context) => throw new InvalidOperationException(nameof(OnFragmentAttached));
@@ -185,7 +175,6 @@ public sealed class ThrowingDialogFragmentService : IDialogFragmentService
 	public void OnFragmentViewDestroyed(AFragmentManager fm, AFragment f) => throw new InvalidOperationException(nameof(OnFragmentViewDestroyed));
 }
 
-/// <summary>An IPlatformApplication that exposes the given services, as IPlatformApplication.Current.</summary>
 public sealed class FakePlatformApplication(IServiceProvider services) : IPlatformApplication
 {
 	public IServiceProvider Services { get; } = services;
@@ -193,7 +182,6 @@ public sealed class FakePlatformApplication(IServiceProvider services) : IPlatfo
 	public IApplication Application => throw new NotSupportedException("The fake platform application has no IApplication.");
 }
 
-/// <summary>Replaces IPlatformApplication.Current for the lifetime of the scope (null is allowed).</summary>
 public sealed class PlatformApplicationScope : IDisposable
 {
 	readonly IPlatformApplication? previous;
@@ -207,11 +195,8 @@ public sealed class PlatformApplicationScope : IDisposable
 	public void Dispose() => IPlatformApplication.Current = previous;
 }
 
-/// <summary>
-/// Replaces Platform.CurrentActivity for the lifetime of the scope. .NET MAUI offers no public way to set the current activity
-/// without registering another lifecycle listener (Platform.Init), so the activity of its ActivityLifecycleContextListener is set
-/// through reflection and restored on dispose.
-/// </summary>
+// .NET MAUI offers no public way to set the current activity without registering another lifecycle listener (Platform.Init), so the activity
+// of its ActivityLifecycleContextListener is set through reflection.
 public sealed class CurrentActivityScope : IDisposable
 {
 	readonly Android.App.Activity? previous = Platform.CurrentActivity;
@@ -234,16 +219,14 @@ public sealed class CurrentActivityScope : IDisposable
 	public void Dispose() => Set(previous);
 }
 
-/// <summary>
-/// Undoes, on dispose, what Platform.Init(Application) did to the runner while the scope was alive. The Essentials registration of every
-/// MauiApp calls it when the app's ILifecycleEventService is created: it registers a new ActivityLifecycleContextListener on the
-/// Application, makes it the listener of ActivityStateManager.Default (Platform.CurrentActivity, Platform.ActivityStateChanged), and
-/// never unregisters the listener it had (decompiled .NET MAUI 10.0.90: ActivityStateManagerImplementation.Init, UseEssentials). Without
-/// the scope, every test that creates the service would leave one more listener registered for the rest of the launch, and every later
-/// activity event would be raised once more to the subscribers of Platform.ActivityStateChanged. The scope unregisters the listener the
-/// ActivityStateManager holds at the end, the last one registered: a test MauiApp has one Essentials registration, so one is registered
-/// (measured on Android API 36 and 28: 2 listeners before and after the scope, 3 after the same resolution without it).
-/// </summary>
+// The Essentials registration of every MauiApp calls Platform.Init(Application) when the app's ILifecycleEventService is created: it
+// registers a new ActivityLifecycleContextListener on the Application, makes it the listener of ActivityStateManager.Default
+// (Platform.CurrentActivity, Platform.ActivityStateChanged), and never unregisters the listener it had (decompiled .NET MAUI 10.0.90:
+// ActivityStateManagerImplementation.Init, UseEssentials). Without this scope, every test that creates the service would leave one more
+// listener registered for the rest of the launch, and every later activity event would be raised once more to the subscribers of
+// Platform.ActivityStateChanged. A test MauiApp has one Essentials registration, so the scope unregisters the listener the
+// ActivityStateManager holds at the end, the last one registered (measured on Android API 36 and 28: 2 listeners before and after the
+// scope, 3 after the same resolution without it).
 public sealed class ActivityStateListenerScope : IDisposable
 {
 	readonly IActivityStateManager manager = ActivityStateManager.Default;
@@ -274,7 +257,6 @@ public sealed class ActivityStateListenerScope : IDisposable
 	}
 }
 
-/// <summary>Collects System.Diagnostics.Trace output while it is alive.</summary>
 public sealed class FragmentTraceListener : TraceListener
 {
 	readonly List<string> messages = [];
@@ -315,7 +297,6 @@ public sealed class FragmentTraceListener : TraceListener
 	}
 }
 
-/// <summary>An IWindowInsetsController that reports a configured appearance and records every SetSystemBarsAppearance call.</summary>
 public sealed class SpyInsetsController : Java.Lang.Object, IWindowInsetsController
 {
 	readonly List<(int Appearance, int Mask)> appearanceCalls = [];
@@ -358,11 +339,7 @@ public sealed class SpyInsetsController : Java.Lang.Object, IWindowInsetsControl
 	public void Show(int types) => throw new NotSupportedException();
 }
 
-/// <summary>
-/// A Window that reports a configured status bar color and insets controller and records what the status bar handling writes:
-/// SetStatusBarColor, SetDecorFitsSystemWindows, ClearFlags and SetFlags. It lets tests reach states a real window cannot be in
-/// (an insets controller that is null, a status bar color that is not ignored on Android 15 and newer). Every other member is unsupported.
-/// </summary>
+// Reaches the states a real window cannot be in: no insets controller, and a status bar color that is not ignored on Android 15 and newer.
 public sealed class SpyWindow : AWindow
 {
 	readonly List<int> statusBarColorCalls = [];
@@ -527,28 +504,22 @@ public sealed class SpyWindow : AWindow
 	}
 }
 
-/// <summary>Base of the Android fragment tests: hosts fragments in the runner's AppCompatActivity.</summary>
 public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 {
-	/// <summary>A color the runner's themes never use, so "was copied" and "was left alone" are distinguishable.</summary>
+	// A color the runner's themes never use, so that "was copied" and "was left alone" can be told apart.
 	protected const int distinctOpaqueColor = unchecked((int)0xFF336699);
 
-	/// <summary>A status bar color a dialog starts with in the tests, so a call that does change it is visible.</summary>
+	// The status bar color a dialog starts with in the tests, so that a call that changes it is visible.
 	protected const int dialogMarkerColor = unchecked((int)0xFFAA5500);
 
 	protected static readonly int lightStatusBarsBit = (int)WindowInsetsControllerAppearance.LightStatusBars;
 
 	readonly Android.App.Activity? currentActivityAtStart = Platform.CurrentActivity;
 
-	/// <summary>The runner's activity (headless: TestActivity, visual runner: MainActivity).</summary>
 	protected static AppCompatActivity HostActivity =>
 		TestWindow.PlatformWindow as AppCompatActivity
 		?? throw new InvalidOperationException($"The runner's activity must be an {nameof(AppCompatActivity)}, but it is {TestWindow.PlatformWindow.GetType().FullName}.");
 
-	/// <summary>
-	/// Shows <paramref name="fragment"/> on the host activity's FragmentManager (so it runs the whole lifecycle up to RESUMED),
-	/// runs <paramref name="body"/> on the UI thread with the host activity as Platform.CurrentActivity, and dismisses the fragment again.
-	/// </summary>
 	protected static async Task WithShownDialogFragmentAsync(ProbeDialogFragment fragment, Func<AppCompatActivity, ProbeDialogFragment, Task> body)
 	{
 		var tag = $"test-{Guid.NewGuid():N}";
@@ -578,7 +549,6 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 	protected static Task WithShownDialogFragmentAsync(Func<AppCompatActivity, ProbeDialogFragment, Task> body) =>
 		WithShownDialogFragmentAsync(new ProbeDialogFragment(), body);
 
-	/// <summary>Sets the status bar color of the host activity's window for the duration of <paramref name="body"/> (UI thread).</summary>
 	protected static async Task WithActivityStatusBarColorAsync(int color, Func<Task> body)
 	{
 		var original = await InvokeOnMainThreadAsync(() =>
@@ -599,7 +569,6 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	/// <summary>The state of a window that the status bar handling reads or writes, as the native window reports it.</summary>
 	protected readonly record struct WindowState(int StatusBarColor, WindowManagerFlags Flags, int Appearance)
 	{
 		public const int AppearanceUnavailable = -1;
@@ -618,12 +587,12 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 			? controller.SystemBarsAppearance
 			: WindowState.AppearanceUnavailable;
 
-	/// <summary>Sets bits of SystemBarsAppearance on a window whose insets controller exists (Android 11+).</summary>
+	// Needs an insets controller, which exists from Android 11 on.
 	protected static void SetAppearance(AWindow window, int appearance, int mask) =>
 		window.InsetsController!.SetSystemBarsAppearance(appearance, mask);
 
-	// A safety net for the tests that run afterwards: if anything in a test left Platform.CurrentActivity null (the listener of the
-	// ActivityStateManager replaced; GetToolkitOnCreateDelegates undoes that itself), put back the activity the test started with.
+	// A safety net for the tests that run afterwards: puts back the activity the test started with if anything left Platform.CurrentActivity
+	// null (the listener of the ActivityStateManager replaced; GetToolkitOnCreateDelegates undoes that itself).
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -639,16 +608,14 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// The OnCreate delegates the toolkit added (UseMauiCommunityToolkitCore with the modal status bar option): the lifecycle service also
-	// holds MAUI's own (Essentials) OnCreate delegates, which must not be invoked with activities that are not attached. The toolkit's
-	// lambdas are compiled into Core.AppBuilderExtensions.
+	// The lifecycle service also holds MAUI's own (Essentials) OnCreate delegates, which must not be invoked with activities that are not
+	// attached. The toolkit's lambdas are compiled into Core.AppBuilderExtensions, which is how they are told apart.
 	protected IReadOnlyList<AndroidLifecycle.OnCreate> GetToolkitOnCreateDelegates()
 	{
 		ILifecycleEventService? lifecycle;
 
-		// Creating the lifecycle service runs every lifecycle registration of the test's MauiApp, MAUI's Essentials one included, which
-		// calls Platform.Init(Application) on the runner's Application: the scope unregisters the listener that adds and puts the
-		// runner's own listener back (see ActivityStateListenerScope).
+		// Creating the lifecycle service runs every lifecycle registration of the test's MauiApp, MAUI's Essentials one included, which calls
+		// Platform.Init(Application) on the runner's Application (see ActivityStateListenerScope).
 		using (new ActivityStateListenerScope())
 		{
 			lifecycle = ApplicationServices.GetService<ILifecycleEventService>();
@@ -658,9 +625,7 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 			.Where(onCreate => onCreate.Method.DeclaringType?.DeclaringType == typeof(Core.AppBuilderExtensions))];
 	}
 
-	// What DialogFragmentService.OnFragmentStarted did to a dialog that ArrangeThatStartedWouldChange prepared, while the activity had the
-	// status bar of WithActivityStatusBarAsync(distinctOpaqueColor): its color (read back up to Android 14) and, from Android 11 on, its
-	// light status bars.
+	// Expects the activity's status bar from WithActivityStatusBarAsync(distinctOpaqueColor).
 	protected static void AssertDialogTookOverTheStatusBarOfTheActivity(AWindow dialogWindow)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(35))
@@ -674,7 +639,6 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// Gives the dialog a state OnFragmentStarted would change on this Android version (see WithActivityStatusBarAsync for the activity side).
 	protected static void ArrangeThatStartedWouldChange(AWindow dialogWindow)
 	{
 		// A window that was never shown has no decor view yet, and its insets controller needs one.
@@ -691,7 +655,8 @@ public abstract class FragmentTestBase : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// The activity's status bar: the color (ignored from Android 15 on) and, from Android 11 on, light status bar icons.
+	// Besides the color (ignored from Android 15 on), the activity gets light status bars from Android 11 on, so that a dialog copying them
+	// is observable.
 	protected static async Task WithActivityStatusBarAsync(int color, Func<Task> body)
 	{
 		var originalLight = await InvokeOnMainThreadAsync(() =>

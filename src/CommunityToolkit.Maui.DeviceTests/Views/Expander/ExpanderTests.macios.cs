@@ -6,8 +6,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: inside a ListView, tapping the header reloads the UITableView (`#if IOS || MACCATALYST` in
-// Expander.ResizeExpanderInItemsView) so that the table measures the row again.
 public partial class ExpanderTests
 {
 	[Fact]
@@ -37,7 +35,6 @@ public partial class ExpanderTests
 		var inner = new ListView();
 		var expander = new Expander { Header = new Label { Text = "Header" }, Content = new Label { Text = "Content" } };
 
-		// The walk up the parents does not stop at the first ListView: a list inside a row of another list is reloaded, and so is the outer one.
 		inner.Parent = outer;
 		expander.Parent = inner;
 
@@ -72,7 +69,7 @@ public partial class ExpanderTests
 		{
 			var table = CreateHandler<ReloadCountingListViewHandler>(listView).PlatformView;
 
-			// Without a header ResizeExpanderInItemsView returns before it walks the parents, so the list is not reloaded.
+			// Without a header, ResizeExpanderInItemsView returns before it walks the parents.
 			expander.HandleHeaderTap(new TappedEventArgs(null));
 
 			Assert.True(expander.IsExpanded);
@@ -82,7 +79,6 @@ public partial class ExpanderTests
 
 	static bool IsPlatformViewVisible(IView view) => !((UIView)view.Handler!.PlatformView!).Hidden;
 
-	// The row's frame in the UITableView, in points (the unit MAUI uses).
 	static double GetRowHeight(ListView listView, int row) => GetRowFrame(listView, row).Height;
 
 	static double GetRowTop(ListView listView, int row) => GetRowFrame(listView, row).Y;
@@ -94,7 +90,7 @@ public partial class ExpanderTests
 		return table.RectForRowAtIndexPath(NSIndexPath.FromRowSection(row, 0));
 	}
 
-	// A ListView handler whose platform view is a plain UIView, to reach the `as UITableView` null branch.
+	// A plain UIView as platform view reaches the `as UITableView` null branch.
 	sealed class NonTableListViewHandler : ViewHandler<ListView, UIView>
 	{
 		public NonTableListViewHandler() : base(ViewMapper)
@@ -104,7 +100,6 @@ public partial class ExpanderTests
 		protected override UIView CreatePlatformView() => new();
 	}
 
-	// A ListView handler whose platform view is a UITableView that counts the ReloadData calls (the Expander makes them).
 	sealed class ReloadCountingListViewHandler : ViewHandler<ListView, ReloadCountingTableView>
 	{
 		public ReloadCountingListViewHandler() : base(ViewMapper)

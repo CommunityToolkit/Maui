@@ -500,7 +500,6 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 		{
 			if (View is not null)
 			{
-				// Gives the element its own background colour back if one of the behavior's is on it
 				gestureManager.Reset(View);
 
 				// Every detach gives the children their InputTransparent back, also the detach of an unload (PlatformBehavior detaches on

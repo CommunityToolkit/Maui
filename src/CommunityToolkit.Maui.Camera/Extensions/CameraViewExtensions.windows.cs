@@ -51,7 +51,6 @@ static class CameraViewExtensions
 		}
 		catch (System.Runtime.InteropServices.COMException)
 		{
-			// Media Foundation could not open the camera
 			return false;
 		}
 	}

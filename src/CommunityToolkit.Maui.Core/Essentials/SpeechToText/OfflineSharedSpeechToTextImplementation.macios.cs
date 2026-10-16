@@ -18,7 +18,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	SFSpeechRecognitionTask? recognitionTask;
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
 
-	// The state that StateChanged reported last: the framework can end a recognition that was reported as Listening when its task no longer runs
+	// The framework can end a recognition that was reported as Listening when its task no longer runs, so the last reported state can differ from CurrentState
 	SpeechToTextState reportedState = SpeechToTextState.Stopped;
 
 	/// <inheritdoc/>
@@ -26,7 +26,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 												? SpeechToTextState.Listening
 												: SpeechToTextState.Stopped;
 
-	// A new recognition task is Starting (CurrentState Stopped) until the framework processes audio; the recognizer exists from the start of StartListenAsync until InternalStopListening
+	// CurrentState is Stopped while a new recognition task is Starting, until the framework processes audio, so a session is active while the
+	// recognizer exists: from the start of StartListenAsync until InternalStopListening.
 	bool IsListeningSessionActive => speechRecognizer is not null;
 
 
@@ -98,15 +99,14 @@ public sealed partial class OfflineSpeechToTextImplementation
 		recognitionTask = null;
 
 		// Dispose all IDisposables before reading `CurrentState` to ensure CurrentState == SpeechToTextState.Stopped
-		// StateChanged is raised when CurrentState has changed, or when the recognition was reported as Listening and its task no longer ran (the framework ended it):
-		// not when nothing was started, after a failed start or for a second stop
+		// StateChanged is not raised when nothing was started, after a failed start or for a second stop
 		if (CurrentState != previousState || CurrentState != reportedState)
 		{
 			ReportState(CurrentState);
 		}
 	}
 
-	// Stops the audio and lets the recognition task finish: the framework still delivers its final result (or an error)
+	// The task is finished, not canceled, so the framework still delivers its final result (or an error)
 	void EndRecording()
 	{
 		liveSpeechRequest?.EndAudio();
@@ -164,7 +164,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 				{
 					RestartTimer();
 
-					// The first partial result reports the state of the recognition, unless StateChanged already did (a partial result can arrive after the stop)
+					// A partial result can arrive after the stop, when StateChanged has already reported the state
 					if (currentIndex <= 0 && CurrentState != reportedState)
 					{
 						ReportState(CurrentState);
@@ -197,7 +197,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 	void RestartTimer()
 	{
-		// Only a running timer is restarted: CreateSilenceTimer leaves the timer stopped (and without an Interval) for the default AutoStopSilenceTimeout, and InternalStopListening stops it
+		// CreateSilenceTimer leaves the timer stopped (and without an Interval) for the default AutoStopSilenceTimeout, and InternalStopListening stops it
 		if (silenceTimer is { IsRunning: true } timer)
 		{
 			timer.Stop();

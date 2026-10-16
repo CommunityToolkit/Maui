@@ -52,7 +52,6 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 	[InlineData(TextDecorationFlags.NullToEmpty, true)]
 	public async Task IsValid_NullText_IsValidatedAsAnEmptyStringWhenDecorationFlagsIncludesNullToEmpty(TextDecorationFlags flags, bool expectedValue)
 	{
-		// Arrange
 		// The default RegexPattern ("") and MinimumLength (0) accept an empty string
 		var behavior = new TextValidationBehavior
 		{
@@ -65,10 +64,8 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		};
 		entry.Behaviors.Add(behavior);
 
-		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
 
@@ -123,7 +120,6 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenRegexPatternChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var behavior = new TextValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnValueChanged,
@@ -137,21 +133,17 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		entry.Text = "abc";
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		behavior.RegexPattern = "^[a-z]*$";
 
-		// Assert
 		Assert.True(behavior.IsValid);
 	}
 
-	// The settings of the Sample's TextValidationBehaviorPage, with DecorationFlags set after the text was validated
+	// Mirrors the settings of the Sample's TextValidationBehaviorPage.
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenDecorationFlagsChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var behavior = new TextValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnValueChanged,
@@ -165,20 +157,16 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		entry.Text = "12 ";
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		behavior.DecorationFlags = TextDecorationFlags.Trim;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 	}
 
 	[Fact]
 	public void IsValid_ShouldStayValid_WhenARuleChangesWhileTheViewIsFocusedAndFlagsIncludesForceMakeValidWhenFocused()
 	{
-		// Arrange
 		var behavior = new TextValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnUnfocused | ValidationFlags.ForceMakeValidWhenFocused,
@@ -193,23 +181,18 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		((IView)entry).IsFocused = false;
 		((IView)entry).IsFocused = true;
 
-		// Act
 		behavior.MinimumLength = 5;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 
-		// Act
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 	}
 
 	[Fact]
 	public void IsValid_ShouldNotValidate_WhenARuleChangesBeforeTheFirstValidationOfAnotherView()
 	{
-		// Arrange
 		var behavior = new TextValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnUnfocused
@@ -226,17 +209,13 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		var secondEntry = new Entry();
 		secondEntry.Behaviors.Add(behavior);
 
-		// Act
 		behavior.MinimumLength = 1;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 
-		// Act
 		((IView)secondEntry).IsFocused = true;
 		((IView)secondEntry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 	}
 

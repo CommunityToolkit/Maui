@@ -5,9 +5,6 @@ using CommunityToolkit.Maui.DeviceTests.Runners;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Tests of DrawingViewService, the platform code that turns points and lines into a PNG stream (Bitmap on Android, UIImage on
-// iOS and Mac Catalyst, Win2D on Windows). Each test decodes the stream the service returns with the platform's own PNG decoder
-// and asserts size and pixels, so nothing here reads a toolkit-cached value.
 [Category(TestCategory.DrawingView)]
 public partial class DrawingViewServiceTests
 {
@@ -18,7 +15,6 @@ public partial class DrawingViewServiceTests
 	// The bounding box of these points padded by the line width: x 10..50, y 10..30 plus 4 on every side = 48 x 28 pixels.
 	static readonly (float X, float Y)[] lShape = [(10, 10), (50, 10), (50, 30)];
 
-	// Catches: wrong bounding box, offset, padding, polyline or PNG output
 	[Fact]
 	public async Task PointsWithoutACanvasProduceAPngCoveringTheirBoundingBox()
 	{
@@ -36,7 +32,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 24, 14, white);
 	}
 
-	// Catches: the canvas size is ignored, or the points are shifted by the bounding box instead of drawn in canvas coordinates
 	[Fact]
 	public async Task PointsWithACanvasSizeProduceAPngOfTheCanvasSizeWithPointsInCanvasCoordinates()
 	{
@@ -51,7 +46,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 5, 5, white);
 	}
 
-	// Catches: the stroke color is not applied (Android used to apply it only from API 29 on)
 	[Fact]
 	public async Task PointsAreStrokedWithTheStrokeColor()
 	{
@@ -60,13 +54,11 @@ public partial class DrawingViewServiceTests
 		using var stream = await DrawingViewService.GetImageStream(options);
 
 		var image = await DecodeAsync(stream);
-		// geometry first, then the stroke color
 		DrawingPixelAssert.NotColorAtUnits(image, 50, 20, white, because: "the segment is drawn, whatever its color");
 		DrawingPixelAssert.ColorAtUnits(image, 50, 34, white);
 		AssertStrokeColor(image, 50, 20, blue);
 	}
 
-	// Catches: strokes are drawn with butt or square caps, or with miter or bevel joins, instead of round ones
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -90,7 +82,6 @@ public partial class DrawingViewServiceTests
 			joinImage = await DecodeAsync(joinStream);
 		}
 
-		// geometry first, then the stroke color
 		DrawingPixelAssert.NotColorAtUnits(capImage, 113, 50, white, because: "a butt cap would end at x = 120");
 		DrawingPixelAssert.NotColorAtUnits(capImage, 177, 50, white, because: "a butt cap would end at x = 170");
 		DrawingPixelAssert.ColorAtUnits(capImage, 112, 42, white, because: "a square cap would cover the corner of the cap, which is outside the round cap");
@@ -102,8 +93,6 @@ public partial class DrawingViewServiceTests
 		AssertStrokeColor(joinImage, 50, 19.5, red);
 	}
 
-	// Catches: a canvas smaller than one pixel (-Infinity included) is rendered
-	// or rejected instead of returning Stream.Null
 	[Theory]
 	[InlineData(0.5, 10)]
 	[InlineData(10, 0.5)]
@@ -118,8 +107,6 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// Catches: a canvas smaller than one pixel (-Infinity included) is rendered
-	// or rejected instead of returning Stream.Null (lines)
 	[Theory]
 	[InlineData(0.5, 10)]
 	[InlineData(10, 0.5)]
@@ -135,7 +122,6 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// Catches: a drawing narrower than one pixel is rendered instead of returning Stream.Null
 	[Fact]
 	public async Task SinglePointWithZeroLineWidthReturnsNullStream()
 	{
@@ -146,8 +132,7 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// Empty points: every platform returns Stream.Null through an explicit guard
-	// (Apple used to fail in points.Min()). (The DrawingLine unit tests that expect Stream.Null only run against the net stub, so they do not settle the contract.)
+	// Apple used to fail in points.Min(). The DrawingLine unit tests that expect Stream.Null only run against the net stub, so they do not settle the contract.
 	[Fact]
 	public async Task EmptyPointsReturnNullStream()
 	{
@@ -158,7 +143,7 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// Catches: a single point is not drawn or the padding is wrong (image is 12x12: the point padded by the 6 unit line width on both sides)
+	// The image is 12x12: the point padded by the 6 unit line width on both sides.
 	[Fact]
 	public async Task SinglePointProducesAnImageOfTheLineWidthPadding()
 	{
@@ -172,7 +157,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.NotColorAtUnits(image, 6, 6, white, because: "the single point is drawn as a dot of the line width");
 	}
 
-	// A line with a single point (a tap on the DrawingView) must be in the image as a dot of its line width
 	[Fact]
 	public async Task SinglePointLineAppearsInTheImageAsADot()
 	{
@@ -187,7 +171,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.NotColorAtUnits(image, 50, 25, white, because: "the single point is drawn as a dot of the line width");
 	}
 
-	// Catches: padding uses the first line's width instead of the largest, or a line is skipped
 	[Fact]
 	public async Task LinesProduceAPngPaddedByTheLargestLineWidthWithEveryLineDrawn()
 	{
@@ -211,7 +194,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 28, 18, white);
 	}
 
-	// Catches: lines are not drawn with their own color
 	[Fact]
 	public async Task LinesAreStrokedWithTheirOwnColors()
 	{
@@ -232,7 +214,6 @@ public partial class DrawingViewServiceTests
 		AssertStrokeColor(image, 50, 30, blue);
 	}
 
-	// Catches: FullCanvas ignores the canvas size
 	[Fact]
 	public async Task LinesWithACanvasSizeProduceAPngOfTheCanvasSize()
 	{
@@ -247,8 +228,7 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 50, 40, white);
 	}
 
-	// No lines (DrawingView.GetImageStream on an empty drawing): every platform returns Stream.Null
-	// (Android used to fail in Max() over no line widths, iOS and Mac Catalyst threw "Unable to generate image. No Lines Found")
+	// DrawingView.GetImageStream on an empty drawing: Android used to fail in Max() over no line widths, iOS and Mac Catalyst threw "Unable to generate image. No Lines Found"
 	[Fact]
 	public async Task NoLinesReturnNullStream()
 	{
@@ -259,8 +239,6 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// No lines with a canvas size (DrawingView.GetImageStream with DrawingViewOutputOption.FullCanvas on an
-	// empty drawing): Stream.Null as without a canvas size, not an image of the empty canvas
 	[Fact]
 	public async Task NoLinesWithACanvasSizeReturnNullStream()
 	{
@@ -271,7 +249,6 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// A line without points: every platform returns Stream.Null through its empty-points guard
 	[Fact]
 	public async Task LineWithoutPointsReturnsNullStream()
 	{
@@ -282,7 +259,6 @@ public partial class DrawingViewServiceTests
 		Assert.Same(Stream.Null, stream);
 	}
 
-	// Robustness: a line without points next to a drawable line must not stop the drawable line from rendering
 	[Fact]
 	public async Task LineWithoutPointsNextToAValidLineIsSkipped()
 	{
@@ -299,7 +275,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.NotColorAtUnits(image, 50, 20, white, because: "the valid line is drawn");
 	}
 
-	// Catches: the bounding-box offset has the wrong sign (or is dropped) for points with negative coordinates
 	[Fact]
 	public async Task PointsWithNegativeCoordinatesProduceTheSameImageAsTheSameShapeAtPositiveCoordinates()
 	{
@@ -315,7 +290,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SameImage(expected, actual, because: "the shape is the same, only shifted by (-100,-60)");
 	}
 
-	// The service has no thread affinity: the image is the same on the UI thread and on a worker thread
 	[Fact]
 	public async Task ImageIsTheSameWhetherRequestedOnTheUiThreadOrOnAWorkerThread()
 	{
@@ -330,7 +304,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SameImage(workerImage, uiImage);
 	}
 
-	// Catches: SolidPaint backgrounds are not filled with their color
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -346,7 +319,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 50, 40, green);
 	}
 
-	// Catches: a SolidPaint without a color is not replaced by the default background
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -359,7 +331,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 97, 47, Colors.LightGray);
 	}
 
-	// Catches: a missing background is not replaced by the default background
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -372,7 +343,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 97, 47, Colors.LightGray);
 	}
 
-	// Catches: paints other than solid and gradients are not replaced by the default background
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -385,7 +355,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 97, 47, Colors.LightGray);
 	}
 
-	// Catches: a linear gradient is not drawn from its start point to its end point, or its stop offsets are replaced by evenly spaced ones
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -405,7 +374,7 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 98, 5, blue, tolerance: 80, because: "the end of the gradient");
 	}
 
-	// The end color continues beyond the end point, as it does for gradients everywhere else in MAUI
+	// This matches gradients everywhere else in MAUI.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -420,7 +389,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 90, 5, blue, tolerance: 80, because: "beyond the end point (x = 50) the end color continues (Apple converts gradient colors between color spaces: pure blue comes back as about #0432FF)");
 	}
 
-	// Catches: a radial gradient is not drawn from the center outwards
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -436,7 +404,6 @@ public partial class DrawingViewServiceTests
 		Assert.True(corner.B > corner.R + 50, $"The corner of a red to blue radial gradient should be bluer than red, but is {corner}.");
 	}
 
-	// The radial gradient is centered on RadialGradientPaint.Center and ends at RadialGradientPaint.Radius
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -451,8 +418,8 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 90, 25, blue, tolerance: 50, because: "that is far outside the radius, so the end color is used");
 	}
 
-	// As in MAUI's canvas, which draws the DrawingView on every platform, the radial gradient is a circle whose radius is
-	// relative to the larger side of the image, also when that is the height (Android used the width, Windows drew an ellipse)
+	// MAUI's canvas, which draws the DrawingView on every platform, makes the radial gradient a circle whose radius is relative to the larger side of the image,
+	// also when that is the height (Android used the width, Windows drew an ellipse).
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -472,9 +439,8 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.ColorAtUnits(image, 2, 50, Color.FromRgb(138, 0, 117), tolerance: 50, because: "the gradient is a circle, so 23 units left of the center is about halfway too");
 	}
 
-	// Gradient paints that a platform gradient API rejects (no stop, one stop, zero radius) must also produce
-	// an image, with the colors that the other platforms give them: a single stop fills the image with its color, a gradient without stops is filled with the default background,
-	// and a radius of 0 spans the diagonal of the image, as in MAUI's canvas (Android's shaders reject all three, Apple's CGGradient a gradient without stops).
+	// Android's shaders reject a gradient without stops, with one stop or with a radius of 0, and Apple's CGGradient rejects one without stops,
+	// yet every platform must produce an image with the colors that the other platforms give them (a radius of 0 spans the diagonal of the image, as in MAUI's canvas).
 	// Apple converts gradient colors between color spaces (pure red comes back as about #FF2600), hence the tolerance.
 	[Theory]
 	[InlineData("linear-1-stop", false)]
@@ -513,9 +479,8 @@ public partial class DrawingViewServiceTests
 		}
 	}
 
-	// A DesiredSize with a NaN side, or with two infinite sides, must be rejected with an ArgumentException instead of failing inside
-	// the platform image APIs: the image is resized by Math.Min(desired width / width, desired height / height), which is then NaN or infinite
-	// (a NaN side: Java.Lang.IllegalArgumentException from Bitmap.CreateScaledBitmap on Android, UIGraphics.BeginImageContext aborts the process on iOS and Mac Catalyst).
+	// Without validation the image is resized by Math.Min(desired width / width, desired height / height), which is then NaN or infinite, and that fails inside the platform
+	// image APIs (a NaN side: Java.Lang.IllegalArgumentException from Bitmap.CreateScaledBitmap on Android, UIGraphics.BeginImageContext aborts the process on iOS and Mac Catalyst).
 	// The options are built inside the recorded calls, so validation in the options constructors and validation in DrawingViewService both pass.
 	[Theory]
 	[InlineData(double.NaN, 50)]
@@ -542,8 +507,7 @@ public partial class DrawingViewServiceTests
 		Assert.IsType<ArgumentException>(exception, exactMatch: false);
 	}
 
-	// A canvas size with a NaN side or a side of positive infinity must be rejected with an ArgumentException instead of
-	// failing inside the platform image APIs, because the canvas size is the size of the image that is drawn (a NaN side: Java.Lang.IllegalArgumentException from
+	// The canvas size is the size of the image that is drawn, so without validation it fails inside the platform image APIs (a NaN side: Java.Lang.IllegalArgumentException from
 	// Bitmap.CreateBitmap on Android, UIGraphics.BeginImageContextWithOptions aborts the process on iOS and Mac Catalyst).
 	// The options are built inside the recorded calls, so validation in the options constructors and validation in DrawingViewService both pass.
 	[Theory]
@@ -577,8 +541,7 @@ public partial class DrawingViewServiceTests
 		Assert.IsType<ArgumentException>(exception, exactMatch: false);
 	}
 
-	// Catches: the image is not resized proportionally to fit the desired size (Windows used to keep the natural size),
-	// or an infinite side of the desired size is rejected instead of fitting the image to the other side
+	// Windows used to keep the natural size. An infinite side of the desired size fits the image to the other side instead of being rejected.
 	[Theory]
 	[InlineData(96, 200, 96, 56)]
 	[InlineData(24, 100, 24, 14)]
@@ -597,7 +560,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SizeIs(image, expectedWidth, expectedHeight);
 	}
 
-	// Catches: the image is not resized proportionally to fit the desired size
 	[Theory]
 	[InlineData(112, 200, 112, 72)]
 	[InlineData(28, 100, 28, 18)]
@@ -614,7 +576,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SizeIs(image, expectedWidth, expectedHeight);
 	}
 
-	// Catches: a desired size below one pixel (a negative side, -Infinity included) produces an empty or invalid image
 	[Theory]
 	[InlineData(0, 0)]
 	[InlineData(-5, 10)]
@@ -630,7 +591,6 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SizeIs(image, 1, 1);
 	}
 
-	// The documented DesiredSize also applies when a canvas size is supplied
 	[Fact]
 	public async Task PointsWithACanvasSizeAreScaledToTheDesiredSize()
 	{
@@ -643,8 +603,7 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SizeIs(image, 200, 100);
 	}
 
-	// Catches: an already cancelled token is ignored
-	// (Windows used to see the token only in SaveAsync(...).AsTask(token), whose outcome depends on timing).
+	// Windows used to see the token only in SaveAsync(...).AsTask(token), whose outcome depends on timing.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -661,7 +620,6 @@ public partial class DrawingViewServiceTests
 		Assert.IsType<OperationCanceledException>(exception, exactMatch: false);
 	}
 
-	// An already cancelled token is honored first, also when there is nothing to draw
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -680,7 +638,6 @@ public partial class DrawingViewServiceTests
 		Assert.IsType<OperationCanceledException>(exception, exactMatch: false);
 	}
 
-	// Catches: a token that is not cancelled prevents the image
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -694,7 +651,6 @@ public partial class DrawingViewServiceTests
 		AssertPng(stream);
 	}
 
-	// Catches: DrawingLine.GetImageStream ignores the line's points, width or color
 	[Fact]
 	public async Task DrawingLineGetImageStreamRendersItsPointsWidthAndBackground()
 	{
@@ -713,7 +669,7 @@ public partial class DrawingViewServiceTests
 
 	Task<Stream> GetStreamAsync(bool useLines, Paint? background, CancellationToken token = default)
 	{
-		// Both options types describe the same 100x50 canvas with one line along y = 20.
+		// The two branches must describe the same 100x50 canvas with one line along y = 20, as the tests expect the same pixels from both.
 		if (useLines)
 		{
 			var lines = new List<IDrawingLine> { CreateLine(red, 4, (10, 20), (90, 20)) };

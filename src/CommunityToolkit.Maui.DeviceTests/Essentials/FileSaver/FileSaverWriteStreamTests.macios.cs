@@ -2,8 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: a write of WriteStream that the file system refuses. The file is opened for writing, so only the write itself can
-// fail (a full disk, an I/O error, a file size limit); the tests make a write exceed a file size limit of the process.
+// The file is opened for writing, so only the write itself can fail (a full disk, an I/O error, a file size limit); the tests make a write
+// exceed a file size limit of the process.
 public partial class FileSaverWriteStreamTests
 {
 	[Fact]
@@ -68,11 +68,8 @@ public partial class FileSaverWriteStreamTests
 		Assert.True(values.Count is 0 || values[^1] < 100, $"A failed copy reported {string.Join(", ", values)}.");
 	}
 
-	/// <summary>
-	/// Lowers the file size limit of the process (RLIMIT_FSIZE) and ignores SIGXFSZ while it is applied, so that a write past the limit
-	/// fails with EFBIG instead of ending the process; Dispose puts both back. It affects every file of the process, so it is applied for
-	/// as short a time as possible.
-	/// </summary>
+	// SIGXFSZ is ignored while the limit is applied, so that a write past the limit fails with EFBIG instead of ending the process. The limit
+	// affects every file of the process, so it is applied for as short a time as possible.
 	sealed class FilesFileSizeLimit : IDisposable
 	{
 		const string libSystem = "/usr/lib/libSystem.dylib";

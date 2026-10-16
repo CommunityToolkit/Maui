@@ -9,8 +9,6 @@ using MediaPlayer;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs: Play, Pause, Stop, Seek, the played-to-end handling and the playback speed. They run against the real
-// AVPlayer; the player, the item and the notifications are the native state the assertions read.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
@@ -39,7 +37,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// Play() of media that played to its end starts it again from its start, as on Android, without reporting another end.
+	// As on Android, Play() at the end of the media starts it again from its start without reporting another end.
 	[Fact]
 	public async Task PlayAtTheEndOfTheMediaPlaysItAgainFromTheStart()
 	{
@@ -93,11 +91,9 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		{
 			using var manager = CreateManager(CreateMediaElement());
 
-			// No player and no item.
 			Assert.Null(Record.Exception(manager.Play));
 			Assert.Null(Record.Exception(manager.Pause));
 
-			// An item but no player.
 			manager.NativePlayerItem = new AVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("video", "mp4"))));
 			Assert.Null(Record.Exception(manager.Play));
 			Assert.Null(Record.Exception(manager.Pause));
@@ -307,8 +303,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// IMediaElement.SeekTo clamps a position outside of the media: before the start to the start, beyond the end to the end, and the end itself (the
-	// Duration, which the half-open seekable range does not contain) is the end. The seek then completes and raises SeekCompleted like any other.
+	// The Duration is the end of the media, although the half-open seekable range does not contain it.
 	[Theory]
 	[InlineData(2000, 2.0)]
 	[InlineData(5000, 2.0)]
@@ -333,7 +328,6 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// SeekTo(Duration) moves the playhead to the end of the media.
 	[Fact]
 	public async Task SeekToTheDurationMovesToTheEndOfTheMedia()
 	{
@@ -355,7 +349,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 	}
 
 	// The duration of most media (29.97 fps video, 44.1 kHz audio) is not a whole number of milliseconds, and neither is their Duration:
-	// SeekTo(Duration) moves the playhead to the end of the media all the same, not to the key frame before the end (1.668 s).
+	// SeekTo(Duration) must still reach the end of the media, not the key frame before the end (1.668 s).
 	[Fact]
 	public async Task SeekToTheDurationOfAMediaWhoseDurationIsNotAWholeNumberOfMillisecondsMovesToTheEnd()
 	{
@@ -410,8 +404,6 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// An item without a seekable range: only a position before the start of the media is clamped (to the start); the player is asked for any
-	// other position as it is.
 	[Theory]
 	[InlineData(1000, 1000)]
 	[InlineData(5000, 5000)]
@@ -448,7 +440,6 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 			manager.CreatePlatformView();
 			var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("video", "mp4"))))
 			{
-				// Both ranges contain 1.5 s: the first one that does is used and the search ends there.
 				SeekableTimeRangesOverride =
 				[
 					NSValue.FromCMTimeRange(new CMTimeRange { Start = CMTime.Zero, Duration = CMTime.FromSeconds(2, 1000) }),
@@ -483,7 +474,6 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 			manager.NativePlayer = player;
 			using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
 
-			// The position is seekable, so the player is asked to seek, but it never reports that the seek finished.
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => manager.Seek(TimeSpan.FromSeconds(1), cancellation.Token));
 
 			Assert.Equal(1.0, Assert.Single(player.SeekRequests).Seconds, precision: 3);
@@ -590,8 +580,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// A second seek while the first one runs: AVPlayer reports the first one as not finished at once. Both seeks complete and raise SeekCompleted,
-	// and the playhead is where the second one went.
+	// A second seek while the first one runs: AVPlayer reports the first one as not finished at once.
 	[Fact]
 	public async Task SeekInterruptedByAnotherSeekCompletesAndRaisesSeekCompleted()
 	{
@@ -615,8 +604,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// The seekable time ranges bound the seek: a position before the first one goes to its start, one after the last one to its end, and any
-	// position from the start of the first one to the end of the last one, the gap between two ranges included, is passed on as it is.
+	// A position in the gap between two ranges is passed on as it is: only a position before the first range or after the last one is clamped.
 	[Theory]
 	[InlineData(5500, 5500)]
 	[InlineData(500, 500)]
@@ -651,8 +639,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// The seekable window of a live stream (an indefinite duration) starts after 0: a position before the window goes to its start, one after it
-	// to its end (the live edge).
+	// A live stream has an indefinite duration and a seekable window that starts after 0; the end of the window is the live edge.
 	[Theory]
 	[InlineData(5000, 10000)]
 	[InlineData(15000, 15000)]
@@ -735,7 +722,6 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 
 			mediaElement.Play();
 
-			// The clip ends after 0.3 s and starts over: the playhead is back near the start and still moving.
 			await WaitUntilAsync(() => player.CurrentTime.Seconds < 1.0 && player.Rate > 0, "The media did not loop.");
 			Assert.Equal(0, events.Ended);
 

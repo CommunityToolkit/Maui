@@ -6,8 +6,6 @@ using CoreMedia;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraViewExtensions.macios.cs: the flash mode conversion, the camera availability check and the AVCaptureDeviceFormat.ResolutionArea
-// extension property.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewExtensionsAppleTests : CameraHandlerTestBase

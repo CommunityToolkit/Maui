@@ -78,7 +78,7 @@ public static partial class DrawingViewService
 
 		if (drawingLineWithLargestLineWidth is null)
 		{
-			// no lines: nothing to draw, so GetPlatformImageStream returns Stream.Null, as on every platform
+			// GetPlatformImageStream returns Stream.Null when there is nothing to draw, as on every platform
 			return null;
 		}
 
@@ -149,8 +149,8 @@ public static partial class DrawingViewService
 		var linePoints = points.Select(p => new CGPoint(p.X - offset.Width, p.Y - offset.Height)).ToArray();
 		if (linePoints.Length is 1)
 		{
-			// a single point (a tap) is a zero-length segment, which the round caps draw as a dot of the line width, as MauiDrawingView draws it
-			// (AddLines with one point only moves to it)
+			// AddLines with one point only moves to it, so a single point (a tap) becomes a zero-length segment, which the round caps draw as a dot
+			// of the line width, as MauiDrawingView draws it
 			linePoints = [linePoints[0], linePoints[0]];
 		}
 
@@ -220,7 +220,7 @@ public static partial class DrawingViewService
 						positions[index] = gradientStop.Offset;
 					}
 
-					// the center is relative to the image and the radius to its larger side, as in MAUI's canvas, where a radius of 0 spans the diagonal of the image
+					// As in MAUI's canvas, the radius is relative to the larger side of the image, and a radius of 0 spans its diagonal
 					var radius = radialGradientBrush.Radius * Math.Max(imageSize.Width.Value, imageSize.Height.Value);
 					if (radius is not > 0)
 					{
@@ -253,7 +253,7 @@ public static partial class DrawingViewService
 		context.AddPath(GetBackgroundPath(size));
 		context.EOClip();
 
-		// the end color continues beyond the radius, as in MAUI's canvas and on Android
+		// The end color continues beyond the radius, as in MAUI's canvas and on Android
 		context.DrawRadialGradient(gradient, center, 0, center, (nfloat)radius, CGGradientDrawingOptions.DrawsBeforeStartLocation | CGGradientDrawingOptions.DrawsAfterEndLocation);
 
 		context.RestoreState();
@@ -270,7 +270,7 @@ public static partial class DrawingViewService
 		context.AddPath(GetBackgroundPath(size));
 		context.EOClip();
 
-		// the start and end colors continue beyond the start and end points, as in MAUI's canvas and on Android
+		// The start and end colors continue beyond the start and end points, as in MAUI's canvas and on Android
 		context.DrawLinearGradient(
 			gradient,
 			startPoint,

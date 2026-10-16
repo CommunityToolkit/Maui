@@ -4,7 +4,6 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: the behavior calls TextBox.SelectAll() from its GotFocus handler. Entry and Editor both have a TextBox platform view.
 public partial class SelectAllTextBehaviorTests
 {
 	// Not verified on a device: the WinUI element is only reachable through COM wrappers, so the toolkit-owned managed objects are what the leak tests require.

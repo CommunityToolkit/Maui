@@ -7,9 +7,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.macios.cs and the shared CameraManager.shared.cs members on iOS and Mac Catalyst, in places without a camera or
-// without the camera permission: a real AVCaptureSession and preview layer are created, and the state that a running capture
-// session would set up (initialized preview, an output that is recording) is seeded through CameraManagerAccessor.
+// These tests also run without a camera or the camera permission, so the state that a running capture session would set up (initialized
+// preview, an output that is recording) is seeded through CameraManagerAccessor.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleTests : CameraHandlerTestBase
@@ -157,7 +156,6 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			Assert.Equal(NativeHandle.Zero, platformView.Handle);
 			Assert.Equal(NativeHandle.Zero, session.Handle);
 
-			// The second Dispose finds nothing left to release.
 			Assert.Null(Record.Exception(created.Manager.Dispose));
 			Assert.Null(created.Access.CaptureSession);
 			Assert.Null(created.Access.PreviewView);
@@ -687,16 +685,16 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 
 			var exception = await Assert.ThrowsAsync<CameraException>(async () => await scope.Manager.UpdateCurrentCamera(cameraWithoutCaptureDevice, CancellationToken.None));
 
-			// The restart failed on the camera without device, and the manager stays initialized, so that the next camera change starts the
-			// preview again (UpdateCurrentCameraAfterASwitchThatFailedStartsTheNextSelectedCamera).
+			// The manager stays initialized so that the next camera change starts the preview again
+			// (UpdateCurrentCameraAfterASwitchThatFailedStartsTheNextSelectedCamera).
 			Assert.Equal("No Camera found", exception.Message);
 			Assert.True(scope.Access.IsInitialized);
 			Assert.Equal(0, scope.LoadedCount);
 		});
 	}
 
-	// A camera that never started has no photo output (StartCameraPreview creates it). The capture is reported as MediaCaptureFailed, which
-	// CameraView.CaptureImage turns into a CameraException, as on Windows; it used to throw ArgumentNullException for the photo output.
+	// The capture used to throw ArgumentNullException for the missing photo output (StartCameraPreview creates it). It is now reported as
+	// MediaCaptureFailed, which CameraView.CaptureImage turns into a CameraException, as on Windows.
 	[Fact]
 	public async Task TakePictureWithoutAPhotoOutputRaisesMediaCaptureFailed()
 	{
@@ -1066,8 +1064,6 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// Seeds what StartVideoRecording leaves behind: a movie output attached to the session, the file the recording writes to,
-	// the destination stream and the TaskCompletionSource that the recording delegate completes.
 	static AVCaptureMovieFileOutput SeedRecordingState(AppleCameraManagerScope scope, string recordedFile, Stream destination, out TaskCompletionSource finalizeTcs)
 	{
 		var session = scope.Access.CaptureSession ?? throw new InvalidOperationException("The manager has no capture session.");

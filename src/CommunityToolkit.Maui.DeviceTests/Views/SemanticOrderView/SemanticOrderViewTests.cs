@@ -6,18 +6,6 @@ using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// SemanticOrderView (Android, iOS, Mac Catalyst, Windows): the handler creates the native MauiSemanticOrderView, and ViewOrder is
-// applied to the native views: Android links the views with AccessibilityTraversalBefore/After (generating view ids), iOS and Mac
-// Catalyst set the container's accessibilityElements, Windows sets the TabIndex of the views. The platform partials read that state
-// (AssertPlatformOrder, AssertNoOrder, IsInNativeOrder, DescribeNativeOrder, ...).
-//
-// One contract for every platform: ViewOrder lists the views in the order assistive technologies visit them, and the views that are not
-// in it stay accessible (iOS and Mac Catalyst list them after the views of the order: see the Apple partial). Entries that cannot be
-// ordered natively (no platform view yet, or a platform view of another type) are left out and the other views keep their relative
-// order; a child entry that gets its platform view later joins the order, wherever it is below the container (adding a view does not
-// necessarily lay the container out again: see ViewOrderEntryThatGetsItsPlatformViewLaterJoinsTheNativeOrder); views dropped from
-// ViewOrder lose their native order; with nothing to order the platform's default order is used (the ViewOrder documentation: "If not
-// set, the default order is used").
 [Category(TestCategory.SemanticOrderView)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
@@ -35,7 +23,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		Last,
 	}
 
-	// What the layout that a child entry is added to is placed in, below the container.
 	public enum ChildLayoutHost
 	{
 		TheContainer,
@@ -96,8 +83,8 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		await InvokeOnMainThreadAsync(() => AssertOrderLinks(handler, buttons[1], buttons[2], buttons[0]));
 	}
 
-	// The native order must describe the current ViewOrder only: a view that was dropped from the order, and the ends of the new
-	// order, must not keep links to the previous order (Android would otherwise be told that a view comes both before and after another).
+	// A view that was dropped from the order, and the ends of the new order, must not keep links to the previous order: Android would
+	// otherwise be told that a view comes both before and after another.
 	[Fact]
 	public async Task ViewsDroppedFromTheViewOrderLoseTheirNativeOrder()
 	{
@@ -144,9 +131,7 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Wherever the entry without a platform view is (on Android: the first or the second view of a pair), applying the order must not fail,
-	// and once the entry has a platform view, setting the order again applies all of it. What the other views get in the meantime is asserted
-	// by ViewOrderEntriesThatCannotBeOrderedAreLeftOutAndTheOtherViewsKeepTheirOrder.
+	// Every position is tried because, on Android, the entry can be the first or the second view of a pair.
 	[Theory]
 	[InlineData(EntryPosition.First)]
 	[InlineData(EntryPosition.Middle)]
@@ -165,24 +150,20 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		};
 		view.ViewOrder = order;
 
-		// The entry has no handler yet: applying the order must not fail.
 		var handler = await CreateHandlerAsync<SemanticOrderViewHandler>(view);
 		Assert.Null(later.Handler);
 
 		await InvokeOnMainThreadAsync(() =>
 		{
 			CreateHandler<ButtonHandler>(later);
-			// Setting the same order again (a new list, so it is a property change) applies it with all views realized.
+			// Setting the same order again needs a new list to be a property change.
 			view.ViewOrder = [.. order];
 
 			AssertPlatformOrder(handler, order);
 		});
 	}
 
-	// The same for an entry whose platform view is not a native view of this platform (on Android: the first or the second view of a pair
-	// whose platform view is not an Android View): applying the order must not fail, and once the entry is replaced by a view that has a
-	// native view, the whole order is applied. What the other views get while the entry is listed is asserted by
-	// ViewOrderEntriesThatCannotBeOrderedAreLeftOutAndTheOtherViewsKeepTheirOrder.
+	// Every position is tried for the same reason as above: on Android the entry can be the first or the second view of a pair.
 	[Theory]
 	[InlineData(EntryPosition.First)]
 	[InlineData(EntryPosition.Middle)]
@@ -194,7 +175,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		var foreign = new ForeignView { Handler = new ObjectPlatformViewHandler(new object()) };
 		view.ViewOrder = WithEntryAt(position, foreign, buttons[0], buttons[1]);
 
-		// The entry's platform view is a plain object: applying the order must not fail.
 		var handler = await CreateHandlerAsync<SemanticOrderViewHandler>(view);
 
 		await InvokeOnMainThreadAsync(() =>
@@ -206,12 +186,8 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A child entry that is not part of the visual tree yet has no platform view when the order is applied. Once it gets one (it is added to
-	// a layout below the container), it must take its place in the native order without ViewOrder being set again. Adding a view does not
-	// necessarily lay the container out again: iOS and Mac Catalyst stop MAUI's layout invalidation at a view whose size cannot change (a
-	// Grid or a Border with a WidthRequest and a HeightRequest), and WinUI lays out only the part of the tree whose size changed. Android
-	// applies the order again when the container is laid out (OnLayout: requestLayout always reaches the container), iOS and Mac Catalyst
-	// build it when UIKit asks for the container's accessibility elements, Windows applies it again after every layout pass.
+	// Adding a view does not necessarily lay the container out again: iOS and Mac Catalyst stop MAUI's layout invalidation at a view whose size
+	// cannot change (a Grid or a Border with a WidthRequest and a HeightRequest), and WinUI lays out only the part of the tree whose size changed.
 	[Theory]
 	[InlineData(ChildLayoutHost.TheContainer)]
 	[InlineData(ChildLayoutHost.AScrollView)]
@@ -249,7 +225,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 			Assert.Null(later.Handler);
 			Assert.True(IsInNativeOrder(semanticOrderViewHandler, buttons[0], buttons[1]), $"The views that have a platform view are not in the native order: {DescribeNativeOrder(semanticOrderViewHandler, buttons[0], buttons[1])}.");
 
-			// Adding the view creates its platform view.
 			layout.Add(later);
 
 			var joined = await AssertHelpers.Wait(
@@ -280,9 +255,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// An entry without a platform view (a view that is not part of the visual tree yet) and an entry whose platform view is not a native
-	// view of this platform cannot be ordered natively, wherever they are in the list: they are left out and the other views keep their
-	// relative order (every platform skips such an entry).
 	[Theory]
 	[InlineData(UnorderableEntry.WithoutAPlatformView, EntryPosition.First)]
 	[InlineData(UnorderableEntry.WithoutAPlatformView, EntryPosition.Middle)]
@@ -313,7 +285,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// The entry still cannot be ordered natively.
 			Assert.True(entryKind is UnorderableEntry.WithAPlatformViewOfAnotherType || entry.Handler is null, "The entry without a platform view got a handler.");
 
 			Assert.True(
@@ -324,9 +295,8 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Without a virtual view there is nothing to order. Android and Windows keep the current native order, iOS and Mac Catalyst fall back
-	// to UIKit's default (nil); whatever a platform does, it must not declare that the container has no accessible children (see the
-	// Apple partial).
+	// Android and Windows keep the current native order, iOS and Mac Catalyst fall back to UIKit's default (nil); whatever a platform does,
+	// it must not declare that the container has no accessible children (see the Apple partial).
 	[Fact]
 	public async Task PlatformViewWithoutAVirtualViewIsHandledWhenUpdatingTheOrder()
 	{
@@ -344,8 +314,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The native view forgets the virtual view it was given: a later ViewOrder change of the old view still reaches the native view through
-	// the handler's mapper, finds no virtual view, does not fail, and orders nothing (on every platform, whatever the native view keeps).
 	[Fact]
 	public async Task PlatformViewWithoutAVirtualViewIgnoresLaterViewOrderChanges()
 	{
@@ -363,6 +331,7 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 
 			view.ViewOrder = [buttons[1], buttons[2]];
 
+			// The platforms differ in what the native view keeps, so this only asserts that the new order was not applied.
 			Assert.False(
 				IsInNativeOrder(handler, buttons[1], buttons[2]),
 				$"The order of a view that the native view no longer has was applied: {DescribeNativeOrder(handler, buttons)}.");
@@ -404,7 +373,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 			Assert.IsNotType<MauiSemanticOrderView>(handler.PlatformView);
 			AssertNoOrder(handler, buttons);
 
-			// Changing the order maps ViewOrder to a platform view that cannot apply it: nothing happens.
 			view.ViewOrder = [buttons[0], buttons[1], buttons[2]];
 
 			AssertNoOrder(handler, buttons);
@@ -424,7 +392,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 			handler.SetVirtualView(view);
 			AssertNoOrder(handler, buttons);
 
-			// Setting the property reaches the handler's mapper: the default one maps ViewOrder to the native views.
 			view.ViewOrder = [buttons[1], buttons[0], buttons[2]];
 
 			AssertPlatformOrder(handler, buttons[1], buttons[0], buttons[2]);
@@ -478,7 +445,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		var mappedViewOrderCount = 0;
 		var propertyMapper = new PropertyMapper<ISemanticOrderView, SemanticOrderViewHandler>(SemanticOrderViewHandler.SemanticOrderViewMapper)
 		{
-			// Replaces the toolkit's ViewOrder mapping.
 			[nameof(ISemanticOrderView.ViewOrder)] = (_, _) => mappedViewOrderCount++,
 		};
 		var handler = new SemanticOrderViewHandler(propertyMapper, null);
@@ -556,8 +522,8 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference, childReference, childPlatformViewReference);
 	}
 
-	// Shown in a window and removed again, the container does not stay alive: what it listens to while it is in the visual tree (Windows
-	// applies the order again after every layout pass) does not keep it, its handler or the views of its order alive.
+	// What the container listens to while it is in the visual tree (Windows applies the order again after every layout pass) must not keep
+	// it, its handler or the views of its order alive.
 	[Fact]
 	public async Task SemanticOrderViewThatWasShownInAWindowDoesNotLeak()
 	{
@@ -570,8 +536,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		await VisualBehaviorHelpers.WaitForGCAsync(references);
 	}
 
-	// Shows a container with an order in a window, removes it, waits until it was unloaded and disconnects its handler: returns weak
-	// references to the container, its handler, its platform view, and a view of its order with its platform view.
 	async Task<WeakReference[]> ShowInAWindowAndRemoveAsync()
 	{
 		var view = CreateSemanticOrderView(out var buttons);
@@ -614,7 +578,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		return new SemanticOrderView { Content = layout };
 	}
 
-	// The order of the two views with the entry first, between them, or last.
 	static IView[] WithEntryAt(EntryPosition position, IView entry, IView first, IView second) => position switch
 	{
 		EntryPosition.First => [entry, first, second],
@@ -623,7 +586,6 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(position), position, null),
 	};
 
-	// A readable name for failure messages.
 	static string NameOf(IView view) => view switch
 	{
 		Button button => button.Text,

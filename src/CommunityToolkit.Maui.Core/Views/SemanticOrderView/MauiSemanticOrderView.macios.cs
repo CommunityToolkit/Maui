@@ -20,12 +20,11 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 	{
 	}
 
-	// UIKit asks the container for its accessibility elements whenever it needs them: they are the platform views of ViewOrder at that
-	// moment, followed by the rest of the container's content. So a view of the order that got its platform view since ViewOrder was set is
-	// listed too, also when nothing laid the container out again (adding a view below a view with a fixed size does not).
-	// With nothing to order, UIKit's default (nil) is returned: the container then exposes its subviews in their default order. A non-nil
-	// array is the complete list of the container's accessibility elements, so an empty one would hide every child, and the content that is
-	// not in the order must be listed too, or VoiceOver cannot reach it.
+	// UIKit asks for the accessibility elements whenever it needs them, so a view of the order that got its platform view since ViewOrder was
+	// set is listed too, also when nothing laid the container out again (adding a view below a view with a fixed size does not).
+	// With nothing to order, nil (UIKit's default) is returned: the container then exposes its subviews in their default order. A non-nil array
+	// is the complete list of the container's accessibility elements, so an empty one would hide every child, and the content that is not in the
+	// order must be listed too, or VoiceOver cannot reach it.
 	[Export("accessibilityElements")]
 	NSArray? GetAccessibilityElementsInViewOrder()
 	{
@@ -50,10 +49,9 @@ public class MauiSemanticOrderView : ContentView, IUIAccessibilityContainer
 
 		return NSArray.FromNSObjects(accessibilityElements.ToArray());
 
-		// The content of the view, in the order of the view hierarchy, without the views of the order. A subview that holds no view of the
-		// order is listed as it is: UIKit exposes it, or what it holds, as it would without an order. So is an accessibility element, which
-		// UIKit does not look into. UIKit would look into any other view that holds views of the order and expose them a second time: what
-		// else that view holds is listed instead. Hidden views stay hidden, as they are without an order.
+		// A subview that holds no view of the order is listed as it is: UIKit exposes it, or what it holds, as it would without an order. So is an
+		// accessibility element, which UIKit does not look into. UIKit would look into any other view that holds views of the order and expose them
+		// a second time: what else that view holds is listed instead. Hidden views stay hidden, as they are without an order.
 		void AddTheRestOfTheContent(UIView view)
 		{
 			foreach (var subview in view.Subviews)

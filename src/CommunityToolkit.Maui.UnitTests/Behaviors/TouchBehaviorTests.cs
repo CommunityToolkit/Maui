@@ -538,8 +538,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		}
 	}
 
-	// Without a platform view (this target framework) nothing clicks a Button for a tap but the behavior: a completed touch raises its Clicked
-	// once, and a cancelled one does not.
+	// This target framework has no platform view, so the behavior itself raises the Clicked of a Button for a tap.
 	[Fact]
 	public void VerifyCompletedTouchClicksAButtonWithoutAPlatformViewOnce()
 	{
@@ -559,8 +558,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(1, clicks);
 	}
 
-	// The hover status is updated before the hover state: a HoverStateChanged handler reads the status of the same change, and a
-	// HoverStatusChanged handler still reads the previous state.
+	// The hover status is updated before the hover state, so a HoverStatusChanged handler still reads the previous state.
 	[Fact]
 	public void VerifyHoverStateChangedHandlersSeeTheHoverStatusOfTheSameChange()
 	{
@@ -1154,8 +1152,8 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
 	}
 
-	// A behavior without background colours leaves an element whose colour comes from a binding or a DynamicResource following that
-	// source while it is attached, before a touch and after one: a colour that the behavior set on the element would take the source's place.
+	// A colour that the behavior set on the element would take the place of the binding or DynamicResource, and the element would stop
+	// following its source.
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
@@ -1198,8 +1196,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(Colors.Green, view.BackgroundColor);
 	}
 
-	// With a pressed colour configured, the release gives the element back the app's colour and its source: a binding, a DynamicResource or
-	// a Style the behavior's colour hid works again, and a value the app set on the element is set again.
 	[Theory]
 	[InlineData("Binding")]
 	[InlineData("DynamicResource")]
@@ -1267,7 +1263,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		};
 	}
 
-	// A colour of the app's source that changes while the behavior's hovered colour is shown appears when the hover ends.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -1307,9 +1302,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(Colors.Green, view.BackgroundColor);
 	}
 
-	// An element without a background colour gets the colour of the attach (TouchBehaviorDefaults.DefaultBackgroundColor) as its own: the
-	// states without a colour of their own and the detach leave it on the element, whether the behavior configures no colour at all, only a
-	// pressed colour or only a hovered colour.
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(true, false)]
@@ -1341,9 +1333,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(attachColor, view.BackgroundColor);
 	}
 
-	// The detach while the behavior's hovered colour is shown (the behavior is removed, or the element is unloaded) gives the element back the
-	// app's colour and its source: a binding, a DynamicResource or a Style the behavior's colour hid works again, and a value the app set on
-	// the element is set again. The next attach starts from the app's current colour.
 	[Theory]
 	[InlineData("Binding")]
 	[InlineData("DynamicResource")]
@@ -1383,7 +1372,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		ChangeAppColor(Colors.Green);
 		Assert.Equal(Colors.Green, view.BackgroundColor);
 
-		// Attached again while the hover goes on: the hovered colour, then the app's current colour when the hover ends
+		// Attached again while the hover goes on, so the hovered colour shows until the hover ends
 		touchBehavior.Element = view;
 		Assert.Equal(Colors.Yellow, view.BackgroundColor);
 
@@ -1418,8 +1407,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		};
 	}
 
-	// A colour that the app sets on the element while the behavior's hovered colour is shown takes the place of the behavior's colour: the
-	// detach leaves it on the element and does not set the app's earlier colour back.
 	[Fact]
 	public void VerifyColorTheAppSetWhileAStateColorIsShownStaysAfterTheDetach()
 	{
@@ -1436,8 +1423,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(Colors.Green, view.BackgroundColor);
 	}
 
-	// A colour that the app set on the element itself comes back in one change, when a state without a colour of its own follows a state
-	// colour and at the detach: the behavior sets it in the place of its own colour, and the element never shows another colour in between.
 	[Fact]
 	public void VerifyAppsOwnColorComesBackInOneChange()
 	{

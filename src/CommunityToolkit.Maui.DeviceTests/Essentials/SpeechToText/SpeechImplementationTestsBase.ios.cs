@@ -2,9 +2,6 @@ using CommunityToolkit.Maui.Media;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS half of the Apple start (SpeechToTextImplementation.ios.cs and OfflineSpeechToTextImplementation.ios.cs): unlike Mac Catalyst,
-// the iOS start only configures the shared session (category, options, multichannel content); it neither sets a mode nor activates
-// the session. The stubbed AVAudioSession would record either call.
 public abstract partial class SpeechImplementationTestsBase
 {
 	[Fact]

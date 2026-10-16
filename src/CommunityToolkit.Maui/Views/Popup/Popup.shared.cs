@@ -23,7 +23,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </remarks>
 public partial class Popup : ContentView, IPaddingElement, IView
 {
-	// The largest size PopupPage can display this Popup at; see SetMaximumDisplaySize
 	Size maximumDisplaySize = new(double.PositiveInfinity, double.PositiveInfinity);
 
 	/// <summary>
@@ -96,7 +95,6 @@ public partial class Popup : ContentView, IPaddingElement, IView
 
 	// .NET MAUI's layout uses an explicit size (IView.Width and IView.Height) even when it is larger than the space available, so a Popup
 	// whose WidthRequest or HeightRequest is larger than the window would cover the window, edge to edge, with no space left to tap outside of it.
-	// These re-implement VisualElement's IView.Width and IView.Height, limited to the size the displaying PopupPage has room for.
 	double IView.Width => GetExplicitSize(WidthRequestProperty, maximumDisplaySize.Width);
 
 	double IView.Height => GetExplicitSize(HeightRequestProperty, maximumDisplaySize.Height);
@@ -105,7 +103,6 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	// not of the Popup inside it: keep the implementation of View, which returns View.Margin
 	Thickness IView.Margin => base.Margin;
 
-	// Called by PopupPage.PopupPageLayout when it measures the Popup: the size of the space inside the PopupPage, minus Margin and the Border's stroke
 	internal void SetMaximumDisplaySize(in Size maximumSize)
 	{
 		var view = (IView)this;
@@ -125,7 +122,7 @@ public partial class Popup : ContentView, IPaddingElement, IView
 		}
 	}
 
-	// Same as VisualElement's IView.Width and IView.Height: NaN when the size request is not set (-1), limited to maximumSize
+	// Same as VisualElement's IView.Width and IView.Height, but limited to maximumSize
 	double GetExplicitSize(BindableProperty sizeRequestProperty, double maximumSize)
 	{
 		var sizeRequest = (double)GetValue(sizeRequestProperty);

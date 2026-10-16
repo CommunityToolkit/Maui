@@ -2,10 +2,9 @@ using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// ColorAnimationExtensions.BackgroundColorTo, and the TextColorTo that the toolkit's source generator writes for every ITextStyle view.
-// Their animations run on the platform's animation ticker. A rate of 0 used to reach .NET MAUI's tweener, which divides by the rate on
-// each frame: the DivideByZeroException was thrown in the ticker's frame callback, where no caller could catch it, and the app terminated.
-// The unit tests' ticker swallows such exceptions, so only a device shows the crash. The views are hosted in the runner's window.
+// A rate of 0 used to reach .NET MAUI's tweener, which divides by the rate on each frame: the DivideByZeroException was thrown in the
+// platform animation ticker's frame callback, where no caller could catch it, and the app terminated. The unit tests' ticker swallows
+// such exceptions, so only a device shows the crash.
 [Category(TestCategory.ColorAnimationExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
@@ -30,7 +29,7 @@ public class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
 			Assert.False(border.AnimationIsRunning(nameof(ColorAnimationExtensions.BackgroundColorTo)), "A rejected call must not start an animation.");
 			Assert.Equal(Colors.Blue, border.BackgroundColor);
 
-			// The smallest valid rate runs on the platform's ticker to the end (when Android's animations are off, MAUI ends it at once).
+			// When Android's animations are off, MAUI ends the animation at once.
 			Assert.True(await border.BackgroundColorTo(Colors.Red, rate: 1, length: animationLength));
 			Assert.Equal(Colors.Red, border.BackgroundColor);
 		});
@@ -51,7 +50,7 @@ public class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
 			Assert.False(label.AnimationIsRunning(textColorToAnimationName), "A rejected call must not start an animation.");
 			Assert.Equal(Colors.Blue, label.TextColor);
 
-			// The smallest valid rate runs on the platform's ticker to the end (when Android's animations are off, MAUI ends it at once).
+			// When Android's animations are off, MAUI ends the animation at once.
 			Assert.True(await label.TextColorTo(Colors.Red, rate: 1, length: animationLength));
 			Assert.Equal(Colors.Red, label.TextColor);
 		});

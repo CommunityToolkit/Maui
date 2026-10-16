@@ -9,9 +9,6 @@ using Microsoft.Maui.Hosting;
 
 namespace CommunityToolkit.Maui.DeviceTests.Runners;
 
-/// <summary>
-/// Holds the dispatcher of the thread that built the runner's <see cref="MauiApp"/> (the platform UI thread).
-/// </summary>
 public sealed class TestApplicationDispatcher
 {
 	public TestApplicationDispatcher(IDispatcherProvider provider)

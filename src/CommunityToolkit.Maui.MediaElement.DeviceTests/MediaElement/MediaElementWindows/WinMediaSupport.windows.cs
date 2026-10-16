@@ -11,12 +11,10 @@ using WinMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Support types of the MediaElement-on-Windows tests. Everything here compiles for Windows only (*.windows.cs).
 // The WinMedia prefix keeps the type names unique in the shared CommunityToolkit.Maui.DeviceTests namespace of the app.
 
 /// <summary>
-/// The small, deterministic media assets under Resources/Raw/mediaplayer. They are generated, not downloaded (ffmpeg 8.1, bit-exact, so
-/// regenerating gives the same bytes):
+/// The assets under Resources/Raw/mediaplayer are generated, not downloaded (ffmpeg 8.1, bit-exact, so regenerating gives the same bytes):
 /// <code>
 /// ffmpeg -f lavfi -i testsrc=size=128x96:rate=10:duration=2 -c:v libx264 -profile:v baseline -level 3.0 -pix_fmt yuv420p -g 5 -bf 0 -an
 ///        -movflags +faststart -map_metadata -1 -fflags +bitexact -flags:v +bitexact video.mp4
@@ -24,20 +22,16 @@ namespace CommunityToolkit.Maui.DeviceTests;
 /// ffmpeg -i video.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts -fflags +bitexact -flags:v +bitexact -map_metadata -1
 ///        -muxdelay 0 -muxpreload 0 segment.ts
 /// </code>
-/// corrupt.mp4 is one line of plain text. segment.ts is the same clip as one 2 s MPEG-TS segment (an HLS media segment).
 /// </summary>
 static class WinMediaAssets
 {
-	/// <summary>128x96, 10 fps, 2 s of H.264 baseline video without an audio track (no audio endpoint is needed to play it).</summary>
+	/// <summary>Has no audio track, so playing it needs no audio endpoint.</summary>
 	public const string VideoRelativePath = "mediaplayer/video.mp4";
 
-	/// <summary>Plain text: not a media container. Opening it makes Media Foundation raise MediaFailed.</summary>
 	public const string CorruptRelativePath = "mediaplayer/corrupt.mp4";
 
-	/// <summary>16x16 PNG used as artwork.</summary>
 	public const string ArtworkRelativePath = "mediaplayer/artwork.png";
 
-	/// <summary>The clip as a 2 s MPEG-TS segment, served by the loopback server as the media segment of a local HLS playlist.</summary>
 	public const string SegmentRelativePath = "mediaplayer/segment.ts";
 
 	public const int VideoWidth = 128;
@@ -54,15 +48,14 @@ static class WinMediaAssets
 	public static Uri VideoUri => new(VideoPath);
 
 	/// <summary>
-	/// A file: URI of the artwork. Only for XAML (BitmapImage): RandomAccessStreamReference.CreateFromUri, which the toolkit uses for the thumbnail
-	/// of the system media controls, accepts only http, https, ms-appx and ms-appdata, so the metadata tests serve the artwork with
+	/// Only for XAML (BitmapImage): RandomAccessStreamReference.CreateFromUri, which the toolkit uses for the thumbnail of the system media
+	/// controls, accepts only http, https, ms-appx and ms-appdata, not this file: URI, so the metadata tests serve the artwork with
 	/// <see cref="StartArtworkServer"/> instead.
 	/// </summary>
 	public static Uri ArtworkUri => new(ArtworkPath);
 
 	public static Uri CorruptUri => new(CorruptPath);
 
-	/// <summary>The path below which <see cref="StartArtworkServer"/> serves the artwork.</summary>
 	public const string ArtworkServerPath = "artwork.png";
 
 	public static byte[] ReadVideoBytes() => File.ReadAllBytes(VideoPath);
@@ -74,7 +67,6 @@ static class WinMediaAssets
 	public static string FullPath(string relativePath) =>
 		Path.Combine(WinMediaPackaging.ExpectedPackageFilePath, relativePath.Replace('/', Path.DirectorySeparatorChar));
 
-	/// <summary>A loopback server that serves the artwork PNG at <see cref="ArtworkServerPath"/> (and 404 for anything else).</summary>
 	public static WinMediaHttpServer StartArtworkServer()
 	{
 		var artwork = ReadArtworkBytes();
@@ -84,23 +76,18 @@ static class WinMediaAssets
 		}.Start();
 	}
 
-	/// <summary>
-	/// Whether a COM call failed because the process that serves the object went away: RPC_E_SERVER_DIED_DNE, RPC_E_SERVER_DIED,
-	/// RPC_E_DISCONNECTED or RPC_S_SERVER_UNAVAILABLE.
-	/// </summary>
+	// The HRESULTs, in order: RPC_E_SERVER_DIED_DNE, RPC_E_SERVER_DIED, RPC_E_DISCONNECTED and RPC_S_SERVER_UNAVAILABLE.
 	public static bool IsOutOfProcessServerGone(Exception exception) =>
 		exception is COMException { HResult: unchecked((int)0x80010012) or unchecked((int)0x80010007) or unchecked((int)0x80010108) or unchecked((int)0x800706BA) };
 
 	/// <summary>
-	/// Whether reading a thumbnail back failed the way the out-of-process stream behind it fails now and then, rather than because of what was
-	/// published: the process that serves it went away (<see cref="IsOutOfProcessServerGone"/>; seen on the Windows Server 2025 runners), or
-	/// the stream reported its file missing (FileNotFoundException, 0x80070002; seen in WinMediaProbe's DisplayUpdater probe on the Windows 11
-	/// VM, whose next run read the same artwork).
+	/// The out-of-process stream behind a thumbnail fails now and then for reasons unrelated to what was published: the process that serves it
+	/// went away (<see cref="IsOutOfProcessServerGone"/>; seen on the Windows Server 2025 runners), or the stream reported its file missing
+	/// (FileNotFoundException, 0x80070002; seen in WinMediaProbe's DisplayUpdater probe on the Windows 11 VM, whose next run read the same artwork).
 	/// </summary>
 	public static bool IsTransientThumbnailReadFailure(Exception exception) =>
 		IsOutOfProcessServerGone(exception) || exception is FileNotFoundException { HResult: unchecked((int)0x80070002) };
 
-	/// <summary>Opens <paramref name="reference"/> the way the system media overlay does and returns every byte it delivers.</summary>
 	public static async Task<byte[]> ReadAllBytesAsync(IRandomAccessStreamReference reference)
 	{
 		using var stream = await reference.OpenReadAsync();
@@ -111,25 +98,17 @@ static class WinMediaAssets
 	}
 }
 
-/// <summary>
-/// The positions outside the media of the SeekTo tests: IMediaElement.SeekTo goes to the start of the media for a position before it, and to its end
-/// for a position beyond it.
-/// </summary>
 public enum WinMediaSeekOutsideTheMedia
 {
-	/// <summary>One second before the start: the start.</summary>
 	BeforeTheStart,
 
-	/// <summary>Three seconds beyond the end: the end.</summary>
 	BeyondTheEnd,
 
-	/// <summary>Exactly the duration: the end.</summary>
 	TheEnd
 }
 
 static class WinMediaSeeks
 {
-	/// <summary>The position a test asks for, and the one the player must go to, for media of <paramref name="duration"/>.</summary>
 	public static (TimeSpan Requested, TimeSpan Expected) OutsideTheMedia(WinMediaSeekOutsideTheMedia target, TimeSpan duration) => target switch
 	{
 		WinMediaSeekOutsideTheMedia.BeforeTheStart => (TimeSpan.FromSeconds(-1), TimeSpan.Zero),
@@ -140,8 +119,8 @@ static class WinMediaSeeks
 }
 
 /// <summary>
-/// Win32 calls the full-screen tests need: MauiMediaElement toggles the window that hosts the element and falls back to GetForegroundWindow
-/// when it cannot resolve that window, so the tests bring their own window to the front first (Windows may refuse; the tests then skip visibly).
+/// MauiMediaElement toggles the window that hosts the element and falls back to GetForegroundWindow when it cannot resolve that window, so the
+/// full-screen tests bring their own window to the front first (Windows may refuse; the tests then skip visibly).
 /// </summary>
 static class WinMediaWindowing
 {
@@ -161,10 +140,7 @@ static class WinMediaWindowing
 
 	public static IntPtr GetHandle(Microsoft.UI.Xaml.Window window) => WinRT.Interop.WindowNative.GetWindowHandle(window);
 
-	/// <summary>
-	/// Tries to make <paramref name="handle"/> the foreground window and waits briefly for it. Returns whether it is. Call it on the thread of
-	/// the window.
-	/// </summary>
+	/// <summary>Call it on the thread of the window.</summary>
 	public static async Task<bool> TryBringToForegroundAsync(IntPtr handle)
 	{
 		for (var attempt = 0; attempt < 20; attempt++)
@@ -199,7 +175,6 @@ static class WinMediaWindowing
 		return Maui.Core.Views.MauiMediaElement.TryGetForegroundWindow() == handle;
 	}
 
-	/// <summary>Names the process of the foreground window, for the skip reasons of the tests that need their window in front.</summary>
 	public static string DescribeForegroundWindow()
 	{
 		if (Maui.Core.Views.MauiMediaElement.TryGetForegroundWindow() is not IntPtr foreground)
@@ -222,20 +197,17 @@ static class WinMediaWindowing
 }
 
 /// <summary>
-/// The system media sessions (what the media keys and the Windows media overlay talk to). Asking the session of this app to play, pause or
-/// skip raises SystemMediaTransportControls.ButtonPressed on the app's own controls exactly as a key press does, without touching any
-/// other app: the session is found by a unique title that the test published itself.
+/// Asking the session of this app to play, pause or skip raises SystemMediaTransportControls.ButtonPressed on the app's own controls exactly as
+/// a key press does, without touching any other app: the session is found by a unique title that the test published itself.
 /// </summary>
 static class WinMediaMediaSessions
 {
 	/// <summary>
-	/// Bounds a call into the system media session service, which runs out of process: an answer that never comes must end the test (or the
-	/// lookup), not hang the whole run.
+	/// The system media session service runs out of process: an answer that never comes must end the test (or the lookup), not hang the whole run.
 	/// </summary>
 	public static Task<T> Bounded<T>(Windows.Foundation.IAsyncOperation<T> operation, int timeoutMilliseconds = 15000) =>
 		operation.AsTask().WaitAsync(TimeSpan.FromMilliseconds(timeoutMilliseconds));
 
-	/// <summary>Returns the system media session whose title is <paramref name="title"/>, or null when the machine shows none within the time.</summary>
 	public static async Task<GlobalSystemMediaTransportControlsSession?> FindAsync(string title, int timeoutMilliseconds = 15000)
 	{
 		GlobalSystemMediaTransportControlsSessionManager manager;
@@ -278,7 +250,6 @@ static class WinMediaMediaSessions
 
 static class WinMediaAutomation
 {
-	/// <summary>Presses a button the way assistive technology does (UI Automation Invoke pattern), which raises its Click event.</summary>
 	public static void Invoke(Microsoft.UI.Xaml.Controls.AppBarButton button)
 	{
 		var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(button);
@@ -288,8 +259,7 @@ static class WinMediaAutomation
 }
 
 /// <summary>
-/// Independent oracle for "is this process packaged?" and "where are the app's files?": the Win32 package API, not the toolkit's
-/// AppPackageService (which is the code under test).
+/// Asks the Win32 package API rather than the toolkit's AppPackageService, which is the code under test.
 /// </summary>
 static class WinMediaPackaging
 {
@@ -311,11 +281,10 @@ static class WinMediaPackaging
 }
 
 /// <summary>
-/// An <see cref="Microsoft.Maui.Dispatching.IDispatcher"/> that queues work on a real dispatcher and counts what was queued.
 /// MediaManager decides between "run inline" and "dispatch" with IsDispatchRequired. With <c>isDispatchRequired: true</c> the double reports
-/// true on every thread, so a test can reach the dispatching arm from the UI thread, where reading the XAML player is allowed. With null it
-/// reports what the real dispatcher says. <c>false</c> is only for a fixture that opens no media: it would send the native media events
-/// (raised on other threads) down the inline arm, which reads XAML objects.
+/// true on every thread, so a test can reach the dispatching arm from the UI thread, where reading the XAML player is allowed. <c>false</c> is
+/// only for a fixture that opens no media: it would send the native media events (raised on other threads) down the inline arm, which reads
+/// XAML objects.
 /// </summary>
 public sealed class WinMediaDispatcher(Microsoft.Maui.Dispatching.IDispatcher inner, bool? isDispatchRequired = null) : Microsoft.Maui.Dispatching.IDispatcher
 {
@@ -325,14 +294,12 @@ public sealed class WinMediaDispatcher(Microsoft.Maui.Dispatching.IDispatcher in
 	public bool IsDispatchRequired => isDispatchRequired ?? inner.IsDispatchRequired;
 
 	/// <summary>
-	/// How many actions the manager queued for its own work (a manager that took the inline arm queues nothing). The updates that the player's
-	/// VolumeChanged and IsMutedChanged events queue are counted in <see cref="PlayerEventDispatchCount"/> instead: the player raises those
-	/// events on a worker thread, also for a volume or mute that the manager wrote inline or applied when it connected, so they arrive at any time
-	/// (one arrived between an inline volume write and the test's count in CI run 38106699644).
+	/// Excludes the updates that the player's VolumeChanged and IsMutedChanged events queue (<see cref="PlayerEventDispatchCount"/>): the player
+	/// raises those events on a worker thread, also for a volume or mute that the manager wrote inline or applied when it connected, so they
+	/// arrive at any time (one arrived between an inline volume write and the test's count in CI run 38106699644).
 	/// </summary>
 	public int DispatchCount => Volatile.Read(ref dispatchCount);
 
-	/// <summary>How many updates the player's VolumeChanged and IsMutedChanged events queued (MediaManager's handlers of those events).</summary>
 	public int PlayerEventDispatchCount => Volatile.Read(ref playerEventDispatchCount);
 
 	/// <summary>
@@ -369,10 +336,9 @@ public sealed class WinMediaDispatcher(Microsoft.Maui.Dispatching.IDispatcher in
 }
 
 /// <summary>
-/// An <see cref="Microsoft.Maui.Dispatching.IDispatcher"/> that keeps what is queued instead of running it, so that a test decides when the
-/// queued work runs (for example after the platform view was disposed) and runs it inside Record.Exception: an exception thrown by work on
-/// the real dispatcher queue ends the app (microsoft-ui-xaml#8940: not even Application.UnhandledException can catch it). IsDispatchRequired
-/// is fixed by the test.
+/// Keeps what is queued instead of running it, so that a test decides when the queued work runs (for example after the platform view was
+/// disposed) and runs it inside Record.Exception: an exception thrown by work on the real dispatcher queue ends the app
+/// (microsoft-ui-xaml#8940: not even Application.UnhandledException can catch it).
 /// </summary>
 public sealed class WinMediaCapturingDispatcher(bool isDispatchRequired = false) : Microsoft.Maui.Dispatching.IDispatcher
 {
@@ -380,7 +346,6 @@ public sealed class WinMediaCapturingDispatcher(bool isDispatchRequired = false)
 
 	public bool IsDispatchRequired => isDispatchRequired;
 
-	/// <summary>Removes and returns everything queued so far, oldest first.</summary>
 	public IReadOnlyList<Action> TakeQueued()
 	{
 		var taken = new List<Action>();
@@ -405,11 +370,11 @@ public sealed class WinMediaCapturingDispatcher(bool isDispatchRequired = false)
 }
 
 /// <summary>
-/// Counts how often a native player finished opening a source (MediaOpened or MediaFailed). Create it after the manager created the platform
-/// view: the manager subscribed first, so its handler for an event has run when this one counts it. A test that applies a source the platform
-/// can open, and does not wait for the open itself, awaits <see cref="UntilOpensEndedAsync"/> before it ends. Otherwise the manager's MediaOpened
-/// handler, which runs on a worker thread, can queue SetDuration behind the test's cleanup; the cleanup disposes the player, and the queued read
-/// of the closed player then throws on the UI thread, which ends the app and with it every later test of the launch.
+/// Create it after the manager created the platform view: the manager subscribed first, so its handler for an event has run when this one
+/// counts it. A test that applies a source the platform can open, and does not wait for the open itself, awaits
+/// <see cref="UntilOpensEndedAsync"/> before it ends. Otherwise the manager's MediaOpened handler, which runs on a worker thread, can queue
+/// SetDuration behind the test's cleanup; the cleanup disposes the player, and the queued read of the closed player then throws on the UI
+/// thread, which ends the app and with it every later test of the launch.
 /// </summary>
 public sealed class WinMediaOpenWatcher
 {
@@ -421,22 +386,22 @@ public sealed class WinMediaOpenWatcher
 		player.MediaFailed += (_, _) => Interlocked.Increment(ref endedOpens);
 	}
 
-	/// <summary>How many opens ended so far (MediaOpened plus MediaFailed).</summary>
 	public int EndedOpens => Volatile.Read(ref endedOpens);
 
-	/// <summary>Waits (bounded) until <paramref name="count"/> opens have ended, then until the UI-thread work queued by then has run.</summary>
 	public async Task UntilOpensEndedAsync(int count, int timeoutMilliseconds = 20000)
 	{
 		await AssertionExtensions.AssertEventually(() => EndedOpens >= count, timeoutMilliseconds, 50,
 			$"The native player did not finish opening its source (MediaOpened or MediaFailed): {EndedOpens} of {count} opens ended.");
+
+		// Completes only after the UI-thread work queued so far has run.
 		await CommunityToolkit.Maui.DeviceTests.Runners.TestDispatcher.Current.DispatchAsync(static () => { });
 	}
 }
 
 /// <summary>
-/// "Is this WinRT object closed?" A closed (disposed) MediaSource reports MediaSourceState.Closed or answers with an error; other closed WinRT
-/// objects answer every call with an error (RO_E_CLOSED). Whether this machine makes closing observable is checked once by the
-/// WinMediaProbe.Disposed*NotObservableReason probes, with a live object as the control, before a test relies on it.
+/// A closed (disposed) MediaSource reports MediaSourceState.Closed or answers with an error; other closed WinRT objects answer every call with
+/// an error (RO_E_CLOSED). Whether this machine makes closing observable is checked once by the WinMediaProbe.Disposed*NotObservableReason
+/// probes, with a live object as the control, before a test relies on it.
 /// </summary>
 static class WinMediaClosed
 {
@@ -467,10 +432,10 @@ static class WinMediaClosed
 }
 
 /// <summary>
-/// A native oracle for Windows.System.Display.DisplayRequest, which has no query API: RequestRelease throws when the object has no active
-/// request (Windows Developer Blog, 2016-05-24, "How to prevent screen locks in your UWP apps"), so the active requests can be counted by
-/// releasing them one at a time until the platform refuses and then activating as many again. WinMediaProbe.DisplayRequestCountingUnavailableReason
-/// checks both halves of that premise on a plain DisplayRequest first. Call it on the thread that created the request (DisplayRequest is not agile).
+/// Windows.System.Display.DisplayRequest has no query API: RequestRelease throws when the object has no active request (Windows Developer
+/// Blog, 2016-05-24, "How to prevent screen locks in your UWP apps"), so the active requests can be counted by releasing them one at a time
+/// until the platform refuses and then activating as many again. WinMediaProbe.DisplayRequestCountingUnavailableReason checks both halves of
+/// that premise on a plain DisplayRequest first. Call it on the thread that created the request (DisplayRequest is not agile).
 /// </summary>
 static class WinMediaDisplayRequests
 {
@@ -505,7 +470,6 @@ static class WinMediaDisplayRequests
 	}
 }
 
-/// <summary>A read-only stream that cannot seek (a network or pipe stream, for example). Converting it to a WinRT random-access stream is not possible.</summary>
 sealed class WinMediaNonSeekableStream(byte[] content) : Stream
 {
 	readonly MemoryStream inner = new(content, writable: false);
@@ -548,9 +512,8 @@ sealed class WinMediaNonSeekableStream(byte[] content) : Stream
 }
 
 /// <summary>
-/// Reads private state and calls private members of the toolkit types. Used where the Windows platform exposes no observable for what the
-/// toolkit decided, or where a private handler cannot be reached otherwise. A renamed member fails the test loudly (MissingMemberException)
-/// instead of silently passing.
+/// Used where the Windows platform exposes no observable for what the toolkit decided, or where a private handler cannot be reached
+/// otherwise. A renamed member fails the test loudly (MissingMemberException) instead of silently passing.
 /// </summary>
 static class WinMediaReflection
 {
@@ -582,7 +545,6 @@ static class WinMediaReflection
 		field.SetValue(target, value);
 	}
 
-	/// <summary>Calls the private method <paramref name="name"/>; exceptions of the method are rethrown unwrapped.</summary>
 	public static object? Invoke(object target, string name, params object?[] arguments) =>
 		InvokeCore(target.GetType(), target, name, arguments);
 
@@ -629,8 +591,8 @@ static class WinMediaReflection
 }
 
 /// <summary>
-/// Catches the exceptions of async void methods. An async void method posts its exception to the SynchronizationContext that was
-/// current when it started; on the UI thread that would crash the test app, so tests call such methods inside this scope.
+/// An async void method posts its exception to the SynchronizationContext that was current when it started; on the UI thread that would
+/// crash the test app, so tests call such methods inside this scope.
 /// Only valid for async void methods that finish synchronously (no await that really yields) or throw before their first await.
 /// </summary>
 sealed class WinMediaAsyncVoidCapture : SynchronizationContext, IDisposable
@@ -658,9 +620,7 @@ sealed class WinMediaAsyncVoidCapture : SynchronizationContext, IDisposable
 	public void Dispose() => SetSynchronizationContext(previous);
 }
 
-/// <summary>
-/// Collects System.Diagnostics.Trace output (the toolkit reports adaptive-streaming download failures through Trace.WriteLine).
-/// </summary>
+/// <summary>The toolkit reports adaptive-streaming download failures through Trace.WriteLine.</summary>
 sealed class WinMediaTraceListener : TraceListener
 {
 	readonly Lock gate = new();
@@ -696,8 +656,7 @@ sealed class WinMediaTraceListener : TraceListener
 }
 
 /// <summary>
-/// Puts <see cref="Application.Current"/> back when the test is done. Constructing an Application replaces Application.Current,
-/// so create the scope first and the fake application after it.
+/// Constructing an Application replaces <see cref="Application.Current"/>, so create the scope first and the fake application after it.
 /// </summary>
 sealed class WinMediaApplicationScope : IDisposable
 {
@@ -707,8 +666,7 @@ sealed class WinMediaApplicationScope : IDisposable
 }
 
 /// <summary>
-/// An Application without a platform handler. Without a window it has an empty Windows list; with <see cref="AddWindow"/> its
-/// window has a page but no handler. The window's Handler stays null because nothing attaches a platform window to it.
+/// An Application without a platform handler: nothing attaches a platform window to its window, so the window's Handler stays null.
 /// </summary>
 sealed class WinMediaFakeApplication : Application
 {
@@ -722,9 +680,6 @@ sealed class WinMediaFakeApplication : Application
 		createWindow?.Invoke() ?? throw new InvalidOperationException("This fake application was created without a window factory.");
 }
 
-/// <summary>
-/// An ILoggerFactory that remembers what the toolkit logged, with the exception of each entry (MediaManager logs unusable sources and media failures).
-/// </summary>
 public sealed class WinMediaLoggerFactory : ILoggerFactory
 {
 	readonly Lock gate = new();

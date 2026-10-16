@@ -527,7 +527,6 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[Fact]
 	public void IsValid_ShouldRevalidate_WhenMaximumValueChangesAfterTheViewLostFocus()
 	{
-		// Arrange
 		var behavior = new NumericValidationBehavior
 		{
 			Flags = ValidationFlags.ValidateOnValueChanged
@@ -540,13 +539,10 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		entry.Text = "15";
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 
-		// Act
 		behavior.MaximumValue = 10;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 	}
 

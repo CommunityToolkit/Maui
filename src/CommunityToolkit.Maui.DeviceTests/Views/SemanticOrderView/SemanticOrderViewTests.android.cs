@@ -6,8 +6,6 @@ using PlatformContentViewGroup = Microsoft.Maui.Platform.ContentViewGroup;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: ViewOrder links the native views with AccessibilityTraversalAfter/Before (API 22+), generating a view id for every
-// view of the order that has none. OnLayout applies the order again.
 public partial class SemanticOrderViewTests
 {
 	[Fact]
@@ -127,8 +125,6 @@ public partial class SemanticOrderViewTests
 		});
 	}
 
-	// The view removes only the links it made: links that the app set itself are kept when the order changes. Here the app makes the first
-	// view of the order come after a view outside of the container, and a view that is then dropped from the order come before it.
 	[Fact]
 	public async Task ChangingViewOrderKeepsTheLinksThatTheAppSet()
 	{
@@ -157,8 +153,7 @@ public partial class SemanticOrderViewTests
 	}
 
 	// A view of the previous order whose Java peer was disposed meanwhile (its handler was disconnected and the view thrown away) has no links
-	// left to remove: changing the order skips it instead of failing on it.
-	// Catches: RemoveLinksOfThePreviousOrder reading the links of a disposed view (ObjectDisposedException).
+	// left to remove: RemoveLinksOfThePreviousOrder must skip it instead of failing with an ObjectDisposedException.
 	[Fact]
 	public async Task ChangingViewOrderAfterAViewOfThePreviousOrderWasDisposedDoesNotThrow()
 	{
@@ -282,7 +277,6 @@ public partial class SemanticOrderViewTests
 		&& firstView.AccessibilityTraversalBefore == secondView.Id
 		&& secondView.AccessibilityTraversalAfter == firstView.Id;
 
-	// Every consecutive pair of the order is linked in both directions.
 	static bool IsInNativeOrder(SemanticOrderViewHandler handler, params IView[] order)
 	{
 		for (var i = 1; i < order.Length; i++)
@@ -301,7 +295,6 @@ public partial class SemanticOrderViewTests
 			? $"{NameOf(view)}: id={platformView.Id}, after={platformView.AccessibilityTraversalAfter}, before={platformView.AccessibilityTraversalBefore}"
 			: $"{NameOf(view)}: no native view"));
 
-	// Android keeps one link per direction on every view: the view that follows it, and the view that precedes it.
 	static void AssertOrderLinks(SemanticOrderViewHandler handler, params IView[] order)
 	{
 		var views = order.Select(PlatformViewOf).ToArray();
@@ -319,7 +312,6 @@ public partial class SemanticOrderViewTests
 		}
 	}
 
-	// The links of the order, and nothing else: the first view has no view before it and the last no view after it.
 	static void AssertPlatformOrder(SemanticOrderViewHandler handler, params IView[] order)
 	{
 		AssertOrderLinks(handler, order);
@@ -346,7 +338,6 @@ public partial class SemanticOrderViewTests
 		}
 	}
 
-	// Without a virtual view the update returns: the links stay as they were.
 	static void AssertPlatformOrderWithoutVirtualView(SemanticOrderViewHandler handler, params IView[] previousOrder) =>
 		AssertPlatformOrder(handler, previousOrder);
 

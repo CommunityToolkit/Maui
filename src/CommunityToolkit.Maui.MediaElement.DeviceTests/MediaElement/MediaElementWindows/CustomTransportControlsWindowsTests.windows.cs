@@ -7,16 +7,14 @@ using WinStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Primitives/CustomTransportControls.windows.cs. The controls are hosted in a MediaPlayerElement inside a real WinUI window (the way
-// MauiMediaElement hosts them), with the toolkit's own template (the embedded ResourceDictionary.windows.xaml) and with templates built here
-// that lack the FullWindowButton part or hold a collapsed one. Templates apply during layout, so the tests poll for the effect.
+// Templates apply during layout, so the tests poll for the effect.
 [Category(TestCategory.CustomTransportControlsWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CustomTransportControlsWindowsTests : WinMediaTestBase
 {
 	sealed record ControlsFixture(MediaPlayerElement Element, CustomTransportControls Controls, Microsoft.UI.Xaml.Controls.AppBarButton InitialButton);
 
-	// The same loading MauiMediaElement does, so that the controls get exactly the template that ships with the toolkit.
+	// Mirrors how MauiMediaElement loads it, so that the controls get exactly the template that ships with the toolkit.
 	static WinStyle LoadToolkitStyle()
 	{
 		using var stream = typeof(MauiMediaElement).Assembly.GetManifestResourceStream("ResourceDictionary.windows.xaml")
@@ -89,9 +87,8 @@ public class CustomTransportControlsWindowsTests : WinMediaTestBase
 		{
 			await AssertionExtensions.AssertEventually(() => fixture.Controls.FullScreenButton.Name == "FullWindowButton", 5000, 50, "The FullWindowButton of the template was never picked up.");
 
-			// The template's button replaced the placeholder and was assigned before the event was raised. (Its Visibility is asserted with a
-			// template without a CommandBar below: inside the toolkit's template, MediaTransportControls collapses and expands its buttons by
-			// width while it lays out, so the value read here would race with that.)
+			// Visibility is not asserted here: inside the toolkit's template, MediaTransportControls collapses and expands its buttons by width while it
+			// lays out, so the value would race with that. TemplateButtonThatStartsCollapsedIsShown asserts it with a template without a CommandBar.
 			Assert.NotSame(fixture.InitialButton, fixture.Controls.FullScreenButton);
 			Assert.NotEmpty(loadedWith);
 			Assert.All(loadedWith, entry =>
@@ -167,17 +164,14 @@ public class CustomTransportControlsWindowsTests : WinMediaTestBase
 		{
 			var controls = new CustomTransportControls();
 
-			// First click (not full screen yet): the icon becomes "back to window".
 			WinMediaReflection.Invoke(controls, "FullScreenButton_Click", null, null);
 			var backToWindow = Assert.IsType<Microsoft.UI.Xaml.Controls.SymbolIcon>(controls.FullScreenButton.Icon);
 			Assert.Equal(Microsoft.UI.Xaml.Controls.Symbol.BackToWindow, backToWindow.Symbol);
 
-			// Second click: back to the full-window glyph.
 			WinMediaReflection.Invoke(controls, "FullScreenButton_Click", null, null);
 			var fullWindow = Assert.IsType<Microsoft.UI.Xaml.Controls.FontIcon>(controls.FullScreenButton.Icon);
 			Assert.Equal("\uE740", fullWindow.Glyph);
 
-			// And it keeps alternating.
 			WinMediaReflection.Invoke(controls, "FullScreenButton_Click", null, null);
 			Assert.IsType<Microsoft.UI.Xaml.Controls.SymbolIcon>(controls.FullScreenButton.Icon);
 		});
@@ -196,7 +190,6 @@ public class CustomTransportControlsWindowsTests : WinMediaTestBase
 		{
 			await AssertionExtensions.AssertEventually(() => fixture.Controls.FullScreenButton.Name == "FullWindowButton", 5000, 50, "The FullWindowButton of the template was never picked up.");
 
-			// OnApplyTemplate subscribed FullScreenButton_Click to the template's button: a real click must reach it.
 			WinMediaAutomation.Invoke(fixture.Controls.FullScreenButton);
 			await AssertionExtensions.AssertEventually(() => fixture.Controls.FullScreenButton.Icon is Microsoft.UI.Xaml.Controls.SymbolIcon { Symbol: Microsoft.UI.Xaml.Controls.Symbol.BackToWindow }, 5000, 50,
 				"Clicking the FullWindowButton did not switch its icon to BackToWindow.");

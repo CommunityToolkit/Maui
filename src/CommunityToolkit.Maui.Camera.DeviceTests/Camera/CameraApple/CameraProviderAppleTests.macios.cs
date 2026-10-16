@@ -6,7 +6,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraProvider.macios.cs: the capture device types that are searched and the mapping of AVCaptureDevices to CameraInfo.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraProviderAppleTests : CameraHandlerTestBase
@@ -173,7 +172,6 @@ public class CameraProviderAppleTests : CameraHandlerTestBase
 
 	static AVCaptureDeviceType[] GetCaptureDevices() => CameraProviderAccessor.CaptureDevices;
 
-	// The same discovery as CameraProvider.macios.cs, with the expected device types written out.
 	static AVCaptureDevice[] DiscoverDevices()
 	{
 		var discoverySession = AVCaptureDeviceDiscoverySession.Create(GetCaptureDevices(), AVMediaTypes.Video, AVCaptureDevicePosition.Unspecified);

@@ -12,10 +12,6 @@ using WinStyle = Microsoft.UI.Xaml.Style;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Views/MauiMediaElement.windows.cs: the construction of the platform view (resource dictionary, custom style, custom transport controls),
-// Dispose (including the finalizer path and a real finalizer run), CurrentPage / TryGetForegroundWindow and the full-screen toggle. The view
-// is created around a real MediaPlayerElement; the full-screen tests host it in a real WinUI window, bring that window to the foreground (the
-// code under test toggles the window that hosts the element and falls back to the foreground window) and skip visibly when Windows refuses.
 [Category(TestCategory.MauiMediaElementWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MauiMediaElementWindowsTests : WinMediaTestBase
@@ -42,9 +38,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			return new ViewFixture(view, element, player, stockControls);
 		});
 
-	// Hosts the view (at the size the full-screen scenarios use) until its transport controls have applied the toolkit's template:
-	// OnTemplateLoaded has then subscribed the view to the template's FullWindowButton (the state of every view that was on screen with its
-	// controls enabled).
+	// Leaves the view in the state of every view that was on screen with its controls enabled: OnTemplateLoaded has subscribed it to the
+	// template's FullWindowButton.
 	async Task ApplyTemplateAsync(MauiMediaElement view, MediaPlayerElement element)
 	{
 		await InvokeOnMainThreadAsync(() =>
@@ -116,7 +111,6 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// ResourceDictionary.windows.xaml is embedded in the MediaElement assembly and loaded with XamlReader.
 			Assert.Single(fixture.View.Resources.MergedDictionaries);
 			Assert.True(fixture.View.Resources.TryGetValue("customTransportcontrols", out var style));
 			var customStyle = Assert.IsType<WinStyle>(style, exactMatch: false);
@@ -125,8 +119,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// Dispose(true) detaches the player from the element in every case. That the player and its MediaSource are really closed is asserted by the
-	// next two tests, behind probes that check on plain objects that this machine makes "closed" observable at all.
+	// Closing is not asserted here: the next two tests do, behind probes that check on plain objects that this machine makes "closed"
+	// observable at all.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -207,15 +201,14 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		await RequireMediaPlayerAsync();
 		var fixture = await CreateViewAsync();
 
-		// The finalizer path: no managed resource may be released (finalizers must not touch other managed objects).
+		// Finalizers must not touch other managed objects, so the finalizer path (Dispose(false)) must leave the player alone.
 		await InvokeOnMainThreadAsync(() => fixture.View.CallDispose(false));
 
 		await InvokeOnMainThreadAsync(() => Assert.NotNull(fixture.Element.MediaPlayer));
 		Assert.Equal(1.0, fixture.Player.Volume, 3);
 	}
 
-	// The real finalizer scenario: Dispose(false) on a thread that is not the UI thread, for a view whose template was never applied (the
-	// placeholder button) and for one that was on screen (the toolkit subscribed to the template's FullWindowButton).
+	// The real finalizer runs Dispose(false) on a thread that is not the UI thread.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -236,8 +229,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		Assert.Equal(1.0, fixture.Player.Volume, 3);
 	}
 
-	// A view that is never disposed (a handler that was never disconnected) is finalized: the finalizer must complete. Here the view was on
-	// screen, so FullScreenButton is the template's button, to which the toolkit subscribed.
+	// A view whose handler was never disconnected is never disposed, only finalized. Here it was on screen, so its FullScreenButton is the template's
+	// button, to which the toolkit subscribed.
 	[Fact]
 	public async Task FinalizerOfAViewWhoseTemplateWasAppliedCompletes()
 	{
@@ -254,9 +247,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		await AssertTheFinalizerOfAnAbandonedViewCompletesAsync(templateApplied: false);
 	}
 
-	// Dispose(false) is first tried on a pool thread with a view in the same state; if it threw there, the finalizer would throw as well and end
-	// the whole run, so the test fails before it abandons a view. An exception in the real finalizer is not caught: the run ends, which is what
-	// users would see.
+	// Dispose(false) is first tried on a pool thread with a view in the same state: an exception in the real finalizer is not caught and ends the
+	// whole run (as it would for users), so the test must fail before it abandons a view.
 	async Task AssertTheFinalizerOfAnAbandonedViewCompletesAsync(bool templateApplied)
 	{
 		SetupWindowsBuilder();
@@ -279,8 +271,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		Assert.True(WinMediaFinalizerProbeView.CompletedFinalizerPaths > completedBefore, "The finalizer of the collected view did not complete Dispose(false).");
 	}
 
-	// Creates a view, with its own MediaPlayer like every view the handler creates, that nothing references afterwards, optionally after it
-	// was on screen long enough for the template to apply. Only a weak reference leaves this method; the player is released with the view.
+	// Only a weak reference leaves this method, and it is not inlined, so nothing references the view when the collection starts. The player is
+	// released with the view.
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	async Task<WeakReference> CreateAndAbandonAViewAsync(bool templateApplied)
 	{
@@ -384,8 +376,6 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		throw new SkipException("The foreground window kept changing, so the two Win32 reads could not be compared.");
 	}
 
-	// The fallback of the full-screen click for an element whose window cannot be resolved. Runs wherever there is no foreground window (a
-	// locked or disconnected session, which a test cannot create); everywhere else it is a visible skip.
 	[Fact]
 	public void NoForegroundWindowMakesTheFullScreenClickThrowInvalidOperationException()
 	{
@@ -410,9 +400,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 
 		public IReadOnlyList<Popup> OpenPopups => Microsoft.UI.Xaml.Media.VisualTreeHelper.GetOpenPopupsForXamlRoot(element.XamlRoot);
 
-		// MauiMediaElement hides the navigation bar of the current page of the application's window that shows the element, and of the first
-		// window's (Application.Current.Windows.FirstOrDefault()?.Page) when no window does. The element's window is a plain WinUI window, so a fake
-		// application whose only window shows our page is current while the click runs.
+		// The element's window is a plain WinUI window, so no application window shows the element and MauiMediaElement falls back to the first window's
+		// page (Application.Current.Windows.FirstOrDefault()?.Page): a fake application whose only window shows our page is current while the click runs.
 		public void Click()
 		{
 			using var scope = new WinMediaApplicationScope();
@@ -422,8 +411,6 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			WinMediaReflection.Invoke(view, "OnFullScreenButtonClick", null, null);
 		}
 
-		// The same click in an application with two windows: the first shows another page, the second shows our page in the element's window (its
-		// handler's platform window is the one that hosts the element).
 		public void ClickWithTheElementInTheSecondWindow(Page firstWindowPage)
 		{
 			using var scope = new WinMediaApplicationScope();
@@ -439,7 +426,7 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			AssertionExtensions.AssertEventually(() => predicate(appWindow.Presenter.Kind), 5000, 50, message);
 	}
 
-	// The handler of a MAUI window shown in a given WinUI window. Of a window's handler, the full-screen click reads only the platform view.
+	// The full-screen click finds the window that shows the element by the platform view of each window's handler, so the other members do nothing.
 	sealed class PlatformWindowHandler(Microsoft.UI.Xaml.Window platformWindow) : IElementHandler
 	{
 		public object? PlatformView => platformWindow;
@@ -498,8 +485,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// The full-screen click against the real application (no fake): the toolkit then hides and restores the navigation bar of the runner's own
-	// page. Its value is captured first and put back afterwards, whatever happens in between.
+	// The click runs against the real application, so the toolkit hides and restores the navigation bar of the runner's own page: its value is
+	// captured first and put back afterwards, whatever happens in between.
 	static async Task RunAgainstTheRunnerPageAsync(Func<Page, bool, Task> scenario)
 	{
 		Page runnerPage;
@@ -548,7 +535,6 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			context.Click();
 
 			await context.WaitForPresenterAsync(kind => kind == windowedKind, "The window did not leave full screen.");
-			// The navigation bar returns to what it was before, whatever that was.
 			Assert.Equal(navigationBarVisible, Shell.GetNavBarIsVisible(context.Page));
 			Assert.Empty(context.OpenPopups);
 			Assert.Same(context.Element, Assert.Single(context.View.Children));
@@ -557,8 +543,7 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// Two windows of the application, the element in the second: full screen hides, and the second click restores, the navigation bar of the page
-	// in the element's window. The first window, whose page CurrentPage returns, keeps its navigation bar.
+	// The element is in the second window, so the first window, whose page CurrentPage returns, keeps its navigation bar.
 	[Fact]
 	public async Task FullScreenClickHidesTheNavigationBarOfThePageInTheElementsWindow()
 	{
@@ -583,8 +568,6 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// The window is full screen for a reason other than the toolkit's button (F11 in the app, another control, the user): the next click takes
-	// the leave branch while the element is still the view's child and the toolkit's popup is closed.
 	[Fact]
 	public async Task LeavingAFullScreenTheButtonDidNotStartKeepsTheElementAndTheNavigationBar()
 	{
@@ -605,8 +588,6 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// The button entered full screen, then something else (F11, the user, another control) put the window back: the toolkit's popup is still open
-	// with the element in it, and the next click takes the enter branch again.
 	[Fact]
 	public async Task ReenteringFullScreenAfterThePresenterWasResetKeepsThePopupAndRestoresTheNavigationBar()
 	{
@@ -657,9 +638,8 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 		}));
 	}
 
-	// Two windows of the same app: the element's window and, in front of it, the runner's window. A press of the element's own full-screen
-	// button (from the keyboard or assistive technology, which does not bring the window to the front first) must toggle the window that hosts
-	// the element.
+	// A press of the element's own full-screen button from the keyboard or assistive technology does not bring its window to the front first, so
+	// another window of the app (here the runner's) can be in front of it. The press must still toggle the window that hosts the element.
 	[Fact]
 	public async Task FullScreenButtonTogglesTheWindowThatHostsTheElement()
 	{

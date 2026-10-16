@@ -53,7 +53,6 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	bool isDisposed;
 
-	// Whether the behavior has validated a value (since it was last attached): from then on, OnValidationPropertyChanged validates again whatever the Flags
 	bool hasValidated;
 
 	/// <summary>

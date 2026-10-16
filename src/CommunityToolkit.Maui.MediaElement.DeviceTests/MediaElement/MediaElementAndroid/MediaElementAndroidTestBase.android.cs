@@ -17,18 +17,13 @@ using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Media used by the Android tests lives in Resources/Raw/exoplayer/ (MauiAssets, so they are opened with FileSystem.OpenAppPackageFileAsync
-// and played through MediaSource.FromResource). They are generated with ffmpeg, bit-exact, so they are deterministic:
+// The media in Resources/Raw/exoplayer/ is generated with ffmpeg, bit-exact, so it is deterministic:
 //   tone.wav        3 s, 8 kHz mono PCM16 sine (ffmpeg -f lavfi -i sine=frequency=440:sample_rate=8000:duration=3 -ac 1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact -map_metadata -1)
 //   tone_short.wav  0.6 s of the same, 880 Hz: short enough to be played to its end inside a test
 //   video.mp4       2 s, 64x48, 10 fps H.264 baseline (testsrc pattern, no audio)
-//   art.png         8x8 solid-color PNG used as MetadataArtworkUrl
-//   empty.png       an empty file (0 bytes): artwork asset that exists but has no content
+//   art.png         8x8 solid-color PNG
+//   empty.png       0 bytes: an artwork asset that exists but has no content
 
-/// <summary>
-/// Shared plumbing of the MediaElement-on-Android tests: a MauiApp whose MediaElement handler exposes its MediaManager, hosting
-/// helpers that always release the player (and the foreground service) again, native-view accessors, assets and waits.
-/// </summary>
 public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 {
 	protected const string toneAsset = "exoplayer/tone.wav";
@@ -39,10 +34,9 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	protected static readonly TimeSpan toneDuration = TimeSpan.FromSeconds(3);
 	protected static readonly TimeSpan shortToneDuration = TimeSpan.FromSeconds(0.6);
 
-	// ExoPlayer waits (opening, buffering, a 0.6 s clip playing out) are bounded by this; on a failure the assertion message names what never happened.
 	protected const int waitTimeout = 8000;
 
-	// Waits that need the video decoder: on a loaded emulator host the software H.264 decoder can take far longer than 8 s to start.
+	// On a loaded emulator host the software H.264 decoder can take far longer than 8 s to start.
 	protected const int videoWaitTimeout = 30000;
 
 	// Android sheds an UPDATE of an app's notification while the app's estimated notification rate is above 5 per second
@@ -56,10 +50,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	readonly List<string> temporaryFiles = [];
 	bool usesForegroundService;
 
-	/// <summary>
-	/// Builds the test's MauiApp with the toolkit's MediaElement handler replaced by <see cref="AndroidMediaElementProbeHandler"/>
-	/// (a subclass: same behavior, plus access to the MediaManager).
-	/// </summary>
 	protected void SetupProbeBuilder(bool isAndroidForegroundServiceEnabled = false, Action<MediaElementOptions>? configureMediaElementOptions = null, Action<MauiAppBuilder>? configureBuilder = null)
 	{
 		usesForegroundService = isAndroidForegroundServiceEnabled || configureMediaElementOptions is not null;
@@ -70,10 +60,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		}, isAndroidForegroundServiceEnabled, configureMediaElementOptions);
 	}
 
-	/// <summary>
-	/// Puts the element into the runner's window, waits for it to be loaded, runs <paramref name="test"/> on the UI thread and
-	/// always disconnects the handler afterwards (that releases the ExoPlayer and stops the foreground service).
-	/// </summary>
 	protected async Task HostAsync(MediaElement mediaElement, Func<AndroidMediaElementProbeHandler, Task> test)
 	{
 		hostedElements.Add(mediaElement);
@@ -91,7 +77,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		}
 	}
 
-	/// <summary>Like the asynchronous <c>HostAsync</c> for a synchronous <paramref name="test"/>.</summary>
 	protected Task HostAsync(MediaElement mediaElement, Action<AndroidMediaElementProbeHandler> test) =>
 		HostAsync(mediaElement, handler =>
 		{
@@ -99,10 +84,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 			return Task.CompletedTask;
 		});
 
-	/// <summary>
-	/// Creates the handler on the UI thread without putting the view into a window (the lightest host: property mapping and
-	/// player behavior need none), runs <paramref name="test"/> there and always disconnects the handler afterwards.
-	/// </summary>
+	/// <summary>The lightest host: the view is not put into a window, which property mapping and player behavior do not need.</summary>
 	protected async Task WithHandlerAsync(MediaElement mediaElement, Func<AndroidMediaElementProbeHandler, Task> test)
 	{
 		hostedElements.Add(mediaElement);
@@ -120,7 +102,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		}
 	}
 
-	/// <summary>Like <see cref="WithHandlerAsync(MediaElement, Func{AndroidMediaElementProbeHandler, Task})"/> for a synchronous <paramref name="test"/>.</summary>
 	protected Task WithHandlerAsync(MediaElement mediaElement, Action<AndroidMediaElementProbeHandler> test) =>
 		WithHandlerAsync(mediaElement, handler =>
 		{
@@ -128,11 +109,11 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 			return Task.CompletedTask;
 		});
 
-	/// <summary>Creates a 200x100 MediaElement on the UI thread (setting its Source off that thread would create its status timer there).</summary>
+	/// <summary>Creates the element on the UI thread: setting its Source off that thread would create its status timer there.</summary>
 	protected static Task<MediaElement> CreateMediaElementAsync(Action<MediaElement>? configure = null) =>
 		CreateMediaElementAsync(() => new MediaElement { WidthRequest = 200, HeightRequest = 100 }, configure);
 
-	/// <summary>Creates the MediaElement with <paramref name="create"/> on the UI thread, for options that are init-only (AndroidViewType).</summary>
+	/// <summary>For options that are init-only (AndroidViewType), which can only be set while the element is created.</summary>
 	protected static Task<MediaElement> CreateMediaElementAsync(Func<MediaElement> create, Action<MediaElement>? configure = null) =>
 		InvokeOnMainThreadAsync(() =>
 		{
@@ -145,24 +126,20 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		InvokeOnMainThreadAsync(() => mediaElement.Handler?.DisconnectHandler());
 
 	/// <summary>
-	/// Disposes <paramref name="mediaElement"/> when the test ends, for an element that is used without HostAsync/WithHandlerAsync: setting a
-	/// Source starts its 200 ms status timer, which would otherwise tick for the rest of the run.
+	/// For an element that is used without HostAsync/WithHandlerAsync: setting a Source starts its 200 ms status timer, which would otherwise
+	/// tick for the rest of the run.
 	/// </summary>
 	protected void DisposeWhenTheTestEnds(MediaElement mediaElement) => hostedElements.Add(mediaElement);
 
-	/// <summary>
-	/// Puts the MediaElement into a known state without going through the player. Listener tests start from a state that none of the
-	/// mappings produces (Opening), so that every assertion of a mapped state shows that the mapping ran.
-	/// </summary>
 	protected static void SetCurrentState(MediaElement mediaElement, MediaElementState state) =>
 		((IMediaElement)mediaElement).CurrentStateChanged(state);
 
 	/// <summary>
-	/// The video tests need the H.264 decoder. On the API 28 emulator the media codec service (omx@1.0-service) crashes now and then while it
-	/// decodes (SIGSEGV, "&gt;&gt;&gt; media.codec &lt;&lt;&lt;" in logcat) and ExoPlayer fails the load with ERROR_CODE_DECODING_FAILED: 1 of 30
-	/// loads of the 2 s test video, and it was seen in full runs too. None of the
-	/// code these tests cover depends on the Android version (OnVideoSizeChanged, the resize modes, the TextureView), so they run on API 29 and
-	/// later and on devices, and skip visibly on the old emulator instead of failing CI at random.
+	/// On the API 28 emulator the media codec service (omx@1.0-service) crashes now and then while it decodes (SIGSEGV,
+	/// "&gt;&gt;&gt; media.codec &lt;&lt;&lt;" in logcat) and ExoPlayer fails the load with ERROR_CODE_DECODING_FAILED: 1 of 30 loads of the
+	/// 2 s test video, and it was seen in full runs too. None of the code these tests cover depends on the Android version
+	/// (OnVideoSizeChanged, the resize modes, the TextureView), so they run on API 29 and later and on devices, and skip visibly on the old
+	/// emulator instead of failing CI at random.
 	/// </summary>
 	protected static void SkipWhereTheVideoDecoderIsUnreliable() =>
 		Skip.If(!OperatingSystem.IsAndroidVersionAtLeast(29) && IsEmulator(),
@@ -181,8 +158,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	protected static IExoPlayer GetPlayer(MediaElement mediaElement) => (IExoPlayer)GetPlayerView(mediaElement).Player!;
 
-	// ---- MediaControlsService (the foreground service): what the system reports about it, and the toolkit's private state
-
 	/// <summary>The class name that the manifest gives the service ([Service(Name = ...)] on MediaControlsService).</summary>
 	protected const string mediaControlsServiceName = "communityToolkit.maui.media.services";
 
@@ -191,7 +166,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	const string mediaStyleTemplate = "android.app.Notification$MediaStyle";
 
-	/// <summary>The running MediaControlsService of this app as the ActivityManager reports it, or null when it is not running.</summary>
 	protected static ActivityManager.RunningServiceInfo? FindMediaControlsService()
 	{
 		var context = MauiPlatform.AppContext;
@@ -202,24 +176,20 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return services?.FirstOrDefault(info => info.Service?.PackageName == context.PackageName && info.Service?.ClassName == mediaControlsServiceName);
 	}
 
-	/// <summary>The notifications of this app that are currently posted.</summary>
 	protected static StatusBarNotification[] GetActiveNotifications()
 	{
 		var notificationManager = (NotificationManager)MauiPlatform.AppContext.GetSystemService(Context.NotificationService)!;
 		return notificationManager.GetActiveNotifications() ?? [];
 	}
 
-	/// <summary>The notification that MediaControlsService posts (id 1), or null.</summary>
 	protected static Notification? FindServiceNotification() =>
 		GetActiveNotifications().FirstOrDefault(notification => notification.Id == serviceNotificationId)?.Notification;
 
 	protected static bool IsMediaStyle(Notification? notification) => notification?.Extras?.GetString(Notification.ExtraTemplate) == mediaStyleTemplate;
 
-	/// <summary>Polls until the service is gone and has no notification left (the system stops it a few moments after StopService).</summary>
 	protected static Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout) =>
 		WaitUntilAsync(() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0, "MediaControlsService was never stopped (or its notification stayed).", timeout);
 
-	// The manager's service connection and media session are private; the system's view of them is what the tests assert.
 	private protected static BoundServiceConnection? GetServiceConnection(MediaManager manager) =>
 		(BoundServiceConnection?)typeof(MediaManager).GetField("connection", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(manager);
 
@@ -234,7 +204,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return output.ToArray();
 	}
 
-	/// <summary>Copies an asset to a uniquely named file in the cache directory (deleted when the test ends) and returns its path.</summary>
 	protected async Task<string> CopyAssetToCacheAsync(string asset)
 	{
 		var path = Path.Combine(FileSystem.CacheDirectory, $"{Guid.NewGuid():N}_{Path.GetFileName(asset)}");
@@ -244,8 +213,8 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	}
 
 	/// <summary>
-	/// Like AssertionExtensions.WaitForGC (up to 40 forced collections per reference), but names the survivors itself: WaitForGC describes a
-	/// survivor with its ToString(), which throws ObjectDisposedException for a Java peer that was disposed (a leaked platform view).
+	/// Names the survivors itself because AssertionExtensions.WaitForGC describes a survivor with its ToString(), which throws
+	/// ObjectDisposedException for a Java peer that was disposed (a leaked platform view).
 	/// </summary>
 	protected static async Task AssertCollectedAsync(params (string Name, WeakReference Reference)[] references)
 	{
@@ -254,7 +223,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		Assert.True(collected, $"Still alive after the forced collections: {string.Join(", ", references.Where(reference => reference.Reference.IsAlive).Select(reference => reference.Name))}.");
 	}
 
-	/// <summary>Polls <paramref name="condition"/> every 25 ms until it holds; fails with <paramref name="message"/> after <paramref name="timeout"/> ms.</summary>
 	protected static Task WaitUntilAsync(Func<bool> condition, string message, int timeout = waitTimeout) =>
 		AssertEventually(condition, timeout, 25, message);
 
@@ -262,8 +230,8 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		WaitUntilAsync(() => mediaElement.CurrentState == state, $"The MediaElement never reached {state}.", timeout);
 
 	/// <summary>
-	/// Waits until the MediaElement's source is loaded: MediaOpened was raised and the player knows the duration. A MediaFailed ends the wait
-	/// at once and fails with the player's error, instead of waiting for the timeout and reporting a missing duration.
+	/// A MediaFailed ends the wait at once and fails with the player's error, instead of waiting for the timeout and reporting a missing
+	/// duration.
 	/// </summary>
 	protected static async Task WaitUntilLoadedAsync(MediaElement mediaElement, MediaElementRecorder recorder, int timeout = waitTimeout)
 	{
@@ -273,7 +241,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		Assert.True(loaded, recorder.OpenedCount == 0 ? "MediaOpened was never raised." : "The duration was never reported.");
 	}
 
-	/// <summary>Waits until the player reported the size of the video (OnVideoSizeChanged); a MediaFailed ends the wait at once.</summary>
 	protected static async Task WaitUntilVideoSizeIsKnownAsync(MediaElement mediaElement, MediaElementRecorder recorder)
 	{
 		var known = await Wait(() => recorder.FailureMessages.Count > 0 || mediaElement.MediaWidth > 0, videoWaitTimeout, 25);
@@ -302,7 +269,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 					// Already released by the test itself.
 				}
 
-				// Stops the status timer that setting a Source started: it would tick (and keep the element alive) for the rest of the run.
+				// The status timer that setting a Source started would otherwise tick (and keep the element alive) for the rest of the run.
 				await InvokeOnMainThreadAsync(() => mediaElement.Dispose());
 			}
 
@@ -331,7 +298,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	}
 }
 
-/// <summary>Records the events of a <see cref="MediaElement"/> so that a test can assert on what was raised and in which order.</summary>
 public sealed class MediaElementRecorder : IDisposable
 {
 	readonly MediaElement mediaElement;
@@ -399,9 +365,8 @@ public sealed class MediaElementRecorder : IDisposable
 }
 
 /// <summary>
-/// A JNI global reference to a Java object. Disposing a managed peer (what <c>Dispose()</c> on a view or player does) invalidates the
-/// peer, so the state of a Java object that was released can only be read through a new peer that wraps the same object. This keeps the
-/// Java object reachable and hands out such a peer.
+/// Disposing a managed peer (what <c>Dispose()</c> on a view or player does) invalidates the peer, so the state of a Java object that was
+/// released can only be read through a new peer that wraps the same object. A JNI global reference keeps the Java object reachable for that.
 /// </summary>
 public sealed class JavaObjectReference : IDisposable
 {
@@ -409,7 +374,6 @@ public sealed class JavaObjectReference : IDisposable
 
 	public JavaObjectReference(Java.Lang.Object javaObject) => globalReference = JNIEnv.NewGlobalRef(javaObject.Handle);
 
-	/// <summary>A new managed peer for the referenced Java object.</summary>
 	public T GetPeer<T>() where T : class, IJavaObject =>
 		Java.Lang.Object.GetObject<T>(globalReference, JniHandleOwnership.DoNotTransfer) ?? throw new InvalidOperationException("The Java object is gone.");
 
@@ -423,7 +387,6 @@ public sealed class JavaObjectReference : IDisposable
 	}
 }
 
-/// <summary>An <see cref="ILoggerFactory"/> that keeps what the toolkit logs, to assert on error logging.</summary>
 public sealed class CapturingLoggerFactory : ILoggerFactory
 {
 	readonly object gate = new();

@@ -8,8 +8,6 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs: StreamMediaSource handling (the stream:// asset, the StreamAssetResourceLoader it owns and the content
-// type it detects). AVFoundation reads the stream through the loader, so these tests play real media from streams.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerStreamSourceAppleTests : AppleMediaElementTestBase
@@ -185,7 +183,7 @@ public class MediaManagerStreamSourceAppleTests : AppleMediaElementTestBase
 			// How the read failure is reported is StreamThatFailsToReadIsReportedAsFailedAndReplacesThePreviousMedia below.
 			await SetSourceAsync(mediaElement, handler, MediaSource.FromStream(stream));
 
-			// The content type detection reads the start of the stream and puts the position back, even when the read fails.
+			// The content type detection reads the 12-byte file type header at position 0, recorded as Read@<position>x<count>.
 			Assert.Contains("Read@0x12", stream.Calls);
 			Assert.Equal(5, stream.Position);
 		});
@@ -279,7 +277,7 @@ public class MediaManagerStreamSourceAppleTests : AppleMediaElementTestBase
 
 		var contentType = GetStreamContentType(stream);
 
-		// The type of such a stream is ContentTypeIsDetectedWhenTheStreamReturnsShortReads below; the stream must be left where it was.
+		// The type of such a stream is ContentTypeIsDetectedWhenTheStreamReturnsShortReads below.
 		Assert.Equal(9, stream.Position);
 		Assert.Contains(contentType, new[] { defaultContentType, quickTimeContentType });
 	}

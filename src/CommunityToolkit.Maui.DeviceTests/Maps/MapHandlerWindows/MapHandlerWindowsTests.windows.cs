@@ -12,9 +12,6 @@ using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of MapHandlerWindows (Windows) that need no map page: creating the platform view, the static mappings against a platform
-// view that is no WebView2, the MoveToRegion argument handling, and the handler's subscriptions to the network state. The tests of the
-// map page itself are in MapHandlerWindowsPageTests and MapHandlerWindowsMessageTests.
 [Category(TestCategory.MapHandlerWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MapHandlerWindowsTests : MapTestBase
@@ -23,8 +20,6 @@ public class MapHandlerWindowsTests : MapTestBase
 		?? throw new InvalidOperationException("MapHandlerWindows has no 'regionToGo' field: the handler changed.");
 
 	static MapSpan? GetRegionToGo(MapHandlerWindows handler) => (MapSpan?)regionToGoField.GetValue(handler);
-
-	// ---- CreatePlatformView
 
 	public static TheoryData<string?> MissingMapsKeys => new() { null, string.Empty };
 
@@ -40,8 +35,6 @@ public class MapHandlerWindowsTests : MapTestBase
 		Assert.Equal("You need to specify a Bing Maps Key", exception.Message);
 	}
 
-	// The handlers below create the real WebView2 of MapHandlerWindows without hosting it. Its mappings already call
-	// EnsureCoreWebView2Async from async void lambdas, which would fail on the UI thread without the WebView2 Runtime.
 	[Fact]
 	public async Task CreatingThePlatformViewReturnsAMauiWebViewAndBuildsTheMapPageWithTheKey()
 	{
@@ -80,8 +73,6 @@ public class MapHandlerWindowsTests : MapTestBase
 			((IElementHandler)second).DisconnectHandler();
 		});
 	}
-
-	// ---- mappings against a platform view that is no WebView2 (TryCallJSMethod returns false)
 
 	[Fact]
 	public async Task MapTypeMappingRunsNoScriptWithoutAWebView()
@@ -125,7 +116,6 @@ public class MapHandlerWindowsTests : MapTestBase
 			var map = new Map { IsShowingUser = false };
 			var handler = CreateHandler<NoWebViewMapHandler>(map);
 
-			// Completes without a WebView2 and without touching the location API (IsShowingUser is false).
 			var exception = await Record.ExceptionAsync(() => MapHandlerWindows.MapIsShowingUser(handler, map));
 
 			Assert.Null(exception);
@@ -165,8 +155,6 @@ public class MapHandlerWindowsTests : MapTestBase
 			Assert.Null(exception);
 		});
 	}
-
-	// ---- MoveToRegion
 
 	[Fact]
 	public async Task MoveToRegionStoresTheRegionOfAMapHandlerWindows()
@@ -235,16 +223,14 @@ public class MapHandlerWindowsTests : MapTestBase
 			var otherHandler = DispatchProxy.Create<IMapHandler, OtherMapHandlerProxy>();
 			var proxy = (OtherMapHandlerProxy)(object)otherHandler;
 
-			// Another IMapHandler has no region to store (no cast to MapHandlerWindows may fail), and the script call still goes to its
-			// platform view: TryCallJSMethod reads it once, finds no WebView2 and runs no script.
+			// Another IMapHandler has no region to store, and no cast to MapHandlerWindows may fail. The script call reads its platform view once;
+			// it is no WebView2, so no script runs.
 			var exception = await Record.ExceptionAsync(() => MapHandlerWindows.MapMoveToRegion(otherHandler, map, new MapSpan(new Location(1, 2), 1, 1)));
 
 			Assert.Null(exception);
 			Assert.Equal(1, proxy.PlatformViewReads);
 		});
 	}
-
-	// ---- network subscriptions
 
 	[Fact]
 	public async Task ConnectingTheHandlerListensToTheNetworkAndDisconnectingStops()
@@ -281,8 +267,6 @@ public class MapHandlerWindowsTests : MapTestBase
 		});
 	}
 
-	// ---- leak
-
 	[Fact]
 	public async Task MapHandlerAndPlatformViewAreCollectedAfterTheHandlerIsDisconnected()
 	{
@@ -310,8 +294,7 @@ public class MapHandlerWindowsTests : MapTestBase
 		RequireWebView2Runtime();
 		SetupMapBuilder();
 
-		// The handler subscribed to the WebView2 and to the network: when it is disconnected, neither may keep the handler or the map alive
-		// (the WebView2 itself is released by WinUI, on its own schedule, so it is not part of the assertion).
+		// Only the map and the handler are asserted on: WinUI releases the WebView2 itself on its own schedule.
 		var (mapReference, handlerReference) = await HostAndDisconnectAsync();
 
 		await AssertionExtensions.WaitForGC(mapReference, handlerReference);
@@ -334,12 +317,9 @@ public class MapHandlerWindowsTests : MapTestBase
 		return (mapReference, handlerReference);
 	}
 
-	// ---- helpers
-
-	// The static mappings return the Task of the script call, whose result says whether a script ran.
+	// Some mappings are declared to return Task but return the Task<bool> of the script call, whose result says whether a script ran.
 	static async Task<bool> ScriptRanAsync(Task mappingTask) => await Assert.IsType<Task<bool>>(mappingTask, exactMatch: false);
 
-	// An IMapHandler that is not a MapHandlerWindows, with a platform view that is no WebView2; it counts how often that view is read.
 	public class OtherMapHandlerProxy : DispatchProxy
 	{
 		WFrameworkElement? platformView;

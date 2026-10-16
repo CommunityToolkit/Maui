@@ -13,11 +13,10 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Test doubles for the iOS / Mac Catalyst MediaElement tests. They only open up protected members of the toolkit's classes
-// (MediaManager's player, observers and Dispose(bool)) and replace native objects whose state cannot be produced on demand
-// (AVPlayer.Status == Failed, a live stream's indefinite duration). Everything else runs against real AVFoundation.
+// The doubles only open up protected members of the toolkit's classes (MediaManager's player, observers and Dispose(bool)) and replace native
+// objects whose state cannot be produced on demand (AVPlayer.Status == Failed, a live stream's indefinite duration). Everything else runs
+// against real AVFoundation.
 
-/// <summary>A <see cref="MediaManager"/> that exposes its protected state.</summary>
 sealed class AppleMediaManager(Microsoft.Maui.IMauiContext context, IMediaElement mediaElement, Microsoft.Maui.Dispatching.IDispatcher dispatcher)
 	: MediaManager(context, mediaElement, dispatcher)
 {
@@ -56,8 +55,8 @@ sealed class AppleMediaManager(Microsoft.Maui.IMauiContext context, IMediaElemen
 	readonly List<Task> sourceUpdates = [];
 
 	/// <summary>
-	/// Completes when every <see cref="MediaManager.UpdateSource"/> call since the last call of this method has finished (the
-	/// handler fires them without awaiting), and faults with their exceptions.
+	/// The handler fires <see cref="MediaManager.UpdateSource"/> without awaiting it, so a test awaits the calls since the last call of this
+	/// method here.
 	/// </summary>
 	public Task TakeSourceUpdates()
 	{
@@ -70,8 +69,8 @@ sealed class AppleMediaManager(Microsoft.Maui.IMauiContext context, IMediaElemen
 	}
 
 	/// <summary>
-	/// When set, the next source update first waits for this task, then runs: an update that continues after an await, as the updates of Android and
-	/// Windows do (since #3281 the Apple update is synchronous).
+	/// Makes the next source update continue after an await, as the updates of Android and Windows do (since #3281 the Apple update is
+	/// synchronous).
 	/// </summary>
 	public Task? DelayNextSourceUpdate { get; set; }
 
@@ -120,14 +119,9 @@ sealed class AppleMediaManager(Microsoft.Maui.IMauiContext context, IMediaElemen
 		await base.PlatformUpdateSource();
 	}
 
-	/// <summary>The cancellation source of the observed item's status handler (#3281), or null.</summary>
 	public CancellationTokenSource? NativeItemCancellationTokenSource =>
 		(CancellationTokenSource?)typeof(MediaManager).GetField("playerItemCancellationTokenSource", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(this);
 
-	/// <summary>
-	/// Runs the handler that the observer of the item's status calls (#3281: PlayerItemStatusChanged) for <paramref name="item"/>, as if
-	/// the item had reported its status, and returns its task.
-	/// </summary>
 	public Task RunItemStatusHandler(AVPlayerItem item, CancellationToken token)
 	{
 		var method = typeof(MediaManager).GetMethod("PlayerItemStatusChanged", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
@@ -136,7 +130,6 @@ sealed class AppleMediaManager(Microsoft.Maui.IMauiContext context, IMediaElemen
 	}
 }
 
-/// <summary>A <see cref="MediaElementHandler"/> whose <see cref="MediaManager"/> is an <see cref="AppleMediaManager"/>.</summary>
 class AppleMediaElementHandler : MediaElementHandler
 {
 	public AppleMediaElementHandler()
@@ -159,7 +152,7 @@ class AppleMediaElementHandler : MediaElementHandler
 
 	public void DisposeCore(bool disposing) => Dispose(disposing);
 
-	/// <summary>The public disconnect (the handler's own overload is protected).</summary>
+	/// <summary>The handler's own disconnect overload is protected.</summary>
 	public void Disconnect() => ((Microsoft.Maui.IElementHandler)this).DisconnectHandler();
 
 	protected override MauiMediaElement CreatePlatformView()
@@ -174,8 +167,8 @@ class AppleMediaElementHandler : MediaElementHandler
 }
 
 /// <summary>
-/// An <see cref="AppleMediaElementHandler"/> that the handler factory creates with the mappers a test puts into the static properties
-/// (the factory only uses the parameterless constructor). The tests that use it run one at a time (DisableParallelization) and reset them.
+/// The handler factory only uses the parameterless constructor, so a test passes the mappers through the static properties. The tests that
+/// use it run one at a time (DisableParallelization) and reset them.
 /// </summary>
 sealed class AppleMappedMediaElementHandler : AppleMediaElementHandler
 {
@@ -188,44 +181,36 @@ sealed class AppleMappedMediaElementHandler : AppleMediaElementHandler
 	public static Microsoft.Maui.CommandMapper? CommandMapperToUse { get; set; }
 }
 
-/// <summary>An <see cref="AVPlayer"/> whose status values can be forced; everything else is the real player.</summary>
 sealed class AppleFakeAVPlayer : AVPlayer
 {
 	public AVPlayerStatus? StatusOverride { get; set; }
 	public AVPlayerTimeControlStatus? TimeControlStatusOverride { get; set; }
 
-	/// <summary>When true, <see cref="CurrentItem"/> is <see cref="CurrentItemOverride"/> (which may be null) instead of the real item.</summary>
+	/// <summary>Says whether <see cref="CurrentItemOverride"/> applies, because null is a valid override (no current item).</summary>
 	public bool UseCurrentItemOverride { get; set; }
 	public AVPlayerItem? CurrentItemOverride { get; set; }
 
-	/// <summary>
-	/// When set, a seek with a completion handler reports this result instead of seeking. Like AVFoundation, it calls the completion later from
-	/// the main queue (a native callback), never from inside the Seek call, so an exception thrown by the completion is handled the way the real
-	/// player's callbacks handle it instead of reaching the caller of Seek.
-	/// </summary>
 	public bool? SeekResult { get; set; }
 
-	/// <summary>When true, a seek with a completion handler records the request and never reports a result (a seek that takes forever).</summary>
 	public bool HoldSeekCompletion { get; set; }
 
-	/// <summary>The times of the seeks with a completion handler, with or without tolerances.</summary>
 	public List<CMTime> SeekRequests { get; } = [];
 
 	public int PauseCount { get; private set; }
 	public List<AVPlayerItem?> ReplacedItems { get; } = [];
 
-	/// <summary>Runs (once) right after the item was replaced, like an event handler that the replacement raises synchronously.</summary>
+	/// <summary>Simulates an event handler that the replacement raises synchronously (runs once).</summary>
 	public Action? AfterNextReplace { get; set; }
 
-	/// <summary>Runs right after <see cref="Play"/> started the player, like a handler of the state change that Play raises.</summary>
+	/// <summary>Simulates a handler of the state change that Play raises.</summary>
 	public Action? AfterPlay { get; set; }
 
-	/// <summary>Runs right after a caller set <see cref="Rate"/>, like a handler of the rate change that it raises.</summary>
+	/// <summary>Simulates a handler of the rate change that a caller setting Rate raises.</summary>
 	public Action? AfterRateSet { get; set; }
 
 	public int PlayCount { get; private set; }
 
-	/// <summary>The rates that callers set (AVPlayer's own play and pause set the rate too; those are not recorded).</summary>
+	/// <summary>Only the rates that callers set: AVPlayer's own play and pause set the rate too, and those are not recorded.</summary>
 	public List<float> RatesSet { get; } = [];
 
 	bool isInPlayOrPause;
@@ -308,7 +293,6 @@ sealed class AppleFakeAVPlayer : AVPlayer
 		}
 	}
 
-	// Records the seek, and answers it when the test says so: true when the real player must not seek
 	bool InterceptSeek(CMTime time, AVCompletion completion)
 	{
 		SeekRequests.Add(time);
@@ -319,6 +303,8 @@ sealed class AppleFakeAVPlayer : AVPlayer
 
 		if (SeekResult is bool result)
 		{
+			// Like AVFoundation's native callbacks, the completion runs later from the main queue, never inside the Seek call, so an exception it
+			// throws is handled the way the real player's callbacks handle it instead of reaching the caller of Seek.
 			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => completion(result));
 			return true;
 		}
@@ -327,7 +313,6 @@ sealed class AppleFakeAVPlayer : AVPlayer
 	}
 }
 
-/// <summary>An <see cref="AVPlayerItem"/> whose timing and size can be forced (a live stream has an indefinite duration).</summary>
 sealed class AppleFakeAVPlayerItem(AVAsset asset) : AVPlayerItem(asset)
 {
 	public CMTime? DurationOverride { get; set; }
@@ -338,7 +323,7 @@ sealed class AppleFakeAVPlayerItem(AVAsset asset) : AVPlayerItem(asset)
 
 	public AVPlayerItemStatus? StatusOverride { get; set; }
 
-	/// <summary>Statuses that the next reads of <see cref="Status"/> return, one per read, before it falls back to the usual value (an item whose status changes between two reads).</summary>
+	/// <summary>Simulates an item whose status changes between two reads.</summary>
 	public Queue<AVPlayerItemStatus>? StatusReads { get; set; }
 
 	public override CMTime Duration => DurationOverride ?? base.Duration;
@@ -355,8 +340,8 @@ sealed class AppleFakeAVPlayerItem(AVAsset asset) : AVPlayerItem(asset)
 }
 
 /// <summary>
-/// An <see cref="AVUrlAsset"/> whose video tracks load only when the test says so (<see cref="CompleteTrackLoad"/>,
-/// <see cref="FailTrackLoad"/>), or never: MediaManager loads them through the managed LoadTracksWithMediaTypeAsync wrapper.
+/// MediaManager loads the video tracks through the managed LoadTracksWithMediaTypeAsync wrapper, which this asset overrides so that the test
+/// decides when they load (<see cref="CompleteTrackLoad"/>, <see cref="FailTrackLoad"/>), or never.
 /// </summary>
 sealed class AppleTrackLoadingAsset(NSUrl url) : AVUrlAsset(url)
 {
@@ -364,7 +349,7 @@ sealed class AppleTrackLoadingAsset(NSUrl url) : AVUrlAsset(url)
 
 	public int TrackLoads { get; private set; }
 
-	/// <summary>Runs inside the track load call, before it returns (like an event that the load raises synchronously).</summary>
+	/// <summary>Simulates an event that the load raises synchronously.</summary>
 	public Action? DuringTrackLoad { get; set; }
 
 #pragma warning disable CS0618, CS0672 // The product calls this obsolete string overload.
@@ -376,16 +361,11 @@ sealed class AppleTrackLoadingAsset(NSUrl url) : AVUrlAsset(url)
 		return tracks.Task;
 	}
 
-	/// <summary>Completes the track load without a video track.</summary>
 	public void CompleteTrackLoad() => tracks.TrySetResult(new NSArray<AVFoundation.AVMutableCompositionTrack>());
 
 	public void FailTrackLoad(NSError error) => tracks.TrySetException(new NSErrorException(error));
 }
 
-/// <summary>
-/// An <see cref="AVPlayerViewController"/> whose <c>View</c> is nil. Its content overlay view is a plain view: AVKit's own code asks
-/// the controller for the overlay while it loads the (never loading) view, which recurses until the stack is exhausted on Mac Catalyst.
-/// </summary>
 sealed class AppleViewlessPlayerViewController : AVPlayerViewController
 {
 	UIView? contentOverlayView;
@@ -397,13 +377,11 @@ sealed class AppleViewlessPlayerViewController : AVPlayerViewController
 		set { }
 	}
 
+	// A plain view: AVKit's own code asks the controller for the overlay while it loads the (never loading) view, which recurses until the stack
+	// is exhausted on Mac Catalyst.
 	public override UIView? ContentOverlayView => contentOverlayView ??= new UIView();
 }
 
-/// <summary>
-/// An <see cref="AVPlayerViewController"/> that records every parent UIKit reports to <c>DidMoveToParentViewController</c>: the parent it
-/// was added to, or null when it was removed from one.
-/// </summary>
 sealed class AppleParentTrackingPlayerViewController : AVPlayerViewController
 {
 	public List<UIViewController?> MovedToParents { get; } = [];
@@ -415,13 +393,11 @@ sealed class AppleParentTrackingPlayerViewController : AVPlayerViewController
 	}
 }
 
-/// <summary>An <see cref="AVPlayerViewController"/> whose <c>ContentOverlayView</c> is nil.</summary>
 sealed class AppleOverlaylessPlayerViewController : AVPlayerViewController
 {
 	public override UIView? ContentOverlayView => null;
 }
 
-/// <summary>A remote-command event that carries a playback position (the lock screen's scrubber).</summary>
 sealed class AppleChangePlaybackPositionEvent : MPChangePlaybackPositionCommandEvent
 {
 	readonly double positionTime;
@@ -434,7 +410,7 @@ sealed class AppleChangePlaybackPositionEvent : MPChangePlaybackPositionCommandE
 	public override double PositionTime => positionTime;
 }
 
-/// <summary>A remote-command event of the base type (what play/pause/seek commands deliver).</summary>
+/// <summary>The base event type, which is what play, pause and seek commands deliver.</summary>
 sealed class AppleRemoteCommandEvent : MPRemoteCommandEvent
 {
 	public AppleRemoteCommandEvent() : base(NSObjectFlag.Empty)
@@ -442,7 +418,6 @@ sealed class AppleRemoteCommandEvent : MPRemoteCommandEvent
 	}
 }
 
-/// <summary>Collects what the toolkit logs, so tests can assert on the warnings and errors it reports.</summary>
 sealed class AppleCapturingLoggerFactory : ILoggerFactory
 {
 	readonly List<(LogLevel Level, string Message, Exception? Exception)> entries = [];
@@ -484,9 +459,6 @@ sealed class AppleCapturingLoggerFactory : ILoggerFactory
 	}
 }
 
-/// <summary>
-/// A stream that records how the resource loader uses it and can be made non-seekable, short-reading or failing.
-/// </summary>
 sealed class AppleRecordingStream(Stream inner, bool canSeek = true) : Stream
 {
 	public List<string> Calls { get; } = [];
@@ -546,7 +518,6 @@ sealed class AppleRecordingStream(Stream inner, bool canSeek = true) : Stream
 	}
 }
 
-/// <summary>A view handler that only hands out a platform view (a stand-in for a parent's real handler).</summary>
 sealed class AppleStubElementHandler(object platformView) : Microsoft.Maui.IViewHandler
 {
 	public object PlatformView { get; } = platformView;
@@ -582,7 +553,6 @@ sealed class AppleStubElementHandler(object platformView) : Microsoft.Maui.IView
 	}
 }
 
-/// <summary>A view whose safe area insets are set by the test, so inset arithmetic can be asserted.</summary>
 sealed class AppleInsetView(UIEdgeInsets insets) : UIView
 {
 	public UIEdgeInsets Insets { get; set; } = insets;
@@ -590,21 +560,16 @@ sealed class AppleInsetView(UIEdgeInsets insets) : UIView
 	public override UIEdgeInsets SafeAreaInsets => Insets;
 }
 
-/// <summary>A view controller whose view reports fixed safe area insets.</summary>
 sealed class AppleInsetViewController(UIEdgeInsets insets) : UIViewController
 {
 	public override void LoadView() => View = new AppleInsetView(insets);
 }
 
-/// <summary>A media source type the platform manager does not know.</summary>
 sealed class AppleUnknownMediaSource : MediaSource
 {
 }
 
-/// <summary>
-/// A synchronization context that records the exception an <c>async void</c> method posts to it (instead of the exception crashing the
-/// app), so a test can assert what an <c>async void</c> handler throws.
-/// </summary>
+/// <summary>Records the exception that an <c>async void</c> method posts to it, instead of the exception crashing the app.</summary>
 sealed class AppleCapturingSynchronizationContext : SynchronizationContext
 {
 	public Exception? Captured { get; private set; }
@@ -621,7 +586,6 @@ sealed class AppleCapturingSynchronizationContext : SynchronizationContext
 		}
 	}
 
-	/// <summary>Runs <paramref name="action"/> with this context as the current one and restores the previous context.</summary>
 	public void Run(Action action)
 	{
 		var previous = Current;
@@ -637,7 +601,6 @@ sealed class AppleCapturingSynchronizationContext : SynchronizationContext
 	}
 }
 
-/// <summary>A content-information request that records what the resource loader sets (AVFoundation creates the real ones).</summary>
 sealed class AppleFakeContentInformationRequest : AVAssetResourceLoadingContentInformationRequest
 {
 	string? contentType;
@@ -667,12 +630,11 @@ sealed class AppleFakeContentInformationRequest : AVAssetResourceLoadingContentI
 	}
 }
 
-/// <summary>A data request that records the responses of the resource loader.</summary>
 sealed class AppleFakeDataRequest(long requestedOffset, nint requestedLength, long currentOffset = 0) : AVAssetResourceLoadingDataRequest(NSObjectFlag.Empty)
 {
 	public List<byte[]> Responses { get; } = [];
 
-	/// <summary>The data objects the resource loader responded with (to check that it released them).</summary>
+	/// <summary>Kept to check that the resource loader released the data objects it responded with.</summary>
 	public List<NSData> ResponseData { get; } = [];
 
 	public override long RequestedOffset => requestedOffset;
@@ -688,17 +650,13 @@ sealed class AppleFakeDataRequest(long requestedOffset, nint requestedLength, lo
 	}
 }
 
-/// <summary>A loading request with the requests a test wants the resource loader to see.</summary>
 sealed class AppleFakeLoadingRequest(AVAssetResourceLoadingContentInformationRequest? contentInformationRequest, AVAssetResourceLoadingDataRequest? dataRequest)
 	: AVAssetResourceLoadingRequest(NSObjectFlag.Empty)
 {
-	/// <summary>How often the request was finished successfully.</summary>
 	public int FinishCount { get; private set; }
 
-	/// <summary>How often the request was finished with an error.</summary>
 	public int FinishWithErrorCount { get; private set; }
 
-	/// <summary>How often the request was finished, successfully or with an error.</summary>
 	public int TotalFinishCount => FinishCount + FinishWithErrorCount;
 
 	public override AVAssetResourceLoadingContentInformationRequest? ContentInformationRequest => contentInformationRequest;

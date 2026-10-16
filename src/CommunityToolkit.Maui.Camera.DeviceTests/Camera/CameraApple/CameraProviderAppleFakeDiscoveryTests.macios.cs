@@ -5,9 +5,8 @@ using CoreVideo;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraProvider.macios.cs against a scripted discovery session (AppleDiscoveryStub, FakeDeviceDiscoverySession and FakeCaptureDevice):
-// every device layout (front, back and unspecified positions, an undefined position, 420v and duplicate formats, no device) runs on any
-// machine. CameraProviderAppleTests checks the same code against the real cameras of the machine, which the simulator does not have.
+// The scripted discovery session lets every device layout run on any machine. CameraProviderAppleTests checks the same code against the real
+// cameras of the machine, which the simulator does not have.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
@@ -157,7 +156,6 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 
 			await provider.RefreshAvailableCameras(CancellationToken.None);
 
-			// Only the 420v (video range) formats are skipped, not the full range ones of the same resolution.
 			var camera = Assert.Single(provider.AvailableCameras ?? []);
 			Assert.Equal(new AVCaptureDeviceFormat[] { fullRange, jpeg }, camera.SupportedFormats);
 			Assert.Equal([new Size(1920, 1080), new Size(1280, 720)], camera.SupportedResolutions);
@@ -245,13 +243,11 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 			await provider.RefreshAvailableCameras(CancellationToken.None);
 			var published = provider.AvailableCameras;
 
-			// The same devices in another order: the same set of cameras, so the published list stays.
 			stub.Session = new FakeDeviceDiscoverySession(second, first);
 			await provider.RefreshAvailableCameras(CancellationToken.None);
 			Assert.Same(published, provider.AvailableCameras);
 			Assert.Single(recorder.Lists);
 
-			// One camera gone: a new list is published.
 			stub.Session = new FakeDeviceDiscoverySession(second);
 			await provider.RefreshAvailableCameras(CancellationToken.None);
 

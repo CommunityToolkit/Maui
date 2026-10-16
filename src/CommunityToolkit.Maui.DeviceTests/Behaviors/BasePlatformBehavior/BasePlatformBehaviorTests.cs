@@ -14,10 +14,6 @@ using CommunityToolkit.Maui.Behaviors;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of BasePlatformBehavior<TView, TPlatformView>, the base class of the toolkit's platform behaviors (StatusBarBehavior,
-// IconTintColorBehavior, TouchBehavior, ...), with probe behaviors on a Label: MAUI attaches a PlatformBehavior when its view loads
-// (and only if the view's platform view has the behavior's TPlatformView type), the base class then tracks the view and forwards the
-// view's property changes to OnViewPropertyChanged until the behavior detaches.
 [Category(TestCategory.BasePlatformBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public class BasePlatformBehaviorTests : StatusBarTestBase
@@ -244,8 +240,7 @@ public class BasePlatformBehaviorTests : StatusBarTestBase
 		await AssertionExtensions.WaitForGC(behaviorReference, labelReference, platformViewReference);
 	}
 
-	// Creates the label and the behavior in this method only (no caller local keeps them alive), hosts the label until it unloads and
-	// disconnects its handler, like the leak test pattern in the README.
+	// The label and the behavior live in this method only, so no caller local keeps them alive (the leak test pattern in the README).
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 	async Task<(WeakReference Behavior, WeakReference Label, WeakReference PlatformView)> HostAndDetachNewBehaviorAsync()
 	{
@@ -287,7 +282,6 @@ public class BasePlatformBehaviorTests : StatusBarTestBase
 			?? throw new InvalidOperationException("ICommunityToolkitBehavior<TView> no longer has a protected OnViewPropertyChanged(object, PropertyChangedEventArgs)."))
 		.Invoke(behavior, [sender, new PropertyChangedEventArgs(propertyName)]);
 
-	/// <summary>A behavior for every Label, which records what BasePlatformBehavior gives it.</summary>
 	sealed class ProbeBehavior : BasePlatformBehavior<Label>
 	{
 		public int AttachedCount { get; private set; }
@@ -298,12 +292,10 @@ public class BasePlatformBehaviorTests : StatusBarTestBase
 
 		public PlatformView? AttachedPlatformView { get; private set; }
 
-		/// <summary>The protected <c>View</c> of the base class: the label while attached, <see langword="null"/> otherwise.</summary>
 		public Label? TrackedView => View;
 
 		public List<(Label Sender, string? PropertyName)> ViewPropertyChanges { get; } = [];
 
-		/// <summary>Thrown by <see cref="OnViewPropertyChanged"/> after it recorded the change.</summary>
 		public Exception? ExceptionToThrow { get; init; }
 
 		protected override void OnAttachedTo(Label bindable, PlatformView platformView)
@@ -333,7 +325,6 @@ public class BasePlatformBehaviorTests : StatusBarTestBase
 		}
 	}
 
-	/// <summary>A behavior that needs a platform view (a button, an image view) that a label never has.</summary>
 	sealed class MismatchedBehavior : BasePlatformBehavior<Label, MismatchedPlatformView>
 	{
 		public int AttachedCount { get; private set; }

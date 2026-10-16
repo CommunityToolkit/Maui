@@ -10,9 +10,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraViewHandler and CameraView on iOS and Mac Catalyst, driven through AppleNoConnectCameraViewHandler: it behaves like the
-// real handler except that it does not connect the camera automatically (see its comment), so the tests need neither a camera nor
-// the camera permission. The Apple branches of CameraViewHandler.shared.cs (MapIsAvailable) and the AVFoundation platform view are covered here.
+// The tests use AppleNoConnectCameraViewHandler, which does not connect the camera automatically, so they need neither a camera nor
+// the camera permission.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewHandlerAppleTests : CameraHandlerTestBase
@@ -46,9 +45,9 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 		Assert.Contains(nameof(ICameraView.SelectedCamera), keys);
 	}
 
-	// Both constructors without custom mappers take CameraViewHandler's static PropertyMapper and CommandMapper when the handler is created.
-	// The test swaps them for probes that inherit every default mapping while it creates the handlers, so it sees which mappers each handler
-	// uses without reading MAUI internals.
+	// Without custom mappers the handlers take CameraViewHandler's static PropertyMapper and CommandMapper when they are created, so the test
+	// swaps them for probes that inherit every default mapping while it creates the handlers: it sees which mappers each handler uses without
+	// reading MAUI internals.
 	[Fact]
 	public async Task HandlerCreatedWithoutCustomMappersUsesTheMappersOfCameraViewHandler()
 	{
@@ -93,12 +92,11 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 			parameterless.Invoke("DeviceTestsProbe", 1);
 			withNullMappers.Invoke("DeviceTestsProbe", 2);
 
-			// Each handler kept the mappers that were current when it was created, and the default mappings that the probes inherit map
-			// the view onto the camera manager.
 			List<(CameraViewHandler Handler, float ZoomFactor)> expectedZoomFactors = [(parameterless, 2f), (withNullMappers, 3f)];
 			List<(CameraViewHandler Handler, object? Argument)> expectedCommandArguments = [(parameterless, 1), (withNullMappers, 2)];
 			Assert.Equal(expectedZoomFactors, mappedZoomFactors);
 			Assert.Equal(expectedCommandArguments, commandArguments);
+			// The probes inherit the default mappings, so the flash mode of the view still reaches the camera manager.
 			Assert.Equal(AVCaptureFlashMode.Auto, new CameraManagerAccessor(withNullMappers.CameraManager).FlashMode);
 			view.CameraFlashMode = CameraFlashMode.On;
 			Assert.Equal(AVCaptureFlashMode.On, new CameraManagerAccessor(withNullMappers.CameraManager).FlashMode);
@@ -137,8 +135,8 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 			view.ZoomFactor = 2.5f;
 			handler.Invoke("DeviceTestsProbe", 42);
 
-			// The replacement ran instead of CameraViewHandler.MapZoomFactor (which would have zoomed the initialized device), the
-			// mappings that the custom mapper inherits still run (flash mode), and the custom command reached its action.
+			// The initialized device shows that the replacement ran instead of CameraViewHandler.MapZoomFactor, which would have zoomed it, and the
+			// flash mode shows that the mappings that the custom mapper inherits still run.
 			Assert.Equal([2.5f], mappedZoomFactors.Skip(mappedBeforeTheChange));
 			Assert.Empty(device.Calls);
 			Assert.Equal(AVCaptureFlashMode.On, access.FlashMode);
@@ -200,7 +198,6 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 			var view = new CameraView();
 			CreateHandler<AppleNoConnectCameraViewHandler>(view);
 
-			// IsAvailable is mapped: a change makes the handler recompute it from the device.
 			((ICameraView)view).IsAvailable = !expected;
 
 			Assert.Equal(expected, view.IsAvailable);
@@ -413,7 +410,6 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 			var manager = handler.CameraManager;
 			var session = new CameraManagerAccessor(manager).CaptureSession ?? throw new InvalidOperationException("No capture session.");
 
-			// Dispose(false) is the finalizer path: managed objects such as the camera manager are not touched.
 			handler.CallDispose(disposing: false);
 
 			Assert.Same(manager, handler.CameraManager);
@@ -493,7 +489,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 	}
 
 	// A camera that never started has no photo output: CaptureImage throws the camera API's CameraException (as on Windows) instead of an
-	// ArgumentNullException for the photo output, raises MediaCaptureFailed with the same reason, and releases its semaphore for the next call.
+	// ArgumentNullException for the photo output.
 	[Fact]
 	public async Task CaptureImageWithoutAStartedCameraThrowsCameraExceptionOnEveryCallAndReleasesTheSemaphore()
 	{
@@ -647,7 +643,6 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 			Assert.Equal(["lock", "zoom=2.5", "unlock"], device.Calls);
 			Assert.Equal(2.5, device.CurrentZoomFactor);
 
-			// CameraView clamps the factor to the range of the selected camera (1 to 4) before the handler maps it.
 			view.ZoomFactor = 10f;
 			Assert.Equal(4f, view.ZoomFactor);
 			Assert.Equal(4, device.CurrentZoomFactor);
@@ -682,8 +677,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// A resolution that no format fits keeps the format that the session preset (AVCaptureSessionPresetPhoto) gave the camera, whatever
-	// photo pixel formats the photo output reports: the photo output does not choose the format.
+	// The photo output reports a pixel format to show that it does not choose the format.
 	[Fact]
 	public async Task ImageCaptureResolutionThatNoFormatFitsKeepsTheFormatOfTheSessionPreset()
 	{
@@ -733,7 +727,6 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			access.OnLoaded();
 
-			// Torch first, then the zoom factor reset to 1 reaches the device through the property mapper.
 			Assert.Equal(["lock", "torch=On", "unlock", "lock", "zoom=1", "unlock"], device.Calls);
 			Assert.True(device.TorchIsActive);
 			Assert.Equal(1, device.CurrentZoomFactor);
@@ -811,7 +804,6 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 			var first = view.CaptureImage(CancellationToken.None);
 			var second = view.CaptureImage(CancellationToken.None);
 
-			// The second call waits for the first one: only one capture has started.
 			Assert.Single(pendingCompletions);
 			pendingCompletions[0].Completion.DidFinishProcessingPhoto(output, new FakeCapturePhoto(() => NSData.FromArray([1, 1, 1])), null!);
 			var firstStream = await first.WaitAsync(TimeSpan.FromSeconds(5));

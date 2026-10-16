@@ -98,7 +98,7 @@ public static partial class KeyboardExtensions
 			throw new SoftKeyboardException($"Unable to retrieve {typeof(PlatformView)} to determine soft keyboard status");
 		}
 
-		// This method is synchronous: where the platform view must be used on the UI thread, a caller on another thread waits for its answer
+		// This method is synchronous, so a caller on another thread waits for the UI thread's answer.
 		if (IsDispatchRequiredByThePlatform(handler, out var dispatcher))
 		{
 			var isShowing = false;
@@ -139,7 +139,6 @@ public static partial class KeyboardExtensions
 		return true;
 	}
 
-	// Platform views must only be used on their UI thread: returns the dispatcher of that thread when the caller is on another thread.
 	// A handler without a MauiContext has no dispatcher: the platform view is then used directly, as on the UI thread.
 	static bool IsDispatchRequired(IViewHandler handler, [NotNullWhen(true)] out IDispatcher? dispatcher)
 	{
@@ -153,9 +152,8 @@ public static partial class KeyboardExtensions
 		return false;
 	}
 
-	// Whether the soft keyboard calls of the platform view (hide, show, is showing) must switch to the UI thread. UIKit (iOS) and WinUI
-	// (Windows: the XamlRoot of the view) must only be used on the UI thread. Android's input method manager and window insets can be used
-	// on any thread, and Mac Catalyst does not support the soft keyboard: there the platform view is called on the calling thread.
+	// UIKit (iOS) and WinUI (Windows: the XamlRoot of the view) must only be used on the UI thread. Android's input method manager and window
+	// insets can be used on any thread, and Mac Catalyst does not support the soft keyboard: there the platform view is called on the calling thread.
 	static bool IsDispatchRequiredByThePlatform(IViewHandler handler, [NotNullWhen(true)] out IDispatcher? dispatcher)
 	{
 #if IOS || WINDOWS
@@ -166,8 +164,6 @@ public static partial class KeyboardExtensions
 #endif
 	}
 
-	// Calls the platform on the UI thread: directly when the caller is on it, otherwise through the dispatcher of the handler, which throws
-	// InvalidOperationException when it cannot queue the call, and skips the call when the token is cancelled before the UI thread runs it
 	static ValueTask CallOnUIThreadAsync(IViewHandler handler, Action platformCall, CancellationToken token)
 	{
 		if (IsDispatchRequired(handler, out var dispatcher))
@@ -179,7 +175,6 @@ public static partial class KeyboardExtensions
 		return ValueTask.CompletedTask;
 	}
 
-	// Calls the platform view on the calling thread, or, where the platform requires it, on the UI thread as CallOnUIThreadAsync does
 	static ValueTask<bool> CallThePlatformAsync(IViewHandler handler, Func<bool> platformCall, CancellationToken token)
 	{
 		if (IsDispatchRequiredByThePlatform(handler, out var dispatcher))
@@ -197,9 +192,7 @@ public static partial class KeyboardExtensions
 		}
 	}
 
-	// Queues the platform call on the UI thread, also when the caller is on it: throws InvalidOperationException when the dispatcher cannot
-	// queue the call, skips the call when the token is cancelled before the UI thread runs it, and does not run the caller's continuation on
-	// the UI thread.
+	// Queues the call also when the caller is on the UI thread, so that it runs after the work that is already queued there.
 	static async Task<bool> QueueOnUIThreadAsync(IDispatcher dispatcher, Func<bool> platformCall, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();

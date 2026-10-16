@@ -6,20 +6,16 @@ using AUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// StreamDataSourceFactory.android.cs: the IDataSource that lets ExoPlayer read the Stream of a StreamMediaSource. ExoPlayer drives it
-// with DataSpecs that it creates itself (MediaManagerSourceAndroidTests plays a stream through the real player); these tests drive it
-// directly, with the DataSpecs that reach every branch: seekable and non-seekable streams, positions, explicit and unbounded lengths.
-// The first byte of the test stream at index i is i, so a read tells where the stream was positioned.
 [Category(TestCategory.MediaElementAndroid)]
 public class StreamDataSourceFactoryAndroidTests
 {
+	// The byte at index i is i, so a read tells where the stream was positioned.
 	static readonly byte[] data = Enumerable.Range(0, 100).Select(static i => (byte)i).ToArray();
 
 	static IDataSource CreateDataSource(Stream stream) => new StreamDataSourceFactory(stream).CreateDataSource();
 
 	static DataSpec CreateSpec(long position = 0, long length = C.LengthUnset) => new(AUri.Parse("stream://media"), position, length);
 
-	// Reads up to count bytes with a single Read call: returns the bytes read (empty at the end of the input).
 	static byte[] Read(IDataSource source, int count)
 	{
 		var buffer = new byte[count];
@@ -46,7 +42,6 @@ public class StreamDataSourceFactoryAndroidTests
 		Assert.NotSame(first, second);
 		first.Open(CreateSpec(0));
 		Assert.Equal(data[..5], Read(first, 5));
-		// The stream is shared: the second data source moves it.
 		second.Open(CreateSpec(50));
 		Assert.Equal(data[50..55], Read(second, 5));
 	}
@@ -78,7 +73,6 @@ public class StreamDataSourceFactoryAndroidTests
 		Assert.Equal(20, length);
 		Assert.Equal(data[10..30], Read(source, 50));
 		Assert.Empty(Read(source, 50));
-		// The stream was not read past the requested range.
 		Assert.Equal(30, stream.Position);
 	}
 
@@ -96,8 +90,7 @@ public class StreamDataSourceFactoryAndroidTests
 		Assert.Contains("Position 101 exceeds stream length 100", exception.Message);
 	}
 
-	// A stream that fails (that of a medium that was removed, for example) fails the source with a Java IOException, which ExoPlayer retries and
-	// then reports (MediaFailed).
+	// A Java IOException is a source error that ExoPlayer retries, then reports (MediaFailed).
 	[Fact]
 	public void OpenOfAStreamThatFailsToSeekThrowsAJavaIOException()
 	{
@@ -145,7 +138,6 @@ public class StreamDataSourceFactoryAndroidTests
 		source.Close();
 
 		Assert.Null(source.Uri);
-		// The caller owns the stream: it can still be read and seeked.
 		stream.Position = 0;
 		Assert.Equal(data[0], stream.ReadByte());
 	}
@@ -219,7 +211,6 @@ public class StreamDataSourceFactoryAndroidTests
 
 		Assert.Equal(150, length);
 		Assert.Equal(data, Read(source, 200));
-		// 50 bytes are still "remaining", but the stream has nothing left.
 		Assert.Equal(C.ResultEndOfInput, source.Read(new byte[10], 0, 10));
 	}
 
@@ -251,7 +242,7 @@ public class StreamDataSourceFactoryAndroidTests
 		Assert.Empty(Read(source, 10));
 	}
 
-	// A stream that cannot seek cannot be read at another position (after a seek outside of what the player has buffered, for example): a source
+	// A seek outside of what the player has buffered needs the stream at another position, which a non-seekable stream cannot give: a source
 	// error that ExoPlayer does not retry, as for a seekable stream (OpenBeyondTheEndOfASeekableStreamWithoutALengthThrows).
 	[Fact]
 	public void NonSeekableStreamCannotBeOpenedAtALaterPosition()
@@ -265,8 +256,8 @@ public class StreamDataSourceFactoryAndroidTests
 		Assert.Contains("non-seekable", exception.Message);
 	}
 
-	// The length of a non-seekable stream is unknown (C.LengthUnset, -1): an unbounded DataSpec (what ExoPlayer sends) is answered with
-	// C.LENGTH_UNSET, as IDataSource.open requires for a length it cannot resolve, and Read delivers the stream to its end.
+	// The length of a non-seekable stream is unknown, so an unbounded DataSpec (what ExoPlayer sends) is answered with C.LENGTH_UNSET, as
+	// IDataSource.open requires for a length it cannot resolve.
 	[Fact]
 	public void NonSeekableStreamOpenedWithoutALengthReturnsLengthUnsetAndDeliversEverything()
 	{

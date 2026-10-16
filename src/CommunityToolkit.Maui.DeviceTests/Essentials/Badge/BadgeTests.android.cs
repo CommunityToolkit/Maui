@@ -6,9 +6,8 @@ using AndroidApplication = Android.App.Application;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: BadgeImplementation asks BadgeFactory for the provider of the launcher that resolves the HOME intent, and the default provider
-// broadcasts android.intent.action.BADGE_COUNT_UPDATE when a receiver for it is installed. The broadcast is observed with a receiver that
-// the test registers, and the receiver that makes the package manager list a listener is the test app's own (disabled by default).
+// The default provider broadcasts only when a receiver for the action is installed, so a test enables the test app's own receiver
+// (disabled by default) and observes the broadcast with a receiver that it registers.
 // Run on API 28 and API 36: the launcher lookup and the receiver lookup take different branches from API 33.
 public partial class BadgeTests
 {
@@ -25,8 +24,6 @@ public partial class BadgeTests
 	static string PackageName => AndroidApplication.Context.PackageName!;
 
 	static string LaunchActivityClassName => AndroidApplication.Context.PackageManager!.GetLaunchIntentForPackage(PackageName)!.Component!.ClassName!;
-
-	// -- BadgeFactory
 
 	[Fact]
 	public void GetBadgeProviderReturnsTheDefaultProviderWhenNothingIsRegistered()
@@ -133,8 +130,6 @@ public partial class BadgeTests
 		Assert.NotEqual("com.android.settings", LauncherTypeOfBadgeFactory());
 	}
 
-	// -- BadgeImplementation
-
 	[Theory]
 	[InlineData(0u)]
 	[InlineData(1u)]
@@ -166,8 +161,6 @@ public partial class BadgeTests
 
 		Assert.Equal([2u], late.Counts);
 	}
-
-	// -- DefaultBadgeProvider
 
 	[Fact]
 	public async Task SetCountDoesNotBroadcastWhenNoReceiverListensForTheBadgeAction()
@@ -204,8 +197,7 @@ public partial class BadgeTests
 		Assert.False(trace.Contains(noBadgeSupport) || trace.Contains(launchIntentMissing), string.Join(Environment.NewLine, trace.Lines));
 	}
 
-	// Launchers read the count as an int, so a count above int.MaxValue cannot be handed over as it is; the rule this test expects for it
-	// is the largest count a launcher can read (int.MaxValue).
+	// Launchers read the count as an int, so a count above int.MaxValue is sent as the largest count that they can read.
 	[Theory]
 	[InlineData(7u, 7)]
 	[InlineData(2147483648u, int.MaxValue)]
@@ -267,8 +259,6 @@ public partial class BadgeTests
 		Assert.Equal(PackageName, broadcast.GetStringExtra("badge_count_package_name"));
 	}
 
-	// -- helpers
-
 	FilesBadgeBroadcastCapture StartCapture()
 	{
 		var capture = new FilesBadgeBroadcastCapture();
@@ -276,10 +266,8 @@ public partial class BadgeTests
 		return capture;
 	}
 
-	/// <summary>
-	/// The launcher type that BadgeFactory resolves (its private GetLauncherType). The lookup tests register their provider under it, so
-	/// they test the lookup whatever the resolution returns; the resolution has its own tests.
-	/// </summary>
+	// The lookup tests register their provider under the launcher type that BadgeFactory resolves (its private GetLauncherType), so they
+	// test the lookup whatever the resolution returns; the resolution has its own tests.
 	static string LauncherTypeOfBadgeFactory()
 	{
 		var method = typeof(BadgeFactory).GetMethod("GetLauncherType", BindingFlags.NonPublic | BindingFlags.Static)
@@ -287,10 +275,8 @@ public partial class BadgeTests
 		return (string?)method.Invoke(null, null) ?? throw new InvalidOperationException("BadgeFactory.GetLauncherType returned null.");
 	}
 
-	/// <summary>
-	/// The count of a badge broadcast, whatever type the extra has (Bundle.getLong returns the default for an Integer and getInt for a
-	/// Long, and logs a type warning), so these tests do not depend on the type, which SetCountBroadcastsTheCountAsAnIntExtra is about.
-	/// </summary>
+	// Reads the extra whatever its type is (Bundle.getLong returns the default for an Integer and getInt for a Long, and logs a type
+	// warning), so these tests do not depend on the type, which SetCountBroadcastsTheCountAsAnIntExtra is about.
 	static long BadgeCount(Intent broadcast)
 	{
 		Assert.True(broadcast.HasExtra("badge_count"), "The broadcast has no badge_count extra.");
@@ -304,7 +290,6 @@ public partial class BadgeTests
 		return asInt != int.MinValue ? asInt : throw new InvalidOperationException("The badge_count extra is neither a long nor an int.");
 	}
 
-	/// <summary>The package of the HOME activity, resolved with MatchDefaultOnly and with no flags.</summary>
 	static (string? DefaultOnly, string? Unrestricted) ResolveHomePackages()
 	{
 		var packageManager = AndroidApplication.Context.PackageManager!;

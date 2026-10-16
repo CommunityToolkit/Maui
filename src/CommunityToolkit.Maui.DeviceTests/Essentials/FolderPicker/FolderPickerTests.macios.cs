@@ -6,9 +6,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: FolderPicker presents a UIDocumentPickerViewController that opens folders and turns the URL that the delegate
-// reports into a Folder. The picker is the real one, answered through its delegate as UIKit does for a person; the native state that the
-// tests read back is the picker (mode, directory, event handlers) and whether it is still on screen.
 public partial class FolderPickerTests
 {
 	[Fact]
@@ -18,7 +15,6 @@ public partial class FolderPickerTests
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// No initial path: no directory, so the picker opens where the system chooses
 			Assert.Equal(UIDocumentPickerMode.Open, picker.DocumentPickerMode);
 			Assert.Null(picker.DirectoryUrl);
 			Assert.False(picker.AllowsMultipleSelection);
@@ -64,7 +60,6 @@ public partial class FolderPickerTests
 		Assert.Equal(TemporaryRoot, path);
 	}
 
-	// Every overload reaches the same picker; the one with an initial path sets its directory, and the other gives it none.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -341,7 +336,6 @@ public partial class FolderPickerTests
 		await AssertionExtensions.WaitForGC(references);
 	}
 
-	// A pick that is not asked about must never leave a picker on screen.
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static async Task AssertNoPickerWasStartedAsync() =>
@@ -349,7 +343,6 @@ public partial class FolderPickerTests
 
 	static string TemporaryRoot => NSFileManager.DefaultManager.GetTemporaryDirectory().Path!;
 
-	// Starts FolderPicker.Default.PickAsync on the UI thread (with the initial path when there is one) and waits for the picker it presents.
 	async Task<(Task<FolderPickerResult> Operation, UIDocumentPickerViewController Picker, object PickerDelegate)> StartPickAsync(string? initialPath = null, CancellationToken token = default)
 	{
 		var operation = await StartOnMainThreadAsync(() => initialPath is null
@@ -360,7 +353,6 @@ public partial class FolderPickerTests
 		return (operation, picker, await FilesApplePicker.GetDelegateAsync(picker));
 	}
 
-	// A folder with this name under a new folder of the temporary directory, which the test removes at its end.
 	string NewFolder(string name)
 	{
 		var parent = Path.Combine(TemporaryRoot, $"files-folderpicker-{Guid.NewGuid():N}");
@@ -370,7 +362,6 @@ public partial class FolderPickerTests
 		return folder;
 	}
 
-	// Takes the root view controller away from every window, so that MAUI has no view controller to present from. The cleanup puts them back.
 	async Task RemoveRootViewControllersAsync()
 	{
 		var removed = await InvokeOnMainThreadAsync(() =>

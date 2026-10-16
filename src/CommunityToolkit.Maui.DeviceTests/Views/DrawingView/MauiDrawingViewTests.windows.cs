@@ -11,7 +11,6 @@ public partial class MauiDrawingViewTests
 	// capability inputInjectionBrokered). The shared OnStart/OnMoving/OnFinish/OnCancel logic that they call is covered through reflection by
 	// the other tests; the DrawingView page of the Sample logs each pointer event while a person draws.
 
-	// Catches: Initialize on an old Windows version assigns the drawable, or throws
 	[Fact]
 	public async Task InitializeOnWindowsOlderThan18362LeavesTheDrawableUnset()
 	{
@@ -27,7 +26,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: Initialize does not assign a DrawingViewDrawable on supported Windows versions
 	[Fact]
 	public async Task InitializeAssignsTheDrawableOnSupportedWindowsVersions()
 	{
@@ -44,7 +42,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: Dispose does not mark the view disposed, does not dispose the in-progress path, or runs again on a second call
 	[Fact]
 	public async Task DisposeMarksTheViewDisposedAndCanBeRepeated()
 	{
@@ -70,7 +67,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: Dispose(false) is not recorded or disposes the in-progress path, or a later Dispose(true) is not ignored
 	[Fact]
 	public async Task DisposeWithoutDisposingMarksTheViewDisposedAndLaterDisposeIsIgnored()
 	{
@@ -93,7 +89,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: the finalizer disposes managed resources (calls Dispose(true) instead of Dispose(false))
 	[Fact]
 	public async Task FinalizerRunsDisposeWithoutDisposingManagedResources()
 	{
@@ -118,7 +113,7 @@ public partial class MauiDrawingViewTests
 		public void CallDispose(bool disposing) => Dispose(disposing);
 	}
 
-	// Records every Dispose(bool) call, including the one made by the finalizer on the finalizer thread.
+	// The finalizer thread also calls Dispose(bool), so the calls are kept in a ConcurrentQueue.
 	sealed class FinalizerProbe : MauiDrawingView
 	{
 		public static ConcurrentQueue<bool> Calls { get; } = new();

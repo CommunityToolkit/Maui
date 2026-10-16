@@ -16,34 +16,27 @@ public class PopupStyleTests : BaseViewTest
 	[Fact]
 	public void ExplicitStyle_ShouldSetPopupProperties()
 	{
-		// Arrange
 		var popup = new StyledPopup();
 
-		// Act
 		popup.Style = CreateStyle();
 
-		// Assert
 		AssertStyleApplied(popup);
 	}
 
 	[Fact]
 	public void ImplicitStyle_ShouldSetPopupProperties()
 	{
-		// Arrange
 		var application = Application.Current ?? throw new InvalidOperationException("Application.Current cannot be null");
 		application.Resources.Add(CreateStyle());
 
-		// Act
 		var popup = new StyledPopup();
 
-		// Assert
 		AssertStyleApplied(popup);
 	}
 
 	[Fact]
 	public void XamlStyle_ShouldSetPopupProperties()
 	{
-		// Arrange
 		const string xaml = """
 			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -62,57 +55,46 @@ public class PopupStyleTests : BaseViewTest
 		var resourceDictionary = Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(new ResourceDictionary(), xaml);
 		var popup = new StyledPopup();
 
-		// Act
 		popup.Style = (Style)resourceDictionary["PopupStyle"];
 
-		// Assert
 		AssertStyleApplied(popup);
 	}
 
 	[Fact]
 	public void Style_ShouldBeDisplayedByPopupPage()
 	{
-		// Arrange
 		var popup = new StyledPopup
 		{
 			Style = CreateStyle()
 		};
 
-		// Act
 		var popupPage = new PopupPage(popup, PopupOptions.Empty);
 
-		// Assert
 		AssertStyleDisplayed(popupPage, popup);
 	}
 
 	[Fact]
 	public void StyleAppliedAfterPopupPageIsCreated_ShouldBeDisplayedByPopupPage()
 	{
-		// Arrange
 		var popup = new StyledPopup();
 		var popupPage = new PopupPage(popup, PopupOptions.Empty);
 
-		// Act
 		popup.Style = CreateStyle();
 
-		// Assert
 		AssertStyleDisplayed(popupPage, popup);
 	}
 
 	[Fact]
 	public void ImplicitStyle_ShouldBeDisplayedWhenPopupIsShown()
 	{
-		// Arrange
 		var application = Application.Current ?? throw new InvalidOperationException("Application.Current cannot be null");
 		application.Resources.Add(CreateStyle());
 
 		var navigation = application.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate INavigation");
 		var popup = new StyledPopup();
 
-		// Act
 		navigation.ShowPopup(popup, PopupOptions.Empty);
 
-		// Assert
 		var popupPage = Assert.IsType<PopupPage>(navigation.ModalStack[^1]);
 		AssertStyleDisplayed(popupPage, popup);
 	}
@@ -120,7 +102,6 @@ public class PopupStyleTests : BaseViewTest
 	[Fact]
 	public void LocalValues_ShouldTakePrecedenceOverStyle()
 	{
-		// Arrange
 		var popup = new StyledPopup
 		{
 			BackgroundColor = Colors.Blue,
@@ -131,12 +112,10 @@ public class PopupStyleTests : BaseViewTest
 			CanBeDismissedByTappingOutsideOfPopup = true
 		};
 
-		// Act
 		popup.Style = CreateStyle();
 		var popupPage = new PopupPage(popup, PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 
-		// Assert
 		Assert.Equal(Colors.Blue, popup.BackgroundColor);
 		Assert.Equal(Colors.Blue, popupBorder.BackgroundColor);
 		Assert.Equal(new Thickness(11), popupBorder.Margin);
@@ -149,7 +128,6 @@ public class PopupStyleTests : BaseViewTest
 	[Fact]
 	public void DefaultPopupSettings_ShouldBeRestored_WhenStyleIsRemoved()
 	{
-		// Arrange
 		var popup = new StyledPopup
 		{
 			Style = CreateStyle()
@@ -157,10 +135,8 @@ public class PopupStyleTests : BaseViewTest
 		var popupPage = new PopupPage(popup, PopupOptions.Empty);
 		var popupBorder = popupPage.Content.PopupBorder;
 
-		// Act
 		popup.Style = null;
 
-		// Assert
 		Assert.Null(popup.BackgroundColor);
 		Assert.Equal(Colors.White, popupBorder.BackgroundColor);
 		Assert.Equal(new Thickness(30), popupBorder.Margin);

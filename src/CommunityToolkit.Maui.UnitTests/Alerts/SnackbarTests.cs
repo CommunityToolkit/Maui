@@ -263,7 +263,7 @@ public class SnackbarTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	// The anchor is created here so that no local of the test keeps it alive.
+	// Not inlined, so that no local of the test keeps the anchor alive.
 	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 	static ISnackbar MakeSnackbarWhoseAnchorIsReferencedNowhereElse(out WeakReference anchorReference)
 	{

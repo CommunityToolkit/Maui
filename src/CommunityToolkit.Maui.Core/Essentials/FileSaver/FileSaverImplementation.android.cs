@@ -79,7 +79,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			stream.Seek(0, SeekOrigin.Begin);
 		}
 
-		// OpenFileDescriptor returns null when the provider has no file for the document
 		using var parcelFileDescriptor = Application.Context.ContentResolver?.OpenFileDescriptor(uri, "wt")
 			?? throw new FileSaveException($"Unable to open the file at URI '{uri}' for writing.");
 		using var fileOutputStream = new ParcelFileDescriptor.AutoCloseOutputStream(parcelFileDescriptor);
@@ -98,8 +97,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 				await fileOutputStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
 				totalRead += bytesRead;
 
-				// The progress is in percent. Only a stream that can seek has a length; the progress of one that cannot is only the final report.
-				// The block that reaches the end of the stream is not reported either: the save is not complete before the document is truncated,
+				// The block that reaches the end of the stream is not reported: the save is not complete before the document is truncated,
 				// closed and its path resolved, so 100 is only ever the final report
 				if (stream.CanSeek && totalRead < stream.Length)
 				{
@@ -139,14 +137,13 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		// which tells the provider that the document is written
 		fileOutputStream.Close();
 
-		// The document is written. One whose file has no path that the provider tells (a document of a cloud provider, a download of another
-		// app) is reported by its content URI, which the app can open with the ContentResolver, never as a save that failed
+		// A written document whose file has no path that the provider tells (a document of a cloud provider, a download of another app) is
+		// reported by its content URI, which the app can open with the ContentResolver, never as a save that failed
 		var path = uri.ToPhysicalPath()
 			?? GetPathOfDocumentCreatedInDownloads(uri)
 			?? uri.ToString()
 			?? throw new FileSaveException($"Unable to resolve absolute path where the file was saved '{uri}'.");
 
-		// A save that fails or is canceled never gets here
 		progress?.Report(100);
 
 		return path;

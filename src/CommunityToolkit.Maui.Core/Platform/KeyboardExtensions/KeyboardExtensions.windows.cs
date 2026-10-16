@@ -37,7 +37,6 @@ public static partial class KeyboardExtensions
 		return false;
 	}
 
-	// The input pane of the window that hosts the element: an element that is not in a window has none
 	static bool TryGetInputPane(this FrameworkElement element, [NotNullWhen(true)] out InputPane? inputPane)
 	{
 		var windowHandle = element.XamlRoot?.ContentIslandEnvironment is Microsoft.UI.Content.ContentIslandEnvironment contentIslandEnvironment

@@ -4,9 +4,6 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// AndroidViewGroupExtensions.FindChildWithTag (Android): StatusBar and NavigationBar find their own overlay view among the direct children
-// of the decor view with it. An app view deeper in the hierarchy that carries the same tag must not be taken for it (ViewGroup.FindViewWithTag
-// would return it), which StatusBarTests and NavigationBarTests only check on Android 15 and later.
 [Category(TestCategory.AndroidViewGroupExtensions)]
 public class AndroidViewGroupExtensionsTests : CommunityToolkitHandlerTestBase
 {
@@ -27,6 +24,9 @@ public class AndroidViewGroupExtensionsTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
+	// StatusBar and NavigationBar find their overlay among the direct children of the decor view, so an app view deeper in the hierarchy
+	// that carries the same tag must not be taken for it (ViewGroup.FindViewWithTag would return it). StatusBarTests and
+	// NavigationBarTests only check that on Android 15 and later.
 	[Fact]
 	public async Task FindChildWithTagIgnoresAViewWithTheTagDeeperInTheHierarchy()
 	{

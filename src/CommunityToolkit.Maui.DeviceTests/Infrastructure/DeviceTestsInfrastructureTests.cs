@@ -13,8 +13,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Smoke tests of the device-test infrastructure. Every run reports two Skipped tests from this class on purpose:
-// RuntimeSkipIsReportedAsSkipped and one row of RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
+// Every run reports two Skipped tests from this class on purpose: RuntimeSkipIsReportedAsSkipped and one row of
+// RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
 [Category(TestCategory.DeviceTestsInfrastructure)]
 [Collection(TestCollections.DisableParallelization)]
 public class DeviceTestsInfrastructureTests : CommunityToolkitHandlerTestBase
@@ -75,7 +75,6 @@ public class DeviceTestsInfrastructureTests : CommunityToolkitHandlerTestBase
 
 		if (previousRowServices is not null)
 		{
-			// The previous row's teardown (HandlerTestBasement.DisposeAsync) disposed its MauiApp and undid its option change.
 			Assert.Throws<ObjectDisposedException>(() => previousRowServices.GetService(typeof(IMauiHandlersFactory)));
 			Assert.Equal(original, Options.ShouldSuppressExceptionsInConverters);
 		}
@@ -94,8 +93,7 @@ public class DeviceTestsInfrastructureTests : CommunityToolkitHandlerTestBase
 		Assert.True(violations.Count is 0, string.Join(Environment.NewLine, violations));
 	}
 
-	// The capabilities that a CI job declares missing or required (DeviceTestCapabilities) must be ones the tests know: a misspelled name
-	// would silently skip or require nothing.
+	// A misspelled capability name in a CI job would silently skip or require nothing.
 	[Fact]
 	public void DeclaredCapabilitiesAreValid()
 	{
@@ -141,8 +139,8 @@ public class DeviceTestsInfrastructureTests : CommunityToolkitHandlerTestBase
 
 		await AttachAndRun(label, async handler =>
 		{
-			// OnLoadedAsync returns once the view is loaded, which can come before MAUI raises Loaded (CI run 38100792354, Android API 28):
-			// wait for the counted event as well
+			// OnLoadedAsync returns once the view is loaded, which can come before MAUI raises Loaded (CI run 38100792354, Android API 28),
+			// so wait for the counted event as well.
 			await loaded.Task.WaitAsync(TimeSpan.FromSeconds(10));
 			await label.OnLoadedAsync();
 

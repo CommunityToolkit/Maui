@@ -33,7 +33,6 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	[Fact]
 	public void ValueChange_ShouldNotValidate_WhenFlagsDoesNotIncludeValidateOnValueChanged()
 	{
-		// Arrange
 		var behavior = new MockValidationBehavior
 		{
 			ExpectedValue = "321",
@@ -47,20 +46,15 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		entry.Text = "123";
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		((IView)entry).IsFocused = true;
 		entry.Text = "321";
 
-		// Assert
 		Assert.False(behavior.IsValid);
 
-		// Act
 		((IView)entry).IsFocused = false;
 
-		// Assert
 		Assert.True(behavior.IsValid);
 	}
 
@@ -283,7 +277,6 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	[Fact]
 	public async Task ValidateAsync_ReceivesTheValueReturnedByDecorate()
 	{
-		// Arrange
 		var behavior = new UppercaseDecoratingValidationBehavior
 		{
 			ExpectedValue = "ABC"
@@ -293,10 +286,8 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 		entry.Behaviors.Add(behavior);
 		entry.Text = "abc";
 
-		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal("ABC", behavior.ValidatedValue);
 		Assert.True(behavior.IsValid);
 	}

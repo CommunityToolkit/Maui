@@ -3,8 +3,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
 
-	<!-- CameraView: preview and capture, and the audio track of video recordings. -->
 	<uses-permission android:name="android.permission.CAMERA" />
+	<!-- CameraView records its videos with audio. -->
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 	<!-- Emulators without a camera must still install the app. -->
 	<uses-feature android:name="android.hardware.camera" android:required="false" />

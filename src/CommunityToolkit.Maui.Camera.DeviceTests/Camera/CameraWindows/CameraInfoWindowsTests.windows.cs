@@ -5,8 +5,6 @@ using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The WINDOWS blocks of CameraInfo.shared.cs: the constructor parameters and the internal FrameSourceGroup and ImageEncodingProperties
-// properties that CameraManager.windows.cs uses.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraInfoWindowsTests : CameraHandlerTestBase
@@ -65,8 +63,8 @@ public class CameraInfoWindowsTests : CameraHandlerTestBase
 			Assert.Equal(camera.DeviceId, camera.FrameSourceGroup.Id);
 			Assert.Equal(camera.Name, camera.FrameSourceGroup.DisplayName);
 
-			// The photo sizes are the ImageEncodingProperties of the camera's photo stream, each size once. A camera that takes its photos from
-			// its video stream (most webcams) lists only VideoEncodingProperties there, so it has none.
+			// A camera that takes its photos from its video stream (most webcams) lists only VideoEncodingProperties in its photo stream, so it
+			// has no photo sizes.
 			using var mediaCapture = WindowsCameraEnvironment.CreateMediaCapture();
 			Skip.IfNot(await mediaCapture.InitializeCameraForCameraView(camera.DeviceId, CancellationToken.None), $"{camera.Name} cannot be opened (another app may be using it).");
 			var offeredSizes = mediaCapture.VideoDeviceController.GetAvailableMediaStreamProperties(MediaStreamType.Photo)

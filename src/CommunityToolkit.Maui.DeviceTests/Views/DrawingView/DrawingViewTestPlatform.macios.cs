@@ -29,9 +29,10 @@ static partial class DrawingViewTestPlatform
 
 	internal static NSSet CreateTouches(double x, double y) => CreateTouches(new CGPoint(x, y), new CGPoint(x, y));
 
-	/// <summary>A touch whose current and previous locations differ: TouchesBegan reads the previous one, TouchesMoved the current one.</summary>
+	// TouchesBegan reads the previous location and TouchesMoved the current one.
 	internal static NSSet CreateTouches(CGPoint location, CGPoint previousLocation) => new(new FakeTouch(location, previousLocation));
 
+	// UI thread only.
 	internal static async Task<DrawingPixelImage> RenderAsync(MauiDrawingView view, IMauiContext mauiContext)
 	{
 		var image = await view.ToBitmap(mauiContext);

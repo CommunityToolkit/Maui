@@ -8,7 +8,6 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 {
 	readonly Random locationRandomSeed = new();
 	// TODO generate actual random pins
-	// Cities in western North America: west of the prime meridian, so their longitudes are negative
 	readonly Location[] randomLocations =
 	[
 		new Location(51.8833333333333, -176.65),

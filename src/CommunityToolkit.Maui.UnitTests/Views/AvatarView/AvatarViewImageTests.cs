@@ -214,8 +214,6 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarImage.Clip.Should().BeSameAs(clip);
 	}
 
-	// The image handler reports how the load of the image source ended through IImageSourcePartEvents: a source that fails to load shows nothing,
-	// so the avatar shows its text instead.
 	[Fact]
 	public void TextIsShownWhenTheImageSourceFailsToLoad()
 	{
@@ -238,7 +236,6 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarView.Content.Should().BeSameAs(image);
 	}
 
-	// Each load of the image source reports how it ended: a source that loads after a failure (its Uri changed, for example) shows the image again.
 	[Fact]
 	public void ImageIsShownAgainWhenTheImageSourceLoadsAfterAFailure()
 	{
@@ -265,7 +262,7 @@ public class AvatarViewImageTests : BaseViewTest
 		image.Source.Should().BeSameAs(otherSource);
 	}
 
-	// A load that does not complete successfully was canceled, or another load replaced it: that load reports for itself.
+	// LoadingCompleted(false) means the load was canceled or another load replaced it, and that load reports for itself.
 	[Fact]
 	public void ImageStaysWhenTheLoadOfTheImageSourceIsCanceled()
 	{
@@ -300,6 +297,7 @@ public class AvatarViewImageTests : BaseViewTest
 		},
 	};
 
+	// The image handler reports how a load of the image source ended through IImageSourcePartEvents, so the tests report it the same way.
 	static void ReportLoadFailure(Image image)
 	{
 		((IImageSourcePartEvents)image).LoadingStarted();

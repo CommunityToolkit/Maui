@@ -7,18 +7,11 @@ using Microsoft.Maui.Maps;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of the messages that the map page of MapHandlerWindows posts to the handler (WebMessageReceived): the bounds of the
-// map, clicks on the map, clicks on a pin and on its info window, and the messages the handler has to ignore. The page runs for real in
-// a WebView2; the stand-in of MapTestBase for the Bing control raises the map events, and raw messages are posted with
-// window.chrome.webview.postMessage. The handler subscribed to the WebView2 before the tests do, so a test that waits for its own
-// subscription to get a message knows that the handler has handled the part of it that does not await.
 [Category(TestCategory.MapHandlerWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MapHandlerWindowsMessageTests : MapTestBase
 {
 	const string hideInfoWindowEntry = "{\"kind\":\"infobox\",\"options\":{\"visible\":false}}";
-
-	// ---- BoundsChanged
 
 	[Fact]
 	public async Task BoundsChangedMessageSetsTheVisibleRegionOfTheMap()
@@ -59,8 +52,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			Assert.Same(region, map.VisibleRegion);
 		});
 	}
-
-	// ---- MapClicked
 
 	[Fact]
 	public async Task MapClickedMessageRaisesTheMapClickedEventOnlyForPrimaryClicks()
@@ -138,8 +129,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 		await AssertMessageIsIgnoredAsync(message);
 	}
 
-	// ---- PinClicked
-
 	[Theory]
 	[InlineData("PinClicked")]
 	[InlineData("InfoWindowClicked")]
@@ -170,7 +159,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			Assert.Equal(messageId == "PinClicked" ? 1 : 0, markerClicks);
 			Assert.Equal(messageId == "InfoWindowClicked" ? 1 : 0, infoWindowClicks);
 
-			// The handler is still listening.
 			await page.PostMessageAsync("{ id: 'MapClicked', payload: { latitude: 7.5, longitude: 8.5 } }");
 			Assert.Single(mapClicks);
 		});
@@ -217,10 +205,10 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			await page.SettleAsync();
 
 			var infoboxEntries = Entries(await page.GetLogAsync(), "infobox");
-			// The page opened its info window for the pin...
+			// The page opens its info window for the pin, and the handler hides it again only when the event asked for it
+			// (HideInfoWindow is false unless a handler sets it).
 			Assert.True(infoboxEntries[0].GetProperty("options").GetProperty("visible").GetBoolean());
 			Assert.Equal("First", infoboxEntries[0].GetProperty("options").GetProperty("title").GetString());
-			// ...and the handler closes it again only when the event asked for it (HideInfoWindow is false unless a handler sets it).
 			Assert.Equal(hideInfoWindow ? 2 : 1, infoboxEntries.Count);
 		});
 	}
@@ -228,7 +216,7 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 	// Bing shows the title of its info window as text, but renders the description as HTML (the stand-in shows them the same way). The page passes
 	// the label of the clicked pin as the title and encodes the address for the description, so that the info window shows both as they are
 	// written and no markup in them runs script in the map page (which can post messages to the handler).
-	// (The rows are named, so that no markup ends up in the name of a test.)
+	// The rows are enum members, so that no markup ends up in the name of a test.
 	public enum InfoWindowText
 	{
 		PlainText,
@@ -237,7 +225,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 		EveryCharacterThatHtmlEncodes
 	}
 
-	// An image that cannot load, whose error handler counts in window.__injected.
 	const string scriptMarkup = "<img src=x onerror=\"window.__injected = (window.__injected || 0) + 1\">";
 
 	[Theory]
@@ -263,17 +250,15 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			var options = Entries(await page.GetLogAsync(), "infobox")[0].GetProperty("options");
 			Assert.True(options.GetProperty("visible").GetBoolean());
 
-			// The title is the label as it is, and the description is the HTML encoding of the address (for plain text, the text itself) ...
 			Assert.Equal(label, options.GetProperty("title").GetString());
 			Assert.Equal(WebUtility.HtmlEncode(address), options.GetProperty("description").GetString());
 
-			// ... so the info window shows exactly the label and the address, and no element made of their markup.
 			Assert.Equal(label + address, await GetInfoWindowTextAsync(page));
 
 			if (text is InfoWindowText.MarkupInTheLabel or InfoWindowText.MarkupInTheAddress)
 			{
-				// Shown in the info window, that markup ran no script. The control, the same markup inserted into the page as HTML and counting in
-				// window.__control instead, does: this page runs such markup, and its error event comes after the one of the info window's text.
+				// A control: the same markup inserted into the page as HTML, counting in window.__control instead, does run script here. Its error
+				// event comes after the one the info window's text would raise, so once it has run, script in the info window would have run too.
 				await page.ExecuteAsync($"document.body.insertAdjacentHTML('beforeend', {JsonSerializer.Serialize((label + address).Replace("__injected", "__control", StringComparison.Ordinal))});");
 
 				await AssertHelpers.AssertEventually(async () => await page.ExecuteForStringAsync("String(window.__control)") is "1", timeout: 10000, interval: 50,
@@ -292,7 +277,7 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(text), text, null)
 	};
 
-	// The text that the info window of the stand-in shows (its title, then its description), or null when its description holds an element.
+	// Null when the description holds an element, so markup that became elements never equals the expected text.
 	static Task<string?> GetInfoWindowTextAsync(LoadedMapPage page) =>
 		page.ExecuteForStringAsync("(function () { var infobox = document.getElementById('__infobox'); return infobox.lastChild.childElementCount === 0 ? infobox.textContent : null; })()");
 
@@ -313,7 +298,7 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 
 	// A script in the page can post any payload, also as JSON text, which can hold a property twice. The handler reads only the marker id of a
 	// clicked pin, so properties that JSON cannot give a MAUI Pin (an Element) neither stop the click nor escape the handler: parent and handler
-	// have an abstract and an interface type, and AutomationId can be set only once. MARKER_ID stands for the id of the first pin.
+	// have an abstract and an interface type, and AutomationId can be set only once.
 	[Theory]
 	[InlineData("{ markerId: 'MARKER_ID', parent: {} }")]
 	[InlineData("{ markerId: 'MARKER_ID', handler: {} }")]
@@ -339,7 +324,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			Assert.Equal(1, firstClicks);
 			Assert.Equal(0, secondClicks);
 
-			// The handler is still listening.
 			await page.PostMessageAsync("{ id: 'MapClicked', payload: { latitude: 7.5, longitude: 8.5 } }");
 			Assert.Single(mapClicks);
 		});
@@ -388,14 +372,11 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			Assert.Equal(1, await page.ExecuteForCountAsync($"window.__clickPin('{first.Id}', 'polyline');"));
 			await PostOrderingMessageAsync(page);
 
-			// Messages arrive in the order they were posted: the ordering message is the only one the click could have been before.
 			Assert.Equal(1, messages);
 			Assert.Equal(0, clicks);
 			Assert.Empty(Entries(await page.GetLogAsync(), "infobox"));
 		});
 	}
-
-	// ---- InfoWindowClicked
 
 	[Theory]
 	[InlineData(false)]
@@ -494,8 +475,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 		});
 	}
 
-	// ---- disconnecting
-
 	[Fact]
 	public async Task DisconnectedHandlerIgnoresTheMessagesOfThePage()
 	{
@@ -519,9 +498,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 		});
 	}
 
-	// ---- helpers
-
-	// Posts a message that the handler cannot act on and checks that it changed nothing and that the handler still listens.
 	async Task AssertMessageIsIgnoredAsync(string message)
 	{
 		var map = new Map();
@@ -537,7 +513,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 			Assert.Null(map.VisibleRegion);
 			Assert.Empty(Entries(await page.GetLogAsync(), "infobox"));
 
-			// The handler is still listening.
 			await page.PostMessageAsync("{ id: 'MapClicked', payload: { latitude: 7.5, longitude: 8.5 } }");
 			Assert.Single(clicks);
 		});
@@ -557,7 +532,6 @@ public class MapHandlerWindowsMessageTests : MapTestBase
 	// WebView2 delivers messages in the order they were posted, so when this one has arrived, an earlier message has arrived too.
 	static Task PostOrderingMessageAsync(LoadedMapPage page) => page.PostMessageAsync("null");
 
-	// The pins are added after the page loaded, one script call after the other.
 	static Task<IReadOnlyList<string>> WaitForPinsAsync(LoadedMapPage page) =>
 		page.WaitForLogAsync(entries => Entries(entries, "push").Count >= 2, "The pins never reached the page.");
 }

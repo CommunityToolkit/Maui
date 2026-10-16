@@ -1,6 +1,5 @@
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The Android DialogFragment and Fragment lifecycle services and the platform code of the Core AppBuilderExtensions.
 public static partial class TestCategory
 {
 	public const string CoreAppBuilderExtensions = nameof(CoreAppBuilderExtensions);

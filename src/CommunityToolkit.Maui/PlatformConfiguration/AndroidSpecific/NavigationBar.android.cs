@@ -26,9 +26,6 @@ static partial class NavigationBar
 	// once the window has a navigation bar color of its own.
 	const int forceLightNavigationBarsAppearance = 1 << 9;
 
-	// What NavigationBar changed in each window: the navigation bar color (API 23-34) and the navigation bar appearance that the window had before
-	// the first change, and the page whose value the window has shown since the last change. When that page clears its value, the window gets back
-	// what it had.
 	static readonly List<WindowChange<int>> colorChanges = [];
 	static readonly List<WindowChange<NavigationBarAppearance>> styleChanges = [];
 
@@ -175,8 +172,6 @@ static partial class NavigationBar
 		}
 	}
 
-	// From API 35 on, the navigation bar color is a view on top of the window: a child of the decor view, laid out over the window's navigation
-	// bar, and laid out again each time the window dispatches its insets
 	[SupportedOSPlatform("android35.0")]
 	static AView AddNavigationBarOverlay(Activity activity, ViewGroup decorGroup)
 	{
@@ -200,9 +195,7 @@ static partial class NavigationBar
 		return navigationBarOverlay;
 	}
 
-	// Lays the overlay out over the window's navigation bar, the way the decor view lays out its own navigation bar background: at the bottom, or,
-	// when the navigation bar has no bottom inset, at the right or the left edge (three-button navigation in landscape). Without a navigation bar
-	// (hidden, or not next to the window) the overlay has no size.
+	// Laid out like the decor view's own navigation bar background: at the bottom, or, with three-button navigation in landscape, at the right or the left edge
 	[SupportedOSPlatform("android35.0")]
 	internal static void UpdateNavigationBarOverlayLayout(AView navigationBarOverlay, WindowInsets? windowInsets)
 	{
@@ -235,7 +228,6 @@ static partial class NavigationBar
 		PageHandler.Mapper.Add(StyleProperty.PropertyName, MapNavigationStyleProperty);
 	}
 
-	// Once the Color of the page is cleared, every window that still shows it gets back the navigation bar it had before NavigationBar first changed it
 	static partial void RestoreNavigationBarColorIfCleared(BindableObject bindable)
 	{
 		if (bindable is not Page page || page.IsSet(ColorProperty))
@@ -262,8 +254,6 @@ static partial class NavigationBar
 		}
 	}
 
-	// Once the Style of the page is cleared, every window that still shows it gets back the navigation bar appearance it had before NavigationBar first
-	// changed it
 	static partial void RestoreNavigationBarAppearanceIfCleared(BindableObject bindable)
 	{
 		if (bindable is not Page page || page.IsSet(StyleProperty))
@@ -275,8 +265,8 @@ static partial class NavigationBar
 		{
 			if (original.IsForcedLight && OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
-				// First the navigation bar color that the decor view had given the window (Window.SetNavigationBarColor stops the forced light
-				// navigation bars), then the forced light navigation bars
+				// The navigation bar color that the decor view had given the window goes first: Window.SetNavigationBarColor stops the forced light
+				// navigation bars, so they are forced again after it
 				if (original.NavigationBarColor is int navigationBarColor)
 				{
 #pragma warning disable CA1422 // Window.SetNavigationBarColor is obsolete from API 35, but it still gives the window a navigation bar color of its own
@@ -294,14 +284,11 @@ static partial class NavigationBar
 		}
 	}
 
-	// Whether the system forces light navigation bars on the window (API 35+), whatever the window's own light navigation bars
 	static bool IsForcedLightNavigationBars(AWindow window) =>
 		OperatingSystem.IsAndroidVersionAtLeast(35)
 		&& window.InsetsController is IWindowInsetsController insetsController
 		&& (insetsController.SystemBarsAppearance & forceLightNavigationBarsAppearance) != 0;
 
-	// Before NavigationBar changes a window: remembers what the window has, unless an earlier change already did, and that the window shows
-	// the value of the page from now on
 	static void RecordChange<T>(List<WindowChange<T>> changes, AWindow window, Page page, T currentValue)
 	{
 		lock (changes)
@@ -312,7 +299,6 @@ static partial class NavigationBar
 			{
 				if (changes[i].Window is not AWindow changedWindow)
 				{
-					// The window is gone
 					changes[i].Dispose();
 					changes.RemoveAt(i);
 				}
@@ -333,8 +319,6 @@ static partial class NavigationBar
 		}
 	}
 
-	// Forgets the changes of the windows that show the value of the page, and of the windows that are gone, and returns the windows of the page
-	// with what they had before the first change
 	static List<(AWindow Window, T Original)> TakeChanges<T>(List<WindowChange<T>> changes, Page page)
 	{
 		var takenChanges = new List<(AWindow Window, T Original)>();
@@ -362,9 +346,7 @@ static partial class NavigationBar
 		return takenChanges;
 	}
 
-	// What NavigationBar changed in a window: the value the window had before the first change, and the page whose value it shows now. It holds
-	// the window with a Java weak reference, because the .NET object of a Java window can be collected and created again while the window lives
-	// on, and the page with a weak reference.
+	// The window is held with a Java weak reference, because the .NET object of a Java window can be collected and created again while the window lives on
 	sealed class WindowChange<T>(AWindow changedWindow, T original, Page owner) : IDisposable
 	{
 		readonly Java.Lang.Ref.WeakReference windowReference = new(changedWindow);
@@ -372,7 +354,6 @@ static partial class NavigationBar
 
 		public T Original { get; } = original;
 
-		// The window, until it is gone
 		public AWindow? Window => windowReference.Get() as AWindow;
 
 		public bool IsOwnedBy(Page page) => ownerReference.TryGetTarget(out var currentOwner) && ReferenceEquals(currentOwner, page);
@@ -382,12 +363,8 @@ static partial class NavigationBar
 		public void Dispose() => windowReference.Dispose();
 	}
 
-	// The navigation bar appearance of a window before NavigationBar first changed it: its light navigation bars, whether the system forced them
-	// light (API 35+), and then the window's navigation bar color (the color of its background; null when that is not a color)
 	readonly record struct NavigationBarAppearance(bool IsLight, bool IsForcedLight, int? NavigationBarColor);
 
-	// Lays the overlay out over the window's navigation bar each time the window dispatches its insets, which it does whenever the navigation bar
-	// moves or changes its size (the window rotates, the navigation bar is hidden or shown)
 	[SupportedOSPlatform("android35.0")]
 	sealed class NavigationBarOverlayInsetsListener : Java.Lang.Object, AView.IOnApplyWindowInsetsListener
 	{

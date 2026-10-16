@@ -12,19 +12,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class NavigationBarTests
 {
-	// NavigationBar remembers what it changed in each window until the page whose value the window shows clears it, and ResetNativeStateAsync
-	// puts the runner's window back without NavigationBar knowing: what it remembered in an earlier test would be wrong for this one, so every
-	// test starts with NavigationBar remembering nothing.
+	// ResetNativeStateAsync puts the runner's window back without NavigationBar knowing, so what NavigationBar remembered changing in an earlier
+	// test would be wrong for this one: every test starts with NavigationBar remembering nothing.
 	public NavigationBarTests() => ForgetWindowChanges();
-
-	// What NavigationBar does per Android version:
-	//   API < 23   unsupported: both mappings return before touching the window
-	//   API 23-34  Color sets the window's navigation bar color
-	//   API 35+    Color adds (once) a tagged overlay view to the decor view, over the window's navigation bar: at the bottom, or with
-	//              three-button navigation in landscape at the right or left edge. It follows the bar whenever the window dispatches its insets.
-	// Style turns the light navigation bar icons on or off on every supported version. A page that clears its Color or Style (ClearValue) gives
-	// every window that still shows its value back what the window had before NavigationBar first changed it: the navigation bar color (from
-	// API 35 on the overlay goes away) or the light appearance. The pools provide API 28 and 36.
 
 	[Fact]
 	public async Task RemapForControlsRegistersTheColorAndStyleMappingsOfThePageHandler()
@@ -100,8 +90,8 @@ public partial class NavigationBarTests
 		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(firstPage));
 		await AssertNavigationBarShowsAsync(Colors.Red);
 
-		// API 35+: a second page finds the overlay of the first one and only changes its color (AssertNavigationBarShowsAsync
-		// asserts that exactly one overlay exists). Before: the window's navigation bar color changes.
+		// From API 35 on, AssertNavigationBarShowsAsync asserts that exactly one overlay exists, which shows that the second page reused the
+		// overlay of the first one.
 		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(secondPage));
 
 		await AssertNavigationBarShowsAsync(Colors.Green);
@@ -125,16 +115,13 @@ public partial class NavigationBarTests
 		await ResetNativeStateAsync();
 		var page = CreatePage();
 
-		// Only reading the color, never setting it: the app did not ask for a navigation bar color.
 		Assert.Equal(Color.FromUint(0u), NavigationBar.GetColor(page));
 		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
 
 		await AssertNavigationBarUntouchedAsync();
 	}
 
-	// A page that clears its Color no longer asks for that color, so the navigation bar stops showing it: the window gets back the navigation
-	// bar it had before NavigationBar's first change (ColorClearedAfterItWasChangedRestoresTheNavigationBarTheWindowHadBeforeTheFirstChange pins
-	// which one). The never-set case of the same mapping is ColorNotSetLeavesTheNavigationBarAlone.
+	// Which navigation bar comes back is pinned by ColorClearedAfterItWasChangedRestoresTheNavigationBarTheWindowHadBeforeTheFirstChange.
 	[Fact]
 	public async Task ColorClearedAfterItWasAppliedNoLongerShowsInTheNavigationBar()
 	{
@@ -162,9 +149,7 @@ public partial class NavigationBarTests
 		});
 	}
 
-	// The navigation bar that comes back is the one the window had before NavigationBar's first change: not the property's default, and not an
-	// earlier color of the page. Below API 35 that is the window's own navigation bar color; from API 35 on the overlay is the color, and the
-	// window had none of its own. A last color equal to the property's default (0x00000000) is cleared without any PropertyChanged.
+	// A last color equal to the property's default (0x00000000) is cleared without any PropertyChanged.
 	[Theory]
 	[InlineData(0xFF0000FFu)]
 	[InlineData(0x00000000u)]
@@ -186,8 +171,7 @@ public partial class NavigationBarTests
 		await AssertOwnNavigationBarAsync(windowColor.ToPlatform().ToArgb());
 	}
 
-	// A page that cleared its Color before NavigationBar applied it changed no window, so it has nothing to give back: the window keeps the color
-	// of another page (both the clear and the creation of the page's handler reach NavigationBar).
+	// The page changed no window, so it has nothing to give back, although both the clear and the creation of its handler reach NavigationBar.
 	[Fact]
 	public async Task ColorClearedBeforeItWasAppliedKeepsTheColorOfAnotherPage()
 	{
@@ -206,8 +190,8 @@ public partial class NavigationBarTests
 		await AssertNavigationBarShowsAsync(Colors.Red);
 	}
 
-	// The window shows the color of the page that NavigationBar applied last. A page whose color another page replaced has nothing left to give
-	// back when it clears it; once the other page clears its color too, the window gets back the navigation bar it had before the first page's.
+	// The window shows the color of the page that NavigationBar applied last, so a page whose color another page replaced has nothing left to
+	// give back when it clears it.
 	[Fact]
 	public async Task ColorClearedAfterAnotherPageReplacedItKeepsTheColorOfTheOtherPage()
 	{
@@ -227,8 +211,7 @@ public partial class NavigationBarTests
 		await AssertNavigationBarUntouchedAsync();
 	}
 
-	// NavigationBar changes the current window: the activity's, or a visible dialog's. When the page clears its color, every window that shows
-	// one of its colors gets back its own navigation bar, also the activity's window while the dialog's is the current one.
+	// NavigationBar changes the current window: the activity's, or a visible dialog's.
 	[Fact]
 	public async Task ColorClearedGivesEveryWindowThatShowsItBackItsOwnNavigationBar()
 	{
@@ -302,7 +285,6 @@ public partial class NavigationBarTests
 		{
 			await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
 
-			// The app's view keeps its own color, and the navigation bar gets an overlay of its own.
 			await InvokeOnMainThreadAsync(() => Assert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
 			await AssertNavigationBarShowsAsync(Colors.Red);
 		}
@@ -312,8 +294,6 @@ public partial class NavigationBarTests
 		}
 	}
 
-	// From API 35 on the overlay is the navigation bar color: it covers exactly the navigation bar that the window reports in its insets (48 dp
-	// high with three-button navigation, 24 dp with gesture navigation), and nothing of the page above it.
 	[Fact]
 	public async Task ColorOverlayCoversExactlyTheNavigationBarOfTheWindow()
 	{
@@ -328,9 +308,7 @@ public partial class NavigationBarTests
 		await AssertNavigationBarOverlayCoversTheNavigationBarAsync();
 	}
 
-	// Where the overlay goes for the navigation bar insets of a window, as the decor view places its own navigation bar background: at the bottom,
-	// or, when the navigation bar has no bottom inset, at the right or left edge (three-button navigation in landscape or reverse landscape). The
-	// pools' emulators use gesture navigation, so the side edges are only reached with insets made for the test.
+	// The pools' emulators use gesture navigation, so the side edges are only reached with insets made for the test.
 	[Theory]
 	[InlineData(0, 0, 0, 126, Android.Views.ViewGroup.LayoutParams.MatchParent, 126, Android.Views.GravityFlags.Bottom)] // three-button navigation
 	[InlineData(0, 0, 0, 63, Android.Views.ViewGroup.LayoutParams.MatchParent, 63, Android.Views.GravityFlags.Bottom)] // gesture navigation
@@ -364,8 +342,6 @@ public partial class NavigationBarTests
 		Assert.Equal((expectedWidth, expectedHeight, expectedGravity), layout);
 	}
 
-	// The window dispatches its insets again whenever its navigation bar moves or changes size (the window rotates, the navigation bar is hidden
-	// or shown), and the overlay is laid out over the navigation bar again each time.
 	[Fact]
 	public async Task ColorOverlayIsLaidOutOverTheNavigationBarAgainWhenTheWindowDispatchesItsInsets()
 	{
@@ -389,9 +365,9 @@ public partial class NavigationBarTests
 		await AssertNavigationBarOverlayCoversTheNavigationBarAsync();
 	}
 
-	// With three-button navigation, Android moves the navigation bar to the right edge in landscape and to the left edge in reverse landscape;
-	// with gesture navigation it stays at the bottom. The runner's activity handles orientation changes itself, as the activity of a .NET MAUI app
-	// does: the window stays and dispatches its insets again.
+	// Android moves a three-button navigation bar to the right edge in landscape and to the left edge in reverse landscape; a gesture navigation
+	// bar stays at the bottom. The runner's activity handles orientation changes itself, as the activity of a .NET MAUI app does: the window
+	// stays and dispatches its insets again.
 	[Fact]
 	public async Task ColorOverlayFollowsTheNavigationBarWhenTheWindowRotates()
 	{
@@ -433,7 +409,7 @@ public partial class NavigationBarTests
 
 	// The decor view adds its own navigation bar background (behind three-button navigation, a scrim of the window's background color) when the
 	// window first dispatches its insets: after the overlay when a page applies its color before that, as the first page of an app or of an activity
-	// that Android recreated (another font size, another navigation mode) does. The overlay stays above it, and casts no shadow.
+	// that Android recreated (another font size, another navigation mode) does.
 	[Fact]
 	public async Task ColorOverlayIsDrawnAboveAViewThatTheDecorViewAddsAfterIt()
 	{
@@ -544,8 +520,8 @@ public partial class NavigationBarTests
 		await AssertNavigationBarUntouchedAsync();
 	}
 
-	// NavigationBar.IsSupported is false only on Android 5 (API 21-22), which no pool device runs (see the skipped tests). These tests switch the
-	// support flag off (UnsupportedAndroidVersion) and run the guard arm of the mapping: the window has to stay as ResetNativeStateAsync left it.
+	// NavigationBar.IsSupported is false only on Android 5 (API 21-22), which no pool device runs (see the skipped tests), so these tests switch
+	// the support flag off (UnsupportedAndroidVersion) to run the guard arm of the mapping.
 	[Fact]
 	public async Task ColorIsNotAppliedWhileTheNavigationBarIsMarkedUnsupported()
 	{
@@ -753,10 +729,8 @@ public partial class NavigationBarTests
 		await AssertNavigationBarStyleAsync(NavigationBarStyle.Default);
 	}
 
-	// Like ColorClearedAfterItWasAppliedNoLongerShowsInTheNavigationBar: once the page cleared its Style it reports the Default style, and the
-	// window no longer keeps DarkContent's light navigation bar icons. It gets back the appearance it had before NavigationBar's first change,
-	// which here has no light icons, as the Default style (StyleClearedAfterItWasAppliedRestoresTheAppearanceTheWindowHadBeforeTheFirstChange
-	// tells the two apart). The never-set case is StyleNotSetLeavesTheNavigationBarAlone.
+	// The window had no light icons before NavigationBar's first change, which is also what the Default style applies:
+	// StyleClearedAfterItWasAppliedRestoresTheAppearanceTheWindowHadBeforeTheFirstChange tells the two apart.
 	[Fact]
 	public async Task StyleClearedAfterItWasAppliedNoLongerUsesLightNavigationBars()
 	{
@@ -775,8 +749,8 @@ public partial class NavigationBarTests
 		await AssertNavigationBarStyleAsync(NavigationBarStyle.Default);
 	}
 
-	// The appearance that comes back is the window's own from before NavigationBar's first change, which can differ from what the Default
-	// style applies (no light icons). Clearing the Default style, the property's default, raises no PropertyChanged.
+	// The window's own appearance can differ from what the Default style applies (no light icons). Clearing the Default style, the property's
+	// default, raises no PropertyChanged.
 	[Theory]
 	[InlineData(true, NavigationBarStyle.LightContent)]
 	[InlineData(true, NavigationBarStyle.Default)]
@@ -796,8 +770,7 @@ public partial class NavigationBarTests
 		await InvokeOnMainThreadAsync(() => Assert.Equal(windowLightNavigationBars, AndroidSystemBars.IsLightNavigationBars(AndroidSystemBars.ActivityWindow)));
 	}
 
-	// A page that cleared its Style before NavigationBar applied it changed no window, so it has nothing to give back: the window keeps the
-	// style of another page (both the clear and the creation of the page's handler reach NavigationBar).
+	// The page changed no window, so it has nothing to give back, although both the clear and the creation of its handler reach NavigationBar.
 	[Fact]
 	public async Task StyleClearedBeforeItWasAppliedKeepsTheStyleOfAnotherPage()
 	{
@@ -817,8 +790,6 @@ public partial class NavigationBarTests
 		await AssertNavigationBarStyleAsync(NavigationBarStyle.DarkContent);
 	}
 
-	// Like ColorClearedAfterAnotherPageReplacedItKeepsTheColorOfTheOtherPage: only the page whose style the window shows gives the window back
-	// its appearance.
 	[Fact]
 	public async Task StyleClearedAfterAnotherPageReplacedItKeepsTheStyleOfTheOtherPage()
 	{
@@ -839,8 +810,6 @@ public partial class NavigationBarTests
 		await InvokeOnMainThreadAsync(static () => Assert.False(AndroidSystemBars.IsLightNavigationBars(AndroidSystemBars.ActivityWindow)));
 	}
 
-	// Like ColorClearedGivesEveryWindowThatShowsItBackItsOwnNavigationBar: the activity's window gets back its light icons and the dialog's window
-	// its dark ones.
 	[Fact]
 	public async Task StyleClearedGivesEveryWindowThatShowsItBackItsOwnAppearance()
 	{
@@ -924,8 +893,8 @@ public partial class NavigationBarTests
 		}
 	}
 
-	// A page that clears its Style gives the window back the light navigation bars that the system forced, with the navigation bar color that Style
-	// replaced to stop them.
+	// Style stops the system from forcing light navigation bars by replacing the window's navigation bar color: clearing the Style gives that
+	// color back, and with it the forced light navigation bars.
 	[Fact]
 	public async Task StyleClearedGivesTheWindowBackTheLightNavigationBarsThatTheSystemForced()
 	{
@@ -990,7 +959,6 @@ public partial class NavigationBarTests
 		}
 	}
 
-	// A page handler whose platform views were created with the application context: their Context is not an Activity.
 	PageHandler CreatePageHandlerWithApplicationContext()
 	{
 		var applicationContext = new MauiContext(ApplicationServices, Platform.CurrentActivity?.ApplicationContext ?? throw new InvalidOperationException("The test needs the runner's current activity."));
@@ -999,8 +967,6 @@ public partial class NavigationBarTests
 		return handler;
 	}
 
-	// A page handler whose platform views were created with a ContextThemeWrapper around the runner's activity: their Context is not an
-	// Activity, but it leads to one.
 	PageHandler CreatePageHandlerWithActivityWrapperContext()
 	{
 		var activity = Platform.CurrentActivity ?? throw new InvalidOperationException("The test needs the runner's current activity.");
@@ -1018,8 +984,8 @@ public partial class NavigationBarTests
 		Assert.Equal(isLight, AndroidSystemBars.IsLightNavigationBars(window));
 	}
 
-	// Gives the runner's window a navigation bar color of its own. From API 35 on the window ignores it (NavigationBar shows its color in an
-	// overlay instead), so only the older versions get one.
+	// From API 35 on the window ignores its own navigation bar color (NavigationBar shows its color in an overlay instead), so only the older
+	// versions get one.
 	static void SetWindowNavigationBarColor(Color color)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(35))
@@ -1030,9 +996,8 @@ public partial class NavigationBarTests
 		}
 	}
 
-	// Shows a dialog and gives its window a light background. The window is new, so it has no navigation bar color of its own yet, and Android 15+
-	// forces light navigation bars on it when it enforces edge-to-edge for the app (Android 16 for an app that targets it, Android 15 for an app
-	// that does not opt out). Skips the test where Android does not.
+	// The window is new, so it has no navigation bar color of its own yet, and Android 15+ forces light navigation bars on it when it enforces
+	// edge-to-edge for the app (Android 16 for an app that targets it, Android 15 for an app that does not opt out).
 	async Task<TestDialogFragment> ShowDialogWithForcedLightNavigationBarsAsync(string tag)
 	{
 		var dialog = await InvokeOnMainThreadAsync(() => TestDialogFragment.Show(tag));
@@ -1056,8 +1021,7 @@ public partial class NavigationBarTests
 		}
 	}
 
-	// Waits until the navigation bar overlay of the runner's window is laid out over the window's navigation bar (the decor view lays its children
-	// out after the window dispatched its insets), and fails with both rectangles when it does not get there.
+	// The decor view lays its children out after the window dispatched its insets, so this polls until the overlay is in place.
 	async Task AssertNavigationBarOverlayCoversTheNavigationBarAsync()
 	{
 		var frames = string.Empty;
@@ -1074,8 +1038,8 @@ public partial class NavigationBarTests
 		Assert.True(coversTheNavigationBar, $"The navigation bar overlay does not cover the window's navigation bar: {frames}.");
 	}
 
-	// Polls the condition on the UI thread like AssertEventuallyOnMainThread, but reports a timeout as false instead of failing: for clean-up code
-	// and for assertions that explain the failure themselves.
+	// Unlike AssertEventuallyOnMainThread it reports a timeout as false instead of failing: for clean-up code and for assertions that explain
+	// the failure themselves.
 	async Task<bool> WaitOnMainThreadAsync(Func<bool> condition, int timeout = 10000)
 	{
 		try
@@ -1091,7 +1055,6 @@ public partial class NavigationBarTests
 
 	static bool IsPortrait(Android.App.Activity activity) => activity.Window?.DecorView is Android.Views.View decor && decor.Height > decor.Width;
 
-	// Landscape as the configuration says and as the decor view was laid out
 	static bool IsLandscape(Android.App.Activity activity) =>
 		activity.Resources?.Configuration?.Orientation is Android.Content.Res.Orientation.Landscape
 		&& activity.Window?.DecorView is Android.Views.View decor
@@ -1107,8 +1070,6 @@ public partial class NavigationBarTests
 		return activity.Display?.Rotation ?? throw new InvalidOperationException("The activity has no display.");
 	}
 
-	// Asserts that the window shows its own navigation bar again, without NavigationBar's color: no overlay, and below API 35 the window's own
-	// navigation bar color (ARGB).
 	Task AssertOwnNavigationBarAsync(int windowNavigationBarColor, TestDialogFragment? dialog = null) =>
 		InvokeOnMainThreadAsync(() =>
 		{
@@ -1120,7 +1081,7 @@ public partial class NavigationBarTests
 			}
 		});
 
-	// Creates the page in this method only (no caller local keeps it alive), lets NavigationBar apply its color and style, and disconnects its handler.
+	// The page is created in this method only, so that no caller local keeps it alive.
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	async Task<WeakReference> ApplyColorAndStyleOfANewPageAsync()
 	{
@@ -1140,8 +1101,6 @@ public partial class NavigationBarTests
 		return new WeakReference(page);
 	}
 
-	// Empties NavigationBar's private lists of the windows it changed (see the constructor), like UnsupportedAndroidVersion reaches its private
-	// support flag.
 	static void ForgetWindowChanges()
 	{
 		foreach (var fieldName in new[] { "colorChanges", "styleChanges" })

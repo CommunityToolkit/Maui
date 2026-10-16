@@ -93,7 +93,7 @@ public partial class StatusBarBehaviorTests
 		var behavior = await CreateBehaviorAsync();
 		await ResetNativeStateAsync();
 
-		// The behavior skips the status bar while MAUI has no current activity (StatusBar would throw InvalidOperationException).
+		// Without a current activity StatusBar would throw InvalidOperationException, so the behavior must skip it.
 		await InvokeOnMainThreadAsync(() => AndroidSystemBars.WithoutCurrentActivity(() =>
 		{
 			behavior.StatusBarColor = Colors.Red;

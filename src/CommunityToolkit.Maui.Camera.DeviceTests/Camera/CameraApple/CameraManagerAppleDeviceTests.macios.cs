@@ -5,9 +5,7 @@ using Foundation;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.macios.cs members that configure a real AVCaptureDevice: zoom, active format (capture resolution) and torch.
-// Configuring a device does not need the camera permission (opening a capture input does), so these run on any Mac with a camera.
-// They skip on the iOS simulator and on machines without a camera. The device state is restored after every test.
+// Configuring a device does not need the camera permission (opening a capture input does), so these tests run on any Mac with a camera.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleDeviceTests : CameraHandlerTestBase
@@ -111,8 +109,8 @@ public class CameraManagerAppleDeviceTests : CameraHandlerTestBase
 		});
 	}
 
-	// No format fits the request (also the default ImageCaptureResolution, Size.Zero): the camera keeps its active format, which a real start gets
-	// from the session preset, with or without a photo output.
+	// The default ImageCaptureResolution, Size.Zero, also fits no format: the camera keeps the active format that a real start gets from
+	// the session preset, with or without a photo output.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]

@@ -13,7 +13,6 @@ on:
             - '*'
 
 env:
-    # LATEST_NET_VERSION is in shared.env, next to this file; the job loads it after its checkout.
     PathToCommunityToolkitAnalyzersBenchmarksCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj'
 

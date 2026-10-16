@@ -1,7 +1,5 @@
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The views with platform code and handlers: AvatarView, DrawingView (MauiDrawingView, DrawingViewHandler and DrawingViewService),
-// Expander, SemanticOrderView and the Windows WrapperControl.
 public static partial class TestCategory
 {
 	public const string AvatarView = nameof(AvatarView);

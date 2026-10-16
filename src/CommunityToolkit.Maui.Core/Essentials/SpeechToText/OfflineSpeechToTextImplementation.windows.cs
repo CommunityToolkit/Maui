@@ -151,7 +151,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		var currentState = CurrentState;
 
-		// The silence timer runs while the engine hears silence: speech stops it, and the next silence starts it again
 		lock (silenceTimerLock)
 		{
 			silenceTimer?.Change(currentState is SpeechToTextState.Silence ? silenceTimeout : Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);

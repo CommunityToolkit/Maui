@@ -6,15 +6,10 @@ using System.Reflection;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Builds the headless runner's skip list from an app's TestCategory class and checks the category rules that TestFilter relies on.
-/// </summary>
 public static class TestCategoryExtensions
 {
 	/// <summary>
-	/// dotnet/maui's TestFilter handling (<see cref="DeviceTestSharedHelpers.GetExcludedTestCategories"/>: "Category=X" runs only X,
-	/// "SkipCategories=A,B" skips A and B) plus <paramref name="neverRunHeadless"/>, which are skipped by every headless run.
-	/// The visual runner ignores this list, so those tests can still be run by hand.
+	/// The visual runner ignores this list, so the <paramref name="neverRunHeadless"/> categories can still be run by hand.
 	/// </summary>
 	public static List<string> GetHeadlessSkipCategories([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] this Type testCategoryType, params string[] neverRunHeadless)
 	{
@@ -35,15 +30,10 @@ public static class TestCategoryExtensions
 	}
 
 	/// <summary>
-	/// Lists every test in <paramref name="testAssembly"/> (a method with [Fact] or [Theory]) that breaks the category rules, one line
-	/// per problem. A test needs exactly one feature category: a constant of <paramref name="testCategoryType"/>, set with [Category]
-	/// on its class, a base class or the method. <paramref name="additionalCategories"/> (RequiresUserInteraction) may be added on top.
-	/// </summary>
-	/// <remarks>
 	/// "TestFilter=Category=X" skips every other constant, so a test without a category (or with a string that is not a constant)
 	/// runs in every filtered run, and a test with two feature categories is skipped by both "Category=" runs. Windows runs a
 	/// filtered app once per category and skips all other categories in each launch, so such a test never runs there.
-	/// </remarks>
+	/// </summary>
 	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Test classes and their methods are kept: the test runner discovers them by reflection.")]
 	[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Test classes and their methods are kept: the test runner discovers them by reflection.")]
 	public static List<string> GetCategoryRuleViolations([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] this Type testCategoryType, Assembly testAssembly, params string[] additionalCategories)
@@ -97,7 +87,7 @@ public static class TestCategoryExtensions
 			.SelectMany(static argument => ToStrings(argument.Value));
 
 	// CoreCLR returns the params string[] argument as a ReadOnlyCollection<CustomAttributeTypedArgument>; Mono (Android, iOS,
-	// Mac Catalyst) returns another collection, so any collection of strings or typed arguments is read.
+	// Mac Catalyst) returns another collection type.
 	static IEnumerable<string> ToStrings(object? value) => value switch
 	{
 		string category => [category],

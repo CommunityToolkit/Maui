@@ -11,8 +11,6 @@ using PlatformView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the native state is the UIImage rendering mode and the tint color of the UIImageView (Image) or UIButton
-// (ImageButton, Button). IconTintColorBehavior sets AlwaysTemplate + TintColor, and restores AlwaysOriginal when it detaches.
 public partial class IconTintColorBehaviorTests
 {
 	public enum TintRemoval
@@ -50,7 +48,7 @@ public partial class IconTintColorBehaviorTests
 		_ => null
 	};
 
-	// The object that stands for the image the platform view shows: a new image source gives a new UIImage.
+	// A new image source gives a new UIImage.
 	static object? GetNativeImageIdentity(PlatformView platformView) => GetNativeImage(platformView);
 
 	static bool HasNativeImage(PlatformView platformView) => GetNativeImage(platformView) is not null;
@@ -63,7 +61,6 @@ public partial class IconTintColorBehaviorTests
 	static bool IsNativeUntinted(PlatformView platformView) =>
 		GetNativeImage(platformView)?.RenderingMode != UIImageRenderingMode.AlwaysTemplate;
 
-	// Puts the native view into the state of a view that was never tinted, without going through the behavior.
 	static void ResetNativeTint(PlatformView platformView)
 	{
 		switch (platformView)
@@ -104,8 +101,8 @@ public partial class IconTintColorBehaviorTests
 		_ => DescribeNativeTintColors(platformView)
 	};
 
-	// The key-value observations of the "image" key path of the button's image view, as its observationInfo (NSKeyValueObserving) describes
-	// them. The managed UIImageView is only used in here, so that nothing in the test keeps it alive.
+	// The observationInfo (NSKeyValueObserving) of the button's image view describes its key-value observations. The managed UIImageView is
+	// only used in here, so that nothing in the test keeps it alive.
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	static int CountImageObservations(UIButton button)
 	{
@@ -172,7 +169,6 @@ public partial class IconTintColorBehaviorTests
 			await button.OnLoadedAsync();
 			var uiButton = (UIButton)handler.PlatformView!;
 
-			// There is no image to tint: SetUIButtonTintColor returns before it changes anything.
 			Assert.Equal(1, behavior.AttachedCount);
 			Assert.Null(uiButton.CurrentImage);
 			Assert.Null(uiButton.ImageView.Image);
@@ -199,7 +195,6 @@ public partial class IconTintColorBehaviorTests
 		{
 			await image.OnLoadedAsync();
 
-			// SetUIImageViewTintColor returns without an image: nothing is tinted until the image source is set.
 			Assert.False(HasNativeImage(handler.PlatformView!));
 			Assert.True(IsNativeUntinted(handler.PlatformView!), DescribeNativeTint(handler.PlatformView!));
 			Assert.False(IsSameColor(GetNativeTintColor(handler.PlatformView!), Colors.Blue), $"The behavior tinted an image view that has no image: {DescribeNativeTint(handler.PlatformView!)}");
@@ -311,16 +306,14 @@ public partial class IconTintColorBehaviorTests
 
 			ResetNativeTint(handler.PlatformView!);
 
-			// Only TintColor reaches the native view: the behavior has other bindable properties (BindingContext).
 			behavior.BindingContext = new object();
 
 			Assert.True(IsNativeUntinted(handler.PlatformView!), $"A BindingContext change applied the tint: {DescribeNativeTint(handler.PlatformView!)}");
 		});
 	}
 
-	// ClearTintColor gives the image back its AlwaysOriginal rendering mode (TintIsClearedWhen... check that). A tint that is removed
-	// must also give the view back the tint color it had: the behavior wrote it. Every way the tint goes away runs ClearTintColor: removing
-	// the behavior, a null TintColor, and the view leaving the window (Unloaded detaches the behavior).
+	// Every way the tint goes away runs ClearTintColor, and the behavior wrote the view's tint color, so each of them must give back the
+	// color the view had.
 	[Theory]
 	[InlineData(IconKind.Image, TintRemoval.RemoveBehavior)]
 	[InlineData(IconKind.ImageButton, TintRemoval.RemoveBehavior)]
@@ -400,8 +393,8 @@ public partial class IconTintColorBehaviorTests
 		Assert.Equal(tintColorsBefore, DescribeNativeTintColors(handler.PlatformView!));
 	}
 
-	// The behavior tints an icon. On Android and Windows the title of a Button keeps its color; a UIButton's title follows its tintColor
-	// when the Button has no TextColor, so the title must not get the tint color, neither while the behavior is attached nor after.
+	// On Android and Windows the title of a Button keeps its color; a UIButton's title follows its tintColor when the Button has no
+	// TextColor, so the title must not get the tint color, neither while the behavior is attached nor after.
 	[Fact]
 	public async Task ButtonTitleColorIsNotChangedByTheTint()
 	{
@@ -429,7 +422,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The same for every state whose title color MAUI's ButtonHandler sets: the title of a pressed or disabled Button keeps its colors too.
 	[Fact]
 	public async Task ButtonTitleColorsOfTheStatesMauiStylesAreNotChangedByTheTint()
 	{
@@ -458,7 +450,7 @@ public partial class IconTintColorBehaviorTests
 	}
 
 	// MAUI maps Button.TextColor to the tint color and the title colors of the UIButton, so a TextColor change gives the button the color of
-	// its text as its tint color (ButtonExtensions.UpdateTextColor). The icon keeps the tint of the behavior.
+	// its text as its tint color (ButtonExtensions.UpdateTextColor).
 	[Fact]
 	public async Task IconKeepsTheTintWhenTheButtonTextColorChanges()
 	{
@@ -482,8 +474,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// A TextColor change while the button is tinted gives the button other colors to put back (see above): once the tint is removed, the
-	// button has the colors MAUI gives it for its new TextColor, the title included, and the title never had the tint color meanwhile.
 	[Theory]
 	[InlineData(TextColorChange.FromNoneToLime)]
 	[InlineData(TextColorChange.FromLimeToNone)]
@@ -526,8 +516,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The behavior keeps the title of a tinted button in the colors it had: when the tint is removed, it takes back only the title colors
-	// that it set. A title color the button got in the meantime from elsewhere stays.
 	[Fact]
 	public async Task TitleColorTheButtonGotWhileItWasTintedIsKeptWhenTheTintIsRemoved()
 	{
@@ -555,8 +543,7 @@ public partial class IconTintColorBehaviorTests
 	}
 
 	// UIKit dims the tint color of the views behind an alert, an action sheet or a popover (TintAdjustmentMode Dimmed): their tintColor, and
-	// the title colors that follow it, read dimmed meanwhile. A tint applied then leaves no dimmed color behind once the dimming is over,
-	// neither while the view is tinted nor after the tint is removed.
+	// the title colors that follow it, read dimmed meanwhile.
 	[Theory]
 	[InlineData(IconKind.Image)]
 	[InlineData(IconKind.ImageButton)]
@@ -661,8 +648,7 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The behavior reads the colors of a dimmed UIButton undimmed, which changes the button's TintAdjustmentMode for that time: the button
-	// gets its mode back, whether its superview dims it or it is dimmed of its own.
+	// The behavior reads the colors of a dimmed UIButton undimmed, which changes the button's TintAdjustmentMode for that time.
 	[Theory]
 	[InlineData(IconKind.ImageButton, true)]
 	[InlineData(IconKind.ImageButton, false)]
@@ -709,8 +695,7 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// MAUI never sets the tint color of an Image's UIImageView, which follows the tint color of its superview: it does again once the tint is
-	// removed.
+	// MAUI never sets the tint color of an Image's UIImageView, which follows the tint color of its superview.
 	[Fact]
 	public async Task ImageViewFollowsTheTintColorOfItsSuperviewAgainAfterTheTintIsRemoved()
 	{
@@ -745,9 +730,8 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The behavior observes the image of a Button's UIButton while it is attached (key-value observing), and removes the observation when it
-	// detaches. The managed UIImageView the observation was added through can be collected meanwhile, as it is by the collections an app
-	// makes: the observations of the attaches that come with each load must not add up, and none may be left once the behavior detached.
+	// The managed UIImageView that the behavior added its key-value observation through can be collected while the behavior is attached, as
+	// it is by the collections an app makes: the observations of the attaches that come with each load must not add up.
 	[Fact]
 	public async Task ButtonImageObservationIsRemovedWhenTheBehaviorDetaches()
 	{
@@ -786,7 +770,7 @@ public partial class IconTintColorBehaviorTests
 	}
 
 	// A StreamImageSource is loaded off the UI thread: MAUI gives the UIButton the new image after the ImageSource change was handled, as an
-	// AlwaysOriginal image. The behavior has to tint it whenever it arrives.
+	// AlwaysOriginal image.
 	[Fact]
 	public async Task TintIsKeptWhenTheButtonImageSourceChangesToAnImageThatLoadsAsynchronously()
 	{
@@ -830,7 +814,7 @@ public partial class IconTintColorBehaviorTests
 
 	// UIButton.CurrentImage is the image of setImage:forState:. A button that gets its image from its configuration shows an image in
 	// its image view while CurrentImage is null, which is the second condition of SetUIButtonTintColor's guard. MAUI never creates such
-	// a button; a custom handler can. Whatever the behavior does with it, it must not throw and must not leave it half tinted.
+	// a button; a custom handler can.
 	static UIButton CreateButtonWithConfigurationImage()
 	{
 		using var renderer = new UIGraphicsImageRenderer(new CGSize(20, 20));

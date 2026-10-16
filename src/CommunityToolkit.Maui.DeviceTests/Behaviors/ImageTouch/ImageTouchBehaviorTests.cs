@@ -13,11 +13,8 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of ImageTouchBehavior (ImageTouchBehavior.android.cs, .macios.cs, .windows.cs, .shared.cs and the image part of
-// GestureManager.SetImageSource). The behavior swaps the Source and the Aspect of an Image or ImageButton when the touch or hover
-// state changes. The views are hosted in the runner's window (MAUI attaches the PlatformBehavior while the view is Loaded) and the
-// touch is sent to the native view where the platform allows it (see the platform partials). The images are solid colors, so the
-// rendered pixels tell which source the native view shows, and the native scale type / content mode / stretch tells the aspect.
+// MAUI attaches the PlatformBehavior while the view is Loaded, so the tests host the view in the runner's window. The images are solid
+// colors, so the rendered pixels tell which source the native view shows.
 [Category(TestCategory.ImageTouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
@@ -141,7 +138,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 	{
 		SetupBuilder();
 
-		// Without a hovered source and aspect the hovered state falls back to the default ones.
 		var behavior = new ImageTouchBehavior { DefaultImageSource = defaultSource, DefaultImageAspect = Aspect.AspectFill };
 		var image = CreateImageView(ImageKind.Image);
 		image.Behaviors.Add(behavior);
@@ -235,8 +231,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// HandleDefaultImageSourceChanged, HandleHoveredImageSourceChanged and HandlePressedImageSourceChanged only change the image that
-	// the current state shows; every other change waits until its state is shown.
 	[Theory]
 	[InlineData(ImageKind.Image, ChangedSource.Default, Interaction.Idle, true, true)]
 	[InlineData(ImageKind.Image, ChangedSource.Default, Interaction.Hovered, false, true)]
@@ -302,9 +296,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The state machine (GestureManager.SetImageSource) shows the default image source for a pressed or hovered state that has no image
-	// source of its own. Clearing the image source of the state that is shown must show the same, not remove the image.
-	// Catches: HandlePressedImageSourceChanged and HandleHoveredImageSourceChanged putting the cleared value (null) on the view.
 	[Theory]
 	[InlineData(ImageKind.Image, ChangedSource.Pressed)]
 	[InlineData(ImageKind.ImageButton, ChangedSource.Pressed)]
@@ -340,9 +331,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A pressed state without a PressedImageSource shows the default image source (PressedStateKeepsTheDefaultImageSourceAndAspect...), so
-	// a new DefaultImageSource has to be shown while the view is pressed, as it is while the view is idle.
-	// Catches: HandleDefaultImageSourceChanged updating the image in the default touch state only.
 	[Theory]
 	[InlineData(ImageKind.Image, Interaction.Pressed)]
 	[InlineData(ImageKind.ImageButton, Interaction.Pressed)]
@@ -371,9 +359,8 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// The image sources update the image while their state is shown (Handle*ImageSourceChanged), and Xamarin Community Toolkit's
-	// TouchEffect re-applied the state for every image aspect change: a new aspect of the state that is shown is shown right away.
-	// Catches: Default/Hovered/PressedImageAspect without a property-changed handler (the new aspect would wait for the next state change).
+	// Xamarin Community Toolkit's TouchEffect re-applied the state for every image aspect change, so a new aspect of the state that is shown
+	// is shown right away.
 	[Theory]
 	[InlineData(ImageKind.Image, ChangedAspect.Default, Interaction.Idle)]
 	[InlineData(ImageKind.Image, ChangedAspect.Hovered, Interaction.Hovered)]
@@ -417,10 +404,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A pressed or hovered state without an image aspect of its own shows the default image aspect (GestureManager.SetImageSource): clearing
-	// the aspect of the state that is shown shows the default aspect, and a new default aspect is shown right away while that state is.
-	// Catches: an aspect handler leaving a cleared aspect on the view or falling back to the wrong aspect, or HandleDefaultImageAspectChanged
-	// ignoring a pressed or hovered state that shows the default aspect.
 	[Theory]
 	[InlineData(ImageKind.Image, Interaction.Pressed)]
 	[InlineData(ImageKind.Image, Interaction.Hovered)]
@@ -485,7 +468,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 
 			view.Behaviors.Remove(behavior);
 
-			// The behavior has detached: it must not change the image any more.
 			var sourceWhenDetached = GetSource(view);
 			behavior.DefaultImageSource = ImageSource.FromFile(hoveredSource);
 			behavior.HoveredImageSource = ImageSource.FromFile(hoveredSource);
@@ -565,7 +547,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 
 			await PressAsync(handler, behavior);
 
-			// The pressed image waits for the end of the pressed animation (1.5 s).
 			Assert.Same(behavior.DefaultImageSource, GetSource(image));
 
 			await AssertEventually(() => ReferenceEquals(behavior.PressedImageSource, GetSource(image)), timeout: 5000, message: "The pressed image was never set.");
@@ -617,7 +598,7 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 
 			Assert.Equal(TouchState.Default, behavior.CurrentTouchState);
 
-			// There is no event for "nothing happens": watch the image for longer than the pressed animation (200 ms).
+			// The window is longer than the pressed animation (200 ms).
 			await VisualBehaviorHelpers.AssertStaysFalseAsync(() => ReferenceEquals(behavior.PressedImageSource, GetSource(image)), "The pressed image was set after the touch ended.", windowMilliseconds: 600);
 
 			Assert.Same(behavior.DefaultImageSource, GetSource(image));
@@ -625,8 +606,8 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Without a DefaultImageSource the default state falls back to the built-in default of the behavior, which is no image at all
-	// (ImageTouchBehaviorDefaults.DefaultBackgroundImageSource), and the aspect to AspectFit. The behavior owns the image of the view.
+	// Once the behavior has an image source it owns the image of the view, and its built-in default image source is no image at all
+	// (ImageTouchBehaviorDefaults.DefaultBackgroundImageSource).
 	[Theory]
 	[InlineData(ImageKind.Image)]
 	[InlineData(ImageKind.ImageButton)]
@@ -638,7 +619,7 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		var view = CreateImageView(kind);
 		SetSource(view, ImageSource.FromFile(defaultSource));
 
-		// The behavior takes over the aspect as well: it is not the built-in one before the behavior attaches.
+		// The view starts with an aspect that is not the built-in one, so the test can tell that the behavior takes over the aspect as well.
 		SetAspect(view, Aspect.Fill);
 		view.Behaviors.Add(behavior);
 
@@ -657,7 +638,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 
 			await AssertEventually(() => GetSource(view) is null && !HasNativeImage(handler.PlatformView!), timeout: 3000, message: $"The pressed image was not removed when the touch ended: {DescribeNativeAspect(handler.PlatformView!)}");
 
-			// The hovered state has neither a hovered nor a default image source to fall back to: still no image.
 			await HoverEnterAsync(handler, behavior);
 
 			Assert.Equal(HoverState.Hovered, behavior.CurrentHoverState);
@@ -668,7 +648,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 
 	// Xamarin Community Toolkit's TouchEffect left the image alone when none of its image sources was set (SetBackgroundImageAsync
 	// returned early), so an ImageTouchBehavior can be used for its touch animations alone, or with sources that are bound later.
-	// Catches: GestureManager.SetImageSource writing the missing default image source (null) and the built-in AspectFit to the view.
 	[Theory]
 	[InlineData(ImageKind.Image)]
 	[InlineData(ImageKind.ImageButton)]
@@ -700,9 +679,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// An ImageTouchBehavior with image aspects but without an image source shows the aspect of each state and leaves the image of the view
-	// alone: it has no image of its own to show.
-	// Catches: the default state writing the behavior's missing default image source (null) over the view's own image.
 	[Theory]
 	[InlineData(ImageKind.Image)]
 	[InlineData(ImageKind.ImageButton)]
@@ -733,9 +709,7 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Image sources that arrive after the attach, as a binding that resolves later sets them: from then on the behavior owns the image of
-	// the view, and the default state shows its image with the built-in aspect, before the first touch as well as after it.
-	// Catches: the source property handlers showing the new source with the view's own aspect, which only the first touch replaces.
+	// A binding that resolves later sets the image sources after the attach; from then on the behavior owns the image of the view.
 	[Theory]
 	[InlineData(ImageKind.Image)]
 	[InlineData(ImageKind.ImageButton)]
@@ -770,8 +744,7 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// GestureManager.SetImageSource is the code that swaps the images, and it skips every TouchBehavior that is not an ImageTouchBehavior:
-	// the touch of a plain TouchBehavior must leave the Source and the Aspect of the image it is attached to alone.
+	// GestureManager.SetImageSource swaps the images and skips every TouchBehavior that is not an ImageTouchBehavior.
 	[Theory]
 	[InlineData(ImageKind.Image)]
 	[InlineData(ImageKind.ImageButton)]
@@ -795,7 +768,6 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 
 			Assert.Equal(TouchState.Pressed, behavior.CurrentTouchState);
 
-			// There is no event for "nothing happens": watch the image while the touch state is handled.
 			await VisualBehaviorHelpers.AssertStaysFalseAsync(() => !ReferenceEquals(source, GetSource(view)) || GetNativeAspect(handler.PlatformView!) != Aspect.AspectFit, "A plain TouchBehavior changed the image source or the aspect.");
 
 			await ReleaseAsync(handler, behavior);
@@ -1015,7 +987,7 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// The native view shows the image of the expected color (the images load asynchronously) with the expected aspect.
+	// The images load asynchronously.
 	async Task AssertShowsAsync(IPlatformViewHandler handler, ImageKind kind, Color color, Aspect aspect)
 	{
 		await AssertEventually(() => GetNativeAspect(handler.PlatformView!) == aspect, timeout: 3000, message: $"The native {kind} does not show the aspect {aspect}: {DescribeNativeAspect(handler.PlatformView!)}");
@@ -1030,14 +1002,11 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 		return VisualBehaviorHelpers.WaitForPixelsAsync(platformView, MauiContext, expected, unexpected);
 	}
 
-	// Calls the protected attach method directly, for views that MAUI would never hand to the behavior without throwing inside
-	// the Loaded event.
 	sealed class ImageTouchBehaviorProbe : ImageTouchBehavior
 	{
 		public void AttachTo(VisualElement view, PlatformView platformView) => OnAttachedTo(view, platformView);
 	}
 
-	// A view that is an IImage, as Image and ImageButton are, but neither of them.
 	sealed class ImageViewThatIsNotAnImage : View, Microsoft.Maui.IImage
 	{
 		Aspect Microsoft.Maui.IImage.Aspect => Aspect.AspectFit;

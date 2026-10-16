@@ -9,13 +9,10 @@ using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the recognizers the behavior adds, disposes and removes.
 public partial class TouchBehaviorLifecycleTests
 {
-	// The attach enables user interaction on the platform view (UserInteractionEnabled = true) and adds the hover recognizer (iOS 13+).
 	// MAUI turns user interaction off for an input transparent control such as a label, but never for a layout (its layouts implement
 	// InputTransparent in their hit testing and keep UserInteractionEnabled on), so the label is what shows the attach turning it on.
-	// Catches: the hover recognizer missing (the OS version check), the attach not enabling user interaction.
 	[Fact]
 	public async Task AttachAddsTheHoverRecognizerAndEnablesUserInteraction()
 	{
@@ -38,10 +35,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// The detach gives user interaction back to MAUI, which sets it from InputTransparent: an element whose InputTransparent changed while
-	// the behavior was attached ends up as MAUI sets it now, not as it was when the behavior attached.
-	// Catches: the detach putting back the UserInteractionEnabled value read at attach (out of date here; a MAUI layout even reports true
-	// whatever its InputTransparent, because it implements InputTransparent in its hit testing).
 	[Fact]
 	public async Task DetachLeavesUserInteractionAsMauiSetsItFromInputTransparent()
 	{
@@ -66,8 +59,7 @@ public partial class TouchBehaviorLifecycleTests
 	}
 
 	// MAUI also turns user interaction off for a disabled view that is not a UIControl (IsEnabled sets UserInteractionEnabled as well as
-	// InputTransparent does): a label disabled at run time must not take touches once the behavior is removed.
-	// Catches: the detach applying only MAUI's InputTransparent mapping, which turns user interaction on for the disabled label.
+	// InputTransparent does), so a detach that applied only MAUI's InputTransparent mapping would turn it on for the disabled label.
 	[Fact]
 	public async Task DetachLeavesADisabledLabelWithoutUserInteraction()
 	{
@@ -92,9 +84,7 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Two TouchBehaviors on one input transparent label: when one of them is removed, the label must keep taking touches for the other one, and
-	// once both are removed it is input transparent again.
-	// Catches: each detach handing user interaction back to MAUI, which turns it off under the behavior that is still attached.
+	// A detach that handed user interaction back to MAUI each time would turn it off under the behavior that is still attached.
 	[Fact]
 	public async Task RemovingOneOfTwoBehaviorsKeepsUserInteractionForTheOther()
 	{
@@ -121,8 +111,8 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Dispose must not leave the disposed recognizers on the view: their native objects outlive the managed peers, and UIKit keeps
-	// calling the touch recognizer (a managed subclass) for every touch on the view.
+	// The native objects of disposed recognizers outlive their managed peers, and UIKit keeps calling the touch recognizer (a managed
+	// subclass) for every touch on the view.
 	[Fact]
 	public async Task DisposeRemovesTheRecognizersFromTheView()
 	{
@@ -154,9 +144,8 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: PlatformDispose not disposing (or not dropping) the touch and hover recognizers, and the touch recognizer's
-	// Dispose(true) not disposing its delegate. The touch recognizer and its delegate are managed subclasses, whose native handle stays
-	// valid after Dispose, so their disposed flag is read; the hover recognizer is a plain UIKit object, whose handle is cleared.
+	// The touch recognizer and its delegate are managed subclasses, whose native handle stays valid after Dispose, so their disposed flag is
+	// read; the hover recognizer is a plain UIKit object, whose handle is cleared.
 	[Fact]
 	public async Task DisposeReleasesTheRecognizersOfTheBehavior()
 	{
@@ -186,10 +175,8 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// The touch recognizer's finalizer path (Dispose(false)) must leave its delegate alone: only an explicit Dispose releases it. A finalizer
-	// cannot be triggered on purpose, so the protected Dispose(false) is called directly, on a recognizer of a test-built view that no touch
-	// can reach.
-	// Catches: the recognizer's "if (disposing)" check missing (the finalizer would dispose a delegate UIKit may still call).
+	// A finalizer cannot be triggered on purpose, so the protected Dispose(false) is called directly, on a recognizer of a test-built view
+	// that no touch can reach. A finalizer that disposed the delegate would dispose one UIKit may still call.
 	[Fact]
 	public async Task RecognizerFinalizerPathKeepsItsDelegate()
 	{
@@ -217,7 +204,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: OnDetachedFrom trying to remove recognizers that a Dispose already dropped (the null checks of both recognizers).
 	[Fact]
 	public async Task DetachingAfterDisposeDoesNotThrow()
 	{
@@ -239,7 +225,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: Dispose(false) (the finalizer path) releasing the recognizers.
 	[Fact]
 	public async Task FinalizerPathKeepsTheRecognizers()
 	{
@@ -266,7 +251,7 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: OnHover dereferencing a hover recognizer that the detach already dropped (a hover action UIKit had queued arrives late).
+	// A hover action UIKit had queued arrives late, after the detach dropped the hover recognizer that OnHover dereferences.
 	[Fact]
 	public async Task HoverCallbackAfterDetachIsIgnored()
 	{

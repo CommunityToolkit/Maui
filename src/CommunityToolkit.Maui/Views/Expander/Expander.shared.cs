@@ -248,9 +248,9 @@ public partial class Expander : ContentView, IExpander
 		}
 	}
 
-	// The Grid that holds Header and Content. An implicit Style only applies to its exact TargetType unless it sets ApplyToDerivedTypes,
-	// so the app's implicit Grid Style does not reach this subclass. The local null Background and BackgroundColor outrank any Style,
-	// so this Grid cannot paint over the Background and BackgroundColor of the Expander. CsWinRT requires partial on Windows (CsWinRT1028).
+	// An implicit Style only applies to its exact TargetType unless it sets ApplyToDerivedTypes, so the app's implicit Grid Style does not reach this subclass.
+	// The local null Background and BackgroundColor outrank any Style, so this Grid cannot paint over the Background and BackgroundColor of the Expander.
+	// CsWinRT requires partial on Windows (CsWinRT1028).
 	sealed partial class ExpanderLayout : Grid
 	{
 		public ExpanderLayout()

@@ -5,12 +5,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MauiMediaElement.macios.cs: the platform view of MediaElement. It hosts the view of the AVPlayerViewController. On iOS 16+ and Mac
-// Catalyst 16.1+ it also adds the AVPlayerViewController as a child of the view controller that its responder chain reaches (otherwise
-// the playback controls are not shown), whenever it moves to a superview or a window or lays out: it moves the controller to the new
-// parent when the view moves, cancels out the parent view's safe area insets, re-attaches the controller when the playback controls are
-// shown, and DetachFromParentViewController removes it. The UIKit parent-child relations and the additional safe area insets are what the
-// tests read. The branch for iOS / Mac Catalyst before 16 (no parent view controller at all) cannot run: the oldest runtime is 18.
+// The branch of MauiMediaElement for iOS / Mac Catalyst before 16 (no parent view controller at all) cannot run: the oldest runtime is 18.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MauiMediaElementAppleTests : AppleMediaElementTestBase
@@ -35,8 +30,7 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 			.SelectMany(static scene => scene.Windows)
 			.First(static window => window.IsKeyWindow);
 
-	// Removes the view from its superview and the controller from its parent with UIKit's own containment calls, so a test that is not
-	// about DetachFromParentViewController does not depend on it.
+	// UIKit's own containment calls instead of DetachFromParentViewController, so that a test that is not about it does not depend on it.
 	static void Cleanup(MauiMediaElement? view, AVPlayerViewController controller)
 	{
 		view?.RemoveFromSuperview();
@@ -102,7 +96,6 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 		{
 			var controller = new AppleParentTrackingPlayerViewController();
 
-			// A new view has no superview, so its responder chain reaches no view controller.
 			var view = new MauiMediaElement(controller, CreateMediaElement());
 
 			Assert.Null(controller.ParentViewController);
@@ -112,7 +105,7 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// The view is added to the view of a view controller directly, or through views in between (the responder chain goes up the superviews).
+	// The responder chain goes up the superviews, so the view controller is also found through views in between.
 	[Theory]
 	[InlineData(0)]
 	[InlineData(2)]
@@ -140,7 +133,6 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 			Assert.Contains(controller, parent.ChildViewControllers);
 			Assert.Equal(new UIViewController?[] { parent }, controller.MovedToParents);
 
-			// The player view stays in the MauiMediaElement: only the controller is added to the parent.
 			Assert.Same(controller.View, Assert.Single(view.Subviews));
 			Cleanup(view, controller);
 		});
@@ -168,8 +160,7 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// A view hierarchy that is built first and added to a view controller's view in the window afterwards: the MauiMediaElement keeps its
-	// superview, so it is MovedToWindow that adds the controller.
+	// The MauiMediaElement keeps its superview when the container is added to the window, so it is MovedToWindow that adds the controller.
 	[Fact]
 	public async Task MovingIntoTheWindowAddsThePlayerViewControllerToTheViewControllerOfTheNewSuperviews()
 	{
@@ -212,7 +203,6 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 
 			parent.View!.AddSubview(view);
 
-			// The top and bottom insets of the parent are cancelled out; left and right are the test below.
 			Assert.Equal(-10, (double)controller.AdditionalSafeAreaInsets.Top);
 			Assert.Equal(-30, (double)controller.AdditionalSafeAreaInsets.Bottom);
 			Cleanup(view, controller);
@@ -238,8 +228,6 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// The effect of the additional insets above on the safe area that UIKit gives the player view, in a real window: a player view that
-	// covers the parent's unsafe edges and one inside the parent's safe area.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -261,7 +249,6 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 
 			try
 			{
-				// Every edge of the parent has a safe area inset.
 				await AssertionExtensions.AssertEventually(() =>
 				{
 					window.LayoutIfNeeded();
@@ -283,8 +270,8 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 				window.LayoutIfNeeded();
 				Assert.Same(parentController, controller.ParentViewController);
 
-				// The player view gets the parent's safe area where the two overlap, like the view that contains it; the additional insets of
-				// the AVPlayerViewController must not add the parent's insets to that.
+				// The player view gets the parent's safe area only where the two overlap, like the view that contains it, so the additional insets of
+				// the AVPlayerViewController must not make its insets exceed the container's.
 				var containerInsets = view.SafeAreaInsets;
 				var playerInsets = controller.View!.SafeAreaInsets;
 				Assert.True(
@@ -324,13 +311,11 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal(new UIEdgeInsets(-1, -2, -3, -4), controller.AdditionalSafeAreaInsets);
 
-			// The controller stays where it is.
 			Assert.Equal(new UIViewController?[] { parent }, controller.MovedToParents);
 			Cleanup(view, controller);
 		});
 	}
 
-	// Each edge of the parent's safe area is compared: a change of a single inset is applied as well.
 	// Catches: the comparison of the current and the applied insets leaving out an edge.
 	[Theory]
 	[InlineData("Top")]
@@ -413,7 +398,6 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 			Assert.Equal(new UIViewController?[] { first, null, second }, controller.MovedToParents);
 			Assert.Equal(new UIEdgeInsets(-1, -2, -3, -4), controller.AdditionalSafeAreaInsets);
 
-			// The player view is back in the MauiMediaElement, at its size.
 			Assert.Same(controller.View, Assert.Single(view.Subviews));
 			Assert.Equal(view.Bounds, controller.View!.Frame);
 			Cleanup(view, controller);
@@ -523,8 +507,8 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// MediaElementHandler.Dispose (and DisconnectHandler) dispose the AVPlayerViewController while the view can still be in a view hierarchy:
-	// the layout and the moves that UIKit still reports must not use the disposed controller (an exception there ends the app).
+	// MediaElementHandler.Dispose and DisconnectHandler dispose the AVPlayerViewController while the view can still be in a view hierarchy,
+	// so the layout and moves that UIKit still reports must not use the disposed controller (an exception there ends the app).
 	[Fact]
 	public async Task LayoutAndMovesAfterThePlayerViewControllerWasDisposedDoNothing()
 	{

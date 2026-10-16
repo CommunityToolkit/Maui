@@ -7,8 +7,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Reads the UIKit alert view stack that Alert, PlatformToast and PlatformSnackbar put into the key window:
-// AlertView -> UIStackView (Container) -> [RoundedView (background), PaddedLabel (message), PaddedButton (Snackbar action)].
 static class AlertsApple
 {
 	public static UIWindow KeyWindow => TryGetKeyWindow() ?? throw new InvalidOperationException("The test app has no key window.");
@@ -29,7 +27,7 @@ static class AlertsApple
 
 	// PaddedButton pads its title with UIButton.ContentEdgeInsets, which UIKit marks obsolete from iOS 15 on (a button without a
 	// UIButtonConfiguration still honors it): the tests read what the toolkit wrote.
-#pragma warning disable CA1422 // Validate platform compatibility
+#pragma warning disable CA1422
 	public static UIEdgeInsets GetContentEdgeInsets(this UIButton button) => button.ContentEdgeInsets;
 #pragma warning restore CA1422
 
@@ -37,7 +35,7 @@ static class AlertsApple
 	public static void AssertClose(double expected, double actual, double tolerance = 0.6) =>
 		Assert.True(Math.Abs(expected - actual) <= tolerance, $"Expected {expected} (+/- {tolerance}) but was {actual}.");
 
-	// Asserts the RGBA components of a UIKit color against literal values (not against MAUI's own color conversion).
+	// Compares against literal values, not against MAUI's own color conversion.
 	public static void AssertColor(double red, double green, double blue, double alpha, UIColor? actual)
 	{
 		Assert.NotNull(actual);
@@ -48,7 +46,6 @@ static class AlertsApple
 		Assert.Equal(alpha, (double)actualAlpha, 2);
 	}
 
-	// Waits for the first layout pass of the alert view (its constraints resolve a size).
 	public static async Task WaitForLayoutAsync(AlertView alertView)
 	{
 		var window = KeyWindow;
@@ -59,7 +56,6 @@ static class AlertsApple
 		}, timeout: 10000, message: "The alert view was never laid out.");
 	}
 
-	// Reads every pixel of the image as RGBA bytes (premultiplied, row by row from the top).
 	public static (byte[] Pixels, int Width, int Height) ReadPixels(UIImage image)
 	{
 		var cgImage = image.CGImage!;
@@ -74,7 +70,6 @@ static class AlertsApple
 		return (pixels, width, height);
 	}
 
-	// True when the point lies inside the rounded path that RoundedView uses as its layer mask.
 	public static bool IsInsideMask(UIView view, CGPoint point)
 	{
 		var mask = Assert.IsType<CoreAnimation.CAShapeLayer>(view.Layer.Mask);
@@ -86,9 +81,9 @@ static class AlertsApple
 		(bool)(typeof(PlatformToast).GetField("isDisposed", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(platformToast)
 			?? throw new InvalidOperationException("PlatformToast.isDisposed was not found."));
 
-	// Disposing the managed peer of a view created from managed code (a toolkit subclass such as PaddedLabel) releases the managed
-	// reference that kept the native view alive, but the handle stays valid while UIKit retains the view (its stack view does): the only
-	// trace is the disposed flag of the peer, a private property of NSObject (its getter where only that is kept).
+	// Disposing the managed peer of a view created from managed code (a toolkit subclass such as PaddedLabel) leaves the native handle
+	// valid while UIKit retains the view (its stack view does): the only trace is the private disposed property of NSObject (or just its
+	// getter, where only that is kept).
 	public static bool IsManagedPeerDisposed(NSObject peer)
 	{
 		var flags = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -97,14 +92,12 @@ static class AlertsApple
 		return (bool)getter.Invoke(peer, null)!;
 	}
 
-	// Alert.timer: the NSTimer that Alert.Show schedules to dismiss the alert, null before Show and after Dismiss.
 	public static NSTimer? GetTimer(Alert alert) =>
 		(NSTimer?)(typeof(Alert).GetField("timer", BindingFlags.Instance | BindingFlags.NonPublic)
 			?? throw new InvalidOperationException("Alert.timer was not found.")).GetValue(alert);
 
-	// Asserts that the timer of the alert fires once the duration has passed since Show, which ran between the two NSDate readings
-	// (seconds since the reference date) before and after: NSTimer sets its fire date to the time it is created plus the interval, and
-	// uses 0.1 ms for an interval that is not positive. The margin only absorbs floating point rounding.
+	// NSTimer sets its fire date to the time it is created plus the interval, and uses 0.1 ms for an interval that is not positive.
+	// The margin only absorbs floating point rounding.
 	public static void AssertTimerFiresAfterTheDuration(Alert alert, TimeSpan duration, double before, double after)
 	{
 		var timer = GetTimer(alert);
@@ -125,7 +118,6 @@ public enum AlertCorner
 	BottomRight
 }
 
-// The protected members of the toolkit's alert classes, exposed for the tests.
 sealed class TestAlert : Alert
 {
 	public AlertView View => AlertView;

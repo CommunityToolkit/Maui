@@ -6,14 +6,11 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Test seams for the static AVFoundation and UIKit calls that CameraManager, CameraProvider and CameraViewExtensions make on iOS and
-// Mac Catalyst (AVCaptureDevice.GetDefaultDevice, AVCaptureDeviceDiscoverySession.Create, AVCaptureDevice.RequestAccessForMediaTypeAsync,
-// the AVCaptureDeviceInput and AVCaptureDeviceRotationCoordinator initializers, the movie output, UIKit's orientation and the OS version).
-// They answer from the hardware, the permission state and the OS version of the machine; the iOS simulator and CI Macs have no camera,
-// no camera permission and only OS 27, so most of the toolkit code that handles those answers could never run.
+// The static AVFoundation and UIKit calls that CameraManager, CameraProvider and CameraViewExtensions make on iOS and Mac Catalyst answer
+// from the hardware, the permission state and the OS version of the machine. The iOS simulator and CI Macs have no camera, no camera
+// permission and only OS 27, so most of the toolkit code that handles those answers could never run.
 //
-// ObjCMethodReplacement replaces the implementation (IMP) of one Objective-C method until it is disposed, so the real toolkit code runs
-// against a scripted answer. Rules for the tests that use it:
+// Rules for the tests that use ObjCMethodReplacement:
 //  - always in a `using`, on the UI thread, and never across an await that lets unrelated work run against the replaced method;
 //  - a replacement never throws (it is called from native code, where a managed exception cannot unwind);
 //  - a replacement that only scripts some receivers forwards the others to the original implementation.
@@ -36,15 +33,13 @@ sealed class ObjCMethodReplacement : IDisposable
 
 	public IntPtr OriginalImplementation { get; }
 
-	// An instance method such as -[AVCaptureDeviceInput initWithDevice:error:]. An inherited method is replaced on the class that implements it.
+	// An inherited method is replaced on the class that implements it.
 	public static ObjCMethodReplacement OfInstanceMethod(Type nativeType, string selector, Delegate replacement) =>
 		new(FindMethod(class_getInstanceMethod, nativeType, selector), replacement);
 
-	// A class method such as +[AVCaptureDevice defaultDeviceWithMediaType:].
 	public static ObjCMethodReplacement OfClassMethod(Type nativeType, string selector, Delegate replacement) =>
 		new(FindMethod(class_getClassMethod, nativeType, selector), replacement);
 
-	// The implementation that was replaced, callable with the same native signature.
 	public TDelegate GetOriginal<TDelegate>() where TDelegate : Delegate =>
 		Marshal.GetDelegateForFunctionPointer<TDelegate>(OriginalImplementation);
 
@@ -76,7 +71,7 @@ sealed class ObjCMethodReplacement : IDisposable
 	static extern IntPtr method_setImplementation(IntPtr method, IntPtr implementation);
 }
 
-// Native signatures of the replaced methods: (self, _cmd, arguments...) -> result. IntPtr is an object or a pointer, nint an NSInteger.
+// Native signatures: (self, _cmd, arguments...) -> result. IntPtr is an object or a pointer, nint an NSInteger.
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 delegate IntPtr ObjCImplementationObject(IntPtr self, IntPtr selector);
 
@@ -101,7 +96,6 @@ delegate nint ObjCImplementationInteger(IntPtr self, IntPtr selector);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 delegate void ObjCBlockInvokeBool(IntPtr block, byte value);
 
-// Objective-C runtime helpers for the scripted native objects.
 static class ObjCNative
 {
 	const string objcLibrary = "/usr/lib/libobjc.dylib";
@@ -110,11 +104,10 @@ static class ObjCNative
 	// struct Block_literal { void *isa; int flags; int reserved; void (*invoke)(void *, ...); ... }: the invoke pointer is at offset 16.
 	const int blockInvokeOffset = 16;
 
-	// Keeps an object that was allocated but never initialized alive for the life of the process: its -dealloc would read state that
+	// An object that was allocated but never initialized must stay alive for the life of the process: its -dealloc would read state that
 	// the initializer never set up (AVFoundation's -dealloc of such objects crashes the process).
 	public static IntPtr RetainForever(IntPtr nativeObject) => objc_retain(nativeObject);
 
-	// Calls a block of the form `void (^)(BOOL)`, such as the completion handler of +[AVCaptureDevice requestAccessForMediaType:completionHandler:].
 	public static void InvokeBlockWithBool(IntPtr block, bool value)
 	{
 		var invoke = Marshal.ReadIntPtr(block, blockInvokeOffset);

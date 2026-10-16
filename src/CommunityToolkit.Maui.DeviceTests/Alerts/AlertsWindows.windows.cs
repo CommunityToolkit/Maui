@@ -10,8 +10,8 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// An app notification as the Windows App SDK describes it: the texts, the buttons and the duration are read from the payload XML that
-// the SDK itself built from the toolkit's AppNotificationBuilder calls.
+// The texts, the buttons and the duration are read from the payload XML that the SDK itself built from the toolkit's
+// AppNotificationBuilder calls.
 sealed record WindowsNotification(AppNotification Notification, IReadOnlyList<string> Texts, IReadOnlyList<WindowsNotificationButton> Buttons, string? Duration)
 {
 	// A Snackbar is the notification with an action button, a Toast has none.
@@ -22,20 +22,15 @@ sealed record WindowsNotification(AppNotification Notification, IReadOnlyList<st
 
 sealed record WindowsNotificationButton(string Content, string Arguments)
 {
-	// The Snackbar identifies the action of a button by the snackbarIdentifier argument.
 	public string? SnackbarIdentifier => Regex.Match(Arguments, "snackbarIdentifier=([^;&]+)") is { Success: true } match ? match.Groups[1].Value : null;
 }
 
-// Reads the app notifications that Snackbar and Toast show (they are listed in the Action Center of the app), and the toolkit's private
-// static state that goes with them.
 static partial class AlertsWindows
 {
 	const string probeText = "alerts-capability-probe";
 
 	static bool isProbed;
 
-	// Why the app cannot show notifications in this session (null when it can), and why Windows does not list them back (null when it does;
-	// never null while notifications cannot be shown).
 	static string? cannotShowReason;
 	static string? cannotListReason;
 
@@ -50,7 +45,6 @@ static partial class AlertsWindows
 		return new WindowsNotification(notification, texts, buttons, (string?)document.Root?.Attribute("duration"));
 	}
 
-	// Every notification of the app that is listed in the Action Center. Skips the calling test when Windows cannot list notifications.
 	public static async Task<IReadOnlyList<WindowsNotification>> GetDisplayedAsync()
 	{
 		await SkipWhenNotificationsAreUnavailableAsync();
@@ -58,8 +52,7 @@ static partial class AlertsWindows
 		return [.. (await AppNotificationManager.Default.GetAllAsync()).Select(Parse)];
 	}
 
-	// Asks the platform once per process whether this app can show a notification and whether the notification is listed back. The probe
-	// shows a notification and removes every notification of the app, so it has to run before a test shows its own:
+	// The probe shows a notification and removes every notification of the app, so it has to run before a test shows its own:
 	// AlertsTestBase.PreparePlatformAsync calls it.
 	public static async Task EnsureProbedAsync()
 	{
@@ -70,9 +63,7 @@ static partial class AlertsWindows
 		}
 	}
 
-	// Skips the calling test when this app cannot show notifications in this session (AppNotificationManager is not supported, or showing
-	// the probe's notification failed): every test that shows a Snackbar or a Toast would fail for that reason alone.
-	// AlertsTestBase.PreparePlatformAsync calls it.
+	// When the app cannot show notifications in this session, every test that shows a Snackbar or a Toast would fail for that reason alone.
 	public static async Task SkipWhenNotificationsCannotBeShownAsync()
 	{
 		await EnsureProbedAsync();
@@ -80,8 +71,8 @@ static partial class AlertsWindows
 		Skip.If(cannotShowReason is not null, cannotShowReason ?? string.Empty);
 	}
 
-	// Skips the calling test unless a notification that this app shows is listed back by the platform. Windows does that unless
-	// notifications are turned off for the app or the user, or the session has no notification platform.
+	// Windows lists a notification back unless notifications are turned off for the app or the user, or the session has no notification
+	// platform.
 	public static async Task SkipWhenNotificationsAreUnavailableAsync()
 	{
 		await EnsureProbedAsync();
@@ -89,7 +80,6 @@ static partial class AlertsWindows
 		Skip.If(cannotListReason is not null, cannotListReason ?? string.Empty);
 	}
 
-	// Removes the notifications of earlier tests. Best effort: a session without a notification platform has nothing to remove.
 	public static async Task TryRemoveAllAsync()
 	{
 		try
@@ -98,11 +88,10 @@ static partial class AlertsWindows
 		}
 		catch (Exception exception) when (IsNotificationPlatformFailure(exception))
 		{
-			// Notifications are not available in this session.
+			// Notifications are not available in this session, so there is nothing to remove.
 		}
 	}
 
-	// Snackbar.actions: the action of every notification that is shown, by the identifier that is in the button's arguments.
 	public static Dictionary<string, Action?> GetRegisteredActions() =>
 		(Dictionary<string, Action?>)(typeof(Snackbar).GetField("actions", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
 			?? throw new InvalidOperationException("Snackbar.actions was not found."));

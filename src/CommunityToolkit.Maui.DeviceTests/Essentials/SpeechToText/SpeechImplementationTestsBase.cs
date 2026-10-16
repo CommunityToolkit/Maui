@@ -3,32 +3,21 @@ using CommunityToolkit.Maui.Media;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Tests of the behavior that <see cref="SpeechToTextImplementation"/> and <see cref="OfflineSpeechToTextImplementation"/> share:
-/// both are built from the same shape (a shared file with the public API and the weak events, one platform file per OS), so the
-/// same tests run against both through <see cref="CreateImplementation"/>. The two concrete classes carry the feature categories.
-/// </summary>
-/// <remarks>
-/// Platform partials (<c>.android.cs</c>, <c>.macios.cs</c>, <c>.windows.cs</c>) add the tests that read or drive platform objects.
-/// They implement <see cref="GetNativeObjects"/>. The recognizers need a microphone, consent and (for server recognition) the network,
-/// so the platform tests drive the toolkit's callback entry points with real platform objects instead of waiting for the OS to call.
-/// </remarks>
+// SpeechToTextImplementation and OfflineSpeechToTextImplementation are built from the same shape (a shared file with the public API and
+// the weak events, one platform file per OS), so the same tests run against both through CreateImplementation.
 public abstract partial class SpeechImplementationTestsBase : CommunityToolkitHandlerTestBase
 {
 	protected static CultureInfo EnglishUnitedStates => new("en-US");
 
 	protected static SpeechToTextOptions DefaultOptions => new() { Culture = EnglishUnitedStates };
 
-	/// <summary>The implementation under test.</summary>
 	protected abstract ISpeechToText CreateImplementation();
 
-	/// <summary>True for <see cref="OfflineSpeechToTextImplementation"/> (on-device recognition), false for <see cref="SpeechToTextImplementation"/>.</summary>
 	protected abstract bool IsOffline { get; }
 
 	/// <summary>The platform objects (audio engine, recognizer peers, ...) that belong to <paramref name="speech"/> and must not leak.</summary>
 	protected partial object[] GetNativeObjects(ISpeechToText speech);
 
-	/// <summary>Builds the test's MauiApp (the convention: first call of every test) and creates the implementation.</summary>
 	protected ISpeechToText CreateSpeech()
 	{
 		SetupBuilder();
@@ -253,11 +242,8 @@ public abstract partial class SpeechImplementationTestsBase : CommunityToolkitHa
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 	}
 
-	/// <summary>
-	/// Shared body of "StopListenAsync observes a token that is already cancelled": the platform classes decide whether the
-	/// implementation throws (the shared offline file and the Android and Apple online files check the token first; the Windows
-	/// online file swallows it so that the cleanup always runs).
-	/// </summary>
+	// Shared body, not a test of its own: the platform classes decide whether the implementation throws (the shared offline file and the
+	// Android and Apple online files check the token first; the Windows online file swallows it so that the cleanup always runs).
 	protected async Task AssertStopListenAsyncThrowsWhenTokenIsAlreadyCancelled()
 	{
 		var speech = CreateSpeech();

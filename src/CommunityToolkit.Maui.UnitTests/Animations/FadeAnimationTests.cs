@@ -16,7 +16,6 @@ public class FadeAnimationTests : BaseTest
 	const double fadedOpacity = 0.2;
 	const double opacityPrecision = 0.001;
 
-	// Each of the two fades of an animation (out, then back) lasts this long
 	const uint fadeLength = 500;
 
 	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
@@ -192,17 +191,16 @@ public class FadeAnimationTests : BaseTest
 		};
 		border.EnableAnimations();
 
-		// AnimationBehavior cancels the running animation and starts a new one
 		var fadingOut = WaitForOpacityAsync(border, token, opacity => opacity < originalOpacity - 0.2);
 		behavior.AnimateCommand.Execute(token);
 		await fadingOut;
 
+		// AnimationBehavior cancels the running animation and starts a new one, so two animations end
 		behavior.AnimateCommand.Execute(token);
 		await animation.WaitForEndedAnimationsAsync(2, token);
 
 		border.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
 
-		// A later animation that nothing interrupts returns the border to its original opacity as well
 		behavior.AnimateCommand.Execute(token);
 		await animation.WaitForEndedAnimationsAsync(1, token);
 
@@ -232,13 +230,12 @@ public class FadeAnimationTests : BaseTest
 		return label;
 	}
 
-	// Runs a test on one thread, the way an app runs its animations on its UI thread. The mock ticker of EnableAnimations then fires on that
-	// thread as well, instead of on the thread pool, where it races the test, and the tickers of other views, for MAUI's animation bookkeeping
-	// (a static Dictionary that is not thread-safe).
+	// Running the test on one thread, like an app runs its animations on its UI thread, makes the mock ticker of EnableAnimations fire on that
+	// thread too. On the thread pool it races the test, and the tickers of other views, for MAUI's animation bookkeeping (a static Dictionary
+	// that is not thread-safe).
 	static Task RunOnSingleThreadAsync(Func<CancellationToken, Task> test, CancellationToken token) =>
 		Task.Run(() => AsyncContext.Run(() => test(token)), token);
 
-	// Completes once the opacity of the view, as it changes, has met each condition in turn
 	static Task WaitForOpacityAsync(VisualElement view, CancellationToken token, params Func<double, bool>[] conditions)
 	{
 		var conditionsMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -258,7 +255,7 @@ public class FadeAnimationTests : BaseTest
 		}
 	}
 
-	// Counts its animations that ended, however they ended: AnimationBehavior starts them without handing out their Task
+	// AnimationBehavior starts its animations without handing out their Task, so a test cannot await them.
 	sealed class ObservedFadeAnimation : FadeAnimation
 	{
 		readonly Channel<bool> endedAnimations = Channel.CreateUnbounded<bool>();

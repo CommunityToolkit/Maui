@@ -8,9 +8,6 @@ using Stretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Handlers/MediaElementHandler.windows.cs and the #if WINDOWS parts of Handlers/MediaElementHandler.shared.cs: platform view creation,
-// the property mapper, the command mapper, DisconnectHandler / Dispose and the leak tests. The handler is the real MediaElementHandler
-// (a derived WinMediaHandler only adds read access); everything is asserted on the native WinUI / Windows.Media objects.
 [Category(TestCategory.MediaElementHandlerWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaElementHandlerWindowsTests : WinMediaTestBase
@@ -211,8 +208,6 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		Assert.Equal(0.25, player.Volume, 3);
 	}
 
-	// Every source that UpdateSource cannot apply, a kind of MediaSource the platform does not know included: the user must learn about it through
-	// MediaFailed, which is how the MediaElement reports a source that cannot be played (see the manager-level tests of each case).
 	[Theory]
 	[InlineData("a missing file")]
 	[InlineData("a header the platform refuses")]
@@ -236,8 +231,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		Assert.Equal(MediaElementState.Failed, view.CurrentState);
 	}
 
-	// A source that cannot be applied replaces the previous media, as a source that cannot be played does: the previous media leaves the player,
-	// so that it neither keeps playing (it loops, so it would not end by itself) nor reports a state over Failed.
+	// The previous media must leave the player, or it would keep playing (it loops, so it would not end by itself) and report a state over Failed.
 	[Theory]
 	[InlineData("a missing file")]
 	[InlineData("a header the platform refuses")]
@@ -274,7 +268,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		Assert.False(isOverwritten, $"The state went from Failed to {view.CurrentState} after MediaFailed.");
 	}
 
-	// Serves the clip to ranged GETs and refuses HEAD, as servers that authorise each method separately (presigned URLs, for example) do.
+	// Servers that authorise each method separately (presigned URLs, for example) refuse HEAD while ranged GETs work.
 	static WinMediaHttpServer StartServerThatRejectsHead(byte[] video) =>
 		new WinMediaHttpServer
 		{
@@ -293,8 +287,8 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(source), source, null),
 	};
 
-	// A source without data loads nothing, like a null Source: the media that was playing (it loops, so it would not end by itself) stops and leaves
-	// the player, the state is None, and nothing is reported as a failure.
+	// A source without data loads nothing, like a null Source, so nothing is reported as a failure. The media that was playing loops, so it would
+	// not end by itself.
 	[Theory]
 	[InlineData("a Uri source without a Uri")]
 	[InlineData("a File source with a blank path")]
@@ -328,7 +322,6 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		Assert.Equal(0, view.MediaWidth);
 		Assert.Equal(0, view.MediaHeight);
 
-		// The media has left the player, so the state it reports from now on is None as well.
 		await WaitUntilAsync(() => view.CurrentState is MediaElementState.None, "The state did not become None.");
 		Assert.Equal(0, Volatile.Read(ref failures));
 	}
@@ -380,8 +373,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		await OpenAsync(view, VideoSource);
 		var session = (await GetPlayerAsync(handler)).PlaybackSession;
 
-		// From the UI thread (inline arm); the seek completes SeekCompletedTCS through MapSeekRequested, which is what SeekTo awaits. The waits are
-		// bounded: a SeekTo that never completes must fail this test, not hang the run.
+		// The waits are bounded: a SeekTo that never completes must fail this test, not hang the run.
 		await InvokeOnMainThreadAsync(async () => await view.SeekTo(TimeSpan.FromSeconds(1)).WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds)));
 		await WaitUntilAsync(() => Math.Abs(session.Position.TotalSeconds - 1) <= 0.35, "SeekTo(1 s) on the UI thread did not move the native position.");
 
@@ -404,8 +396,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		await WaitUntilAsync(() => Math.Abs(session.Position.TotalSeconds - 1.5) <= 0.35, "SeekTo(1.5 s) from a pool thread did not move the native position.");
 	}
 
-	// IMediaElement.SeekTo outside the media goes to its start or its end, completes, and raises SeekCompleted. The clip does not loop and stays
-	// paused, and SeekTo(1 s) moves the player away from both ends first, so that every seek moves it.
+	// The clip does not loop and stays paused, and SeekTo(1 s) moves the player away from both ends first, so that every seek moves it.
 	[Theory]
 	[InlineData(WinMediaSeekOutsideTheMedia.BeforeTheStart)]
 	[InlineData(WinMediaSeekOutsideTheMedia.BeyondTheEnd)]
@@ -442,7 +433,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		await ConnectAsync(view);
 		await OpenAsync(view, VideoSource);
 
-		// MediaOpened starts the 200 ms timer; each tick runs StatusUpdated -> MapStatusUpdated -> UpdateStatus (the runner's window exists).
+		// UpdateStatus does nothing without an application window; the test relies on the runner's window.
 		await InvokeOnMainThreadAsync(() => view.Play());
 
 		await WaitUntilAsync(() => view.Position > TimeSpan.FromSeconds(0.3), "The status timer never copied the advancing native position to MediaElement.Position.");
@@ -722,9 +713,8 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		});
 	}
 
-	// A disposed handler that is still the view's handler: every property change goes through MAUI's property mapper to the toolkit's mappers,
-	// which must find no manager, do nothing and throw nothing, so the native player and element the handler created keep their values. (After
-	// DisconnectHandler, by contrast, MAUI has already cleared view.Handler, so a property change reaches no toolkit code at all.)
+	// Dispose leaves the handler as the view's handler, so property changes still reach the toolkit's mappers, which must find no manager and do
+	// nothing. After DisconnectHandler, by contrast, MAUI has already cleared view.Handler, so a property change reaches no toolkit code at all.
 	[Fact]
 	public async Task PropertyChangesAfterTheHandlerWasDisposedLeaveTheNativePlayerAlone()
 	{
@@ -736,7 +726,6 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// The values the initial mapping gave the native objects (the MediaElement defaults).
 			Assert.Equal(1.0, player.Volume, 3);
 			Assert.False(player.IsMuted);
 			Assert.False(player.IsLoopingEnabled);

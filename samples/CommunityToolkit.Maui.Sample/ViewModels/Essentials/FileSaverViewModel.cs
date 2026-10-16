@@ -39,7 +39,7 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		{
 			var fileName = await (Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt"));
 
-			// DisplayPromptAsync returns null when the prompt is canceled: there is no file name, so nothing is saved
+			// DisplayPromptAsync returns null when the prompt is canceled.
 			if (fileName is null)
 			{
 				return;

@@ -7,12 +7,11 @@ using Window = Microsoft.Maui.Controls.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The Windows block of Options.SetShouldEnableSnackbarOnWindows registers two lifecycle delegates on the builder: OnLaunched registers
-// the app notification manager (so that the buttons of a Snackbar reach the toolkit) and OnClosed unregisters it. The delegates are
-// taken from the test's MauiApp and invoked directly, except for the two arms that call the process-wide AppNotificationManager
-// Register() and Unregister(): the runner's own launch ran the first one (RunnerLaunchRanTheRegistrationArmOfThisConfiguration), the
-// second one would stop the runner's registration. A person checks it in the Sample (Alerts pages) by closing the last window, and the
-// button of a notification by pressing it (SnackbarTests.PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar).
+// The lifecycle delegates that Options.SetShouldEnableSnackbarOnWindows registers (OnLaunched, OnClosed) are taken from the test's
+// MauiApp and invoked directly, except for the two arms that call the process-wide AppNotificationManager Register() and Unregister():
+// the runner's own launch ran the first one (RunnerLaunchRanTheRegistrationArmOfThisConfiguration), the second one would stop the
+// runner's registration. A person checks it in the Sample (Alerts pages) by closing the last window, and the button of a notification
+// by pressing it (SnackbarTests.PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar).
 public partial class SnackbarWindowsSetupTests
 {
 	const string documentationUrl = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar";
@@ -32,7 +31,6 @@ public partial class SnackbarWindowsSetupTests
 			Assert.Equal(documentationUrl, exception.HelpLink);
 			Assert.Equal(before, Options.ShouldEnableSnackbarOnWindows);
 
-			// Disabling needs no builder.
 			new Options().SetShouldEnableSnackbarOnWindows(false);
 			Assert.False(Options.ShouldEnableSnackbarOnWindows);
 		}
@@ -202,7 +200,6 @@ public partial class SnackbarWindowsSetupTests
 		});
 	}
 
-	// Options.isSnackbarNotificationManagerRegistered: set after Register() returned, cleared after Unregister().
 	static bool IsNotificationManagerRegistered
 	{
 		get => (bool)NotificationManagerRegisteredField.GetValue(null)!;
@@ -213,12 +210,12 @@ public partial class SnackbarWindowsSetupTests
 		typeof(Options).GetField("isSnackbarNotificationManagerRegistered", BindingFlags.Static | BindingFlags.NonPublic)
 			?? throw new InvalidOperationException("Options.isSnackbarNotificationManagerRegistered was not found.");
 
-	// The lifecycle delegates that Options.SetShouldEnableSnackbarOnWindows added to the test's MauiApp (its lambdas are nested in Options).
+	// The delegates of Options.SetShouldEnableSnackbarOnWindows are told apart by their lambdas being nested in Options.
 	List<TDelegate> GetToolkitDelegates<TDelegate>(string eventName)
 		where TDelegate : Delegate =>
 		[.. ApplicationServices.GetService<ILifecycleEventService>()?.GetEventDelegates<TDelegate>(eventName).Where(del => del.Method.DeclaringType?.DeclaringType == typeof(Options)) ?? []];
 
-	// An application with the given number of windows (Application.Current is set by its constructor, the tests put the runner's back).
+	// Application.Current is set by its constructor: the tests put the runner's back.
 	sealed class WindowsTestApplication : Application
 	{
 		public WindowsTestApplication(int windowCount)

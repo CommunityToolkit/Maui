@@ -71,7 +71,7 @@ static partial class StatusBar
 		}
 	}
 
-	// statusBarFrame is the status bar frame of the window's scene: the deprecated UIApplication.StatusBarFrame is CGRect.Null in an app built with the iOS 27 SDK
+	// The deprecated UIApplication.StatusBarFrame is CGRect.Null in an app built with the iOS 27 SDK, so the status bar frame of the window's scene is passed in.
 	static CGRect GetStatusBarFrame(in UIWindow window, in CGRect statusBarFrame, in bool isUsingSafeArea)
 	{
 		return isUsingSafeArea
@@ -102,16 +102,11 @@ static partial class StatusBar
 #if NET11_0_OR_GREATER
 	const string viewControllerBasedStatusBarAppearanceKey = "UIViewControllerBasedStatusBarAppearance";
 
-	/// <summary>
-	/// Sets the <see cref="IWindow.StatusBarTheme"/> of every window of the app. CommunityToolkit.Maui sets it in UseMauiCommunityToolkit:
-	/// only Microsoft.Maui.Controls.Window can change the theme, and CommunityToolkit.Maui.Core does not reference Microsoft.Maui.Controls.
-	/// </summary>
+	// Set by CommunityToolkit.Maui in UseMauiCommunityToolkit: only Microsoft.Maui.Controls.Window can change the theme, and
+	// CommunityToolkit.Maui.Core does not reference Microsoft.Maui.Controls.
 	internal static Action<StatusBarTheme>? SetStatusBarThemeOfEveryWindow { get; set; }
 
-	/// <summary>
-	/// Reads the value of UIViewControllerBasedStatusBarAppearance in the app's Info.plist (<see langword="null"/> without the key). The device tests
-	/// replace it to show what each value does.
-	/// </summary>
+	// The device tests replace it to show what each value of UIViewControllerBasedStatusBarAppearance does.
 	internal static Func<NSObject?> ReadViewControllerBasedStatusBarAppearance { get; set; } = static () => NSBundle.MainBundle.ObjectForInfoDictionary(viewControllerBasedStatusBarAppearanceKey);
 
 	/// <summary>

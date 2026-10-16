@@ -20,8 +20,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class SnackbarTests
 {
-	// Material dismisses a snackbar when its action is clicked, and Snackbar raises Dismissed from the Material callback.
-	// The action button of the native snackbar can be activated from a test.
 	static string? ActionCannotBeClickedReason => null;
 
 	static Task<IReadOnlyList<string>> GetVisibleMessagesAsync() =>
@@ -38,8 +36,8 @@ public partial class SnackbarTests
 	}
 
 	// Disposing the Java peer of a snackbar that is still shown would leave it on screen for good, and in Material's SnackbarManager, which
-	// would dismiss it into the next test (see AlertsAndroid.RemoveSnackbarsThatCannotBeDismissedAsync). So the tests dismiss it natively
-	// first. The dismissed Material snackbar stays the toolkit's platform snackbar, which Dispose then disposes.
+	// would dismiss it into the next test (see AlertsAndroid.RemoveSnackbarsThatCannotBeDismissedAsync). The dismissed Material snackbar
+	// stays the toolkit's platform snackbar, which Dispose then disposes.
 	static async Task TakeTheSnackbarOffScreenBeforeItIsDisposedAsync()
 	{
 		AlertsAndroid.GetNativeSnackbar(GetPlatformSnackbar()).Dismiss();
@@ -93,8 +91,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// The options of a snackbar made without visual options (Make's `visualOptions ?? new()`): AlertDefaults colors, 14 dip fonts and
-	// 4 dip corners.
 	[Fact]
 	public async Task DefaultVisualOptionsUseTheAlertDefaults()
 	{
@@ -148,7 +144,7 @@ public partial class SnackbarTests
 			Assert.Equal(20 * AlertsAndroid.Density, message.TextSize, 0.5);
 			Assert.True(message.Typeface!.IsBold);
 
-			// The amount of spacing is pinned by CharacterSpacingIsTheLetterSpacingOfTheMessageInEm: here only that it is applied.
+			// The amount of spacing is pinned by CharacterSpacingIsTheLetterSpacingOfTheMessageInEm.
 			Assert.True(message.LetterSpacing > 0, $"The message is not spaced: LetterSpacing is {message.LetterSpacing}.");
 			Assert.Equal(10, message.MaxLines);
 			Assert.Equal(Color.FromRgb(30, 200, 40).ToPlatform().ToArgb(), action.CurrentTextColor);
@@ -158,8 +154,8 @@ public partial class SnackbarTests
 		});
 	}
 
-	// SnackbarOptions.CharacterSpacing is the letter spacing of the message in em, whatever the font size: the unit documented on
-	// SnackbarOptions.CharacterSpacing (a MAUI Label with the same CharacterSpacing is spaced by CharacterSpacing * 0.0624 em instead).
+	// The expected values follow the unit documented on SnackbarOptions.CharacterSpacing; a MAUI Label with the same CharacterSpacing is
+	// spaced by CharacterSpacing * 0.0624 em instead.
 	[Theory]
 	[InlineData(2.0, 20.0)]
 	[InlineData(2.0, 10.0)]
@@ -208,7 +204,6 @@ public partial class SnackbarTests
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
-			// The size Material gives a snackbar nobody has styled.
 			var nativeDefault = MaterialSnackbar.Make(AlertsAndroid.Content, "Native", MaterialSnackbar.LengthIndefinite)!.View;
 			var defaultMessageSize = AlertsAndroid.GetMessageView(nativeDefault).TextSize;
 			var defaultActionSize = AlertsAndroid.GetActionView(nativeDefault).TextSize;
@@ -362,7 +357,7 @@ public partial class SnackbarTests
 	// Material sets the bottom margin of an anchored snackbar, the distance from the bottom of its parent to the top of the anchor, when it
 	// shows the snackbar, and sets it again after a layout pass only when its anchor layout listener is enabled. Without the listener the
 	// snackbar stayed where it was shown: after a rotation to landscape the portrait margin was taller than the parent, so the snackbar was
-	// laid out above the screen with no height while it was still shown. Here the anchor moves because the view above it changes height.
+	// laid out above the screen with no height while it was still shown.
 	[Theory]
 	[InlineData(120.0, 320.0)]
 	[InlineData(320.0, 120.0)]
@@ -754,7 +749,7 @@ public partial class SnackbarTests
 	}
 
 	// A modal page that sits in a CoordinatorLayout (as in Shell) gets a snackbar whose layout parameters are CoordinatorLayout.LayoutParams,
-	// which the navigation bar compensation does not handle: the margins stay what Material made them.
+	// which the navigation bar compensation does not handle.
 	[Fact]
 	public async Task SnackbarAboveAModalPageInACoordinatorLayoutKeepsTheMarginsMaterialGaveIt()
 	{
@@ -773,7 +768,6 @@ public partial class SnackbarTests
 			coordinator.AddView(modalView);
 			try
 			{
-				// The margins Material itself gives a snackbar in this parent.
 				var nativeSnackbar = MaterialSnackbar.Make(modalView, "Native", MaterialSnackbar.LengthIndefinite)!;
 				nativeSnackbar.Show();
 				await AssertEventually(() => AlertsAndroid.GetSnackbarLayouts().Count == 1, timeout: 10000, message: "The native snackbar was never shown.");
@@ -923,8 +917,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Under a Material 3 theme the corner radii become the corner sizes of the shape appearance of the MaterialShapeDrawable background,
-	// in the corners they name (the setup is the one of BackgroundColorIsRenderedUnderAMaterial3Theme).
+	// The setup is the one of BackgroundColorIsRenderedUnderAMaterial3Theme.
 	[Fact]
 	public async Task CornerRadiiAreAppliedToTheMatchingCornersUnderAMaterial3Theme()
 	{
@@ -984,8 +977,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Dismiss works off the UI thread too: Material's SnackbarManager posts the dismissal to the main thread, and Dismiss waits for the
-	// callback that reports it.
+	// Material's SnackbarManager posts the dismissal to the main thread, and Dismiss waits for the callback that reports it.
 	[Fact]
 	public async Task DismissOffTheUiThreadDismissesTheSnackbar()
 	{
@@ -1008,8 +1000,8 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Material hides the action of a snackbar whose action text is empty. iOS and Mac Catalyst keep an empty, padded action button instead
-	// (SnackbarTests.EmptyActionButtonTextKeepsAnEmptyActionButton): the platforms differ for this input.
+	// iOS and Mac Catalyst keep an empty, padded action button for this input (SnackbarTests.EmptyActionButtonTextKeepsAnEmptyActionButton):
+	// the platforms differ.
 	[Fact]
 	public async Task EmptyActionButtonTextHidesTheActionButton()
 	{

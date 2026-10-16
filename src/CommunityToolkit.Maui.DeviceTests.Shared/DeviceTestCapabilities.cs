@@ -14,12 +14,10 @@ using CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// Machine capabilities that a headless run declares, so that each CI job says what its runner cannot run while every other run executes
-/// everything. A run declares capabilities missing (DEVICE_TEST_SKIP_CAPABILITIES): their tests end as Skipped without probing the machine.
-/// It declares capabilities required (DEVICE_TEST_REQUIRE_CAPABILITIES): their tests fail, instead of skipping, when the machine turns out not
-/// to offer them. The device test jobs of .github/workflows/device-tests.yml set both lists, and eng/devices/*.ps1 pass them to the app the way
-/// they pass TestFilter: an instrumentation argument on Android, an environment variable on iOS and Mac Catalyst, and a file next to the
-/// results file on Windows. Runs without the lists, such as local script runs and the visual runner, skip nothing and require nothing.
+/// Lets each CI job say what its runner cannot run while every other run, such as a local script run or the visual runner, executes
+/// everything. A capability declared missing (DEVICE_TEST_SKIP_CAPABILITIES) ends its tests as Skipped without probing the machine. A
+/// capability declared required (DEVICE_TEST_REQUIRE_CAPABILITIES) fails its tests, instead of skipping them, when the machine turns out
+/// not to offer it.
 /// </summary>
 /// <remarks>
 /// A test guards a capability that a CI runner may lack with <see cref="Require(string, bool, string)"/> (or the overload that takes a
@@ -33,10 +31,9 @@ public static class DeviceTestCapabilities
 	/// <summary>Windows: a MediaPlayer renders the H.264 test clip, so it reports the natural video size and plays.</summary>
 	public const string VideoRendering = nameof(VideoRendering);
 
-	/// <summary>A camera that the platform's capture APIs find.</summary>
 	public const string Camera = nameof(Camera);
 
-	/// <summary>A second camera to switch to. A run that declares <see cref="Camera"/> missing has no second camera either.</summary>
+	/// <summary>A run that declares <see cref="Camera"/> missing has no second camera either.</summary>
 	public const string SecondCamera = nameof(SecondCamera);
 
 	/// <summary>Android: an on-device speech recognition service that answers and has a language installed.</summary>
@@ -52,15 +49,10 @@ public static class DeviceTestCapabilities
 
 	static readonly Lazy<Declarations> declarations = new(ReadDeclarations);
 
-	/// <summary>The capabilities this run declares missing.</summary>
 	public static IReadOnlyList<string> DeclaredMissing => declarations.Value.Missing;
 
-	/// <summary>The capabilities this run requires.</summary>
 	public static IReadOnlyList<string> DeclaredRequired => declarations.Value.Required;
 
-	/// <summary>
-	/// Ends the test as Skipped when this run declares <paramref name="capability"/> missing, and does nothing otherwise.
-	/// </summary>
 	public static void SkipIfDeclaredMissing(string capability)
 	{
 		var declared = DeclaredMissing.FirstOrDefault(missing => missing == capability || (capability is SecondCamera && missing is Camera));
@@ -70,11 +62,6 @@ public static class DeviceTestCapabilities
 		}
 	}
 
-	/// <summary>
-	/// Lets the test go on when <paramref name="isAvailable"/> is true. Otherwise the test fails when this run requires
-	/// <paramref name="capability"/>, and ends as Skipped with <paramref name="unavailableReason"/> when it does not. A run that declares
-	/// the capability missing skips without looking at <paramref name="isAvailable"/>.
-	/// </summary>
 	public static void Require(string capability, [DoesNotReturnIf(false)] bool isAvailable, string unavailableReason)
 	{
 		SkipIfDeclaredMissing(capability);
@@ -84,10 +71,6 @@ public static class DeviceTestCapabilities
 		}
 	}
 
-	/// <summary>
-	/// <see cref="Require(string, bool, string)"/> for a probe that answers with the reason why <paramref name="capability"/> is
-	/// unavailable, or with null when it is available.
-	/// </summary>
 	public static void Require(string capability, string? unavailableReason)
 	{
 		SkipIfDeclaredMissing(capability);
@@ -98,8 +81,8 @@ public static class DeviceTestCapabilities
 	}
 
 	/// <summary>
-	/// What is wrong with this run's declarations, one line per problem: a name that is not a capability of this class, or a capability
-	/// that is declared both missing and required. The DeviceTestsInfrastructure tests of every app fail on any.
+	/// A misspelled capability name would silently skip or require nothing, so the DeviceTestsInfrastructure tests of every app
+	/// fail on any problem.
 	/// </summary>
 	public static IReadOnlyList<string> GetDeclarationProblems()
 	{
@@ -142,8 +125,8 @@ public static class DeviceTestCapabilities
 		missing = Environment.GetEnvironmentVariable(skipKey);
 		required = Environment.GetEnvironmentVariable(requireKey);
 #elif WINDOWS
-		// A packaged app does not inherit the environment of the script that starts it, so windows.ps1 writes the lists, one "key=value" line
-		// each, to a file next to the results file. A headless run gets the results file as its first argument; the visual runner gets none.
+		// A packaged app does not inherit the environment of the script that starts it, so windows.ps1 writes the lists to a file next to
+		// the results file. A headless run gets the results file as its first argument; the visual runner gets none.
 		var resultsFile = HeadlessTestRunner.TestResultsFile;
 		var declarationsFile = string.IsNullOrEmpty(resultsFile) ? null : Path.Combine(Path.GetDirectoryName(resultsFile) ?? string.Empty, declarationsFileName);
 		if (declarationsFile is not null && File.Exists(declarationsFile))

@@ -21,7 +21,7 @@ static partial class DrawingViewTestPlatform
 
 	internal static bool IsChildOf(MauiDrawingView view, object platformParent) => platformParent is Microsoft.UI.Xaml.Controls.Panel panel && panel.Children.Contains(view);
 
-	// WinUI cannot construct PointerRoutedEventArgs, so the shared gesture methods are called directly.
+	// WinUI cannot construct PointerRoutedEventArgs, so the touch helpers call the view's shared gesture methods by reflection.
 	internal static void TouchDown(MauiDrawingView view, double x, double y) => Invoke(view, "OnStart", new PointF((float)x, (float)y));
 
 	internal static void TouchMove(MauiDrawingView view, double x, double y) => Invoke(view, "OnMoving", new PointF((float)x, (float)y));
@@ -46,9 +46,8 @@ static partial class DrawingViewTestPlatform
 	}
 
 	/// <summary>
-	/// Draws the view's native drawable into an offscreen Win2D render target of the view's size. Capturing the Win2D control through
-	/// the screen is not available on every CI machine (see AssertionExtensions.ToBitmap), so the pixels come from the drawable that
-	/// the view's W2DGraphicsView would draw.
+	/// UI thread only. Capturing the Win2D control through the screen is not available on every CI machine (see AssertionExtensions.ToBitmap), so the pixels
+	/// come from the drawable that the view's W2DGraphicsView would draw, in an offscreen render target.
 	/// </summary>
 	internal static Task<DrawingPixelImage> RenderAsync(MauiDrawingView view, IMauiContext mauiContext)
 	{

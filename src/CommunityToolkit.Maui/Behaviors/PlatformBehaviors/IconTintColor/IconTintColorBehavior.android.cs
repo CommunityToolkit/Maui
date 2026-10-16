@@ -85,7 +85,7 @@ public partial class IconTintColorBehavior
 		static void SetMaterialButtonTintColor(AndroidMaterialButton button, Color? color)
 		{
 			// A MaterialButton is also an Android.Widget.Button. Its icon is one of its compound drawables, but MaterialButton tints it with
-			// IconTint, which it applies again whenever it updates the icon: the tint is set and cleared through IconTint.
+			// IconTint, which it applies again whenever it updates the icon.
 			if (color is null)
 			{
 				button.IconTint = null;
@@ -112,7 +112,6 @@ public partial class IconTintColorBehavior
 		}
 	}
 
-	// Removes the tint that SetWidgetButtonTintColor gives the compound drawables of an Android.Widget.Button: they show their own colors again.
 	static void ClearWidgetButtonTintColor(AndroidWidgetButton button)
 	{
 		// getCompoundDrawables() returns null for each side that has no drawable.

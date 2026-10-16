@@ -5,17 +5,14 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior : IDisposable
 {
-	// The InputTransparent value of each view before the behavior changed it, given back when the views get their input back
 	readonly Dictionary<View, bool> inputTransparentToRestore = [];
 
-	// The layout whose children the behavior handles (the element, or the layout a content view shows): the behavior lets go of this layout,
-	// even when the content view shows another content by then
+	// The behavior lets go of this layout, even when the content view that showed it shows another content by then
 	Layout? childrenLayout;
 
 	bool isDisposed;
 
 #if !(ANDROID || IOS || MACCATALYST || WINDOWS)
-	// Without a platform view only the behavior raises the Clicked of a Button or an ImageButton
 	internal bool IsClickedRaisedByPlatformView => false;
 #endif
 
@@ -328,7 +325,6 @@ public partial class TouchBehavior : IDisposable
 
 	void OnLayoutChildRemoved(object? sender, ElementEventArgs e)
 	{
-		// A child that leaves the layout is no longer the behavior's business: it gets its own value back.
 		if (e.Element is View view && inputTransparentToRestore.Remove(view, out var inputTransparent))
 		{
 			GiveBackInputTransparent(view, inputTransparent);

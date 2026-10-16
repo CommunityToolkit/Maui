@@ -15,8 +15,6 @@ on:
             - README.md
 
 env:
-    # The .NET SDK and Xcode versions are in shared.env, next to this file (device-tests.yml uses them too): each job that needs them loads
-    # it with ./.github/actions/load-shared-env after its checkout.
     CurrentSemanticVersionBase: '99.0.0'
     PreviewNumber: ${{ github.run_number }}
     CurrentSemanticVersion: '99.0.0-preview${{ github.run_number }}'
@@ -279,7 +277,6 @@ jobs:
             -   name: Pack CommunityToolkit.Maui.Maps NuGet
                 run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
-            # Tag builds stage the packages too: sign and release-nuget publish them.
             -   name: Copy NuGet Packages to Staging Directory
                 if: ${{ runner.os == 'Windows' }}
                 run: |
@@ -303,18 +300,14 @@ jobs:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
     
-    # The device tests (device-tests.yml) run as part of this workflow, for pushes to main and pull requests; tags only build, sign and
-    # publish the packages. The device test jobs that collect code coverage upload it for the code_coverage job.
+    # Tag builds only build, sign and publish the packages, so they skip the device tests.
     device_tests:
         name: Device Tests
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: ./.github/workflows/device-tests.yml
 
-    # One code coverage report for the unit tests and the device tests (eng/coverage-report.ps1), whatever the tests' results: the job
-    # summary, and the HTML report in the code-coverage-report artifact. It merges the coverage-* artifacts of this run: the unit tests
-    # (build_library, Windows, Debug) and the device test jobs that set DEVICE_TEST_COVERAGE. Those jobs are in device-tests.yml, and what
-    # a called workflow uploads belongs to the run of the workflow that called it, so this job waits for the whole device_tests job (the
-    # Windows jobs too, which collect no coverage). A tag build has only the unit tests.
+    # Runs whatever the tests' results, and on tag builds, which skip the device tests. What a called workflow uploads belongs to the run
+    # of the workflow that called it, so this job waits for the whole device_tests job, the Windows jobs too, which collect no coverage.
     code_coverage:
         name: Code Coverage
         if: ${{ !cancelled() }}

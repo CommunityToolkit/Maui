@@ -9,12 +9,8 @@ using FrameLayout = Android.Widget.FrameLayout;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android only: the key listener, the click listener that carries the gesture in touch exploration (TalkBack) mode, hover tracking while
-// touching, the request not to intercept touches, the guard clauses of the touch handler, and what the behavior's listeners do to a
-// view that has listeners of its own (a Button).
 public partial class TouchBehaviorInputTests
 {
-	// Catches: the space key release not completing the gesture (OnKeyPressed).
 	[Fact]
 	public async Task SpaceKeyReleaseCompletesTheGesture()
 	{
@@ -42,7 +38,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: any other key, or the space key going down, completing the gesture (the KeyCode and Action checks of OnKeyPressed).
 	[Fact]
 	public async Task OtherKeysAndKeyDownDoNotCompleteTheGesture()
 	{
@@ -64,8 +59,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the key listener consuming key events (e.Handled must be set to false: the .NET wrapper starts with Handled = true, and a
-	// consumed key never reaches the view's own key handling or focus navigation).
+	// The .NET wrapper of the key event starts with Handled = true, so the behavior's listener must set it to false: a consumed key never
+	// reaches the view's own key handling or focus navigation.
 	[Fact]
 	public async Task KeyEventsAreNotConsumed()
 	{
@@ -79,11 +74,9 @@ public partial class TouchBehaviorInputTests
 			var view = GetPlatformView(handler);
 			FocusForKeyboardInput(view);
 
-			// A key that nobody handles stays unhandled: the behavior's listener did not consume it.
 			Assert.False(DispatchKey(view, Keycode.A, KeyEventActions.Down), "The behavior must not consume a key it ignores.");
 			Assert.False(DispatchKey(view, Keycode.A, KeyEventActions.Up), "The behavior must not consume a key it ignores.");
 
-			// Every event is handed back unhandled, the space release the behavior acts on included.
 			foreach (var (key, action) in new[] { (Keycode.Space, KeyEventActions.Up), (Keycode.Space, KeyEventActions.Down), (Keycode.Enter, KeyEventActions.Up) })
 			{
 				using var keyEvent = new KeyEvent(action, key);
@@ -94,7 +87,7 @@ public partial class TouchBehaviorInputTests
 				Assert.False(args.Handled, $"{key} {action} must not be consumed by the behavior.");
 			}
 
-			// A key event without its KeyEvent (the null-conditional of the Action check) completes nothing, and is not consumed either.
+			// Android always hands a key listener its KeyEvent, so the null-conditional of the Action check is only reachable directly.
 			var withoutEvent = new AView.KeyEventArgs(true, Keycode.Space, null);
 			InvokePrivate(behavior, "OnKeyPressed", view, withoutEvent);
 			Assert.False(withoutEvent.Handled);
@@ -103,12 +96,10 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// After the detach neither the key nor the touch listener may reach the behavior. The command cannot show it (without an element
-	// CanExecute is false, so nothing runs either way) and the interaction ends Completed either way, so the test records the events: a
-	// key handler left registered turns the touch status into Canceled (HandleTouchEnded with a command that can no longer execute), a touch
-	// handler left registered raises InteractionStatusChanged (Started, Completed). Before the detach the same key completes the gesture, so
-	// the key does reach the view's key listener here.
-	// Catches: the key or touch handler staying registered after the behavior detached (OnDetachedFrom's KeyPress -= / Touch -=).
+	// A listener left registered would show neither in the command (without an element CanExecute is false) nor in the final interaction
+	// status (Completed either way), so the test records the events: a key handler left registered turns the touch status into Canceled
+	// (HandleTouchEnded with a command that can no longer execute), a touch handler left registered raises InteractionStatusChanged.
+	// Before the detach the same key completes the gesture, so it does reach the view's key listener here.
 	[Fact]
 	public async Task KeysAreIgnoredAfterTheBehaviorDetached()
 	{
@@ -144,8 +135,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the touch listener consuming touch events (e.Handled must be set to false before anything else, also when the behavior is
-	// disabled): a consumed touch never reaches the view's own touch handling (pressed state, click, long click).
+	// e.Handled must be set to false before anything else, also when the behavior is disabled: a consumed touch never reaches the view's own
+	// touch handling (pressed state, click, long click).
 	[Fact]
 	public async Task TouchesAreNotConsumed()
 	{
@@ -181,8 +172,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: motion events the behavior has no arm for (a second finger, an outside touch, a hover move, and an event without a
-	// MotionEvent at all) changing the touch, or failing.
 	[Fact]
 	public async Task OtherMotionEventsAreIgnored()
 	{
@@ -211,9 +200,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: touch exploration mode not routing the gesture through the click listener (OnClick), raw touches or a real hover still being
-	// handled in that mode (OnTouch and OnGenericMotion return early), the click listener not following the accessibility state
-	// (AccessibilityListener).
 	[Fact]
 	public async Task TouchExplorationCompletesTheGestureThroughClickAndIgnoresRawTouches()
 	{
@@ -228,33 +214,29 @@ public partial class TouchBehaviorInputTests
 		{
 			var view = GetPlatformView(handler);
 
-			// Outside touch exploration a click does nothing: the touch listener carries the gesture.
 			view.PerformClick();
 			Assert.Equal(0, command.ExecuteCount);
 
 			await WithTouchExplorationAsync(view, async () =>
 			{
-				// The touch listener ignores raw touches in this mode: the behavior's own state does not move...
 				NativePress(handler);
 				NativeRelease(handler);
 				AssertTouchNow(behavior, TouchStatus.Completed, TouchState.Default, TouchInteractionStatus.Completed, "raw touches in touch exploration mode");
 				Assert.Equal(0, command.ExecuteCount);
 
-				// ...but Android turns the touch into a click, which it posts to the main thread (a double tap does the same): the click
-				// listener completes the gesture.
+				// Android turns the touch into a click, which it posts to the main thread (a double tap does the same): the click listener
+				// completes the gesture.
 				await WaitUntilAsync(() => command.ExecuteCount == 1, "The click that Android posted after the touch did not complete the gesture.");
 
 				view.PerformClick();
 				Assert.Equal(2, command.ExecuteCount);
 				Assert.Equal(["click", "click"], command.Parameters);
 
-				// A disabled behavior ignores the click as well.
 				behavior.IsEnabled = false;
 				view.PerformClick();
 				Assert.Equal(2, command.ExecuteCount);
 				behavior.IsEnabled = true;
 
-				// A real mouse or stylus hover reaches the view's generic motion listener, which ignores it in this mode too.
 				await NativeHoverEnterAsync(handler);
 				await NativeHoverExitAsync(handler);
 				Assert.Empty(hoverLog.Items);
@@ -274,9 +256,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// An accessibility service that does not explore by touch (the AccessibilityManager is enabled, touch exploration is off) is not
-	// accessibility mode: raw touches carry the gesture and a click does not complete it a second time.
-	// Catches: IsAccessibilityMode ignoring IsTouchExplorationEnabled (any enabled accessibility service would then swallow raw touches).
 	[Fact]
 	public async Task RawTouchesAreHandledWhileAnAccessibilityServiceRunsWithoutTouchExploration()
 	{
@@ -303,12 +282,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Without any accessibility service (the AccessibilityManager is disabled) raw touches carry the gesture.
-	// Catches: IsAccessibilityMode treating a disabled AccessibilityManager as accessibility mode. The instrumentation's UiAutomation stays
-	// registered as an accessibility service once a test used it, so the test disconnects it first (ReleaseAccessibilityServiceAsync: from
-	// API 33 through the public API; before that through the hidden UiAutomation.destroy(), which API 28 accepts, and only for a
-	// UiAutomation that this area's tests connected). It skips visibly while a service it may not or cannot switch off runs: before API 33
-	// one that it did not connect (a real accessibility service of the device; the Toast tests release theirs after each test), or a refused destroy.
+	// The instrumentation's UiAutomation stays registered as an accessibility service once a test used it, so the test disconnects it first.
 	[Fact]
 	public async Task RawTouchesAreHandledWhileNoAccessibilityServiceRuns()
 	{
@@ -331,8 +305,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: UpdateClickHandler not registering the click listener while touch exploration is on, even for a disabled behavior, or not
-	// removing it again when it ends (both AccessibilityListener callbacks).
 	[Fact]
 	public async Task ClickListenerFollowsTheAccessibilityState()
 	{
@@ -344,7 +316,6 @@ public partial class TouchBehaviorInputTests
 		{
 			var view = GetPlatformView(handler);
 
-			// Disabled behavior outside touch exploration: no click listener, but the view is still made clickable.
 			Assert.True(view.Clickable);
 			Assert.False(view.HasOnClickListeners);
 
@@ -358,8 +329,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Outside touch exploration the behavior leaves the click listener slot alone, also for a disabled element.
-	// Catches: UpdateClickHandler registering the listener outside touch exploration (it takes the place of the view's own listener).
+	// A listener registered outside touch exploration would take the place of the view's own click listener.
 	[Fact]
 	public async Task ClickListenerIsNotRegisteredForADisabledElement()
 	{
@@ -378,10 +348,9 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// The HoverEnter / HoverExit arms of the touch listener. Android never hands a real hover to a touch listener (a mouse hover is a
-	// generic motion event, see TouchBehaviorInputTests.HoverEnterAndExitUpdateTheHoverStatus), so the hover actions are handed to the
-	// listener directly: this is only about those arms and the hover tracking they switch on.
-	// Catches: the arms not reporting Entered / Exited, or reporting the wrong one.
+	// Android never hands a real hover to a touch listener (a mouse hover is a generic motion event, see
+	// TouchBehaviorInputTests.HoverEnterAndExitUpdateTheHoverStatus), so the hover actions are handed to the listener directly, to cover its
+	// HoverEnter / HoverExit arms and the hover tracking they switch on.
 	[Fact]
 	public async Task HoverActionsDeliveredToTheTouchListenerUpdateTheHover()
 	{
@@ -407,10 +376,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A real hover (a generic motion event from the mouse) reaches the behavior and a PointerGestureRecognizer of the same view: MAUI
-	// implements the recognizer with the view's OnHoverListener (it sets and clears that single slot), so the behavior must not use it.
-	// Catches: the behavior taking the hover listener slot (MAUI's PointerEntered / PointerExited stop), MAUI's listener hiding the hover
-	// from the behavior.
+	// MAUI implements the PointerGestureRecognizer with the view's OnHoverListener (it sets and clears that single slot), so the behavior
+	// must not use it.
 	[Fact]
 	public async Task HoverReachesTheBehaviorAndAPointerGestureRecognizerOfTheView()
 	{
@@ -436,9 +403,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: hover tracking during a touch (isHoverSupported): leaving the view must end the hover, entering it again must restart it
-	// and the touch (Android lets a touch re-enter the view; the Apple recognizer does not). Hover is switched on through the touch
-	// listener's hover arm (see HoverActionsDeliveredToTheTouchListenerUpdateTheHover).
+	// Android lets a touch re-enter the view and restart (the Apple recognizer does not). Hover tracking (isHoverSupported) is switched on
+	// through the touch listener's hover arm (see HoverActionsDeliveredToTheTouchListenerUpdateTheHover).
 	[Fact]
 	public async Task TouchLeavingAndReenteringTheViewFollowsTheHoverAndRestartsThePress()
 	{
@@ -467,7 +433,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: touch moves changing the hover although no hover event was ever delivered (the isHoverSupported guard).
 	[Fact]
 	public async Task TouchMovesDoNotChangeTheHoverWithoutHoverSupport()
 	{
@@ -487,7 +452,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: OnDetachedFrom not resetting isHoverSupported: a stale flag would make the next touch end a hover that began before detach.
+	// A stale isHoverSupported flag would make the next touch end a hover that began before the detach.
 	[Fact]
 	public async Task HoverSupportIsForgottenWhenTheViewIsUnloaded()
 	{
@@ -517,7 +482,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the parent never being asked not to intercept while a threshold is set (OnTouchDown), or never being released (HandleTouchEnded).
 	[Fact]
 	public async Task ThresholdAsksTheParentNotToInterceptWhilePressed()
 	{
@@ -542,7 +506,6 @@ public partial class TouchBehaviorInputTests
 				NativeReleaseOn(child);
 				Assert.Equal([true, false], parent.DisallowInterceptRequests);
 
-				// A drag beyond the threshold ends the touch, and releases the parent as well.
 				NativePressOn(child);
 				NativeMoveOn(child, 80, 0);
 				Assert.Equal([true, false, true, false], parent.DisallowInterceptRequests);
@@ -554,10 +517,10 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// The request not to intercept must reach the view's own parent: Android's RequestDisallowInterceptTouchEvent travels up from the view
-	// it is sent to, so a request sent to the grandparent never reaches a parent that intercepts (a scroll view holding the view).
-	// Catches: the request going to the parent of the first ViewGroup found from the view (FindParentOfType<ViewGroup>), which for a
-	// platform view that is not a ViewGroup (Label, Image, Button) is already the grandparent.
+	// Android's RequestDisallowInterceptTouchEvent travels up from the view it is sent to, so a request sent to the grandparent never reaches
+	// a parent that intercepts (a scroll view holding the view). The child is not a ViewGroup because for such a view (Label, Image,
+	// Button) the parent of the first ViewGroup found from it, which the behavior used to ask (FindParentOfType<ViewGroup>), is already
+	// the grandparent.
 	[Fact]
 	public async Task ThresholdRequestReachesTheDirectParentOfAViewThatIsNotAViewGroup()
 	{
@@ -590,8 +553,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: the threshold requests failing for a view without a ViewGroup above it (viewGroup null) or for a ViewGroup without a parent
-	// (viewGroup.Parent null): both null-conditional hops of OnTouchDown and HandleTouchEnded.
 	[Fact]
 	public async Task ThresholdRequestWithoutAParentGroupDoesNotFail()
 	{
@@ -628,7 +589,6 @@ public partial class TouchBehaviorInputTests
 		Assert.Equal(2, command.ExecuteCount);
 	}
 
-	// Catches: the parent being asked not to intercept although no threshold is configured (the DisallowTouchThreshold > 0 guards).
 	[Fact]
 	public async Task WithoutAThresholdTheParentIsNotAskedToStayOutOfTheTouch()
 	{
@@ -659,10 +619,9 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A Button keeps raising Pressed, Released and Clicked while the behavior is attached. MAUI's ButtonHandler raises Pressed and Released
-	// from the OnTouchListener it installs, which the behavior's Touch += replaces (Android views have a single touch listener slot): the
-	// behavior gives the Button a handler that raises them instead. The Button keeps its own click listener.
-	// Catches: the behavior's touch listener leaving the Button without Pressed and Released, or its click listener replacing the Button's.
+	// MAUI's ButtonHandler raises Pressed and Released from the OnTouchListener it installs, which the behavior's Touch += replaces (Android
+	// views have a single touch listener slot): the behavior gives the Button a handler that raises them instead. The Button keeps its own
+	// click listener.
 	[Fact]
 	public async Task ButtonRaisesPressedAndReleasedWhileTheBehaviorIsAttached()
 	{
@@ -686,8 +645,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A Button clicks natively once the behavior is removed: its own click listener is still in Android's single click listener slot.
-	// Catches: the behavior taking the click listener slot outside touch exploration (the detach's Click -= would then leave it empty).
+	// The Button's own click listener stays in Android's single click listener slot: if the behavior took the slot outside touch
+	// exploration, the detach's Click -= would leave it empty.
 	[Fact]
 	public async Task ButtonClicksNativelyAfterTheBehaviorIsRemoved()
 	{
@@ -710,9 +669,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// After the behavior is removed the Button still raises Pressed and Released: the handler the behavior gave it stays, as MAUI's own touch
-	// listener cannot be given back.
-	// Catches: the detach leaving the Button without press and release handling (Touch -= empties the slot that MAUI's listener had).
+	// The handler the behavior gave the Button stays after the removal, as MAUI's own touch listener cannot be given back (Touch -= empties
+	// the slot that MAUI's listener had).
 	[Fact]
 	public async Task ButtonRaisesPressedAndReleasedAfterTheBehaviorIsRemoved()
 	{
@@ -736,7 +694,6 @@ public partial class TouchBehaviorInputTests
 			Assert.Equal(1, pressed);
 			Assert.Equal(1, released);
 
-			// Attaching and removing a behavior again does not add a second press and release handler
 			button.Behaviors.Add(behavior);
 			await WaitUntilAsync(() => behavior.Element is not null, "The behavior did not attach again.");
 			button.Behaviors.Remove(behavior);
@@ -750,10 +707,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// One tap on a Button or an ImageButton with a TouchBehavior clicks it once: the button's own click listener raises Clicked and runs its
-	// Command, and the behavior runs its own Command.
-	// Catches: GestureManager.OnTappedCompleted raising Clicked (IButtonController.SendClicked) although the button's own click listener
-	// already did (an ImageButton's handler subscribes Click +=, which the behavior does not replace).
+	// The button's own click listener raises Clicked and runs its Command (an ImageButton's handler subscribes Click +=, which the behavior
+	// does not replace), so GestureManager.OnTappedCompleted must not raise Clicked (IButtonController.SendClicked) as well.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -790,10 +745,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A Button whose platform view has no click listener of its own (an app removed it) does not click by itself: the behavior raises its
-	// Clicked for a completed tap, exactly once, and a cancelled or rejected touch does not click it.
-	// Catches: OnTappedCompleted's IButtonController branch not clicking such a button, clicking it twice, or clicking without the command
-	// check.
+	// A Button whose platform view has no click listener of its own (an app removed it) does not click by itself.
 	[Fact]
 	public async Task ButtonWithoutAClickListenerOfItsOwnIsClickedByTheBehavior()
 	{
@@ -813,7 +765,6 @@ public partial class TouchBehaviorInputTests
 			NativeRelease(handler);
 			await WaitUntilAsync(() => clicks == 1, "The behavior did not click the button.");
 
-			// Cancelled and rejected touches do not click
 			NativePress(handler);
 			NativeCancel(handler);
 			behaviorCommand.CanExecuteResult = false;
@@ -826,10 +777,9 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A DatePicker or TimePicker opens on a tap while a TouchBehavior is attached and after it is removed: MAUI's pickers are their own click
-	// listener (SetOnClickListener(this)), which the behavior's click listener used to take the place of. Each row opens its picker once:
-	// on API 28 MAUI's picker does not open again after IsOpen = false (Dialog.Hide keeps Dialog.IsShowing true before API 29).
-	// Catches: the behavior taking the click listener slot outside touch exploration.
+	// MAUI's pickers are their own click listener (SetOnClickListener(this)), which a click listener registered by the behavior would replace.
+	// Each row opens its picker once: on API 28 MAUI's picker does not open again after IsOpen = false (Dialog.Hide keeps Dialog.IsShowing
+	// true before API 29).
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
@@ -858,9 +808,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A TapGestureRecognizer of a Button goes on working with a TouchBehavior attached and after it is removed: MAUI's gesture handling and the
-	// behavior share the view's touch listener (the .NET Touch event), and the removal takes only the behavior's handler out.
-	// Catches: the behavior installing a touch listener of its own (SetOnTouchListener), which takes the gesture handling's place.
+	// MAUI's gesture handling and the behavior share the view's touch listener (the .NET Touch event), and the removal takes only the
+	// behavior's handler out: a touch listener of the behavior's own (SetOnTouchListener) would take the gesture handling's place.
 	[Fact]
 	public async Task TapGestureRecognizerOfAButtonWorksWithTheBehaviorAndAfterItIsRemoved()
 	{
@@ -890,12 +839,9 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A Button with a container view (a Shadow gives it one) and a gesture recognizer raises Pressed, Released and Clicked while a TouchBehavior
-	// is attached and after it is removed: MAUI's gesture handling listens to the container view then, and the press and release handler that
-	// the Button keeps leaves the touch to the Button, as MAUI's own touch listener does.
-	// Catches: the press and release handler leaving the touch handled (TouchEventArgs.Handled stays true unless a handler clears it) for a
-	// Button with gesture recognizers although MAUI's gesture handling is not in the Button's listener: the Button never clicks again once
-	// the behavior is removed.
+	// With a container view (a Shadow gives the Button one) MAUI's gesture handling listens to the container view, and the press and release
+	// handler that the Button keeps must leave the touch to the Button, as MAUI's own touch listener does (TouchEventArgs.Handled stays true
+	// unless a handler clears it): otherwise the Button never clicks again once the behavior is removed.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -933,13 +879,9 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Once the behavior is removed, a tap clicks a Button with a gesture recognizer exactly as often as it clicks the same Button that never had
-	// the behavior, with and without a container view: where MAUI's gesture handling shares the Button's touch listener (no container view) it
-	// decides whether the Button gets the touch, and the Button's own touch handling does where MAUI's gesture handling listens to the
-	// container view (a Shadow).
-	// Catches: the press and release handler that the Button keeps leaving the touch handled where MAUI's gesture handling listens to the
-	// container view (the Button would not click), or clearing it where MAUI's gesture handling shares the listener (the Button would click
-	// although MAUI's gesture handling took the touch).
+	// Who decides whether the Button gets the touch depends on the row: MAUI's gesture handling where it shares the Button's touch listener
+	// (no container view), the Button's own touch handling where it listens to the container view (a Shadow). So the clicks are compared
+	// with those of the same Button that never had the behavior.
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
@@ -975,7 +917,7 @@ public partial class TouchBehaviorInputTests
 				NativePress(handler);
 				NativeRelease(handler);
 
-				// Android performs the click in a message that it posts after the touch
+				// Android performs the click in a message that it posts after the touch.
 				await SettleAsync();
 			});
 
@@ -995,11 +937,8 @@ public partial class TouchBehaviorInputTests
 		return button;
 	}
 
-	// Touch exploration (TalkBack): a Button or an ImageButton keeps its own click listener. The click TalkBack performs raises Clicked once
-	// and completes the behavior's gesture through it; the button clicks natively once touch exploration ends and after the behavior is
-	// removed.
-	// Catches: the behavior taking a button's click listener slot in touch exploration mode (the button would lose its listener for good when
-	// touch exploration ends), the gesture not completing through Clicked, Clicked raised twice.
+	// The behavior must not take a button's click listener slot in touch exploration mode (TalkBack): the button would lose its listener for
+	// good when touch exploration ends.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -1036,7 +975,6 @@ public partial class TouchBehaviorInputTests
 				return Task.CompletedTask;
 			});
 
-			// Outside touch exploration a click is the button's alone (the touch listener carries the behavior's gesture)
 			view.PerformClick();
 			Assert.Equal(2, clicked);
 			Assert.Equal(1, behaviorCommand.ExecuteCount);
@@ -1047,11 +985,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Touch exploration (TalkBack): a DatePicker, a TimePicker or a Picker keeps its own click listener, so the click TalkBack performs opens
-	// it. The click is the picker's alone: it does not complete the behavior's gesture (TouchBehavior remarks).
-	// Catches: the behavior taking the click listener slot of a view that has a listener of its own in touch exploration mode (the DatePicker
-	// and the TimePicker, which are their own click listener, would not open), or completing its gesture from the click of a picker whose
-	// handler subscribes the .NET Click event that the behavior would share (the Picker; the earlier code ran the behavior's Command twice).
+	// The DatePicker and the TimePicker are their own click listener, and the Picker's handler subscribes the .NET Click event that the
+	// behavior would share, so the click is the picker's alone: it must not complete the behavior's gesture (TouchBehavior remarks).
 	[Theory]
 	[InlineData(nameof(DatePicker))]
 	[InlineData(nameof(TimePicker))]
@@ -1108,9 +1043,6 @@ public partial class TouchBehaviorInputTests
 		}
 	}
 
-	// Touch exploration (TalkBack): two TouchBehaviors of a view without a click listener of its own share the click listener slot, and the
-	// click completes the gesture of both.
-	// Catches: the second behavior taking the first one's listener for the view's own (and leaving the slot to it).
 	[Fact]
 	public async Task BehaviorsOfOneViewShareTheClickListenerInTouchExploration()
 	{
@@ -1140,9 +1072,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// MAUI's Picker maps IsEnabled to Clickable, and a tap opens it only while it is clickable. A Picker that was disabled when the behavior
-	// attached and was enabled while the behavior was attached must open on a tap once the behavior is removed.
-	// Catches: the detach giving the Picker the Clickable value read at attach (the disabled Picker's false) instead of the one MAUI sets now.
+	// MAUI's Picker maps IsEnabled to Clickable, and a tap opens it only while it is clickable, so the detach must not give it the Clickable
+	// value read at attach (the disabled Picker's false) instead of the one MAUI sets now.
 	[Fact]
 	public async Task PickerEnabledWhileTheBehaviorWasAttachedOpensOnATapOnceTheBehaviorIsRemoved()
 	{
@@ -1178,11 +1109,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Two TouchBehaviors on one view: when one of them is removed, the view must stay clickable for the other one. A view that is not clickable
-	// does not take the press, so its parent never hands it the release and the remaining behavior's tap never completes. Removing both gives
-	// the view its own values back. The taps go through the parent ViewGroup, as Android delivers them.
-	// Catches: each behavior giving the view the values it read at its own attach (the first one removed makes the view unclickable, the other
-	// one then gives back the values the first one had set).
+	// A view that is not clickable does not take the press, so its parent never hands it the release and the remaining behavior's tap never
+	// completes. The taps go through the parent ViewGroup, as Android delivers them.
 	[Fact]
 	public async Task RemainingBehaviorStillCompletesATapWhenTheOtherBehaviorOfTheViewIsRemoved()
 	{
@@ -1220,7 +1148,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: OnTouch accepting a null sender (ArgumentNullException guard).
 	[Fact]
 	public async Task TouchHandlerRejectsANullSender()
 	{
@@ -1238,8 +1165,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: a touch-down without a MotionEvent being accepted (the ArgumentNullException guard of OnTouchDown; OnTouch can never
-	// pass one for a Down action, so the guard is only reachable directly).
+	// OnTouch can never pass a missing MotionEvent for a Down action, so the guard of OnTouchDown is only reachable directly.
 	[Fact]
 	public async Task TouchDownRejectsAMissingMotionEvent()
 	{
@@ -1256,7 +1182,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: a move without a MotionEvent changing the touch (the null check at the top of OnTouchMove).
 	[Fact]
 	public async Task TouchMoveWithoutAMotionEventIsIgnored()
 	{
@@ -1275,8 +1200,6 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Catches: OnTouchMove of a behavior that has no view (it was never attached) failing with anything but the documented
-	// InvalidOperationException of its density lookup.
 	[Fact]
 	public async Task TouchMoveOfABehaviorWithoutAViewReportsTheMissingContext()
 	{
@@ -1296,9 +1219,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// A disposed behavior must not take touches any more: Dispose must remove the touch, key and click listeners from the view. A listener
-	// left on the view hands the next touch to the disposed behavior, which throws ObjectDisposedException inside the Android listener; in
-	// an app that exception kills the process.
+	// A listener left on the view hands the next touch to the disposed behavior, which throws ObjectDisposedException inside the Android
+	// listener; in an app that exception kills the process.
 	[Fact]
 	public async Task TouchesAfterDisposeAreIgnored()
 	{
@@ -1329,10 +1251,8 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// Nor a mouse hover: Dispose must also remove the generic motion listener, through which Android hands a hover to the behavior (see
-	// HoverEnterAndExitUpdateTheHoverStatus).
-	// Catches: Dispose leaving the generic motion listener on the view (the hover reaches the disposed behavior, which throws
-	// ObjectDisposedException inside the Android listener).
+	// Android hands a hover to the behavior through the generic motion listener (see HoverEnterAndExitUpdateTheHoverStatus), which Dispose
+	// must remove as well: the hover would reach the disposed behavior, which throws ObjectDisposedException inside the Android listener.
 	[Fact]
 	public async Task HoverAfterDisposeIsIgnored()
 	{
@@ -1386,10 +1306,8 @@ public partial class TouchBehaviorInputTests
 		await WaitUntilAsync(() => !isOpen(), $"The {picker.GetType().Name} did not close {step}.");
 	}
 
-	/// <summary>
-	/// Android delivers key events to the focused view only: a ViewGroup dispatches a key event to its own key listener only while it
-	/// has focus.
-	/// </summary>
+	// Android delivers key events to the focused view only: a ViewGroup dispatches a key event to its own key listener only while it
+	// has focus.
 	static void FocusForKeyboardInput(AView view)
 	{
 		view.Focusable = true;

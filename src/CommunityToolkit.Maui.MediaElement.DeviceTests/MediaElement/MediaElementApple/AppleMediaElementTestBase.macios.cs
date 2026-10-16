@@ -12,12 +12,10 @@ using UIKit;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 /// <summary>
-/// Base class of the iOS and Mac Catalyst MediaElement tests. <see cref="SetupApple"/> builds the test's MauiApp with the toolkit
-/// handler replaced by <see cref="AppleMediaElementHandler"/> (so tests can reach the protected <see cref="MediaManager"/>) and a
-/// logger that records what the toolkit logs. Media comes from the tiny files in Resources/Raw/avplayer, made with ffmpeg: a 2 s,
-/// 64x48, 10 fps H.264 baseline video of the testsrc2 pattern (moov atom first, at the end, rotated 90 degrees through the display
-/// matrix, and in a QuickTime container), a 1 s 440 Hz AAC tone, a 40x30 PNG poster, a well-formed MP4 without any track, and a
-/// 160x120 H.264 video of 61 frames at 29.97 fps, whose duration is not a whole number of milliseconds.
+/// Media comes from the tiny files in Resources/Raw/avplayer, made with ffmpeg: a 2 s, 64x48, 10 fps H.264 baseline video of the testsrc2
+/// pattern (moov atom first, at the end, rotated 90 degrees through the display matrix, and in a QuickTime container), a 1 s 440 Hz AAC
+/// tone, a 40x30 PNG poster, a well-formed MP4 without any track, and a 160x120 H.264 video of 61 frames at 29.97 fps, whose duration is
+/// not a whole number of milliseconds.
 /// </summary>
 public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 {
@@ -30,7 +28,6 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 	/// <summary>1 s AAC audio, no video track.</summary>
 	internal const string AudioResource = "avplayer/audio.m4a";
 
-	/// <summary>A well-formed MP4 without any track.</summary>
 	internal const string TracklessResource = "avplayer/trackless.mp4";
 
 	/// <summary>
@@ -39,18 +36,16 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 	/// </summary>
 	internal const string NtscVideoResource = "avplayer/video_ntsc.mp4";
 
-	/// <summary>The audio clip, but stored in the bundle root.</summary>
 	internal const string RootAudioResource = "root_audio.m4a";
 
 	internal static readonly TimeSpan VideoDuration = TimeSpan.FromSeconds(2);
 
 	internal AppleCapturingLoggerFactory Logs { get; } = new();
 
-	// Runs after every test. Every MediaManager that updates its source creates a Metadata, which registers six targets on the process-wide
-	// MPRemoteCommandCenter (disposing the manager removes them, but a Metadata that a test creates itself keeps them) and publishes its Now
-	// Playing info on the process-wide MPNowPlayingInfoCenter (MetadataAppleTests.DisconnectingTheMediaElementClearsItsNowPlayingInfo).
-	// Both are reset, so that no test leaves targets behind (they keep its Metadata and AVPlayer reachable and would answer a media key
-	// pressed during a later test) or the Now Playing info of its media.
+	// Every MediaManager that updates its source creates a Metadata, which registers six targets on the process-wide MPRemoteCommandCenter
+	// (disposing the manager removes them, but a Metadata that a test creates itself keeps them) and publishes its Now Playing info on the
+	// process-wide MPNowPlayingInfoCenter. Both are reset, so that no test leaves targets behind (they keep its Metadata and AVPlayer
+	// reachable and would answer a media key pressed during a later test) or the Now Playing info of its media.
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -69,7 +64,7 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 		}
 	}
 
-	/// <summary>Builds this test's MauiApp. Call it first in every test (it throws once a handler exists).</summary>
+	/// <summary>Call it first in every test: it throws once a handler exists.</summary>
 	protected void SetupApple(Action<MauiAppBuilder>? configureBuilder = null) =>
 		SetupBuilder(builder =>
 		{
@@ -80,16 +75,13 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 
 	protected static MediaElement CreateMediaElement() => new() { WidthRequest = 200, HeightRequest = 100 };
 
-	/// <summary>Absolute path of a bundled test file (<c>Resources/Raw/avplayer/&lt;name&gt;.&lt;extension&gt;</c>).</summary>
 	protected static string BundlePath(string name, string extension) =>
 		NSBundle.MainBundle.PathForResource(name, extension, "avplayer") ?? throw new FileNotFoundException($"{name}.{extension} is not in the app bundle.");
 
 	protected static string BundleFileUrl(string name, string extension) => NSUrl.FromFilename(BundlePath(name, extension)).AbsoluteString!;
 
 	/// <summary>
-	/// Hosts <paramref name="mediaElement"/> in a <see cref="ContentPage"/> inside the runner's window (MauiMediaElement needs a
-	/// parent page), runs <paramref name="action"/> on the UI thread once the page is loaded and always disconnects the handlers
-	/// afterwards, which releases the AVPlayer.
+	/// MauiMediaElement needs a parent page. The handlers are disconnected even when the test fails, because that releases the AVPlayer.
 	/// </summary>
 	internal async Task HostAsync(MediaElement mediaElement, Func<AppleMediaElementHandler, Task> action)
 	{
@@ -113,10 +105,6 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// Sets the source and waits until the media is opened (MediaOpened, after which the media size and the poster are set) and the
-	/// platform player can play (and seek in) it.
-	/// </summary>
 	internal static async Task LoadAsync(MediaElement mediaElement, AppleMediaElementHandler handler, MediaSource source)
 	{
 		var opened = WhenOpenedOrFailedAsync(mediaElement, openedOnly: true);
@@ -127,9 +115,8 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 	}
 
 	/// <summary>
-	/// Sets the source and waits until the update has settled: its PlatformUpdateSource calls have finished and, when it created an
-	/// AVPlayerItem, the media was opened (MediaOpened) or has failed (MediaFailed). Returns the exception of the setter (since #3281
-	/// PlatformUpdateSource runs synchronously, so its exceptions reach the code that sets Source) or of the update, or null.
+	/// Since #3281 PlatformUpdateSource runs synchronously and its exceptions reach the code that sets Source, so the exception of the setter
+	/// counts as well as that of the update.
 	/// </summary>
 	internal static async Task<Exception?> SetSourceAsync(MediaElement mediaElement, AppleMediaElementHandler handler, MediaSource? source)
 	{
@@ -146,9 +133,9 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 	}
 
 	/// <summary>
-	/// A task that completes after the next MediaOpened (or MediaFailed) of <paramref name="mediaElement"/>, and only once the main-thread
-	/// work that raised the event has finished, so whatever the product does right after the event (since #3281: the poster) has happened.
-	/// Create it before the change that starts the update: before #3281 MediaOpened is raised inside the Source setter.
+	/// Completes only once the main-thread work that raised MediaOpened (or MediaFailed) has finished, so whatever the product does right after
+	/// the event (since #3281: the poster) has happened. Create it before the change that starts the update: before #3281 MediaOpened is raised
+	/// inside the Source setter.
 	/// </summary>
 	internal static Task WhenOpenedOrFailedAsync(MediaElement mediaElement, bool openedOnly = false)
 	{
@@ -190,7 +177,6 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 		}
 	}
 
-	/// <summary>Awaits <paramref name="task"/> for at most <paramref name="timeout"/> milliseconds; fails with <paramref name="message"/> after that.</summary>
 	internal static async Task WaitAsync(Task task, string message, int timeout = 5000)
 	{
 		try
@@ -204,9 +190,8 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 	}
 
 	/// <summary>
-	/// Completes once the blocks that are already queued on the main dispatch queue have run (it queues one more and waits for it). Since
-	/// #3281 the item's status observer queues its handler there, so this lets an already queued handler run before a test asserts that
-	/// it did nothing.
+	/// Since #3281 the item's status observer queues its handler on the main dispatch queue, so this lets an already queued handler run before
+	/// a test asserts that it did nothing.
 	/// </summary>
 	internal static Task DrainMainQueueAsync()
 	{
@@ -227,7 +212,6 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 
 	protected static ResourceMediaSource ResourceSource(string path) => (ResourceMediaSource)MediaSource.FromResource(path);
 
-	/// <summary>The toolkit's <c>Metadata</c> instance of a manager (it keeps it in a private field).</summary>
 	internal static Metadata GetMetadata(MediaManager manager) =>
 		(Metadata)typeof(MediaManager).GetField("metaData", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager)!;
 
@@ -236,7 +220,6 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 
 	protected static double Seconds(CMTime time) => time.Seconds;
 
-	/// <summary>Records the events a MediaElement raises, in order.</summary>
 	protected sealed class MediaElementEvents
 	{
 		public MediaElementEvents(MediaElement mediaElement)

@@ -3,9 +3,6 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of MaxLengthReachedBehavior.ShouldDismissKeyboardAutomatically: a focused Entry in the window reaches its MaxLength through
-// text that its platform view enters. Dismissing the keyboard removes the focus on every platform; on Android it also hides the soft
-// keyboard (see the .android.cs partial).
 [Category(TestCategory.MaxLengthReachedBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class MaxLengthReachedBehaviorTests : KeyboardDismissalTestBase
@@ -42,8 +39,8 @@ public partial class MaxLengthReachedBehaviorTests : KeyboardDismissalTestBase
 		});
 	}
 
-	// The Command runs after the behavior dismissed the keyboard. (A handler of the MaxLengthReached event would be held weakly: a lambda that
-	// nothing else references could be collected before the event.)
+	// The Command runs after the behavior dismissed the keyboard. A handler of the MaxLengthReached event would be held weakly, so a lambda
+	// that nothing else references could be collected before the event.
 	static (Entry Entry, Task<string> MaxLengthReached) CreateEntryWithBehavior(bool shouldDismissKeyboardAutomatically)
 	{
 		var maxLengthReachedTCS = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);

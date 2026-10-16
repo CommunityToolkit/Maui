@@ -4,9 +4,6 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Snackbar on every platform. The shared tests drive the public API and read what the user would see from the platform partials:
-// GetVisibleMessagesAsync, GetVisibleActionTextsAsync and ClickVisibleActionAsync look at the native views (Android: the Material
-// SnackbarLayout in the activity, Apple: the AlertView in the key window, Windows: the app notifications of the app).
 // The pure logic of Snackbar (argument checks, defaults, the weak Anchor) is tested by CommunityToolkit.Maui.UnitTests.
 [Category(TestCategory.Snackbar)]
 [Collection(TestCollections.DisableParallelization)]
@@ -273,8 +270,6 @@ public partial class SnackbarTests : AlertsTestBase
 		});
 	}
 
-	// Clicking the action dismisses the snackbar and raises Dismissed: showing the next snackbar must not dismiss it, and raise Dismissed
-	// for it, a second time.
 	[Fact]
 	public async Task ShowAfterClickingTheActionDoesNotRaiseDismissedAgain()
 	{
@@ -297,8 +292,6 @@ public partial class SnackbarTests : AlertsTestBase
 		});
 	}
 
-	// The action itself dismisses the snackbar (here through another instance): the click must not dismiss it, and raise Dismissed for it,
-	// a second time.
 	[Fact]
 	public async Task ClickingAnActionThatDismissesTheSnackbarRaisesDismissedOnce()
 	{
@@ -323,8 +316,7 @@ public partial class SnackbarTests : AlertsTestBase
 		});
 	}
 
-	// The "Undo" pattern: the action shows the next snackbar, which dismisses the clicked one. The click must not dismiss the clicked
-	// snackbar, and raise Dismissed for it, a second time: the next snackbar stays shown.
+	// The "Undo" pattern: the action shows the next snackbar, which dismisses the clicked one.
 	[Fact]
 	public async Task ClickingAnActionThatShowsTheNextSnackbarRaisesDismissedOnceAndKeepsTheNextSnackbarShown()
 	{
@@ -419,15 +411,12 @@ public partial class SnackbarTests : AlertsTestBase
 			await AssertEventually(() => recorder.DismissedCount == 1 && !Snackbar.IsShown, timeout: 10000, message: "The snackbar never dismissed itself.");
 			stopwatch.Stop();
 
-			// The platform timer runs for the whole duration: a snackbar whose duration was ignored would go away at once (or much later).
 			Assert.True(stopwatch.ElapsedMilliseconds >= 600, $"The snackbar went away after {stopwatch.ElapsedMilliseconds} ms although its duration is 700 ms.");
 			Assert.Equal(1, recorder.ShownCount);
 			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 0, timeout: 10000, message: "The snackbar stayed on screen after it was dismissed.");
 		});
 	}
 
-	// A snackbar that went away by itself has raised Dismissed already: showing the next snackbar must not dismiss it, and raise
-	// Dismissed for it, a second time.
 	[Fact]
 	public async Task ShowAfterTheSnackbarDismissedItselfDoesNotRaiseDismissedAgain()
 	{
@@ -447,9 +436,9 @@ public partial class SnackbarTests : AlertsTestBase
 		});
 	}
 
-	// A duration of zero (or less) means that the snackbar does not stay. The limit, 1.5 s, is Material's shortest timed length
-	// (LENGTH_SHORT): a snackbar that goes away at once is gone well before it, animations included. Material reads -1 and -2 ms as its
-	// LENGTH_SHORT and LENGTH_INDEFINITE constants; iOS and Mac Catalyst (NSTimer) use 0.1 ms for an interval that is not positive.
+	// The limit, 1.5 s, is Material's shortest timed length (LENGTH_SHORT): a snackbar that goes away at once is gone well before it,
+	// animations included. Material reads -1 and -2 ms as its LENGTH_SHORT and LENGTH_INDEFINITE constants; iOS and Mac Catalyst (NSTimer)
+	// use 0.1 ms for an interval that is not positive.
 	[Theory]
 	[InlineData(0)]
 	[InlineData(-1)]

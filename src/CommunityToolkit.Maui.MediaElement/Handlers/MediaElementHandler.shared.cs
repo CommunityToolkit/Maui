@@ -204,8 +204,8 @@ public partial class MediaElementHandler
 			return;
 		}
 
-		// The task of this seek request. A SeekTo whose token ends its wait cancels it, so that the later result or failure of this seek changes nothing,
-		// and replaces it for the next request
+		// Captured before the await: a SeekTo whose token ends its wait cancels this task (so the later result or failure of this seek changes
+		// nothing) and replaces it for the next request
 		var seekCompletedTaskCompletionSource = ((IMediaElement)mediaElement).SeekCompletedTCS;
 
 		try
@@ -233,11 +233,10 @@ public partial class MediaElementHandler
 		handler.MediaManager?.Stop();
 	}
 
-	// A property mapper cannot await MediaManager.UpdateSource. The manager reports a source that it cannot apply through MediaFailed, like a source
-	// that cannot be played, so an exception of the update is not a failure of the source: typically an event handler that the update raised threw
-	// it. It propagates, as an exception of an event handler does: thrown to the code that set the Source while the update runs synchronously (the
-	// whole update on iOS and Mac Catalyst), and rethrown on the dispatcher once the update has awaited. An update that a newer one replaced
-	// (OperationCanceledException) has nothing left to report.
+	// A property mapper cannot await MediaManager.UpdateSource. An exception of the update is not a failure of the source (those go through
+	// MediaFailed) but typically one that an event handler raised by the update threw, so it propagates like one: to the code that set the Source
+	// while the update runs synchronously (the whole update on iOS and Mac Catalyst), and on the dispatcher once the update has awaited.
+	// An update that a newer one replaced (OperationCanceledException) has nothing left to report.
 	static void UpdateSource(ValueTask update)
 	{
 		if (update.IsCompleted)

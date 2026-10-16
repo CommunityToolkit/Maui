@@ -8,10 +8,7 @@ using AWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Reads and resets the native state of an Android window that the status bar and navigation bar code changes. Everything here
-/// goes through the Android SDK (and AndroidX), never through a toolkit field. Call it on the UI thread.
-/// </summary>
+// Everything here goes through the Android SDK (and AndroidX), never through a toolkit field. Call it on the UI thread.
 static class AndroidSystemBars
 {
 	// Tags that the toolkit puts on the overlay views it adds to the decor view (StatusBar.android.cs, NavigationBar.android.cs).
@@ -38,14 +35,11 @@ static class AndroidSystemBars
 
 	public static Android.App.Activity Activity => Platform.CurrentActivity ?? throw new InvalidOperationException("The test needs the runner's current activity.");
 
-	/// <summary>The activity's own window (not the toolkit's GetCurrentWindow, which changes flags and prefers a visible dialog).</summary>
+	// Not the toolkit's GetCurrentWindow, which changes flags and prefers a visible dialog.
 	public static AWindow ActivityWindow => Activity.Window ?? throw new InvalidOperationException("The current activity has no window.");
 
-	/// <summary>
-	/// The system bar state of the runner's window before the first status bar test changed it (captured once per app run). <see cref="Reset"/>
-	/// puts it back, so the tests that run later in the same app see the window as the runner set it up (e.g. the theme's status bar color on
-	/// API 28, which is not black).
-	/// </summary>
+	// Reset puts the window back to this state, so the tests that run later in the same app see the window as the runner set it up (e.g. the
+	// theme's status bar color on API 28, which is not black).
 	public static WindowState OriginalState => originalState ?? throw new InvalidOperationException($"{nameof(CaptureOriginalState)} has not run yet.");
 
 	public static ViewGroup Decor(AWindow window) => (ViewGroup)window.DecorView;
@@ -60,11 +54,9 @@ static class AndroidSystemBars
 
 	public static bool IsLightNavigationBars(AWindow window) => WindowCompat.GetInsetsController(window, window.DecorView)?.AppearanceLightNavigationBars ?? false;
 
-	/// <summary>Whether the system forces light navigation bars (dark icons) on the window (Android 15+, see <see cref="ForceLightNavigationBarsAppearance"/>).</summary>
 	public static bool IsForcedLightNavigationBars(AWindow window) =>
 		OperatingSystem.IsAndroidVersionAtLeast(30) && ((window.InsetsController?.SystemBarsAppearance ?? 0) & ForceLightNavigationBarsAppearance) != 0;
 
-	/// <summary>All direct children of the decor view that carry <paramref name="tag"/>.</summary>
 	public static List<AView> FindTagged(AWindow window, string tag)
 	{
 		var decor = Decor(window);
@@ -85,10 +77,6 @@ static class AndroidSystemBars
 
 	public static Android.Graphics.Color? BackgroundColor(AView view) => (view.Background as Android.Graphics.Drawables.ColorDrawable)?.Color;
 
-	/// <summary>
-	/// Asserts that <paramref name="overlay"/> is drawn above the window's content, the decor child that holds android.R.id.content (see
-	/// <see cref="AssertDrawnAbove"/>).
-	/// </summary>
 	public static void AssertDrawnAboveTheContent(AWindow window, AView overlay)
 	{
 		var decor = Decor(window);
@@ -101,10 +89,7 @@ static class AndroidSystemBars
 		AssertDrawnAbove(window, overlay, contentChild);
 	}
 
-	/// <summary>
-	/// Asserts that the decor view draws its child <paramref name="overlay"/> above its child <paramref name="other"/>: a view group draws its
-	/// children in the order of their elevation (Z), and children at the same elevation in child order.
-	/// </summary>
+	// A view group draws its children in the order of their elevation (Z), and children at the same elevation in child order.
 	public static void AssertDrawnAbove(AWindow window, AView overlay, AView other)
 	{
 		var decor = Decor(window);
@@ -121,13 +106,9 @@ static class AndroidSystemBars
 		Assert.True(isDrawnAbove, $"The overlay (decor child {overlayIndex}, Z {overlay.GetZ()}) is drawn behind decor child {otherIndex} (Z {other.GetZ()}).");
 	}
 
-	/// <summary>The bounds of <paramref name="view"/> in its parent, as its last layout placed it.</summary>
 	public static Android.Graphics.Rect Frame(AView view) => new(view.Left, view.Top, view.Right, view.Bottom);
 
-	/// <summary>
-	/// The insets of the window's navigation bar as the window reports them to its root view (API 30+): what the system reports, before any view
-	/// of the window consumed some. A hidden navigation bar, or one that the window does not reach, has none.
-	/// </summary>
+	// The insets as the window reports them to its root view: what the system reports, before any view of the window consumed some.
 	public static Android.Graphics.Insets NavigationBarInsets(AWindow window)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(30))
@@ -138,10 +119,6 @@ static class AndroidSystemBars
 		return window.DecorView.RootWindowInsets?.GetInsets(WindowInsets.Type.NavigationBars()) ?? Android.Graphics.Insets.None;
 	}
 
-	/// <summary>
-	/// Where the window's navigation bar is, in the coordinates of the decor view (API 30+). The decor view places its own navigation bar background
-	/// the same way: at the bottom, or, when the navigation bar has no bottom inset, at the right or left edge (three-button navigation in landscape).
-	/// </summary>
 	public static Android.Graphics.Rect NavigationBarFrame(AWindow window)
 	{
 		var decor = window.DecorView;
@@ -155,7 +132,6 @@ static class AndroidSystemBars
 		};
 	}
 
-	/// <summary>The width, height and gravity of a child of the decor view that covers the window's navigation bar (see <see cref="NavigationBarFrame"/>).</summary>
 	public static (int Width, int Height, GravityFlags Gravity) NavigationBarLayout(AWindow window)
 	{
 		var insets = NavigationBarInsets(window);
@@ -168,8 +144,8 @@ static class AndroidSystemBars
 		};
 	}
 
-	// The edge of the window where the navigation bar is: the bottom, unless the bar has no bottom inset but one at the right or the left (DecorView's
-	// isNavBarToRightEdge and isNavBarToLeftEdge)
+	// Decides as DecorView's isNavBarToRightEdge and isNavBarToLeftEdge do: three-button navigation in landscape puts the bar at the right or
+	// left edge.
 	static GravityFlags NavigationBarEdge(Android.Graphics.Insets insets) => insets switch
 	{
 		{ Bottom: 0, Right: > 0 } => GravityFlags.Right,
@@ -177,11 +153,9 @@ static class AndroidSystemBars
 		_ => GravityFlags.Bottom
 	};
 
-	/// <summary>The status bar height that the window reports (API 30+).</summary>
 	[System.Runtime.Versioning.SupportedOSPlatform("android30.0")]
 	public static int StatusBarInset(AWindow window) => window.DecorView.RootWindowInsets?.GetInsets(WindowInsets.Type.StatusBars()).Top ?? 0;
 
-	/// <summary>The height of the dimen that the platform names <paramref name="name"/> in the android package (e.g. status_bar_height).</summary>
 	public static int FrameworkDimension(string name)
 	{
 		var resources = Activity.Resources ?? throw new InvalidOperationException("The current activity has no resources.");
@@ -189,7 +163,7 @@ static class AndroidSystemBars
 		return id > 0 ? resources.GetDimensionPixelSize(id) : 0;
 	}
 
-	/// <summary>Runs everything that was posted to the window's decor view before this call (FIFO), e.g. the API 36 status bar overlay creation.</summary>
+	// Everything posted to the decor view before this call runs first (FIFO), e.g. the API 36 status bar overlay creation.
 	public static async Task FlushPostedActions(AWindow window)
 	{
 		var completion = new TaskCompletionSource();
@@ -199,17 +173,11 @@ static class AndroidSystemBars
 		await completion.Task.WaitAsync(TimeSpan.FromSeconds(10));
 	}
 
-	/// <summary>
-	/// Runs <paramref name="action"/> while MAUI reports no current activity (<c>Platform.CurrentActivity</c> is <see langword="null"/>), which is
-	/// what the toolkit's <c>Activity can't be null</c> guard and the behavior's <c>Platform.CurrentActivity is null</c> check react to.
-	/// </summary>
+	// The toolkit's "Activity can't be null" guard and the behavior's Platform.CurrentActivity is null check react to a missing activity.
 	public static T WithoutCurrentActivity<T>(Func<T> action) => WithCurrentActivity(null, action);
 
-	/// <summary>
-	/// Runs <paramref name="action"/> while MAUI reports <paramref name="activity"/> as the current activity (<c>Platform.CurrentActivity</c>), which
-	/// is where the toolkit's status bar code takes its window from. The runner's activity is restored afterwards. MAUI's ActivityStateManager
-	/// keeps it in a lifecycle listener; there is no public way to replace it.
-	/// </summary>
+	// Platform.CurrentActivity is where the toolkit's status bar code takes its window from. MAUI's ActivityStateManager keeps it in a
+	// lifecycle listener; there is no public way to replace it.
 	public static T WithCurrentActivity<T>(Android.App.Activity? activity, Func<T> action)
 	{
 		var manager = ActivityStateManager.Default;
@@ -230,22 +198,16 @@ static class AndroidSystemBars
 		}
 	}
 
-	/// <summary>Records the runner window's system bar state the first time it is called; later calls do nothing.</summary>
 	public static void CaptureOriginalState(AWindow window) => originalState ??= WindowState.Read(window);
 
-	/// <summary>Removes the toolkit's overlays and puts the window's flags, bar colors and appearance back to <see cref="OriginalState"/>.</summary>
 	public static void Reset(AWindow window)
 	{
 		CaptureOriginalState(window);
 		Restore(window, OriginalState);
 	}
 
-	/// <summary>
-	/// Removes the toolkit's overlays and puts the window's flags, bar colors and appearance back to <paramref name="original"/>, e.g. a
-	/// <see cref="WindowState.Read"/> taken before a test outside the status bar tests let the toolkit change the runner's window. Such a
-	/// test has to put the window back: the status bar tests capture the runner window's state once per app run (<see cref="CaptureOriginalState"/>),
-	/// so a change left behind by an earlier test would become their "original" state.
-	/// </summary>
+	// A test outside the status bar tests that lets the toolkit change the runner's window has to put it back: the status bar tests capture
+	// the runner window's state once per app run, so a change left behind by an earlier test would become their "original" state.
 	public static void Restore(AWindow window, WindowState original)
 	{
 		var decor = Decor(window);
@@ -281,7 +243,6 @@ static class AndroidSystemBars
 		window.SetNavigationBarColor(new Android.Graphics.Color(original.NavigationBarColor));
 	}
 
-	/// <summary>The parts of a window's state that the status bar and navigation bar code change.</summary>
 	public sealed record WindowState(WindowManagerFlags Flags, int SystemUiVisibility, int StatusBarColor, int NavigationBarColor, bool LightStatusBars, bool LightNavigationBars)
 	{
 		public bool HasFlag(WindowManagerFlags flag) => (Flags & flag) == flag;

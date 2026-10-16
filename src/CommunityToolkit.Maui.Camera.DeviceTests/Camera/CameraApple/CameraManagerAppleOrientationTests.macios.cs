@@ -4,11 +4,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.GetVideoOrientation, UpdateVideoOrientation and PreviewView.UpdatePreviewVideoOrientation (macios) with scripted UIKit answers
-// (AppleInterfaceOrientationStub, ApplePreviewLayerConnectionStub): every interface orientation from each source the manager reads (the
-// window scene before OS 26, its effective geometry from OS 26, the status bar without a window scene), on both sides of the OS 26 check
-// (AppleRuntimeOsVersionOverride). The simulator cannot turn an iPhone upside down and Mac Catalyst windows cannot be rotated at all;
-// CameraManagerAppleTests rotates the real window scene where that is possible.
+// UIKit's interface orientations are scripted (AppleInterfaceOrientationStub) because the simulator cannot turn an iPhone upside down and Mac
+// Catalyst windows cannot be rotated at all. CameraManagerAppleTests rotates the real window scene where that is possible.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleOrientationTests : CameraHandlerTestBase
@@ -203,7 +200,6 @@ public class CameraManagerAppleOrientationTests : CameraHandlerTestBase
 		}
 	}
 
-	// The OS 26 arm runs on the real OS; the older arm needs AppleRuntimeOsVersionOverride to go back, never forward.
 	static void SkipUnlessTheRealOsIsAtLeast26() =>
 		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26),
 			"Needs iOS or Mac Catalyst 26 or later: the scripted orientation sources are read through the OS 26 code path, and the older one by overriding the version downwards.");

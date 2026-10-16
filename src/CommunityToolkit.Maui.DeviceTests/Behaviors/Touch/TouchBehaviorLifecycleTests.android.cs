@@ -7,13 +7,12 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: what Dispose and a detach after a Dispose do to the native views, and the accessibility listener. The views are built by the
-// tests (not by MAUI handlers), because a Dispose that misbehaves would otherwise take the test's own view hierarchy with it.
+// The views are built by the tests (not by MAUI handlers), because a Dispose that misbehaves would otherwise take the test's own view
+// hierarchy with it.
 public partial class TouchBehaviorLifecycleTests
 {
-	// Dispose must only release what the behavior owns: the managed wrappers of the view it is attached to and of that view's parent belong
-	// to whoever created them (a disposed wrapper has no native handle and cannot be used any more).
-	// Catches: PlatformDispose disposing the view or its parent group.
+	// Dispose may only release what the behavior owns: the managed wrappers of its view and of that view's parent belong to whoever created
+	// them, and a disposed wrapper has no native handle and cannot be used any more.
 	[Fact]
 	public async Task DisposeLeavesTheNativeViewsUsable()
 	{
@@ -39,10 +38,8 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Dispose must unregister the accessibility listener from the system's AccessibilityManager: a disposed listener that stays registered
-	// makes the next touch exploration change call into a peer that no longer exists, and the process dies with NotSupportedException
-	// (Unable to activate instance of type AccessibilityListener).
-	// Catches: PlatformDispose disposing the listener without removing it from the AccessibilityManager.
+	// A disposed listener that stays registered makes the next touch exploration change call into a peer that no longer exists, and the
+	// process dies with NotSupportedException (Unable to activate instance of type AccessibilityListener).
 	[Fact]
 	public async Task DisposeUnregistersTheAccessibilityListener()
 	{
@@ -66,8 +63,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: Dispose(false) (the finalizer path) releasing the platform views, or removing the click listener (which the behavior holds in
-	// touch exploration mode).
 	[Fact]
 	public async Task FinalizerPathKeepsTheNativeViews()
 	{
@@ -107,10 +102,7 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// The detach MAUI runs after an app disposed the behavior (Dispose(), then the page goes away) must go through. The Dispose leaves the
-	// view's managed wrapper alone (see DisposeLeavesTheNativeViewsUsable), so the detach runs to its end; the test does not depend on that
-	// (DetachingFromAViewWhoseWrapperWasDisposedDoesNotThrow reaches the ObjectDisposedException arm).
-	// Catches: OnDetachedFrom throwing after a Dispose, or not resetting the hover tracking and the element.
+	// MAUI runs the detach after an app disposed the behavior (Dispose(), then the page goes away).
 	[Fact]
 	public async Task DetachingAfterDisposeDoesNotThrow()
 	{
@@ -139,9 +131,8 @@ public partial class TouchBehaviorLifecycleTests
 	// OnDetachedFrom's catch (ObjectDisposedException): the managed wrapper of the platform view was disposed by somebody else (the Java view
 	// lives on in its parent), so the first "view.Touch -= OnTouch" throws. The test disposes its own wrapper, so the arm is reached whatever
 	// the behavior's Dispose does.
-	// Catches: the catch missing (the exception escapes the detach), the hover tracking reset moved before the catch (it is skipped), the
-	// accessibility listener teardown moved after the listeners of the view (the exception would skip it and leave a listener registered that
-	// the detach has disposed).
+	// The hover tracking reset must not move before the catch, and the accessibility listener teardown must not move after the listeners of
+	// the view: the exception would skip them.
 	[Fact]
 	public async Task DetachingFromAViewWhoseWrapperWasDisposedDoesNotThrow()
 	{
@@ -168,8 +159,8 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: the listener list of the system's AccessibilityManager keeping the behavior's listener (and through it the behavior) after
-	// OnDetachedFrom: a registered listener that was disposed would crash the next time touch exploration changes.
+	// A listener left registered with the system's AccessibilityManager after OnDetachedFrom would still pass touch exploration changes to the
+	// behavior, and a disposed one would crash the next time touch exploration changes.
 	[Fact]
 	public async Task AccessibilityChangesAfterDetachDoNotReachTheBehavior()
 	{
@@ -185,7 +176,6 @@ public partial class TouchBehaviorLifecycleTests
 
 			await WithTouchExplorationAsync(view, () =>
 			{
-				// Still detached: the listener is gone, so the click listener must not come back.
 				Assert.False(view.HasOnClickListeners);
 				return Task.CompletedTask;
 			});
@@ -194,8 +184,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: UpdateClickHandler touching a view that is gone: the field is null after a Dispose, or the view's managed peer was released
-	// (IsPeerAlive); either would throw (ObjectDisposedException / NullReferenceException) instead of returning.
 	[Fact]
 	public async Task UpdateClickHandlerIgnoresAViewThatIsGone()
 	{
@@ -212,8 +200,7 @@ public partial class TouchBehaviorLifecycleTests
 			DisposeAttachedBehavior(disposed);
 			Assert.Null(Record.Exception(() => InvokeUpdateClickHandler(disposed)));
 
-			// Somebody else released the managed peer of the view (its Java object lives on in the parent). The behavior holds the click
-			// listener in touch exploration mode.
+			// Somebody else released the managed peer of the view (its Java object lives on in the parent).
 			var behavior = new DirectTouchBehavior();
 			var (parent, second) = CreateDetachedPlatformViews();
 			behavior.AttachDirect(element, second);
@@ -239,7 +226,6 @@ public partial class TouchBehaviorLifecycleTests
 
 	// After a detach the behavior still knows its (live) view but has no accessibility manager any more: refreshing the click listener then
 	// must not put it back, even while touch exploration is on (a late accessibility callback would get there).
-	// Catches: a detached behavior taking the view's click listener again.
 	[Fact]
 	public async Task UpdateClickHandlerAfterTheDetachDoesNotRegisterTheClickListener()
 	{
@@ -269,9 +255,8 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: the accessibility listener not refreshing the click listener when the accessibility state or the touch exploration state
-	// changes (both callbacks must reach UpdateClickHandler). In touch exploration mode the behavior takes the click listener only from a view
-	// without one of its own: the view drops its own listener, and a callback is what makes the behavior look at the slot again.
+	// In touch exploration mode the behavior takes the click listener only from a view without one of its own: the view drops its own
+	// listener, and a callback is what makes the behavior look at the slot again.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -295,7 +280,6 @@ public partial class TouchBehaviorLifecycleTests
 				{
 					var listener = GetAccessibilityListener(behavior) ?? throw new InvalidOperationException("The behavior has no accessibility listener.");
 
-					// The view keeps its own click listener in touch exploration mode
 					child.PerformClick();
 					Assert.Equal(1, ownListener.Clicks);
 
@@ -316,8 +300,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: the listener's Dispose not dropping the behavior (a late system callback would then reach a detached behavior), or the
-	// listener losing the behavior while it is still registered.
 	[Fact]
 	public async Task AccessibilityListenerForgetsTheBehaviorOnlyWhenItIsDisposed()
 	{
@@ -332,18 +314,16 @@ public partial class TouchBehaviorLifecycleTests
 			behavior.AttachDirect(element, child);
 			var listener = GetAccessibilityListener(behavior) ?? throw new InvalidOperationException("The behavior has no accessibility listener.");
 
-			// Registered: callbacks reach the behavior.
 			Assert.Same(behavior, GetListenerTarget(listener));
 			behavior.IsEnabled = false;
 			NotifyAccessibilityChange(listener, accessibilityState: true);
 			Assert.False(child.HasOnClickListeners);
 			behavior.IsEnabled = true;
 
-			// The detach removes and disposes the listener: it forgets the behavior.
 			behavior.DetachDirect(element, child);
 			Assert.Null(GetListenerTarget(listener));
 
-			// A callback the system had already queued reaches nothing and does not throw.
+			// The system may already have queued a callback when the listener is removed.
 			Assert.Null(Record.Exception(() =>
 			{
 				NotifyAccessibilityChange(listener, accessibilityState: true);
@@ -353,9 +333,7 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// The listener's finalizer path (Dispose(false)) must leave managed state alone: only Dispose(true) forgets the behavior. A finalizer
-	// cannot be triggered on purpose, so the protected Dispose(false) is called directly, on a listener that is registered nowhere.
-	// Catches: the listener's "if (disposing)" check missing.
+	// A finalizer cannot be triggered on purpose, so the protected Dispose(false) is called directly on a listener registered nowhere.
 	[Fact]
 	public async Task AccessibilityListenerFinalizerPathKeepsTheBehavior()
 	{
@@ -380,8 +358,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// Catches: the attach requiring an AccessibilityManager (the null check before the listener registration), IsAccessibilityMode
-	// dereferencing a missing manager, and the detach failing without a listener.
 	[Fact]
 	public async Task BehaviorWorksOnAViewWhoseContextHasNoAccessibilityService()
 	{
@@ -432,7 +408,6 @@ public partial class TouchBehaviorLifecycleTests
 		liveView.SetOnGenericMotionListener(null);
 	}
 
-	/// <summary>A click listener of the view's own, as a handler installs it (SetOnClickListener).</summary>
 	sealed class CountingClickListener : Java.Lang.Object, Android.Views.View.IOnClickListener
 	{
 		public int Clicks { get; private set; }

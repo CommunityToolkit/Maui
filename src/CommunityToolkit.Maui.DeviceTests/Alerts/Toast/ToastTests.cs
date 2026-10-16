@@ -4,10 +4,6 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Toast on every platform. The shared tests drive the public API and read what the user would see from the platform partials:
-// ShowAndWaitForDisplayAsync, IsDisplayedAsync and GetDisplayedTextsAsync look at the native side (Android: the system toast, observed
-// through its callbacks and accessibility events; Apple: the AlertView in the key window; Windows: the app notifications of the app).
-// The pure logic of Toast (argument checks, defaults) is tested by CommunityToolkit.Maui.UnitTests.
 [Category(TestCategory.Toast)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class ToastTests : AlertsTestBase
@@ -93,9 +89,8 @@ public partial class ToastTests : AlertsTestBase
 		});
 	}
 
-	// Toast.Show returns the task of the asynchronous ShowPlatform on Windows (#if WINDOWS), and runs the synchronous ShowPlatform before
-	// it returns a completed task everywhere else: a cancelled token surfaces in the returned task on Windows, and as an exception thrown by
-	// Show itself on the other platforms.
+	// On Windows, Show returns the task of the asynchronous ShowPlatform, so a cancelled token surfaces in the returned task. Elsewhere the
+	// synchronous ShowPlatform runs before Show returns a completed task, so Show itself throws.
 	[Fact]
 	public async Task ShowWithACancelledTokenThrowsOperationCanceledAndCreatesNoPlatformToast()
 	{

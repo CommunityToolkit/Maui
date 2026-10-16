@@ -7,9 +7,8 @@ using PlatformView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: an Entry (UITextField) selects all its text when the EditingDidBegin control event fires, an Editor
-// (UITextView) when MAUI raises its Focused event. Mac Catalyst selects the text of a focused UITextField by itself, so for the
-// Entry the tests send the EditingDidBegin event the behavior listens to, which tells the behavior's work from the platform's.
+// Mac Catalyst selects the text of a focused UITextField by itself, so for an Entry the tests send the EditingDidBegin event that the
+// behavior listens to, which tells the behavior's work from the platform's.
 public partial class SelectAllTextBehaviorTests
 {
 	static bool CanAssertPlatformViewIsCollected => true;
@@ -210,7 +209,6 @@ public partial class SelectAllTextBehaviorTests
 	{
 		SetupBuilder();
 
-		// Only an Editor has a UITextView platform view. An Entry that is given one is not supported.
 		var entry = new Entry { Text = text };
 		var probe = new SelectAllTextBehaviorProbe();
 
@@ -285,7 +283,6 @@ public partial class SelectAllTextBehaviorTests
 				await editor.OnLoadedAsync();
 				await entry.OnLoadedAsync();
 
-				// Attaching to an Entry (UITextField) never warns.
 				entry.Behaviors.Add(behavior);
 				entry.Behaviors.Remove(behavior);
 

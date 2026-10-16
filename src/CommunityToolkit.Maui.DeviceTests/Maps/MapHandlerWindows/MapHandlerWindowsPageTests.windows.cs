@@ -12,17 +12,12 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of MapHandlerWindows (Windows) against its real map page in a WebView2: when the page loads, how the map properties,
-// the pins and the region reach it, and what the handler does when the network changes. The page runs for real; only the Bing control
-// it loads is the stand-in of MapTestBase (see MapTestSupport.windows.cs), whose log the tests read.
 [Category(TestCategory.MapHandlerWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MapHandlerWindowsPageTests : MapTestBase
 {
 	static readonly FieldInfo regionToGoField = typeof(MapHandlerWindows).GetField("regionToGo", BindingFlags.Instance | BindingFlags.NonPublic)
 		?? throw new InvalidOperationException("MapHandlerWindows has no 'regionToGo' field: the handler changed.");
-
-	// ---- loading the page
 
 	[Fact]
 	public async Task PageIsLoadedOnlyWhileTheNetworkIsInternet()
@@ -41,14 +36,12 @@ public class MapHandlerWindowsPageTests : MapTestBase
 				}
 			};
 
-			// The network was down when the handler connected, and a network that is not Internet does not change that.
 			Assert.False(page.WebView.CoreWebView2.Source.StartsWith("data:", StringComparison.Ordinal));
 			Network.Change(NetworkAccess.Local);
 			Network.Change(NetworkAccess.ConstrainedInternet);
 			Network.Change(NetworkAccess.Unknown);
 			Network.Change(NetworkAccess.None);
 
-			// Internet loads the page of the handler.
 			var pageLoaded = page.WaitForPageLoadedAsync();
 			Network.Change(NetworkAccess.Internet);
 			await pageLoaded;
@@ -57,7 +50,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			// states had started to load would have been counted before the page of the Internet state completed.
 			Assert.Equal(1, pageNavigations);
 			Assert.Equal("function", await page.ExecuteForStringAsync("typeof setMapType"));
-			// The Bing control (here its stand-in) has arrived: Microsoft.Maps.Map is its constructor.
 			Assert.Equal("function", await page.ExecuteForStringAsync("typeof Microsoft.Maps.Map"));
 		}, loadPage: false);
 	}
@@ -74,7 +66,7 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			var map = new Map { WidthRequest = 400, HeightRequest = 300 };
 			var handler = CreateHandler<MapHandlerWindows>(map);
 			var webView = Assert.IsType<MauiWebView>(handler.PlatformView);
-			// The handler starts loading as soon as the WebView2 is ready, so the stand-in for the Bing control has to be there by then.
+			// The handler starts loading as soon as the WebView2 is ready, so the stand-in has to be installed by then.
 			webView.CoreWebView2Initialized += (sender, _) => InstallBingControlStub(sender);
 			var page = new LoadedMapPage(webView);
 			var pageLoaded = page.WaitForPageLoadedAsync();
@@ -89,8 +81,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			}, MauiContext);
 		});
 	}
-
-	// ---- properties
 
 	[Fact]
 	public async Task PropertiesPinsAndRegionOfTheMapAreSentToThePageWhenItLoads()
@@ -111,14 +101,12 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 		await WithMapPageAsync(map, async (handler, page) =>
 		{
-			// The pins are added last: they follow the removal of the old ones, which the handler awaits.
 			var log = await page.WaitForLogAsync(entries => Entries(entries, "push").Count >= 2, "The two pins never reached the page.");
 
 			Assert.Contains(Entries(log, "setView"), entry => entry.GetProperty("view").TryGetProperty("mapTypeId", out var type) && type.GetString() == "aerial");
 			Assert.Contains(Entries(log, "setView"), entry => HasBoundsCenter(entry, 47.5, -122.25));
 			Assert.Contains(Entries(log, "setOptions"), entry => entry.GetProperty("options").TryGetProperty("disableZooming", out var disabled) && disabled.GetBoolean());
 			Assert.Contains(Entries(log, "setOptions"), entry => entry.GetProperty("options").TryGetProperty("disablePanning", out var disabled) && disabled.GetBoolean());
-			// The page asked Bing for its Traffic module when it loaded.
 			Assert.Equal(["Microsoft.Maps.Traffic"], Entries(log, "module").Select(entry => entry.GetProperty("name").GetString()));
 			// The user is not shown, so there is no location pin to remove.
 			Assert.Empty(Entries(log, "remove"));
@@ -140,7 +128,7 @@ public class MapHandlerWindowsPageTests : MapTestBase
 	public async Task MapTypeChangeIsSentToThePageAsARoadOrAerialMap(MapType mapType, string expectedPageType)
 	{
 		SetupMapBuilder();
-		// A different starting type, so the change is a change and the page type of the start differs from the expected one.
+		// Starts with a type whose page type differs from the expected one, so that the change is a real change.
 		var map = new Map { MapType = expectedPageType == "road" ? MapType.Satellite : MapType.Street };
 
 		await WithMapPageAsync(map, async (handler, page) =>
@@ -152,7 +140,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 			var log = await page.WaitForLogAsync(entries => Entries(entries, "setView").Count == 1, $"MapType {mapType} never reached the page.");
 			Assert.Equal(expectedPageType, Entries(log, "setView")[0].GetProperty("view").GetProperty("mapTypeId").GetString());
-			// The mapping itself reports that it ran a script.
 			Assert.True(await ScriptRanAsync(MapHandlerWindows.MapMapType(handler, map)));
 		});
 	}
@@ -233,8 +220,7 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			await page.ExecuteAsync("addLocationPin(1.25, 2.5);");
 			Assert.Single(Entries(await page.GetLogAsync(), "push"));
 
-			// IsShowingUser is false (the person is not shown): the property mapping of the handler makes the page remove the pin that
-			// marks the person. Updating the value through the handler needs no location permission, unlike showing the person.
+			// Updating the value through the handler needs no location permission, unlike showing the person.
 			((IElementHandler)handler).UpdateValue(nameof(IMap.IsShowingUser));
 
 			var log = await page.WaitForLogAsync(entries => Entries(entries, "remove").Count == 1, "The location pin was never removed.");
@@ -243,8 +229,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			Assert.Equal(2.5, removed.GetProperty("longitude").GetDouble());
 		});
 	}
-
-	// ---- pins
 
 	[Fact]
 	public async Task PinsAreSentToThePageAgainWhenThePinsChange()
@@ -263,7 +247,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 			map.Pins.Add(second);
 
-			// The page forgets its pins and the handler adds every pin of the map again.
 			var log = await page.WaitForLogAsync(entries => Entries(entries, "push").Count == 2, "The pins were never sent again.");
 			Assert.StartsWith("{\"kind\":\"clear\"", log[0]);
 			var pushes = Entries(log, "push");
@@ -273,7 +256,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			await page.ClearLogAsync();
 			map.Pins.Clear();
 
-			// Without pins only the removal is left.
 			log = await page.WaitForLogAsync(entries => entries.Count >= 1, "The pins were never removed from the page.");
 			await page.SettleAsync();
 			log = await page.GetLogAsync();
@@ -304,8 +286,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		});
 	}
 
-	// ---- region
-
 	[Fact]
 	public async Task MoveToRegionIsSentToThePageWithTheCenterAndBothDegrees()
 	{
@@ -323,10 +303,11 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			var bounds = Entries(log, "setView")[0].GetProperty("view").GetProperty("bounds");
 			Assert.Equal(10.5, bounds.GetProperty("center").GetProperty("latitude").GetDouble());
 			Assert.Equal(20.25, bounds.GetProperty("center").GetProperty("longitude").GetDouble());
-			// Both degrees are sent; which of them is the width and which the height is a separate question (see the skipped test below).
+			// Which degrees are the width and which the height is checked by
+			// MoveToRegionSendsTheLatitudeDegreesAsTheHeightAndTheLongitudeDegreesAsTheWidth.
 			Assert.Equal([1.5, 2.5], new[] { bounds.GetProperty("width").GetDouble(), bounds.GetProperty("height").GetDouble() }.Order());
 
-			// The mapping itself completes once the page has run its script (MapMoveToRegion returns a Task, not the Task<bool> of the script call).
+			// MapMoveToRegion returns a Task that completes once the page has run its script, not the Task<bool> of the script call.
 			await page.ClearLogAsync();
 			await MapHandlerWindows.MapMoveToRegion(handler, map, new MapSpan(new Location(-5.5, -6.25), 0.5, 0.5));
 			Assert.Contains(Entries(await page.GetLogAsync(), "setView"), entry => HasBoundsCenter(entry, -5.5, -6.25));
@@ -385,7 +366,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			await page.WaitForLogAsync(entries => Entries(entries, "setView").Any(entry => HasBoundsCenter(entry, 10.5, 20.25)), "The new region never reached the page.");
 			await page.SettleAsync();
 
-			// A network change loads the page again: it starts empty, and the region the map moved to last is sent to it.
 			var pageLoaded = page.WaitForPageLoadedAsync();
 			Network.Change(NetworkAccess.Internet);
 			await pageLoaded;
@@ -413,12 +393,9 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 			var log = await page.GetLogAsync();
 			Assert.DoesNotContain(Entries(log, "setView"), entry => entry.GetProperty("view").TryGetProperty("bounds", out _));
-			// The rest of the properties did reach the page.
 			Assert.Contains(Entries(log, "setView"), entry => entry.GetProperty("view").TryGetProperty("mapTypeId", out _));
 		}, loadPage: false);
 	}
-
-	// ---- disconnecting
 
 	[Fact]
 	public async Task DisconnectedHandlerNoLongerReactsToTheNetworkOrToTheLoadingOfAPage()
@@ -435,8 +412,8 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 			Assert.Equal(0, Network.SubscriberCount);
 
-			// The page is loaded again from outside. A handler that still listened would send the properties of the map to it, and
-			// fail while doing so: it has no map any more.
+			// A handler that still listened would send the properties of the map to the page that is loaded again, and fail while doing so:
+			// it has no map any more.
 			var pageLoaded = page.WaitForPageLoadedAsync();
 			page.WebView.NavigateToString(MapHandlerWindows.MapPage ?? throw new InvalidOperationException("The handler never built its map page."));
 			await pageLoaded;
@@ -449,8 +426,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			Assert.Equal(["map", "module"], log.Select(entry => JsonDocument.Parse(entry).RootElement.GetProperty("kind").GetString()));
 		});
 	}
-
-	// ---- location of the user (needs the location permission of the OS)
 
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
@@ -475,10 +450,9 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		});
 	}
 
-	// Without location access GetCurrentLocation returns null and the handler sends nothing to the page. The app declares no location
-	// capability (Platforms/Windows/Package.appxmanifest), so Windows denies a packaged run the location without asking anybody. An
-	// unpackaged run may get a location prompt instead, which nobody answers on CI and which would stay in front of the later tests, so
-	// it skips (the packaged leg of the CI matrix runs this test).
+	// The app declares no location capability (Platforms/Windows/Package.appxmanifest), so Windows denies a packaged run the location
+	// without asking anybody. An unpackaged run may get a location prompt instead, which nobody answers on CI and which would stay in
+	// front of the later tests, so it skips (the packaged leg of the CI matrix runs this test).
 	[Fact]
 	public async Task ShowingTheUserWithoutLocationAccessAddsNoLocationPin()
 	{
@@ -500,15 +474,12 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			await MapHandlerWindows.MapIsShowingUser(handler, map);
 			await page.SettleAsync();
 
-			// No location: no location pin and no centering on it (and the page keeps whatever it had).
 			var log = await page.GetLogAsync();
 			Assert.Empty(Entries(log, "push"));
 			Assert.Empty(Entries(log, "setView"));
 			Assert.Empty(Entries(log, "remove"));
 		});
 	}
-
-	// ---- fixed product bugs
 
 	[Fact]
 	public async Task RemovingThePinsKeepsTheMapCenteredOnTheLocationPin()
@@ -550,10 +521,10 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		});
 	}
 
-	// The rest of the text that MapPins puts into its single-quoted addPin('label', 'address', ...) call unescaped: a backslash changes the
-	// text, or escapes the closing quote when it ends the text; a line break ends the script with a syntax error; and a text that closes
-	// the quote runs its own script in the map page, which can post forged messages to the handler through window.chrome.webview.
-	// (The rows are named, so that no line break ends up in the name of a test.)
+	// Text that would break out of the single-quoted addPin('label', 'address', ...) call of MapPins if it were not encoded: a backslash
+	// changes the text, or escapes the closing quote when it ends the text; a line break ends the script with a syntax error; and a text
+	// that closes the quote runs its own script in the map page, which can post forged messages to the handler through window.chrome.webview.
+	// The rows are enum members, so that no line break ends up in the name of a test.
 	public enum PinText
 	{
 		BackslashInTheLabel,
@@ -589,9 +560,7 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 			await page.WaitForLogAsync(entries => Entries(entries, "push").Count >= 1, "The pin never reached the page.");
 			await page.SettleAsync();
-			// The one pin of the map, with its label and address exactly as they are...
 			AssertPin(Assert.Single(Entries(await page.GetLogAsync(), "push")), pin);
-			// ...and none of that text ran as script.
 			Assert.Equal("undefined", await page.ExecuteForStringAsync("typeof window.__injected"));
 		});
 	}
@@ -664,9 +633,8 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		});
 	}
 
-	// Each change of the pins sends one script that replaces them, so pins added one after the other are each on the map once. MapPins used to send
-	// the removal on its own and then, after an await, the pins of that later moment: the removals of all three changes ran first and each change
-	// then added all three pins.
+	// MapPins used to send the removal on its own and then, after an await, the pins of that later moment: the removals of all three changes
+	// ran first and each change then added all three pins.
 	[Fact]
 	public async Task PinsAddedOneAfterTheOtherAreEachOnTheMapOnce()
 	{
@@ -692,7 +660,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			await page.WaitForLogAsync(entries => Entries(entries, "push").Count >= pins.Length, "The pins never reached the page.");
 			await page.SettleAsync();
 
-			// What the map shows: the pins pushed after the last removal of all pins.
 			var log = await page.GetLogAsync();
 			var lastClear = -1;
 			for (var i = 0; i < log.Count; i++)
@@ -741,10 +708,7 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		});
 	}
 
-	// ---- helpers
-
-	// Asks Windows for location access the way the handler does, on the UI thread. Null when no answer came within 5 seconds (a location
-	// prompt that waits for a person); the request is cancelled then.
+	// Null when Windows did not answer within 5 seconds: a location prompt is waiting for a person.
 	static async Task<Windows.Devices.Geolocation.GeolocationAccessStatus?> RequestLocationAccessAsync()
 	{
 		using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -764,7 +728,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		&& bounds.GetProperty("center").GetProperty("latitude").GetDouble() == latitude
 		&& bounds.GetProperty("center").GetProperty("longitude").GetDouble() == longitude;
 
-	// The page gets the pin through addPin(latitude, longitude, label, address, id): the stand-in logs what the page made of them.
 	static void AssertPin(JsonElement push, Pin pin)
 	{
 		var entity = push.GetProperty("entity");
@@ -777,7 +740,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 
 	static async Task<bool> ScriptRanAsync(Task mappingTask) => await Assert.IsType<Task<bool>>(mappingTask, exactMatch: false);
 
-	// An IMapPin that is not a Maps Pin.
 	sealed class PlainMapPin : IMapPin
 	{
 		public string Address { get; set; } = string.Empty;
@@ -797,7 +759,6 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		public bool SendInfoWindowClick() => false;
 	}
 
-	// An IMap that only knows its pins, which is all MapHandlerWindows.MapPins reads.
 	static IMap CreateMapWithPins(params IMapPin[] pins)
 	{
 		var map = DispatchProxy.Create<IMap, PinsOnlyMapProxy>();

@@ -16,9 +16,8 @@ public interface ICameraView : IView
 	/// <remarks>
 	/// On iOS and Mac Catalyst the camera uses its largest format that fits within this resolution. When no format fits, for example with the
 	/// default <see cref="Size.Zero"/>, the camera keeps its current format. Until a resolution that fits one of its formats has been applied,
-	/// that is the format that the photo session preset (AVCaptureSessionPresetPhoto) chose. Once a format has been applied, the session no
-	/// longer chooses formats (AVCaptureSessionPresetInputPriority): the camera keeps the last applied format, and a camera selected later keeps
-	/// its own current format.
+	/// that is the format that the photo session preset (AVCaptureSessionPresetPhoto) chose. Once a format has been applied, the camera keeps
+	/// the last applied format, and a camera selected later keeps its own current format.
 	/// </remarks>
 	Size ImageCaptureResolution { get; }
 

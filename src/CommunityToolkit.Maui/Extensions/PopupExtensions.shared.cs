@@ -290,9 +290,6 @@ public static class PopupExtensions
 	// .NET MAUI's PopModalAsync removes a modal page from the ModalStack and raises its Disappearing event (Page.OnDisappearing) before it dismisses the page,
 	// removes it from its Window and raises Window.ModalPopped. A modal page pushed in between, like a popup displayed in OnDisappearing, is removed again:
 	// Shell pops every modal page above its destination, and other root pages remove it when they sync the modal stack of the platform.
-	// Returns true when page is on such a modal page: a page that is still displayed in the Window and whose Parent is the Window, but which is neither
-	// the Page of the Window nor on its ModalStack. IsLoaded excludes a modal page that .NET MAUI dropped from the ModalStack without popping it,
-	// e.g. when the Page of the Window was replaced: it is no longer displayed, and it is never removed from the Window
 	static bool TryGetModalPageBeingPopped(Page page, [NotNullWhen(true)] out Window? window, [NotNullWhen(true)] out Page? modalPageBeingPopped)
 	{
 		Element rootElement = page;
@@ -301,7 +298,8 @@ public static class PopupExtensions
 			rootElement = parent;
 		}
 
-		// IsLoaded reads the platform view: check it last, only for a modal page that is no longer on the ModalStack
+		// IsLoaded excludes a modal page that .NET MAUI dropped from the ModalStack without popping it, e.g. when the Page of the Window was replaced:
+		// it is no longer displayed, and it is never removed from the Window. It reads the platform view, so keep it last
 		if (rootElement is Page rootPage
 			&& rootPage.Parent is Window parentWindow
 			&& rootPage != parentWindow.Page
@@ -318,16 +316,15 @@ public static class PopupExtensions
 		return false;
 	}
 
-	// Waits until .NET MAUI has removed modalPageBeingPopped from window and returns the INavigation of the page that is then on top of the window:
-	// the INavigation of the popped page no longer displays anything
+	// The INavigation of the popped page no longer displays anything, so the popup goes to the page that is on top of the window once it is removed
 	static async Task<INavigation> GetNavigationWhenModalPageIsPoppedAsync(Window window, Page modalPageBeingPopped, CancellationToken token)
 	{
 		// RunContinuationsAsynchronously: the popup is pushed after the code that removed the modal page from the window has returned, so that .NET MAUI first
 		// finishes the navigation that popped the modal page, e.g. the loop of Shell.GoToAsync("..") that pops every modal page above its destination
 		var modalPageRemovedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		// PopModalAsync removes the modal page from the window right before it raises Window.ModalPopped, after the platform has dismissed the page;
-		// the sync of the platform's modal stack removes it without raising Window.ModalPopped
+		// ParentChanged rather than Window.ModalPopped: PopModalAsync removes the modal page from the window right before it raises ModalPopped, after the platform
+		// has dismissed the page, but the sync of the platform's modal stack removes it without raising ModalPopped
 		modalPageBeingPopped.ParentChanged += HandleParentChanged;
 
 		try

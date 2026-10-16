@@ -5,5 +5,5 @@ runs:
     steps:
         -   name: Load .github/workflows/shared.env
             shell: bash
-            # Drops comments, blank lines and carriage returns (a Windows checkout has CRLF line endings), and prints what it loads.
+            # A Windows checkout has CRLF line endings, and the carriage returns would end up in the values.
             run: tr -d '\r' < .github/workflows/shared.env | grep -Ev '^[[:space:]]*(#|$)' | tee -a "$GITHUB_ENV"

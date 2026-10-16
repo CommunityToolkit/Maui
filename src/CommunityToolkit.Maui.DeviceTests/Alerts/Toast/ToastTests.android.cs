@@ -23,7 +23,7 @@ public partial class ToastTests
 		Task.FromResult<IReadOnlyList<string>>([.. ToastObserver.Toasts.Where(toast => toast.IsDisplayed).Select(toast => toast.Event?.Text ?? string.Empty)]);
 
 	// A toast whose Java peer is disposed while it is displayed can no longer be cancelled: the system keeps it until it times out and
-	// shows every later toast after it (see ToastObserver.WaitForToastsThatCannotBeCancelledAsync). So the tests cancel it natively first.
+	// shows every later toast after it (see ToastObserver.WaitForToastsThatCannotBeCancelledAsync).
 	async Task TakeTheToastOffScreenBeforeItIsDisposedAsync()
 	{
 		GetNativeToast().Cancel();
@@ -189,7 +189,6 @@ public partial class ToastTests
 			await TakeTheToastOffScreenBeforeItIsDisposedAsync();
 			first.Dispose();
 
-			// A later toast: put a platform toast of its own where Show would have left it.
 			var laterPlatformToast = Android.Widget.Toast.MakeText(AlertsAndroid.Activity, "Later", ToastLength.Long)!;
 			SetPlatformToast(laterPlatformToast);
 
@@ -199,9 +198,7 @@ public partial class ToastTests
 		});
 	}
 
-	// The next toast replaced (cancelled) the toast of the first instance, which is disposed afterwards: only its own platform toast goes,
-	// so the toast that is displayed stays the toolkit's platform toast and its Dismiss cancels it. The system would hide it by itself
-	// after 3.5 s (ToastLength.Long): Dismiss has to hide it well before.
+	// The system would hide the toast by itself after 3.5 s (ToastLength.Long): Dismiss has to hide it well before.
 	[Fact]
 	public async Task DisposingAnOlderToastKeepsTheDisplayedToastDismissable()
 	{
@@ -251,8 +248,7 @@ public partial class ToastTests
 		});
 	}
 
-	// Android only lets a thread with a Looper (the UI thread) create a toast: Show called from a background thread fails before the
-	// toolkit stores a platform toast. Android 11 and later report it with a NullPointerException, earlier versions with a RuntimeException.
+	// Android 11 and later report the missing Looper with a NullPointerException, earlier versions with a RuntimeException.
 	[Fact]
 	public async Task ShowOffTheUiThreadThrowsBecauseTheThreadHasNoLooper()
 	{

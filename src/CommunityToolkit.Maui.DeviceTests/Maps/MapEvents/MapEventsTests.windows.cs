@@ -6,17 +6,12 @@ using Microsoft.Maui.Devices.Sensors;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of the types that describe the messages of the Windows map page (Maps, Handler/Map): EventMessage, EventIdentifier and the
-// source-generated SerializerContext with the payload types. The JSON below is what the page posts (window.chrome.webview.postMessage of
-// the objects built in MapHandler.Windows.cs, as WebView2 serializes them), so these tests pin the contract between the page and the
-// handler. The Maps package is only part of this app on Windows.
-//
-// These tests need no device, but the Maps package is only part of this app on Windows, and the unit tests do not reference it.
+// These tests need no device, but the unit tests do not reference the Maps package, which is only part of this app on Windows.
+// The JSON below is what the map page posts (window.chrome.webview.postMessage, as WebView2 serializes it), so these tests pin the
+// contract between the page and the handler.
 [Category(TestCategory.MapEvents)]
 public class MapEventsTests : CommunityToolkitHandlerTestBase
 {
-	// ---- EventMessage
-
 	[Fact]
 	public void EventMessageStartsWithAnEmptyIdAndNoPayload()
 	{
@@ -36,8 +31,6 @@ public class MapEventsTests : CommunityToolkitHandlerTestBase
 		Assert.Equal("MapClicked", message.Id);
 		Assert.Same(payload, message.Payload);
 	}
-
-	// ---- EventIdentifier
 
 	[Fact]
 	public void EventIdentifierHasUnknownAndTheFourEventsOfThePage()
@@ -72,8 +65,6 @@ public class MapEventsTests : CommunityToolkitHandlerTestBase
 	{
 		Assert.False(Enum.TryParse<EventIdentifier>(id, true, out _));
 	}
-
-	// ---- SerializerContext
 
 	[Fact]
 	public void SerializerContextReadsAnEventMessageAndKeepsThePayloadAsJson()
@@ -128,8 +119,8 @@ public class MapEventsTests : CommunityToolkitHandlerTestBase
 	[InlineData("[1,2]")]
 	public void SerializerContextThrowsJsonExceptionForAMessageThatIsNotAnObject(string json)
 	{
-		// WebView2 hands the handler whatever the page posted as JSON. The handler does not catch this exception (it runs in an async void
-		// event handler), so only the page's own messages, which are objects, are safe: this pins what the deserializer does with the rest.
+		// WebView2 hands the handler whatever the page posted, and the handler's DeserializeOrDefault catches only JsonException: anything else
+		// would escape its async void event handler.
 		Assert.Throws<JsonException>(() => JsonSerializer.Deserialize(json, SerializerContext.Default.EventMessage));
 	}
 
@@ -242,8 +233,7 @@ public class MapEventsTests : CommunityToolkitHandlerTestBase
 		Assert.NotNull(SerializerContext.Default.GetTypeInfo(typeof(Location)));
 		Assert.NotNull(SerializerContext.Default.GetTypeInfo(typeof(Bounds)));
 		Assert.NotNull(SerializerContext.Default.GetTypeInfo(typeof(InfoWindow)));
-		// It knows nothing else: a type that the handler never deserializes has no metadata in the context. A clicked pin is read into
-		// ClickedPin, not into the MAUI Pin.
+		// The handler never deserializes other types, and it reads a clicked pin into ClickedPin, not into the MAUI Pin.
 		Assert.Null(SerializerContext.Default.GetTypeInfo(typeof(Map)));
 		Assert.Null(SerializerContext.Default.GetTypeInfo(typeof(Pin)));
 	}

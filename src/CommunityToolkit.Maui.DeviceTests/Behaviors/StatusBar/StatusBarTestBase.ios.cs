@@ -7,13 +7,9 @@ public abstract partial class StatusBarTestBase
 {
 	protected partial Task ResetNativeStateAsync() => InvokeOnMainThreadAsync(IosStatusBarViews.Reset);
 
-	/// <summary>Asserts that every window that has a status bar shows exactly one status bar view with <paramref name="color"/>.</summary>
 	protected Task AssertStatusBarShowsAsync(Color color) => InvokeOnMainThreadAsync(() => AssertStatusBarShows(color));
 
-	/// <summary>
-	/// <see cref="AssertStatusBarShowsAsync"/> for code that already runs on the UI thread and must not yield (InvokeOnMainThreadAsync always
-	/// posts). Each window is checked on its own: UIApplication.Windows can list more windows than the runner's (see IosStatusBarViews.Windows).
-	/// </summary>
+	// For code that already runs on the UI thread and must not yield: InvokeOnMainThreadAsync always posts.
 	protected static void AssertStatusBarShows(Color color)
 	{
 		var windows = IosStatusBarViews.WindowsWithStatusBar();
@@ -24,7 +20,6 @@ public abstract partial class StatusBarTestBase
 		}
 	}
 
-	/// <summary>Asserts that nothing changed the status bar since <see cref="ResetNativeStateAsync"/>: no window has a status bar view.</summary>
 	protected Task AssertStatusBarUntouchedAsync() =>
 		InvokeOnMainThreadAsync(static () =>
 		{
@@ -34,10 +29,8 @@ public abstract partial class StatusBarTestBase
 			}
 		});
 
-	/// <summary>
-	/// Asserts that no status bar view has a color: <see cref="AssertStatusBarUntouchedAsync"/> is too strict where the behavior's
-	/// page-size handler may already have added a status bar view (StatusBar.SetBarSize adds one, without a color).
-	/// </summary>
+	// AssertStatusBarUntouchedAsync is too strict where the behavior's page-size handler may already have added a status bar view
+	// (StatusBar.SetBarSize adds one, without a color).
 	protected Task AssertStatusBarColorNotAppliedAsync() =>
 		InvokeOnMainThreadAsync(static () =>
 		{
@@ -47,16 +40,13 @@ public abstract partial class StatusBarTestBase
 			}
 		});
 
-	/// <summary>
-	/// Presents a view controller over the runner's root view controller, runs <paramref name="statusBarCall"/> and asserts that it called
-	/// SetNeedsStatusBarAppearanceUpdate on that topmost view controller (the one that controls the status bar). The call is counted on the
-	/// view controller itself, so the check does not depend on UIKit re-reading the style, which it only does with view controller-based
-	/// status bar appearance (an app may set UIViewControllerBasedStatusBarAppearance to false). With <paramref name="keepPresentingViewLoaded"/>
-	/// the view controller is presented over the full screen without removing the presenting views from the window (a hosted page stays loaded).
-	/// </summary>
+	// The call is counted on the topmost view controller (the one that controls the status bar) itself, so the check does not depend on UIKit
+	// re-reading the style, which it only does with view controller-based status bar appearance (an app may set
+	// UIViewControllerBasedStatusBarAppearance to false).
 	protected async Task AssertUpdatesTheStatusBarAppearanceAsync(Action statusBarCall, bool keepPresentingViewLoaded = false)
 	{
 		var rootViewController = await InvokeOnMainThreadAsync(static () => TestWindow.PlatformWindow.RootViewController ?? throw new InvalidOperationException("The runner's window has no root view controller."));
+		// OverFullScreen leaves the presenting views in the window, so a hosted page stays loaded.
 		var presented = new QueryCountingViewController(keepPresentingViewLoaded ? UIModalPresentationStyle.OverFullScreen : UIModalPresentationStyle.FullScreen);
 
 		try
@@ -90,10 +80,6 @@ public abstract partial class StatusBarTestBase
 		return viewController;
 	}
 
-	/// <summary>
-	/// A view controller that counts the SetNeedsStatusBarAppearanceUpdate calls it receives, and how often UIKit asks it for its status bar
-	/// style (UIKit does that after SetNeedsStatusBarAppearanceUpdate when the app uses view controller-based status bar appearance).
-	/// </summary>
 	protected sealed class QueryCountingViewController : UIViewController
 	{
 		public QueryCountingViewController(UIModalPresentationStyle presentationStyle = UIModalPresentationStyle.FullScreen)
@@ -104,7 +90,6 @@ public abstract partial class StatusBarTestBase
 
 		public int StyleQueries { get; private set; }
 
-		/// <summary>How often SetNeedsStatusBarAppearanceUpdate was called on this very view controller (not on another one).</summary>
 		public int AppearanceUpdateRequests { get; private set; }
 
 		public override UIStatusBarStyle PreferredStatusBarStyle()

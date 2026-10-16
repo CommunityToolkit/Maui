@@ -170,9 +170,9 @@ public class MauiMediaElement : UIView
 	[SupportedOSPlatform("maccatalyst16.1")]
 	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
 	{
-		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap: its additional safe area
-		// insets must not add the parent's insets to that a second time. They are the negated insets of the parent, which adds none
-		// (UIKit does not apply negative additional insets, so this does not zero out the safe area of the AVPlayerViewController)
+		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap, so its additional safe area insets
+		// must not add the parent's insets a second time: the negated insets add none. UIKit does not apply negative additional insets, so
+		// this does not zero out the safe area of the AVPlayerViewController.
 		UIEdgeInsets insets = parentView.SafeAreaInsets;
 		return new UIEdgeInsets(insets.Top * -1, insets.Left * -1, insets.Bottom * -1, insets.Right * -1);
 	}

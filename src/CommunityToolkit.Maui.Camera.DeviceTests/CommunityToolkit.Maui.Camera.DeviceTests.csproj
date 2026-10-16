@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Device tests of CommunityToolkit.Maui.Camera, modelled on dotnet/maui's
-       src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj. See ../CommunityToolkit.Maui.DeviceTests/README.md. -->
+  <!-- Modelled on dotnet/maui's src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj. -->
 
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
@@ -45,8 +44,8 @@
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
-    <!-- Test assets: anything added under these folders is packaged; Raw files keep their path without the Resources\Raw prefix. -->
     <MauiImage Include="Resources\Images\**" />
+    <!-- Raw files keep their path without the Resources\Raw prefix. -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
@@ -61,8 +60,8 @@
     <ProjectReference Include="..\CommunityToolkit.Maui.DeviceTests.Runners.SourceGen\CommunityToolkit.Maui.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\CommunityToolkit.Maui.DeviceTests.Shared\CommunityToolkit.Maui.DeviceTests.Shared.csproj" />
 
-    <!-- The package under test, with the analyzers that its NuGet package adds to an app. -->
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
+    <!-- An app that installs the CommunityToolkit.Maui.Camera NuGet package also gets its analyzers. -->
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

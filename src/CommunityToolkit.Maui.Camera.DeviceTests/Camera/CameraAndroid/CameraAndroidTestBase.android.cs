@@ -21,20 +21,12 @@ using Runnable = Java.Lang.Runnable;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Base class of the Camera-on-Android device tests: runtime permissions, native CameraX state readers, hosting of
-/// platform views, a guard for exceptions that escape from <c>async void</c> toolkit code, and per-test cleanup.
-/// </summary>
-/// <remarks>
-/// Every camera session the tests open is closed again in <see cref="DisposeAsyncCore"/>, because CameraX keeps its state
-/// (ProcessCameraProvider, bound use cases, open cameras) for the whole process.
-/// </remarks>
 public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 {
 	internal const string CameraPermission = "android.permission.CAMERA";
 	internal const string RecordAudioPermission = "android.permission.RECORD_AUDIO";
 
-	/// <summary>Upper bound for anything that talks to the (emulated) camera. Only reached when a test fails (or the machine is overloaded).</summary>
+	// Only an upper bound: reached when a test fails or the machine is overloaded.
 	internal static readonly TimeSpan CameraTimeout = TimeSpan.FromSeconds(45);
 
 	readonly List<Action> cleanups = [];
@@ -43,14 +35,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	bool asyncVoidGuardInstalled;
 	bool usedCameraSession;
 
-	/// <summary>The runner's activity (the Android context the toolkit's views and managers bind the camera to).</summary>
 	protected static Context AppContext => MauiProgramDefaults.DefaultContext;
 
-	/// <summary>
-	/// Builds this test's MauiApp (see <see cref="CameraHandlerTestBase.SetupBuilder"/>) and starts guarding the UI thread
-	/// against exceptions that escape from <c>async void</c> code (CameraViewHandler.ConnectHandler, the CameraX listener
-	/// callbacks of CameraManager). Without the guard such an exception would crash the whole test run.
-	/// </summary>
 	protected void SetupBuilder(Action<MauiAppBuilder>? configureBuilder = null, [CallerMemberName] string? testName = null)
 	{
 		// The runner only reports results when the whole run ends, so a crash of the app (the camera HAL, the media codec or
@@ -61,10 +47,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		InstallAsyncVoidGuard();
 	}
 
-	// ------------------------------------------------------------------------------------------------------------------
-	// async void guard
-	// ------------------------------------------------------------------------------------------------------------------
-
+	// Without the guard, an exception that escapes from async void code (CameraViewHandler.ConnectHandler, the CameraX listener callbacks
+	// of CameraManager) would crash the whole test run.
 	void InstallAsyncVoidGuard()
 	{
 		if (asyncVoidGuardInstalled)
@@ -81,25 +65,13 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		});
 	}
 
-	/// <summary>Exceptions that escaped from <c>async void</c> code on the UI thread since the last claim.</summary>
 	protected IReadOnlyList<Exception> UnhandledAsyncVoidExceptions => asyncVoidGuard.Snapshot();
-
-	// ------------------------------------------------------------------------------------------------------------------
-	// permissions
-	// ------------------------------------------------------------------------------------------------------------------
 
 	protected static bool IsPermissionGranted(string permission) =>
 		AppContext.CheckSelfPermission(permission) == Permission.Granted;
 
-	/// <summary>
-	/// Grants the runtime permissions the camera needs, like AndroidX's GrantPermissionRule does: through the instrumentation's
-	/// UiAutomation (<c>pm grant</c>). The test is skipped, visibly, when the permissions can not be granted (for example when
-	/// the app was started by hand instead of by XHarness).
-	/// </summary>
-	/// <remarks>
-	/// Revoking a runtime permission kills the app process, so tests never revoke. The permissions stay granted until XHarness
-	/// uninstalls the app. Tests that need a denied permission use a Context whose permission checks are denied instead.
-	/// </remarks>
+	// Revoking a runtime permission kills the app process, so tests never revoke: the permissions stay granted until XHarness
+	// uninstalls the app. Tests that need a denied permission use a Context whose permission checks are denied instead.
 	protected static void EnsureCameraPermissions(bool includeRecordAudio = false)
 	{
 		string[] permissions = includeRecordAudio ? [CameraPermission, RecordAudioPermission] : [CameraPermission];
@@ -125,7 +97,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>Runs a shell command through the instrumentation's UiAutomation (the identity of the adb shell) and returns its output.</summary>
+	// The instrumentation's UiAutomation has the identity of the adb shell; AndroidX's GrantPermissionRule grants permissions the same way.
 	static string RunShellCommand(string command)
 	{
 		var uiAutomation = MauiTestInstrumentation.Current?.UiAutomation
@@ -137,11 +109,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return reader.ReadToEnd();
 	}
 
-	/// <summary>
-	/// The number of accelerometer connections that <c>android.view.OrientationEventListener</c> objects of this app hold in Android's
-	/// sensor service (what OrientationEventListener.enable registers and disable removes), read from <c>dumpsys sensorservice</c>:
-	/// "android.view.OrientationEventListener | WakeLockRefCount 0 | uid 10216 | ...". The test is skipped when the dump is not available.
-	/// </summary>
+	// The accelerometer connections that OrientationEventListener.enable registers (and disable removes) appear in dumpsys sensorservice
+	// as "android.view.OrientationEventListener | WakeLockRefCount 0 | uid 10216 | ...".
 	protected static async Task<int> CountOrientationListenersOfThisAppAsync()
 	{
 		string dump;
@@ -159,13 +128,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return dump.Split('\n').Count(line => line.Contains("android.view.OrientationEventListener |", StringComparison.Ordinal) && line.Contains($"| uid {uid} |", StringComparison.Ordinal));
 	}
 
-	// ------------------------------------------------------------------------------------------------------------------
-	// native CameraX state
-	// ------------------------------------------------------------------------------------------------------------------
-
-	/// <summary>
-	/// The process-wide CameraX provider, whose managed peer every CameraManager of the process shares: never dispose it.
-	/// </summary>
+	// The managed peer of the process-wide CameraX provider is shared by every CameraManager of the process: never dispose it.
 	protected static async Task<ProcessCameraProvider> GetNativeCameraProviderAsync()
 	{
 		var context = AppContext;
@@ -196,7 +159,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			?? throw new InvalidOperationException($"CameraX does not know a camera with id {cameraId}.");
 	}
 
-	/// <summary>The native CameraX state of a camera: PENDING_OPEN, OPENING, OPEN, CLOSING or CLOSED.</summary>
+	// CameraState.GetType() is CameraX's getType(), not Object.GetType(): PENDING_OPEN, OPENING, OPEN, CLOSING or CLOSED.
 	protected static string GetNativeCameraState(ICameraInfo nativeInfo) =>
 		(nativeInfo.CameraState.Value as CameraState)?.GetType()?.ToString() ?? "UNKNOWN";
 
@@ -209,7 +172,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static bool IsNativeTorchOn(ICameraInfo nativeInfo) =>
 		(nativeInfo.TorchState.Value as Java.Lang.Integer)?.IntValue() == 1;
 
-	/// <summary>Waits until the native camera has the given CameraX state (see <see cref="GetNativeCameraState"/>).</summary>
 	protected static async Task WaitForNativeCameraStateAsync(string cameraId, string expectedState, int timeoutMilliseconds = 30000)
 	{
 		var last = "never read";
@@ -228,7 +190,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>Waits until the preview shows frames (PreviewView.PreviewStreamState is STREAMING).</summary>
 	protected static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000)
 	{
 		try
@@ -257,69 +218,48 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static async Task<bool> IsNativelyBoundAsync(UseCase useCase) =>
 		(await GetNativeCameraProviderAsync()).IsBound(useCase);
 
-	/// <summary>
-	/// Waits until the preview shows frames, which means that the camera CameraX bound is open and delivers images to the PreviewView.
-	/// </summary>
-	/// <remarks>
-	/// This deliberately does not wait for CameraX's public camera state (ICameraInfo.CameraState) to become OPEN. When the toolkit rebinds
-	/// a camera that is already open (UnbindAll followed by BindToLifecycle in one UI-thread message: a new capture resolution, an
-	/// extension mode, a recording that starts or stops, a restarted preview), CameraX's camera thread goes CLOSING, REOPENING and
-	/// OPENED before the UI thread dispatched the states it posted, and CameraStateMachine drops the final OPEN because LiveData still
-	/// holds the OPEN of before (logcat: "Transitioning camera internal state: REOPENING --> OPENED" without a following "Publishing
-	/// new public camera state ... OPEN"). The public state then stays OPENING for good while the camera streams. A camera that was
-	/// closed before (never rebound while open) does publish OPEN: tests that open a camera for the first time assert it with
-	/// <see cref="WaitForNativeCameraStateAsync"/>.
-	/// </remarks>
+	// Streaming proves that the bound camera is open, so this deliberately does not wait for CameraX's public camera state
+	// (ICameraInfo.CameraState) to become OPEN. When the toolkit rebinds a camera that is already open (UnbindAll followed by
+	// BindToLifecycle in one UI-thread message: a new capture resolution, an extension mode, a recording that starts or stops, a
+	// restarted preview), CameraX's camera thread goes CLOSING, REOPENING and OPENED before the UI thread dispatched the states it
+	// posted, and CameraStateMachine drops the final OPEN because LiveData still holds the OPEN of before (logcat:
+	// "Transitioning camera internal state: REOPENING --> OPENED" without a following "Publishing new public camera state ... OPEN").
+	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
+	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
 	protected static Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView)
 	{
 		ArgumentNullException.ThrowIfNull(view.SelectedCamera);
 		return WaitForStreamingAsync(previewView);
 	}
 
-	/// <summary>
-	/// Waits until the native torch of a camera is on (true) or off (false). <paramref name="message"/> replaces the failure message,
-	/// so that a test can tell its own setup apart from the step that it is about.
-	/// </summary>
 	protected static Task WaitForNativeTorchAsync(string cameraId, bool on, int timeoutMilliseconds = 30000, string? message = null) =>
 		AssertionExtensions.AssertEventuallyAsync(async () => IsNativeTorchOn(await GetNativeCameraInfoAsync(cameraId)) == on, timeoutMilliseconds, 50,
 			message ?? $"The torch of camera {cameraId} never became {(on ? "on" : "off")}.");
 
-	/// <summary>Waits until the native zoom ratio of a camera is the given ratio (<paramref name="message"/>: see <see cref="WaitForNativeTorchAsync"/>).</summary>
 	protected static Task WaitForNativeZoomAsync(string cameraId, float ratio, int timeoutMilliseconds = 30000, string? message = null) =>
 		AssertionExtensions.AssertEventuallyAsync(async () => Math.Abs(GetNativeZoomRatio(await GetNativeCameraInfoAsync(cameraId)) - ratio) < 0.01f, timeoutMilliseconds, 50,
 			message ?? $"The zoom ratio of camera {cameraId} never became {ratio}.");
 
-	/// <summary>Unbinds every use case at the native level, like another app component using CameraX would (UI thread).</summary>
+	// Simulates another app component that uses CameraX. Must run on the UI thread.
 	protected static async Task UnbindAllNativeAsync() => (await GetNativeCameraProviderAsync()).UnbindAll();
 
-	/// <summary>
-	/// A 4:3 capture size that is smaller than what the cameras of the emulators capture by default (the largest 4:3 size: 640x480 on
-	/// the Android 9 emulator, 2048x1536 and more on newer ones), so that restricting the capture resolution to it visibly changes
-	/// the resolution CameraX negotiates. Tests skip cameras that do not offer it.
-	/// </summary>
+	// A 4:3 capture size that is smaller than what the cameras of the emulators capture by default (the largest 4:3 size: 640x480 on
+	// the Android 9 emulator, 2048x1536 and more on newer ones), so that restricting the capture resolution to it visibly changes the
+	// resolution CameraX negotiates.
 	protected static Size SmallResolution => new(320, 240);
 
 	protected static (int Width, int Height) SmallSize => (320, 240);
 
-	/// <summary>The id of the camera that CameraX bound the use cases to (the <see cref="ICamera"/> that CameraManager got from BindToLifecycle).</summary>
 	protected static string GetBoundCameraId(ICamera camera) => GetNativeCameraId(camera.CameraInfo);
 
-	/// <summary>The resolution CameraX negotiated for a bound use case (width, height), or null while it is not bound.</summary>
 	protected static (int Width, int Height)? GetNativeResolution(ResolutionInfo? info) =>
 		info?.Resolution is Android.Util.Size size ? (size.Width, size.Height) : null;
 
-	/// <summary>Lets the messages that are already posted to the UI thread (CameraX callbacks) run.</summary>
 	protected Task SettleUiThreadAsync() =>
 		InvokeOnMainThreadAsync(() => { }).ContinueWith(_ => InvokeOnMainThreadAsync(() => { }), TaskScheduler.Default).Unwrap();
 
-	/// <summary>
-	/// Runs <paramref name="action"/> (UI thread) and waits until the PreviewView went IDLE and then STREAMING again, which means
-	/// that CameraX closed the session of the camera and started a new one (a rebind), and that the new session delivers frames.
-	/// </summary>
-	/// <remarks>
-	/// Waiting only for STREAMING could return before the rebind took effect, while the PreviewView still reports the stream of the
-	/// old session. Must be called on the UI thread (LiveData observers are added there).
-	/// </remarks>
+	// Waiting only for STREAMING could return before the rebind took effect, while the PreviewView still reports the stream of the
+	// old session. Must be called on the UI thread: LiveData observers are added there.
 	protected static async Task RunAndWaitForANewPreviewStreamAsync(PreviewView previewView, Func<Task> action)
 	{
 		var states = new LiveDataRecorder(previewView.PreviewStreamState);
@@ -339,18 +279,11 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// A camera whose CameraX selector matches no camera of the device (an external USB camera that is not plugged in, or a
-	/// CameraInfo that outlived its camera): CameraX can not bind use cases to it.
-	/// </summary>
+	// The selector matches no camera of the device, like an external USB camera that is not plugged in or a CameraInfo that outlived its camera.
 	protected static CameraInfo CreateCameraThatCanNotBeBound() =>
 		new("External Camera", "unplugged-camera", CameraPosition.Unknown, false, 1, 1, [],
 			new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingExternal)!.Build());
 
-	/// <summary>
-	/// Takes a picture through the manager and returns the captured image, or throws a <see cref="CameraException"/> with the
-	/// reason of MediaCaptureFailed (the events are raised on CameraX's executor thread).
-	/// </summary>
 	internal static async Task<Stream> TakePictureAsync(ManagerSession session)
 	{
 		var outcome = new TaskCompletionSource<Stream>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -370,27 +303,16 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// Skips the test (visibly) on an Android 9 or older emulator: the camera HAL of those system images (camera.ranchu, in
-	/// JpegCompressor/createThumbnail) crashes with SIGSEGV on every still capture, so no JPEG can be produced there. Devices and
-	/// newer emulators are not affected.
-	/// </summary>
 	protected static void RequireStillCapture() =>
 		Skip.If(IsAndroid9OrOlderEmulator,
 			"The camera HAL of the Android 9 (and older) emulator images crashes with SIGSEGV (camera.ranchu JpegCompressor/createThumbnail) on every still capture, so this device can not produce a JPEG.");
 
-	/// <summary>
-	/// Skips the test (visibly) on an Android 9 or older emulator: the software H.264 encoder of those system images (media.codec,
-	/// C2SoftAvcEnc, 'Codec2BufferUtils.cpp:214 Check failed: (src.width() &amp; 1) == 0') aborts as soon as a recording receives
-	/// frames, and the native crash can take the whole app down with it. Devices and newer emulators are not affected.
-	/// </summary>
 	protected static void RequireVideoRecording() =>
 		Skip.If(IsAndroid9OrOlderEmulator,
 			"The software H.264 encoder of the Android 9 (and older) emulator images aborts (media.codec: Codec2BufferUtils.cpp:214 'Check failed: (src.width() & 1) == 0') as soon as a recording receives frames and takes the app down with it, so this device can not record a video.");
 
 	static bool IsAndroid9OrOlderEmulator => !OperatingSystem.IsAndroidVersionAtLeast(29) && Android.OS.Build.Hardware is "ranchu" or "goldfish";
 
-	/// <summary>Native size of a JPEG, read by Android's BitmapFactory without decoding the pixels.</summary>
 	protected static (int Width, int Height) GetJpegSize(byte[] jpeg)
 	{
 		var options = new Android.Graphics.BitmapFactory.Options { InJustDecodeBounds = true };
@@ -408,11 +330,9 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static bool IsJpeg(byte[] data) =>
 		data.Length > 4 && data[0] == 0xFF && data[1] == 0xD8 && data[^2] == 0xFF && data[^1] == 0xD9;
 
-	/// <summary>The recordings the manager keeps in the cache directory while a video is recorded (<c>&lt;ticks&gt;.mp4</c>).</summary>
 	protected static IReadOnlyList<string> ListRecordingFiles() =>
 		AppContext.CacheDir?.ListFiles()?.Where(file => file.Name.EndsWith(".mp4", StringComparison.Ordinal)).Select(file => file.AbsolutePath).Order().ToList() ?? [];
 
-	/// <summary>Reads a recorded video with Android's own MediaMetadataRetriever: whether it has a video track, its duration and size.</summary>
 	protected static (bool HasVideo, long DurationMilliseconds, int Width, int Height) ReadVideoInfo(byte[] mp4)
 	{
 		var path = System.IO.Path.Combine(AppContext.CacheDir!.AbsolutePath, $"probe-{Guid.NewGuid():N}.probe");
@@ -440,12 +360,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// Forces garbage collections until every reference is collected, for at most 20 seconds (the Java peers of a view are
-	/// released by CameraX and the Android runtime a little later than the managed objects, and the layout helpers of the test
-	/// runner keep a view alive for up to a second through a timer). Unlike AssertionExtensions.WaitForGC it lists the survivors
-	/// by type name: the toolkit disposes the Java peers of its views, and ToString on a disposed peer throws.
-	/// </summary>
+	// The Java peers of a view are released by CameraX and the Android runtime a little later than the managed objects, and the layout helpers
+	// of the test runner keep a view alive for up to a second through a timer, so this retries for up to 20 seconds. Unlike
+	// AssertionExtensions.WaitForGC it lists the survivors by type name: the toolkit disposes the Java peers of its views, and ToString on a
+	// disposed peer throws.
 	protected static async Task AssertCollectedAsync(params (string Name, WeakReference Reference)[] references)
 	{
 		var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(20);
@@ -459,10 +377,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		Assert.True(survivors.Count is 0, $"Expected every reference to be collected, but these are still alive after 20 seconds of garbage collections: {string.Join(", ", survivors)}.");
 	}
 
-	// ------------------------------------------------------------------------------------------------------------------
-	// private state of the toolkit's CameraManager (white box: the native objects it holds are asserted, never its flags)
-	// ------------------------------------------------------------------------------------------------------------------
-
+	// White box on purpose: the tests assert the native objects that CameraManager holds in its private fields, never its flags.
 	protected static T? GetPrivateField<T>(object target, string name) =>
 		(T?)GetFieldInfo(target, name).GetValue(target);
 
@@ -473,14 +388,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
 			?? throw new MissingFieldException(target.GetType().FullName, name);
 
-	// ------------------------------------------------------------------------------------------------------------------
-	// hosting
-	// ------------------------------------------------------------------------------------------------------------------
-
-	/// <summary>
-	/// Hosts platform views in the runner's real window for the duration of <paramref name="body"/> (UI thread). Unlike
-	/// AttachAndRun it can host several views at once; AttachAndRun can not be nested.
-	/// </summary>
+	// Unlike AttachAndRun, this can host several views at once, and AttachAndRun can not be nested.
 	protected Task HostAsync(Func<Task> body, params AView[] views) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
@@ -499,8 +407,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			root.AddView(container);
 			try
 			{
-				// Polling (unlike AssertionExtensions.WaitForLayout, which leaves a timer that holds the view for its whole timeout)
-				// keeps nothing alive once the view is laid out.
+				// Polls instead of using AssertionExtensions.WaitForLayout, whose timer holds the view for its whole timeout,
+				// so that nothing stays alive once the view is laid out.
 				await AssertionExtensions.AssertEventually(() => views[0].IsLaidOut && views[0].Width > 0 && views[0].Height > 0, 5000, 20, "The hosted view was not laid out.");
 				await body();
 			}
@@ -511,11 +419,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			}
 		});
 
-	// ------------------------------------------------------------------------------------------------------------------
-	// CameraManager sessions
-	// ------------------------------------------------------------------------------------------------------------------
-
-	/// <summary>A CameraManager together with the CameraView it serves (no handler), as CameraViewHandler wires them.</summary>
 	internal sealed class ManagerSession
 	{
 		public required CameraView View { get; init; }
@@ -528,25 +431,20 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 		public int LoadedCount { get; set; }
 
-		/// <summary>The native object the manager holds in a private field.</summary>
 		public T? Native<T>(string field) where T : class => GetPrivateField<T>(Manager, field);
 
-		/// <summary>The CameraX use cases the manager currently holds (they are replaced whenever the manager rebuilds them).</summary>
+		// Not cached: the manager replaces its use cases whenever it rebuilds them.
 		public ImageCapture ImageCapture => Native<ImageCapture>("imageCapture") ?? throw new InvalidOperationException("The manager has no ImageCapture.");
 
 		public Preview CameraPreview => Native<Preview>("cameraPreview") ?? throw new InvalidOperationException("The manager has no Preview.");
 
 		public AndroidX.Camera.Video.VideoCapture VideoCapture => Native<AndroidX.Camera.Video.VideoCapture>("videoCapture") ?? throw new InvalidOperationException("The manager has no VideoCapture.");
 
-		/// <summary>The resolution CameraX negotiated for the image capture and for the preview.</summary>
 		public (int Width, int Height) CaptureResolution => GetNativeResolution(ImageCapture.ResolutionInfo) ?? throw new InvalidOperationException("The ImageCapture is not bound.");
 
 		public (int Width, int Height) PreviewResolution => GetNativeResolution(CameraPreview.ResolutionInfo) ?? throw new InvalidOperationException("The Preview is not bound.");
 
-		/// <summary>
-		/// Does what CameraViewHandler does for a new view: maps the capture resolution (which creates the ResolutionSelector the
-		/// use cases need) and connects the camera.
-		/// </summary>
+		// Like CameraViewHandler, this maps the capture resolution first: it creates the ResolutionSelector that the use cases need.
 		public async Task ConnectAsync(CancellationToken token = default)
 		{
 			await Manager.UpdateCaptureResolution(View.ImageCaptureResolution, token);
@@ -554,10 +452,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>
-	/// Creates a CameraManager (and, unless asked not to, its PreviewView) on the UI thread. The manager is disposed when the
-	/// test ends.
-	/// </summary>
 	internal async Task<ManagerSession> CreateSessionAsync(ICameraProvider? provider = null, IMauiContext? mauiContext = null, bool createPlatformView = true, CameraView? view = null, bool track = true)
 	{
 		usedCameraSession = true;
@@ -590,18 +484,12 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return session!;
 	}
 
-	/// <summary>Creates a session, hosts its PreviewView in the window and runs <paramref name="body"/> on the UI thread.</summary>
 	internal async Task RunWithSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, IMauiContext? mauiContext = null, CameraView? view = null)
 	{
 		var session = await CreateSessionAsync(provider, mauiContext, true, view);
 		await HostAsync(() => body(session), session.PreviewView!);
 	}
 
-	// ------------------------------------------------------------------------------------------------------------------
-	// hosted CameraView (the real handler, as an app uses it)
-	// ------------------------------------------------------------------------------------------------------------------
-
-	/// <summary>A CameraView hosted in the window through the real <see cref="CameraViewHandler"/>.</summary>
 	internal sealed class HostedView
 	{
 		public required CameraView View { get; init; }
@@ -610,19 +498,13 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 		public required PreviewView PreviewView { get; init; }
 
-		/// <summary>The CameraManager of the handler (throws once the handler is disconnected).</summary>
 		public CameraManager Manager => Handler.CameraManager;
 
-		/// <summary>The native object the manager holds in a private field.</summary>
 		public T? Native<T>(string field) where T : class => GetPrivateField<T>(Manager, field);
 
 		public string SelectedCameraId => (View.SelectedCamera ?? throw new InvalidOperationException("No camera is selected.")).DeviceId;
 	}
 
-	/// <summary>
-	/// Hosts <paramref name="view"/> in the runner's window with the real handler (which connects the camera), waits until the
-	/// camera streams and runs <paramref name="body"/> on the UI thread. The handler is disconnected when the test ends.
-	/// </summary>
 	internal async Task RunWithCameraViewAsync(Func<HostedView, Task> body, CameraView? view = null, bool includeRecordAudio = false, bool waitForStreaming = true, bool disconnectWhenDone = true)
 	{
 		EnsureCameraPermissions(includeRecordAudio);
@@ -651,20 +533,14 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		});
 	}
 
-	/// <summary>
-	/// Waits until the camera connection that the handler started in its async void ConnectHandler has finished (the photo session
-	/// is bound and the manager counts as initialized). A handler that is disconnected before that ends the connection without a camera
-	/// (like a cancelled one), so a test that is not about that waits for the connection first. It takes longest for the first camera of
-	/// the process (CameraX and its extensions start).
-	/// </summary>
+	// The handler connects the camera in its async void ConnectHandler, which returns no task to await. A handler that is disconnected
+	// before the connection has finished ends it without a camera (like a cancelled one), so a test that is not about that waits for the
+	// connection first. It takes longest for the first camera of the process (CameraX and its extensions start).
 	protected static Task WaitUntilTheHandlerConnectedTheCameraAsync(CameraViewHandler handler) =>
 		AssertionExtensions.AssertEventually(() => GetPrivateField<bool>(handler.CameraManager, "isInitialized"), 30000, 50,
 			"The handler never finished connecting the camera.");
 
-	/// <summary>
-	/// Makes <paramref name="provider"/> the ICameraProvider that CameraView and CameraViewHandler resolve from
-	/// <c>IPlatformApplication.Current</c> until the test ends (the runner app's own provider is restored afterwards).
-	/// </summary>
+	// CameraView and CameraViewHandler resolve their ICameraProvider from IPlatformApplication.Current.
 	protected void UseCameraProvider(ICameraProvider provider)
 	{
 		var previous = IPlatformApplication.Current;
@@ -673,10 +549,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		RegisterCleanup(() => IPlatformApplication.Current = previous);
 	}
 
-	/// <summary>
-	/// Creates a session, hosts its PreviewView, connects the camera (the way the handler does) and waits until the preview streams,
-	/// then runs <paramref name="body"/> on the UI thread. The runtime permissions are granted first.
-	/// </summary>
 	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false)
 	{
 		EnsureCameraPermissions(includeRecordAudio);
@@ -689,7 +561,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}, provider, null, view);
 	}
 
-	/// <summary>The cameras CameraX reports, read through a provider of its own.</summary>
 	protected static async Task<IReadOnlyList<CameraInfo>> GetRealCamerasAsync()
 	{
 		using var provider = new CameraProvider();
@@ -706,19 +577,18 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	/// <summary>Remembers that the test opened a camera, so that the teardown waits for every camera to close.</summary>
 	protected void MarkCameraSessionUsed() => usedCameraSession = true;
 
-	/// <summary>Runs <paramref name="cleanup"/> on the UI thread when the test ends (last registered, first run).</summary>
 	protected void RegisterCleanup(Action cleanup) => cleanups.Add(cleanup);
 
-	/// <summary>Disconnects the handler of a hosted CameraView (the handler disposes the manager).</summary>
 	protected void RegisterHandlerCleanup(IElementHandler handler)
 	{
 		usedCameraSession = true;
 		cleanups.Add(() => handler.DisconnectHandler());
 	}
 
+	// CameraX keeps its state (ProcessCameraProvider, bound use cases, open cameras) for the whole process, so every camera session that a
+	// test opened is closed again here.
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		var failures = new List<Exception>();

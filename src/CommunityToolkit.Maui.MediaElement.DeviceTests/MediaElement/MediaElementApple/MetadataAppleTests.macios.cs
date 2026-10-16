@@ -12,11 +12,9 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Metadata.macios.cs: the Now Playing info (lock screen / Control Center) and the remote commands of the shared MPRemoteCommandCenter.
-// MPNowPlayingInfoCenter and MPRemoteCommandCenter are the native state the assertions read. The command handlers (private methods of
-// Metadata) are called directly for the arguments the system never sends (no event, another kind of event), and the commands are also
-// delivered the way the system delivers them (AppleRemoteCommands.Dispatch: a real command event through MediaPlayer) to check which
-// handler each command reaches.
+// The command handlers (private methods of Metadata) are called directly for the arguments the system never sends (no event, another
+// kind of event), and the commands are also delivered the way the system delivers them (AppleRemoteCommands.Dispatch: a real command
+// event through MediaPlayer) to check which handler each command reaches.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MetadataAppleTests : AppleMediaElementTestBase
@@ -58,7 +56,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		return $"http://127.0.0.1:{port}/art.png";
 	}
 
-	// Starts and ends without remote command targets: the command center keeps the targets of every Metadata ever created.
+	// The command center keeps the targets of every Metadata ever created.
 	async Task WithCleanRemoteCommandsAsync(Func<Task> action)
 	{
 		await InvokeOnMainThreadAsync(AppleRemoteCommands.RemoveAllTargets);
@@ -72,11 +70,10 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		}
 	}
 
-	// The number of times the Metadata of WithPlayerAsync asked its owner to start playback: the remote commands start playback through
-	// the play callback (MediaManager.PlayAtSpeed, which starts at the Speed), not with AVPlayer.Play().
+	// The remote commands start playback through the play callback (MediaManager.PlayAtSpeed, which starts at the Speed), not with
+	// AVPlayer.Play(), so the tests count the calls of the callback.
 	int playCallbackCount;
 
-	// A real player with the 30 s audio clip (ready to play) and a Metadata for it, whose play callback starts the player.
 	Task WithPlayerAsync(Func<AVPlayer, Metadata, Task> action) =>
 		WithCleanRemoteCommandsAsync(async () =>
 		{
@@ -118,8 +115,6 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 
 	static Task<MPRemoteCommandHandlerStatus> InvokeHandlerAsync(Metadata metadata, string handlerName, MPRemoteCommandEvent? commandEvent) =>
 		InvokeOnMainThreadAsync(() => Invoke(metadata, handlerName, commandEvent));
-
-	// ---- constructor
 
 	[Fact]
 	public async Task ConstructorPublishesTheDefaultNowPlayingInfo()
@@ -199,8 +194,6 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			Assert.False(AppleRemoteCommands.HasTargets("nextTrack"));
 		}));
 	}
-
-	// ---- now playing info
 
 	[Fact]
 	public async Task ClearNowPlayingPublishesTheDefaultNowPlayingInfo()
@@ -313,8 +306,6 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			Assert.Contains(server.Requests, request => request.Path == "/art.png");
 		}));
 	}
-
-	// ---- artwork loading
 
 	[Fact]
 	public async Task ArtworkOfAnHttpUrlIsLoaded()
@@ -433,8 +424,6 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 
 		Assert.Same(DefaultImage, image);
 	}
-
-	// ---- remote commands
 
 	[Fact]
 	public async Task PlayCommandStartsThePlayer()
@@ -754,7 +743,6 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 
 			handler.Disconnect();
 
-			// The lock screen and Control Center must not keep showing the media of a MediaElement whose player is gone.
 			var nowPlaying = MPNowPlayingInfoCenter.DefaultCenter.NowPlaying;
 			Assert.True(string.IsNullOrEmpty(nowPlaying?.Title), $"Now Playing title after the disconnect: '{nowPlaying?.Title}'.");
 			Assert.True(string.IsNullOrEmpty(nowPlaying?.Artist), $"Now Playing artist after the disconnect: '{nowPlaying?.Artist}'.");
@@ -916,8 +904,6 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			Assert.All(AppleRemoteCommands.Names, name => Assert.False(AppleRemoteCommands.HasTargets(name), name));
 		}));
 	}
-
-	// ---- remote commands delivered the way the system delivers them (a real command event, through MediaPlayer)
 
 	async Task DispatchAsync(string commandName)
 	{

@@ -16,9 +16,6 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: the behavior hides the image behind a SpriteVisual (a mask brush that holds the tint color) that it adds as the child
-// visual of the Image (or of the Image inside the Button), and replaces Image.Source with a blank WriteableBitmap until it detaches.
-// RenderTargetBitmap does not capture composition visuals, so the tint is verified through the visual, not through pixels.
 public partial class IconTintColorBehaviorTests
 {
 	public enum UnusableElementChange
@@ -28,6 +25,7 @@ public partial class IconTintColorBehaviorTests
 		ViewWithoutAHandler
 	}
 
+	// RenderTargetBitmap does not capture composition visuals, so the tint is verified through the visual, not through pixels.
 	static bool CanAssertTintPixels => false;
 
 	static bool CanAssertButtonTintPixels => false;
@@ -50,11 +48,12 @@ public partial class IconTintColorBehaviorTests
 	static SpriteVisual? GetTintVisual(PlatformView platformView) =>
 		GetNativeImage(platformView) is WImage image ? ElementCompositionPreview.GetElementChildVisual(image) as SpriteVisual : null;
 
-	// The object that stands for the image the platform view shows: a new image source gives a new WinUI image source.
+	// A new image source gives a new WinUI image source.
 	static object? GetNativeImageIdentity(PlatformView platformView) => GetNativeImage(platformView)?.Source;
 
 	static bool HasNativeImage(PlatformView platformView) => GetNativeImage(platformView)?.Source is not null;
 
+	// While tinted, the behavior replaces Image.Source with a blank WriteableBitmap and hides the image behind the tint visual.
 	static bool IsNativeTinted(PlatformView platformView, Color color) =>
 		GetTintVisual(platformView)?.Brush is CompositionMaskBrush { Source: CompositionColorBrush colorBrush }
 		&& colorBrush.Color == color.ToWindowsColor()
@@ -64,7 +63,6 @@ public partial class IconTintColorBehaviorTests
 		GetTintVisual(platformView) is null
 		&& GetNativeImage(platformView)?.Source is not WriteableBitmap;
 
-	// Puts the native view into the state of a view that was never tinted, without going through the behavior.
 	static void ResetNativeTint(PlatformView platformView)
 	{
 		var image = GetNativeImage(platformView) ?? throw new InvalidOperationException($"{platformView.GetType()} has no image to reset.");
@@ -80,7 +78,6 @@ public partial class IconTintColorBehaviorTests
 		return $"{platformView.GetType().Name}: image source {image?.Source?.GetType().Name ?? "none"}, tint visual {(visual is null ? "none" : "present")}, tint color {tint}";
 	}
 
-	// The brush that holds the tint color (the source of the visual's mask brush).
 	static CompositionColorBrush? GetTintColorBrush(PlatformView platformView) =>
 		GetTintVisual(platformView)?.Brush is CompositionMaskBrush { Source: CompositionColorBrush colorBrush } ? colorBrush : null;
 
@@ -109,8 +106,7 @@ public partial class IconTintColorBehaviorTests
 	static Task WaitForLoadedAndMeasuredAsync(WImage image) =>
 		AssertEventually(() => image.IsLoaded && image.ActualWidth > 0 && image.ActualHeight > 0, timeout: 3000, message: $"The WinUI Image was never loaded and measured: IsLoaded {image.IsLoaded}, size {image.ActualWidth}x{image.ActualHeight}.");
 
-	// Sets the source of a hosted WinUI Image and returns once it has opened. The handlers that were subscribed before (the behavior's) run
-	// before this method returns.
+	// The handlers that were subscribed before (the behavior's) have run when this method returns.
 	static async Task SetSourceAndWaitUntilItOpensAsync(WImage image, WImageSource source)
 	{
 		var imageOpened = new TaskCompletionSource();
@@ -131,7 +127,6 @@ public partial class IconTintColorBehaviorTests
 		}
 	}
 
-	// OnElementPropertyChanged only reacts to the Source property: any other property of the view leaves the tint (and its visual) alone.
 	[Fact]
 	public async Task TintIsNotAppliedAgainWhenAnUnrelatedImagePropertyChanges()
 	{
@@ -157,7 +152,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// OnIconTintColorBehaviorPropertyChanged only reacts to TintColor: another bindable property of the behavior leaves the tint alone.
 	// The brush color is changed behind the behavior's back first: handling the change as a TintColor change would only write TintColor
 	// into the same brush again (the visual would stay), so the brush color is what tells the two apart.
 	[Fact]
@@ -187,8 +181,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// An image that has no size yet when the behavior applies the tint is tinted once SizeChanged reports both a width and a height:
-	// a SizeChanged with one of them still 0 is ignored. The WinUI Image is hosted alone, so its size is set by hand.
 	[Fact]
 	public async Task ImageThatIsNotMeasuredYetIsTintedOnceItHasAWidthAndAHeight()
 	{
@@ -199,6 +191,7 @@ public partial class IconTintColorBehaviorTests
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
+			// The WinUI Image is hosted alone, so its size is set by hand.
 			var wImage = new WImage { Width = 0, Height = 0 };
 
 			await wImage.AttachAndRun(async () =>
@@ -223,8 +216,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// RemoveTintColor has no other platform view to restore than Image and Button: a tint that was applied to an Image cannot be removed
-	// from anything else.
 	[Fact]
 	public async Task UnsupportedPlatformViewThrowsNotSupportedExceptionWhenTheBehaviorDetachesWhileTinted()
 	{
@@ -246,9 +237,8 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// A UriImageSource does not need the network: an ms-appx URI points into the app package. LoadAndApplyImageTintColor loads such a
-	// source itself (a BitmapImage, or an SvgImageSource for an .svg URI) and puts that source back when the tint is removed. The .svg
-	// row uses Resources/Raw/behavior_disc.svg, a MauiAsset packaged as is (MauiImage would convert an SVG to PNG).
+	// A UriImageSource does not need the network: an ms-appx URI points into the app package. The .svg row uses
+	// Resources/Raw/behavior_disc.svg, a MauiAsset packaged as is (MauiImage would convert an SVG to PNG).
 	[Theory]
 	[InlineData("ms-appx:///behavior_disc.png", false)]
 	[InlineData("ms-appx:///behavior_disc.svg", true)]
@@ -275,7 +265,7 @@ public partial class IconTintColorBehaviorTests
 	}
 
 	// MAUI's Button always holds an Image, so the WinUI buttons that TryGetButtonImage cannot find an Image in are hand-made: a text
-	// content and a panel without an Image. ApplyTintColor returns without a tint for both.
+	// content and a panel without an Image.
 	[Fact]
 	public async Task ButtonWithoutAnImageIsIgnoredWhenTheBehaviorAttaches()
 	{
@@ -295,7 +285,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// RemoveTintColor with a tint applied, handed a WinUI Button that holds no Image: nothing to restore, and the tint state is cleared.
 	[Fact]
 	public async Task DetachingFromAButtonWithoutAnImageWhileTintedDoesNotThrow()
 	{
@@ -315,9 +304,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// An Image that is not loaded yet (not in the visual tree) is tinted only once it raises ImageOpened: attaching creates no tint, and
-	// neither does being hosted (Loaded, SizeChanged) before it has an image. The image MAUI would set for the FileImageSource is then set
-	// by hand: the tint appears once it opened, and detaching puts that image back.
 	[Fact]
 	public async Task ImageThatIsNotLoadedIsNotTintedBeforeItOpens()
 	{
@@ -340,6 +326,7 @@ public partial class IconTintColorBehaviorTests
 
 				Assert.Null(ElementCompositionPreview.GetElementChildVisual(wImage));
 
+				// The image MAUI would set for the FileImageSource is set by hand.
 				var source = new BitmapImage(new Uri("ms-appx:///behavior_disc.png"));
 				await SetSourceAndWaitUntilItOpensAsync(wImage, source);
 
@@ -386,9 +373,7 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// The WinUI Image has no source yet (MAUI sets it once the image source has loaded): attaching adds no tint and leaves the image alone,
-	// and the behavior waits for the image to open. That the image that arrives afterwards is tinted is the subject of
-	// TintIsAppliedWhenTheImageSourceIsSetAfterTheBehaviorAttached.
+	// The WinUI Image has no source yet when the behavior attaches: MAUI sets it once the image source has loaded.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -416,9 +401,8 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// MAUI's Button content is a panel that holds an Image (collapsed while the Button has no ImageSource): TryGetButtonImage takes the
-	// first Image of the panel, which is tinted and restored. Here an ImageButton is the element, with a hand-made WinUI Button whose
-	// panel has a TextBlock before the Image.
+	// MAUI's Button content is a panel that holds an Image (collapsed while the Button has no ImageSource). TryGetButtonImage takes the first
+	// Image of the panel, so the hand-made WinUI Button's panel has a TextBlock before the Image.
 	[Fact]
 	public async Task ButtonWhoseContentIsAPanelWithAnImageIsTintedAndRestored()
 	{
@@ -524,8 +508,6 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// Hosts a WinUI Image that shows the disc loaded from a stream, as MAUI shows a stream or a rooted file, and attaches the behavior to it
-	// for the given view: no exception, a tint whose mask has loaded the icon, and the stream image back once the behavior detached.
 	Task AssertStreamLoadedImageIsTintedAsync(Image image) => InvokeOnMainThreadAsync(async () =>
 	{
 		var probe = new IconTintColorBehaviorProbe { TintColor = Colors.Blue };
@@ -605,7 +587,7 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// ApplyImageTintColor is only called for a measured image; called for one that is not measured, it adds no tint.
+	// ApplyImageTintColor is only called for a measured image, so the test calls it directly with an unmeasured one.
 	[Fact]
 	public async Task ImageThatIsNotMeasuredIsNotTinted()
 	{
@@ -626,7 +608,7 @@ public partial class IconTintColorBehaviorTests
 		});
 	}
 
-	// RestoreOriginalImage is only called while a tint is applied; without one it leaves the image alone.
+	// RestoreOriginalImage is only called while a tint is applied, so the test calls it directly without one.
 	[Fact]
 	public async Task RestoringTheOriginalImageWithoutATintLeavesTheImageAlone()
 	{

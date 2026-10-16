@@ -9,8 +9,6 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of FragmentLifecycleManager (Core, Android): every FragmentLifecycleCallbacks override forwards its arguments to the
-// IDialogFragmentService, and a manager registered on a real FragmentManager receives the lifecycle of the fragments it hosts.
 [Category(TestCategory.FragmentLifecycleManager)]
 [Collection(TestCollections.DisableParallelization)]
 public class FragmentLifecycleManagerTests : FragmentTestBase
@@ -49,7 +47,7 @@ public class FragmentLifecycleManagerTests : FragmentTestBase
 			var view = new AView(activity);
 			var bundle = new Bundle();
 
-			var expectedArguments = Invoke(manager, callback, fragmentManager, fragment, activity, view, bundle);
+			var expectedArguments = InvokeCallbackAndGetExpectedArguments(manager, callback, fragmentManager, fragment, activity, view, bundle);
 
 			var call = Assert.Single(service.Calls);
 			Assert.Equal(callback, call.Name);
@@ -105,7 +103,7 @@ public class FragmentLifecycleManagerTests : FragmentTestBase
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => InvokeOnMainThreadAsync(() =>
 		{
 			var activity = HostActivity;
-			Invoke(manager, callback, activity.SupportFragmentManager, new PlainFragment(), activity, new AView(activity), new Bundle());
+			InvokeCallbackAndGetExpectedArguments(manager, callback, activity.SupportFragmentManager, new PlainFragment(), activity, new AView(activity), new Bundle());
 		}));
 
 		Assert.Equal(callback, exception.Message);
@@ -238,10 +236,7 @@ public class FragmentLifecycleManagerTests : FragmentTestBase
 		await AssertionExtensions.WaitForGC(managerReference, serviceReference, fragmentReference, dialogFragmentReference);
 	}
 
-	// ---- helpers
-
-	// Calls the named callback of the manager and returns the arguments the service has to receive, in order.
-	static object?[] Invoke(FragmentLifecycleManager manager, string callback, AFragmentManager fragmentManager, AFragment fragment, AppCompatActivity activity, AView view, Bundle bundle)
+	static object?[] InvokeCallbackAndGetExpectedArguments(FragmentLifecycleManager manager, string callback, AFragmentManager fragmentManager, AFragment fragment, AppCompatActivity activity, AView view, Bundle bundle)
 	{
 		switch (callback)
 		{

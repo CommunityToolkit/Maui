@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The Android build packs this manifest into CommunityToolkit.Maui.Core.aar, and the manifest merger merges it into the manifest of every
-  app that references CommunityToolkit.Maui.Core.
   - package: the build leaves a library manifest without a package attribute out of the .aar.
-  - uses-sdk: for a library manifest without it the merger assumes API level 1 and adds the implied READ_PHONE_STATE,
-    READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE permissions to the app. The Android build requires minSdkVersion to equal the
-    Android SupportedOSPlatformVersion of CommunityToolkit.Maui.Core.csproj for the NetVersion it builds: 21 for .NET 10 (this file),
-    24 for .NET 11 (AndroidManifest.net11.xml, which the project uses for NetVersion net11.0). Keep both files the same otherwise.
+  - uses-sdk: for a library manifest without it the manifest merger assumes API level 1 and adds the implied READ_PHONE_STATE,
+    READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE permissions to the manifest of every app that references CommunityToolkit.Maui.Core.
+    The Android build requires minSdkVersion to equal the Android SupportedOSPlatformVersion of CommunityToolkit.Maui.Core.csproj for the
+    NetVersion it builds: 21 for .NET 10 (this file), 24 for .NET 11 (AndroidManifest.net11.xml, which the project uses for NetVersion
+    net11.0). Keep both files the same otherwise.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="communitytoolkit.maui.core">
   <uses-sdk android:minSdkVersion="21" />

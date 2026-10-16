@@ -6,11 +6,6 @@ using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of UseMauiCommunityToolkitMaps (Maps, AppBuilderExtensions.shared.cs). Its only platform code is the `#if WINDOWS` block:
-// it stores the Bing Maps key for the handler and registers MapHandlerWindows for Map. The Maps package is only part of this app on
-// Windows (the other platforms use MAUI's own map handlers), so the tests are Windows-only.
-//
-// The registration runs when MAUI creates the handler factory of the app, not when the extension method is called.
 [Category(TestCategory.MapsAppBuilderExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class MapsAppBuilderExtensionsTests : MapTestBase
@@ -36,7 +31,6 @@ public class MapsAppBuilderExtensionsTests : MapTestBase
 	[Fact]
 	public async Task UseMauiCommunityToolkitMapsRegistersMapHandlerWindowsForMap()
 	{
-		// The handler creates its WebView2, whose mappings call EnsureCoreWebView2Async from async void lambdas.
 		RequireWebView2Runtime();
 		SetupMapBuilder();
 

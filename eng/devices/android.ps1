@@ -131,9 +131,8 @@ function Get-AndroidDevices {
     return , $devices
 }
 
-function Test-AndroidDeviceAttached {
-    # Whether adb still lists the device, in any state. An emulator whose process ended (it aborted, or something killed it) is no longer
-    # listed, and waiting does not bring it back.
+function Test-AndroidDeviceListed {
+    # An emulator whose process ended (it aborted, or something killed it) is no longer listed, and waiting does not bring it back.
     param([string]$Adb, [string]$Serial)
 
     return @(Get-AndroidDevices -Adb $Adb | Where-Object { $_.Serial -eq $Serial }).Count -gt 0
@@ -157,7 +156,6 @@ function Invoke-AndroidShell {
 }
 
 function Wait-AndroidDevice {
-    # Waits until the device has booted and the package manager answers; returns $null when ready or an error.
     param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds, [System.Diagnostics.Process]$Process)
 
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
@@ -180,7 +178,6 @@ function Wait-AndroidDevice {
 }
 
 function Start-AndroidEmulator {
-    # Boots -Avd on -EmulatorPort and returns the emulator (Serial, Process, Started) or an Error.
     param([string]$SdkRoot, [string]$Adb, [string]$Name, [int]$Port, [int]$TimeoutSeconds, [string]$LogDirectory)
 
     $serial = "emulator-$Port"
@@ -288,7 +285,7 @@ function Invoke-AndroidDeviceTests {
 
         # A device that is gone is not handed to XHarness: it would look for it for minutes, then try restarts that only work on its own lab
         # machines (systemctl restart android-emulator, adb emu restart), and end with 81 without saying what happened.
-        if (-not (Test-AndroidDeviceAttached -Adb $Adb -Serial $Serial)) {
+        if (-not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
             $goneVerdict = New-DeviceTestVerdict -ExitCode 81 -Directory $androidOutput -Reason (Get-AndroidDeviceGoneReason -Serial $Serial)
             $goneVerdict.Attempt = $attemptNumber
             $goneVerdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true
@@ -297,7 +294,7 @@ function Invoke-AndroidDeviceTests {
 
         $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
         $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
-        if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceAttached -Adb $Adb -Serial $Serial)) {
+        if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
             # Another attempt on a device that is gone cannot help
             $verdict.Reasons = @($verdict.Reasons) + (Get-AndroidDeviceGoneReason -Serial $Serial)
             $verdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true -Force
@@ -306,7 +303,7 @@ function Invoke-AndroidDeviceTests {
         $verdict
     } -BeforeRetry {
         # Waiting only helps a device that is still listed (offline, or booting again)
-        if (Test-AndroidDeviceAttached -Adb $Adb -Serial $Serial) {
+        if (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial) {
             $retryError = Wait-AndroidDevice -Adb $Adb -Serial $Serial -TimeoutSeconds 120
             if ($retryError) {
                 Write-DeviceTestWarning $retryError

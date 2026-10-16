@@ -4,9 +4,9 @@ using PlatformView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Mac Catalyst: the soft keyboard is not supported, every platform call throws NotSupportedException. The shared code first looks
-// up the platform view and handles cancellation, so those results are the same as on the other platforms (shared tests). Whether the
-// exception is thrown by the call or reported through the returned task is an implementation detail: the tests await the call.
+// The shared code looks up the platform view and handles cancellation before any platform call, so those results are the same as on the
+// other platforms and covered by the shared tests. Whether the exception is thrown by the call or reported through the returned task is
+// an implementation detail: the tests await the call.
 public partial class KeyboardExtensionsTests
 {
 	const string macOsMessage = "MacOS does not currently support opening the SoftKeyboard";
@@ -42,7 +42,6 @@ public partial class KeyboardExtensionsTests
 		{
 			await view.OnLoadedAsync();
 
-			// The unfocused path focuses the view, then shows the keyboard on the dispatcher: the exception comes back through the task.
 			var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await ((ITextInput)view).ShowKeyboardAsync());
 			Assert.Equal(macOsMessage, exception.Message);
 		});
@@ -74,7 +73,6 @@ public partial class KeyboardExtensionsTests
 		var input = new TextInputStub { Handler = handler };
 		((IView)input).IsFocused = true;
 
-		// A focused view skips the Focus command: only the platform view is asked to show the keyboard.
 		var exception = await Assert.ThrowsAsync<NotSupportedException>(async () => await input.ShowKeyboardAsync());
 
 		Assert.Equal(macOsMessage, exception.Message);
@@ -105,7 +103,6 @@ public partial class KeyboardExtensionsTests
 		Assert.Throws<NotSupportedException>(() => input.IsSoftKeyboardShowing());
 	}
 
-	// Calls made off the UI thread (an app's background task) behave as on the UI thread: on Mac Catalyst, NotSupportedException.
 	[Theory]
 	[InlineData(KeyboardCall.Show)]
 	[InlineData(KeyboardCall.Hide)]

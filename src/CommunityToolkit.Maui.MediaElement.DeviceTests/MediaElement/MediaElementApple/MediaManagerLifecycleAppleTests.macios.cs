@@ -10,8 +10,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs: CreatePlatformView, Dispose(bool) and the observer registration helpers. The manager is created
-// directly (its public API) so that the tests see exactly what CreatePlatformView does, without the handler's property mapper.
+// The manager is created directly (its public API) so that the tests see exactly what CreatePlatformView does, without the handler's
+// property mapper.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
@@ -105,7 +105,7 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 			Assert.False(controller.UpdatesNowPlayingInfoCenter);
 #else
 			// Mac Catalyst: the controller keeps publishing it. True is also AVPlayerViewController's default, so this arm documents the
-			// platform's state rather than proving the assignment (the coverage file lists the assignment as not observable).
+			// platform's state rather than proving the assignment.
 			Assert.True(controller.UpdatesNowPlayingInfoCenter);
 #endif
 		});
@@ -158,7 +158,6 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 
 			NSNotificationCenter.DefaultCenter.PostNotificationName(AVPlayerItem.PlaybackStalledNotification, null);
 
-			// Both calls registered a stalled-playback observer; the second call must have removed the first one's.
 			Assert.Single(Logs.Entries, entry => entry.Level is LogLevel.Warning);
 		});
 	}
@@ -263,12 +262,11 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 			Assert.NotNull(secondObserver);
 			Assert.NotSame(firstObserver, secondObserver);
 
-			// The observer of the replaced item was disposed: AddObserver returns an NSObject that removes the observation and releases its
-			// native handle in Dispose. The test keeps a reference, so only Dispose can clear the handle.
+			// AddObserver returns an NSObject that removes the observation and releases its native handle in Dispose. The test keeps a
+			// reference, so only Dispose can have cleared the handle of the replaced item's observer.
 			Assert.Equal(NativeHandle.Zero, Assert.IsType<NSObject>(firstObserver, exactMatch: false).Handle);
 			Assert.NotEqual(NativeHandle.Zero, Assert.IsType<NSObject>(secondObserver, exactMatch: false).Handle);
 
-			// Without an item there is nothing to observe, and the observer of the cleared item was disposed too.
 			mediaElement.Source = null;
 			await manager.TakeSourceUpdates();
 			Assert.Null(manager.NativeCurrentItemErrorObserver);

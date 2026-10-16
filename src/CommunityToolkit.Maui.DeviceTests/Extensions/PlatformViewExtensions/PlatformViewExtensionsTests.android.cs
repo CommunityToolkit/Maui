@@ -8,8 +8,6 @@ using ToolkitPlatformViewExtensions = CommunityToolkit.Maui.Extensions.PlatformV
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// PlatformViewExtensions (Android): the toolkit's own FindParentOfType, IsPeerDisposed and IsPeerAlive helpers, tested on real
-// Android views and Java peers.
 [Category(TestCategory.PlatformViewExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class PlatformViewExtensionsTests : TestBase
@@ -25,7 +23,6 @@ public class PlatformViewExtensionsTests : TestBase
 
 			Assert.Same(tree.Text, ToolkitPlatformViewExtensions.FindParentOfType<TextView>(tree.Text));
 			Assert.Same(tree.Text, ToolkitPlatformViewExtensions.FindParentOfType<AView>(tree.Text));
-			// The view itself wins even though a parent of the same type exists.
 			Assert.Same(tree.Scroll, ToolkitPlatformViewExtensions.FindParentOfType<FrameLayout>(tree.Scroll));
 			Assert.Same(tree.Linear, ToolkitPlatformViewExtensions.FindParentOfType<ViewGroup>(tree.Linear));
 		});
@@ -44,11 +41,11 @@ public class PlatformViewExtensionsTests : TestBase
 		{
 			using var tree = new ViewTree(Context);
 
-			// text -> linear -> relative -> scroll (a FrameLayout) -> outer (a FrameLayout)
 			Assert.Same(tree.Linear, ToolkitPlatformViewExtensions.FindParentOfType<LinearLayout>(tree.Text));
 			Assert.Same(tree.Linear, ToolkitPlatformViewExtensions.FindParentOfType<ViewGroup>(tree.Text));
 			Assert.Same(tree.Relative, ToolkitPlatformViewExtensions.FindParentOfType<RelativeLayout>(tree.Text));
 			Assert.Same(tree.Scroll, ToolkitPlatformViewExtensions.FindParentOfType<AScrollView>(tree.Text));
+			// A ScrollView is a FrameLayout, so it is nearer than the outer FrameLayout.
 			Assert.Same(tree.Scroll, ToolkitPlatformViewExtensions.FindParentOfType<FrameLayout>(tree.Text));
 			Assert.Same(tree.Outer, ToolkitPlatformViewExtensions.FindParentOfType<FrameLayout>(tree.Scroll.Parent as AView));
 		});
@@ -74,7 +71,6 @@ public class PlatformViewExtensionsTests : TestBase
 
 			Assert.Null(ToolkitPlatformViewExtensions.FindParentOfType<HorizontalScrollView>(tree.Text));
 			Assert.Null(ToolkitPlatformViewExtensions.FindParentOfType<TextView>(tree.Linear));
-			// The root of a detached tree has no parent at all.
 			Assert.Null(tree.Outer.Parent);
 			Assert.Null(ToolkitPlatformViewExtensions.FindParentOfType<HorizontalScrollView>(tree.Outer));
 			Assert.Null(ToolkitPlatformViewExtensions.FindParentOfType<LinearLayout>(new TextView(Context)));
@@ -90,14 +86,12 @@ public class PlatformViewExtensionsTests : TestBase
 			{
 				Assert.True(tree.Text.IsAttachedToWindow);
 
-				// The tree's own parents are found first, then the walk goes on above it: the layout that AttachAndRun adds is the
-				// first parent of the outermost view.
 				Assert.Same(tree.Scroll, ToolkitPlatformViewExtensions.FindParentOfType<AScrollView>(tree.Text));
+				// The layout that AttachAndRun adds is the first parent of the outermost view.
 				var host = ToolkitPlatformViewExtensions.FindParentOfType<ViewGroup>(tree.Outer.Parent as AView);
 				Assert.NotNull(host);
 				Assert.Equal(((JavaObject)tree.Outer.Parent!).Handle, host.Handle);
 
-				// A type that no parent has: the walk ends at the window's root, whose parent is null.
 				Assert.Null(ToolkitPlatformViewExtensions.FindParentOfType<HorizontalScrollView>(tree.Text));
 				Assert.Null(ToolkitPlatformViewExtensions.FindParentOfType<TextView>(tree.Outer));
 			});
@@ -151,7 +145,6 @@ public class PlatformViewExtensionsTests : TestBase
 			Assert.False(ToolkitPlatformViewExtensions.IsPeerAlive(view));
 		});
 
-	// outer (FrameLayout) > scroll (AScrollView) > relative (RelativeLayout) > linear (LinearLayout) > text (TextView)
 	sealed class ViewTree : IDisposable
 	{
 		public ViewTree(Context context)

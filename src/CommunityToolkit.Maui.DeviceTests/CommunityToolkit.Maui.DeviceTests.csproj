@@ -1,8 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Device tests of CommunityToolkit.Maui and CommunityToolkit.Maui.Core (+ CommunityToolkit.Maui.Maps on Windows), modelled on
-       dotnet/maui's src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj. See README.md. -->
-
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
@@ -32,8 +29,8 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
-  <!-- Minimum OS versions: the library minimums (iOS 15, Android 21, Windows 10.0.17763.0), so version-gated branches can run on
-       older devices. Mac Catalyst is 17.0: the Microsoft.MacCatalyst.Sdk 27.0 packs (Xcode 27) reject lower values for apps. -->
+  <!-- The library's minimum OS versions, so version-gated branches can run on older devices. Mac Catalyst is 17.0: the
+       Microsoft.MacCatalyst.Sdk 27.0 packs (Xcode 27) reject lower values for apps. -->
   <PropertyGroup>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
@@ -45,7 +42,6 @@
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
-    <!-- Test assets: anything added under these folders is packaged; Raw files keep their path without the Resources\Raw prefix. -->
     <MauiImage Include="Resources\Images\**" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

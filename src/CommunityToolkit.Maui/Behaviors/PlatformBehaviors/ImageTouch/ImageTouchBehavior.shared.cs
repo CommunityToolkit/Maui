@@ -182,8 +182,8 @@ public partial class ImageTouchBehavior : TouchBehavior
 		}
 	}
 
-	// The aspect that GestureManager.SetImageSource shows in the current state: a state without an aspect of its own shows the default
-	// one. A handler that shows a source shows this aspect with it, as a state change would.
+	// Mirrors the aspect that GestureManager.SetImageSource shows in the current state, because a handler that shows a source has to show
+	// this aspect with it, as a state change would.
 	static Aspect GetCurrentImageAspect(ImageTouchBehavior imageTouchBehavior) => (imageTouchBehavior.CurrentTouchState, imageTouchBehavior.CurrentHoverState) switch
 	{
 		(TouchState.Pressed, _) => imageTouchBehavior.PressedImageAspect ?? imageTouchBehavior.DefaultImageAspect ?? ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect,

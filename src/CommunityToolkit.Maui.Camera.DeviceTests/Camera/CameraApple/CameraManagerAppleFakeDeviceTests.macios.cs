@@ -6,10 +6,8 @@ using Foundation;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.macios.cs device configuration (torch, zoom, capture resolution) against FakeCaptureDevice and FakeCaptureDeviceFormat
-// (see AppleNativeFakes.macios.cs). The fakes make every branch reachable on the iOS simulator and on CI Macs without a camera:
-// torch support, a device that cannot be locked, formats of known sizes. The same members are also tested against the real camera of a
-// Mac in CameraManagerAppleDeviceTests.
+// The fakes make every branch reachable on the iOS simulator and on CI Macs without a camera: torch support, a device that cannot be locked,
+// formats of known sizes. CameraManagerAppleDeviceTests tests the same members against the real camera of a Mac.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
@@ -189,9 +187,9 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 		});
 	}
 
-	// No format fits the request (also the default ImageCaptureResolution, Size.Zero): the device keeps the format that the session preset
-	// (AVCaptureSessionPresetPhoto) chose. The largest format of all, which the toolkit used to choose without a photo output, can be
-	// one that the photo output cannot capture from (#2920, #3037).
+	// The default ImageCaptureResolution, Size.Zero, fits no format either. The format that the session preset (AVCaptureSessionPresetPhoto) chose
+	// stays active because the largest format, which the toolkit used to choose without a photo output, can be one that the photo output cannot
+	// capture from (#2920, #3037).
 	[Theory]
 	[InlineData(0, 0)]
 	[InlineData(1, 1)]
@@ -212,9 +210,8 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 		});
 	}
 
-	// The photo output never chooses the format either: whatever photo pixel formats it reports, a request that no format fits keeps
-	// the format of the session preset, and the toolkit does not ask it. This is what real iPhones have done since #2941, whose filter asked the
-	// photo output for the file type "Jpeg", which is not an AVFileType, and so never kept a format.
+	// Real iPhones have not let the photo output choose the format since #2941, whose filter asked it for the file type "Jpeg", which is not an
+	// AVFileType, and so never kept a format.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -253,7 +250,6 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 
 			UpdateResolution(scope, new Size(1920, 1080));
 
-			// A format that fits the request is chosen without consulting the photo output.
 			Assert.Equal(["lock", "format=1280x720", "unlock"], scope.Fake.Calls);
 			Assert.Empty(photoOutput.RequestedFileTypes);
 		});
@@ -307,9 +303,8 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 		});
 	}
 
-	// The raise is modeled by FakeCaptureDevice's strict mode after Apple's documentation of -[AVCaptureDevice setActiveFormat:]
-	// (NSInvalidArgumentException for a format that is not in the device's formats), reachable through the public CameraInfo constructor with
-	// formats of another device. UpdateCaptureResolution locks the device, so it must unlock it also when setting the active format raises.
+	// FakeCaptureDevice's strict mode models Apple's documentation of -[AVCaptureDevice setActiveFormat:] (NSInvalidArgumentException for a format
+	// that is not in the device's formats), which the public CameraInfo constructor makes reachable with formats of another device.
 	[Fact]
 	public async Task UpdateCaptureResolutionThatTheDeviceRejectsStillUnlocksTheDevice()
 	{
@@ -327,9 +322,9 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 		});
 	}
 
-	// After StopCameraPreview a new SelectedCamera does not replace the capture device (UpdateCurrentCamera only restarts a running preview):
-	// the formats of the selected camera must not be applied to the device of the stopped camera (AVFoundation raises
-	// NSInvalidArgumentException for them); the next StartCameraPreview applies the resolution to the selected camera.
+	// After StopCameraPreview a new SelectedCamera does not replace the capture device (UpdateCurrentCamera only restarts a running preview), and
+	// AVFoundation raises NSInvalidArgumentException when the formats of the selected camera are applied to the device of the stopped camera.
+	// The next StartCameraPreview applies the resolution to the selected camera.
 	[Fact]
 	public async Task UpdateCaptureResolutionDoesNotApplyTheFormatsOfAnotherCameraToTheCaptureDevice()
 	{
@@ -389,7 +384,6 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 	static CameraInfo CreateCamera(FakeCaptureDevice device, params AVCaptureDeviceFormat[] formats) =>
 		new("Fake camera", $"fake-fake-{Guid.NewGuid()}", CameraPosition.Rear, false, 1f, 4f, [new Size(640, 480)], device, formats);
 
-	// Runs the test on the UI thread with a manager that is initialized for the fake device, and disposes everything afterwards.
 	async Task RunAsync(FakeCaptureDevice fake, Action<(FakeDeviceScope Scope, FakeCaptureDevice Device)> test)
 	{
 		SetupBuilder();
@@ -424,7 +418,7 @@ public class CameraManagerAppleFakeDeviceTests : CameraHandlerTestBase
 
 		public void Dispose()
 		{
-			// Dispose would stop and release a session this scope never created; the fake device is not owned by the manager.
+			// The fake device belongs to the test, not to the manager, so the scope disposes it itself.
 			inner.Access.CaptureDevice = null;
 			inner.Dispose();
 			Fake.Dispose();

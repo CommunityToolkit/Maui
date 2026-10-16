@@ -10,17 +10,10 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// When MAUI attaches and detaches <see cref="TouchBehavior"/> and what the platform implementation does to the native view on the way:
-/// Android registers touch, key and click listeners and makes the view clickable, iOS and Mac Catalyst add a touch and a hover
-/// gesture recognizer, Windows adds storyboards to the element's resources. Also: Dispose, the finalizer path and leaks.
-/// </summary>
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 {
-	// Catches: OnAttachedTo not registering the native hooks (or doing so before the view is loaded), OnDetachedFrom not removing them,
-	// OnDetachedFrom not clearing Element.
 	[Fact]
 	public async Task BehaviorAttachesWhenTheViewIsLoadedAndDetachesWhenItIsUnloaded()
 	{
@@ -47,7 +40,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the behavior only attaching on the first Loaded event of the view.
 	[Fact]
 	public async Task BehaviorAddedAfterTheViewLoadedAttachesImmediately()
 	{
@@ -68,7 +60,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: OnDetachingFrom of the PlatformBehavior base not reaching OnDetachedFrom, native hooks left on the view.
 	[Fact]
 	public async Task BehaviorRemovedWhileTheViewIsLoadedDetaches()
 	{
@@ -89,7 +80,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: native hooks added twice (or not removed) over two load/unload cycles; the second attach not running.
 	[Fact]
 	public async Task BehaviorAttachesAgainWhenTheViewIsReloaded()
 	{
@@ -125,8 +115,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		Assert.Null(behavior.Element);
 	}
 
-	// Catches: property changes reaching the native view of a detached behavior; a stale Element after detach; the next attach not applying
-	// the values that changed while detached.
 	[Fact]
 	public async Task PropertiesChangedWhileDetachedLeaveTheViewAloneAndApplyOnTheNextAttach()
 	{
@@ -145,7 +133,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 		await WaitUntilUnloadedAsync(host);
 
-		// Detached: none of this may touch the native view or throw.
 		behavior.DefaultOpacity = 0.3;
 		behavior.IsEnabled = false;
 		behavior.PressedOpacity = 0.1;
@@ -161,9 +148,8 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a disposed behavior still running a gesture from its platform callbacks (HandleTouch, HandleUserInteraction and
-	// HandleHover must throw ObjectDisposedException), Dispose not being idempotent, and a detach after the dispose failing.
-	// The behavior is attached to a test-built platform view (a dispose removes the behavior's hooks from it: see the platform partials).
+	// The platform view is test-built: a dispose removes the behavior's hooks from it (see the platform partials), and one that misbehaves
+	// would otherwise take the test's own view hierarchy with it.
 	[Fact]
 	public async Task DisposedBehaviorRejectsFurtherTouchHandling()
 	{
@@ -178,6 +164,7 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 			behavior.AttachDirect(element, child);
 
 			DisposeWhileAttached(behavior);
+			// A second Dispose must be harmless.
 			behavior.Dispose();
 
 			Assert.Throws<ObjectDisposedException>(() => behavior.HandleTouch(TouchStatus.Started));
@@ -192,8 +179,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: Dispose(false) (the finalizer path) disposing the gesture manager (its token sources would be cancelled and dropped) or the
-	// native hooks, or not marking the behavior disposed (the platform callbacks must be rejected from then on).
 	[Fact]
 	public async Task FinalizerPathMarksTheBehaviorDisposedWithoutDisposingItsGestureManager()
 	{
@@ -217,13 +202,11 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 			Assert.False(animationSource.IsCancellationRequested, "Dispose(false) must not cancel the gesture manager's token sources.");
 			AssertNativeHooksAttached(GetPlatformView(handler));
 
-			// The detach still runs normally.
 			host.Behaviors.Remove(behavior);
 			Assert.Null(behavior.Element);
 		});
 	}
 
-	// Catches: a behavior or view that stays reachable after the behavior was detached and the handler disconnected.
 	[Fact]
 	public async Task BehaviorViewAndPlatformViewAreCollectedAfterDetach()
 	{
@@ -235,9 +218,7 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		await AssertionExtensions.WaitForGC(references.View, references.Behavior, references.Handler, references.PlatformView);
 	}
 
-	// A behavior removed from a view that stays alive must not be kept alive by that view (control for the layout case below: a Label has
-	// no children, so the behavior subscribes to nothing of it that outlives the detach).
-	// Catches: the detach leaving a subscription or a native listener on the view that references the behavior.
+	// Control for the layout case below: a Label has no children, so the behavior subscribes to nothing of it that outlives the detach.
 	[Fact]
 	public async Task BehaviorRemovedFromALiveViewIsCollected()
 	{
@@ -252,7 +233,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 	}
 
 	// Same with a layout that stays alive: the behavior subscribes to the layout's ChildAdded (and ChildRemoved) while it is attached.
-	// Catches: the detach leaving those subscriptions on the layout (see TouchBehaviorChildrenTests.RemovedBehaviorGivesTheChildrenTheirInputBack).
 	[Fact]
 	public async Task BehaviorRemovedFromALiveLayoutIsCollected()
 	{
@@ -267,8 +247,6 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		GC.KeepAlive(host);
 	}
 
-	// Detaching cancels the token of the state animation that is still running (the Element setter's AbortAnimations).
-	// Catches: the Element setter not aborting on detach (the token stays live and the source is never released).
 	[Fact]
 	public async Task DetachingCancelsTheTokenOfTheRunningAnimation()
 	{
@@ -295,9 +273,7 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The element must not keep animating to the look of a behavior that is gone.
-	// Catches: the detach not stopping the element's state animations (GestureManager.AbortAnimations has to find the element even when the
-	// behavior's Element was already cleared), or not stopping the 'SetScale' animation.
+	// GestureManager.AbortAnimations has to find the element even when the behavior's Element was already cleared.
 	[Fact]
 	public async Task DetachingCancelsTheAnimationThatIsStillRunning()
 	{
@@ -325,10 +301,8 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Removing the behavior, or disposing its gesture manager (what TouchBehavior.Dispose does first), stops the behavior's own state
-	// animations only: an animation that the app runs on the element once the state animations are over must reach its end.
-	// Catches: the detach or the dispose aborting the animations of an element whose state animations are over (the element of an earlier
-	// state update kept, or the behavior's Element aborted whatever runs on it).
+	// Disposing the gesture manager is what TouchBehavior.Dispose does first. Neither it nor the detach may abort an animation the app runs
+	// once the state animations are over, whether through the element kept from an earlier state update or through the behavior's Element.
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
@@ -352,7 +326,7 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 				SimulateRelease(behavior);
 			}
 
-			// Well past the end of the state animations
+			// Well past the end of the state animations.
 			await Task.Delay(600);
 
 			var translation = host.TranslateToAsync(80, 0, 1200);
@@ -374,12 +348,9 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Removing the behavior, or disposing its gesture manager, while a state animation of the behavior still runs (its scale) stops the
-	// behavior's animations only: an animation that the app runs on the element at the same time reaches its end, whether it animates
-	// another property (the app's TranslateToAsync) or took the place of the behavior's animation of the same property (the app's
-	// FadeToAsync started during the behavior's pressed fade, which MAUI then stops).
-	// Catches: the detach or the dispose stopping every animation of the element (VisualElement.CancelAnimations) instead of the behavior's
-	// own, or stopping a MAUI animation handle that the behavior's animation no longer holds.
+	// With sameProperty, the app's FadeToAsync starts during the behavior's pressed fade and MAUI stops that fade, so the app's animation
+	// takes its place. The detach and the dispose must stop neither every animation of the element (VisualElement.CancelAnimations) nor a MAUI
+	// animation handle that the behavior's animation no longer holds.
 	[Theory]
 	[InlineData(false, false)]
 	[InlineData(false, true)]
@@ -422,9 +393,8 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Attaching applies the default state of the effects at once: that must not stop an animation the app runs on another property.
-	// Catches: the attach's state update stopping every animation of the element (the zero-duration path of an effect aborting
-	// VisualElement.CancelAnimations' animations instead of the one of its own property).
+	// Attaching applies the default state of the effects at once. That zero-duration path must abort only the animation of its own property,
+	// not every animation of the element (VisualElement.CancelAnimations).
 	[Fact]
 	public async Task AttachingLeavesTheAppsAnimationOfAnotherPropertyAlone()
 	{
@@ -449,9 +419,8 @@ public partial class TouchBehaviorLifecycleTests : TouchBehaviorTestBase
 		});
 	}
 
-	// What the behavior changed on the view to take input must be undone when it is removed: Android makes the view clickable and long
-	// clickable, iOS / Mac Catalyst enable user interaction (an input transparent label then takes the touches meant for the views below
-	// it), and every platform turns the layout's InputTransparent off.
+	// On iOS / Mac Catalyst the attach enables user interaction on the input transparent label, which would then take the touches meant for
+	// the views below it unless the removal restores it.
 	[Fact]
 	public async Task RemovedBehaviorRestoresTheInteractionStateItChanged()
 	{

@@ -9,23 +9,22 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager's IPlayerListener implementation (MediaManager.android.cs): how ExoPlayer's callbacks become MediaElement state.
-// ExoPlayer would deliver them itself, asynchronously and only for real media, so most tests call the public listener methods directly
-// on the handler's MediaManager. A MediaElement whose Source is a UriMediaSource without a Uri is the quiet fixture: it has a Source
-// (the listener methods ignore a MediaElement without one), but nothing is loaded, so the player stays idle and sends no callbacks of
-// its own. The tests put the MediaElement into a baseline state themselves (Opening, which no mapping produces) instead of relying on the
-// state that the source mapping leaves behind for a source without data (see MediaManagerSourceAndroidTests.SourceWithoutDataReportsStateNone).
+// ExoPlayer would deliver the callbacks itself, asynchronously and only for real media, so most tests call the public listener methods
+// directly on the handler's MediaManager. The quiet MediaElement (CreateQuietMediaElementAsync) has a Source, which the listener methods
+// require, but it is a UriMediaSource without a Uri: nothing is loaded, so the player stays idle and sends no callbacks of its own. The
+// tests put the MediaElement into a baseline state themselves: Opening, which no mapping produces, so that every assertion of a mapped
+// state shows that the mapping ran. They do not rely on the state that the source mapping leaves behind for a source without data (see
+// MediaManagerSourceAndroidTests.SourceWithoutDataReportsStateNone).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 {
 	// ExoPlayer's Player.STATE_* values are 1 to 4; the manager's OnPlayerStateChanged switch reads them as Media3 states and keeps
-	// android.media.session.PlaybackState arms for the other values (see Media3PlayerStateMapsToTheMediaElementState).
+	// android.media.session.PlaybackState arms for the other values.
 	const int playerStateIdle = 1, playerStateBuffering = 2, playerStateReady = 3, playerStateEnded = 4;
 
-	// Every arm of the switch except idle (1), which PlayerThatGoesIdleAfterPlaybackStopsTheMediaElement covers, and buffering (2) and ended (4),
-	// which Media3PlayerStateMapsToTheMediaElementState covers. ExoPlayer itself only sends 1 to 4: rows 0 and 5 to 12 (and -1) reach the
-	// PlaybackState arms that only another caller of this public method can reach.
+	// Idle (1), buffering (2) and ended (4) have tests of their own below. ExoPlayer itself only sends 1 to 4: rows 0 and 5 to 12 (and -1)
+	// reach the PlaybackState arms that only another caller of this public method can reach.
 	[Theory]
 	[InlineData(true, 3, MediaElementState.Playing)]       // PlaybackState.StatePlaying (Media3 STATE_READY)
 	[InlineData(false, 3, MediaElementState.Paused)]
@@ -62,9 +61,8 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Idle (1: PlaybackState.StateStopped, Media3 STATE_IDLE) of a player that was playing or paused, which is what Player.Stop leaves behind
-	// (MediaElement.Stop): the MediaElement stops. The rows start from Playing and Paused, not from Opening: ExoPlayer also reports idle while a
-	// source opens, and that must not become Stopped (OpeningASourceRaisesNoSpuriousStoppedOrPausedState).
+	// The rows start from Playing and Paused, not from Opening: ExoPlayer also reports idle while a source opens, and that must not become
+	// Stopped (see OpeningASourceRaisesNoSpuriousStoppedOrPausedState).
 	[Theory]
 	[InlineData(true, MediaElementState.Playing)]
 	[InlineData(false, MediaElementState.Paused)]
@@ -83,8 +81,6 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// ExoPlayer is idle until the source is prepared, and the source mapping sets PlayWhenReady before the media item: idle while the source
-	// opens is not the end of playback.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -103,8 +99,8 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// ExoPlayer calls OnPlayerStateChanged with Media3's Player.STATE_* values (1 idle, 2 buffering, 3 ready, 4 ended), not with
-	// android.media.session.PlaybackState values (2 paused, 4 fast-forwarding): buffering is Buffering and the end of the media is Stopped.
+	// ExoPlayer calls OnPlayerStateChanged with Media3's Player.STATE_* values, not with android.media.session.PlaybackState values
+	// (where 2 is paused and 4 is fast-forwarding).
 	[Theory]
 	[InlineData(true, playerStateBuffering, MediaElementState.Buffering)]
 	[InlineData(false, playerStateBuffering, MediaElementState.Buffering)]
@@ -126,7 +122,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 	}
 
 	// The same mapping, seen through a real load: ExoPlayer reports idle (with playWhenReady set) and then buffering through OnPlayerStateChanged
-	// before OnPlaybackStateChanged reports buffering. Neither may raise StateChanged with Stopped or Paused between Opening and Buffering.
+	// before OnPlaybackStateChanged reports buffering.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -153,7 +149,6 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Only the ready state (3) copies the duration and position of the player; every other value leaves them alone.
 	[Theory]
 	[InlineData(-1)]
 	[InlineData(0)]
@@ -224,7 +219,6 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// The manager was never asked to create a player: no handler, no platform view.
 			using var manager = new AndroidMediaManagerProbe(MauiContext, mediaElement, TestDispatcher.Current);
 			Assert.Null(manager.ExposedPlayer);
 
@@ -234,7 +228,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// An idle player has no duration (a negative sentinel): ready then reports a zero duration and position.
+	// An idle player has no duration (a negative sentinel).
 	[Fact]
 	public async Task ReadyPlayerWithoutMediaReportsZeroDurationAndPosition()
 	{
@@ -255,7 +249,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 	}
 
 	// With nothing loaded (an empty timeline) ExoPlayer keeps a seek position as it is given (ExoPlayerImpl's masking position) and reports it as
-	// its current position, a negative one too: ready then reports position zero instead of a negative position.
+	// its current position, a negative one too.
 	[Fact]
 	public async Task ReadyPlayerWithANegativePositionReportsPositionZero()
 	{
@@ -344,7 +338,6 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Idle (1) and the values the switch has no case for leave the state alone.
 	[Theory]
 	[InlineData(playerStateIdle)]
 	[InlineData(0)]
@@ -405,7 +398,6 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The failure message is "<code name>, <code>, <message>" without the parts that are missing.
 	[Theory]
 	[InlineData("boom", PlaybackException.ErrorCodeIoUnspecified, "Error codename: ERROR_CODE_IO_UNSPECIFIED, Error code: 2000, Error message: boom")]
 	[InlineData("   ", PlaybackException.ErrorCodeUnspecified, "Error codename: ERROR_CODE_UNSPECIFIED, Error code: 1000")]
@@ -569,9 +561,8 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// MediaManager.android.cs, OnPlaybackParametersChanged returns early when AreFloatingPointNumbersEqual says that the player's speed is the
-	// MediaElement's. A speed that the player reports (lock-screen or notification controls, another controller of the media session) reaches
-	// MediaElement.Speed (it never did while the helper returned true for numbers that differ).
+	// OnPlaybackParametersChanged ignores a speed that AreFloatingPointNumbersEqual calls equal to MediaElement.Speed: while that helper returned
+	// true for numbers that differ, no speed that the player reported got through.
 	[Fact]
 	public async Task PlaybackParametersChangedByThePlayerUpdateTheMediaElementSpeed()
 	{
@@ -638,7 +629,6 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The fixture described at the top of the class.
 	static Task<MediaElement> CreateQuietMediaElementAsync() =>
 		CreateMediaElementAsync(element => element.Source = new UriMediaSource());
 }

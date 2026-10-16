@@ -16,19 +16,16 @@ public partial class Snackbar
 
 	static Dictionary<string, Action?> actions = [];
 
-	// The snackbarIdentifier argument of the button of PlatformSnackbar
 	static string? platformSnackbarIdentifier;
 
-	// Raises Dismissed on the Snackbar that showed PlatformSnackbar and stops its dismissal at the end of its Duration
 	static Action? onPlatformSnackbarDismissed;
 
 	static AppNotification? PlatformSnackbar { get; set; }
 
 	internal static void HandleSnackbarAction(AppNotificationActivatedEventArgs args) => HandleSnackbarAction(args.Arguments);
 
-	// A person pressed the button of a notification: Windows removes the notification and raises NotificationInvoked on a background
-	// thread. The action of the snackbar runs and the snackbar is then dismissed (Dismissed is raised, IsShown cleared) on the UI thread,
-	// as when the action of a snackbar is clicked on the other platforms.
+	// Windows removes the notification and raises NotificationInvoked on a background thread, so the action runs and the snackbar is dismissed
+	// on the UI thread, as when the action of a snackbar is clicked on the other platforms.
 	internal static void HandleSnackbarAction(IDictionary<string, string> arguments)
 	{
 		if (!arguments.TryGetValue(snackbarIdentifierArgumentKey, out var id))
@@ -116,7 +113,7 @@ public partial class Snackbar
 	}
 
 	// Windows removes a notification once it expires without telling the app, so the toolkit dismisses the snackbar itself at the end of its
-	// Duration, as the other platforms do: on the UI thread, Dismissed is raised, IsShown cleared and the notification removed.
+	// Duration, as the other platforms do.
 	static async Task DismissAfterDurationAsync(AppNotification platformSnackbar, string id, TimeSpan duration, CancellationToken token)
 	{
 		// A Duration of zero or less dismisses the snackbar right after it is shown; one longer than Task.Delay can wait leaves the
@@ -186,8 +183,7 @@ public partial class Snackbar
 		onDismissed?.Invoke();
 	}
 
-	// The end of the Duration or a press of the button of the snackbar that id identifies: forgets the snackbar and raises Dismissed for it,
-	// unless Dismiss, Show or the other one of them dismissed it first. Returns whether it did.
+	// Dismiss, Show, the end of the Duration and a press of the button can each dismiss the same snackbar: only the first one raises Dismissed.
 	static bool OnPlatformSnackbarDismissed(string id)
 	{
 		Action? onDismissed;

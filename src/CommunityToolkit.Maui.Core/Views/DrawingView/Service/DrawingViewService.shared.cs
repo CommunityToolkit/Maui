@@ -53,10 +53,9 @@ public abstract class ImageOptions(Size desiredSize, Paint? background, Size? ca
 		? canvasSize
 		: throw new ArgumentException($"The width and height of the canvas size cannot be NaN or positive infinity, but the canvas size is {canvasSize}.", nameof(canvasSize));
 
-	// The image is resized by the factor that fits it into the desired size, Math.Min(desired width / width, desired height / height)
-	// (GetMaximumBitmap, GetMaximumUIImage, GetMaximumCanvasRenderTarget). A NaN side, or two sides of positive infinity, make that factor NaN
-	// or infinite, and the platform image APIs then throw (Android) or abort the process (iOS, Mac Catalyst). One infinite side fits the image
-	// to the other side, and a negative side, -Infinity included, gives the minimum image of one pixel.
+	// The resize factor is Math.Min(desired width / width, desired height / height) (GetMaximumBitmap, GetMaximumUIImage, GetMaximumCanvasRenderTarget).
+	// A NaN side, or two sides of positive infinity, make it NaN or infinite, and the platform image APIs then throw (Android) or abort the process
+	// (iOS, Mac Catalyst). One infinite side fits the image to the other side, and a negative side, -Infinity included, gives the minimum image of one pixel.
 	static bool IsValidDesiredSize(Size desiredSize) =>
 		!double.IsNaN(desiredSize.Width)
 		&& !double.IsNaN(desiredSize.Height)

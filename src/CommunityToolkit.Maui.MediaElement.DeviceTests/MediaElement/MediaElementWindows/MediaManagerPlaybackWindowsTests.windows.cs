@@ -8,9 +8,6 @@ using Windows.Media.Playback;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Views/MediaManager.windows.cs: playback, seek, speed, position, the native-event handlers and failure reporting. The manager is
-// created without a handler and plays the bundled 2 s H.264 clip through a real Windows MediaPlayer. Tests that need to decode skip
-// visibly (with the Media Foundation error) on a machine that cannot open the clip; the others only need a MediaPlayer.
 [Category(TestCategory.MediaManagerPlaybackWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
@@ -100,16 +97,16 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await SetSourceAsync(fixture.View, null, fixture.Manager);
 		await WaitUntilAsync(() => fixture.View.CurrentState is MediaElementState.None, "None was not reported after the source was cleared.");
 
-		// Paused (opened) -> Playing -> Paused -> None (a cleared source: PlatformUpdateSource reports None itself, so this None does not prove the
-		// default arm of the native-state mapping; NativeNoneStateIsReportedAsNone does). The platform reports the Opening state of a local file so
-		// briefly that the manager may already read Paused when it handles that event, so Opening has its own test with a source that stays in it
-		// (MediaManagerNetworkWindowsTests.OpeningASourceThatNeverAnswersReportsTheOpeningState).
+		// Opening is not in the sequence: the platform reports the Opening state of a local file so briefly that the manager may already read Paused
+		// when it handles that event, so Opening has its own test with a source that stays in it
+		// (MediaManagerNetworkWindowsTests.OpeningASourceThatNeverAnswersReportsTheOpeningState). The final None comes from PlatformUpdateSource itself,
+		// so it does not prove the default arm of the native-state mapping (NativeNoneStateIsReportedAsNone does).
 		AssertInOrder(states.ToArray(), MediaElementState.Paused, MediaElementState.Playing, MediaElementState.Paused, MediaElementState.None);
 	}
 
-	// The default arm of OnPlaybackSessionPlaybackStateChanged's mapping: MediaPlaybackState.None, which a player without media (or one whose
-	// media was closed) reports. A source cleared through the manager cannot show it, because PlatformUpdateSource reports None on its own, so the
-	// manager's handler gets the real session of a player that has no media, while the MediaElement still reports Playing.
+	// The default arm of OnPlaybackSessionPlaybackStateChanged's mapping (MediaPlaybackState.None) cannot be shown by clearing the source through the
+	// manager, because PlatformUpdateSource reports None on its own. So the manager's handler gets the real session of a player that has no media,
+	// while the MediaElement still reports Playing.
 	[Fact]
 	public async Task NativeNoneStateIsReportedAsNone()
 	{
@@ -190,16 +187,14 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await InvokeOnMainThreadAsync(() => fixture.Manager.Stop());
 		await nativePaused.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 
-		// Stop() set Stopped first; the native pause that Stop() caused (PlaybackStateChanged(Paused), a moment later) must not turn it into
-		// Paused, which is what Pause() reports.
 		Assert.Equal(MediaElementState.Stopped, fixture.View.CurrentState);
 	}
 
-	// Play() and Stop() in one UI-thread turn: Stop() reports Stopped before the manager handled any native state of that Play(). The pause of Stop()
-	// cancels a play that the player has not started yet, and the player then reports no state at all. A player that has started it reports Playing,
-	// which a handler that runs before the pause of Stop() has taken effect reads (PlaybackStateChanged carries no state): that Playing is stale until
-	// the player reports the pause, so neither it nor the Paused that Stop() causes may overwrite Stopped. Which of the two a run hits depends on
-	// timing; PlayingReadAfterTheStopOfAPlayingPlayerIsStaleUntilThePlayerReportsThePause hits the second every time.
+	// Play() and Stop() in one UI-thread turn, so Stop() reports Stopped before the manager handled any native state of that Play(). Which of two
+	// things happens depends on timing: the pause of Stop() cancels a play that the player has not started yet and the player then reports no state
+	// at all, or the player has started it and a handler that runs before that pause has taken effect reads a stale Playing (PlaybackStateChanged
+	// carries no state). Neither that Playing nor the Paused that Stop() causes may overwrite Stopped.
+	// PlayingReadAfterTheStopOfAPlayingPlayerIsStaleUntilThePlayerReportsThePause hits the second case every time.
 	[Fact]
 	public async Task StopRightAfterPlayKeepsReportingStoppedOnceTheNativePlayerSettles()
 	{
@@ -225,8 +220,8 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			fixture.Manager.Stop();
 		});
 
-		// The player settles in Paused. Wait until the manager handled that event (or 5 s pass without one: the player then never left Paused, and
-		// no late native state can overwrite Stopped either), then until everything it queued has run.
+		// The player settles in Paused. The wait is not asserted: if 5 s pass without the manager handling that event, the player never left Paused,
+		// and no late native state can overwrite Stopped either.
 		await AssertHelpers.Wait(() => Volatile.Read(ref pausedEventsHandled) > 0 && session.PlaybackState is MediaPlaybackState.Paused, 5000, 50);
 		await FlushDispatcherAsync();
 
@@ -263,7 +258,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 					fixture.Manager.Stop();
 					Assert.Equal(MediaElementState.Stopped, fixture.View.CurrentState);
 
-					// The handler of a Playing of the playback that Stop() pauses, run before that pause has taken effect: stale.
+					// Run before the pause of Stop() has taken effect, so this Playing is stale.
 					WinMediaReflection.Invoke(fixture.Manager, "OnPlaybackSessionPlaybackStateChanged", playing.Player.PlaybackSession, null);
 					Assert.Equal(MediaElementState.Stopped, fixture.View.CurrentState);
 
@@ -279,10 +274,9 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		}
 	}
 
-	// Play() followed in the same UI-thread turn by Stop() or Pause(): the pause cancels the play, which the player has not started yet, and the player
-	// then reports no state at all. So there is no pause for the stop to wait for: the next play that does not go through Play() is reported, also
-	// after a second Stop() of the paused player, or after a Stop() that follows the Pause(). The native player is played directly, which is what the
-	// play button of the transport controls does.
+	// The pause cancels a play that the player has not started yet, and the player then reports no state at all. So there is no pause for the stop to
+	// wait for: the next play that does not go through Play() is reported, also after a second Stop() of the paused player, or after a Stop() that
+	// follows the Pause(). The native player is played directly, which is what the play button of the transport controls does.
 	[Theory]
 	[InlineData("Play() and Stop()")]
 	[InlineData("Play() and Stop(), then Stop()")]
@@ -321,8 +315,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await WaitUntilAsync(() => fixture.View.CurrentState is MediaElementState.Playing, $"A play that did not go through Play() was not reported after {sequence}.");
 	}
 
-	// From now on the manager's handler no longer sees the state changes of its own player, which plays and pauses for real: the test gives it the
-	// states it reads instead.
 	static void DetachNativeStateHandler(WinMediaManagerFixture fixture)
 	{
 		var handler = typeof(CommunityToolkit.Maui.Core.Views.MediaManager).GetMethod("OnPlaybackSessionPlaybackStateChanged", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -331,8 +323,8 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		fixture.Player!.PlaybackSession.PlaybackStateChanged -= handler.CreateDelegate<Windows.Foundation.TypedEventHandler<MediaPlaybackSession, object>>(fixture.Manager);
 	}
 
-	// Waits until the manager's own player has rested in Paused for a second after the Play() and the pause of the test: it played and paused, or
-	// never started.
+	// After the Play() and the pause of the test, the manager's own player either played and paused or never started, so a second spent in Paused
+	// means it has settled.
 	static Task WaitUntilTheOwnPlayerRestsInPausedAsync(WinMediaManagerFixture fixture)
 	{
 		var pausedFor = new Stopwatch();
@@ -369,8 +361,8 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await WaitUntilAsync(() => fixture.View.CurrentState is MediaElementState.Playing, "A play that did not go through Play() was not reported after the Stop() of a paused player.");
 	}
 
-	// Stop() of a playing player settles when the player reports the pause of Stop(); a play that did not go through Play() after that (the play
-	// button of the transport controls plays the native player directly) is reported.
+	// Stop() of a playing player settles when the player reports its pause. The native player is played directly, as the play button of the transport
+	// controls does.
 	[Fact]
 	public async Task NativePlayAfterTheStopOfAPlayingPlayerHasSettledIsReported()
 	{
@@ -416,7 +408,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var states = new ConcurrentQueue<MediaElementState>();
 		fixture.View.StateChanged += (_, e) => states.Enqueue(e.NewState);
 
-		// From the start, as the seek bar of the transport controls would, so that the play lasts as long as the clip.
+		// From the start, so that the play lasts as long as the clip.
 		fixture.Player!.PlaybackSession.Position = TimeSpan.Zero;
 		fixture.Player.Play();
 
@@ -462,8 +454,8 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var pausedEventsBeforeTheEnd = Volatile.Read(ref pausedEventsHandled);
 		await ended.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 
-		// A player that reaches the end without looping settles in Paused. Wait until the manager handled that event (or 5 s pass without one,
-		// in which case no late native state can overwrite Stopped either), then until everything it queued has run.
+		// A player that reaches the end without looping settles in Paused. The wait is not asserted: if 5 s pass without the manager handling that
+		// event, no late native state can overwrite Stopped either.
 		await AssertHelpers.Wait(() => Volatile.Read(ref pausedEventsHandled) > pausedEventsBeforeTheEnd && session.PlaybackState is MediaPlaybackState.Paused, 5000, 50);
 		await FlushDispatcherAsync();
 
@@ -489,7 +481,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		});
 
 		// MediaPlayerElement passes AutoPlay on to its MediaPlayer only while it is in a live visual tree (the MediaPlayer's own default is
-		// false), so the element is on screen while the source is applied, as it is in an app.
+		// false), so the element is on screen while the source is applied.
 		await HostAsync(fixture.Element!, async _ =>
 		{
 			await OpenAsync(fixture.View, VideoSource, fixture.Manager);
@@ -507,7 +499,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var fixture = await OpenVideoAsync(recordDispatches: true);
 		var dispatchesBefore = fixture.Dispatcher!.DispatchCount;
 
-		// IsDispatchRequired == false on the UI thread: the position is written inline.
 		await InvokeOnMainThreadAsync(async () => await fixture.Manager.Seek(TimeSpan.FromSeconds(1)));
 
 		Assert.Equal(dispatchesBefore, fixture.Dispatcher.DispatchCount);
@@ -519,8 +510,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 	{
 		SetupWindowsBuilder();
 
-		// The dispatcher reports IsDispatchRequired == true although the call is made on the UI thread, so the dispatching arm runs where
-		// the XAML player may be used.
 		var fixture = await OpenVideoAsync(dispatchRequired: true);
 		var dispatchesBefore = fixture.Dispatcher!.DispatchCount;
 
@@ -537,7 +526,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 
 		var fixture = await OpenVideoAsync();
 
-		// IsDispatchRequired == true on a pool thread.
 		await Task.Run(() => fixture.Manager.Seek(TimeSpan.FromSeconds(1.5)));
 
 		await WaitUntilAsync(() => IsNear(fixture.Player!.PlaybackSession.Position, 1.5), $"The position stayed at {fixture.Player!.PlaybackSession.Position}.");
@@ -568,7 +556,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		using var cancellation = new CancellationTokenSource();
 		await cancellation.CancelAsync();
 
-		// The dispatching arm checks the token before it queues the update (and waits for a queued update with WaitAsync(token)).
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
 			InvokeOnMainThreadAsync(async () => await fixture.Manager.Seek(TimeSpan.FromSeconds(1), cancellation.Token)));
 	}
@@ -585,7 +572,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
 			InvokeOnMainThreadAsync(async () => await fixture.Manager.Seek(TimeSpan.FromSeconds(1), cancellation.Token)));
 
-		// Everything the cancelled call queued has run by now.
 		await FlushDispatcherAsync();
 		Assert.True(IsNear(fixture.Player!.PlaybackSession.Position, 0, 0.2), $"The cancelled seek moved the position to {fixture.Player.PlaybackSession.Position}.");
 	}
@@ -613,11 +599,10 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			fixture.Dispatcher.BeforeDispatch = null;
 		}
 
-		// The update was queued (the token was not cancelled yet when the manager checked it before queueing), and it has run by now.
 		Assert.True(fixture.Dispatcher.DispatchCount > dispatchesBefore, "The position update was not queued on the dispatcher.");
 		await FlushDispatcherAsync();
 
-		// A position update that ran would show within a moment.
+		// A position update that ran would show within a moment, so the wait is expected to time out.
 		var moved = await AssertHelpers.Wait(() => !IsNear(fixture.Player!.PlaybackSession.Position, 0, 0.2), 1000, 50);
 		Assert.False(moved, $"The cancelled seek moved the position to {fixture.Player!.PlaybackSession.Position}.");
 	}
@@ -650,8 +635,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await completed.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 	}
 
-	// IMediaElement.SeekTo: a position outside the media goes to its start or its end, and that seek raises SeekCompleted like any other. The clip
-	// does not loop and stays paused, and the player is moved away from both ends first, so that every seek moves it.
+	// The clip does not loop and stays paused, and the player is moved away from both ends first, so that every seek moves it.
 	[Theory]
 	[InlineData(WinMediaSeekOutsideTheMedia.BeforeTheStart)]
 	[InlineData(WinMediaSeekOutsideTheMedia.BeyondTheEnd)]
@@ -708,18 +692,17 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var playRequests = 0;
 		fixture.View.PlayRequested += (_, _) => Interlocked.Increment(ref playRequests);
 
-		// previous speed > 0 and new speed == 0: MediaPlayer.Pause().
 		fixture.View.Speed = 0;
 		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
 		await WaitUntilAsync(() => fixture.Player!.PlaybackSession.PlaybackState is MediaPlaybackState.Paused, "Speed 0 did not pause the native player.", decodeTimeoutMilliseconds);
 		Assert.Equal(0, fixture.Player!.PlaybackSession.PlaybackRate);
 		Assert.Equal(0, playRequests);
 
-		// zero -> zero is neither transition.
+		// Zero to zero neither pauses nor requests Play.
 		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
 		Assert.Equal(0, playRequests);
 
-		// previous speed == 0 and new speed > 0: MediaElement.Play() (raises PlayRequested; without handler nothing else happens).
+		// MediaElement.Play() only raises PlayRequested here: without a handler, nothing else happens.
 		fixture.View.Speed = 1;
 		await InvokeOnMainThreadAsync(() => fixture.Manager.UpdateSpeed());
 		Assert.Equal(1, playRequests);
@@ -746,8 +729,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			}
 		};
 
-		// Playing with rate 0 is reported as Playing by the platform (a plain MediaPlayer was probed for exactly that); the manager then raises
-		// the rate to 1 and Speed follows.
+		// Playing with rate 0 is reported as Playing by the platform (a plain MediaPlayer was probed for exactly that).
 		await InvokeOnMainThreadAsync(() => fixture.Manager.Play());
 		await nativePlaying.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 
@@ -762,7 +744,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 
 		var fixture = await OpenVideoAsync();
 
-		// What the transport controls' playback-rate button does; the event arrives off the UI thread (dispatch-required arm).
+		// The event arrives off the UI thread.
 		fixture.Player!.PlaybackSession.PlaybackRate = 1.5;
 
 		await WaitUntilAsync(() => Math.Abs(fixture.View.Speed - 1.5) < 0.001, "Speed did not follow the native playback rate.");
@@ -786,7 +768,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		await rateChanged.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 		await FlushDispatcherAsync();
 
-		// 1.5 vs 1.505 is within the 0.01 tolerance of the comparison: the event is ignored.
+		// 1.5 vs 1.505 is within the 0.01 tolerance of the comparison.
 		Assert.Equal(1.5, fixture.View.Speed);
 	}
 
@@ -802,7 +784,6 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			var session = fixture.Player!.PlaybackSession;
 			session.PlaybackRate = 1.5;
 
-			// IsDispatchRequired == false: the handler writes Speed immediately instead of queueing it.
 			WinMediaReflection.Invoke(fixture.Manager, "OnPlaybackSessionPlaybackRateChanged", session, null);
 
 			Assert.Equal(1.5, fixture.View.Speed, 3);
@@ -822,7 +803,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			((IMediaElement)fixture.View).Duration = TimeSpan.Zero;
 			using var capture = new WinMediaAsyncVoidCapture();
 
-			// IsDispatchRequired == false: SetDuration runs before the first await of the async void handler.
+			// SetDuration runs before the first await of the async void handler, so Duration is already set when the call returns.
 			WinMediaReflection.Invoke(fixture.Manager, "OnMediaElementMediaOpened", fixture.Player, null);
 
 			Assert.Equal(fixture.Player!.PlaybackSession.NaturalDuration, fixture.View.Duration);
@@ -854,7 +835,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 				view.Dispose();
 			});
 
-			// MediaOpened: SetDuration is queued; the rest of the handler (MediaOpened on the view, the metadata) runs to its end right here.
+			// The rest of the handler (MediaOpened on the view, the metadata) runs to its end right here; only SetDuration is queued.
 			using (var capture = new WinMediaAsyncVoidCapture())
 			{
 				WinMediaReflection.Invoke(manager, "OnMediaElementMediaOpened", manager.PlayerElement!.MediaPlayer, null);
@@ -863,11 +844,9 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 
 			var queuedDurationUpdate = Assert.Single(dispatcher.TakeQueued());
 
-			// Disconnecting before the queue runs: MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
 			manager.Dispose();
 			platformView.Dispose();
 
-			// The queued update runs after that; there is no player left to read, so it must do nothing.
 			Assert.Null(Record.Exception(queuedDurationUpdate));
 			Assert.Equal(TimeSpan.Zero, view.Duration);
 		});
@@ -917,11 +896,10 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			var seek = manager.Seek(TimeSpan.FromSeconds(1));
 			var queuedUpdate = Assert.Single(dispatcher.TakeQueued());
 
-			// Disconnecting before the queue runs: MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
+			// MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
 			manager.Dispose();
 			platformView.Dispose();
 
-			// The queued update runs after that; there is no player left to seek, so it must do nothing, and the Seek completes.
 			Assert.Null(Record.Exception(queuedUpdate));
 			await seek.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 		});
@@ -958,15 +936,13 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 				});
 				Assert.Equal(0, session.PlaybackRate);
 
-				// Playing at rate 0: the handler queues the write of rate 1.
 				WinMediaReflection.Invoke(manager, "OnPlaybackSessionPlaybackStateChanged", session, null);
 				var queuedWrite = Assert.Single(dispatcher.TakeQueued());
 
-				// Disconnecting before the queue runs: MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
+				// MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
 				manager.Dispose();
 				platformView.Dispose();
 
-				// The manager has no player left, so the queued write must not touch the session it was queued for.
 				Assert.Null(Record.Exception(queuedWrite));
 				Assert.Equal(0, session.PlaybackRate);
 			});
@@ -1120,7 +1096,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 
 			fixture.Manager.UpdateStatus();
 
-			// ParentWindow.Exists is false (the window of the current page has no handler): the workaround for the timer that outlives its window.
+			// The workaround for the timer that outlives its window: ParentWindow.Exists is false because the window of the current page has no handler.
 			Assert.Equal(TimeSpan.Zero, fixture.View.Position);
 		});
 	}
@@ -1159,11 +1135,11 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var failed = new TaskCompletionSource<MediaFailedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
 		fixture.View.MediaFailed += (_, e) => failed.TrySetResult(e);
 
-		// Registered after the manager's handler: it reports what the platform said, the manager's handler already ran.
+		// Registered after the manager's handler, so the manager's handler has already run when this reports what the platform said.
 		var native = new TaskCompletionSource<(MediaPlayerError Error, string? ExtendedMessage, string ErrorMessage)>(TaskCreationOptions.RunContinuationsAsynchronously);
 		fixture.Player!.MediaFailed += (_, args) => native.TrySetResult((args.Error, args.ExtendedErrorCode?.Message, args.ErrorMessage));
 
-		// The corrupt file is not a media container; nothing listens on port 1, so the connection is refused.
+		// Nothing listens on port 1, so the connection is refused.
 		await SetSourceAsync(fixture.View, useCorruptFile
 			? new FileMediaSource { Path = WinMediaAssets.CorruptPath }
 			: new UriMediaSource { Uri = new Uri("http://127.0.0.1:1/never.mp4") }, fixture.Manager);
@@ -1171,7 +1147,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var raised = await failed.Task.WaitAsync(TimeSpan.FromMilliseconds(refusedConnectionTimeoutMilliseconds));
 		var (error, extendedMessage, errorMessage) = await native.Task.WaitAsync(TimeSpan.FromMilliseconds(refusedConnectionTimeoutMilliseconds));
 
-		// The message is the non-empty parts of: error name, "Error code: ...", "Error message: ..." joined by ", " (parts depend on what the platform reported).
+		// The parts of the message depend on what the platform reported, so the expectation is rebuilt from the platform's own values.
 		var expected = string.Join(", ", new[]
 		{
 			error.ToString(),
@@ -1181,23 +1157,22 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		Assert.Equal(expected, raised.ErrorMessage);
 		Assert.Contains(loggerFactory.Entries, entry => entry.Level is LogLevel.Error && entry.Message == expected);
 
-		// Failed was reported. The platform also moves its own state to None after a failed open, and the manager reports that too, so the
-		// state that is current a moment later can be either; only "Failed was entered" does not depend on the order of the two events.
+		// The platform also moves its own state to None after a failed open, and the manager reports that too, so the state that is current a moment
+		// later can be either; only "Failed was entered" does not depend on the order of the two events.
 		Assert.Contains(MediaElementState.Failed, states);
 		Assert.Equal(TimeSpan.Zero, fixture.View.Duration);
 		Assert.Equal(TimeSpan.Zero, fixture.View.Position);
 	}
 
-	// Seeks the native player directly (not through the manager) and waits until the position is observable.
 	static async Task SeekNativeAsync(WinMediaManagerFixture fixture, double seconds)
 	{
 		fixture.Player!.PlaybackSession.Position = TimeSpan.FromSeconds(seconds);
 		await WaitUntilAsync(() => IsNear(fixture.Player.PlaybackSession.Position, seconds), "The native position did not move.");
 	}
 
-	// OnMediaElementMediaFailed builds the message from what the platform delivered: an ErrorMessage (blank or not) and an ExtendedErrorCode (null
-	// or not). Which unusable source produces which arm is up to the platform, so each arm has its own test that uses the first of several
-	// unusable sources for which the platform delivered that arm, and skips visibly when none did.
+	// OnMediaElementMediaFailed builds the message from an ErrorMessage (blank or not) and an ExtendedErrorCode (null or not), and which unusable
+	// source produces which arm is up to the platform. So each arm has its own test that uses the first of several unusable sources for which the
+	// platform delivered that arm, and skips visibly when none did.
 	sealed record FailureObservation(string SourceName, MediaFailedEventArgs Raised, MediaPlayerError Error, string? ExtendedMessage, string ErrorMessage);
 
 	static (string Name, Func<WinMediaHttpServer, MediaSource> Create)[] UnusableSources =>
@@ -1214,13 +1189,13 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		var failed = new TaskCompletionSource<MediaFailedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
 		fixture.View.MediaFailed += (_, e) => failed.TrySetResult(e);
 
-		// Registered after the manager's handler: it reports what the platform delivered to it.
+		// Registered after the manager's handler, so the manager's handler has already run when this reports what the platform delivered.
 		var native = new TaskCompletionSource<(MediaPlayerError Error, string? ExtendedMessage, string ErrorMessage)>(TaskCreationOptions.RunContinuationsAsynchronously);
 		fixture.Player!.MediaFailed += (_, args) => native.TrySetResult((args.Error, args.ExtendedErrorCode?.Message, args.ErrorMessage));
 
 		await SetSourceAsync(fixture.View, source, fixture.Manager);
 
-		// One of the sources is a refused connection
+		// One of the sources is a refused connection, which needs the longer timeout.
 		var raised = await failed.Task.WaitAsync(TimeSpan.FromMilliseconds(refusedConnectionTimeoutMilliseconds));
 		var (error, extendedMessage, errorMessage) = await native.Task.WaitAsync(TimeSpan.FromMilliseconds(refusedConnectionTimeoutMilliseconds));
 		Assert.StartsWith(error.ToString(), raised.ErrorMessage, StringComparison.Ordinal);

@@ -70,7 +70,6 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 	[InlineData(TextDecorationFlags.Trim, true)]
 	public async Task IsValid_ChildDecorationFlagsAreAppliedBeforeValidation(TextDecorationFlags flags, bool expectedValue)
 	{
-		// Arrange
 		var textValidationBehavior = new TextValidationBehavior
 		{
 			RegexPattern = "^[0-9]+$",
@@ -86,10 +85,8 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 		};
 		entry.Behaviors.Add(multiBehavior);
 
-		// Act
 		await multiBehavior.ForceValidate(TestContext.Current.CancellationToken);
 
-		// Assert
 		Assert.Equal(expectedValue, textValidationBehavior.IsValid);
 		Assert.Equal(expectedValue, multiBehavior.IsValid);
 	}

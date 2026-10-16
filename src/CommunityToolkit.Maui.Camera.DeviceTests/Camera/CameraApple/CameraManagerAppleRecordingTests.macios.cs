@@ -5,11 +5,8 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Video recording (CameraManager.PlatformStartVideoRecording / PlatformStopVideoRecording, macios) with every answer scripted: the camera
-// permission (AppleRequestAccessStub, no prompt), the microphone (AppleDefaultDeviceStub, AppleDeviceInputStub), the session
-// (FakeCaptureSession), the video connection of the movie output (AppleMovieOutputConnectionStub) and the movie output's recording
-// (AppleMovieRecordingStub). A real recording needs a camera, a running session and two permissions that a headless run cannot grant;
-// CameraManagerApplePermissionTests and CameraManagerAppleCaptureTests run the real path where the permissions are granted.
+// A real recording needs a camera, a running session and two permissions that a headless run cannot grant, so every answer is scripted by stubs
+// and fakes. CameraManagerApplePermissionTests and CameraManagerAppleCaptureTests run the real path where the permissions are granted.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
@@ -82,7 +79,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
 
-			// The first begin/commit pair is the cleanup of an earlier recording.
+			// The first begin/commit pair is the cleanup of an earlier recording, which every start runs even when there is none.
 			Assert.Equal(["begin", "commit", "begin", "add-output", "commit"], recording.Session.Calls);
 			Assert.Equal([AppleMediaTypes.Audio], recording.DefaultDevices.RequestedMediaTypes);
 			Assert.Empty(recording.Inputs.Devices);
@@ -115,7 +112,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	{
 		await RunAsync(async recording =>
 		{
-			// A session with a microphone but no camera input: the movie output has an audio connection only. A real output records it.
+			// Without a camera input the movie output has only an audio connection, which a real output records.
 			recording.Connections.VideoConnection = null;
 			using var destination = new MemoryStream();
 			using var trace = new TraceRecorder();
@@ -131,7 +128,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	// AVFoundation records only through connections that are active and enabled: -[AVCaptureMovieFileOutput startRecordingToOutputFileURL:
 	// recordingDelegate:] raises NSInvalidArgumentException ("No active/enabled connections") when the movie output has none. A video
 	// connection that exists but is inactive (the session's configuration can make it so) or disabled gives the movie output nothing to
-	// record, so without a microphone StartVideoRecording must throw the documented CameraException and release the movie output.
+	// record when there is no microphone.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -152,8 +149,8 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// With a microphone the movie output still has an active and enabled audio connection: like a session without a camera input, the
-	// recording starts with the microphone only, and the unusable video connection is reported and left alone.
+	// With a microphone the movie output still has an active and enabled audio connection, so the recording starts as in a session without a
+	// camera input, and the unusable video connection is left alone.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -261,8 +258,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	{
 		await RunAsync(async recording =>
 		{
-			// With the default ThrowOnInitFailure the binding throws when the initializer returns nil (a denied microphone does that):
-			// the manager catches it and records without audio.
+			// With the default ThrowOnInitFailure the binding throws when the initializer returns nil (a denied microphone does that).
 			Assert.True(Class.ThrowOnInitFailure);
 			recording.Inputs.FailureFor = device => ReferenceEquals(device, recording.Microphone) ? AppleDeviceInputStub.CreateError("Microphone access denied") : null;
 			using var destination = new MemoryStream();
@@ -347,7 +343,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
 
-			// The second start first removes the input and output of the first recording in one configuration block.
 			Assert.Equal(
 				["begin", "commit", "begin", "add-input", "add-output", "commit", "begin", "remove-input", "remove-output", "commit", "begin", "add-input", "add-output", "commit"],
 				recording.Session.Calls);
@@ -375,7 +370,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 			var result = await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 
-			// The delegate of the finished recording is released, not only forgotten.
 			Assert.Equal(NativeHandle.Zero, recordingDelegate.Handle);
 			Assert.Same(destination, result);
 			Assert.Equal(0, result.Position);
@@ -405,7 +399,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
 			using var cancellationTokenSource = new CancellationTokenSource();
 
-			// The movie output is still writing: the stop waits for its delegate.
 			var cancelledStop = recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token);
 			Assert.False(cancelledStop.IsCompleted);
 			await cancellationTokenSource.CancelAsync();
@@ -413,7 +406,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Equal(0, destination.Length);
 			Assert.NotNull(recording.Scope.Access.VideoOutput);
 
-			// A second stop completes once AVFoundation reports the end of the recording.
 			var stop = recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 			Assert.False(stop.IsCompleted);
 			recording.Movies.Finish(Assert.Single(recording.Movies.Recordings));
@@ -434,13 +426,12 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
 			await destination.DisposeAsync();
 
-			// What the failed stop releases is StopVideoRecordingThatFailsToCopyTheMovieStillReleasesTheRecording.
 			await Assert.ThrowsAsync<ObjectDisposedException>(() => recording.Scope.Manager.StopVideoRecording(CancellationToken.None));
 		});
 	}
 
-	// A copy into the caller's stream that fails (disposed, read-only or full stream) must still release the recording: the temporary .mov,
-	// the movie output and the recording state (the stop used to skip CleanupVideoRecordingResources, which left all of them behind).
+	// The stop used to skip CleanupVideoRecordingResources when the copy into the caller's stream failed (disposed, read-only or full stream),
+	// which left the temporary .mov, the movie output and the recording state behind.
 	[Fact]
 	public async Task StopVideoRecordingThatFailsToCopyTheMovieStillReleasesTheRecording()
 	{
@@ -468,8 +459,8 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	}
 
 	// AVFoundation finishes a recording that did not complete with an error (its AVErrorRecordingSuccessfullyFinishedKey = NO; here the disk is
-	// full) and wrote no movie. StopVideoRecording reports the failed recording with the camera API's CameraException instead of returning the
-	// caller's untouched stream as if the recording had succeeded, and it releases the recording like a stop that succeeds.
+	// full) and wrote no movie. StopVideoRecording must report that with the camera API's CameraException instead of returning the caller's
+	// untouched stream as if the recording had succeeded.
 	[Fact]
 	public async Task StopVideoRecordingAfterARecordingThatAVFoundationReportsAsFailedThrowsCameraException()
 	{
@@ -493,8 +484,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 	// AVFoundation also finishes a recording with an error when it stopped early but wrote the movie recorded until then
 	// (AVErrorRecordingSuccessfullyFinishedKey = YES, for example after an interruption), and that can happen before the app stops the recording.
-	// That movie is usable: StopVideoRecording returns it like the movie of a recording without an error, instead of throwing and deleting it, and
-	// traces why the recording stopped early.
+	// That movie is usable, so StopVideoRecording returns it instead of throwing and deleting it.
 	[Fact]
 	public async Task StopVideoRecordingAfterAVFoundationStoppedTheRecordingWithAnErrorReturnsTheMovieThatItReportsAsRecorded()
 	{
@@ -521,8 +511,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 	// Only a recording that left no usable movie fails: AVFoundation reports the movie as not recorded (AVErrorRecordingSuccessfullyFinishedKey
 	// = NO, even though it wrote part of the file), the error does not say (no AVErrorRecordingSuccessfullyFinishedKey), or the movie that it
-	// reports as recorded is missing. StopVideoRecording then throws a CameraException with the reason, writes nothing to the caller's stream and
-	// releases the recording.
+	// reports as recorded is missing.
 	[Theory]
 	[InlineData("notFinishedWithAFile")]
 	[InlineData("noFinishedKey")]
@@ -554,8 +543,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// A stop that reported a failed recording has released it: the next recording starts, and its stop returns its movie (the failure belongs to
-	// the recording that failed).
 	[Fact]
 	public async Task AStopVideoRecordingThatReportsAFailedRecordingDoesNotBlockTheNextRecording()
 	{
@@ -576,7 +563,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// The error with which AVFoundation reports a recording that stopped without a usable movie (for example because the disk is full).
 	static NSError CreateUnfinishedRecordingError()
 	{
 		var userInfo = NSDictionary.FromObjectsAndKeys(
@@ -586,7 +572,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		return new NSError(AVErrorKeys.ErrorDomain, (nint)(long)AVError.DiskFull, userInfo);
 	}
 
-	// The error with which AVFoundation reports a recording that an interruption stopped after it wrote part of the movie.
 	static NSError CreateInterruptedRecordingError()
 	{
 		var userInfo = NSDictionary.FromObjectsAndKeys(
@@ -596,7 +581,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		return new NSError(AVErrorKeys.ErrorDomain, (nint)(long)AVError.SessionWasInterrupted, userInfo);
 	}
 
-	// An error of a recording that stopped, with AVErrorRecordingSuccessfullyFinishedKey set to the given value, or without that key (null).
 	static NSError CreateRecordingError(bool? recordingSuccessfullyFinished)
 	{
 		var keys = new List<NSObject> { NSError.LocalizedDescriptionKey, NSError.LocalizedFailureReasonErrorKey };
@@ -637,8 +621,8 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	}
 
 	// The page closes (the handler disposes the manager) right after the user tapped stop, while AVFoundation still writes the movie. Dispose
-	// releases the recording and the caller's stream, so the stop has no video to return: it completes with Stream.Null, like on Android,
-	// instead of waiting for an end of the recording that the released session may never report (StopVideoRecordingCommand passes no token).
+	// releases the recording and the caller's stream, so the stop completes with Stream.Null, like on Android, instead of waiting for an end of
+	// the recording that the released session may never report (StopVideoRecordingCommand passes no token).
 	[Fact]
 	public async Task StopVideoRecordingThatWaitsWhenTheManagerIsDisposedCompletesWithTheNullStream()
 	{
@@ -703,9 +687,9 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// A StartVideoRecording while a StopVideoRecording waits for AVFoundation waits until the stop has returned its video, like on Android. The
-	// start used to release the recording that the stop ends (and delete its movie) at once, so the stop returned its stream without the video,
-	// as if the recording had succeeded. The permission stub answers at once, so without the wait the start completes within the call.
+	// Like on Android, the start waits for the stop. It used to release the recording that the stop ends (and delete its movie) at once, so the
+	// stop returned its stream without the video, as if the recording had succeeded. The permission stub answers at once, so without the wait the
+	// start completes within the call.
 	[Fact]
 	public async Task StartVideoRecordingWhileAStopWaitsStartsOnceTheStopReturnedItsVideo()
 	{
@@ -735,10 +719,10 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// A camera switch during a recording (a new CameraView.SelectedCamera: UpdateCurrentCamera stops the running preview and starts it with
-	// the new camera) removes and releases every input of the session, the microphone input of the recording too. StopVideoRecording and
-	// Dispose must not use that released input again: removing it throws ObjectDisposedException inside the session's configuration block,
-	// which then stays open, and AVCaptureSession raises NSGenericException when stopRunning (Dispose) is called before commitConfiguration.
+	// A camera switch during a recording removes and releases every input of the session, the microphone input of the recording too.
+	// StopVideoRecording and Dispose must not use that released input again: removing it throws ObjectDisposedException inside the session's
+	// configuration block, which then stays open, and AVCaptureSession raises NSGenericException when stopRunning (Dispose) is called before
+	// commitConfiguration.
 	[Fact]
 	public async Task StopVideoRecordingAfterACameraSwitchDuringTheRecordingReleasesTheRecording()
 	{
@@ -773,10 +757,9 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// StartVideoRecording adds the movie output inside a configuration block of the session. When the session raises instead (AVFoundation's
-	// NSInvalidArgumentException for an output that it cannot take, surfaced as ObjCException), the exception reaches the caller, and the
-	// configuration is committed first: AVCaptureSession raises NSGenericException when stopRunning (Dispose) or startRunning is called
-	// between beginConfiguration and commitConfiguration.
+	// When the session raises while StartVideoRecording adds the movie output (AVFoundation's NSInvalidArgumentException for an output that it
+	// cannot take, surfaced as ObjCException), the configuration must be committed before the exception reaches the caller: AVCaptureSession
+	// raises NSGenericException when stopRunning (Dispose) or startRunning is called between beginConfiguration and commitConfiguration.
 	[Fact]
 	public async Task StartVideoRecordingCommitsTheConfigurationWhenTheSessionRaisesForTheMovieOutput()
 	{
@@ -793,8 +776,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// Releasing the recording removes the microphone input and the movie output inside a configuration block of the session: when the session
-	// raises there, the configuration is committed as well (see StartVideoRecordingCommitsTheConfigurationWhenTheSessionRaisesForTheMovieOutput).
+	// The configuration must be committed for the same reason as in StartVideoRecordingCommitsTheConfigurationWhenTheSessionRaisesForTheMovieOutput.
 	[Fact]
 	public async Task StopVideoRecordingCommitsTheConfigurationWhenTheSessionRaisesForTheMicrophoneInput()
 	{
@@ -814,15 +796,14 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			}
 			finally
 			{
-				// The manager still holds the recording, which the scope releases.
+				// The manager still holds the recording and the scope's Dispose removes its input again, so the session must stop raising.
 				recording.Session.Failures.Clear();
 			}
 		});
 	}
 
 	// Without a camera input and without a microphone the movie output has no connection at all, and AVFoundation refuses to record with an
-	// Objective-C exception (NSInvalidArgumentException from -[AVCaptureMovieFileOutput startRecordingToOutputFileURL:recordingDelegate:]), so
-	// StartVideoRecording must not start the recording: it throws the documented CameraException and releases the movie output.
+	// Objective-C exception (NSInvalidArgumentException from -[AVCaptureMovieFileOutput startRecordingToOutputFileURL:recordingDelegate:]).
 	[Fact]
 	public async Task StartVideoRecordingWithoutAnyConnectionThrowsCameraException()
 	{
@@ -846,8 +827,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
-	// What a started recording leaves in the manager: the movie output in the session, the caller's stream, a pending finalize task and a
-	// temporary .mov file that the movie output records to with the manager's delegate.
 	static void AssertRecordingStarted(RecordingHarness recording, Stream destination)
 	{
 		var access = recording.Scope.Access;
@@ -865,8 +844,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		Assert.Equal(0, movie.StopCount);
 	}
 
-	// What an ended recording leaves in the manager: nothing of the recording (movie output, microphone input, temporary file name, finalize
-	// task, delegate), and a session whose configuration is committed.
 	static void AssertRecordingReleased(RecordingHarness recording)
 	{
 		var access = recording.Scope.Access;
@@ -880,9 +857,6 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		Assert.False(recording.Session.IsConfiguring);
 	}
 
-	// Runs the test on the UI thread with a manager whose session is a FakeCaptureSession, the camera permission granted, a microphone, a movie
-	// output with a video connection (and an audio connection while the microphone input is in the session) and a scripted recording.
-	// Everything is released afterwards, including the temporary movie files.
 	async Task RunAsync(Func<RecordingHarness, Task> test)
 	{
 		SetupBuilder();

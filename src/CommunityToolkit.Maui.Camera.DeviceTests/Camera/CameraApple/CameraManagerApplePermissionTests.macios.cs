@@ -4,14 +4,11 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.PlatformStartVideoRecording against the REAL permission state, microphone and movie output (no stubs): the real-AVFoundation
-// counterpart of CameraManagerAppleRecordingTests, which scripts the same paths. The method asks for the camera permission first, so these
-// tests depend on the permission state of the app, which a headless run cannot answer (the system prompt needs a person):
-//  - Denied or Restricted: the permission test runs (revoke it on a simulator with 'xcrun simctl privacy <udid> revoke camera <bundle id>').
-//  - Authorized: the other tests run (on the iOS 27 simulator 'xcrun simctl privacy <udid> grant camera|microphone <bundle id>' grants both,
-//    although 'camera' is not in simctl's list of services; the CI job does not do it).
-//  - NotDetermined (the default on a fresh simulator or Mac): they skip with that reason; asking would show a prompt that blocks the run.
-// None of them needs a camera: the session has an audio input and a movie output, but no video input.
+// The real-AVFoundation counterpart of CameraManagerAppleRecordingTests, which scripts the same paths. PlatformStartVideoRecording asks for the
+// camera permission first and a headless run cannot answer the system prompt, so each test skips unless the permission already has the state
+// it needs: asking while it is NotDetermined (the default on a fresh simulator or Mac) would show a prompt that blocks the run. On the iOS 27
+// simulator 'xcrun simctl privacy <udid> grant camera|microphone <bundle id>' grants both, although 'camera' is not in simctl's list of
+// services; the CI job does not do it. None of the tests needs a camera: the session has an audio input and a movie output, but no video input.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerApplePermissionTests : CameraHandlerTestBase
@@ -168,8 +165,8 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 
 			try
 			{
-				// The audio input fails (the binding throws for a denied microphone): the manager ignores it and goes on to the movie
-				// output, which the fake session then rejects. The CameraException therefore comes from the output, not from the audio.
+				// The binding throws for a denied microphone and the manager ignores that, so the CameraException comes from the movie output,
+				// which the fake session rejects, not from the audio.
 				var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
 
 				Assert.Equal("Unable to add video output to capture session.", exception.Message);
@@ -187,7 +184,6 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 		Skip.IfNot(AppleCameraEnvironment.IsCameraAuthorized,
 			$"Needs the camera permission to be granted ({AppleCameraEnvironment.DescribeCameraAccess()}). A headless run cannot answer the system prompt; grant it with 'xcrun simctl privacy <udid> grant camera <bundle id>' on a simulator.");
 
-	// Starting a recording creates an audio input, which prompts for the microphone permission when it was not decided yet.
 	static void SkipUnlessCameraAndMicrophoneAreAuthorized()
 	{
 		SkipUnlessCameraIsAuthorized();

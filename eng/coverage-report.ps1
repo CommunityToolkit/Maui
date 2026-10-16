@@ -71,8 +71,8 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $invariant = [System.Globalization.CultureInfo]::InvariantCulture
 
-# The last 'src/CommunityToolkit.Maui<...>/' folder of a path starts its repository-relative part (the last one, because a checkout
-# folder can have that name too: ~/src/CommunityToolkit.Maui/src/CommunityToolkit.Maui.Core/...).
+# Greedy, so the last 'src/CommunityToolkit.Maui<...>/' folder starts the repository-relative path: a checkout folder can have that name
+# too (~/src/CommunityToolkit.Maui/src/CommunityToolkit.Maui.Core/...).
 $repositoryPathPattern = [regex]'^(?:.*/)?(src/CommunityToolkit\.Maui[^/]*/.*)$'
 $generatedPathPattern = [regex]'^(src/[^/]+/obj)/[^/]+/net\d+\.\d+(?:-[a-z]+[\d.]*)?/(.*)$'
 # MAUI's binding source generator names its files after the source file's full path ('-Users-me-repo-src-CommunityToolkit.Maui-...',
@@ -81,7 +81,6 @@ $checkoutInFileNamePattern = [regex]'(^|/)[^/]*-src-(CommunityToolkit\.Maui)'
 $conditionCoveragePattern = [regex]'\((\d+)/(\d+)\)'
 
 function ConvertTo-RepositoryPath {
-    # Returns the repository-relative path of a Cobertura class's file name, or $null when it is not a toolkit source file.
     param([string]$FileName, [string[]]$Sources)
 
     $file = $FileName.Replace('\', '/')
@@ -105,14 +104,12 @@ function ConvertTo-RepositoryPath {
 }
 
 function ConvertTo-FileCobertura {
-    # Rewrites a Cobertura file into one class per repository-relative source file and returns the line counts of each assembly.
     param([string]$Path, [string]$Destination)
 
     $document = New-Object System.Xml.XmlDocument
     $document.Load($Path)
     $sources = @($document.SelectNodes('/coverage/sources/source') | ForEach-Object { $_.InnerText.Trim() } | Where-Object { $_ })
 
-    # package name -> file -> line number -> @(hits, isBranch, coveredConditions, conditions)
     $packages = [ordered]@{}
     $unmapped = New-Object System.Collections.Generic.HashSet[string]
     foreach ($package in $document.SelectNodes('/coverage/packages/package')) {
@@ -180,7 +177,7 @@ function ConvertTo-FileCobertura {
             $writer.WriteAttributeString('name', $packageName)
             $writer.WriteStartElement('classes')
             foreach ($file in ($packages[$packageName].Keys | Sort-Object)) {
-                # ReportGenerator reads '/', '+' and '$' in class names as nesting: the class is the path with dots.
+                # ReportGenerator reads '/', '+' and '$' in class names as nesting.
                 $className = ($file -replace '^src/', '' -replace '\.cs$', '').Replace('/', '.').Replace('+', '.').Replace('$', '.')
                 $writer.WriteStartElement('class')
                 $writer.WriteAttributeString('name', $className)
@@ -258,7 +255,6 @@ foreach ($item in ($Report | ForEach-Object { $_ -split ',' } | Where-Object { $
     }
 }
 
-# A report is named after its file; reports with the same file name are told apart by their path.
 foreach ($group in ($reportFiles | Group-Object Label | Where-Object { $_.Count -gt 1 })) {
     foreach ($reportFile in $group.Group) {
         $reportFile.Label = [System.IO.Path]::GetRelativePath((Get-Location).Path, $reportFile.Path).Replace('\', '/') -replace '\.cobertura\.xml$', ''
@@ -275,8 +271,7 @@ $reportFolder = Join-Path $Output 'report'
 New-Item -ItemType Directory -Force -Path $inputFolder, $reportFolder | Out-Null
 
 $summary = New-Object System.Collections.Generic.List[string]
-# The coverage of each input: the last, folded part of the summary.
-$sources = New-Object System.Collections.Generic.List[string]
+$inputCoverageTable = New-Object System.Collections.Generic.List[string]
 
 if ($reportFiles.Count -eq 0) {
     $summary.Add('## Code coverage')
@@ -284,8 +279,8 @@ if ($reportFiles.Count -eq 0) {
     $summary.Add('No coverage report was found, so there is nothing to merge.')
 }
 else {
-    $sources.Add('| Coverage report | Assemblies it covers (CommunityToolkit.*) | Files | Covered lines | Coverable lines | Line coverage |')
-    $sources.Add('|---|---|---:|---:|---:|---:|')
+    $inputCoverageTable.Add('| Coverage report | Assemblies it covers (CommunityToolkit.*) | Files | Covered lines | Coverable lines | Line coverage |')
+    $inputCoverageTable.Add('|---|---|---:|---:|---:|---:|')
     $rewritten = New-Object System.Collections.Generic.List[string]
     $index = 0
     foreach ($reportFile in $reportFiles) {
@@ -299,7 +294,7 @@ else {
         $files = ($tested | Measure-Object -Property Files -Sum).Sum
         $covered = ($tested | Measure-Object -Property Covered -Sum).Sum
         $coverable = ($tested | Measure-Object -Property Lines -Sum).Sum
-        $sources.Add("| ``$($reportFile.Label)`` | $(($tested | ForEach-Object { $_.Assembly -replace '^CommunityToolkit\.', '' } | Sort-Object) -join ', ') | $files | $covered | $coverable | $(Format-Percent $covered $coverable) |")
+        $inputCoverageTable.Add("| ``$($reportFile.Label)`` | $(($tested | ForEach-Object { $_.Assembly -replace '^CommunityToolkit\.', '' } | Sort-Object) -join ', ') | $files | $covered | $coverable | $(Format-Percent $covered $coverable) |")
         foreach ($assembly in $assemblies) {
             Write-Host "$($reportFile.Label): $($assembly.Assembly): $($assembly.Covered) of $($assembly.Lines) lines in $($assembly.Files) files"
         }
@@ -338,7 +333,6 @@ else {
     function Format-Coverage([object]$Percent) { if ($null -eq $Percent) { 'n/a' } else { ([double]$Percent).ToString($invariant) + '%' } }
     function Format-Count([long]$Count) { $Count.ToString('N0', $invariant) }
 
-    # The flag of one line or branch coverage on Google's scale (no value: nothing to cover, no flag).
     $blue, $green, $yellow, $red = 0x1F535, 0x1F7E2, 0x1F7E1, 0x1F534 | ForEach-Object { [char]::ConvertFromUtf32($_) }
     function Get-CoverageFlag([object]$Percent) {
         if ($null -eq $Percent -or "$Percent" -eq '') { return '' }
@@ -348,7 +342,6 @@ else {
     function Format-Flagged([object]$Percent) { "$(Get-CoverageFlag $Percent) $(Format-Coverage $Percent)" }
     $acceptableText, $commendableText, $exemplaryText = $Acceptable, $Commendable, $Exemplary | ForEach-Object { $_.ToString($invariant) + '%' }
 
-    # First what matters most: the line and branch coverage of every assembly together.
     $summary.Add("## Code coverage: $(Format-Flagged $total.linecoverage) of lines, $(Format-Flagged $total.branchcoverage) of branches")
     $summary.Add('')
     $summary.Add("All $($total.assemblies) toolkit assemblies, unit tests and device tests together: $(Format-Count $total.coveredlines) of $(Format-Count $total.coverablelines) lines and $(Format-Count $total.coveredbranches) of $(Format-Count $total.totalbranches) branches.")
@@ -356,8 +349,8 @@ else {
     $summary.Add("$red below ${acceptableText}: needs work now · $yellow $acceptableText to ${commendableText}: acceptable, could be better · $green $commendableText to ${exemplaryText}: commendable · $blue $exemplaryText or more: exemplary, more tests rarely pay off. The scale of [Google's code coverage guidelines](https://testing.googleblog.com/2020/08/code-coverage-best-practices.html), for lines and branches each.")
     $summary.Add('')
 
-    # Then ReportGenerator's section of each assembly, folded and alphabetical, with the branch coverage in its label too. Its summary table
-    # above them repeats the totals (and the reports are merged per file, so they have no method coverage): it is left out.
+    # ReportGenerator's summary table above the assembly sections is left out: it repeats the totals, and the reports are merged per file, so
+    # it has no method coverage.
     $inAssemblies = $false
     foreach ($line in (Get-Content -LiteralPath (Join-Path $reportFolder 'SummaryGithub.md'))) {
         if (-not $inAssemblies) {
@@ -372,7 +365,7 @@ else {
             $line = "<details><summary>$($assembly.name): $(Format-Flagged $assembly.coverage) of lines, $branches</summary>"
         }
         else {
-            # A row of an assembly's table (|name|line%|branch%|, the assembly's own row in bold): a flag before each coverage.
+            # A row of an assembly's table is |name|line%|branch%|, with the assembly's own row in bold.
             $row = [regex]::Match($line, '^\|(?<name>[^|]+)\|(?<line>\**(?<linevalue>[\d.]+)%\**)\|(?<branch>(?:\**(?<branchvalue>[\d.]+)%\**)?)\|$')
             if ($row.Success) {
                 $branchCell = if ($row.Groups['branchvalue'].Success) { "$(Get-CoverageFlag $row.Groups['branchvalue'].Value) $($row.Groups['branch'].Value)" } else { '' }
@@ -383,11 +376,10 @@ else {
         $summary.Add($line)
     }
 
-    # Last, folded: where the numbers come from.
     $summary.Add('')
     $summary.Add('<details><summary>How this report is made</summary>')
     $summary.Add('')
-    $summary.AddRange($sources)
+    $summary.AddRange($inputCoverageTable)
     $summary.Add('')
     $summary.Add('A line counts as covered when any test run above covered it, and as coverable when any build of its file has it (each report covers the files its target framework compiles). A row counts only the assemblies its tests cover; the merged report counts every assembly of every report. The full report, down to each line, is the HTML report of the code-coverage-report artifact (report/index.html).')
     foreach ($line in $Note) {

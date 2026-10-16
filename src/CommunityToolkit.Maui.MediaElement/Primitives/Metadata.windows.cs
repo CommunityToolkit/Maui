@@ -29,13 +29,12 @@ sealed partial class Metadata : IDisposable
 			return;
 		}
 
-		// Media with metadata becomes a system media session, which the system media overlay shows and the media keys control, like the Now
-		// Playing info on iOS and the media notification on Android. Media without metadata does not: the controls stay off, as
-		// MediaManager.CreatePlatformView leaves them.
+		// Only media with metadata becomes a system media session, like the Now Playing info on iOS and the media notification on Android.
+		// Media without metadata leaves the controls off, as MediaManager.CreatePlatformView does.
 		systemMediaControls.IsEnabled = HasMetadata(mp);
 
-		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only: any other url (a relative or
-		// malformed one, or a file path, for example) cannot be the thumbnail and is ignored rather than passed on
+		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only, so any other url (a relative
+		// or malformed one, or a file path, for example) is ignored instead of passed on.
 		if (Uri.TryCreate(mp.MetadataArtworkUrl, UriKind.Absolute, out var artworkUri)
 			&& artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata")
 		{
@@ -48,8 +47,8 @@ sealed partial class Metadata : IDisposable
 	}
 
 	/// <summary>
-	/// Stops handling the buttons of the system media transport controls. The controls belong to the player: until their handler is
-	/// removed, they keep this instance and its MediaElement reachable.
+	/// Removes the button handler from the system media transport controls, which belong to the player and would otherwise keep this
+	/// instance and its MediaElement reachable.
 	/// </summary>
 	public void Dispose()
 	{

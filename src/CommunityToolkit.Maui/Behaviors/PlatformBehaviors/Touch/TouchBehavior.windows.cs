@@ -102,8 +102,8 @@ public partial class TouchBehavior
 
 	partial void PlatformDispose()
 	{
-		// A disposed behavior takes no more input: its pointer handlers leave the element, as they do on detach. A handler left on the element
-		// would hand the next pointer event (a mouse moving over the element is enough) to the disposed behavior, which throws.
+		// A handler left on the element would hand the next pointer event (a mouse moving over the element is enough) to the disposed
+		// behavior, which throws.
 		if (view is not null)
 		{
 			RemovePointerHandlers(view);

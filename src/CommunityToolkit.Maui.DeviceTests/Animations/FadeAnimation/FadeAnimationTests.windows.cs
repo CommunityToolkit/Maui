@@ -6,7 +6,7 @@ public partial class FadeAnimationTests
 {
 	static double GetNativeOpacity(IPlatformViewHandler handler) => ((FrameworkElement)(handler.ContainerView ?? handler.PlatformView!)).Opacity;
 
-	// No-op on Windows: MAUI's Windows ticker animates whatever the system's animation setting (MAUI 10 does not read it).
+	// Nothing to enable: MAUI 10's Windows ticker does not read the system's animation setting, so it always animates.
 	static Task EnableAnimationsAsync(IPlatformViewHandler handler) => Task.CompletedTask;
 
 	static ValueTask PlatformDisposeAsync() => ValueTask.CompletedTask;

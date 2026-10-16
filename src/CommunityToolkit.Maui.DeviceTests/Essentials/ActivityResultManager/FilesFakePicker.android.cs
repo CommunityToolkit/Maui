@@ -9,18 +9,12 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// One <c>startActivityForResult</c> call that AndroidX's ActivityResultRegistry made on a <see cref="FilesFakePickerActivity"/>:
-/// the intent that the toolkit built and the request code that the registry chose for it.
-/// </summary>
 public sealed record FilesFakePickerLaunch(FilesFakePickerActivity Activity, Intent Intent, int RequestCode);
 
 /// <summary>
-/// Stands in for the system document picker (DocumentsUI). It is a real <see cref="ComponentActivity"/> with a real
+/// Fakes the system document picker (DocumentsUI) and nothing else: it is a real <see cref="ComponentActivity"/> with a real
 /// ActivityResultRegistry, so the toolkit's <c>ActivityResultManager</c> registers, launches and receives results exactly as it does
-/// in an app. Only the last step is replaced: <c>StartActivityForResult</c> records the intent instead of starting another
-/// activity, and the test delivers the answer with <see cref="FilesPickerSession.DeliverAsync"/>, which is the
-/// <c>onActivityResult</c> call that the system makes when a picker closes.
+/// in an app, and only <c>StartActivityForResult</c> is replaced, to record the intent instead of starting another activity.
 /// </summary>
 [Activity(
 	Name = FilesFakePicker.FakePickerJavaName,
@@ -83,12 +77,11 @@ public sealed class FilesFakePickerActivity : ComponentActivity
 		FilesFakePicker.Capture(this, intent ?? throw new ArgumentNullException(nameof(intent)), requestCode);
 	}
 
-	/// <summary>What the system does when the started activity finishes: <c>Activity.onActivityResult</c> on the UI thread.</summary>
 	internal void DeliverResult(int requestCode, Result resultCode, Intent? data) =>
 		OnActivityResult(requestCode, resultCode, data);
 }
 
-/// <summary>A plain <see cref="Activity"/>: not a ComponentActivity, so it has no ActivityResultRegistry.</summary>
+/// <summary>Not a <see cref="ComponentActivity"/>, so it has no ActivityResultRegistry.</summary>
 [Activity(
 	Name = FilesFakePicker.PlainJavaName,
 	Exported = false,
@@ -105,7 +98,6 @@ public sealed class FilesPlainActivity : Activity
 	}
 }
 
-/// <summary>Records what the toolkit asked the fake picker activities to launch, and lets a test script their behavior.</summary>
 public static class FilesFakePicker
 {
 	public const string FakePickerJavaName = "com.communitytoolkit.maui.devicetests.files.FilesFakePickerActivity";
@@ -147,7 +139,6 @@ public static class FilesFakePicker
 		}
 	}
 
-	/// <summary>Forgets the recorded launches and the scripted behaviors. Call it when a test starts and when it ends.</summary>
 	public static void Reset()
 	{
 		lock (gate)
@@ -160,8 +151,6 @@ public static class FilesFakePicker
 		ContextAvailableBehavior = null;
 	}
 
-	/// <summary>Starts <typeparamref name="TActivity"/> on top of the current activity, or with <paramref name="flags"/> such as
-	/// <see cref="ActivityFlags.NewTask"/>, and waits until it is resumed, and so current.</summary>
 	public static async Task<TActivity> StartActivityAsync<TActivity>(ActivityFlags flags = 0, CancellationToken token = default)
 		where TActivity : Activity
 	{
@@ -194,7 +183,6 @@ public static class FilesFakePicker
 		}
 	}
 
-	/// <summary>Finishes <paramref name="activity"/> and waits until it is destroyed, which is when the previous activity is current again.</summary>
 	public static async Task FinishActivityAsync(Activity activity, CancellationToken token = default)
 	{
 		var destroyed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -233,9 +221,8 @@ public static class FilesFakePicker
 	}
 
 	/// <summary>
-	/// Recreates <paramref name="activity"/>, as a configuration change or the system does, and returns the new instance once it is
-	/// resumed (<paramref name="waitForResumed"/>, for an activity in front) or created (for one that is behind another activity and
-	/// so is not resumed). The old instance is destroyed without finishing.
+	/// <paramref name="waitForResumed"/> must be false for an activity that is behind another one: its new instance is created but not
+	/// resumed.
 	/// </summary>
 	public static async Task<FilesFakePickerActivity> RecreateAsync(FilesFakePickerActivity activity, bool waitForResumed = true, CancellationToken token = default)
 	{
@@ -262,7 +249,6 @@ public static class FilesFakePicker
 		}
 	}
 
-	/// <summary>Returns the launch with this index in <see cref="Launches"/>, waiting until the registry makes it.</summary>
 	public static async Task<FilesFakePickerLaunch> WaitForLaunchAsync(int index = 0, CancellationToken token = default)
 	{
 		while (true)
@@ -283,14 +269,10 @@ public static class FilesFakePicker
 		}
 	}
 
-	/// <summary>
-	/// A fake picker activity that the framework never started: a ComponentActivity with a working ActivityResultRegistry but no
-	/// window and no lifecycle callbacks. Created on the UI thread, which ComponentActivity's lifecycle registry requires.
-	/// </summary>
+	// Created on the UI thread, which ComponentActivity's lifecycle registry requires.
 	public static Task<FilesFakePickerActivity> CreateDetachedAsync() =>
 		MainThread.InvokeOnMainThreadAsync(() => new FilesFakePickerActivity());
 
-	/// <summary>Delivers a result for <paramref name="requestCode"/> through the activity's <c>onActivityResult</c>, on the UI thread.</summary>
 	public static Task DeliverAsync(FilesFakePickerActivity activity, int requestCode, Result resultCode, Intent? data = null) =>
 		MainThread.InvokeOnMainThreadAsync(() => activity.DeliverResult(requestCode, resultCode, data));
 
@@ -310,7 +292,6 @@ public static class FilesFakePicker
 		LaunchBehavior?.Invoke(launch);
 	}
 
-	/// <summary>The fake picker activities that were created and not destroyed yet, oldest first.</summary>
 	public static IReadOnlyList<FilesFakePickerActivity> LiveActivities
 	{
 		get
@@ -345,8 +326,8 @@ public static class FilesFakePicker
 }
 
 /// <summary>
-/// One test's use of the fake picker: it puts a <see cref="FilesFakePickerActivity"/> in front (so it is the app's current activity,
-/// where FileSaver and FolderPicker launch their pickers from), and gives it back when disposed.
+/// Puts a <see cref="FilesFakePickerActivity"/> in front, so it is the app's current activity, where FileSaver and FolderPicker launch
+/// their pickers from.
 /// </summary>
 public sealed class FilesPickerSession : IAsyncDisposable
 {
@@ -362,7 +343,6 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		startedActivities.Add(activity);
 	}
 
-	/// <summary>The fake picker activity that is in front, or was when the last recreation or start finished.</summary>
 	public FilesFakePickerActivity Activity { get; private set; }
 
 	public IReadOnlyList<FilesFakePickerLaunch> Launches => FilesFakePicker.Launches;
@@ -385,11 +365,9 @@ public sealed class FilesPickerSession : IAsyncDisposable
 
 	public Task<FilesFakePickerLaunch> WaitForLaunchAsync(int index = 0) => FilesFakePicker.WaitForLaunchAsync(index);
 
-	/// <summary>Answers a launch as the system picker would, through the activity that made it.</summary>
 	public Task DeliverAsync(FilesFakePickerLaunch launch, Result resultCode, Intent? data = null) =>
 		FilesFakePicker.DeliverAsync(launch.Activity, launch.RequestCode, resultCode, data);
 
-	/// <summary>Puts one more fake picker activity in front of the current one (the current one is stopped, not destroyed).</summary>
 	public async Task<FilesFakePickerActivity> StartAnotherAsync()
 	{
 		var another = await FilesFakePicker.StartActivityAsync<FilesFakePickerActivity>();
@@ -397,7 +375,6 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		return another;
 	}
 
-	/// <summary>Starts one more fake picker activity in a task of its own (as another window of the app or a document opened in its own task is).</summary>
 	public async Task<FilesFakePickerActivity> StartInAnotherTaskAsync()
 	{
 		var another = await FilesFakePicker.StartActivityAsync<FilesFakePickerActivity>(ActivityFlags.NewTask | ActivityFlags.MultipleTask);
@@ -405,7 +382,6 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		return another;
 	}
 
-	/// <summary>Puts a plain, non-ComponentActivity activity in front.</summary>
 	public async Task<FilesPlainActivity> StartPlainAsync()
 	{
 		var plain = await FilesFakePicker.StartActivityAsync<FilesPlainActivity>();
@@ -431,7 +407,7 @@ public sealed class FilesPickerSession : IAsyncDisposable
 	{
 		try
 		{
-			// Newest first. An activity that the system recreated is not one that the test started, so it is taken from the live list.
+			// An activity that the system recreated is not one that the test started, so it is taken from the live list.
 			var toFinish = startedActivities.Concat(FilesFakePicker.LiveActivities).Distinct().Reverse().ToArray();
 			foreach (var activity in toFinish)
 			{

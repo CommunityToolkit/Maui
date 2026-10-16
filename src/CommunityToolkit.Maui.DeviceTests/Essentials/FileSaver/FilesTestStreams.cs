@@ -1,11 +1,5 @@
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// A read-only stream over a byte array that records what the toolkit does to it and can be told to fail or to cancel a token while
-/// it is being read, which is how a test reaches the cancellation and error branches of a save. Like a well-behaved stream it honors
-/// the token that it is given: a read with a canceled token throws <see cref="OperationCanceledException"/> (unless
-/// <see cref="IgnoresToken"/>, a stream that never looks at it).
-/// </summary>
 public sealed class FilesScriptedStream : Stream
 {
 	readonly byte[] data;
@@ -18,41 +12,27 @@ public sealed class FilesScriptedStream : Stream
 		this.canSeek = canSeek;
 	}
 
-	/// <summary>Number of ReadAsync calls so far (the last one of a complete read returns 0).</summary>
 	public int ReadCalls { get; private set; }
 
-	/// <summary>Number of ReadAsync calls that returned data.</summary>
 	public int ReadsWithData { get; private set; }
 
-	/// <summary>Number of Seek calls so far.</summary>
 	public int SeekCalls { get; private set; }
 
-	/// <summary>Throw <see cref="FailureOnRead"/> from the read with this 1-based number.</summary>
 	public int FailAtRead { get; init; } = -1;
 
 	public Exception? FailureOnRead { get; init; }
 
-	/// <summary>
-	/// Cancel <see cref="CancelSource"/> inside the read with this 1-based number, then throw OperationCanceledException from it: a
-	/// stream that observes the cancellation itself.
-	/// </summary>
 	public int CancelAtRead { get; init; } = -1;
 
-	/// <summary>
-	/// Cancel <see cref="CancelSource"/> inside the read with this 1-based number and still return its data normally: the token is
-	/// canceled between two blocks, and only the toolkit's own checks of the token can stop the copy.
-	/// </summary>
+	// The token is canceled between two blocks while the read still returns its data, so only the toolkit's own checks of the token can stop
+	// the copy.
 	public int CancelDuringRead { get; init; } = -1;
 
-	/// <summary>Cancel <see cref="CancelSource"/> inside the read that reports the end of the data, and still return 0 (no exception).</summary>
 	public bool CancelAtEndOfData { get; init; }
 
 	public CancellationTokenSource? CancelSource { get; init; }
 
-	/// <summary>
-	/// Never look at the token that a read is given, as many streams do not: then only the caller's own checks of the token can stop a
-	/// copy once the token is canceled.
-	/// </summary>
+	// Many streams never look at the token, and with such a stream only the caller's own checks of it can stop a copy once it is canceled.
 	public bool IgnoresToken { get; init; }
 
 	public override bool CanRead => true;

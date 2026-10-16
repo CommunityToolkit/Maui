@@ -7,11 +7,6 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraView on Android: the view's own members (SetExtensionMode, GetAvailableCameras, CaptureImage, the preview and recording
-/// methods and the commands) against the real camera, hosted by the real handler. Every assertion reads the native CameraX state
-/// or the media that CameraX produced.
-/// </summary>
 [Category(TestCategory.CameraViewAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewAndroidTests : CameraAndroidTestBase
@@ -36,18 +31,14 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 	static Task WaitUntilAsync(Func<bool> condition, string message) => AssertionExtensions.AssertEventually(condition, 30000, 50, message);
 
-	/// <summary>The image callback that a CameraManager hands to CameraX, created for <paramref name="view"/>: it raises the events of that view.</summary>
 	static object CreateImageCallbackOf(CameraView view)
 	{
 		var type = typeof(CameraManager).GetNestedType("ImageCallBack", System.Reflection.BindingFlags.NonPublic) ?? throw new MissingMemberException("CameraManager.ImageCallBack");
 		return Activator.CreateInstance(type, view)!;
 	}
 
-	/// <summary>Waits until the recording wrote its first data into a new file in the cache directory.</summary>
 	static Task WaitForRecordingDataAsync(IReadOnlyCollection<string> before) =>
 		WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
-
-	// ---- SetExtensionMode --------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task SetExtensionModeBindsTheUseCasesOfAHostedViewAgain()
@@ -97,7 +88,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// SetExtensionMode binds the camera again: the properties of the view must still describe what the camera does afterwards.
+	// SetExtensionMode binds the camera again, and CameraX starts a bound camera with its defaults.
 	[Fact]
 	public async Task ZoomFactorOfTheViewStillDescribesTheNativeZoomAfterSetExtensionMode()
 	{
@@ -139,8 +130,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		}, new CameraView { SelectedCamera = camera });
 	}
 
-	// ---- Dispose ----------------------------------------------------------------------------------------------------------------
-
 	sealed class ViewThatDisposesWithoutDisposing : CameraView
 	{
 		public void DisposeWithoutDisposing() => Dispose(false);
@@ -154,7 +143,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 		view.Dispose();
 
-		// Dispose released the semaphore that serializes the captures.
+		// Disposing the view disposed the semaphore that serializes the captures.
 		await Assert.ThrowsAsync<ObjectDisposedException>(() => view.CaptureImage(CancellationToken.None));
 	}
 
@@ -184,8 +173,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => view.CaptureImage(CancellationToken.None));
 		Assert.Equal("Unable to retrieve Handler", exception.Message);
 	}
-
-	// ---- GetAvailableCameras ----------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task GetAvailableCamerasReturnsTheCamerasOfTheDeviceInTheNativeOrder()
@@ -282,8 +269,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			IPlatformApplication.Current = previous;
 		}
 	}
-
-	// ---- CaptureImage -------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task CaptureImageReturnsAJpegOfTheNativeCaptureResolution()
@@ -397,7 +382,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
 			await Assert.ThrowsAsync<CameraException>(() => host.View.CaptureImage(CancellationToken.None).WaitAsync(CameraTimeout));
 
-			// The failure released the semaphore and unsubscribed the handlers: the next capture works once the camera runs again.
+			// The failure released the semaphore and unsubscribed the handlers.
 			await host.View.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
 			Assert.True(IsJpeg(await CaptureJpegAsync(host.View)));
@@ -494,7 +479,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 	}
 
 	// The capture that failed because the camera had not started (the manager has no ImageCapture before ConnectCamera created it)
-	// released the capture semaphore and the event handlers: once the camera runs, CaptureImage takes the picture.
+	// released the capture semaphore and the event handlers.
 	[Fact]
 	public async Task CaptureImageWorksOnceTheCameraStartedAfterACaptureThatFailedBecauseItHadNotStarted()
 	{
@@ -517,8 +502,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			Assert.True(IsJpeg(await CaptureJpegAsync(host.View)));
 		});
 	}
-
-	// ---- commands ------------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task StopAndStartCameraPreviewCommandsCloseAndOpenTheNativeCamera()
@@ -578,7 +561,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 	}
 
 	// The user taps stop and the page closes right away (both in one UI-thread message): the handler disposes the manager while the stop
-	// of the async void StopVideoRecordingCommand still waits for CameraX to finalize the recording, and nothing may escape the command.
+	// of the async void StopVideoRecordingCommand still waits for CameraX to finalize the recording.
 	[Fact]
 	public async Task StopVideoRecordingCommandRightBeforeTheHandlerDisconnectsLetsNothingEscape()
 	{
@@ -614,8 +597,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			}
 		}, includeRecordAudio: true, disconnectWhenDone: false);
 	}
-
-	// ---- recording ------------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task StartVideoRecordingWithoutAStreamRecordsIntoANewMemoryStream()
@@ -686,10 +667,8 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- what the view applies again after a recording ----------------------------------------------------------------------------
-
 	// StartVideoRecording and StopVideoRecording build new use cases and bind the photo or video session again, and CameraX starts a
-	// bound camera with its defaults. The properties of the view must still describe what the camera does afterwards.
+	// bound camera with its defaults.
 	[Fact]
 	public async Task FlashModeOfTheViewIsStillAppliedAfterARecording()
 	{

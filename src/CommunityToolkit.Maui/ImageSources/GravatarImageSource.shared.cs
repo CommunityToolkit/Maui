@@ -164,11 +164,8 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		_ => defaultGravatar.ToString().ToLower(),
 	};
 
-	/// <summary>Gets the hash that identifies <paramref name="email"/> on Gravatar.</summary>
-	/// <remarks>
-	/// Gravatar hashes the address with leading and trailing white space removed and in lower case
-	/// (<see href="https://docs.gravatar.com/rest/hash/">Creating identifier (hash)</see>); it still accepts the MD5 hash used here.
-	/// </remarks>
+	// Gravatar hashes the address with leading and trailing white space removed and in lower case (https://docs.gravatar.com/rest/hash/),
+	// and it still accepts the MD5 hash used here.
 	static string? GetGravatarHash(string? email) => email?.Trim().ToLowerInvariant().GetMd5Hash(string.Empty).ToLowerInvariant();
 
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)

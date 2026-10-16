@@ -40,7 +40,7 @@ public class CameraInfoAndroidTests
 
 		var info = Create(selector: selector);
 
-		// The very selector object is kept (CameraX selects the camera with it; its lens facing getter is internal CameraX API).
+		// The lens facing getter of a CameraSelector is internal CameraX API, so only the instance can be compared.
 		Assert.Same(selector, info.CameraSelector);
 	}
 

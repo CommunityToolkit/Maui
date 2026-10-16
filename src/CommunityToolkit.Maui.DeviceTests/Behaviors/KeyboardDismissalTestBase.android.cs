@@ -9,9 +9,8 @@ using PlatformView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: an Entry is an EditText. Clearing the focus of an EditText leaves its soft keyboard open, so the behaviors hide the keyboard
-// themselves. Whether the soft keyboard shows is read from the visible display frame of the window, which the keyboard shortens; the
-// window insets of AndroidX (what the toolkit reads) only prepare and clean up. Every test ends with the soft keyboard hidden.
+// Clearing the focus of an EditText leaves its soft keyboard open, so the behaviors hide the keyboard themselves. The tests read whether
+// the keyboard shows from the visible display frame; the AndroidX window insets (what the toolkit reads) only prepare and clean up.
 public abstract partial class KeyboardDismissalTestBase
 {
 	const int softKeyboardTimeout = 5000;
@@ -31,7 +30,6 @@ public abstract partial class KeyboardDismissalTestBase
 		Skip.If(hasHardwareKeyboard && !showsImeWithHardwareKeyboard, "This Android device reports a hardware keyboard (AVD hw.keyboard=yes), so Android does not show the soft keyboard.");
 	}
 
-	// Focuses the view and shows its soft keyboard, as a tap on an Entry does; returns the frame that tells whether the keyboard shows.
 	protected static async Task<VisibleFrame> ShowSoftKeyboardAsync(InputView input, PlatformView platformView)
 	{
 		var frame = VisibleFrame.RecordWithoutKeyboard(platformView);
@@ -43,7 +41,6 @@ public abstract partial class KeyboardDismissalTestBase
 		return frame;
 	}
 
-	// The keyboard must be hidden when the behavior dismisses it, and must still show a second later when it does not.
 	protected static async Task AssertSoftKeyboardIsDismissedAsync(VisibleFrame frame, bool isDismissed)
 	{
 		if (isDismissed)
@@ -85,8 +82,7 @@ public abstract partial class KeyboardDismissalTestBase
 		?? throw new InvalidOperationException("The runner's activity is not available.");
 
 	// The visible display frame of the window loses the height of the soft keyboard at its bottom, whatever the soft input mode (pan or
-	// resize) is. The frame is recorded while no keyboard shows; the keyboard counts as showing while the frame is more than 100 dp shorter
-	// (more than any navigation bar, less than any soft keyboard).
+	// resize) is. 100 dp is more than any navigation bar and less than any soft keyboard.
 	protected sealed class VisibleFrame
 	{
 		const int minimumKeyboardHeightInDp = 100;

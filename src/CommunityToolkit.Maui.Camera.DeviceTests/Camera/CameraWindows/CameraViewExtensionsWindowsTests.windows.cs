@@ -6,7 +6,6 @@ using Windows.Media.Capture;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraViewExtensions.windows.cs: the availability check and the MediaCapture initialization.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewExtensionsWindowsTests : CameraHandlerTestBase
@@ -83,8 +82,8 @@ public class CameraViewExtensionsWindowsTests : CameraHandlerTestBase
 	{
 		var cameras = await DiscoverCamerasOrSkipAsync();
 		var camera = cameras[0];
-		// The same decision as the extension: audio is requested only by a packaged app that declares the microphone capability
-		// and was granted it; otherwise the capture streams video only.
+		// Repeats the extension's decision, which depends on the app: audio is requested only by a packaged app that declares the microphone
+		// capability and was granted it.
 		var isMicrophoneCapable = AppInfo.PackagingModel == AppPackagingModel.Packaged && Permissions.IsCapabilityDeclared("microphone");
 		var microphoneStatus = isMicrophoneCapable ? await Permissions.CheckStatusAsync<Permissions.Microphone>() : PermissionStatus.Unknown;
 		var expected = !isMicrophoneCapable || microphoneStatus != PermissionStatus.Granted
@@ -110,9 +109,7 @@ public class CameraViewExtensionsWindowsTests : CameraHandlerTestBase
 
 	// The catch of InitializeCameraForCameraView: whatever MediaCapture.InitializeAsync does with a device id that does not exist, no
 	// COMException may escape (Media Foundation reports such failures as HRESULTs, which surface as COMException). Needs Media Foundation, not
-	// a camera. The extension reports such a failure by returning false: the camera discovery skips that camera
-	// (CameraProviderWindowsTests.RefreshWhileAnotherCaptureHoldsACameraListsExactlyTheCamerasThatCanBeOpened) and the preview reports a
-	// CameraException (CameraManagerWindowsTests.StartCameraPreviewOfACameraThatCannotBeOpenedRaisesErrorOccurred).
+	// a camera.
 	[Fact]
 	public async Task InitializeCameraForCameraViewLetsNoComExceptionEscape()
 	{
@@ -123,7 +120,7 @@ public class CameraViewExtensionsWindowsTests : CameraHandlerTestBase
 		Assert.False(exception is COMException, $"A COMException escaped: {exception}");
 	}
 
-	// The case the catch was written for ("Camera already initialized"): a second capture of a camera that another capture holds.
+	// The case the catch was written for ("Camera already initialized").
 	[Fact]
 	public async Task InitializeCameraForCameraViewDoesNotThrowWhenTheCameraIsAlreadyInUseByAnotherCapture()
 	{

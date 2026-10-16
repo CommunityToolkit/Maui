@@ -7,8 +7,8 @@ using Microsoft.Maui.Devices;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// StatusBarBehavior's platform code: it exists on Android and iOS only, and both implementations behave the same way, so these tests
-// read the native status bar through the accessors of the platform partials (AssertStatusBarShowsAsync and friends).
+// StatusBarBehavior's platform code exists on Android and iOS only, and both implementations behave the same way, so these tests read
+// the native status bar through the accessors of the platform partials.
 public partial class StatusBarBehaviorTests
 {
 	[Fact]
@@ -50,7 +50,7 @@ public partial class StatusBarBehaviorTests
 
 		await AttachPageAndRun(page, async _ =>
 		{
-			await AssertStatusBarColorNotAppliedAsync(); // attached, but the behavior waits for the navigation
+			await AssertStatusBarColorNotAppliedAsync();
 
 			StatusBarEventRaisers.RaiseNavigatedTo(page);
 
@@ -70,7 +70,7 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			await AssertStatusBarShowsAsync(Colors.Red);
-			StatusBar.SetColor(Colors.Green); // somebody else changes the status bar after the behavior applied its color
+			StatusBar.SetColor(Colors.Green);
 			await AssertStatusBarShowsAsync(Colors.Green);
 
 			StatusBarEventRaisers.RaiseNavigatedTo(page);
@@ -130,11 +130,10 @@ public partial class StatusBarBehaviorTests
 		var behavior = await CreateBehaviorAsync();
 		await ResetNativeStateAsync();
 
-		// Never attached: the behavior still forwards its property changes to the status bar (the unit tests rely on it too).
+		// The behavior forwards its property changes to the status bar even though it was never attached (the unit tests rely on it too).
 		await InvokeOnMainThreadAsync(() => behavior.StatusBarColor = Colors.Red);
 		await AssertStatusBarShowsAsync(Colors.Red);
 
-		// Attached and detached again: same.
 		page.Behaviors.Add(behavior);
 		await AttachPageAndRun(page, static _ => Task.CompletedTask);
 		await WaitForDetachAsync(behavior);

@@ -8,9 +8,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs: the Platform* property updates (aspect, controls, volume, mute, screen-on, loop) and the position/duration
-// reporting. Handler-based tests change the MediaElement property and read the native AVPlayer / AVPlayerViewController / UIApplication
-// state; manager-only tests cover the guards for a manager that has no player.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPropertiesAppleTests : AppleMediaElementTestBase

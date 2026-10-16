@@ -6,9 +6,9 @@ using PlatformView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the behavior adds a UIGestureRecognizer subclass that handles touches in TouchesBegan/TouchesEnded, which the
-// tests call with an empty touch set (UIKit has no public way to create a UITouch). The hover recognizer (UIHoverGestureRecognizer)
-// cannot be driven from code, so hovering calls the behavior's internal HandleHover, which the recognizer calls too.
+// UIKit has no public way to create a UITouch, so the tests call TouchesBegan and TouchesEnded of the behavior's recognizer with an empty
+// touch set. The hover recognizer (UIHoverGestureRecognizer) cannot be driven from code, so hovering calls the behavior's internal
+// HandleHover, which the recognizer calls too.
 public partial class ImageTouchBehaviorTests
 {
 	static bool CanAssertPlatformViewIsCollected => true;

@@ -1,4 +1,4 @@
-# Vendored or ported from dotnet/maui (see the header of each file). Treated as generated code so the repository's style
-# analyzers do not rewrite upstream code, which keeps it diffable against dotnet/maui. Compiler diagnostics still apply.
+# Treated as generated code so the repository's style analyzers do not rewrite these vendored and ported dotnet/maui sources, which
+# keeps them diffable against dotnet/maui.
 [*.cs]
 generated_code = true

@@ -105,7 +105,7 @@ function Invoke-Simctl {
 }
 
 function Format-SimctlFailure {
-    # Why a simctl call failed. A call that was killed at its timeout has no exit code and usually printed nothing.
+    # A call that was killed at its timeout has no exit code and usually printed nothing.
     param([string]$Command, $Result, [int]$TimeoutSeconds)
 
     if ($Result.TimedOut) {
@@ -116,8 +116,7 @@ function Format-SimctlFailure {
 }
 
 function Get-SimctlJson {
-    # Lists runtimes, device types or devices. Each try gets the 6 minutes that XHarness gives its own simulator listing (SimulatorLoader),
-    # and a failed listing is tried once more before this throws.
+    # Each try gets the 6 minutes that XHarness gives its own simulator listing (SimulatorLoader).
     param([string]$Kind, [int]$TimeoutSeconds = 360, [int]$Attempts = 2)
 
     $failure = $null
@@ -144,15 +143,12 @@ function Get-SimctlJson {
 }
 
 function Format-SimulatorDescription {
-    # The device line of the summary: name, device type, runtime and UDID (the identifiers without their com.apple.CoreSimulator prefix).
     param([string]$Name, [string]$DeviceTypeIdentifier, [string]$RuntimeIdentifier, [string]$Identifier)
 
     return "$Name, $($DeviceTypeIdentifier -replace '^.*\.', ''), $($RuntimeIdentifier -replace '^.*\.', ''), $Identifier"
 }
 
 function Find-SimulatorDevice {
-    # The device entry (name, state, device type and runtime) of the simulator with this UDID, or $null when there is none. Throws when simctl
-    # cannot list the devices.
     param([string]$Identifier)
 
     $devices = Get-SimctlJson -Kind 'devices'
@@ -216,7 +212,7 @@ function Select-SimulatorDeviceType {
 }
 
 function Wait-Simulator {
-    # 'simctl bootstatus -b' boots the simulator if needed and returns once it has finished booting.
+    # 'simctl bootstatus -b' boots the simulator if needed, so there is no separate boot step.
     param([string]$Identifier, [int]$TimeoutSeconds)
 
     $status = Invoke-Simctl -ArgumentList @('bootstatus', $Identifier, '-b') -TimeoutSeconds $TimeoutSeconds
@@ -243,8 +239,7 @@ function Remove-Simulator {
 }
 
 function New-TestSimulator {
-    # Creates this run's simulator and boots it. Returns the simulator (null when none was created) and why it cannot be used (null when it
-    # booted). The summary's device line comes from what was created, so it needs no device listing.
+    # The summary's device line comes from what was created, so it needs no device listing.
     param([string]$Name, $DeviceType, $Runtime, [int]$BootTimeoutSeconds, [int]$CreateTimeoutSeconds = 300)
 
     Write-Host "Creating simulator '$Name' ($($DeviceType.name), $($Runtime.name))"
@@ -275,7 +270,6 @@ function New-TestSimulator {
 }
 
 function Get-AppBundleIdentifiers {
-    # The ApplicationId of every app in the run.
     param($Context)
 
     foreach ($item in $Context.Projects) {
@@ -285,11 +279,11 @@ function Get-AppBundleIdentifiers {
 }
 
 function Grant-SimulatorPrivacy {
-    # Grants the camera, the microphone and speech recognition to the test apps on a simulator that this script created, so that the tests
-    # of those paths run instead of skipping: a headless run cannot answer the permission prompts. 'simctl privacy' has no speech
-    # recognition service, so that grant goes straight into the simulator's TCC database. Grants made before XHarness installs an app survive
-    # the install (seen with Xcode 27.0); erasing the simulator removes them. A grant that is not made only skips the tests that need it, so
-    # once simctl stops answering, the remaining simctl grants are left out instead of waiting for each of them.
+    # Without these grants, the tests of the camera, microphone and speech recognition paths would skip, because a headless run cannot
+    # answer the permission prompts. 'simctl privacy' has no speech recognition service, so that grant goes straight into the simulator's
+    # TCC database. Grants made before XHarness installs an app survive the install (seen with Xcode 27.0); erasing the simulator removes
+    # them. A grant that is not made only skips the tests that need it, so once simctl stops answering, the remaining simctl grants are
+    # left out instead of waiting for each of them.
     param([string]$Identifier, [string[]]$BundleIdentifiers, [int]$GrantTimeoutSeconds = 120)
 
     $database = Join-Path $HOME "Library/Developer/CoreSimulator/Devices/$Identifier/data/Library/TCC/TCC.db"
@@ -445,7 +439,6 @@ try {
                     -ExtraArguments ($XHarnessArgs + (Get-DeviceTestCoverageArguments -Session $coverageSession -Project $item)) `
                     -BeforeRetry {
                         if ($simulator.Created) {
-                            # Only a simulator this script created is ever reset.
                             [void](Invoke-Simctl -ArgumentList @('shutdown', $simulator.Udid))
                             $erased = Invoke-Simctl -ArgumentList @('erase', $simulator.Udid) -TimeoutSeconds 300
                             if ($erased.ExitCode -ne 0) {

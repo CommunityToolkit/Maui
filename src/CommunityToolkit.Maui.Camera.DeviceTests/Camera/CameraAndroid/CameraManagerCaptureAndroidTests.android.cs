@@ -11,16 +11,11 @@ using ImageReader = Android.Media.ImageReader;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraManager on Android: taking pictures. The real camera takes pictures through CameraX; the image callback and the
-/// resolution filter that the manager hands to CameraX are also driven directly with images that Android's ImageReader produces
-/// (so that every branch of the callback runs) and asserted through the events of the CameraView.
-/// </summary>
 [Category(TestCategory.CameraManagerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 {
-	/// <summary>Collects the events of a CameraView (they are raised on CameraX's executor thread).</summary>
+	// The events of the CameraView are raised on CameraX's executor thread, hence the concurrent queues.
 	sealed class CaptureRecorder
 	{
 		readonly ConcurrentQueue<Stream> captured = new();
@@ -47,6 +42,8 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		void OnMediaCaptureFailed(object? sender, MediaCaptureFailedEventArgs e) => failures.Enqueue(e.FailureReason);
 	}
 
+	// The tests drive the image callback and the resolution filter of CameraManager directly, the callback with images that Android's
+	// ImageReader produces, so that every branch of the callback runs.
 	static ImageCapture.OnImageCapturedCallback CreateImageCallback(CameraView view)
 	{
 		var type = typeof(CameraManager).GetNestedType("ImageCallBack", BindingFlags.NonPublic) ?? throw new MissingMemberException("CameraManager.ImageCallBack");
@@ -66,8 +63,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		buffer.Get(bytes);
 		return bytes;
 	}
-
-	// ---- TakePicture with the real camera -----------------------------------------------------------------------------
 
 	[Fact]
 	public async Task TakePictureRaisesMediaCapturedWithAJpegOfTheNativeCaptureResolution()
@@ -147,14 +142,13 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			await session.Manager.TakePicture(CancellationToken.None);
 			await recorder.WaitForFailureAsync();
 
-			// CameraX's own ImageCaptureException message reaches the view.
 			Assert.Contains("Not bound to a valid Camera", Assert.Single(recorder.Failures));
 			Assert.Empty(recorder.Captured);
 		});
 	}
 
-	// Nothing was connected yet, so there is no ImageCapture and no picture can be taken: the view hears it at once through MediaCaptureFailed
-	// (CameraView.CaptureImage waits for MediaCaptured or MediaCaptureFailed, so it throws CameraException instead of waiting for its token).
+	// The failure has to be raised at once: CameraView.CaptureImage waits for MediaCaptured or MediaCaptureFailed, and without either
+	// it would wait until its token is cancelled instead of throwing CameraException.
 	[Fact]
 	public async Task TakePictureBeforeTheCameraIsConnectedRaisesMediaCaptureFailed()
 	{
@@ -212,8 +206,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// ---- the image callback with images the tests produce ---------------------------------------------------------------
-
 	[Fact]
 	public void ImageCallbackWithoutAnImageProxyRaisesMediaCaptureFailed()
 	{
@@ -269,7 +261,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var recorder = new CaptureRecorder(view);
 		var callback = CreateImageCallback(view);
 
-		// A PRIVATE image is filled by a GPU producer: a hardware canvas draws into the reader's surface.
+		// A PRIVATE image is filled by a GPU producer, hence the hardware canvas.
 		using var reader = ImageReader.NewInstance(64, 64, ImageFormatType.Private, 2, HardwareBuffer.UsageGpuColorOutput | HardwareBuffer.UsageGpuSampledImage);
 		var available = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		reader.SetOnImageAvailableListener(new ImageAvailableListener(available), new Android.OS.Handler(Android.OS.Looper.MainLooper!));
@@ -411,8 +403,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		Assert.Equal("An unknown error occurred.", Assert.Single(recorder.Failures));
 	}
-
-	// ---- the resolution filter that CameraX applies -------------------------------------------------------------------
 
 	static List<(int Width, int Height)> Dimensions(IEnumerable<Android.Util.Size> sizes) => sizes.Select(size => (size.Width, size.Height)).ToList();
 

@@ -8,15 +8,11 @@ using Speech;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst half of the shared tests (both implementations share SharedSpeechToTextImplementation.macios.cs and
-// OfflineSharedSpeechToTextImplementation.macios.cs). SFSpeechRecognizer needs a microphone and two consents (speech recognition
-// and microphone) that nobody can give in a headless run, and a real recognition or a real audio session activation would raise
-// system prompts that stay on the device. So the tests run the toolkit's real StartListenAsync / StopListenAsync / DisposeAsync
-// against the real SFSpeechRecognizer, SFSpeechAudioBufferRecognitionRequest, AVAudioSession and dispatcher timer, with:
-//   - SpeechFakeAudioEngine in place of the implementation's AVAudioEngine (no audio hardware is started), and
-//   - SpeechFrameworkStub replacing, at the Objective-C level, the few framework methods that would start a recognition, show a
-//     prompt or block the main thread (see SpeechObjectiveC.macios.cs). The test then plays the framework: it calls the result
-//     handler that the toolkit registered and moves the task through its states.
+// SFSpeechRecognizer needs a microphone and two consents (speech recognition and microphone) that nobody can give in a headless
+// run, and a real recognition or a real audio session activation would raise system prompts that stay on the device. So a
+// SpeechFakeAudioEngine stands in for the implementation's AVAudioEngine (no audio hardware is started), and a SpeechFrameworkStub
+// replaces, at the Objective-C level, the few framework methods that would start a recognition, show a prompt or block the main
+// thread (see SpeechObjectiveC.macios.cs).
 // Product contract used by the assertions: StateChanged is raised when CurrentState has changed (ISpeechToText), so a failed start
 // or a stop of something that never listened raises no event at all.
 public abstract partial class SpeechImplementationTestsBase
@@ -48,16 +44,13 @@ public abstract partial class SpeechImplementationTestsBase
 	protected static Task StartOnMainThreadAsync(ISpeechToText speech, SpeechToTextOptions options, CancellationToken cancellationToken = default) =>
 		InvokeOnMainThreadAsync(() => speech.StartListenAsync(options, cancellationToken));
 
-	/// <summary>Calls the toolkit's result handler on the main queue, where the framework calls it.</summary>
+	// The framework calls the result handler on the main queue.
 	protected static Task DeliverAsync(AppleStart start, SFSpeechRecognitionResult? result, NSError? error) =>
 		InvokeOnMainThreadAsync(() => start.Framework.ResultHandler!(result!, error!));
 
-	/// <summary>
-	/// Replaces the silence timer of a started implementation with a fake one, running when <paramref name="isRunning"/> (as the timer of a
-	/// start with an AutoStopSilenceTimeout). The replaced timer is stopped, so a timer that the start started cannot tick later.
-	/// </summary>
 	protected static SpeechFakeDispatcherTimer UseFakeSilenceTimer(ISpeechToText speech, bool isRunning = false)
 	{
+		// The replaced timer is stopped, so that a timer which the start started cannot tick later.
 		GetSilenceTimer(speech)?.Stop();
 		var timer = new SpeechFakeDispatcherTimer(isRunning);
 		SpeechInternals.SetField(speech, "silenceTimer", timer);
@@ -67,7 +60,6 @@ public abstract partial class SpeechImplementationTestsBase
 	protected static Task<IDispatcherTimer> CreateSilenceTimerAsync(ISpeechToText speech, SpeechToTextOptions options, CancellationToken cancellationToken = default) =>
 		(Task<IDispatcherTimer>)SpeechInternals.Invoke(speech, "CreateSilenceTimer", options, cancellationToken)!;
 
-	/// <summary>Everything a start created is stopped and released: StopRecording ran to its end.</summary>
 	protected static void AssertStartedRecordingIsReleased(ISpeechToText speech, AppleStart start, SpeechFakeTask task, SFSpeechRecognizer recognizer, IntPtr requestHandle)
 	{
 		Assert.Equal<string>(["installTap", "prepare", "start", "stop", "removeTap"], start.EngineCalls);
@@ -82,10 +74,6 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 	}
 
-	/// <summary>
-	/// The stubbed framework, a fake audio engine inside the implementation, and the shared audio session restored afterwards.
-	/// Dispose it at the end of the test (it also fails the test if a stubbed Objective-C method threw).
-	/// </summary>
 	protected sealed class AppleStart : IDisposable
 	{
 		readonly AudioSessionScope audioSession;
@@ -101,10 +89,8 @@ public abstract partial class SpeechImplementationTestsBase
 
 		public SpeechFakeAudioEngine Engine { get; }
 
-		/// <summary>Every call to the audio engine, its input node and (Mac Catalyst) the audio session, in order.</summary>
 		public IReadOnlyList<string> Calls => Engine.Calls;
 
-		/// <summary>The calls to the audio engine and its input node only, in order.</summary>
 		public IReadOnlyList<string> EngineCalls => [.. Engine.Calls.Where(call => !call.StartsWith("session.", StringComparison.Ordinal))];
 
 		public static AppleStart Create(ISpeechToText speech)
@@ -125,6 +111,7 @@ public abstract partial class SpeechImplementationTestsBase
 		{
 			try
 			{
+				// Fails the test if a stubbed Objective-C method threw.
 				Framework.Dispose();
 			}
 			finally
@@ -134,7 +121,6 @@ public abstract partial class SpeechImplementationTestsBase
 		}
 	}
 
-	/// <summary>Restores what a test changes on the shared audio session: category, options, mode and multichannel support.</summary>
 	protected sealed class AudioSessionScope : IDisposable
 	{
 		readonly AVAudioSession session = AVAudioSession.SharedInstance();
@@ -158,10 +144,6 @@ public abstract partial class SpeechImplementationTestsBase
 			session.SetSupportsMultichannelContent(supportsMultichannelContent, out _);
 		}
 	}
-
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// CurrentState and the result handler of CreateSpeechRecognizerTask, called the way the framework calls it.
-	// ---------------------------------------------------------------------------------------------------------------------------
 
 	[Theory]
 	[InlineData(SFSpeechRecognitionTaskState.Starting, SpeechToTextState.Stopped)]
@@ -198,7 +180,6 @@ public abstract partial class SpeechImplementationTestsBase
 
 		await DeliverAsync(start, null, CreateError("No speech detected"));
 
-		// The recording is stopped first (CurrentState falls back to Stopped), then the failure is reported.
 		events.AssertEntries("StateChanged:Stopped", "Completed:Failed:No speech detected");
 		var result = Assert.Single(events.Results);
 		Assert.False(result.IsSuccessful);
@@ -253,8 +234,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The final result ends the utterance and resets the count of partial results: the first partial result of the next recognition
-	// that reaches this handler announces the state again. (A new task is injected because StopRecording released the first one.)
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -269,6 +248,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 		await DeliverAsync(start, PartialResult("a"), null);
 		await DeliverAsync(start, endWithFinalResult ? FinalResult("a b") : null, endWithFinalResult ? null : CreateError("interrupted"));
+		// A new task is injected because StopRecording released the first one.
 		using var nextTask = new SpeechFakeTask(SFSpeechRecognitionTaskState.Running);
 		SpeechInternals.SetField(speech, "recognitionTask", nextTask);
 		await DeliverAsync(start, PartialResult("c"), null);
@@ -280,8 +260,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A start with an AutoStopSilenceTimeout leaves the silence timer running; every partial result restarts it, so the timeout counts
-	// from the last result. (With the default timeout the timer is not running and stays so: see the next tests.)
 	[Fact]
 	public async Task PartialResultsRestartTheSilenceTimer()
 	{
@@ -350,7 +328,6 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// RestartTimer's null arm: the handler is built directly (no start, so no silence timer exists) for a task that is running.
-	// The partial result skips the timer restart without throwing, announces the new state and is reported.
 	[Fact]
 	public async Task PartialResultWithoutASilenceTimerIsReported()
 	{
@@ -403,8 +380,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The real dispatcher timer of a start with a timeout: the final result (or the error) stops it and removes the toolkit's
-	// handler, so ticking it afterwards stops nothing.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -424,7 +399,7 @@ public abstract partial class SpeechImplementationTestsBase
 		var entriesAfterStop = events.Count;
 		var callsAfterStop = start.EngineCalls.Count;
 
-		// Tick the real timer quickly: the toolkit's handler must not run any more.
+		// The dispatcher's timer does not expose its subscribers, so tick it quickly: the toolkit's handler must not run any more.
 		var ticks = 0;
 		await InvokeOnMainThreadAsync(() =>
 		{
@@ -476,7 +451,6 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.True(isRunning);
 		Assert.Equal(timeout, interval);
 
-		// Nothing was heard, so the timer elapses and stops the recording by itself.
 		Assert.True(await AssertHelpers.Wait(() => GetTask(speech) is null, 10_000, 25), "The silence timer never stopped the recording.");
 
 		events.AssertEntries("StateChanged:Stopped");
@@ -504,19 +478,17 @@ public abstract partial class SpeechImplementationTestsBase
 		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() => handler(FinalResult("hello world"), null!)));
 
 		Assert.Null(exception);
-		// The late result is reported; the stop it runs again changes no state, so it raises no second StateChanged.
+		// The stop that the late result runs again changes no state, so it raises no second StateChanged.
 		events.AssertEntries("StateChanged:Stopped", "Completed:Success:hello world");
 		Assert.Equal("hello world", Assert.Single(events.Results).Text);
-		// The engine was not started again by the late result.
 		Assert.Single(start.EngineCalls, call => call == "start");
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 
 		await speech.DisposeAsync();
 	}
 
-	// A recognition that StopListenAsync stopped still delivers its outcome (FinalResultDeliveredAfterStopListenAsyncIsReported). Once a new
-	// recognition has started, what the stopped one delivers belongs to neither: it must not stop the new recognition (EndAudio, Finish, the
-	// engine and the tap of the new one), and neither its outcome nor a late partial result is reported for the new recognition. As on Android
+	// A recognition that StopListenAsync stopped still delivers its outcome (FinalResultDeliveredAfterStopListenAsyncIsReported), but
+	// once a new recognition has started, what the stopped one delivers belongs to neither. As on Android
 	// (StartListenAsyncAfterStopListenAsyncReplacesTheStoppedSession), a recognition that a new one replaced reports nothing.
 	[Theory]
 	[InlineData("final")]
@@ -596,10 +568,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// StopListenAsync / StartListenAsync guards and disposal.
-	// ---------------------------------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task StopListenAsyncFinishesTheTaskAndReleasesEverythingTheStartCreated()
 	{
@@ -623,8 +591,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// StopListenAsync does not hop to the main thread: StopRecording runs on the calling thread. The dispatcher timer (a cancellable
-	// dispatch block on the main queue) is stopped from there, and everything the start created is finished and released.
+	// StopListenAsync does not hop to the main thread: StopRecording runs on the calling thread and stops the dispatcher timer (a
+	// cancellable dispatch block on the main queue) from there.
 	[Fact]
 	public async Task StopListenAsyncFromABackgroundThreadReleasesEverythingTheStartCreated()
 	{
@@ -654,7 +622,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// Nothing was started: only the audio engine is stopped (it always exists); every other part is null and skipped.
+	// The audio engine always exists, so it is stopped even though nothing was started.
 	[Fact]
 	public async Task StopListenAsyncWithoutAnythingStartedOnlyStopsTheEngine()
 	{
@@ -686,8 +654,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The real engine of the implementation (never started): stopping it and removing a tap that was never installed must neither
-	// throw nor start it. (No test starts a real AVAudioEngine: without a usable audio device CoreAudio blocks the main thread.)
+	// The real engine of the implementation is never started: without a usable audio device CoreAudio blocks the main thread, so no test
+	// starts a real AVAudioEngine.
 	[Fact]
 	public async Task StopListenAsyncLeavesTheRealAudioEngineStopped()
 	{
@@ -705,7 +673,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The cancelled token is checked before anything is stopped, so a cancelled stop leaves the recognition running.
 	[Fact]
 	public async Task CancelledStopListenAsyncDoesNotStopTheRunningTask()
 	{
@@ -731,8 +698,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// StartListenAsync returns at once while a recognition is running; without the guard it would install a second tap and start a
-	// second recognition.
 	[Fact]
 	public async Task StartListenAsyncWhileTheTaskIsRunningIsIgnored()
 	{
@@ -785,7 +750,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The guard only ignores a start while a session runs: once the recording stopped, a new StartListenAsync starts a new recognition.
 	[Fact]
 	public async Task StartListenAsyncAfterStopListenAsyncStartsANewRecognition()
 	{
@@ -832,8 +796,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// The framework keeps a recognition task running until its audio ends (and calls the result handler, which ignores it after
-	// DisposeAsync). DisposeAsync of a running recognition ends it as StopListenAsync does: it ends the request's audio, finishes the
-	// task, stops the engine and removes the tap before it releases them, and it reports nothing.
+	// DisposeAsync), so DisposeAsync ends the request's audio and finishes the task as StopListenAsync does, and it reports nothing.
 	[Fact]
 	public async Task DisposeAsyncWhileListeningEndsTheRecognition()
 	{
@@ -898,8 +861,8 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.Empty(events.Entries);
 	}
 
-	// DisposeAsync stops the silence timer: a tick after DisposeAsync would run StopRecording on the disposed engine
-	// (NullReferenceException on the main thread). The timer here has a long interval, so it cannot tick during the test.
+	// A tick after DisposeAsync would run StopRecording on the disposed engine (NullReferenceException on the main thread). The timer here
+	// has a long interval, so it cannot tick during the test.
 	[Fact]
 	public async Task DisposeAsyncStopsTheSilenceTimer()
 	{
@@ -920,8 +883,8 @@ public abstract partial class SpeechImplementationTestsBase
 		}
 	}
 
-	// DisposeAsync also removes the handler that CreateSilenceTimer subscribed, so the timer can never stop a disposed implementation
-	// (the fake timer counts its subscribers; the dispatcher's timer does not tell).
+	// The timer must never stop a disposed implementation. A fake timer is used here because it counts its subscribers, which the
+	// dispatcher's timer does not expose.
 	[Fact]
 	public async Task DisposeAsyncDetachesTheSilenceTimer()
 	{
@@ -936,10 +899,6 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.False(timer.IsRunning);
 		Assert.Equal(0, timer.TickSubscriberCount);
 	}
-
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// AVAudioSession: the toolkit configures the shared session, read back from the OS.
-	// ---------------------------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task AudioSessionIsConfiguredForPlayAndRecordWithTheExpectedOptions()
@@ -967,10 +926,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// StartListenAsync: the real code against the real Speech objects, the stubbed framework and an engine without hardware.
-	// ---------------------------------------------------------------------------------------------------------------------------
-
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -983,24 +938,20 @@ public abstract partial class SpeechImplementationTestsBase
 
 		await StartOnMainThreadAsync(speech, options);
 
-		// The recognizer and the request that the toolkit created, read back from the framework objects.
 		var recognizer = GetRecognizer(speech)!;
 		var request = GetRequest(speech)!;
 		Assert.Equal("de", recognizer.Locale.LanguageCode);
 		Assert.Equal("DE", recognizer.Locale.CountryCode);
 		Assert.Equal(shouldReportPartialResults, request.ShouldReportPartialResults);
 		Assert.Equal(IsOffline, request.RequiresOnDeviceRecognition);
-		// Only the on-device implementation asks the recognizer for on-device recognition.
 		Assert.Equal<bool>(IsOffline ? new[] { true } : Array.Empty<bool>(), start.Framework.SupportsOnDeviceRecognitionValues);
 
-		// The framework was asked for exactly one recognition task, with this recognizer and this request.
 		Assert.Equal(1, start.Framework.RecognitionTaskCalls);
 		Assert.Same(recognizer, start.Framework.Recognizer);
 		Assert.Same(request, start.Framework.Request);
 		Assert.Same(start.Framework.LastTask, GetTask(speech));
 		Assert.NotNull(start.Framework.ResultHandler);
 
-		// The audio session and the engine: the tap, the prepare and the start of the audio input.
 		Assert.Equal(AVAudioSession.CategoryPlayAndRecord.ToString(), AVAudioSession.SharedInstance().Category.ToString());
 		Assert.Equal<string>(["installTap", "prepare", "start"], start.EngineCalls);
 		Assert.Equal<nuint>(0, start.Engine.FakeInputNode.InstalledTapBus);
@@ -1033,7 +984,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await StartOnMainThreadAsync(speech, DefaultOptions);
 		IntPtr requestHandle = GetRequest(speech)!.Handle;
 
-		// The audio thread calls the tap; each buffer goes to the live request.
+		// The audio thread calls the tap.
 		var first = await Task.Run(() => start.Engine.FakeInputNode.DeliverBuffer());
 		var second = await Task.Run(() => start.Engine.FakeInputNode.DeliverBuffer());
 
@@ -1058,8 +1009,6 @@ public abstract partial class SpeechImplementationTestsBase
 
 		Assert.Equal(startError.Domain, exception.Error.Domain);
 		Assert.Equal(startError.Code, exception.Error.Code);
-		// The clean-up of StartListenAsync ran before the exception was rethrown: the tap was removed, the engine stopped and the
-		// recognizer and the request released. No recognition task and no silence timer were created.
 		Assert.Equal<string>(["installTap", "prepare", "start", "stop", "removeTap"], start.EngineCalls);
 		Assert.Equal(0, start.Framework.RecognitionTaskCalls);
 		Assert.Null(GetSilenceTimer(speech));
@@ -1071,8 +1020,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The token is checked once more after the audio engine started, before the silence timer and the recognition task are created:
-	// a start that was cancelled meanwhile does not leave a recognition running.
+	// The token is checked once more after the audio engine started, before the silence timer and the recognition task are created.
 	[Fact]
 	public async Task StartListenAsyncCancelledAfterTheAudioEngineStartedCleansUpWithoutCreatingARecognition()
 	{
@@ -1111,7 +1059,6 @@ public abstract partial class SpeechImplementationTestsBase
 
 		// The binding reports the nil that SFSpeechRecognizer(locale:) returns for a locale it does not support.
 		Assert.Contains("initWithLocale", exception.Message);
-		// The clean-up in StartListenAsync's catch block ran (the engine was stopped) and the exception was rethrown.
 		Assert.Equal<string>(["stop", "removeTap"], start.EngineCalls);
 		Assert.Empty(start.Framework.SupportsOnDeviceRecognitionValues);
 		Assert.Null(GetRecognizer(speech));
@@ -1140,7 +1087,6 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.Equal<bool>(IsOffline ? new[] { true } : Array.Empty<bool>(), start.Framework.SupportsOnDeviceRecognitionValues);
 		Assert.Equal<string>(["stop", "removeTap"], start.EngineCalls);
 		Assert.Equal(0, start.Framework.RecognitionTaskCalls);
-		// The recognizer that answered "not available" was created by the start and released by its clean-up.
 		Assert.NotNull(start.Framework.AvailabilityRecognizer);
 		Assert.Equal(NativeHandle.Zero, start.Framework.AvailabilityRecognizer.Handle);
 		Assert.Null(GetRecognizer(speech));
@@ -1151,8 +1097,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// Installing a tap on an input node without a usable format (a machine without a microphone) raises an Objective-C exception;
-	// here the fake node throws one (simulated: the real node would only do so on a machine without audio input). StartListenAsync
-	// must clean up and rethrow it.
+	// here the fake node throws one (simulated: the real node would only do so on a machine without audio input).
 	[Fact]
 	public async Task StartListenAsyncCleansUpAndRethrowsWhenTheMicrophoneTapCannotBeInstalled()
 	{
@@ -1175,10 +1120,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// The silence timer.
-	// ---------------------------------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task CreateSilenceTimerWithTheDefaultTimeoutReturnsATimerThatIsNotRunning()
 	{
@@ -1192,9 +1133,8 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// The silence timer must come from the dispatcher of the main thread, which a thread-pool thread does not have
-	// (Dispatcher.GetForCurrentThread() is null there, and CreateSilenceTimer would throw InvalidOperationException). An app that starts
-	// from a background thread must not fail: CreateSilenceTimer hops to the main thread (MainThread.InvokeOnMainThreadAsync) for the
-	// timer, and the rest of the start completes.
+	// (Dispatcher.GetForCurrentThread() is null there, and CreateSilenceTimer would throw InvalidOperationException), so an app that
+	// starts from a background thread depends on CreateSilenceTimer hopping to the main thread (MainThread.InvokeOnMainThreadAsync).
 	[Fact]
 	public async Task StartListenAsyncFromABackgroundThreadCreatesTheSilenceTimerOnTheMainThread()
 	{
@@ -1225,9 +1165,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The wait for the main thread observes the token: with the main thread busy, a cancelled token ends the wait at once. The whole
-	// sequence runs on a thread-pool thread without a synchronization context: the runner resumes a test's awaits on the main thread,
-	// which this test keeps busy on purpose. The wait is bounded, so a regression fails (TimeoutException) and the finally block
+	// The whole sequence runs on a thread-pool thread without a synchronization context: the runner resumes a test's awaits on the main
+	// thread, which this test keeps busy on purpose. The wait is bounded, so a regression fails (TimeoutException) and the finally block
 	// frees the main thread.
 	[Fact]
 	public async Task CreateSilenceTimerThrowsWhenTheTokenIsCancelledWhileWaitingForTheMainThread()
@@ -1270,7 +1209,6 @@ public abstract partial class SpeechImplementationTestsBase
 		public IDispatcher? GetForCurrentThread() => null;
 	}
 
-	// The timer comes from the dispatcher of the main thread; when the dispatcher cannot be resolved the toolkit says so.
 	[Fact]
 	public async Task CreateSilenceTimerThrowsWhenNoDispatcherIsAvailable()
 	{
@@ -1291,10 +1229,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// ---------------------------------------------------------------------------------------------------------------------------
-	// Permissions: the system's answer is played by the stubbed requestAuthorization: (the real one would show a prompt).
-	// ---------------------------------------------------------------------------------------------------------------------------
-
 	[Theory]
 	[InlineData(SFSpeechRecognizerAuthorizationStatus.Authorized, true)]
 	[InlineData(SFSpeechRecognizerAuthorizationStatus.Denied, false)]
@@ -1314,9 +1248,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// While the system has not answered (a person is looking at the prompt), the token ends the wait; the answer that comes later is
-	// absorbed without an error. The stubbed system never answers by itself, so the wait is bounded: if the token stopped ending it,
-	// the test fails with a TimeoutException (not an OperationCanceledException) instead of hanging the run.
+	// The stubbed system never answers by itself, like a person who is still looking at the prompt, so the wait is bounded: if the token
+	// stopped ending it, the test fails with a TimeoutException (not an OperationCanceledException) instead of hanging the run.
 	[Fact]
 	public async Task RequestPermissionsStopsWaitingWhenTheTokenIsCancelled()
 	{
@@ -1339,7 +1272,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 	// The token is only observed by the wait for the answer: with a token that is already cancelled the request still reaches the
 	// system (which shows its prompt while the authorization is undecided) and then fails at once. Android behaves the same way
-	// (Essentials is asked first); pinned behaviour, the contract of RequestPermissions does not say. The late answer is absorbed.
+	// (Essentials is asked first); pinned behaviour, the contract of RequestPermissions does not say.
 	[Fact]
 	public async Task RequestPermissionsWithACancelledTokenThrowsButStillAsksTheSystem()
 	{
@@ -1357,8 +1290,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// The real system: once the authorization is decided it answers at once without a prompt. While it is undecided (always on a
-	// fresh simulator or CI machine) asking would show a prompt that nobody can answer, so the test is skipped.
 	[Fact]
 	public async Task RequestPermissionsReportsTheDecidedAuthorizationStatusOfTheSystem()
 	{
@@ -1373,8 +1304,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A person authorizes speech recognition and the microphone, says something and then stays silent: the real framework reports
-	// the speech, the silence timer stops the recording and the final transcription is completed.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task StartListenAsyncRecognizesWhatAPersonSays()
@@ -1402,7 +1331,6 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A person has to answer the system prompt: run it from the visual runner.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task RequestPermissionsReturnsTheDecisionOfTheUser()

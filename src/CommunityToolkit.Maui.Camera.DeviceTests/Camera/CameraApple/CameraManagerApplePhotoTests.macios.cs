@@ -7,11 +7,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.PlatformTakePicture and TryConfigureAVCaptureConnection against FakePhotoOutput,
-// FakeCapturePhoto, FakeCaptureConnection and FakeRotationCoordinator (see AppleNativeFakes.macios.cs). The real capture needs a camera
-// and the camera permission; the fakes script what the native photo output reports (supported flash modes, the video connection, the
-// delegate callback with a photo, an error or nothing), so every branch of the toolkit's capture code runs on any device. The real
-// capture is covered by CameraManagerAppleCaptureTests where a camera is authorized.
+// The real capture needs a camera and the camera permission, so the fakes script what the native photo output reports and every branch of the
+// toolkit's capture code runs on any device. CameraManagerAppleCaptureTests covers the real capture where a camera is authorized.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerApplePhotoTests : CameraHandlerTestBase
@@ -35,7 +32,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 		});
 	}
 
-	// The photo settings ask for a JPEG photo (what the toolkit reports as image/jpeg), not for the HEIF that AVFoundation prefers.
+	// AVFoundation prefers HEIF, but the toolkit captures JPEG photos, as on Android and Windows.
 	[Fact]
 	public async Task TakePictureCapturesInTheJpegCodec()
 	{
@@ -277,9 +274,8 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 	}
 
 	// AVFoundation captures only through a video connection that is active and enabled: the reason of the NSInvalidArgumentException that
-	// capturePhotoWithSettings:delegate: raises says so ("No active and enabled video connection"). A connection that exists but is inactive
-	// (the session's configuration can make it so, for example an active format that the photo output cannot use) or disabled must fail the
-	// capture through MediaCaptureFailed like a missing connection, and the capture must never reach the output.
+	// capturePhotoWithSettings:delegate: raises says so ("No active and enabled video connection"). A connection that exists can still be inactive
+	// (the session's configuration can make it so, for example an active format that the photo output cannot use) or disabled.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -333,8 +329,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 	// A session without a camera input has no video connection, for example after a camera switch failed (PlatformStartCameraPreview removes
 	// the inputs before it throws). AVFoundation refuses to capture then (ObjCException NSInvalidArgumentException '-[AVCapturePhotoOutput
-	// capturePhotoWithSettings:delegate:] No active and enabled video connection'), so the capture must fail as MediaCaptureFailed, which
-	// CaptureImage reports as CameraException.
+	// capturePhotoWithSettings:delegate:] No active and enabled video connection').
 	[Fact]
 	public async Task CaptureImageWithoutAVideoConnectionThrowsCameraException()
 	{
@@ -344,7 +339,6 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 		{
 			var view = new CameraView();
 			var handler = CreateHandler<AppleNoConnectCameraViewHandler>(view);
-			// A real photo output in a session without a camera input (what a failed camera switch leaves behind).
 			new CameraManagerAccessor(handler.CameraManager).PhotoOutput = new AVCapturePhotoOutput();
 
 			try
@@ -368,7 +362,6 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 			await scope.Manager.TakePicture(CancellationToken.None);
 
-			// The SDK's own constant for the video media type.
 			Assert.Equal([AVMediaTypes.Video.GetConstant()!.ToString()], output.RequestedMediaTypes);
 		});
 	}
@@ -517,7 +510,6 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 		return copy.ToArray();
 	}
 
-	// Runs the test on the UI thread with a manager whose photo output is a FakePhotoOutput, and disposes everything afterwards.
 	async Task RunAsync(Func<AppleCameraManagerScope, FakePhotoOutput, AppleMediaRecorder, Task> test)
 	{
 		SetupBuilder();

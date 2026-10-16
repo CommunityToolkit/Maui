@@ -134,7 +134,6 @@ public class FileSaverTests : BaseTest
 		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
 	}
 
-	// Calls one of the four overloads: 0 and 2 take an initial path, 2 and 3 a progress
 	static Task<FileSaverResult> SaveAsync(int overload, string fileName, Stream stream, CancellationToken token) => overload switch
 	{
 		0 => FileSaver.SaveAsync("initial path", fileName, stream, token),

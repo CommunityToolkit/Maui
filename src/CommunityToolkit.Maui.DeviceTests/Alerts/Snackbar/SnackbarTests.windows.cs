@@ -3,15 +3,12 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Snackbar on Windows is an app notification: AppNotificationManager shows it, lists it in the Action Center of the app, and a press on
-// its button reaches the toolkit through NotificationInvoked. The tests read the notification that the Windows App SDK built (payload
-// XML, expiration) and the notifications that the platform lists back.
 public partial class SnackbarTests
 {
 	const string documentationUrl = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar";
 
 	// ShowPlatform computes the expiration synchronously between the two time stamps a test takes around Show; the margin only absorbs
-	// clock reads (the Short and Long toasts differ by 1.5 s).
+	// clock reads.
 	static readonly TimeSpan expirationMargin = TimeSpan.FromMilliseconds(100);
 
 	static string? ActionCannotBeClickedReason =>
@@ -99,7 +96,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// A zero or negative duration gives a notification that expires when it is shown (or before): Windows removes it at once.
 	[Theory]
 	[InlineData(0)]
 	[InlineData(-2)]
@@ -121,8 +117,8 @@ public partial class SnackbarTests
 		});
 	}
 
-	// The notification of a snackbar whose action text is empty still has its button, with empty content and the identifier of the action
-	// (Android hides the action, iOS and Mac Catalyst keep an empty button: SnackbarTests.EmptyActionButtonText*).
+	// Android hides the action and iOS and Mac Catalyst keep an empty, padded button for this input (SnackbarTests.EmptyActionButtonText*):
+	// the platforms differ.
 	[Fact]
 	public async Task EmptyActionButtonTextBuildsAButtonWithoutContent()
 	{
@@ -193,7 +189,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Nothing in the Windows Snackbar needs the UI thread: the Windows App SDK notification APIs can be called from any thread.
+	// The Windows App SDK notification APIs can be called from any thread.
 	[Fact]
 	public async Task ShowOffTheUiThreadShowsTheNotification()
 	{
@@ -211,7 +207,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Dismiss needs no UI thread either.
 	[Fact]
 	public async Task DismissOffTheUiThreadOnAnotherInstanceRemovesTheNotification()
 	{
@@ -337,7 +332,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Only the dismissal that removes the notification raises Dismissed: two Dismiss calls that are in flight at once raise it once.
+	// Only the dismissal that removes the notification raises Dismissed.
 	[Fact]
 	public async Task ConcurrentDismissCallsRaiseDismissedOnce()
 	{
@@ -358,8 +353,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Windows removes an expired notification without telling the app: at the end of the snackbar's duration the toolkit dismisses it
-	// itself, so the notification is removed and its action forgotten.
+	// Windows removes an expired notification without telling the app: at the end of the snackbar's duration the toolkit dismisses it itself.
 	[Fact]
 	public async Task NotificationAndItsActionAreRemovedAtTheEndOfTheDuration()
 	{
@@ -436,10 +430,9 @@ public partial class SnackbarTests
 	}
 
 	// A press of the notification's button reaches Snackbar.HandleSnackbarAction through NotificationInvoked, on a background thread, with
-	// the arguments of the button. Windows removes the notification itself; the toolkit runs the action and then dismisses the snackbar,
-	// both on the UI thread (a Snackbar action usually updates the UI), as when the action is clicked on the other platforms. Only a person
-	// can press the button (PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar), so this test hands the
-	// toolkit the press the way NotificationInvoked does.
+	// the arguments of the button. The action and the dismissal run on the UI thread because a Snackbar action usually updates the UI.
+	// Only a person can press the button (PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar), so this
+	// test hands the toolkit the press the way NotificationInvoked does.
 	[Fact]
 	public async Task PressOfTheButtonRunsTheActionThenDismissesTheSnackbarOnTheUiThread()
 	{
@@ -471,7 +464,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// The button of a snackbar without an action dismisses it all the same.
 	[Fact]
 	public async Task PressOfTheButtonOfASnackbarWithoutAnActionDismissesTheSnackbar()
 	{
@@ -495,8 +487,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// The end of the Duration of a snackbar that was shown off the UI thread still raises Dismissed on the UI thread, as on the other
-	// platforms, and removes the notification and its action.
 	[Fact]
 	public async Task SnackbarShownOffTheUiThreadRaisesDismissedOnTheUiThreadAtTheEndOfItsDuration()
 	{
@@ -517,8 +507,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Pressing the button of a real notification: NotificationInvoked reaches Snackbar.HandleSnackbarAction on a background thread, the
-	// toolkit runs the action on the UI thread and then dismisses the snackbar, and Windows removes the notification.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar()
@@ -528,7 +516,6 @@ public partial class SnackbarTests
 		using var recorder = new SnackbarEventRecorder();
 		var pressed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		// Press "OK" on the notification that appears (it stays for a minute).
 		await InvokeOnMainThreadAsync(() => Snackbar.Make("Press OK on this notification", () => pressed.TrySetResult(Microsoft.Maui.ApplicationModel.MainThread.IsMainThread), "OK", TimeSpan.FromSeconds(60)).Show());
 
 		var ranOnTheUiThread = await pressed.Task.WaitAsync(TimeSpan.FromSeconds(60));
@@ -541,7 +528,6 @@ public partial class SnackbarTests
 		});
 	}
 
-	// The arguments that NotificationInvoked reports for a press of the button of the notification that is shown.
 	static Dictionary<string, string> GetArgumentsOfAPressOfTheButton()
 	{
 		var button = Assert.Single(AlertsWindows.Parse(AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.")).Buttons);

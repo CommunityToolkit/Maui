@@ -9,7 +9,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class MauiDrawingViewTests
 {
-	// Catches: TouchesBegan reads the current location (or TouchesMoved the previous one)
 	[Fact]
 	public Task TouchesBeganReportsThePreviousLocationAndTouchesMovedTheCurrentLocation() => WithView(view =>
 	{
@@ -22,7 +21,6 @@ public partial class MauiDrawingViewTests
 		AssertPoint(50, 60, Assert.Single(recorder.Points));
 	});
 
-	// Catches: ancestor scroll views stay enabled during the gesture, or are not re-enabled afterwards
 	[Fact]
 	public Task TouchesBeganDisablesParentScrollViewsAndTouchesEndedReEnablesThem() => WithScrollParents((view, outer, inner) =>
 	{
@@ -42,7 +40,6 @@ public partial class MauiDrawingViewTests
 		Assert.True(inner.ScrollEnabled);
 	});
 
-	// Catches: TouchesCancelled does not re-enable the ancestor scroll views
 	[Fact]
 	public Task TouchesCancelledReEnablesParentScrollViews() => WithScrollParents((view, outer, inner) =>
 	{
@@ -56,7 +53,6 @@ public partial class MauiDrawingViewTests
 		Assert.True(inner.ScrollEnabled);
 	});
 
-	// Catches: the ancestors are added to the cache again on every gesture (duplicates), or a later gesture no longer toggles them
 	[Fact]
 	public Task RepeatedGesturesToggleTheParentScrollViewsEachTimeWithoutDuplicates() => WithScrollParents((view, outer, inner) =>
 	{
@@ -65,8 +61,8 @@ public partial class MauiDrawingViewTests
 			DrawingViewTestPlatform.TouchDown(view, 20, 20);
 			Assert.False(outer.ScrollEnabled, $"gesture {i + 1}: the outer scroll view still scrolls");
 			Assert.False(inner.ScrollEnabled, $"gesture {i + 1}: the inner scroll view still scrolls");
-			// duplicates have no native observable, so the cache is read while it is in use; whether it is kept after the gesture is not asserted
-			// (without a readable cache, for example after a fix that no longer caches the ancestors, there is nothing that could hold duplicates)
+			// Duplicates have no native observable, so the cache is read while it is in use; whether it is kept after the gesture is not asserted.
+			// Without a readable cache (for example after a fix that no longer caches the ancestors) there is nothing that could hold duplicates.
 			if (TryGetCachedScrollViews(view) is List<object> cached)
 			{
 				Assert.Equal(cached.Distinct().Count(), cached.Count);
@@ -149,8 +145,6 @@ public partial class MauiDrawingViewTests
 		}
 	}
 
-	// A gesture that UIKit cancels (TouchesCancelled, for example when the view leaves its window) must also
-	// release the UIScrollView ancestors it found, as ViewInsideAScrollViewIsCollectableAfterAGesture checks for a gesture that ends
 	[Fact]
 	public async Task ViewInsideAScrollViewIsCollectableAfterACancelledGesture()
 	{
@@ -218,7 +212,6 @@ public partial class MauiDrawingViewTests
 		}
 	}
 
-	// Catches: scroll views that are not ancestors are disabled, or a hierarchy without scroll views breaks the gesture
 	[Fact]
 	public async Task GestureWithoutScrollViewAncestorsLeavesOtherScrollViewsAlone()
 	{
@@ -248,7 +241,6 @@ public partial class MauiDrawingViewTests
 		}));
 	}
 
-	// Catches: a gesture on a view without a superview throws
 	[Fact]
 	public async Task GestureOnAViewWithoutASuperviewWorks()
 	{
@@ -267,7 +259,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: Dispose(true) does not release the native object (base.Dispose) or the in-progress path
 	[Fact]
 	public async Task DisposeReleasesTheNativeHandle()
 	{
@@ -287,7 +278,6 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// Catches: the finalizer path (Dispose(false)) releases the native object or disposes the in-progress path (a managed resource)
 	[Fact]
 	public async Task DisposeWithoutDisposingKeepsTheNativeHandle()
 	{
@@ -308,9 +298,8 @@ public partial class MauiDrawingViewTests
 		});
 	}
 
-	// A second touch that begins while a gesture is in progress (another finger) finds the scroll views already cached: walking the ancestors
-	// again would add them twice.
-	// Catches: DetectScrollViews without its early return for a cache that is already filled.
+	// A second touch while a gesture is in progress (another finger) finds the scroll views already cached: DetectScrollViews must return early
+	// instead of walking the ancestors again, which would add them twice.
 	[Fact]
 	public Task SecondTouchDuringAGestureDoesNotCacheTheParentScrollViewsAgain() => WithScrollParents((view, outer, inner) =>
 	{
@@ -329,7 +318,6 @@ public partial class MauiDrawingViewTests
 
 	// MovedToWindow raises AttachedToWindow on the next turn of the main loop (as MAUI raises Loaded). A view that left the window again in the
 	// meantime is not attached any more, so the event (which makes a waiting DrawingViewHandler listen again) is not raised for it.
-	// Catches: the callback of MovedToWindow raising AttachedToWindow without checking that the view is still in a window.
 	[Fact]
 	public async Task AttachedToWindowIsNotRaisedForAViewThatLeftTheWindowBeforeTheEvent()
 	{
@@ -367,7 +355,6 @@ public partial class MauiDrawingViewTests
 		public void CallDispose(bool disposing) => Dispose(disposing);
 	}
 
-	// The drawing view inside an inner UIScrollView inside an outer UIScrollView, both hosted in the runner's window.
 	async Task WithScrollParents(Action<MauiDrawingView, UIScrollView, UIScrollView> body)
 	{
 		SetupBuilder();
@@ -385,10 +372,9 @@ public partial class MauiDrawingViewTests
 		await InvokeOnMainThreadAsync(async () => await outer.AttachAndRun(() => body(view, outer, inner)));
 	}
 
-	// The UIScrollView ancestors that MauiDrawingView.macios.cs keeps in its private scrollViewParents field while a gesture is in progress, read defensively:
-	// another implementation may change the field, for example to weak references, or remove it. Weak references are resolved to their targets;
-	// a missing field, null or a value that is not a collection gives null (no readable cache), and the callers then keep only their assertions on
-	// observable behavior (UIScrollView.ScrollEnabled, the gesture events, the leak checks).
+	// Read defensively through reflection: another implementation may change the private scrollViewParents field (for example to weak references,
+	// which are resolved to their targets) or remove it. A missing or unreadable field gives null, and the callers then keep only their
+	// assertions on observable behavior.
 	static List<object>? TryGetCachedScrollViews(MauiDrawingView view) =>
 		typeof(MauiDrawingView).GetField("scrollViewParents", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(view) is IEnumerable cache
 			? cache.Cast<object?>().Select(item => item is WeakReference<UIScrollView> weak ? (weak.TryGetTarget(out var target) ? target : null) : item).OfType<object>().ToList()

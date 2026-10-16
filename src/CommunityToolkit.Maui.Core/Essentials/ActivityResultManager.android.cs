@@ -177,12 +177,12 @@ static class ActivityResultManager
 
 		public Task<Intent> Task => taskCompletionSource.Task;
 
-		// The activity that started the request: Android delivers the result to it, or to its new instance when the system recreates it
+		// Android delivers the result to the activity that started the request, or to its new instance when the system recreates it
 		public Type? RequesterType { get; init; }
 
 		public int RequesterTaskId { get; init; }
 
-		// Whether the activity is the one that started the request or a new instance of it (the same type in the same task); a request that does not know its requester accepts any activity
+		// A new instance of the requester has the same type and task
 		public bool IsRequester(ComponentActivity activity) =>
 			RequesterType is null || (activity.GetType() == RequesterType && activity.TaskId == RequesterTaskId);
 

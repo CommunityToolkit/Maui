@@ -4,9 +4,6 @@ using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Toast on Windows is an app notification without buttons, shown by AppNotificationManager and listed in the Action Center of the app.
-// The tests read the notification that the Windows App SDK built (payload XML, expiration) and the notifications that the platform
-// lists back.
 public partial class ToastTests
 {
 	// ShowPlatform computes the expiration synchronously between the two time stamps a test takes around Show; the margin only absorbs
@@ -29,9 +26,7 @@ public partial class ToastTests
 	// A Toast is the notification without a button, a Snackbar has one.
 	static async Task<IReadOnlyList<WindowsNotification>> GetToastsAsync() => [.. (await AlertsWindows.GetDisplayedAsync()).Where(notification => !notification.IsSnackbar)];
 
-	// A Toast is an app notification too, so it needs the same opt-in as Snackbar: Show fails while the option is off, before it shows
-	// anything.
-	// Catches: ShowPlatform not checking Options.ShouldEnableSnackbarOnWindows (EnsureWindowsToastEnabled).
+	// A Toast is an app notification too, so it needs the same opt-in as Snackbar.
 	[Fact]
 	public async Task ShowThrowsWhileTheWindowsOptionIsNotEnabled()
 	{
@@ -113,7 +108,6 @@ public partial class ToastTests
 		});
 	}
 
-	// Dismiss needs no UI thread either.
 	[Fact]
 	public async Task DismissOffTheUiThreadExpiresTheNotification()
 	{

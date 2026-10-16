@@ -51,9 +51,8 @@ public partial class MauiDrawingView
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
-	// Raised when the view is in a window: on the main thread after the attach, as MAUI raises VisualElement.Loaded, and only if the view is still
-	// in a window then (iOS and Mac Catalyst raise it). DrawingViewHandler listens again from it after the DrawingView was unloaded. Weak, like the
-	// other events: while the DrawingView is unloaded, the view must not keep its handler alive.
+	// Lets DrawingViewHandler listen again after the DrawingView was unloaded (raised on iOS and Mac Catalyst). Weak, like the other events:
+	// while the DrawingView is unloaded, the view must not keep its handler alive.
 	internal event EventHandler AttachedToWindow
 	{
 		add => weakEventManager.AddEventHandler(value);

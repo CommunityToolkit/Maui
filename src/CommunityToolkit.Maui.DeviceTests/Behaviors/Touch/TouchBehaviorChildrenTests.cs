@@ -2,17 +2,10 @@ using CommunityToolkit.Maui.Behaviors;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// <c>ShouldMakeChildrenInputTransparent</c>: while the behavior is attached to a layout the layout's children must not take the touches
-/// that the layout's own touch handling needs. Every assertion reads the platform view (iOS: <c>UserInteractionEnabled</c>, Android:
-/// the layout flag or the <c>WrapperView</c> flag, Windows: <c>IsHitTestVisible</c>), not only MAUI's <c>InputTransparent</c> property.
-/// </summary>
 [Category(TestCategory.TouchBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 {
-	// Catches: the children not becoming input transparent (SetChildrenInputTransparent / OnLayoutChildAdded), the layout itself staying
-	// input transparent (layout.InputTransparent = false), a native view not following MAUI's property.
 	[Fact]
 	public async Task ChildrenBecomeInputTransparentAndTheLayoutDoesNot()
 	{
@@ -35,7 +28,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the ChildAdded subscription missing, so that a child added later takes the touches.
 	[Fact]
 	public async Task ChildAddedWhileAttachedBecomesInputTransparent()
 	{
@@ -54,8 +46,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: ShouldMakeChildrenInputTransparent = false being ignored (OnLayoutChildAdded's branch for it, SetChildrenInputTransparent's
-	// early return).
 	[Fact]
 	public async Task ChildrenStayInteractiveWhenTheBehaviorMustNotMakeThemTransparent()
 	{
@@ -78,8 +68,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a child added after ShouldMakeChildrenInputTransparent was turned off being made input transparent (OnLayoutChildAdded's
-	// branch for the option; the ChildAdded handler stays subscribed while the behavior is attached).
 	[Fact]
 	public async Task ChildAddedAfterTurningTheOptionOffStaysInteractive()
 	{
@@ -102,8 +90,8 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: OnLayoutChildAdded failing for a child that is not a View (its first guard). MAUI layouts hold IView children, which are
-	// Views in practice, so the event is raised with a non-View element directly (Element.OnChildAdded raises ChildAdded for any element).
+	// MAUI layouts hold IView children, which are Views in practice, so the event is raised with a non-View element directly
+	// (Element.OnChildAdded raises ChildAdded for any element).
 	[Fact]
 	public async Task ChildAddedThatIsNotAViewIsIgnored()
 	{
@@ -119,7 +107,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 
 			Assert.Null(exception);
 
-			// The handler is still subscribed and still serves views.
 			var late = new Label { Text = "late" };
 			host.Add(late);
 			Assert.True(first.InputTransparent);
@@ -128,7 +115,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: a disabled behavior making children input transparent (OnLayoutChildAdded assigns IsEnabled).
 	[Fact]
 	public async Task DisabledBehaviorDoesNotMakeChildrenInputTransparent()
 	{
@@ -151,7 +137,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Catches: the content-view branch of SetChildrenInputTransparent (IContentView with a Layout content) missing.
 	[Fact]
 	public async Task ChildrenOfAContentViewsLayoutBecomeInputTransparent()
 	{
@@ -169,10 +154,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A content view whose content is not a layout (a ContentView holding a label, and one without content) matches neither arm of the
-	// switch ("IContentView { Content: Layout }" needs a layout): the behavior works on the content view and leaves its content alone.
-	// Catches: the content-view arm accepting any content (the label would be made input transparent), the attach failing for such a
-	// content view (a cast of its content to Layout).
 	[Fact]
 	public async Task ContentViewWhoseContentIsNotALayoutKeepsItsContentInteractive()
 	{
@@ -202,7 +183,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		await RunAttachedAsync(empty, emptyBehavior, _ => Assert.Same(empty, emptyBehavior.Element));
 	}
 
-	// Catches: an element that is neither a layout nor a content view making the behavior fail (the switch has no arm for it).
 	[Fact]
 	public async Task ElementWithoutChildrenAttachesWithoutTouchingAnything()
 	{
@@ -218,10 +198,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The behavior only changes the children while it is attached: removing it must give them their input back, and a layout that gets
-	// children later must not be touched by a behavior that is gone.
-	// Catches: the Element setter's reset block not running on detach (OnDetachedFrom clearing Element only after the base class cleared
-	// View), SetChildrenInputTransparent(false, layout) only unsubscribing ChildAdded without resetting the children.
 	[Fact]
 	public async Task RemovedBehaviorGivesTheChildrenTheirInputBack()
 	{
@@ -247,8 +223,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The detach gives each child the value it had before the behavior changed it: a child that the app made input transparent stays so.
-	// Catches: the detach making every child take input (InputTransparent = false) instead of undoing what the behavior changed.
 	[Fact]
 	public async Task RemovedBehaviorKeepsAChildThatWasInputTransparentBefore()
 	{
@@ -274,9 +248,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A child removed from the layout while the behavior is attached is no longer the behavior's business: it gets back the value it had
-	// before the behavior changed it (and the behavior does not keep it).
-	// Catches: a removed child staying input transparent, a removed child that was input transparent before being made interactive.
 	[Fact]
 	public async Task ChildRemovedWhileAttachedGetsItsOwnInputTransparentBack()
 	{
@@ -300,15 +271,12 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 			Assert.False(interactive.InputTransparent, "A child removed from the layout must take input again.");
 			Assert.True(transparent.InputTransparent, "A child that was input transparent before the behavior must stay input transparent.");
 
-			// The removed children are not the behavior's any more: removing the behavior leaves them alone.
 			interactive.InputTransparent = true;
 			host.Behaviors.Remove(behavior);
 			Assert.True(interactive.InputTransparent, "The detach must not touch a child that was removed from the layout.");
 		});
 	}
 
-	// The children follow the option while the behavior is attached: turning ShouldMakeChildrenInputTransparent off must give the existing
-	// children their input back, as it does for children added afterwards.
 	[Fact]
 	public async Task TurningTheOptionOffGivesTheExistingChildrenTheirInputBack()
 	{
@@ -330,8 +298,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Same for IsEnabled: a disabled behavior leaves the children interactive (a child added while it is disabled is), so disabling it
-	// must give the existing children their input back.
 	[Fact]
 	public async Task DisablingTheBehaviorGivesTheExistingChildrenTheirInputBack()
 	{
@@ -356,10 +322,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Both properties can be switched back on while the behavior is attached: the existing children are made input transparent again, and
-	// the detach still gives each child the value it had before the behavior (not one the behavior set in between).
-	// Catches: a change of either property only being applied in one direction, the recorded value of a child being replaced by a value
-	// the behavior set itself (a disabled behavior makes every child take input).
 	[Fact]
 	public async Task SwitchingTheOptionAndTheBehaviorBackOnMakesTheChildrenInputTransparentAgain()
 	{
@@ -387,6 +349,7 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 			Assert.True(transparent.InputTransparent);
 			await WaitUntilAsync(() => IsNativeInputTransparent(interactive), "The platform view of the child still takes input.");
 
+			// Disabling the behavior made every child take input; the detach must still give each child its value from before the behavior.
 			host.Behaviors.Remove(behavior);
 			Assert.False(interactive.InputTransparent, "The detach must give the child the value it had before the behavior.");
 			Assert.True(transparent.InputTransparent, "The detach must give the child the value it had before the behavior.");
@@ -394,8 +357,7 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 	}
 
 	// The app may block input to the layout while the behavior is attached, e.g. with the layout's InputTransparent and the behavior's IsEnabled
-	// bound to the same busy flag: changing IsEnabled must leave the layout's InputTransparent as the app set it, whichever changes first.
-	// Catches: a change of IsEnabled making the layout take input again (only the attach makes the layout take input).
+	// bound to the same busy flag.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -432,10 +394,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// A parent that is input transparent while the behavior attaches passes its transparency on (CascadeInputTransparent): the layout and its
-	// children report InputTransparent = true although that is not their own value. Once the parent takes input again, removing the behavior
-	// must leave them taking input.
-	// Catches: the attach recording the transparency the views inherit from the parent as their own value (the detach then gives it to them).
 	[Fact]
 	public async Task RemovedBehaviorDoesNotGiveTheViewsTheInputTransparencyOfAParent()
 	{
@@ -444,6 +402,8 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		var child = new Label { Text = "child" };
 		var host = CreateHost();
 		host.Add(child);
+		// An input transparent parent passes that on to its children (CascadeInputTransparent), so the layout and its children report
+		// InputTransparent = true although that is not their own value.
 		var root = new Grid { InputTransparent = true, Children = { host } };
 		var behavior = new TouchBehavior();
 
@@ -465,11 +425,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// Two TouchBehaviors on one layout change the same views. Removing one of them must leave the views as the other one needs them, and
-	// removing both gives every view the value it had before either behavior. The layout is input transparent before the behaviors without
-	// passing it on to its children (CascadeInputTransparent = false), so that the children's values can be read on their own.
-	// Catches: each behavior giving the views back on its own: the first one removed makes the layout input transparent and the children take
-	// input under the other one, and the other one gives back the values the first one had set.
 	[Fact]
 	public async Task TwoBehaviorsOnALayoutGiveTheViewsBackWhenTheLastOneIsRemoved()
 	{
@@ -480,6 +435,7 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		var host = CreateHost();
 		host.Add(interactive);
 		host.Add(transparent);
+		// Without the cascade, the children report their own InputTransparent values, not the layout's.
 		host.CascadeInputTransparent = false;
 		host.InputTransparent = true;
 		var first = new TouchBehavior();
@@ -509,10 +465,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	// The behavior handles the children of the layout that a content view shows when the behavior attaches. When the content view shows
-	// something else by the time the behavior is removed, the behavior must still let go of that layout: its children get their own value
-	// back, and a child added to it later is not made input transparent.
-	// Catches: the detach unsubscribing from (and giving back) the content it finds at that time instead of the layout it handled.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -540,7 +492,6 @@ public class TouchBehaviorChildrenTests : TouchBehaviorTestBase
 		});
 	}
 
-	/// <summary>A Grid that can raise <c>ChildAdded</c> for any element.</summary>
 	sealed class ChildRaisingGrid : Grid
 	{
 		public void RaiseChildAdded(Element child) => OnChildAdded(child);

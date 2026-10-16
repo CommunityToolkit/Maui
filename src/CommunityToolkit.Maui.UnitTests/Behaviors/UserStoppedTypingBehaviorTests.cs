@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
 public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypingBehavior, InputView>(new UserStoppedTypingBehavior(), new Entry())
 {
-	// The StoppedTypingTimeThreshold of GetCommandExecutionsAfterTextChanges
 	const int textChangesStoppedTypingTimeThreshold = 100;
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -252,23 +251,21 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	[InlineData(int.MinValue)]
 	public void ShouldKeepPreviousStoppedTypingTimeThresholdWhenNegativeValueIsSet(int negativeThreshold)
 	{
-		// arrange
 		var behavior = new UserStoppedTypingBehavior
 		{
 			StoppedTypingTimeThreshold = 250
 		};
 
-		// act
 		behavior.StoppedTypingTimeThreshold = negativeThreshold;
 
-		// assert - .NET MAUI ignores a value rejected by the validation of the property (logging a warning) instead of throwing
+		// .NET MAUI ignores a value rejected by the validation of the property (logging a warning) instead of throwing.
 		Assert.Equal(250, behavior.StoppedTypingTimeThreshold);
 	}
 
 	[Fact]
 	public void ShouldKeepPreviousStoppedTypingTimeThresholdWhenBindingProvidesNegativeValue()
 	{
-		// arrange - the threshold is bound to the text of an Entry, as in the Sample app
+		// The threshold is bound to the text of an Entry, as in the Sample app.
 		var thresholdEntry = new Entry
 		{
 			Text = "250"
@@ -277,10 +274,8 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		behavior.SetBinding(UserStoppedTypingBehavior.StoppedTypingTimeThresholdProperty, new Binding(nameof(Entry.Text), source: thresholdEntry));
 		Assert.Equal(250, behavior.StoppedTypingTimeThreshold);
 
-		// act
 		thresholdEntry.Text = "-5";
 
-		// assert
 		Assert.Equal(250, behavior.StoppedTypingTimeThreshold);
 	}
 
@@ -289,7 +284,6 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	[InlineData(-5)]
 	public async Task ShouldExecuteCommandAfterPreviousStoppedTypingTimeThresholdWhenNegativeValueIsSet(int negativeThreshold)
 	{
-		// act
 		var executedText = await RunOnSingleThreadedSynchronizationContext(async () =>
 		{
 			var commandTCS = new TaskCompletionSource<string>();
@@ -302,14 +296,12 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 			return await commandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 		}, TestContext.Current.CancellationToken);
 
-		// assert
 		Assert.Equal("1", executedText);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShouldExecuteCommandOnceWithLatestTextWhenTextChangesSeveralTimesInOneMessageOfTheUIThread()
 	{
-		// act
 		var executedTexts = await GetCommandExecutionsAfterTextChanges(entry =>
 		{
 			entry.Text = "a";
@@ -317,7 +309,6 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 			entry.Text = "abc";
 		}, TestContext.Current.CancellationToken);
 
-		// assert
 		var executedText = Assert.Single(executedTexts);
 		Assert.Equal("abc", executedText);
 	}
@@ -325,10 +316,9 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShouldExecuteCommandOnceWithLatestTextWhenKeystrokesAreQueuedOnTheUIThread()
 	{
-		// arrange
 		const string typedText = "abcdefghijklmnopqrstuvwxyz0123";
 
-		// act - every keystroke is its own message of the UI thread, and all of them are queued before the behavior resumes, as in a typing burst
+		// Every keystroke is its own message of the UI thread, and all of them are queued before the behavior resumes, as in a typing burst.
 		var executedTexts = await GetCommandExecutionsAfterTextChanges(entry =>
 		{
 			var uiThread = SynchronizationContext.Current ?? throw new InvalidOperationException("The Text changes must run on a SynchronizationContext");
@@ -339,7 +329,6 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 			}
 		}, TestContext.Current.CancellationToken);
 
-		// assert
 		var executedText = Assert.Single(executedTexts);
 		Assert.Equal(typedText, executedText);
 	}
@@ -347,7 +336,7 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task ShouldExecuteCommandOnceWithLatestTextWhenTextChangesWhileTheElapsedWaitIsQueuedOnTheUIThread()
 	{
-		// act - the UI thread is busy until the wait for "a" has elapsed, so the change to "ab" is handled before the continuation of that wait
+		// The UI thread is busy until the wait for "a" has elapsed, so the change to "ab" is handled before the continuation of that wait.
 		var executedTexts = await GetCommandExecutionsAfterTextChanges(entry =>
 		{
 			entry.Text = "a";
@@ -355,13 +344,11 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 			entry.Text = "ab";
 		}, TestContext.Current.CancellationToken);
 
-		// assert
 		var executedText = Assert.Single(executedTexts);
 		Assert.Equal("ab", executedText);
 	}
 
-	// Changes the Text on a single-threaded SynchronizationContext and returns the text of every execution of the Command until five thresholds
-	// after the first one: an outdated execution and the execution with the latest text both come within that time.
+	// Waits five thresholds after the first execution, so that an outdated execution is recorded as well as the one with the latest text.
 	static Task<List<string>> GetCommandExecutionsAfterTextChanges(Action<Entry> changeText, CancellationToken token) => RunOnSingleThreadedSynchronizationContext(async () =>
 	{
 		var executedTexts = new List<string>();
@@ -380,8 +367,8 @@ public class UserStoppedTypingBehaviorTests() : BaseBehaviorTest<UserStoppedTypi
 		return executedTexts;
 	}, token);
 
-	// Runs the test on a single-threaded SynchronizationContext, like the UI thread of an app: the continuations of the behavior come back to
-	// this thread, and an exception thrown by the async void handler of the behavior fails the test instead of terminating the test process
+	// The continuations of the behavior come back to one thread, like on the UI thread of an app, and an exception thrown by the async void
+	// handler of the behavior fails the test instead of terminating the test process.
 	static Task<T> RunOnSingleThreadedSynchronizationContext<T>(Func<Task<T>> test, CancellationToken token) =>
 		Task.Run(() => AsyncContext.Run(test), token);
 

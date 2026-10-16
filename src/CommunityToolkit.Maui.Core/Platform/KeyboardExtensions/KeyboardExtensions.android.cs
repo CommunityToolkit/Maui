@@ -40,7 +40,7 @@ public static partial class KeyboardExtensions
 	static bool ShowKeyboard(this AView view) => view switch
 	{
 		TextView textView => textView.ShowKeyboard(),
-		// The text editor of the group, as MAUI finds the query editor of a SearchView: its first TextView is not necessarily editable
+		// EditText rather than TextView, as MAUI finds the query editor of a SearchView: its first TextView is not necessarily editable
 		// (a SearchView starts with its zero-size search badge)
 		ViewGroup viewGroup => viewGroup.GetFirstChildOfType<EditText>()?.ShowKeyboard() is true,
 		_ => false,

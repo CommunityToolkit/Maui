@@ -5,12 +5,9 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// Replaces the activity that <c>Platform.CurrentActivity</c> reports for as long as it is alive, then puts the original back. Code that
-/// asks for the current activity (MauiMediaElement's full-screen handling) can then be run in the situations that a running app does not
-/// produce on demand: no current activity, or an activity that has no window. Only the UI thread may be using the activity meanwhile, so
-/// keep the scope short and call it on the UI thread.
-/// </summary>
+// Lets the code that asks Platform.CurrentActivity for the activity (MauiMediaElement's full-screen handling) run in situations that a
+// running app does not produce on demand: no current activity, or an activity that has no window. Only the UI thread may be using the
+// activity meanwhile, so keep the scope short and call it on the UI thread.
 public sealed class ActivityStateOverride : IDisposable
 {
 	// ActivityStateManager.SetDefault is internal; the field behind ActivityStateManager.Default is the only way to swap the implementation.
@@ -18,7 +15,6 @@ public sealed class ActivityStateOverride : IDisposable
 
 	readonly IActivityStateManager original = ActivityStateManager.Default;
 
-	/// <param name="currentActivity">What <c>Platform.CurrentActivity</c> returns while the override is active.</param>
 	public ActivityStateOverride(Activity? currentActivity) => defaultImplementationField.SetValue(null, new FixedActivityStateManager(currentActivity));
 
 	public void Dispose() => defaultImplementationField.SetValue(null, original);

@@ -5,13 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of the `#if ANDROID` block of Core's AppBuilderExtensions.UseMauiCommunityToolkitCore. The option that turns the modal
-// status bar support on is an app-wide static, so this class runs alone and restores it.
-// - Android (CoreAppBuilderExtensionsTests.android.cs): the block registers the Android services and the OnCreate lifecycle event. The
-//   tests of the completion event live there too, because on Android UseMauiCommunityToolkitCore runs the platform block inside the same
-//   call, before it raises the event.
-// - Every other platform (this file): the block is compiled out, which EnabledStatusBarOptionRegistersNothingOnThisPlatform checks. The
-//   completion event itself is shared code that CommunityToolkit.Maui.UnitTests (Extensions/AppBuilderExtensionsTests) covers.
+// The option that turns the modal status bar support on is an app-wide static, so this class runs alone and restores it.
+// The tests of the completion event live in the Android partial because there UseMauiCommunityToolkitCore runs the platform block inside the
+// same call, before it raises the event. On every other platform the event is shared code that CommunityToolkit.Maui.UnitTests covers
+// (Extensions/AppBuilderExtensionsTests).
 [Category(TestCategory.CoreAppBuilderExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 #if ANDROID
@@ -21,8 +18,7 @@ public partial class CoreAppBuilderExtensionsTests : CommunityToolkitHandlerTest
 #endif
 {
 #if !ANDROID
-	// The `#if ANDROID` block is the only thing the option adds to the app: elsewhere, the option on and the option off build the same
-	// services (a lifecycle event registration is a service too), and the completion event is still raised.
+	// A lifecycle event registration is a service too, so comparing the services covers the whole `#if ANDROID` block.
 	[Fact]
 	public void EnabledStatusBarOptionRegistersNothingOnThisPlatform()
 	{
@@ -38,7 +34,7 @@ public partial class CoreAppBuilderExtensionsTests : CommunityToolkitHandlerTest
 			var withoutOption = DescribeServices(MauiApp.CreateBuilder().UseMauiCommunityToolkitCore(options => options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(false)));
 
 			Assert.Equal(withoutOption, withOption);
-			// The Android service does not even exist here (DialogFragmentService.android.cs).
+			// The type exists only on Android (DialogFragmentService.android.cs), so it is matched by name.
 			Assert.DoesNotContain(withOption, service => service.Contains("DialogFragmentService", StringComparison.Ordinal));
 		}
 		finally
@@ -48,7 +44,7 @@ public partial class CoreAppBuilderExtensionsTests : CommunityToolkitHandlerTest
 		}
 	}
 
-	// Every registration of the builder as "service type => implementation", sorted (the registrations are compared as a multiset).
+	// Sorted, because the registrations are compared as a multiset.
 	static List<string> DescribeServices(MauiAppBuilder builder) => [.. builder.Services.Select(Describe).Order(StringComparer.Ordinal)];
 
 	static string Describe(ServiceDescriptor descriptor)

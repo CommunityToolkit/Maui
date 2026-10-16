@@ -9,15 +9,11 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public abstract partial class StatusBarTestBase
 {
-	/// <summary>Hosts <paramref name="page"/> like <see cref="AttachViewAndRun"/>.</summary>
 	protected Task AttachPageAndRun(Page page, Func<IPlatformViewHandler, Task> action) => AttachViewAndRun(page, action);
 
-	/// <summary>
-	/// Hosts <paramref name="view"/> in the runner's activity, waits until it is loaded, runs <paramref name="action"/> on the UI
-	/// thread and removes the view again (Unloaded). Like AttachAndRun, but it does not wait for the view's root to report IsLaidOut,
-	/// which a MAUI page's root view never does on Android, and it leaves no layout listener or timer behind that keeps the platform
-	/// view alive for a second after the test (AttachAndRun's WaitForLayout does, which a leak test would see).
-	/// </summary>
+	// Not AttachAndRun: it waits for the view's root to report IsLaidOut, which a MAUI page's root view never does on Android, and its
+	// WaitForLayout leaves a layout listener and timer behind that keep the platform view alive for a second after the test, which a leak
+	// test would see.
 	protected Task AttachViewAndRun(VisualElement view, Func<IPlatformViewHandler, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
@@ -68,16 +64,15 @@ public abstract partial class StatusBarTestBase
 	protected static int ExpectedOverlayHeight(AWindow window) =>
 		(OperatingSystem.IsAndroidVersionAtLeast(36) ? AndroidSystemBars.StatusBarInset(window) : AndroidSystemBars.FrameworkDimension("status_bar_height")) + overlayHeightPadding;
 
-	// What SetColor does to the window, per Android version: API < 35 sets the window's status bar color; API 35+ adds a tagged overlay
-	// view above the content (API 36 posts it, so wait for it). The window flags do not depend on the color, transparent or not (#2351: a
-	// transparent color used to lay the window out without limits, behind the status and navigation bars): the window draws the system bar
-	// backgrounds and its decor no longer fits the system windows. API < 30 also clears LayoutNoLimits; API 30+ leaves it as it was.
+	// The window flags do not depend on the color, transparent or not (#2351: a transparent color used to lay the window out without limits,
+	// behind the status and navigation bars).
 	protected async Task AssertStatusBarShowsAsync(Color color, TestDialogFragment? dialog = null)
 	{
 		var expected = color.ToPlatform();
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
+			// API 36 posts the overlay creation, so wait for it.
 			await AssertEventuallyOnMainThread(
 				() => AndroidSystemBars.FindOverlay(dialog?.DialogWindow ?? AndroidSystemBars.ActivityWindow, AndroidSystemBars.StatusBarOverlayTag) is Android.Views.View overlay && AndroidSystemBars.BackgroundColor(overlay) == expected,
 				$"The status bar overlay did not show {color}.");
@@ -124,10 +119,6 @@ public abstract partial class StatusBarTestBase
 		});
 	}
 
-	/// <summary>
-	/// Asserts that nothing changed the status bar since <see cref="ResetNativeStateAsync"/>: no overlay, and the flags, the decor's
-	/// system UI layout flags, the color and the light appearance of the runner's window as they were before the first status bar test.
-	/// </summary>
 	protected Task AssertStatusBarUntouchedAsync() =>
 		InvokeOnMainThreadAsync(() =>
 		{
@@ -148,19 +139,15 @@ public abstract partial class StatusBarTestBase
 			}
 		});
 
-	/// <summary>
-	/// Asserts that nothing changed the status bar's color since <see cref="ResetNativeStateAsync"/>. Same as <see cref="AssertStatusBarUntouchedAsync"/> here;
-	/// on iOS a status bar view without a color can exist without the color having been applied.
-	/// </summary>
+	// The same as AssertStatusBarUntouchedAsync here; on iOS a status bar view without a color can exist without the color having been applied.
 	protected Task AssertStatusBarColorNotAppliedAsync() => AssertStatusBarUntouchedAsync();
 
-	/// <summary>Asserts the light/dark appearance of the status bar icons: DarkContent turns on AppearanceLightStatusBars, the other styles turn it off.</summary>
+	// Android's light status bars have dark content, hence DarkContent.
 	protected Task AssertStatusBarStyleAsync(StatusBarStyle style) =>
 		InvokeOnMainThreadAsync(() => Assert.Equal(style is StatusBarStyle.DarkContent, AndroidSystemBars.IsLightStatusBars(AndroidSystemBars.ActivityWindow)));
 
-	// What NavigationBar's color mapping does to the window, per Android version: API 35+ adds a tagged overlay view to the decor view,
-	// laid out over the window's navigation bar (synchronously, from the insets that the window has) and drawn above the content; older
-	// versions set the window's navigation bar color and add nothing.
+	// Unlike the status bar overlay, the navigation bar overlay is laid out synchronously, from the insets that the window has, so nothing is
+	// waited for.
 	protected Task AssertNavigationBarShowsAsync(Color color, TestDialogFragment? dialog = null) =>
 		InvokeOnMainThreadAsync(() =>
 		{
@@ -175,7 +162,7 @@ public abstract partial class StatusBarTestBase
 				Assert.Equal(AndroidSystemBars.NavigationBarLayout(window), (parameters.Width, parameters.Height, parameters.Gravity));
 				AndroidSystemBars.AssertDrawnAboveTheContent(window, overlay);
 
-				// The decor view's own navigation bar background (a scrim behind three-button navigation), once the decor view has one
+				// The decor view's own navigation bar background (a scrim behind three-button navigation), once the decor view has one.
 				if (window.DecorView.FindViewById(Android.Resource.Id.NavigationBarBackground) is Android.Views.View navigationBarBackground
 					&& AndroidSystemBars.Decor(window).IndexOfChild(navigationBarBackground) >= 0)
 				{
@@ -189,29 +176,24 @@ public abstract partial class StatusBarTestBase
 			}
 		});
 
-	/// <summary>
-	/// Asserts that nothing changed the navigation bar since <see cref="ResetNativeStateAsync"/>: no overlay, and the color and the light
-	/// appearance of the runner's window as they were before the first status bar test (a dialog's window: no light appearance).
-	/// </summary>
 	protected Task AssertNavigationBarUntouchedAsync(TestDialogFragment? dialog = null) =>
 		InvokeOnMainThreadAsync(() =>
 		{
 			var window = dialog?.DialogWindow ?? AndroidSystemBars.ActivityWindow;
 			var original = AndroidSystemBars.OriginalState;
 			Assert.Empty(AndroidSystemBars.FindTagged(window, AndroidSystemBars.NavigationBarOverlayTag));
+			// A dialog's window has no light appearance.
 			Assert.Equal(dialog is null && original.LightNavigationBars, AndroidSystemBars.IsLightNavigationBars(window));
 
-			// Before API 35 the window keeps its navigation bar color; from API 35 on it ignores window colors and reports transparent.
+			// From API 35 on the window ignores window colors and reports transparent.
 			if (dialog is null && !OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
 				Assert.Equal(original.NavigationBarColor, window.NavigationBarColor);
 			}
 		});
 
-	/// <summary>
-	/// Asserts the light/dark appearance of the navigation bar icons: DarkContent turns on AppearanceLightNavigationBars, the other styles turn it
-	/// off, and the system does not force light navigation bars over it (Android 15+, see <see cref="AndroidSystemBars.ForceLightNavigationBarsAppearance"/>).
-	/// </summary>
+	// Android's light navigation bars have dark content, hence DarkContent. Android 15+ can force light navigation bars whatever the window's
+	// own appearance says (see AndroidSystemBars.ForceLightNavigationBarsAppearance).
 	protected Task AssertNavigationBarStyleAsync(NavigationBarStyle style, TestDialogFragment? dialog = null) =>
 		InvokeOnMainThreadAsync(() =>
 		{

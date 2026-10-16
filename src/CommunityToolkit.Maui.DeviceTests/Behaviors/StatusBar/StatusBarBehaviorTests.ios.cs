@@ -9,13 +9,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// StatusBarBehavior's iOS-only code: it sizes the status bar view (StatusBar.SetBarSize, with the page's UseSafeArea setting) when it
-// attaches to a loaded page, whenever the page's size changes and whenever the display changes, and stops doing so when it detaches.
-// SetBarSize is the only code that moves an existing status bar view, so these tests give the views a frame that the toolkit never
-// produces: a frame that changed proves that SetBarSize ran, whatever frame it computed.
-// The status bar code changes every window of UIApplication.Windows, and that list is not only the runner's window: once any text input
-// was first responder in the app run (another feature's test), UIKit keeps a second window of the scene listed for good. So the tests
-// check each window's status bar view (AssertStatusBarShows and the helpers below) and never count the views of all windows together.
+// StatusBar.SetBarSize is the only code that moves an existing status bar view, so these tests give the views a frame that the toolkit
+// never produces: a frame that changed proves that SetBarSize ran, whatever frame it computed.
 // The style: on .NET 10 the behavior calls StatusBar.SetStyle (UIApplication.SetStatusBarStyle, which the runner ignores: its Info.plist keeps view
 // controller-based status bar appearance); on .NET 11 it sets Window.StatusBarTheme of its page's window, which the tests show in a .NET MAUI
 // window (RunInMauiWindowAsync).
@@ -33,7 +28,7 @@ public partial class StatusBarBehaviorTests
 
 		await AttachPageAndRun(page, async _ =>
 		{
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			page.Behaviors.Add(behavior); // the page is loaded: the behavior attaches synchronously
 
@@ -56,7 +51,7 @@ public partial class StatusBarBehaviorTests
 
 		await AttachPageAndRun(page, async _ =>
 		{
-			await GiveTheStatusBarViewsTheSentinelFrameAsync(); // the views are red
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			page.Behaviors.Add(behavior);
 
@@ -64,7 +59,7 @@ public partial class StatusBarBehaviorTests
 			AssertEveryStatusBarViewHasTheSentinelFrame();
 			AssertStatusBarShows(Colors.Red);
 
-			StatusBarEventRaisers.RaiseNavigatedTo(page); // applies the color, but only SetBarSize moves the view
+			StatusBarEventRaisers.RaiseNavigatedTo(page);
 
 			AssertEveryStatusBarViewHasTheSentinelFrame();
 			AssertStatusBarShows(Colors.Green);
@@ -82,7 +77,7 @@ public partial class StatusBarBehaviorTests
 
 		await AttachPageAndRun(page, async _ =>
 		{
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			page.Behaviors.Add(behavior);
 
@@ -120,7 +115,7 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			page.Behaviors.Add(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			ResizePage(page);
 
@@ -140,7 +135,7 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			page.Behaviors.Add(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			ResizePage(page);
 
@@ -159,11 +154,11 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			page.Behaviors.Add(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			ResizePage(page);
 
-			// The size hook is not gated by ApplyOn: it only moves the view, the color is still the one that was there.
+			// The size hook only moves the view: the color is still the one that was there.
 			AssertNoStatusBarViewHasTheSentinelFrame();
 			AssertStatusBarShows(Colors.Red);
 		});
@@ -182,7 +177,7 @@ public partial class StatusBarBehaviorTests
 			page.Behaviors.Add(behavior);
 			page.Behaviors.Remove(behavior);
 			Assert.False(behavior.IsAttached);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			ResizePage(page);
 
@@ -201,14 +196,14 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			page.Behaviors.Add(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
 			AssertNoStatusBarViewHasTheSentinelFrame();
 
 			page.Behaviors.Remove(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
@@ -228,7 +223,7 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			page.Behaviors.Add(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync();
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
@@ -242,7 +237,7 @@ public partial class StatusBarBehaviorTests
 		SetupBuilder();
 		var behavior = await CreateBehaviorAsync();
 		await ResetNativeStateAsync();
-		await GiveTheStatusBarViewsTheSentinelFrameAsync();
+		await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 		// The behavior only listens while it is attached to a page; calling its handler directly shows what the page check is for.
 		await InvokeOnMainThreadAsync(() =>
@@ -274,8 +269,7 @@ public partial class StatusBarBehaviorTests
 	}
 
 #if NET11_0_OR_GREATER
-	// .NET 11: the behavior sets Window.StatusBarTheme of its page's window, and UIKit takes the style from the
-	// view controllers of .NET MAUI, which return the style of their window's theme.
+	// .NET 11: UIKit takes the style from the view controllers of .NET MAUI, which return the style of their window's theme.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
 	[InlineData(StatusBarWindowPage.NavigationPage)]
@@ -300,8 +294,8 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// Each step changes the style that the step before set (LightContent after Default and after DarkContent, DarkContent after LightContent,
-	// Default after LightContent), and only the style: the status bar views keep the color that the test gave them, not the behavior's.
+	// Each step changes the style that the step before set, and only the style: the status bar views keep the color that the test gave them,
+	// not the behavior's.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
 	[InlineData(StatusBarWindowPage.NavigationPage)]
@@ -374,9 +368,8 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// A real navigation: the NavigationPage pushes the page with its animation, and .NET MAUI raises NavigatedTo when the push finished, after the
-	// page loaded and the behavior attached. (Without the animation MAUI 11 RC1 raises NavigatedTo before the page loads, before the behavior
-	// attaches and starts listening.)
+	// The push is animated: .NET MAUI then raises NavigatedTo when the push finished, after the page loaded and the behavior attached.
+	// Without the animation MAUI 11 RC1 raises NavigatedTo before the page loads, before the behavior attaches and starts listening.
 	[Fact]
 	public async Task StyleAppliedOnNavigationReachesTheStatusBarWhenANavigationPagePushesThePage()
 	{
@@ -404,7 +397,6 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// The style belongs to the window of the behavior's page, not to the app: another window keeps its own.
 	[Fact]
 	public async Task StyleChangesOnlyTheStatusBarThemeOfTheWindowOfThePage()
 	{
@@ -426,8 +418,6 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// The behavior has a status bar to change only while it is attached to a page of a window: before it is attached and after it was detached,
-	// a new style changes no window.
 	[Fact]
 	public async Task StyleChangeWhileTheBehaviorIsNotAttachedChangesNoWindow()
 	{
@@ -443,7 +433,7 @@ public partial class StatusBarBehaviorTests
 			Assert.False(behavior.IsAttached);
 			Assert.Equal(StatusBarTheme.Default, mauiWindow.Window.StatusBarTheme);
 
-			page.Behaviors.Add(behavior); // the page is loaded: the behavior attaches and applies its style
+			page.Behaviors.Add(behavior);
 
 			Assert.True(behavior.IsAttached);
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
@@ -458,8 +448,7 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// A page outside of any .NET MAUI window (its view hosted by native code, as with .NET MAUI embedding or the runner's AttachAndRun) has no
-	// window whose status bar the behavior could change: it attaches, and its style changes nothing.
+	// A page whose view is hosted by native code (as with .NET MAUI embedding or the runner's AttachAndRun) has no window.
 	[Fact]
 	public async Task StyleOfAPageWithoutAWindowChangesNoStatusBar()
 	{
@@ -481,7 +470,6 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// StatusBar.SetStyle throws for a StatusBarStyle that is not defined: the behavior does too, also while it has no window to set the style of.
 	[Fact]
 	public async Task UndefinedStyleThrowsNotSupportedExceptionWhileTheBehaviorIsNotAttached()
 	{
@@ -493,9 +481,8 @@ public partial class StatusBarBehaviorTests
 		Assert.Equal("StatusBarStyle 42 is not yet supported on iOS", exception.Message);
 	}
 
-	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to false
-	// (with false it shows the style of the whole app, which the runner ignores): the behavior still sets the theme of its window, and says that UIKit
-	// ignores the style only for false.
+	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to
+	// false (with false it shows the style of the whole app, which the runner ignores).
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -544,8 +531,6 @@ public partial class StatusBarBehaviorTests
 		});
 	}
 
-	// The behavior sets a style, of its window or of the whole app, only while it is attached to a page of a window: without a window it sets none,
-	// and says nothing.
 	[Fact]
 	public async Task StyleOfABehaviorWithoutAWindowDoesNotTraceThatUIKitIgnoresIt()
 	{
@@ -574,7 +559,7 @@ public partial class StatusBarBehaviorTests
 		await AttachPageAndRun(page, async _ =>
 		{
 			page.Behaviors.Add(behavior);
-			await GiveTheStatusBarViewsTheSentinelFrameAsync(); // the views are red
+			await AddRedStatusBarViewsWithTheSentinelFrameAsync();
 
 			await AssertUpdatesTheStatusBarAppearanceAsync(() => behavior.StatusBarStyle = StatusBarStyle.DarkContent, keepPresentingViewLoaded: true);
 
@@ -585,8 +570,7 @@ public partial class StatusBarBehaviorTests
 	}
 #endif
 
-	// StatusBar.SetColor adds a status bar view to every window; the views get a frame that only SetBarSize replaces.
-	static Task GiveTheStatusBarViewsTheSentinelFrameAsync() =>
+	static Task AddRedStatusBarViewsWithTheSentinelFrameAsync() =>
 		InvokeOnMainThreadAsync(static () =>
 		{
 			StatusBar.SetColor(Colors.Red);
@@ -613,7 +597,6 @@ public partial class StatusBarBehaviorTests
 		Assert.All(views, static view => Assert.NotEqual(sentinelFrame.ToString(), view.Frame.ToString()));
 	}
 
-	// With the page's UseSafeArea setting the status bar view is as high as the window's top safe area inset (SetBarSize(true)).
 	static void AssertEveryStatusBarViewHasTheSafeAreaHeight()
 	{
 		var windows = IosStatusBarViews.WindowsWithStatusBar();

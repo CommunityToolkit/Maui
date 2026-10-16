@@ -10,20 +10,14 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
-	// The element's own background colour (the app's), and the colour SetBackgroundColor left on the element (with the animation still on
-	// its way)
 	Color? defaultBackgroundColor, appliedBackgroundColor;
 
-	// Whether the colour on the element is one the behavior set in the place of the app's colour, whether the app's colour is a value of the
-	// element itself (rather than one from a binding, DynamicResource, AppThemeBinding or Style), and whether a state update since the attach
-	// handled the background colour
 	bool isBackgroundColorApplied, isAppBackgroundColorLocal, hasUpdatedBackgroundColor;
 
 	Task<bool>? backgroundColorAnimation;
 
-	// The animations of the state update that is running, with their element, for AbortAnimations and Dispose (on a detach the behavior has
-	// already lost its Element). Each state update has its own, which it clears when its animations are over: an element the behavior does
-	// not animate is left alone, with the animations the app runs on it.
+	// The animations keep their own element because on a detach the behavior has already lost its Element. A state update clears them when its
+	// animations are over: an element the behavior does not animate is left alone, with the animations the app runs on it.
 	StateAnimations? stateAnimations;
 
 	int stateChangeCount;
@@ -236,10 +230,10 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	// Forgets the element of a detach. While one of the behavior's background colours is on the element, the element gets its own colour back
-	// first: no later state change of the behavior would give it back, and the next attach would take the behavior's colour for the app's.
 	internal void Reset(VisualElement element)
 	{
+		// The element gets its own colour back first: no later state change of the behavior would give it back, and the next attach would take
+		// the behavior's colour for the app's.
 		GiveBackAppBackgroundColorAtDetach(element);
 
 		defaultBackgroundColor = appliedBackgroundColor = null;
@@ -1003,16 +997,13 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		return await AnimateBackgroundColor(element, stateBackgroundColor, duration, easing, false, token);
 	}
 
-	// A state without a background colour of its own shows the app's colour. While the behavior's colour is on the element, the behavior
-	// gives the app's colour back, at once or at the end of the animation to it (GiveBackAppBackgroundColor).
 	async Task<bool> ShowAppBackgroundColor(VisualElement element, bool isFirstBackgroundColorUpdate, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (!isBackgroundColorApplied)
 		{
-			// The element shows the app's colour. An element without a colour is painted with TouchBehaviorDefaults.DefaultBackgroundColor
-			// by the state update of the attach, which is the element's own colour from then on: a later state without a colour of its own
-			// and the detach leave it on the element. Taking it away would change how the element looks at a touch that configures no
-			// colour (an Android Button would get its Material fill back).
+			// An element without a colour is painted with TouchBehaviorDefaults.DefaultBackgroundColor by the state update of the attach, which is
+			// the element's own colour from then on: a later state without a colour of its own and the detach leave it on the element. Taking it
+			// away would change how the element looks at a touch that configures no colour (an Android Button would get its Material fill back).
 			if (isFirstBackgroundColorUpdate && element.BackgroundColor is null)
 			{
 				backgroundColorAnimation = null;
@@ -1051,8 +1042,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		{
 			var result = await animation.WaitAsync(token);
 
-			// The animation to the app's colour reached its end: the app gets its colour back, unless a state change took the background
-			// colour over meanwhile (its cancellation is requested before it stops the animation)
+			// A state change may have taken the background colour over meanwhile: its cancellation is requested before it stops the animation
 			if (givesBackAppBackgroundColor && !token.IsCancellationRequested && backgroundColorAnimation == animation)
 			{
 				GiveBackAppBackgroundColor(element);
@@ -1071,10 +1061,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	// The detach (the behavior's removal, or the unload of its element) while the behavior's colour is on the element: a colour animation of the
-	// behavior is stopped first, while it is still the behavior's (MAUI completes an animation that another one with the same handle took the
-	// place of), as it would go on writing the behavior's colours. A colour that the app set since the behavior's last one took the place of
-	// the behavior's and stays.
+	// A colour animation of the behavior is stopped first, while it is still the behavior's (MAUI completes an animation that another one with
+	// the same handle took the place of), as it would go on writing the behavior's colours. A colour that the app set since the behavior's
+	// last one took the place of the behavior's and stays.
 	void GiveBackAppBackgroundColorAtDetach(VisualElement element)
 	{
 		var animation = backgroundColorAnimation;
@@ -1097,10 +1086,10 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	// Takes the behavior's colour off the element. Clearing the value the behavior set brings back what MAUI applies from the app's binding,
-	// DynamicResource, AppThemeBinding or Style, with its latest value (a theme switch or a change of the source while the behavior's colour
-	// was shown included). A colour that the app had set on the element itself was replaced by the behavior's and is set again in its place,
-	// in one change: clearing the behavior's value first would show the element without that colour for a moment.
+	// Clearing the value the behavior set brings back what MAUI applies from the app's binding, DynamicResource, AppThemeBinding or Style, with
+	// its latest value (a theme switch or a change of the source while the behavior's colour was shown included). A colour that the app had set
+	// on the element itself was replaced by the behavior's and is set again in its place, in one change: clearing the behavior's value first
+	// would show the element without that colour for a moment.
 	void GiveBackAppBackgroundColor(VisualElement element)
 	{
 		if (isAppBackgroundColorLocal)
@@ -1116,9 +1105,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		defaultBackgroundColor = appliedBackgroundColor = element.BackgroundColor;
 	}
 
-	// Whether the background colour the element shows is a value of the element itself, which a colour the behavior sets replaces, rather than
-	// one that MAUI applies from a binding, DynamicResource, AppThemeBinding or Style, which a colour the behavior sets only hides. Clearing the
-	// element's value tells them apart: it changes nothing in the second case, and in the first the value is set back at once.
+	// A value of the element itself is replaced by a colour the behavior sets, while one that MAUI applies from a binding, DynamicResource,
+	// AppThemeBinding or Style is only hidden by it. Clearing the element's value tells them apart: it changes nothing in the second case, and
+	// in the first the value is set back at once.
 	static bool IsLocalBackgroundColor(VisualElement element)
 	{
 		var backgroundColor = element.BackgroundColor;
@@ -1238,17 +1227,15 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	// Records an animation that the running state update starts on its element, under the handle MAUI runs it with. The state update starts
-	// its animations without its token, which only ends the wait for them: MAUI 11 answers a cancelled token by aborting the handle later, on
-	// the element's dispatcher, when the handle can belong to the next state update's animation or to the app's. The behavior stops its own
-	// animations itself, while they are still its own (StateAnimations.Abort).
+	// The state update starts its animations without its token, which only ends the wait for them: MAUI 11 answers a cancelled token by
+	// aborting the handle later, on the element's dispatcher, when the handle can belong to the next state update's animation or to the app's.
+	// The behavior stops its own animations itself, while they are still its own (StateAnimations.Abort).
 	Task<bool> TrackAnimation(string handle, Task<bool> animation)
 	{
 		stateAnimations?.Add(handle, animation);
 		return animation;
 	}
 
-	// The animations that one state update started on its element, each with the handle MAUI runs it under
 	sealed class StateAnimations(VisualElement element)
 	{
 		readonly List<(string Handle, Task Animation)> animations = [];
@@ -1261,11 +1248,10 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			}
 		}
 
-		// Stops the animations of the state update that are still running. MAUI completes an animation when another animation with the same
-		// handle takes its place on the element (one the app starts, or one of a later state update): the handle of a completed animation
-		// belongs to that other animation, which is left alone. The check and the abort run together on the element's dispatcher, so that
-		// an animation cannot take the place of the behavior's in between. A dispatcher that takes no more work (the app is closing) has no
-		// animations left to stop.
+		// MAUI completes an animation when another animation with the same handle takes its place on the element (one the app starts, or one of a
+		// later state update): the handle of a completed animation belongs to that other animation, which is left alone. The check and the abort
+		// run together on the element's dispatcher, so that an animation cannot take the place of the behavior's in between. A dispatcher that
+		// takes no more work (the app is closing) has no animations left to stop.
 		public void Abort()
 		{
 			var dispatcher = element.Dispatcher;

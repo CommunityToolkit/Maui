@@ -14,7 +14,7 @@ public abstract partial class AlertsTestBase
 
 	protected ToastObserver ToastObserver => toastObserver ?? throw new InvalidOperationException($"{nameof(PreparePlatformAsync)} was not called, or the test class does not observe toasts.");
 
-	// Only the Toast tests need the observer of the system's toast events: the Snackbar tests read the views of the activity.
+	// Only the Toast tests need the toast observer: the Snackbar tests read the views of the activity.
 	protected virtual bool ObservesToasts => false;
 
 	// The headless runner's application has no MAUI Window, and Snackbar reads Application.Current.Windows[0] and the application
@@ -22,18 +22,15 @@ public abstract partial class AlertsTestBase
 	// carries this test's services. CleanUpAlertsAsync puts the runner's application back.
 	protected async Task PreparePlatformAsync()
 	{
-		// The toasts are observed through the instrumentation of the headless runner (XHarness, CI). The visual runner, which runs the
-		// RequiresUserInteraction tests by hand, has no instrumentation.
 		Skip.If(ObservesToasts && MauiTestInstrumentation.Current is null, "The Toast tests observe toasts through the UiAutomation of the headless runner's instrumentation, which the visual runner does not have.");
 
 		await InvokeOnMainThreadAsync(() => InstallTestApplication(new ContentPage()));
 
 		if (ObservesToasts)
 		{
-			// UiAutomation connects on its own thread and delivers the accessibility events (the text of every toast) to the observer.
-			// Connecting it switches an accessibility service on for the whole process; CleanUpAlertsAsync switches it off again, so that
-			// the tests that run later, of any area of the app, see no accessibility service (see ToastObserver). Only a service that this
-			// test switches on is switched off: one that already runs (a real accessibility service of the device) stays as it is.
+			// Connecting the UiAutomation switches an accessibility service on for the whole process; CleanUpAlertsAsync switches it off again,
+			// so that the tests that run later, of any area of the app, see no accessibility service (see ToastObserver). Only a service that
+			// this test switches on is switched off: one that already runs (a real accessibility service of the device) stays as it is.
 			var accessibilityManager = GetAccessibilityManager();
 			releaseAccessibilityService = !accessibilityManager.IsEnabled;
 			toastObserver = await Task.Run(() => ToastObserver.Create(MauiTestInstrumentation.Current.UiAutomation ?? throw new InvalidOperationException("The instrumentation has no UiAutomation.")));
@@ -65,12 +62,11 @@ public abstract partial class AlertsTestBase
 		return application;
 	}
 
-	// Application.Current can also be set to null (or to the runner's application) by a test: remember what to restore.
+	// Application.Current can also be set to null (or to the runner's application) by a test.
 	protected void RememberApplicationToRestore() => previousApplication ??= Application.Current;
 
-	// Ends every test with nothing on screen. An alert that cannot be taken away (a test disposed its Java peer while it was shown, so
-	// neither Dismiss nor Cancel reaches it any more) would leak into the next test: a stray Snackbar.Dismissed event, or a toast that
-	// the system displays before the next test's toast. Such an alert is removed or waited out, and the test that left it fails.
+	// An alert that cannot be taken away (a test disposed its Java peer while it was shown, so neither Dismiss nor Cancel reaches it any
+	// more) would leak into the next test: a stray Snackbar.Dismissed event, or a toast that the system displays before the next test's toast.
 	async Task CleanUpAlertsAsync()
 	{
 		var leftovers = new List<string>();

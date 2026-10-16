@@ -8,10 +8,6 @@ using MediaPlayer;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.macios.cs: the playback speed. MediaElement.Speed is applied to AVPlayer.Rate while the media plays (setting the rate
-// starts playback) and to AVPlayer.DefaultRate, the rate that Play() starts at; the player's rate notification is the way the system
-// playback controls change the speed. The tests run against the real AVPlayer; the player's rates, time control status and Now Playing
-// info are the native state.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
@@ -39,8 +35,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// Small steps of the Speed reach the playing player as well: only a Speed within the rounding margin (0.005) of the native rate is taken
-	// for the rate that the player already has.
+	// Only a Speed within the rounding margin (0.005) of the native rate is taken for the rate that the player already has.
 	// Catches: a margin wide enough to swallow a real change of the Speed.
 	[Fact]
 	public async Task SmallSpeedChangesWhilePlayingSetTheNativeRate()
@@ -114,7 +109,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			mediaElement.Play();
 			await WaitUntilAsync(() => mediaElement.CurrentState is MediaElementState.Playing, "The player did not start playing.");
 
-			// A Speed of 0 pauses the media, and the next positive Speed resumes it (as on Android and Windows).
+			// A Speed of 0 pauses the media, as on Android and Windows.
 			mediaElement.Speed = 0;
 			Assert.Equal(0f, player.Rate);
 
@@ -385,7 +380,6 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
 			await DrainMainQueueAsync();
 
-			// A Speed of 0 pauses the media, and the next positive Speed starts it (PositiveSpeedAfterASpeedOfZeroResumesPlayback).
 			Assert.Equal(0.0, mediaElement.Speed);
 			Assert.Equal(0f, player.Rate);
 			Assert.Equal(MediaElementState.Paused, mediaElement.CurrentState);
@@ -467,7 +461,6 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 
 			mediaElement.Play();
 
-			// The clip ends after 0.3 s of media and starts over at the Speed.
 			await WaitUntilAsync(() => player.CurrentTime.Seconds < 1.0 && player.Rate > 0, "The media did not loop.");
 			Assert.Equal(2f, player.Rate);
 			Assert.Equal(2.0, mediaElement.Speed);

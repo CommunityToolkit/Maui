@@ -6,27 +6,18 @@ using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// A document provider that the test app owns, standing in for the one that the user picks a destination from. It serves the file
-/// descriptors that FileSaver opens with <c>ContentResolver.OpenFileDescriptor(uri, "wt")</c>, from files under the app's cache
-/// folder. Its URIs have the shape of the external storage provider's
-/// (<c>content://authority/document/primary%3Apath%2Fto%2Ffile</c>), so the toolkit's <c>ToPhysicalPath()</c> resolves them.
-/// Every descriptor it hands out reports its closing to the provider (<c>ParcelFileDescriptor.Open</c> with an
-/// <c>OnCloseListener</c>), which is how a test sees whether its client closed it, as a provider that commits on close would.
-/// </summary>
+// The document URIs have the shape of the external storage provider's (content://authority/document/primary%3Apath%2Fto%2Ffile), so the
+// toolkit's ToPhysicalPath() resolves them. Every descriptor the provider hands out reports its closing back to it, which is how a test sees
+// whether its client closed it, as a provider that commits on close would.
 [ContentProvider([FilesTestContentProvider.Authority], Name = FilesTestContentProvider.JavaName, Exported = false, GrantUriPermissions = false)]
 public sealed class FilesTestContentProvider : ContentProvider
 {
 	public const string Authority = "com.communitytoolkit.maui.devicetests.files";
 	public const string JavaName = "com.communitytoolkit.maui.devicetests.files.FilesTestContentProvider";
 
-	/// <summary>A document id with this prefix opens as a null descriptor (a provider that has no file for the document).</summary>
 	public const string NullDescriptorPrefix = "null-descriptor:";
 
-	/// <summary>
-	/// A document id with this prefix opens read-only whatever mode is asked for (a provider whose document cannot be written): its
-	/// backing file must exist, and writing to the descriptor fails.
-	/// </summary>
+	// Models a provider whose document cannot be written: it opens read-only whatever mode is asked for, so the backing file must exist.
 	public const string ReadOnlyDescriptorPrefix = "read-only-descriptor:";
 
 	static readonly Lock gate = new();
@@ -36,10 +27,8 @@ public sealed class FilesTestContentProvider : ContentProvider
 	static int cleanCloses;
 	static int failedCloses;
 
-	/// <summary>When true the provider opens "wt" as "rw": a provider that ignores the truncate flag.</summary>
 	public static bool IgnoreTruncateFlag { get; set; }
 
-	/// <summary>The modes that <c>OpenFile</c> was called with since <see cref="Reset"/>.</summary>
 	public static IReadOnlyList<string> OpenModes
 	{
 		get
@@ -53,22 +42,12 @@ public sealed class FilesTestContentProvider : ContentProvider
 
 	static string RootFolder => Path.Combine(AndroidApplication.Context.CacheDir?.AbsolutePath ?? throw new InvalidOperationException("The app has no cache folder."), "files-tests");
 
-	/// <summary>
-	/// How many descriptors handed out since <see cref="Reset"/> their client closed (the close listener reported no error). A
-	/// descriptor that is never closed and is finalized by the garbage collector counts in <see cref="FailedCloseCount"/> instead.
-	/// </summary>
 	public static int CleanCloseCount => Volatile.Read(ref cleanCloses);
 
-	/// <summary>
-	/// How many descriptors handed out since <see cref="Reset"/> were reported closed with an error: closed by their client with
-	/// <c>ParcelFileDescriptor.CloseWithError</c>, or finalized without being closed (leaked).
-	/// </summary>
+	// Includes a descriptor that was finalized without being closed (leaked), which the close listener reports as an error too.
 	public static int FailedCloseCount => Volatile.Read(ref failedCloses);
 
-	/// <summary>
-	/// The message of each error that a close reported since <see cref="Reset"/>. The one of a client's <c>CloseWithError(message)</c>
-	/// holds that message, which tells it apart from a descriptor that was leaked.
-	/// </summary>
+	// A client's CloseWithError(message) reports that message, which tells its close apart from a descriptor that was leaked.
 	public static IReadOnlyList<string> CloseErrors
 	{
 		get
@@ -98,11 +77,9 @@ public sealed class FilesTestContentProvider : ContentProvider
 		}
 	}
 
-	/// <summary>The URI of a document of this provider: <c>content://authority/document/{documentId}</c> (percent-encoded).</summary>
 	public static AndroidUri BuildDocumentUri(string documentId) =>
 		AndroidUri.Parse($"content://{Authority}/document/{AndroidUri.Encode(documentId)}") ?? throw new InvalidOperationException("Uri.Parse returned null.");
 
-	/// <summary>The file that backs the document with this id.</summary>
 	public static string GetBackingFile(string documentId) => Path.Combine(RootFolder, documentId.Replace(':', '/'));
 
 	public override bool OnCreate() => true;
@@ -150,8 +127,6 @@ public sealed class FilesTestContentProvider : ContentProvider
 
 	public override int Update(AndroidUri uri, ContentValues? values, string? selection, string[]? selectionArgs) => 0;
 
-	// Called on the main thread when the client closes the descriptor (no error), closes it with an error, or when it is finalized without
-	// being closed (error).
 	// Only closes of descriptors opened since the last Reset count, so a late finalization from an earlier test changes nothing.
 	sealed class CloseListener(int openedIn) : Java.Lang.Object, ParcelFileDescriptor.IOnCloseListener
 	{

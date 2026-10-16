@@ -8,9 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraViewHandler and CameraView on Windows, driven through WindowsNoConnectCameraViewHandler: it behaves like the real handler
-// except that it does not connect the camera automatically (see its comment), so the tests need no camera. The WINDOWS branch of
-// CameraViewHandler.shared.cs (MapIsAvailable) and the MediaPlayerElement platform view are covered here.
+// The tests use WindowsNoConnectCameraViewHandler, which does not connect the camera automatically, so they need no camera.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewHandlerWindowsTests : CameraHandlerTestBase
@@ -44,9 +42,9 @@ public class CameraViewHandlerWindowsTests : CameraHandlerTestBase
 		Assert.Contains(nameof(ICameraView.SelectedCamera), keys);
 	}
 
-	// Both constructors without custom mappers take CameraViewHandler's static PropertyMapper and CommandMapper when the handler is created.
-	// The test swaps them for probes that inherit every default mapping while it creates the handlers, so it sees which mappers each handler
-	// uses without reading MAUI internals.
+	// Without custom mappers the handlers take CameraViewHandler's static PropertyMapper and CommandMapper when they are created, so the test
+	// swaps them for probes that inherit every default mapping while it creates the handlers: it sees which mappers each handler uses without
+	// reading MAUI internals.
 	[Fact]
 	public async Task HandlerCreatedWithoutCustomMappersUsesTheMappersOfCameraViewHandler()
 	{
@@ -91,7 +89,6 @@ public class CameraViewHandlerWindowsTests : CameraHandlerTestBase
 			parameterless.Invoke("DeviceTestsProbe", 1);
 			withNullMappers.Invoke("DeviceTestsProbe", 2);
 
-			// Each handler kept the mappers that were current when it was created.
 			List<(CameraViewHandler Handler, float ZoomFactor)> expectedZoomFactors = [(parameterless, 2f), (withNullMappers, 3f)];
 			List<(CameraViewHandler Handler, object? Argument)> expectedCommandArguments = [(parameterless, 1), (withNullMappers, 2)];
 			Assert.Equal(expectedZoomFactors, mappedZoomFactors);
@@ -160,7 +157,7 @@ public class CameraViewHandlerWindowsTests : CameraHandlerTestBase
 		var view = new CameraView();
 		await InvokeOnMainThreadAsync(() => CreateHandler<WindowsNoConnectCameraViewHandler>(view));
 
-		// IsAvailable is mapped: a change makes the handler recompute it asynchronously from the devices.
+		// The handler recomputes IsAvailable asynchronously from the devices, hence the wait below.
 		await InvokeOnMainThreadAsync(() => ((ICameraView)view).IsAvailable = !expected);
 
 		await AssertHelpers.AssertEventually(
@@ -331,7 +328,6 @@ public class CameraViewHandlerWindowsTests : CameraHandlerTestBase
 			var mediaElement = Assert.IsType<MediaPlayerElement>(handler.PlatformView);
 			WindowsCameraEnvironment.AssignPlaceholderSource(mediaElement);
 
-			// Dispose(false) is the finalizer path: managed objects such as the camera manager are not touched.
 			handler.CallDispose(disposing: false);
 
 			Assert.Same(manager, handler.CameraManager);
@@ -386,8 +382,8 @@ public class CameraViewHandlerWindowsTests : CameraHandlerTestBase
 		});
 	}
 
-	// Whatever a capture without a MediaCapture ends with (see CaptureImageWithoutAMediaCaptureThrowsCameraException), it must release the
-	// semaphore that serializes captures.
+	// How a capture without a MediaCapture ends is covered by CaptureImageWithoutAMediaCaptureThrowsCameraException: this test only requires
+	// that it releases the semaphore that serializes captures.
 	[Fact]
 	public async Task CaptureImageWithoutAMediaCaptureReleasesTheSemaphoreWhenItEnds()
 	{

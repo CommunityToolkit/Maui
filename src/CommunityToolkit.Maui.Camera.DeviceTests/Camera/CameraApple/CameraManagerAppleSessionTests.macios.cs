@@ -4,9 +4,8 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The capture-session handling of CameraManager.macios.cs (start, stop and dispose of the preview, removal of inputs and recording
-// resources) against FakeCaptureSession (see AppleNativeFakes.macios.cs). A real session cannot be configured without a camera input, and on
-// the iOS simulator its StartRunning and StopRunning each take about 9 s, so the fake records the calls the manager makes instead.
+// A real session cannot be configured without a camera input, and on the iOS simulator its StartRunning and StopRunning each take about 9 s, so
+// FakeCaptureSession records the calls the manager makes instead.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleSessionTests : CameraHandlerTestBase
@@ -71,9 +70,9 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 
 			var exception = await Assert.ThrowsAsync<CameraException>(async () => await scope.Manager.UpdateCurrentCamera(camera, CancellationToken.None));
 
-			// The old preview stops first, then the new start begins its configuration, fails on the camera that has no device and
-			// commits the configuration (see StartCameraPreviewThatFailsCommitsTheConfigurationBlock). The session stays stopped, and the
-			// manager stays initialized for the next camera change.
+			// The camera has no device, so the start fails after beginning its configuration and commits it (see
+			// StartCameraPreviewThatFailsCommitsTheConfigurationBlock). The manager stays initialized so that the next camera change starts the
+			// preview.
 			Assert.Equal("No Camera found", exception.Message);
 			Assert.Equal(["stop", "begin", "commit"], session.Calls);
 			Assert.False(session.IsRunning);
@@ -185,7 +184,6 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 		var provider = new AppleFakeCameraProvider { AvailableCameras = [camera] };
 		await RunAsync(async (scope, session) =>
 		{
-			// The initializer fails like it does for a camera that another app uses: it returns nil and reports an NSError.
 			using var inputs = new AppleDeviceInputStub { FailureFor = _ => AppleDeviceInputStub.CreateError("Cannot use the camera") };
 
 			var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartCameraPreview(CancellationToken.None));
@@ -220,7 +218,6 @@ public class CameraManagerAppleSessionTests : CameraHandlerTestBase
 		});
 	}
 
-	// Runs the test on the UI thread with a manager whose capture session is a FakeCaptureSession, and disposes everything afterwards.
 	async Task RunAsync(Action<AppleCameraManagerScope, FakeCaptureSession> test, ICameraProvider? provider = null) =>
 		await RunAsync((scope, session) =>
 		{

@@ -22,7 +22,7 @@ public abstract partial class TouchBehaviorTestBase
 
 	protected static UIView GetPlatformView(IPlatformViewHandler handler) => (UIView)handler.PlatformView!;
 
-	/// <summary>The gesture recognizer the behavior adds for touches (a private nested type, so it is found by name).</summary>
+	// The behavior's touch recognizer is a private nested type, so it is found by name.
 	protected static UIGestureRecognizer GetTapRecognizer(UIView view) =>
 		Assert.Single(view.GestureRecognizers ?? [], static recognizer => recognizer.GetType().Name == "TouchUITapGestureRecognizer");
 
@@ -35,9 +35,6 @@ public abstract partial class TouchBehaviorTestBase
 	protected static int CountHoverRecognizers(UIView view) =>
 		(view.GestureRecognizers ?? []).OfType<UIHoverGestureRecognizer>().Count();
 
-	// ---- lifecycle accessors (used by the shared lifecycle tests)
-
-	/// <summary>The behavior added one touch recognizer and one hover recognizer to the view and enabled user interaction.</summary>
 	protected static void AssertNativeHooksAttached(UIView view)
 	{
 		Assert.Equal(1, CountTapRecognizers(view));
@@ -45,24 +42,21 @@ public abstract partial class TouchBehaviorTestBase
 		Assert.True(view.UserInteractionEnabled, "The behavior must enable user interaction on the view.");
 	}
 
-	/// <summary>The behavior removed both of its recognizers from the view.</summary>
 	protected static void AssertNativeHooksDetached(UIView view)
 	{
 		Assert.Equal(0, CountTapRecognizers(view));
 		Assert.Equal(0, CountHoverRecognizers(view));
 	}
 
-	/// <summary>What the behavior changes on the platform view to take input: iOS / Mac Catalyst enable user interaction.</summary>
 	protected static string GetNativeInteractionState(IPlatformViewHandler handler) =>
 		$"UserInteractionEnabled={GetPlatformView(handler).UserInteractionEnabled}";
 
-	/// <summary>No-op on Apple platforms: managed objects with a native peer are released by the normal collections.</summary>
+	// Managed objects with a native peer are released by the normal collections.
 	protected static Task ReleaseNativeReferencesAsync() => Task.CompletedTask;
 
-	/// <summary>No-op on Apple platforms: Core Animation always animates (there is no system switch that makes MAUI skip animations).</summary>
+	// Core Animation always animates: there is no system switch that makes MAUI skip animations.
 	protected Task EnableAnimationsAsync(IPlatformViewHandler handler) => Task.CompletedTask;
 
-	/// <summary>A test-built platform view (a UIView inside a UIView) for <see cref="DirectTouchBehavior"/>.</summary>
 	protected static (UIView Parent, UIView Child) CreateDetachedPlatformViews()
 	{
 		var parent = new UIView(new CGRect(0, 0, 200, 200));
@@ -71,10 +65,7 @@ public abstract partial class TouchBehaviorTestBase
 		return (parent, child);
 	}
 
-	/// <summary>
-	/// Records every state the hover recognizer reports to its targets (a second target next to the behavior's own), so a test can wait
-	/// until UIKit delivered a state change to the behavior as well.
-	/// </summary>
+	// The recorder is a second target next to the behavior's own, so a test can wait until UIKit delivered a state change to the behavior too.
 	protected static List<UIGestureRecognizerState> RecordHoverStates(IPlatformViewHandler handler)
 	{
 		var hover = GetHoverRecognizer(GetPlatformView(handler));
@@ -83,7 +74,6 @@ public abstract partial class TouchBehaviorTestBase
 		return states;
 	}
 
-	/// <summary>How the platform's image view scales its image, as a MAUI <see cref="Aspect"/>.</summary>
 	protected static Aspect GetNativeImageAspect(IPlatformViewHandler handler) =>
 		((UIImageView)handler.PlatformView!).ContentMode switch
 		{
@@ -94,9 +84,6 @@ public abstract partial class TouchBehaviorTestBase
 			var other => throw new InvalidOperationException($"Unexpected content mode {other}.")
 		};
 
-	// ---- native state
-
-	/// <summary>True when MAUI turned user interaction off on the element's platform view (<c>InputTransparent</c>).</summary>
 	protected static bool IsNativeInputTransparent(VisualElement element) =>
 		!((UIView)((IPlatformViewHandler)element.Handler!).PlatformView!).UserInteractionEnabled;
 
@@ -135,13 +122,9 @@ public abstract partial class TouchBehaviorTestBase
 		return Math.Atan2(transform.M31, transform.M11) * 180 / Math.PI;
 	}
 
-	/// <summary>The colour the platform view paints as its background; <see langword="null"/> when it has none.</summary>
 	protected static Color? GetNativeBackgroundColor(IPlatformViewHandler handler) => GetPlatformView(handler).BackgroundColor?.ToColor();
 
-	/// <summary>
-	/// The colour the platform view shows at its centre, with its alpha: what the view looks like there, also when it paints its background
-	/// in another way than its BackgroundColor.
-	/// </summary>
+	// Unlike GetNativeBackgroundColor, this also works when the view paints its background in another way than its BackgroundColor.
 	protected static async Task<Color> GetNativeCenterColorAsync(IPlatformViewHandler handler)
 	{
 		using var bitmap = await GetPlatformView(handler).ToBitmap(handler.MauiContext!);
@@ -152,8 +135,6 @@ public abstract partial class TouchBehaviorTestBase
 		return new Color((float)red, (float)green, (float)blue, (float)alpha);
 	}
 
-	// ---- native input (device independent units relative to the top left of the view)
-	//
 	// UIKit cannot be handed a touch from the outside, so the tests build UITouch/UIEvent objects the way UIKit would (alloc/init plus
 	// the private setters UIKit itself uses) and send them to the recognizer through its public touchesBegan/Moved/Ended/Cancelled
 	// entry points. The recognizer therefore runs exactly the code a real touch runs.
@@ -193,16 +174,11 @@ public abstract partial class TouchBehaviorTestBase
 		ReleaseTouch();
 	}
 
-	/// <summary>A tap at the centre of the view, delivered through UIKit as a finger's (see <see cref="TapThroughUIKitAsync"/>).</summary>
 	protected static Task NativeTapAsync(IPlatformViewHandler handler) => TapThroughUIKitAsync(GetPlatformView(handler));
 
-	/// <summary>
-	/// A tap at the centre of <paramref name="view"/> that goes through UIKit's own event delivery, as a finger's does: the window hit-tests it,
-	/// hands it to the gesture recognizers and then to the view (a UIButton tracks it and sends its control events). The touch is built the way
-	/// UIKit builds one, with an IOHIDEvent digitizer event behind it, and sent through <c>UIApplication.sendEvent:</c> with the application's
-	/// touches event (private API, which the UI test frameworks for UIKit use the same way). <see cref="NativePress"/> and
-	/// <see cref="NativeRelease"/> only reach the behavior's recognizer.
-	/// </summary>
+	// Unlike NativePress and NativeRelease, which only reach the behavior's recognizer, this tap goes through UIKit's own event delivery, as a
+	// finger's does, so a UIButton tracks it and sends its control events. That takes private API (an IOHIDEvent digitizer event sent through
+	// UIApplication.sendEvent:), which the UI test frameworks for UIKit use the same way.
 	protected static async Task TapThroughUIKitAsync(UIView view)
 	{
 		var window = view.Window ?? throw new InvalidOperationException("The view is not in a window.");
@@ -225,7 +201,7 @@ public abstract partial class TouchBehaviorTestBase
 
 		SendThroughUIKit(application, touch, pointInWindow, UITouchPhase.Began);
 
-		// A finger rests on the screen for a moment; UIKit reports the touch's end in a later turn of the run loop
+		// A finger rests on the screen for a moment; UIKit reports the touch's end in a later turn of the run loop.
 		await Task.Delay(50);
 
 		SendThroughUIKit(application, touch, pointInWindow, UITouchPhase.Ended);
@@ -262,8 +238,7 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	// A hand event with one finger at the point, as the digitizer reports it (IOKit's IOHIDEventCreateDigitizerEvent and
-	// IOHIDEventCreateDigitizerFingerEventWithQuality; the field and mask values are IOKit's)
+	// The field and mask values are IOKit's (see IOHIDEventCreateDigitizerEvent and IOHIDEventCreateDigitizerFingerEventWithQuality).
 	static IntPtr CreateDigitizerEvent(CGPoint pointInWindow, bool isTouching)
 	{
 		const uint transducerTypeHand = 3;
@@ -414,13 +389,9 @@ public abstract partial class TouchBehaviorTestBase
 	[DllImport(objCLibrary, EntryPoint = "objc_msgSend")]
 	static extern void MessagePointBool(IntPtr receiver, IntPtr selector, CGPoint point, [MarshalAs(UnmanagedType.I1)] bool flag);
 
-	/// <summary>Disposes an attached <see cref="DirectTouchBehavior"/> the way an app does (<c>Dispose()</c> without a detach first).</summary>
 	protected static void DisposeWhileAttached(DirectTouchBehavior behavior) => behavior.DisposeDirect(true);
 
-	/// <summary>
-	/// A TouchBehavior that can be attached to a platform view that MAUI knows nothing about: the native hierarchy is built by the
-	/// test, so the test controls the parents and the lifetime of the platform view.
-	/// </summary>
+	// The native hierarchy is built by the test, so the test controls the parents and the lifetime of the platform view.
 	protected sealed class DirectTouchBehavior : TouchBehavior
 	{
 		public void AttachDirect(VisualElement bindable, UIView platformView) => OnAttachedTo(bindable, platformView);

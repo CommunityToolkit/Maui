@@ -1,7 +1,6 @@
 name: Device Tests
 
-# dotnet-build.yml runs this workflow as its device_tests job, for pushes to main and pull requests (not for tags), so the device tests
-# are part of the Build run and its jobs can wait for them. Start it from the Actions tab to run a subset.
+# dotnet-build.yml calls this workflow, so the device tests are part of the Build run and its jobs can wait for them.
 on:
     workflow_call:
     workflow_dispatch:
@@ -30,33 +29,20 @@ permissions:
     contents: read
 
 env:
-    # The .NET SDK and Xcode versions are in shared.env, next to this file (dotnet-build.yml uses them too): each job loads it with
-    # ./.github/actions/load-shared-env after its checkout.
     DOTNET_NOLOGO: true
     DOTNET_CLI_TELEMETRY_OPTOUT: true
-    # Read by eng/devices/*.ps1; empty means the default filter (every test except the human-only category).
     TEST_FILTER: ${{ inputs.test-filter }}
-    # The app(s) every job builds and runs: all three when dotnet-build.yml runs this workflow, the chosen one(s) on workflow_dispatch.
+    # A Build run passes no inputs, so it builds and runs all three apps.
     DEVICE_TEST_PROJECT: ${{ inputs.project || 'All' }}
 
 # No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
-# Every job builds and runs the device test apps in DEVICE_TEST_PROJECT (eng/devices/README.md). The scripts decide pass or fail from
-# the test results, not from xharness's exit code alone, and test the remaining apps when one fails.
 jobs:
-    # Each job declares what its runner cannot run or must run (eng/devices/README.md, "Capability declarations"): the tests that need a
-    # capability in DEVICE_TEST_SKIP_CAPABILITIES are skipped (reported as Skipped, with this workflow as the reason), and those that need one
-    # in DEVICE_TEST_REQUIRE_CAPABILITIES fail instead of skipping when the runner turns out not to offer it. Only this workflow sets them:
-    # local runs, from the scripts or the IDE, run everything. A manual run with run-everything empties the skip lists, which shows whether a
-    # runner can run those tests now; when it can, delete the entry here.
-    #
-    # The Android API 36, iOS and Mac Catalyst jobs of a Build run also collect the code coverage of the toolkit assemblies
-    # (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage"), which packages the apps a second time with instrumented toolkit
-    # assemblies. They upload it as coverage-device-tests-*, and the Code Coverage job of dotnet-build.yml merges it with the unit tests'.
-    # A manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the tests, and a run
-    # started to answer a question does not need the extra packaging. In a called workflow, github.event_name is the caller's event, so
-    # != 'workflow_dispatch' is true in a Build run only.
+    # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") packages the apps a second time with instrumented
+    # toolkit assemblies, so a manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the
+    # tests, and a run started to answer a question does not need the extra packaging. In a called workflow, github.event_name is the
+    # caller's event, so != 'workflow_dispatch' is true in a Build run only.
     device_tests_android:
         name: Device Tests (Android API ${{ matrix.api-level }})
         permissions:
@@ -87,7 +73,7 @@ jobs:
             # Delete it when a run-everything run shows those rows passing, or skipping without the 30 s waits, on both API levels.
             DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'OnDeviceSpeech' || '' }}
             # SecondCamera: the emulator has a back and a front camera (-camera-front emulated below), so the two-camera tests fail, instead of
-            # skipping, if it ever loses one (the emulator options).
+            # skipping, if the emulator options ever lose one.
             DEVICE_TEST_REQUIRE_CAPABILITIES: 'SecondCamera'
         steps:
             -   name: Checkout code
@@ -226,8 +212,7 @@ jobs:
             -   name: Build device test apps
                 run: pwsh ./eng/devices/ios.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT"
 
-            # ios.ps1 creates a dedicated simulator for the run, grants the camera, the microphone and speech recognition to the test apps
-            # on it, and deletes it afterwards. 40 minutes per app: the main app took 8 minutes on an M4 Max; the runner has 3 M1 cores.
+            # 40 minutes per app: the main app took 8 minutes on an M4 Max; the runner has 3 M1 cores.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
                 run: pwsh ./eng/devices/ios.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Timeout 00:40:00
@@ -475,8 +460,7 @@ jobs:
                         artifacts/device-tests/
                         artifacts/logs/
 
-    # The single status check to require in branch protection ("Device Tests / Device Tests" in a Build run); it fails unless every device
-    # test job succeeded.
+    # The single status check to require in branch protection ("Device Tests / Device Tests" in a Build run).
     device_tests:
         name: Device Tests
         if: ${{ always() }}

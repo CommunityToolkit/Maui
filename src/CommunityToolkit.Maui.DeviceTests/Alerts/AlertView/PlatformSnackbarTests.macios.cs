@@ -130,8 +130,7 @@ public class PlatformSnackbarTests : AlertsTestBase
 		});
 	}
 
-	// The action may dismiss the alert itself (Snackbar.Dismiss, or the Show of the next snackbar, does): the tap must not dismiss it, and
-	// invoke OnDismissed, a second time.
+	// The action may dismiss the alert itself: Snackbar.Dismiss, or the Show of the next snackbar, does.
 	[Fact]
 	public async Task TappingTheActionButtonOfAnAlertThatTheActionDismissedInvokesOnDismissedOnce()
 	{
@@ -187,14 +186,12 @@ public class PlatformSnackbarTests : AlertsTestBase
 
 			Assert.Equal(1, actionCount);
 
-			// The false path reaches PlatformToast.Dispose(false) too: the toast part is marked disposed and its label is left alone.
+			// The false path reaches PlatformToast.Dispose(false) too.
 			Assert.True(AlertsApple.IsDisposed(snackbar));
 			Assert.False(AlertsApple.IsManagedPeerDisposed(label));
 		});
 	}
 
-	// PlatformSnackbar.Dispose(true) unsubscribes the action button and then hands over to PlatformToast.Dispose(true), which disposes the
-	// managed peer of the message label and marks the toast part disposed.
 	[Fact]
 	public async Task DisposeAlsoDisposesThePlatformToastPartAndItsMessageLabel()
 	{

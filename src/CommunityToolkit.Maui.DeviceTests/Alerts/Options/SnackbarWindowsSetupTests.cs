@@ -1,7 +1,7 @@
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Options.SetShouldEnableSnackbarOnWindows has a Windows-only block (#if WINDOWS): it registers the app notification handler that makes
-// the buttons of a Windows Snackbar work. Every other platform only stores the value. The platform partials test their own arm.
+// Options.SetShouldEnableSnackbarOnWindows has a Windows-only block (#if WINDOWS): every other platform only stores the value. Each
+// platform partial tests its own arm.
 [Category(TestCategory.SnackbarWindowsSetup)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class SnackbarWindowsSetupTests : CommunityToolkitHandlerTestBase

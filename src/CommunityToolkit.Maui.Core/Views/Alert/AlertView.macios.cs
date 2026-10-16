@@ -13,7 +13,6 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	readonly List<UIView> children = [];
 	readonly bool shouldFillAndExpandHorizontally = shouldFillAndExpandHorizontally;
 
-	// The constraints that place the view vertically: at the bottom of the safe area, or above or below placedAnchorView
 	NSLayoutConstraint[] verticalConstraints = [];
 	UIView? placedAnchorView;
 	bool isPlacedBelowAnchorView;
@@ -80,14 +79,12 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 		UpdateVerticalConstraints();
 	}
 
-	// Places the view at the bottom of the safe area or, when it has an anchor, above the anchor if it fits between the top of the safe
-	// area and the anchor, and below the anchor otherwise. This runs on every layout pass, so the constraints are only replaced when the
-	// placement changes (or UIKit removed them together with a view they referred to): constraints added on every pass pile up and
-	// contradict each other.
+	// Runs on every layout pass, so the constraints are only replaced when the placement changes (or UIKit removed them together with a view
+	// they referred to): constraints added on every pass pile up and contradict each other.
 	void UpdateVerticalConstraints()
 	{
-		// UIKit throws (NSGenericException) when it activates a constraint between views that have no common ancestor: the view is only
-		// constrained while it is in the parent view, and an anchor that is not, or no longer, in the parent view is ignored
+		// UIKit throws (NSGenericException) when it activates a constraint between views that have no common ancestor, which is also why an
+		// anchor that is not in the parent view is ignored
 		if (!IsDescendantOfView(ParentView))
 		{
 			return;
@@ -122,9 +119,8 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 		isPlacedBelowAnchorView = isBelowAnchorView;
 	}
 
-	// Whether the view fits between the top of the parent's safe area and the anchor. The height comes from Container, which
-	// base.LayoutSubviews has laid out: unlike the view's own frame, it does not depend on where the view is placed (the view grows by
-	// the safe area insets it overlaps) and it is already known on the first layout pass.
+	// The height comes from Container, which base.LayoutSubviews has laid out: unlike the view's own frame, it does not depend on where the
+	// view is placed (the view grows by the safe area insets it overlaps) and it is already known on the first layout pass.
 	bool FitsAbove(UIView anchorView)
 	{
 		var height = Container.Frame.Height + (2 * defaultSpacing);

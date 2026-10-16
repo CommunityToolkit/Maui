@@ -14,10 +14,6 @@ using Windows.Storage.Streams;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Shared helpers of the Windows camera tests (MediaCapture).
-//
-// Every test that needs a camera skips visibly when the machine has none, and the camera-less tests only rely on behavior that
-// follows directly from the source (guards, exceptions the code throws itself, disposal).
 static class WindowsCameraEnvironment
 {
 	public static async Task<IReadOnlyList<DeviceInformation>> FindVideoCaptureDevicesAsync()
@@ -44,7 +40,7 @@ static class WindowsCameraEnvironment
 		Skip.If(access is not AppCapabilityAccessStatus.Allowed, $"Camera access of this packaged app is {access}: Windows asks a person the first time the app opens a camera (or Settings > Privacy & security > Camera), which nobody does in a headless run.");
 	}
 
-	// Discovers the cameras the way the toolkit does (CameraProvider.windows.cs), so tests use exactly the cameras the toolkit sees.
+	// Uses the toolkit's own CameraProvider (CameraProvider.windows.cs), so tests use exactly the cameras the toolkit sees.
 	public static async Task<IReadOnlyList<CameraInfo>> DiscoverCamerasAsync()
 	{
 		await SkipUnlessCamerasCanBeOpenedAsync();
@@ -89,9 +85,8 @@ static class WindowsCameraEnvironment
 		}
 	}
 
-	// CameraProvider.windows.cs lists the frame source groups (Windows.Media.Capture.Frames) of the video capture devices. The tests that
-	// refresh a real CameraProvider make the same call first, so that a machine without Media Foundation skips them visibly; the provider's
-	// own call then runs unguarded.
+	// The tests that refresh a real CameraProvider make the same call as CameraProvider.windows.cs (listing the frame source groups) first, so
+	// that a machine without Media Foundation skips them visibly; the provider's own call then runs unguarded.
 	public static async Task SkipUnlessFrameSourceGroupsCanBeListedAsync()
 	{
 		try
@@ -104,9 +99,9 @@ static class WindowsCameraEnvironment
 		}
 	}
 
-	// Whether a MediaCapture was closed (Dispose): StopPreviewAsync fails with RO_E_CLOSED (ObjectDisposedException) once the capture is closed,
-	// and with MF_E_NOT_INITIALIZED (0xC00D36B6) on an open capture that was never initialized; it opens no camera. Its properties are no
-	// witness: CameraStreamState, for one, still answers after Close (Windows 11 26200).
+	// StopPreviewAsync is the probe: it fails with RO_E_CLOSED (ObjectDisposedException) once the capture is closed, and with
+	// MF_E_NOT_INITIALIZED (0xC00D36B6) on an open capture that was never initialized, and it opens no camera. The properties of the capture
+	// are no witness: CameraStreamState, for one, still answers after Close (Windows 11 26200).
 	public static async Task<bool> IsClosedAsync(MediaCapture mediaCapture)
 	{
 		try
@@ -124,7 +119,6 @@ static class WindowsCameraEnvironment
 		}
 	}
 
-	// A photo size of a camera, as CameraProvider.windows.cs lists it in CameraInfo.ImageEncodingProperties.
 	public static ImageEncodingProperties CreateJpegProperties(uint width, uint height)
 	{
 		ImageEncodingProperties properties;
@@ -195,7 +189,6 @@ sealed class WindowsCameraManagerAccessor(CameraManager manager)
 		set => Set("videoCaptureStream", value);
 	}
 
-	// The callback the handler passes to the manager; the manager invokes it when the camera preview has started.
 	public Action OnLoaded => Get<Action>("onLoaded");
 
 	static FieldInfo GetField(string name) =>
@@ -206,7 +199,6 @@ sealed class WindowsCameraManagerAccessor(CameraManager manager)
 	void Set(string name, object? value) => GetField(name).SetValue(manager, value);
 }
 
-// A CameraManager with its own CameraView and a fake provider, disposed together.
 sealed class WindowsCameraManagerScope : IDisposable
 {
 	public WindowsCameraManagerScope(IMauiContext mauiContext, ICameraProvider? provider = null)
@@ -234,7 +226,6 @@ sealed class WindowsCameraManagerScope : IDisposable
 	}
 }
 
-// ICameraProvider test double: RefreshAvailableCameras publishes CamerasAfterRefresh (an empty list by default).
 sealed class WindowsFakeCameraProvider : ICameraProvider
 {
 	public IReadOnlyList<CameraInfo>? AvailableCameras { get; set; }
@@ -261,10 +252,8 @@ sealed class WindowsFakeCameraProvider : ICameraProvider
 	}
 }
 
-// The real CameraViewHandler connects the camera from an `async void` ConnectHandler: without a camera it only traces the CameraException
-// of the connection, which no test can await or assert, and with a camera it opens the device (and may show the Windows camera consent
-// prompt). This handler keeps everything else (platform view creation, property mapping, disconnect and
-// dispose) and skips only the automatic camera connection, so the tests start and stop the preview explicitly.
+// The real CameraViewHandler connects the camera from an `async void` ConnectHandler, which no test can await, and with a camera it opens the
+// device (and may show the Windows camera consent prompt). Skipping that connection lets the tests start and stop the preview explicitly.
 sealed class WindowsNoConnectCameraViewHandler : CameraViewHandler
 {
 	protected override void ConnectHandler(Microsoft.UI.Xaml.FrameworkElement platformView)
@@ -273,7 +262,7 @@ sealed class WindowsNoConnectCameraViewHandler : CameraViewHandler
 }
 
 // Calls the protected members of CameraViewHandler that the framework never calls in an unusual state: CreatePlatformView without a
-// MauiContext and Dispose(false). Like WindowsNoConnectCameraViewHandler it does not connect the camera when a platform view is attached.
+// MauiContext and Dispose(false). Like WindowsNoConnectCameraViewHandler it does not connect the camera.
 sealed class WindowsCreateViewCameraViewHandler : CameraViewHandler
 {
 	public Microsoft.UI.Xaml.FrameworkElement CallCreatePlatformView() => CreatePlatformView();
@@ -285,8 +274,7 @@ sealed class WindowsCreateViewCameraViewHandler : CameraViewHandler
 	}
 }
 
-// Built through either constructor of CameraViewHandler (the one with custom mappers falls back to the handler's own mappers for null).
-// Like WindowsNoConnectCameraViewHandler it does not connect the camera when a platform view is attached.
+// Like WindowsNoConnectCameraViewHandler it does not connect the camera.
 sealed class WindowsMapperCameraViewHandler : CameraViewHandler
 {
 	public WindowsMapperCameraViewHandler()
@@ -320,7 +308,6 @@ sealed class WindowsCameraProviderOverride : IDisposable
 			: new PlatformApplicationDecorator(previous, new ServiceProviderDecorator(previous.Services, provider));
 	}
 
-	// A platform application whose services do not know ICameraProvider, like an app that never called UseMauiCommunityToolkitCamera.
 	public static WindowsCameraProviderOverride WithoutCameraProvider() => new(null, keepPlatformApplication: true);
 
 	public static WindowsCameraProviderOverride WithoutPlatformApplication() => new(null, keepPlatformApplication: false);
@@ -340,9 +327,9 @@ sealed class WindowsCameraProviderOverride : IDisposable
 	}
 }
 
-// Records the callbacks that are posted to it instead of running them: an exception that escapes an `async void` method (such as
-// CameraViewHandler.ConnectHandler) is delivered to the SynchronizationContext that was current when the method started, which in an app
-// rethrows it and terminates the app. With this context installed, a test sees it as a posted callback instead.
+// An exception that escapes an `async void` method (such as CameraViewHandler.ConnectHandler) is delivered to the SynchronizationContext that
+// was current when the method started, which in an app rethrows it and terminates the app. With this context installed, a test sees it as a
+// posted callback instead.
 sealed class WindowsRecordingSynchronizationContext : SynchronizationContext
 {
 	readonly List<(SendOrPostCallback Callback, object? State)> posted = [];
@@ -368,8 +355,7 @@ sealed class WindowsRecordingSynchronizationContext : SynchronizationContext
 	public override void OperationCompleted() => Interlocked.Decrement(ref runningAsyncVoidMethods);
 
 	// Like Drain, for async void methods that await WinRT operations: the continuations after such an await are posted here when the
-	// operation completes, on a thread pool thread. Runs the posted callbacks until every async void method that started with this context
-	// current has ended, and returns what they threw.
+	// operation completes, on a thread pool thread.
 	public async Task<IReadOnlyList<Exception>> DrainUntilAsyncVoidMethodsEndAsync(TimeSpan timeout)
 	{
 		var exceptions = new List<Exception>();
@@ -427,7 +413,6 @@ sealed class WindowsRecordingSynchronizationContext : SynchronizationContext
 		return new Restore(previous);
 	}
 
-	// Runs the posted callbacks (and the ones they post) with this context installed and returns what they threw.
 	public IReadOnlyList<Exception> Drain()
 	{
 		var exceptions = new List<Exception>();

@@ -63,16 +63,14 @@ public partial class DrawingViewHandler
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>, IDrawingViewHandler
 {
 
-	// The DrawingView line that each platform line stands for: the app's line that was copied to the platform view, or the conversion of a drawn line.
-	// Copying the platform lines back to DrawingView.Lines reuses these instances, so the app's lines and the lines reported by DrawingLineCompleted
-	// stay in DrawingView.Lines. The platform lines are weak keys: an entry goes away with its platform line.
+	// Copying the platform lines back to DrawingView.Lines reuses the DrawingView line that each platform line stands for (the app's line that was
+	// copied to the platform view, or the conversion of a drawn line), so the app's lines and the lines reported by DrawingLineCompleted stay in
+	// DrawingView.Lines. The platform lines are weak keys: an entry goes away with its platform line.
 	readonly ConditionalWeakTable<MauiDrawingLine, IDrawingLine> platformToVirtualViewLines = new();
 
 	IDrawingLineAdapter adapter = new DrawingLineAdapter();
 	ObservableCollection<IDrawingLine>? observedVirtualViewLines;
 
-	// True from StopListeningUntilLoaded until ListenAgain: the DrawingView is out of the window, and the handler listens neither to its platform view
-	// nor to DrawingView.Lines
 	bool isWaitingToBeLoaded;
 
 	/// <summary>
@@ -208,10 +206,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	protected override MauiDrawingView CreatePlatformView() => new();
 #endif
 
-	// Stops listening to the platform view and to DrawingView.Lines until the DrawingView is loaded again. DrawingView does this on Unloaded (#420):
-	// while its page is away, the platform view and the DrawingView's Lines, which the app may keep, do not keep this handler and each other alive.
-	// The handler stays connected to the DrawingView, so that MAUI can still remove the DrawingView from its layout (or move it to another one) and
-	// property changes still reach the platform view. ListenAgain undoes it.
+	// DrawingView calls this on Unloaded (#420): while its page is away, the platform view and the DrawingView's Lines, which the app may keep, do not
+	// keep this handler and each other alive. The handler stays connected to the DrawingView, so that MAUI can still remove the DrawingView from its
+	// layout (or move it to another one) and property changes still reach the platform view.
 	internal void StopListeningUntilLoaded()
 	{
 		if (isWaitingToBeLoaded || ((IElementHandler)this).PlatformView is not MauiDrawingView platformView)
@@ -223,10 +220,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		StopListening(platformView);
 	}
 
-	// Listens to the platform view and to DrawingView.Lines again after StopListeningUntilLoaded, as ConnectHandler does, and maps DrawingView.Lines, which may
-	// have changed meanwhile, to the platform view through the mapper. DrawingView calls it on Loaded; on iOS and Mac Catalyst the platform view's
-	// AttachedToWindow calls it as well. Listen comes first, as ConnectHandler comes before the mappers: MapLines replaces the two Lines subscriptions of
-	// Listen, while a Listen after MapLines would subscribe to the platform view's Lines a second time.
+	// DrawingView.Lines may have changed meanwhile, so it is mapped to the platform view again. Listen comes first, as ConnectHandler comes before
+	// the mappers: MapLines replaces the two Lines subscriptions of Listen, while a Listen after MapLines would subscribe to the platform view's
+	// Lines a second time.
 	internal void ListenAgain()
 	{
 		if (!isWaitingToBeLoaded)
@@ -239,8 +235,8 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		UpdateValue(nameof(IDrawingView.Lines));
 	}
 
-	// Adds every subscription that StopListening removes, whatever the mapper maps: a mapper without the Lines mapping (or with another one) must not leave
-	// the two Lines collections out of sync. MapLines observes DrawingView.Lines and subscribes to the platform view's Lines again without doubling them.
+	// A mapper without the Lines mapping (or with another one) must not leave the two Lines collections out of sync, so this subscribes to both itself.
+	// MapLines observes DrawingView.Lines and subscribes to the platform view's Lines again without doubling them.
 	void Listen(MauiDrawingView platformView)
 	{
 		platformView.DrawingStarted += OnPlatformViewDrawingStarted;
@@ -251,7 +247,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		platformView.Lines.CollectionChanged += OnPlatformViewLinesCollectionChanged;
 	}
 
-	// Removes every subscription that Listen adds: those between this handler, the platform view and DrawingView.Lines, except AttachedToWindow (weak)
+	// AttachedToWindow stays subscribed (weakly) to start the listening again
 	void StopListening(MauiDrawingView platformView)
 	{
 		platformView.DrawingStarted -= OnPlatformViewDrawingStarted;
@@ -262,8 +258,8 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		platformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
 	}
 
-	// The platform view is in a window again. MAUI raises VisualElement.Loaded for a MauiDrawingView on iOS and Mac Catalyst only once it notices a layout
-	// change of the view, so the platform view raises this event there.
+	// MAUI raises VisualElement.Loaded for a MauiDrawingView on iOS and Mac Catalyst only once it notices a layout change of the view, so the platform
+	// view raises this event there.
 	void OnPlatformViewAttachedToWindow(object? sender, EventArgs e) => ListenAgain();
 
 	void OnPlatformViewDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
@@ -293,8 +289,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		SetPlatformViewLines(VirtualView);
 	}
 
-	// Copies the lines of the DrawingView to the platform view and records which DrawingView line each copy stands for, without copying
-	// the platform lines back to DrawingView.Lines, which would replace the line instances of the app with converted copies.
+	// The platform lines are not copied back to DrawingView.Lines, which would replace the line instances of the app with converted copies.
 	void SetPlatformViewLines(IDrawingView view)
 	{
 		PlatformView.Lines.CollectionChanged -= OnPlatformViewLinesCollectionChanged;
@@ -316,11 +311,9 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		ObserveVirtualViewLines(VirtualView.Lines);
 	}
 
-	// The DrawingView line that the platform line stands for; a platform line without one (a drawn line) is converted with the adapter once
 	IDrawingLine GetVirtualViewLine(MauiDrawingLine platformLine) => platformToVirtualViewLines.GetValue(platformLine, adapter.ConvertMauiDrawingLine);
 
-	// Observes one DrawingView.Lines collection (null: none) and stops observing the previous one, so a collection that DrawingView.Lines
-	// no longer holds neither changes the platform view nor keeps this handler alive.
+	// A collection that DrawingView.Lines no longer holds neither changes the platform view nor keeps this handler alive.
 	void ObserveVirtualViewLines(ObservableCollection<IDrawingLine>? lines)
 	{
 		if (observedVirtualViewLines is not null)
@@ -336,7 +329,6 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 		}
 	}
 
-	// Copies a platform line to DrawingView.Lines as the DrawingView line it stands for (see GetVirtualViewLine)
 	sealed class VirtualViewLineAdapter(DrawingViewHandler handler) : IDrawingLineAdapter
 	{
 		public IDrawingLine ConvertMauiDrawingLine(MauiDrawingLine mauiDrawingLine) => handler.GetVirtualViewLine(mauiDrawingLine);

@@ -19,16 +19,13 @@ using AWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MauiMediaElement (MauiMediaElement.android.cs): the Android view that hosts the PlayerView, its constructors and Dispose, and the
-// full-screen mode (the PlayerView's own full-screen button moves the player layout into the activity's DecorView and hides the system
-// bars). The button is clicked with View.PerformClick: that is what a tap does, without needing a person.
+// The full-screen button is clicked with View.PerformClick: that is what a tap does, without needing a person.
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 {
-	// What the product code changes in the legacy (API < 30) full screen: the layout/hide flags. WindowInsetsControllerCompat adds the
-	// immersive flags itself for the behavior it is given, so those are not compared.
-	const SystemUiFlags barFlags = SystemUiFlags.LayoutStable | SystemUiFlags.LayoutHideNavigation | SystemUiFlags.LayoutFullscreen | SystemUiFlags.HideNavigation | SystemUiFlags.Fullscreen;
+	// The immersive flags are left out: WindowInsetsControllerCompat adds them itself for the behavior it is given.
+	const SystemUiFlags legacyFullscreenFlags = SystemUiFlags.LayoutStable | SystemUiFlags.LayoutHideNavigation | SystemUiFlags.LayoutFullscreen | SystemUiFlags.HideNavigation | SystemUiFlags.Fullscreen;
 
 	// How long a test watches the system bars to show that something did NOT change them; a change that does happen is seen well within it.
 	const int systemBarsWatchTimeout = 2000;
@@ -41,7 +38,6 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// Disposed at the end: a view without a PlayerView has no player to release (see DisposingAViewCreatedWithoutAPlayerViewDoesNotThrow).
 			using var withContext = new MauiMediaElement(context);
 			using var withAttributes = new MauiMediaElement(context, (IAttributeSet?)null);
 			using var withDefaultStyle = new MauiMediaElement(context, (IAttributeSet?)null, 0);
@@ -76,8 +72,6 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The playerView field is only set by the constructor that takes a PlayerView: for the other constructors it is null, and Dispose has no
-	// player to release.
 	[Fact]
 	public async Task DisposingAViewCreatedWithoutAPlayerViewDoesNotThrow()
 	{
@@ -133,9 +127,9 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(playerView.Handle, relativeLayout.GetChildAt(0)!.Handle);
 			Assert.Equal(AColor.Black, Assert.IsType<ColorDrawable>(playerView.Background).Color);
 
-			// The layout around the player is wrap_content. The view is a CoordinatorLayout: AddView replaces the RelativeLayout.LayoutParams
-			// that the constructor built (with center-in-parent rules, which only a RelativeLayout parent applies) by its own LayoutParams. The
-			// rules have no visible effect: the match_parent PlayerView makes the layout as large as the view.
+			// The view is a CoordinatorLayout: AddView replaces the RelativeLayout.LayoutParams that the constructor built (with center-in-parent
+			// rules, which only a RelativeLayout parent applies) by its own LayoutParams. The rules have no visible effect: the match_parent
+			// PlayerView makes the layout as large as the view.
 			var layout = Assert.IsType<CoordinatorLayout.LayoutParams>(relativeLayout.LayoutParameters);
 			Assert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (layout.Width, layout.Height));
 		});
@@ -281,7 +275,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(platformView.Handle, ParentHandle(relativeLayout));
 			Assert.Equal(1, platformView.ChildCount);
 			await WaitUntilSystemBarsAsync(window, visible: true);
-			Assert.Equal(flagsBefore & barFlags, window.DecorView.SystemUiFlags & barFlags);
+			Assert.Equal(flagsBefore & legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
 			Assert.Equal(WindowInsetsControllerCompat.BehaviorDefault, WindowCompat.GetInsetsController(window, window.DecorView)!.SystemBarsBehavior);
 		});
 	}
@@ -319,8 +313,6 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Entering full screen records whether each bar was visible (isStatusBarVisible and isNavigationBarVisible; before Android 11 the system UI
-	// flags), and leaving it restores that: bars that the app had hidden stay hidden.
 	[Fact]
 	public async Task SystemBarsHiddenBeforeFullscreenStayHiddenAfterLeavingIt()
 	{
@@ -349,8 +341,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Full screen is applied again whenever the view becomes visible (OnVisibilityChanged), also while full screen itself hides the bars: what
-	// leaving full screen restores is still the visibility of the bars before full screen was entered.
+	// Full screen is applied again whenever the view becomes visible (OnVisibilityChanged), also while full screen itself hides the bars.
 	[Fact]
 	public async Task SystemBarsVisibleBeforeFullscreenComeBackWhenFullscreenWasAppliedAgain()
 	{
@@ -376,8 +367,6 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The visibility of each bar is restored on its own: an app that hid only the status bar, or only the navigation bar, gets back the bar that
-	// was visible, and the bar that it had hidden stays hidden.
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
@@ -414,9 +403,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Leaving full screen also restores the behavior of the system bars: an app in immersive mode (hidden bars that a swipe shows for a moment)
-	// stays in it, instead of getting the default behavior, with which a swipe brings the bars back for good. Before Android 11 the behavior is
-	// part of the system UI flags (IMMERSIVE_STICKY), which leaving full screen restores exactly.
+	// Before Android 11 the behavior of the system bars is part of the system UI flags (IMMERSIVE_STICKY), which leaving full screen restores exactly.
 	[Fact]
 	public async Task SystemBarsBehaviorOfTheAppIsRestoredAfterLeavingFullscreen()
 	{
@@ -482,12 +469,11 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(window.DecorView.Handle, ParentHandle(relativeLayout));
 			await WaitUntilSystemBarsAsync(window, visible: false);
 
-			// Removing the view from its parent detaches it from the window: OnDetachedFromWindow ends full screen first.
 			((ViewGroup)platformView.Parent!).RemoveView(platformView);
 
 			Assert.Equal(platformView.Handle, ParentHandle(relativeLayout));
 			await WaitUntilSystemBarsAsync(window, visible: true);
-			Assert.Equal(flagsBefore & barFlags, window.DecorView.SystemUiFlags & barFlags);
+			Assert.Equal(flagsBefore & legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
 		});
 	}
 
@@ -569,8 +555,8 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Full screen asks Platform.CurrentActivity for its window (CurrentPlatformContext): without an activity, or with one that has no
-	// window, it throws. OnDetachedFromWindow leaves full screen, so it is the public way into the same code.
+	// OnDetachedFromWindow leaves full screen, so it is the public way into the code that asks Platform.CurrentActivity for its
+	// window (CurrentPlatformContext).
 	[Fact]
 	public async Task LeavingFullscreenNeedsTheCurrentActivityAndItsWindow()
 	{
@@ -602,7 +588,6 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 				Assert.Equal("Window cannot be null", exception.Message);
 			}
 
-			// Nothing was changed by the failed attempts: the view is still in full screen and can leave it.
 			Assert.Equal(window.DecorView.Handle, ParentHandle(relativeLayout));
 			button.PerformClick();
 			Assert.Equal(platformView.Handle, ParentHandle(relativeLayout));
@@ -623,11 +608,10 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			GetFullscreenButton(mediaElement).PerformClick();
 			await WaitUntilSystemBarsAsync(window, visible: false);
 
-			// The user swipes the bars back in (they are transient in full screen)...
+			// Stands in for the user swiping the bars back in (they are transient in full screen).
 			await ShowSystemBarsAsync(window);
 			Assert.True(AreSystemBarsVisible(window));
 
-			// ...and when the view becomes visible again, full screen is applied again.
 			platformView.Visibility = ViewStates.Invisible;
 			platformView.Visibility = ViewStates.Visible;
 
@@ -635,9 +619,8 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Only becoming visible re-applies full screen: hiding the view leaves the bars that the user swiped in alone. From Android 11 a hide through the
-	// insets controller reaches the window insets only on a later layout pass, so the bars are watched for a while instead of looked at once; making
-	// the view visible again hides them within that time, which shows that the watch would have seen a hide.
+	// From Android 11 a hide through the insets controller reaches the window insets only on a later layout pass, so the bars are watched for a
+	// while instead of looked at once; making the view visible again hides them within that time, which shows that the watch would have seen a hide.
 	[Theory]
 	[InlineData(ViewStates.Invisible)]
 	[InlineData(ViewStates.Gone)]
@@ -664,10 +647,9 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Outside full screen the view leaves the system bars to the app: neither a visibility change nor attaching the view to the window again (which
-	// reports the view's visibility through OnVisibilityChanged too) may show bars that the app hid. A stray show would come from the exit path of
-	// full screen (WindowInsetsControllerCompat.Show, and the saved flags before Android 11), which takes effect on a later layout pass: the bars are
-	// watched for a while, and the same show is then seen within that time.
+	// Attaching the view to the window again is part of this test because it reports the view's visibility through OnVisibilityChanged too. A stray
+	// show would come from the exit path of full screen (WindowInsetsControllerCompat.Show, and the saved flags before Android 11), which takes
+	// effect on a later layout pass: the bars are watched for a while, and the same show is then seen within that time.
 	[Fact]
 	public async Task SystemBarsHiddenByTheAppStayHiddenWhenTheViewIsShownOrAttachedOutsideFullscreen()
 	{
@@ -717,12 +699,12 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			platformView.Visibility = ViewStates.Visible;
 
 			Assert.True(AreSystemBarsVisible(window));
-			Assert.Equal(flagsBefore & barFlags, window.DecorView.SystemUiFlags & barFlags);
+			Assert.Equal(flagsBefore & legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
 		});
 	}
 
 	// Full screen on Android 11 and later goes through the window insets controller; before that it sets (and later restores) the
-	// decor view's system UI flags. Each device checks the branch that its OS version takes.
+	// decor view's system UI flags.
 	static void AssertFullscreenSystemUi(AWindow window, SystemUiFlags flagsBefore)
 	{
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
@@ -731,8 +713,8 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		}
 		else
 		{
-			Assert.Equal(barFlags, window.DecorView.SystemUiFlags & barFlags);
-			Assert.NotEqual(flagsBefore & barFlags, window.DecorView.SystemUiFlags & barFlags);
+			Assert.Equal(legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
+			Assert.NotEqual(flagsBefore & legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
 		}
 	}
 
@@ -773,7 +755,6 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		? window.DecorView.RootWindowInsets?.IsVisible(WindowInsets.Type.NavigationBars()) == true
 		: !window.DecorView.SystemUiFlags.HasFlag(SystemUiFlags.HideNavigation);
 
-	// Hides the status bar alone, or the navigation bar alone, the way an app does it on its Android version.
 	static void HideSystemBar(AWindow window, bool isStatusBar)
 	{
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))

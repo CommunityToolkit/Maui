@@ -4,13 +4,11 @@ using AListView = Android.Widget.ListView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android needs no platform code in Expander: the platform list measures its rows again by itself. The accessors below let the
-// shared tests prove that the row really grows and shrinks with the Expander on Android as well.
+// Android needs no platform code in Expander: the platform list measures its rows again by itself.
 public partial class ExpanderTests
 {
 	static bool IsPlatformViewVisible(IView view) => ((Android.Views.View)view.Handler!.PlatformView!).Visibility == ViewStates.Visible;
 
-	// The row's size in device-independent units (the unit MAUI uses). 0 while the row is not realized.
 	static double GetRowHeight(ListView listView, int row) => ToDips(listView, GetRow(listView, row)?.Height ?? 0);
 
 	static double GetRowTop(ListView listView, int row) => ToDips(listView, GetRow(listView, row)?.Top ?? 0);

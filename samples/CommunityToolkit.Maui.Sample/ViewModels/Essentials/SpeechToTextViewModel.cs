@@ -147,7 +147,8 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		}
 		catch (PermissionException e)
 		{
-			// For example on Windows, when "Online speech recognition" is switched off in the privacy settings
+			// The permission requests above do not cover every case, for example on Windows when "Online speech recognition" is
+			// switched off in the privacy settings.
 			CanStartListenExecute = true;
 			CanStopListenExecute = false;
 
@@ -172,8 +173,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		return speechToText.StopListenAsync(cancellationToken);
 	}
 
-	// Calls StopListenAsync with a token that is already canceled while the recognizer listens. The outcome depends on the platform:
-	// Windows ignores the canceled token, so the recognizer is still released; Android, iOS and Mac Catalyst throw an OperationCanceledException
+	// Windows ignores the canceled token, so the recognizer is still released. Android, iOS and Mac Catalyst throw an OperationCanceledException
 	// before they stop anything, so the recognizer keeps listening until StopListenAsync is called again.
 	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
 	async Task StopListenWithCanceledToken(CancellationToken cancellationToken)
@@ -196,7 +196,7 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 			outcome = $"threw {nameof(OperationCanceledException)}";
 		}
 
-		// Windows unsubscribes from StateChanged before it releases the recognizer, so no event refreshes the State label
+		// Windows unsubscribes from StateChanged before it releases the recognizer, so no event refreshes the State label.
 		OnPropertyChanged(nameof(State));
 
 		await Toast.Make($"StopListenAsync with a canceled token {outcome}. State: {State}").Show(cancellationToken);

@@ -8,12 +8,10 @@ using PlatformContentView = Microsoft.Maui.Platform.ContentView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: the views of ViewOrder are the first accessibilityElements of the native container, in order, and the rest of its
-// content follows them (the container builds the list when UIKit asks for it). UIKit's default for a container is a nil
-// accessibilityElements (the container then exposes its subviews); a non-nil array is the complete list of its accessibility elements, so
-// the content that is not in the order must be listed too, and a non-nil EMPTY array declares that the container has no accessible
-// children at all. UIKit looks into a listed view that is not an accessibility element itself and exposes what it holds: such a view must
-// not hold a view of the order, which would be exposed a second time (see Exposes).
+// UIKit's default for a container is a nil accessibilityElements (the container then exposes its subviews); a non-nil array is the complete
+// list of its accessibility elements, so the content that is not in the order must be listed too, and a non-nil EMPTY array declares that the
+// container has no accessible children at all. UIKit looks into a listed view that is not an accessibility element itself and exposes what it
+// holds: such a view must not hold a view of the order, which would be exposed a second time (see Exposes).
 public partial class SemanticOrderViewTests
 {
 	[Fact]
@@ -31,8 +29,8 @@ public partial class SemanticOrderViewTests
 			Assert.IsType<IUIAccessibilityContainer>(platformView, exactMatch: false);
 			var elements = ElementsOf(handler);
 
-			// The views of the order, then the button that is not in it: the view that holds its platform view in the layout, which UIKit
-			// looks into (MAUI puts the UIButton of a Button in a WrapperView).
+			// The last element is the view that holds the platform view of the button that is not in the order, which UIKit looks into
+			// (MAUI puts the UIButton of a Button in a WrapperView).
 			Assert.Equal(3, elements.Length);
 			Assert.IsType<UIView>(elements[0], exactMatch: false);
 			Assert.Equal(PlatformViewOf(buttons[1]).Handle, elements[0].Handle);
@@ -71,8 +69,8 @@ public partial class SemanticOrderViewTests
 
 		await InvokeOnMainThreadAsync(() => view.ViewOrder = []);
 
-		// No view of the previous order is listed any more, and the container falls back to UIKit's default (nil), as with the default
-		// empty ViewOrder (EmptyViewOrderLeavesTheDefaultAccessibilityElements): a non-nil empty array would hide every child.
+		// Like the default empty ViewOrder (EmptyViewOrderLeavesTheDefaultAccessibilityElements), clearing falls back to UIKit's default (nil):
+		// a non-nil empty array would hide every child.
 		await InvokeOnMainThreadAsync(() =>
 		{
 			AssertPlatformOrder(handler);
@@ -83,9 +81,8 @@ public partial class SemanticOrderViewTests
 		});
 	}
 
-	// The container answers UIKit's accessibilityElements request with the platform views of ViewOrder at that moment: a child entry that
-	// gets its platform view is listed at once, before any layout pass and without ViewOrder being set again (MAUI does not necessarily lay
-	// the container out again when a view is added below it), and laying the container out does not change the order.
+	// The container answers UIKit's accessibilityElements request with the platform views of ViewOrder at that moment, so the entry is listed
+	// before any layout pass: MAUI does not necessarily lay the container out again when a view is added below it.
 	[Fact]
 	public async Task AChildEntryIsListedAsSoonAsItHasItsPlatformView()
 	{
@@ -101,7 +98,6 @@ public partial class SemanticOrderViewTests
 			var platformView = Assert.IsType<MauiSemanticOrderView>(handler.PlatformView);
 			AssertPlatformOrder(handler, buttons[1], buttons[0]);
 
-			// Adding the view to the layout creates its platform view; the container is not laid out in between.
 			layout.Add(later);
 			Assert.NotNull(later.Handler?.PlatformView);
 
@@ -115,7 +111,6 @@ public partial class SemanticOrderViewTests
 	}
 
 	// The layout of the Sample's SemanticOrderView page: a heading that is not in ViewOrder, in the same layout as the views of the order.
-	// It must stay reachable: it is listed after the views of the order, which VoiceOver visits first.
 	[Fact]
 	public async Task ViewsThatAreNotInTheViewOrderAreListedAfterTheViewsOfTheOrder()
 	{
@@ -145,10 +140,9 @@ public partial class SemanticOrderViewTests
 		});
 	}
 
-	// Each visible view of the container is exposed once: the views of the order as themselves, first, and the rest of the content after
-	// them, in the order of the view hierarchy. A view that holds views of the order is not listed (UIKit would look into it and expose them
-	// a second time): what else it holds is listed instead. A view that holds none of them is listed as it is (UIKit exposes what it holds).
-	// Hidden views, and views whose accessibility elements are hidden, are not exposed, as without an order.
+	// A view that holds views of the order is not listed, because UIKit would look into it and expose them a second time: what else it holds
+	// is listed instead. A view that holds none of them is listed as it is (UIKit exposes what it holds). Hidden views, and views whose
+	// accessibility elements are hidden, are not exposed, as without an order.
 	[Fact]
 	public async Task EveryVisibleViewOfTheContainerIsExposedOnce()
 	{
@@ -196,16 +190,15 @@ public partial class SemanticOrderViewTests
 				Assert.True(TimesExposed(elements, notExposed) is 0, $"{NameOf(notExposed)} is exposed {TimesExposed(elements, notExposed)} times: {DescribeNativeOrder(handler, views)}.");
 			}
 
-			// After the views of the order, in the order of the view hierarchy (the two grouped labels are in one listed layout).
+			// The two grouped labels are in one listed layout, so their positions can be equal.
 			var positions = new IView[] { before, besideOrdered1, grouped1, grouped2 }.Select(visible => IndexOfExposure(elements, visible)).ToArray();
 			var inOrder = positions[0] > 1 && positions[1] > positions[0] && positions[2] > positions[1] && positions[3] >= positions[2];
 			Assert.True(inOrder, $"The rest of the content is not listed after the views of the order, in the order of the view hierarchy (positions {string.Join(", ", positions)}): {DescribeNativeOrder(handler, views)}.");
 		});
 	}
 
-	// A view that holds a view of the order and is an accessibility element itself (here a layout with a semantic description) is listed as
-	// it is: UIKit does not look into an accessibility element, so the view of the order is not exposed a second time, and the description
-	// stays the element that VoiceOver reads for what the layout holds.
+	// UIKit does not look into an accessibility element, so the view of the order is not exposed a second time, and the description stays the
+	// element that VoiceOver reads for what the layout holds.
 	[Fact]
 	public async Task AnAccessibilityElementThatHoldsAViewOfTheOrderIsListedAsItIs()
 	{
@@ -236,15 +229,12 @@ public partial class SemanticOrderViewTests
 	static NSObject PlatformViewOf(IView view) =>
 		view.Handler?.PlatformView as NSObject ?? throw new InvalidOperationException($"{NameOf(view)} has no native view.");
 
-	// The native accessibilityElements of the container: null when it is nil (UIKit's default).
 	static NSArray? AccessibilityElementsArray(SemanticOrderViewHandler handler) =>
 		(handler.PlatformView as IUIAccessibilityContainer)?.GetAccessibilityElements() as NSArray;
 
 	static NSObject[] ElementsOf(SemanticOrderViewHandler handler) =>
 		AccessibilityElementsArray(handler) is NSArray array ? NSArray.FromArray<NSObject>(array) ?? [] : [];
 
-	// A listed element exposes a view when it is the view, or when UIKit looks into it (it is a view that is not an accessibility element)
-	// and it holds the view.
 	static bool Exposes(NSObject element, NSObject view) =>
 		element.Handle == view.Handle
 		|| (element is UIView { IsAccessibilityElement: false } container && view is UIView platformView && platformView.IsDescendantOfView(container));
@@ -261,8 +251,6 @@ public partial class SemanticOrderViewTests
 		return Array.FindIndex(elements, element => Exposes(element, platformView));
 	}
 
-	// The views of the order are the first accessibilityElements, in order, and no element after them exposes one of them again. With
-	// nothing to order, accessibilityElements is nil (UIKit's default).
 	static bool IsInNativeOrder(SemanticOrderViewHandler handler, params IView[] order)
 	{
 		if (order.Length is 0)
@@ -289,7 +277,6 @@ public partial class SemanticOrderViewTests
 			return "accessibilityElements = nil";
 		}
 
-		// An element that is not one of the views is named after its type and the views that UIKit finds in it.
 		var names = ElementsOf(handler).Select(element =>
 		{
 			if (views.FirstOrDefault(view => view.Handler?.PlatformView is NSObject platformView && platformView.Handle == element.Handle) is IView known)
@@ -304,8 +291,6 @@ public partial class SemanticOrderViewTests
 		return $"accessibilityElements = [{string.Join(", ", names)}]";
 	}
 
-	// iOS builds the whole array on every request: the platform views of the order come first, in order, followed by the rest of the
-	// container's content.
 	static void AssertPlatformOrder(SemanticOrderViewHandler handler, params IView[] order)
 	{
 		var inOrder = IsInNativeOrder(handler, order);
@@ -314,8 +299,8 @@ public partial class SemanticOrderViewTests
 
 	static void AssertOrderLinks(SemanticOrderViewHandler handler, params IView[] order) => AssertPlatformOrder(handler, order);
 
-	// A view without an order is not listed among the views of the order: it is listed after them, with the rest of the container's
-	// content, or not at all.
+	// A view without an order can still be listed, after the views of the order with the rest of the container's content: it only must not be
+	// among them.
 	static void AssertNoOrder(SemanticOrderViewHandler handler, params IView[] views)
 	{
 		var elements = ElementsOf(handler).Select(element => element.Handle).ToList();
@@ -331,8 +316,6 @@ public partial class SemanticOrderViewTests
 		}
 	}
 
-	// Without a virtual view there is nothing to order: the container must keep the previous order or fall back to UIKit's default (nil),
-	// never declare an empty list of accessibility elements.
 	static void AssertPlatformOrderWithoutVirtualView(SemanticOrderViewHandler handler, params IView[] previousOrder)
 	{
 		var keptOrDefault = AccessibilityElementsArray(handler) is null || IsInNativeOrder(handler, previousOrder);

@@ -94,8 +94,8 @@ public partial class MapHandlerWindows : MapHandler
 	}
 
 	/// <summary>
-	/// Maps Pins: replaces the pins of the map page with the pins of <paramref name="map"/>, in one script per change, so that pins added one
-	/// after the other are each on the map once. A pin without a <see cref="IMapPin.Location"/> is left out.
+	/// Maps Pins: replaces the pins of the map page with the pins of <paramref name="map"/>, so that pins added one after the other are each on
+	/// the map once. A pin without a <see cref="IMapPin.Location"/> is left out.
 	/// </summary>
 	/// <remarks>
 	/// The info window that a click on a pin opens shows the pin's <see cref="Pin.Label"/> and <see cref="Pin.Address"/> as plain text: markup in

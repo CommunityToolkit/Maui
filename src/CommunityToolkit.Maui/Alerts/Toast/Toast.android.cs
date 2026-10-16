@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
-	// The platform toast that this instance showed last: PlatformToast is shared by every Toast, so another instance may have replaced it
+	// PlatformToast is shared by every Toast, so another instance may have replaced the toast that this instance showed
 	Android.Widget.Toast? shownPlatformToast;
 
 	static Android.Widget.Toast? PlatformToast { get; set; }
@@ -23,8 +23,7 @@ public partial class Toast
 
 		if (isDisposing && shownPlatformToast is not null)
 		{
-			// Only the platform toast of this instance is disposed, and forgotten while it is still the shared one: a Show or Dismiss after
-			// this one must not reach the disposed Java peer, and the toast that another instance showed stays dismissable
+			// A later Show or Dismiss must not reach the disposed Java peer, and the toast that another instance showed must stay dismissable
 			if (PlatformToast == shownPlatformToast)
 			{
 				PlatformToast = null;

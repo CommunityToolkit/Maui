@@ -95,8 +95,7 @@ public sealed partial class FileSaverImplementation
 					await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 					totalRead += bytesRead;
 
-					// The progress is in percent. Only a stream that can seek has a length; the progress of one that cannot is only the final report.
-					// The block that reaches the end of the stream is not reported either: the copy is not complete before the file stream wrote what
+					// The block that reaches the end of the stream is not reported: the copy is not complete before the file stream wrote what
 					// it buffered, so 100 is only ever the final report
 					if (stream.CanSeek && totalRead < stream.Length)
 					{
@@ -110,7 +109,7 @@ public sealed partial class FileSaverImplementation
 			}
 		}
 
-		// The copy is complete once the file stream has written all it buffered and closed the file; a copy that fails or is canceled never gets here
+		// The copy is complete once the file stream has written all it buffered and closed the file
 		progress?.Report(100);
 	}
 }

@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: ViewOrder becomes the TabIndex (1, 2, 3, ...) of the native views, in order.
 public partial class SemanticOrderViewTests
 {
 	// WinUI's default TabIndex.
@@ -28,8 +27,6 @@ public partial class SemanticOrderViewTests
 		});
 	}
 
-	// A dropped view gets its default tab index back only while it still has the tab index that the order gave it: a tab index that the app
-	// set since is kept.
 	[Fact]
 	public async Task DroppedViewKeepsATabIndexThatTheAppSetSince()
 	{
@@ -52,7 +49,6 @@ public partial class SemanticOrderViewTests
 	static FrameworkElement PlatformViewOf(IView view) =>
 		view.Handler?.PlatformView as FrameworkElement ?? throw new InvalidOperationException($"{NameOf(view)} has no native view.");
 
-	// The views of the order have the tab indexes 1, 2, 3, ... in order.
 	static bool IsInNativeOrder(SemanticOrderViewHandler handler, params IView[] order) =>
 		order.Select((view, index) => view.Handler?.PlatformView is FrameworkElement platformView && platformView.TabIndex == index + 1).All(static inPlace => inPlace);
 
@@ -78,7 +74,6 @@ public partial class SemanticOrderViewTests
 		}
 	}
 
-	// Without a virtual view the update does nothing: the indexes stay as they were.
 	static void AssertPlatformOrderWithoutVirtualView(SemanticOrderViewHandler handler, params IView[] previousOrder) =>
 		AssertPlatformOrder(handler, previousOrder);
 

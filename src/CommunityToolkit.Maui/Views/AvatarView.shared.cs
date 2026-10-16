@@ -16,7 +16,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </remarks>
 public partial class AvatarView : Border, IAvatarView
 {
-	// The Border and View properties whose defaults AvatarView changes (see SetAvatarViewDefault).
 	static readonly BindableProperty[] propertiesWithAvatarViewDefaults =
 	[
 		HorizontalOptionsProperty,
@@ -41,7 +40,6 @@ public partial class AvatarView : Border, IAvatarView
 		Text = AvatarViewDefaults.Text,
 	};
 
-	// The default StrokeShape, while it is the StrokeShape (see HandleAvatarViewDefault).
 	RoundRectangle? defaultStrokeShape;
 	bool wasImageLoading;
 
@@ -296,7 +294,7 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	}
 
-	// The image source loaded: the image replaces the text that a failed load left (the source itself can change, a UriImageSource's Uri for example).
+	// A failed load can be followed by a successful one without ImageSource being set again: the source itself can change, a UriImageSource's Uri for example.
 	void HandleImageSourceLoaded(object? sender, EventArgs e) => ToolkitDispatcherExtensions.DispatchIfRequired(Dispatcher, () =>
 	{
 		if (avatarImage.Source is not null && ReferenceEquals(Content, avatarLabel))
@@ -306,7 +304,6 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	});
 
-	// The image source failed to load (for example a URL that cannot be reached): the image would stay empty, so the text is shown instead.
 	void HandleImageSourceFailedToLoad(object? sender, EventArgs e) => ToolkitDispatcherExtensions.DispatchIfRequired(Dispatcher, () =>
 	{
 		if (ReferenceEquals(Content, avatarImage))
@@ -315,9 +312,8 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	});
 
-	// Gives the property its AvatarView default as a value from the handler (Element.SetValueFromRenderer), not as a local value: a local value takes
-	// precedence over every Style setter, so no Style could size an AvatarView or change its stroke, while a value from the handler only stays until
-	// another value replaces it (a local value, a binding, a Style, a trigger or a visual state).
+	// Element.SetValueFromRenderer instead of a local value: a local value takes precedence over every Style setter, so no Style could size an AvatarView
+	// or change its stroke, while a value from the handler only stays until another value replaces it.
 	void SetAvatarViewDefault(BindableProperty property)
 	{
 		object defaultValue = property.PropertyName switch
@@ -353,15 +349,14 @@ public partial class AvatarView : Border, IAvatarView
 	{
 		if (property == StrokeShapeProperty && defaultStrokeShape is not null && !ReferenceEquals(StrokeShape, defaultStrokeShape))
 		{
-			// Another value replaced the default shape, or it was cleared. Border removes the previous StrokeShape from its logical children, but it reads
-			// that shape once a value from the handler is already discarded: the default shape would stay a logical child.
+			// Border removes the previous StrokeShape from its logical children, but it reads that shape once a value from the handler is already
+			// discarded: the default shape would stay a logical child.
 			RemoveLogicalChild(defaultStrokeShape);
 			defaultStrokeShape = null;
 		}
 
 		if (!IsSet(property))
 		{
-			// The value that replaced the default was removed (ClearValue, or a Style, a trigger or a visual state that no longer applies): the default comes back.
 			SetAvatarViewDefault(property);
 
 			if (property == StrokeShapeProperty && defaultStrokeShape is not null)
@@ -427,8 +422,8 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	}
 
-	// The image of an AvatarView. The image handler reports through IImageSourcePartEvents whether the image source loaded: MAUI's Image has no
-	// event for a source that fails to load, and then shows nothing. Partial for CsWinRT on Windows (CsWinRT1028: Image implements WinRT interfaces).
+	// MAUI's Image has no event for a source that fails to load, and then shows nothing: the image handler reports whether the image source loaded
+	// through IImageSourcePartEvents. Partial for CsWinRT on Windows (CsWinRT1028: Image implements WinRT interfaces).
 	sealed partial class AvatarImage : Image, IImageSourcePartEvents
 	{
 		public event EventHandler? SourceLoaded;

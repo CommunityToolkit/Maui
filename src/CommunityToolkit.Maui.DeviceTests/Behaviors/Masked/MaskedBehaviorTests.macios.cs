@@ -3,10 +3,10 @@ using PlatformView = UIKit.UIView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// iOS and Mac Catalyst: an Entry is a UITextField. UIKit delivers the keystrokes that are still pending inside the setter of
-// UITextField.Text and then stores the value it was given, so a mask written after the Text change, from the dispatcher, dropped the
-// characters typed in between ("abcdef" typed fast became "ab-cf"). The behavior applies the mask while the Text change is handled: these
-// tests change the text through UIKit and assert the masked text before the UI thread runs anything else.
+// UIKit delivers the keystrokes that are still pending inside the setter of UITextField.Text and then stores the value it was given, so a
+// mask written after the Text change, from the dispatcher, dropped the characters typed in between ("abcdef" typed fast became "ab-cf").
+// The behavior applies the mask while the Text change is handled, so these tests assert the masked text before the UI thread runs
+// anything else.
 public partial class MaskedBehaviorTests
 {
 	static void SetPlatformText(PlatformView platformView, string text) => ((UITextField)platformView).Text = text;
@@ -44,8 +44,8 @@ public partial class MaskedBehaviorTests
 		});
 	}
 
-	// Code that sets the text of the UITextField (MauiTextField raises TextPropertySet), with a text longer than the mask: every pass of the
-	// behavior, until the text fits the mask, is done when the setter returns.
+	// MauiTextField raises TextPropertySet when code sets the text, so every pass of the behavior, until the text fits the mask, is done
+	// when the setter returns.
 	[Fact]
 	public async Task TextSetOnTheTextFieldIsMaskedBeforeTheSetterReturns()
 	{

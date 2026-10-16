@@ -24,7 +24,6 @@ sealed partial class MediaControlsService : Service
 	PlayerNotificationManager? playerNotificationManager;
 	NotificationCompat.Builder? notificationBuilder;
 
-	// What the notification shows: the session of the builder's MediaStyle, and the player of the PlayerNotificationManager (before Android 13)
 	MediaSession? notificationSession;
 	PlatformMediaElement? legacyNotificationPlayer;
 

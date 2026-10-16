@@ -2,19 +2,10 @@ using CommunityToolkit.Maui.Storage;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// FileSaver on a device. FileSaverImplementation (Core, Essentials/FileSaver) is one class in several files: the shared file maps what
-// the platform does to a FileSaverResult, and the Android, iOS/Mac Catalyst and Windows files talk to the system's document picker.
-// This file holds what is the same everywhere; each platform partial (FileSaverTests.android.cs, .macios.cs, .windows.cs) drives its
-// own picker, answers it the way a person would, and reads the native state back.
-//
-// The pickers are answered by the test: Android launches into a fake picker activity that records the intent and delivers the result
-// through the real ActivityResultRegistry, and iOS/Mac Catalyst present the real UIDocumentPickerViewController and are answered through its
-// delegate. Windows has no way to answer the system dialog, so its interactive paths are under RequiresUserInteraction.
 [Category(TestCategory.FileSaver)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class FileSaverTests : FilesTestBase
 {
-	// The four SaveAsync overloads, once through a FileSaverImplementation and once through the static FileSaver facade.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -44,9 +35,8 @@ public partial class FileSaverTests : FilesTestBase
 		await AssertNoPickerWasStartedAsync();
 	}
 
-	// A null file name, which an app passes on when it asks for the name with a prompt that the person cancels, is an ArgumentNullException
-	// that names it, in every overload and before anything reaches the platform: Android used to fail on it with a NullReferenceException,
-	// iOS and Mac Catalyst with the ArgumentNullException of NSUrl.Append, once they had created a temporary folder that they left behind.
+	// An app passes a null file name on when the person cancels the prompt that asked for it. Android used to fail with a NullReferenceException,
+	// and iOS and Mac Catalyst with the ArgumentNullException of NSUrl.Append, once they had created a temporary folder that they left behind.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -72,7 +62,7 @@ public partial class FileSaverTests : FilesTestBase
 		await AssertNoPickerWasStartedAsync();
 	}
 
-	// A null stream is the same, where it used to fail only once the picker had returned the document to write it to.
+	// A null stream used to fail only once the picker had returned the document to write it to.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -105,7 +95,6 @@ public partial class FileSaverTests : FilesTestBase
 		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
 	}
 
-	/// <summary>Calls one of the four overloads. Overloads 0 and 2 pass <paramref name="initialPath"/>; 2 and 3 pass the progress.</summary>
 	static Task<FileSaverResult> SaveAsync(int overload, bool useStaticApi, string fileName, Stream stream, IProgress<double> progress, CancellationToken token, string initialPath = "") =>
 		useStaticApi
 			? overload switch

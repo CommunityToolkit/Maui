@@ -12,16 +12,11 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// KeyboardExtensions (Android, iOS, Mac Catalyst, Windows): HideKeyboardAsync, ShowKeyboardAsync and IsSoftKeyboardShowing for an
-// ITextInput. The shared code gets the platform view from the view's handler; every platform partial reads and drives the real soft
-// keyboard state: Android (input method manager, the IME window insets, and the visible display frame of the window as an independent
-// oracle), iOS (first responder), Mac Catalyst (not supported: NotSupportedException), Windows (input pane). This file holds what does not
-// depend on the platform view, and the helpers for the "called from a background thread" tests of every platform.
 [Category(TestCategory.KeyboardExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 {
-	// How long a test waits for a call that must complete (it never waits that long when the toolkit behaves).
+	// A test never waits that long when the toolkit behaves.
 	static readonly TimeSpan callTimeout = TimeSpan.FromSeconds(10);
 
 	public enum TextInputKind
@@ -107,9 +102,8 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		Assert.Empty(handler.FocusRequests);
 	}
 
-	// The unfocused path does its platform work through the UI thread's dispatcher (a focused view is served at once). Whether the Focus
-	// command itself is sent directly or through the dispatcher is an implementation detail (the toolkit dispatches it for callers on a
-	// background thread, as here); the Focus command is asserted by each platform's unfocused-path tests once the call completes.
+	// The Focus command is not asserted here: whether it is sent directly or through the dispatcher is an implementation detail, and each
+	// platform's unfocused-path tests assert it once the call completes.
 	[Fact]
 	public async Task ShowKeyboardAsyncOfAnUnfocusedViewWaitsForTheUIThreadAndStopsWhenCancelled()
 	{
@@ -122,7 +116,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 
 		var task = input.ShowKeyboardAsync(cancellationTokenSource.Token).AsTask();
 
-		// The dispatcher holds the work back, so the call is still waiting for the UI thread.
 		Assert.NotEmpty(dispatcher.Pending);
 		Assert.False(task.IsCompleted);
 
@@ -138,14 +131,11 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		var handler = await InvokeOnMainThreadAsync(() => new ObjectPlatformViewHandler(CreateExpectedPlatformView()));
 		var input = new TextInputStub { Handler = handler };
 
-		// There is no IDispatcher to dispatch the show request to.
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await input.ShowKeyboardAsync());
 
 		Assert.Contains("MauiContext", exception.Message);
 	}
 
-	// A call cancelled while it waits for the UI thread makes no platform call when the UI thread gets to its work later: here the view is
-	// not focused (the Focus command is the first platform call of the unfocused path).
 	[Fact]
 	public async Task ShowKeyboardAsyncCancelledWhileWaitingForTheUIThreadDoesNotFocusTheViewLater()
 	{
@@ -162,18 +152,16 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		cancellationTokenSource.Cancel();
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(callTimeout));
 
-		// The UI thread now runs the work that was queued before the cancellation.
 		await InvokeOnMainThreadAsync(dispatcher.Run);
 
 		Assert.Empty(handler.FocusRequests);
 		Assert.Empty(dispatcher.Pending);
 	}
 
-	// A dispatcher that cannot queue work (Android's Handler.post and Windows' DispatcherQueue.TryEnqueue refuse it while the UI thread's
-	// queue shuts down): a call that needs the UI thread fails with InvalidOperationException instead of waiting forever (bounded, see
-	// callTimeout: a call that waits forever fails with a TimeoutException instead of hanging the run). The Focus command of an unfocused
-	// view needs the UI thread everywhere; hiding the keyboard and showing it for a focused view need it on iOS (UIKit) and Windows (the
-	// XamlRoot of the view) only (see KeyboardActionsOfAFocusedViewFromABackgroundThreadDoNotNeedTheDispatcher).
+	// Android's Handler.post and Windows' DispatcherQueue.TryEnqueue refuse work while the UI thread's queue shuts down: a call that needs the
+	// UI thread must then fail instead of waiting forever. The Focus command of an unfocused view needs the UI thread everywhere; hiding the
+	// keyboard and showing it for a focused view need it on iOS (UIKit) and Windows (the XamlRoot of the view) only (see
+	// KeyboardActionsOfAFocusedViewFromABackgroundThreadDoNotNeedTheDispatcher).
 	[Theory]
 	[InlineData(KeyboardCall.Show, false)]
 #if IOS || WINDOWS
@@ -195,10 +183,8 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 	}
 
 #if ANDROID || MACCATALYST
-	// Android's input method manager can be used on any thread, and Mac Catalyst does not support the soft keyboard (NotSupportedException):
-	// hiding the keyboard and showing it for a focused view call the platform on the calling thread, as IsSoftKeyboardShowing does, so they
-	// do not depend on the UI thread (on Android a caller on another thread is answered even while the UI thread waits for it: see the
-	// Android tests).
+	// Android's input method manager can be used on any thread, and Mac Catalyst does not support the soft keyboard (NotSupportedException),
+	// so hiding the keyboard and showing it for a focused view do not depend on the UI thread there.
 	[Theory]
 	[InlineData(KeyboardCall.Show)]
 	[InlineData(KeyboardCall.Hide)]
@@ -223,9 +209,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 	}
 #endif
 
-	// The unfocused path queues its request to show the keyboard after the Focus command, on the UI thread: when the dispatcher queues the
-	// Focus command but cannot queue that request (its UI thread's queue shuts down in between), the call fails with InvalidOperationException
-	// instead of waiting forever.
 	[Fact]
 	public async Task ShowKeyboardAsyncOfAnUnfocusedViewFromABackgroundThreadThrowsWhenTheDispatcherStopsQueueingAfterTheFocusCommand()
 	{
@@ -241,8 +224,7 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		Assert.IsType<FocusRequest>(Assert.Single(handler.FocusRequests));
 	}
 
-	// A caller on a background thread goes on on a background thread once the call completes, not on the UI thread that did the work (the
-	// unfocused path does its last step on the UI thread).
+	// The unfocused path does its last step on the UI thread, where the background caller's code after the await must not run.
 	[Fact]
 	public async Task ABackgroundCallerOfShowKeyboardAsyncOfAnUnfocusedViewDoesNotGoOnOnTheUIThread()
 	{
@@ -275,8 +257,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 	}
 
 #if IOS || ANDROID
-	// A call cancelled after its Focus command ran, while its request to show the keyboard waits for the UI thread, does not ask the platform
-	// view to show the keyboard when the UI thread gets to that request later.
 	[Fact]
 	public async Task ShowKeyboardAsyncCancelledAfterTheFocusCommandDoesNotShowTheKeyboardLater()
 	{
@@ -290,7 +270,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		var task = input.ShowKeyboardAsync(cancellationTokenSource.Token).AsTask();
 		Assert.True(await AssertHelpers.Wait(() => dispatcher.Pending.Count is 1, timeout: 5000), "The Focus command was not queued.");
 
-		// The UI thread runs the Focus command; the call then queues its request to show the keyboard.
 		await InvokeOnMainThreadAsync(dispatcher.Run);
 		Assert.True(await AssertHelpers.Wait(() => dispatcher.Pending.Count is 1, timeout: 5000), "The request to show the keyboard was not queued after the Focus command.");
 		Assert.IsType<FocusRequest>(Assert.Single(handler.FocusRequests));
@@ -299,7 +278,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task.WaitAsync(callTimeout));
 		var showRequestsBefore = showRequests();
 
-		// The UI thread now gets to the request that was queued before the cancellation.
 		await InvokeOnMainThreadAsync(dispatcher.Run);
 
 		var showRequestsAfter = showRequests() - showRequestsBefore;
@@ -309,9 +287,8 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 #endif
 
 	// IsSoftKeyboardShowing is synchronous, so it only switches to the UI thread where the platform requires it (iOS: UIKit's
-	// IsFirstResponder; Windows: the XamlRoot of the view), and fails there when the dispatcher cannot queue the call instead of blocking
-	// forever. Android reads the root window insets, and Mac Catalyst throws NotSupportedException, on the calling thread: the dispatcher is
-	// not involved.
+	// IsFirstResponder; Windows: the XamlRoot of the view). Android reads the root window insets, and Mac Catalyst throws
+	// NotSupportedException, on the calling thread.
 	[Fact]
 	public async Task IsSoftKeyboardShowingFromABackgroundThreadDoesNotHangWhenTheDispatcherCannotQueueTheCall()
 	{
@@ -343,7 +320,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
 	};
 
-	// Makes the call on a thread-pool thread, as an app does from a background task, and returns its result (bounded, see callTimeout).
 	static Task<bool> CallFromABackgroundThreadAsync(ITextInput input, KeyboardCall call) =>
 		Task.Run(async () =>
 		{
@@ -364,16 +340,14 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 	static void AssertCannotRetrievePlatformView(KeyboardExtensions.SoftKeyboardException exception) =>
 		Assert.Equal($"Unable to retrieve {typeof(PlatformView)} to determine soft keyboard status", exception.Message);
 
-	// The IMauiContext of a stub handler whose services only hold the given dispatcher.
 	static IMauiContext CreateMauiContext(IDispatcher dispatcher) =>
 		new DeviceTestMauiContext(new ServiceCollection().AddSingleton(dispatcher).BuildServiceProvider());
 
-	// Holds back everything dispatched to it until Run is called (work may be dispatched from any thread).
 	sealed class ManualDispatcher : IDispatcher
 	{
+		// Work may be dispatched from any thread, so every access to the held back work is locked.
 		readonly List<Action> pending = [];
 
-		// A copy of the work that is held back.
 		public IReadOnlyList<Action> Pending
 		{
 			get
@@ -401,7 +375,7 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 
 		public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
 
-		// Runs the work that is held back now (work dispatched while it runs is held back until the next Run).
+		// Work dispatched while it runs is held back until the next Run.
 		public void Run()
 		{
 			Action[] actions;
@@ -418,8 +392,7 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		}
 	}
 
-	// Queues the first call on the UI thread, then refuses every later call (a UI thread whose queue shuts down after the first call), and
-	// counts the requests.
+	// Simulates a UI thread whose queue shuts down after the first call.
 	sealed class FirstCallOnlyDispatcher : IDispatcher
 	{
 		int requests;
@@ -444,7 +417,7 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
 	}
 
-	// Refuses everything dispatched to it, as a dispatcher whose UI thread's queue shuts down, and counts the requests.
+	// Simulates a dispatcher whose UI thread's queue shuts down.
 	sealed class RefusingDispatcher : IDispatcher
 	{
 		int requests;
@@ -464,7 +437,6 @@ public partial class KeyboardExtensionsTests : CommunityToolkitHandlerTestBase
 		public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
 	}
 
-	// An ITextInput that is not an IView.
 	sealed class NonViewTextInput : ITextInput
 	{
 		public string Text { get; set; } = string.Empty;

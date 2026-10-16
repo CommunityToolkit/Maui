@@ -10,11 +10,6 @@ using PlatformView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: the toolkit shows and hides the keyboard through the input method manager (of the platform view's context, with the
-// window token of the focused view or of the platform view) and reads the IME window insets (AndroidX) to know whether it is showing.
-// TextViews are asked directly, ViewGroups (SearchView) through their first EditText, any other view cannot show the keyboard.
-// Whether the keyboard really shows is read from the window's visible display frame (VisibleFrame), an oracle that shares no code with
-// the toolkit; IsKeyboardVisible (the same AndroidX call as the toolkit) only prepares and cleans up.
 public partial class KeyboardExtensionsTests
 {
 	const int imeTimeout = 5000;
@@ -120,8 +115,6 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// The user dismissed the keyboard (here: HideKeyboardAsync) and the view stays focused: ShowKeyboardAsync takes the focused path and
-	// asks the input method manager directly.
 	[Theory]
 	[InlineData(TextInputKind.Entry)]
 	[InlineData(TextInputKind.Editor)]
@@ -142,7 +135,7 @@ public partial class KeyboardExtensionsTests
 
 			try
 			{
-				// Focuses the view and shows the keyboard (the result of this first call is asserted by the tests of the unfocused path).
+				// The result of this first call is asserted by the tests of the unfocused path.
 				await input.ShowKeyboardAsync();
 				Assert.True(await Wait(() => frame.ShowsKeyboard, imeTimeout), $"The soft keyboard did not show: {frame}.");
 				Assert.True(await input.HideKeyboardAsync(), "HideKeyboardAsync returned false.");
@@ -161,8 +154,6 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// Calls made off the UI thread (an app's background task) behave as on the UI thread: ShowKeyboardAsync dispatches its platform call
-	// to the UI thread itself.
 	[Theory]
 	[InlineData(KeyboardCall.Show)]
 	[InlineData(KeyboardCall.Hide)]
@@ -185,7 +176,6 @@ public partial class KeyboardExtensionsTests
 			{
 				if (call is not KeyboardCall.Show)
 				{
-					// Hide and IsShowing are called while the keyboard shows (shown from the UI thread).
 					Assert.True(await input.ShowKeyboardAsync(), "ShowKeyboardAsync returned false.");
 					Assert.True(await Wait(() => frame.ShowsKeyboard, imeTimeout), $"The soft keyboard did not show: {frame}.");
 				}
@@ -203,9 +193,8 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// IsSoftKeyboardShowing reads the root window insets on the calling thread: a caller on another thread is answered even while the UI
-	// thread waits for it (app code that blocks the UI thread on a task, which the toolkit cannot forbid). The wait is bounded: a call that
-	// needs the UI thread is not answered until the wait gives up.
+	// IsSoftKeyboardShowing reads the root window insets on the calling thread, so it does not need the UI thread. The wait is bounded: a
+	// call that needs the UI thread is not answered until the wait gives up.
 	[Fact]
 	public async Task IsSoftKeyboardShowingFromABackgroundThreadAnswersWhileTheUIThreadWaitsForIt()
 	{
@@ -226,9 +215,8 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// HideKeyboardAsync, and ShowKeyboardAsync of a focused view, call the input method manager on the calling thread too (only the Focus
-	// command of an unfocused view, and the request to show the keyboard that follows it, need the UI thread): a caller on another thread is
-	// completed even while the UI thread waits for it. The wait is bounded, as above.
+	// HideKeyboardAsync, and ShowKeyboardAsync of a focused view, call the input method manager on the calling thread too: only the Focus
+	// command of an unfocused view, and the request to show the keyboard that follows it, need the UI thread.
 	[Fact]
 	public async Task HideKeyboardAsyncFromABackgroundThreadCompletesWhileTheUIThreadWaitsForIt()
 	{
@@ -285,7 +273,7 @@ public partial class KeyboardExtensionsTests
 
 			// Nothing is showing, so asking the platform to hide the keyboard changes nothing and it answers the same way again.
 			// The answer depends on the Android version (observed: API 28 false, API 36 true), so the platform is the oracle.
-			var expected = InputMethodManagerHides(platformView);
+			var expected = AskInputMethodManagerToHide(platformView);
 			var hidden = await ((ITextInput)entry).HideKeyboardAsync();
 
 			Assert.Equal(expected, hidden);
@@ -352,7 +340,6 @@ public partial class KeyboardExtensionsTests
 			Assert.Null(platformView.WindowToken);
 			var input = (ITextInput)entry;
 
-			// No window: no window token to hide the keyboard from, no root window insets, and the input method cannot serve the view.
 			Assert.False(await input.HideKeyboardAsync());
 			Assert.False(input.IsSoftKeyboardShowing());
 			Assert.False(await input.ShowKeyboardAsync());
@@ -400,7 +387,6 @@ public partial class KeyboardExtensionsTests
 		var editText = await InvokeOnMainThreadAsync(() => new EditText(ActivityContext));
 		var handler = new ObjectPlatformViewHandler(editText, MauiContext)
 		{
-			// What the real handler does for the Focus command.
 			OnInvoke = (command, _) =>
 			{
 				if (command == nameof(IView.Focus))
@@ -483,8 +469,6 @@ public partial class KeyboardExtensionsTests
 		}));
 	}
 
-	// A TextView that is not an EditText (a label, like the search badge a SearchView starts with) cannot take text input: the keyboard is
-	// shown for the first EditText of the group.
 	[Fact]
 	public async Task ShowKeyboardAsyncShowsTheKeyboardOfTheFirstEditTextInsideAViewGroupThatStartsWithALabel()
 	{
@@ -606,8 +590,6 @@ public partial class KeyboardExtensionsTests
 					Assert.Null(other.Context!.GetSystemService(Context.InputMethodService));
 					Assert.NotNull(other.Context.GetActivityOrNull());
 
-					// The activity's focused view (the entry) provides the window token and the context: a view that is not focused, and
-					// has no input method manager, can still hide the keyboard.
 					Assert.True(await otherInput.HideKeyboardAsync());
 
 					Assert.True(await Wait(() => !frame.ShowsKeyboard, imeTimeout), $"The soft keyboard did not hide: {frame}.");
@@ -634,9 +616,9 @@ public partial class KeyboardExtensionsTests
 			Assert.Null(ActivityContext.GetActivityOrNull()?.Window?.CurrentFocus);
 			Assert.False(IsKeyboardVisible(view));
 
-			// Nothing is focused, so the window token and the context come from the view; there is no keyboard to hide and the platform
-			// answers the way it does for any hide request without a keyboard (it depends on the Android version).
-			var expected = InputMethodManagerHides(view);
+			// There is no keyboard to hide, so the platform answers the way it does for any hide request without a keyboard (it depends on
+			// the Android version).
+			var expected = AskInputMethodManagerToHide(view);
 			var hidden = await input.HideKeyboardAsync();
 
 			Assert.Equal(expected, hidden);
@@ -705,7 +687,6 @@ public partial class KeyboardExtensionsTests
 					Assert.NotNull(view.WindowToken);
 					Assert.Null(view.Context!.GetSystemService(Context.InputMethodService));
 
-					// The view has a window token but its context has no input method manager: nothing is hidden.
 					Assert.False(await input.HideKeyboardAsync());
 
 					Assert.True(frame.ShowsKeyboard, $"The soft keyboard was hidden: {frame}.");
@@ -740,7 +721,6 @@ public partial class KeyboardExtensionsTests
 				Assert.True(await Wait(() => frame.ShowsKeyboard, imeTimeout), $"The soft keyboard did not show: {frame}.");
 				Assert.Null(detached.WindowToken);
 
-				// A view that is not in a window has no window token to hide the keyboard from.
 				Assert.False(await input.HideKeyboardAsync());
 
 				Assert.True(frame.ShowsKeyboard, $"The soft keyboard was hidden: {frame}.");
@@ -754,7 +734,7 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// Every test leaves the soft keyboard hidden: the next test starts with no keyboard and no focused view.
+	// The next test must start with no keyboard and no focused view.
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -780,15 +760,14 @@ public partial class KeyboardExtensionsTests
 
 	static PlatformView CreateExpectedPlatformView() => new EditText(ActivityContext);
 
-	// What the platform itself answers when asked to hide the keyboard of the view's window.
-	static bool InputMethodManagerHides(AView view)
+	static bool AskInputMethodManagerToHide(AView view)
 	{
 		var inputMethodManager = (InputMethodManager)view.Context!.GetSystemService(Context.InputMethodService)!;
 		return inputMethodManager.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
 	}
 
 	// Android never shows the soft keyboard while the device reports a hardware keyboard (an AVD with hw.keyboard=yes), unless the user turned
-	// "show_ime_with_hard_keyboard" on. The tests that need the keyboard to appear skip visibly there; the pooled emulators have no hardware keyboard.
+	// "show_ime_with_hard_keyboard" on. The pooled emulators have no hardware keyboard.
 	static void SkipWhenTheSoftKeyboardCannotShow()
 	{
 		var configuration = ActivityContext.Resources!.Configuration!;
@@ -812,7 +791,7 @@ public partial class KeyboardExtensionsTests
 		await Wait(() => !IsKeyboardVisible(view), imeTimeout);
 	}
 
-	// Adds the view to the runner activity's content (AttachAndRun needs a view whose context is an activity).
+	// AttachAndRun needs a view whose context is an activity.
 	static async Task AttachToActivityAsync(AView view, Func<Task> action)
 	{
 		var activity = (Android.App.Activity?)ActivityContext.GetActivityOrNull() ?? throw new InvalidOperationException("The runner's activity is not available.");
@@ -831,9 +810,8 @@ public partial class KeyboardExtensionsTests
 	}
 
 	// An oracle that shares no code with the toolkit (which asks AndroidX for the IME window insets): the window manager's visible display
-	// frame of the window loses the soft keyboard's height at its bottom, whatever the soft input mode (pan or resize) is. The frame is
-	// recorded while no keyboard shows; the keyboard counts as showing while the frame is more than 100 dp shorter (more than any
-	// navigation bar, less than any soft keyboard).
+	// frame of the window loses the soft keyboard's height at its bottom, whatever the soft input mode (pan or resize) is. The keyboard counts
+	// as showing while the frame is more than 100 dp shorter (more than any navigation bar, less than any soft keyboard).
 	sealed class VisibleFrame
 	{
 		const int minimumKeyboardHeightInDp = 100;
@@ -866,21 +844,19 @@ public partial class KeyboardExtensionsTests
 		}
 	}
 
-	// An EditText whose context counts the lookups of the input method manager, which the toolkit looks up to show the keyboard.
+	// The toolkit looks up the input method manager to show the keyboard, so counting the lookups counts the show requests.
 	static (PlatformView PlatformView, Func<int> ShowRequests) CreatePlatformViewThatCountsShowRequests()
 	{
 		var context = new ContextThatCountsInputMethodManagerLookups(ActivityContext);
 		return (new EditText(context), () => context.Lookups);
 	}
 
-	// A context that has everything of the wrapped context except an input method manager.
 	sealed class ContextWithoutInputMethodManager(Context baseContext) : ContextWrapper(baseContext)
 	{
 		public override Java.Lang.Object? GetSystemService(string? name) =>
 			name == InputMethodService ? null : base.GetSystemService(name);
 	}
 
-	// A context that counts the lookups of its input method manager.
 	sealed class ContextThatCountsInputMethodManagerLookups(Context baseContext) : ContextWrapper(baseContext)
 	{
 		int lookups;
@@ -901,7 +877,7 @@ public partial class KeyboardExtensionsTests
 
 static class KeyboardExtensionsTestsAndroidExtensions
 {
-	// The activity that a context is (or wraps), like MAUI's internal Context.GetActivity().
+	// Mirrors MAUI's internal Context.GetActivity().
 	public static Android.App.Activity? GetActivityOrNull(this Context? context)
 	{
 		while (context is not null)

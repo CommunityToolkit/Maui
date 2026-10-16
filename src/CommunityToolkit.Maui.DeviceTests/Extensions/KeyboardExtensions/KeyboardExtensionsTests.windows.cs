@@ -9,12 +9,8 @@ using WWindow = Microsoft.UI.Xaml.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows: the toolkit drives the InputPane of the window that hosts the view (InputPaneInterop.GetForWindow of the window of the view's
-// XamlRoot): TryHide, TryShow and Visible. AttachAndRun hosts every view in a WinUI window of its own, so the oracle is the pane of that
-// window, which the tests take from the test's MauiContext (the toolkit takes it from the view). A desktop without a touch keyboard never
-// shows the pane: tests that need it to appear first probe the pane itself (never the toolkit) and skip visibly when it refuses; such a
-// probe leaves the view focused (as MAUI reports it), so ShowKeyboardAsync takes its focused path. On a machine without a touch keyboard
-// (the Windows 11 VM of the local runs, and windows-latest in CI) the tests that need the pane to show skip (environment).
+// A desktop without a touch keyboard never shows the input pane (the Windows 11 VM of the local runs and windows-latest in CI have none),
+// so the tests that need the pane to show probe the pane itself, never the toolkit, and skip visibly when it refuses.
 public partial class KeyboardExtensionsTests
 {
 	const int inputPaneTimeout = 3000;
@@ -97,7 +93,6 @@ public partial class KeyboardExtensionsTests
 		});
 	}
 
-	// Calls made off the UI thread (an app's background task) behave as on the UI thread, as on Android.
 	[Theory]
 	[InlineData(KeyboardCall.Show)]
 	[InlineData(KeyboardCall.Hide)]
@@ -118,7 +113,6 @@ public partial class KeyboardExtensionsTests
 			{
 				if (call is not KeyboardCall.Show)
 				{
-					// Hide and IsShowing are called while the pane shows (shown from the UI thread).
 					Assert.True(await input.ShowKeyboardAsync(), "ShowKeyboardAsync returned false.");
 					Assert.True(await Wait(() => inputPane.Visible, inputPaneTimeout), "The input pane did not show.");
 				}
@@ -138,7 +132,8 @@ public partial class KeyboardExtensionsTests
 
 	static PlatformView CreateExpectedPlatformView() => new WTextBox();
 
-	// The input pane of the window that hosts the view under test (AttachAndRun takes that window from the test's MauiContext).
+	// AttachAndRun hosts every view in a WinUI window of its own, which the tests take from the test's MauiContext (the toolkit takes it
+	// from the view).
 	InputPane InputPaneOfTheHostWindow()
 	{
 		var window = (WWindow?)MauiContext.Services.GetService(typeof(WWindow)) ?? throw new InvalidOperationException("The test's MauiContext has no WinUI window.");
@@ -148,10 +143,8 @@ public partial class KeyboardExtensionsTests
 		return InputPaneInterop.GetForWindow(windowHandle);
 	}
 
-	// Decides from the pane itself, never from the toolkit, whether this machine can show a touch keyboard: the view's text control is
-	// focused (the pane shows for a focused text control), the pane is asked to show, and is hidden again. The view stays focused: WinUI
-	// raises GotFocus asynchronously, so the test waits until MAUI reports the focus, and ShowKeyboardAsync then always takes its focused
-	// path (ShowKeyboard of the platform view, no Focus command).
+	// The pane only shows for a focused text control. The view stays focused: WinUI raises GotFocus asynchronously, so the test waits until
+	// MAUI reports the focus, and ShowKeyboardAsync then always takes its focused path (no Focus command).
 	static async Task SkipWhenTheInputPaneCannotShowAsync(IView view, IPlatformViewHandler handler, InputPane inputPane)
 	{
 		if (handler.PlatformView is WControl control)

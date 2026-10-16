@@ -34,8 +34,7 @@ partial class CameraManager
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	Stream? videoRecordingStream;
 
-	// Serializes StartVideoRecording and StopVideoRecording, like on Android: a start waits until a stop that waits for AVFoundation has
-	// returned its video, instead of releasing the recording that the stop ends (and deleting its movie)
+	// A start must not release the recording that a stop still waits for AVFoundation to finish (and delete its movie), like on Android
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 	CMMotionManager? motionManager;
 	bool isDisposed;
@@ -410,7 +409,6 @@ partial class CameraManager
 			// Ignore audio configuration issues; proceed with video-only recording
 		}
 
-		// The configuration is committed also when adding the movie output fails (see PlatformStartCameraPreview)
 		try
 		{
 			videoOutput = new AVCaptureMovieFileOutput();
@@ -503,16 +501,13 @@ partial class CameraManager
 			return Stream.Null;
 		}
 
-		// The recording has ended: its resources (movie output, microphone input, temporary file) are released also when it failed or when
-		// copying it fails
 		try
 		{
 			var hasMovie = File.Exists(fileName);
 
-			// AVFoundation reported that the recording failed (AVCaptureMovieFileOutputRecordingDelegate). When it still reports the movie as
-			// successfully recorded (it stopped early, for example after an interruption or when the disk filled up), the movie recorded until
-			// then is returned. Otherwise there is no usable movie: the caller gets the failure instead of its stream, which would look like a
-			// successful recording
+			// When AVFoundation still reports the movie as successfully recorded (it stopped early, for example after an interruption or when
+			// the disk filled up), the movie recorded until then is returned. Otherwise there is no usable movie: the caller gets the failure
+			// instead of its stream, which would look like a successful recording
 			if (recordingDelegate?.FailureReason is string failureReason)
 			{
 				if (!recordingDelegate.IsRecordingSuccessfullyFinished || !hasMovie)
@@ -557,7 +552,6 @@ partial class CameraManager
 		{
 			captureSession.BeginConfiguration();
 
-			// The configuration is committed also when removing the input or the output fails (see PlatformStartCameraPreview)
 			try
 			{
 				if (audioInput is not null)
@@ -620,8 +614,6 @@ partial class CameraManager
 
 		if (!TryConfigureAVCaptureConnection(photoOutput, out var errorMessage))
 		{
-			// Without an active and enabled video connection (for example without a camera input in the session) capturePhotoWithSettings:delegate:
-			// raises NSInvalidArgumentException
 			Trace.TraceWarning(errorMessage);
 			cameraView.OnMediaCapturedFailed(errorMessage);
 			return;
@@ -793,21 +785,16 @@ class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskComplet
 	// Written on the queue on which AVFoundation calls the delegate, read on the thread that releases the recording
 	volatile bool hasFinished;
 
-	// Whether AVFoundation reported the end of the recording; until then it can still call this delegate
 	public bool HasFinished => hasFinished;
 
-	// Why AVFoundation reported that the recording failed; null while it records and once it finished without an error
 	public string? FailureReason { get; private set; }
 
-	// Whether the movie file holds a usable recording: true once AVFoundation finished the recording without an error, or with an error whose
-	// AVErrorRecordingSuccessfullyFinishedKey is YES (the recording stopped early, for example after an interruption or when the disk filled up)
 	public bool IsRecordingSuccessfullyFinished { get; private set; }
 
 	public override void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, NSError? error)
 	{
 		// AVFoundation finishes a recording that failed with an error (the disk is full, the session was interrupted, ...), and says in the error
-		// whether the movie was written all the same. StopVideoRecording returns such a movie, and throws a CameraException for a recording that
-		// left no usable movie, like Android does for a recording that CameraX finalizes without a usable file
+		// whether the movie was written all the same
 		if (error is null)
 		{
 			IsRecordingSuccessfullyFinished = true;

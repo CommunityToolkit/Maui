@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- dotnet/maui's runner source generator, vendored: see ../CommunityToolkit.Maui.DeviceTests.Runners/README.md.
-       It generates each device-test app's platform entry points (Android MainApplication/MainActivity/TestActivity/
-       TestInstrumentation, iOS and Mac Catalyst Program + app delegates) from ApplicationId, ApplicationTitle and RootNamespace. -->
+  <!-- dotnet/maui's runner source generator, vendored: see ../CommunityToolkit.Maui.DeviceTests.Runners/README.md. -->
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

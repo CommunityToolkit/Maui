@@ -5,8 +5,9 @@ using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Turns the TestFailed message of a test that threw SkipException into TestSkipped, the technique of Xunit.SkippableFact.
-// DeviceTestCase moves the count from Failed to Skipped in the returned RunSummary, which feeds the assembly totals.
+// xUnit 2 cannot skip a test at run time, so the failure of a test that threw SkipException is reported as skipped instead (the
+// technique of Xunit.SkippableFact). DeviceTestCase moves SkippedCount from Failed to Skipped in the returned RunSummary, which feeds
+// the assembly totals.
 sealed class RuntimeSkipMessageBus(IMessageBus inner) : IMessageBus
 {
 	static readonly string skipExceptionTypeName = typeof(SkipException).FullName ?? nameof(SkipException);

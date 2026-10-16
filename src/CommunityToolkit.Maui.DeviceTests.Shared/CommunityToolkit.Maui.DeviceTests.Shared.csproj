@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Helpers and base classes shared by the device-test apps (dotnet/maui's TestUtils.DeviceTests + Core.DeviceTests.Shared
-       equivalent). It does not reference the toolkit: each app adds its own package (see README.md of
-       CommunityToolkit.Maui.DeviceTests). dotnet-maui/ holds the vendored and ported dotnet/maui sources. -->
+  <!-- Does not reference the toolkit: each device-test app adds its own package (see README.md of
+       CommunityToolkit.Maui.DeviceTests). -->
 
   <PropertyGroup>
     <!-- No plain $(NetVersion) target (the code needs a platform): on Linux, where the Apple workloads do not exist, only Android. -->

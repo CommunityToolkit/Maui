@@ -5,9 +5,8 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// CameraManager.Dispose releases every native object the manager owns. A real preview start creates most of them (device input, photo
-// output, rotation coordinator) and needs a camera and its permission, so these tests seed each field with an object of the real type
-// (or a native fake of it) and check that Dispose released it.
+// A real preview start creates most of the native objects that the manager owns (device input, photo output, rotation coordinator) and needs a
+// camera and its permission, so these tests seed each field with an object of the real type (or a native fake of it).
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleOwnershipTests : CameraHandlerTestBase

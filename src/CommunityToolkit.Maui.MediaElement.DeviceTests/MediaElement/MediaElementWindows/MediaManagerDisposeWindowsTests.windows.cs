@@ -4,11 +4,9 @@ using Windows.Media.Playback;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Views/MediaManager.windows.cs, Dispose(bool): the native event handlers are unsubscribed, the display request is released and the
-// disposing == false path does nothing. A handler that stayed subscribed would change the MediaElement after Dispose, so every test
-// drives the native event itself and compares the MediaElement afterwards. The test registers its own handler on the same event after the
-// manager's: WinRT raises handlers in subscription order, so when the test's handler ran, the manager's handler (if it were still
-// subscribed) already ran for the same event, and the MediaElement can be inspected without waiting for something that never happens.
+// The tests that raise native events register their own handler on the same event after the manager's: WinRT raises handlers in subscription
+// order, so when the test's handler ran, the manager's handler (if it were still subscribed) already ran for the same event, and the
+// MediaElement can be inspected without waiting for something that never happens.
 [Category(TestCategory.MediaManagerWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerDisposeWindowsTests : WinMediaTestBase
@@ -66,7 +64,6 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 
 		await InvokeOnMainThreadAsync(() => fixture.Manager.Dispose());
 
-		// Open, size, state, rate, seek, volume, mute and end events of a healthy clip ...
 		await InvokeOnMainThreadAsync(() => player.SetUriSource(WinMediaAssets.VideoUri));
 		await WaitAsync(opened);
 		await WaitAsync(sized);
@@ -82,11 +79,9 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 		await WaitAsync(playing);
 		await WaitAsync(ended);
 
-		// ... and the failure event of a broken one.
 		await InvokeOnMainThreadAsync(() => player.SetUriSource(WinMediaAssets.CorruptUri));
 		await WaitAsync(failed);
 
-		// None of it reached the MediaElement: the manager's handlers were removed by Dispose.
 		Assert.Equal(0, viewOpened);
 		Assert.Equal(0, viewEnded);
 		Assert.Equal(0, viewFailed);
@@ -139,7 +134,7 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 		var volumeChanged = NewSignal();
 		fixture.Player!.VolumeChanged += (_, _) => volumeChanged.TrySetResult();
 
-		// The finalizer path: no managed resource is released, so the display request and the event handlers stay.
+		// The finalizer path must not touch other managed objects, so the display request and the event handlers stay.
 		await InvokeOnMainThreadAsync(() =>
 		{
 			fixture.Manager.CallDispose(false);
@@ -184,7 +179,7 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 		{
 			fixture.Manager.Dispose();
 
-			// Nothing was requested, so nothing may have been released (RequestRelease without a request would throw) or requested.
+			// Nothing was requested, so nothing may be released: RequestRelease without a request would throw.
 			AssertDisplayRequest(fixture.Manager, active: false);
 		});
 	}
@@ -212,7 +207,6 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 
 		var fixture = await CreateManagerAsync(createPlatformView: false);
 
-		// Player is null: the "Player?.MediaPlayer is not null" guard skips every unsubscription.
 		await InvokeOnMainThreadAsync(() => fixture.Manager.Dispose());
 	}
 
@@ -226,7 +220,7 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			// What MauiMediaElement.Dispose does first when the handler disconnects a view that was already unloaded.
+			// MauiMediaElement.Dispose releases the player this way.
 			fixture.Element!.SetMediaPlayer(null);
 
 			fixture.Manager.Dispose();

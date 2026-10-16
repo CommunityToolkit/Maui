@@ -1,6 +1,5 @@
-# Shared helpers for the device test scripts in this folder (android.ps1, ios.ps1, catalyst.ps1, windows.ps1).
-# Dot-source it; it does nothing on its own. It must keep working in Windows PowerShell 5.1 because the Windows
-# jobs run windows.ps1 with it: no ternary, no null-coalescing, no pipeline chain operators and no -AsHashtable.
+# This file must keep working in Windows PowerShell 5.1 because the Windows jobs run windows.ps1 with it: no ternary,
+# no null-coalescing, no pipeline chain operators and no -AsHashtable.
 #
 # The scripts mirror dotnet/maui's eng/devices/*.cake (targets buildOnly/testOnly/buildAndTest, TestFilter syntax,
 # xharness arguments) and add one results gate for every platform, because xharness can report SUCCESS for a run
@@ -9,15 +8,14 @@
 $script:DeviceTestsRepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot (Join-Path '..' '..')))
 $script:DeviceTestsOnWindows = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
 
-# The device test apps, one per shipping package. The key is the project name under src/, the value its short alias.
 $script:DeviceTestProjects = [ordered]@{
     'CommunityToolkit.Maui.DeviceTests'              = 'Maui'
     'CommunityToolkit.Maui.MediaElement.DeviceTests' = 'MediaElement'
     'CommunityToolkit.Maui.Camera.DeviceTests'       = 'Camera'
 }
 
-# Tests that need a person in front of the device. The apps never run them headless; the scripts also add the category
-# to every SkipCategories filter so the CI default can never select them.
+# The apps never run this category headless; the scripts also add it to every SkipCategories filter so the CI default
+# can never select it.
 $script:HumanOnlyTestCategory = 'RequiresUserInteraction'
 
 # xharness exit codes (Microsoft.DotNet.XHarness.Common.CLI.ExitCode). Every script reports in this vocabulary,
@@ -48,9 +46,9 @@ $script:DeviceTestExitCodeNames = @{
     94 = 'TEST_RESULTS_MISSING'
 }
 
-# Only infrastructure failures are retried. Test failures (1), crashes (80, 93), hangs (70) and missing results (94)
-# are never retried, so a retry cannot hide a real problem. Get-DeviceTestVerdict never returns one of these codes for
-# results that contain a failed test, and Invoke-DeviceTestWithRetries never retries such a verdict.
+# Test failures (1), crashes (80, 93), hangs (70) and missing results (94) are never retried, so a retry cannot hide a
+# real problem. Get-DeviceTestVerdict never returns one of the codes below for results that contain a failed test, and
+# Invoke-DeviceTestWithRetries never retries such a verdict.
 $script:DeviceTestInfraExitCodes = @(78, 81, 83, 84, 86, 88, 89, 90, 91, 92)
 
 function Get-DeviceTestExitCodeName {
@@ -99,7 +97,7 @@ function Write-DeviceTestWarning {
 }
 
 function Resolve-DeviceTestPath {
-    # Resolves a path relative to the current directory without requiring it to exist.
+    # Unlike Resolve-Path, this accepts a path that does not exist yet.
     param([string]$Path)
 
     return $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
@@ -121,7 +119,7 @@ function Format-DeviceTestCommandLine {
 }
 
 function ConvertTo-WindowsCommandLineArgument {
-    # Quotes one argument the way CommandLineToArgvW (and so Environment.GetCommandLineArgs) splits it back.
+    # The quoting follows CommandLineToArgvW (and so Environment.GetCommandLineArgs), which splits the argument back.
     param([string]$Argument)
 
     if ($Argument.Length -gt 0 -and $Argument -notmatch '[\s"]') {
@@ -169,8 +167,6 @@ function Assert-DeviceTestCommand {
 }
 
 function Invoke-DeviceTestNative {
-    # Runs a native command, streams its output (stdout and stderr) to the host and optionally to a log file,
-    # and returns its exit code.
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
         [string[]]$ArgumentList = @(),
@@ -208,7 +204,6 @@ function Invoke-DeviceTestNative {
 }
 
 function Invoke-DeviceTestNativeCapture {
-    # Runs a native command and returns its exit code and stdout lines; stderr is discarded.
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
         [string[]]$ArgumentList = @()
@@ -234,8 +229,7 @@ function Invoke-DeviceTestNativeCapture {
 }
 
 function Invoke-DeviceTestProcess {
-    # Runs a native command with a timeout (killing it when the timeout expires) and returns its exit code,
-    # stdout and stderr. Used for device tools that can hang, such as adb and simctl.
+    # Device tools such as adb and simctl can hang, hence the timeout.
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
         [string[]]$ArgumentList = @(),
@@ -294,7 +288,6 @@ function Invoke-DeviceTestProcess {
 }
 
 function Resolve-DeviceTestProjects {
-    # Accepts project names, the aliases Maui/MediaElement/Camera, All, csproj paths or project directories.
     # Comma-separated values are accepted because "pwsh -File" passes "-Project A,B" as a single string.
     param([string[]]$Project)
 
@@ -375,9 +368,6 @@ function Resolve-DeviceTestProjects {
 }
 
 function Resolve-DeviceTestFilter {
-    # Returns the TestFilter value passed to the apps (dotnet/maui syntax): "Category=<name>" runs only that
-    # category (plus uncategorized tests) and "SkipCategories=<a>,<b>" skips those categories. Without a filter,
-    # and in every SkipCategories filter, the human-only category is skipped.
     param(
         [string]$TestFilter,
         [bool]$IsBound
@@ -433,10 +423,8 @@ function Resolve-DeviceTestFilter {
 }
 
 function Resolve-DeviceTestCapabilities {
-    # Returns the capability names of a -SkipCapabilities or -RequireCapabilities value (separated by commas, semicolons or spaces). Unbound,
-    # they come from DEVICE_TEST_SKIP_CAPABILITIES and DEVICE_TEST_REQUIRE_CAPABILITIES, which only the CI jobs set
-    # (.github/workflows/device-tests.yml), so local runs declare nothing. The apps check the names against their capabilities
-    # (DeviceTestCapabilities in CommunityToolkit.Maui.DeviceTests.Shared).
+    # Only the form of each name is checked here: the apps check the names against their capabilities (DeviceTestCapabilities
+    # in CommunityToolkit.Maui.DeviceTests.Shared).
     param(
         [string[]]$Value,
         [bool]$IsBound,
@@ -471,8 +459,7 @@ function Resolve-DeviceTestCapabilities {
 }
 
 function Get-DeviceTestCapabilityDeclarations {
-    # Writes the capability lists the way the apps read them (DeviceTestCapabilities) to the pipeline: "SkipCapabilities=<a>,<b>" and
-    # "RequireCapabilities=<c>", each only when its list is not empty, so that a run without declarations passes nothing.
+    # The format must match what the apps read (DeviceTestCapabilities).
     param([Parameter(Mandatory = $true)]$Context)
 
     if ($Context.SkipCapabilities.Count -gt 0) {
@@ -516,7 +503,6 @@ function ConvertTo-DeviceTestSeconds {
 }
 
 function Initialize-DeviceTestRun {
-    # Validates the common parameters and returns the run context shared by the platform scripts.
     param(
         [Parameter(Mandatory = $true)][string]$Platform,
         [Parameter(Mandatory = $true)][string]$Leg,
@@ -561,7 +547,6 @@ function Initialize-DeviceTestRun {
         }
     }
 
-    # Unbound, -Coverage comes from DEVICE_TEST_COVERAGE, which only the CI jobs set (.github/workflows/device-tests.yml).
     if (-not $CoverageIsBound) {
         $Coverage = $env:DEVICE_TEST_COVERAGE -eq 'true'
     }
@@ -608,7 +593,6 @@ function Initialize-DeviceTestRun {
 }
 
 function Get-DeviceTestMSBuildProperties {
-    # Evaluates MSBuild properties of a project with 'dotnet msbuild -getProperty' and returns a hashtable.
     param(
         [Parameter(Mandatory = $true)][string]$ProjectPath,
         [Parameter(Mandatory = $true)][string[]]$Name,
@@ -655,8 +639,7 @@ function Get-DeviceTestMSBuildProperties {
 }
 
 function Get-DeviceTestTargetFramework {
-    # Picks the project's target framework for a platform (android, ios, maccatalyst or windows) from its
-    # TargetFrameworks, so the scripts follow the repo's NetVersion instead of hard-coding net10.0.
+    # The target framework is read from the project, so the scripts follow the repo's NetVersion instead of hard-coding net10.0.
     param(
         [Parameter(Mandatory = $true)]$Project,
         [Parameter(Mandatory = $true)][string]$Platform
@@ -685,7 +668,6 @@ function Get-DeviceTestBinlogPath {
 }
 
 function Invoke-DeviceTestBuild {
-    # Builds (or publishes) one device test app and records a build failure in the context.
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)]$Project,
@@ -744,7 +726,7 @@ function Initialize-DeviceTestResultsDirectory {
 }
 
 function Move-DeviceTestAttempt {
-    # Keeps a failed attempt's files in attempt-<n> so a retry does not overwrite the evidence.
+    # A retry must not overwrite the evidence of the failed attempt.
     param([string]$Path, [int]$Attempt)
 
     $destination = Join-Path $Path "attempt-$Attempt"
@@ -812,7 +794,6 @@ function ConvertTo-DeviceTestInt {
 }
 
 function Read-DeviceTestResults {
-    # Sums xUnit v2 XML results (<assemblies><assembly total passed failed skipped errors>) across files.
     param([System.IO.FileInfo[]]$Files)
 
     $summary = New-Object PSObject -Property @{
@@ -886,7 +867,6 @@ function Read-DeviceTestResults {
 }
 
 function Get-DeviceTestJsonValue {
-    # Reads a dotted path (a.b.c) from an object returned by ConvertFrom-Json; returns $null when absent.
     param($Object, [string]$Path)
 
     $current = $Object
@@ -924,9 +904,9 @@ function Read-XHarnessResult {
 }
 
 function Get-DeviceTestVerdict {
-    # The results gate. It decides the exit code from what the run left on disk, never from the runner's exit code
-    # alone: xharness reports SUCCESS when an iOS app crashes before the test runner starts and for every
-    # Mac Catalyst crash, because no results file is treated as a device communication problem.
+    # The results gate: the exit code comes from what the run left on disk, never from the runner's exit code
+    # alone, because xharness reports SUCCESS when an iOS app crashes before the test runner starts and for every
+    # Mac Catalyst crash (no results file is treated as a device communication problem).
     param(
         [Parameter(Mandatory = $true)][string]$Platform,
         [Parameter(Mandatory = $true)][string]$Directory,
@@ -1053,7 +1033,6 @@ function Get-DeviceTestVerdict {
 }
 
 function New-DeviceTestVerdict {
-    # A verdict for a run that never reached the test runner (build failure, missing app, no device, ...).
     param([int]$ExitCode, [string]$Reason, [string]$Directory)
 
     return New-Object PSObject -Property @{
@@ -1080,7 +1059,6 @@ function New-DeviceTestVerdict {
 }
 
 function Invoke-DeviceTestWithRetries {
-    # Runs one attempt (a scriptblock returning a verdict) and repeats it only for infrastructure exit codes.
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)]$Project,
@@ -1168,7 +1146,6 @@ function Format-DeviceTestMarkdownText {
 }
 
 function Write-DeviceTestSummary {
-    # Writes <Results>/summary.md and appends it to the GitHub step summary when running in GitHub Actions.
     param([Parameter(Mandatory = $true)]$Context)
 
     $lines = New-Object System.Collections.Generic.List[string]
@@ -1269,8 +1246,6 @@ function Write-DeviceTestSummary {
 }
 
 function Complete-DeviceTestRun {
-    # Writes the summary and returns the script's exit code: 0 when every app built and passed, otherwise the
-    # first non-zero exit code in project order (71 for a build failure in a build-only run).
     param([Parameter(Mandatory = $true)]$Context)
 
     if ($Context.Builds.Count -gt 0 -or $Context.Verdicts.Count -gt 0) {
@@ -1291,7 +1266,6 @@ function Complete-DeviceTestRun {
 }
 
 function Get-DeviceTestErrorExitCode {
-    # 3 (INVALID_ARGUMENTS) for bad parameters, 71 (GENERAL_FAILURE) for anything else.
     param($ErrorRecord)
 
     $exception = $ErrorRecord
@@ -1307,7 +1281,6 @@ function Get-DeviceTestErrorExitCode {
 }
 
 function Write-DeviceTestException {
-    # Reports an error that stopped a script and returns the exit code for it.
     param($ErrorRecord)
 
     $exitCode = Get-DeviceTestErrorExitCode $ErrorRecord
@@ -1321,7 +1294,6 @@ function Write-DeviceTestException {
 }
 
 function Get-DeviceTestHostArchitecture {
-    # arm64 or x64: the architecture that native builds (iOS simulator, Mac Catalyst, Windows) target.
     if ($script:DeviceTestsOnWindows) {
         # RuntimeInformation is not loaded in Windows PowerShell 5.1.
         $architecture = $env:PROCESSOR_ARCHITEW6432
@@ -1341,7 +1313,7 @@ function Get-DeviceTestHostArchitecture {
 }
 
 function Invoke-DeviceTestToolRestore {
-    # Restores the pinned xharness CLI from .config/dotnet-tools.json (the root NuGet.config maps it to dotnet-eng).
+    # Runs from the repo root, where the tool manifest is and whose NuGet.config maps xharness to the dotnet-eng feed.
     Push-Location $script:DeviceTestsRepoRoot
     try {
         $exitCode = Invoke-DeviceTestNative -FilePath 'dotnet' -ArgumentList @('tool', 'restore')
@@ -1356,8 +1328,7 @@ function Invoke-DeviceTestToolRestore {
 }
 
 function Invoke-XHarness {
-    # Runs 'dotnet xharness <arguments>' from the repo root (where the tool manifest is), logging to the output
-    # directory, and returns xharness's exit code.
+    # Runs from the repo root because that is where the tool manifest is.
     param(
         [Parameter(Mandatory = $true)][string[]]$ArgumentList,
         [Parameter(Mandatory = $true)][string]$OutputDirectory
@@ -1376,7 +1347,7 @@ function Invoke-XHarness {
 }
 
 function Get-DeviceTestOutputDirectory {
-    # Turns an evaluated OutputPath/PublishDir (relative, possibly with Windows separators) into a full path.
+    # An evaluated OutputPath/PublishDir can be relative to the project and can have Windows separators.
     param([Parameter(Mandatory = $true)]$Project, [string]$Path)
 
     $normalized = $Path.Replace('\', [System.IO.Path]::DirectorySeparatorChar).Replace('/', [System.IO.Path]::DirectorySeparatorChar)
@@ -1388,7 +1359,6 @@ function Get-DeviceTestOutputDirectory {
 }
 
 function Get-DeviceTestXcodeRoot {
-    # The Xcode.app folder xharness should use: -Xcode when given, otherwise the one xcode-select points to.
     param([string]$Xcode)
 
     if ($Xcode) {
@@ -1409,8 +1379,7 @@ function Get-DeviceTestXcodeRoot {
 }
 
 function Find-DeviceTestAppBundle {
-    # Finds the built .app bundle of an iOS or Mac Catalyst app: Mac Catalyst names it after ApplicationTitle and iOS
-    # after AssemblyName; otherwise take the newest bundle in the output directory.
+    # Mac Catalyst names the bundle after ApplicationTitle and iOS after AssemblyName.
     param([Parameter(Mandatory = $true)][string]$OutputDirectory, [string[]]$Names = @())
 
     if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
@@ -1437,7 +1406,6 @@ function Find-DeviceTestAppBundle {
 }
 
 function Invoke-AppleDeviceTests {
-    # Runs 'xharness apple test' for one app and applies the results gate (shared by ios.ps1 and catalyst.ps1).
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)]$Project,

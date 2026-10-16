@@ -29,12 +29,6 @@ public abstract partial class TouchBehaviorTestBase
 
 	protected static float GetDensity(AView view) => view.Context!.Resources!.DisplayMetrics!.Density;
 
-	// ---- lifecycle accessors (used by the shared lifecycle tests)
-
-	/// <summary>
-	/// The behavior made the view clickable and long clickable, and left the view's single click listener slot alone: it takes it in touch
-	/// exploration mode only (see TouchBehaviorInputTests.TouchExplorationCompletesTheGestureThroughClickAndIgnoresRawTouches).
-	/// </summary>
 	protected static void AssertNativeHooksAttached(AView view)
 	{
 		Assert.True(view.Clickable, "The behavior must make the view clickable.");
@@ -42,21 +36,18 @@ public abstract partial class TouchBehaviorTestBase
 		Assert.False(view.HasOnClickListeners, "Outside touch exploration the behavior must leave the view's click listener slot alone.");
 	}
 
-	/// <summary>The behavior removed its click listener (the touch and key listeners can only be probed through events).</summary>
+	// Only the click listener can be probed here: the touch and key listeners can only be probed through events.
 	protected static void AssertNativeHooksDetached(AView view) =>
 		Assert.False(view.HasOnClickListeners, "The behavior must remove its click listener.");
 
-	/// <summary>What the behavior changes on the platform view to take input: Android makes it clickable and long clickable.</summary>
 	protected static string GetNativeInteractionState(IPlatformViewHandler handler)
 	{
 		var view = GetPlatformView(handler);
 		return $"Clickable={view.Clickable}, LongClickable={view.LongClickable}";
 	}
 
-	/// <summary>
-	/// Lets Java collect the native peers that the managed objects hold on to: a managed object with a Java peer is only released
-	/// after both garbage collectors ran, and on API 28 that can take several rounds (the bridge processes the cross references lazily).
-	/// </summary>
+	// A managed object with a Java peer is only released after both garbage collectors ran, and on API 28 that can take several rounds (the
+	// bridge processes the cross references lazily).
 	protected static async Task ReleaseNativeReferencesAsync()
 	{
 		for (var i = 0; i < 10; i++)
@@ -68,18 +59,12 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>
-	/// Makes MAUI animate in this process. The pool emulators (like CI's) run with the global animator duration scale at 0, and MAUI then
-	/// jumps to the end of every animation (it asks <c>ValueAnimator.AreAnimatorsEnabled</c>), so no timing, easing, cancellation or
-	/// intermediate step can be observed.
-	/// <para>
-	/// The scale is switched on for this process only, through <c>ValueAnimator.setDurationScale</c> (a hidden API on the
-	/// unsupported-app-usage list), and never through the global setting: nothing outlives the test process, so a crash cannot leave
-	/// animations on for later runs on a shared emulator. <see cref="PlatformDisposeAsync"/> puts the previous scale back. MAUI's ticker
-	/// learns about the change through its duration scale listener (API 33+) or, before that, through its energy saver callback, which
-	/// re-reads the same API.
-	/// </para>
-	/// </summary>
+	// The pool emulators (like CI's) run with the global animator duration scale at 0, and MAUI then jumps to the end of every animation (it
+	// asks ValueAnimator.AreAnimatorsEnabled), so no timing, easing, cancellation or intermediate step can be observed.
+	// The scale is switched on for this process only, through ValueAnimator.setDurationScale (a hidden API on the unsupported-app-usage list),
+	// and never through the global setting: nothing outlives the test process, so a crash cannot leave animations on for later runs on a
+	// shared emulator. MAUI's ticker learns about the change through its duration scale listener (API 33+) or, before that, through its energy
+	// saver callback, which re-reads the same API.
 	protected async Task EnableAnimationsAsync(IPlatformViewHandler handler)
 	{
 		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(26), "ValueAnimator.DurationScale and AreAnimatorsEnabled need API 26: animations cannot be switched on in-process here.");
@@ -134,7 +119,6 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>How the platform's image view scales its image, as a MAUI <see cref="Aspect"/>.</summary>
 	protected static Aspect GetNativeImageAspect(IPlatformViewHandler handler)
 	{
 		var scaleType = ((Android.Widget.ImageView)handler.PlatformView!).GetScaleType();
@@ -162,12 +146,7 @@ public abstract partial class TouchBehaviorTestBase
 		throw new InvalidOperationException($"Unexpected scale type {scaleType}.");
 	}
 
-	// ---- native state
-
-	/// <summary>
-	/// True when MAUI made the element's platform view ignore touches (<c>InputTransparent</c>): layouts carry the flag themselves, any
-	/// other view is wrapped in a <see cref="WrapperView"/> that carries it.
-	/// </summary>
+	// Layouts carry the InputTransparent flag themselves; any other view is wrapped in a WrapperView that carries it.
 	protected static bool IsNativeInputTransparent(VisualElement element)
 	{
 		var handler = (IPlatformViewHandler)element.Handler!;
@@ -205,7 +184,6 @@ public abstract partial class TouchBehaviorTestBase
 
 	protected static double GetNativeRotationY(IPlatformViewHandler handler) => GetPlatformView(handler).RotationY;
 
-	/// <summary>The colour the platform view paints as its background; <see langword="null"/> when it has none.</summary>
 	protected static Color? GetNativeBackgroundColor(IPlatformViewHandler handler)
 	{
 		var drawable = GetPlatformView(handler).Background;
@@ -216,10 +194,7 @@ public abstract partial class TouchBehaviorTestBase
 		};
 	}
 
-	/// <summary>
-	/// The colour the platform view shows at its centre, with its alpha: what the view looks like there, also when a drawable that is not a
-	/// colour paints its background (a Button's).
-	/// </summary>
+	// Unlike GetNativeBackgroundColor, this also works when a drawable that is not a colour paints the background (a Button's).
 	protected static async Task<Color> GetNativeCenterColorAsync(IPlatformViewHandler handler)
 	{
 		using var bitmap = await GetPlatformView(handler).ToBitmap(handler.MauiContext!);
@@ -228,12 +203,9 @@ public abstract partial class TouchBehaviorTestBase
 		return Color.FromRgba(color.R, color.G, color.B, color.A);
 	}
 
-	// ---- native input (device independent units relative to the top left of the view)
-
 	protected void NativePress(IPlatformViewHandler handler, double x = HostCenter, double y = HostCenter) =>
 		NativePressOn(GetPlatformView(handler), x, y);
 
-	/// <summary>Sends a touch-down to a platform view that was not created by a MAUI handler.</summary>
 	protected void NativePressOn(AView view, double x = HostCenter, double y = HostCenter)
 	{
 		touchDownTime = SystemClock.UptimeMillis();
@@ -250,7 +222,7 @@ public abstract partial class TouchBehaviorTestBase
 	protected void NativeRelease(IPlatformViewHandler handler, double x = HostCenter, double y = HostCenter) =>
 		Dispatch(GetPlatformView(handler), MotionEventActions.Up, x, y);
 
-	/// <summary>A tap at the centre of the view, delivered as Android delivers a finger's (the view's own click follows in a posted message).</summary>
+	// As for a finger's tap, Android posts the view's own click after the touch, so the click arrives after this returns.
 	protected Task NativeTapAsync(IPlatformViewHandler handler)
 	{
 		NativePress(handler);
@@ -261,23 +233,20 @@ public abstract partial class TouchBehaviorTestBase
 	protected void NativeCancel(IPlatformViewHandler handler) =>
 		Dispatch(GetPlatformView(handler), MotionEventActions.Cancel, HostCenter, HostCenter);
 
-	/// <summary>
-	/// A mouse entering the view, delivered the way Android delivers it: a hover is a generic motion event from a pointer source
-	/// (<c>dispatchGenericMotionEvent</c> → <c>dispatchHoverEvent</c>), never a touch event, so the view's touch listener does not see it.
-	/// </summary>
 	protected Task NativeHoverEnterAsync(IPlatformViewHandler handler)
 	{
 		DispatchMouseHover(GetPlatformView(handler), MotionEventActions.HoverEnter);
 		return Task.CompletedTask;
 	}
 
-	/// <inheritdoc cref="NativeHoverEnterAsync"/>
 	protected Task NativeHoverExitAsync(IPlatformViewHandler handler)
 	{
 		DispatchMouseHover(GetPlatformView(handler), MotionEventActions.HoverExit);
 		return Task.CompletedTask;
 	}
 
+	// Android delivers a hover as a generic motion event from a pointer source (dispatchGenericMotionEvent → dispatchHoverEvent), never as a
+	// touch event, so the view's touch listener does not see it.
 	protected static bool DispatchMouseHover(AView view, MotionEventActions action)
 	{
 		var density = GetDensity(view);
@@ -288,11 +257,8 @@ public abstract partial class TouchBehaviorTestBase
 		return view.DispatchGenericMotionEvent(motionEvent);
 	}
 
-	/// <summary>
-	/// Hands a hover action straight to the view's touch listener (<c>DispatchTouchEvent</c>). Android never does this for a real hover
-	/// (see <see cref="NativeHoverEnterAsync"/>); it is the only way to reach the HoverEnter / HoverExit arms of the behavior's touch
-	/// listener, so only the tests that are explicitly about those arms use it.
-	/// </summary>
+	// Android never hands a real hover to the touch listener (see DispatchMouseHover), but this is the only way to reach the HoverEnter /
+	// HoverExit arms of the behavior's touch listener, so only the tests that are explicitly about those arms use it.
 	protected bool DispatchHoverToTheTouchListener(AView view, MotionEventActions action) => Dispatch(view, action, HostCenter, HostCenter);
 
 	protected bool Dispatch(AView view, MotionEventActions action, double x, double y)
@@ -308,8 +274,6 @@ public abstract partial class TouchBehaviorTestBase
 		using var keyEvent = new KeyEvent(action, keyCode);
 		return view.DispatchKeyEvent(keyEvent);
 	}
-
-	// ---- accessibility (the instrumentation's UiAutomation is the only way to switch an accessibility service on in a test)
 
 	// Before API 33 (see ReleaseAccessibilityServiceAsync) set while the instrumentation's UiAutomation is one that these helpers connected
 	// themselves: they asked for it while no accessibility service ran in the process, so the instrumentation created it for them. Only such
@@ -337,11 +301,6 @@ public abstract partial class TouchBehaviorTestBase
 	static AccessibilityManager GetAccessibilityManager(AView view) =>
 		(AccessibilityManager)(view.Context!.GetSystemService(Context.AccessibilityService) ?? throw new InvalidOperationException("No AccessibilityManager."));
 
-	/// <summary>
-	/// Runs <paramref name="body"/> while the system reports touch exploration (TalkBack style accessibility mode). The instrumentation's
-	/// UiAutomation registers as an accessibility service that requests touch exploration; the request is withdrawn afterwards and the
-	/// accessibility connection released (see <see cref="ReleaseAccessibilityServiceAsync"/>).
-	/// </summary>
 	protected static async Task WithTouchExplorationAsync(AView view, Func<Task> body)
 	{
 		var accessibilityManager = GetAccessibilityManager(view);
@@ -370,10 +329,6 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>
-	/// Runs <paramref name="body"/> while an accessibility service runs that does NOT explore by touch: the AccessibilityManager is
-	/// enabled, touch exploration is off.
-	/// </summary>
 	protected static async Task WithAccessibilityServiceWithoutTouchExplorationAsync(AView view, Func<Task> body)
 	{
 		var accessibilityManager = GetAccessibilityManager(view);
@@ -392,16 +347,13 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>
-	/// Once connected, the instrumentation's UiAutomation stays registered as an accessibility service for the rest of the process, which
-	/// would leave <c>AccessibilityManager.IsEnabled</c> on for every later test of every category. From API 33 the connection is remade
-	/// without accessibility (<c>UiAutomationFlags.DontUseAccessibility</c>): the same UiAutomation object stays, with whatever listener another
-	/// test installed on it, and the next plain <c>UiAutomation</c> request reconnects it with accessibility. Before API 33 there is no public
-	/// way: the hidden <c>UiAutomation.destroy()</c> disconnects it, and the instrumentation creates a new object on the next request, without
-	/// the listeners of the old one. So before API 33 only a UiAutomation that these helpers connected themselves is destroyed (see
-	/// <see cref="ownsUiAutomation"/>); one that somebody else connected stays (and with it the accessibility service), and so does one whose
-	/// destroy the platform refuses.
-	/// </summary>
+	// Once connected, the instrumentation's UiAutomation stays registered as an accessibility service for the rest of the process, which would
+	// leave AccessibilityManager.IsEnabled on for every later test of every category. From API 33 the connection is remade without
+	// accessibility (UiAutomationFlags.DontUseAccessibility): the same UiAutomation object stays, with whatever listener another test
+	// installed on it, and the next plain UiAutomation request reconnects it with accessibility. Before API 33 there is no public way: the
+	// hidden UiAutomation.destroy() disconnects it, and the instrumentation creates a new object on the next request, without the listeners of
+	// the old one. So before API 33 only a UiAutomation that these helpers connected themselves is destroyed (see ownsUiAutomation); one that
+	// somebody else connected stays (and with it the accessibility service), and so does one whose destroy the platform refuses.
 	protected static async Task ReleaseAccessibilityServiceAsync(AccessibilityManager accessibilityManager)
 	{
 		if (MauiTestInstrumentation.Current is not MauiTestInstrumentation instrumentation)
@@ -447,10 +399,7 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>
-	/// A TouchBehavior that can be attached to a platform view that MAUI knows nothing about: the native hierarchy is built by the
-	/// test, so the test controls the parents and the lifetime of the platform view.
-	/// </summary>
+	// The native hierarchy is built by the test, so the test controls the parents and the lifetime of the platform view.
 	protected sealed class DirectTouchBehavior : TouchBehavior
 	{
 		public void AttachDirect(VisualElement bindable, AView platformView) => OnAttachedTo(bindable, platformView);
@@ -463,7 +412,6 @@ public abstract partial class TouchBehaviorTestBase
 		public void SetViewOnly(VisualElement? view) => View = view;
 	}
 
-	/// <summary>A test-built platform view (a FrameLayout child of a FrameLayout) for <see cref="DirectTouchBehavior"/>.</summary>
 	protected static (AView Parent, AView Child) CreateDetachedPlatformViews()
 	{
 		var context = MauiProgramDefaults.DefaultContext;
@@ -474,14 +422,10 @@ public abstract partial class TouchBehaviorTestBase
 	}
 
 	/// <summary>
-	/// Disposes an attached <see cref="DirectTouchBehavior"/> the way an app does (<c>Dispose()</c> without a detach first) and reports
-	/// whether the dispose left the behavior's accessibility listener registered with the system's <c>AccessibilityManager</c>.
-	/// <para>
 	/// A listener that stays registered after its managed peer was disposed crashes the whole process at the next accessibility or touch
-	/// exploration change (NotSupportedException: Unable to activate instance of type AccessibilityListener), so this helper also
-	/// removes it again, through JNI references of its own (the dispose drops the behavior's references to the listener and the manager).
-	/// It must be used by every test that disposes an attached behavior.
-	/// </para>
+	/// exploration change (NotSupportedException: Unable to activate instance of type AccessibilityListener), so this helper removes it
+	/// again, through JNI references of its own (the dispose drops the behavior's references to the listener and the manager).
+	/// Every test that disposes an attached behavior must use it.
 	/// </summary>
 	protected static (bool StateListenerLeftRegistered, bool TouchExplorationListenerLeftRegistered) DisposeAttachedBehavior(DirectTouchBehavior behavior)
 	{
@@ -513,10 +457,8 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>Disposes an attached <see cref="DirectTouchBehavior"/> without leaving its accessibility listener registered.</summary>
 	protected static void DisposeWhileAttached(DirectTouchBehavior behavior) => DisposeAttachedBehavior(behavior);
 
-	/// <summary>The behavior's private accessibility listener (null when the view's context has no AccessibilityManager).</summary>
 	protected static object? GetAccessibilityListener(TouchBehavior behavior) =>
 		typeof(TouchBehavior).GetField("accessibilityListener", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.GetValue(behavior);
 
@@ -535,7 +477,6 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>A parent that records <see cref="ViewGroup.RequestDisallowInterceptTouchEvent"/>.</summary>
 	protected sealed class RecordingViewGroup(Context context) : FrameLayout(context)
 	{
 		public List<bool> DisallowInterceptRequests { get; } = [];
@@ -547,7 +488,6 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	/// <summary>A context whose <c>GetSystemService(AccessibilityService)</c> returns nothing, like a context of a process without one.</summary>
 	protected sealed class NoAccessibilityServiceContext(Context baseContext) : ContextWrapper(baseContext)
 	{
 		public override Java.Lang.Object? GetSystemService(string? name) =>

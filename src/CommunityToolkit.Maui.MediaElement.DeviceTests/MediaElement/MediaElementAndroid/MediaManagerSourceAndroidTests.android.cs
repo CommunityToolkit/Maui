@@ -9,7 +9,6 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.PlatformUpdateSource and SetPlayerData (MediaManager.android.cs): every kind of MediaSource, played by the real ExoPlayer.
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
@@ -44,7 +43,6 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(1, recorder.OpenedCount);
 			Assert.Equal(1, recorder.EndedCount);
 			Assert.Empty(recorder.FailureMessages);
-			// The source mapping announces the load first.
 			Assert.Equal((MediaElementState.None, MediaElementState.Opening), recorder.Transitions[0]);
 			Assert.Contains(MediaElementState.Playing, recorder.States);
 			Assert.Equal(MediaElementState.Stopped, mediaElement.CurrentState);
@@ -161,7 +159,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// UriMediaSource reports a change of its HttpHeaders as a source change: the source mapping runs again and loads the media with them.
+	// UriMediaSource reports a change of its HttpHeaders as a source change, so the source mapping runs again.
 	[Fact]
 	public async Task ChangingTheHeadersOfAUriSourceLoadsTheMediaAgainWithTheNewValues()
 	{
@@ -248,9 +246,9 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A stream that cannot seek is read once, from its start. A seek back to a part of the media that the player no longer holds (to 0.2 s while it
-	// plays at 1.5 s) needs the stream at another position: the source fails (MediaFailed) and the app goes on. The data source used to throw a
-	// managed exception there, on ExoPlayer's loading thread, which ended the app.
+	// A stream that cannot seek is read once, from its start, so a seek back to a part of the media that the player no longer holds (to 0.2 s
+	// while it plays at 1.5 s) fails the source (MediaFailed) and the app goes on. The data source used to throw a managed exception there, on
+	// ExoPlayer's loading thread, which ended the app.
 	[Fact]
 	public async Task SeekBackInAStreamThatCannotSeekRaisesMediaFailed()
 	{
@@ -270,7 +268,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			mediaElement.Play();
 			await WaitUntilAsync(() => player.CurrentPosition > 1500, "The stream never played past 1.5 s.");
 
-			// Not awaited: what is tested is the failure of the source
+			// Not awaited: what is tested is the failure of the source.
 			_ = mediaElement.SeekTo(TimeSpan.FromSeconds(0.2));
 
 			await WaitUntilAsync(() => recorder.FailureMessages.Count > 0, "The seek that the stream cannot serve was never reported.");
@@ -280,8 +278,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A stream that fails to read (that of a connection that was lost, for example) fails the source: ExoPlayer retries the read, then reports it
-	// (MediaFailed), and the app goes on. The managed exception of the stream used to reach ExoPlayer's loading thread, which ended the app.
+	// The managed exception of a stream that fails to read used to reach ExoPlayer's loading thread, which ended the app.
 	[Fact]
 	public async Task StreamThatFailsToReadIsReportedAsFailed()
 	{
@@ -294,7 +291,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		{
 			mediaElement.Source = MediaSource.FromStream(new FailingStream(tone));
 
-			// ExoPlayer retries a failed load three times, the last one 2 s after the previous failure, before it reports the error
+			// ExoPlayer retries a failed load three times, the last one 2 s after the previous failure, before it reports the error.
 			await WaitUntilAsync(() => recorder.FailureMessages.Count > 0, "The stream that fails to read was never reported.", timeout: 15000);
 			var failure = Assert.Single(recorder.FailureMessages);
 			Assert.Contains("ERROR_CODE_IO_UNSPECIFIED", failure);
@@ -415,8 +412,6 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(1, player.MediaItemCount);
 			Assert.EndsWith(shortToneAsset, player.CurrentMediaItem!.MediaId);
 			Assert.Equal(2, recorder.OpenedCount);
-			// Every load has a token source of its own, and the next source cancels the one of the load it replaces (see
-			// ChangingTheSourceWhilePreviousArtworkDownloadsKeepsTheNewSource).
 			Assert.NotSame(tokenSource, GetPrivateField(handler.Manager!, "cancellationTokenSource"));
 			Assert.True(tokenSource.IsCancellationRequested);
 		});
@@ -485,8 +480,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The state is set to Opening before the player data is built; a source without data then reports None, like a null Source (and like iOS
-	// for a source without data, MediaManager.macios.cs).
+	// The state is set to Opening before the player data is built, so a source without data has to report None again, like a null Source (and
+	// like iOS for a source without data, MediaManager.macios.cs).
 	[Theory]
 	[InlineData(EmptySourceKind.UriWithoutUri)]
 	[InlineData(EmptySourceKind.FileWithoutPath)]
@@ -505,8 +500,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// After a valid source, a source without data leaves nothing loaded, like a null Source: the previous media is taken out of the player
-	// without being played to its end (no MediaEnded), the duration is reset and the state is None (on every platform, not a failure).
+	// Like a null Source, a source without data takes the previous media out of the player without playing it to its end. It is not a failure, on
+	// every platform.
 	[Theory]
 	[InlineData(EmptySourceKind.UriWithoutUri)]
 	[InlineData(EmptySourceKind.FileWithoutPath)]
@@ -535,9 +530,6 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A source without data after a stream source releases the stream data source factory of that stream source (and with it the stream it
-	// reads), as a null Source does (ClearingAStreamSourceDisposesTheStreamDataSourceFactoryAndEmptiesThePlayer).
-	// Catches: the source-without-data arm of PlatformUpdateSource keeping the factory of the previous stream source.
 	[Fact]
 	public async Task SourceWithoutDataAfterAStreamSourceDisposesTheStreamDataSourceFactory()
 	{
@@ -561,8 +553,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// UpdateSource returns before it asks for the player data when the Source is null, so the null guard of SetPlayerData (the private method
-	// that turns the Source into a media item) is reached by calling it. Without the guard the null Source would end in the "not yet supported" arm.
+	// UpdateSource returns before it asks for the player data when the Source is null, so the null guard of the private SetPlayerData can only be
+	// reached by calling it. Without the guard the null Source would end in the "not yet supported" arm.
 	[Fact]
 	public async Task PlayerDataOfAMediaElementWithoutASourceIsNothing()
 	{
@@ -581,8 +573,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The asset path of a resource source starts with the package name of the PlayerView's context. A manager that has a player but no
-	// PlayerView (a subclass can give it one) has no package name: the path starts with an empty one instead of failing.
+	// The asset path of a resource source starts with the package name of the PlayerView's context, so a manager that has a player but no
+	// PlayerView (a subclass can give it one) has no package name to put there.
 	[Fact]
 	public async Task ResourceSourceOfAManagerWithoutAPlayerViewUsesAnEmptyPackageName()
 	{
@@ -612,14 +604,14 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The artwork download of a source is cancelled when the Source changes (every load has a token source of its own, which the next source
-	// cancels), and a load that was replaced applies nothing: a source that waits for a slow artwork cannot replace the source that replaced it.
+	// Every load has a token source of its own, which the next source cancels, and a load that was replaced applies nothing: a source that
+	// waits for a slow artwork cannot replace the source that replaced it.
 	[Fact]
 	public async Task ChangingTheSourceWhilePreviousArtworkDownloadsKeepsTheNewSource()
 	{
 		var artwork = await ReadAssetAsync(artworkAsset);
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (artwork, "image/png") });
-		var artworkResponse = server.HoldResponses("/art.png");
+		var heldArtworkResponse = server.HoldResponses("/art.png");
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
@@ -630,7 +622,6 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 		await HostAsync(mediaElement, async _ =>
 		{
-			// The first source waits for its artwork: the server holds the answer back.
 			await WaitUntilAsync(() => server.HasRequest("HEAD", "/art.png"), "The artwork of the first source was never requested.");
 			Assert.Equal(0, recorder.OpenedCount);
 
@@ -640,8 +631,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 			Assert.EndsWith(shortToneAsset, GetPlayer(mediaElement).CurrentMediaItem!.MediaId);
 
-			// Now the artwork of the first source arrives: a source that was replaced has nothing left to load.
-			artworkResponse.SetResult();
+			heldArtworkResponse.SetResult();
 			await AssertHelpers.Wait(() => recorder.OpenedCount >= 2, timeout: 3000);
 
 			Assert.EndsWith(shortToneAsset, GetPlayer(mediaElement).CurrentMediaItem!.MediaId);
@@ -649,8 +639,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The same for a stream source: the source that was replaced while its artwork downloaded must not put its stream behind the data source of
-	// the stream that replaced it (CreateMediaItemFromStream sets the manager's StreamDataSourceFactory once the artwork is there).
+	// CreateMediaItemFromStream sets the manager's StreamDataSourceFactory once the artwork is there, so the source that was replaced while its
+	// artwork downloaded must not put its stream behind the data source of the stream that replaced it.
 	[Fact]
 	public async Task ChangingTheStreamSourceWhilePreviousArtworkDownloadsKeepsTheDataSourceOfTheNewStream()
 	{
@@ -658,7 +648,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		var tone = await ReadAssetAsync(toneAsset);
 		var shortTone = new MemoryStream(await ReadAssetAsync(shortToneAsset));
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (artwork, "image/png") });
-		var artworkResponse = server.HoldResponses("/art.png");
+		var heldArtworkResponse = server.HoldResponses("/art.png");
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
@@ -675,7 +665,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			mediaElement.Source = MediaSource.FromStream(shortTone);
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			artworkResponse.SetResult();
+			heldArtworkResponse.SetResult();
 			await AssertHelpers.Wait(() => recorder.OpenedCount >= 2, timeout: 3000);
 
 			var factory = GetStreamDataSourceFactory(handler.Manager!);
@@ -687,15 +677,15 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A StateChanged handler can set another Source while the Source being applied raises Opening. During the handler's initial mapping MAUI
-	// applies that Source at once, inside the update that raised Opening (a Source set later waits for the running update instead): the update
-	// that raised Opening was replaced and loads nothing, and a Source set after both cancels the load of the one that replaced it.
+	// During the handler's initial mapping MAUI applies at once a Source that a StateChanged handler sets while Opening is raised, inside the
+	// update that raised Opening (a Source set later waits for the running update instead): that update was replaced and loads nothing, and a
+	// Source set after both cancels the load of the one that replaced it.
 	[Fact]
 	public async Task SourceSetWhileOpeningIsRaisedDuringTheInitialMappingCannotReplaceALaterSource()
 	{
 		var artwork = await ReadAssetAsync(artworkAsset);
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (artwork, "image/png") });
-		var artworkResponse = server.HoldResponses("/art.png");
+		var heldArtworkResponse = server.HoldResponses("/art.png");
 		SetupProbeBuilder();
 		var isSourceReplaced = false;
 		var mediaElement = await CreateMediaElementAsync(element =>
@@ -705,7 +695,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 			// MAUI's WeakEventManager, which raises StateChanged, holds the target of a handler weakly. A handler that captured `element` would be
 			// the only reference to its closure, which a collection before the handler connects removes (and the handler with it): this one
-			// captures only the test's own state, which the running test keeps, and sets the Source through the sender
+			// captures only the test's own state, which the running test keeps, and sets the Source through the sender.
 			element.StateChanged += (sender, e) =>
 			{
 				if (e.NewState is MediaElementState.Opening && !isSourceReplaced)
@@ -718,7 +708,6 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 		await HostAsync(mediaElement, async _ =>
 		{
-			// The source set while Opening was raised waits for its artwork: the server holds the answer back.
 			await WaitUntilAsync(() => isSourceReplaced && server.HasRequest("HEAD", "/art.png"), "The source set while Opening was raised never requested its artwork.");
 
 			// The latest source has no artwork, so it loads at once.
@@ -726,16 +715,15 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			mediaElement.Source = MediaSource.FromResource(toneAsset);
 			await WaitUntilAsync(() => GetPlayer(mediaElement).CurrentMediaItem?.MediaId?.EndsWith(toneAsset, StringComparison.Ordinal) == true, "The latest source was never loaded.");
 
-			// Now the artwork arrives: the sources that the latest one replaced have nothing left to load.
-			artworkResponse.SetResult();
+			heldArtworkResponse.SetResult();
 			await AssertHelpers.Wait(() => GetPlayer(mediaElement).CurrentMediaItem?.MediaId?.EndsWith(toneAsset, StringComparison.Ordinal) != true, timeout: 3000);
 
 			Assert.EndsWith(toneAsset, GetPlayer(mediaElement).CurrentMediaItem!.MediaId);
 		});
 	}
 
-	// The manager reports a source that it cannot apply itself, through MediaFailed with the message of the NotSupportedException, and does not
-	// throw it: an exception of UpdateSource is not a failure of the source (the source mapping lets it propagate).
+	// An exception of UpdateSource is not a failure of the source (the source mapping lets it propagate), so the manager reports a source that
+	// it cannot apply through MediaFailed, with the message of the NotSupportedException, instead of throwing it.
 	[Fact]
 	public async Task UnsupportedKindOfMediaSourceIsReportedByTheManagerWithoutThrowing()
 	{
@@ -759,7 +747,6 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A source that the manager cannot apply is reported through MediaFailed, as a source that cannot be played is.
 	[Fact]
 	public async Task UnsupportedKindOfMediaSourceRaisesMediaFailed()
 	{
@@ -778,8 +765,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A source that the manager cannot apply replaces the previous media like a source that cannot be played: the previous media stops and
-	// leaves the player, so nothing is reported for it afterwards (its MediaEnded, or a state that overwrites Failed).
+	// Like a source that cannot be played, a source that the manager cannot apply takes the previous media out of the player, so nothing is
+	// reported for it afterwards (its MediaEnded, or a state that overwrites Failed).
 	[Fact]
 	public async Task SourceThatCannotBeAppliedStopsThePreviousMedia()
 	{
@@ -810,9 +797,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Only a source that cannot be applied or played is reported through MediaFailed. An exception that an event handler throws while the source
-	// changes (here the StateChanged handler for Opening, raised before the source is applied) is not a failure of the source: it propagates to
-	// the code that sets Source, as the update runs synchronously up to its first await.
+	// Opening is raised before the source is applied, and the update runs synchronously up to its first await, so the exception of its handler
+	// reaches the code that sets Source.
 	[Fact]
 	public async Task ExceptionOfAnEventHandlerDuringASourceChangePropagatesAndIsNotReportedAsMediaFailed()
 	{
@@ -836,13 +822,13 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
 
 			// A failure of the source raises MediaFailed. CurrentState cannot show one here: MAUI applies no change of CurrentState after a StateChanged
-			// handler threw (BindableObject queues the changes of a property while it is being set, and the exception never ends that set)
+			// handler threw (BindableObject queues the changes of a property while it is being set, and the exception never ends that set).
 			Assert.Empty(recorder.FailureMessages);
 		});
 	}
 
-	// MediaOpened is raised once the source is applied, after the part of the update whose failures are failures of the source: an exception of its
-	// handler propagates (without artwork the update runs synchronously, so to the code that sets Source), and the source stays applied.
+	// MediaOpened is raised after the part of the update whose failures are failures of the source, so an exception of its handler propagates
+	// (without artwork the update runs synchronously, so to the code that sets Source).
 	[Fact]
 	public async Task ExceptionOfAMediaOpenedHandlerPropagatesAndTheSourceStaysApplied()
 	{
@@ -872,8 +858,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	// ExoPlayer raises its events synchronously while it takes the source (SetMediaItem and Prepare), here StateChanged for Buffering. There, only an
-	// exception of the player itself (a Java exception) is a failure of the source: the exception of an event handler propagates (without artwork the
-	// update runs synchronously, so to the code that sets Source), is not reported as MediaFailed, and the player keeps the source.
+	// exception of the player itself (a Java exception) is a failure of the source, so the exception of an event handler propagates (without
+	// artwork the update runs synchronously, so to the code that sets Source).
 	[Fact]
 	public async Task ExceptionOfABufferingHandlerWhileThePlayerTakesTheSourcePropagatesAndIsNotReportedAsMediaFailed()
 	{
@@ -888,7 +874,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			var isSettingTheSource = false;
 			mediaElement.StateChanged += (_, e) =>
 			{
-				// Only while the source is set: an exception of a handler that ExoPlayer raises from its looper would end the app
+				// Only while the source is set: an exception of a handler that ExoPlayer raises from its looper would end the app.
 				if (isSettingTheSource && e.NewState is MediaElementState.Buffering)
 				{
 					throw handlerException;
@@ -911,8 +897,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The events raised after the part of the update whose failures are failures of the source are not in it: here None, once a source without data
-	// has emptied the player. An exception of its handler propagates to the code that sets Source, and is not reported as MediaFailed.
+	// None is raised after the part of the update whose failures are failures of the source (once a source without data has emptied the player),
+	// so an exception of its handler propagates to the code that sets Source.
 	[Fact]
 	public async Task ExceptionOfANoneHandlerAfterTheSourceIsAppliedPropagatesAndIsNotReportedAsMediaFailed()
 	{
@@ -945,9 +931,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A StateChanged handler that ExoPlayer raises while it takes the source (Buffering) can set another Source, whose update replaces this one. With
-	// artwork the update has awaited its download by then, so the other Source is applied at once (MAUI defers only a Source that is set while the
-	// Source is being set): the replaced update reports nothing more, and MediaOpened is raised once, for the source that replaced it.
+	// With artwork the update has awaited its download by the time ExoPlayer takes the source, so the Source that the Buffering handler sets is
+	// applied at once (MAUI defers only a Source that is set while the Source is being set).
 	[Fact]
 	public async Task SourceSetByABufferingHandlerWhileThePlayerTakesTheSourceReplacesIt()
 	{
@@ -971,7 +956,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 			mediaElement.Source = MediaSource.FromResource(toneAsset);
 
-			// The update of the other source applies it and raises its MediaOpened in one turn of the main thread
+			// The update of the other source applies it and raises its MediaOpened in one turn of the main thread.
 			await WaitUntilAsync(() => player.CurrentMediaItem?.MediaId?.EndsWith(shortToneAsset, StringComparison.Ordinal) is true, "The source that the Buffering handler set never reached the player.");
 			await WaitForStateAsync(mediaElement, MediaElementState.Paused);
 			Assert.True(hasReplacedTheSource);

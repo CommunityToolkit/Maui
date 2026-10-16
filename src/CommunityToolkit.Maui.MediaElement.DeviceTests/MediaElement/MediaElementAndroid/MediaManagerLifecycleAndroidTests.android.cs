@@ -11,9 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager's construction, its platform view creation and its Dispose (MediaManager.shared.cs, the Android blocks of
-// MediaManager.android.cs): what the manager owns and what it releases again. A media session id is unique in the process while the
-// session is alive (Media3 refuses a second session with the same id), which is how the tests see that a session was released.
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
@@ -61,7 +58,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
-			// The manager was never asked to create a player.
 			using var manager = new AndroidMediaManagerProbe(MauiContext, mediaElement, TestDispatcher.Current);
 
 			await manager.UpdateSource();
@@ -93,12 +89,11 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 			client = (HttpClient?)GetPrivateField(manager, "client");
 			Assert.NotNull(factory);
 			Assert.NotNull(tokenSource);
-			// While the manager lives, its session owns the id.
-			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildSession(sessionId!));
+			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildAndReleaseSession(sessionId!));
 		});
 		// HostAsync disconnected the handler, which disposed the manager.
 
-		await InvokeOnMainThreadAsync(() => BuildSession(sessionId!));
+		await InvokeOnMainThreadAsync(() => BuildAndReleaseSession(sessionId!));
 		Assert.Equal(IntPtr.Zero, factory!.Handle);
 		Assert.Throws<ObjectDisposedException>(() => tokenSource!.Token);
 		await Assert.ThrowsAsync<ObjectDisposedException>(() => client!.GetAsync("http://127.0.0.1:1/"));
@@ -125,7 +120,7 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 			// The finalizer path: the managed objects may be finalized already, so nothing may be released.
 			disposeCore.Invoke(manager, [false]);
 
-			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildSession(sessionId));
+			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildAndReleaseSession(sessionId));
 			Assert.NotEqual(IntPtr.Zero, factory.Handle);
 			Assert.False(tokenSource.IsCancellationRequested);
 			Assert.Null(Record.Exception(() => tokenSource.Token));
@@ -135,7 +130,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// "session ??= builder.Build()": a second CreatePlatformView builds a new player but no second media session (Build() is not called).
 	[Fact]
 	public async Task CreatingThePlatformViewAgainKeepsTheOneMediaSession()
 	{
@@ -189,8 +183,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A source without data (Uri, File, Resource or Stream source with nothing in it) has no media item, also after a valid source: the previous
-	// media is not loaded again and MediaOpened is not raised again, as for a fresh manager (SourceWithoutDataLoadsNothing).
 	[Fact]
 	public async Task SourceWithoutDataAfterAValidSourceDoesNotOpenTheOldMediaAgain()
 	{
@@ -210,8 +202,8 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Releases a session of this process after building it: a second live session with the same id makes Media3 throw.
-	void BuildSession(string id)
+	// Media3 refuses a second live session with the same id, so building one shows whether the manager's session was released.
+	void BuildAndReleaseSession(string id)
 	{
 		var player = new ExoPlayerBuilder(MauiContext.Context!).Build()!;
 		try
@@ -227,7 +219,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 	static object? GetPrivateField(object instance, string name) =>
 		instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(instance);
 
-	// A Context that has no Resources, which MediaManager checks for before it inflates the TextureView layout.
 	sealed class ContextWithoutResources(Context baseContext) : ContextWrapper(baseContext)
 	{
 		public override Resources? Resources => null;

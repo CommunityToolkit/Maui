@@ -2,7 +2,7 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: clearing the focus of an EditText leaves its soft keyboard open, so the behavior also hides the soft keyboard.
+// Clearing the focus of an EditText leaves its soft keyboard open, so the behavior also hides the soft keyboard.
 public partial class MaxLengthReachedBehaviorTests
 {
 	[Theory]

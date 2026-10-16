@@ -80,8 +80,8 @@ public partial class ToastTests
 		});
 	}
 
-	// The duration of the toast is the interval of the NSTimer that hides it: Short is 2 s, Long 3.5 s. The fire date of the timer pins the
-	// interval in both directions (the tests that wait for the toast to go away allow for a busy main thread).
+	// The fire date of the NSTimer that hides the toast pins its duration in both directions, which the tests that wait for the toast to go
+	// away cannot do: they allow for a busy main thread.
 	[Theory]
 	[InlineData(ToastDuration.Short, 2.0)]
 	[InlineData(ToastDuration.Long, 3.5)]
@@ -119,8 +119,7 @@ public partial class ToastTests
 		});
 	}
 
-	// UIKit only accepts calls from the main thread (the binding checks it in Debug builds): Show called from a background thread fails
-	// before anything is created or shown.
+	// UIKit only accepts calls from the main thread, and the binding checks it in Debug builds.
 	[Fact]
 	public async Task ShowOffTheUiThreadThrowsUIKitThreadAccessExceptionAndShowsNothing()
 	{
@@ -136,7 +135,7 @@ public partial class ToastTests
 		});
 	}
 
-	// Dismiss fails the same way off the UI thread (Alert.Dismiss removes the view through UIKit), and the toast stays.
+	// Dismiss fails the same way off the UI thread, because Alert.Dismiss removes the view through UIKit.
 	[Fact]
 	public async Task DismissOffTheUiThreadThrowsUIKitThreadAccessExceptionAndKeepsTheToast()
 	{
@@ -154,7 +153,6 @@ public partial class ToastTests
 		});
 	}
 
-	// Show dismisses the toast that is displayed before it shows the next one: the first one is gone at once, not once its own timer fires.
 	[Fact]
 	public async Task ShowRemovesTheDisplayedToastBeforeItShowsTheNextOne()
 	{
@@ -187,7 +185,7 @@ public partial class ToastTests
 		});
 	}
 
-	// The window tells the two durations apart (Long is 3.5 s); the extra time allows for a busy main thread.
+	// The 1.9 to 3.2 s window tells the two durations apart (Long is 3.5 s); the extra time allows for a busy main thread.
 	[Fact]
 	public async Task ShortToastHidesItselfAfterAboutTwoSeconds()
 	{
@@ -261,8 +259,8 @@ public partial class ToastTests
 		await AssertionExtensions.WaitForGC(toastReference, platformReference, alertViewReference);
 	}
 
-	// Toast.Dispose(true) disposes the platform toast, whose only visible trace is its own disposed state: the native label stays in the
-	// AlertView (UIKit retains it), so the tests read PlatformToast's isDisposed flag.
+	// Disposing the platform toast leaves no visible trace but its own disposed state: the native label stays in the AlertView (UIKit retains
+	// it), so the tests read PlatformToast's isDisposed flag.
 	[Fact]
 	public async Task DisposeDisposesThePlatformToast()
 	{

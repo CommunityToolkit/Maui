@@ -25,8 +25,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 	static int GetCamera2LensFacing(string cameraId) =>
 		((Java.Lang.Integer)GetCamera2Characteristics(cameraId).Get(CameraCharacteristics.LensFacing)!).IntValue();
 
-	// Camera2: high resolution sizes first (API 23+), then the normal sizes, exactly the order CameraProvider adds them.
-	static List<Size> GetCamera2JpegSizes(string cameraId)
+	static List<Size> GetCamera2JpegSizesInCameraProviderOrder(string cameraId)
 	{
 		var map = (StreamConfigurationMap)GetCamera2Characteristics(cameraId).Get(CameraCharacteristics.ScalerStreamConfigurationMap)!;
 		var sizes = new List<Size>();
@@ -139,7 +138,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 
 		foreach (var camera in cameras)
 		{
-			var expected = GetCamera2JpegSizes(camera.DeviceId);
+			var expected = GetCamera2JpegSizesInCameraProviderOrder(camera.DeviceId);
 			Assert.NotEmpty(expected);
 			Assert.Equal(expected, camera.SupportedResolutions);
 		}
@@ -158,7 +157,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		{
 			Assert.NotNull(camera.CameraSelector);
 
-			// The selector CameraX hands out for a camera selects exactly that camera among all native cameras.
 			var selected = camera.CameraSelector.Filter(nativeCameras);
 			Assert.Equal(new[] { camera.DeviceId }, selected.Select(GetNativeCameraId).ToList());
 		}
@@ -239,11 +237,11 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => provider.RefreshAvailableCameras(cancellation.Token));
 
-		// The cancelled caller did not even get past the semaphore, so no platform refresh was started...
+		// The cancelled caller does not get past the semaphore.
 		Assert.Null(GetPrivateField<Task>(provider, "refreshAvailableCamerasTask"));
 
-		// ... and none publishes cameras later: the CameraX listener of this request runs after any listener the provider could
-		// have registered on the same future and executor.
+		// The CameraX listener of this request runs after any listener that the provider could have registered on the same future and
+		// executor, so no refresh can publish cameras later.
 		await GetNativeCameraProviderAsync();
 		Assert.Null(provider.AvailableCameras);
 	}
@@ -297,9 +295,8 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		var native = await RefreshAsync(provider);
 		var nativeIds = native.Select(camera => camera.DeviceId).ToList();
 
-		// A platform refresh that really runs publishes what CameraX reports again. Reusing the completed refresh of before (which a
-		// comparison of Task instances can not tell apart: a refresh that completes synchronously is Task.CompletedTask) would leave
-		// the list that the provider knows as it is.
+		// A platform refresh that really runs publishes what CameraX reports again, while reusing the completed one would leave the list as it
+		// is. Comparing Task instances can not tell them apart: a refresh that completes synchronously is Task.CompletedTask.
 		SetAvailableCameras(provider, [CreateInfo("not-a-native-camera")]);
 
 		var refreshed = await RefreshAsync(provider);
@@ -341,8 +338,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		Assert.Same(first, second);
 	}
 
-	// ---- high resolution sizes (Camera2 reports them for cameras that support high resolution capture) -----------------------
-
 	static List<Size>? GetCamera2HighResolutionSizes(string cameraId)
 	{
 		var map = (StreamConfigurationMap)GetCamera2Characteristics(cameraId).Get(CameraCharacteristics.ScalerStreamConfigurationMap)!;
@@ -373,10 +368,8 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		var camera = cameras.FirstOrDefault(camera => GetCamera2HighResolutionSizes(camera.DeviceId) is null or { Count: 0 });
 		Skip.If(camera is null, "Every camera of this device supports high resolution capture, so the arm without high resolution sizes is not taken here.");
 
-		Assert.Equal(GetCamera2JpegSizes(camera.DeviceId), camera.SupportedResolutions);
+		Assert.Equal(GetCamera2JpegSizesInCameraProviderOrder(camera.DeviceId), camera.SupportedResolutions);
 	}
-
-	// ---- cancelling one of several callers ------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task SecondRefreshIsNotCancelledWhenOnlyTheFirstCallerCancels()
@@ -399,8 +392,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		Assert.NotNull(provider.AvailableCameras);
 	}
 
-	// ---- leaks ---------------------------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public async Task ProviderIsCollectedAfterItRefreshedTheCamerasAndWasDisposed()
 	{
@@ -421,11 +412,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		provider.Dispose();
 		return reference;
 	}
-
-	// AreCameraInfoListsEqual is platform-independent logic; CommunityToolkit.Maui.UnitTests/Views/CameraView/CameraProviderTests.cs
-	// covers it (null and empty lists, order, duplicates, ids versus other properties).
-
-	// ---- device configurations the pool does not have (each test runs for real where its condition holds) ------------------------
 
 	[Fact]
 	public async Task RefreshMapsAnExternalCameraToTheUnknownPosition()
@@ -514,23 +500,16 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		Assert.Equal(0, raised);
 	}
 
-	/// <summary>Configures CameraX (see <see cref="ReconfigureCameraXAsync"/>) with a camera limiter that selects no camera.</summary>
 	Task LimitCameraXToNoCameraAsync() => ReconfigureCameraXAsync(new CameraSelector.Builder().AddCameraFilter(new NoCameraFilter()).Build());
 
-	/// <summary>
-	/// Configures CameraX (see <see cref="ReconfigureCameraXAsync"/>) so that its next initialization fails like on a device whose camera
-	/// service lists fewer cameras than the device declares: CameraX must find the back camera that the device declares, but its camera
-	/// limiter selects no camera. Without retries CameraX fails at once, instead of after retrying for 6 seconds.
-	/// </summary>
+	// CameraX must find the back camera that the device declares, but its camera limiter selects no camera. Without retries it fails at
+	// once, instead of after retrying for 6 seconds.
 	Task MakeCameraXFailToInitializeAsync() => ReconfigureCameraXAsync(
 		new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingBack).AddCameraFilter(new NoCameraFilter()).Build(),
 		RetryPolicy.Never);
 
-	/// <summary>
-	/// Shuts the process-wide CameraX down and configures it again with a camera limiter (and a retry policy for its initialization), the
-	/// way CameraX's own tests reconfigure it (ProcessCameraProvider.ShutdownAsync, then ConfigureInstance). When the test ends CameraX is
-	/// shut down once more, so that the next test starts it with its default configuration again.
-	/// </summary>
+	// Shutting down and then configuring is how CameraX's own tests reconfigure it (ProcessCameraProvider.ShutdownAsync, then
+	// ConfigureInstance). The cleanup shuts CameraX down once more, so that the next test starts it with its default configuration again.
 	async Task ReconfigureCameraXAsync(CameraSelector availableCamerasLimiter, IRetryPolicy? initializationRetryPolicy = null)
 	{
 		var native = await GetNativeCameraProviderAsync();

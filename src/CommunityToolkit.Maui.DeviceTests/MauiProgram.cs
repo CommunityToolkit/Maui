@@ -5,8 +5,8 @@ using CommunityToolkit.Maui.Maps;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Same shape as dotnet/maui's src/Controls/tests/DeviceTests/MauiProgram.cs. The runner source generator calls CreateMauiApp
-// from the generated platform entry points; the headless runner (XHarness) and the visual runner (no arguments) share it.
+// Same shape as dotnet/maui's src/Controls/tests/DeviceTests/MauiProgram.cs. The runner source generator calls CreateMauiApp from the
+// generated platform entry points, for the headless runner (XHarness) and the visual runner (no arguments) alike.
 public static class MauiProgram
 {
 #if MACCATALYST
@@ -33,18 +33,18 @@ public static class MauiProgram
 		}, ConfigureApp);
 	}
 
-	// The runner's own MauiApp: IPlatformApplication.Current.Services, Application.Current and the app lifecycle events come
-	// from here, so register what the toolkit resolves from the running app. Each test also builds its own MauiApp (SetupBuilder).
+	// IPlatformApplication.Current.Services, Application.Current and the app lifecycle events come from the runner's own MauiApp, so it
+	// registers what the toolkit resolves from the running app. Each test also builds its own MauiApp (SetupBuilder).
 	static void ConfigureApp(MauiAppBuilder builder)
 	{
 		builder.UseMauiCommunityToolkit(static options =>
 		{
-			// Registers the Windows app-notification handler on launch (needs the activation entries in Package.appxmanifest).
+			// Needs the activation entries in Package.appxmanifest to register the Windows app-notification handler on launch.
 			options.SetShouldEnableSnackbarOnWindows(true);
 		});
 
 #if WINDOWS
-		// Maps tests never render a map, so no Bing Maps key is needed.
+		// The Maps tests answer the request for the Bing control with a stand-in, so no real Bing Maps key is needed.
 		builder.UseMauiCommunityToolkitMaps("device-tests-placeholder-key");
 #endif
 	}

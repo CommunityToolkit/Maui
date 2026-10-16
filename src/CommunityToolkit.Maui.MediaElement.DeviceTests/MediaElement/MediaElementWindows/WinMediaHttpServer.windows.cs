@@ -5,13 +5,11 @@ using System.Text;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>One request seen by <see cref="WinMediaHttpServer"/>.</summary>
 sealed record WinMediaRequest(string Method, string Path, IReadOnlyDictionary<string, string> Headers)
 {
 	public string? Header(string name) => Headers.TryGetValue(name, out var value) ? value : null;
 }
 
-/// <summary>A canned response of <see cref="WinMediaHttpServer"/>.</summary>
 sealed class WinMediaResponse
 {
 	public int StatusCode { get; init; } = 200;
@@ -22,10 +20,8 @@ sealed class WinMediaResponse
 
 	public byte[] Body { get; init; } = [];
 
-	/// <summary>Leaves the Content-Length header out (a HEAD answer without length, for example).</summary>
 	public bool OmitContentLength { get; init; }
 
-	/// <summary>Holds the answer back (to cancel a request that is in flight).</summary>
 	public TimeSpan Delay { get; init; }
 
 	public static WinMediaResponse NotFound() => new() { StatusCode = 404, ReasonPhrase = "Not Found" };
@@ -35,10 +31,6 @@ sealed class WinMediaResponse
 	public static WinMediaResponse Text(string text, string contentType) =>
 		new() { Headers = [("Content-Type", contentType)], Body = Encoding.UTF8.GetBytes(text) };
 
-	/// <summary>
-	/// Serves <paramref name="content"/> like a static file server: HEAD gets the length, a "Range: bytes=a-b" GET gets 206 with
-	/// Content-Range, anything else gets 200 with the whole content.
-	/// </summary>
 	public static WinMediaResponse ServeBytes(WinMediaRequest request, byte[] content, string contentType)
 	{
 		var headers = new List<(string, string)> { ("Content-Type", contentType), ("Accept-Ranges", "bytes") };
@@ -71,11 +63,7 @@ sealed class WinMediaResponse
 	}
 }
 
-/// <summary>
-/// A minimal HTTP/1.1 server on the loopback interface (raw sockets, no admin rights or URL reservation needed, no traffic leaves
-/// the machine). Every connection serves one request and closes. Tests register a <see cref="Handler"/> that answers by path and
-/// method, and read back what the toolkit actually sent through <see cref="Requests"/>.
-/// </summary>
+// Raw sockets on the loopback interface: no admin rights or URL reservation are needed.
 sealed class WinMediaHttpServer : IAsyncDisposable
 {
 	readonly TcpListener listener = new(IPAddress.Loopback, 0);

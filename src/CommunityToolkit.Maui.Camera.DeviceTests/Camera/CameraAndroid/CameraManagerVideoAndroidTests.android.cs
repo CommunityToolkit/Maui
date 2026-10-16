@@ -11,20 +11,10 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-/// <summary>
-/// CameraManager on Android: recording video (start, stop, the state it keeps while it records, the files it creates and removes)
-/// and the CameraConsumer that reports the end of a recording. The runtime permissions (camera and microphone) are granted first
-/// and every assertion reads what CameraX and the file system report natively: bound use cases, image capture mode, the
-/// recording file in the cache directory, and the recorded MP4 as Android's MediaMetadataRetriever sees it.
-/// </summary>
 [Category(TestCategory.CameraManagerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 {
-	/// <summary>
-	/// Waits until the recording wrote its first data into a new file in the cache directory and returns the path. A test passes its
-	/// own <paramref name="message"/> for the step it is about, so that a failure there can not be mistaken for a failure of its setup.
-	/// </summary>
 	static async Task<string> WaitForRecordingFileAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
 	{
 		string? path = null;
@@ -53,11 +43,8 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		return expected is MemoryStream memory ? memory.ToArray() : throw new InvalidOperationException("Expected a MemoryStream.");
 	}
 
-	/// <summary>
-	/// A VideoRecordEvent.Finalize as CameraX's Recorder creates it, with an error (<paramref name="error"/>, <paramref name="cause"/>) or
-	/// without, so that CameraConsumer reads the real hasError(), getError() and getCause() of the event. The event, its RecordingStats,
-	/// AudioStats and OutputResults only have package-private factories (only CameraX creates them), which JNI calls regardless of Java access.
-	/// </summary>
+	// The event, its RecordingStats, AudioStats and OutputResults only have package-private factories (only CameraX creates them), which
+	// JNI calls regardless of Java access. This way CameraConsumer reads the real hasError(), getError() and getCause() of the event.
 	static VideoRecordEvent.Finalize CreateFinalizeEvent(int error = VideoRecordEvent.Finalize.ErrorNone, Java.Lang.Throwable? cause = null)
 	{
 		using var file = new Java.IO.File(AppContext.CacheDir, "finalize-event.mp4");
@@ -100,7 +87,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}
 	}
 
-	/// <summary>A CameraConsumer that received a VideoRecordEvent.Finalize with <paramref name="error"/>, as CameraX reports a recording that failed.</summary>
 	static CameraConsumer CreateFinalizedConsumer(int error)
 	{
 		var consumer = new CameraConsumer(new TaskCompletionSource());
@@ -134,10 +120,8 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}
 	}
 
-	/// <summary>
-	/// Watches a running recording for two seconds and fails as soon as CameraX finalizes it. CameraX finalizes a recording whose
-	/// VideoCapture was unbound within about half a second, so a recording that is still running after this window was kept.
-	/// </summary>
+	// CameraX finalizes a recording whose VideoCapture was unbound within about half a second, so a recording that is still running after
+	// this window of two seconds was kept.
 	static async Task AssertTheRecordingKeepsRunningAsync(TaskCompletionSource finalized, string cause)
 	{
 		var window = Stopwatch.StartNew();
@@ -145,19 +129,14 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		Assert.False(finalized.Task.IsCompleted, $"CameraX finalized the recording after {cause}.");
 	}
 
-	/// <summary>
-	/// Asserts that a returned video covers the whole time from when the recording first wrote data until the stop was requested (one
-	/// second of tolerance). CameraX ends the video at the stop request, but finalizing it can take more than a second (it waits up to
-	/// a second for the camera to stop streaming into the encoder), so the caller stops the stopwatch when it requests the stop.
-	/// </summary>
+	// CameraX ends the video at the stop request, but finalizing it can take more than a second (it waits up to a second for the camera
+	// to stop streaming into the encoder), so the caller stops the stopwatch when it requests the stop.
 	static void AssertTheVideoCoversTheRecordingTime(byte[] mp4, Stopwatch sinceTheRecordingHadData)
 	{
 		var (_, durationMilliseconds, _, _) = ReadVideoInfo(mp4);
 		var expected = sinceTheRecordingHadData.ElapsedMilliseconds - 1000;
 		Assert.True(durationMilliseconds >= expected, $"The video lasts {durationMilliseconds} ms, but the recording ran for at least {expected} ms: it was cut short.");
 	}
-
-	// ---- start -----------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task StartVideoRecordingRecordsIntoACacheFileWithTheVideoSessionBound()
@@ -180,7 +159,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Equal(0, stream.Length);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
 
-			// Start, Status and the other non-final events of the recording never complete the finalize task.
 			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs");
 			Assert.NotNull(finalized);
 			Assert.False(finalized.Task.IsCompleted);
@@ -214,7 +192,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// The app starts the next recording right after it stopped one (both calls in one UI-thread message), so the stop still waits for
-	// CameraX to finalize its recording when the start comes in: the stop returns the first video and the start records the second one.
+	// CameraX to finalize its recording when the start comes in.
 	[Fact]
 	public async Task StartVideoRecordingRightAfterStopVideoRecordingRecordsTheNextVideoAndTheStopReturnsTheFirstOne()
 	{
@@ -241,8 +219,8 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// CameraX finalized the running recording with an error (its VideoCapture was unbound; the test unbinds the use cases itself) and the app
-	// did not stop it. The next StartVideoRecording discards that recording like a running one and records into its own stream, and the
-	// failure of the discarded recording does not reach the stop of the new one.
+	// did not stop it. The next StartVideoRecording discards that recording like a running one, and the failure of the discarded recording
+	// does not reach the stop of the new one.
 	[Fact]
 	public async Task StartVideoRecordingAfterARecordingThatCameraXFinalizedWithAnErrorRecordsIntoTheNewStream()
 	{
@@ -429,7 +407,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 				await Assert.ThrowsAnyAsync<Java.Lang.SecurityException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
 			}
 
-			// The cache directory works again, or the permission is granted again: the next recording must start.
 			context.CacheDirectoryOverride = null;
 			context.DeniedPermissions.Clear();
 			var stream = new MemoryStream();
@@ -440,7 +417,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// A second StartVideoRecording ends the running recording (StartVideoRecordingWhileRecordingRecordsIntoTheNewStream) and then fails,
-	// because its recording file can not be created: no recording runs any more, so the manager is back in its photo session.
+	// because its recording file can not be created: no recording runs any more.
 	[Fact]
 	public async Task ASecondStartVideoRecordingThatFailsReturnsToThePhotoSession()
 	{
@@ -495,7 +472,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
 
-			// PendingRecording.withAudioEnabled refuses to record audio without the permission.
 			var exception = await Assert.ThrowsAnyAsync<Java.Lang.SecurityException>(() => session.Manager.StartVideoRecording(stream, CancellationToken.None));
 
 			Assert.Contains("RECORD_AUDIO", exception.Message);
@@ -540,7 +516,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StartVideoRecording(stream, cancellation.Token));
 
-			// Nothing was recorded, so the manager is still taking photos.
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture is no longer bound.");
 			Assert.Equal(ImageCapture.CaptureModeMaximizeQuality, session.ImageCapture.CaptureMode);
 			Assert.Null(GetPrivateField<Stream>(session.Manager, "videoRecordingStream"));
@@ -551,7 +526,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// The token is cancelled while StartVideoRecording waits for CameraX to resolve the camera of the video session, after the
-	// recording file was created and before the session changed: the photo session stays as it was, with the same ImageCapture.
+	// recording file was created and before the session changed.
 	[Fact]
 	public async Task StartVideoRecordingCancelledWhileItWaitsForCameraXKeepsThePhotoSession()
 	{
@@ -572,7 +547,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start.WaitAsync(CameraTimeout));
 			await SettleUiThreadAsync();
 
-			// Nothing was recorded, so the manager is still taking photos.
 			Assert.Equal("Photo", GetPrivateField<object>(session.Manager, "currentSessionMode")?.ToString());
 			Assert.Same(imageCapture, session.ImageCapture);
 			Assert.True(await IsNativelyBoundAsync(imageCapture), "The ImageCapture is no longer bound.");
@@ -588,7 +562,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// CameraFlashMode.ToPlatform rejects a value that is no CameraFlashMode (NotSupportedException) when the ImageCapture of the video
-	// session is created: the start fails, and the manager keeps its photo session with its ImageCapture, never a disposed one.
+	// session is created, so the start fails.
 	[Fact]
 	public async Task StartVideoRecordingWithAnUndefinedFlashModeKeepsThePhotoSessionAndItsImageCapture()
 	{
@@ -618,8 +592,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Empty(ListRecordingFiles().Except(before));
 		}, includeRecordAudio: true);
 	}
-
-	// ---- stop ------------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task StopVideoRecordingReturnsThePlayableVideoInTheStreamAndRestoresThePhotoSession()
@@ -795,7 +767,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await WaitForRecordingFileAsync(before);
 			await Assert.ThrowsAsync<NotSupportedException>(() => session.Manager.StopVideoRecording(CancellationToken.None));
 
-			// The failed copy must not keep the manager in its recording state: the next recording starts and is returned.
 			var stream = new MemoryStream();
 			var beforeTheNextRecording = ListRecordingFiles();
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
@@ -804,8 +775,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// The recording is over after a stop whose copy failed: the manager is back in its photo session, like after a stop that could
-	// write the stream, so a new capture resolution applies again (UpdateCaptureResolution rebuilds the use cases of the photo session).
 	[Fact]
 	public async Task AStopVideoRecordingThatCanNotWriteTheStreamReturnsToThePhotoSession()
 	{
@@ -827,6 +796,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the photo session is not bound.");
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 
+			// UpdateCaptureResolution rebuilds the use cases of the photo session only, so a new ImageCapture shows that the manager is back in it.
 			var imageCapture = session.ImageCapture;
 			await session.Manager.UpdateCaptureResolution(SmallResolution, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
 
@@ -836,9 +806,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// CameraX finalizes a recording with an error when the VideoCapture is unbound while it records (ERROR_SOURCE_INACTIVE; the test unbinds
-	// the use cases itself and the preview stays started) and keeps the video recorded until then in the file. StopVideoRecording returns
-	// that video like the video of a stopped recording, and the recording is over: the manager is back in its photo session, and the next
-	// recording is returned.
+	// the use cases itself and the preview stays started) and keeps the video recorded until then in the file.
 	[Fact]
 	public async Task StopVideoRecordingOfARecordingThatCameraXFinalizedBecauseItsSourceStoppedReturnsTheVideoRecordedUntilThen()
 	{
@@ -877,8 +845,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// The recording has not written anything yet when it is stopped (the camera still starts the video session): CameraX finalizes it
-	// with ERROR_NO_VALID_DATA, and without a video StopVideoRecording reports the failure instead of an empty stream. The recording is
-	// over all the same: the manager is back in its photo session.
+	// with ERROR_NO_VALID_DATA, and without a video StopVideoRecording reports the failure instead of an empty stream.
 	[Fact]
 	public async Task StopVideoRecordingRightAfterStartVideoRecordingThrowsCameraExceptionBecauseNothingWasRecorded()
 	{
@@ -906,7 +873,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	// StopCameraPreview closes the camera before the recording wrote anything. CameraX finalizes a recording that already started with
 	// ERROR_SOURCE_INACTIVE, an error after which the file holds the video recorded until then, but there is none, and a recording that
 	// still waited for the camera with ERROR_NO_VALID_DATA once it is stopped: either way StopVideoRecording reports the failure instead of
-	// an empty stream. The preview that the app stopped stays stopped.
+	// an empty stream.
 	[Fact]
 	public async Task StopVideoRecordingOfARecordingWhoseCameraClosedBeforeItRecordedAnythingThrowsCameraException()
 	{
@@ -934,9 +901,9 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// CameraX keeps the video recorded until these errors in the file (VideoRecordEvent.Finalize documentation; ERROR_UNKNOWN "may or may
-	// not" generate it, and here it did): StopVideoRecording returns that video. The real recording of the test is finalized without an
-	// error, and the manager reads the error from a consumer that received a Finalize event with it, because most of these errors can not be
-	// provoked on purpose (a full storage, a size or duration limit, which the manager does not set).
+	// not" generate it, and here it did). The real recording of the test is finalized without an error, and the manager reads the error from
+	// a consumer that received a Finalize event with it, because most of these errors can not be provoked on purpose (a full storage, a size
+	// or duration limit, which the manager does not set).
 	[Theory]
 	[InlineData(VideoRecordEvent.Finalize.ErrorUnknown)]
 	[InlineData(VideoRecordEvent.Finalize.ErrorFileSizeLimitReached)]
@@ -997,7 +964,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 	// The errors after which CameraX keeps the video recorded until then, but the file holds no video that Android can read (the test
 	// overwrites the finalized file): it stayed empty because CameraX wrote nothing (the storage was full or the camera closed before the
-	// recording got any data), or its content is no video. StopVideoRecording reports the failure instead of returning what is not a video.
+	// recording got any data), or its content is no video.
 	[Theory]
 	[InlineData(VideoRecordEvent.Finalize.ErrorUnknown, 0)]
 	[InlineData(VideoRecordEvent.Finalize.ErrorUnknown, 4096)]
@@ -1063,8 +1030,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// Like on iOS (CameraManager.macios.cs stops the recording before it waits with the token), a StopVideoRecording whose token is
-	// cancelled already still stops the recording: CameraX finalizes it, and the next StopVideoRecording returns the video.
+	// The token only cancels waiting for the video, not the stop itself, so the next StopVideoRecording returns the video.
 	[Fact]
 	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenStillStopsTheRecording()
 	{
@@ -1083,14 +1049,13 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StopVideoRecording(cancellation.Token));
 
-			// CameraX finalizes a stopped recording within about a second.
 			await AssertionExtensions.AssertEventually(() => finalized.Task.IsCompleted, 10000, 50, "The StopVideoRecording with an already cancelled token did not stop the recording.");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 		}, includeRecordAudio: true);
 	}
 
 	// StopCameraPreview during a recording unbinds its VideoCapture and closes the camera, so CameraX finalizes the recording with an error
-	// (ERROR_SOURCE_INACTIVE) and keeps the video recorded until then, which StopVideoRecording returns.
+	// (ERROR_SOURCE_INACTIVE) and keeps the video recorded until then.
 	[Fact]
 	public async Task StopVideoRecordingAfterStopCameraPreviewKeepsTheCameraClosed()
 	{
@@ -1112,15 +1077,12 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			Assert.Empty(ListRecordingFiles().Except(before));
 
-			// The app stopped the preview: stopping the recording must not bind and open the camera again.
 			Assert.False(await IsNativelyBoundAsync(session.ImageCapture), "StopVideoRecording bound the photo session of a stopped preview.");
 			Assert.False(await IsNativelyBoundAsync(session.CameraPreview), "StopVideoRecording bound the preview of a stopped preview.");
 			await AssertEveryCameraIsClosedAsync();
 		}, includeRecordAudio: true);
 	}
 
-	// The app stopped the preview before it started the recording, which opens the camera to record. Once the recording is stopped, the
-	// preview that the app stopped stays stopped: nothing is bound any more and the camera closes again.
 	[Fact]
 	public async Task StopVideoRecordingOfARecordingStartedAfterStopCameraPreviewClosesTheCameraAgain()
 	{
@@ -1170,8 +1132,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Same(Stream.Null, await stop.WaitAsync(CameraTimeout));
 		}, includeRecordAudio: true);
 	}
-
-	// ---- dispose ---------------------------------------------------------------------------------------------------------
 
 	[Fact]
 	public async Task DisposeWhileRecordingDeletesTheRecordingFileAndDisposesTheStream()
@@ -1233,13 +1193,10 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			session.Manager.Dispose();
 
-			// Disposing the manager disposes the stream it recorded into (the stream the caller got back from StopVideoRecording).
 			Assert.False(stream.CanRead);
 			Assert.Empty(ListRecordingFiles().Except(before));
 		}, includeRecordAudio: true);
 	}
-
-	// ---- other state of the manager while it records ------------------------------------------------------------------------
 
 	[Fact]
 	public async Task UpdateCaptureResolutionWhileRecordingDoesNotRebuildTheUseCases()
@@ -1282,14 +1239,13 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 
-			// Only which use cases SetExtensionMode binds is asserted here (the unbound state makes the assertion able to fail);
-			// what happens to the running recording is SetExtensionModeWhileRecordingKeepsTheRecordingRunning.
+			// The use cases are unbound first, so that the assertions can fail. What happens to the running recording is asserted by
+			// SetExtensionModeWhileRecordingKeepsTheRecordingRunning.
 			await UnbindAllNativeAsync();
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture));
 
 			await session.Manager.SetExtensionMode(ExtensionMode.None, CancellationToken.None).WaitAsync(CameraTimeout);
 
-			// The session mode is Video, so the video capture is bound again (and not just the photo use cases).
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
@@ -1425,9 +1381,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// ---- camera switch while recording ------------------------------------------------------------------------------------
-
-	/// <summary>What CameraViewHandler.MapSelectedCamera does when the app selects another camera.</summary>
+	// Stands in for CameraViewHandler.MapSelectedCamera, which a manager session has no handler to run.
 	static Task SelectCameraAsync(ManagerSession session, CameraInfo camera)
 	{
 		session.View.SelectedCamera = camera;
@@ -1441,7 +1395,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		DeviceTestCapabilities.Require(DeviceTestCapabilities.SecondCamera, (await GetRealCamerasAsync()).Count >= 2, "Needs two cameras to switch between; this device has one.");
 
 	// Binding the use cases to another camera would make CameraX finalize the running recording, so a camera switch waits for the recording
-	// to end: the recording keeps its camera and runs on (no video is cut short), and the view keeps the camera that the app selected.
+	// to end: the recording keeps its camera and runs on (no video is cut short).
 	[Fact]
 	public async Task SwitchingTheCameraWhileRecordingKeepsTheRecordingRunningOnItsCamera()
 	{
@@ -1476,9 +1430,8 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// Two switches while the recording runs, the second one back to the camera of the recording: both wait for the recording, which keeps
-	// running on its camera, and once it is stopped the manager runs the camera that the app selected last. That is the camera of the
-	// recording, so the photo session is bound to it again, as after a recording without a switch: the camera is not closed and loaded again.
+	// The second switch goes back to the camera of the recording, so once the recording is stopped the photo session is bound to that same
+	// camera again, as after a recording without a switch: the camera is not closed and loaded again.
 	[Fact]
 	public async Task SwitchingTheCameraTwiceWhileRecordingKeepsTheRecordingRunningAndTheStopAppliesTheLastSelection()
 	{
@@ -1510,7 +1463,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			AssertIsAPlayableVideo(video);
 			AssertTheVideoCoversTheRecordingTime(video, sinceTheRecordingHadData);
 
-			// The camera of the recording is bound again, so CameraX does not publish its OPEN state again (see WaitUntilCameraIsStreamingAsync)
+			// The camera of the recording is bound again, so CameraX does not publish its OPEN state again (see WaitUntilCameraIsStreamingAsync).
 			Assert.Equal(loadedBefore, session.LoadedCount);
 			Assert.Equal(first.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview), "The Preview of the selected camera is not bound.");
@@ -1522,8 +1475,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// While a camera switch waits for the recording, the ImageCapture stays bound with the recording to the camera of the recording (the
-	// documented contract of ICameraView.SelectedCamera): a picture comes from that camera, and taking it neither ends the recording nor
-	// completes the switch.
+	// documented contract of ICameraView.SelectedCamera).
 	[Fact]
 	public async Task TakePictureWhileACameraSwitchWaitsForTheRecordingUsesTheCameraOfTheRecording()
 	{
@@ -1556,8 +1508,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// The stop of the recording completes the camera switch that waited for it, the way UpdateCurrentCamera completes a switch: the photo
-	// session is bound to the selected camera, which opens and streams, and the camera is loaded (the view's flash, torch and zoom again).
+	// Completing the switch loads the camera as UpdateCurrentCamera does (the view's flash, torch and zoom again).
 	[Fact]
 	public async Task StopVideoRecordingCompletesTheCameraSwitchThatWaitedForTheRecording()
 	{
@@ -1592,8 +1543,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// The page closes right after the user switched the camera during a recording and tapped stop (one UI-thread message): Dispose ends the
-	// recording, the stop returns no video (DisposeWhileStopVideoRecordingIsPendingDoesNotThrowNullReferenceException), and the camera switch
-	// that waited for the recording never completes: the selected camera is never loaded, and every camera closes.
+	// recording and the stop returns no video (DisposeWhileStopVideoRecordingIsPendingDoesNotThrowNullReferenceException).
 	[Fact]
 	public async Task DisposeWhileACameraSwitchWaitsForTheRecordingCompletesNoSwitch()
 	{
@@ -1626,9 +1576,8 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// StopCameraPreview, also while a camera switch waits for the recording, stops the preview: the camera of the recording closes, CameraX
-	// keeps the video recorded until then (StopVideoRecordingAfterStopCameraPreviewKeepsTheCameraClosed), and the switch is dropped, so the
-	// stop of the recording opens no camera. The next StartCameraPreview opens the selected camera.
+	// StopCameraPreview closes the camera of the recording and CameraX keeps the video recorded until then
+	// (StopVideoRecordingAfterStopCameraPreviewKeepsTheCameraClosed). The switch is dropped, so the stop of the recording opens no camera.
 	[Fact]
 	public async Task StopCameraPreviewWhileACameraSwitchWaitsForTheRecordingStopsThePreview()
 	{
@@ -1665,7 +1614,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	}
 
 	// A StartVideoRecording during the recording ends it (StartVideoRecordingWhileRecordingRecordsIntoTheNewStream): the camera switch that
-	// waited for that recording completes first, and the new recording records with the selected camera.
+	// waited for that recording completes first.
 	[Fact]
 	public async Task StartVideoRecordingWhileACameraSwitchWaitsForTheRecordingRecordsWithTheSelectedCamera()
 	{
@@ -1717,7 +1666,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 
-			// The recording uses a new ImageCapture (minimum latency): it must be bound, so that pictures can be taken while recording.
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the recording is not bound.");
 			Assert.True(IsJpeg(await ReadAllBytesAsync(await TakePictureAsync(session))));
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
@@ -1768,7 +1716,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			var video = await StopAndReadAsync(session, stream);
 
-			// There is no camera to bind the rebuilt image capture to.
 			AssertIsAPlayableVideo(video);
 			Assert.Equal(ImageCapture.CaptureModeMaximizeQuality, session.ImageCapture.CaptureMode);
 			Assert.False(await IsNativelyBoundAsync(session.ImageCapture));
@@ -1801,8 +1748,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
-	// ---- CameraConsumer --------------------------------------------------------------------------------------------------
-
 	[Fact]
 	public void CameraConsumerCompletesTheTaskWhenTheRecordingIsFinalized()
 	{
@@ -1817,9 +1762,9 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		Assert.Equal(VideoRecordEvent.Finalize.ErrorNone, consumer.Error);
 	}
 
-	// CameraX finalizes a recording that failed with an error (VideoRecordEvent.Finalize.hasError()). The task completes all the same, so that
-	// StopVideoRecording does not wait forever, and the consumer keeps the error, from which StopVideoRecording decides whether the file can
-	// hold the video recorded until then, and why the recording failed, which StopVideoRecording throws as a CameraException without a video.
+	// The task completes even when the recording failed, so that StopVideoRecording does not wait forever. StopVideoRecording reads the
+	// kept error to decide whether the file can hold the video recorded until then, and throws the kept failure reason as a CameraException
+	// when the file holds no playable video.
 	[Theory]
 	[InlineData(VideoRecordEvent.Finalize.ErrorUnknown)]
 	[InlineData(VideoRecordEvent.Finalize.ErrorFileSizeLimitReached)]
@@ -1863,7 +1808,6 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		var finalized = new TaskCompletionSource();
 		var consumer = new CameraConsumer(finalized);
 
-		// The events CameraX reports while a recording runs, and objects that are no recording event at all.
 		consumer.Accept(CreateRecordEvent<VideoRecordEvent.Start>());
 		consumer.Accept(CreateRecordEvent<VideoRecordEvent.Status>());
 		consumer.Accept(CreateRecordEvent<VideoRecordEvent.Pause>());

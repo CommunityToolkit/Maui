@@ -13,8 +13,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaElementHandler.macios.cs and the Apple parts of MediaElementHandler.shared.cs / AppBuilderExtensions.shared.cs: creating the
-// MauiMediaElement and its MediaManager, disconnecting and disposing, and the property/command mapping methods without a manager.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
@@ -111,7 +109,6 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 	[InlineData(true, true)]
 	public async Task HandlerUsesTheMappersItIsConstructedWithAndTheDefaultMappersForNull(bool customPropertyMapper, bool customCommandMapper)
 	{
-		// The handler factory creates the handler with the mappers of the static properties of AppleMappedMediaElementHandler.
 		SetupApple(builder => builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<MediaElement, AppleMappedMediaElementHandler>()));
 		var customCalls = new List<string>();
 		AppleMappedMediaElementHandler.PropertyMapperToUse = customPropertyMapper
@@ -137,18 +134,15 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 				var controller = handler.Manager!.NativePlayerViewController!;
 				await handler.Manager.TakeSourceUpdates();
 
-				// Creating the controller applied ShouldShowPlaybackControls (#3222), and connecting the handler applied the property mapper.
+				// Creating the controller applied ShouldShowPlaybackControls (#3222).
 				Assert.False(controller.ShowsPlaybackControls);
 				Assert.Equal(customPropertyMapper, customCalls.Contains("Controls"));
 
-				// A change reaches the property mapper: the default one shows the playback controls of the controller, a custom one that
-				// replaces that mapping leaves them hidden.
 				var controlsCalls = customCalls.Count(static call => call is "Controls");
 				mediaElement.ShouldShowPlaybackControls = true;
 				Assert.Equal(!customPropertyMapper, controller.ShowsPlaybackControls);
 				Assert.Equal(customPropertyMapper ? controlsCalls + 1 : 0, customCalls.Count(static call => call is "Controls"));
 
-				// Stop() reaches the command mapper: the default one stops the player, a custom one that replaces it does not.
 				Assert.Equal(MediaElementState.None, mediaElement.CurrentState);
 				mediaElement.Stop();
 				Assert.Equal(customCommandMapper ? MediaElementState.None : MediaElementState.Stopped, mediaElement.CurrentState);
@@ -201,7 +195,7 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 			handler.Disconnect();
 
 			// UIKit containment: a child view controller that is no longer used has to be removed from its parent, otherwise every
-			// MediaElement that is added to and removed from a live page leaves its AVPlayerViewController behind.
+			// MediaElement added to and removed from a live page leaves its AVPlayerViewController behind.
 			Assert.DoesNotContain(parent.ChildViewControllers, child => child.Handle == controllerHandle);
 		});
 	}
@@ -225,8 +219,7 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 				first.Disconnect();
 				Assert.Equal(NativeHandle.Zero, firstPlayer.Handle);
 
-				// The same MediaElement gets a new handler (for example when a recycled item is shown again): it keeps its Source, the new
-				// handler builds a new manager and a new native player, and the media plays in it.
+				// The same MediaElement gets a new handler, for example when a recycled item is shown again.
 				var second = CreateHandler<AppleMediaElementHandler>(mediaElement);
 				await second.Manager!.TakeSourceUpdates();
 				await WaitUntilReadyAsync(second);
@@ -290,7 +283,6 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 			Assert.Equal(NativeHandle.Zero, player.Handle);
 			Assert.Equal(NativeHandle.Zero, controller.Handle);
 
-			// The second call finds neither a manager nor a player view controller.
 			Assert.Null(Record.Exception(() => handler.DisposeCore(disposing: true)));
 		});
 	}
@@ -471,8 +463,8 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// A seek that Stop() interrupts: AVPlayer reports it as not finished, inside a native callback. The seek has ended all the same: SeekTo, which
-	// goes through the async void MapSeekRequested, completes and raises SeekCompleted, as on Android, and nothing reaches the UI thread.
+	// AVPlayer reports a seek that Stop() interrupts as not finished, inside a native callback. The seek has ended all the same, so SeekTo
+	// (through the async void MapSeekRequested) completes and raises SeekCompleted, as on Android, without anything reaching the UI thread.
 	[Fact]
 	public async Task SeekToInterruptedByStopCompletesAndRaisesSeekCompleted()
 	{
@@ -501,8 +493,8 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 		});
 	}
 
-	// SeekTo stops waiting when its token is cancelled, and the seek goes on. When that seek fails later (here the SeekCompleted handler of the app
-	// throws, which fails the platform seek), nothing awaits the task of the seek request any more: the failure must not fault it, which would
+	// SeekTo stops waiting when its token is cancelled, and the seek goes on. When that seek fails later (here the app's SeekCompleted handler
+	// throws, which fails the platform seek), nothing awaits the seek request's task any more: the failure must not fault it, which would
 	// raise TaskScheduler.UnobservedTaskException (apps log it, or crash on it) once the task is collected.
 	[Fact]
 	public async Task FailureOfASeekAfterItsTokenWasCancelledLeavesNoUnobservedTaskException()
@@ -514,8 +506,8 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 		var unobservedFailures = new ConcurrentQueue<AggregateException>();
 		void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
 		{
-			// The handler's exception comes wrapped (MAUI's WeakEventManager invokes handlers through reflection): the text of the whole exception
-			// holds the unique message
+			// The handler's exception comes wrapped (MAUI's WeakEventManager invokes handlers through reflection), so the unique message is
+			// looked for in the text of the whole exception.
 			if (e.Exception.ToString().Contains(failureMessage, StringComparison.Ordinal))
 			{
 				unobservedFailures.Enqueue(e.Exception);
@@ -547,7 +539,7 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 				await DrainMainQueueAsync();
 			});
 
-			// Collecting the task of the seek request runs the finalizer that reports an exception nothing observed
+			// Collecting the task of the seek request runs the finalizer that reports an exception nothing observed.
 			await AssertionExtensions.WaitForGC(seekRequestTask!);
 			GC.WaitForPendingFinalizers();
 
@@ -566,8 +558,8 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 	[Fact]
 	public void PropertyMapperMapsTheMediaElementProperties()
 	{
-		// Looping has no mapping on iOS and Mac Catalyst (MediaManager's played-to-end handling implements it); the #if that leaves it out
-		// is compile-time only (the mapping method does not exist in the Apple handler), so the test checks the mappings that exist.
+		// Looping has no mapping on iOS and Mac Catalyst (MediaManager's played-to-end handling implements it) and the mapping method does
+		// not exist in the Apple handler, so only the mappings that exist are checked.
 		var keys = MediaElementHandler.PropertyMapper.GetKeys().ToList();
 
 		Assert.Contains(nameof(IMediaElement.Aspect), keys);
@@ -598,8 +590,7 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 				var platformView = Assert.IsType<MauiMediaElement>(handler.PlatformView);
 
 				// The product handler starts without a MediaManager, so CreatePlatformView created one (the test double handler assigns its
-				// own manager before it calls the product's CreatePlatformView, which then keeps it): exactly the toolkit's MediaManager,
-				// whose player view controller's view is what the platform view hosts.
+				// own manager before it calls the product's CreatePlatformView, which then keeps it).
 				var manager = Assert.IsType<MediaManager>(mediaElementHandlerManager.GetValue(handler));
 				var controller = (AVPlayerViewController)mediaManagerPlayerViewController.GetValue(manager)!;
 				Assert.Same(controller.View, Assert.Single(platformView.Subviews));

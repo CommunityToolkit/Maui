@@ -6,10 +6,9 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The capture paths of CameraManager.macios.cs that need a camera AND the camera permission: starting the preview, taking a photo,
-// recording a movie, switching cameras and the real CameraViewHandler. They run only when the app already has the camera permission
-// (a headless run cannot answer the system prompt) and the machine has a camera, e.g. on a Mac after the permission was granted once
-// with CameraAppleUserInteractionTests; everywhere else, including the simulators and the CI runners, they skip with the reason.
+// These tests need a camera AND the camera permission, so they run only when the machine has a camera and the app already has the
+// permission (a headless run cannot answer the system prompt), e.g. on a Mac after the permission was granted once with
+// CameraAppleUserInteractionTests.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleCaptureTests : CameraHandlerTestBase

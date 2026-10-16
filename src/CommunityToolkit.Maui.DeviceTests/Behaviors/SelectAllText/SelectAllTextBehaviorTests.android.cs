@@ -4,8 +4,8 @@ using PlatformView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: the behavior calls EditText.SetSelectAllOnFocus(true) when it attaches and SetSelectAllOnFocus(false) when it detaches.
-// The binding has no getter for that flag, so the tests focus the EditText and read the selection that Android makes.
+// The binding has no getter for the flag that EditText.SetSelectAllOnFocus sets, so the tests focus the EditText and read the selection
+// that Android makes.
 public partial class SelectAllTextBehaviorTests
 {
 	static bool CanAssertPlatformViewIsCollected => false;

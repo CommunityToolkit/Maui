@@ -2,8 +2,7 @@ using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: clearing the focus of an EditText leaves its soft keyboard open, so the behavior also hides the soft keyboard. (A SearchBar,
-// whose SearchView hides the keyboard when it loses the focus, did not need it.)
+// Clearing the focus of an EditText leaves its soft keyboard open, so the behavior also hides the soft keyboard.
 public partial class UserStoppedTypingBehaviorTests
 {
 	[Theory]

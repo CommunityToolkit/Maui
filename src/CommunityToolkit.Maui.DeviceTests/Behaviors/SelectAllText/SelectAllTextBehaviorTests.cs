@@ -13,9 +13,7 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Device tests of SelectAllTextBehavior (SelectAllTextBehavior.android.cs, .macios.cs, .windows.cs). The behavior selects the whole text
-// of an Entry or Editor when it gets focus. MAUI attaches the PlatformBehavior while the view is Loaded, so every test hosts the view
-// in the runner's window and focuses it for real. The native selection is read through the platform partials.
+// MAUI attaches the PlatformBehavior while the view is Loaded, so the tests host the view in the runner's window and focus it for real.
 [Category(TestCategory.SelectAllTextBehavior)]
 [Collection(TestCollections.DisableParallelization)]
 public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBase
@@ -55,7 +53,6 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 
 			await AssertAllTextIsSelectedAsync(handler);
 
-			// Every focus selects the text again.
 			await UnfocusAsync(input);
 			CollapseNativeSelection(handler.PlatformView!);
 			await FocusAsync(input);
@@ -169,8 +166,8 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		await WaitForGCAsync(CanAssertPlatformViewIsCollected ? [viewReference, behaviorReference, platformViewReference] : [viewReference, behaviorReference]);
 	}
 
-	// The same after the behavior handled a focus. UIKit keeps the UITextView of an Editor that had the focus alive for a while (it does
-	// without the behavior too), so the platform view is not part of this one.
+	// UIKit keeps the UITextView of an Editor that had the focus alive for a while (it does without the behavior too), so the platform
+	// view is not part of this one.
 	[Theory]
 	[InlineData(InputKind.Entry)]
 	[InlineData(InputKind.Editor)]
@@ -256,7 +253,6 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 	static Task AssertAllTextIsSelectedAsync(IPlatformViewHandler handler) =>
 		AssertEventually(() => IsAllTextSelected(handler.PlatformView!), timeout: 3000, message: $"The text was not selected when the view got the focus: {DescribeNativeSelection(handler.PlatformView!)}");
 
-	// There is no event to wait for when nothing should happen: watch the selection for a moment instead.
 	static Task AssertTextStaysUnselectedAsync(IPlatformViewHandler handler) =>
 		VisualBehaviorHelpers.AssertStaysFalseAsync(() => IsAllTextSelected(handler.PlatformView!), $"The text was selected although the behavior is not attached: {DescribeNativeSelection(handler.PlatformView!)}");
 
@@ -306,8 +302,6 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		}
 	}
 
-	// Calls the protected attach/detach methods directly, for platform views that MAUI would never hand to the behavior without
-	// throwing inside the Loaded event.
 	sealed class SelectAllTextBehaviorProbe : SelectAllTextBehavior
 	{
 		public void AttachTo(InputView view, NativeTextInput platformView) => OnAttachedTo(view, platformView);

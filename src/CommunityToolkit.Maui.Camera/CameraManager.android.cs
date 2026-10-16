@@ -25,19 +25,16 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 {
 	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
 
-	// The VideoRecordEvent.Finalize error code of the recording: ErrorNone while it records and once CameraX finalized it without an error
 	internal int Error { get; private set; } = VideoRecordEvent.Finalize.ErrorNone;
 
-	// Why CameraX reported that the recording failed; null while it records and once it finalized the recording without an error
 	internal string? FailureReason { get; private set; }
 
 	public void Accept(Object? videoRecordEvent)
 	{
 		if (videoRecordEvent is VideoRecordEvent.Finalize finalizeEvent)
 		{
-			// CameraX finalizes a recording that failed with an error (the storage is full, the camera closed, ...), also when the video
-			// recorded until then is in the file: StopVideoRecording returns that video when it can be played, and otherwise throws the
-			// failure as a CameraException
+			// CameraX finalizes a recording that failed with an error (the storage is full, the camera closed, ...) also when the video
+			// recorded until then is in the file, so the error is kept for StopVideoRecording to decide whether that video can be played
 			if (finalizeEvent.HasError)
 			{
 				Error = finalizeEvent.Error;
@@ -56,8 +53,8 @@ partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
-	// StartVideoRecording and StopVideoRecording wait for CameraX: they run one at a time, so that neither works on a recording
-	// that the other one is ending or replacing
+	// StartVideoRecording and StopVideoRecording both wait for CameraX: without this, one could work on a recording that the other one
+	// is ending or replacing
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 
 	NativePlatformCameraPreviewView? previewView;
@@ -81,8 +78,6 @@ partial class CameraManager
 	int extensionMode = ExtensionMode.Auto;
 	bool isDisposed;
 
-	// The app selected another camera while a recording ran: the recording keeps its camera, and the switch completes once no recording
-	// runs any more (ReturnToPhotoSessionAsync, which does nothing once the manager is disposed)
 	bool isCameraSwitchDeferred;
 
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
@@ -118,8 +113,8 @@ partial class CameraManager
 
 		CleanupVideoRecordingResources();
 
-		// Unbind only the use cases of this manager. The ProcessCameraProvider is process-wide, and CameraX hands the same camera
-		// and CameraControl to every manager bound to the same LifecycleOwner, so their managed peers are shared: release them, never dispose them.
+		// The ProcessCameraProvider is process-wide, and CameraX hands the same camera and CameraControl to every manager bound to the same
+		// LifecycleOwner, so their managed peers are shared: release them, never dispose them.
 		UnbindUseCases();
 		processCameraProvider = null;
 
@@ -343,7 +338,7 @@ partial class CameraManager
 			_ => ImageCapture.CaptureModeMaximizeQuality
 		};
 
-		// A new ImageCapture starts with CameraX's default flash mode: it gets the flash mode of the view
+		// A new ImageCapture starts with CameraX's default flash mode, not the one of the view
 		return new ImageCapture.Builder()
 			.SetCaptureMode(imageCaptureMode)
 			.SetFlashMode(cameraView.CameraFlashMode.ToPlatform())
@@ -389,9 +384,8 @@ partial class CameraManager
 
 	Task BindVideoSessionAsync(CancellationToken token) => BindSessionAsync(CaptureSessionMode.Video, token);
 
-	// Binds the use cases of a session (without a session: the current one) to the selected camera. CameraX resolves the camera
-	// selector first, and the session and its use cases are read once it answered: a session switch or a new capture resolution can
-	// have replaced (and disposed) the use cases meanwhile, and a recording can have started.
+	// CameraX resolves the camera selector first, and the session and its use cases are read once it answered: a session switch or a new
+	// capture resolution can have replaced (and disposed) the use cases meanwhile, and a recording can have started.
 	async Task BindSessionAsync(CaptureSessionMode? sessionMode, CancellationToken token)
 	{
 		if (processCameraProvider is null || cameraView.SelectedCamera is null)
@@ -401,7 +395,6 @@ partial class CameraManager
 
 		var cameraSelector = await EnableModes(cameraView.SelectedCamera, token);
 
-		// Dispose released the use cases while CameraX resolved the camera selector: bind nothing
 		ObjectDisposedException.ThrowIf(isDisposed, this);
 
 		// Binding the use cases again would make CameraX finalize the recording that started meanwhile, whose session is bound already
@@ -413,7 +406,6 @@ partial class CameraManager
 		BindSession(sessionMode ?? currentSessionMode, cameraSelector);
 	}
 
-	// Binds the use cases of a session to the camera that CameraX resolved; without one of them, nothing is bound
 	void BindSession(CaptureSessionMode sessionMode, CameraSelector cameraSelector)
 	{
 		if (processCameraProvider is null || cameraPreview is null || imageCapture is null)
@@ -431,17 +423,14 @@ partial class CameraManager
 		}
 	}
 
-	// Switches between the photo and the video session: rebuilds the ImageCapture for the capture mode of the session and binds the
-	// session, or, when asked not to (the app stopped the preview), unbinds the use cases, which closes the camera. CameraX resolves
-	// the camera selector and the new ImageCapture is created before anything changes, so that a cancelled token (or an ImageCapture
-	// that can not be created) leaves the current session as it was.
+	// CameraX resolves the camera selector and the new ImageCapture is created before anything changes, so that a cancelled token (or an
+	// ImageCapture that can not be created) leaves the current session as it was.
 	async Task SwitchSessionAsync(CaptureSessionMode sessionMode, bool bindSession, CancellationToken token)
 	{
 		var cameraSelector = bindSession && cameraView.SelectedCamera is not null
 			? await EnableModes(cameraView.SelectedCamera, token)
 			: null;
 
-		// Dispose released the use cases while CameraX resolved the camera selector
 		ObjectDisposedException.ThrowIf(isDisposed, this);
 
 		var sessionImageCapture = CreateImageCapture(sessionMode);
@@ -458,10 +447,8 @@ partial class CameraManager
 		}
 	}
 
-	// The recording state was released and no recording runs: the manager returns to its photo session, also when the token of the
-	// call was cancelled meanwhile. A preview that the app stopped stays stopped (StartCameraPreview binds the photo session). A camera
-	// switch that waited for the recording to end completes now, the way UpdateCurrentCamera completes a switch: the use cases leave the
-	// camera of the recording, and starting the preview binds the photo session to the selected camera and loads it.
+	// Called once no recording runs any more, also when the token of the call was cancelled meanwhile. A preview that the app stopped stays
+	// stopped. A camera switch that waited for the recording to end completes now, the way UpdateCurrentCamera completes a switch.
 	async Task ReturnToPhotoSessionAsync()
 	{
 		if (isDisposed)
@@ -493,7 +480,6 @@ partial class CameraManager
 		}
 	}
 
-	// Whether the use cases were last bound to the given camera
 	bool IsBoundTo(CameraInfo? cameraInfo) => camera is not null
 		&& cameraInfo is not null
 		&& string.Equals(Camera2CameraInfo.From(camera.CameraInfo)?.CameraId, cameraInfo.DeviceId, StringComparison.Ordinal);
@@ -503,7 +489,7 @@ partial class CameraManager
 		&& videoCapture is not null
 		&& processCameraProvider?.IsBound(videoCapture) is true;
 
-	// Unbinds the use cases of this manager only: the ProcessCameraProvider is process-wide
+	// The ProcessCameraProvider is process-wide, so only the use cases of this manager are unbound
 	void UnbindUseCases()
 	{
 		UseCase[] useCases = [.. new UseCase?[] { cameraPreview, imageCapture, videoCapture }.OfType<UseCase>()];
@@ -515,9 +501,9 @@ partial class CameraManager
 		camera = boundCamera;
 		cameraControl = boundCamera.CameraControl;
 
-		// CameraX starts a camera that is bound again with its defaults (zoom ratio 1, torch off): give it the zoom and the torch of the view.
-		// Its camera thread resets the published zoom state when it detaches the use cases, which can come after this zoom request was
-		// published (the request itself still reaches the camera), so the zoom of the view is requested again once CameraX answered.
+		// CameraX starts a camera that is bound again with its defaults (zoom ratio 1, torch off). Its camera thread resets the published
+		// zoom state when it detaches the use cases, which can come after this zoom request was published (the request itself still reaches
+		// the camera), so the zoom of the view is requested again once CameraX answered.
 		cameraControl?.SetZoomRatio(cameraView.ZoomFactor)?.AddListener(new Runnable(() => UpdateZoom(cameraView.ZoomFactor)), ContextCompat.GetMainExecutor(context));
 		UpdateIsTorchOn(cameraView.IsTorchOn);
 	}
@@ -541,7 +527,6 @@ partial class CameraManager
 			return false;
 		}
 
-		// Both sessions bind the Preview and the ImageCapture, the video session binds the VideoCapture as well
 		var arePreviewAndImageCaptureBound = processCameraProvider.IsBound(cameraPreview)
 			&& processCameraProvider.IsBound(imageCapture);
 
@@ -561,7 +546,7 @@ partial class CameraManager
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-		// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch): its preview keeps running as it is
+		// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
 		if (isCameraSwitchDeferred && IsRecordingBound())
 		{
 			return;
@@ -590,10 +575,8 @@ partial class CameraManager
 		onLoaded.Invoke();
 	}
 
-	// UpdateCurrentCamera switches the camera of a running preview by stopping the preview and starting it again for the SelectedCamera.
-	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred: the recording
-	// keeps its camera, and the switch completes once the recording ends (StopVideoRecording, a StartVideoRecording that replaces it, or one
-	// that fails). That includes a selection that comes back to the camera of the recording (for example through null)
+	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred until the
+	// recording ends (StopVideoRecording, or a StartVideoRecording that replaces it or fails)
 	private partial void PlatformStopCameraPreviewForCameraSwitch()
 	{
 		if (processCameraProvider is not null && isInitialized && IsRecordingBound())
@@ -629,9 +612,8 @@ partial class CameraManager
 
 		if (imageCapture is null)
 		{
-			// The camera never started (ConnectCamera has not completed, or it failed, for example without a camera): CameraView.CaptureImage
-			// waits for MediaCaptured or MediaCaptureFailed, so the capture that can not start is reported, and CaptureImage throws
-			// CameraException instead of waiting for its token, as on Windows
+			// CameraView.CaptureImage waits for MediaCaptured or MediaCaptureFailed, so a capture that can not start (the camera never started,
+			// for example without a camera) is reported: CaptureImage throws CameraException instead of waiting for its token, as on Windows
 			cameraView.OnMediaCapturedFailed("Unable to capture an image because the camera is not initialized.");
 			return ValueTask.CompletedTask;
 		}
@@ -669,13 +651,12 @@ partial class CameraManager
 
 		if (videoRecording is not null && videoRecordingFinalizeTcs is not null)
 		{
-			// Like on iOS and Windows, the stream of the latest StartVideoRecording receives the video: the running recording ends
-			// (its video is discarded) and the new one starts once CameraX finalized it
+			// Like on iOS and Windows, the stream of the latest StartVideoRecording receives the video: the running recording ends and its
+			// video is discarded
 			token.ThrowIfCancellationRequested();
 			videoRecording.Stop();
 			await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
-			// Dispose released the recording while CameraX finalized it
 			ObjectDisposedException.ThrowIf(isDisposed, this);
 
 			CleanupVideoRecordingResources();
@@ -728,7 +709,6 @@ partial class CameraManager
 		}
 		catch
 		{
-			// The recording did not start
 			recordingFile.Delete();
 			recordingFile.Dispose();
 
@@ -783,14 +763,13 @@ partial class CameraManager
 		videoRecording.Stop();
 		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
 
-		// Dispose released the recording (deleted its file, disposed its stream) while CameraX finalized it
 		ObjectDisposedException.ThrowIf(isDisposed, this);
 
 		try
 		{
-			// CameraX reported that the recording failed (CameraConsumer). Without a video that can be played the caller gets the failure
-			// instead of its stream, which would look like a successful recording; a video recorded until the failure (for example until
-			// StopCameraPreview closed the camera) is returned like the video of a recording that was stopped
+			// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful
+			// recording; a video recorded until the failure (for example until StopCameraPreview closed the camera) is returned like the
+			// video of a recording that was stopped
 			if (videoRecordingConsumer?.FailureReason is string failureReason)
 			{
 				if (!HasPlayableVideo(videoRecordingConsumer.Error, videoRecordingFile))
@@ -807,8 +786,6 @@ partial class CameraManager
 		}
 		finally
 		{
-			// The recording is over, also when it failed or when its video can not be copied into the stream: the ImageCapture optimizes
-			// for quality again and the VideoCapture is released
 			CleanupVideoRecordingResources();
 			await ReturnToPhotoSessionAsync();
 		}
@@ -821,8 +798,7 @@ partial class CameraManager
 		return stream;
 	}
 
-	// Whether the file of a recording that CameraX finalized with an error holds a video that can be played, after the documentation of the
-	// VideoRecordEvent.Finalize errors:
+	// The errors are classified according to the documentation of VideoRecordEvent.Finalize:
 	// - ERROR_INVALID_OUTPUT_OPTIONS generates no output file, the output file of ERROR_ENCODING_FAILED and ERROR_RECORDER_ERROR "is not
 	//   properly constructed", and ERROR_NO_VALID_DATA misses "the essential data for a recording to be played correctly": no video.
 	// - ERROR_SOURCE_INACTIVE (the camera closed: StopCameraPreview, the app went to the background), ERROR_INSUFFICIENT_STORAGE (the storage

@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.PlatformConfiguration;
 
 // NavigationBar is an Android platform configuration (SupportedOSPlatform Android 23), but its attached properties and the extension
 // methods of the platform configuration are plain logic that every platform compiles. What the Android page handler does with them
-// (the navigation bar of the window) is tested by the device tests (CommunityToolkit.Maui.DeviceTests, NavigationBarTests).
+// is tested by NavigationBarTests in CommunityToolkit.Maui.DeviceTests.
 #pragma warning disable CA1416 // Validate platform compatibility
 public class NavigationBarTests : BaseTest
 {
@@ -23,8 +23,7 @@ public class NavigationBarTests : BaseTest
 		Assert.Equal(NavigationBarStyle.Default, NavigationBar.GetStyle(page));
 	}
 
-	// The Android page handler applies Color and Style only when the page has them set (BindableObject.IsSet), so reading them must
-	// not count as setting them: the app did not ask for a navigation bar color or style.
+	// The Android page handler applies Color and Style only when the page has them set (BindableObject.IsSet), so reading them must not set them.
 	[Fact]
 	public void ReadingColorAndStyleDoesNotSetThem()
 	{

@@ -81,9 +81,8 @@ public partial class Snackbar
 		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
 	}
 
-	// The platform snackbar is gone: Dismiss was called, its timer fired or its action was clicked. Forget it, so that a later Dismiss
-	// or Show does not dismiss it (and raise Dismissed) again, and dispose it, so that the subscription of its action button no longer
-	// keeps it, its AlertView and this Snackbar alive.
+	// Forget the platform snackbar, so that a later Dismiss or Show does not dismiss it (and raise Dismissed) again, and dispose it, so that
+	// the subscription of its action button no longer keeps it, its AlertView and this Snackbar alive.
 	void OnPlatformSnackbarDismissed(PlatformSnackbar platformSnackbar)
 	{
 		// Alert.Dismiss invokes OnDismissed each time it runs: Dismissed is raised once per platform snackbar

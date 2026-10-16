@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class DrawingViewServiceTests
 {
-	// Catches: a token cancelled while the lines are drawn is not observed after drawing
 	[Fact]
 	public async Task TokenCancelledWhileLinesAreDrawnThrowsOperationCanceledException()
 	{
@@ -18,7 +17,6 @@ public partial class DrawingViewServiceTests
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await DrawingViewService.GetImageStream(options, cancellation.Token));
 	}
 
-	// Catches: a token cancelled while the points are drawn is not observed after drawing
 	[Fact]
 	public async Task TokenCancelledWhilePointsAreDrawnThrowsOperationCanceledException()
 	{
@@ -29,7 +27,7 @@ public partial class DrawingViewServiceTests
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await DrawingViewService.GetImageStream(options, cancellation.Token));
 	}
 
-	// Cancels the token when the service first reads the line's color, i.e. while it draws, after the first token check.
+	// The service reads LineColor while it builds the image, after its first token check.
 	sealed class CancellingLine(CancellationTokenSource cancellation) : IDrawingLine
 	{
 		public int Granularity { get; set; } = 5;
@@ -54,7 +52,7 @@ public partial class DrawingViewServiceTests
 			throw new NotSupportedException();
 	}
 
-	// Cancels the token when the service first enumerates the points.
+	// The service first enumerates the points while it builds the image, after its first token check.
 	sealed class CancellingPointList(CancellationTokenSource cancellation, IEnumerable<PointF> points) : IList<PointF>
 	{
 		readonly List<PointF> items = [.. points];

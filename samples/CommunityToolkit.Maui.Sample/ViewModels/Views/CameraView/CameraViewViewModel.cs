@@ -77,7 +77,7 @@ public partial class CameraViewViewModel : BaseViewModel
 
 	void UpdateSupportedResolutions()
 	{
-		// A camera can list a resolution more than once (for example 1280 x 720 on the Android API 28 emulator): show each one once, the largest first
+		// A camera can list a resolution more than once, for example 1280 x 720 on the Android API 28 emulator.
 		SupportedResolutions = SelectedCamera?.SupportedResolutions
 			.Distinct()
 			.OrderByDescending(static resolution => resolution.Width * resolution.Height)
@@ -118,7 +118,7 @@ public partial class CameraViewViewModel : BaseViewModel
 
 	void UpdateResolutionText()
 	{
-		// Until a resolution is picked, SelectedResolution is Size.Zero, CameraView's default ImageCaptureResolution: the camera uses its default resolution
+		// Size.Zero is the default ImageCaptureResolution of CameraView, which leaves the resolution to the camera.
 		ResolutionText = SelectedResolution.IsZero
 			? "Selected Resolution: Default"
 			: $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";

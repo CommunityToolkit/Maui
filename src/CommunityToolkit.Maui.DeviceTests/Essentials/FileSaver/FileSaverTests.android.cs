@@ -7,9 +7,6 @@ using AndroidUri = Android.Net.Uri;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Android: FileSaver launches ACTION_CREATE_DOCUMENT through ActivityResultManager, then writes the stream to the content URI that the
-// picker returns. The picker is a FilesFakePickerActivity (see ActivityResultManagerTests), the destination is a document of the test
-// app's FilesTestContentProvider, and the result is read back from the provider's file, which is the native state of a save.
 public partial class FileSaverTests
 {
 	const string externalStorageProviderAuthority = "com.android.externalstorage.documents";
@@ -108,9 +105,9 @@ public partial class FileSaverTests
 
 		if (expectedDocumentId.Length is 0)
 		{
-			// An empty expected id: the app's private storage, like a path that only starts like a storage folder (/sdcard2 is not in
-			// /sdcard), is on no volume that the document picker shows, so no document id can name it, and the picker is left to choose
-			// where it starts (DocumentsContract.EXTRA_INITIAL_URI is absent), as the system does when it cannot find the initial location.
+			// The app's private storage, and a path that only starts like a storage folder (/sdcard2 is not in /sdcard), are on no volume
+			// that the document picker shows, so no document id can name them and the picker is left to choose where it starts
+			// (DocumentsContract.EXTRA_INITIAL_URI is absent).
 			Assert.Null(launch.Intent.GetParcelableExtra(DocumentsContract.ExtraInitialUri));
 		}
 		else
@@ -402,9 +399,8 @@ public partial class FileSaverTests
 		Assert.IsType<FileSaveException>(result.Exception);
 	}
 
-	// The path is resolved after the document was written: a provider whose document ids have no volume prefix (a cloud provider, for
-	// example) gets the whole file, and the app gets the content URI of the document, which it can open with the ContentResolver, as the
-	// path of a complete save, never a failure.
+	// The path is resolved after the document was written, so a provider whose document ids have no volume prefix (a cloud provider, for
+	// example) still gets the whole file, and the app gets the document's content URI, which the ContentResolver opens, instead of a failure.
 	[Fact]
 	public async Task SaveAsyncReportsTheContentUriOfASavedDocumentWhosePathCannotBeResolved()
 	{
@@ -434,8 +430,6 @@ public partial class FileSaverTests
 		await session.DeliverAsync(launch, Result.Ok, Answer(documentId));
 		var result = await operation.WaitAsync(operationTimeout);
 
-		// The provider hands out a descriptor that is open for reading only, as a provider whose document cannot be written would: the
-		// write of the first block fails, the copy stops there, and the save returns the failure of the write.
 		Assert.False(result.IsSuccessful);
 		Assert.False(result.IsCancelled);
 		Assert.Null(result.FilePath);
@@ -533,8 +527,7 @@ public partial class FileSaverTests
 		var session = await StartSessionAsync();
 		using var cancellation = new CancellationTokenSource();
 		var content = Enumerable.Range(0, 5000).Select(i => (byte)(i % 211)).ToArray();
-		// The read that reports the end of the data cancels the token: the copy loop ends normally, the document is truncated to what was
-		// written, and SaveDocument then checks the token once more, so the save is canceled.
+		// The copy loop ends normally, but SaveDocument then checks the token once more, so the save is canceled.
 		var stream = new FilesScriptedStream(content) { CancelAtEndOfData = true, CancelSource = cancellation };
 		const string documentId = "primary:Documents/last.bin";
 
@@ -610,9 +603,7 @@ public partial class FileSaverTests
 		Assert.True(values.Count is 0 || values[^1] < 100, $"A {(canceled ? "canceled" : "failed")} save reported {string.Join(", ", values)}.");
 	}
 
-	// These saves write the whole stream before they are canceled or fail, so the block that reaches the end of the stream must not report
-	// 100 either. Canceled: the read that reports the end of the data cancels the token. Failed: that read throws (the 10,000 bytes are
-	// read in three blocks, and the fourth read reports the end of the data).
+	// The failing variant throws on the fourth read, which reports the end of the data (the 10,000 bytes are read in three blocks).
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -670,10 +661,9 @@ public partial class FileSaverTests
 		Assert.Equal(0, FilesTestContentProvider.FailedCloseCount);
 	}
 
-	// A save that fails or is canceled closes the document's descriptor with an error (ParcelFileDescriptor.closeWithError: "communicate to the
-	// remote side that an error occurred"), never as a document that is written: a provider that commits a document when it is closed would
-	// otherwise take the part that was written for the whole document. The error carries the reason, which tells this close apart from a
-	// descriptor that was leaked (also an error for the provider).
+	// Closing with an error (ParcelFileDescriptor.closeWithError: "communicate to the remote side that an error occurred") keeps a provider that
+	// commits a document when it is closed from taking the part that was written for the whole document. The error carries the reason, which
+	// tells this close apart from a descriptor that was leaked (also an error for the provider).
 	[Fact]
 	public async Task SaveAsyncClosesTheDocumentDescriptorWithAnErrorWhenReadingTheStreamFails()
 	{
@@ -694,7 +684,6 @@ public partial class FileSaverTests
 		var session = await StartSessionAsync();
 		using var cancellation = new CancellationTokenSource();
 		var content = Enumerable.Range(0, 10_000).Select(i => (byte)(i % 251)).ToArray();
-		// The token is canceled while the second block is read, once the first block is in the document
 		var stream = new FilesScriptedStream(content) { CancelDuringRead = 2, CancelSource = cancellation, IgnoresToken = true };
 
 		var (operation, launch) = await StartSaveAsync(session, "canceled.bin", stream, token: cancellation.Token);
@@ -746,7 +735,6 @@ public partial class FileSaverTests
 		Assert.Equal([7, 8], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
-	// Every overload reaches the same picker; the ones with an initial path put it in the intent, and the ones with a progress report to it.
 	[Theory]
 	[InlineData(0, false)]
 	[InlineData(1, false)]
@@ -851,7 +839,6 @@ public partial class FileSaverTests
 	static Task<(Task<FileSaverResult> Operation, FilesFakePickerLaunch Launch)> StartSaveAsync(FilesPickerSession session, string initialPath, string fileName, Stream stream) =>
 		StartSaveAsync(session, initialPath, fileName, stream, null, default);
 
-	// Starts FileSaver.Default.SaveAsync (the overload follows from the arguments) on the UI thread and returns it with the launch it made.
 	static async Task<(Task<FileSaverResult> Operation, FilesFakePickerLaunch Launch)> StartSaveAsync(FilesPickerSession session, string? initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken token)
 	{
 		var operation = await StartOnMainThreadAsync(() => (initialPath, progress) switch
@@ -865,7 +852,6 @@ public partial class FileSaverTests
 		return (operation, await session.WaitForLaunchAsync());
 	}
 
-	// Answers the picker as a person who closes it, and waits for the save to report it.
 	static async Task CancelPickerAsync(FilesPickerSession session, FilesFakePickerLaunch launch, Task<FileSaverResult> operation)
 	{
 		await session.DeliverAsync(launch, Result.Canceled);
@@ -874,7 +860,6 @@ public partial class FileSaverTests
 
 	static Intent Answer(string documentId) => new Intent().SetData(FilesTestContentProvider.BuildDocumentUri(documentId));
 
-	// The one descriptor that the test provider handed out was closed with an error that carries this reason, and never as a written document.
 	static async Task AssertTheDescriptorWasClosedWithAnErrorAsync(string reason)
 	{
 		await AssertionExtensions.AssertEventually(() => FilesTestContentProvider.CleanCloseCount + FilesTestContentProvider.FailedCloseCount > 0, timeout: 5000, message: "The document descriptor was not closed.");

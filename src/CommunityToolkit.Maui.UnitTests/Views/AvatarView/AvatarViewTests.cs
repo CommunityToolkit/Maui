@@ -8,7 +8,6 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class AvatarViewTests : BaseViewTest
 {
-	// The Border and View properties whose defaults AvatarView changes.
 	static readonly BindableProperty[] propertiesWithAvatarViewDefaults =
 	[
 		VisualElement.WidthRequestProperty,
@@ -472,8 +471,6 @@ public class AvatarViewTests : BaseViewTest
 		AssertAvatarViewDefaults(avatarView);
 	}
 
-	// A visual state that sets these properties replaces the defaults and, each time it no longer applies, the defaults come back: no default
-	// stroke shape is left behind among the logical children.
 	[Fact]
 	public void AvatarViewDefaultsComeBackEachTimeAVisualStateNoLongerApplies()
 	{

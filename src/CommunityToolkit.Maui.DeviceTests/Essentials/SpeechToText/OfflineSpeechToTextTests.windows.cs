@@ -7,11 +7,11 @@ using Windows.Security.Authorization.AppCapabilityAccess;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Windows on-device recognizer (System.Speech.Recognition.SpeechRecognitionEngine). The engine needs an installed recognizer for the
-// culture and a microphone, which a CI machine may lack. The event arguments of System.Speech are ordinary managed classes with
-// internal constructors, so the tests build them by reflection (exactly the signature of the shipped System.Speech 10.0.11) and
-// call the toolkit's handlers with them; everything that needs a real recognizer adapts to what the machine has. What only a listening
-// engine produces (the Speech and Silence states, the microphone consent) is checked by hand in the Sample (OfflineSpeechToText page, Essentials).
+// The engine needs an installed recognizer for the culture and a microphone, which a CI machine may lack, so everything that needs a
+// real recognizer adapts to what the machine has. The event arguments of System.Speech are ordinary managed classes with internal
+// constructors, so the tests build them by reflection (exactly the signature of the shipped System.Speech 10.0.11) and call the
+// toolkit's handlers with them. What only a listening engine produces (the Speech and Silence states, the microphone consent) is
+// checked by hand in the Sample (OfflineSpeechToText page, Essentials).
 public sealed partial class OfflineSpeechToTextTests
 {
 	const BindingFlags allInstanceMembers = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -66,7 +66,6 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// Cancelled wins over an error: the first branch of the handler is taken.
 	[Fact]
 	public async Task RecognizeCompletedAsCancelledWithAnErrorStillReportsTheCancellation()
 	{
@@ -132,7 +131,6 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// Without options (nothing was started) the null-conditional makes the phrase count but not report.
 	[Fact]
 	public async Task SpeechRecognizedWithoutOptionsAccumulatesTheTextWithoutReporting()
 	{
@@ -147,7 +145,6 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	/// <summary>A real engine for en-US that is never started (AudioState.Stopped); skips when this machine has no such recognizer.</summary>
 	static SpeechRecognitionEngine CreateIdleEngineOrSkip()
 	{
 		try
@@ -160,8 +157,6 @@ public sealed partial class OfflineSpeechToTextTests
 		}
 	}
 
-	// A real engine that was never started is AudioState.Stopped, which CurrentState maps to Stopped (the default arm of the switch);
-	// stopping an engine that is not running skips RecognizeAsyncStop and releases the engine.
 	[Fact]
 	public async Task IdleEngineIsStoppedAndStopListenAsyncReleasesIt()
 	{
@@ -181,7 +176,6 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// DisposeAsync runs the same clean-up as a stop: the engine is released and the implementation reports Stopped.
 	[Fact]
 	public async Task DisposeAsyncReleasesAnIdleEngine()
 	{
@@ -194,11 +188,8 @@ public sealed partial class OfflineSpeechToTextTests
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 	}
 
-	/// <summary>
-	/// Whether this machine can create the engine that the toolkit creates for en-US, decided the way the toolkit's start decides it:
-	/// System.Speech 10.0.11's SpeechRecognitionEngine(CultureInfo) takes a recognizer for exactly en-US or, failing that, one for the
-	/// same language (en-GB, en-AU, en-IN, ...), and throws ArgumentException only when there is neither. Skips when SAPI itself fails.
-	/// </summary>
+	// Mirrors the toolkit's start: System.Speech 10.0.11's SpeechRecognitionEngine(CultureInfo) takes a recognizer for exactly en-US or,
+	// failing that, one for the same language (en-GB, en-AU, en-IN, ...), and throws ArgumentException only when there is neither.
 	static bool CanCreateEnglishEngine()
 	{
 		try
@@ -216,10 +207,8 @@ public sealed partial class OfflineSpeechToTextTests
 		}
 	}
 
-	// What the machine offers is established first (exactly as the toolkit's start decides it), then each outcome is pinned
-	// (decompiled System.Speech 10.0.11): without a recognizer for English the engine constructor throws ArgumentException; with one
-	// but without a default audio input, SetInputToDefaultAudioDevice reports SAPI's SPERR_NOT_FOUND as InvalidOperationException; with
-	// a microphone the start listens and the stop ends it. Every outcome leaves the implementation Stopped without an engine. With an
+	// Decompiled System.Speech 10.0.11: without a recognizer for English the engine constructor throws ArgumentException; with one but
+	// without a default audio input, SetInputToDefaultAudioDevice reports SAPI's SPERR_NOT_FOUND as InvalidOperationException. With an
 	// AutoStopSilenceTimeout the start also creates the toolkit's silence timer before the audio input is chosen; the default options
 	// ("auto-stop disabled") create none.
 	[Theory]
@@ -259,9 +248,7 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// The engine's AudioStateChanged handler reads neither its sender nor its arguments: it announces CurrentState. Called the way
-	// the engine calls it, without an engine (Stopped through the null arm) and with an idle engine (AudioState.Stopped). The
-	// listening states need a running engine; the OfflineSpeechToText page of the Sample shows them while a person speaks.
+	// The engine's AudioStateChanged handler reads neither its sender nor its arguments: it announces CurrentState.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -284,12 +271,10 @@ public sealed partial class OfflineSpeechToTextTests
 		Assert.Null(GetRecognizer(speech));
 	}
 
-	/// <summary>
-	/// Skips (visibly) when this machine could listen but the app may not use the microphone yet: a packaged app gets it only once a person
-	/// allowed it. The first time such an app opens the microphone, Windows shows a consent prompt ("Let ... access your microphone?"), the
-	/// recognizer hears nothing until someone answers, and the prompt stays in front of the tests that follow; a run that nobody watches
-	/// never answers. An unpackaged app follows the "Let desktop apps access your microphone" setting instead.
-	/// </summary>
+	// A packaged app gets the microphone only once a person allowed it. The first time such an app opens the microphone, Windows shows a
+	// consent prompt ("Let ... access your microphone?"), the recognizer hears nothing until someone answers, and the prompt stays in
+	// front of the tests that follow; a run that nobody watches never answers. An unpackaged app follows the "Let desktop apps access
+	// your microphone" setting instead.
 	static void SkipWhenListeningWouldAskForMicrophoneAccess()
 	{
 		if (AppInfo.PackagingModel is not AppPackagingModel.Packaged || !CanListenInEnglish())
@@ -301,11 +286,6 @@ public sealed partial class OfflineSpeechToTextTests
 		Skip.If(access is not AppCapabilityAccessStatus.Allowed, $"Microphone access of this packaged app is {access}: Windows asks a person the first time the app opens the microphone (or Settings > Privacy & security > Microphone), which nobody does in a headless run.");
 	}
 
-	/// <summary>
-	/// Whether this machine can listen with the engine that the toolkit creates for en-US: a recognizer for English and a default audio
-	/// input (SetInputToDefaultAudioDevice reports SAPI's SPERR_NOT_FOUND as InvalidOperationException when there is none, see
-	/// StartListenAsyncFailsOrListensAccordingToWhatTheMachineOffers). Skips when SAPI itself fails.
-	/// </summary>
 	static bool CanListenInEnglish()
 	{
 		if (!CanCreateEnglishEngine())
@@ -321,6 +301,7 @@ public sealed partial class OfflineSpeechToTextTests
 		}
 		catch (InvalidOperationException)
 		{
+			// SetInputToDefaultAudioDevice reports SAPI's SPERR_NOT_FOUND as InvalidOperationException when there is no default audio input.
 			return false;
 		}
 	}
@@ -328,7 +309,7 @@ public sealed partial class OfflineSpeechToTextTests
 	// System.Speech 10.0.11 applies InitialSilenceTimeout and BabbleTimeout only in RecognizeMode.Single (RecognizerBase.
 	// ProcessStartStreamEvent / ProcessPhraseStartEvent check _recognizeMode == Single), and the toolkit recognizes in
 	// RecognizeMode.Multiple, so the toolkit's own timer ends a recognition after AutoStopSilenceTimeout of silence (copying the timeout
-	// to those two properties ended nothing). Needs a recognizer and a microphone.
+	// to those two properties ended nothing).
 	[Fact]
 	public async Task AutoStopSilenceTimeoutEndsARecognitionThatHearsNothing()
 	{
@@ -351,8 +332,8 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
-	// The silence timer stops the recognition with RecognizeAsyncStop, which System.Speech reports as a cancelled recognition; it ends
-	// like the engine's own silence timeouts end a RecognizeMode.Single recognition: with the text recognized so far.
+	// The silence timer stops the recognition with RecognizeAsyncStop, which System.Speech reports as a cancelled recognition. It ends
+	// with the text recognized so far, like the engine's own silence timeouts end a RecognizeMode.Single recognition.
 	[Fact]
 	public async Task RecognizeCompletedAfterTheSilenceTimeoutCompletesWithTheRecognizedText()
 	{
@@ -395,7 +376,6 @@ public sealed partial class OfflineSpeechToTextTests
 			(bool)(typeof(OfflineSpeechToTextImplementation).GetField("isSilenceTimeoutReached", allInstanceMembers)?.GetValue(speech) ?? throw new MissingFieldException(nameof(OfflineSpeechToTextImplementation), "isSilenceTimeoutReached"));
 	}
 
-	// A person has to answer the system dialog: run it from the visual runner.
 	[Fact]
 	[Category(TestCategory.RequiresUserInteraction)]
 	public async Task RequestPermissionsReturnsTheDecisionOfTheUser()

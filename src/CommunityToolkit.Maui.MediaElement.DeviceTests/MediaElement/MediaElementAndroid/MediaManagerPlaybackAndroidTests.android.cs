@@ -5,10 +5,6 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MediaManager.PlatformSeek, PlatformPlay without media and at the end of the media, PlatformUpdatePosition, UpdateNotifications' guard and looping
-// (MediaManager.android.cs).
-// Seeks that must stay pending use the quiet fixture of MediaManagerListenerAndroidTests: a Source without data, so ExoPlayer never reports
-// "ready" by itself and the test decides when the seek completes (MediaManager.OnPlaybackStateChanged(ready)).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
@@ -33,7 +29,6 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 			long highestPosition = 0;
 			var wrapped = false;
 
-			// The 0.6 s clip is at its end after 600 ms: if the position falls back, the player started the clip again.
 			await WaitUntilAsync(() =>
 			{
 				var position = player.CurrentPosition;
@@ -70,8 +65,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// ExoPlayer stays at the end of the media on play(): its ended state takes a seek. Play() of media that played to its end starts it again from
-	// its start, like the play button of Media3's own controls.
+	// ExoPlayer stays at the end of the media on play(): leaving its ended state takes a seek, so Play() starts the media again from its
+	// start, like the play button of Media3's own controls.
 	[Fact]
 	public async Task PlayAfterTheMediaEndedPlaysItAgainFromTheStart()
 	{
@@ -93,7 +88,6 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 			mediaElement.Play();
 
-			// The 0.6 s clip plays again from its start (the position falls back into its first half) and ends a second time.
 			await WaitUntilAsync(() =>
 			{
 				hasGoneBackToTheStart |= player.CurrentPosition < shortToneDuration.TotalMilliseconds / 2;
@@ -104,8 +98,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// IMediaElement.SeekTo clamps a position outside of the media to the media, and ExoPlayer does it (the last millisecond is the end): these seeks
-	// complete and raise SeekCompleted, they do not wait for a ready state that never comes.
+	// ExoPlayer clamps a position outside of the media (the last millisecond is the end), so these seeks complete and raise SeekCompleted
+	// instead of waiting for a ready state that never comes.
 	[Fact]
 	public async Task SeekBeyondTheEndMovesToTheEndOfTheMedia()
 	{
@@ -201,8 +195,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 			cancellation.Cancel();
 
-			// "Here, we don't want to throw an exception": cancelling stops the wait without an error, and the code after the wait still runs:
-			// the seek is reported as completed (SuppressThrowing).
+			// "Here, we don't want to throw an exception" (SuppressThrowing): cancelling stops the wait without an error, and the code after the wait
+			// still runs, so the seek is reported as completed.
 			await seek.WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.True(seek.IsCompletedSuccessfully);
 			Assert.Equal(1, recorder.SeekCompletedCount);
@@ -223,7 +217,6 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 			using var cancellation = new CancellationTokenSource();
 			var second = manager.Seek(TimeSpan.FromSeconds(2), cancellation.Token);
-			// Only one seek at a time: the second one waits for the first.
 			Assert.False(second.IsCompleted);
 
 			cancellation.Cancel();
@@ -265,8 +258,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Stop() idles the player, which then reports no ready state for a seek that Stop() interrupted. That seek has ended all the same: SeekTo
-	// completes and raises SeekCompleted (IMediaElement.SeekTo), as on iOS and Mac Catalyst, instead of waiting for its two minute timeout.
+	// Stop() idles the player, which then never reports the ready state that the interrupted seek waits for. The seek has ended all the same
+	// (IMediaElement.SeekTo), as on iOS and Mac Catalyst, so it must not wait for its two minute timeout.
 	[Fact]
 	public async Task SeekToInterruptedByStopCompletesAndRaisesSeekCompleted()
 	{
@@ -292,8 +285,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The wait for ExoPlayer's ready state ends on ready, on Stop(), on the token (MapSeekRequested passes CancellationToken.None) or after two
-	// minutes, and when the manager is disposed: a SeekTo that is pending when the handler disconnects ends like a cancelled seek.
+	// Only disposing the manager ends the wait when the handler disconnects (ready never comes, MapSeekRequested passes CancellationToken.None,
+	// the timeout is two minutes), so a SeekTo that is pending then ends like a cancelled seek.
 	[Fact]
 	public async Task SeekPendingWhenTheHandlerDisconnectsDoesNotHangTheCaller()
 	{
@@ -303,18 +296,16 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 		await WithHandlerAsync(mediaElement, handler =>
 		{
-			// Nothing is loaded, so ExoPlayer never reports ready: the seek is pending.
 			seek = mediaElement.SeekTo(TimeSpan.FromSeconds(1));
 			Assert.False(seek.IsCompleted);
 		});
-		// WithHandlerAsync disconnected the handler: the player is released and nothing can answer the seek any more.
 
 		// Completing or being cancelled are both fine; staying pending is not.
 		Assert.True(await AssertHelpers.Wait(() => seek!.IsCompleted, timeout: 5000), "The SeekTo that was pending when the handler disconnected is still pending.");
 	}
 
-	// The pending seek ends once DisconnectHandler has returned: what waits for it (MapSeekRequested, the code after the app's await SeekTo) does
-	// not run in the middle of the disconnection, while the handler is half disconnected.
+	// What waits for the pending seek (MapSeekRequested, the code after the app's await SeekTo) must not run in the middle of the
+	// disconnection, while the handler is half disconnected.
 	// Catches: Dispose cancelling the pending seek inline instead of on a later turn of the main thread.
 	[Fact]
 	public async Task SeekPendingWhenTheHandlerDisconnectsEndsOnlyAfterTheDisconnection()
@@ -326,7 +317,6 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 		await WithHandlerAsync(mediaElement, handler =>
 		{
-			// Nothing is loaded, so ExoPlayer never reports ready: the seek is pending.
 			var seek = mediaElement.SeekTo(TimeSpan.FromSeconds(1));
 			_ = seek.ContinueWith(_ => hadDisconnectedWhenTheSeekEnded.TrySetResult(hasDisconnected), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 			Assert.False(seek.IsCompleted);
@@ -388,8 +378,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// A source without data loads nothing, like a null Source, and Play() does nothing for it either: an empty player that is prepared ends at
-	// once, which would report MediaEnded (and Stopped) for a media that never existed.
+	// An empty player that is prepared ends at once, which would report MediaEnded (and Stopped) for a media that never existed.
 	[Fact]
 	public async Task PlayOfASourceWithoutDataDoesNothing()
 	{
@@ -410,14 +399,13 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Play() while the source still loads (its artwork downloads, so the player has no media yet): playback starts once the source is loaded,
-	// and nothing ends before.
+	// Holding the artwork response keeps the source loading, so the player has no media yet when Play() is called.
 	[Fact]
 	public async Task PlayWhileTheSourceIsLoadingStartsPlaybackOnceItIsLoaded()
 	{
 		var artwork = await ReadAssetAsync(artworkAsset);
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (artwork, "image/png") });
-		var artworkResponse = server.HoldResponses("/art.png");
+		var heldArtworkResponse = server.HoldResponses("/art.png");
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
@@ -436,12 +424,14 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(0, recorder.EndedCount);
 			Assert.Equal(MediaElementState.Opening, mediaElement.CurrentState);
 
-			artworkResponse.SetResult();
+			heldArtworkResponse.SetResult();
 			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
 			Assert.Equal(0, recorder.EndedCount);
 		});
 	}
 
+	// A Source without data loads nothing, so ExoPlayer never reports "ready" by itself: a seek stays pending until the test calls
+	// OnPlaybackStateChanged(ready).
 	static Task<MediaElement> CreateQuietMediaElementAsync() =>
 		CreateMediaElementAsync(element => element.Source = new UriMediaSource());
 }
