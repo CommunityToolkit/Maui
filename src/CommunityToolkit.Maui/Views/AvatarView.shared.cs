@@ -331,7 +331,8 @@ public partial class AvatarView : Border, IAvatarView
 
 	// Posted, never run at once: a load that ends synchronously, such as that of a StreamImageSource whose stream is already there, reports while the
 	// handler of the AvatarView is still mapping the image as its Content (Windows), and that mapping then shows the image whatever Content became.
-	// A load of an earlier source that reports after another source was set changes nothing. A dispatcher refuses work only while the app shuts down.
+	// A change posted for a source that the image no longer has does nothing: setting ImageSource already chose the Content for the new source. A
+	// dispatcher refuses work only while the app shuts down.
 	void PostContentChange(Action changeContent) => _ = Dispatcher.Dispatch(changeContent);
 
 	// Element.SetValueFromRenderer instead of a local value: a local value takes precedence over every Style setter, so no Style could size an AvatarView
