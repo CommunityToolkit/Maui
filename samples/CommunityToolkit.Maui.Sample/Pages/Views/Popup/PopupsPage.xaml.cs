@@ -227,6 +227,11 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
 	}
 
+	async void HandleSoftInputKeyboardPopupClicked(object? sender, EventArgs eventArgs)
+	{
+		await popupService.ShowPopupAsync<SoftInputKeyboardPopup>(Navigation);
+	}
+
 	async void HandlePopupAppThemeButtonClicked(object? sender, EventArgs e)
 	{
 		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
