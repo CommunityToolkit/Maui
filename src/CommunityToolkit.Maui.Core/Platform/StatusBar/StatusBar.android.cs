@@ -83,18 +83,18 @@ static partial class StatusBar
 				if (existingOverlay is not null)
 				{
 					existingOverlay.SetBackgroundColor(platformColor);
-					ApplyWindowFlags(window, platformColor);
+					ApplyWindowFlags(window);
 					return;
 				}
 
 				ApplyStatusBarOverlay(window, platformColor, decorGroup);
-				ApplyWindowFlags(window, platformColor);
+				ApplyWindowFlags(window);
 			});
 		}
 		else
 		{
 			statusBarOverlay.SetBackgroundColor(platformColor);
-			ApplyWindowFlags(window, platformColor);
+			ApplyWindowFlags(window);
 		}
 	}
 
@@ -111,14 +111,14 @@ static partial class StatusBar
 			statusBarOverlay.SetBackgroundColor(platformColor);
 		}
 
-		ApplyWindowFlags(window, platformColor);
+		ApplyWindowFlags(window);
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android35.0")]
 	static void PlatformSetColor_AndroidApiLessThan35(in Window window, in PlatformColor platformColor)
 	{
 		window.SetStatusBarColor(platformColor);
-		ApplyWindowFlags(window, platformColor);
+		ApplyWindowFlags(window);
 	}
 
 	[SupportedOSPlatform("android35.0")]
@@ -140,24 +140,32 @@ static partial class StatusBar
 		statusBarOverlay.SetBackgroundColor(platformColor);
 	}
 
-	static void ApplyWindowFlags(Window window, PlatformColor platformColor)
+	static void ApplyWindowFlags(Window window)
 	{
-		bool isTransparent = platformColor == PlatformColor.Transparent;
-
-		if (isTransparent)
+		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
-			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-			window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+			ApplyAndroidApi30(window);
 		}
 		else
 		{
-			window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			window.SetFlags(
-				WindowManagerFlags.DrawsSystemBarBackgrounds,
-				WindowManagerFlags.DrawsSystemBarBackgrounds);
+			ApplyAndroidApiLessThan30(window);
 		}
+	}
 
-		WindowCompat.SetDecorFitsSystemWindows(window, !isTransparent);
+	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android30.0")]
+	static void ApplyAndroidApiLessThan30(Window window)
+	{
+		window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+		window.SetFlags(
+			WindowManagerFlags.DrawsSystemBarBackgrounds,
+			WindowManagerFlags.DrawsSystemBarBackgrounds);
+		WindowCompat.SetDecorFitsSystemWindows(window, false);
+	}
+
+	[SupportedOSPlatform("android30.0")]
+	static void ApplyAndroidApi30(Window window)
+	{
+		WindowCompat.SetDecorFitsSystemWindows(window, false);
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)

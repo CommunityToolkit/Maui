@@ -56,6 +56,7 @@
 
                 <Button Text="Software Input Keyboard Popup" Clicked="HandleSoftInputKeyboardPopupClicked" />
 
+                <Button Text="Popup App Theme Initialization" Clicked="HandlePopupAppThemeButtonClicked" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>

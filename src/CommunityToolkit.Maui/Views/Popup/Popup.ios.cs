@@ -36,7 +36,7 @@ public partial class Popup
 			popupNativeView = view;
 		}
 
-		willShow = UIKeyboard.Notifications.ObserveWillShow((_, args) => HandleKeyboard(args));
+willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKeyboard(args));
 
 		willHide = UIKeyboard.Notifications.ObserveWillHide((_, args) => ResetSafeArea());
     }

@@ -137,11 +137,36 @@ partial class CameraManager
 			return;
 		}
 
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault();
+
+		if (cameraView.SelectedCamera is null)
+		{
+			cameraView.OnErrorOccurred(
+				new CameraException("Couldn't start camera preview; no cameras available"));
+			return;
+		}
 
 		mediaCapture = new MediaCapture();
 
-		await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
+		try
+		{
+			await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token);
+		}
+		catch (Exception ex)
+		{
+			// can't use that camera
+			mediaCapture?.Dispose();
+			mediaCapture = null;
+
+			if (ex is OperationCanceledException)
+			{
+				throw;
+			}
+
+			cameraView.OnErrorOccurred(ex);
+
+			return;
+		}
 
 		frameSource = mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
 

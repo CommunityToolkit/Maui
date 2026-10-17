@@ -100,4 +100,28 @@ public class CameraViewTests : BaseViewTest
 			mediaCaptureFailedTcs.SetResult(e);
 		}
 	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task OnErrorOccurred_RaisesErrorOccurredEvent()
+	{
+		Exception failureException = new CameraException("Proof that this test passes");
+
+		bool wasEventRaised = false;
+		var errorOccurredTcs = new TaskCompletionSource<ErrorOccurredEventArgs>();
+		cameraView.ErrorOccurred += HandleErrorOccurred;
+
+		((ICameraView)cameraView).OnErrorOccurred(failureException);
+
+		var errorOccurredEventArgs = await errorOccurredTcs.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(wasEventRaised);
+		Assert.Equal(failureException, errorOccurredEventArgs.Exception);
+
+		void HandleErrorOccurred(object? sender, ErrorOccurredEventArgs e)
+		{
+			cameraView.ErrorOccurred -= HandleErrorOccurred;
+			wasEventRaised = true;
+			errorOccurredTcs.SetResult(e);
+		}
+	}
 }

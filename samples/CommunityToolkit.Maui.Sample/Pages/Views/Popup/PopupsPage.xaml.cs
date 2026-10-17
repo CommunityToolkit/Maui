@@ -231,4 +231,19 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 	{
 		await popupService.ShowPopupAsync<SoftInputKeyboardPopup>(Navigation);
 	}
+
+	async void HandlePopupAppThemeButtonClicked(object? sender, EventArgs e)
+	{
+		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+		var previousTheme = application.UserAppTheme;
+
+		try
+		{
+			await popupService.ShowPopupAsync<AppThemePopup>(Navigation);
+		}
+		finally
+		{
+			application.UserAppTheme = previousTheme;
+		}
+	}
 }
