@@ -59,6 +59,11 @@
                 Command="{Binding PlayCommand}"
                 HorizontalOptions="Center" />
 
+            <Button
+                Text="Recognize from Media file"
+                Command="{Binding RecognizeCommand}"
+                HorizontalOptions="Center" />
+
             <Border
                 StrokeThickness="2"
                 Stroke="#808080"

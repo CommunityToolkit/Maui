@@ -47,6 +47,18 @@ public interface ISpeechToText : IAsyncDisposable
 	Task StopListenAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Recognize audio stream and return the recognized text.
+	/// </summary>
+	/// <remarks>
+	/// Returns the recognized text from the provided audio stream.
+	/// </remarks>
+	/// <param name="stream">The audio stream to recognize.</param>
+	/// <param name="options">The <see cref="SpeechToTextOptions"/> used to customize how the speech will be detected and converted to text.</param>
+	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	Task<SpeechToTextResult> RecognizeAsync(Stream stream, SpeechToTextOptions options,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Request permissions for speech to text.
 	/// </summary>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
