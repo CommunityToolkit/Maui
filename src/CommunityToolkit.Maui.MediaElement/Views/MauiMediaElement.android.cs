@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Android.App;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -9,6 +10,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Views;
+using RelativeLayout = Android.Widget.RelativeLayout;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -61,19 +63,44 @@ public class MauiMediaElement : CoordinatorLayout
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
 	{
 		this.playerView = playerView;
-		this.playerView.SetBackgroundColor(global::Android.Graphics.Color.Black);
+		playerView.Background = new ColorDrawable(Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
+		playerView.SetShowBuffering(PlayerView.ShowBufferingAlways);
+		playerView.Alpha = 1.0f;
+		playerView.ArtworkDisplayMode = PlayerView.ArtworkDisplayModeFit;
+		playerView.DefaultArtwork = new ColorDrawable(Android.Graphics.Color.Black);
+
 		var layout = new RelativeLayout.LayoutParams(LayoutParams.WrapContent, LayoutParams.WrapContent);
 		layout.AddRule(LayoutRules.CenterInParent);
 		layout.AddRule(LayoutRules.CenterVertical);
 		layout.AddRule(LayoutRules.CenterHorizontal);
 		relativeLayout = new RelativeLayout(Platform.AppContext)
 		{
-			LayoutParameters = layout,
+			LayoutParameters = layout
 		};
-		relativeLayout.AddView(playerView);
+		SetBackgroundResource(Android.Resource.Color.Black);
+	}
 
-		AddView(relativeLayout);
+	public void SetView(AndroidX.Media3.Common.IPlayer player)
+	{
+		playerView.Player = player;
+
+		if (playerView.Parent is ViewGroup playerViewParent && playerViewParent != relativeLayout)
+		{
+			playerViewParent.RemoveView(playerView);
+		}
+		if (playerView.Parent is null)
+		{
+			relativeLayout.AddView(playerView);
+		}
+		if (relativeLayout.Parent is ViewGroup relativeLayoutParent && relativeLayoutParent != this)
+		{
+			relativeLayoutParent.RemoveView(relativeLayout);
+		}
+		if (relativeLayout.Parent is null)
+		{
+			AddView(relativeLayout);
+		}
 	}
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
@@ -84,6 +111,29 @@ public class MauiMediaElement : CoordinatorLayout
 			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
 		}
 		base.OnDetachedFromWindow();
+	}
+
+	/// <inheritdoc/>
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			playerView.FullscreenButtonClick -= OnFullscreenButtonClick;
+
+			if (playerView.Parent is ViewGroup playerParent)
+			{
+				playerParent.RemoveView(playerView);
+			}
+
+			if (relativeLayout.Parent is ViewGroup relativeParent)
+			{
+				relativeParent.RemoveView(relativeLayout);
+			}
+
+			relativeLayout.Dispose();
+		}
+
+		base.Dispose(disposing);
 	}
 
 	/// <summary>
@@ -98,34 +148,6 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			SetSystemBarsVisibility();
 		}
-	}
-
-	/// <summary>
-	/// Releases the unmanaged resources used by the <see cref="MediaElement"/> and optionally releases the managed resources.
-	/// </summary>
-	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			try
-			{
-				if (playerView.Player is not null)
-				{
-					playerView.Player.PlayWhenReady = false;
-				}
-				// https://github.com/google/ExoPlayer/issues/1855#issuecomment-251041500
-				playerView.Player?.Release();
-				playerView.Player?.Dispose();
-				playerView.Dispose();
-			}
-			catch (ObjectDisposedException)
-			{
-				// playerView already disposed
-			}
-		}
-
-		base.Dispose(disposing);
 	}
 
 	void OnFullscreenButtonClick(object? sender, PlayerView.FullscreenButtonClickEventArgs e)
