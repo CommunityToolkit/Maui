@@ -149,7 +149,8 @@ public partial class SelectAllTextBehaviorTests
 		GC.KeepAlive(input);
 	}
 
-	// MAUI only raises Focused with IsFocused true, so the branch of the handler for "not focused" needs the event to be raised by hand.
+	// MAUI raises Focused only with IsFocused true, so the behavior's handler is called directly to reach its "not focused" branch.
+	// TextIsSelectedWhenTheViewIsFocusedWhileTheBehaviorIsAttached covers the handler's subscription to the real event.
 	[Fact]
 	public async Task EditorTextIsNotSelectedWhenTheFocusedEventReportsNoFocus()
 	{
@@ -163,18 +164,15 @@ public partial class SelectAllTextBehaviorTests
 		{
 			await editor.OnLoadedAsync();
 
-			var focusedEvent = typeof(VisualElement).GetField(nameof(VisualElement.Focused), BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(editor) as EventHandler<FocusEventArgs>;
-			Skip.If(focusedEvent is null, "MAUI no longer keeps VisualElement.Focused in a field of that name, so the event cannot be raised by hand.");
-
 			Assert.Equal(1, behavior.AttachedCount);
 			CollapseNativeSelection(handler.PlatformView!);
 
-			focusedEvent(editor, new FocusEventArgs(editor, false));
+			SelectAllTextBehavior.OnTextViewFocussed(editor, new FocusEventArgs(editor, false));
 
 			await AssertTextStaysUnselectedAsync(handler);
 
-			// The same event with IsFocused true selects the text, so the handler was reached.
-			focusedEvent(editor, new FocusEventArgs(editor, true));
+			// The same call with IsFocused true selects the text, so the handler was reached.
+			SelectAllTextBehavior.OnTextViewFocussed(editor, new FocusEventArgs(editor, true));
 
 			await AssertAllTextIsSelectedAsync(handler);
 		});

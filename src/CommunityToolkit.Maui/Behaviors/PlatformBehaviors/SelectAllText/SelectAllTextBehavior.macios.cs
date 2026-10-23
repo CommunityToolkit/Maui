@@ -9,6 +9,16 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 {
+	// Static, so that the handler removed when the behavior detaches is the one added when it attached.
+	// Internal for the device tests: .NET MAUI raises Focused only with IsFocused true, so only a direct call reaches the other branch.
+	internal static void OnTextViewFocussed(object? sender, FocusEventArgs e)
+	{
+		if (e.IsFocused && sender is VisualElement { Handler.PlatformView: UITextView textView })
+		{
+			textView.SelectAll(textView);
+		}
+	}
+
 	/// <inheritdoc/>
 	protected override void OnAttachedTo(InputView bindable, UIView platformView)
 	{
@@ -84,15 +94,6 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 		else
 		{
 			mauiControl.Focused -= OnTextViewFocussed;
-		}
-
-		// Static, so that the handler removed when the behavior detaches is the one added when it attached.
-		static void OnTextViewFocussed(object? sender, FocusEventArgs e)
-		{
-			if (e.IsFocused && sender is VisualElement { Handler.PlatformView: UITextView textView })
-			{
-				textView.SelectAll(textView);
-			}
 		}
 	}
 }
