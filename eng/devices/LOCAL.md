@@ -31,7 +31,7 @@ powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
 
 * A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, several emulators running (it does not guess; `-DeviceId` or `-Avd` chooses) or no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
 * It never uses a physical Android device unless you name it with `-DeviceId`, and it never touches a simulator that it did not create unless you name it with `-Udid`.
-* All three apps run. The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
+* All three apps run (the platform scripts alone run the main app unless `-Project` says otherwise). The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
 * The platforms run one after the other, so a full run takes tens of minutes per platform. A packaged Windows run needs an elevated PowerShell the first time, to trust its signing certificate.
 
 Choose what runs:
