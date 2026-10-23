@@ -174,6 +174,8 @@ public partial class ToastTests
 		});
 	}
 
+	// The end of its Duration removes "First" a moment before "Second", so Windows briefly lists only "Second" even when "First" outlived
+	// the removal by the second Show: the list is read as soon as "Second" appears.
 	[Fact]
 	public async Task ShowAgainExpiresTheOldNotificationAndKeepsOnlyTheNewOne()
 	{
@@ -193,7 +195,8 @@ public partial class ToastTests
 			Assert.NotNull(second);
 			Assert.NotSame(first, second);
 			Assert.InRange(first.Expiration, before - expirationMargin, after + expirationMargin);
-			await AssertEventually(async () => (await GetDisplayedTextsAsync()) is ["Second"], timeout: 10000, message: "Windows does not list only the second toast.");
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Second"), timeout: 10000, message: "Windows does not list the second toast.");
+			Assert.Equal(new[] { "Second" }, await GetDisplayedTextsAsync());
 		});
 	}
 
