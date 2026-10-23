@@ -157,6 +157,29 @@ public class HttpClientExtensionsTests : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task DownloadStreamAsync_BodyDoesNotArriveWithinTheTimeout_ReturnsStreamNullAndReleasesTheServerStream()
+	{
+		var serverStream = new ServerStream(CreateBody(length: 1_000), maxBytesPerRead: 100, blockAfterBytes: 300);
+		using var client = new HttpClient(RespondWith(serverStream)) { Timeout = TimeSpan.FromMilliseconds(300) };
+
+		var stream = await client.DownloadStreamAsync(avatarUri, TestContext.Current.CancellationToken);
+
+		stream.Should().BeSameAs(Stream.Null);
+		serverStream.IsDisposed.Should().BeTrue();
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task DownloadStreamAsync_ClientHasNoTimeout_ReturnsEveryByte()
+	{
+		var body = CreateBody(length: 3_000);
+		using var client = new HttpClient(RespondWith(new ServerStream(body, maxBytesPerRead: 400))) { Timeout = Timeout.InfiniteTimeSpan };
+
+		await using var stream = await client.DownloadStreamAsync(avatarUri, TestContext.Current.CancellationToken);
+
+		(await ReadToEndAsync(stream)).Should().Equal(body);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task DownloadStreamAsync_TokenIsAlreadyCanceled_ReturnsStreamNull()
 	{
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -248,7 +271,7 @@ public class HttpClientExtensionsTests : BaseTest
 		}
 	}
 
-	// The body of a response that is still arriving: it cannot seek, hands out small chunks and, like a network stream, is read asynchronously.
+	// A MemoryStream would hide what is under test: the body of a response cannot seek, arrives in small chunks and is only read asynchronously.
 	sealed class ServerStream(byte[] content, int maxBytesPerRead = int.MaxValue, int blockAfterBytes = int.MaxValue, int failAfterBytes = int.MaxValue) : Stream
 	{
 		readonly TaskCompletionSource readIsBlocked = new(TaskCreationOptions.RunContinuationsAsynchronously);

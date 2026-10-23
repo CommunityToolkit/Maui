@@ -11,7 +11,7 @@ static partial class HttpClientExtensions
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>
 	/// A readable, seekable stream that holds the whole response body, positioned at its start.
-	/// <see cref="Stream.Null"/> when the response headers do not arrive within <see cref="HttpClient.Timeout"/>,
+	/// <see cref="Stream.Null"/> when the whole response does not arrive within <see cref="HttpClient.Timeout"/>,
 	/// the response has an error status code, the request is canceled, or the download fails.
 	/// </returns>
 	public static async Task<Stream> DownloadStreamAsync(this HttpClient client, Uri uri, CancellationToken cancellationToken)
@@ -21,8 +21,12 @@ static partial class HttpClientExtensions
 
 		try
 		{
-			// Headers first: HttpClient.Timeout covers the wait for the response, and the body of an error response is never downloaded.
-			using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+			// With ResponseHeadersRead, HttpClient.Timeout ends once the headers are in: this deadline keeps it covering the body that is read here.
+			using var downloadTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			downloadTimeout.CancelAfter(client.Timeout);
+
+			// Headers first, so that the body of an error response is never downloaded.
+			using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, downloadTimeout.Token).ConfigureAwait(false);
 			if (!response.IsSuccessStatusCode)
 			{
 				Trace.WriteLine($"Could not retrieve {uri}, status code {response.StatusCode}");
@@ -31,7 +35,7 @@ static partial class HttpClientExtensions
 
 			// Not the network stream of the response: .NET MAUI on Windows decodes an image from a stream through AsRandomAccessStream,
 			// which throws for a stream that cannot seek.
-			var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+			var content = await response.Content.ReadAsByteArrayAsync(downloadTimeout.Token).ConfigureAwait(false);
 			return new MemoryStream(content, writable: false);
 		}
 		catch (Exception ex)
