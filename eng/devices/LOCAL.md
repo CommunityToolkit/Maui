@@ -43,7 +43,7 @@ pwsh eng/devices/run.ps1 -Project MediaElement                          # only t
 pwsh eng/devices/run.ps1 -TestFilter 'Category=IconTintColorBehavior'   # one test category, where it has tests
 pwsh eng/devices/run.ps1 -TestFilter 'SkipCategories=Snackbar,Badge'   # everything except these categories
 pwsh eng/devices/run.ps1 -Configuration Release                         # what CI builds
-pwsh eng/devices/run.ps1 -Target buildOnly                              # build now, then run with -Target testOnly as often as you like
+pwsh eng/devices/run.ps1 -Target buildOnly                              # build without a device, then run with -Target testOnly as often as you like
 ```
 
 The platform names are `ios`, `maccatalyst`, `android`, `windows-packaged` and `windows-unpackaged` (`catalyst`, `packaged`, `unpackaged` and `windows`, for both Windows platforms, are short forms). A category is a constant of `TestCategory` in `src/<app>/**/TestCategory*.cs`; every test class has exactly one. With a `Category=` filter, `run.ps1` leaves out the apps (unless you name them with `-Project`) and the platforms (unless you name them with `-Platform`) that have no test of the category, such as iOS for a category whose tests are all in `*.android.cs` files, because a run of 0 tests fails. [README.md](README.md#choosing-tests-testfilter-and-categories) explains the filters, and its [run.ps1](README.md#one-command-runps1) section lists every parameter, among them the ones that choose the Android device (`-Avd`, `-DeviceId`), the simulator (`-Udid`) and the Xcode (`-Xcode`).

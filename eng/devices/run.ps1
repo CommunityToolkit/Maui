@@ -39,7 +39,8 @@
     The build configuration. Debug by default, as in the platform scripts; CI runs Release.
 
 .PARAMETER Target
-    buildOnly, testOnly or buildAndTest (the default). Build once and test many times with buildOnly and then testOnly.
+    buildOnly, testOnly or buildAndTest (the default). Build once and test many times with buildOnly and then testOnly. buildOnly needs
+    no device, simulator or emulator.
 
 .PARAMETER Results
     The folder that holds one results folder per platform. Defaults to artifacts/device-tests, where each platform writes
@@ -541,7 +542,7 @@ function New-RunPlanEntry {
 }
 
 function Get-RunAppleEntry {
-    param([string]$Id, [string]$Xcode, [string]$Udid, [bool]$KeepDevice)
+    param([string]$Id, [string]$Xcode, [string]$Udid, [bool]$KeepDevice, [bool]$BuildOnly)
 
     $problem = Get-RunXcodeProblem -Xcode $Xcode
     if ($problem) {
@@ -551,6 +552,11 @@ function Get-RunAppleEntry {
     $arguments = @{}
     if ($Xcode) {
         $arguments['Xcode'] = $Xcode
+    }
+
+    # The platform scripts create or choose a device only to run the tests, so a build needs none.
+    if ($BuildOnly) {
+        return New-RunPlanEntry -Id $Id -Available $true -Detail 'builds the apps' -Arguments $arguments
     }
 
     if ($Id -eq 'maccatalyst') {
@@ -579,11 +585,16 @@ function Get-RunAppleEntry {
 }
 
 function Get-RunAndroidEntry {
-    param([string]$Avd, [int]$EmulatorPort, [string]$DeviceId, [bool]$KeepDevice)
+    param([string]$Avd, [int]$EmulatorPort, [string]$DeviceId, [bool]$KeepDevice, [bool]$BuildOnly)
 
     $sdkRoot = Get-AndroidSdkRoot
     if (-not $sdkRoot) {
         return New-RunPlanEntry -Id 'android' -Available $false -Detail 'the Android SDK was not found. Install it and set ANDROID_HOME (eng/devices/README.md, Prerequisites).'
+    }
+
+    # android.ps1 boots or chooses a device only to run the tests, so a build needs none.
+    if ($BuildOnly) {
+        return New-RunPlanEntry -Id 'android' -Available $true -Detail 'builds the apps'
     }
 
     $adb = Get-AndroidTool -SdkRoot $sdkRoot -Folder 'platform-tools' -Name 'adb'
@@ -652,13 +663,16 @@ function Get-RunAndroidEntry {
 }
 
 function Get-RunWindowsEntry {
-    param([string]$Id, [bool]$KeepDevice)
+    param([string]$Id, [bool]$KeepDevice, [bool]$BuildOnly)
 
     $arguments = @{}
     if ($Id -eq 'windows-packaged') {
         $arguments['Packaging'] = 'packaged'
         $detail = 'signs an MSIX with a test certificate, installs it and removes it afterwards; the first run needs an elevated shell to trust the certificate'
-        if ($KeepDevice) {
+        if ($BuildOnly) {
+            $detail = 'builds an MSIX signed with a test certificate; the first run needs an elevated shell to trust the certificate'
+        }
+        elseif ($KeepDevice) {
             $arguments['KeepDevice'] = $true
             $detail = 'signs an MSIX with a test certificate and installs it, and keeps it installed; the first run needs an elevated shell to trust the certificate'
         }
@@ -667,7 +681,12 @@ function Get-RunWindowsEntry {
     }
 
     $arguments['Packaging'] = 'unpackaged'
-    return New-RunPlanEntry -Id $Id -Available $true -Detail 'publishes a self-contained app and starts it' -Arguments $arguments
+    $detail = 'publishes a self-contained app and starts it'
+    if ($BuildOnly) {
+        $detail = 'publishes a self-contained app'
+    }
+
+    return New-RunPlanEntry -Id $Id -Available $true -Detail $detail -Arguments $arguments
 }
 
 function Get-RunPlan {
@@ -681,9 +700,11 @@ function Get-RunPlan {
         [string]$Xcode,
         [bool]$KeepDevice,
         [string]$Category,
-        [string[]]$CategoryPlatforms
+        [string[]]$CategoryPlatforms,
+        [string]$Target
     )
 
+    $buildOnly = $Target -eq 'buildOnly'
     foreach ($id in $script:RunPlatforms.Keys) {
         $needs = $script:RunPlatforms[$id].OperatingSystem
         $supported = $needs -eq 'any' -or $needs -eq $OperatingSystem
@@ -707,10 +728,10 @@ function Get-RunPlan {
 
         try {
             switch ($id) {
-                'ios' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice }
-                'maccatalyst' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice }
-                'android' { Get-RunAndroidEntry -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId -KeepDevice $KeepDevice }
-                default { Get-RunWindowsEntry -Id $id -KeepDevice $KeepDevice }
+                'ios' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice -BuildOnly $buildOnly }
+                'maccatalyst' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice -BuildOnly $buildOnly }
+                'android' { Get-RunAndroidEntry -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId -KeepDevice $KeepDevice -BuildOnly $buildOnly }
+                default { Get-RunWindowsEntry -Id $id -KeepDevice $KeepDevice -BuildOnly $buildOnly }
             }
         }
         catch {
@@ -1093,7 +1114,7 @@ try {
     }
 
     $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
-        -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms)
+        -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target)
 
     $common = @{ Target = $Target; Project = $projectArguments; Configuration = $Configuration }
     foreach ($name in @('TestFilter', 'BinlogDir', 'SkipCapabilities', 'RequireCapabilities', 'Timeout', 'InfraRetries', 'BuildArgs')) {
