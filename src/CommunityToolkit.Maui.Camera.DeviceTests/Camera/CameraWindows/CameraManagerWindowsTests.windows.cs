@@ -715,15 +715,12 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 			Assert.Null(scope.Access.MediaCapture);
 			Assert.Equal(0, scope.LoadedCount);
 
-			// The camera cannot be opened, but the preview counts as started: the next SelectedCamera tries to open its camera (as on Android).
+			// The camera cannot be opened, but the preview counts as started: the next SelectedCamera tries to open its camera.
 			Assert.True(scope.Access.IsInitialized);
 		});
 	}
 
-	// The first start fails on a camera that cannot be opened, as a camera switch can (see
-	// UpdateCurrentCameraAfterASwitchThatFailedOpensTheNextSelectedCamera): the preview counts as started, so that the next SelectedCamera opens
-	// its camera (which fails the same way here, a camera that no device has) instead of being ignored, as on Android, iOS and Mac Catalyst.
-	// Before, Windows left the manager stopped after a failed first start.
+	// The next SelectedCamera is a camera that no device has too: its second error shows that the manager tried to open it.
 	[Fact]
 	public async Task StartCameraPreviewOfACameraThatCannotBeOpenedOpensTheNextSelectedCamera()
 	{

@@ -6,17 +6,12 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The commands of CameraView on iOS and Mac Catalyst. ICommand.Execute cannot return the task of the work that a command starts: an exception
-// that escaped a command would reach no caller and end the app (AppleRecordingSynchronizationContext receives it here), and an app that binds
-// the command in XAML cannot catch it. A command reports its failure once instead, through the event that describes it: MediaCaptureFailed for
-// the capture and the recording, ErrorOccurred for the preview. The handler does not connect the camera (AppleNoConnectCameraViewHandler) and
-// every failure is scripted, so the tests need no camera and no permission.
+// An exception that escaped a command would end the app: AppleRecordingSynchronizationContext receives it here. The handler does not connect
+// the camera (AppleNoConnectCameraViewHandler) and every failure is scripted, so the tests need no camera and no permission.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraViewCommandAppleTests : CameraHandlerTestBase
 {
-	// The platform reports a capture that cannot start (no photo output before the preview started) through MediaCaptureFailed itself: the
-	// command must not report it a second time, and the CameraException of CaptureImage must not escape.
 	[Fact]
 	public async Task CaptureImageCommandOfACameraThatNeverStartedRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
 	{
@@ -38,7 +33,6 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// StartCameraPreview reports a preview that cannot start through ErrorOccurred itself: the command must not report it a second time.
 	[Fact]
 	public async Task StartCameraPreviewCommandOfACameraThatCannotStartRaisesErrorOccurredOnceAndLetsNothingEscape()
 	{
@@ -59,8 +53,7 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// StopCameraPreviewCommand is a synchronous Command: an exception would escape to the caller of ICommand.Execute, which is MAUI when the
-	// command is bound in XAML. The session refuses to stop like AVFoundation does between beginConfiguration and commitConfiguration.
+	// The session refuses to stop like AVFoundation does between beginConfiguration and commitConfiguration.
 	[Fact]
 	public async Task StopCameraPreviewCommandThatTheSessionRefusesRaisesErrorOccurredOnceAndLetsNothingEscape()
 	{
@@ -89,7 +82,6 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// StartVideoRecording throws CameraException without the camera permission (the prompt's answer is scripted).
 	[Fact]
 	public async Task StartVideoRecordingCommandWithoutTheCameraPermissionRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
 	{
@@ -113,9 +105,7 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// A recording command that fails while a capture waits for its photo reports the failure through MediaCaptureFailed, the event with which
-	// the platform also answers a capture that failed. The failure is the recording's: the capture still returns the photo that the platform
-	// delivers afterwards, and each event is raised once.
+	// MediaCaptureFailed reports the failures of the recording commands as well as the platform's answer to a capture that failed.
 	[Fact]
 	public async Task CaptureImageReturnsThePhotoAlthoughARecordingCommandReportsAFailureWhileItWaits()
 	{
@@ -149,8 +139,7 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	// AVFoundation ended the recording with an error before the app stopped it (here the disk filled up) and wrote no movie: StopVideoRecording
-	// throws CameraException. The recording runs on a FakeCaptureSession without a microphone, and the movie output's recording is scripted.
+	// The recording runs on a FakeCaptureSession without a microphone, and the movie output's recording is scripted.
 	[Fact]
 	public async Task StopVideoRecordingCommandOfARecordingThatFailedRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
 	{
@@ -189,8 +178,6 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		return new NSError(AVErrorKeys.ErrorDomain, (nint)(long)AVError.DiskFull, userInfo);
 	}
 
-	// Runs the test on the UI thread with a new CameraView whose handler does not connect the camera, and a recording SynchronizationContext for
-	// the commands. The handler is disconnected afterwards (the manager's Dispose stops and releases the session).
 	async Task RunAsync(Func<CameraView, CameraManagerAccessor, AppleRecordingSynchronizationContext, Task> test)
 	{
 		SetupBuilder();

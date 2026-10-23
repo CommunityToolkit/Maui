@@ -27,11 +27,6 @@ sealed class CameraErrorRecorder : IDisposable
 		}
 	}
 
-	/// <summary>
-	/// Runs <paramref name="action"/>, which must not throw, and returns the one exception that <paramref name="view"/> reported through
-	/// ErrorOccurred meanwhile, which must be exactly a <typeparamref name="TException"/>. StartCameraPreview reports a preview that cannot
-	/// start this way instead of throwing.
-	/// </summary>
 	public static async Task<TException> AssertReportsAsync<TException>(CameraView view, Func<Task> action) where TException : Exception
 	{
 		using var recorder = new CameraErrorRecorder(view);

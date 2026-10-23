@@ -605,12 +605,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true, disconnectWhenDone: false);
 	}
 
-	// ICommand.Execute cannot return the task of the work that a command starts: an exception that escaped a command would reach no caller and
-	// end the app (the async void guard of the test base receives it here), and an app that binds the command in XAML cannot catch it. A command
-	// reports its failure once instead, through the event that describes it.
-
-	// The platform reports a capture that cannot start (no ImageCapture before the camera connected) through MediaCaptureFailed itself: the
-	// command must not report it a second time, and the CameraException of CaptureImage must not escape.
 	[Fact]
 	public async Task CaptureImageCommandBeforeTheCameraStartedRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
 	{
@@ -633,8 +627,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		}, waitForStreaming: false);
 	}
 
-	// StartCameraPreview reports a preview that cannot start (here a camera that CameraX cannot bind) through ErrorOccurred itself: the command
-	// must not report it a second time, and before, the IllegalArgumentException of CameraX escaped the command.
 	[Fact]
 	public async Task StartCameraPreviewCommandOfACameraThatCanNotBeBoundRaisesErrorOccurredOnceAndLetsNothingEscape()
 	{
@@ -659,8 +651,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// StopCameraPreviewCommand is a synchronous Command: an exception would escape to the caller of ICommand.Execute. CameraX unbinds the use
-	// cases only on the main thread, so the command fails when it is executed on another thread.
+	// CameraX unbinds the use cases only on the main thread, so the command fails when it is executed on another thread.
 	[Fact]
 	public async Task StopCameraPreviewCommandOffTheUiThreadRaisesErrorOccurredOnceAndLetsNothingEscape()
 	{
@@ -679,8 +670,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// The recording is stopped right after it started, before it recorded anything: CameraX finalizes it with ERROR_NO_VALID_DATA, and the
-	// CameraException of StopVideoRecording used to escape the command.
+	// CameraX finalizes a recording that is stopped before it recorded anything with ERROR_NO_VALID_DATA, so StopVideoRecording fails.
 	[Fact]
 	public async Task StopVideoRecordingCommandOfARecordingThatRecordedNothingRaisesMediaCaptureFailedOnceAndLetsNothingEscape()
 	{

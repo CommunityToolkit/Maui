@@ -401,7 +401,7 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 			Assert.False(preview.Session.IsRunning);
 			Assert.Equal(0, preview.Scope.LoadedCount);
 
-			// The camera cannot be started, but the preview counts as started: the next SelectedCamera starts it (as on Android).
+			// The camera cannot be started, but the preview counts as started: the next SelectedCamera starts it.
 			Assert.True(preview.Scope.Access.IsInitialized);
 		});
 	}
@@ -427,15 +427,11 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 			Assert.Null(preview.Scope.Access.CaptureInput);
 			Assert.Equal(0, preview.Scope.LoadedCount);
 
-			// The camera cannot be opened, but the preview counts as started: the next SelectedCamera starts it (as on Android).
+			// The camera cannot be opened, but the preview counts as started: the next SelectedCamera starts it.
 			Assert.True(preview.Scope.Access.IsInitialized);
 		});
 	}
 
-	// The first start fails because of the selected camera, as a camera switch can (see
-	// UpdateCurrentCameraAfterASwitchThatFailedStartsTheNextSelectedCamera): the preview counts as started, so that the next SelectedCamera
-	// starts the preview with that camera, as on Android. Before, iOS and Mac Catalyst left the manager stopped and ignored every later
-	// SelectedCamera until the app called StartCameraPreview.
 	[Theory]
 	[InlineData("noCaptureDevice")]
 	[InlineData("inputCannotBeCreated")]
@@ -476,9 +472,6 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 		});
 	}
 
-	// AVFoundation refuses the camera input of an app without the camera permission (AVErrorApplicationIsNotAuthorizedToUseDevice): unlike a
-	// camera that cannot be opened, the start leaves the preview stopped, so that selecting another camera does not try again, until the app
-	// calls StartCameraPreview once it has the permission. The failure names the permission, like StartVideoRecording.
 	[Fact]
 	public async Task StartCameraPreviewWithoutTheCameraPermissionLeavesThePreviewStoppedUntilItIsStartedAgain()
 	{
@@ -503,7 +496,6 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 			Assert.False(preview.Session.IsRunning);
 			Assert.False(preview.Scope.Access.IsInitialized);
 
-			// The app has the permission now.
 			preview.Inputs.FailureFor = static _ => null;
 			await preview.Scope.Manager.StartCameraPreview(CancellationToken.None);
 

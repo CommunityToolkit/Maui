@@ -276,7 +276,6 @@ partial class CameraManager
 
 		captureSession.BeginConfiguration();
 
-		// Whether AVFoundation refused the camera because the app may not use it (the camera permission)
 		var isCameraAccessDenied = false;
 
 		// The configuration is committed also when the start fails: AVCaptureSession raises NSGenericException when stopRunning
@@ -342,8 +341,8 @@ partial class CameraManager
 		{
 			// The selected camera cannot be started (it has no capture device, it cannot be opened, for example while another app uses it, or the
 			// session rejects it): the preview stays started, so that selecting another camera starts the preview with that camera
-			// (UpdateCurrentCamera), as on Android. Without a camera, without the camera permission or when the start was cancelled, it stays
-			// stopped until StartCameraPreview is called again
+			// (UpdateCurrentCamera). Without a camera, without the camera permission or when the start was cancelled, it stays stopped until
+			// StartCameraPreview is called again
 			isInitialized = true;
 			throw;
 		}

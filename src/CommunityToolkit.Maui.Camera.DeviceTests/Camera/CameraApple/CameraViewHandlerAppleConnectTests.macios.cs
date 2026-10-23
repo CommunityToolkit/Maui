@@ -49,10 +49,7 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 		});
 	}
 
-	// The camera that the connection selected cannot start (here it has no capture device, as for one that another app uses): the view reports
-	// it, and selecting another camera starts the preview with that camera, as on Android. Before, the failed connection left the manager
-	// stopped and the handler ignored every SelectedCamera until the app called StartCameraPreview. The second camera starts on a
-	// FakeCaptureSession with stubbed device input and rotation coordinator, so no camera is needed.
+	// The second camera starts on a FakeCaptureSession with stubbed device input and rotation coordinator, so no camera is needed.
 	[Fact]
 	public async Task SelectingACameraAfterTheConnectionFailedStartsThePreviewWithIt()
 	{

@@ -91,8 +91,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 	bool isDisposed;
 
-	// The capture that TakePicture waits for, set while it holds captureImageSemaphoreSlim. Only the platform's answer to the picture
-	// (ICameraView.OnMediaCaptured or OnMediaCapturedFailed) completes it: a failure that a command reports through MediaCaptureFailed does not
+	// Only the platform's answer to the picture (ICameraView.OnMediaCaptured or OnMediaCapturedFailed) completes it: a failure that a command
+	// reports through MediaCaptureFailed does not
 	TaskCompletionSource<PictureOutcome>? pendingPictureTCS;
 
 	/// <summary>
@@ -420,8 +420,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 	}
 
 	// ICommand.Execute cannot return the task of the work that a command starts: an exception that escaped the command would reach no caller
-	// and end the app, and an app that binds the command in XAML cannot catch it. The command reports the failure through the event that
-	// describes it instead, once (on the thread that executed the command), and ends quietly when the app cancelled the token of the command
+	// and end the app, and an app that binds the command in XAML cannot catch it
 	static async Task ExecuteCommand(Func<Task> work, Action<Exception> reportFailure, CancellationToken token = default)
 	{
 		try
@@ -437,8 +436,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 	}
 
-	// Takes a picture and waits for the platform's answer to it: ICameraView.OnMediaCaptured with the image, or OnMediaCapturedFailed with the
-	// reason of the failure. What fails before the platform answered, for example a view without a handler, throws
+	// What fails before the platform answered, for example a view without a handler, throws
 	async Task<PictureOutcome> TakePicture(CancellationToken token)
 	{
 		// One capture at a time: the platform's answer completes the pending capture, so a second capture waits until the first one has ended
@@ -492,6 +490,5 @@ public partial class CameraView : View, ICameraView, IDisposable
 		return input;
 	}
 
-	// What the platform answered to a picture: the image of MediaCaptured, or, without an image, the reason of MediaCaptureFailed
 	readonly record struct PictureOutcome(Stream? Image, string FailureReason);
 }

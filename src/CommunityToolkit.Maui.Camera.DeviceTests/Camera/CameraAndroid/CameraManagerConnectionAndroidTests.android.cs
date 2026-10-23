@@ -700,8 +700,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// StartCameraPreview reports a preview that cannot start through ErrorOccurred instead of throwing (#3299), as on iOS, Mac Catalyst and
-	// Windows: an app that starts the preview from a command could not catch the exception.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -742,8 +740,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// A camera that CameraX cannot bind (for example an unplugged USB camera) is reported like every other preview that cannot start, with the
-	// exception of CameraX.
 	[Fact]
 	public async Task StartCameraPreviewOfACameraThatCanNotBeBoundRaisesErrorOccurred()
 	{
@@ -763,9 +759,6 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// A start that fails on a camera that CameraX cannot bind leaves the preview started, like a camera switch that fails
-	// (UpdateCurrentCameraToAValidCameraAfterOneThatCanNotBeBoundOpensTheValidCamera): the next SelectedCamera opens its camera. iOS, Mac Catalyst
-	// and Windows do the same since decision P.
 	[Fact]
 	public async Task StartCameraPreviewOfACameraThatCanNotBeBoundLeavesThePreviewStartedForTheNextSelectedCamera()
 	{
@@ -815,14 +808,12 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.False(await IsNativelyBoundAsync(session.CameraPreview));
 			await AssertEveryCameraIsClosedAsync();
 
-			// The stopped preview does not follow the selection.
 			session.View.SelectedCamera = cameras[^1];
 			await session.Manager.UpdateCurrentCamera(cameras[^1], CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
 			await SettleUiThreadAsync();
 			Assert.Equal(0, session.LoadedCount);
 			await AssertEveryCameraIsClosedAsync();
 
-			// The app has the permission now.
 			context.DeniedPermissions.Clear();
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 

@@ -179,8 +179,8 @@ partial class CameraManager
 			token.ThrowIfCancellationRequested();
 
 			// A camera that cannot be opened (it does not exist any more, or another app uses it) leaves the preview started, so that selecting
-			// another camera starts the preview with that camera (UpdateCurrentCamera), as on Android, iOS and Mac Catalyst. A camera that the
-			// privacy settings block (UnauthorizedAccessException) leaves it stopped until StartCameraPreview is called again
+			// another camera starts the preview with that camera (UpdateCurrentCamera). A camera that the privacy settings block
+			// (UnauthorizedAccessException) leaves it stopped until StartCameraPreview is called again
 			isInitialized = ex is not UnauthorizedAccessException;
 
 			cameraView.OnErrorOccurred(ex);

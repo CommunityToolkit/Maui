@@ -74,14 +74,6 @@ sealed partial class CameraManager(
 	/// <summary>
 	/// Starts the camera preview.
 	/// </summary>
-	/// <remarks>
-	/// A preview that cannot start is reported through <see cref="ICameraView.OnErrorOccurred(Exception)"/> instead of an exception, on every
-	/// platform: for example no camera is available, the camera permission is not granted, or the selected camera cannot be started (another
-	/// app uses it, or it was unplugged). A cancelled start throws <see cref="OperationCanceledException"/>.
-	/// A start that failed because of the selected camera leaves the <see cref="CameraManager"/> initialized, like a camera switch that failed:
-	/// the next camera change starts the preview with that camera (<see cref="UpdateCurrentCamera(CameraInfo?, CancellationToken)"/>). A start
-	/// without a camera, without the camera permission or that was cancelled leaves it stopped until the next start.
-	/// </remarks>
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	public async Task StartCameraPreview(CancellationToken token)
 	{

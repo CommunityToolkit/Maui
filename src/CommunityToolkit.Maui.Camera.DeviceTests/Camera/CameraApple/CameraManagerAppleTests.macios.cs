@@ -496,7 +496,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			Assert.Empty(scope.Access.CaptureSession?.Inputs ?? []);
 			Assert.Equal(0, scope.LoadedCount);
 
-			// The selected camera cannot be started, but the preview counts as started: the next SelectedCamera starts it (as on Android).
+			// The selected camera cannot be started, but the preview counts as started: the next SelectedCamera starts it.
 			Assert.True(scope.Access.IsInitialized);
 		});
 	}
@@ -1082,7 +1082,6 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 		return output;
 	}
 
-	// StartCameraPreview reports a preview that cannot start through ErrorOccurred instead of throwing (#3299).
 	static Task<CameraException> StartCameraPreviewExpectingAnErrorAsync(AppleCameraManagerScope scope) =>
 		CameraErrorRecorder.AssertReportsAsync<CameraException>(scope.View, () => scope.Manager.StartCameraPreview(CancellationToken.None));
 
