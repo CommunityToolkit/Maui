@@ -257,6 +257,13 @@ partial class CameraManager
 			   && dimensions.Height <= resolution.Height;
 	}
 
+	// AVFoundation refuses the device input of a camera that the app may not use (the camera permission was denied, or is restricted) with
+	// AVErrorApplicationIsNotAuthorizedToUseDevice
+	static bool IsCameraAccessDenied(NSError? error) =>
+		error is not null
+		&& error.Code == (nint)(long)AVError.ApplicationIsNotAuthorizedToUseDevice
+		&& error.Domain == AVErrorKeys.ErrorDomain.ToString();
+
 	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
 		// CameraViewHandler connects the camera in ConnectHandler, right before MAUI maps the properties of the view. Started at once, the camera
@@ -355,13 +362,6 @@ partial class CameraManager
 		isInitialized = true;
 		onLoaded.Invoke();
 	}
-
-	// AVFoundation refuses the device input of a camera that the app may not use (the camera permission was denied, or is restricted) with
-	// AVErrorApplicationIsNotAuthorizedToUseDevice
-	static bool IsCameraAccessDenied(NSError? error) =>
-		error is not null
-		&& error.Code == (nint)(long)AVError.ApplicationIsNotAuthorizedToUseDevice
-		&& error.Domain == AVErrorKeys.ErrorDomain.ToString();
 
 	private partial void PlatformStopCameraPreviewForCameraSwitch() => PlatformStopCameraPreview();
 

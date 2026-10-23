@@ -419,6 +419,28 @@ public partial class CameraView : View, ICameraView, IDisposable
 		return new(async token => await ExecuteCommand(() => cameraView.StopVideoRecording(token), cameraView.ReportMediaCaptureFailure, token));
 	}
 
+	static object CoerceZoom(BindableObject bindable, object value)
+	{
+		var cameraView = (CameraView)bindable;
+		var input = (float)value;
+
+		if (cameraView.SelectedCamera is null)
+		{
+			return input;
+		}
+
+		if (input < cameraView.SelectedCamera.MinimumZoomFactor)
+		{
+			input = cameraView.SelectedCamera.MinimumZoomFactor;
+		}
+		else if (input > cameraView.SelectedCamera.MaximumZoomFactor)
+		{
+			input = cameraView.SelectedCamera.MaximumZoomFactor;
+		}
+
+		return input;
+	}
+
 	// ICommand.Execute cannot return the task of the work that a command starts: an exception that escaped the command would reach no caller
 	// and end the app, and an app that binds the command in XAML cannot catch it
 	static async Task ExecuteCommand(Func<Task> work, Action<Exception> reportFailure, CancellationToken token = default)
@@ -467,28 +489,6 @@ public partial class CameraView : View, ICameraView, IDisposable
 		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
 
 	void ReportError(Exception exception) => ((ICameraView)this).OnErrorOccurred(exception);
-
-	static object CoerceZoom(BindableObject bindable, object value)
-	{
-		var cameraView = (CameraView)bindable;
-		var input = (float)value;
-
-		if (cameraView.SelectedCamera is null)
-		{
-			return input;
-		}
-
-		if (input < cameraView.SelectedCamera.MinimumZoomFactor)
-		{
-			input = cameraView.SelectedCamera.MinimumZoomFactor;
-		}
-		else if (input > cameraView.SelectedCamera.MaximumZoomFactor)
-		{
-			input = cameraView.SelectedCamera.MaximumZoomFactor;
-		}
-
-		return input;
-	}
 
 	readonly record struct PictureOutcome(Stream? Image, string FailureReason);
 }
