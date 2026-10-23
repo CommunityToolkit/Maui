@@ -108,11 +108,11 @@ The IDEs run these builds. They work in every shell, and they are the quickest w
 
 | Target | Command |
 | --- | --- |
-| Mac Catalyst | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-maccatalyst -t:Run` |
-| iOS simulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-ios -t:Run -p:_DeviceName=:v2:udid=<simulator UDID>` |
+| Mac Catalyst | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-maccatalyst -t:Build,Run` |
+| iOS simulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-ios -t:Build,Run -p:_DeviceName=:v2:udid=<simulator UDID>` |
 | Android emulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-android -t:Run -p:AdbTarget="-s emulator-5554"` |
 
-`net10.0` is the `NetVersion` of `Directory.Build.props`. `xcrun simctl list devices available` lists the simulators with their UDIDs. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
+On iOS and Mac Catalyst the `Run` target only starts the app as it was last built, so `Build,Run` builds it first; on Android `Run` builds and installs the app itself. `net10.0` is the `NetVersion` of `Directory.Build.props`. `xcrun simctl list devices available` lists the simulators with their UDIDs. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
 
 On Windows the scripts build the app, and you start it yourself. The first packaged build needs an elevated PowerShell to trust its signing certificate.
 
