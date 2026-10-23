@@ -39,8 +39,10 @@ function Get-DeviceTestReferences {
         [string[]]$Property = @()
     )
 
-    $arguments = @('msbuild', $Project.Path, '-nologo', '-target:ResolveReferences', '-getItem:ReferencePath', '-p:BuildProjectReferences=false',
-        "-p:TargetFramework=$TargetFramework", "-p:Configuration=$Configuration")
+    # A build for another platform restores the assets file for its own runtime identifier: without -restore the query then fails with
+    # NETSDK1047, and the apps are tested without coverage.
+    $arguments = @('msbuild', $Project.Path, '-nologo', '-restore', '-target:ResolveReferences', '-getItem:ReferencePath',
+        '-p:BuildProjectReferences=false', "-p:TargetFramework=$TargetFramework", "-p:Configuration=$Configuration")
     foreach ($item in $Property) {
         $arguments += "-p:$item"
     }
