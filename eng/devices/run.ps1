@@ -780,14 +780,16 @@ function Get-RunAppResult {
 
 function Remove-RunPreviousVerdicts {
     # A script that ends before it writes its verdicts, for example on a missing certificate, must not leave the summary with the numbers
-    # of an earlier run.
-    param($Projects, [string]$ResultsRoot)
+    # or the details of an earlier run.
+    param($Projects, [string]$ResultsRoot, [string]$SummaryName, [bool]$HasVerdicts)
 
-    foreach ($item in $Projects) {
-        Remove-Item -LiteralPath (Join-Path (Join-Path $ResultsRoot $item.Name) 'gate.json') -Force -ErrorAction SilentlyContinue
+    if ($HasVerdicts) {
+        foreach ($item in $Projects) {
+            Remove-Item -LiteralPath (Join-Path (Join-Path $ResultsRoot $item.Name) 'gate.json') -Force -ErrorAction SilentlyContinue
+        }
     }
 
-    Remove-Item -LiteralPath (Join-Path $ResultsRoot 'summary.md') -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path $ResultsRoot $SummaryName) -Force -ErrorAction SilentlyContinue
 }
 
 function Invoke-RunPlatform {
@@ -795,9 +797,14 @@ function Invoke-RunPlatform {
 
     Write-DeviceTestHeader "$($Entry.Id): $($Entry.Title)"
 
-    if ($Arguments['Target'] -ne 'buildOnly') {
-        Remove-RunPreviousVerdicts -Projects $Projects -ResultsRoot $ResultsRoot
+    # A build-only run has no verdicts, and the platform scripts name its summary differently.
+    $hasVerdicts = $Arguments['Target'] -ne 'buildOnly'
+    $summaryName = 'build-summary.md'
+    if ($hasVerdicts) {
+        $summaryName = 'summary.md'
     }
+
+    Remove-RunPreviousVerdicts -Projects $Projects -ResultsRoot $ResultsRoot -SummaryName $summaryName -HasVerdicts $hasVerdicts
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $errorLines = New-Object System.Collections.Generic.List[string]
@@ -817,13 +824,13 @@ function Invoke-RunPlatform {
 
     $stopwatch.Stop()
     $apps = @()
-    if ($Arguments['Target'] -ne 'buildOnly') {
+    if ($hasVerdicts) {
         foreach ($item in $Projects) {
             $apps += Get-RunAppResult -Project $item -ResultsRoot $ResultsRoot
         }
     }
 
-    $summaryFile = Join-Path $ResultsRoot 'summary.md'
+    $summaryFile = Join-Path $ResultsRoot $summaryName
     if (-not (Test-Path -LiteralPath $summaryFile -PathType Leaf)) {
         $summaryFile = ''
     }
