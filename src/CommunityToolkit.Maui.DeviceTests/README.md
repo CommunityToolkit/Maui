@@ -10,8 +10,9 @@ If a test would also pass in `CommunityToolkit.Maui.UnitTests` (converters, defa
 not here.
 
 The house rules are in [`.github/instructions/device-tests.instructions.md`](../../.github/instructions/device-tests.instructions.md).
-How to run the tests from the command line and on CI is in [`eng/devices/README.md`](../../eng/devices/README.md), which also says where the
-code coverage of the device tests, merged with the unit tests', is published.
+How to run the tests on your machine (one command for every platform, your IDE, the tests that need a person) is in
+[`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md). How to run them from the command line and on CI is in
+[`eng/devices/README.md`](../../eng/devices/README.md), which also says where the code coverage of the device tests, merged with the unit tests', is published.
 
 ## Projects
 
@@ -213,7 +214,7 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
 - **`TestCategory.RequiresUserInteraction`** marks tests that need a person (pickers, permission prompts, hardware). Keep the
   feature category on the class and add `[Category(TestCategory.RequiresUserInteraction)]` to the method. Headless runs never
   execute them: `MauiProgram` adds the category to every skip list, and the scripts skip it too. Start the app without
-  arguments to run them in the visual runner.
+  arguments to run them in the visual runner; [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md#run-the-tests-that-need-a-person) says what each of them needs from you.
 - **`TestCategory.DeviceTestsInfrastructure`**: the smoke tests in `Infrastructure/`. Each run reports two Skipped tests from
   that class on purpose; they prove that run-time skips reach the results as Skipped.
 - **`[Collection(TestCollections.DisableParallelization)]`** runs a class alone, after all other tests. Use it for classes that
@@ -223,10 +224,12 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
   v2 only discovers collection definitions in the test assembly, so every app declares this one in
   `DisableParallelizationCollection.cs`.
 
-Run one category on each platform from the repository root (`-Project Maui|MediaElement|Camera|All`; see
+Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the app that declares the category; see
+[`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its script (`-Project Maui|MediaElement|Camera|All`; see
 [`eng/devices/README.md`](../../eng/devices/README.md)):
 
 ```bash
+pwsh eng/devices/run.ps1 -TestFilter 'Category=IconTintColorBehavior'
 pwsh eng/devices/android.ps1  -Project Maui -Avd <your AVD> -TestFilter 'Category=IconTintColorBehavior'
 pwsh eng/devices/ios.ps1      -Project Maui -TestFilter 'Category=IconTintColorBehavior'
 pwsh eng/devices/catalyst.ps1 -Project Maui -TestFilter 'Category=IconTintColorBehavior'
