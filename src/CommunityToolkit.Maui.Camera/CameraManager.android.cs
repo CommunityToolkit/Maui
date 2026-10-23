@@ -599,7 +599,7 @@ partial class CameraManager
 			return;
 		}
 
-		// Before the cancellation check: a later start cancels the retry of an earlier start without the permission also when it is cancelled itself
+		// Before the cancellation check: a later start that is cancelled still cancels the retry of an earlier start without the permission
 		isWaitingForCameraPermission = false;
 
 		// A start that StopCameraPreview cancelled while it waited (for the connection, or for CameraX to run the listener of the connection) must
