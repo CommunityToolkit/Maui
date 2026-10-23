@@ -197,6 +197,18 @@ sealed class WindowsCameraManagerAccessor(CameraManager manager)
 		set => Set("initializeMediaCapture", value);
 	}
 
+	public Func<MediaCapture, MediaFrameSource?> FindColorVideoFrameSource
+	{
+		get => Get<Func<MediaCapture, MediaFrameSource?>>("findColorVideoFrameSource");
+		set => Set("findColorVideoFrameSource", value);
+	}
+
+	public Func<MediaCapture, ImageEncodingProperties, CancellationToken, Task> SetPhotoStreamProperties
+	{
+		get => Get<Func<MediaCapture, ImageEncodingProperties, CancellationToken, Task>>("setPhotoStreamProperties");
+		set => Set("setPhotoStreamProperties", value);
+	}
+
 	public Func<MediaCapture, MediaEncodingProfile, IRandomAccessStream, CancellationToken, Task<LowLagMediaRecording>> PrepareLowLagRecording
 	{
 		get => Get<Func<MediaCapture, MediaEncodingProfile, IRandomAccessStream, CancellationToken, Task<LowLagMediaRecording>>>("prepareLowLagRecording");
@@ -271,22 +283,32 @@ sealed class WindowsFakeCameraProvider : ICameraProvider
 sealed class WindowsScriptedMediaFoundation
 {
 	readonly List<Request<bool>> initializations = [];
+	readonly List<Request<bool>> resolutionChanges = [];
 	readonly List<Request<LowLagMediaRecording>> recordingPreparations = [];
 
 	public bool ObservesCancellation { get; init; }
 
 	public IReadOnlyList<Request<bool>> Initializations => initializations;
 
+	public IReadOnlyList<Request<bool>> ResolutionChanges => resolutionChanges;
+
 	public IReadOnlyList<Request<LowLagMediaRecording>> RecordingPreparations => recordingPreparations;
 
 	public void ReplaceTheMediaFoundationOf(WindowsCameraManagerAccessor access)
 	{
 		access.InitializeMediaCapture = InitializeAsync;
+		access.SetPhotoStreamProperties = SetPhotoStreamPropertiesAsync;
 		access.PrepareLowLagRecording = PrepareLowLagRecordingAsync;
+
+		// Media Foundation never initializes the MediaCapture of a scripted start, so it has no frame source to show
+		access.FindColorVideoFrameSource = static _ => null;
 	}
 
 	Task<bool> InitializeAsync(MediaCapture mediaCapture, string deviceId, CancellationToken token) =>
 		Add(initializations, mediaCapture, token);
+
+	Task SetPhotoStreamPropertiesAsync(MediaCapture mediaCapture, ImageEncodingProperties properties, CancellationToken token) =>
+		Add(resolutionChanges, mediaCapture, token);
 
 	Task<LowLagMediaRecording> PrepareLowLagRecordingAsync(MediaCapture mediaCapture, MediaEncodingProfile profile, IRandomAccessStream stream, CancellationToken token) =>
 		Add(recordingPreparations, mediaCapture, token);

@@ -16,9 +16,18 @@ partial class CameraManager
 	LowLagMediaRecording? mediaRecording;
 	Stream? videoCaptureStream;
 
-	// The device tests replace them: their machines have no camera, so they script when and how Media Foundation answers a start
+	// The device tests replace them: their machines have no camera, so they script when and how Media Foundation answers a start, and the frame
+	// source of a MediaCapture that it never initialized
 	Func<MediaCapture, string, CancellationToken, Task<bool>> initializeMediaCapture =
 		static (capture, deviceId, token) => capture.InitializeCameraForCameraView(deviceId, token);
+
+	Func<MediaCapture, MediaFrameSource?> findColorVideoFrameSource =
+		static capture => capture.FrameSources
+			.FirstOrDefault(static source => source.Value.Info.MediaStreamType is MediaStreamType.VideoRecord && source.Value.Info.SourceKind is MediaFrameSourceKind.Color)
+			.Value;
+
+	Func<MediaCapture, ImageEncodingProperties, CancellationToken, Task> setPhotoStreamProperties =
+		static (capture, properties, token) => capture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, properties).AsTask(token);
 
 	Func<MediaCapture, MediaEncodingProfile, IRandomAccessStream, CancellationToken, Task<LowLagMediaRecording>> prepareLowLagRecording =
 		static (capture, profile, stream, token) => capture.PrepareLowLagRecordToStreamAsync(profile, stream).AsTask(token);
@@ -136,10 +145,7 @@ partial class CameraManager
 		}
 	}
 
-	private async partial Task PlatformConnectCamera(CancellationToken token)
-	{
-		await StartCameraPreview(token);
-	}
+	private partial Task PlatformConnectCamera(CancellationToken token) => PlatformStartCameraPreview(token);
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
@@ -221,7 +227,7 @@ partial class CameraManager
 			return;
 		}
 
-		frameSource = startedMediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		frameSource = findColorVideoFrameSource(startedMediaCapture);
 
 		if (frameSource is not null)
 		{
@@ -231,10 +237,37 @@ partial class CameraManager
 
 		isInitialized = true;
 
-		await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
+		try
+		{
+			await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
 
-		// Media Foundation can complete the resolution before a StopCameraPreview that ran before this continuation: that stop released the preview
-		token.ThrowIfCancellationRequested();
+			// Media Foundation can complete the resolution before a StopCameraPreview that ran before this continuation: that stop released the
+			// preview
+			token.ThrowIfCancellationRequested();
+		}
+		catch (Exception ex) when (token.IsCancellationRequested || !OwnsThePreview())
+		{
+			// As during the initialization, a start that was cancelled, or whose MediaCapture was released or replaced meanwhile, reports nothing,
+			// also when Media Foundation fails the resolution of the released MediaCapture. Unlike then, its preview shows already: a start that its
+			// own token cancelled stops it again
+			if (OwnsThePreview())
+			{
+				PlatformStopCameraPreview();
+			}
+			else
+			{
+				startedMediaCapture.Dispose();
+			}
+
+			if (ex is OperationCanceledException)
+			{
+				throw;
+			}
+
+			token.ThrowIfCancellationRequested();
+
+			return;
+		}
 
 		if (!OwnsThePreview())
 		{
@@ -279,7 +312,7 @@ partial class CameraManager
 
 		if (filteredPropertiesList.Count is not 0)
 		{
-			await mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.Photo, filteredPropertiesList.First()).AsTask(token);
+			await setPhotoStreamProperties(mediaCapture, filteredPropertiesList.First(), token);
 		}
 	}
 
@@ -303,9 +336,7 @@ partial class CameraManager
 		// that cannot seek) must not replace the stream of a recording that is running
 		videoCaptureStream = stream;
 
-		frameSource = mediaCapture.FrameSources
-			.FirstOrDefault(static source => source.Value.Info.MediaStreamType is MediaStreamType.VideoRecord && source.Value.Info.SourceKind is MediaFrameSourceKind.Color)
-			.Value;
+		frameSource = findColorVideoFrameSource(mediaCapture);
 
 		if (frameSource is not null)
 		{

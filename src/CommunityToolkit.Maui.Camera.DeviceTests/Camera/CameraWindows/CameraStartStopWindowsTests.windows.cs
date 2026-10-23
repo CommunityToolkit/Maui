@@ -1,10 +1,11 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
+using Windows.Media.MediaProperties;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The test machines have no camera, so WindowsScriptedMediaFoundation answers the initializations and recording preparations of the manager
-// when the test says so: a StopCameraPreview, or another start, lands while a start waits for Media Foundation.
+// The test machines have no camera, so WindowsScriptedMediaFoundation answers the initializations, capture resolutions and recording
+// preparations of the manager when the test says so: a StopCameraPreview, or another start, lands while a start waits for Media Foundation.
 [Category(TestCategory.CameraWindows)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraStartStopWindowsTests : CameraHandlerTestBase
@@ -58,6 +59,41 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 			Assert.Null(scope.Access.MediaCapture);
 			Assert.Empty(errors.Errors);
 		});
+	}
+
+	// A camera switch whose new camera cannot be opened leaves the preview started for the next selected camera (decision P): a stop while the
+	// switch waits for Media Foundation must clear that too.
+	[Theory]
+	[InlineData("observesTheCancellation")]
+	[InlineData("failsTheReleasedMediaCapture")]
+	[InlineData("opensTheCameraAllTheSame")]
+	public async Task StopCameraPreviewWhileACameraSwitchWaitsForMediaFoundationKeepsThePreviewStoppedWhenAnotherCameraIsSelected(string answer)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			scope.Access.MediaCapture = WindowsCameraEnvironment.CreateMediaCapture();
+			scope.Access.IsInitialized = true;
+			var next = CreateCamera("fake-start-stop-switch-next-device");
+			scope.View.SelectedCamera = next;
+
+			var cameraSwitch = scope.Manager.UpdateCurrentCamera(next, CancellationToken.None).AsTask();
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			Assert.False(cameraSwitch.IsCompleted, "The camera switch completed without waiting for Media Foundation.");
+
+			scope.Manager.StopCameraPreview();
+			Answer(initialization, answer);
+			await cameraSwitch.WaitAsync(timeout);
+
+			var other = CreateCamera("fake-start-stop-switch-other-device");
+			scope.View.SelectedCamera = other;
+			await scope.Manager.UpdateCurrentCamera(other, CancellationToken.None);
+
+			Assert.Single(mediaFoundation.Initializations);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Empty(errors.Errors);
+			Assert.Equal(0, scope.LoadedCount);
+		}, observesCancellation: answer is "observesTheCancellation");
 	}
 
 	// The camera discovery of a real provider waits for Media Foundation as well, before the connection starts the preview.
@@ -157,6 +193,131 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 			Assert.Equal(CameraManagerWindowsTests.CameraThatCannotBeOpenedMessage, Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
 			Assert.Null(scope.Access.MediaCapture);
 		});
+	}
+
+	// The start shows its preview before Media Foundation applies the capture resolution.
+	[Theory]
+	[InlineData("observesTheCancellation")]
+	[InlineData("failsTheReleasedMediaCapture")]
+	[InlineData("appliesTheResolutionAllTheSame")]
+	public async Task StopCameraPreviewWhileTheConnectionWaitsForMediaFoundationToApplyTheCaptureResolutionKeepsThePreviewStoppedWithoutAnError(string answer)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			scope.View.SelectedCamera = CreateCamera("fake-start-stop-resolution-device", WindowsCameraEnvironment.CreateJpegProperties(640, 480));
+
+			var connect = scope.Manager.ConnectCamera(CancellationToken.None);
+			var resolution = await OpenTheCameraOfTheLatestStartAsync(mediaFoundation);
+			Assert.False(connect.IsCompleted, "ConnectCamera completed without waiting for Media Foundation to apply the capture resolution.");
+
+			scope.Manager.StopCameraPreview();
+			AnswerTheResolution(resolution, answer);
+			await connect.WaitAsync(timeout);
+
+			Assert.Empty(errors.Errors);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(resolution.MediaCapture), "The MediaCapture of the cancelled start was not released.");
+			Assert.Equal(0, scope.LoadedCount);
+		}, observesCancellation: answer is "observesTheCancellation");
+	}
+
+	// The other platforms show no preview for a start that its token cancelled.
+	[Fact]
+	public async Task StartCameraPreviewThatItsTokenCancelsWhileMediaFoundationAppliesTheCaptureResolutionStopsThePreviewThatItShows()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			scope.View.SelectedCamera = CreateCamera("fake-start-stop-resolution-device", WindowsCameraEnvironment.CreateJpegProperties(640, 480));
+			using var cancellation = new CancellationTokenSource();
+
+			var start = scope.Manager.StartCameraPreview(cancellation.Token);
+			var resolution = await OpenTheCameraOfTheLatestStartAsync(mediaFoundation);
+			Assert.True(scope.Access.IsInitialized, "The start did not show its preview before Media Foundation applied the capture resolution.");
+			cancellation.Cancel();
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start.WaitAsync(timeout));
+			Assert.Equal(cancellation.Token, exception.CancellationToken);
+			Assert.Empty(errors.Errors);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(resolution.MediaCapture), "The cancelled start did not release its MediaCapture.");
+			Assert.Equal(0, scope.LoadedCount);
+		}, observesCancellation: true);
+	}
+
+	// The newer start replaces the MediaCapture of the older start in the manager without releasing it, so the stop releases only the newer one.
+	[Theory]
+	[InlineData("observesTheCancellation")]
+	[InlineData("failsTheReleasedMediaCapture")]
+	[InlineData("appliesTheResolutionAllTheSame")]
+	public async Task AStartThatANewerStartReplacedWhileMediaFoundationAppliedTheCaptureResolutionReleasesItsMediaCaptureWhenStopCameraPreviewCancelsIt(string answer)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			scope.View.SelectedCamera = CreateCamera("fake-start-stop-resolution-device", WindowsCameraEnvironment.CreateJpegProperties(640, 480));
+
+			var olderStart = scope.Manager.StartCameraPreview(CancellationToken.None);
+			var olderResolution = await OpenTheCameraOfTheLatestStartAsync(mediaFoundation);
+			var newerStart = scope.Manager.StartCameraPreview(CancellationToken.None);
+			var newer = mediaFoundation.Initializations[1];
+			Assert.Same(newer.MediaCapture, scope.Access.MediaCapture);
+
+			scope.Manager.StopCameraPreview();
+			AnswerTheResolution(olderResolution, answer);
+			Answer(newer, "failsTheReleasedMediaCapture");
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => olderStart.WaitAsync(timeout));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => newerStart.WaitAsync(timeout));
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(olderResolution.MediaCapture), "The older start did not release its own MediaCapture.");
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(newer.MediaCapture), "The MediaCapture of the newer start was not released.");
+			Assert.Empty(errors.Errors);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Equal(0, scope.LoadedCount);
+		}, observesCancellation: answer is "observesTheCancellation");
+	}
+
+	// Media Foundation can fail the resolution of the MediaCapture that a camera switch or the release of the view released.
+	[Theory]
+	[InlineData("aCameraSwitch")]
+	[InlineData("theReleaseOfTheView")]
+	public async Task AStartWhoseMediaCaptureWasReleasedWhileMediaFoundationAppliedTheCaptureResolutionReportsNothing(string releasedBy)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			scope.View.SelectedCamera = CreateCamera("fake-start-stop-resolution-device", WindowsCameraEnvironment.CreateJpegProperties(640, 480));
+
+			var start = scope.Manager.StartCameraPreview(CancellationToken.None);
+			var resolution = await OpenTheCameraOfTheLatestStartAsync(mediaFoundation);
+
+			Task? cameraSwitch = null;
+			if (releasedBy is "aCameraSwitch")
+			{
+				var other = CreateCamera("fake-start-stop-switch-device");
+				scope.View.SelectedCamera = other;
+				cameraSwitch = scope.Manager.UpdateCurrentCamera(other, CancellationToken.None).AsTask();
+			}
+			else
+			{
+				scope.Manager.Dispose();
+			}
+
+			resolution.Answer.SetException(new ObjectDisposedException("MediaCapture"));
+			await start.WaitAsync(timeout);
+
+			Assert.Empty(errors.Errors);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(resolution.MediaCapture), "The MediaCapture of the start was not released.");
+			Assert.Equal(0, scope.LoadedCount);
+
+			if (cameraSwitch is not null)
+			{
+				// The switch still waits for Media Foundation to open the other camera
+				scope.Manager.StopCameraPreview();
+				await cameraSwitch.WaitAsync(timeout);
+				Assert.Empty(errors.Errors);
+			}
+		}, observesCancellation: true);
 	}
 
 	// The token of the start is linked with the token that StopCameraPreview cancels: the exception still has the type of the platform's
@@ -293,11 +454,41 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		}
 	}
 
-	static CameraInfo CreateCamera(string deviceId)
+	static void AnswerTheResolution(WindowsScriptedMediaFoundation.Request<bool> resolution, string answer)
+	{
+		switch (answer)
+		{
+			case "observesTheCancellation":
+				Assert.True(resolution.Answer.Task.IsCanceled, "The scripted Media Foundation did not observe the cancellation.");
+				break;
+			case "failsTheReleasedMediaCapture":
+				resolution.Answer.TrySetException(new ObjectDisposedException("MediaCapture"));
+				break;
+			case "appliesTheResolutionAllTheSame":
+				resolution.Answer.TrySetResult(true);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(answer), answer, null);
+		}
+	}
+
+	static async Task<WindowsScriptedMediaFoundation.Request<bool>> OpenTheCameraOfTheLatestStartAsync(WindowsScriptedMediaFoundation mediaFoundation)
+	{
+		var resolutionChanges = mediaFoundation.ResolutionChanges.Count;
+
+		mediaFoundation.Initializations[^1].Answer.SetResult(true);
+
+		await AssertHelpers.AssertEventually(() => mediaFoundation.ResolutionChanges.Count > resolutionChanges, (int)timeout.TotalMilliseconds,
+			message: "The start did not apply the capture resolution once Media Foundation opened the camera.");
+
+		return mediaFoundation.ResolutionChanges[^1];
+	}
+
+	static CameraInfo CreateCamera(string deviceId, params ImageEncodingProperties[] photoResolutions)
 	{
 		// The scripted Media Foundation answers for a camera that no device has, so it has no frame source group
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		return new CameraInfo("Scripted camera", deviceId, CameraPosition.Rear, false, 1f, 1f, [], null, []);
+		return new CameraInfo("Scripted camera", deviceId, CameraPosition.Rear, false, 1f, 1f, [], null, photoResolutions);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
