@@ -62,9 +62,17 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 		player.MediaEnded += (_, _) => ended.TrySetResult();
 		player.MediaFailed += (_, _) => failed.TrySetResult();
 
+		var videoItem = WinMediaAssets.NewPlaybackItem(WinMediaAssets.VideoUri);
+		var corruptItem = WinMediaAssets.NewPlaybackItem(WinMediaAssets.CorruptUri);
+		RegisterCleanup(() =>
+		{
+			videoItem.Source.Dispose();
+			corruptItem.Source.Dispose();
+		});
+
 		await InvokeOnMainThreadAsync(() => fixture.Manager.Dispose());
 
-		await InvokeOnMainThreadAsync(() => player.SetUriSource(WinMediaAssets.VideoUri));
+		await InvokeOnMainThreadAsync(() => player.Source = videoItem);
 		await WaitAsync(opened);
 		await WaitAsync(sized);
 		session.PlaybackRate = 2;
@@ -79,7 +87,7 @@ public class MediaManagerDisposeWindowsTests : WinMediaTestBase
 		await WaitAsync(playing);
 		await WaitAsync(ended);
 
-		await InvokeOnMainThreadAsync(() => player.SetUriSource(WinMediaAssets.CorruptUri));
+		await InvokeOnMainThreadAsync(() => player.Source = corruptItem);
 		await WaitAsync(failed);
 
 		Assert.Equal(0, viewOpened);
