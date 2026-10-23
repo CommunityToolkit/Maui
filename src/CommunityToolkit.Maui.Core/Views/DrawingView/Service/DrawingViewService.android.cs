@@ -177,9 +177,11 @@ public static partial class DrawingViewService
 		var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
 		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
-		var width = Math.Max(maxResizeFactor * sourceSize.Width, 1);
-		var height = Math.Max(maxResizeFactor * sourceSize.Height, 1);
-		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)
+		// In floating point the factor times a side can be a hair below a whole number (1920 / 411 * 411 = 1919.9999999999998), and truncating it would make
+		// the image a pixel smaller than the desired size: the size is rounded, half away from zero as Win2D rounds it on Windows.
+		var width = (int)Math.Round(Math.Max(maxResizeFactor * sourceSize.Width, 1), MidpointRounding.AwayFromZero);
+		var height = (int)Math.Round(Math.Max(maxResizeFactor * sourceSize.Height, 1), MidpointRounding.AwayFromZero);
+		return Bitmap.CreateScaledBitmap(sourceImage, width, height, false)
 				?? throw new InvalidOperationException("Failed to create Bitmap");
 	}
 
