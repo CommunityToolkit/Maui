@@ -77,24 +77,18 @@ static class ActivityResultManager
 		return pendingRequest.Task;
 	}
 
-	static PendingRequest[] GetPendingRequests()
+	// Internal for the device tests, which raise lifecycle events in an order that they choose or for activities that the framework never
+	// runs: .NET MAUI creates ActivityStateChangedEventArgs in internal code only.
+	internal static void HandleActivityStateChanged(Android.App.Activity changedActivity, ActivityState state)
 	{
-		lock (pendingRequestsLock)
-		{
-			return [.. pendingRequests.Values];
-		}
-	}
-
-	static void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
-	{
-		if (e.Activity is not ComponentActivity activity)
+		if (changedActivity is not ComponentActivity activity)
 		{
 			return;
 		}
 
 		var requests = GetPendingRequests();
 
-		switch (e.State)
+		switch (state)
 		{
 			case ActivityState.Created:
 				RegisterPendingRequests(activity, requests);
@@ -109,6 +103,16 @@ static class ActivityResultManager
 				break;
 		}
 	}
+
+	static PendingRequest[] GetPendingRequests()
+	{
+		lock (pendingRequestsLock)
+		{
+			return [.. pendingRequests.Values];
+		}
+	}
+
+	static void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e) => HandleActivityStateChanged(e.Activity, e.State);
 
 	static void RegisterPendingRequests(ComponentActivity activity, IEnumerable<PendingRequest> requests)
 	{

@@ -92,30 +92,11 @@ public static class FilesActivityResultManagerState
 	}
 
 	/// <summary>
-	/// Calls the manager's handler of <c>Platform.ActivityStateChanged</c> directly, so a test can raise lifecycle events in an order that
+	/// Does what the manager's handler of <c>Platform.ActivityStateChanged</c> does, so a test can raise lifecycle events in an order that
 	/// it chooses, or for an activity that the framework never runs (one whose registry cannot be used).
 	/// </summary>
-	public static void RaiseActivityStateChanged(Activity activity, ActivityState state)
-	{
-		var arguments = (ActivityStateChangedEventArgs)(Activator.CreateInstance(
-			typeof(ActivityStateChangedEventArgs),
-			BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
-			null,
-			[activity, state],
-			null) ?? throw new InvalidOperationException("ActivityStateChangedEventArgs could not be created."));
-
-		var handler = managerType.GetMethod("OnActivityStateChanged", anyMember)
-			?? throw new InvalidOperationException("ActivityResultManager.OnActivityStateChanged was not found.");
-
-		try
-		{
-			handler.Invoke(null, [null, arguments]);
-		}
-		catch (TargetInvocationException ex) when (ex.InnerException is not null)
-		{
-			ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-		}
-	}
+	public static void RaiseActivityStateChanged(Activity activity, ActivityState state) =>
+		ActivityResultManager.HandleActivityStateChanged(activity, state);
 }
 
 public sealed class FilesPendingRequest
