@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Core;
@@ -90,9 +91,14 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <see cref="MediaSource"/> that the platform does not support is reported through <see cref="MediaFailed(MediaFailedEventArgs)"/>.
 	/// </para>
 	/// <para>
-	/// A source that cannot be applied or played is reported through <see cref="MediaFailed(MediaFailedEventArgs)"/>. An exception thrown by an event
-	/// handler that the change of the source raises, for example a <see cref="StateChanged"/> handler for <see cref="MediaElementState.Opening"/>, is
-	/// not a failure of the source: it propagates to the code that set the source, or, once the change continues asynchronously, to the dispatcher.
+	/// A source that cannot be applied or played is reported through <see cref="MediaFailed(MediaFailedEventArgs)"/>. The change of the source raises
+	/// events while it applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanged (for
+	/// example of <see cref="Position"/> or <see cref="Duration"/>), MediaFailed for a source that cannot be applied and, on Android, MediaOpened. An
+	/// exception thrown by one of their handlers is not a failure of the source, and does not reach the code that set the source, which is often
+	/// MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the source, and once the change has ended the first of these
+	/// exceptions is reported through MediaFailed, without setting <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/> (see
+	/// <see cref="MediaFailed(MediaFailedEventArgs)"/>). The events that the player raises afterwards, for example MediaOpened on iOS, Mac Catalyst
+	/// and Windows, are not part of the change.
 	/// </para>
 	/// </remarks>
 	MediaSource? Source { get; set; }
@@ -136,8 +142,15 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <param name="args">Event arguments containing extra information about this event.</param>
 	/// <remarks>
-	/// A source that cannot be applied, for example a stream that cannot be read, is reported like a source that cannot be played. An exception that
-	/// an event handler throws while the source changes is not reported: it propagates (see <see cref="Source"/>).
+	/// <para>
+	/// A source that cannot be applied, for example a stream that cannot be read, is reported like a source that cannot be played.
+	/// </para>
+	/// <para>
+	/// The event is also raised, once per change of the source, when event handlers threw exceptions while the source changed (see
+	/// <see cref="Source"/>). Its <see cref="MediaFailedEventArgs.ErrorMessage"/> then names the first exception: its type and its message. The source
+	/// stays applied and <see cref="CurrentState"/> is not set to <see cref="MediaElementState.Failed"/>. An exception that a MediaFailed handler throws
+	/// while such an exception is reported is only logged.
+	/// </para>
 	/// </remarks>
 	void MediaFailed(MediaFailedEventArgs args);
 
@@ -200,4 +213,10 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaElementState newState);
+
+	/// <summary>
+	/// Runs the platform's update for a change of <see cref="Source"/>, catching the exceptions of the event handlers that it raises (see
+	/// <see cref="Source"/>).
+	/// </summary>
+	internal ValueTask RunSourceUpdate(Func<ValueTask> updateSource, ILogger logger);
 }

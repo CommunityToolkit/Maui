@@ -326,6 +326,52 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		Assert.Equal(0, Volatile.Read(ref failures));
 	}
 
+	// The source mapping cannot await the update, which resets Duration after an await: an exception that the update throws from then on reaches
+	// the dispatcher, which ends the app. The capture receives what the mapping would rethrow there. A source without data needs no decoder.
+	[Fact]
+	public async Task ExceptionOfAnEventHandlerDuringAMappedSourceChangeIsReportedThroughMediaFailedAndNothingReachesTheDispatcher()
+	{
+		var loggerFactory = new WinMediaLoggerFactory();
+		SetupWindowsBuilder(loggerFactory);
+		await RequireMediaPlayerAsync();
+		var view = NewMediaElement(view => ((IMediaElement)view).Duration = TimeSpan.FromSeconds(5));
+		await ConnectAsync(view);
+		var failures = RecordFailures(view);
+		var reported = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		view.MediaFailed += (_, _) => reported.TrySetResult();
+		var handlerException = new InvalidOperationException("The PropertyChanged handler of the app failed.");
+		var hasThrown = false;
+		view.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == nameof(MediaElement.Duration) && !hasThrown)
+			{
+				hasThrown = true;
+				throw handlerException;
+			}
+		};
+
+		List<Exception> dispatcherExceptions = [];
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var capture = new WinMediaAsyncVoidCapture();
+			dispatcherExceptions = capture.Exceptions;
+			view.Source = new FileMediaSource { Path = " " };
+		});
+		await reported.Task.WaitAsync(TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
+
+		// The mapping's continuation runs on the UI thread after the update has reported the exception.
+		await FlushDispatcherAsync();
+		await InvokeOnMainThreadAsync(() => Assert.Empty(dispatcherExceptions));
+		Assert.True(hasThrown);
+		AssertReportsTheExceptionOfTheHandler(failures, loggerFactory, handlerException);
+		Assert.Equal(MediaElementState.None, view.CurrentState);
+		Assert.Equal(TimeSpan.Zero, view.Duration);
+
+		// MAUI applies no later change of a property whose setting threw.
+		await InvokeOnMainThreadAsync(() => ((IMediaElement)view).Duration = TimeSpan.FromSeconds(1));
+		Assert.Equal(TimeSpan.FromSeconds(1), view.Duration);
+	}
+
 	[Fact]
 	public async Task SourceChangeOpensTheMediaAndReportsDurationAndSize()
 	{

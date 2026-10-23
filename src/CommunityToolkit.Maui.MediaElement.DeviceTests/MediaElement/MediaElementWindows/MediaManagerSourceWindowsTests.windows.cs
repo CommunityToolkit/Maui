@@ -383,40 +383,38 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Empty(failures);
 	}
 
-	// The update raises the events of the MediaElement (here PropertyChanged of the Duration it resets) before it gives the player the new source,
-	// so an exception of the app's handler stops the update in between; it is not a failure of the source (no MediaFailed, no Failed state).
+	// The update resets Duration after an await, where only the dispatcher would receive the exception of a handler, and that ends the app. The
+	// Duration of the opened media shows that the set whose handler threw has ended: MAUI applies no later change of a property whose setting threw.
 	[Fact]
-	public async Task ExceptionOfAnAppEventHandlerDuringTheSourceUpdatePropagatesAndLeavesThePlayingMedia()
+	public async Task ExceptionOfAnAppEventHandlerDuringTheSourceUpdateIsReportedThroughMediaFailedAndTheSourceIsApplied()
 	{
-		SetupWindowsBuilder();
+		var loggerFactory = new WinMediaLoggerFactory();
+		SetupWindowsBuilder(loggerFactory);
 
-		var fixture = await OpenAndPlayStreamAsync();
-		var nativeSource = await InvokeOnMainThreadAsync(() => fixture.Element!.Source);
+		// The player opens the media after the update: a machine that cannot decode it would report a second MediaFailed.
+		await RequireDecoderAsync();
+		var fixture = await CreateManagerAsync(view => ((IMediaElement)view).Duration = TimeSpan.FromSeconds(5));
 		var failures = RecordFailures(fixture.View);
 		var appException = new InvalidOperationException("Thrown by an app handler.");
+		var hasThrown = false;
 		fixture.View.PropertyChanged += (_, e) =>
 		{
-			if (e.PropertyName == nameof(MediaElement.Duration))
+			// Only for the reset of the update: the Duration of the opened media is set outside any source update.
+			if (e.PropertyName == nameof(MediaElement.Duration) && !hasThrown)
 			{
+				hasThrown = true;
 				throw appException;
 			}
 		};
 
 		var thrown = await Record.ExceptionAsync(() => SetSourceAsync(fixture.View, MediaSource.FromFile(WinMediaAssets.VideoPath), fixture.Manager));
 
-		Assert.Same(appException, thrown);
-		Assert.Empty(failures);
+		Assert.Null(thrown);
+		Assert.True(hasThrown);
+		AssertReportsTheExceptionOfTheHandler(failures, loggerFactory, appException);
 		Assert.NotEqual(MediaElementState.Failed, fixture.View.CurrentState);
-		await InvokeOnMainThreadAsync(() => Assert.Same(nativeSource, fixture.Element!.Source));
-		Assert.Equal(MediaPlaybackState.Playing, fixture.Player!.PlaybackSession.PlaybackState);
-
-		// No Failed latch either: the native state is reported.
-		await InvokeOnMainThreadAsync(() =>
-		{
-			((IMediaElement)fixture.View).CurrentStateChanged(MediaElementState.None);
-			WinMediaReflection.Invoke(fixture.Manager, "OnPlaybackSessionPlaybackStateChanged", fixture.Player.PlaybackSession, null);
-			Assert.Equal(MediaElementState.Playing, fixture.View.CurrentState);
-		});
+		await WaitUntilAsync(() => fixture.View.Duration > TimeSpan.Zero, "The Duration of the opened media was never set.");
+		Assert.Single(failures);
 	}
 
 	// A handler of the events that the update raises before it gives the player its source (here PropertyChanged of the Duration it resets) can set

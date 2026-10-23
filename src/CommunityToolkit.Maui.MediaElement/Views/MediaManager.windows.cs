@@ -446,8 +446,9 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		// Only giving the source to the player is guarded: an exception of the app's own event handlers (those of the resets above, for example)
-		// propagates, and neither takes the media out of the player nor becomes MediaFailed
+		// Only giving the source to the player is guarded: an exception of the app's own event handlers (those of the resets above, for example) is
+		// not a failure of the source. The MediaElement catches it and reports it once the update has ended (UpdateSource), so it neither stops the
+		// update nor takes the media out of the player
 		bool hasMedia;
 		try
 		{

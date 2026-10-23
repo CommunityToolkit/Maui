@@ -1,4 +1,3 @@
-using System.Reflection;
 using AVFoundation;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
@@ -587,10 +586,9 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		}
 	}
 
-	// The update of iOS and Mac Catalyst runs synchronously, so an exception that an event handler throws while the source changes propagates
-	// to the code that sets Source: it is not a failure of the source.
+	// Paused shows that the set of CurrentState whose handler threw has ended: MAUI applies no later change of a property whose setting threw.
 	[Fact]
-	public async Task ExceptionOfAnEventHandlerDuringASourceChangePropagatesAndIsNotReportedAsMediaFailed()
+	public async Task ExceptionOfAnOpeningHandlerIsReportedThroughMediaFailedAndTheSourceIsApplied()
 	{
 		SetupApple();
 		var mediaElement = CreateMediaElement();
@@ -599,7 +597,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
-			var manager = handler.Manager!;
+			var manager = handler.Manager;
+			Assert.NotNull(manager);
 			await manager.TakeSourceUpdates();
 			mediaElement.StateChanged += (_, e) =>
 			{
@@ -609,23 +608,24 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 				}
 			};
 
+			var opened = WhenOpenedOrFailedAsync(mediaElement, openedOnly: true);
 			var setterException = Record.Exception(() => mediaElement.Source = ResourceSource(VideoResource));
-			await Record.ExceptionAsync(manager.TakeSourceUpdates);
-			await DrainMainQueueAsync();
+			await manager.TakeSourceUpdates();
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(events, handlerException);
 
-			// CurrentState cannot show a failure here: MAUI applies no change of CurrentState after a StateChanged handler threw
-			// (BindableObject queues the changes of a property while it is being set, and the exception never ends that set).
-			Assert.Empty(events.Failures);
+			await WaitAsync(opened, "The media of the source was not opened.");
+			Assert.NotNull(manager.NativePlayer?.CurrentItem);
+			Assert.Equal(MediaElementState.Paused, mediaElement.CurrentState);
+			Assert.Single(events.Failures);
 		});
 	}
 
-	// The part of a source update that runs after an await (the updates of Android and Windows do) has no caller left: an exception of an event
-	// handler that it raises is rethrown on the dispatcher, as the exception of a handler of an event that the player raises, and is not reported
-	// as MediaFailed either.
+	// The update of iOS and Mac Catalyst is synchronous, so the test double makes it continue after an await, as the updates of Android and Windows
+	// do: what is thrown from then on can only reach the dispatcher, which ends the app.
 	[Fact]
-	public async Task ExceptionOfAnEventHandlerAfterTheSourceUpdateAwaitedIsRethrownOnTheDispatcher()
+	public async Task ExceptionOfAnEventHandlerAfterTheSourceUpdateAwaitedIsReportedThroughMediaFailed()
 	{
 		SetupApple();
 		var mediaElement = CreateMediaElement();
@@ -634,7 +634,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
-			var manager = handler.Manager!;
+			var manager = handler.Manager;
+			Assert.NotNull(manager);
 			await manager.TakeSourceUpdates();
 			var resume = new TaskCompletionSource();
 			manager.DelayNextSourceUpdate = resume.Task;
@@ -646,26 +647,28 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 				}
 			};
 
-			// The capturing context receives what the source mapping rethrows on the dispatcher (where it would end the app), and runs the rest of the
-			// update inline on this thread.
+			// The context receives what would be rethrown on the dispatcher, and runs the rest of the update inline on this thread.
 			var context = new AppleCapturingSynchronizationContext();
 			Exception? setterException = null;
 			context.Run(() => setterException = Record.Exception(() => mediaElement.Source = ResourceSource(VideoResource)));
 			Assert.Null(setterException);
+			Assert.Empty(events.Failures);
 
 			resume.SetResult();
-			await Record.ExceptionAsync(manager.TakeSourceUpdates);
+			await manager.TakeSourceUpdates();
+			await WaitUntilAsync(() => events.Failures.Count > 0, "The exception of the handler was not reported.");
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(context.Captured));
-			Assert.Empty(events.Failures);
+			Assert.Null(context.Captured);
+			AssertReportsTheExceptionOfTheHandler(events, handlerException);
+			Assert.NotNull(manager.NativePlayer?.CurrentItem);
+			Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
 		});
 	}
 
-	// The part of the update whose failures are failures of the source ends with the creation of the asset and its item. None is raised after it,
-	// once a source without data has taken the previous media out of the player, so an exception of its handler propagates to the code that sets
-	// Source.
+	// None is raised after the part of the update whose failures are failures of the source, once a source without data has taken the previous
+	// media out of the player.
 	[Fact]
-	public async Task ExceptionOfANoneHandlerAfterTheSourceIsAppliedPropagatesAndIsNotReportedAsMediaFailed()
+	public async Task ExceptionOfANoneHandlerAfterTheSourceIsAppliedIsReportedThroughMediaFailed()
 	{
 		SetupApple();
 		var mediaElement = CreateMediaElement();
@@ -674,7 +677,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
-			var manager = handler.Manager!;
+			var manager = handler.Manager;
+			Assert.NotNull(manager);
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
 			var isSettingTheSource = false;
 			mediaElement.StateChanged += (_, e) =>
@@ -688,19 +692,58 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			isSettingTheSource = true;
 			var setterException = Record.Exception(() => mediaElement.Source = new UriMediaSource());
 			isSettingTheSource = false;
-			await Record.ExceptionAsync(manager.TakeSourceUpdates);
+			await manager.TakeSourceUpdates();
 			await DrainMainQueueAsync();
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
-			Assert.Empty(events.Failures);
-			Assert.Null(manager.NativePlayer!.CurrentItem);
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(events, handlerException);
+			var player = manager.NativePlayer;
+			Assert.NotNull(player);
+			Assert.Null(player.CurrentItem);
 			Assert.Equal(MediaElementState.None, mediaElement.CurrentState);
 		});
 	}
 
-	// MAUI's WeakEventManager, which raises the MediaElement's events, invokes the handlers through reflection: the exception of a handler reaches
-	// the caller in a TargetInvocationException.
-	static Exception? ExceptionOfTheHandler(Exception? exception) => exception is TargetInvocationException { InnerException: Exception inner } ? inner : exception;
+	// MediaFailed resets Duration before it raises the event, so the exception of the Duration handler must not stop the report of the failure. The
+	// Duration of the next source shows that the set whose handler threw has ended: MAUI applies no later change of a property whose setting threw.
+	[Fact]
+	public async Task ExceptionOfADurationHandlerWhileAFailedSourceResetsTheDurationIsReportedAfterTheFailure()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		var events = new MediaElementEvents(mediaElement);
+		var handlerException = new InvalidOperationException("The PropertyChanged handler of the app failed.");
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager;
+			Assert.NotNull(manager);
+			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+			var isSettingTheSource = false;
+			mediaElement.PropertyChanged += (_, e) =>
+			{
+				if (isSettingTheSource && e.PropertyName is nameof(MediaElement.Duration))
+				{
+					throw handlerException;
+				}
+			};
+
+			isSettingTheSource = true;
+			var setterException = Record.Exception(() => mediaElement.Source = new AppleUnknownMediaSource());
+			isSettingTheSource = false;
+			await manager.TakeSourceUpdates();
+
+			Assert.Null(setterException);
+			Assert.Equal(2, events.Failures.Count);
+			Assert.Equal($"{typeof(AppleUnknownMediaSource).FullName} is not yet supported for {nameof(MediaElement.Source)}", events.Failures[0]);
+			Assert.EndsWith($": {handlerException.GetType().FullName}: {handlerException.Message}", events.Failures[1]);
+			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+			Assert.Equal(TimeSpan.Zero, mediaElement.Duration);
+
+			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+			Assert.Equal(VideoDuration.TotalSeconds, mediaElement.Duration.TotalSeconds, precision: 1);
+		});
+	}
 
 	[Fact]
 	public async Task ClearingTheSourceWhileTheMediaLoadsLeavesNoStaleState()
@@ -835,5 +878,12 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
+	}
+
+	void AssertReportsTheExceptionOfTheHandler(MediaElementEvents events, Exception handlerException)
+	{
+		var failure = Assert.Single(events.Failures);
+		Assert.EndsWith($": {handlerException.GetType().FullName}: {handlerException.Message}", failure);
+		Assert.Contains(Logs.Entries, entry => entry.Level is LogLevel.Error && ReferenceEquals(entry.Exception, handlerException));
 	}
 }

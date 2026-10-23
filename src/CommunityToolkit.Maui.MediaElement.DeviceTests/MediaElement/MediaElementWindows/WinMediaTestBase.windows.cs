@@ -241,6 +241,13 @@ public abstract class WinMediaTestBase : MediaElementHandlerTestBase
 		return failures;
 	}
 
+	protected static void AssertReportsTheExceptionOfTheHandler(IEnumerable<MediaFailedEventArgs> failures, WinMediaLoggerFactory loggerFactory, Exception handlerException)
+	{
+		var failure = Assert.Single(failures);
+		Assert.EndsWith($": {handlerException.GetType().FullName}: {handlerException.Message}", failure.ErrorMessage);
+		Assert.Contains(loggerFactory.Entries, entry => entry.Level is LogLevel.Error && ReferenceEquals(entry.Exception, handlerException));
+	}
+
 	// XAML objects are thread-affine, so the condition is polled on the UI thread.
 	protected static Task WaitUntilOnUiAsync(Func<bool> condition, string message, int timeoutMilliseconds = decodeTimeoutMilliseconds) =>
 		AssertionExtensions.AssertEventuallyAsync(() => InvokeOnMainThreadAsync(condition), timeoutMilliseconds, 50, message);

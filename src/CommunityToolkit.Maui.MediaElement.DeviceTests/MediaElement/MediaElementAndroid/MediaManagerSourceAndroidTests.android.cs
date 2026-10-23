@@ -5,6 +5,8 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -797,18 +799,20 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Opening is raised before the source is applied, and the update runs synchronously up to its first await, so the exception of its handler
-	// reaches the code that sets Source.
+	// Opening is raised before the source is applied. Paused shows that the set of CurrentState whose handler threw has ended: MAUI applies no
+	// later change of a property whose setting threw.
 	[Fact]
-	public async Task ExceptionOfAnEventHandlerDuringASourceChangePropagatesAndIsNotReportedAsMediaFailed()
+	public async Task ExceptionOfAnOpeningHandlerIsReportedThroughMediaFailedAndTheSourceIsApplied()
 	{
-		SetupProbeBuilder();
+		var logger = new CapturingLoggerFactory();
+		SetupProbeBuilder(configureBuilder: builder => builder.Services.AddSingleton<ILoggerFactory>(logger));
 		var mediaElement = await CreateMediaElementAsync();
 		using var recorder = new MediaElementRecorder(mediaElement);
 		var handlerException = new InvalidOperationException("The StateChanged handler of the app failed.");
 
-		await WithHandlerAsync(mediaElement, handler =>
+		await HostAsync(mediaElement, async _ =>
 		{
+			var player = GetPlayer(mediaElement);
 			mediaElement.StateChanged += (_, e) =>
 			{
 				if (e.NewState is MediaElementState.Opening)
@@ -819,18 +823,20 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 			var setterException = Record.Exception(() => mediaElement.Source = MediaSource.FromResource(toneAsset));
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
-
-			// A failure of the source raises MediaFailed. CurrentState cannot show one here: MAUI applies no change of CurrentState after a StateChanged
-			// handler threw (BindableObject queues the changes of a property while it is being set, and the exception never ends that set).
-			Assert.Empty(recorder.FailureMessages);
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
+			Assert.Contains((LogLevel.Error, "MediaManager", recorder.FailureMessages[0]), logger.Entries);
+			Assert.Equal(1, recorder.OpenedCount);
+			Assert.EndsWith(toneAsset, player.CurrentMediaItem?.MediaId);
+			await WaitForStateAsync(mediaElement, MediaElementState.Paused);
+			Assert.Single(recorder.FailureMessages);
 		});
 	}
 
-	// MediaOpened is raised after the part of the update whose failures are failures of the source, so an exception of its handler propagates
-	// (without artwork the update runs synchronously, so to the code that sets Source).
+	// On Android the update raises MediaOpened itself, so its handler's exception is part of the change; the capture shows that nothing reaches the
+	// dispatcher either.
 	[Fact]
-	public async Task ExceptionOfAMediaOpenedHandlerPropagatesAndTheSourceStaysApplied()
+	public async Task ExceptionOfAMediaOpenedHandlerIsReportedThroughMediaFailedAndTheSourceStaysApplied()
 	{
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync();
@@ -849,19 +855,19 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 				Assert.Null(capture.Exception);
 			}
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
 			Assert.Equal(1, recorder.OpenedCount);
-			Assert.EndsWith(toneAsset, player.CurrentMediaItem!.MediaId);
+			Assert.EndsWith(toneAsset, player.CurrentMediaItem?.MediaId);
 			await WaitForStateAsync(mediaElement, MediaElementState.Paused);
-			Assert.Empty(recorder.FailureMessages);
+			Assert.Single(recorder.FailureMessages);
 		});
 	}
 
-	// ExoPlayer raises its events synchronously while it takes the source (SetMediaItem and Prepare), here StateChanged for Buffering. There, only an
-	// exception of the player itself (a Java exception) is a failure of the source, so the exception of an event handler propagates (without
-	// artwork the update runs synchronously, so to the code that sets Source).
+	// ExoPlayer raises its events synchronously while it takes the source (SetMediaItem and Prepare), here StateChanged for Buffering, so the
+	// exception of the handler has to be caught before it unwinds through ExoPlayer. There, only a Java exception is a failure of the source.
 	[Fact]
-	public async Task ExceptionOfABufferingHandlerWhileThePlayerTakesTheSourcePropagatesAndIsNotReportedAsMediaFailed()
+	public async Task ExceptionOfABufferingHandlerWhileThePlayerTakesTheSourceIsReportedThroughMediaFailed()
 	{
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync();
@@ -890,17 +896,17 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 				Assert.Null(capture.Exception);
 			}
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
-			Assert.Empty(recorder.FailureMessages);
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
 			Assert.Equal(1, player.MediaItemCount);
-			Assert.EndsWith(toneAsset, player.CurrentMediaItem!.MediaId);
+			Assert.EndsWith(toneAsset, player.CurrentMediaItem?.MediaId);
+			Assert.Equal(1, recorder.OpenedCount);
 		});
 	}
 
-	// None is raised after the part of the update whose failures are failures of the source (once a source without data has emptied the player),
-	// so an exception of its handler propagates to the code that sets Source.
+	// None is raised after the part of the update whose failures are failures of the source, once a source without data has emptied the player.
 	[Fact]
-	public async Task ExceptionOfANoneHandlerAfterTheSourceIsAppliedPropagatesAndIsNotReportedAsMediaFailed()
+	public async Task ExceptionOfANoneHandlerAfterTheSourceIsAppliedIsReportedThroughMediaFailed()
 	{
 		SetupProbeBuilder();
 		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
@@ -924,10 +930,53 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			var setterException = Record.Exception(() => mediaElement.Source = new UriMediaSource());
 			isSettingTheSource = false;
 
-			Assert.Same(handlerException, ExceptionOfTheHandler(setterException));
-			Assert.Empty(recorder.FailureMessages);
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
 			Assert.Equal(0, player.MediaItemCount);
 			Assert.Equal(MediaElementState.None, mediaElement.CurrentState);
+		});
+	}
+
+	// With artwork the update raises MediaOpened after it awaited the download, where only the dispatcher would receive the exception of the
+	// handler, and that ends the app. The test awaits an update of its own instead of the source mapping's, so that what the update throws
+	// reaches the test.
+	[Fact]
+	public async Task ExceptionOfAMediaOpenedHandlerAfterTheArtworkDownloadIsReportedThroughMediaFailed()
+	{
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (await ReadAssetAsync(artworkAsset), "image/png") });
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.MetadataArtworkUrl = server.GetUri("/art.png").ToString());
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var handlerException = new InvalidOperationException("The MediaOpened handler of the app failed.");
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager;
+			Assert.NotNull(manager);
+			var heldArtworkResponse = server.HoldResponses("/art.png");
+			var isUpdating = false;
+			mediaElement.MediaOpened += (_, _) =>
+			{
+				if (isUpdating)
+				{
+					throw handlerException;
+				}
+			};
+
+			// The update that the source mapping starts waits for the artwork too, and the test's update replaces it, so it loads nothing.
+			mediaElement.Source = MediaSource.FromResource(toneAsset);
+			isUpdating = true;
+			var update = manager.UpdateSource().AsTask();
+			Assert.False(update.IsCompleted);
+
+			heldArtworkResponse.SetResult();
+			var updateException = await Record.ExceptionAsync(() => update);
+			isUpdating = false;
+
+			Assert.Null(updateException);
+			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
+			Assert.Equal(1, recorder.OpenedCount);
+			Assert.EndsWith(toneAsset, GetPlayer(mediaElement).CurrentMediaItem?.MediaId);
 		});
 	}
 
@@ -965,9 +1014,12 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// MAUI's WeakEventManager, which raises the MediaElement's events, invokes the handlers through reflection: the exception of a handler reaches
-	// the caller in a TargetInvocationException.
-	static Exception? ExceptionOfTheHandler(Exception? exception) => exception is TargetInvocationException { InnerException: Exception inner } ? inner : exception;
+	static void AssertReportsTheExceptionOfTheHandler(MediaElementRecorder recorder, Exception handlerException)
+	{
+		var failure = Assert.Single(recorder.FailureMessages);
+		Assert.EndsWith($": {handlerException.GetType().FullName}: {handlerException.Message}", failure);
+		Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+	}
 
 	static MediaSource CreateEmptySource(EmptySourceKind kind) => kind switch
 	{

@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -120,6 +123,10 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Bindable property for the <see cref="MetadataArtworkUrl"/> property.
 	/// </summary>
 	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkUrl);
+
+	// An AsyncLocal follows the source update through its awaits (Android and Windows), and does not reach what runs outside of it: the events that
+	// the player raises on its own and those of the app's own calls.
+	static readonly AsyncLocal<SourceUpdate?> currentSourceUpdate = new();
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
@@ -307,9 +314,14 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <see cref="MediaSource"/> that the platform does not support is reported through <see cref="MediaFailed"/>.
 	/// </para>
 	/// <para>
-	/// A source that cannot be applied or played is reported through <see cref="MediaFailed"/>. An exception thrown by an event handler that the
-	/// change of the source raises, for example a <see cref="StateChanged"/> handler for <see cref="MediaElementState.Opening"/>, is not a failure of
-	/// the source: it propagates to the code that set the source, or, once the change continues asynchronously, to the dispatcher.
+	/// A source that cannot be applied or played is reported through <see cref="MediaFailed"/>. The change of the source raises events while it
+	/// applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanged (for example of
+	/// <see cref="Position"/> or <see cref="Duration"/>), <see cref="MediaFailed"/> for a source that cannot be applied and, on Android,
+	/// <see cref="MediaOpened"/>. An exception thrown by one of their handlers is not a failure of the source, and does not reach the code that set
+	/// the source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the source, and once the change
+	/// has ended the first of these exceptions is reported through <see cref="MediaFailed"/>, without setting <see cref="CurrentState"/> to
+	/// <see cref="MediaElementState.Failed"/>. The events that the player raises afterwards, for example <see cref="MediaOpened"/> on iOS, Mac
+	/// Catalyst and Windows, are not part of the change.
 	/// </para>
 	/// </remarks>
 	[TypeConverter(typeof(MediaSourceConverter))]
@@ -421,6 +433,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		set => SetValue(mediaHeightPropertyKey, value);
 	}
 
+	SourceUpdate? RunningSourceUpdate => currentSourceUpdate.Value is SourceUpdate sourceUpdate && sourceUpdate.IsRunningFor(this) ? sourceUpdate : null;
+
 	/// <inheritdoc/>
 	public void Dispose()
 	{
@@ -485,10 +499,29 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
+	// The code that sets the Source is often MAUI's (XAML, a binding), so the app cannot catch what its event handlers throw during the update. The
+	// exception is caught where the event is raised (RaiseEvent, OnPropertyChanged), before it can end the update or leave a property that MAUI
+	// was setting unable to change again.
+	async ValueTask IMediaElement.RunSourceUpdate(Func<ValueTask> updateSource, ILogger logger)
+	{
+		var sourceUpdate = new SourceUpdate(this, logger);
+
+		// An async method gives its caller back the caller's AsyncLocal values, so only the update and its continuations see this one.
+		currentSourceUpdate.Value = sourceUpdate;
+		try
+		{
+			await updateSource();
+		}
+		finally
+		{
+			sourceUpdate.End();
+		}
+	}
+
 	internal void OnMediaEnded()
 	{
 		CurrentState = MediaElementState.Stopped;
-		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaEnded));
+		RaiseEvent(EventArgs.Empty, nameof(MediaEnded));
 	}
 
 	internal void OnMediaFailed(MediaFailedEventArgs args)
@@ -496,13 +529,29 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		((IMediaElement)this).Duration = ((IMediaElement)this).Position = TimeSpan.Zero;
 
 		CurrentState = MediaElementState.Failed;
-		eventManager.HandleEvent(this, args, nameof(MediaFailed));
+		RaiseEvent(args, nameof(MediaFailed));
 	}
 
 	internal void OnMediaOpened()
 	{
 		InitializeTimer();
-		eventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaOpened));
+		RaiseEvent(EventArgs.Empty, nameof(MediaOpened));
+	}
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// While the change of <see cref="Source"/> applies the source, an exception thrown by a PropertyChanged handler is caught (see <see cref="Source"/>).
+	/// </remarks>
+	protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+	{
+		try
+		{
+			base.OnPropertyChanged(propertyName);
+		}
+		catch (Exception exception) when (RunningSourceUpdate is SourceUpdate sourceUpdate)
+		{
+			sourceUpdate.Catch(exception);
+		}
 	}
 
 	/// <inheritdoc/>
@@ -605,21 +654,76 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		InvalidateMeasure();
 	}
 
-	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) =>
-		eventManager.HandleEvent(this, mediaPositionChangedEventArgs, nameof(PositionChanged));
+	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) => RaiseEvent(mediaPositionChangedEventArgs, nameof(PositionChanged));
 
-	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) =>
-		eventManager.HandleEvent(this, mediaStateChangedEventArgs, nameof(StateChanged));
+	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) => RaiseEvent(mediaStateChangedEventArgs, nameof(StateChanged));
 
-	void OnPauseRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PauseRequested));
+	void OnPauseRequested() => RaiseEvent(EventArgs.Empty, nameof(PauseRequested));
 
-	void OnPlayRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PlayRequested));
+	void OnPlayRequested() => RaiseEvent(EventArgs.Empty, nameof(PlayRequested));
 
-	void OnStopRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StopRequested));
+	void OnStopRequested() => RaiseEvent(EventArgs.Empty, nameof(StopRequested));
 
-	void OnSeekCompleted() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(SeekCompleted));
+	void OnSeekCompleted() => RaiseEvent(EventArgs.Empty, nameof(SeekCompleted));
 
-	void OnPositionRequested() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(PositionRequested));
+	void OnPositionRequested() => RaiseEvent(EventArgs.Empty, nameof(PositionRequested));
 
-	void OnUpdateStatus() => eventManager.HandleEvent(this, EventArgs.Empty, nameof(StatusUpdated));
+	void OnUpdateStatus() => RaiseEvent(EventArgs.Empty, nameof(StatusUpdated));
+
+	void RaiseEvent(object eventArgs, string eventName)
+	{
+		try
+		{
+			eventManager.HandleEvent(this, eventArgs, eventName);
+		}
+		catch (Exception exception) when (RunningSourceUpdate is SourceUpdate sourceUpdate)
+		{
+			sourceUpdate.Catch(exception);
+		}
+	}
+
+	sealed class SourceUpdate(MediaElement mediaElement, ILogger logger)
+	{
+		const string handlerExceptionMessage = "An event handler threw an exception while the source of the MediaElement was updated";
+
+		// Code that captured the flow of the update, such as the continuation of an async event handler, can run after the update has ended: the
+		// update then catches nothing more, and lets go of the MediaElement, which that code must not keep alive.
+		MediaElement? runningFor = mediaElement;
+		Exception? firstException;
+
+		public bool IsRunningFor(MediaElement element) => ReferenceEquals(Volatile.Read(ref runningFor), element);
+
+		public void Catch(Exception exception)
+		{
+			exception = Unwrap(exception);
+			logger.LogError(exception, "{LogMessage}", Describe(exception));
+			Interlocked.CompareExchange(ref firstException, exception, null);
+		}
+
+		public void End()
+		{
+			var element = Interlocked.Exchange(ref runningFor, null);
+			var exception = Interlocked.Exchange(ref firstException, null);
+			if (element is null || exception is null)
+			{
+				return;
+			}
+
+			// Not through OnMediaFailed: the source has not failed, so CurrentState, Duration and Position stay as the update set them.
+			try
+			{
+				element.eventManager.HandleEvent(element, new MediaFailedEventArgs(Describe(exception)), nameof(MediaFailed));
+			}
+			catch (Exception mediaFailedException)
+			{
+				// Reported like the exceptions of the update, it would be reported again, and again.
+				logger.LogError(Unwrap(mediaFailedException), "{LogMessage}", $"A {nameof(MediaFailed)} handler threw an exception while this was reported: {Describe(exception)}");
+			}
+		}
+
+		static string Describe(Exception exception) => $"{handlerExceptionMessage}: {exception.GetType().FullName}: {exception.Message}";
+
+		// MAUI's WeakEventManager invokes the handlers through reflection.
+		static Exception Unwrap(Exception exception) => exception is TargetInvocationException { InnerException: Exception innerException } ? innerException : exception;
+	}
 }

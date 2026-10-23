@@ -94,9 +94,10 @@ public partial class MediaElementHandler
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <remarks>
-	/// The platform's <see cref="Views.MediaManager"/> reports a source that it cannot apply through <see cref="MediaElement.MediaFailed"/>. An
-	/// exception thrown while the source is updated, such as the exception of an event handler that the update raises, propagates: to the caller
-	/// while the update runs synchronously, and on the dispatcher once the update continues asynchronously.
+	/// The platform's <see cref="Views.MediaManager"/> reports a source that it cannot apply through <see cref="MediaElement.MediaFailed"/>, and so
+	/// does its <see cref="Views.MediaManager.UpdateSource"/> for an exception of an event handler that the update raises (see
+	/// <see cref="MediaElement.Source"/>). Any other exception of the update propagates: to the caller while the update runs synchronously, and on
+	/// the dispatcher once the update continues asynchronously.
 	/// </remarks>
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
@@ -233,9 +234,9 @@ public partial class MediaElementHandler
 		handler.MediaManager?.Stop();
 	}
 
-	// A property mapper cannot await MediaManager.UpdateSource. An exception of the update is not a failure of the source (those go through
-	// MediaFailed) but typically one that an event handler raised by the update threw, so it propagates like one: to the code that set the Source
-	// while the update runs synchronously (the whole update on iOS and Mac Catalyst), and on the dispatcher once the update has awaited.
+	// A property mapper cannot await MediaManager.UpdateSource. The update reports a source that it cannot apply, and the exceptions of the event
+	// handlers that it raises, through MediaFailed, so any other exception propagates: to the code that set the Source while the update runs
+	// synchronously (the whole update on iOS and Mac Catalyst), and on the dispatcher once the update has awaited.
 	// An update that a newer one replaced (OperationCanceledException) has nothing left to report.
 	static void UpdateSource(ValueTask update)
 	{

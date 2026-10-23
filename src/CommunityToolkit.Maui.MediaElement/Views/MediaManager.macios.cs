@@ -244,8 +244,8 @@ public partial class MediaManager : IDisposable
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
 
 		// Only a failure to create the asset or the item of the source is a failure of the source (below: MediaFailed). The events that the update
-		// raises (StateChanged, also from the observers of the player while its item is replaced) are not in this part: an exception of their
-		// handlers is not a failure of the source, and propagates to the code that set the Source
+		// raises (StateChanged, also from the observers of the player while its item is replaced) are not in this part: the MediaElement catches the
+		// exceptions of their handlers and reports them once the update has ended (UpdateSource), so they do not stop the update
 		Exception? sourceException = null;
 		try
 		{

@@ -547,8 +547,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 
 		// Only a failure to apply the source (to create its media item or media source, or to hand it to the player) is a failure of the source.
-		// An exception of an event handler is not, and propagates: of the events raised after this part (MediaOpened, or None for a source
-		// without data), and of those that the player raises while it takes the source
+		// An exception of an event handler is not, whether the handler is that of an event raised after this part (MediaOpened, or None for a
+		// source without data) or that of an event the player raises while it takes the source: the MediaElement catches it and reports it once
+		// the update has ended (UpdateSource), so it does not stop the update
 		MediaItem? item;
 		var isPlayerTakingTheSource = false;
 		try
