@@ -119,9 +119,11 @@ sealed partial class CameraManager(
 	/// </summary>
 	public void StopCameraPreview()
 	{
+		// Cancel runs the continuations of a cancelled camera switch inline, which on Android include the app's code after its
+		// `await StopVideoRecording()`: the token source is replaced afterwards, so that a camera switch started by that code is cancelled too
 		using var pendingCameraSwitchesTokenSource = stopCameraPreviewTokenSource;
-		stopCameraPreviewTokenSource = new();
 		pendingCameraSwitchesTokenSource.Cancel();
+		stopCameraPreviewTokenSource = new();
 
 		PlatformStopCameraPreview();
 	}

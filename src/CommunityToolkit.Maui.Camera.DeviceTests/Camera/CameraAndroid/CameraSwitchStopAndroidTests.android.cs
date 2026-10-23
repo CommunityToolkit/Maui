@@ -105,8 +105,12 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 
 	// The camera switch that waited for the recording unbinds the use cases of the recording in the UI-thread message in which it starts to
 	// wait for CameraX, and CameraX answers within a few messages, so the loop yields to the next message instead of polling on a timer.
-	[Fact]
-	public async Task StopCameraPreviewWhileStopVideoRecordingCompletesACameraSwitchKeepsThePreviewStopped()
+	// Cancelling that switch completes StopVideoRecording inline: the app's code after `await StopVideoRecording()` runs inside
+	// StopCameraPreview, and a camera that this code selects must not start the preview either.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StopCameraPreviewWhileStopVideoRecordingCompletesACameraSwitchKeepsThePreviewStopped(bool selectACameraOnceStopVideoRecordingReturns)
 	{
 		SetupBuilder();
 		RequireVideoRecording();
@@ -133,9 +137,11 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 
 			Assert.False(provider.IsBound(videoCapture), "StopVideoRecording never started the camera switch that waited for the recording.");
 			Assert.False(stopVideoRecording.IsCompleted, "StopVideoRecording completed the camera switch before the preview could be stopped.");
+			var selectingACamera = selectACameraOnceStopVideoRecordingReturns ? SelectCameraAfterAsync(stopVideoRecording, session, first) : Task.CompletedTask;
 			session.Manager.StopCameraPreview();
 
 			Assert.Same(stream, await stopVideoRecording.WaitAsync(CameraTimeout));
+			await selectingACamera.WaitAsync(CameraTimeout);
 			AssertIsAPlayableVideo(stream.ToArray());
 			Assert.False(await IsNativelyBoundAsync(session.CameraPreview), "The camera switch bound the preview after StopCameraPreview.");
 
@@ -163,6 +169,12 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 	{
 		session.View.SelectedCamera = camera;
 		return session.Manager.UpdateCurrentCamera(camera, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
+	}
+
+	static async Task SelectCameraAfterAsync(Task stopVideoRecording, ManagerSession session, CameraInfo camera)
+	{
+		await stopVideoRecording;
+		await SelectCameraAsync(session, camera);
 	}
 
 	static Task WaitForRecordingDataAsync(IReadOnlyCollection<string> before) =>
