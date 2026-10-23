@@ -273,12 +273,10 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 	public async Task CustomMappersReplaceTheDefaultMappersAndNullSelectsTheDefaults()
 	{
 		SetupBuilder();
-		// Which command mapper a handler uses has no native observable without focus or window setup, so it is read from the internal readonly
-		// field that MAUI keeps it in (ElementHandler._commandMapper, Microsoft.Maui 10.0.90).
-		var commandMapperField = typeof(ElementHandler).GetField("_commandMapper", BindingFlags.Instance | BindingFlags.NonPublic);
-		Skip.If(commandMapperField is null, "MAUI's ElementHandler no longer keeps the command mapper in the _commandMapper field.");
+		const string probeCommand = "DrawingViewHandlerTests.Probe";
 		var mappedLineColors = new List<Color>();
 		var focusRequests = new List<object?>();
+		var probedHandlers = new List<DrawingViewHandler>();
 		var mapper = new PropertyMapper<IDrawingView, DrawingViewHandler>
 		{
 			[nameof(IDrawingView.LineColor)] = (handler, view) => mappedLineColors.Add(view.LineColor)
@@ -292,30 +290,58 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		customView.LineWidth = 11;
 		var defaultView = CreateDrawingView();
 		defaultView.LineWidth = 11;
+		var parameterlessView = CreateDrawingView();
 
-		await InvokeOnMainThreadAsync(() =>
+		// No public API tells which command mapper a handler uses, so a probe command is chained into DrawingViewCommandMapper for the
+		// duration of the test: only a handler that uses DrawingViewCommandMapper reaches it.
+		var originalChain = DrawingViewHandler.DrawingViewCommandMapper.Chained;
+		Assert.NotNull(originalChain);
+
+		try
 		{
-			var customHandler = new DrawingViewHandler(mapper, commandMapper);
-			InitializeViewHandler(customView, customHandler);
-			var request = new FocusRequest();
-			((IElementHandler)customHandler).Invoke(nameof(IView.Focus), request);
+			DrawingViewHandler.DrawingViewCommandMapper.Chained = new CommandMapper<IDrawingView, DrawingViewHandler>(originalChain)
+			{
+				[probeCommand] = (handler, _, _) => probedHandlers.Add(handler)
+			};
 
-			Assert.Equal(red, Assert.Single(mappedLineColors));
-			Assert.Same(request, Assert.Single(focusRequests));
-			DrawingViewTestPlatform.Stroke(customHandler.PlatformView, (10, 10), (30, 30));
-			Assert.Equal(5f, Assert.Single(customHandler.PlatformView.Lines).LineWidth);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var customHandler = new DrawingViewHandler(mapper, commandMapper);
+				InitializeViewHandler(customView, customHandler);
+				var request = new FocusRequest();
+				((IElementHandler)customHandler).Invoke(nameof(IView.Focus), request);
+				((IElementHandler)customHandler).Invoke(probeCommand, null);
 
-			var defaultHandler = new DrawingViewHandler(null, null);
-			InitializeViewHandler(defaultView, defaultHandler);
-			DrawingViewTestPlatform.Stroke(defaultHandler.PlatformView, (10, 10), (30, 30));
-			Assert.Equal(11f, Assert.Single(defaultHandler.PlatformView.Lines).LineWidth);
-			Assert.Same(DrawingViewHandler.DrawingViewCommandMapper, commandMapperField.GetValue(defaultHandler));
-			Assert.Same(commandMapper, commandMapperField.GetValue(customHandler));
-			Assert.Same(DrawingViewHandler.DrawingViewCommandMapper, commandMapperField.GetValue(new DrawingViewHandler()));
+				Assert.Equal(red, Assert.Single(mappedLineColors));
+				Assert.Same(request, Assert.Single(focusRequests));
+				Assert.Empty(probedHandlers);
+				DrawingViewTestPlatform.Stroke(customHandler.PlatformView, (10, 10), (30, 30));
+				Assert.Equal(5f, Assert.Single(customHandler.PlatformView.Lines).LineWidth);
 
-			((IElementHandler)customHandler).DisconnectHandler();
-			((IElementHandler)defaultHandler).DisconnectHandler();
-		});
+				var defaultHandler = new DrawingViewHandler(null, null);
+				InitializeViewHandler(defaultView, defaultHandler);
+				DrawingViewTestPlatform.Stroke(defaultHandler.PlatformView, (10, 10), (30, 30));
+				Assert.Equal(11f, Assert.Single(defaultHandler.PlatformView.Lines).LineWidth);
+				((IElementHandler)defaultHandler).Invoke(probeCommand, null);
+
+				var parameterlessHandler = new DrawingViewHandler();
+				InitializeViewHandler(parameterlessView, parameterlessHandler);
+				((IElementHandler)parameterlessHandler).Invoke(probeCommand, null);
+
+				Assert.Collection(probedHandlers,
+					handler => Assert.Same(defaultHandler, handler),
+					handler => Assert.Same(parameterlessHandler, handler));
+				Assert.Single(focusRequests);
+
+				((IElementHandler)customHandler).DisconnectHandler();
+				((IElementHandler)defaultHandler).DisconnectHandler();
+				((IElementHandler)parameterlessHandler).DisconnectHandler();
+			});
+		}
+		finally
+		{
+			DrawingViewHandler.DrawingViewCommandMapper.Chained = originalChain;
+		}
 	}
 
 	[Fact]
