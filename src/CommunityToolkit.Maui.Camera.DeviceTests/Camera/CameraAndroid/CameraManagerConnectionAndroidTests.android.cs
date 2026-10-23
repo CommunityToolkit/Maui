@@ -766,7 +766,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 		await RunWithStreamingSessionAsync(async session =>
 		{
-			var valid = session.View.SelectedCamera!;
+			var valid = session.View.SelectedCamera ?? throw new InvalidOperationException("The connected session has no selected camera.");
 			session.Manager.StopCameraPreview();
 			session.View.SelectedCamera = CreateCameraThatCanNotBeBound();
 			using var errors = new CameraErrorRecorder(session.View);
@@ -779,7 +779,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
 		});
 	}
 
@@ -820,7 +820,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.Single(errors.Errors);
 			Assert.Equal(1, session.LoadedCount);
 			await WaitForNativeCameraStateAsync(cameras[^1].DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 

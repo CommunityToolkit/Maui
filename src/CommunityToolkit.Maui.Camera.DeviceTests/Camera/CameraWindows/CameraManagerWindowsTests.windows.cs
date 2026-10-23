@@ -728,8 +728,10 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
-			var first = new CameraInfo("Unknown camera", "fake-unknown-first-start-device", CameraPosition.Rear, false, 1f, 1f, [], null!, []);
-			var next = new CameraInfo("Other unknown camera", "fake-unknown-after-first-start-device", CameraPosition.Front, false, 1f, 1f, [], null!, []);
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+			var first = new CameraInfo("Unknown camera", "fake-unknown-first-start-device", CameraPosition.Rear, false, 1f, 1f, [], null, []);
+			var next = new CameraInfo("Other unknown camera", "fake-unknown-after-first-start-device", CameraPosition.Front, false, 1f, 1f, [], null, []);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 			var provider = new WindowsFakeCameraProvider { AvailableCameras = [first, next] };
 			using var scope = new WindowsCameraManagerScope(MauiContext, provider);
 			using var errors = new CameraErrorRecorder(scope.View);

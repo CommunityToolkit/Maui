@@ -128,7 +128,7 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 			Assert.Empty(context.Drain());
 			Assert.Equal(["Camera permission is not granted. Please enable it in the app settings."], recorder.Failures);
 
-			completion.DidFinishProcessingPhoto(output, new FakeCapturePhoto(() => NSData.FromArray([1, 2, 3])), null!);
+			completion.DidFinishProcessingPhoto(output, new FakeCapturePhoto(() => NSData.FromArray([1, 2, 3])), null);
 			var photo = await capture.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.Equal(3, photo.Length);
