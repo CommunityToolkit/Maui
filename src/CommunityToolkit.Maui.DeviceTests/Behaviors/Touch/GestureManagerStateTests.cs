@@ -359,12 +359,13 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 
 			SimulatePress(behavior);
 			SimulateRelease(behavior);
-			Assert.Equal(1, GetNativeScale(handler), 2);
+
+			// The release resets the scale only once the cancellation callbacks of the pressed state update ran, and the press can already have
+			// moved it: MAUI ticks a new animation as it starts its ticker, by Environment.TickCount (10 ms steps on the API 28 emulator).
+			await AssertNativeValueAsync(() => GetNativeScale(handler), 1, "Scale after the release", 0.005);
 
 			// Past the end of the aborted animation.
-			await Task.Delay(900);
-
-			Assert.Equal(1, GetNativeScale(handler), 2);
+			await AssertNativeValueStaysForAsync(() => GetNativeScale(handler), 1, "Scale after the release", 900, 0.005);
 		});
 	}
 
