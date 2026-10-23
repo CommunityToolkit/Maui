@@ -375,6 +375,15 @@
         <Setter Property="FontSize" Value="14" />
     </Style>
 
+    <Style x:Key="LabelEdgeToEdgeMarker" TargetType="Label">
+        <Setter Property="BackgroundColor" Value="{StaticResource Yellow100Accent}" />
+        <Setter Property="TextColor" Value="{StaticResource Black}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HeightRequest" Value="56" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
     <Style x:Key="BorderGalleryCard" TargetType="Border">
         <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" />

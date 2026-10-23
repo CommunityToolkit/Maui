@@ -172,11 +172,33 @@
                 x:Name="ModalPageButton"
                 HorizontalOptions="Center"
                 VerticalOptions="Center" />
-             <Button
-                Clicked="OnBrokenShellButtonClicked"
-                HorizontalOptions="Center"
-                Text="Go to Broken Shell.TitleView"
-                VerticalOptions="Center" />
+
+            <VerticalStackLayout
+                IsVisible="{OnPlatform Android=True, Default=False}"
+                Spacing="12">
+                <Label
+                    Style="{StaticResource LabelSectionTitle}"
+                    Text="Android regression tests" />
+                <Label
+                    LineBreakMode="WordWrap"
+                    Style="{StaticResource LabelSectionText}"
+                    Text="Each demo says what to check. A modal page copies the status bar of this page, so the modal demos first set the sliders above to transparent (the default) or to solid red." />
+                <Button
+                    Clicked="OnEdgeToEdgeModalButtonClicked"
+                    HorizontalOptions="Center"
+                    Text="Modal page demo (#3353)"
+                    VerticalOptions="Center" />
+                <Button
+                    Clicked="OnSolidRedEdgeToEdgeModalButtonClicked"
+                    HorizontalOptions="Center"
+                    Text="Modal page demo from a solid red status bar"
+                    VerticalOptions="Center" />
+                <Button
+                    Clicked="OnEdgeToEdgeShellButtonClicked"
+                    HorizontalOptions="Center"
+                    Text="Shell demo (#2351)"
+                    VerticalOptions="Center" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
