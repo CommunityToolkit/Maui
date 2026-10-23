@@ -1,6 +1,6 @@
 # Running the device tests on your machine
 
-The device tests are three .NET MAUI apps, one per shipped feature package, that run the tests on a real platform: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `src/CommunityToolkit.Maui.MediaElement.DeviceTests` and `src/CommunityToolkit.Maui.Camera.DeviceTests`. `dotnet test` does not run them. The `Device Tests` job of every pull request builds and runs them on Android, iOS, Mac Catalyst and Windows; this guide is for running them on your own machine.
+The device tests are three .NET MAUI apps, one per shipped feature package, that run the tests on a real platform: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `src/CommunityToolkit.Maui.MediaElement.DeviceTests` and `src/CommunityToolkit.Maui.Camera.DeviceTests`. `dotnet test` does not run them. The `Device Tests` job of every pull request builds and runs them on Android, iOS, Mac Catalyst and Windows with the `run.ps1` command that this guide starts with (its lines are in `.github/workflows/device-tests.yml`); this guide is for running them on your own machine.
 
 * [Run everything with one command](#run-everything-with-one-command)
 * [Run an app from your IDE](#run-an-app-from-your-ide)
@@ -173,7 +173,7 @@ The MediaElement app has three tests (`MediaMetadataWindowsTests`) that wait for
 
 ## What your machine does differently from CI
 
-The CI jobs prepare their runners, and a script that runs on your machine does not. These are the differences that decide whether a test runs or skips.
+The CI jobs run `run.ps1` as you do, one platform per job, but they prepare their runners first, and a script that runs on your machine does not. These are the differences that decide whether a test runs or skips. [README.md](README.md#ci) says what each job runs and how to replay one with its environment.
 
 ### Mac Catalyst asks for camera, microphone and speech recognition
 
