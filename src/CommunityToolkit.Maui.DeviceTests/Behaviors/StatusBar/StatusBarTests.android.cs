@@ -583,11 +583,14 @@ public partial class StatusBarTests
 
 		await InvokeOnMainThreadAsync(static () =>
 		{
-			// FindViewWithTag also tests the view it starts from, so tagging the decor view of a window that was never shown (it has no
-			// layout parameters yet) gives the status bar code an "overlay" without layout parameters.
 			using var unshown = new UnshownWindow();
-			unshown.DecorView.Tag = AndroidSystemBars.StatusBarOverlayTag;
-			Assert.Null(unshown.DecorView.LayoutParameters);
+			using var overlay = new AView(AndroidSystemBars.Activity) { Tag = AndroidSystemBars.StatusBarOverlayTag };
+			using var root = new RootWithAChildWithoutLayoutParameters(AndroidSystemBars.Activity, unshown.DecorView, overlay);
+
+			// The status bar code looks for its overlay among the children of the window's root view, which for a decor view that is not
+			// attached to a window is its topmost parent.
+			Assert.Same(root, unshown.DecorView.RootView);
+			Assert.Null(overlay.LayoutParameters);
 
 			// Before Android 15 measuring the status bar would throw NotSupportedException: the missing layout parameters must stop it first.
 			AndroidSystemBars.WithCurrentActivity(unshown.Activity, static () =>
@@ -596,7 +599,7 @@ public partial class StatusBarTests
 				return true;
 			});
 
-			Assert.Null(unshown.DecorView.LayoutParameters);
+			Assert.Null(overlay.LayoutParameters);
 		});
 	}
 
@@ -712,5 +715,15 @@ public partial class StatusBarTests
 		view.SetBackgroundColor(Colors.Blue.ToPlatform());
 		content.AddView(view, new Android.Widget.FrameLayout.LayoutParams(AppViewSize, AppViewSize));
 		return view;
+	}
+
+	// ViewGroup.addView gives a child without layout parameters default ones: only the protected attachViewToParent leaves a child without them.
+	sealed class RootWithAChildWithoutLayoutParameters : Android.Widget.FrameLayout
+	{
+		public RootWithAChildWithoutLayoutParameters(Android.Content.Context context, AView decorView, AView childWithoutLayoutParameters) : base(context)
+		{
+			AddView(decorView);
+			AttachViewToParent(childWithoutLayoutParameters, -1, null);
+		}
 	}
 }
