@@ -31,9 +31,10 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <remarks>
 	/// This property will be <c>null</c> if no camera is selected.
-	/// Changing it while the camera preview runs restarts the preview with the new camera. When the new camera cannot be started (for example
-	/// because another app uses it), the preview stays stopped, the view reports the failure through its ErrorOccurred event, and selecting
-	/// another camera starts the preview with that camera. The same holds after a start of the preview (when the view connects its camera, or
+	/// Changing it while the camera preview runs restarts the preview with the new camera, and a <see cref="StopCameraPreview"/> before the new
+	/// camera has started keeps the preview stopped. When the new camera cannot be started (for example because another app uses it), the
+	/// preview stays stopped, the view reports the failure through its ErrorOccurred event, and selecting another camera starts the preview
+	/// with that camera. The same holds after a start of the preview (when the view connects its camera, or
 	/// <see cref="StartCameraPreview(CancellationToken)"/>) that failed because of the selected camera. After a start that failed because the
 	/// camera permission is not granted, changing it does not start the preview: call <see cref="StartCameraPreview(CancellationToken)"/> once
 	/// the app has the permission.

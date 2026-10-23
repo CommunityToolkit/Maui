@@ -470,9 +470,15 @@ partial class CameraManager
 			return;
 		}
 
+		var stopCameraPreviewToken = stopCameraPreviewTokenSource.Token;
 		try
 		{
-			await PlatformStartCameraPreview(CancellationToken.None);
+			await PlatformStartCameraPreview(stopCameraPreviewToken);
+		}
+		catch (OperationCanceledException) when (stopCameraPreviewToken.IsCancellationRequested)
+		{
+			// The app stopped the preview while the switch waited for CameraX: the preview stays stopped, and the recording that ended still
+			// returns its video
 		}
 		catch (System.Exception ex) when (!isDisposed)
 		{

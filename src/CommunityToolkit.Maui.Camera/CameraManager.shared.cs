@@ -20,6 +20,9 @@ sealed partial class CameraManager(
 {
 	readonly Action onLoaded = onLoaded;
 
+	// StopCameraPreview cancels it: a camera switch that still waits for the platform must not start the preview that the app stopped meanwhile
+	CancellationTokenSource stopCameraPreviewTokenSource = new();
+
 	bool isInitialized;
 
 	/// <summary>
@@ -114,7 +117,14 @@ sealed partial class CameraManager(
 	/// <summary>
 	/// Stops the camera preview.
 	/// </summary>
-	public void StopCameraPreview() => PlatformStopCameraPreview();
+	public void StopCameraPreview()
+	{
+		using var pendingCameraSwitchesTokenSource = stopCameraPreviewTokenSource;
+		stopCameraPreviewTokenSource = new();
+		pendingCameraSwitchesTokenSource.Cancel();
+
+		PlatformStopCameraPreview();
+	}
 
 	/// <summary>
 	/// Updates the current camera.
@@ -137,9 +147,20 @@ sealed partial class CameraManager(
 		{
 			PlatformStopCameraPreviewForCameraSwitch();
 
+			var stopCameraPreviewToken = stopCameraPreviewTokenSource.Token;
+			using var cameraSwitchTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, stopCameraPreviewToken);
+
 			// A camera that cannot be started leaves the manager initialized, so that selecting another camera opens that camera instead of being
 			// ignored (a stopped manager does not follow SelectedCamera): PlatformStartCameraPreview decides, as for the first start
-			await PlatformStartCameraPreview(token);
+			try
+			{
+				await PlatformStartCameraPreview(cameraSwitchTokenSource.Token);
+			}
+			catch (Exception) when (stopCameraPreviewToken.IsCancellationRequested)
+			{
+				// The app stopped the preview while the switch waited for the platform, which can also end that start with an error (on Windows the
+				// stop releases the MediaCapture that the start still configures): the preview stays stopped, and there is no error to report
+			}
 		}
 	}
 

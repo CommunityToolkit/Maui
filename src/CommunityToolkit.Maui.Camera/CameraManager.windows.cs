@@ -157,6 +157,10 @@ partial class CameraManager
 			{
 				throw new CameraException("Unable to open the selected camera. It may be unavailable or in use by another application.");
 			}
+
+			// StopCameraPreview cancels a camera switch and releases the MediaCapture that the switch initializes: an initialization that Media
+			// Foundation completes all the same must not go on with it
+			token.ThrowIfCancellationRequested();
 		}
 		catch (Exception ex)
 		{
@@ -169,6 +173,10 @@ partial class CameraManager
 			{
 				throw;
 			}
+
+			// Media Foundation can also fail to initialize the MediaCapture that StopCameraPreview released: a start that was cancelled reports no
+			// error
+			token.ThrowIfCancellationRequested();
 
 			// A camera that cannot be opened (it does not exist any more, or another app uses it) leaves the preview started, so that selecting
 			// another camera starts the preview with that camera (UpdateCurrentCamera), as on Android, iOS and Mac Catalyst. A camera that the
