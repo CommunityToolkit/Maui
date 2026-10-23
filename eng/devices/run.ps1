@@ -682,34 +682,39 @@ function Write-RunPlan {
 
 function Write-RunScriptOutput {
     # Write-Host writes to the information stream. Invoke-RunPlatform redirects that stream to read the ERROR lines of the script for the
-    # summary, so the text goes to the host from here, with the colors the script gave it.
+    # summary, so the text goes to the host from here, with the colors the script gave it. A line that cannot be shown with its colors is
+    # shown without them: a problem in here must never stop the tests of the script.
     param($Item, $ErrorLines)
 
-    if ($Item -isnot [System.Management.Automation.InformationRecord]) {
+    try {
+        $data = $Item
+        if ($Item -is [System.Management.Automation.InformationRecord]) {
+            $data = $Item.MessageData
+        }
+
+        if ($data -isnot [System.Management.Automation.HostInformationMessage]) {
+            Write-Host "$data"
+            return
+        }
+
+        if ($data.Message -match '^(?:ERROR: |::error[^:]*::)(.*)$') {
+            $ErrorLines.Add($Matches[1])
+        }
+
+        $arguments = @{ Object = $data.Message; NoNewline = $data.NoNewLine }
+        if ($null -ne $data.ForegroundColor -and [int]$data.ForegroundColor -ge 0) {
+            $arguments['ForegroundColor'] = $data.ForegroundColor
+        }
+
+        if ($null -ne $data.BackgroundColor -and [int]$data.BackgroundColor -ge 0) {
+            $arguments['BackgroundColor'] = $data.BackgroundColor
+        }
+
+        Write-Host @arguments
+    }
+    catch {
         Write-Host "$Item"
-        return
     }
-
-    $data = $Item.MessageData
-    if ($data -isnot [System.Management.Automation.HostInformationMessage]) {
-        Write-Host "$data"
-        return
-    }
-
-    if ($data.Message -match '^(?:ERROR: |::error[^:]*::)(.*)$') {
-        $ErrorLines.Add($Matches[1])
-    }
-
-    $arguments = @{ Object = $data.Message; NoNewline = $data.NoNewLine }
-    if ($null -ne $data.ForegroundColor -and [int]$data.ForegroundColor -ge 0) {
-        $arguments['ForegroundColor'] = $data.ForegroundColor
-    }
-
-    if ($null -ne $data.BackgroundColor -and [int]$data.BackgroundColor -ge 0) {
-        $arguments['BackgroundColor'] = $data.BackgroundColor
-    }
-
-    Write-Host @arguments
 }
 
 function Get-RunAppResult {
