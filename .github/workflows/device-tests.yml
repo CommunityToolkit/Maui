@@ -49,6 +49,9 @@ env:
 # No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
+# Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
+# (eng/devices/LOCAL.md), so this file shows how to run them. A job names its -Platform and its -Project: without them run.ps1 chooses for
+# the machine, and for a Category= filter leaves out the apps and platforms that have no test of the category, where a job runs what it names.
 jobs:
     # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") packages the apps a second time with instrumented
     # toolkit assemblies, so a manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the
@@ -134,7 +137,7 @@ jobs:
                     df -h "$GITHUB_WORKSPACE" "$HOME"
 
             -   name: Build device test apps
-                run: pwsh ./eng/devices/android.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # Runs even when an app failed to build, so the other apps are still tested.
             -   name: Run device tests
@@ -156,7 +159,8 @@ jobs:
                     emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated ${{ matrix.emulator-features }}
                     disable-animations: true
                     # 30 minutes per app: the main app took 5.5 minutes on an arm64 emulator on an M4 Max; this one has 4 cores and software rendering.
-                    script: pwsh ./eng/devices/android.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:30:00 -Results artifacts/device-tests/android-api${{ matrix.api-level }}
+                    # -ResultsFolder, not -Results: the coverage upload below reads this exact folder, and the coverage report is named after it.
+                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:30:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
 
             -   name: Upload device test results
                 if: always()
@@ -223,12 +227,12 @@ jobs:
                     system_profiler SPAudioDataType SPCameraDataType || true
 
             -   name: Build device test apps
-                run: pwsh ./eng/devices/ios.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # 40 minutes per app: the main app took 8 minutes on an M4 Max; the runner has 3 M1 cores.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/ios.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:40:00
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:40:00
 
             -   name: Upload device test results
                 if: always()
@@ -338,12 +342,12 @@ jobs:
                     sudo sqlite3 -cmd '.timeout 5000' "$db" "SELECT service, client, auth_value FROM access WHERE client LIKE 'com.communitytoolkit.maui.%';" || true
 
             -   name: Build device test apps
-                run: pwsh ./eng/devices/catalyst.ps1 -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # 30 minutes per app: the main app took 5.5 minutes on an M4 Max; the runner has 3 M1 cores.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/catalyst.ps1 -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
+                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
 
             -   name: Upload device test results
                 if: always()
@@ -454,15 +458,15 @@ jobs:
                     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
                     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
 
-            # windows.ps1 runs in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
+            # run.ps1 runs windows.ps1 in its own process, in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
             -   name: Build device test apps
                 shell: powershell
-                run: .\eng\devices\windows.ps1 -Target buildOnly -Packaging ${{ matrix.packaging }} -Project $env:DEVICE_TEST_PROJECT -Configuration $env:DEVICE_TEST_CONFIGURATION
+                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Project $env:DEVICE_TEST_PROJECT -Configuration $env:DEVICE_TEST_CONFIGURATION
 
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.workload.outcome == 'success' }}
                 shell: powershell
-                run: .\eng\devices\windows.ps1 -Target testOnly -Packaging ${{ matrix.packaging }} -Project $env:DEVICE_TEST_PROJECT -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00
+                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target testOnly -Project $env:DEVICE_TEST_PROJECT -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00
 
             -   name: Upload device test results
                 if: always()
