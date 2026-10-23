@@ -1,9 +1,11 @@
 using System.Reflection;
+using Android.App;
 using Android.Content;
 using Android.Views;
 using Android.Views.Accessibility;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 using FrameLayout = Android.Widget.FrameLayout;
 
@@ -787,7 +789,7 @@ public partial class TouchBehaviorInputTests
 	[InlineData(true, true)]
 	public async Task PickerOpensOnATapWhileTheBehaviorIsAttachedAndAfterItIsRemoved(bool timePicker, bool behaviorRemoved)
 	{
-		SetupBuilder();
+		SetupBuilderKeepingPickerDialogs();
 
 		VisualElement picker = timePicker
 			? new TimePicker { WidthRequest = 200, HeightRequest = 50 }
@@ -993,7 +995,7 @@ public partial class TouchBehaviorInputTests
 	[InlineData(nameof(Picker))]
 	public async Task PickerOpensOnAClickInTouchExplorationWithoutCompletingTheGesture(string pickerType)
 	{
-		SetupBuilder();
+		SetupBuilderKeepingPickerDialogs();
 
 		var (picker, isOpen, close) = CreatePicker(pickerType);
 		var behaviorCommand = new CountingCommand();
@@ -1012,6 +1014,7 @@ public partial class TouchBehaviorInputTests
 				finally
 				{
 					close();
+					DismissPickerDialogs(handler);
 				}
 
 				await WaitUntilAsync(() => !isOpen(), $"The {pickerType} did not close.");
@@ -1281,6 +1284,31 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
+	// IsOpen = false only hides the dialog of MAUI's DatePicker and TimePicker, and the TimePicker's handler then forgets it. The hidden window
+	// stays attached to the activity (android.view.WindowLeaked when the activity is destroyed), so the tests dismiss the dialogs that the
+	// handlers of SetupBuilderKeepingPickerDialogs recorded.
+	static void DismissPickerDialogs(IPlatformViewHandler handler)
+	{
+		var dialogs = handler switch
+		{
+			DialogKeepingDatePickerHandler datePickerHandler => datePickerHandler.Dialogs,
+			DialogKeepingTimePickerHandler timePickerHandler => timePickerHandler.Dialogs,
+			_ => []
+		};
+
+		foreach (var dialog in dialogs)
+		{
+			dialog.Dismiss();
+		}
+	}
+
+	void SetupBuilderKeepingPickerDialogs() =>
+		SetupBuilder(builder => builder.ConfigureMauiHandlers(handlers =>
+		{
+			handlers.AddHandler<DatePicker, DialogKeepingDatePickerHandler>();
+			handlers.AddHandler<TimePicker, DialogKeepingTimePickerHandler>();
+		}));
+
 	async Task TapAndCloseThePickerAsync(IPlatformViewHandler handler, VisualElement picker, string step)
 	{
 		Func<bool> isOpen = picker is DatePicker datePicker ? () => datePicker.IsOpen : () => ((TimePicker)picker).IsOpen;
@@ -1301,6 +1329,8 @@ public partial class TouchBehaviorInputTests
 			{
 				((TimePicker)picker).IsOpen = false;
 			}
+
+			DismissPickerDialogs(handler);
 		}
 
 		await WaitUntilAsync(() => !isOpen(), $"The {picker.GetType().Name} did not close {step}.");
@@ -1321,5 +1351,29 @@ public partial class TouchBehaviorInputTests
 			?? throw new MissingMethodException(nameof(TouchBehavior), methodName);
 
 		return method.Invoke(behavior, arguments);
+	}
+
+	sealed class DialogKeepingDatePickerHandler : DatePickerHandler
+	{
+		public List<Dialog> Dialogs { get; } = [];
+
+		protected override DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
+		{
+			var dialog = base.CreateDatePickerDialog(year, month, day);
+			Dialogs.Add(dialog);
+			return dialog;
+		}
+	}
+
+	sealed class DialogKeepingTimePickerHandler : TimePickerHandler
+	{
+		public List<Dialog> Dialogs { get; } = [];
+
+		protected override TimePickerDialog CreateTimePickerDialog(int hour, int minute)
+		{
+			var dialog = base.CreateTimePickerDialog(hour, minute);
+			Dialogs.Add(dialog);
+			return dialog;
+		}
 	}
 }
