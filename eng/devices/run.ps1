@@ -404,12 +404,21 @@ function Test-RunIosRuntimeInstalled {
 }
 
 function Get-RunAvdRoot {
+    # The folder must be the one where the emulator, which android.ps1 starts, looks for the AVDs.
     if ($env:ANDROID_AVD_HOME) {
         return $env:ANDROID_AVD_HOME
     }
 
+    if ($env:ANDROID_EMULATOR_HOME) {
+        return Join-Path $env:ANDROID_EMULATOR_HOME 'avd'
+    }
+
     if ($env:ANDROID_USER_HOME) {
         return Join-Path $env:ANDROID_USER_HOME 'avd'
+    }
+
+    if ($env:ANDROID_SDK_HOME) {
+        return Join-Path $env:ANDROID_SDK_HOME (Join-Path '.android' 'avd')
     }
 
     $userFolder = $HOME
