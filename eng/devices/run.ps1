@@ -401,6 +401,11 @@ function Get-RunAvds {
     foreach ($file in (Get-ChildItem -LiteralPath $Root -Filter '*.ini' -File)) {
         $pointer = Read-RunIniFile $file.FullName
         $directory = $pointer['path']
+        # The absolute path is stale when the AVD folder was copied to another user or machine.
+        if ((-not $directory -or -not (Test-Path -LiteralPath $directory -PathType Container)) -and $pointer['path.rel']) {
+            $directory = Join-Path (Split-Path -Parent $Root) $pointer['path.rel']
+        }
+
         if (-not $directory -or -not (Test-Path -LiteralPath $directory -PathType Container)) {
             $directory = Join-Path $Root "$($file.BaseName).avd"
         }
@@ -566,6 +571,11 @@ function Get-RunAndroidEntry {
 
         $abis = (Get-RunHostAbis) -join ' or '
         return New-RunPlanEntry -Id 'android' -Available $false -Detail "no emulator is running and none of the AVDs ($(($avds | ForEach-Object { $_.Name }) -join ', ')) is a phone or tablet image for this CPU ($abis)."
+    }
+
+    $emulator = Get-AndroidTool -SdkRoot $sdkRoot -Folder 'emulator' -Name 'emulator'
+    if (-not (Test-Path -LiteralPath $emulator -PathType Leaf)) {
+        return New-RunPlanEntry -Id 'android' -Available $false -Detail "the AVD $($picked.Name) cannot be booted: $emulator was not found (install the Android Emulator with the SDK Manager)."
     }
 
     $port = $EmulatorPort
