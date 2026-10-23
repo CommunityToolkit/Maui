@@ -1,10 +1,10 @@
 # Running the device tests from the command line
 
-These scripts build the device test apps and run them headless on Android, iOS, Mac Catalyst and Windows. They follow dotnet/maui's `eng/devices/*.cake` scripts (same targets, same `TestFilter` syntax, same XHarness arguments, same Windows app contract) and are what the device test jobs (`.github/workflows/device-tests.yml`, part of the `Build` workflow) run on every pull request. To run the tests on your own machine, start with [`run.ps1`](#one-command-runps1) and the guide for contributors, [LOCAL.md](LOCAL.md): one command for every platform your machine can run, running an app from Visual Studio, Rider or Visual Studio Code, the tests that need a person, and what a local run does differently from CI.
+These scripts build the device test apps and run them headless on Android, iOS, Mac Catalyst and Windows. They follow dotnet/maui's `eng/devices/*.cake` scripts (same targets, same `TestFilter` syntax, same XHarness arguments, same Windows app contract) and run on every pull request in the device test jobs (`.github/workflows/device-tests.yml`, part of the `Build` workflow), which call [`run.ps1`](#one-command-runps1), one platform per job. To run the tests on your own machine, use the same `run.ps1` and the guide for contributors, [LOCAL.md](LOCAL.md): one command for every platform your machine can run, running an app from Visual Studio, Rider or Visual Studio Code, the tests that need a person, and what a local run does differently from CI.
 
 | Script | Platform | Runner |
 | --- | --- | --- |
-| `run.ps1` | every platform this machine can run | the scripts below, one after the other |
+| `run.ps1` | every platform this machine can run; in CI, the platform of the job | the scripts below, one after the other |
 | `android.ps1` | Android emulator or device | `xharness android test` |
 | `ios.ps1` | iOS simulator | `xharness apple test --target ios-simulator-64` |
 | `catalyst.ps1` | Mac Catalyst on this Mac | `xharness apple test --target maccatalyst` |
@@ -64,7 +64,7 @@ echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n CTM_
 
 ## One command: run.ps1
 
-`run.ps1` detects the operating system and the platforms it can run, runs the platform scripts on each with `-Target buildAndTest` (all three apps, `Debug`), and ends with one summary. It needs no setup beyond the [prerequisites](#prerequisites). [LOCAL.md](LOCAL.md) is the guide for using it.
+`run.ps1` detects the operating system and the platforms it can run, runs the platform scripts on each with `-Target buildAndTest` (all three apps, `Debug`), and ends with one summary. It needs no setup beyond the [prerequisites](#prerequisites). [LOCAL.md](LOCAL.md) is the guide for using it, and the [CI](#ci) jobs run it too, one `-Platform` each.
 
 ```bash
 pwsh eng/devices/run.ps1                                                   # everything this machine can run
@@ -97,7 +97,7 @@ Android runs on, in this order: the device named by `-DeviceId` (without `-Avd`)
 | `-Udid`, `-Xcode` | | iOS: use this simulator (nothing is granted on it); iOS and Mac Catalyst: use this Xcode.app |
 | `-KeepDevice` | | keep the simulator or the AVD that a script started, and the installed packaged Windows app |
 
-The platform scripts run in the process of `run.ps1`, one after the other, and print as they always do; the summary at the end has one row per platform and app with the tests that passed, failed and were skipped, the time of the platform and the results folder, then the reasons of every failure and the platforms that were skipped. The exit code is the first non-zero exit code of the scripts, or 0. Before `run.ps1` runs a platform it deletes the `gate.json` and `summary.md` (`build-summary.md` for `-Target buildOnly`) of an earlier run, so a script that ends before it writes its verdicts shows no old numbers. Packaged Windows runs first of the two Windows platforms, so that a missing elevation shows within seconds. `-Coverage` and `-XHarnessArgs` are not passed on: use the platform scripts for them.
+The platform scripts run in the process of `run.ps1`, one after the other, and print as they always do; the summary at the end has one row per platform and app with the tests that passed, failed and were skipped, the time of the platform and the results folder, then the reasons of every failure and the platforms that were skipped. The exit code is the first non-zero exit code of the scripts, or 0. Before `run.ps1` runs a platform it deletes the `gate.json` and `summary.md` (`build-summary.md` for `-Target buildOnly`) of an earlier run, so a script that ends before it writes its verdicts shows no old numbers. Packaged Windows runs first of the two Windows platforms, so that a missing elevation shows within seconds. `-Coverage` and `-XHarnessArgs` are not passed on: use the platform scripts for them. The platform scripts read `TEST_FILTER`, `DEVICE_TEST_SKIP_CAPABILITIES` and `DEVICE_TEST_REQUIRE_CAPABILITIES` from the environment, and all but `windows.ps1` read `DEVICE_TEST_COVERAGE`, so `run.ps1` declares capabilities and collects coverage when they are set, as the CI jobs do.
 
 ## Parameters
 
@@ -165,7 +165,7 @@ Some tests need something that a machine may lack: a camera, a second camera, a 
 Only the CI jobs set the variables, so local script runs and the visual runner declare nothing and run everything. The scripts pass the lists the way they pass `TestFilter`: `--arg SkipCapabilities=...` on Android, `--set-env SkipCapabilities=...` on iOS and Mac Catalyst, and on Windows a `devicetestcapabilities.txt` file next to the results file, because a packaged app does not inherit the environment. A name in both lists is an invalid argument (3), and each app's `DeclaredCapabilitiesAreValid` infrastructure test fails on a name that is not a capability. The run header and `summary.md` show the declarations. To see what a CI job skips, replay it locally with its lists:
 
 ```bash
-pwsh eng/devices/catalyst.ps1 -Project All -SkipCapabilities Camera
+pwsh eng/devices/run.ps1 -Platform maccatalyst -Project All -SkipCapabilities Camera
 ```
 
 ## Results and exit codes
@@ -232,6 +232,23 @@ The scripts only touch devices they create or that you name; `run.ps1` follows t
 ## CI
 
 The device test jobs, in `.github/workflows/device-tests.yml`, run every app on Android (API 36 and 28, x86_64 emulators on `ubuntu-24.04`), the iOS simulator and Mac Catalyst (`xcode-27`), and Windows packaged and unpackaged (`windows-2025`), and upload `artifacts/device-tests` and `artifacts/logs` from every job. The `Build` workflow (`dotnet-build.yml`) runs them as its `Device Tests` job (a reusable workflow) for pushes to `main` and pull requests, not for tags, and they load the .NET and Xcode versions from `.github/workflows/shared.env`, as the `Build` jobs do. The `Device Tests / Device Tests` job fails when any of the others fails; make it the required status check. To run a subset, start the `Device Tests` workflow from the Actions tab (`workflow_dispatch`) and choose the inputs `project` (`All`, `Maui`, `MediaElement` or `Camera`) and `test-filter`.
+
+Every job builds and tests with [`run.ps1`](#one-command-runps1), the command that runs the device tests on your machine: its `Build device test apps` step runs it with `-Target buildOnly` and its `Run device tests` step with `-Target testOnly`, so the job lines in `device-tests.yml` show how to run each platform. A line names its `-Platform` and its `-Project` (`DEVICE_TEST_PROJECT`: `All`, or the app that a manual run chose) and passes the `-Configuration` (`DEVICE_TEST_CONFIGURATION`); the test step adds the `-Timeout`. Without `-Platform` and `-Project`, `run.ps1` chooses for the machine and, for a `Category=` filter, leaves out the apps and platforms that have no test of the category, but a job runs what it names, and an app that runs 0 tests fails the job with 94.
+
+| Job | `-Platform` | Results folder, below `artifacts/device-tests/` |
+| --- | --- | --- |
+| Android API 36 and 28 | `android`, and `-DeviceId emulator-5554` in the test step, the emulator that the action boots | `android-api36` and `android-api28`, named with `-ResultsFolder` because the coverage upload reads the folder and the report is named after it |
+| iOS simulator | `ios` | `ios` |
+| Mac Catalyst | `maccatalyst` | `maccatalyst` |
+| Windows | `windows-packaged` and `windows-unpackaged`, run by Windows PowerShell 5.1 | `windows-packaged` and `windows-unpackaged` |
+
+`run.ps1` runs the platform script in its own process, so a step gets what it got from the script: the exit code (the first non-zero one of the scripts, such as 94 for an app that produced no results, which fails the step), the `::error` and `::warning` annotations, and the table that the script appends to the job summary (`$GITHUB_STEP_SUMMARY`). The script reads the `env` of the job (`DEVICE_TEST_COVERAGE`, `DEVICE_TEST_SKIP_CAPABILITIES`, `DEVICE_TEST_REQUIRE_CAPABILITIES` and `TEST_FILTER`) as it did, and the log gains the plan that `run.ps1` prints first and its summary last. To replay a job on your machine, set its `env` and run its lines, for example Mac Catalyst:
+
+```bash
+export DEVICE_TEST_PROJECT=All DEVICE_TEST_CONFIGURATION=Release DEVICE_TEST_SKIP_CAPABILITIES=Camera
+pwsh eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
+pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
+```
 
 The jobs build and run the apps in `Release` (`DEVICE_TEST_CONFIGURATION`), the configuration that apps ship in; a manual run can choose `Debug` (the `configuration` input) for readable BCL exception messages and line numbers in stack traces. Debug runs every assembly in the Mono interpreter on Android, iOS and Mac Catalyst (MAUI sets `UseInterpreter` for Debug) and trims nothing, which no shipped app does, so it cannot show what only a Release build does:
 
