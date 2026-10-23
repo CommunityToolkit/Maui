@@ -73,6 +73,7 @@ partial class CameraManager
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
 	OrientationListener? orientationListener;
+	ActivityResumedObserver? activityResumedObserver;
 	Java.IO.File? videoRecordingFile;
 	TaskCompletionSource? videoRecordingFinalizeTcs;
 	CameraConsumer? videoRecordingConsumer;
@@ -81,6 +82,11 @@ partial class CameraManager
 	bool isDisposed;
 
 	bool isCameraSwitchDeferred;
+
+	// Android cannot tell a camera permission that the app has not asked for yet from a denied one, and an app often asks for it while the view
+	// connects its camera: a start that failed only for the missing permission is retried once the activity resumes with it, as CameraX opened
+	// the camera by itself before the start checked the permission
+	bool isWaitingForCameraPermission;
 
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
 	enum CaptureSessionMode { Photo, Video }
@@ -169,6 +175,13 @@ partial class CameraManager
 		orientationListener?.Dispose();
 		orientationListener = null;
 
+		if (activityResumedObserver is not null && context is ILifecycleOwner lifecycleOwner)
+		{
+			lifecycleOwner.Lifecycle.RemoveObserver(activityResumedObserver);
+			activityResumedObserver.Dispose();
+			activityResumedObserver = null;
+		}
+
 		videoRecordingStream?.Dispose();
 		videoRecordingStream = null;
 	}
@@ -186,6 +199,14 @@ partial class CameraManager
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(OnOrientationChanged, context);
 		orientationListener.Enable();
+
+		// Observed for the lifetime of the manager rather than only while a start waits for the camera permission: a lifecycle accepts
+		// observers only on the main thread, on which the platform view is created and disposed, while a start can fail on any thread
+		if (activityResumedObserver is null && context is ILifecycleOwner lifecycleOwner)
+		{
+			activityResumedObserver = new ActivityResumedObserver(OnActivityResumed);
+			lifecycleOwner.Lifecycle.AddObserver(activityResumedObserver);
+		}
 
 		return previewView;
 	}
@@ -552,6 +573,8 @@ partial class CameraManager
 			return;
 		}
 
+		isWaitingForCameraPermission = false;
+
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
 		// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
@@ -561,10 +584,11 @@ partial class CameraManager
 		}
 
 		// CameraX binds the use cases also without the camera permission, and then keeps trying to open the camera without reporting anything.
-		// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped until
-		// StartCameraPreview is called again once the app has the permission
-		if (ContextCompat.CheckSelfPermission(context, Android.Manifest.Permission.Camera) is not Android.Content.PM.Permission.Granted)
+		// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped, until
+		// StartCameraPreview is called again or the activity resumes with the permission (OnActivityResumed)
+		if (!IsCameraPermissionGranted())
 		{
+			isWaitingForCameraPermission = true;
 			throw new CameraException(cameraPermissionNotGrantedMessage);
 		}
 
@@ -607,6 +631,8 @@ partial class CameraManager
 	// StopCameraPreview always stops the preview, also a running recording (CameraX finalizes it) and a camera switch that waits for it
 	private partial void PlatformStopCameraPreview()
 	{
+		isWaitingForCameraPermission = false;
+
 		if (processCameraProvider is null)
 		{
 			return;
@@ -619,6 +645,38 @@ partial class CameraManager
 
 	private partial void PlatformDisconnect()
 	{
+	}
+
+	bool IsCameraPermissionGranted() =>
+		ContextCompat.CheckSelfPermission(context, Android.Manifest.Permission.Camera) is Android.Content.PM.Permission.Granted;
+
+	void OnActivityResumed()
+	{
+		if (isWaitingForCameraPermission && IsCameraPermissionGranted())
+		{
+			StartCameraPreviewWithTheGrantedPermission();
+		}
+	}
+
+	// No caller awaits a start that the resume of the activity retries, so an exception that escaped would end the app: its failure is reported
+	// like the failures of the work that CameraViewHandler starts on its own
+	async void StartCameraPreviewWithTheGrantedPermission()
+	{
+		var stopCameraPreviewToken = stopCameraPreviewTokenSource.Token;
+
+		try
+		{
+			await PlatformStartCameraPreview(stopCameraPreviewToken);
+		}
+		catch (System.Exception ex)
+		{
+			// Like a camera switch, a start that StopCameraPreview interrupted while it waited for CameraX ends quietly, and so does a start whose
+			// view was released meanwhile
+			if (!stopCameraPreviewToken.IsCancellationRequested && !isDisposed)
+			{
+				cameraView.OnErrorOccurred(ex);
+			}
+		}
 	}
 
 	private partial ValueTask PlatformTakePicture(CancellationToken token)
@@ -1005,6 +1063,17 @@ partial class CameraManager
 			}
 
 			callback.Invoke(orientation);
+		}
+	}
+
+	sealed class ActivityResumedObserver(Action onResumed) : Object, ILifecycleEventObserver
+	{
+		public void OnStateChanged(ILifecycleOwner source, Lifecycle.Event e)
+		{
+			if (e.Equals(Lifecycle.Event.OnResume))
+			{
+				onResumed.Invoke();
+			}
 		}
 	}
 }

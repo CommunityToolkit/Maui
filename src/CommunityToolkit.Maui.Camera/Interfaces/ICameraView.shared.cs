@@ -37,7 +37,8 @@ public interface ICameraView : IView
 	/// with that camera. The same holds after a start of the preview (when the view connects its camera, or
 	/// <see cref="StartCameraPreview(CancellationToken)"/>) that failed because of the selected camera. After a start that failed because the
 	/// camera permission is not granted, changing it does not start the preview: call <see cref="StartCameraPreview(CancellationToken)"/> once
-	/// the app has the permission.
+	/// the app has the permission (on Android the preview also starts when the activity resumes with the permission, see
+	/// <see cref="StartCameraPreview(CancellationToken)"/>).
 	/// On Android, selecting another camera while a video recording runs does not end the recording, nor does selecting the camera of the
 	/// recording again (for example after <c>null</c>): the change waits until the recording is stopped or replaced. <see cref="StopVideoRecording(CancellationToken)"/> applies the change before it returns, and
 	/// <see cref="StartVideoRecording(CancellationToken)"/> or <see cref="StartVideoRecording(Stream, CancellationToken)"/> applies it before it
@@ -91,8 +92,12 @@ public interface ICameraView : IView
 	/// example no camera is available, the camera permission is not granted, or the selected camera cannot be opened (another app uses it, or
 	/// it was unplugged). A preview whose selected camera cannot be opened counts as started: selecting another camera starts the preview with
 	/// that camera (see <see cref="SelectedCamera"/>). A preview without the camera permission stays stopped until this method is called again
-	/// once the app has the permission; on Android that is also the case when the view connected its camera before the app asked for the
-	/// permission.
+	/// once the app has the permission.
+	/// On Android, a start that failed only because the app did not have the camera permission (it had not asked for it yet, or the user denied
+	/// it) is retried when the activity of the view resumes with the permission granted, for example once the user allowed it in the permission
+	/// dialog or in the settings of the app: a view that connects its camera while the app asks for the permission starts its preview without a
+	/// call to this method. The retry reports its failure through the ErrorOccurred event. Only the last start counts: <see cref="StopCameraPreview"/>
+	/// cancels the retry, and so does a later start that succeeds or that fails for another reason.
 	/// </remarks>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled before the preview started.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when the view has no handler, for example before it is shown or after its handler was
@@ -105,6 +110,8 @@ public interface ICameraView : IView
 	/// <remarks>
 	/// To customize the behavior of stopping the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StopCameraPreview), ADD YOUR METHOD);</c>.
+	/// On Android it also cancels the start that the activity would retry once the app has the camera permission (see
+	/// <see cref="StartCameraPreview(CancellationToken)"/>).
 	/// </remarks>
 	void StopCameraPreview();
 

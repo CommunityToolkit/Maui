@@ -790,10 +790,8 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		});
 	}
 
-	// CameraX binds the use cases also without the camera permission and then keeps trying to open the camera without reporting anything. A
-	// start without the permission fails instead: it is reported, nothing is bound, and the preview stays stopped (a later SelectedCamera does
-	// not start it) until StartCameraPreview is called once the app has the permission, like on iOS, Mac Catalyst and Windows. Android kills the
-	// app when a granted runtime permission is revoked, so the manager's Context denies it.
+	// Android kills the app when a granted runtime permission is revoked, so the manager's Context denies it. The start that a resume of the
+	// activity retries once the app has the permission is tested in CameraPermissionResumeAndroidTests.
 	[Fact]
 	public async Task StartCameraPreviewWithoutTheCameraPermissionRaisesErrorOccurredAndLeavesThePreviewStopped()
 	{

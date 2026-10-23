@@ -262,6 +262,17 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected Task SettleUiThreadAsync() =>
 		InvokeOnMainThreadAsync(() => { }).ContinueWith(_ => InvokeOnMainThreadAsync(() => { }), TaskScheduler.Default).Unwrap();
 
+	// Work that the manager starts on its own (a camera switch that a view starts in the async void MapSelectedCamera, a start that the resume
+	// of the activity retries) returns no task to await. It waits for the listeners of CameraX futures that completed before, which run on the
+	// UI thread within a few messages: once these messages ran, that work has bound its camera or given up.
+	protected async Task WaitForTheListenersOfCameraXAsync()
+	{
+		for (var i = 0; i < 10; i++)
+		{
+			await SettleUiThreadAsync();
+		}
+	}
+
 	// Waiting only for STREAMING could return before the rebind took effect, while the PreviewView still reports the stream of the
 	// old session. Must be called on the UI thread: LiveData observers are added there.
 	protected static async Task RunAndWaitForANewPreviewStreamAsync(PreviewView previewView, Func<Task> action)

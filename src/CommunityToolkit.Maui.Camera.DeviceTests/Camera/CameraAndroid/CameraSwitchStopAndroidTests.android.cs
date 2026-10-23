@@ -189,15 +189,4 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
 		Assert.True(width > 0 && height > 0, $"The recording has no size ({width}x{height}).");
 	}
-
-	// A camera switch that a view starts runs in the async void MapSelectedCamera, so there is no task to await. It waits for the listeners of
-	// CameraX futures that completed when the camera was connected, which run on the UI thread within a few messages: once these messages
-	// ran, the switch has bound its camera or given up.
-	async Task WaitForTheListenersOfCameraXAsync()
-	{
-		for (var i = 0; i < 10; i++)
-		{
-			await SettleUiThreadAsync();
-		}
-	}
 }

@@ -125,11 +125,13 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	/// <remarks>
 	/// It reports the failures of the work that the handler starts on its own, which no caller could catch: connecting the camera when the
-	/// handler connects the view (for example when no camera is available, when the camera permission was removed, or on Android when CameraX
-	/// cannot initialize), switching to the camera that <see cref="SelectedCamera"/> selects, applying <see cref="ImageCaptureResolution"/>
-	/// and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was disconnected are not reported. It also reports a
-	/// camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an exception, on every platform, and the failures
-	/// of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which let no exception escape.
+	/// handler connects the view (for example when no camera is available, when the app does not have the camera permission, or on Android when
+	/// CameraX cannot initialize), switching to the camera that <see cref="SelectedCamera"/> selects, applying <see cref="ImageCaptureResolution"/>,
+	/// on Android the start of the preview that the activity retries once the app has the camera permission (see
+	/// <see cref="StartCameraPreview(CancellationToken)"/>) and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was
+	/// disconnected are not reported. It also reports a camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an
+	/// exception, on every platform, and the failures of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which
+	/// let no exception escape.
 	/// </remarks>
 	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
 	{
