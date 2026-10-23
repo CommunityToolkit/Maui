@@ -99,7 +99,8 @@ public interface ICameraView : IView
 	/// call to this method. The retry reports its failure through the ErrorOccurred event. Only the last start counts: <see cref="StopCameraPreview"/>
 	/// cancels the retry, and so does a later start that succeeds or that fails for another reason.
 	/// </remarks>
-	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled before the preview started.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled before the start has finished waiting for the
+	/// platform: CameraX on Android, Media Foundation on Windows. On iOS and Mac Catalyst the start does not wait.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when the view has no handler, for example before it is shown or after its handler was
 	/// disconnected.</exception>
 	Task StartCameraPreview(CancellationToken token);
