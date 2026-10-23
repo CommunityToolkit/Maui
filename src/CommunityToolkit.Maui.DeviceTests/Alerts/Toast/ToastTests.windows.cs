@@ -197,6 +197,79 @@ public partial class ToastTests
 		});
 	}
 
+	// The displayed toast gives both Show calls a notification to remove, so the second Show starts while the first one waits for that
+	// removal, as when PopupsPage shows "Popup Opened" right after "Opening Popup". Had the second Show removed the notifications before
+	// the first one showed its own, the second toast would wait behind the banner of the first one.
+	[Fact]
+	public async Task OverlappingShowCallsShowOnlyTheLaterToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Displayed", ToastDuration.Long));
+
+			var first = Toast.Make("First", ToastDuration.Long).Show();
+			var second = Toast.Make("Second", ToastDuration.Long).Show();
+			await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(10));
+
+			var platformToast = AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("No notification was shown.");
+			Assert.Equal(new[] { "Second" }, AlertsWindows.Parse(platformToast).Texts);
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Second"), timeout: 10000, message: "Windows does not list the toast of the later Show.");
+			Assert.Equal(new[] { "Second" }, await GetDisplayedTextsAsync());
+		});
+	}
+
+	// The Dismiss starts while the Show waits for the removal of the displayed toast. The notification shown last tells when Windows lists
+	// what was shown before it, such as a toast that the Show displayed after the Dismiss had removed the notifications.
+	[Fact]
+	public async Task DismissDuringAShowRemovesTheToastOfThatShow()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Displayed", ToastDuration.Long));
+
+			var show = Toast.Make("Shown", ToastDuration.Long).Show();
+			var dismiss = Toast.Make("Other instance").Dismiss();
+			await Task.WhenAll(show, dismiss).WaitAsync(TimeSpan.FromSeconds(10));
+
+			Assert.Null(AlertsWindows.GetPlatformToast());
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Shown after the Dismiss").BuildNotification());
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Shown after the Dismiss"), timeout: 10000, message: "Windows does not list the notification shown after the Dismiss.");
+			Assert.Equal(new[] { "Shown after the Dismiss" }, await GetDisplayedTextsAsync());
+		});
+	}
+
+	// The displayed toast keeps the first Show waiting for its removal, so the token of the second Show is cancelled before the second Show
+	// can remove anything.
+	[Fact]
+	public async Task ShowCancelledWhileAnEarlierShowRunsThrowsAndKeepsTheEarlierToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Displayed", ToastDuration.Long));
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var first = Toast.Make("First", ToastDuration.Long).Show();
+			var second = Toast.Make("Second", ToastDuration.Long).Show(cancellationTokenSource.Token);
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => second.WaitAsync(TimeSpan.FromSeconds(10)));
+			await first.WaitAsync(TimeSpan.FromSeconds(10));
+			var platformToast = AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("No notification was shown.");
+			Assert.Equal(new[] { "First" }, AlertsWindows.Parse(platformToast).Texts);
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("First"), timeout: 10000, message: "Windows does not list the toast of the first Show.");
+			Assert.Equal(new[] { "First" }, await GetDisplayedTextsAsync());
+		});
+	}
+
 	[Fact]
 	public async Task DismissExpiresTheNotificationAndClearsThePlatformToast()
 	{
@@ -219,8 +292,7 @@ public partial class ToastTests
 		});
 	}
 
-	// Two Dismiss calls are both in flight when the first RemoveAllAsync completes: the second one finds the notification already
-	// gone after its await and must skip the expiration update.
+	// The second Dismiss waits for the removal that the first one started, and then finds no toast left to remove.
 	[Fact]
 	public async Task ConcurrentDismissCallsBothComplete()
 	{
