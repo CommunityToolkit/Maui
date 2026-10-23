@@ -109,8 +109,7 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 			throw new InvalidOperationException("Dialog window cannot be null");
 		}
 
-		// Any color without alpha is invisible, not only Color.Transparent (0x00000000)
-		var isColorTransparent = platformColor.A == 0;
+		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
@@ -137,29 +136,17 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 			dialogWindow.SetStatusBarColor(platformColor);
 
-			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
-			{
-				dialogWindow.SetDecorFitsSystemWindows(!isColorTransparent);
-			}
-			else
-			{
-				AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, !isColorTransparent);
-			}
+			// Whatever the color, as StatusBar.SetColor does for the page's window (#3189)
+			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
 		}
 		else
 		{
 			dialogWindow.SetStatusBarColor(platformColor);
 
-			if (isColorTransparent)
-			{
-				dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-			}
-			else
-			{
-				dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			}
+			// LayoutNoLimits is cleared for every color, as StatusBar.SetColor does for the page's window (#3189): it lays the content out behind the system bars with no window insets to avoid them (#2351)
+			dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+			dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
 		}
 	}
 }
