@@ -346,6 +346,69 @@ public partial class SnackbarTests
 		});
 	}
 
+	// The displayed snackbar keeps the first Show waiting for its removal, so the second Show waits for its turn. The first Show hands it the
+	// turn as it completes, and only then is the token cancelled: SemaphoreSlim.WaitAsync returns the turn instead of throwing.
+	[Fact]
+	public async Task ShowCancelledOnceItsTurnCameThrowsAndKeepsTheEarlierSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Displayed", duration: longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 1, timeout: 10000, message: "The displayed snackbar was never listed.");
+			using var recorder = new SnackbarEventRecorder();
+			using var cancellationTokenSource = new CancellationTokenSource();
+			Action firstAction = () => { };
+
+			var first = Snackbar.Make("First", firstAction, "One", longDuration).Show();
+			var second = Snackbar.Make("Second", () => { }, "Two", longDuration).Show(cancellationTokenSource.Token);
+			await first.WaitAsync(dismissTimeout);
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => second.WaitAsync(dismissTimeout));
+			var platformSnackbar = AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("The cancelled Show dismissed the snackbar of the first Show.");
+			Assert.Equal(new[] { "First" }, AlertsWindows.Parse(platformSnackbar).Texts);
+			Assert.Same(firstAction, Assert.Single(AlertsWindows.GetRegisteredActions()).Value);
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed), nameof(Snackbar.Shown) }, recorder.Sequence);
+			Assert.True(Snackbar.IsShown);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("First"), timeout: 10000, message: "Windows does not list the snackbar of the first Show.");
+			Assert.Equal(new[] { "First" }, await GetVisibleMessagesAsync());
+		});
+	}
+
+	// As in ShowCancelledOnceItsTurnCameThrowsAndKeepsTheEarlierSnackbar, the token is cancelled after the Show handed the Dismiss its turn.
+	[Fact]
+	public async Task DismissCancelledOnceItsTurnCameThrowsAndKeepsTheSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Displayed", duration: longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 1, timeout: 10000, message: "The displayed snackbar was never listed.");
+			using var recorder = new SnackbarEventRecorder();
+			using var cancellationTokenSource = new CancellationTokenSource();
+			Action action = () => { };
+
+			var show = Snackbar.Make("Shown", action, "Undo", longDuration).Show();
+			var dismiss = Snackbar.Make("Other instance").Dismiss(cancellationTokenSource.Token);
+			await show.WaitAsync(dismissTimeout);
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => dismiss.WaitAsync(dismissTimeout));
+			var platformSnackbar = AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("The cancelled Dismiss dismissed the snackbar.");
+			Assert.Equal(new[] { "Shown" }, AlertsWindows.Parse(platformSnackbar).Texts);
+			Assert.Same(action, Assert.Single(AlertsWindows.GetRegisteredActions()).Value);
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed), nameof(Snackbar.Shown) }, recorder.Sequence);
+			Assert.True(Snackbar.IsShown);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("Shown"), timeout: 10000, message: "Windows does not list the snackbar of the Show.");
+			Assert.Equal(new[] { "Shown" }, await GetVisibleMessagesAsync());
+		});
+	}
+
 	[Fact]
 	public async Task DismissOnAnotherInstanceRemovesTheNotificationAndTheRegisteredAction()
 	{

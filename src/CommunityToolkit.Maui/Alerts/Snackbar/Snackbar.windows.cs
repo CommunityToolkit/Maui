@@ -16,7 +16,8 @@ public partial class Snackbar
 
 	// Show and Dismiss take turns, in the order they are called. Otherwise a Show or Dismiss that starts while a Show waits for the removal of
 	// the displayed snackbar can remove the notifications before that Show displays its own, which then stays on screen, dismissed and
-	// without its action, in front of any later snackbar.
+	// without its action, in front of any later snackbar. WaitAsync can also hand the turn to a call whose token was cancelled while it
+	// waited, so each call checks its token once its turn came.
 	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
 
 	static Dictionary<string, Action?> actions = [];
@@ -77,6 +78,7 @@ public partial class Snackbar
 		await showAndDismissSemaphore.WaitAsync(token);
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			await RemovePlatformSnackbarAsync();
 		}
 		finally
@@ -95,6 +97,7 @@ public partial class Snackbar
 		await showAndDismissSemaphore.WaitAsync(token);
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			await RemovePlatformSnackbarAsync();
 			token.ThrowIfCancellationRequested();
 

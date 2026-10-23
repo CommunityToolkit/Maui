@@ -270,6 +270,57 @@ public partial class ToastTests
 		});
 	}
 
+	// The displayed toast keeps the first Show waiting for its removal, so the second Show waits for its turn. The first Show hands it the
+	// turn as it completes, and only then is the token cancelled: SemaphoreSlim.WaitAsync returns the turn instead of throwing.
+	[Fact]
+	public async Task ShowCancelledOnceItsTurnCameThrowsAndKeepsTheEarlierToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Displayed", ToastDuration.Long));
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var first = Toast.Make("First", ToastDuration.Long).Show();
+			var second = Toast.Make("Second", ToastDuration.Long).Show(cancellationTokenSource.Token);
+			await first.WaitAsync(TimeSpan.FromSeconds(10));
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => second.WaitAsync(TimeSpan.FromSeconds(10)));
+			var platformToast = AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("The cancelled Show removed the toast of the first Show.");
+			Assert.Equal(new[] { "First" }, AlertsWindows.Parse(platformToast).Texts);
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("First"), timeout: 10000, message: "Windows does not list the toast of the first Show.");
+			Assert.Equal(new[] { "First" }, await GetDisplayedTextsAsync());
+		});
+	}
+
+	// As in ShowCancelledOnceItsTurnCameThrowsAndKeepsTheEarlierToast, the token is cancelled after the Show handed the Dismiss its turn.
+	[Fact]
+	public async Task DismissCancelledOnceItsTurnCameThrowsAndKeepsTheToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Displayed", ToastDuration.Long));
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var show = Toast.Make("Shown", ToastDuration.Long).Show();
+			var dismiss = Toast.Make("Other instance").Dismiss(cancellationTokenSource.Token);
+			await show.WaitAsync(TimeSpan.FromSeconds(10));
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => dismiss.WaitAsync(TimeSpan.FromSeconds(10)));
+			var platformToast = AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("The cancelled Dismiss removed the toast.");
+			Assert.Equal(new[] { "Shown" }, AlertsWindows.Parse(platformToast).Texts);
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Shown"), timeout: 10000, message: "Windows does not list the toast of the Show.");
+			Assert.Equal(new[] { "Shown" }, await GetDisplayedTextsAsync());
+		});
+	}
+
 	[Fact]
 	public async Task DismissExpiresTheNotificationAndClearsThePlatformToast()
 	{

@@ -15,7 +15,8 @@ public partial class Toast
 
 	// Show and Dismiss take turns, in the order they are called. Otherwise a Show that starts while an earlier one waits for the removal of the
 	// displayed toast can remove the notifications before the earlier toast is shown, and its own toast then waits behind that banner until
-	// both are removed at the end of their Duration.
+	// both are removed at the end of their Duration. WaitAsync can also hand the turn to a call whose token was cancelled while it waited, so
+	// each call checks its token once its turn came.
 	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
 
 	static AppNotification? PlatformToast { get; set; }
@@ -40,6 +41,7 @@ public partial class Toast
 		await showAndDismissSemaphore.WaitAsync(token);
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			await RemovePlatformToastAsync();
 		}
 		finally
@@ -85,6 +87,7 @@ public partial class Toast
 		await showAndDismissSemaphore.WaitAsync(token);
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			await RemovePlatformToastAsync();
 			token.ThrowIfCancellationRequested();
 
