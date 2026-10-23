@@ -56,6 +56,8 @@ static class IosStatusBarStyle
 	// UIKit draws the status bar outside the windows of the app, so UIScreen.SnapshotView and UIView.DrawViewHierarchy (public API) leave
 	// it out: _UICreateScreenUIImage (private, UIKitCore) draws the screen as it is shown. On the iOS 27 simulator its status bar pixels
 	// were the same as those of 'xcrun simctl io screenshot'.
+	// Only the top of the screen is read: iPhone Duo shows the status bar on the right edge of its screens, so ios.ps1 creates an iPhone
+	// with one built-in screen.
 	public static StatusBarContent CaptureContent(UIWindowScene scene)
 	{
 		var statusBarFrame = scene.StatusBarManager?.StatusBarFrame ?? throw new InvalidOperationException("The scene has no status bar.");
@@ -93,7 +95,7 @@ static class IosStatusBarStyle
 			}
 		}
 
-		return new StatusBarContent(lightPixels, darkPixels);
+		return new StatusBarContent(lightPixels, darkPixels, $"the top {stripHeight} rows of the {width}x{height} screen (status bar frame {statusBarFrame}, scale {image.CurrentScale})");
 	}
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -102,7 +104,7 @@ static class IosStatusBarStyle
 
 // The background is neither near-white nor near-black (the tests use red pages and bars). The time, signal and battery cover about 5,500
 // pixels of the iOS 27 simulator's status bar (3x) in one color.
-readonly record struct StatusBarContent(int LightPixels, int DarkPixels)
+readonly record struct StatusBarContent(int LightPixels, int DarkPixels, string Region)
 {
 	const int minimumContentPixels = 500;
 
@@ -110,5 +112,5 @@ readonly record struct StatusBarContent(int LightPixels, int DarkPixels)
 
 	public bool IsDark => DarkPixels >= minimumContentPixels && LightPixels * 10 < DarkPixels;
 
-	public override string ToString() => $"{LightPixels} near-white and {DarkPixels} near-black pixels";
+	public override string ToString() => $"{LightPixels} near-white and {DarkPixels} near-black pixels in {Region}";
 }
