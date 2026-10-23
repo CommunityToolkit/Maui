@@ -1,9 +1,10 @@
 # Running the device tests from the command line
 
-These scripts build the device test apps and run them headless on Android, iOS, Mac Catalyst and Windows. They follow dotnet/maui's `eng/devices/*.cake` scripts (same targets, same `TestFilter` syntax, same XHarness arguments, same Windows app contract) and are what the device test jobs (`.github/workflows/device-tests.yml`, part of the `Build` workflow) run on every pull request.
+These scripts build the device test apps and run them headless on Android, iOS, Mac Catalyst and Windows. They follow dotnet/maui's `eng/devices/*.cake` scripts (same targets, same `TestFilter` syntax, same XHarness arguments, same Windows app contract) and are what the device test jobs (`.github/workflows/device-tests.yml`, part of the `Build` workflow) run on every pull request. To run the tests on your own machine, start with [`run.ps1`](#one-command-runps1) and the guide for contributors, [LOCAL.md](LOCAL.md): one command for every platform your machine can run, running an app from Visual Studio, Rider or Visual Studio Code, the tests that need a person, and what a local run does differently from CI.
 
 | Script | Platform | Runner |
 | --- | --- | --- |
+| `run.ps1` | every platform this machine can run | the scripts below, one after the other |
 | `android.ps1` | Android emulator or device | `xharness android test` |
 | `ios.ps1` | iOS simulator | `xharness apple test --target ios-simulator-64` |
 | `catalyst.ps1` | Mac Catalyst on this Mac | `xharness apple test --target maccatalyst` |
@@ -28,6 +29,10 @@ There is one test app per shipped feature package: `src/CommunityToolkit.Maui.De
 Run these from the repository root. Each command builds the app and runs its tests.
 
 ```bash
+# Everything this machine can run: on a Mac the iOS simulator and Mac Catalyst, on Windows the packaged and the unpackaged app, and Android
+# when an emulator is running or an AVD exists; all three apps, then one summary (see run.ps1 below)
+pwsh eng/devices/run.ps1
+
 # Android: boot an existing AVD on port 5560, run the tests, shut the emulator down afterwards
 pwsh eng/devices/android.ps1 -Avd CTM_DeviceTests -EmulatorPort 5560
 
@@ -40,7 +45,10 @@ pwsh eng/devices/catalyst.ps1
 ```
 
 ```powershell
-# Windows
+# Windows: everything this machine can run
+powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
+
+# Windows, one platform
 powershell -ExecutionPolicy Bypass -File eng\devices\windows.ps1 -Packaging unpackaged
 powershell -ExecutionPolicy Bypass -File eng\devices\windows.ps1 -Packaging packaged
 ```
@@ -53,6 +61,42 @@ Create an AVD for Android once, for example:
 "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "system-images;android-36;google_apis;arm64-v8a"   # x86_64 on Intel hosts
 echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n CTM_DeviceTests -k "system-images;android-36;google_apis;arm64-v8a" -d pixel_7
 ```
+
+## One command: run.ps1
+
+`run.ps1` detects the operating system and the platforms it can run, runs the platform scripts on each with `-Target buildAndTest` (all three apps, `Debug`), and ends with one summary. It needs no setup beyond the [prerequisites](#prerequisites). [LOCAL.md](LOCAL.md) is the guide for using it.
+
+```bash
+pwsh eng/devices/run.ps1                                                   # everything this machine can run
+pwsh eng/devices/run.ps1 -DryRun                                           # print the plan and run nothing (also -WhatIf)
+pwsh eng/devices/run.ps1 -Platform ios,android -Project Maui -TestFilter 'Category=IconTintColorBehavior'
+```
+
+| Machine | Runs without `-Platform` |
+| --- | --- |
+| macOS | `ios` (needs Xcode and an iOS simulator runtime), `maccatalyst` (needs Xcode) and `android` |
+| Windows | `windows-packaged`, `windows-unpackaged` and `android` |
+| Linux | `android` |
+
+A platform that the machine cannot run is skipped, with the reason in the plan and in the summary. A platform that `-Platform` names and that cannot run is an error: exit code 3 on the wrong operating system, 81 for Android without a device, 71 otherwise. When nothing can run the exit code is 71.
+
+Android runs on, in this order: the device named by `-DeviceId` (without `-Avd`); the AVD named by `-Avd`, which the script boots and stops; an emulator that is running already (the first `emulator-*` in state `device`); an AVD that the script picks and boots. Of the AVDs (the `*.ini` files in `$ANDROID_AVD_HOME`, `$ANDROID_USER_HOME/avd` or `~/.android/avd`), it picks one with a system image for this machine's CPU that is not for Wear OS, TV, Automotive, Desktop or XR: one named `CTM_DeviceTests*` first, then the newest API level. A physical device is never used unless `-DeviceId` names it, and the emulator gets a free port from 5554 up unless `-EmulatorPort` says which.
+
+| Parameter | Default | Meaning |
+| --- | --- | --- |
+| `-Platform` | every platform this machine can run | `ios`, `maccatalyst` (`catalyst`), `android`, `windows-packaged` (`packaged`), `windows-unpackaged` (`unpackaged`) and `windows` for both; comma-separated values are fine |
+| `-Project` | `All` | `Maui`, `MediaElement`, `Camera`, `All`, a project name or a `.csproj` path. With `-TestFilter 'Category=<name>'` and no `-Project`, only the apps that declare the category run, because an app that runs 0 tests fails with 94 |
+| `-TestFilter` | `$env:TEST_FILTER` | as in the other scripts |
+| `-Configuration` | `Debug` | CI builds `Release` |
+| `-Target` | `buildAndTest` | `buildOnly`, `testOnly` or `buildAndTest` |
+| `-DryRun` (`-WhatIf`) | | print the plan and stop |
+| `-Results` | `artifacts/device-tests` | the folder that holds `<platform>/<app>/` |
+| `-BinlogDir`, `-SkipCapabilities`, `-RequireCapabilities`, `-Timeout`, `-InfraRetries`, `-BuildArgs` | those of the platform scripts | passed to every platform script when given |
+| `-Avd`, `-EmulatorPort`, `-DeviceId` | | Android: boot this AVD, on this port; use this device |
+| `-Udid`, `-Xcode` | | iOS: use this simulator (nothing is granted on it); iOS and Mac Catalyst: use this Xcode.app |
+| `-KeepDevice` | | keep the simulator or the AVD that a script started, and the installed packaged Windows app |
+
+The platform scripts run in the process of `run.ps1`, one after the other, and print as they always do; the summary at the end has one row per platform and app with the tests that passed, failed and were skipped, the time of the platform and the results folder, then the reasons of every failure and the platforms that were skipped. The exit code is the first non-zero exit code of the scripts, or 0. Before `run.ps1` runs the tests of a platform it deletes the `gate.json` and `summary.md` of an earlier run, so a script that ends before it writes its verdicts shows no old numbers. Packaged Windows runs first of the two Windows platforms, so that a missing elevation shows within seconds. `-Coverage` and `-XHarnessArgs` are not passed on: use the platform scripts for them.
 
 ## Parameters
 
@@ -182,7 +226,7 @@ pwsh eng/coverage-report.ps1 -Report artifacts/coverage,artifacts/device-tests/i
 
 ## Using your own devices
 
-The scripts only touch devices they create or that you name. `ios.ps1` grants permissions on, erases or deletes only a simulator it created; a `-Udid` simulator that was shut down is booted for the run and shut down again. It never passes `--reset-simulator` to XHarness, which kills every simulator on the Mac. `android.ps1` stops only an emulator it started. Run one Mac Catalyst test app at a time.
+The scripts only touch devices they create or that you name; `run.ps1` follows the same rule, and uses an emulator that is already running or boots an AVD, never an attached device that you did not name with `-DeviceId`. `ios.ps1` grants permissions on, erases or deletes only a simulator it created; a `-Udid` simulator that was shut down is booted for the run and shut down again. It never passes `--reset-simulator` to XHarness, which kills every simulator on the Mac. `android.ps1` stops only an emulator it started. Run one Mac Catalyst test app at a time.
 
 ## CI
 
