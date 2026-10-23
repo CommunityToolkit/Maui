@@ -112,6 +112,9 @@ public partial class AvatarView : Border, IAvatarView
 	/// <summary>
 	/// Gets or sets a value of the control corner radius property.
 	/// </summary>
+	/// <remarks>
+	/// A negative radius is drawn by the <see cref="RoundRectangle"/> geometry of .NET MAUI, which gives notched shapes. Use radii of 0 or more.
+	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
 	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
 
