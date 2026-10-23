@@ -1471,3 +1471,49 @@ function Invoke-AppleDeviceTests {
 
     return $verdict
 }
+
+function Get-AndroidSdkRoot {
+    $candidates = @($env:ANDROID_HOME, $env:ANDROID_SDK_ROOT)
+    if ($script:DeviceTestsOnWindows) {
+        $candidates += (Join-Path $env:LOCALAPPDATA (Join-Path 'Android' 'Sdk'))
+    }
+    elseif ($IsMacOS) {
+        $candidates += (Join-Path $HOME (Join-Path 'Library' (Join-Path 'Android' 'sdk')))
+    }
+    else {
+        $candidates += (Join-Path $HOME (Join-Path 'Android' 'Sdk'))
+    }
+
+    foreach ($candidate in $candidates) {
+        if ($candidate -and (Test-Path -LiteralPath (Join-Path $candidate 'platform-tools') -PathType Container)) {
+            return [System.IO.Path]::GetFullPath($candidate)
+        }
+    }
+
+    return ''
+}
+
+function Get-AndroidTool {
+    param([string]$SdkRoot, [string]$Folder, [string]$Name)
+
+    $fileName = $Name
+    if ($script:DeviceTestsOnWindows) {
+        $fileName = "$Name.exe"
+    }
+
+    return Join-Path $SdkRoot (Join-Path $Folder $fileName)
+}
+
+function Get-AndroidDevices {
+    param([string]$Adb)
+
+    $listing = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('devices') -TimeoutSeconds 60
+    $devices = @()
+    foreach ($line in ($listing.Output -split "`r?`n")) {
+        if ($line -match '^(\S+)\s+(device|offline|unauthorized|bootloader|recovery|sideload|no permissions.*)$') {
+            $devices += New-Object PSObject -Property @{ Serial = $Matches[1]; State = $Matches[2] }
+        }
+    }
+
+    return , $devices
+}
