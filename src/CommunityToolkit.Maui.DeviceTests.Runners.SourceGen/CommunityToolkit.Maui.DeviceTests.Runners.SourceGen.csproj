@@ -9,11 +9,13 @@
     <RootNamespace>CommunityToolkit.Maui.DeviceTests.Runners.SourceGen</RootNamespace>
     <AssemblyName>CommunityToolkit.Maui.DeviceTests.Runners.SourceGen</AssemblyName>
     <!-- RS2002: TST1001 is the generator's Debug-only logging diagnostic, so no analyzer lists it as supported (as upstream). -->
-    <NoWarn>$(NoWarn);RS2002</NoWarn>
+    <!-- RS1036: the extended analyzer rules it asks for ban upstream's non-incremental ISourceGenerator (RS1035), which stays as vendored. -->
+    <NoWarn>$(NoWarn);RS2002;RS1036</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" PrivateAssets="all" />
+    <!-- Toolkit change: the toolkit's CodeAnalysisVersion instead of upstream's 4.5.0, so Dependabot moves it with the toolkit's analyzers. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
