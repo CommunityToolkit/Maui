@@ -21,12 +21,12 @@ static partial class DrawingViewTestPlatform
 
 	internal static bool IsChildOf(MauiDrawingView view, object platformParent) => platformParent is Microsoft.UI.Xaml.Controls.Panel panel && panel.Children.Contains(view);
 
-	// WinUI cannot construct PointerRoutedEventArgs, so the touch helpers call the view's shared gesture methods by reflection.
+	// WinUI cannot construct PointerRoutedEventArgs, so the touch helpers call, by reflection, the methods that the view's pointer overrides call.
 	internal static void TouchDown(MauiDrawingView view, double x, double y) => Invoke(view, "OnStart", new PointF((float)x, (float)y));
 
 	internal static void TouchMove(MauiDrawingView view, double x, double y) => Invoke(view, "OnMoving", new PointF((float)x, (float)y));
 
-	internal static void TouchUp(MauiDrawingView view, double x, double y) => Invoke(view, "OnFinish");
+	internal static void TouchUp(MauiDrawingView view, double x, double y) => Invoke(view, "OnRelease");
 
 	internal static void TouchCancel(MauiDrawingView view, double x, double y) => Invoke(view, "OnCancel");
 

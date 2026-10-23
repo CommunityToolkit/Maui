@@ -60,6 +60,10 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 	{
 		base.OnPointerPressed(e);
 
+		// Without the capture, WinUI hands the moves and the release outside the view to other elements, so a line released outside would never
+		// end. Android and iOS keep sending a touch to the view where it began.
+		CapturePointer(e.Pointer);
+
 		var wPoint = e.GetCurrentPoint(this).Position;
 		OnStart(new PointF(wPoint._x, wPoint._y));
 	}
@@ -76,7 +80,10 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 	protected override void OnPointerReleased(PointerRoutedEventArgs e)
 	{
 		base.OnPointerReleased(e);
-		OnFinish();
+		OnRelease();
+
+		// Only after OnRelease: ReleasePointerCapture raises PointerCaptureLost at once, which cancels a line that is still being drawn.
+		ReleasePointerCapture(e.Pointer);
 	}
 
 	/// <inheritdoc />
@@ -84,6 +91,38 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 	{
 		base.OnPointerCanceled(e);
 		OnCancel();
+	}
+
+	/// <inheritdoc />
+	protected override void OnPointerCaptureLost(PointerRoutedEventArgs e)
+	{
+		base.OnPointerCaptureLost(e);
+		OnCaptureLost();
+	}
+
+	// A release also reaches the view when the press began on another element. It ends no line, and OnFinish would clear the lines when
+	// ShouldClearOnFinish is set.
+	void OnRelease()
+	{
+		if (!isDrawing)
+		{
+			return;
+		}
+
+		// Cleared before OnFinish raises DrawingLineCompleted: a handler that removes the view from its window makes WinUI raise PointerCaptureLost
+		// during that event, which must not cancel the line that was just completed.
+		isDrawing = false;
+		OnFinish();
+	}
+
+	// Alt+Tab, another window or a system gesture can take the pointer while a line is being drawn. WinUI also raises PointerCaptureLost after
+	// each release, and for a pointer that only hovers over the view.
+	void OnCaptureLost()
+	{
+		if (isDrawing)
+		{
+			OnCancel();
+		}
 	}
 
 	void Redraw()
