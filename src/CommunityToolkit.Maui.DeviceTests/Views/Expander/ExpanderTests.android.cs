@@ -70,7 +70,10 @@ public partial class ExpanderTests
 		SetupBuilder();
 		var expander = CreateExpander();
 		List<bool> expandedChanges = [];
+		List<object?> commandParameters = [];
 		expander.ExpandedChanged += (_, e) => expandedChanges.Add(e.IsExpanded);
+		expander.Command = new Command(parameter => commandParameters.Add(parameter));
+		expander.CommandParameter = nameof(Expander.CommandParameter);
 
 		await AttachAndRun(expander, async _ =>
 		{
@@ -82,6 +85,9 @@ public partial class ExpanderTests
 
 			Assert.True(header.PerformAccessibilityAction(AccessibilityAction.Expand, null));
 			Assert.True(expander.IsExpanded);
+			var expandedActions = GetAccessibilityActionIds(header);
+			Assert.Contains(AccessibilityNodeInfoCompat.ActionCollapse, expandedActions);
+			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, expandedActions);
 			await AssertionExtensions.AssertEventually(() => IsPlatformViewVisible(expander.Content), message: "The expand action did not show the content.");
 
 			Assert.False(header.PerformAccessibilityAction(AccessibilityAction.Expand, null));
@@ -89,8 +95,12 @@ public partial class ExpanderTests
 
 			Assert.True(header.PerformAccessibilityAction(AccessibilityAction.Collapse, null));
 			Assert.False(expander.IsExpanded);
+			var collapsedActions = GetAccessibilityActionIds(header);
+			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, collapsedActions);
+			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, collapsedActions);
 
 			Assert.Equal<bool>([true, false], expandedChanges);
+			Assert.Equal<object?>([nameof(Expander.CommandParameter), nameof(Expander.CommandParameter)], commandParameters);
 		});
 	}
 

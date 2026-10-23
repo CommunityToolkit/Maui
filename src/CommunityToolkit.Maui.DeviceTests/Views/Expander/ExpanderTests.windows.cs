@@ -40,7 +40,6 @@ public partial class ExpanderTests
 
 	static IInvokeProvider GetInvokeProvider(AutomationPeer peer) => Assert.IsType<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke), exactMatch: false);
 
-
 	static double GetRowHeight(ListView listView, int row) => GetListViewItem(listView, row)?.ActualHeight ?? 0;
 
 	static double GetRowTop(ListView listView, int row) =>
@@ -506,6 +505,8 @@ public partial class ExpanderTests
 			Assert.True(panel.IsTabStop, "Tab does not stop at the header.");
 			Assert.True(peer.IsKeyboardFocusable());
 			Assert.True(peer.IsEnabled());
+			Assert.True(peer.IsControlElement(), "The Expander is missing from the control view, which Narrator reads.");
+			Assert.True(peer.IsContentElement());
 			Assert.Equal(AutomationControlType.Button, peer.GetAutomationControlType());
 			Assert.Equal(nameof(Expander), peer.GetClassName());
 			Assert.Equal("Header", peer.GetName());
@@ -713,6 +714,22 @@ public partial class ExpanderTests
 			await expander.OnLoadedAsync();
 
 			Assert.Equal("Described header", GetAutomationPeer(expander).GetName());
+		});
+	}
+
+	[Fact]
+	public async Task UIAutomationReadsTheSemanticHintOfTheHeaderAsTheHelpTextOfTheExpander()
+	{
+		SetupBuilder();
+		var header = new Label { Text = "Header" };
+		SemanticProperties.SetHint(header, "Shows the content");
+		var expander = new Expander { Header = header, Content = new Label { Text = "Content" } };
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+
+			Assert.Equal("Shows the content", GetAutomationPeer(expander).GetHelpText());
 		});
 	}
 

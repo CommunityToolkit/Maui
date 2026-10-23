@@ -68,7 +68,10 @@ public partial class ExpanderTests
 		SetupBuilder();
 		var expander = CreateExpander();
 		List<bool> expandedChanges = [];
+		List<object?> commandParameters = [];
 		expander.ExpandedChanged += (_, e) => expandedChanges.Add(e.IsExpanded);
+		expander.Command = new Command(parameter => commandParameters.Add(parameter));
+		expander.CommandParameter = nameof(Expander.CommandParameter);
 
 		await AttachAndRun(expander, async _ =>
 		{
@@ -86,6 +89,7 @@ public partial class ExpanderTests
 
 			Assert.False(expander.IsExpanded);
 			Assert.Equal(UIAccessibilityExpandedStatus.Collapsed, GetAccessibilityExpandedStatus(headerElement));
+			Assert.Equal<object?>([nameof(Expander.CommandParameter), nameof(Expander.CommandParameter)], commandParameters);
 
 			expander.IsExpanded = true;
 			Assert.Equal(UIAccessibilityExpandedStatus.Expanded, GetAccessibilityExpandedStatus(headerElement));
@@ -166,6 +170,37 @@ public partial class ExpanderTests
 			SetHeaderActivationBlocked(expander, nameof(Expander.Header) + nameof(VisualElement.IsVisible), isBlocked: true);
 
 			Assert.Null(GetAccessibilityElements(expander));
+		});
+	}
+
+	// Without elements of its own the layout leaves UIKit's default, its subviews, through which VoiceOver reaches the control in the header.
+	[Theory]
+	[InlineData(nameof(Button))]
+	[InlineData(nameof(Editor))]
+	public async Task AHeaderThatHoldsAControlKeepsTheDefaultAccessibilityElementsOfUIKit(string controlType)
+	{
+		SetupBuilder();
+		View control = controlType switch
+		{
+			nameof(Button) => new Button { Text = "Delete" },
+			nameof(Editor) => new Editor { Text = "Notes" },
+			_ => throw new ArgumentOutOfRangeException(nameof(controlType), controlType, "Not a control that the test puts in the header.")
+		};
+		var expander = new Expander
+		{
+			Header = new HorizontalStackLayout { new Label { Text = "Header" }, control },
+			Content = new Label { Text = "Content" }
+		};
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+
+			Assert.Null(GetAccessibilityElements(expander));
+
+			control.IsVisible = false;
+
+			Assert.NotNull(GetAccessibilityElements(expander));
 		});
 	}
 

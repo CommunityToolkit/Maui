@@ -18,10 +18,11 @@ namespace CommunityToolkit.Maui.Views;
 /// Keyboard and screen reader users can expand and collapse the <see cref="Expander"/> through its <see cref="Header"/> whenever a tap on the
 /// <see cref="Header"/> can: while the <see cref="Header"/> is visible, enabled and not input transparent.
 /// On Windows, Tab stops at the <see cref="Expander"/>, Enter and Space toggle it, and UI Automation exposes it as a button with the
-/// ExpandCollapse and Invoke patterns, named after the <see cref="Header"/>.
+/// ExpandCollapse and Invoke patterns, with the name and the help text of the <see cref="Header"/>.
 /// On Android, TalkBack announces the <see cref="Header"/> as collapsed or expanded and offers its expand or collapse action.
 /// On iOS and Mac Catalyst, VoiceOver reads the whole <see cref="Header"/> as one button that a double tap toggles, and announces it as
-/// collapsed or expanded from version 18.
+/// collapsed or expanded from version 18. A <see cref="Header"/> that holds a control, such as a <see cref="Button"/>, a <see cref="Switch"/>
+/// or an <see cref="Entry"/>, is not read as one button, so that VoiceOver still reaches the control.
 /// </para>
 /// </remarks>
 [ContentProperty(nameof(Content))]

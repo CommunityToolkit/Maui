@@ -124,6 +124,8 @@ sealed partial class ExpanderLayoutPanel : LayoutPanel
 
 		ExpanderLayoutPanel Panel => (ExpanderLayoutPanel)Owner;
 
+		UIElement? HeaderPlatformView => Panel.ParentExpander?.Header?.Handler?.PlatformView as UIElement;
+
 		public void Collapse() => SetIsExpanded(false);
 
 		public void Expand() => SetIsExpanded(true);
@@ -156,10 +158,22 @@ sealed partial class ExpanderLayoutPanel : LayoutPanel
 
 		protected override string GetClassNameCore() => nameof(Expander);
 
+		// A screen reader reads the help text of the focused element, which is the Expander and not its header.
+		protected override string GetHelpTextCore()
+		{
+			var helpText = base.GetHelpTextCore();
+			if (string.IsNullOrEmpty(helpText) && HeaderPlatformView is UIElement header)
+			{
+				return AutomationProperties.GetHelpText(header);
+			}
+
+			return helpText;
+		}
+
 		protected override string GetNameCore()
 		{
 			var name = base.GetNameCore();
-			if (string.IsNullOrEmpty(name) && Panel.ParentExpander?.Header?.Handler?.PlatformView is UIElement header)
+			if (string.IsNullOrEmpty(name) && HeaderPlatformView is UIElement header)
 			{
 				return GetNameOf(header);
 			}

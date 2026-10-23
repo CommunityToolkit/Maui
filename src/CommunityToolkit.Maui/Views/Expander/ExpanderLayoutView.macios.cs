@@ -23,12 +23,18 @@ sealed class ExpanderLayoutView : LayoutView, IUIAccessibilityContainer
 	static UIView? GetPlatformView(IView view) =>
 		view.Handler is IPlatformViewHandler { ContainerView: UIView containerView } ? containerView : view.Handler?.PlatformView as UIView;
 
+	// VoiceOver cannot reach a control inside the header element, so a header that holds one keeps UIKit's default elements.
+	static bool HoldsAControl(UIView view) => !view.Hidden && (view is UIControl or UITextView || view.Subviews.Any(HoldsAControl));
+
 	// UIKit asks for the elements whenever it needs them, so they follow the header, the content and the Direction without being updated.
 	// A non-nil array is the complete list of the elements of the layout, and nil leaves UIKit's default: its subviews.
 	[Export("accessibilityElements")]
 	NSArray? GetAccessibilityElementsWithTheHeaderAsOneElement()
 	{
-		if (ParentExpander is not Expander expander || expander.Header is not View { IsVisible: true } header || GetPlatformView(header) is null)
+		if (ParentExpander is not Expander expander
+			|| expander.Header is not View { IsVisible: true } header
+			|| GetPlatformView(header) is not UIView headerView
+			|| HoldsAControl(headerView))
 		{
 			return null;
 		}
@@ -90,8 +96,8 @@ sealed class ExpanderLayoutView : LayoutView, IUIAccessibilityContainer
 
 		UIView? HeaderPlatformView => ParentExpander?.Header?.Handler?.PlatformView as UIView;
 
-		// With another TapGestureRecognizer on the header, VoiceOver taps the header instead, as it did before the Expander had this element,
-		// so that every TapGestureRecognizer of the header runs.
+		// With another TapGestureRecognizer on the header, returning false makes VoiceOver tap the header instead, so that every
+		// TapGestureRecognizer of the header runs.
 		[Export("accessibilityActivate")]
 		public bool AccessibilityActivate()
 		{
