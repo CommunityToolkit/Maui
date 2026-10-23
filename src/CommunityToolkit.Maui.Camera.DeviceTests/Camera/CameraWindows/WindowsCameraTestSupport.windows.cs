@@ -191,6 +191,18 @@ sealed class WindowsCameraManagerAccessor(CameraManager manager)
 
 	public Action OnLoaded => Get<Action>("onLoaded");
 
+	public Func<MediaCapture, string, CancellationToken, Task<bool>> InitializeMediaCapture
+	{
+		get => Get<Func<MediaCapture, string, CancellationToken, Task<bool>>>("initializeMediaCapture");
+		set => Set("initializeMediaCapture", value);
+	}
+
+	public Func<MediaCapture, MediaEncodingProfile, IRandomAccessStream, CancellationToken, Task<LowLagMediaRecording>> PrepareLowLagRecording
+	{
+		get => Get<Func<MediaCapture, MediaEncodingProfile, IRandomAccessStream, CancellationToken, Task<LowLagMediaRecording>>>("prepareLowLagRecording");
+		set => Set("prepareLowLagRecording", value);
+	}
+
 	static FieldInfo GetField(string name) =>
 		typeof(CameraManager).GetField(name, instanceFlags) ?? throw new MissingFieldException(nameof(CameraManager), name);
 
@@ -234,21 +246,69 @@ sealed class WindowsFakeCameraProvider : ICameraProvider
 
 	public int RefreshCount { get; private set; }
 
+	// The discovery of a real provider waits for Media Foundation: a refresh waits until this task completes.
+	public Task Discovery { get; set; } = Task.CompletedTask;
+
 	public event EventHandler<IReadOnlyList<CameraInfo>?>? AvailableCamerasChanged;
 
-	public Task RefreshAvailableCameras(CancellationToken token)
+	public async Task RefreshAvailableCameras(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
 		RefreshCount++;
+		await Discovery.WaitAsync(token);
 		AvailableCameras = CamerasAfterRefresh;
 		AvailableCamerasChanged?.Invoke(this, AvailableCameras);
-
-		return Task.CompletedTask;
 	}
 
 	public void Dispose()
 	{
+	}
+}
+
+// Stands in for the Media Foundation calls that a start of the preview or of a recording waits for (WindowsCameraManagerAccessor replaces the
+// manager's): each call waits until the test answers it, or until its token is cancelled when ObservesCancellation is set.
+sealed class WindowsScriptedMediaFoundation
+{
+	readonly List<Request<bool>> initializations = [];
+	readonly List<Request<LowLagMediaRecording>> recordingPreparations = [];
+
+	public bool ObservesCancellation { get; init; }
+
+	public IReadOnlyList<Request<bool>> Initializations => initializations;
+
+	public IReadOnlyList<Request<LowLagMediaRecording>> RecordingPreparations => recordingPreparations;
+
+	public void ReplaceTheMediaFoundationOf(WindowsCameraManagerAccessor access)
+	{
+		access.InitializeMediaCapture = InitializeAsync;
+		access.PrepareLowLagRecording = PrepareLowLagRecordingAsync;
+	}
+
+	Task<bool> InitializeAsync(MediaCapture mediaCapture, string deviceId, CancellationToken token) =>
+		Add(initializations, mediaCapture, token);
+
+	Task<LowLagMediaRecording> PrepareLowLagRecordingAsync(MediaCapture mediaCapture, MediaEncodingProfile profile, IRandomAccessStream stream, CancellationToken token) =>
+		Add(recordingPreparations, mediaCapture, token);
+
+	Task<T> Add<T>(List<Request<T>> requests, MediaCapture mediaCapture, CancellationToken token)
+	{
+		var request = new Request<T>(mediaCapture);
+		requests.Add(request);
+
+		if (ObservesCancellation)
+		{
+			_ = token.Register(() => request.Answer.TrySetCanceled(token));
+		}
+
+		return request.Answer.Task;
+	}
+
+	public sealed class Request<T>(MediaCapture mediaCapture)
+	{
+		public MediaCapture MediaCapture { get; } = mediaCapture;
+
+		public TaskCompletionSource<T> Answer { get; } = new();
 	}
 }
 

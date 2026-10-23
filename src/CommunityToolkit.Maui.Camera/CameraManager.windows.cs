@@ -4,6 +4,7 @@ using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
 using Windows.Media.Core;
 using Windows.Media.MediaProperties;
+using Windows.Storage.Streams;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -14,6 +15,13 @@ partial class CameraManager
 	MediaFrameSource? frameSource;
 	LowLagMediaRecording? mediaRecording;
 	Stream? videoCaptureStream;
+
+	// The device tests replace them: their machines have no camera, so they script when and how Media Foundation answers a start
+	Func<MediaCapture, string, CancellationToken, Task<bool>> initializeMediaCapture =
+		static (capture, deviceId, token) => capture.InitializeCameraForCameraView(deviceId, token);
+
+	Func<MediaCapture, MediaEncodingProfile, IRandomAccessStream, CancellationToken, Task<LowLagMediaRecording>> prepareLowLagRecording =
+		static (capture, profile, stream, token) => capture.PrepareLowLagRecordToStreamAsync(profile, stream).AsTask(token);
 
 	public MediaPlayerElement CreatePlatformView()
 	{
@@ -149,30 +157,36 @@ partial class CameraManager
 			return;
 		}
 
-		var startingMediaCapture = new MediaCapture();
-		mediaCapture = startingMediaCapture;
+		// A start that StopCameraPreview cancelled before it began (on the connection of the view) must not open a camera
+		token.ThrowIfCancellationRequested();
+
+		// In the field while Media Foundation initializes it, so that StopCameraPreview and Dispose release it at once. Another start can replace
+		// it there meanwhile, so this start only ever releases its own MediaCapture
+		var startedMediaCapture = new MediaCapture();
+		mediaCapture = startedMediaCapture;
 
 		try
 		{
-			if (!await startingMediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token))
+			if (!await initializeMediaCapture(startedMediaCapture, cameraView.SelectedCamera.DeviceId, token))
 			{
 				throw new CameraException("Unable to open the selected camera. It may be unavailable or in use by another application.");
 			}
 
-			// StopCameraPreview cancels a camera switch and releases the MediaCapture that the switch initializes: an initialization that Media
-			// Foundation completes all the same must not go on with it
+			// StopCameraPreview cancels a start and releases the MediaCapture that the start initializes: an initialization that Media Foundation
+			// completes all the same must not go on with it
 			token.ThrowIfCancellationRequested();
 		}
 		catch (Exception ex)
 		{
 			// A MediaCapture that Media Foundation could not initialize cannot preview or capture, whatever stopped its initialization (a camera
-			// that cannot be opened, the cancellation of the token, a camera that the privacy settings block). A start that the app calls after
-			// the StopCameraPreview that cancelled this one can have replaced it by now: only this start's own MediaCapture is released
-			startingMediaCapture.Dispose();
-			if (ReferenceEquals(mediaCapture, startingMediaCapture))
+			// that cannot be opened, the cancellation of the token, a camera that the privacy settings block)
+			var ownsThePreview = OwnsThePreview();
+			if (ownsThePreview)
 			{
 				mediaCapture = null;
 			}
+
+			startedMediaCapture.Dispose();
 
 			if (ex is OperationCanceledException)
 			{
@@ -182,6 +196,13 @@ partial class CameraManager
 			// Media Foundation can also fail to initialize the MediaCapture that StopCameraPreview released: a start that was cancelled reports no
 			// error
 			token.ThrowIfCancellationRequested();
+
+			// The start that replaced this start's MediaCapture (a newer start, or a camera switch) decides about the preview, and a released view
+			// reports nothing
+			if (!ownsThePreview)
+			{
+				return;
+			}
 
 			// A camera that cannot be opened (it does not exist any more, or another app uses it) leaves the preview started, so that selecting
 			// another camera starts the preview with that camera (UpdateCurrentCamera). A camera that the privacy settings block
@@ -193,7 +214,14 @@ partial class CameraManager
 			return;
 		}
 
-		frameSource = mediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
+		// A newer start, a camera switch or the release of the view can replace this start's MediaCapture while the start waits for Media Foundation
+		if (!OwnsThePreview())
+		{
+			startedMediaCapture.Dispose();
+			return;
+		}
+
+		frameSource = startedMediaCapture.FrameSources.FirstOrDefault(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color).Value;
 
 		if (frameSource is not null)
 		{
@@ -205,7 +233,18 @@ partial class CameraManager
 
 		await PlatformUpdateResolution(cameraView.ImageCaptureResolution, token);
 
+		// Media Foundation can complete the resolution before a StopCameraPreview that ran before this continuation: that stop released the preview
+		token.ThrowIfCancellationRequested();
+
+		if (!OwnsThePreview())
+		{
+			startedMediaCapture.Dispose();
+			return;
+		}
+
 		onLoaded.Invoke();
+
+		bool OwnsThePreview() => ReferenceEquals(mediaCapture, startedMediaCapture);
 	}
 
 	private partial void PlatformStopCameraPreviewForCameraSwitch() => PlatformStopCameraPreview();
@@ -252,7 +291,13 @@ partial class CameraManager
 		}
 
 		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
-		mediaRecording = await mediaCapture.PrepareLowLagRecordToStreamAsync(profile, stream.AsRandomAccessStream());
+		var preparedRecording = await prepareLowLagRecording(mediaCapture, profile, stream.AsRandomAccessStream(), token);
+
+		// Media Foundation can complete the preparation before a StopCameraPreview that ran before this continuation and released the MediaCapture
+		// of the prepared recording: StopVideoRecording must not find the recording of a start that the stop cancelled
+		token.ThrowIfCancellationRequested();
+
+		mediaRecording = preparedRecording;
 
 		// Only a recording that could be prepared replaces the stream: a stream that is refused (AsRandomAccessStream throws for a stream
 		// that cannot seek) must not replace the stream of a recording that is running
@@ -270,7 +315,11 @@ partial class CameraManager
 
 			if (frameFormat is not null)
 			{
-				await frameSource.SetFormatAsync(frameFormat);
+				await frameSource.SetFormatAsync(frameFormat).AsTask(token);
+
+				// The source that a StopCameraPreview cleared meanwhile stays cleared
+				token.ThrowIfCancellationRequested();
+
 				mediaElement.AutoPlay = true;
 				mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
 				await mediaRecording.StartAsync();

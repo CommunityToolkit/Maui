@@ -267,6 +267,9 @@ partial class CameraManager
 		// a second time. Like on Android and Windows, whose connections complete asynchronously, the camera starts once the mapping is done
 		await Task.Yield();
 
+		// The start itself does not wait for anything that observes the token, so a StopCameraPreview during the yield would be ignored
+		token.ThrowIfCancellationRequested();
+
 		await PlatformStartCameraPreview(token);
 	}
 
@@ -386,6 +389,11 @@ partial class CameraManager
 		// the one that continues second must find the state that the first one claimed. Asked after that check, the second start would wait
 		// for the semaphore and then replace the recording that just started, where Android lets it join the first start.
 		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
+
+		// AVFoundation answers on a queue of its own and this continuation runs later on the thread of the start: a StopCameraPreview in between
+		// finds the answer already there, which WaitAsync returns
+		token.ThrowIfCancellationRequested();
+
 		if (!isPermissionGranted)
 		{
 			throw new CameraException(cameraPermissionNotGrantedMessage);

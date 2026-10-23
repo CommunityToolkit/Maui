@@ -290,7 +290,7 @@ partial class CameraManager
 		{
 			RebuildCameraPreview();
 			RebuildImageCapture();
-			await PlatformStartCameraPreview(token);
+			await RestartCameraPreview(token);
 		}
 	}
 
@@ -342,7 +342,9 @@ partial class CameraManager
 			}
 		}), ContextCompat.GetMainExecutor(context));
 
-		await cameraProviderTCS.Task.WaitAsync(token);
+		// Not cancelled by the token, which only cancels the start of the preview: a StartCameraPreview while the view connects waits for this
+		// connection, which must have prepared the use cases by then
+		await cameraProviderTCS.Task;
 	}
 
 	void InitializeUseCases()
@@ -585,10 +587,21 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		// The connection prepares the use cases (see pendingConnection): without this wait, a start while the view connects would do nothing,
+		// although a StopCameraPreview can have cancelled the start of the connection
+		if (processCameraProvider is null && !pendingConnection.IsCompleted)
+		{
+			await pendingConnection.WaitAsync(token);
+		}
+
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
 			return;
 		}
+
+		// A start that StopCameraPreview cancelled while it waited (for the connection, or for CameraX to run the listener of the connection) must
+		// not wait for the camera permission: the activity would start the stopped preview when it resumes with the permission
+		token.ThrowIfCancellationRequested();
 
 		isWaitingForCameraPermission = false;
 

@@ -145,6 +145,10 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		{
 			await Camera.StartCameraPreview(CancellationToken.None);
 		}
+		catch (OperationCanceledException)
+		{
+			// Stop Camera Preview was tapped before the camera started: nothing failed
+		}
 		catch (Exception ex)
 		{
 			await DisplayCameraError("Unable to Start Camera Preview", ex);
@@ -169,6 +173,10 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 		try
 		{
 			await Camera.StartVideoRecording(CancellationToken.None);
+		}
+		catch (OperationCanceledException)
+		{
+			// Stop Camera Preview was tapped before the recording started: nothing failed
 		}
 		catch (Exception ex)
 		{

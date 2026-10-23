@@ -131,7 +131,7 @@ sealed class AppleRequestAccessStub : IDisposable
 	readonly List<string> requestedMediaTypes = [];
 	readonly List<IntPtr> pendingCompletions = [];
 
-	// null never answers: Dispose releases the completion handler without calling it.
+	// null keeps the request waiting until AnswerPending answers it: Dispose releases a waiting completion handler without calling it.
 	public AppleRequestAccessStub(bool? videoAnswer, bool? audioAnswer = true)
 	{
 		VideoAnswer = videoAnswer;

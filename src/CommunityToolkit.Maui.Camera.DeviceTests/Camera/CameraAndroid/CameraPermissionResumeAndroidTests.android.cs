@@ -145,6 +145,34 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 
+	// The connection checks the camera permission in the listener of CameraX, which runs in a later UI-thread message than the stop and before
+	// the test grants the permission: had the cancelled start still checked it, the resume would have retried that start.
+	[Fact]
+	public async Task StopCameraPreviewWhileTheViewConnectsWithoutTheCameraPermissionKeepsThePreviewStoppedWhenTheActivityResumesWithIt()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = new CameraErrorRecorder(session.View);
+			await session.Manager.UpdateCaptureResolution(Size.Zero, CancellationToken.None);
+
+			var connect = session.Manager.ConnectCamera(CancellationToken.None);
+			Assert.False(connect.IsCompleted, "ConnectCamera completed without waiting for CameraX.");
+			session.Manager.StopCameraPreview();
+			await connect.WaitAsync(CameraTimeout);
+			await WaitForTheListenersOfCameraXAsync();
+			Assert.Empty(errors.Errors);
+
+			context.DeniedPermissions.Clear();
+			await AskForTheCameraPermissionAsync();
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Empty(errors.Errors);
+			await AssertThePreviewIsStoppedAsync(session);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
 	[Fact]
 	public async Task AStartThatTheResumeRetriesAndThatFailsRaisesErrorOccurred()
 	{
