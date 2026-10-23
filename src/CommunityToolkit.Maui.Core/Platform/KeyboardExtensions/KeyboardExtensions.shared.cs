@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
+using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -102,7 +103,10 @@ public static partial class KeyboardExtensions
 		if (IsDispatchRequiredByThePlatform(handler, out var dispatcher))
 		{
 			var isShowing = false;
-			dispatcher.DispatchIfRequiredAsync(() => isShowing = platformView.IsSoftKeyboardShowing()).GetAwaiter().GetResult();
+
+			// Not an extension call: with two arguments, that binds to .NET MAUI's internal
+			// Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(IDispatcher?, Action) wherever it is visible (#3273)
+			ToolkitDispatcherExtensions.DispatchIfRequiredAsync(dispatcher, () => isShowing = platformView.IsSoftKeyboardShowing()).GetAwaiter().GetResult();
 			return isShowing;
 		}
 
