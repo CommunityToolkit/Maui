@@ -215,9 +215,8 @@ public class CameraViewTests : BaseViewTest
 		GC.KeepAlive(handleMediaCaptureFailed);
 	}
 
-	// Executes a command the way a Button does and returns what escaped from it: an exception that ICommand.Execute throws, and the exceptions
-	// that an async void command posts to the SynchronizationContext that was current when it started (in an app that context rethrows them and
-	// the app ends).
+	// An async void command posts its exceptions to the SynchronizationContext that was current when it started, which rethrows them in an
+	// app, and the app ends.
 	static IReadOnlyList<Exception> ExecuteRecordingEscapedExceptions(Action execute)
 	{
 		var recorder = new AsyncVoidExceptionRecorder();
@@ -240,7 +239,6 @@ public class CameraViewTests : BaseViewTest
 		return recorder.Exceptions;
 	}
 
-	// Runs what is posted to it at once and records what the callbacks throw.
 	sealed class AsyncVoidExceptionRecorder : SynchronizationContext
 	{
 		readonly List<Exception> exceptions = [];
