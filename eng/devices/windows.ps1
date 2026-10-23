@@ -694,10 +694,14 @@ function Invoke-WindowsDeviceTests {
     }
     else {
         $executableName = "$($properties['AssemblyName']).exe"
-        $executable = Join-Path (Get-DeviceTestOutputDirectory -Project $Project -Path $properties['PublishDir']) $executableName
+        $publishDirectory = Get-DeviceTestOutputDirectory -Project $Project -Path $properties['PublishDir']
+        $executable = Join-Path $publishDirectory $executableName
         if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
-            $binFolder = Join-Path $Project.Directory (Join-Path 'bin' (Join-Path $Context.Configuration $framework))
-            $found = Get-ChildItem -LiteralPath $binFolder -Recurse -Filter $executableName -File -ErrorAction SilentlyContinue |
+            # Not bin\<configuration>, which holds the packaged build: the unpackaged build has bin and obj folders of its own
+            # (CommunityToolkit.Maui.DeviceTests.Runners.props), so another runtime identifier's publish folder is under the
+            # evaluated target framework folder.
+            $frameworkFolder = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($publishDirectory.TrimEnd('\', '/')))
+            $found = Get-ChildItem -LiteralPath $frameworkFolder -Recurse -Filter $executableName -File -ErrorAction SilentlyContinue |
                 Where-Object { $_.DirectoryName -match '[\\/]publish$' } |
                 Sort-Object LastWriteTimeUtc -Descending |
                 Select-Object -First 1

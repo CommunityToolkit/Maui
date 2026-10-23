@@ -16,4 +16,13 @@
     <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_CtmDeviceTestUnpackaged)' == 'true'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
+  <!-- An unpackaged build has bin and obj folders of its own (the SDK still appends the target framework and the runtime
+       identifier). In the folders of a packaged build of the app, it keeps the packaged resources.pri, which lacks the Windows
+       App SDK resources that an unpackaged app merges into it: the PRI targets compare timestamps only, and those resource
+       files are older than the packaged build. The unpackaged app then crashes at startup (0xC000027B). -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(_CtmDeviceTestUnpackaged)' == 'true'">
+    <OutputPath>bin\unpackaged\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\unpackaged\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+
 </Project>

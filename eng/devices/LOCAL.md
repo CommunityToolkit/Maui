@@ -117,9 +117,9 @@ The IDEs run these builds. They work in every shell, and they are the quickest w
 On Windows the scripts build the app, and you start it yourself. The first packaged build needs an elevated PowerShell to trust its signing certificate.
 
 ```powershell
-# Unpackaged: publish a self-contained app, then start its exe without arguments
+# Unpackaged: publish a self-contained app (it builds into bin\unpackaged and obj\unpackaged), then start its exe without arguments
 powershell -ExecutionPolicy Bypass -File eng\devices\windows.ps1 -Packaging unpackaged -Target buildOnly -Project Maui
-$exe = Get-ChildItem src\CommunityToolkit.Maui.DeviceTests\bin -Recurse -Filter CommunityToolkit.Maui.DeviceTests.exe | Where-Object { $_.DirectoryName -like '*\publish' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$exe = Get-ChildItem src\CommunityToolkit.Maui.DeviceTests\bin\unpackaged -Recurse -Filter CommunityToolkit.Maui.DeviceTests.exe | Where-Object { $_.DirectoryName -like '*\publish' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 & $exe.FullName
 
 # Packaged: build and install the signed MSIX with a one-category run that leaves it installed, then start CommunityToolkit.Maui.DeviceTests from the Start menu
