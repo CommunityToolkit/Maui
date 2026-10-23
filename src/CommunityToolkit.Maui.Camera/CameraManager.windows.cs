@@ -149,11 +149,12 @@ partial class CameraManager
 			return;
 		}
 
-		mediaCapture = new MediaCapture();
+		var startingMediaCapture = new MediaCapture();
+		mediaCapture = startingMediaCapture;
 
 		try
 		{
-			if (!await mediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token))
+			if (!await startingMediaCapture.InitializeCameraForCameraView(cameraView.SelectedCamera.DeviceId, token))
 			{
 				throw new CameraException("Unable to open the selected camera. It may be unavailable or in use by another application.");
 			}
@@ -165,9 +166,13 @@ partial class CameraManager
 		catch (Exception ex)
 		{
 			// A MediaCapture that Media Foundation could not initialize cannot preview or capture, whatever stopped its initialization (a camera
-			// that cannot be opened, the cancellation of the token, a camera that the privacy settings block)
-			mediaCapture?.Dispose();
-			mediaCapture = null;
+			// that cannot be opened, the cancellation of the token, a camera that the privacy settings block). A start that the app calls after
+			// the StopCameraPreview that cancelled this one can have replaced it by now: only this start's own MediaCapture is released
+			startingMediaCapture.Dispose();
+			if (ReferenceEquals(mediaCapture, startingMediaCapture))
+			{
+				mediaCapture = null;
+			}
 
 			if (ex is OperationCanceledException)
 			{

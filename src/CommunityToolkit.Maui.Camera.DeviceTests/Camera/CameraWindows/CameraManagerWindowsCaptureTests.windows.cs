@@ -527,6 +527,48 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 	}
 
 	[Fact]
+	public async Task StopCameraPreviewWhileACameraSwitchWaitsForMediaFoundationKeepsThePreviewStoppedWithoutAnError()
+	{
+		await RunWithConnectedCameraAsync(async (scope, camera) =>
+		{
+			using var errors = new CameraErrorRecorder(scope.View);
+
+			var cameraSwitch = scope.Manager.UpdateCurrentCamera(camera, CancellationToken.None).AsTask();
+			Assert.False(cameraSwitch.IsCompleted, "The camera switch completed without waiting for Media Foundation.");
+			scope.Manager.StopCameraPreview();
+			await cameraSwitch.WaitAsync(captureTimeout);
+
+			Assert.Empty(errors.Errors);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Equal(1, scope.LoadedCount);
+		});
+	}
+
+	// Media Foundation can end the initialization of the switch that the stop cancelled before or after the start has created its own
+	// MediaCapture: the test cannot choose, and the start must work either way.
+	[Fact]
+	public async Task StartCameraPreviewRightAfterStopCameraPreviewInterruptedACameraSwitchStartsThePreview()
+	{
+		await RunWithConnectedCameraAsync(async (scope, camera) =>
+		{
+			using var errors = new CameraErrorRecorder(scope.View);
+
+			var cameraSwitch = scope.Manager.UpdateCurrentCamera(camera, CancellationToken.None).AsTask();
+			Assert.False(cameraSwitch.IsCompleted, "The camera switch completed without waiting for Media Foundation.");
+			scope.Manager.StopCameraPreview();
+			var start = scope.Manager.StartCameraPreview(CancellationToken.None);
+			await cameraSwitch.WaitAsync(captureTimeout);
+			await start.WaitAsync(captureTimeout);
+
+			Assert.Empty(errors.Errors);
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Equal(camera.DeviceId, scope.Access.MediaCapture?.MediaCaptureSettings.VideoDeviceId, ignoreCase: true);
+			Assert.Equal(2, scope.LoadedCount);
+		});
+	}
+
+	[Fact]
 	public async Task TheHandlerConnectsTheCameraByItselfAndCaptureImageReturnsAJpeg()
 	{
 		var cameras = await DiscoverCamerasOrSkipAsync();
