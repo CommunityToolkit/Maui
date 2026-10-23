@@ -1,4 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
+using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -254,6 +256,96 @@ public partial class SnackbarTests
 		});
 	}
 
+	// The displayed snackbar gives both Show calls a notification to remove, so the second Show starts while the first one waits for that
+	// removal. Had the second Show removed the notifications before the first one showed its own, the first snackbar would stay on screen,
+	// dismissed and without its action, and hide the second one.
+	[Fact]
+	public async Task OverlappingShowCallsShowOnlyTheLaterSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Displayed", duration: longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 1, timeout: 10000, message: "The displayed snackbar was never listed.");
+			using var recorder = new SnackbarEventRecorder();
+			Action secondAction = () => { };
+
+			var first = Snackbar.Make("First", () => { }, "One", longDuration).Show();
+			var second = Snackbar.Make("Second", secondAction, "Two", longDuration).Show();
+			await Task.WhenAll(first, second).WaitAsync(dismissTimeout);
+
+			var platformSnackbar = AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.");
+			Assert.Equal(new[] { "Second" }, AlertsWindows.Parse(platformSnackbar).Texts);
+			Assert.Same(secondAction, Assert.Single(AlertsWindows.GetRegisteredActions()).Value);
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed), nameof(Snackbar.Shown), nameof(Snackbar.Dismissed), nameof(Snackbar.Shown) }, recorder.Sequence);
+			Assert.True(Snackbar.IsShown);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("Second"), timeout: 10000, message: "Windows does not list the snackbar of the later Show.");
+			Assert.Equal(new[] { "Second" }, await GetVisibleMessagesAsync());
+		});
+	}
+
+	// The Dismiss starts while the Show waits for the removal of the displayed snackbar. The notification shown last tells when Windows lists
+	// what was shown before it, such as a snackbar that the Show displayed after the Dismiss had removed the notifications.
+	[Fact]
+	public async Task DismissDuringAShowDismissesTheSnackbarOfThatShow()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Displayed", duration: longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 1, timeout: 10000, message: "The displayed snackbar was never listed.");
+			using var recorder = new SnackbarEventRecorder();
+
+			var show = Snackbar.Make("Shown", () => { }, "Undo", longDuration).Show();
+			var dismiss = Snackbar.Make("Other instance").Dismiss();
+			await Task.WhenAll(show, dismiss).WaitAsync(dismissTimeout);
+
+			Assert.Null(AlertsWindows.GetPlatformSnackbar());
+			Assert.Empty(AlertsWindows.GetRegisteredActions());
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed), nameof(Snackbar.Shown), nameof(Snackbar.Dismissed) }, recorder.Sequence);
+			Assert.False(Snackbar.IsShown);
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Shown after the Dismiss").BuildNotification());
+			await AssertEventually(async () => (await AlertsWindows.GetDisplayedAsync()).Any(notification => notification.Text == "Shown after the Dismiss"), timeout: 10000, message: "Windows does not list the notification shown after the Dismiss.");
+			Assert.Empty(await GetVisibleMessagesAsync());
+		});
+	}
+
+	// The displayed snackbar keeps the first Show waiting for its removal, so the token of the second Show is cancelled before the second
+	// Show can remove anything.
+	[Fact]
+	public async Task ShowCancelledWhileAnEarlierShowRunsThrowsAndKeepsTheEarlierSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Displayed", duration: longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 1, timeout: 10000, message: "The displayed snackbar was never listed.");
+			using var recorder = new SnackbarEventRecorder();
+			using var cancellationTokenSource = new CancellationTokenSource();
+			Action firstAction = () => { };
+
+			var first = Snackbar.Make("First", firstAction, "One", longDuration).Show();
+			var second = Snackbar.Make("Second", () => { }, "Two", longDuration).Show(cancellationTokenSource.Token);
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => second.WaitAsync(dismissTimeout));
+			await first.WaitAsync(dismissTimeout);
+			var platformSnackbar = AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.");
+			Assert.Equal(new[] { "First" }, AlertsWindows.Parse(platformSnackbar).Texts);
+			Assert.Same(firstAction, Assert.Single(AlertsWindows.GetRegisteredActions()).Value);
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed), nameof(Snackbar.Shown) }, recorder.Sequence);
+			Assert.True(Snackbar.IsShown);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("First"), timeout: 10000, message: "Windows does not list the snackbar of the first Show.");
+			Assert.Equal(new[] { "First" }, await GetVisibleMessagesAsync());
+		});
+	}
+
 	[Fact]
 	public async Task DismissOnAnotherInstanceRemovesTheNotificationAndTheRegisteredAction()
 	{
@@ -311,8 +403,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Two Dismiss calls from instances that did not show the notification are both in flight when the first RemoveAllAsync completes:
-	// the second one finds the notification already gone after its await and must skip the expiration update.
+	// The second Dismiss waits for the removal that the first one started, and then finds no snackbar left to dismiss.
 	[Fact]
 	public async Task ConcurrentDismissCallsOnOtherInstancesBothComplete()
 	{
