@@ -599,11 +599,12 @@ partial class CameraManager
 			return;
 		}
 
+		// Before the cancellation check: a later start cancels the retry of an earlier start without the permission also when it is cancelled itself
+		isWaitingForCameraPermission = false;
+
 		// A start that StopCameraPreview cancelled while it waited (for the connection, or for CameraX to run the listener of the connection) must
 		// not wait for the camera permission: the activity would start the stopped preview when it resumes with the permission
 		token.ThrowIfCancellationRequested();
-
-		isWaitingForCameraPermission = false;
 
 		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 

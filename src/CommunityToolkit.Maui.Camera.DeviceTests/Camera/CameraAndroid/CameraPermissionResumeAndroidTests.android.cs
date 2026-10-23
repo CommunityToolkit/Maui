@@ -99,6 +99,30 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 
+	// The app has the permission by the time of the later start, so only the retry of the start of the connection could start the preview when
+	// the activity resumes.
+	[Fact]
+	public async Task ALaterStartThatItsTokenCancelledKeepsThePreviewStoppedWhenTheActivityResumesWithTheCameraPermission()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = await ConnectWithoutTheCameraPermissionAsync(session);
+			context.DeniedPermissions.Clear();
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StartCameraPreview(cancellation.Token).WaitAsync(CameraTimeout));
+
+			await AskForTheCameraPermissionAsync();
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Single(errors.Errors);
+			await AssertThePreviewIsStoppedAsync(session);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
 	[Fact]
 	public async Task StopCameraPreviewAfterAStartWithoutTheCameraPermissionKeepsThePreviewStoppedWhenTheActivityResumesWithIt()
 	{

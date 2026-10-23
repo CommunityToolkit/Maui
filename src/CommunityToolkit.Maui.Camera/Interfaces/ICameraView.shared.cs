@@ -98,7 +98,7 @@ public interface ICameraView : IView
 	/// it) is retried when the activity of the view resumes with the permission granted, for example once the user allowed it in the permission
 	/// dialog or in the settings of the app: a view that connects its camera while the app asks for the permission starts its preview without a
 	/// call to this method. The retry reports its failure through the ErrorOccurred event. Only the last start counts: <see cref="StopCameraPreview"/>
-	/// cancels the retry, and so does a later start that succeeds or that fails for another reason.
+	/// cancels the retry, and so does a later start, whether it succeeds, fails for another reason or is cancelled.
 	/// <see cref="StopCameraPreview"/> cancels a start that has not completed yet, like a cancellation of <paramref name="token"/>: the preview stays
 	/// stopped, the start throws <see cref="OperationCanceledException"/>, and the ErrorOccurred event is not raised for it, also when the stop
 	/// made the start fail. The <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when
