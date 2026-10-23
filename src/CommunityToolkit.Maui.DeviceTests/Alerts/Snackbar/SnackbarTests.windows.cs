@@ -25,7 +25,7 @@ public partial class SnackbarTests
 	static async Task<IReadOnlyList<string>> GetVisibleActionTextsAsync() =>
 		[.. (await AlertsWindows.GetDisplayedAsync()).Where(notification => notification.IsSnackbar).Select(notification => Assert.Single(notification.Buttons).Content)];
 
-	static Task<bool> ClickVisibleActionAsync() => throw new SkipException(ActionCannotBeClickedReason!);
+	static Task<bool> ClickVisibleActionAsync() => throw new SkipException(ActionCannotBeClickedReason ?? string.Empty);
 
 	[Fact]
 	public async Task ShowBuildsTheNotificationFromTheTextAndTheActionButton()
