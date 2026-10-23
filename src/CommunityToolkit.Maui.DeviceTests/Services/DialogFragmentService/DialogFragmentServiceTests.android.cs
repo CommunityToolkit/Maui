@@ -261,8 +261,8 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		}));
 	}
 
-	// A page stays below the status bar by the window insets of its window, and a window that is laid out without limits, as the dialog was for a
-	// transparent status bar on Android 10 and older, gets none (#2351).
+	// A page keeps clear of the status bar with the window insets that it receives, and the dialog used to keep them from it: laid out without
+	// limits for a transparent status bar on Android 10 and older (#2351), or with a decor view that fit the system windows for the other colors.
 	[Theory]
 	[InlineData(0xFF336699u)]
 	[InlineData(0x80336699u)]
@@ -297,8 +297,9 @@ public class DialogFragmentServiceTests : FragmentTestBase
 					modalPage.ShowNow(fragmentManager, $"test-modal-page-{Guid.NewGuid():N}");
 					await AssertHelpers.AssertEventually(() => modalPage.IsPageLaidOut, timeout: 10000, interval: 50, message: "The modal page was never laid out.");
 
-					Assert.Equal(pageWindowLayout, ReadSystemBarLayout(modalPage.DialogWindow));
+					Assert.Equal(pageWindowLayout.StatusBarInset, modalPage.PageTopInset);
 					Assert.Equal(pageWindowLayout.StatusBarInset, modalPage.PageTopOnScreen);
+					Assert.Equal(pageWindowLayout, ReadSystemBarLayout(modalPage.DialogWindow));
 				}
 				finally
 				{
@@ -470,8 +471,8 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	}
 
 	// From Android 11 on, WindowCompat.SetDecorFitsSystemWindows ends in Window.SetDecorFitsSystemWindows of the dialog window, which is what the
-	// spy window records. Before Android 15 it also sets a system UI flag on the decor view, so the two tests share their body and only the OS
-	// version that can run them differs.
+	// spy window records. Below Android 15 it also sets the stable layout flag on the decor view, so Android 11-14 have a test of their own, which
+	// the API 28 and API 36 device-test emulators report as skipped.
 	[Theory]
 	[InlineData(0xFF336699u)]
 	[InlineData(0x80336699u)]
@@ -479,7 +480,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	[InlineData(0x00FF0000u)]
 	public async Task StartedKeepsTheDecorFromFittingTheSystemWindowsForEveryStatusBarColorOnAndroid15AndNewer(uint argb)
 	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35), "Android 15 (API 35) and newer set no system UI flag on the decor view.");
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35), "WindowCompat only calls Window.SetDecorFitsSystemWindows from Android 15 (API 35) on.");
 		await AssertDecorDoesNotFitSystemWindowsAsync(unchecked((int)argb));
 	}
 
@@ -492,7 +493,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	{
 		Skip.IfNot(
 			OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(35),
-			"Only Android 11-14 (API 30-34) set the stable layout flag on the decor view. The device-test emulators are API 28 and API 36, so this arm needs an API 30-34 device or emulator.");
+			"Only on Android 11-14 (API 30-34) does WindowCompat set the stable layout flag on the decor view next to calling Window.SetDecorFitsSystemWindows. The device-test emulators are API 28 and API 36, so this test needs an API 30-34 device or emulator.");
 		await AssertDecorDoesNotFitSystemWindowsAsync(unchecked((int)argb));
 	}
 

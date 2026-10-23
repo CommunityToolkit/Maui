@@ -136,14 +136,14 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 			dialogWindow.SetStatusBarColor(platformColor);
 
-			// Whatever the color, as StatusBar.SetColor does for the page's window (#3189)
+			// Whatever the color, as StatusBar.SetColor does for the activity's window (#3189)
 			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
 		}
 		else
 		{
 			dialogWindow.SetStatusBarColor(platformColor);
 
-			// LayoutNoLimits is cleared for every color, as StatusBar.SetColor does for the page's window (#3189): it lays the content out behind the system bars with no window insets to avoid them (#2351)
+			// LayoutNoLimits is cleared for every color, as StatusBar.SetColor does for the activity's window (#3189): it lays the content out behind the system bars with no window insets to avoid them (#2351)
 			dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
 			dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
 			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);

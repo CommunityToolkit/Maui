@@ -49,6 +49,8 @@ public sealed class ModalPageFragment : ADialogFragment
 
 	public bool IsPageLaidOut => pageTop is AView top && top.IsLaidOut && top.Height > 0;
 
+	public int PageTopInset => View?.PaddingTop ?? throw new InvalidOperationException("The modal page has no content view yet.");
+
 	public int PageTopOnScreen
 	{
 		get
