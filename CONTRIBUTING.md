@@ -137,7 +137,11 @@ Run them on your machine before you push, with one command from the repository r
 pwsh eng/devices/run.ps1
 ```
 
-It runs every platform that your machine can run (on a Mac the iOS simulator and Mac Catalyst, on Windows the packaged and the unpackaged app, and on both Android when an emulator is running or an AVD exists) and ends with a summary of the tests that passed, failed and were skipped. `-DryRun` shows what it would run. If you changed one feature, narrow the run with `-Platform` and `-TestFilter`, for example `pwsh eng/devices/run.ps1 -Platform ios -TestFilter 'Category=IconTintColorBehavior'`.
+```powershell
+powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
+```
+
+It runs every platform that your machine can run (on a Mac the iOS simulator and Mac Catalyst, on Windows the packaged and the unpackaged app, and on both Android, on the emulator that is running or on an AVD that it boots) and ends with a summary of the tests that passed, failed and were skipped. `-DryRun` shows what it would run. If you changed one feature, narrow the run with `-Platform` and `-TestFilter`, for example `pwsh eng/devices/run.ps1 -Platform ios -TestFilter 'Category=IconTintColorBehavior'`.
 
 * [Running the device tests on your machine](eng/devices/LOCAL.md): the one command, running a test app from Visual Studio, Rider or Visual Studio Code, running the tests that need a person, and what a local run does differently from CI.
 * [Device test scripts and CI](eng/devices/README.md): every script and parameter, the exit codes, the capability declarations, code coverage and the CI jobs.

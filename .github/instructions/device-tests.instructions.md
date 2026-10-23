@@ -5,7 +5,7 @@ applyTo: 'src/CommunityToolkit.Maui.DeviceTests*/**,src/CommunityToolkit.Maui.Me
 
 # Device Tests
 
-The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running the tests is described in `eng/devices/README.md`. The apps use dotnet/maui's device-test architecture: xUnit v2, a vendored runner, XHarness on CI. There is one app per shipped feature package: `CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `CommunityToolkit.Maui.MediaElement.DeviceTests` and `CommunityToolkit.Maui.Camera.DeviceTests`.
+The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running the tests is described in `eng/devices/README.md` and, for a local machine, in `eng/devices/LOCAL.md`. The apps use dotnet/maui's device-test architecture: xUnit v2, a vendored runner, XHarness on CI. There is one app per shipped feature package: `CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `CommunityToolkit.Maui.MediaElement.DeviceTests` and `CommunityToolkit.Maui.Camera.DeviceTests`.
 
 ## Rules
 
