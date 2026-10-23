@@ -17,7 +17,7 @@ namespace CommunityToolkit.Maui.Views;
 /// </para>
 /// <para>
 /// When a <see cref="View"/> that is not a <see cref="Popup"/> is displayed, the <see cref="Popup"/> created to contain it binds its <see cref="Margin"/>, <see cref="HorizontalOptions"/>, <see cref="VerticalOptions"/>, <see cref="VisualElement.Background"/>, <see cref="VisualElement.BackgroundColor"/>
-/// and, when the <see cref="View"/> has a padding, <see cref="Padding"/> to those of the <see cref="View"/>, so a <see cref="Style"/> cannot set them.
+/// and, when the <see cref="View"/> has a <c>Padding</c> property, <see cref="Padding"/> to those of the <see cref="View"/>, so a <see cref="Style"/> cannot set them.
 /// A margin or padding of the <see cref="View"/> that is 0 on every side gives the <see cref="Popup"/> <see cref="DefaultPopupSettings.Margin"/> or <see cref="DefaultPopupSettings.Padding"/> instead.
 /// </para>
 /// <para>
