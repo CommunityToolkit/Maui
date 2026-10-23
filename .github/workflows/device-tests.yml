@@ -42,8 +42,8 @@ env:
     TEST_FILTER: ${{ inputs.test-filter }}
     # A Build run passes no inputs, so it builds and runs all three apps.
     DEVICE_TEST_PROJECT: ${{ inputs.project || 'All' }}
-    # Release, the configuration that apps ship in (trimmed and compiled ahead of time; eng/devices/README.md, "CI"). Both steps of a job
-    # pass it: the test step looks for the apps that the build step made for that configuration.
+    # Release, the configuration that apps ship in (eng/devices/README.md, "CI"). Both steps of a job pass it: the test step looks for the
+    # apps that the build step made for that configuration.
     DEVICE_TEST_CONFIGURATION: ${{ inputs.configuration || 'Release' }}
 
 # No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
