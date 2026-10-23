@@ -991,6 +991,42 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		}
 	}
 
+	// The same for the update of Speed that a rate event queues: when it runs, it reads the rate of the session again, which the disposal closed.
+	[Fact]
+	public async Task QueuedSpeedUpdateThatRunsAfterThePlatformViewWasDisposedDoesNothing()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		var dispatcher = new WinMediaCapturingDispatcher(isDispatchRequired: true);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var view = new MediaElement();
+			var manager = new WinMediaManager(MauiContext, view, dispatcher);
+			var platformView = new WinMediaView(manager.CreatePlatformView());
+			RegisterCleanup(() =>
+			{
+				manager.Dispose();
+				platformView.Dispose();
+				view.Dispose();
+			});
+
+			var session = manager.PlayerElement?.MediaPlayer.PlaybackSession ?? throw new InvalidOperationException("The manager created no player.");
+
+			// Without a handler the view's Speed does not reach the session, so the event of the session's rate 1 queues an update of Speed.
+			view.Speed = 2;
+			WinMediaReflection.Invoke(manager, "OnPlaybackSessionPlaybackRateChanged", session, null);
+			var queuedUpdate = Assert.Single(dispatcher.TakeQueued());
+
+			// MediaElementHandler.DisconnectHandler disposes the manager and the unloaded platform view.
+			manager.Dispose();
+			platformView.Dispose();
+
+			Assert.Null(Record.Exception(queuedUpdate));
+			Assert.Equal(2, view.Speed);
+		});
+	}
+
 	[Fact]
 	public async Task MediaOpenedWithoutPlayerIsIgnored()
 	{
