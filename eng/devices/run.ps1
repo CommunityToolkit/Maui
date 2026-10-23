@@ -695,7 +695,8 @@ function Write-RunPlan {
 function Write-RunScriptOutput {
     # Write-Host writes to the information stream. Invoke-RunPlatform redirects that stream to read the ERROR lines of the script for the
     # summary, so the text goes to the host from here, with the colors the script gave it. A line that cannot be shown with its colors is
-    # shown without them: a problem in here must never stop the tests of the script.
+    # shown without them: a problem in here must never stop the tests of the script. An error that ended a script comes with its stack trace
+    # in the same message, so only its first line is the reason.
     param($Item, $ErrorLines)
 
     try {
@@ -709,7 +710,7 @@ function Write-RunScriptOutput {
             return
         }
 
-        if ($data.Message -match '^(?:ERROR: |::error[^:]*::)(.*)$') {
+        if ($data.Message -match '^(?:ERROR: |::error[^:]*::)([^\r\n]*)') {
             $ErrorLines.Add($Matches[1])
         }
 
@@ -939,7 +940,8 @@ function Write-RunSummary {
 
         $failedApps = @($result.Apps | Where-Object { $_.HasVerdict -and $_.ExitCode -ne 0 })
         foreach ($app in $failedApps) {
-            $reason = ($app.Reasons | Select-Object -First 3) -join '; '
+            # A reason can quote a tool's output of several lines, such as simctl's.
+            $reason = ($app.Reasons | Select-Object -First 3 | ForEach-Object { ($_ -replace '\s+', ' ').Trim() }) -join '; '
             $problems += "$($result.Id) / $($app.Name): exit code $($app.ExitCode) ($($app.ExitCodeName)). $reason$details"
         }
 
