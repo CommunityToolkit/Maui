@@ -249,10 +249,10 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		DetachNativeStateHandler(fixture);
 		await PlayAsync(fixture);
 		var timeout = TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds);
-		var (playing, playingFailure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), timeout);
+		var (playing, playingFailure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, timeout);
 		await using (playing)
 		{
-			var (paused, pausedFailure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), timeout);
+			var (paused, pausedFailure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, timeout);
 			await using (paused)
 			{
 				Assert.True(playingFailure is null && pausedFailure is null, $"A plain MediaPlayer did not open the clip: {playingFailure ?? pausedFailure}");
@@ -792,6 +792,21 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 		});
 	}
 
+	// The plain players of the probes and of these tests must not open the clip with SetUriSource: see WinMediaAssets.NewPlaybackItem.
+	[Fact]
+	public async Task PlainPlayerOpensTheClipAsItsOwnMediaPlaybackItem()
+	{
+		SetupWindowsBuilder();
+		await RequireDecoderAsync();
+		var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
+		await using (plain)
+		{
+			Assert.True(failure is null, $"A plain MediaPlayer did not open the clip: {failure}");
+			var clip = Assert.IsType<MediaPlaybackItem>(plain.Player.Source);
+			await WaitUntilAsync(() => clip.VideoTracks.Count == 1, "The item the plain player opened does not list the video track of the clip.");
+		}
+	}
+
 	// The worker thread of a rate event reads the rate and queues the update of Speed, so the app can apply a newer Speed before the update
 	// runs. The manager's handler gets the session of a plain player, whose rate the test sets as that newer Speed would set it: no event of
 	// the manager's own player can then queue an update of its own.
@@ -800,7 +815,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 	{
 		SetupWindowsBuilder();
 		await RequireDecoderAsync();
-		var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
+		var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 		await using (plain)
 		{
 			Assert.True(failure is null, $"A plain MediaPlayer did not open the clip: {failure}");
@@ -913,18 +928,20 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 			_ = view.Dispatcher;
 			var createdManager = new WinMediaManager(MauiContext, view, dispatcher);
 			var createdPlatformView = new WinMediaView(createdManager.CreatePlatformView());
+			var clip = WinMediaAssets.NewPlaybackItem(WinMediaAssets.VideoUri);
 			RegisterCleanup(() =>
 			{
 				createdManager.Dispose();
 				createdPlatformView.Dispose();
 				view.Dispose();
+				clip.Source.Dispose();
 			});
 
 			// Subscribed after the manager: when these run, the manager's handlers have run for the same event.
 			var player = createdManager.PlayerElement!.MediaPlayer;
 			player.MediaOpened += (_, _) => opened.TrySetResult();
 			player.MediaFailed += (_, args) => opened.TrySetException(new InvalidOperationException($"The clip did not open: {args.Error}."));
-			player.SetUriSource(WinMediaAssets.VideoUri);
+			player.Source = clip;
 
 			return (createdManager, createdPlatformView);
 		});
@@ -954,7 +971,7 @@ public class MediaManagerPlaybackWindowsTests : WinMediaTestBase
 	{
 		SetupWindowsBuilder();
 		await RequirePlayAtZeroRateAsync();
-		var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
+		var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, TimeSpan.FromMilliseconds(decodeTimeoutMilliseconds));
 		await using (plain)
 		{
 			Assert.True(failure is null, $"A plain MediaPlayer did not open the clip: {failure}");

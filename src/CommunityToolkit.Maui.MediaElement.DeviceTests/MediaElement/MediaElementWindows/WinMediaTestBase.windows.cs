@@ -137,8 +137,7 @@ public abstract class WinMediaTestBase : MediaElementHandlerTestBase
 
 	protected static async Task RequireHlsAsync()
 	{
-		// Its probe plays video: a run that declares VideoRendering missing skips without playing any (on a Windows Server runner
-		// without a GPU, the probe's playback ended the app with an access violation in CI run 38115049024).
+		// Its probe plays video, which a run that declares VideoRendering missing may not render, so that run skips without probing.
 		DeviceTestCapabilities.SkipIfDeclaredMissing(DeviceTestCapabilities.VideoRendering);
 		await RequireDecoderAsync();
 		SkipFor(await WinMediaProbe.HlsUnavailableReason, "This machine's MediaPlayer does not play the local HLS stream");
@@ -152,8 +151,7 @@ public abstract class WinMediaTestBase : MediaElementHandlerTestBase
 
 	protected static async Task RequireStarvationBufferingAsync()
 	{
-		// Its probe plays video: a run that declares VideoRendering missing skips without playing any (on a Windows Server runner
-		// without a GPU, the probe's playback ended the app with an access violation in CI run 38115049024).
+		// Its probe plays video, which a run that declares VideoRendering missing may not render, so that run skips without probing.
 		DeviceTestCapabilities.SkipIfDeclaredMissing(DeviceTestCapabilities.VideoRendering);
 		await RequireDecoderAsync();
 		SkipFor(await WinMediaProbe.StarvationBufferingUnavailableReason, "This machine's MediaPlayer does not report Buffering when an HLS stream runs out of data");
@@ -167,8 +165,7 @@ public abstract class WinMediaTestBase : MediaElementHandlerTestBase
 
 	protected static async Task RequireZeroRateAsync()
 	{
-		// Its probe plays video: a run that declares VideoRendering missing skips without playing any (on a Windows Server runner
-		// without a GPU, the probe's playback ended the app with an access violation in CI run 38115049024).
+		// Its probe plays video, which a run that declares VideoRendering missing may not render, so that run skips without probing.
 		DeviceTestCapabilities.SkipIfDeclaredMissing(DeviceTestCapabilities.VideoRendering);
 		await RequireDecoderAsync();
 		SkipFor(await WinMediaProbe.ZeroRateUnavailableReason, "This machine's MediaPlayer does not keep a playback rate of 0");
@@ -176,8 +173,7 @@ public abstract class WinMediaTestBase : MediaElementHandlerTestBase
 
 	protected static async Task RequirePlayAtZeroRateAsync()
 	{
-		// Its probe plays video: a run that declares VideoRendering missing skips without playing any (on a Windows Server runner
-		// without a GPU, the probe's playback ended the app with an access violation in CI run 38115049024).
+		// Its probe plays video, which a run that declares VideoRendering missing may not render, so that run skips without probing.
 		DeviceTestCapabilities.SkipIfDeclaredMissing(DeviceTestCapabilities.VideoRendering);
 		await RequireDecoderAsync();
 		SkipFor(await WinMediaProbe.PlayAtZeroRateUnavailableReason, "This machine's MediaPlayer does not report Playing while its playback rate is 0");

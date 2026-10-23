@@ -57,7 +57,42 @@ sealed class WinMediaPlainPlayer : IAsyncDisposable
 
 	public MediaPlayer Player { get; }
 
-	public static async Task<(WinMediaPlainPlayer Plain, string? Failure)> OpenAsync(Action<MediaPlayer> setSource, TimeSpan timeout)
+	public static Task<(WinMediaPlainPlayer Plain, string? Failure)> OpenAsync(Uri source, TimeSpan timeout, Action<MediaPlayer>? configure = null) =>
+		OpenAsync(player =>
+		{
+			configure?.Invoke(player);
+			player.Source = WinMediaAssets.NewPlaybackItem(source);
+		}, timeout);
+
+	/// <summary>Mirrors how the toolkit opens a header source (through an AdaptiveMediaSource), without using the toolkit.</summary>
+	public static async Task<(WinMediaPlainPlayer? Plain, string? Failure)> OpenHlsAsync(Uri playlist, TimeSpan timeout)
+	{
+		var created = await AdaptiveMediaSource.CreateFromUriAsync(playlist).AsTask().WaitAsync(timeout);
+		if (created.Status is not AdaptiveMediaSourceCreationStatus.Success || created.MediaSource is null)
+		{
+			return (null, $"AdaptiveMediaSource.CreateFromUriAsync returned {created.Status}");
+		}
+
+		return await OpenAsync(player => player.Source = WinMediaSource.CreateFromAdaptiveMediaSource(created.MediaSource), timeout);
+	}
+
+	public async ValueTask DisposeAsync() =>
+		await TestDispatcher.Current.DispatchAsync(() =>
+		{
+			try
+			{
+				Player.Pause();
+				WinMediaAssets.DisposeSource(Player);
+				Player.Source = null;
+				Player.Dispose();
+			}
+			catch (Exception)
+			{
+				// Already released: nothing left to clean up.
+			}
+		});
+
+	static async Task<(WinMediaPlainPlayer Plain, string? Failure)> OpenAsync(Action<MediaPlayer> setSource, TimeSpan timeout)
 	{
 		var plain = await TestDispatcher.Current.DispatchAsync(() =>
 		{
@@ -78,34 +113,6 @@ sealed class WinMediaPlainPlayer : IAsyncDisposable
 			return (plain, $"MediaOpened was not raised within {timeout.TotalSeconds} s");
 		}
 	}
-
-	/// <summary>Mirrors how the toolkit opens a header source (through an AdaptiveMediaSource), without using the toolkit.</summary>
-	public static async Task<(WinMediaPlainPlayer? Plain, string? Failure)> OpenHlsAsync(Uri playlist, TimeSpan timeout)
-	{
-		var created = await AdaptiveMediaSource.CreateFromUriAsync(playlist).AsTask().WaitAsync(timeout);
-		if (created.Status is not AdaptiveMediaSourceCreationStatus.Success || created.MediaSource is null)
-		{
-			return (null, $"AdaptiveMediaSource.CreateFromUriAsync returned {created.Status}");
-		}
-
-		return await OpenAsync(player => player.Source = WinMediaSource.CreateFromAdaptiveMediaSource(created.MediaSource), timeout);
-	}
-
-	public async ValueTask DisposeAsync() =>
-		await TestDispatcher.Current.DispatchAsync(() =>
-		{
-			try
-			{
-				Player.Pause();
-				(Player.Source as IDisposable)?.Dispose();
-				Player.Source = null;
-				Player.Dispose();
-			}
-			catch (Exception)
-			{
-				// Already released: nothing left to clean up.
-			}
-		});
 }
 
 /// <summary>
@@ -205,7 +212,7 @@ static class WinMediaProbe
 
 		try
 		{
-			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), openTimeout);
+			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, openTimeout);
 			await using (plain)
 			{
 				return failure is null ? null : $"Media Foundation cannot open the H.264 test asset: {failure}.";
@@ -228,11 +235,8 @@ static class WinMediaProbe
 		try
 		{
 			var sizeChanges = 0;
-			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player =>
-			{
-				player.PlaybackSession.NaturalVideoSizeChanged += (_, _) => Interlocked.Increment(ref sizeChanges);
-				player.SetUriSource(WinMediaAssets.VideoUri);
-			}, openTimeout);
+			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, openTimeout,
+				player => player.PlaybackSession.NaturalVideoSizeChanged += (_, _) => Interlocked.Increment(ref sizeChanges));
 
 			await using (plain)
 			{
@@ -520,7 +524,7 @@ static class WinMediaProbe
 
 		try
 		{
-			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), openTimeout);
+			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, openTimeout);
 			await using (plain)
 			{
 				if (failure is not null)
@@ -559,7 +563,7 @@ static class WinMediaProbe
 
 		try
 		{
-			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(player => player.SetUriSource(WinMediaAssets.VideoUri), openTimeout);
+			var (plain, failure) = await WinMediaPlainPlayer.OpenAsync(WinMediaAssets.VideoUri, openTimeout);
 			await using (plain)
 			{
 				if (failure is not null)

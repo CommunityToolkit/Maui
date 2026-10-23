@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
+using Windows.Media.Playback;
 using Windows.Storage.Streams;
 using Windows.System.Display;
 using WinMediaSource = Windows.Media.Core.MediaSource;
@@ -57,6 +58,15 @@ static class WinMediaAssets
 	public static Uri CorruptUri => new(CorruptPath);
 
 	public const string ArtworkServerPath = "artwork.png";
+
+	// Tests open media on a MediaPlayer through this, never SetUriSource: a MediaPlaybackItem becomes the player's current item when it is set,
+	// while for a SetUriSource source the player looks that item up as the media opens, and Windows.Media.Playback.MediaPlayer.dll
+	// 10.0.26100.33438 (the Windows Server 2025 runners, where Feature_Servicing_MediaPlayer_CurrentMediaPlaybackItem_RaceConditionFix is off)
+	// can get null there and dereference it: the access violation at +0x3299d that ended CI runs 38115049024 and 39907681941.
+	public static MediaPlaybackItem NewPlaybackItem(Uri source) => new(WinMediaSource.CreateFromUri(source));
+
+	public static void DisposeSource(MediaPlayer player) =>
+		(player.Source is MediaPlaybackItem item ? item.Source : player.Source as IDisposable)?.Dispose();
 
 	public static byte[] ReadVideoBytes() => File.ReadAllBytes(VideoPath);
 
