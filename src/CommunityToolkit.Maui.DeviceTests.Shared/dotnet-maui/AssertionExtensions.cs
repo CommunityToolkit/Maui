@@ -6,7 +6,8 @@
 //                 no-argument IElement.ToPlatform() -> ToPlatform(IMauiContext), platform OnLoaded/IsLoaded -> VisualElement events
 //                 plus IsLoadedOnPlatform); keyboard helpers and the internet-connection helpers were dropped.
 // Toolkit change: added OnLoadedAsync/OnUnloadedAsync/WaitForLoaded (from ControlsHandlerTestBase) as extension methods.
-// Toolkit change: Collect first overwrites the unused stack of the main thread (ClearMainThreadStackAsync).
+// Toolkit change: Collect first overwrites the unused stack of the main thread (ClearMainThreadStackAsync), which also gives the main
+//                 thread a turn before every collection.
 #nullable enable
 using System;
 using System.Runtime.CompilerServices;
@@ -29,6 +30,9 @@ namespace CommunityToolkit.Maui.DeviceTests
 		public static async Task Collect()
 		{
 			await Task.Yield();
+			// Waiting for the main thread every round also lets it run what was posted to it before: without that, the back-to-back collections
+			// kept the Android UI thread from running the cleanup that releases a completed ActivityResultManager request until all 40 were over
+			// (CI run 38952630469).
 			await ClearMainThreadStackAsync();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
