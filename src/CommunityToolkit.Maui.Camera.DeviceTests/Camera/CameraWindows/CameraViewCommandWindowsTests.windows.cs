@@ -37,8 +37,9 @@ public class CameraViewCommandWindowsTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartCameraPreviewCommandWithACancelledTokenEndsWithoutAnEventAndLetsNothingEscape()
 	{
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.Camera, await WindowsCameraEnvironment.HasVideoCaptureDeviceAsync(), $"Needs a camera whose initialization the token cancels ({await WindowsCameraEnvironment.DescribeCameraAccessAsync()}).");
 		var cameras = await WindowsCameraEnvironment.DiscoverCamerasAsync();
-		Skip.If(cameras.Count is 0, $"Needs a camera whose initialization the token cancels ({await WindowsCameraEnvironment.DescribeCameraAccessAsync()}).");
+		Skip.If(cameras.Count is 0, "The camera provider found no camera that can be opened.");
 
 		await RunAsync(async (view, access, context) =>
 		{
