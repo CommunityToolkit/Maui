@@ -66,7 +66,7 @@ The exit code is the first non-zero exit code of the scripts (see [Results and e
 
 ## Run an app from your IDE
 
-An IDE runs a device test app like any .NET MAUI app. Started without arguments, the app is the visual runner: it lists the test assemblies and runs the tests that you choose, with the debugger attached if you want. Use it to debug a test that the scripts reported, to try a change on one platform, and to run the tests that need a person.
+An IDE runs a device test app like any .NET MAUI app. Started without arguments, the app is the visual runner: it lists the test assemblies and runs the tests that you choose, with the debugger attached if you want. Use it to debug a test that the scripts reported (set a breakpoint in the test, start the app with the debugger and tap the test in the runner), to try a change on one platform, and to run the tests that need a person.
 
 ### Visual Studio (Windows)
 
@@ -109,7 +109,7 @@ The IDEs run these builds. They work in every shell, and they are the quickest w
 | iOS simulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-ios -t:Run -p:_DeviceName=:v2:udid=<simulator UDID>` |
 | Android emulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-android -t:Run -p:AdbTarget="-s emulator-5554"` |
 
-The UDID of a simulator is in `xcrun simctl list devices available`; open the Simulator app to see it. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
+`net10.0` is the `NetVersion` of `Directory.Build.props`. The UDID of a simulator is in `xcrun simctl list devices available`; open the Simulator app to see it. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
 
 On Windows the scripts build the app, and you start it yourself. The first packaged build needs an elevated PowerShell to trust its signing certificate.
 
