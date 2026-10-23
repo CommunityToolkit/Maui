@@ -84,15 +84,22 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 		{
 			using var errors = new CameraErrorRecorder(host.View);
 			var first = host.View.SelectedCamera ?? throw new InvalidOperationException("The view has no selected camera.");
+			var other = cameras.First(camera => camera.DeviceId != first.DeviceId);
 			var preview = host.Native<Preview>("cameraPreview") ?? throw new InvalidOperationException("The manager has no Preview.");
 
-			host.View.SelectedCamera = cameras.First(camera => camera.DeviceId != first.DeviceId);
+			host.View.SelectedCamera = other;
 			host.View.StopCameraPreviewCommand.Execute(null);
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.False(await IsNativelyBoundAsync(preview), "The camera switch bound the preview after the StopCameraPreviewCommand.");
 			Assert.Empty(errors.Errors);
 			await WaitForAllCamerasClosedAsync();
+
+			await host.View.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
+
+			Assert.Equal(other.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera") ?? throw new InvalidOperationException("The manager has no camera.")));
+			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
+			Assert.Empty(errors.Errors);
 		});
 	}
 
