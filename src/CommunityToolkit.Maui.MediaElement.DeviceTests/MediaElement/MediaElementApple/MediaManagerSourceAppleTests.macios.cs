@@ -622,6 +622,48 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		});
 	}
 
+	// MAUI raises PropertyChanging before it stores the value: StateChanged for Opening shows that the value was stored all the same, and Paused
+	// that the set whose handler threw has ended (MAUI applies no later change of a property whose setting threw).
+	[Fact]
+	public async Task ExceptionOfAPropertyChangingHandlerIsReportedThroughMediaFailedAndTheSourceIsApplied()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		var events = new MediaElementEvents(mediaElement);
+		var handlerException = new InvalidOperationException("The PropertyChanging handler of the app failed.");
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager;
+			Assert.NotNull(manager);
+			await manager.TakeSourceUpdates();
+			var isSettingTheSource = false;
+			mediaElement.PropertyChanging += (_, e) =>
+			{
+				if (isSettingTheSource && e.PropertyName is nameof(MediaElement.CurrentState))
+				{
+					throw handlerException;
+				}
+			};
+
+			var opened = WhenOpenedOrFailedAsync(mediaElement, openedOnly: true);
+			var statesBeforeTheSource = events.States.Count;
+			isSettingTheSource = true;
+			var setterException = Record.Exception(() => mediaElement.Source = ResourceSource(VideoResource));
+			isSettingTheSource = false;
+			await manager.TakeSourceUpdates();
+
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(events, handlerException);
+			Assert.Contains(MediaElementState.Opening, events.States.Skip(statesBeforeTheSource));
+
+			await WaitAsync(opened, "The media of the source was not opened.");
+			Assert.NotNull(manager.NativePlayer?.CurrentItem);
+			Assert.Equal(MediaElementState.Paused, mediaElement.CurrentState);
+			Assert.Single(events.Failures);
+		});
+	}
+
 	// The update of iOS and Mac Catalyst is synchronous, so the test double makes it continue after an await, as the updates of Android and Windows
 	// do: what is thrown from then on can only reach the dispatcher, which ends the app.
 	[Fact]

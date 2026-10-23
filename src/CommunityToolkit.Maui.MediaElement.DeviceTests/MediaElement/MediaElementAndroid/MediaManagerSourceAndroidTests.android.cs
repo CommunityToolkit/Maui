@@ -833,6 +833,44 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
+	// MAUI raises PropertyChanging before it stores the value: StateChanged for Opening shows that the value was stored all the same, and Paused
+	// that the set whose handler threw has ended (MAUI applies no later change of a property whose setting threw).
+	[Fact]
+	public async Task ExceptionOfAPropertyChangingHandlerIsReportedThroughMediaFailedAndTheSourceIsApplied()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var handlerException = new InvalidOperationException("The PropertyChanging handler of the app failed.");
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			var player = GetPlayer(mediaElement);
+			var isSettingTheSource = false;
+			mediaElement.PropertyChanging += (_, e) =>
+			{
+				// Only while the source is set: an exception of a handler that ExoPlayer raises from its looper would end the app.
+				if (isSettingTheSource && e.PropertyName is nameof(MediaElement.CurrentState))
+				{
+					throw handlerException;
+				}
+			};
+
+			var statesBeforeTheSource = recorder.States.Count;
+			isSettingTheSource = true;
+			var setterException = Record.Exception(() => mediaElement.Source = MediaSource.FromResource(toneAsset));
+			isSettingTheSource = false;
+
+			Assert.Null(setterException);
+			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
+			Assert.Contains(MediaElementState.Opening, recorder.States.Skip(statesBeforeTheSource));
+			Assert.Equal(1, recorder.OpenedCount);
+			Assert.EndsWith(toneAsset, player.CurrentMediaItem?.MediaId);
+			await WaitForStateAsync(mediaElement, MediaElementState.Paused);
+			Assert.Single(recorder.FailureMessages);
+		});
+	}
+
 	// On Android the update raises MediaOpened itself, so its handler's exception is part of the change; the capture shows that nothing reaches the
 	// dispatcher either.
 	[Fact]

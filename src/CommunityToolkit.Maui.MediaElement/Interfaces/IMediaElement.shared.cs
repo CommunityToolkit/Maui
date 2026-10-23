@@ -92,13 +92,13 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </para>
 	/// <para>
 	/// A source that cannot be applied or played is reported through <see cref="MediaFailed(MediaFailedEventArgs)"/>. The change of the source raises
-	/// events while it applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanged (for
-	/// example of <see cref="Position"/> or <see cref="Duration"/>), MediaFailed for a source that cannot be applied and, on Android, MediaOpened. An
-	/// exception thrown by one of their handlers is not a failure of the source, and does not reach the code that set the source, which is often
-	/// MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the source, and once the change has ended the first of these
-	/// exceptions is reported through MediaFailed, without setting <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/> (see
-	/// <see cref="MediaFailed(MediaFailedEventArgs)"/>). The events that the player raises afterwards, for example MediaOpened on iOS, Mac Catalyst
-	/// and Windows, are not part of the change.
+	/// events while it applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanging and
+	/// PropertyChanged (for example of <see cref="Position"/> or <see cref="Duration"/>), MediaFailed for a source that cannot be applied and, on
+	/// Android, MediaOpened. An exception thrown by one of their handlers is not a failure of the source, and does not reach the code that set the
+	/// source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the source, and once the change has
+	/// ended the first of these exceptions is reported through MediaFailed, without setting <see cref="CurrentState"/> to
+	/// <see cref="MediaElementState.Failed"/> (see <see cref="MediaFailed(MediaFailedEventArgs)"/>). The events that the player raises afterwards,
+	/// for example MediaOpened on iOS, Mac Catalyst and Windows, are not part of the change.
 	/// </para>
 	/// </remarks>
 	MediaSource? Source { get; set; }

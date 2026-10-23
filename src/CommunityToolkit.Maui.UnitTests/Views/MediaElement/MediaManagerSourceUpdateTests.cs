@@ -85,6 +85,43 @@ public class MediaManagerSourceUpdateTests : BaseTest
 	}
 
 	[Fact]
+	public async Task ExceptionOfAPropertyChangingHandlerLeavesDurationAndCurrentStateUpdatable()
+	{
+		var mediaElement = new MediaElement();
+		var failures = RecordFailures(mediaElement);
+		var handlerException = new InvalidOperationException("The PropertyChanging handler of the app failed.");
+		mediaElement.PropertyChanging += (_, e) =>
+		{
+			if (e.PropertyName is nameof(MediaElement.Duration) or nameof(MediaElement.CurrentState))
+			{
+				throw handlerException;
+			}
+		};
+
+		var manager = CreateManager(mediaElement, element =>
+		{
+			element.Duration = TimeSpan.FromSeconds(5);
+			element.CurrentStateChanged(MediaElementState.Opening);
+
+			// MAUI applies no later change of a property whose setting threw, so these show that both settings ended.
+			element.Duration = TimeSpan.FromSeconds(6);
+			element.CurrentStateChanged(MediaElementState.Paused);
+			return ValueTask.CompletedTask;
+		});
+
+		await manager.UpdateSource();
+
+		mediaElement.Duration.Should().Be(TimeSpan.FromSeconds(6));
+		mediaElement.CurrentState.Should().Be(MediaElementState.Paused);
+		failures.Should().Equal($"{reportPrefix}System.InvalidOperationException: The PropertyChanging handler of the app failed.");
+		loggerFactory.Errors.Should().HaveCount(4).And.OnlyContain(entry => entry.Exception == handlerException);
+
+		// Outside a source update, the exception of a handler reaches the caller, as before.
+		var setDuration = () => ((IMediaElement)mediaElement).Duration = TimeSpan.FromSeconds(7);
+		setDuration.Should().Throw<InvalidOperationException>().Which.Should().BeSameAs(handlerException);
+	}
+
+	[Fact]
 	public async Task ExceptionOfAMediaFailedHandlerWhileItIsReportedIsOnlyLogged()
 	{
 		var mediaElement = new MediaElement();

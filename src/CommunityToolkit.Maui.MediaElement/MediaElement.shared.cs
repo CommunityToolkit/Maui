@@ -315,13 +315,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </para>
 	/// <para>
 	/// A source that cannot be applied or played is reported through <see cref="MediaFailed"/>. The change of the source raises events while it
-	/// applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanged (for example of
-	/// <see cref="Position"/> or <see cref="Duration"/>), <see cref="MediaFailed"/> for a source that cannot be applied and, on Android,
-	/// <see cref="MediaOpened"/>. An exception thrown by one of their handlers is not a failure of the source, and does not reach the code that set
-	/// the source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the source, and once the change
-	/// has ended the first of these exceptions is reported through <see cref="MediaFailed"/>, without setting <see cref="CurrentState"/> to
-	/// <see cref="MediaElementState.Failed"/>. The events that the player raises afterwards, for example <see cref="MediaOpened"/> on iOS, Mac
-	/// Catalyst and Windows, are not part of the change.
+	/// applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanging and
+	/// PropertyChanged (for example of <see cref="Position"/> or <see cref="Duration"/>), <see cref="MediaFailed"/> for a source that cannot be
+	/// applied and, on Android, <see cref="MediaOpened"/>. An exception thrown by one of their handlers is not a failure of the source, and does not
+	/// reach the code that set the source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the
+	/// source, and once the change has ended the first of these exceptions is reported through <see cref="MediaFailed"/>, without setting
+	/// <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/>. The events that the player raises afterwards, for example
+	/// <see cref="MediaOpened"/> on iOS, Mac Catalyst and Windows, are not part of the change.
 	/// </para>
 	/// </remarks>
 	[TypeConverter(typeof(MediaSourceConverter))]
@@ -500,8 +500,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
 	// The code that sets the Source is often MAUI's (XAML, a binding), so the app cannot catch what its event handlers throw during the update. The
-	// exception is caught where the event is raised (RaiseEvent, OnPropertyChanged), before it can end the update or leave a property that MAUI
-	// was setting unable to change again.
+	// exception is caught where the event is raised (RaiseEvent, OnPropertyChanging, OnPropertyChanged), before it can end the update or leave a
+	// property that MAUI was setting unable to change again.
 	async ValueTask IMediaElement.RunSourceUpdate(Func<ValueTask> updateSource, ILogger logger)
 	{
 		var sourceUpdate = new SourceUpdate(this, logger);
@@ -547,6 +547,22 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		try
 		{
 			base.OnPropertyChanged(propertyName);
+		}
+		catch (Exception exception) when (RunningSourceUpdate is SourceUpdate sourceUpdate)
+		{
+			sourceUpdate.Catch(exception);
+		}
+	}
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// While the change of <see cref="Source"/> applies the source, an exception thrown by a PropertyChanging handler is caught (see <see cref="Source"/>).
+	/// </remarks>
+	protected override void OnPropertyChanging([CallerMemberName] string? propertyName = null)
+	{
+		try
+		{
+			base.OnPropertyChanging(propertyName);
 		}
 		catch (Exception exception) when (RunningSourceUpdate is SourceUpdate sourceUpdate)
 		{

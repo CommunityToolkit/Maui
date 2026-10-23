@@ -417,6 +417,40 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 		Assert.Single(failures);
 	}
 
+	// MAUI raises PropertyChanging before it stores the value. The Duration of the opened media shows that the set whose handler threw has ended:
+	// MAUI applies no later change of a property whose setting threw.
+	[Fact]
+	public async Task ExceptionOfAPropertyChangingHandlerDuringTheSourceUpdateIsReportedThroughMediaFailedAndTheSourceIsApplied()
+	{
+		var loggerFactory = new WinMediaLoggerFactory();
+		SetupWindowsBuilder(loggerFactory);
+
+		// The player opens the media after the update: a machine that cannot decode it would report a second MediaFailed.
+		await RequireDecoderAsync();
+		var fixture = await CreateManagerAsync(view => ((IMediaElement)view).Duration = TimeSpan.FromSeconds(5));
+		var failures = RecordFailures(fixture.View);
+		var handlerException = new InvalidOperationException("The PropertyChanging handler of the app failed.");
+		var hasThrown = false;
+		fixture.View.PropertyChanging += (_, e) =>
+		{
+			// Only for the reset of the update: the Duration of the opened media is set outside any source update.
+			if (e.PropertyName == nameof(MediaElement.Duration) && !hasThrown)
+			{
+				hasThrown = true;
+				throw handlerException;
+			}
+		};
+
+		var thrown = await Record.ExceptionAsync(() => SetSourceAsync(fixture.View, MediaSource.FromFile(WinMediaAssets.VideoPath), fixture.Manager));
+
+		Assert.Null(thrown);
+		Assert.True(hasThrown);
+		AssertReportsTheExceptionOfTheHandler(failures, loggerFactory, handlerException);
+		Assert.NotEqual(MediaElementState.Failed, fixture.View.CurrentState);
+		await WaitUntilAsync(() => fixture.View.Duration > TimeSpan.Zero, "The Duration of the opened media was never set.");
+		Assert.Single(failures);
+	}
+
 	// A handler of the events that the update raises before it gives the player its source (here PropertyChanged of the Duration it resets) can set
 	// another Source. That source's update replaces this one, which then gives the player nothing: the stream of the replaced source never reaches
 	// MediaPlayerElement.Source, where the media of a stream source shows. The newer source is a Uri, which the player gets through SetUriSource.
