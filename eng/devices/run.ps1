@@ -13,8 +13,8 @@
       Linux    Android
     Android runs on the emulator that is already running when it is the only one, or else on an AVD that this machine's CPU can run, which the
     script boots and stops again. With several emulators running it does not guess: -DeviceId chooses one. A physical device is only used when
-    -DeviceId names it. A platform that this machine cannot run is skipped, and the plan and the summary say why. When nothing can run, the
-    exit code is 71.
+    -DeviceId names it. A platform that this machine cannot run is skipped, and the plan and the summary say why; so is a platform that builds
+    no test of the category that -TestFilter 'Category=<name>' selects. When nothing can run, the exit code is 71.
 
     The plan (the platforms, the apps and the commands) is printed first. -DryRun prints it and stops.
 
@@ -22,8 +22,9 @@
 
 .PARAMETER Platform
     The platforms to run: ios, maccatalyst (or catalyst), android, windows-packaged (or packaged), windows-unpackaged (or unpackaged) and
-    windows (both Windows platforms). Comma-separated values are fine. Without it, every platform this machine can run. A platform named here
-    that cannot run is an error, not a skip.
+    windows (both Windows platforms). Comma-separated values are fine. Without it, every platform this machine can run; with -TestFilter
+    'Category=<name>', only those that build a test of that category, because a platform that runs 0 tests fails with 94. A platform named
+    here that cannot run is an error, not a skip.
 
 .PARAMETER Project
     The app(s) to build and run: Maui, MediaElement, Camera, All (the default), a project name or a .csproj path. Comma-separated values are
@@ -169,6 +170,16 @@ $script:RunOperatingSystemNames = @{ 'macos' = 'macOS'; 'windows' = 'Windows'; '
 $script:RunArgumentOrder = @('Packaging', 'Target', 'Project', 'Configuration', 'TestFilter', 'Results', 'BinlogDir', 'SkipCapabilities', 'RequireCapabilities',
     'Timeout', 'InfraRetries', 'Avd', 'EmulatorPort', 'DeviceId', 'Udid', 'Xcode', 'KeepDevice', 'BuildArgs')
 
+# As Directory.Build.targets builds them: a *.macos.cs file (or a file in a macos folder) for Mac Catalyst only, a *.macios.cs file for both
+# Apple platforms.
+$script:RunPlatformsOfSourceName = @{
+    'android' = @('android')
+    'ios'     = @('ios')
+    'macos'   = @('maccatalyst')
+    'macios'  = @('ios', 'maccatalyst')
+    'windows' = @('windows-packaged', 'windows-unpackaged')
+}
+
 # Emulator images that are not for phones and tablets: the apps are not made for them.
 $script:RunUnsuitableAvdTags = 'wear|tv|automotive|desktop|xr'
 
@@ -272,19 +283,26 @@ function Format-RunCommandLine {
     return ($parts -join ' ')
 }
 
-function Test-RunProjectDeclaresCategory {
-    # The categories of an app are the constants of its TestCategory*.cs files (src/<app>/**/TestCategory*.cs).
-    param($Project, [string]$Category)
+function Get-RunSourceFiles {
+    param($Project, [string]$Filter)
 
-    $files = @(Get-ChildItem -LiteralPath $Project.Directory -Filter 'TestCategory*.cs' -File)
+    $files = @(Get-ChildItem -LiteralPath $Project.Directory -Filter $Filter -File)
     # bin and obj are left out: a built app has thousands of files there.
     foreach ($directory in @(Get-ChildItem -LiteralPath $Project.Directory -Directory | Where-Object { $_.Name -ne 'bin' -and $_.Name -ne 'obj' })) {
-        $files += @(Get-ChildItem -LiteralPath $directory.FullName -Recurse -Filter 'TestCategory*.cs' -File)
+        $files += @(Get-ChildItem -LiteralPath $directory.FullName -Recurse -Filter $Filter -File)
     }
 
+    return , $files
+}
+
+function Test-RunProjectDeclaresCategory {
+    # The categories of an app are the constants of its TestCategory*.cs files (src/<app>/**/TestCategory*.cs). The apps compare the names
+    # case-sensitively, so a name in another case would select no test.
+    param($Project, [string]$Category)
+
     $pattern = '\bconst\s+string\s+' + [regex]::Escape($Category) + '\s*='
-    foreach ($file in $files) {
-        if (Select-String -LiteralPath $file.FullName -Pattern $pattern -Quiet) {
+    foreach ($file in (Get-RunSourceFiles -Project $Project -Filter 'TestCategory*.cs')) {
+        if (Select-String -LiteralPath $file.FullName -Pattern $pattern -CaseSensitive -Quiet) {
             return $true
         }
     }
@@ -292,22 +310,53 @@ function Test-RunProjectDeclaresCategory {
     return $false
 }
 
-function Select-RunProjectsForFilter {
+function Select-RunProjectsForCategory {
     # A 'Category=' filter selects the tests of one app. An app that declares no such category runs 0 tests and fails with 94, so the
     # apps that do not declare it are left out when the person did not choose the apps.
-    param($Projects, [string]$Filter)
+    param($Projects, [string]$Category)
 
-    if (-not $Filter.StartsWith('Category=', [System.StringComparison]::Ordinal)) {
-        return $Projects
-    }
-
-    $category = $Filter.Substring('Category='.Length)
-    $declaring = @($Projects | Where-Object { Test-RunProjectDeclaresCategory -Project $_ -Category $category })
+    $declaring = @($Projects | Where-Object { Test-RunProjectDeclaresCategory -Project $_ -Category $Category })
     if ($declaring.Count -eq 0) {
-        throw (New-Object System.ArgumentException "No device test app declares the category '$category' (a constant of TestCategory in src/<app>/**/TestCategory*.cs).")
+        throw (New-Object System.ArgumentException "No device test app declares the category '$Category' (a constant of TestCategory in src/<app>/**/TestCategory*.cs; the names are case-sensitive).")
     }
 
     return $declaring
+}
+
+function Get-RunCategoryPlatforms {
+    # Directory.Build.targets builds a *.<platform>.cs file, and a file in a <platform> folder, for that platform only, so a category whose
+    # tests are all in such files has no test on the other platforms, where a run fails with 94. A file whose platform is not one of those
+    # names, as Directory.Build.targets writes them, counts as a file of every platform: then the result is $null and no platform is left out.
+    param($Projects, [string]$Category)
+
+    $pattern = '\bCategory\(\s*TestCategory\.' + [regex]::Escape($Category) + '\s*\)'
+    $platforms = New-Object System.Collections.Generic.List[string]
+    foreach ($project in $Projects) {
+        foreach ($file in (Get-RunSourceFiles -Project $project -Filter '*.cs')) {
+            if (-not (Select-String -LiteralPath $file.FullName -Pattern $pattern -CaseSensitive -Quiet)) {
+                continue
+            }
+
+            $relativePath = $file.FullName.Substring($project.Directory.Length)
+            if ($file.Name -cmatch '\.(android|ios|macos|macios|windows)\.cs$' -or $relativePath -cmatch '[\\/](android|ios|macos|macios|windows)[\\/]') {
+                foreach ($id in $script:RunPlatformsOfSourceName[$Matches[1]]) {
+                    if (-not $platforms.Contains($id)) {
+                        $platforms.Add($id)
+                    }
+                }
+
+                continue
+            }
+
+            return $null
+        }
+    }
+
+    if ($platforms.Count -eq 0) {
+        return $null
+    }
+
+    return , $platforms.ToArray()
 }
 
 function Get-RunXcodeProblem {
@@ -621,7 +670,9 @@ function Get-RunPlan {
         [string]$DeviceId,
         [string]$Udid,
         [string]$Xcode,
-        [bool]$KeepDevice
+        [bool]$KeepDevice,
+        [string]$Category,
+        [string[]]$CategoryPlatforms
     )
 
     foreach ($id in $script:RunPlatforms.Keys) {
@@ -637,6 +688,11 @@ function Get-RunPlan {
             }
         }
         elseif (-not $supported) {
+            continue
+        }
+
+        if ($null -ne $CategoryPlatforms -and -not ($CategoryPlatforms -contains $id)) {
+            New-RunPlanEntry -Id $id -Available $false -Detail "no test of the category $Category is built for it (only for $($CategoryPlatforms -join ', '))."
             continue
         }
 
@@ -987,7 +1043,7 @@ function Write-RunSummary {
 
     if ($skipped.Count -gt 0) {
         Write-Host ''
-        Write-Host 'Skipped, this machine cannot run them:' -ForegroundColor Yellow
+        Write-Host 'Skipped:' -ForegroundColor Yellow
         foreach ($entry in $skipped) {
             Write-Host "  $($entry.Id): $($entry.Detail)"
         }
@@ -1004,12 +1060,21 @@ try {
 
     $projectArguments = $Project
     $projectNote = ''
-    if (-not $PSBoundParameters.ContainsKey('Project')) {
-        $declaring = @(Select-RunProjectsForFilter -Projects $projects -Filter $filter)
-        if ($declaring.Count -lt $projects.Count) {
-            $projects = $declaring
-            $projectArguments = @($projects | ForEach-Object { $_.Name })
-            $projectNote = " (the apps that declare the category; -Project chooses others)"
+    $category = ''
+    $categoryPlatforms = $null
+    if ($filter.StartsWith('Category=', [System.StringComparison]::Ordinal)) {
+        $category = $filter.Substring('Category='.Length)
+        if (-not $PSBoundParameters.ContainsKey('Project')) {
+            $declaring = @(Select-RunProjectsForCategory -Projects $projects -Category $category)
+            if ($declaring.Count -lt $projects.Count) {
+                $projects = $declaring
+                $projectArguments = @($projects | ForEach-Object { $_.Name })
+                $projectNote = " (the apps that declare the category; -Project chooses others)"
+            }
+        }
+
+        if (-not $PSBoundParameters.ContainsKey('Platform')) {
+            $categoryPlatforms = Get-RunCategoryPlatforms -Projects $projects -Category $category
         }
     }
 
@@ -1019,7 +1084,7 @@ try {
     }
 
     $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
-        -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent)
+        -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms)
 
     $common = @{ Target = $Target; Project = $projectArguments; Configuration = $Configuration }
     foreach ($name in @('TestFilter', 'BinlogDir', 'SkipCapabilities', 'RequireCapabilities', 'Timeout', 'InfraRetries', 'BuildArgs')) {
@@ -1060,7 +1125,7 @@ try {
     }
     elseif ($runnable.Count -eq 0) {
         $exitCode = 71
-        Write-DeviceTestError 'Nothing to run: this machine can run none of the platforms (see the reasons above).'
+        Write-DeviceTestError 'Nothing to run: every platform is skipped (see the reasons above).'
     }
     elseif ($DryRun) {
         $exitCode = 0

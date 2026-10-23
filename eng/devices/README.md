@@ -78,14 +78,14 @@ pwsh eng/devices/run.ps1 -Platform ios,android -Project Maui -TestFilter 'Catego
 | Windows | `windows-packaged`, `windows-unpackaged` and `android` |
 | Linux | `android` |
 
-A platform that the machine cannot run is skipped, with the reason in the plan and in the summary. A platform that `-Platform` names and that cannot run is an error: exit code 3 on the wrong operating system, 81 for Android without a device, 71 otherwise. When nothing can run the exit code is 71.
+A platform that the machine cannot run is skipped, with the reason in the plan and in the summary. With `-TestFilter 'Category=<name>'` and no `-Platform`, so is a platform that builds no test of the category: `Directory.Build.targets` builds a `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` or `*.windows.cs` file, or a file in a folder of that name, for its platforms only, and a platform that runs 0 tests fails with 94. A platform that `-Platform` names and that cannot run is an error: exit code 3 on the wrong operating system, 81 for Android without a device, 71 otherwise. When nothing can run the exit code is 71.
 
 Android runs on, in this order: the device named by `-DeviceId` (without `-Avd`); the AVD named by `-Avd`, which the script boots and stops; the emulator that is running already, when exactly one `emulator-*` is in state `device` (with several running, Android is skipped until `-DeviceId` or `-Avd` chooses, because one of them may be in use for something else); an AVD that the script picks and boots. Of the AVDs (the `*.ini` files in `$ANDROID_AVD_HOME`, `$ANDROID_USER_HOME/avd` or `~/.android/avd`), it picks one with a system image for this machine's CPU that is not for Wear OS, TV, Automotive, Desktop or XR: one named `CTM_DeviceTests*` first, then the newest API level. A physical device is never used unless `-DeviceId` names it, and the emulator gets a free port from 5554 up unless `-EmulatorPort` says which.
 
 | Parameter | Default | Meaning |
 | --- | --- | --- |
 | `-Platform` | every platform this machine can run | `ios`, `maccatalyst` (`catalyst`), `android`, `windows-packaged` (`packaged`), `windows-unpackaged` (`unpackaged`) and `windows` for both; comma-separated values are fine |
-| `-Project` | `All` | `Maui`, `MediaElement`, `Camera`, `All`, a project name or a `.csproj` path. With `-TestFilter 'Category=<name>'` and no `-Project`, only the apps that declare the category run, because an app that runs 0 tests fails with 94 |
+| `-Project` | `All` | `Maui`, `MediaElement`, `Camera`, `All`, a project name or a `.csproj` path. With `-TestFilter 'Category=<name>'` and no `-Project`, only the apps that declare the category (the names are case-sensitive) run, because an app that runs 0 tests fails with 94 |
 | `-TestFilter` | `$env:TEST_FILTER` | as in the other scripts |
 | `-Configuration` | `Debug` | CI builds `Release` |
 | `-Target` | `buildAndTest` | `buildOnly`, `testOnly` or `buildAndTest` |

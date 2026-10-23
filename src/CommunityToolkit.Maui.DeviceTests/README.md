@@ -224,8 +224,9 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
   v2 only discovers collection definitions in the test assembly, so every app declares this one in
   `DisableParallelizationCollection.cs`.
 
-Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the app that declares the category; see
-[`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its script (`-Project Maui|MediaElement|Camera|All`; see
+Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the app that declares the category
+and the platforms that build a test of it; see [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its
+script (`-Project Maui|MediaElement|Camera|All`; see
 [`eng/devices/README.md`](../../eng/devices/README.md)):
 
 ```bash
