@@ -7,6 +7,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class MauiDrawingViewTests
 {
+	const uint otherPointerId = 2;
+
 	// The pointer overrides of MauiDrawingView (OnPointerPressed, OnPointerMoved, OnPointerReleased, OnPointerCanceled and OnPointerCaptureLost)
 	// read a PointerRoutedEventArgs, which WinUI cannot construct, and the test app cannot inject pointer input (InputInjector needs the restricted
 	// capability inputInjectionBrokered). So the tests call the methods behind them through reflection, and the pointer capture itself is checked
@@ -93,6 +95,80 @@ public partial class MauiDrawingViewTests
 		Assert.Equal(1, captureLoss.Count);
 		Assert.Equal(0, recorder.Cancelled);
 		Assert.Same(Assert.Single(recorder.Completed), Assert.Single(view.Lines));
+	});
+
+	[Fact]
+	public Task PressOfAnotherPointerWhileALineIsDrawnStartsNoLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchDown(view, otherPointerId, 80, 80);
+		DrawingViewTestPlatform.TouchUp(view, 10, 10);
+		DrawingViewTestPlatform.TouchMove(view, otherPointerId, 90, 90);
+		DrawingViewTestPlatform.TouchUp(view, otherPointerId);
+
+		AssertPoint(10, 10, Assert.Single(recorder.Started));
+		Assert.Empty(recorder.Points);
+		AssertPoint(10, 10, Assert.Single(Assert.Single(recorder.Completed).Points));
+	});
+
+	[Fact]
+	public Task MovesOfAnotherPointerDoNotExtendTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchMove(view, otherPointerId, 80, 80);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		AssertPoint(30, 30, Assert.Single(recorder.Points));
+		var line = Assert.Single(recorder.Completed);
+		Assert.Equal(2, line.Points.Count);
+		AssertPoint(30, 30, line.Points[1]);
+	});
+
+	[Fact]
+	public Task ReleaseOfAnotherPointerDoesNotEndTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchUp(view, otherPointerId);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		AssertPoint(30, 30, Assert.Single(recorder.Points));
+		Assert.Equal(2, Assert.Single(recorder.Completed).Points.Count);
+	});
+
+	[Fact]
+	public Task CancelOfAnotherPointerDoesNotCancelTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchCancel(view, otherPointerId);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		Assert.Equal(0, recorder.Cancelled);
+		Assert.Equal(2, Assert.Single(recorder.Completed).Points.Count);
+	});
+
+	[Fact]
+	public Task CaptureLossOfAnotherPointerDoesNotCancelTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		LoseCapture(view, otherPointerId);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		Assert.Equal(0, recorder.Cancelled);
+		Assert.Equal(2, Assert.Single(recorder.Completed).Points.Count);
 	});
 
 	[Fact]
@@ -192,7 +268,8 @@ public partial class MauiDrawingViewTests
 	static bool IsDisposed(MauiDrawingView view) =>
 		(bool)typeof(MauiDrawingView).GetField("isDisposed", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(view)!;
 
-	static void LoseCapture(MauiDrawingView view) => DrawingViewTestPlatform.Invoke(view, "OnCaptureLost");
+	static void LoseCapture(MauiDrawingView view, uint pointerId = DrawingViewTestPlatform.DefaultPointerId) =>
+		DrawingViewTestPlatform.Invoke(view, "OnCaptureLost", pointerId);
 
 	sealed class DisposeProbe : MauiDrawingView
 	{

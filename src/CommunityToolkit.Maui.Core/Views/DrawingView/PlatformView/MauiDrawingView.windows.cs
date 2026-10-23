@@ -13,6 +13,10 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 {
 	bool isDisposed;
 
+	// As on Android and iOS, a line follows the pointer that started it: while it is drawn, the other pointers start no line and neither extend,
+	// end nor cancel it.
+	uint linePointerId;
+
 	/// <inheritdoc />
 	~MauiDrawingView() => Dispose(false);
 
@@ -65,7 +69,7 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 		CapturePointer(e.Pointer);
 
 		var wPoint = e.GetCurrentPoint(this).Position;
-		OnStart(new PointF(wPoint._x, wPoint._y));
+		OnPressed(e.Pointer.PointerId, new PointF(wPoint._x, wPoint._y));
 	}
 
 	/// <inheritdoc />
@@ -73,16 +77,16 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 	{
 		base.OnPointerMoved(e);
 		var wPoint = e.GetCurrentPoint(this).Position;
-		OnMoving(new PointF(wPoint._x, wPoint._y));
+		OnMoved(e.Pointer.PointerId, new PointF(wPoint._x, wPoint._y));
 	}
 
 	/// <inheritdoc />
 	protected override void OnPointerReleased(PointerRoutedEventArgs e)
 	{
 		base.OnPointerReleased(e);
-		OnRelease();
+		OnReleased(e.Pointer.PointerId);
 
-		// Only after OnRelease: ReleasePointerCapture raises PointerCaptureLost at once, which cancels a line that is still being drawn.
+		// Only after OnReleased: ReleasePointerCapture raises PointerCaptureLost at once, which cancels a line that is still being drawn.
 		ReleasePointerCapture(e.Pointer);
 	}
 
@@ -90,21 +94,40 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 	protected override void OnPointerCanceled(PointerRoutedEventArgs e)
 	{
 		base.OnPointerCanceled(e);
-		OnCancel();
+		OnCanceled(e.Pointer.PointerId);
 	}
 
 	/// <inheritdoc />
 	protected override void OnPointerCaptureLost(PointerRoutedEventArgs e)
 	{
 		base.OnPointerCaptureLost(e);
-		OnCaptureLost();
+		OnCaptureLost(e.Pointer.PointerId);
+	}
+
+	void OnPressed(uint pointerId, PointF point)
+	{
+		if (isDrawing)
+		{
+			return;
+		}
+
+		linePointerId = pointerId;
+		OnStart(point);
+	}
+
+	void OnMoved(uint pointerId, PointF point)
+	{
+		if (IsDrawingWith(pointerId))
+		{
+			OnMoving(point);
+		}
 	}
 
 	// A release also reaches the view when the press began on another element. It ends no line, and OnFinish would clear the lines when
 	// ShouldClearOnFinish is set.
-	void OnRelease()
+	void OnReleased(uint pointerId)
 	{
-		if (!isDrawing)
+		if (!IsDrawingWith(pointerId))
 		{
 			return;
 		}
@@ -115,15 +138,27 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView, IDisposable
 		OnFinish();
 	}
 
-	// Alt+Tab, another window or a system gesture can take the pointer while a line is being drawn. WinUI also raises PointerCaptureLost after
-	// each release, and for a pointer that only hovers over the view.
-	void OnCaptureLost()
+	void OnCanceled(uint pointerId)
 	{
-		if (isDrawing)
+		if (isDrawing && pointerId != linePointerId)
+		{
+			return;
+		}
+
+		OnCancel();
+	}
+
+	// WinUI ends the capture of a line that is still being drawn when the view leaves its window or the system takes the pointer. It also raises
+	// PointerCaptureLost after each release, and for a pointer that only hovers over the view.
+	void OnCaptureLost(uint pointerId)
+	{
+		if (IsDrawingWith(pointerId))
 		{
 			OnCancel();
 		}
 	}
+
+	bool IsDrawingWith(uint pointerId) => isDrawing && pointerId == linePointerId;
 
 	void Redraw()
 	{

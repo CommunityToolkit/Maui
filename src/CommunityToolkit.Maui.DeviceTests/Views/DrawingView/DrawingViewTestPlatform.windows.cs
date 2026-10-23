@@ -9,6 +9,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 static partial class DrawingViewTestPlatform
 {
+	internal const uint DefaultPointerId = 1;
+
 	internal static MauiDrawingView CreateView(double width, double height) => new() { Width = width, Height = height };
 
 	internal static Task<T> HostAsync<T>(MauiDrawingView view, IMauiContext mauiContext, Func<Task<T>> body) =>
@@ -22,13 +24,23 @@ static partial class DrawingViewTestPlatform
 	internal static bool IsChildOf(MauiDrawingView view, object platformParent) => platformParent is Microsoft.UI.Xaml.Controls.Panel panel && panel.Children.Contains(view);
 
 	// WinUI cannot construct PointerRoutedEventArgs, so the touch helpers call, by reflection, the methods that the view's pointer overrides call.
-	internal static void TouchDown(MauiDrawingView view, double x, double y) => Invoke(view, "OnStart", new PointF((float)x, (float)y));
+	internal static void TouchDown(MauiDrawingView view, double x, double y) => TouchDown(view, DefaultPointerId, x, y);
 
-	internal static void TouchMove(MauiDrawingView view, double x, double y) => Invoke(view, "OnMoving", new PointF((float)x, (float)y));
+	internal static void TouchDown(MauiDrawingView view, uint pointerId, double x, double y) =>
+		Invoke(view, "OnPressed", pointerId, new PointF((float)x, (float)y));
 
-	internal static void TouchUp(MauiDrawingView view, double x, double y) => Invoke(view, "OnRelease");
+	internal static void TouchMove(MauiDrawingView view, double x, double y) => TouchMove(view, DefaultPointerId, x, y);
 
-	internal static void TouchCancel(MauiDrawingView view, double x, double y) => Invoke(view, "OnCancel");
+	internal static void TouchMove(MauiDrawingView view, uint pointerId, double x, double y) =>
+		Invoke(view, "OnMoved", pointerId, new PointF((float)x, (float)y));
+
+	internal static void TouchUp(MauiDrawingView view, double x, double y) => TouchUp(view, DefaultPointerId);
+
+	internal static void TouchUp(MauiDrawingView view, uint pointerId) => Invoke(view, "OnReleased", pointerId);
+
+	internal static void TouchCancel(MauiDrawingView view, double x, double y) => TouchCancel(view, DefaultPointerId);
+
+	internal static void TouchCancel(MauiDrawingView view, uint pointerId) => Invoke(view, "OnCanceled", pointerId);
 
 	internal static void Invoke(MauiDrawingView view, string methodName, params object[] arguments)
 	{
