@@ -27,9 +27,9 @@ powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
 | --- | --- |
 | Mac | the iOS simulator (needs Xcode and an iOS simulator runtime) and Mac Catalyst (needs Xcode) |
 | Windows | the packaged (MSIX) app and the unpackaged app |
-| Mac and Windows | Android, on an emulator that is already running, or else on an AVD that your CPU can run, which the script boots and stops again |
+| Mac and Windows | Android, on the emulator that is already running if exactly one is, or else on an AVD that your CPU can run, which the script boots and stops again |
 
-* A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
+* A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, several emulators running (it does not guess; `-DeviceId` or `-Avd` chooses) or no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
 * It never uses a physical Android device unless you name it with `-DeviceId`, and it never touches a simulator that it did not create unless you name it with `-Udid`.
 * All three apps run. The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
 * The platforms run one after the other, so a full run takes tens of minutes per platform. A packaged Windows run needs an elevated PowerShell the first time, to trust its signing certificate.

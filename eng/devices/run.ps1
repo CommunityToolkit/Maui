@@ -11,9 +11,10 @@
       macOS    the iOS simulator and Mac Catalyst (both need Xcode), and Android
       Windows  the packaged (MSIX) app and the unpackaged app, and Android
       Linux    Android
-    Android runs on an emulator that is already running, or else on an AVD that this machine's CPU can run, which the script boots and stops
-    again. A physical device is only used when -DeviceId names it. A platform that this machine cannot run is skipped, and the plan and the
-    summary say why. When nothing can run, the exit code is 71.
+    Android runs on the emulator that is already running when it is the only one, or else on an AVD that this machine's CPU can run, which the
+    script boots and stops again. With several emulators running it does not guess: -DeviceId chooses one. A physical device is only used when
+    -DeviceId names it. A platform that this machine cannot run is skipped, and the plan and the summary say why. When nothing can run, the
+    exit code is 71.
 
     The plan (the platforms, the apps and the commands) is printed first. -DryRun prints it and stops.
 
@@ -532,16 +533,17 @@ function Get-RunAndroidEntry {
     }
 
     $devices = Get-AndroidDevices -Adb $adb
-    # A device that nobody named is not touched, as eng/devices/README.md promises; an emulator that is running is.
+    # A device that nobody named is not touched, as eng/devices/README.md promises. An emulator that is running is the exception, but only when
+    # it is the one: with several running, one of them may be in use for something else, and android.ps1 does not guess among devices either.
     $emulators = @($devices | Where-Object { $_.State -eq 'device' -and $_.Serial -like 'emulator-*' })
-    if (-not $Avd -and $emulators.Count -gt 0) {
-        $serial = $emulators[0].Serial
-        $detail = "runs on the emulator that is already running ($serial) and leaves it running"
-        if ($emulators.Count -gt 1) {
-            $detail = "$detail; it is the first of $($emulators.Count) running emulators, choose another with -DeviceId"
-        }
+    if (-not $Avd -and $emulators.Count -gt 1) {
+        $serials = ($emulators | ForEach-Object { $_.Serial }) -join ', '
+        return New-RunPlanEntry -Id 'android' -Available $false -Detail "$($emulators.Count) emulators are running ($serials). Choose one with -DeviceId <serial>, or boot an AVD of your own with -Avd <name>."
+    }
 
-        return New-RunPlanEntry -Id 'android' -Available $true -Detail $detail -Arguments @{ DeviceId = $serial }
+    if (-not $Avd -and $emulators.Count -eq 1) {
+        $serial = $emulators[0].Serial
+        return New-RunPlanEntry -Id 'android' -Available $true -Detail "runs on the emulator that is already running ($serial) and leaves it running" -Arguments @{ DeviceId = $serial }
     }
 
     $avds = @(Get-RunAvds -Root (Get-RunAvdRoot))
