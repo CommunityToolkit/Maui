@@ -14,6 +14,26 @@ public class CameraStartStopAppleTests : CameraHandlerTestBase
 	static readonly TimeSpan timeout = TimeSpan.FromSeconds(5);
 
 	[Fact]
+	public async Task StartCameraPreviewWithACancelledTokenThrowsAndKeepsTheSessionStopped()
+	{
+		await RunAsync(async harness =>
+		{
+			using var errors = new CameraErrorRecorder(harness.Scope.View);
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => harness.Scope.Manager.StartCameraPreview(cancellation.Token));
+
+			Assert.Equal(cancellation.Token, exception.CancellationToken);
+			Assert.Empty(harness.Session.Calls);
+			Assert.Empty(harness.Inputs.Devices);
+			Assert.False(harness.Scope.Access.IsInitialized);
+			Assert.Equal(0, harness.Scope.LoadedCount);
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	[Fact]
 	public async Task StopCameraPreviewWhileTheCameraConnectsKeepsTheSessionStopped()
 	{
 		await RunAsync(async harness =>

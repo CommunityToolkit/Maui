@@ -267,9 +267,6 @@ partial class CameraManager
 		// a second time. Like on Android and Windows, whose connections complete asynchronously, the camera starts once the mapping is done
 		await Task.Yield();
 
-		// The start itself does not wait for anything that observes the token, so a StopCameraPreview during the yield would be ignored
-		token.ThrowIfCancellationRequested();
-
 		await PlatformStartCameraPreview(token);
 	}
 
@@ -279,6 +276,10 @@ partial class CameraManager
 		{
 			return;
 		}
+
+		// The start does not wait for anything that observes the token: a start that was cancelled before it began (by its caller, or by a
+		// StopCameraPreview during the yield of the connection) would start the preview all the same
+		token.ThrowIfCancellationRequested();
 
 		captureSession.BeginConfiguration();
 
