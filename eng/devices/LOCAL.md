@@ -32,7 +32,7 @@ powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
 * A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, several emulators running (it does not guess; `-DeviceId` or `-Avd` chooses) or no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
 * It never uses a physical Android device unless you name it with `-DeviceId`, and it never touches a simulator that it did not create unless you name it with `-Udid`.
 * All three apps run (the platform scripts alone run the main app unless `-Project` says otherwise). The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
-* The platforms run one after the other, so a full run takes tens of minutes per platform. A packaged Windows run needs an elevated PowerShell the first time, to trust its signing certificate.
+* The platforms run one after the other, and each takes tens of minutes. A packaged Windows run needs an elevated PowerShell the first time, to trust its signing certificate.
 
 Choose what runs:
 
@@ -57,12 +57,15 @@ ios                 Maui          PASS      6012    5990       0      22  9m 12s
                     Camera        FAIL       120     110       2       8           artifacts/device-tests/ios/CommunityToolkit.Maui.Camera.DeviceTests
 maccatalyst         (all)         FAIL         -       -       -       -  0s       artifacts/device-tests/maccatalyst
 
+2 of 4 passed in 9m 40s
+
 Failed:
   ios / Camera: exit code 1 (TESTS_FAILED). ...
   maccatalyst: exit code 71 (GENERAL_FAILURE). ...
+Exit code: 1 (TESTS_FAILED)
 ```
 
-The exit code is the first non-zero exit code of the scripts (see [Results and exit codes](README.md#results-and-exit-codes)), or 0. Every app writes to `artifacts/device-tests/<platform>/<app>/`: the xUnit results, the logs, a screenshot after a failure, `gate.json` with its verdict, and next to the apps a `summary.md` with the first 50 failed tests. The build logs (`*.binlog`) are in `artifacts/logs/`.
+The exit code is the first non-zero exit code of the scripts (see [Results and exit codes](README.md#results-and-exit-codes)), or 0. Every app writes to `artifacts/device-tests/<platform>/<app>/`: the xUnit results, the logs, `gate.json` with its verdict and, on iOS, a screenshot after a failure. Next to the apps, `summary.md` lists up to 50 failed tests of each app. The build logs (`*.binlog`) are in `artifacts/logs/`.
 
 ## Run an app from your IDE
 
@@ -109,7 +112,7 @@ The IDEs run these builds. They work in every shell, and they are the quickest w
 | iOS simulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-ios -t:Run -p:_DeviceName=:v2:udid=<simulator UDID>` |
 | Android emulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-android -t:Run -p:AdbTarget="-s emulator-5554"` |
 
-`net10.0` is the `NetVersion` of `Directory.Build.props`. The UDID of a simulator is in `xcrun simctl list devices available`; open the Simulator app to see it. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
+`net10.0` is the `NetVersion` of `Directory.Build.props`. `xcrun simctl list devices available` lists the simulators with their UDIDs. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
 
 On Windows the scripts build the app, and you start it yourself. The first packaged build needs an elevated PowerShell to trust its signing certificate.
 
@@ -135,7 +138,7 @@ Get-AppxPackage -Name com.communitytoolkit.maui.devicetests | Remove-AppxPackage
 
 ## Run the tests that need a person
 
-The tests of the `RequiresUserInteraction` category need a person: they open a dialog, wait for a permission prompt, or wait for a key or a voice. Headless runs, the scripts included, never run them. To run them, start the app from your IDE (or from the terminal, see above) on the platform, open the assembly, type a filter from the tables below, and tap a test. It runs, you do what the table says, and the result page opens. A test waits for you only so long (from 30 seconds to two minutes, depending on the test), and fails afterwards; run it again. The classes that these tests belong to also have tests that run without you. The filters below match them as well, and they pass or skip on their own.
+The tests of the `RequiresUserInteraction` category need a person: they open a dialog, wait for a permission prompt, or wait for a key or a voice. Headless runs, the scripts included, never run them. To run them, start the app from your IDE (or from the terminal, see above) on the platform, open the assembly, type a filter from the tables below, and tap a test. It runs, you do what the table says, and the result page opens. A test that waits for you gives up after a while and fails; run it again. The classes that these tests belong to also have tests that run without you. The filters below match them as well, and they pass or skip on their own.
 
 Some answers can only be given once. The system remembers a permission, so the test of the other answer skips until you reset it; the tables say how.
 
@@ -168,8 +171,6 @@ The Maui app needs a person for these tests:
 
 The MediaElement app has three tests (`MediaMetadataWindowsTests`) that wait for a key of the keyboard or for the system media overlay, within a minute. `PressingThePauseMediaKeyPausesTheMediaElement`: press Pause or Play/Pause. `PressingThePlayMediaKeyPlaysTheMediaElement`: press Play or Play/Pause. `PressingAnyOtherMediaKeyLeavesThePlaybackAlone`: press Next track or Stop, not Play or Pause.
 
-Each test names the step that it needs in a `// Person:` comment in its source: `grep -rn "// Person:" src`.
-
 ## What your machine does differently from CI
 
 The CI jobs prepare their runners, and a script that runs on your machine does not. These are the differences that decide whether a test runs or skips.
@@ -181,12 +182,12 @@ macOS shows a privacy prompt the first time an app uses the camera, the micropho
 Answer a prompt when one shows. To run the permission-gated tests, give the apps their answers once:
 
 1. Build the apps without running them: `pwsh eng/devices/catalyst.ps1 -Project All -Target buildOnly`.
-1. Start the app that needs the permission as described in [Run an app from your IDE](#run-an-app-from-your-ide), run the tests in [Run the tests that need a person](#run-the-tests-that-need-a-person) that ask for it, and click Allow. Once an app has asked, you can also switch it on under System Settings > Privacy & Security > Camera, Microphone or Speech Recognition.
-1. Run the tests without building the apps again: `pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly`. macOS remembers the answer for the app as it was built; building it again signs it again, and the prompts can return. `tccutil reset Camera|Microphone|SpeechRecognition <bundle id>` takes an answer back.
+1. Open the app that needs the permission from that build, without building it again, for example `open src/CommunityToolkit.Maui.DeviceTests/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/CommunityToolkit.Maui.DeviceTests.app` (`maccatalyst-x64` on an Intel Mac). Run the tests in [Run the tests that need a person](#run-the-tests-that-need-a-person) that ask for the permission, and click Allow. Once an app has asked, you can also switch it on under System Settings > Privacy & Security > Camera, Microphone or Speech Recognition.
+1. Run the tests without building the apps again: `pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly`. The apps are signed ad hoc, so macOS remembers an answer for the app as it was built, and a build that changes the app brings the prompts back. `tccutil reset Camera|Microphone|SpeechRecognition <bundle id>` takes an answer back.
 
 ### iOS simulator: your own simulator gets no grants
 
-Without `-Udid`, `ios.ps1` creates a simulator, grants the camera, the microphone and speech recognition to the test apps on it, and deletes it afterwards. With `-Udid <simulator>` it touches nothing on your simulator, so the tests that need these permissions skip until the apps have them. Grant them yourself before the run, once per simulator:
+Without `-Udid`, `ios.ps1` creates a simulator, grants the camera, the microphone and speech recognition to the test apps on it, and deletes it afterwards. With `-Udid <simulator>` it grants nothing on your simulator, so the tests that need these permissions skip until the apps have them. Grant them yourself before the run, once per simulator:
 
 ```bash
 xcrun simctl privacy <udid> grant camera com.communitytoolkit.maui.camera.devicetests
@@ -202,11 +203,12 @@ Do the same for the other two bundle ids from the list above. `simctl` has no se
 
 ### Android: the emulator needs the cameras that CI gives it
 
-`run.ps1` and `android.ps1` boot an AVD with both cameras emulated (`-camera-front emulated`), because an AVD that `avdmanager` creates has no front camera, and the tests of two cameras skip without one. An emulator that you start yourself needs the same options. The on-device speech tests can wait 30 seconds for each question on an emulator whose recognizer never answers, which the CI skips with `OnDeviceSpeech`; skip them the same way with `-SkipCapabilities OnDeviceSpeech`. See [Capability declarations](README.md#capability-declarations).
+`android.ps1`, and so `run.ps1`, boots an AVD with both cameras emulated (`-camera-front emulated`), because an AVD that `avdmanager` creates has no front camera, and the tests of two cameras skip without one. An emulator that you start yourself needs the same options. The on-device speech tests can wait 30 seconds for each question on an emulator whose recognizer never answers, which the CI skips with `OnDeviceSpeech`; skip them the same way with `-SkipCapabilities OnDeviceSpeech`. See [Capability declarations](README.md#capability-declarations).
 
 ### Everything else
 
 * CI builds and runs `Release`; the scripts default to `Debug`. A Release build trims and compiles ahead of time, so a failure that only CI shows needs `-Configuration Release` (see [CI](README.md#ci)). It builds much more slowly.
-* A run takes tens of minutes per platform. A Mac that goes to sleep stops the run in the middle; keep it awake with `caffeinate -di pwsh eng/devices/run.ps1`.
+* A Mac that goes to sleep stops the run in the middle; keep it awake with `caffeinate -di pwsh eng/devices/run.ps1`.
+* The scripts find the Android SDK in `ANDROID_HOME`, `ANDROID_SDK_ROOT` or the folder where Android Studio installs it, and `run.ps1` skips Android without one. Visual Studio installs the SDK in `C:\Program Files (x86)\Android\android-sdk`; set `ANDROID_HOME` to that folder.
 * The Mac Catalyst apps open a window while they run and need your session: stay logged in, leave the screen unlocked, and leave the window alone. Run one Mac Catalyst test app at a time.
 * Run one script at a time per checkout: the builds and the results folders are shared.
