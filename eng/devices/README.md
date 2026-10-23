@@ -31,8 +31,8 @@ Run these from the repository root. Each command builds the app and runs its tes
 # Android: boot an existing AVD on port 5560, run the tests, shut the emulator down afterwards
 pwsh eng/devices/android.ps1 -Avd CTM_DeviceTests -EmulatorPort 5560
 
-# iOS: creates a dedicated simulator (newest iOS runtime, newest iPhone), grants the test apps the camera, the microphone
-# and speech recognition on it, and deletes it afterwards
+# iOS: creates a dedicated simulator (newest iOS runtime, newest iPhone with one built-in screen), grants the test apps the
+# camera, the microphone and speech recognition on it, and deletes it afterwards
 pwsh eng/devices/ios.ps1
 
 # Mac Catalyst: the app opens a window on this Mac while it runs
@@ -83,7 +83,7 @@ Platform parameters:
 | `android.ps1`, `ios.ps1`, `catalyst.ps1` | `-XHarnessArgs` | extra XHarness arguments, for example `--set-env=NAME=value` |
 | `android.ps1`, `ios.ps1`, `catalyst.ps1` | `-Coverage` | collect [code coverage](#code-coverage) of the toolkit assemblies; defaults to `$env:DEVICE_TEST_COVERAGE` (`true`), which only the CI jobs set |
 | `ios.ps1` | `-Udid` | use this simulator instead of creating one |
-| `ios.ps1` | `-DeviceType`, `-Runtime`, `-SimulatorName` | for the created simulator, for example `-DeviceType 'iPhone 17' -Runtime 27.0` |
+| `ios.ps1` | `-DeviceType`, `-Runtime`, `-SimulatorName` | for the created simulator, for example `-DeviceType 'iPhone 17' -Runtime 27.0`. Without `-DeviceType` the simulator is the runtime's first iPhone with one built-in screen: the status bar tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge |
 | `ios.ps1` | `-KeepDevice` | keep the created simulator |
 | `ios.ps1`, `catalyst.ps1` | `-Xcode` | Xcode.app to use instead of `xcode-select -p` |
 | `windows.ps1` | `-Packaging packaged\|unpackaged` | required |

@@ -8,13 +8,13 @@
     --set-env TestFilter=<filter>'. After every run the results gate in devices-shared.ps1 decides the exit code,
     because xharness reports SUCCESS when the app dies before its test runner starts.
 
-    Without -Udid the script creates a dedicated simulator (newest iOS runtime and its newest iPhone unless
-    -Runtime/-DeviceType say otherwise), boots it, grants the camera, the microphone and speech recognition to the
-    test apps on it, and deletes it afterwards unless -KeepDevice. A simulator that cannot be created or booted is
-    replaced as often as infrastructure failures are retried (-InfraRetries). It never resets, shuts down, deletes or
-    grants anything on a simulator it did not create, and never passes --reset-simulator to xharness (that kills every
-    simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a simulator failure (88), never a
-    script error.
+    Without -Udid the script creates a dedicated simulator (newest iOS runtime and its newest iPhone with one built-in
+    screen unless -Runtime/-DeviceType say otherwise), boots it, grants the camera, the microphone and speech
+    recognition to the test apps on it, and deletes it afterwards unless -KeepDevice. A simulator that cannot be
+    created or booted is replaced as often as infrastructure failures are retried (-InfraRetries). It never resets,
+    shuts down, deletes or grants anything on a simulator it did not create, and never passes --reset-simulator to
+    xharness (that kills every simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a
+    simulator failure (88), never a script error.
 
     Exit codes use xharness's vocabulary: 0 passed, 1 test failures, 3 invalid arguments, 4 app not built,
     70 timed out, 71 build or script failure, 80 app crash, 88 simulator failure, 94 no results or no tests ran.
@@ -185,6 +185,38 @@ function Select-SimulatorRuntime {
     return ($runtimes | Sort-Object { [version]$_.version } -Descending | Select-Object -First 1)
 }
 
+function Get-SimulatorBuiltInScreenCount {
+    param($DeviceType)
+
+    if (-not $DeviceType.bundlePath) {
+        return $null
+    }
+
+    $capabilities = Join-Path ([string]$DeviceType.bundlePath) 'Contents/Resources/capabilities.plist'
+    if (-not (Test-Path -LiteralPath $capabilities -PathType Leaf)) {
+        return $null
+    }
+
+    $converted = Invoke-DeviceTestNativeCapture -FilePath 'plutil' -ArgumentList @('-convert', 'json', '-o', '-', $capabilities)
+    if ($converted.ExitCode -ne 0) {
+        return $null
+    }
+
+    try {
+        $displays = (($converted.Output -join "`n") | ConvertFrom-Json -AsHashtable)['capabilities']['displays']
+    }
+    catch {
+        return $null
+    }
+
+    if ($null -eq $displays) {
+        return $null
+    }
+
+    # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
+    return @($displays | Where-Object { $_['displayType'] -eq 'integrated' -or "$($_['deviceName'])" -like 'primary*' }).Count
+}
+
 function Select-SimulatorDeviceType {
     param($SelectedRuntime, [string]$Requested)
 
@@ -203,12 +235,25 @@ function Select-SimulatorDeviceType {
         throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
     }
 
-    $iPhone = $supported | Where-Object { $_.productFamily -eq 'iPhone' } | Select-Object -First 1
-    if ($null -eq $iPhone) {
+    $iPhones = @($supported | Where-Object { $_.productFamily -eq 'iPhone' })
+    if ($iPhones.Count -eq 0) {
         throw "$($SelectedRuntime.identifier) supports no iPhone device type."
     }
 
-    return $iPhone
+    # The status bar tests read the status bar from the top of the screen. iPhone Duo, the first iPhone of iOS 27.1, has two built-in screens
+    # and shows the status bar on their right edge.
+    foreach ($iPhone in $iPhones) {
+        $screens = Get-SimulatorBuiltInScreenCount -DeviceType $iPhone
+        if ($screens -gt 1) {
+            Write-Host "Passing over $($iPhone.name): it has $screens built-in screens (-DeviceType selects it)."
+            continue
+        }
+
+        return $iPhone
+    }
+
+    Write-DeviceTestWarning "Every iPhone of $($SelectedRuntime.identifier) has more than one built-in screen: the status bar tests read the status bar from the top of the screen."
+    return $iPhones[0]
 }
 
 function Wait-Simulator {
