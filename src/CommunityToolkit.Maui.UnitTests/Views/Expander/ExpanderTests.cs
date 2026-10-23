@@ -195,6 +195,61 @@ public class ExpanderTests : BaseViewTest
 		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
 	}
 
+	[Fact]
+	public void SetIsExpandedFromHeaderTapsTheHeaderOnlyWhenTheStateChanges()
+	{
+		var handleHeaderTappedCount = 0;
+		List<bool> expandedChanges = [];
+		expander.Header = new MockView();
+		expander.HandleHeaderTapped = _ => handleHeaderTappedCount++;
+		expander.ExpandedChanged += (_, e) => expandedChanges.Add(e.IsExpanded);
+
+		expander.SetIsExpandedFromHeader(false, new TappedEventArgs(null));
+
+		Assert.False(expander.IsExpanded);
+		Assert.Equal(0, handleHeaderTappedCount);
+
+		expander.SetIsExpandedFromHeader(true, new TappedEventArgs(null));
+		expander.SetIsExpandedFromHeader(true, new TappedEventArgs(null));
+
+		Assert.True(expander.IsExpanded);
+		Assert.Equal(1, handleHeaderTappedCount);
+
+		expander.SetIsExpandedFromHeader(false, new TappedEventArgs(null));
+
+		Assert.False(expander.IsExpanded);
+		Assert.Equal(2, handleHeaderTappedCount);
+		Assert.Equal<bool>([true, false], expandedChanges);
+	}
+
+	[Fact]
+	public void IsHeaderActivatableOnlyWhileATapCanToggleTheHeader()
+	{
+		Assert.False(expander.IsHeaderActivatable);
+
+		var header = new MockView();
+		expander.Header = header;
+		Assert.True(expander.IsHeaderActivatable);
+
+		header.IsVisible = false;
+		Assert.False(expander.IsHeaderActivatable);
+		header.IsVisible = true;
+
+		header.IsEnabled = false;
+		Assert.False(expander.IsHeaderActivatable);
+		header.IsEnabled = true;
+
+		header.InputTransparent = true;
+		Assert.False(expander.IsHeaderActivatable);
+		header.InputTransparent = false;
+
+		expander.IsEnabled = false;
+		Assert.False(expander.IsHeaderActivatable);
+		expander.IsEnabled = true;
+
+		Assert.True(expander.IsHeaderActivatable);
+	}
+
 	// Implicit Styles in Application.Resources reach the elements of the Window's Page
 	static void ShowOnPage(View view) => Application.Current!.Windows[0].Page = new ContentPage { Content = view };
 

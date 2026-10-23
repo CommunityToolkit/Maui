@@ -38,6 +38,7 @@ public static class AppBuilderExtensions
 		{
 			h.AddHandler<DrawingView, DrawingViewHandler>();
 			h.AddHandler<SemanticOrderView, SemanticOrderViewHandler>();
+			h.AddHandler<Expander.ExpanderLayout, ExpanderLayoutHandler>();
 		});
 
 #if ANDROID

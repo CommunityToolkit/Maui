@@ -1,4 +1,5 @@
 #pragma warning disable CS0618 // ListView and ViewCell are obsolete, but Expander still supports them in a ListView
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
 
@@ -187,6 +188,40 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(expanderReference, headerReference, handlerReference, platformViewReference);
+	}
+
+	static Expander CreateExpander(ExpandDirection direction = ExpandDirection.Down) => new()
+	{
+		Direction = direction,
+		Header = new Label { Text = "Header", HeightRequest = headerHeight },
+		Content = new BoxView { Color = Colors.Red, HeightRequest = contentHeight }
+	};
+
+	// Each property stops a tap on the header from toggling the Expander, and so stops the keyboard and assistive technology too.
+	static void SetHeaderActivationBlocked(Expander expander, string blockingProperty, bool isBlocked)
+	{
+		var header = Assert.IsType<View>(expander.Header, exactMatch: false);
+		switch (blockingProperty)
+		{
+			case nameof(Expander.IsEnabled):
+				expander.IsEnabled = !isBlocked;
+				break;
+
+			case nameof(Expander.Header) + nameof(VisualElement.IsEnabled):
+				header.IsEnabled = !isBlocked;
+				break;
+
+			case nameof(Expander.Header) + nameof(VisualElement.IsVisible):
+				header.IsVisible = !isBlocked;
+				break;
+
+			case nameof(Expander.Header) + nameof(VisualElement.InputTransparent):
+				header.InputTransparent = isBlocked;
+				break;
+
+			default:
+				throw new ArgumentOutOfRangeException(nameof(blockingProperty), blockingProperty, "Not a property that blocks the activation of the header.");
+		}
 	}
 
 	// The template can also run for row measurement, so not every Expander it created is on screen.
