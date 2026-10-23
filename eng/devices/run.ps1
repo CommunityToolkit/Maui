@@ -46,6 +46,12 @@
     The folder that holds one results folder per platform. Defaults to artifacts/device-tests, where each platform writes
     to <platform>/<app>/.
 
+.PARAMETER ResultsFolder
+    The folder of the one platform that runs, in place of <Results>/<platform>: each app writes to <ResultsFolder>/<app>/. For a job
+    whose later steps read an exact folder, such as the CI jobs of the Android API levels (artifacts/device-tests/android-api36), where
+    the coverage report is named after the folder. Not with -Results, and an error for a run of several platforms, which would share
+    the folder.
+
 .PARAMETER BinlogDir
     Where the build logs go. Defaults to artifacts/logs.
 
@@ -117,6 +123,8 @@ param(
     [string]$Target = 'buildAndTest',
 
     [string]$Results,
+
+    [string]$ResultsFolder,
 
     [string]$BinlogDir,
 
@@ -741,7 +749,11 @@ function Get-RunPlan {
 }
 
 function Get-RunResultsRoot {
-    param([string]$Id, [string]$Results)
+    param([string]$Id, [string]$Results, [string]$Folder)
+
+    if ($Folder) {
+        return Resolve-DeviceTestPath $Folder
+    }
 
     if ($Results) {
         return Join-Path (Resolve-DeviceTestPath $Results) $Id
@@ -751,7 +763,7 @@ function Get-RunResultsRoot {
 }
 
 function Write-RunPlan {
-    param($Plan, $Projects, [string]$Filter, [string]$ProjectNote, [string]$Target, [string]$Configuration, [string]$OperatingSystem, [string]$Results, [bool]$IsDryRun)
+    param($Plan, $Projects, [string]$Filter, [string]$ProjectNote, [string]$Target, [string]$Configuration, [string]$OperatingSystem, [string]$Results, [string]$ResultsFolder, [bool]$IsDryRun)
 
     $title = 'Device tests: plan'
     if ($IsDryRun) {
@@ -764,8 +776,14 @@ function Write-RunPlan {
     Write-Host "Configuration: $Configuration ($Target)"
     Write-Host "TestFilter:    $Filter"
     $separator = [System.IO.Path]::DirectorySeparatorChar
-    $resultsFolder = Format-RunPath (Split-Path -Parent (Get-RunResultsRoot -Id 'platform' -Results $Results))
-    Write-Host "Results:       $resultsFolder$separator<platform>$separator<app>"
+    if ($ResultsFolder) {
+        $resultsLocation = Format-RunPath (Get-RunResultsRoot -Id 'platform' -Results $Results -Folder $ResultsFolder)
+    }
+    else {
+        $resultsLocation = (Format-RunPath (Split-Path -Parent (Get-RunResultsRoot -Id 'platform' -Results $Results))) + "$separator<platform>"
+    }
+
+    Write-Host "Results:       $resultsLocation$separator<app>"
     Write-Host ''
     foreach ($entry in $Plan) {
         if ($entry.Available) {
@@ -1084,6 +1102,10 @@ $exitCode = 71
 try {
     Assert-DeviceTestCommand 'dotnet'
 
+    if ($ResultsFolder -and $Results) {
+        throw (New-Object System.ArgumentException '-Results and -ResultsFolder both say where the results go. Use one of them.')
+    }
+
     $operatingSystem = Get-RunOperatingSystem
     $projects = Resolve-DeviceTestProjects -Project $Project
     $filter = Resolve-DeviceTestFilter -TestFilter $TestFilter -IsBound $PSBoundParameters.ContainsKey('TestFilter')
@@ -1116,6 +1138,11 @@ try {
     $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
         -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target)
 
+    # The plan counts the platforms that are skipped too, so that the same command is valid or invalid on every machine.
+    if ($ResultsFolder -and $plan.Count -gt 1) {
+        throw (New-Object System.ArgumentException "-ResultsFolder is the folder of one platform, but this run has $($plan.Count): $(($plan | ForEach-Object { $_.Id }) -join ', '). Choose one with -Platform, or use -Results for a folder per platform.")
+    }
+
     $common = @{ Target = $Target; Project = $projectArguments; Configuration = $Configuration }
     foreach ($name in @('TestFilter', 'BinlogDir', 'SkipCapabilities', 'RequireCapabilities', 'Timeout', 'InfraRetries', 'BuildArgs')) {
         if ($PSBoundParameters.ContainsKey($name)) {
@@ -1133,15 +1160,15 @@ try {
             $arguments[$name] = $entry.Arguments[$name]
         }
 
-        if ($PSBoundParameters.ContainsKey('Results')) {
-            $arguments['Results'] = Get-RunResultsRoot -Id $entry.Id -Results $Results
+        if ($PSBoundParameters.ContainsKey('Results') -or $ResultsFolder) {
+            $arguments['Results'] = Get-RunResultsRoot -Id $entry.Id -Results $Results -Folder $ResultsFolder
         }
 
         $entry | Add-Member -NotePropertyName 'CommandArguments' -NotePropertyValue $arguments
     }
 
     Write-RunPlan -Plan $plan -Projects $projects -Filter $filter -ProjectNote $projectNote -Target $Target -Configuration $Configuration `
-        -OperatingSystem $operatingSystem -Results $Results -IsDryRun $DryRun.IsPresent
+        -OperatingSystem $operatingSystem -Results $Results -ResultsFolder $ResultsFolder -IsDryRun $DryRun.IsPresent
 
     $runnable = @($plan | Where-Object { $_.Available })
     $blocked = @($plan | Where-Object { -not $_.Available -and $requested -contains $_.Id })
@@ -1164,7 +1191,7 @@ try {
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
         $platformResults = @()
         foreach ($entry in $runnable) {
-            $resultsRoot = Get-RunResultsRoot -Id $entry.Id -Results $Results
+            $resultsRoot = Get-RunResultsRoot -Id $entry.Id -Results $Results -Folder $ResultsFolder
             $platformResults += Invoke-RunPlatform -Entry $entry -Arguments $entry.CommandArguments -Projects $projects -ResultsRoot $resultsRoot
         }
 

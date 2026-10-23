@@ -91,6 +91,7 @@ Android runs on, in this order: the device named by `-DeviceId` (without `-Avd`)
 | `-Target` | `buildAndTest` | `buildOnly`, `testOnly` or `buildAndTest` |
 | `-DryRun` (`-WhatIf`) | | print the plan and stop |
 | `-Results` | `artifacts/device-tests` | the folder that holds `<platform>/<app>/` |
+| `-ResultsFolder` | | the folder of the one platform that runs, in place of `<Results>/<platform>`, for a job whose later steps read an exact folder (`artifacts/device-tests/android-api36`, whose coverage report is named after it). Not with `-Results`; an error when more than one platform would run, because they would share the folder |
 | `-BinlogDir`, `-SkipCapabilities`, `-RequireCapabilities`, `-Timeout`, `-InfraRetries`, `-BuildArgs` | those of the platform scripts | passed to every platform script when given |
 | `-Avd`, `-EmulatorPort`, `-DeviceId` | | Android: boot this AVD, on this port; use this device |
 | `-Udid`, `-Xcode` | | iOS: use this simulator (nothing is granted on it); iOS and Mac Catalyst: use this Xcode.app |
