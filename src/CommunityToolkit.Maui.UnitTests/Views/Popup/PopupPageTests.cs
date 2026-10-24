@@ -518,7 +518,7 @@ public class PopupPageTests : BaseViewTest
 		shell.Items.Add(currentPage);
 
 		Assert.NotNull(Application.Current);
-		Application.Current!.Windows[0].Page = shell;
+		Application.Current.Windows[0].Page = shell;
 		var shellNavigation = Shell.Current.Navigation;
 
 		// Act
@@ -526,7 +526,7 @@ public class PopupPageTests : BaseViewTest
 
 		// Assert
 		var popupPage = Assert.Single(shellNavigation.ModalStack).As<PopupPage>();
-		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);	
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
 	}
 
 	[Fact]
@@ -655,7 +655,7 @@ public class PopupPageTests : BaseViewTest
 		Assert.Equal(PresentationMode.ModalNotAnimated, Shell.GetPresentationMode(popupPage));
 		Assert.Equal(UIModalPresentationStyle.OverFullScreen, popupPage.On<iOS>().ModalPresentationStyle());
 
-		// Verify content has tap gesture recognizer overlay	
+		// Verify content has tap gesture recognizer overlay
 		var gestureRecognizers = popupPage.Content.TapGestureGestureOverlay.GestureRecognizers;
 		var gestureRecognizer = Assert.Single(gestureRecognizers);
 		Assert.IsType<TapGestureRecognizer>(gestureRecognizer);

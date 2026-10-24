@@ -26,6 +26,9 @@ public partial class Popup
 	/// </summary>
 	UIViewController? viewController;
 
+	UIEdgeInsets? originalAdditionalSafeAreaInsets;
+	nfloat? originalSystemBottomSafeAreaInset;
+
 	partial void OnPlatformPopupOpened()
     {
         willShow?.Dispose();
@@ -48,6 +51,8 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 
 		willShow = willHide = null;
 
+		ResetSafeArea();
+
 		popupNativeView = null;
 		viewController = null;
     }
@@ -63,7 +68,17 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 			return;
 		}
 
-		viewController ??= popupNativeView.Window?.RootViewController?.PresentedViewController;
+		if (viewController is null)
+		{
+			for (UIResponder? responder = popupNativeView.NextResponder; responder is not null; responder = responder.NextResponder)
+			{
+				if (responder is UIViewController parentViewController)
+				{
+					viewController = parentViewController;
+					break;
+				}
+			}
+		}
 
 		if (viewController is null)
 		{
@@ -72,7 +87,51 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 			return;
 		}
 
-		viewController.AdditionalSafeAreaInsets = new UIEdgeInsets(0, 0, args.FrameEnd.Height, 0);
+		if (viewController.View is not UIView controllerView)
+		{
+			Trace.WriteLine("Failed to retrieve the popup view controller's view.");
+
+			return;
+		}
+
+		originalAdditionalSafeAreaInsets ??= viewController.AdditionalSafeAreaInsets;
+
+		if (originalSystemBottomSafeAreaInset is null)
+		{
+			var systemBottomInset = controllerView.SafeAreaInsets.Bottom - originalAdditionalSafeAreaInsets.Value.Bottom;
+
+			originalSystemBottomSafeAreaInset = systemBottomInset > 0 ? systemBottomInset : 0;
+		}
+
+		var keyboardFrame = controllerView.ConvertRectFromView(args.FrameEnd, null);
+
+		var bounds = controllerView.Bounds;
+
+		var boundsBottom = bounds.Y + bounds.Height;
+
+		var keyboardBottom = keyboardFrame.Y + keyboardFrame.Height;
+
+		var overlapsHorizontally = keyboardFrame.X < bounds.X + bounds.Width && keyboardFrame.X + keyboardFrame.Width > bounds.X;
+
+		var bottomOverlap = overlapsHorizontally && keyboardBottom >= boundsBottom
+			? boundsBottom - (keyboardFrame.Y > bounds.Y ? keyboardFrame.Y : bounds.Y)
+			: 0;
+
+		if (bottomOverlap < 0)
+		{
+			bottomOverlap = 0;
+		}
+
+		var originalInsets = originalAdditionalSafeAreaInsets.Value;
+		var keyboardInset = bottomOverlap - originalSystemBottomSafeAreaInset.Value;
+		var bottomInset = keyboardInset > originalInsets.Bottom ? keyboardInset : originalInsets.Bottom;
+
+		viewController.AdditionalSafeAreaInsets = new UIEdgeInsets(
+			originalInsets.Top,
+			originalInsets.Left,
+			bottomInset,
+			originalInsets.Right
+		);
 	}
 
 	/// <summary>
@@ -80,6 +139,14 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 	/// </summary>
 	void ResetSafeArea()
 	{
-		viewController?.AdditionalSafeAreaInsets = UIEdgeInsets.Zero;
+		if (viewController is not null && originalAdditionalSafeAreaInsets is UIEdgeInsets originalInsets)
+		{
+			viewController.AdditionalSafeAreaInsets = originalInsets;
+		}
+
+		originalAdditionalSafeAreaInsets = null;
+		originalSystemBottomSafeAreaInset = null;
+
+		// viewController?.AdditionalSafeAreaInsets = UIEdgeInsets.Zero;
 	}
 }

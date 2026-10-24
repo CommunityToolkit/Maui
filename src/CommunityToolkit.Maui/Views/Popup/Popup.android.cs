@@ -1,37 +1,54 @@
-using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Android.App;
+using Android.Views;
+using AndroidWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.Views;
 
 public partial class Popup
 {
     /// <summary>
-    /// Stores the soft input mode that was active before the popup was opened so it can be restored when the popup closes.
+    /// Stores the native window and soft input mode that were active before the popup was opened.
     /// </summary>
-    WindowSoftInputModeAdjust? previousSoftInputMode;
+    AndroidWindow? popupWindow;
+
+    /// <summary>
+    /// Stores the previous Android soft input mode before the popup changes it, so it can be restored afterward.
+    /// </summary>
+    SoftInput? previousSoftInputMode;
 
     partial void OnPlatformPopupOpened()
     {
-        var android = Microsoft.Maui.Controls.Application.Current?.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>();
-
-        if (android is null)
+        if (Handler?.PlatformView is not Android.Views.View platformView || platformView.Context is not Activity activity)
         {
             return;
         }
 
-        previousSoftInputMode = android.GetWindowSoftInputModeAdjust();
+        var window = activity.Window;
 
-        android.UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
+        if (window is null)
+        {
+            return;
+        }
+
+        if (window.Attributes?.SoftInputMode is not { } softInputMode)
+        {
+            return;
+        }
+
+        popupWindow = window;
+        previousSoftInputMode = softInputMode;
+        window.SetSoftInputMode(SoftInput.AdjustResize);
     }
 
     partial void OnPlatformPopupClosed()
     {
-        var android = Microsoft.Maui.Controls.Application.Current?.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>();
-
-        if (android is null)
+        if (popupWindow is not AndroidWindow window || previousSoftInputMode is not { } softInputMode)
         {
             return;
         }
 
-        android.UseWindowSoftInputModeAdjust(previousSoftInputMode ?? WindowSoftInputModeAdjust.Pan);
+        window.SetSoftInputMode(softInputMode);
+        popupWindow = null;
+        previousSoftInputMode = null;
     }
 }
