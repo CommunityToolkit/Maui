@@ -39,7 +39,8 @@ public interface IDrawingLine
 	/// <param name="desiredSizeHeight">Desired height of the image that is returned.</param>
 	/// <param name="background">Background of the generated image.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>, or <see cref="Stream.Null"/> when there is nothing to draw (a line without points, or an image below one pixel).</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="desiredSizeWidth"/> or <paramref name="desiredSizeHeight"/> is NaN, or when both are positive infinity.</exception>
 	ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, CancellationToken token = default) =>
 		GetImageStream(desiredSizeWidth, desiredSizeHeight, background, null, token);
 
@@ -55,6 +56,7 @@ public interface IDrawingLine
 	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.
 	/// </param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>.</returns>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingLine"/>, or <see cref="Stream.Null"/> when there is nothing to draw (a line without points, or an image below one pixel).</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="desiredSizeWidth"/> or <paramref name="desiredSizeHeight"/> is NaN, or when both are positive infinity; or when the width or the height of <paramref name="canvasSize"/> is NaN or positive infinity.</exception>
 	ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default);
 }

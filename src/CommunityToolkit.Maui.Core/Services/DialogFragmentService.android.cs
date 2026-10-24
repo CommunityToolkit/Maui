@@ -109,7 +109,8 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 			throw new InvalidOperationException("Dialog window cannot be null");
 		}
 
-		var isColorTransparent = platformColor == Android.Graphics.Color.Transparent;
+		// Any color without alpha is invisible, not only Color.Transparent (0x00000000)
+		var isColorTransparent = platformColor.A == 0;
 
 		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
@@ -124,7 +125,8 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 			if (appearance.HasValue)
 			{
-				windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value);
+				// The mask also holds the light status bars bit, so that the dialog loses light status bars the activity does not have (.NET MAUI gives the dialog of a modal page light status bars in day mode)
+				windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value | (int)WindowInsetsControllerAppearance.LightStatusBars);
 			}
 			else
 			{

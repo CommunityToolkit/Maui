@@ -63,7 +63,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(new Thickness(15), popup.Padding);
 		Assert.Equal(LayoutOptions.Center, popup.HorizontalOptions);
 		Assert.Equal(LayoutOptions.Center, popup.VerticalOptions);
-		Assert.Equal(Colors.White, popup.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(Colors.White, popupPage.Content.PopupBorder.BackgroundColor);
 	}
 
 	[Theory]
@@ -75,7 +76,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	[InlineData(false, AppTheme.Dark, true)]
 	[InlineData(true, AppTheme.Light, true)]
 	[InlineData(true, AppTheme.Dark, true)]
-	public void BackgroundColorDark_AppThemeChanges_UpdatesPopupAndBorder(bool useGenericPopup, AppTheme initialTheme, bool useCustomDefaults)
+	public void BackgroundColorDark_AppThemeChanges_UpdatesBorder(bool useGenericPopup, AppTheme initialTheme, bool useCustomDefaults)
 	{
 		// Arrange
 		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
@@ -94,8 +95,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		// Act
 		Popup popup = useGenericPopup ? new Popup<string>() : new Popup();
 
-		// Assert
-		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
+		// Assert - the Popup keeps BackgroundColor null, so that a Style can set it (PopupStyleTests)
+		Assert.Null(popup.BackgroundColor);
 
 		var popupPage = useGenericPopup ? new PopupPage<string>(popup, null) : new PopupPage(popup, null);
 		CreateViewHandler<MockPageHandler>(popupPage);
@@ -103,16 +104,16 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var border = popupPage.Content.PopupBorder;
 		Assert.Same(popup, border.Content);
 
-		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
-		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, border.BackgroundColor);
 
 		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
-		Assert.Equal(initialTheme == AppTheme.Dark ? lightColor : darkColor, popup.BackgroundColor);
-		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? lightColor : darkColor, border.BackgroundColor);
 
 		application.UserAppTheme = initialTheme;
-		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
-		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, border.BackgroundColor);
 	}
 
 	[Theory]
@@ -152,6 +153,47 @@ public class DefaultPopupSettingsTests : BaseViewTest
 	}
 
 	[Theory]
+	[InlineData(false, AppTheme.Light)]
+	[InlineData(false, AppTheme.Dark)]
+	[InlineData(true, AppTheme.Light)]
+	[InlineData(true, AppTheme.Dark)]
+	public void BackgroundColorDark_StyleBackgroundColor_PreservesOverrideAcrossThemeChanges(bool useGenericPopup, AppTheme initialTheme)
+	{
+		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+		application.UserAppTheme = initialTheme;
+		new Options().SetPopupDefaults(new DefaultPopupSettings
+		{
+			BackgroundColor = Colors.Orange,
+			BackgroundColorDark = Colors.Purple
+		});
+		Popup popup = useGenericPopup ? new Popup<string>() : new Popup();
+		popup.Style = new Style(popup.GetType())
+		{
+			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Green } }
+		};
+
+		var popupPage = useGenericPopup ? new PopupPage<string>(popup, null) : new PopupPage(popup, null);
+		CreateViewHandler<MockPageHandler>(popupPage);
+		application.OpenWindow(new Window { Page = popupPage });
+		var border = popupPage.Content.PopupBorder;
+
+		Assert.Equal(Colors.Green, popup.BackgroundColor);
+		Assert.Equal(Colors.Green, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+		Assert.Equal(Colors.Green, popup.BackgroundColor);
+		Assert.Equal(Colors.Green, border.BackgroundColor);
+
+		popup.Style = null;
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Orange : Colors.Purple, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme;
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Purple : Colors.Orange, border.BackgroundColor);
+	}
+
+	[Theory]
 	[InlineData(false, AppTheme.Light, false)]
 	[InlineData(false, AppTheme.Dark, false)]
 	[InlineData(true, AppTheme.Light, false)]
@@ -176,7 +218,7 @@ public class DefaultPopupSettingsTests : BaseViewTest
 			});
 		}
 
-		// A view with no explicit background color (its default is Colors.Transparent).
+		// A view with no explicit background color: its BackgroundColor is null, not Colors.Transparent.
 		var view = new ContentView();
 
 		// Act
@@ -187,16 +229,77 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
 
 		// Assert — the background-less view falls back to the theme-aware default (resolves #3310), not transparent.
-		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
-		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		// The Popup keeps the View's null BackgroundColor instead of the default, so that a color the View gets later still reaches it.
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, border.BackgroundColor);
 
 		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
-		Assert.Equal(initialTheme == AppTheme.Dark ? lightColor : darkColor, popup.BackgroundColor);
-		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? lightColor : darkColor, border.BackgroundColor);
 
 		application.UserAppTheme = initialTheme;
-		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, popup.BackgroundColor);
-		Assert.Equal(popup.BackgroundColor, border.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? darkColor : lightColor, border.BackgroundColor);
+	}
+
+	[Theory]
+	[InlineData(false, AppTheme.Light)]
+	[InlineData(false, AppTheme.Dark)]
+	[InlineData(true, AppTheme.Light)]
+	[InlineData(true, AppTheme.Dark)]
+	public void View_BackgroundColorSetAfterPopupPageIsCreated_ShowsColorAcrossThemeChanges(bool useGenericPopup, AppTheme initialTheme)
+	{
+		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+		application.UserAppTheme = initialTheme;
+		var view = new ContentView();
+		var popupPage = useGenericPopup ? new PopupPage<string>(view, null) : new PopupPage(view, null);
+		CreateViewHandler<MockPageHandler>(popupPage);
+		application.OpenWindow(new Window { Page = popupPage });
+		var border = popupPage.Content.PopupBorder;
+		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Black : Colors.White, border.BackgroundColor);
+
+		view.BackgroundColor = Colors.Green;
+
+		Assert.Equal(Colors.Green, popup.BackgroundColor);
+		Assert.Equal(Colors.Green, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+		Assert.Equal(Colors.Green, popup.BackgroundColor);
+		Assert.Equal(Colors.Green, border.BackgroundColor);
+	}
+
+	[Theory]
+	[InlineData(false, AppTheme.Light)]
+	[InlineData(false, AppTheme.Dark)]
+	[InlineData(true, AppTheme.Light)]
+	[InlineData(true, AppTheme.Dark)]
+	public void View_BackgroundColorClearedAfterPopupPageIsCreated_UsesThemeAwareDefaultAcrossThemeChanges(bool useGenericPopup, AppTheme initialTheme)
+	{
+		var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+		application.UserAppTheme = initialTheme;
+		new Options().SetPopupDefaults(new DefaultPopupSettings
+		{
+			BackgroundColor = Colors.Orange,
+			BackgroundColorDark = Colors.Purple
+		});
+		var view = new ContentView { BackgroundColor = Colors.Green };
+		var popupPage = useGenericPopup ? new PopupPage<string>(view, null) : new PopupPage(view, null);
+		CreateViewHandler<MockPageHandler>(popupPage);
+		application.OpenWindow(new Window { Page = popupPage });
+		var border = popupPage.Content.PopupBorder;
+		var popup = Assert.IsType<Popup>(border.Content, exactMatch: false);
+		Assert.Equal(Colors.Green, border.BackgroundColor);
+
+		view.BackgroundColor = null;
+
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Purple : Colors.Orange, border.BackgroundColor);
+
+		application.UserAppTheme = initialTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(initialTheme == AppTheme.Dark ? Colors.Orange : Colors.Purple, border.BackgroundColor);
 	}
 
 	[Theory]
@@ -326,7 +429,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(defaultPopupSettings.Padding, popup.Padding);
 		Assert.Equal(defaultPopupSettings.HorizontalOptions, popup.HorizontalOptions);
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popup.VerticalOptions);
-		Assert.Equal(defaultPopupSettings.BackgroundColor, popup.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(defaultPopupSettings.BackgroundColor, popupPage.Content.PopupBorder.BackgroundColor);
 	}
 
 	[Fact]
@@ -343,7 +447,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		Assert.Equal(new Thickness(15), popup.Padding);
 		Assert.Equal(LayoutOptions.Center, popupBorder.HorizontalOptions);
 		Assert.Equal(LayoutOptions.Center, popupBorder.VerticalOptions);
-		Assert.Equal(Colors.White, popup.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(Colors.White, popupBorder.BackgroundColor);
 	}
 
 	[Fact]
@@ -369,7 +474,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 
 		// Act // Assert
 		Assert.Equal(defaultPopupSettings.Padding, popup.Padding);
-		Assert.Equal(defaultPopupSettings.BackgroundColor, popup.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(defaultPopupSettings.BackgroundColor, popupBorder.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
 		Assert.Equal(defaultPopupSettings.Margin, popupBorder.Margin);
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popupBorder.VerticalOptions);
@@ -414,7 +520,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var underlyingContentView = (ContentView)popup;
 
 		// Assert
-		Assert.Equal(defaultPopupSettings.BackgroundColor, popup.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(defaultPopupSettings.BackgroundColor, popupBorder.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
 		Assert.Equal(defaultPopupSettings.Margin, popupBorder.Margin);
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popupBorder.VerticalOptions);
@@ -464,7 +571,8 @@ public class DefaultPopupSettingsTests : BaseViewTest
 		var underlyingContentView = (ContentView)popup;
 
 		// Assert
-		Assert.Equal(defaultPopupSettings.BackgroundColor, popup.BackgroundColor);
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(defaultPopupSettings.BackgroundColor, popupBorder.BackgroundColor);
 		Assert.Equal(defaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup, popup.CanBeDismissedByTappingOutsideOfPopup);
 		Assert.Equal(defaultPopupSettings.Margin, popupBorder.Margin);
 		Assert.Equal(defaultPopupSettings.VerticalOptions, popupBorder.VerticalOptions);

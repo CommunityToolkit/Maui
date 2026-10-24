@@ -243,12 +243,38 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
+		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
+	[Theory]
+	[InlineData(TextDecorationFlags.None, " email@example.com ", false)]
+	[InlineData(TextDecorationFlags.Trim, " email@example.com ", true)]
+	[InlineData(TextDecorationFlags.TrimStart, " email@example.com", true)]
+	[InlineData(TextDecorationFlags.TrimStart, "email@example.com ", false)]
+	[InlineData(TextDecorationFlags.TrimEnd, "email@example.com ", true)]
+	[InlineData(TextDecorationFlags.TrimEnd, " email@example.com", false)]
+	[InlineData(TextDecorationFlags.Trim, " email @example.com ", false)]
+	public async Task IsValid_DecorationFlagsAreAppliedBeforeValidation(TextDecorationFlags flags, string value, bool expectedValue)
+	{
+		var behavior = new EmailValidationBehavior
+		{
+			DecorationFlags = flags
+		};
+
+		var entry = new Entry
+		{
+			Text = value
+		};
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
+
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
+
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
 
@@ -263,12 +289,10 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires 
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -285,7 +309,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -308,7 +332,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(Keyboard.Email, entry.Keyboard);
@@ -332,7 +356,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		editor.Behaviors.Add(behavior);
+		RunOnUIThread(() => editor.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(Keyboard.Email, editor.Keyboard);
@@ -358,7 +382,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(keyboard, entry.Keyboard);
@@ -384,7 +408,7 @@ public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBe
 		};
 
 		// Act 
-		editor.Behaviors.Add(behavior);
+		RunOnUIThread(() => editor.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(keyboard, editor.Keyboard);

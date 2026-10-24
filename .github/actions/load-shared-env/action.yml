@@ -1,0 +1,9 @@
+name: Load shared environment variables
+description: Adds the variables of .github/workflows/shared.env to the environment of the job's later steps. Use it after actions/checkout.
+runs:
+    using: composite
+    steps:
+        -   name: Load .github/workflows/shared.env
+            shell: bash
+            # A Windows checkout has CRLF line endings, and the carriage returns would end up in the values.
+            run: tr -d '\r' < .github/workflows/shared.env | grep -Ev '^[[:space:]]*(#|$)' | tee -a "$GITHUB_ENV"

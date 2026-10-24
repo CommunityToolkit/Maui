@@ -10,10 +10,13 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 public class PopupTests : BaseViewTest
 {
 	[Fact]
-	public void PopupBackgroundColor_DefaultValue_ShouldBeWhite()
+	public void PopupBackgroundColor_DefaultValue_ShouldBeNull_AndDisplayedWhite()
 	{
 		var popup = new Popup();
-		Assert.Equal(Colors.White, popup.BackgroundColor);
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(Colors.White, popupPage.Content.PopupBorder.BackgroundColor);
 	}
 
 	[Fact]

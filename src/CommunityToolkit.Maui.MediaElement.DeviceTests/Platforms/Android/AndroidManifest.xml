@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The runner source generator declares the activities and the <ApplicationId>.TestInstrumentation instrumentation. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- usesCleartextTraffic: the Android MediaElement tests download media and artwork from an HTTP server on the device's loopback interface (LoopbackHttpServer), and Android blocks cleartext HTTP by default. -->
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true" android:usesCleartextTraffic="true"></application>
+
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<!-- The tests that enable MediaElement's foreground service (UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true)) need the permissions below. -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+	<uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+</manifest>

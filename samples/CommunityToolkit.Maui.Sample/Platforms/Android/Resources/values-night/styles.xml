@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The Dark theme: the app bar of .NET MAUI (style MauiAppBarLayout) has the colorPrimary background (#1976D2), which also shows behind the status bar
+         from Android 15 on (edge to edge). Give it the color of the Shell's navigation bar in the Dark theme instead (Gray950, see the Shell style in
+         Resources/Styles/Styles.xaml). colorPrimary itself stays #1976D2: the buttons of the date picker dialog use it. -->
+    <style name="MauiAppBarLayout" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:background">#141414</item>
+    </style>
+</resources>

@@ -192,6 +192,10 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <Label
+                IsVisible="{Binding NotFoundStateExceptionMessage, Converter={mct:IsStringNotNullOrEmptyConverter}}"
+                Text="{Binding NotFoundStateExceptionMessage}"
+                TextColor="Red" />
 
             <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" >
 

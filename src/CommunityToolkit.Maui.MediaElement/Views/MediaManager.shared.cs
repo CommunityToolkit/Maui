@@ -124,7 +124,13 @@ public partial class MediaManager
 	/// <summary>
 	/// Update the media source.
 	/// </summary>
-	public ValueTask UpdateSource() => PlatformUpdateSource();
+	/// <remarks>
+	/// An exception thrown by a handler of an event that the update raises, PropertyChanging and PropertyChanged included, neither ends the update
+	/// nor is thrown by it: it is logged, and reported through MediaFailed once the update has ended (see <see cref="IMediaElement.Source"/>). Other
+	/// exceptions of the update are thrown.
+	/// </remarks>
+	/// <returns>A task that completes when the update has ended.</returns>
+	public ValueTask UpdateSource() => MediaElement.RunSourceUpdate(PlatformUpdateSource, Logger);
 
 	/// <summary>
 	/// Update the media playback speed.

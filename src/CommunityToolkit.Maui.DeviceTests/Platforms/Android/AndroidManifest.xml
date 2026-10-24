@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The runner source generator declares the activities and the <ApplicationId>.TestInstrumentation instrumentation. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
+
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<!-- SpeechToText -->
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+	<queries>
+		<!-- SpeechToText: makes the speech recognition service visible from Android 11 (package visibility). -->
+		<intent>
+			<action android:name="android.speech.RecognitionService" />
+		</intent>
+	</queries>
+</manifest>

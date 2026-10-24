@@ -87,6 +87,13 @@ public partial class DrawingViewViewModel : BaseViewModel
 
 			await using var stream = await DrawingView.GetImageStream(options, cancellationToken);
 
+			// GetImageStream returns Stream.Null when there is nothing to draw (no lines, or no line with points).
+			if (stream == Stream.Null)
+			{
+				await Toast.Make("Save Failed: No Lines Drawn").Show(cancellationToken);
+				return;
+			}
+
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);
 
@@ -96,9 +103,9 @@ public partial class DrawingViewViewModel : BaseViewModel
 		{
 			await Toast.Make($"Save Failed: {e.Message}").Show(cancellationToken);
 		}
-		catch (InvalidOperationException)
+		catch (InvalidOperationException e)
 		{
-			await Toast.Make("Save Failed: No Lines Drawn").Show(cancellationToken);
+			await Toast.Make($"Save Failed: {e.Message}").Show(cancellationToken);
 		}
 	}
 }

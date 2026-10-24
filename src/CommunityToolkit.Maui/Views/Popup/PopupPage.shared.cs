@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Layouts;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 using Page = Microsoft.Maui.Controls.Page;
 
@@ -34,6 +35,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
+
+	bool hasNotifiedPopupIsOpened;
 
 
 	public PopupPage(View view, IPopupOptions? popupOptions)
@@ -189,14 +192,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
 				// This guarantees the Popup has been removed from MAUI's ModalStack
 				await popupConfirmedPoppedTcs.Task;
-
-				PopupClosed?.Invoke(this, result);
-				popup.NotifyPopupIsClosed();
 			}
 			finally
 			{
 				navigationSemaphoreSlim.Release();
 			}
+
+			// Raised after navigationSemaphoreSlim is released because PopupClosed completes ShowPopupAsync, whose caller may show another popup right away
+			PopupClosed?.Invoke(this, result);
+			popup.NotifyPopupIsClosed();
 		}
 		finally
 		{
@@ -267,10 +271,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
-		if (view.IsSet(Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty))
-		{
-			popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
-		}
+		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay, converter: new MarginConverter());
 		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
@@ -294,6 +295,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	protected override void OnNavigatedTo(NavigatedToEventArgs args)
 	{
 		base.OnNavigatedTo(args);
+
+		// .NET MAUI raises NavigatedTo again when a page above this PopupPage on the ModalStack (e.g. another Popup) is popped
+		// A new PopupPage is created every time a Popup is shown, so notify the Popup only the first time this PopupPage is navigated to
+		if (hasNotifiedPopupIsOpened)
+		{
+			return;
+		}
+
+		hasNotifiedPopupIsOpened = true;
 		popup.NotifyPopupIsOpened();
 	}
 
@@ -328,31 +338,39 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	internal sealed partial class PopupPageLayout : Grid
 	{
+		readonly Popup popup;
 		readonly Action tryExecuteTapOutsideOfPopupCommand;
 
 		public PopupPageLayout(in Popup popupContent, in IPopupOptions options, in Action tryExecuteTapOutsideOfPopupCommand)
 		{
+			popup = popupContent;
 			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
-			if (popupContent.BackgroundColor is null)
-			{
-				popupContent.SetAppThemeColor(
-					Popup.BackgroundColorProperty,
-					Options.DefaultPopupSettings.BackgroundColor,
-					Options.DefaultPopupSettings.BackgroundColorDark);
-			}
-
 			PopupBorder = new Border
 			{
-				BackgroundColor = popupContent.BackgroundColor,
 				Content = popupContent
 			};
 
-			// Bind `Popup` values through to Border using OneWay Bindings 
+			// Bind `Popup` values through to Border using OneWay Bindings
+			// Never set values on the Popup here: a local value or a binding takes precedence over a Style, including an implicit Style applied once the PopupPage is displayed
+			// While Popup.BackgroundColor is null, BackgroundColorConverter displays DefaultPopupSettings.BackgroundColor, or DefaultPopupSettings.BackgroundColorDark while the app uses the dark theme
 			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
 			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
-			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay, converter: new BackgroundColorConverter());
+			PopupBorder.SetBinding(Border.BackgroundColorProperty, new MultiBinding
+			{
+				Bindings =
+				{
+					BindingBase.Create(static (Popup popup) => popup.BackgroundColor, mode: BindingMode.OneWay, source: popupContent),
+					new AppThemeColor
+					{
+						Light = Options.DefaultPopupSettings.BackgroundColor,
+						Dark = Options.DefaultPopupSettings.BackgroundColorDark
+					}.GetBinding()
+				},
+				Converter = new BackgroundColorConverter(),
+				Mode = BindingMode.OneWay
+			});
 			PopupBorder.SetBinding(Border.VerticalOptionsProperty, static (Popup popup) => popup.VerticalOptions, source: popupContent, mode: BindingMode.OneWay, converter: new VerticalOptionsConverter());
 			PopupBorder.SetBinding(Border.HorizontalOptionsProperty, static (Popup popup) => popup.HorizontalOptions, source: popupContent, mode: BindingMode.OneWay, converter: new HorizontalOptionsConverter());
 
@@ -377,6 +395,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		public Border PopupBorder { get; }
 		public PopupGestureOverlay TapGestureGestureOverlay { get; }
 
+		protected override ILayoutManager CreateLayoutManager() => new PopupPageLayoutManager(this);
+
+		void SetPopupMaximumDisplaySize(double widthConstraint, double heightConstraint)
+		{
+			var inset = Padding + PopupBorder.Margin + PopupBorder.Padding + PopupBorder.StrokeThickness;
+
+			popup.SetMaximumDisplaySize(new Size(
+				Math.Max(0, widthConstraint - inset.HorizontalThickness),
+				Math.Max(0, heightConstraint - inset.VerticalThickness)));
+		}
+
 		void HandleOverlayTapped(object? sender, TappedEventArgs e)
 		{
 			ArgumentNullException.ThrowIfNull(sender);
@@ -392,6 +421,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			if (PopupBorder.Bounds.Contains(position.Value) is false)
 			{
 				tryExecuteTapOutsideOfPopupCommand();
+			}
+		}
+
+		sealed class PopupPageLayoutManager(PopupPageLayout popupPageLayout) : GridLayoutManager(popupPageLayout)
+		{
+			public override Size Measure(double widthConstraint, double heightConstraint)
+			{
+				// The constraints are the space the layout arranges its children in (without the safe area it keeps free),
+				// so a Popup larger than the window keeps Popup.Margin to its edges
+				popupPageLayout.SetPopupMaximumDisplaySize(widthConstraint, heightConstraint);
+				return base.Measure(widthConstraint, heightConstraint);
 			}
 		}
 
@@ -423,11 +463,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			public override LayoutOptions ConvertFrom(LayoutOptions value, CultureInfo? culture) => value == LayoutOptions.Fill ? DefaultConvertReturnValue : value;
 		}
 
-		sealed partial class BackgroundColorConverter : BaseConverterOneWay<Color?, Color>
+		sealed class BackgroundColorConverter : IMultiValueConverter
 		{
-			public override Color DefaultConvertReturnValue { get; set; } = Options.DefaultPopupSettings.BackgroundColor;
+			public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) => values switch
+			{
+				[Color popupBackgroundColor, ..] => popupBackgroundColor,
+				[_, Color defaultBackgroundColor, ..] => defaultBackgroundColor,
+				_ => Options.DefaultPopupSettings.BackgroundColor
+			};
 
-			public override Color ConvertFrom(Color? value, CultureInfo? culture) => value ?? DefaultConvertReturnValue;
+			public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
+				throw new NotSupportedException($"{nameof(BackgroundColorConverter)} only supports one-way bindings.");
 		}
 	}
 

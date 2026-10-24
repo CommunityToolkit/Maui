@@ -37,8 +37,7 @@ public class SnackbarTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Show(cts.Token));
 	}
@@ -60,8 +59,7 @@ public class SnackbarTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Dismiss(cts.Token));
 	}
@@ -220,6 +218,31 @@ public class SnackbarTests : BaseTest
 	}
 
 	[Fact]
+	public void SnackbarAnchor_IsHeldWeakly()
+	{
+		var weakAnchorSnackbar = MakeSnackbarWhoseAnchorIsReferencedNowhereElse(out var anchorReference);
+
+		for (var attempt = 0; attempt < 10 && anchorReference.IsAlive; attempt++)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+		}
+
+		Assert.False(anchorReference.IsAlive);
+		Assert.Null(weakAnchorSnackbar.Anchor);
+	}
+
+	[Fact]
+	public void SnackbarAnchor_NullAnchorReadsBackAsNull()
+	{
+		var anchor = new Button();
+		var anchoredSnackbar = new Snackbar { Anchor = anchor };
+
+		Assert.Same(anchor, anchoredSnackbar.Anchor);
+		Assert.Null(new Snackbar { Anchor = null }.Anchor);
+	}
+
+	[Fact]
 	public async Task SnackbarNullValuesThrowArgumentNullException()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -236,5 +259,18 @@ public class SnackbarTests : BaseTest
 		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null, token: TestContext.Current.CancellationToken));
 		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	// Not inlined, so that no local of the test keeps the anchor alive.
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	static ISnackbar MakeSnackbarWhoseAnchorIsReferencedNowhereElse(out WeakReference anchorReference)
+	{
+		var anchor = new Button();
+		anchorReference = new WeakReference(anchor);
+
+		var weakAnchorSnackbar = Snackbar.Make("Weak anchor", anchor: anchor);
+		Assert.Same(anchor, weakAnchorSnackbar.Anchor);
+
+		return weakAnchorSnackbar;
 	}
 }

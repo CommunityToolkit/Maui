@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using System.Web;
 using Android.Content;
 using Android.Provider;
 using CommunityToolkit.Maui.Core.Essentials;
@@ -24,15 +23,13 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		Folder? folder = null;
 
-		if (Android.OS.Environment.ExternalStorageDirectory is not null)
-		{
-			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
-		}
-
-		var initialFolderUri = AndroidUri.Parse(AndroidStorageConstants.ExternalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
-
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
-		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
+
+		// No storage volume holds a folder of the app's private storage: the picker then starts where it chooses.
+		if (AndroidPathExtensions.ToExternalStorageDocumentUri(initialPath) is AndroidUri initialFolderUri)
+		{
+			intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
+		}
 
 		await ActivityResultManager.StartAsync(intent, AndroidRequestCode.RequestCodeFolderPicker, OnResult, cancellationToken);
 

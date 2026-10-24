@@ -33,8 +33,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			var label = new Label { TextColor = Colors.Blue };
 			label.EnableAnimations();
 
-			// Ensure CancellationToken has expired
-			await Task.Delay(100, TestContext.Current.CancellationToken);
+			await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 			await Assert.ThrowsAsync<OperationCanceledException>(() => label.TextColorTo(Colors.Green, token: cts.Token));
 		}
@@ -118,6 +117,36 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 			await Assert.ThrowsAsync<ArgumentNullException>(() => label.TextColorTo(null, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		}
+
+		[Fact]
+		public void LabelTextColorTo_DoesNotAllowZeroRate()
+		{
+			Color originalTextColor = Colors.Blue;
+
+			var label = new Label { TextColor = originalTextColor };
+			label.EnableAnimations();
+
+			// Thrown by the call itself, before an animation starts: .NET MAUI divides by the rate on every frame of the platform's animation ticker
+			Assert.Throws<ArgumentOutOfRangeException>("rate", () => { _ = label.TextColorTo(Colors.Red, rate: 0, token: TestContext.Current.CancellationToken); });
+
+			// The generated TextColorTo names its animation nameof(TextColorTo)
+			Assert.False(label.AnimationIsRunning("TextColorTo"));
+			Assert.Equal(originalTextColor, label.TextColor);
+		}
+
+		[Fact(Timeout = (int)TestDuration.Short)]
+		public async Task LabelTextColorTo_VerifyColorChangedForSmallestRate()
+		{
+			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+			var label = new Label { TextColor = originalTextColor };
+			label.EnableAnimations();
+
+			var isSuccessful = await label.TextColorTo(updatedTextColor, rate: 1, token: TestContext.Current.CancellationToken);
+
+			Assert.True(isSuccessful);
+			Assert.Equal(updatedTextColor, label.TextColor);
 		}
 
 		[Fact]

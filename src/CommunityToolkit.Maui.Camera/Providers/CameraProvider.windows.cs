@@ -11,6 +11,9 @@ partial class CameraProvider
 {
 	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
+		// AsTask only asks the WinRT operations to cancel, and an enumeration that completes first still returns its devices
+		token.ThrowIfCancellationRequested();
+
 		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
 		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
 		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
@@ -23,7 +26,11 @@ partial class CameraProvider
 
 			try
 			{
-				await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
+				if (!await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token))
+				{
+					// The VideoDeviceController, read below, throws for a MediaCapture that is not initialized
+					continue;
+				}
 			}
 			catch (Exception ex) when (ex is not OperationCanceledException)
 			{

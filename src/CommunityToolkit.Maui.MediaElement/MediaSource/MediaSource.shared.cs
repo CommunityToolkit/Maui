@@ -60,6 +60,21 @@ public abstract class MediaSource : Element
 	/// </summary>
 	/// <param name="stream">The stream to use as a media source.</param>
 	/// <returns>A <see cref="StreamMediaSource"/> instance.</returns>
+	/// <remarks>
+	/// <para>
+	/// On iOS, Mac Catalyst and Windows the stream must support seeking (<see cref="Stream.CanSeek"/>): AVFoundation reads the media at the offsets it
+	/// needs, and Windows plays a random-access stream, so a stream that cannot seek is not supported there, and the media fails to open
+	/// (<see cref="MediaElement.MediaFailed"/>).
+	/// </para>
+	/// <para>
+	/// On Android a stream that cannot seek is read once, from its start: the media cannot be sought outside of what the player holds, looped or
+	/// played again after <see cref="MediaElement.Stop"/>, and a seek that needs another part of the stream raises
+	/// <see cref="MediaElement.MediaFailed"/>.
+	/// </para>
+	/// <para>
+	/// Not supported on Tizen: setting the source throws <see cref="NotSupportedException"/>.
+	/// </para>
+	/// </remarks>
 	public static StreamMediaSource FromStream(Stream stream) => new StreamMediaSource { Stream = stream };
 
 	/// <summary>

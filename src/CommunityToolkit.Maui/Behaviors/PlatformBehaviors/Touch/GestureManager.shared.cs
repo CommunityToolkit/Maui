@@ -4,35 +4,68 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Extensions;
 using static System.Math;
+using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
 sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
-	Color? defaultBackgroundColor;
+	Color? defaultBackgroundColor, appliedBackgroundColor;
+
+	bool isBackgroundColorApplied, isAppBackgroundColorLocal, hasUpdatedBackgroundColor;
+
+	Task<bool>? backgroundColorAnimation;
+
+	// The animations keep their own element because on a detach the behavior has already lost its Element. A state update clears them when its
+	// animations are over: an element the behavior does not animate is left alone, with the animations the app runs on it.
+	StateAnimations? stateAnimations;
+
+	int stateChangeCount;
 
 	CancellationTokenSource? longPressTokenSource, animationTokenSource;
 
 	public void Dispose()
 	{
-		animationTokenSource?.Cancel();
-		animationTokenSource?.Dispose();
+		var animations = StopStateUpdates();
+
+		// A token source whose cancellation was already requested is disposed by the AbortAnimations call that requested it, once the
+		// cancellation callbacks ran: disposing it before would drop them
+		if (animationTokenSource?.IsCancellationRequested is false)
+		{
+			animationTokenSource.Cancel();
+			animationTokenSource.Dispose();
+		}
 
 		longPressTokenSource?.Cancel();
 		longPressTokenSource?.Dispose();
 
 		longPressTokenSource = animationTokenSource = null;
+
+		animations?.Abort();
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		await (animationTokenSource?.CancelAsync() ?? Task.CompletedTask);
-		animationTokenSource?.Dispose();
+		var animations = StopStateUpdates();
 
-		await (longPressTokenSource?.CancelAsync() ?? Task.CompletedTask);
-		longPressTokenSource?.Dispose();
-
+		var animationSource = animationTokenSource;
+		var longPressSource = longPressTokenSource;
 		longPressTokenSource = animationTokenSource = null;
+
+		// As in Dispose: a token source whose cancellation was already requested is disposed by the AbortAnimations call that requested it
+		if (animationSource?.IsCancellationRequested is false)
+		{
+			await animationSource.CancelAsync();
+			animationSource.Dispose();
+		}
+
+		if (longPressSource is not null)
+		{
+			await longPressSource.CancelAsync();
+			longPressSource.Dispose();
+		}
+
+		animations?.Abort();
 	}
 
 	internal static bool TryGetBindableImageTouchBehaviorElement(ImageTouchBehavior imageTouchBehavior, [NotNullWhen(true)] out BindableObject? bindable)
@@ -67,8 +100,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			_ => throw new NotSupportedException($"{nameof(HoverStatus)} {hoverStatus} not yet supported")
 		};
 
-		touchBehavior.CurrentHoverState = hoverState;
+		// The status first, as UpdateStatusAndState does for a touch: a HoverStateChanged handler reads the status of the same change
 		touchBehavior.CurrentHoverStatus = hoverStatus;
+		touchBehavior.CurrentHoverState = hoverState;
 	}
 
 	internal static void HandleTouch(in TouchBehavior touchBehavior, in TouchStatus status)
@@ -103,11 +137,19 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 	internal async Task ChangeStateAsync(TouchBehavior touchBehavior, bool animated, CancellationToken token)
 	{
-		var touchStatus = touchBehavior.CurrentTouchStatus;
+		var stateChange = Interlocked.Increment(ref stateChangeCount);
+
+		await AbortAnimations(touchBehavior, token);
+
+		// Aborting the running animations can yield: a state change that came in meanwhile applies the state from here on
+		if (stateChange != Volatile.Read(ref stateChangeCount))
+		{
+			return;
+		}
+
 		var touchState = touchBehavior.CurrentTouchState;
 		var hoverState = touchBehavior.CurrentHoverState;
 
-		await AbortAnimations(touchBehavior, token);
 		animationTokenSource = new CancellationTokenSource();
 
 		if (touchBehavior.Element is not null)
@@ -136,9 +178,17 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	{
 		if (touchBehavior.CurrentTouchState is TouchState.Default)
 		{
-			longPressTokenSource?.CancelAsync();
-			longPressTokenSource?.Dispose();
+			// The cancellation must be complete before the token source is disposed: disposing it while CancelAsync's callbacks are
+			// pending drops them, and the timer of the ended touch then raises its long press during the next touch
+			var longPressSource = longPressTokenSource;
 			longPressTokenSource = null;
+
+			if (longPressSource is not null)
+			{
+				await longPressSource.CancelAsync();
+				longPressSource.Dispose();
+			}
+
 			return;
 		}
 
@@ -149,9 +199,17 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		longPressTokenSource = new CancellationTokenSource();
 
+		// Task.Delay accepts no negative delay other than Timeout.Infinite (-1, the long press never comes):
+		// any other negative duration takes effect at once, as a negative animation duration does
+		var longPressDuration = touchBehavior.LongPressDuration;
+		if (longPressDuration < Timeout.Infinite)
+		{
+			longPressDuration = 0;
+		}
+
 		try
 		{
-			await Task.Delay(touchBehavior.LongPressDuration, longPressTokenSource.Token).WaitAsync(token);
+			await Task.Delay(longPressDuration, longPressTokenSource.Token).WaitAsync(token);
 
 			if (touchBehavior.CurrentTouchState is not TouchState.Pressed)
 			{
@@ -172,18 +230,55 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	internal void Reset()
+	internal void Reset(VisualElement element)
 	{
-		defaultBackgroundColor = default;
+		// The element gets its own colour back first: no later state change of the behavior would give it back, and the next attach would take
+		// the behavior's colour for the app's.
+		GiveBackAppBackgroundColorAtDetach(element);
+
+		defaultBackgroundColor = appliedBackgroundColor = null;
+		isBackgroundColorApplied = isAppBackgroundColorLocal = hasUpdatedBackgroundColor = false;
+		backgroundColorAnimation = null;
 	}
 
 	internal async ValueTask AbortAnimations(TouchBehavior touchBehavior, CancellationToken token)
 	{
-		await (animationTokenSource?.CancelAsync().WaitAsync(token) ?? Task.CompletedTask);
-		animationTokenSource?.Dispose();
-		animationTokenSource = null;
+		// Taken before the cancellation: a state update that the cancellation ends lets go of its animations
+		var animations = Interlocked.Exchange(ref stateAnimations, null);
 
-		touchBehavior.Element?.AbortAnimations();
+		// Only the call that requests the cancellation disposes the token source, once the cancellation callbacks ran: a call that comes in
+		// meanwhile gets a completed task from CancelAsync, and disposing the source would drop the callbacks that are still pending
+		var animationSource = animationTokenSource;
+		var requestsCancellation = animationSource?.IsCancellationRequested is false;
+		var cancellation = animationSource?.CancelAsync();
+
+		// Before anything can yield: a later state change that overtakes this one must not have its new animations aborted here.
+		// The token only cancels the waits for the animations (MAUI 10's animations take no token), the element has to stop them. Only the
+		// behavior's own animations are stopped: an animation the app runs on the element is left alone.
+		animations?.Abort();
+
+		await (cancellation?.WaitAsync(token) ?? Task.CompletedTask);
+
+		if (requestsCancellation)
+		{
+			animationSource?.Dispose();
+		}
+
+		// A state change that ran meanwhile owns the token source that is there now
+		if (animationTokenSource == animationSource)
+		{
+			animationTokenSource = null;
+		}
+	}
+
+	// Disposing cancels the token sources, which only ends the waits for the state animations: the element has to stop them too, and a
+	// state change that still waits for its abort must not start new ones. The animations are taken before the cancellation: a state update
+	// that the cancellation ends lets go of them.
+	StateAnimations? StopStateUpdates()
+	{
+		Interlocked.Increment(ref stateChangeCount);
+
+		return Interlocked.Exchange(ref stateAnimations, null);
 	}
 
 	static void OnTappedCompleted(in TouchBehavior touchBehavior)
@@ -193,11 +288,17 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-#if ANDROID
+#if ANDROID || WINDOWS
+		// A tap on the behavior's view never reaches the platform list of a CollectionView on Android (the behavior makes the view clickable,
+		// so the view takes the touch) or on Windows (the behavior's pointer handlers capture the pointer and handle the press and the
+		// release, so the ListViewItem does not select): the behavior selects the item itself. On iOS and Mac Catalyst the behavior's
+		// recognizer leaves the touch to the collection view, which selects the item.
 		HandleCollectionViewSelection(touchBehavior);
 #endif
 
-		if (touchBehavior.Element is IButtonController button)
+		// The platform view of a Button or an ImageButton raises Clicked (and runs the Command) for the same tap by itself: raising it here
+		// as well would click the button twice
+		if (touchBehavior.Element is IButtonController button && !touchBehavior.IsClickedRaisedByPlatformView)
 		{
 			button.SendClicked();
 		}
@@ -205,11 +306,12 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		touchBehavior.RaiseTouchGestureCompleted();
 	}
 
-#if ANDROID
+#if ANDROID || WINDOWS
 	static void HandleCollectionViewSelection(in TouchBehavior touchBehavior)
 	{
 		if (touchBehavior.Element is null
-			|| !TryFindParentElementWithParentOfType(touchBehavior.Element, out var child, out CollectionView? collectionView))
+			|| !TryFindParentElementWithParentOfType(touchBehavior.Element, out var child, out CollectionView? collectionView)
+			|| IsHeaderFooterOrEmptyView(child, collectionView))
 		{
 			return;
 		}
@@ -265,6 +367,27 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 			return false;
 		}
+
+		// The header, the footer and the empty view of the CollectionView, and the header and the footer of each group, are its children as
+		// well, but they are no items: a tap on them selects nothing. Where the platform shows a View set as the content as it is, the View is
+		// the child. Through a template, the child is the template's root, whose BindingContext is the content (the group, for the header and
+		// the footer of a group): on Android whatever the content is, a View or null included; on Windows the template itself when there is no
+		// content. Other content is plain platform text, which cannot have a behavior.
+		static bool IsHeaderFooterOrEmptyView(VisualElement child, CollectionView collectionView)
+		{
+			var bindingContext = child.BindingContext;
+
+			return IsShownBy(collectionView.Header, collectionView.HeaderTemplate)
+				|| IsShownBy(collectionView.Footer, collectionView.FooterTemplate)
+				|| IsShownBy(collectionView.EmptyView, collectionView.EmptyViewTemplate)
+				|| (collectionView.IsGrouped
+					&& (collectionView.GroupHeaderTemplate is not null || collectionView.GroupFooterTemplate is not null)
+					&& bindingContext is not null
+					&& collectionView.ItemsSource?.Cast<object?>().Any(group => ReferenceEquals(group, bindingContext)) is true);
+
+			bool IsShownBy(object? content, DataTemplate? template) => ReferenceEquals(content, child)
+				|| (template is not null && (ReferenceEquals(content, bindingContext) || ReferenceEquals(template, bindingContext)));
+		}
 	}
 #endif
 
@@ -288,6 +411,12 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			}
 		}
 		catch (TaskCanceledException)
+		{
+			return;
+		}
+
+		// The delay can end right before a state change cancels the token: the continuation then runs after that change
+		if (token.IsCancellationRequested)
 		{
 			return;
 		}
@@ -348,15 +477,42 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
 		}
 
+		// Without any image source the behavior leaves the image of the view alone, as Xamarin Community Toolkit's TouchEffect did, and
+		// without any image source or image aspect its aspect as well: it can serve for the touch effects alone, or wait for sources bound later
+		var hasImageSource = imageTouchBehavior.DefaultImageSource is not null
+			|| imageTouchBehavior.HoveredImageSource is not null
+			|| imageTouchBehavior.PressedImageSource is not null;
+
+		var hasImageAspect = hasImageSource
+			|| imageTouchBehavior.DefaultImageAspect is not null
+			|| imageTouchBehavior.HoveredImageAspect is not null
+			|| imageTouchBehavior.PressedImageAspect is not null;
+
 		switch (bindable)
 		{
 			case Image image:
-				image.SetValue(Image.SourceProperty, updatedImageSource);
-				image.SetValue(Image.AspectProperty, updatedImageAspect);
+				if (hasImageSource)
+				{
+					image.SetValue(Image.SourceProperty, updatedImageSource);
+				}
+
+				if (hasImageAspect)
+				{
+					image.SetValue(Image.AspectProperty, updatedImageAspect);
+				}
+
 				break;
 			case ImageButton imageButton:
-				imageButton.SetValue(ImageButton.SourceProperty, updatedImageSource);
-				imageButton.SetValue(ImageButton.AspectProperty, updatedImageAspect);
+				if (hasImageSource)
+				{
+					imageButton.SetValue(ImageButton.SourceProperty, updatedImageSource);
+				}
+
+				if (hasImageAspect)
+				{
+					imageButton.SetValue(ImageButton.AspectProperty, updatedImageAspect);
+				}
+
 				break;
 			default:
 				throw new NotSupportedException($"{bindable.GetType()} is not yet supported");
@@ -382,11 +538,11 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		VisualStateManager.GoToState(visualElement, state);
 	}
 
-	static async Task<bool> SetOpacity(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	async Task<bool> SetOpacity(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		if (Abs(touchBehavior.DefaultOpacity ?? TouchBehaviorDefaults.DefaultOpacity - 1) <= double.Epsilon
-			&& Abs(touchBehavior.PressedOpacity ?? TouchBehaviorDefaults.PressedOpacity - 1) <= double.Epsilon
-			&& Abs(touchBehavior.HoveredOpacity ?? TouchBehaviorDefaults.HoveredOpacity - 1) <= double.Epsilon)
+		if (Abs((touchBehavior.DefaultOpacity ?? TouchBehaviorDefaults.DefaultOpacity) - 1) <= double.Epsilon
+			&& Abs((touchBehavior.PressedOpacity ?? TouchBehaviorDefaults.PressedOpacity) - 1) <= double.Epsilon
+			&& Abs((touchBehavior.HoveredOpacity ?? TouchBehaviorDefaults.HoveredOpacity) - 1) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -434,23 +590,24 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (duration <= TimeSpan.Zero)
 		{
-			element.AbortAnimations();
+			element.AbortAnimation(nameof(ViewExtensions.FadeToAsync));
 			element.Opacity = updatedOpacity.Value;
 			return true;
 		}
 
 #if NET11_0_OR_GREATER
-		return await element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
+		var animation = TrackAnimation(nameof(ViewExtensions.FadeToAsync), element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
 #else
-		return await element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		var animation = TrackAnimation(nameof(ViewExtensions.FadeToAsync), element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing));
 #endif
+		return await animation.WaitAsync(token);
 	}
 
-	static async Task<bool> SetScale(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	async Task<bool> SetScale(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		if (Abs(touchBehavior.DefaultScale ?? TouchBehaviorDefaults.DefaultScale - 1) <= double.Epsilon
-			&& Abs(touchBehavior.PressedScale ?? TouchBehaviorDefaults.PressedScale - 1) <= double.Epsilon
-			&& Abs(touchBehavior.HoveredScale ?? TouchBehaviorDefaults.HoveredScale - 1) <= double.Epsilon)
+		if (Abs((touchBehavior.DefaultScale ?? TouchBehaviorDefaults.DefaultScale) - 1) <= double.Epsilon
+			&& Abs((touchBehavior.PressedScale ?? TouchBehaviorDefaults.PressedScale) - 1) <= double.Epsilon
+			&& Abs((touchBehavior.HoveredScale ?? TouchBehaviorDefaults.HoveredScale) - 1) <= double.Epsilon)
 		{
 			return false;
 		}
@@ -498,7 +655,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (duration <= TimeSpan.Zero)
 		{
-			element.AbortAnimations(nameof(SetScale));
+			element.AbortAnimation(nameof(SetScale));
 			element.Scale = updatedScale.Value;
 
 			return false;
@@ -515,10 +672,10 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			element.Scale = v;
 		}, element.Scale, (double)updatedScale, 16, (uint)Abs(duration.TotalMilliseconds), easing, (v, b) => animationCompletionSource.SetResult(b));
 
-		return await animationCompletionSource.Task.WaitAsync(token);
+		return await TrackAnimation(nameof(SetScale), animationCompletionSource.Task).WaitAsync(token);
 	}
 
-	static async Task<bool> SetTranslation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	async Task<bool> SetTranslation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultTranslationX ?? TouchBehaviorDefaults.DefaultTranslationX) <= double.Epsilon
 			&& Abs(touchBehavior.PressedTranslationX ?? TouchBehaviorDefaults.PressedTranslationX) <= double.Epsilon
@@ -535,8 +692,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		double? updatedTranslationX = touchBehavior.DefaultTranslationY ?? TouchBehaviorDefaults.DefaultTranslationY;
-		double? updatedTranslationY = touchBehavior.DefaultTranslationX ?? TouchBehaviorDefaults.DefaultTranslationX;
+		double? updatedTranslationX = touchBehavior.DefaultTranslationX ?? TouchBehaviorDefaults.DefaultTranslationX;
+		double? updatedTranslationY = touchBehavior.DefaultTranslationY ?? TouchBehaviorDefaults.DefaultTranslationY;
 
 		switch (touchState, hoverState)
 		{
@@ -593,7 +750,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (duration <= TimeSpan.Zero)
 		{
-			element.AbortAnimations();
+			element.AbortAnimation(nameof(ViewExtensions.TranslateToAsync));
 			element.TranslationX = updatedTranslationX.Value;
 			element.TranslationY = updatedTranslationY.Value;
 
@@ -601,13 +758,14 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 
 #if NET11_0_OR_GREATER
-		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
+		var animation = TrackAnimation(nameof(ViewExtensions.TranslateToAsync), element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
 #else
-		return await element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		var animation = TrackAnimation(nameof(ViewExtensions.TranslateToAsync), element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing));
 #endif
+		return await animation.WaitAsync(token);
 	}
 
-	static async Task<bool> SetRotation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	async Task<bool> SetRotation(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultRotation ?? TouchBehaviorDefaults.DefaultRotation) <= double.Epsilon
 			&& Abs(touchBehavior.PressedRotation ?? TouchBehaviorDefaults.PressedRotation) <= double.Epsilon
@@ -659,19 +817,20 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (duration <= TimeSpan.Zero)
 		{
-			element.AbortAnimations();
+			element.AbortAnimation(nameof(ViewExtensions.RotateToAsync));
 			element.Rotation = updatedRotation.Value;
 			return true;
 		}
 
 #if NET11_0_OR_GREATER
-		return await element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
+		var animation = TrackAnimation(nameof(ViewExtensions.RotateToAsync), element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
 #else
-		return await element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		var animation = TrackAnimation(nameof(ViewExtensions.RotateToAsync), element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing));
 #endif
+		return await animation.WaitAsync(token);
 	}
 
-	static async Task<bool> SetRotationX(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	async Task<bool> SetRotationX(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultRotationX ?? TouchBehaviorDefaults.DefaultRotationX) <= double.Epsilon &&
 			Abs(touchBehavior.PressedRotationX ?? TouchBehaviorDefaults.PressedRotationX) <= double.Epsilon &&
@@ -723,19 +882,20 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (duration <= TimeSpan.Zero)
 		{
-			element.AbortAnimations();
+			element.AbortAnimation(nameof(ViewExtensions.RotateXToAsync));
 			element.RotationX = updatedRotationX.Value;
 			return true;
 		}
 
 #if NET11_0_OR_GREATER
-		return await element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
+		var animation = TrackAnimation(nameof(ViewExtensions.RotateXToAsync), element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
 #else
-		return await element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		var animation = TrackAnimation(nameof(ViewExtensions.RotateXToAsync), element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing));
 #endif
+		return await animation.WaitAsync(token);
 	}
 
-	static async Task<bool> SetRotationY(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
+	async Task<bool> SetRotationY(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
 		if (Abs(touchBehavior.DefaultRotationY ?? TouchBehaviorDefaults.DefaultRotationY) <= double.Epsilon &&
 			Abs(touchBehavior.PressedRotationY ?? TouchBehaviorDefaults.PressedRotationY) <= double.Epsilon &&
@@ -787,16 +947,17 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (duration <= TimeSpan.Zero)
 		{
-			element.AbortAnimations();
+			element.AbortAnimation(nameof(ViewExtensions.RotateYToAsync));
 			element.RotationY = updatedRotationY.Value;
 			return true;
 		}
 
 #if NET11_0_OR_GREATER
-		return await element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, token);
+		var animation = TrackAnimation(nameof(ViewExtensions.RotateYToAsync), element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
 #else
-		return await element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing).WaitAsync(token);
+		var animation = TrackAnimation(nameof(ViewExtensions.RotateYToAsync), element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing));
 #endif
+		return await animation.WaitAsync(token);
 	}
 
 	async Task<bool> SetBackgroundColor(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -806,58 +967,193 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		defaultBackgroundColor ??= element.BackgroundColor;
-
-		var updatedBackgroundColor = defaultBackgroundColor ?? TouchBehaviorDefaults.DefaultBackgroundColor;
-
-		switch (touchState, hoverState)
+		// A state without a background colour of its own shows the element's own colour: any colour that SetBackgroundColor did not leave on
+		// the element was set by the app, before the attach or since the last state change, and took the place of the behavior's colour.
+		// A colour animation that a state change cut short leaves a colour of its own on the element, which is not the app's.
+		if (backgroundColorAnimation is null && (appliedBackgroundColor is null || !appliedBackgroundColor.Equals(element.BackgroundColor)))
 		{
-			case (TouchState.Pressed, _):
-				if (touchBehavior.PressedBackgroundColor is not null)
-				{
-					updatedBackgroundColor = touchBehavior.PressedBackgroundColor;
-				}
-
-				break;
-
-			case (TouchState.Default, HoverState.Hovered):
-				if (touchBehavior.HoveredBackgroundColor is not null)
-				{
-					updatedBackgroundColor = touchBehavior.HoveredBackgroundColor;
-				}
-				else if (touchBehavior.DefaultBackgroundColor is not null)
-				{
-					updatedBackgroundColor = touchBehavior.DefaultBackgroundColor;
-				}
-
-				break;
-
-			case (TouchState.Default, HoverState.Default):
-				if (touchBehavior.DefaultBackgroundColor is not null)
-				{
-					updatedBackgroundColor = touchBehavior.DefaultBackgroundColor;
-				}
-
-				break;
-
-			default:
-				throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported");
+			defaultBackgroundColor = element.BackgroundColor;
+			isBackgroundColorApplied = false;
 		}
 
-		if (duration <= TimeSpan.Zero)
+		var isFirstBackgroundColorUpdate = !hasUpdatedBackgroundColor;
+		hasUpdatedBackgroundColor = true;
+
+		var stateBackgroundColor = (touchState, hoverState) switch
 		{
-			element.AbortAnimations();
-			element.BackgroundColor = updatedBackgroundColor ?? Colors.Transparent;
+			(TouchState.Pressed, _) => touchBehavior.PressedBackgroundColor,
+			(TouchState.Default, HoverState.Hovered) => touchBehavior.HoveredBackgroundColor ?? touchBehavior.DefaultBackgroundColor,
+			(TouchState.Default, HoverState.Default) => touchBehavior.DefaultBackgroundColor,
+			_ => throw new NotSupportedException($"The combination of {nameof(TouchState)} {touchState} and {nameof(HoverState)} {hoverState} is not yet supported")
+		};
+
+		if (stateBackgroundColor is null)
+		{
+			return await ShowAppBackgroundColor(element, isFirstBackgroundColorUpdate, duration, easing, token);
+		}
+
+		// A colour the element already shows is not written again: the value set here would take the place of the app's binding or
+		// DynamicResource, and the element would stop following it
+		if (stateBackgroundColor.Equals(element.BackgroundColor))
+		{
+			backgroundColorAnimation = null;
+			appliedBackgroundColor = element.BackgroundColor;
 
 			return true;
 		}
 
-		return await element.BackgroundColorTo(updatedBackgroundColor ?? Colors.Transparent, length: (uint)duration.TotalMilliseconds, easing: easing, token: token);
+		// The behavior's colour is about to take the place of the app's: whether the app's colour is a value of the element itself decides
+		// how the app gets it back
+		if (!isBackgroundColorApplied)
+		{
+			isAppBackgroundColorLocal = IsLocalBackgroundColor(element);
+			isBackgroundColorApplied = true;
+		}
+
+		if (duration <= TimeSpan.Zero)
+		{
+			backgroundColorAnimation = null;
+			element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));
+			element.BackgroundColor = stateBackgroundColor;
+			appliedBackgroundColor = element.BackgroundColor;
+
+			return true;
+		}
+
+		return await AnimateBackgroundColor(element, stateBackgroundColor, duration, easing, false, token);
 	}
+
+	async Task<bool> ShowAppBackgroundColor(VisualElement element, bool isFirstBackgroundColorUpdate, TimeSpan duration, Easing? easing, CancellationToken token)
+	{
+		if (!isBackgroundColorApplied)
+		{
+			// An element without a colour is painted with TouchBehaviorDefaults.DefaultBackgroundColor by the state update of the attach, which is
+			// the element's own colour from then on: a later state without a colour of its own and the detach leave it on the element. Taking it
+			// away would change how the element looks at a touch that configures no colour (an Android Button would get its Material fill back).
+			if (isFirstBackgroundColorUpdate && element.BackgroundColor is null)
+			{
+				backgroundColorAnimation = null;
+				element.BackgroundColor = TouchBehaviorDefaults.DefaultBackgroundColor;
+				defaultBackgroundColor = element.BackgroundColor;
+			}
+
+			appliedBackgroundColor = element.BackgroundColor;
+
+			return true;
+		}
+
+		var appBackgroundColor = defaultBackgroundColor ?? TouchBehaviorDefaults.DefaultBackgroundColor;
+
+		if (duration <= TimeSpan.Zero || appBackgroundColor.Equals(element.BackgroundColor))
+		{
+			backgroundColorAnimation = null;
+			element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));
+			GiveBackAppBackgroundColor(element);
+
+			return true;
+		}
+
+		return await AnimateBackgroundColor(element, appBackgroundColor, duration, easing, true, token);
+	}
+
+	async Task<bool> AnimateBackgroundColor(VisualElement element, Color backgroundColor, TimeSpan duration, Easing? easing, bool givesBackAppBackgroundColor, CancellationToken token)
+	{
+		// Started without the token, which would only cancel the wait for the animation: the animation itself is tracked, so that an abort
+		// stops it while it is still the behavior's
+		token.ThrowIfCancellationRequested();
+		var animation = TrackAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo), element.BackgroundColorTo(backgroundColor, length: (uint)duration.TotalMilliseconds, easing: easing, token: CancellationToken.None));
+		backgroundColorAnimation = animation;
+
+		try
+		{
+			var result = await animation.WaitAsync(token);
+
+			// A state change may have taken the background colour over meanwhile: its cancellation is requested before it stops the animation
+			if (givesBackAppBackgroundColor && !token.IsCancellationRequested && backgroundColorAnimation == animation)
+			{
+				GiveBackAppBackgroundColor(element);
+			}
+
+			return result;
+		}
+		finally
+		{
+			// Unless a later state change took the background colour over: the element shows the colour the animation got to
+			if (backgroundColorAnimation == animation)
+			{
+				backgroundColorAnimation = null;
+				appliedBackgroundColor = element.BackgroundColor;
+			}
+		}
+	}
+
+	// A colour animation of the behavior is stopped first, while it is still the behavior's (MAUI completes an animation that another one with
+	// the same handle took the place of), as it would go on writing the behavior's colours. A colour that the app set since the behavior's
+	// last one took the place of the behavior's and stays.
+	void GiveBackAppBackgroundColorAtDetach(VisualElement element)
+	{
+		var animation = backgroundColorAnimation;
+
+		// Before the abort: the end of the animation must not give the colour back or take the colour the abort left for the behavior's
+		backgroundColorAnimation = null;
+
+		if (animation is { IsCompleted: false })
+		{
+			element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));
+		}
+		else if (animation is null && !IsSameColor(appliedBackgroundColor, element.BackgroundColor))
+		{
+			return;
+		}
+
+		if (isBackgroundColorApplied)
+		{
+			GiveBackAppBackgroundColor(element);
+		}
+	}
+
+	// Clearing the value the behavior set brings back what MAUI applies from the app's binding, DynamicResource, AppThemeBinding or Style, with
+	// its latest value (a theme switch or a change of the source while the behavior's colour was shown included). A colour that the app had set
+	// on the element itself was replaced by the behavior's and is set again in its place, in one change: clearing the behavior's value first
+	// would show the element without that colour for a moment.
+	void GiveBackAppBackgroundColor(VisualElement element)
+	{
+		if (isAppBackgroundColorLocal)
+		{
+			element.SetValue(VisualElement.BackgroundColorProperty, defaultBackgroundColor);
+		}
+		else
+		{
+			element.ClearValue(VisualElement.BackgroundColorProperty);
+		}
+
+		isBackgroundColorApplied = false;
+		defaultBackgroundColor = appliedBackgroundColor = element.BackgroundColor;
+	}
+
+	// A value of the element itself is replaced by a colour the behavior sets, while one that MAUI applies from a binding, DynamicResource,
+	// AppThemeBinding or Style is only hidden by it. Clearing the element's value tells them apart: it changes nothing in the second case, and
+	// in the first the value is set back at once.
+	static bool IsLocalBackgroundColor(VisualElement element)
+	{
+		var backgroundColor = element.BackgroundColor;
+		element.ClearValue(VisualElement.BackgroundColorProperty);
+
+		if (IsSameColor(element.BackgroundColor, backgroundColor))
+		{
+			return false;
+		}
+
+		element.SetValue(VisualElement.BackgroundColorProperty, backgroundColor);
+
+		return true;
+	}
+
+	static bool IsSameColor(Color? color, Color? other) => color?.Equals(other) ?? other is null;
 
 	async Task<bool> RunAnimationTask(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
 	{
-		if (touchBehavior.Element is null || !touchBehavior.IsEnabled)
+		if (touchBehavior.Element is not VisualElement element || !touchBehavior.IsEnabled)
 		{
 			return false;
 		}
@@ -866,20 +1162,31 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		if (durationMultiplier.HasValue)
 		{
-			duration = (int)durationMultiplier.Value * duration;
+			duration = (int)(durationMultiplier.Value * duration);
 		}
 
 		duration = Max(duration, 0);
 
-		await Task.WhenAll(
-			SetImageSource(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), token),
-			SetBackgroundColor(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
-			SetOpacity(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
-			SetScale(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
-			SetTranslation(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
-			SetRotation(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
-			SetRotationX(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
-			SetRotationY(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token)).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		var animations = new StateAnimations(element);
+		stateAnimations = animations;
+
+		try
+		{
+			await Task.WhenAll(
+				SetImageSource(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), token),
+				SetBackgroundColor(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+				SetOpacity(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+				SetScale(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+				SetTranslation(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+				SetRotation(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+				SetRotationX(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token),
+				SetRotationY(touchBehavior, touchState, hoverState, TimeSpan.FromMilliseconds(duration), easing, token)).ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+		}
+		finally
+		{
+			// The animations of this state update are over, unless a state change or Dispose took them over and stopped them
+			Interlocked.CompareExchange(ref stateAnimations, null, animations);
+		}
 
 		return true;
 
@@ -943,6 +1250,63 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			}
 
 			return (easing, duration.Value);
+		}
+	}
+
+	// The state update starts its animations without its token, which only ends the wait for them: MAUI 11 answers a cancelled token by
+	// aborting the handle later, on the element's dispatcher, when the handle can belong to the next state update's animation or to the app's.
+	// The behavior stops its own animations itself, while they are still its own (StateAnimations.Abort).
+	Task<bool> TrackAnimation(string handle, Task<bool> animation)
+	{
+		stateAnimations?.Add(handle, animation);
+		return animation;
+	}
+
+	sealed class StateAnimations(VisualElement element)
+	{
+		readonly List<(string Handle, Task Animation)> animations = [];
+
+		public void Add(string handle, Task animation)
+		{
+			lock (animations)
+			{
+				animations.Add((handle, animation));
+			}
+		}
+
+		// MAUI completes an animation when another animation with the same handle takes its place on the element (one the app starts, or one of a
+		// later state update): the handle of a completed animation belongs to that other animation, which is left alone. The check and the abort
+		// run together on the element's dispatcher, so that an animation cannot take the place of the behavior's in between. A dispatcher that
+		// takes no more work (the app is closing) has no animations left to stop.
+		public void Abort()
+		{
+			var dispatcher = element.Dispatcher;
+
+			if (dispatcher.IsDispatchRequired)
+			{
+				dispatcher.Dispatch(AbortRunningAnimations);
+			}
+			else
+			{
+				AbortRunningAnimations();
+			}
+		}
+
+		void AbortRunningAnimations()
+		{
+			(string Handle, Task Animation)[] started;
+			lock (animations)
+			{
+				started = [.. animations];
+			}
+
+			foreach (var (handle, animation) in started)
+			{
+				if (!animation.IsCompleted)
+				{
+					element.AbortAnimation(handle);
+				}
+			}
 		}
 	}
 }

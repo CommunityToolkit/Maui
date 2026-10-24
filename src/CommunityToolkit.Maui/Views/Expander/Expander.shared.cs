@@ -6,6 +6,13 @@ using CommunityToolkit.Maui.Core;
 namespace CommunityToolkit.Maui.Views;
 
 /// <inheritdoc cref="IExpander"/>
+/// <remarks>
+/// The <see cref="Expander"/> lays out its <see cref="Header"/> and <see cref="Content"/> in a <see cref="Grid"/> of its own. An implicit
+/// <see cref="Style"/> for <see cref="Grid"/>, for example one in App.xaml, does not apply to that <see cref="Grid"/> unless the
+/// <see cref="Style"/> sets <see cref="Style.ApplyToDerivedTypes"/>, and even then the <see cref="VisualElement.Background"/> and
+/// <see cref="VisualElement.BackgroundColor"/> of that <see cref="Grid"/> stay <see langword="null"/>, so the background of the
+/// <see cref="Expander"/> shows behind the <see cref="Header"/> and the <see cref="Content"/>.
+/// </remarks>
 [ContentProperty(nameof(Content))]
 [RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
@@ -20,7 +27,7 @@ public partial class Expander : ContentView, IExpander
 		HandleHeaderTapped = ResizeExpanderInItemsView;
 		HeaderTapGestureRecognizer.Tapped += OnHeaderTapGestureRecognizerTapped;
 
-		base.Content = new Grid
+		base.Content = new ExpanderLayout
 		{
 			RowDefinitions =
 			{
@@ -104,15 +111,14 @@ public partial class Expander : ContentView, IExpander
 		tappedEventManager.HandleEvent(this, new ExpandedChangedEventArgs(isExpanded), nameof(ExpandedChanged));
 	}
 
+	// Validation only: BindableObject stores newValue after this callback. Setting Direction here as well would store it as a local
+	// value, which outranks Bindings, Styles and DynamicResources, so they could change Direction only once.
 	static void OnExpandDirectionChanging(BindableObject bindable, object oldValue, object newValue)
 	{
-		var direction = (Expander)bindable;
 		if (newValue is not ExpandDirection enumValue || !Enum.IsDefined(enumValue))
 		{
 			throw new InvalidEnumArgumentException(nameof(newValue), newValue is int intValue ? intValue : -1, typeof(ExpandDirection));
 		}
-
-		direction.Direction = enumValue;
 	}
 
 	static void OnContentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -239,6 +245,17 @@ public partial class Expander : ContentView, IExpander
 #endif
 
 			element = element.Parent;
+		}
+	}
+
+	// An implicit Style only applies to its exact TargetType unless it sets ApplyToDerivedTypes, so the app's implicit Grid Style does not reach this subclass.
+	// The local null Background and BackgroundColor outrank any Style, so this Grid cannot paint over the Background and BackgroundColor of the Expander.
+	// CsWinRT requires partial on Windows (CsWinRT1028).
+	sealed partial class ExpanderLayout : Grid
+	{
+		public ExpanderLayout()
+		{
+			Background = BackgroundColor = null;
 		}
 	}
 }
