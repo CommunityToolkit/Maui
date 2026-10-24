@@ -49,8 +49,8 @@
 .PARAMETER ResultsFolder
     The folder of the one platform that runs, in place of <Results>/<platform>: each app writes to <ResultsFolder>/<app>/. For a job
     whose later steps read an exact folder, such as the CI jobs of the Android API levels (artifacts/device-tests/android-api36), where
-    the coverage report is named after the folder. Not with -Results, and an error for a run of several platforms, which would share
-    the folder.
+    the coverage report is named after the folder. Not with -Results, and an error for a run of several platforms (the skipped ones
+    count), which would share the folder.
 
 .PARAMETER BinlogDir
     Where the build logs go. Defaults to artifacts/logs.
@@ -1138,7 +1138,8 @@ try {
     $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
         -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target)
 
-    # The plan counts the platforms that are skipped too, so that the same command is valid or invalid on every machine.
+    # The plan counts the skipped platforms too, so that whether a command is valid depends on the operating system, not on what the machine
+    # can run.
     if ($ResultsFolder -and $plan.Count -gt 1) {
         throw (New-Object System.ArgumentException "-ResultsFolder is the folder of one platform, but this run has $($plan.Count): $(($plan | ForEach-Object { $_.Id }) -join ', '). Choose one with -Platform, or use -Results for a folder per platform.")
     }

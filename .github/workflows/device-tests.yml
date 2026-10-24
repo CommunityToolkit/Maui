@@ -50,8 +50,8 @@ env:
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
 # Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
-# (eng/devices/LOCAL.md), so this file shows how to run them. A job names its -Platform and its -Project: without them run.ps1 chooses for
-# the machine, and for a Category= filter leaves out the apps and platforms that have no test of the category, where a job runs what it names.
+# (eng/devices/LOCAL.md), so this file shows how to run them. -Platform and -Project are explicit because without them run.ps1 runs every
+# platform of the machine and, for a Category= filter, skips what has no test of the category instead of failing with 94.
 jobs:
     # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") packages the apps a second time with instrumented
     # toolkit assemblies, so a manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the
@@ -458,7 +458,7 @@ jobs:
                     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
                     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
 
-            # run.ps1 runs windows.ps1 in its own process, in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
+            # run.ps1 runs windows.ps1 in the same process, so in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
             -   name: Build device test apps
                 shell: powershell
                 run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Project $env:DEVICE_TEST_PROJECT -Configuration $env:DEVICE_TEST_CONFIGURATION
