@@ -47,7 +47,15 @@ function Get-DeviceTestReferences {
         $arguments += "-p:$item"
     }
 
-    $result = Invoke-DeviceTestNativeCapture -FilePath 'dotnet' -ArgumentList $arguments
+    # With -restore, msbuild -getItem computes the FullPath of an item whose path is relative (the Android resource designer assembly in
+    # obj) against the folder it runs in, not the project's.
+    Push-Location -LiteralPath $Project.Directory
+    try {
+        $result = Invoke-DeviceTestNativeCapture -FilePath 'dotnet' -ArgumentList $arguments
+    }
+    finally {
+        Pop-Location
+    }
     $text = ($result.Output -join "`n").Trim()
     $start = $text.IndexOf('{')
     if ($result.ExitCode -ne 0 -or $start -lt 0) {
