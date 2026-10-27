@@ -481,6 +481,108 @@ public class PopupPageTests : BaseViewTest
 		await navigation.PopModalAsync(false);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_WhenPresentingPageIsRootContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var presentingPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = presentingPage;
+		var navigation = presentingPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromVisibleModalContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var rootNavigationPage = new NavigationPage(new ContentPage { HideSoftInputOnTapped = true });
+		var presentingPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+		await rootNavigationPage.Navigation.PushModalAsync(presentingPage, false);
+
+		var navigation = rootNavigationPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromContentPageInModalNavigationPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var rootNavigationPage = new NavigationPage(new ContentPage { HideSoftInputOnTapped = true });
+		var presentingPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var modalNavigationPage = new NavigationPage(presentingPage);
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+		await rootNavigationPage.Navigation.PushModalAsync(modalNavigationPage, false);
+
+		var navigation = rootNavigationPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+		await navigation.PopModalAsync(false);
+	}
+
 	[Fact]
 	public void ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_False_WhenCurrentPageIsContentPage()
 	{

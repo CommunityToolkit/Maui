@@ -88,8 +88,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			token.ThrowIfCancellationRequested();
-			
-			TryInheritHideSoftInputFromPresentingPage(navigation.NavigationStack.LastOrDefault() ?? null);
+
+			TryInheritHideSoftInputFromPresentingPage(GetVisiblePage(navigation));
 
 			await navigation.PushModalAsync(this, false);
 		}
@@ -108,7 +108,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			token.ThrowIfCancellationRequested();
-			
+
 			TryInheritHideSoftInputFromPresentingPage(shell.CurrentPage);
 
 			if (shellParameters is null)
@@ -148,7 +148,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
 		switch (Navigation.ModalStack[^1])
 		{
-			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed 
+			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed
 			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
 				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
 
@@ -157,7 +157,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			case IPageContainer<Page> { CurrentPage: not PopupPage }:
 				throw new PopupBlockedException(Navigation.ModalStack[^1]);
 
-			// Handle edge case where the visible modal page is not the Popup to be closed 
+			// Handle edge case where the visible modal page is not the Popup to be closed
 			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
 				throw new PopupBlockedException(currentVisibleModalPage);
 		}
@@ -176,7 +176,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			// navigationSemaphoreSlim must be in the outer try/finally block to ensure we unsubscribe ModalPopped and NavigatedFrom events when CancellationToken is canceled
-			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully) 
+			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully)
 			// The inner try/finally block ensures we release navigationSemaphoreSlim after its acquisition if any subsequent line of code throws an exception or completes successfully
 			await navigationSemaphoreSlim.WaitAsync(token);
 
@@ -306,7 +306,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
-	
+
 	bool TryInheritHideSoftInputFromPresentingPage(in Page? presentingPage)
 	{
 		// HideSoftInputOnTapped is only declared on ContentPage, so guard for that type before reading the value.
@@ -333,6 +333,41 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			tapOutsideOfPopupCommand.ChangeCanExecute();
 		}
+	}
+
+	static Page? GetVisiblePage(INavigation navigation)
+	{
+		Page? page = null;
+
+		if (navigation.ModalStack.Count > 0)
+		{
+			page = navigation.ModalStack[navigation.ModalStack.Count - 1];
+		}
+		else if (navigation.NavigationStack.Count > 0)
+		{
+			page = navigation.NavigationStack[navigation.NavigationStack.Count - 1];
+		}
+		else if (Microsoft.Maui.Controls.Application.Current?.Windows is { Count: > 0 } windows)
+		{
+			page = windows[0].Page;
+		}
+
+		while (page is not null)
+		{
+			switch (page)
+			{
+				case Shell shell:
+					page = shell.CurrentPage;
+					break;
+				case IPageContainer<Page> container:
+					page = container.CurrentPage;
+					break;
+				default:
+					return page;
+			}
+		}
+
+		return null;
 	}
 
 	internal sealed partial class PopupGestureOverlay : BoxView

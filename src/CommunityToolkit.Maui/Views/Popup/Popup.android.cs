@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Views;
+using Microsoft.Maui.Platform;
 using AndroidWindow = Android.Views.Window;
 
 namespace CommunityToolkit.Maui.Views;
@@ -18,7 +19,7 @@ public partial class Popup
 
     partial void OnPlatformPopupOpened()
     {
-        if (Handler?.PlatformView is not Android.Views.View platformView || platformView.Context is not Activity activity)
+        if (Handler?.PlatformView is not Android.Views.View platformView || platformView.Context?.GetActivity() is not Activity activity)
         {
             return;
         }
@@ -36,7 +37,7 @@ public partial class Popup
         }
 
         popupWindow = window;
-        previousSoftInputMode = softInputMode;
+        previousSoftInputMode ??= softInputMode;
         window.SetSoftInputMode(SoftInput.AdjustResize);
     }
 
