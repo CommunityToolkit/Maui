@@ -31,7 +31,7 @@ partial class CameraManager
 	AVCaptureDeviceRotationCoordinator? rotationCoordinator;
 	AVCaptureMovieFileOutputRecordingDelegate? videoRecordingDelegate;
 	string? videoRecordingFileName;
-	TaskCompletionSource? videoRecordingFinalizeTcs;
+	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 	CMMotionManager? motionManager;
 
@@ -313,74 +313,86 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
-		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
-		if (!isPermissionGranted)
+		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
 		{
-			throw new CameraException("Camera permission is not granted. Please enable it in the app settings.");
+			return;
 		}
 
-		if (captureSession is null)
-		{
-			throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
-		}
-
-		CleanupVideoRecordingResources();
-
-		captureSession.BeginConfiguration();
+		bool recordingRequested = false;
 
 		try
 		{
-			var audioDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio);
-			if (audioDevice is not null)
+			token.ThrowIfCancellationRequested();
+			var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
+			if (!isPermissionGranted)
 			{
-				audioInput = new AVCaptureDeviceInput(audioDevice, out NSError? audioError);
-				if (audioError is null && captureSession.CanAddInput(audioInput))
+				throw new CameraException("Camera permission is not granted. Please enable it in the app settings.");
+			}
+
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+
+			if (captureSession is null)
+			{
+				throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
+			}
+
+			captureSession.BeginConfiguration();
+
+			try
+			{
+				var audioDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio);
+				if (audioDevice is not null)
 				{
-					captureSession.AddInput(audioInput);
-				}
-				else
-				{
-					audioInput?.Dispose();
-					audioInput = null;
+					audioInput = new AVCaptureDeviceInput(audioDevice, out NSError? audioError);
+					if (audioError is null && captureSession.CanAddInput(audioInput))
+					{
+						captureSession.AddInput(audioInput);
+					}
+					else
+					{
+						audioInput?.Dispose();
+						audioInput = null;
+					}
 				}
 			}
+			catch
+			{
+				// Ignore audio configuration issues; proceed with video-only recording
+			}
+
+			videoOutput = new AVCaptureMovieFileOutput();
+
+			if (!captureSession.CanAddOutput(videoOutput))
+			{
+				videoOutput.Dispose();
+				videoOutput = null;
+				captureSession.CommitConfiguration();
+				throw new CameraException("Unable to add video output to capture session.");
+			}
+
+			captureSession.AddOutput(videoOutput);
+			captureSession.CommitConfiguration();
+
+			if (!TryConfigureAVCaptureConnection(videoOutput, out var error))
+			{
+				Trace.TraceWarning(error);
+			}
+
+			videoRecordingStream = stream;
+			videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
+
+			var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
+			videoRecordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(recordingState);
+			videoOutput.StartRecordingToOutputFile(outputUrl, videoRecordingDelegate);
+			recordingRequested = true;
+
+			await recordingState.Started.WaitAsync(token);
 		}
 		catch
 		{
-			// Ignore audio configuration issues; proceed with video-only recording
+			await CancelVideoRecordingStart(recordingState, recordingRequested, CancellationToken.None);
+			throw;
 		}
-
-		videoOutput = new AVCaptureMovieFileOutput();
-
-		if (!captureSession.CanAddOutput(videoOutput))
-		{
-			if (audioInput is not null)
-			{
-				captureSession.RemoveInput(audioInput);
-				audioInput.Dispose();
-				audioInput = null;
-			}
-
-			videoOutput?.Dispose();
-			captureSession.CommitConfiguration();
-			throw new CameraException("Unable to add video output to capture session.");
-		}
-
-		captureSession.AddOutput(videoOutput);
-		captureSession.CommitConfiguration();
-
-		if (!TryConfigureAVCaptureConnection(videoOutput, out var error))
-		{
-			Trace.TraceWarning(error);
-		}
-
-		videoRecordingStream = stream;
-		videoRecordingFinalizeTcs = new TaskCompletionSource();
-		videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
-
-		var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
-		videoRecordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs);
-		videoOutput.StartRecordingToOutputFile(outputUrl, videoRecordingDelegate);
 	}
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
@@ -389,32 +401,95 @@ partial class CameraManager
 			|| videoRecordingFileName is null
 			|| videoOutput is null
 			|| videoRecordingStream is null
-			|| videoRecordingFinalizeTcs is null)
+			|| videoRecordingState is not { } recordingState)
 		{
 			return Stream.Null;
 		}
 
-		videoOutput.StopRecording();
-		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
-
-		if (File.Exists(videoRecordingFileName))
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
 		{
-			await using var inputStream = new FileStream(videoRecordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-			await inputStream.CopyToAsync(videoRecordingStream, token);
-			await videoRecordingStream.FlushAsync(token);
-			if (videoRecordingStream.CanSeek)
+			if (!ReferenceEquals(recordingState, videoRecordingState)
+				|| captureSession is null
+				|| videoRecordingFileName is not { } recordingFileName
+				|| videoOutput is not { } recordingOutput
+				|| videoRecordingStream is not { } recordingStream)
 			{
-				videoRecordingStream.Position = 0;
+				return Stream.Null;
 			}
+
+			if (!recordingState.Finalized.IsCompleted)
+			{
+				recordingOutput.StopRecording();
+			}
+
+			await recordingState.Finalized.WaitAsync(token);
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			token.ThrowIfCancellationRequested();
+
+			if (File.Exists(recordingFileName))
+			{
+				await using var inputStream = new FileStream(recordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+				await inputStream.CopyToAsync(recordingStream, CancellationToken.None);
+				await recordingStream.FlushAsync(CancellationToken.None);
+				if (recordingStream.CanSeek)
+				{
+					recordingStream.Position = 0;
+				}
+			}
+
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			CleanupVideoRecordingResources(recordingState);
+
+			return recordingStream;
 		}
-
-		CleanupVideoRecordingResources();
-
-		return videoRecordingStream;
+		finally
+		{
+			recordingState.StopSemaphore.Release();
+		}
 	}
 
-	void CleanupVideoRecordingResources()
+	async Task CancelVideoRecordingStart(VideoRecordingState recordingState, bool recordingRequested, CancellationToken token)
 	{
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
+		{
+			if (!ReferenceEquals(recordingState, videoRecordingState))
+			{
+				return;
+			}
+
+			if (recordingRequested)
+			{
+				if (!recordingState.Finalized.IsCompleted)
+				{
+					videoOutput?.StopRecording();
+				}
+
+				await recordingState.Finalized.WaitAsync(token);
+			}
+
+			CleanupVideoRecordingResources(recordingState);
+		}
+		catch (Exception exception)
+		{
+			Trace.WriteLine($"Unable to stop video recording after start failed: {exception}");
+		}
+		finally
+		{
+			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	void CleanupVideoRecordingResources(VideoRecordingState? expectedState = null)
+	{
+		if (expectedState is not null && !ReferenceEquals(expectedState, videoRecordingState))
+		{
+			return;
+		}
+
+		videoRecordingState?.CancelPendingTasks();
+
 		if (captureSession is not null)
 		{
 			captureSession.BeginConfiguration();
@@ -450,7 +525,7 @@ partial class CameraManager
 			videoRecordingFileName = null;
 		}
 
-		videoRecordingFinalizeTcs = null;
+		videoRecordingState = null;
 	}
 
 	private async partial ValueTask PlatformTakePicture(CancellationToken token)
@@ -629,10 +704,17 @@ partial class CameraManager
 	}
 }
 
-class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskCompletionSource) : AVCaptureFileOutputRecordingDelegate
+class AVCaptureMovieFileOutputRecordingDelegate(VideoRecordingState recordingState) : AVCaptureFileOutputRecordingDelegate
 {
+	public override void DidStartRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections)
+	{
+		recordingState.OnStarted();
+	}
+
 	public override void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, NSError? error)
 	{
-		taskCompletionSource.SetResult();
+		recordingState.OnFinalized(new CameraException(error is null
+			? "Video recording finished before it started."
+			: $"Video recording failed to start: {error.LocalizedDescription}"));
 	}
 }
