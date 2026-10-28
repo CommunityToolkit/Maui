@@ -69,9 +69,45 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		return false;
 	}
 
-	void OnBrokenShellButtonClicked(object? sender, EventArgs e)
+	void OnEdgeToEdgeShellButtonClicked(object? sender, EventArgs e)
 	{
-		Application.Current?.Windows[0].Page = new BrokenTitleViewShell();
+#if ANDROID
+		// Application.OpenWindow opens nothing on Android: MainActivity is SingleTask, so the new-window intent is routed to the running Activity.
+		Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.StartActivity(typeof(EdgeToEdgeShellActivity));
+#endif
+	}
 
+	async void OnEdgeToEdgeModalButtonClicked(object? sender, EventArgs e)
+	{
+		SetStatusBarForEdgeToEdgeModalPage(isStatusBarSolidRed: false);
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage(isStatusBarSolidRed: false));
+	}
+
+	async void OnSolidRedEdgeToEdgeModalButtonClicked(object? sender, EventArgs e)
+	{
+		SetStatusBarForEdgeToEdgeModalPage(isStatusBarSolidRed: true);
+		await Shell.Current.Navigation.PushModalAsync(new EdgeToEdgeModalPage(isStatusBarSolidRed: true));
+	}
+
+	void SetStatusBarForEdgeToEdgeModalPage(bool isStatusBarSolidRed)
+	{
+		BindingContext.RedSliderValue = isStatusBarSolidRed ? 1 : 0;
+		BindingContext.GreenSliderValue = 0;
+		BindingContext.BlueSliderValue = 0;
+		BindingContext.AlphaSliderValue = isStatusBarSolidRed ? 1 : 0;
+
+		if (isStatusBarSolidRed)
+		{
+			BindingContext.IsLightContentChecked = true;
+		}
+		else
+		{
+			BindingContext.IsDarkContentChecked = true;
+		}
+
+#if ANDROID
+		// Closing a modal runs OnNavigatedTo, which makes the status bar opaque again, and the sliders above only apply a color when their value changes.
+		Core.Platform.StatusBar.SetColor(isStatusBarSolidRed ? Colors.Red : Colors.Transparent);
+#endif
 	}
 }
