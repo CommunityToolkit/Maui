@@ -291,6 +291,7 @@ public static class MauiProgram
 		services.AddTransientPopup<TransparentPopup>();
 		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddTransientPopup<SoftInputKeyboardPopup>();
 		services.AddTransientPopup<AppThemePopup>();
 	}
 
