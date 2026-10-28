@@ -84,6 +84,7 @@ public partial class MediaElementHandler
 	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
 		handler.MediaManager?.UpdateShouldShowPlaybackControls();
+		handler.PlatformRefreshPlaybackControlsVisibility(mediaElement.ShouldShowPlaybackControls);
 	}
 
 	/// <summary>
@@ -96,6 +97,8 @@ public partial class MediaElementHandler
 	{
 		handler.MediaManager?.UpdateSource();
 	}
+
+	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls);
 
 	/// <summary>
 	/// Maps the <see cref="Core.IMediaElement.Speed"/> property between the abstract
