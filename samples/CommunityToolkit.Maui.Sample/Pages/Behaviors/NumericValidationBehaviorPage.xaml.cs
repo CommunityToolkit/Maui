@@ -12,7 +12,7 @@ public partial class NumericValidationBehaviorPage : BasePage<NumericValidationB
 		InitializeComponent();
 	}
 
-	async void SetEntryValue(object? sender, EventArgs e)
+	async void SetSafeEntryValue(object? sender, EventArgs e)
 	{
 		var toastVisibilityTimeSpan = TimeSpan.FromSeconds(5);
 		var cts = new CancellationTokenSource(toastVisibilityTimeSpan);

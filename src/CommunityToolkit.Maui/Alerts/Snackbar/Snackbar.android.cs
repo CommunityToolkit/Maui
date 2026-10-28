@@ -3,7 +3,9 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
+using CommunityToolkit.Maui.Extensions;
 using Google.Android.Material.Snackbar;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Object = Java.Lang.Object;
@@ -37,9 +39,11 @@ public partial class Snackbar
 
 	static bool TryGetPageActiveModalPage([NotNullWhen(true)] out View? modalPage)
 	{
-		if (Application.Current?.Windows[0].Page is Page mainPage && mainPage.Navigation.ModalStack.Count > 0)
+		if (Application.Current?.Windows[0].Page is Page mainPage
+			&& mainPage.Navigation.ModalStack.Count > 0
+			&& mainPage.Navigation.ModalStack.Last().Handler?.PlatformView is View platformModalPage)
 		{
-			modalPage = mainPage.Navigation.ModalStack.Last().ToPlatform();
+			modalPage = platformModalPage;
 			return true;
 		}
 
@@ -87,7 +91,7 @@ public partial class Snackbar
 
 		token.ThrowIfCancellationRequested();
 
-		if (!PlatformSnackbar.IsDisposed())
+		if (!PlatformSnackbar.IsPeerDisposed())
 		{
 			PlatformSnackbar.Dismiss();
 		}
@@ -114,7 +118,7 @@ public partial class Snackbar
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
 		}
 
-		var fontManager = Application.Current?.RequireFontManager() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
+		var fontManager = Application.Current?.Handler?.MauiContext?.Services.GetRequiredService<IFontManager>() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
 		SetLayoutParametersForView(snackbarView);
 		SetContainerForView(snackbarView);
 		SetMessageForView(snackbarView, fontManager);

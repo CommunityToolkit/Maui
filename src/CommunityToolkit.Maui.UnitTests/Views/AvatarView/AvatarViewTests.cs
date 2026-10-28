@@ -204,7 +204,7 @@ public class AvatarViewTests : BaseViewTest
 	public void DefaultFontSize()
 	{
 		var avatarView = new Maui.Views.AvatarView();
-		avatarView.FontSize.Should().Be(0);
+		avatarView.FontSize.Should().Be(-1);
 	}
 
 	[Fact]

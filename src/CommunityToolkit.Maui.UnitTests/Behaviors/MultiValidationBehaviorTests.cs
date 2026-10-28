@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBehavior, VisualElement>(new MultiValidationBehavior(), new View())
+public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBehavior, VisualElement>(new MultiValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", "A", true)]
@@ -97,7 +97,7 @@ public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBe
 	public async Task ForceValidateCancellationTokenCanceled()
 	{
 		// Arrange
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var characterValidationBehavior = new CharactersValidationBehavior();
 		var requiredStringValidationBehavior = new RequiredStringValidationBehavior();

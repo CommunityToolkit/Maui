@@ -176,8 +176,8 @@ public class PopupTests : BaseViewTest
 		showPopupAsyncTask = page.ShowPopupAsync(popup, token: TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Single(page.Navigation.ModalStack);
-		Assert.IsType<PopupPage>(page.Navigation.ModalStack[0]);
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
 		await popup.CloseAsync(TestContext.Current.CancellationToken);
@@ -185,6 +185,32 @@ public class PopupTests : BaseViewTest
 
 		// Assert
 		Assert.Empty(page.Navigation.ModalStack);
+	}
+
+	[Fact]
+	public void PopupNotFoundException_Message_ShouldContainGuidance()
+	{
+		// Arrange
+		var exception = new PopupNotFoundException();
+
+		// Assert
+		Assert.Contains(nameof(PopupExtensions.ShowPopup), exception.Message);
+		Assert.Contains(nameof(Popup.CloseAsync), exception.Message);
+	}
+
+	[Fact]
+	public void PopupBlockedException_Message_ShouldContainBlockedPageType()
+	{
+		// Arrange
+		var page = new ContentPage();
+		var exception = new PopupBlockedException(page);
+
+		// Assert
+		var fullName = page.GetType().FullName;
+
+		Assert.NotNull(fullName);
+		Assert.Contains(fullName, exception.Message);
+		Assert.Contains(nameof(Page.Navigation), exception.Message);
 	}
 
 	sealed class PopupOverridingClose : Popup

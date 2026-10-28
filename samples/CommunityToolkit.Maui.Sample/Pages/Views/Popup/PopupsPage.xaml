@@ -53,6 +53,8 @@
                 <Button Text="Complex Popup" Clicked="HandleComplexPopupClicked" />
                 
                 <Button Text="Collection View Popup" Clicked="HandleCollectionViewPopupClicked" />
+
+                <Button Text="Popup App Theme Initialization" Clicked="HandlePopupAppThemeButtonClicked" />
                 
             </VerticalStackLayout>
         </ScrollView>

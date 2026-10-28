@@ -83,7 +83,7 @@ public class DrawingLineTests : BaseViewTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStream_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();

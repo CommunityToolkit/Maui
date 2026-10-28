@@ -74,7 +74,7 @@ public abstract class BaseViewTest : BaseTest
 		shell.Items.Add(new ContentPage());
 
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window { Page = shell });
+		application.OpenWindow(new Window { Page = shell });
 
 		IPlatformApplication.Current = application;
 

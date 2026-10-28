@@ -1,16 +1,48 @@
-﻿using CommunityToolkit.Maui.Extensions;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.ImageSources;
 
+/// <summary>Default image enumerator.</summary>
+public enum DefaultImage
+{
+	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
+	MysteryPerson = 0,
+
+	/// <summary>404: Do not load any image if none is associated with the email hash, instead return an HTTP 404 (File Not Found) response.</summary>
+	FileNotFound,
+
+	/// <summary>A geometric pattern based on an email hash.</summary>
+	Identicon,
+
+	/// <summary>A generated 'monster' with different colors, faces, etc.</summary>
+	MonsterId,
+
+	/// <summary>Generated faces with differing features and backgrounds.</summary>
+	Wavatar,
+
+	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
+	Retro,
+
+	/// <summary>A generated robot with different colors, faces, etc.</summary>
+	Robohash,
+
+	/// <summary>A transparent PNG image.</summary>
+	Blank,
+}
 /// <summary>Gravatar image source.</summary>
 /// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public partial class GravatarImageSource : StreamImageSource
+public partial class GravatarImageSource : StreamImageSource, IDisposable
 {
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
+	CancellationTokenSource? uriUpdateTokenSource;
+
 	Uri? lastDispatch;
+
+	bool isDisposed;
 
 	/// <summary>Initializes a new instance of the <see cref="GravatarImageSource"/> class.</summary>
 	public GravatarImageSource()
@@ -49,6 +81,8 @@ public partial class GravatarImageSource : StreamImageSource
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
 	internal partial int ParentWidth { get; set; } = GravatarImageSourceDefaults.ParentWidth;
 
+	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
+
 	/// <summary>Gets or sets the image size.</summary>
 	/// <remarks>
 	/// Size is limited to be in the range of 1 to 2048.
@@ -70,13 +104,37 @@ public partial class GravatarImageSource : StreamImageSource
 		}
 	}
 
-	static HttpClient SingletonHttpClient => singletonHttpClientHolder.Value;
-
 	/// <summary>Returns the Uri as a string.</summary>
 	/// <returns>String of the URI.</returns>
 	public override string ToString()
 	{
 		return $"Uri: {Uri}\nEmail: {Email}\nSize: {GravatarSize}\nImage: {DefaultGravatarName(Image)}\nCacheValidity: {CacheValidity}\nCachingEnabled: {CachingEnabled}";
+	}
+
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
+	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			uriUpdateTokenSource?.Cancel();
+			uriUpdateTokenSource?.Dispose();
+			uriUpdateTokenSource = null;
+		}
+
+		isDisposed = true;
 	}
 
 	/// <summary>On parent set.</summary>
@@ -103,14 +161,14 @@ public partial class GravatarImageSource : StreamImageSource
 
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
+		var gravatarImageSource = (GravatarImageSource)bindable;
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, (DefaultImage)newValue, CancellationToken.None);
 	}
 
 	static async void OnEmailPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
-		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
+		var gravatarImageSource = (GravatarImageSource)bindable;
+		await gravatarImageSource.HandleNewUriRequested((string?)newValue, gravatarImageSource.Image, CancellationToken.None);
 	}
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -120,7 +178,7 @@ public partial class GravatarImageSource : StreamImageSource
 			return;
 		}
 
-		GravatarImageSource gravatarImageSource = (GravatarImageSource)bindable;
+		var gravatarImageSource = (GravatarImageSource)bindable;
 		if (gravatarImageSource.GravatarSize is null)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
@@ -128,7 +186,7 @@ public partial class GravatarImageSource : StreamImageSource
 		}
 
 		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
-		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, gravatarImageSource.CancellationTokenSource?.Token ?? CancellationToken.None);
+		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, CancellationToken.None);
 	}
 
 	Task HandleNewUriRequested(string? email, DefaultImage image, CancellationToken token)
@@ -152,44 +210,29 @@ public partial class GravatarImageSource : StreamImageSource
 			return;
 		}
 
+		var uriUpdateToken = ResetUriUpdateTokenSource(token);
+
 		try
 		{
-			await Task.Delay(cancellationTokenSourceTimeout, token);
-			await (CancellationTokenSource?.CancelAsync() ?? Task.CompletedTask);
+			await Task.Delay(cancellationTokenSourceTimeout, uriUpdateToken);
 			lastDispatch = Uri;
-			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged).WaitAsync(token);
+			await Dispatcher.DispatchIfRequiredAsync(OnSourceChanged, uriUpdateToken);
 		}
-		catch (TaskCanceledException)
+		catch (OperationCanceledException) when (uriUpdateToken.IsCancellationRequested)
 		{
 			// Do nothing
 		}
 	}
-}
 
-/// <summary>Default image enumerator.</summary>
-public enum DefaultImage
-{
-	/// <summary>(mystery-person) A simple, cartoon-style silhouetted outline of a person (does not vary by email hash)</summary>
-	MysteryPerson = 0,
+	CancellationToken ResetUriUpdateTokenSource(CancellationToken token)
+	{
+		uriUpdateTokenSource?.Cancel();
+		uriUpdateTokenSource?.Dispose();
 
-	/// <summary>404: Do not load any image if none is associated with the email hash, instead return an HTTP 404 (File Not Found) response.</summary>
-	FileNotFound,
+		uriUpdateTokenSource = token.CanBeCanceled
+			? CancellationTokenSource.CreateLinkedTokenSource(token)
+			: new CancellationTokenSource();
 
-	/// <summary>A geometric pattern based on an email hash.</summary>
-	Identicon,
-
-	/// <summary>A generated 'monster' with different colors, faces, etc.</summary>
-	MonsterId,
-
-	/// <summary>Generated faces with differing features and backgrounds.</summary>
-	Wavatar,
-
-	/// <summary>Awesome generated, 8-bit arcade-style pixilated faces.</summary>
-	Retro,
-
-	/// <summary>A generated robot with different colors, faces, etc.</summary>
-	Robohash,
-
-	/// <summary>A transparent PNG image.</summary>
-	Blank,
+		return uriUpdateTokenSource.Token;
+	}
 }

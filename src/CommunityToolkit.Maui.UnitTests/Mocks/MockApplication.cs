@@ -1,20 +1,34 @@
-﻿using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
 class MockApplication : Application, IPlatformApplication
 {
+	Window? windowToOpen;
+
 	public MockApplication(IServiceProvider serviceProvider)
 	{
 		Services = serviceProvider;
-#pragma warning disable CS0612 // Type or member is obsolete
-		DependencyService.Register<ISystemResourcesProvider, MockResourcesProvider>();
-#pragma warning restore CS0612 // Type or member is obsolete
 	}
 
 	public IApplication Application => this;
 	public IServiceProvider Services { get; }
+
+	public override void OpenWindow(Window window)
+	{
+		windowToOpen = window;
+		try
+		{
+			_ = ((IApplication)this).CreateWindow(null);
+		}
+		finally
+		{
+			windowToOpen = null;
+		}
+	}
+
+	protected override Window CreateWindow(IActivationState? activationState) =>
+		windowToOpen ?? base.CreateWindow(activationState);
 }
 
 // Inspired by https://github.com/dotnet/maui/blob/main/src/Controls/tests/Core.UnitTests/TestClasses/ApplicationHandlerStub.cs

@@ -45,7 +45,7 @@ public class DockLayoutTests : BaseTest
 	public void EnsureDefaults()
 	{
 		var layout = new DockLayout();
-		var view = new View();
+		var view = new MockView();
 
 		Assert.Equal(DockLayoutDefaults.ShouldExpandLastChild, layout.ShouldExpandLastChild);
 		Assert.Equal(DockLayoutDefaults.HorizontalSpacing, layout.HorizontalSpacing);

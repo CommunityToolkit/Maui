@@ -12,7 +12,7 @@ public static class AppThemeObjectExtensions
 	/// <param name="targetProperty">The <see cref="BindableProperty"/> on which to set the <paramref name="appThemeColor"/>.</param>
 	/// <param name="appThemeColor">The <see cref="AppThemeColor"/> to apply to <paramref name="targetProperty"/>.</param>
 	public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, AppThemeColor appThemeColor) =>
-		self.SetBinding(targetProperty, appThemeColor.GetBinding());
+		self.SetBinding(targetProperty, appThemeColor.GetBinding(targetProperty));
 
 	/// <summary>
 	/// Sets the <see cref="AppThemeObject"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
@@ -21,5 +21,5 @@ public static class AppThemeObjectExtensions
 	/// <param name="targetProperty">The <see cref="BindableProperty"/> on which to set the <paramref name="appThemeResource"/>.</param>
 	/// <param name="appThemeResource">The <see cref="AppThemeObject"/> to apply to <paramref name="targetProperty"/>.</param>
 	public static void SetAppTheme<T>(this BindableObject self, BindableProperty targetProperty, AppThemeObject<T> appThemeResource) =>
-		self.SetBinding(targetProperty, appThemeResource.GetBinding());
+		self.SetBinding(targetProperty, appThemeResource.GetBinding(targetProperty));
 }

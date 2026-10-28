@@ -8,19 +8,9 @@ class SpeechToTextImplementationMock(string partialText, string finalText) : ISp
 	readonly string partialText = partialText;
 	readonly string finalText = finalText;
 
-	public ValueTask DisposeAsync()
-	{
-		return ValueTask.CompletedTask;
-	}
-
 	public event EventHandler<SpeechToTextStateChangedEventArgs>? StateChanged;
 	public event EventHandler<SpeechToTextRecognitionResultUpdatedEventArgs>? RecognitionResultUpdated;
 	public event EventHandler<SpeechToTextRecognitionResultCompletedEventArgs>? RecognitionResultCompleted;
-
-	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
-	{
-		return Task.FromResult(true);
-	}
 
 	public SpeechToTextState CurrentState
 	{
@@ -31,6 +21,16 @@ class SpeechToTextImplementationMock(string partialText, string finalText) : ISp
 			StateChanged?.Invoke(this, new SpeechToTextStateChangedEventArgs(value));
 		}
 	} = SpeechToTextState.Stopped;
+
+	public ValueTask DisposeAsync()
+	{
+		return ValueTask.CompletedTask;
+	}
+
+	public Task<bool> RequestPermissions(CancellationToken cancellationToken)
+	{
+		return Task.FromResult(true);
+	}
 
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{

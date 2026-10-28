@@ -41,8 +41,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Platform;
 #endif
 
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
-
 namespace CommunityToolkit.Maui.Sample;
 
 public static class MauiProgram
@@ -293,6 +291,7 @@ public static class MauiProgram
 		services.AddTransientPopup<TransparentPopup>();
 		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddTransientPopup<AppThemePopup>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)

@@ -37,7 +37,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 
-		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeSaveFilePicker, onResult: OnResult).WaitAsync(cancellationToken).ConfigureAwait(false);
+		await ActivityResultManager.StartAsync(intent, AndroidRequestCode.RequestCodeSaveFilePicker, OnResult, cancellationToken).ConfigureAwait(false);
 
 		if (filePath is null)
 		{

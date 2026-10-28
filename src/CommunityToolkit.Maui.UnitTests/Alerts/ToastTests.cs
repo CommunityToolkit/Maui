@@ -15,6 +15,26 @@ public class ToastTests : BaseTest
 		Assert.IsType<IAlert>(toast, exactMatch: false);
 	}
 
+	[Fact]
+	public void EnsureWindowsToastEnabled_NotificationsDisabled_ThrowsSetupException()
+	{
+		var exception = Assert.Throws<InvalidOperationException>(Toast.EnsureWindowsToastEnabled);
+
+		Assert.Contains("UseMauiCommunityToolkit", exception.Message);
+		Assert.Contains(nameof(Options.SetShouldEnableSnackbarOnWindows), exception.Message);
+		Assert.Contains("Package.appxmanifest", exception.Message);
+		Assert.Equal("https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast", exception.HelpLink);
+	}
+
+	[Fact]
+	public void EnsureWindowsToastEnabled_NotificationsEnabled_DoesNotThrow()
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder.UseMauiCommunityToolkit(options => options.SetShouldEnableSnackbarOnWindows(true));
+
+		Toast.EnsureWindowsToastEnabled();
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenExpires()
 	{
@@ -29,7 +49,7 @@ public class ToastTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() =>
 		{
@@ -52,7 +72,7 @@ public class ToastTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastDismiss_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() =>
 		{
@@ -82,35 +102,31 @@ public class ToastTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenCancelled_ReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		cancellationTokenSource.Cancel();
 		await toast.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastDismiss_CancellationTokenCancelled_ReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		cancellationTokenSource.Cancel();
 		await toast.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().ThrowExactlyAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await toast.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await toast.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
-		cancellationTokenSource.Dispose();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

@@ -9,6 +9,12 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel(HttpClient 
 	readonly WeakEventManager imageDownloadFailedEventManager = new();
 	readonly HttpClient client = client;
 
+	public event EventHandler<string> ImageDownloadFailed
+	{
+		add => imageDownloadFailedEventManager.AddEventHandler(value);
+		remove => imageDownloadFailedEventManager.RemoveEventHandler(value);
+	}
+
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(DownloadDotNetBotImageCommand))]
 	public partial bool IsDownloadingImage { get; set; }
 
@@ -18,18 +24,12 @@ public sealed partial class ByteArrayToImageSourceConverterViewModel(HttpClient 
 	[ObservableProperty]
 	public partial string LabelText { get; private set; } = "Tap the Download Image Button to download an Image as a byte[]";
 
-	public event EventHandler<string> ImageDownloadFailed
-	{
-		add => imageDownloadFailedEventManager.AddEventHandler(value);
-		remove => imageDownloadFailedEventManager.RemoveEventHandler(value);
-	}
+	bool CanDownloadDotNetBotImageCommandExecute => !IsDownloadingImage && DotNetBotImageByteArray is null;
 
 	public void Dispose()
 	{
 		DotNetBotImageByteArray = null;
 	}
-
-	bool CanDownloadDotNetBotImageCommandExecute => !IsDownloadingImage && DotNetBotImageByteArray is null;
 
 	[RelayCommand(CanExecute = nameof(CanDownloadDotNetBotImageCommandExecute))]
 	async Task DownloadDotNetBotImage(CancellationToken token)

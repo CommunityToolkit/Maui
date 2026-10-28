@@ -129,6 +129,16 @@ Here we will have some:
 
 ## Contributing Code - Best Practices
 
+### Code Formatting
+
+To format your code, run [`dotnet format`](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) on the samples solution (it includes every project in this repository):
+
+```bash
+dotnet format samples/CommunityToolkit.Maui.Sample.slnx --exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064
+```
+
+The `--exclude-diagnostics` flag is required because, without it, `dotnet format` applies Roslyn's "Add `[Obsolete]`" code fix for these compiler warnings (see [dotnet/format#1230](https://github.com/dotnet/format/issues/1230)), adding the `[Obsolete]` attribute to every member that uses (CS0612, CS0618, CS1062, CS1064) or overrides (CS0672) an obsolete API. Excluding these diagnostics only affects `dotnet format`; the compiler still reports the warnings when building.
+
 ### Debug Logging
 
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
@@ -189,6 +199,26 @@ e.g.
 if (something is Bucket bucket)
 {
    bucket.Empty();
+}
+```
+
+#### Property patterns (non-null checks)
+
+* Avoid the empty property pattern `is { }` (e.g. `x is { } value`) to check for a non-null value and bind it. It reads unclearly and is hard to interpret for a human reviewing the code.
+* Prefer a **type pattern** (`x is Type value`) instead: it both confirms the type and binds the value, and reads clearly.
+* For a pure non-null check with no binding, use `is not null` (see [Null checking](#null-checking)).
+
+e.g.
+
+```csharp
+// Avoid - the empty property pattern is not clear at a glance
+if (someColor is { } color && color != Colors.Transparent)
+{
+}
+
+// Prefer - a type pattern reads clearly and binds the value
+if (someColor is Color color && color != Colors.Transparent)
+{
 }
 ```
 

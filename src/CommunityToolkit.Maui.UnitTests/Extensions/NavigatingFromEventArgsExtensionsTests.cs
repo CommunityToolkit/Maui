@@ -27,7 +27,7 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(shell, null, shellParameters, TestContext.Current.CancellationToken);
-		bool? isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task;
+		bool? isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(isDestinationPageACommunityToolkitPopupPage);
@@ -59,7 +59,7 @@ public class NavigatingFromEventArgsExtensionsTests : BaseViewTest
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		await mainPage.Navigation.PushAsync(anotherShellContentPage);
-		bool? isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task;
+		bool? isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.False(isDestinationPageACommunityToolkitPopupPage);

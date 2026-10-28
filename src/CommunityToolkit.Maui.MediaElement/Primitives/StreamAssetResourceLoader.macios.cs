@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Core;
 sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 {
 	public const string DefaultContentType = "public.mpeg-4";
-	
+
 	readonly Stream stream;
 	readonly string contentType;
 
@@ -34,6 +34,15 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 
 		loadingRequest.FinishLoading();
 		return true;
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			// Don't dispose the stream here - let the caller manage its lifetime
+		}
+		base.Dispose(disposing);
 	}
 
 	void FillContentInformation(AVAssetResourceLoadingContentInformationRequest contentInformationRequest)
@@ -77,14 +86,5 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 			// Log error but don't throw - let AVFoundation handle it
 			System.Diagnostics.Debug.WriteLine($"Error reading stream data: {ex.Message}");
 		}
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			// Don't dispose the stream here - let the caller manage its lifetime
-		}
-		base.Dispose(disposing);
 	}
 }

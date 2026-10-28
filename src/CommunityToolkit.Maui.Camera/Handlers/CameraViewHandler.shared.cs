@@ -51,15 +51,15 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	}
 
+	internal CameraManager CameraManager => cameraManager
+		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
+
 	/// <inheritdoc/>
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
-
-	internal CameraManager CameraManager => cameraManager
-		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
 
 	/// <summary>
 	/// Creates a platform-specific view that will be rendered on that platform.

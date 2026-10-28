@@ -22,6 +22,44 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
+	readonly Popup popup = new();
+	readonly Grid fullScreenGrid = new();
+	readonly MediaPlayerElement mediaPlayerElement;
+	readonly CustomTransportControls? customTransportControls;
+	bool doesNavigationBarExistBeforeFullScreen;
+	bool isDisposed;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
+	/// </summary>
+	/// <param name="mediaPlayerElement"></param>
+	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
+	{
+		LoadResourceDictionary();
+		this.mediaPlayerElement = mediaPlayerElement;
+		customTransportControls = SetTransportControls();
+		Children.Add(this.mediaPlayerElement);
+	}
+
+	/// <summary>
+	/// Finalizer
+	/// </summary>
+	~MauiMediaElement() => Dispose(false);
+
+	/// <summary>
+	/// Gets the presented page.
+	/// </summary>
+	protected static Page CurrentPage =>
+		PageExtensions.GetCurrentPage(Application.Current?.Windows[0].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
+
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	[LibraryImport("user32.dll")]
 	internal static partial IntPtr GetForegroundWindow();
 
@@ -33,23 +71,44 @@ public partial class MauiMediaElement : Grid, IDisposable
 		var hwnd = GetForegroundWindow();
 		return hwnd == IntPtr.Zero ? null : hwnd;
 	}
-	readonly Popup popup = new();
-	readonly Grid fullScreenGrid = new();
-	readonly MediaPlayerElement mediaPlayerElement;
-	readonly CustomTransportControls? customTransportControls;
-	bool doesNavigationBarExistBeforeFullScreen;
-	bool isDisposed;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
+	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
 	/// </summary>
-	/// <param name="mediaPlayerElement"></param>
-	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
+	protected virtual void Dispose(bool disposing)
 	{
-		LoadResourceDictionary();
-		this.mediaPlayerElement = mediaPlayerElement;
-		customTransportControls = SetTransportControls();
-		Children.Add(this.mediaPlayerElement);
+		if (isDisposed)
+		{
+			return;
+		}
+		if (customTransportControls?.FullScreenButton is not null)
+		{
+			customTransportControls.FullScreenButton.Click -= OnFullScreenButtonClick;
+		}
+
+		if (disposing)
+		{
+			mediaPlayerElement.MediaPlayer.Pause();
+
+			if (mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
+			{
+				// Dispose the MediaSource to release the resources
+				// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
+				mediaSource.Dispose();
+			}
+			mediaPlayerElement.MediaPlayer.Source = null;
+			mediaPlayerElement.MediaPlayer.Dispose();
+			mediaPlayerElement.SetMediaPlayer(null);
+		}
+
+		isDisposed = true;
+	}
+
+	static AppWindow GetAppWindowForCurrentWindow()
+	{
+		var windowHandle = TryGetForegroundWindow() ?? throw new InvalidOperationException("No foreground window found.");
+		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
+		return AppWindow.GetFromWindowId(id);
 	}
 
 	void LoadResourceDictionary()
@@ -113,65 +172,6 @@ public partial class MauiMediaElement : Grid, IDisposable
 		mediaPlayerElement.TransportControls = temp;
 		ApplyCustomStyle();
 		return temp;
-	}
-
-	/// <summary>
-	/// Finalizer
-	/// </summary>
-	~MauiMediaElement() => Dispose(false);
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
-	/// <summary>
-	/// Gets the presented page.
-	/// </summary>
-	protected static Page CurrentPage =>
-		PageExtensions.GetCurrentPage(Application.Current?.Windows[0].Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
-	/// </summary>
-	protected virtual void Dispose(bool disposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-		if (customTransportControls?.FullScreenButton is not null)
-		{
-			customTransportControls.FullScreenButton.Click -= OnFullScreenButtonClick;
-		}
-
-		if (disposing)
-		{
-			mediaPlayerElement.MediaPlayer.Pause();
-
-			if (mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
-			{
-				// Dispose the MediaSource to release the resources
-				// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
-				mediaSource.Dispose();
-			}
-			mediaPlayerElement.MediaPlayer.Source = null;
-			mediaPlayerElement.MediaPlayer.Dispose();
-			mediaPlayerElement.SetMediaPlayer(null);
-		}
-
-		isDisposed = true;
-	}
-
-	static AppWindow GetAppWindowForCurrentWindow()
-	{
-		var windowHandle = TryGetForegroundWindow() ?? throw new InvalidOperationException("No foreground window found.");
-		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
-		return AppWindow.GetFromWindowId(id);
 	}
 
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)

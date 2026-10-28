@@ -118,4 +118,10 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <param name="failureReason">A string containing the reason why the capture attempt failed.</param>
 	internal void OnMediaCapturedFailed(string failureReason);
+
+	/// <summary>
+	/// Occurs when a general camera error occurred.
+	/// </summary>
+	/// <param name="ex">exception with details.</param>
+	internal void OnErrorOccurred(Exception ex);
 }
