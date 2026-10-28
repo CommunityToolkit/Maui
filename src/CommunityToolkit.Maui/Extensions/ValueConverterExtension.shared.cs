@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -16,7 +15,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 	private protected static bool IsNullable<T>() => typeof(T).IsNullable();
 
-	private protected static bool IsValidTargetType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTarget>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] in Type targetType, bool shouldAllowNullableValueTypes)
+	private protected static bool IsValidTargetType<TTarget>(in Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		if (IsConvertingToString(targetType) && CanBeConvertedToString())
 		{
@@ -29,11 +28,18 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 			return true;
 		}
 
+		var instanceOfT = default(TTarget);
+
+		// TTarget is a reference type or a Nullable Value Type.
+		// The caller has already checked that TTarget is not assignable from targetType, so the only remaining
+		// conversion is from a Nullable Value Type to its underlying type, Eg TTarget is bool? and targetType is bool
+		if (instanceOfT is null)
+		{
+			return Nullable.GetUnderlyingType(typeof(TTarget)) == targetType;
+		}
+
 		try
 		{
-			var instanceOfT = default(TTarget);
-			instanceOfT ??= (TTarget?)Activator.CreateInstance(targetType);
-
 			var result = Convert.ChangeType(instanceOfT, targetType);
 
 			return result is not null;
@@ -44,7 +50,9 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		}
 
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
-		static bool CanBeConvertedToString() => typeof(TTarget).GetMethods().Any(x => x.Name is nameof(ToString) && x.ReturnType == typeof(string));
+
+		// Every class and struct inherits ToString() from object, but an interface type only exposes the methods it declares
+		static bool CanBeConvertedToString() => !typeof(TTarget).IsInterface;
 
 		static bool IsValidNullableValueType(Type targetType)
 		{
@@ -59,7 +67,7 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		}
 	}
 
-	private protected static void ValidateTargetType<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTarget>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, bool shouldAllowNullableValueTypes)
+	private protected static void ValidateTargetType<TTarget>(Type targetType, bool shouldAllowNullableValueTypes)
 	{
 		ArgumentNullException.ThrowIfNull(targetType);
 

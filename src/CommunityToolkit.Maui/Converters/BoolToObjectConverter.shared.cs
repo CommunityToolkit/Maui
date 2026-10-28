@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -15,7 +14,7 @@ public partial class BoolToObjectConverter : BoolToObjectConverter<object>
 /// Converts <see cref="bool"/> to object and vice versa.
 /// </summary>
 [AcceptEmptyServiceProvider]
-public partial class BoolToObjectConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TObject> : BaseConverter<bool, TObject?>
+public partial class BoolToObjectConverter<TObject> : BaseConverter<bool, TObject?>
 {
 	/// <inheritdoc/>
 	public override TObject? DefaultConvertReturnValue { get; set; } = default;

@@ -31,7 +31,6 @@ public enum ValidationFlags
 /// <summary>
 /// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.
 /// </summary>
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, IDisposable
 {
@@ -375,7 +374,6 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 }
 
 /// <inheritdoc />
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public abstract class ValidationBehavior<T> : ValidationBehavior
 {
