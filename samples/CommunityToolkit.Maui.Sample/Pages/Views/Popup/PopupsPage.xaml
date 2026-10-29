@@ -19,6 +19,8 @@
                 <Button Text="Multiple Button Popup" Clicked="HandleMultipleButtonPopupButtonClicked" />
 
                 <Button Text="Cannot Be Dismissed By Tapping Outside Popup" Clicked="HandleNoOutsideTapDismissPopupClicked" />
+                
+                <Button Text="Cannot Be Dismissed By Pressing Back Button" Clicked="HandleNoBackPressDismissPopupClicked" />
 
                 <Button Text="Toggle Size Popup" Clicked="HandleToggleSizePopupButtonClicked" />
 

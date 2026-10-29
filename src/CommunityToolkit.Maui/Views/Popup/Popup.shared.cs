@@ -18,6 +18,7 @@ public partial class Popup : ContentView
 		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
 		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
 		CanBeDismissedByTappingOutsideOfPopup = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+		CanBeDismissedByBackButtonPressed = Options.DefaultPopupSettings.CanBeDismissedByBackButtonPressed;
 		this.SetAppThemeColor(BackgroundColorProperty, Options.DefaultPopupSettings.BackgroundColor, Options.DefaultPopupSettings.BackgroundColorDark);
 	}
 
@@ -52,10 +53,17 @@ public partial class Popup : ContentView
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> />
 	/// <remarks>
 	/// When true and the user taps outside the popup, it will dismiss.
-	/// On Android - when false the hardware back button is disabled.
 	/// </remarks>
 	[BindableProperty]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+
+	
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByBackButtonPressed"/> />
+	/// <remarks>
+	/// On Android - when false the hardware back button is disabled.
+	/// </remarks>
+	[BindableProperty]
+	public partial bool CanBeDismissedByBackButtonPressed { get; set; }
 
 	/// <summary>
 	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
