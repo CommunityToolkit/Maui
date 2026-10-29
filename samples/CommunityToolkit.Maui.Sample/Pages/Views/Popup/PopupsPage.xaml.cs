@@ -82,6 +82,14 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		});
 	}
 
+	async void HandleNoBackPressDismissPopupClicked(object? sender, EventArgs e)
+	{
+		await popupService.ShowPopupAsync<NoBackPressDismissPopup>(Navigation, new PopupOptions
+		{
+			CanBeDismissedByBackButtonPressed = false,
+		});
+	}
+
 	async void HandleToggleSizePopupButtonClicked(object? sender, EventArgs e)
 	{
 		await popupService.ShowPopupAsync<ToggleSizePopup>(Navigation);
@@ -151,7 +159,8 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 	{
 		this.ShowPopup(new Label().Text("This Popup Will Close Automatically in 2 Seconds"), new PopupOptions
 		{
-			CanBeDismissedByTappingOutsideOfPopup = false
+			CanBeDismissedByTappingOutsideOfPopup = false,
+			CanBeDismissedByBackButtonPressed = false,
 		});
 
 		await Task.Delay(TimeSpan.FromSeconds(2));

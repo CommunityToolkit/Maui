@@ -280,6 +280,7 @@ public static class MauiProgram
 		services.AddTransientPopup<ImplicitStylePopup>();
 		services.AddTransientPopup<MultipleButtonPopup>();
 		services.AddTransientPopup<NoOutsideTapDismissPopup>();
+		services.AddTransientPopup<NoBackPressDismissPopup>();
 		services.AddTransientPopup<OpenedEventSimplePopup>();
 		services.AddTransientPopup<PopupContentView, PopupContentViewModel>();
 		services.AddTransientPopup<RedBlueBoxPopup>();
