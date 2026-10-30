@@ -8,13 +8,20 @@
     --set-env TestFilter=<filter>'. After every run the results gate in devices-shared.ps1 decides the exit code,
     because xharness reports SUCCESS when the app dies before its test runner starts.
 
-    Without -Udid the script creates a dedicated simulator (newest iOS runtime and its newest iPhone with one built-in
-    screen unless -Runtime/-DeviceType say otherwise), boots it, grants the camera, the microphone and speech
+    Without -Udid the script creates a dedicated simulator, boots it, grants the camera, the microphone and speech
     recognition to the test apps on it, and deletes it afterwards unless -KeepDevice. A simulator that cannot be
     created or booted is replaced as often as infrastructure failures are retried (-InfraRetries). It never resets,
     shuts down, deletes or grants anything on a simulator it did not create, and never passes --reset-simulator to
     xharness (that kills every simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a
     simulator failure (88), never a script error.
+
+    The device type of the new simulator is always one that its runtime lists as supported, because 'simctl create'
+    refuses any other. Without -DeviceType it is the runtime's first iPhone with one built-in screen: the status bar
+    tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge.
+    Without -Runtime, the runtime is the newest one that lists such an iPhone (with -DeviceType, the newest one that
+    lists that device type). If the runtime lists no iPhone known to have one built-in screen, the simulator is its
+    first iPhone whose screens could not be counted, else its first iPhone, with a warning; without -Runtime this
+    happens only when no runtime lists such an iPhone, and the runtime is then the newest one that lists any iPhone.
 
     Exit codes use xharness's vocabulary: 0 passed, 1 test failures, 3 invalid arguments, 4 app not built,
     70 timed out, 71 build or script failure, 80 app crash, 88 simulator failure, 94 no results or no tests ran.
@@ -164,25 +171,28 @@ function Find-SimulatorDevice {
     return $null
 }
 
-function Select-SimulatorRuntime {
-    param([string]$Requested)
-
+function Get-SimulatorRuntimes {
     $runtimes = @((Get-SimctlJson -Kind 'runtimes').runtimes | Where-Object { $_.platform -eq 'iOS' -and $_.isAvailable })
     if ($runtimes.Count -eq 0) {
         throw 'No available iOS simulator runtime. Install one in Xcode (Settings > Components).'
     }
 
-    if ($Requested) {
-        foreach ($candidate in $runtimes) {
-            if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.version -eq $Requested -or $candidate.name -eq $Requested) {
-                return $candidate
-            }
-        }
+    return $runtimes
+}
 
-        throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
+function Select-SimulatorRuntime {
+    # There is no default runtime here: the newest one may not list the device type that is needed (iOS 27.1 lists only iPhone Duo), so
+    # Select-SimulatorRuntimeAndDeviceType chooses the runtime and the device type together, and only a requested runtime is resolved here.
+    param([string]$Requested)
+
+    $runtimes = @(Get-SimulatorRuntimes)
+    foreach ($candidate in $runtimes) {
+        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.version -eq $Requested -or $candidate.name -eq $Requested) {
+            return $candidate
+        }
     }
 
-    return ($runtimes | Sort-Object { [version]$_.version } -Descending | Select-Object -First 1)
+    throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
 }
 
 function Get-SimulatorBuiltInScreenCount {
@@ -217,43 +227,148 @@ function Get-SimulatorBuiltInScreenCount {
     return @($displays | Where-Object { $_['displayType'] -eq 'integrated' -or "$($_['deviceName'])" -like 'primary*' }).Count
 }
 
+function Get-SimulatorSupportedDeviceTypes {
+    # simctl builds supportedDeviceTypes with the same check that 'simctl create' makes, which refuses any other device type (SimError 403,
+    # Incompatible device), and a runtime made for particular devices lists only those: the iOS 27.1 runtime of Xcode 27.1 lists only iPhone
+    # Duo. A missing or null supportedDeviceTypes lists none, which @($null) alone would count as one.
+    param($SelectedRuntime)
+
+    return @($SelectedRuntime.supportedDeviceTypes | Where-Object { $null -ne $_ })
+}
+
+function Find-SupportedSimulatorDeviceType {
+    param($SelectedRuntime, [string]$Requested)
+
+    foreach ($candidate in (Get-SimulatorSupportedDeviceTypes -SelectedRuntime $SelectedRuntime)) {
+        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.name -eq $Requested) {
+            return $candidate
+        }
+    }
+}
+
+function Get-SimulatorIPhones {
+    # $ScreenCounts is shared between the runtimes, so that plutil reads each device type's profile once.
+    param([object[]]$DeviceTypes, [hashtable]$ScreenCounts)
+
+    foreach ($deviceType in $DeviceTypes) {
+        if ($deviceType.productFamily -eq 'iPhone') {
+            $identifier = [string]$deviceType.identifier
+            if (-not $ScreenCounts.ContainsKey($identifier)) {
+                $ScreenCounts[$identifier] = Get-SimulatorBuiltInScreenCount -DeviceType $deviceType
+            }
+
+            New-Object PSObject -Property @{ DeviceType = $deviceType; Screens = $ScreenCounts[$identifier] }
+        }
+    }
+}
+
+function Format-SimulatorIPhones {
+    param([object[]]$IPhones)
+
+    if ($IPhones.Count -eq 0) {
+        return 'none'
+    }
+
+    $descriptions = foreach ($iPhone in $IPhones) {
+        $screens = $iPhone.Screens
+        if ($null -eq $screens) {
+            $screens = 'unknown'
+        }
+
+        "$($iPhone.DeviceType.name) ($screens)"
+    }
+
+    return ($descriptions -join ', ')
+}
+
+function Get-SimulatorIPhoneCandidates {
+    param($SelectedRuntime, [hashtable]$ScreenCounts)
+
+    $supported = @(Get-SimulatorSupportedDeviceTypes -SelectedRuntime $SelectedRuntime)
+    $iPhones = @(Get-SimulatorIPhones -DeviceTypes $supported -ScreenCounts $ScreenCounts)
+    Write-Host "iPhones for $($SelectedRuntime.name) ($($SelectedRuntime.buildversion)), with their built-in screens: $(Format-SimulatorIPhones $iPhones)"
+    return New-Object PSObject -Property @{ Runtime = $SelectedRuntime; IPhones = $iPhones }
+}
+
+function Select-SimulatorIPhone {
+    param($Candidates)
+
+    $iPhones = $Candidates.IPhones
+    if ($iPhones.Count -eq 0) {
+        throw "$($Candidates.Runtime.identifier) supports no iPhone device type."
+    }
+
+    # The status bar tests read the status bar from the top of the screen. iPhone Duo has two built-in screens and shows the status bar on their
+    # right edge.
+    foreach ($iPhone in $iPhones) {
+        if ($iPhone.Screens -eq 1) {
+            return $iPhone.DeviceType
+        }
+
+        if ($iPhone.Screens -gt 1) {
+            Write-Host "Passing over $($iPhone.DeviceType.name): it has $($iPhone.Screens) built-in screens (-DeviceType selects it)."
+        }
+    }
+
+    # An iPhone whose screens could not be counted may have one; an iPhone known to have more does not.
+    $fallback = (@($iPhones | Where-Object { $null -eq $_.Screens }) + $iPhones)[0]
+    Write-DeviceTestWarning "No iPhone for $($Candidates.Runtime.identifier) is known to have one built-in screen: the status bar tests read the status bar from the top of the screen."
+    return $fallback.DeviceType
+}
+
 function Select-SimulatorDeviceType {
     param($SelectedRuntime, [string]$Requested)
 
-    $supported = @($SelectedRuntime.supportedDeviceTypes)
-    if ($supported.Count -eq 0) {
-        $supported = @((Get-SimctlJson -Kind 'devicetypes').devicetypes)
+    if ($Requested) {
+        $found = Find-SupportedSimulatorDeviceType -SelectedRuntime $SelectedRuntime -Requested $Requested
+        if ($null -eq $found) {
+            throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
+        }
+
+        return $found
     }
 
-    if ($Requested) {
-        foreach ($candidate in $supported) {
-            if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.name -eq $Requested) {
-                return $candidate
+    $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $SelectedRuntime -ScreenCounts @{}
+    return (Select-SimulatorIPhone -Candidates $candidates)
+}
+
+function Select-SimulatorRuntimeAndDeviceType {
+    param([string]$Runtime, [string]$DeviceType)
+
+    if ($Runtime) {
+        $selectedRuntime = Select-SimulatorRuntime -Requested $Runtime
+        return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
+    }
+
+    $runtimes = @(Get-SimulatorRuntimes | Sort-Object { [version]$_.version } -Descending)
+    if ($DeviceType) {
+        # The newest runtime may not list a device type that an older one lists: the iOS 27.1 runtime of Xcode 27.1 lists only iPhone Duo.
+        foreach ($candidateRuntime in $runtimes) {
+            $found = Find-SupportedSimulatorDeviceType -SelectedRuntime $candidateRuntime -Requested $DeviceType
+            if ($null -ne $found) {
+                return New-Object PSObject -Property @{ Runtime = $candidateRuntime; DeviceType = $found }
             }
         }
 
-        throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
+        throw "Device type '$DeviceType' is not supported by any available iOS runtime ($(($runtimes | ForEach-Object { $_.identifier }) -join ', '))."
     }
 
-    $iPhones = @($supported | Where-Object { $_.productFamily -eq 'iPhone' })
-    if ($iPhones.Count -eq 0) {
-        throw "$($SelectedRuntime.identifier) supports no iPhone device type."
-    }
-
-    # The status bar tests read the status bar from the top of the screen. iPhone Duo, the first iPhone of iOS 27.1, has two built-in screens
-    # and shows the status bar on their right edge.
-    foreach ($iPhone in $iPhones) {
-        $screens = Get-SimulatorBuiltInScreenCount -DeviceType $iPhone
-        if ($screens -gt 1) {
-            Write-Host "Passing over $($iPhone.name): it has $screens built-in screens (-DeviceType selects it)."
-            continue
+    # The status bar tests need an iPhone with one built-in screen, which an older runtime may list when the newest does not: the iOS 27.1
+    # runtime of Xcode 27.1 lists only iPhone Duo.
+    $screenCounts = @{}
+    $examined = @()
+    foreach ($candidateRuntime in $runtimes) {
+        $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $candidateRuntime -ScreenCounts $screenCounts
+        if (@($candidates.IPhones | Where-Object { $_.Screens -eq 1 }).Count -gt 0) {
+            return New-Object PSObject -Property @{ Runtime = $candidateRuntime; DeviceType = (Select-SimulatorIPhone -Candidates $candidates) }
         }
 
-        return $iPhone
+        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone with one built-in screen."
+        $examined += $candidates
     }
 
-    Write-DeviceTestWarning "Every iPhone of $($SelectedRuntime.identifier) has more than one built-in screen: the status bar tests read the status bar from the top of the screen."
-    return $iPhones[0]
+    $chosen = (@($examined | Where-Object { $_.IPhones.Count -gt 0 }) + $examined)[0]
+    return New-Object PSObject -Property @{ Runtime = $chosen.Runtime; DeviceType = (Select-SimulatorIPhone -Candidates $chosen) }
 }
 
 function Wait-Simulator {
@@ -420,8 +535,9 @@ try {
         }
         else {
             try {
-                $selectedRuntime = Select-SimulatorRuntime -Requested $Runtime
-                $selectedDeviceType = Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType
+                $selected = Select-SimulatorRuntimeAndDeviceType -Runtime $Runtime -DeviceType $DeviceType
+                $selectedRuntime = $selected.Runtime
+                $selectedDeviceType = $selected.DeviceType
             }
             catch {
                 $simulatorError = $_.Exception.Message

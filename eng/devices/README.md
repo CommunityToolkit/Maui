@@ -36,8 +36,8 @@ pwsh eng/devices/run.ps1
 # Android: boot an existing AVD on port 5560, run the tests, shut the emulator down afterwards
 pwsh eng/devices/android.ps1 -Avd CTM_DeviceTests -EmulatorPort 5560
 
-# iOS: creates a dedicated simulator (newest iOS runtime, newest iPhone with one built-in screen), grants the test apps the
-# camera, the microphone and speech recognition on it, and deletes it afterwards
+# iOS: creates a dedicated simulator (first listed iPhone with one built-in screen, of the newest iOS runtime that lists one), grants the
+# test apps the camera, the microphone and speech recognition on it, and deletes it afterwards
 pwsh eng/devices/ios.ps1
 
 # Mac Catalyst: the app opens a window on this Mac while it runs
@@ -128,7 +128,7 @@ Platform parameters:
 | `android.ps1`, `ios.ps1`, `catalyst.ps1` | `-XHarnessArgs` | extra XHarness arguments, for example `--set-env=NAME=value` |
 | `android.ps1`, `ios.ps1`, `catalyst.ps1` | `-Coverage` | collect [code coverage](#code-coverage) of the toolkit assemblies; defaults to `$env:DEVICE_TEST_COVERAGE` (`true`), which only the CI jobs set |
 | `ios.ps1` | `-Udid` | use this simulator instead of creating one |
-| `ios.ps1` | `-DeviceType`, `-Runtime`, `-SimulatorName` | for the created simulator, for example `-DeviceType 'iPhone 17' -Runtime 27.0`. Without `-DeviceType` the simulator is the runtime's first iPhone with one built-in screen: the status bar tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge |
+| `ios.ps1` | `-DeviceType`, `-Runtime`, `-SimulatorName` | for the created simulator, for example `-DeviceType 'iPhone 17' -Runtime 27.0`. The device type is always one that the runtime lists as supported, because `simctl create` refuses any other (SimError 403, Incompatible device), and a runtime made for particular devices lists only those: the iOS 27.1 runtime of Xcode 27.1 lists only iPhone Duo. Without `-DeviceType` the simulator is the runtime's first iPhone with one built-in screen (the log lists the runtime's iPhones with their screens): the status bar tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge. Without `-Runtime`, the runtime is the newest one that lists such an iPhone (with `-DeviceType`, the newest one that lists that device type). If the runtime lists no iPhone known to have one built-in screen, the simulator is its first iPhone whose screens could not be counted, else its first iPhone, with a warning; without `-Runtime` this happens only when no runtime lists such an iPhone, and the runtime is then the newest one that lists any iPhone |
 | `ios.ps1` | `-KeepDevice` | keep the created simulator |
 | `ios.ps1`, `catalyst.ps1` | `-Xcode` | Xcode.app to use instead of `xcode-select -p` |
 | `windows.ps1` | `-Packaging packaged\|unpackaged` | required |

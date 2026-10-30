@@ -584,9 +584,9 @@ function Get-RunAppleEntry {
         return New-RunPlanEntry -Id $Id -Available $false -Detail 'no iOS simulator runtime is installed. Install one in Xcode (Settings > Components).'
     }
 
-    $detail = 'creates a simulator (newest iOS runtime, newest iPhone) and deletes it afterwards'
+    $detail = 'creates a simulator (first listed iPhone with one built-in screen, of the newest iOS runtime that lists one) and deletes it afterwards'
     if ($KeepDevice) {
-        $detail = 'creates a simulator (newest iOS runtime, newest iPhone) and keeps it'
+        $detail = 'creates a simulator (first listed iPhone with one built-in screen, of the newest iOS runtime that lists one) and keeps it'
     }
 
     return New-RunPlanEntry -Id $Id -Available $true -Detail $detail -Arguments $arguments
