@@ -3,7 +3,7 @@ using Windows.Media;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
 
-sealed class Metadata
+sealed partial class Metadata : IDisposable
 {
 	readonly IMediaElement? mediaElement;
 	readonly SystemMediaTransportControls? systemMediaControls;
@@ -29,16 +29,36 @@ sealed class Metadata
 			return;
 		}
 
-		if (!string.IsNullOrEmpty(mp.MetadataArtworkUrl))
+		// Only media with metadata becomes a system media session, like the Now Playing info on iOS and the media notification on Android.
+		// Media without metadata leaves the controls off, as MediaManager.CreatePlatformView does.
+		systemMediaControls.IsEnabled = HasMetadata(mp);
+
+		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only, so any other url (a relative
+		// or malformed one, or a file path, for example) is ignored instead of passed on.
+		if (Uri.TryCreate(mp.MetadataArtworkUrl, UriKind.Absolute, out var artworkUri)
+			&& artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata")
 		{
-			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(new Uri(mp.MetadataArtworkUrl ?? string.Empty));
+			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(artworkUri);
 		}
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
-		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataTitle;
-		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataArtist;
+		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataTitle;
+		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataArtist;
 		systemMediaControls.DisplayUpdater.Update();
 	}
 
+	/// <summary>
+	/// Removes the button handler from the system media transport controls, which belong to the player and would otherwise keep this
+	/// instance and its MediaElement reachable.
+	/// </summary>
+	public void Dispose()
+	{
+		systemMediaControls?.ButtonPressed -= OnSystemMediaControlsButtonPressed;
+	}
+
+	static bool HasMetadata(IMediaElement mediaElement) =>
+		!string.IsNullOrWhiteSpace(mediaElement.MetadataTitle)
+		|| !string.IsNullOrWhiteSpace(mediaElement.MetadataArtist)
+		|| !string.IsNullOrWhiteSpace(mediaElement.MetadataArtworkUrl);
 
 	void OnSystemMediaControlsButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
 	{

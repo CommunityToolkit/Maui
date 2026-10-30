@@ -282,6 +282,51 @@ public class GravatarImageSourceTests : BaseViewTest
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=monsterid"), ((GravatarImageSource)testControl.Source).Uri);
 	}
 
+	[Theory]
+	[InlineData("dsiegel@avantipoint.com")]
+	[InlineData("DSIEGEL@AVANTIPOINT.COM")]
+	[InlineData("DSiegel@AvantiPoint.com")]
+	[InlineData(" dsiegel@avantipoint.com ")]
+	[InlineData("\tDSiegel@AvantiPoint.com\r\n")]
+	public void UriUsesHashOfTrimmedLowerCaseEmail(string emailAddress)
+	{
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = emailAddress
+		};
+
+		Image testControl = new()
+		{
+			Source = gravatarImageSource
+		};
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), gravatarImageSource.Uri);
+		Assert.Equal(emailAddress, gravatarImageSource.Email);
+	}
+
+	[Theory]
+	[InlineData("dsiegel@avantipoint.com")]
+	[InlineData("DSIEGEL@AVANTIPOINT.COM")]
+	[InlineData("DSiegel@AvantiPoint.com")]
+	[InlineData(" dsiegel@avantipoint.com ")]
+	[InlineData("\tDSiegel@AvantiPoint.com\r\n")]
+	public void ChangingEmailUpdatesUriWithHashOfTrimmedLowerCaseEmail(string emailAddress)
+	{
+		var gravatarImageSource = new GravatarImageSource();
+
+		Image testControl = new()
+		{
+			Source = gravatarImageSource
+		};
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		gravatarImageSource.Email = emailAddress;
+
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), gravatarImageSource.Uri);
+		Assert.Equal(emailAddress, gravatarImageSource.Email);
+	}
+
 	[Fact]
 	public void TestControlPage()
 	{

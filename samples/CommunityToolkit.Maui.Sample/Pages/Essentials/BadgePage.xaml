@@ -55,6 +55,7 @@
 
         <Label
             BackgroundColor="LightYellow"
+            TextColor="Black"
             Grid.Row="4"
             Grid.ColumnSpan="2"
             HorizontalTextAlignment="Center"

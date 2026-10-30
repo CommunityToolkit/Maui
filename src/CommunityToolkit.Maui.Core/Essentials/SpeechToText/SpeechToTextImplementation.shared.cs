@@ -30,11 +30,18 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		remove => speechToTextStateChangedWeakEventManager.RemoveEventHandler(value);
 	}
 
+#if !ANDROID && !IOS && !MACCATALYST
+	// The other platforms guard StartListenAsync with CurrentState alone
+	bool IsListeningSessionActive => false;
+#endif
+
 	/// <inheritdoc/>
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		if (CurrentState is not SpeechToTextState.Stopped)
+
+		// CurrentState is still Stopped while a session starts (Android: until speech begins; iOS and Mac Catalyst: while the recognition task is starting)
+		if (CurrentState is not SpeechToTextState.Stopped || IsListeningSessionActive)
 		{
 			return;
 		}

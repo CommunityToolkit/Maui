@@ -14,8 +14,8 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 
 	/// <inheritdoc/>
 	/// <remarks>
-	/// When true and the user taps outside the popup, it will dismiss.
-	/// On Android - when false the hardware back button is disabled.
+	/// While both this property and <see cref="Views.Popup.CanBeDismissedByTappingOutsideOfPopup"/> of the <see cref="Views.Popup"/> displayed with these options are <see langword="true"/>, the <see cref="Views.Popup"/> is dismissed when the user taps outside of it or, on Android, presses the hardware back button.
+	/// While either is <see langword="false"/>, tapping outside of the <see cref="Views.Popup"/> and the hardware back button do nothing.
 	/// </remarks>
 	[BindableProperty]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; } = Options.DefaultPopupOptionsSettings.CanBeDismissedByTappingOutsideOfPopup;

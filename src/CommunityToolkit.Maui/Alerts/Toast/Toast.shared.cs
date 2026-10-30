@@ -73,6 +73,10 @@ public partial class Toast : IToast
 	/// with <see cref="Options.SetShouldEnableSnackbarOnWindows"/> set to <see langword="true"/>.
 	/// Packaged Windows apps also require the manifest setup described in the
 	/// <see href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast">Toast documentation</see>.
+	/// On Windows, the toast is an app notification, and Windows decides when its banner appears: for example, no banner appears while
+	/// Do Not Disturb is on, and a notification can wait until the banner of an earlier one is gone. The toolkit removes the notification
+	/// at the end of <see cref="Duration"/>, which takes its banner off screen, so the banner can be shown for less time than
+	/// <see cref="Duration"/>, or not at all.
 	/// </remarks>
 	public virtual Task Show(CancellationToken token = default)
 	{

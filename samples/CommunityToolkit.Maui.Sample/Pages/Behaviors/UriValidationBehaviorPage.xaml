@@ -18,41 +18,43 @@
         </Style>
     </pages:BasePage.Resources>
 
-    <VerticalStackLayout Padding="{StaticResource ContentPadding}"
-                 Spacing="50"
-                 VerticalOptions="Start">
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource ContentPadding}"
+                     Spacing="50"
+                     VerticalOptions="Start">
 
-        <Label Text="The UriValidationBehavior is a behavior that allows users to determine whether or not text input is a valid URI. For example, an Entry control can be styled differently depending on whether a valid or an invalid URI is provided. Additional properties handling validation are inherited from ValidationBehavior"
-               TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label Text="The UriValidationBehavior is a behavior that allows users to determine whether or not text input is a valid URI. For example, an Entry control can be styled differently depending on whether a valid or an invalid URI is provided. Additional properties handling validation are inherited from ValidationBehavior"
+                   TextColor="{StaticResource NormalLabelTextColor}" />
 
-        <Label Text="Text color will change accordingly to the style that is configured when a invalid URI is entered." />
+            <Label Text="Text color will change accordingly to the style that is configured when a invalid URI is entered." />
 
-        <Entry Placeholder="UriKind: Absolute">
-            <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="Absolute"
-                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                           ValidStyle="{StaticResource ValidEntryStyle}"
-                                           Flags="ValidateOnValueChanged"/>
-            </Entry.Behaviors>
-        </Entry>
+            <Entry Placeholder="UriKind: Absolute">
+                <Entry.Behaviors>
+                    <mct:UriValidationBehavior UriKind="Absolute"
+                                               InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"/>
+                </Entry.Behaviors>
+            </Entry>
 
-        <Entry Placeholder="UriKind: Relative">
-            <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="Relative"
-                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                           ValidStyle="{StaticResource ValidEntryStyle}"
-                                           Flags="ValidateOnValueChanged"/>
-            </Entry.Behaviors>
-        </Entry>
+            <Entry Placeholder="UriKind: Relative">
+                <Entry.Behaviors>
+                    <mct:UriValidationBehavior UriKind="Relative"
+                                               InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"/>
+                </Entry.Behaviors>
+            </Entry>
 
-        <Entry Placeholder="UriKind: RelativeOrAbsolute">
-            <Entry.Behaviors>
-                <mct:UriValidationBehavior UriKind="RelativeOrAbsolute"
-                                           InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                           ValidStyle="{StaticResource ValidEntryStyle}"
-                                           Flags="ValidateOnValueChanged"/>
-            </Entry.Behaviors>
-        </Entry>
-    </VerticalStackLayout>
+            <Entry Placeholder="UriKind: RelativeOrAbsolute">
+                <Entry.Behaviors>
+                    <mct:UriValidationBehavior UriKind="RelativeOrAbsolute"
+                                               InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                               ValidStyle="{StaticResource ValidEntryStyle}"
+                                               Flags="ValidateOnValueChanged"/>
+                </Entry.Behaviors>
+            </Entry>
+        </VerticalStackLayout>
+    </ScrollView>
 
 </pages:BasePage>

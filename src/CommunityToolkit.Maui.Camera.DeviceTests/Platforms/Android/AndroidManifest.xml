@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The runner source generator declares the activities and the <ApplicationId>.TestInstrumentation instrumentation. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
+
+	<uses-permission android:name="android.permission.CAMERA" />
+	<!-- CameraView records its videos with audio. -->
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+	<!-- Emulators without a camera must still install the app. -->
+	<uses-feature android:name="android.hardware.camera" android:required="false" />
+	<uses-feature android:name="android.hardware.camera.any" android:required="false" />
+</manifest>

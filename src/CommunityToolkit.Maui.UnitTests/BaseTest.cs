@@ -77,6 +77,16 @@ public abstract class BaseTest : IDisposable, IAsyncDisposable
 		return true;
 	}
 
+	// A fixed delay can finish before the timer of a CancellationTokenSource has run its callback on a busy runner,
+	// which leaves the code under test with a token that is not cancelled yet.
+	protected static async Task WaitForCancellationAsync(CancellationToken expiringToken, CancellationToken cancellationToken)
+	{
+		var cancellationRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		await using var registration = expiringToken.Register(() => cancellationRequested.TrySetResult());
+
+		await cancellationRequested.Task.WaitAsync(cancellationToken);
+	}
+
 	protected virtual ValueTask DisposeAsyncCore()
 	{
 		return ValueTask.CompletedTask;

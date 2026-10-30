@@ -35,7 +35,8 @@ class DefaultBadgeProvider : IBadgeProvider
 			var intent = new Intent(intentAction);
 			intent.PutExtra("badge_count_package_name", packageName);
 			intent.PutExtra("badge_count_class_name", component.ClassName);
-			intent.PutExtra("badge_count", count);
+			// Launchers read badge_count with getIntExtra, which returns their default for an extra of another type (a uint binds to PutExtra(string, long))
+			intent.PutExtra("badge_count", int.CreateSaturating(count));
 			Application.Context.SendBroadcast(intent);
 		}
 		catch (Exception ex)

@@ -5,7 +5,16 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class TouchBehavior : IDisposable
 {
+	readonly Dictionary<View, bool> inputTransparentToRestore = [];
+
+	// The behavior lets go of this layout, even when the content view that showed it shows another content by then
+	Layout? childrenLayout;
+
 	bool isDisposed;
+
+#if !(ANDROID || IOS || MACCATALYST || WINDOWS)
+	internal bool IsClickedRaisedByPlatformView => false;
+#endif
 
 	/// <inheritdoc/>
 	public void Dispose()
@@ -113,8 +122,12 @@ public partial class TouchBehavior : IDisposable
 	{
 		var touchBehavior = (TouchBehavior)bindable;
 
-		await Task.WhenAll(touchBehavior.ForceUpdateState(CancellationToken.None), touchBehavior.HandleLongPress(CancellationToken.None));
-		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new TouchStateChangedEventArgs(touchBehavior.CurrentTouchState), nameof(CurrentTouchStateChanged));
+		// The event reports this change, so it is raised now, with the new value: once the state update and the long press timer
+		// complete, the state may already have changed again (a tap ends before LongPressDuration).
+		var updateStateTask = Task.WhenAll(touchBehavior.ForceUpdateState(CancellationToken.None), touchBehavior.HandleLongPress(CancellationToken.None));
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new TouchStateChangedEventArgs((TouchState)newValue), nameof(CurrentTouchStateChanged));
+
+		await updateStateTask;
 	}
 
 	static void RaiseInteractionStatusChanged(BindableObject bindable, object oldValue, object newValue)
@@ -133,8 +146,11 @@ public partial class TouchBehavior : IDisposable
 	{
 		var touchBehavior = (TouchBehavior)bindable;
 
-		await touchBehavior.ForceUpdateState(CancellationToken.None);
-		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStateChangedEventArgs(touchBehavior.CurrentHoverState), nameof(HoverStateChanged));
+		// Raised now, with the new value, for the same reason as RaiseCurrentTouchStateChanged.
+		var updateStateTask = touchBehavior.ForceUpdateState(CancellationToken.None);
+		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStateChangedEventArgs((HoverState)newValue), nameof(HoverStateChanged));
+
+		await updateStateTask;
 	}
 
 	static void RaiseHoverStatusChanged(BindableObject bindable, object oldValue, object newValue)
@@ -144,40 +160,54 @@ public partial class TouchBehavior : IDisposable
 		touchBehavior.weakEventManager.HandleEvent(touchBehavior, new HoverStatusChangedEventArgs(touchBehavior.CurrentHoverStatus), nameof(HoverStatusChanged));
 	}
 
-	static void HandleDefaultOpacityChanging(BindableObject bindable, object oldValue, object newValue)
+	static void HandleDefaultOpacityChanging(BindableObject bindable, object? oldValue, object? newValue)
 	{
-		var defaultOpacity = (double)newValue;
+		var defaultOpacity = (double?)newValue;
 		switch (defaultOpacity)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be greater than 0");
 			case > 1:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be less than 1");
+			case double.NaN:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(DefaultOpacity)} must be a number between 0 and 1");
 		}
 	}
 
-	static void HandleHoveredOpacityChanging(BindableObject bindable, object oldValue, object newValue)
+	static void HandleHoveredOpacityChanging(BindableObject bindable, object? oldValue, object? newValue)
 	{
-		var hoveredOpacity = (double)newValue;
+		var hoveredOpacity = (double?)newValue;
 		switch (hoveredOpacity)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be greater than 0");
 			case > 1:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be less than 1");
+			case double.NaN:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(HoveredOpacity)} must be a number between 0 and 1");
 		}
 	}
 
-	static void HandlePressedOpacityChanging(BindableObject bindable, object oldValue, object newValue)
+	static void HandlePressedOpacityChanging(BindableObject bindable, object? oldValue, object? newValue)
 	{
-		var pressedOpacity = (double)newValue;
+		var pressedOpacity = (double?)newValue;
 		switch (pressedOpacity)
 		{
 			case < 0:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be greater than 0");
 			case > 1:
 				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be less than 1");
+			case double.NaN:
+				throw new ArgumentOutOfRangeException(nameof(newValue), newValue, $"{nameof(PressedOpacity)} must be a number between 0 and 1");
 		}
+	}
+
+	// IsEnabled and ShouldMakeChildrenInputTransparent decide what the attached behavior does to the children: apply a change to the
+	// existing children as well (a detached behavior has no element, so nothing happens).
+	static void HandleChildrenInputTransparencyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var touchBehavior = (TouchBehavior)bindable;
+		touchBehavior.SetChildrenInputTransparent(touchBehavior.ShouldMakeChildrenInputTransparent);
 	}
 
 	async Task HandleLongPress(CancellationToken token)
@@ -190,35 +220,89 @@ public partial class TouchBehavior : IDisposable
 		await gestureManager.HandleLongPress(this, token);
 	}
 
-	void SetChildrenInputTransparent(bool shouldSetTransparent)
+	// Another TouchBehavior attached to the same element relies on what the attach changed on the platform view (Android: clickable, iOS and
+	// Mac Catalyst: user interaction): the first behavior to attach reads the view's own values, the last one to detach gives them back.
+	static TouchBehavior? GetOtherAttachedTouchBehavior(VisualElement element, TouchBehavior behavior) =>
+		element.Behaviors.OfType<TouchBehavior>().FirstOrDefault(other => !ReferenceEquals(other, behavior) && ReferenceEquals(other.Element, element));
+
+	// MAUI's InputTransparent getter also returns true while a parent that passes its input transparency on (CascadeInputTransparent, true by
+	// default) is input transparent. That value is the parent's, and MAUI does not expose the view's own value then: it is taken as false, the
+	// default, so that the transparency of a parent is never given back to the view as its own.
+	static bool GetOwnInputTransparent(View view)
 	{
-		switch (Element)
+		if (!view.InputTransparent)
 		{
-			case Layout layout:
-				SetChildrenInputTransparent(shouldSetTransparent, layout);
-				return;
-			case IContentView { Content: Layout contentLayout }:
-				SetChildrenInputTransparent(shouldSetTransparent, contentLayout);
-				break;
+			return false;
 		}
+
+		// MAUI looks at the parents for as long as they are layouts, content views, scroll views or content presenters
+		for (var parent = view.Parent as VisualElement; parent is not null; parent = parent.Parent as VisualElement)
+		{
+			bool? cascadeInputTransparent = parent switch
+			{
+				Layout layout => layout.CascadeInputTransparent,
+				TemplatedView templatedView => templatedView.CascadeInputTransparent,
+				ScrollView scrollView => scrollView.CascadeInputTransparent,
+				ContentPresenter contentPresenter => contentPresenter.CascadeInputTransparent,
+				_ => null
+			};
+
+			if (cascadeInputTransparent is null)
+			{
+				break;
+			}
+
+			if (cascadeInputTransparent.Value && parent.InputTransparent)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
-	void SetChildrenInputTransparent(bool shouldSetTransparent, Layout layout)
+	void SetChildrenInputTransparent(bool shouldSetTransparent)
 	{
-		layout.ChildAdded -= OnLayoutChildAdded;
+		if (childrenLayout is not null)
+		{
+			childrenLayout.ChildAdded -= OnLayoutChildAdded;
+			childrenLayout.ChildRemoved -= OnLayoutChildRemoved;
+			childrenLayout = null;
+		}
 
 		if (!shouldSetTransparent)
+		{
+			RestoreInputTransparent();
+			return;
+		}
+
+		var layout = Element switch
+		{
+			Layout elementLayout => elementLayout,
+			IContentView { Content: Layout contentLayout } => contentLayout,
+			_ => null
+		};
+
+		if (layout is null)
 		{
 			return;
 		}
 
-		layout.InputTransparent = false;
+		// The layout takes the touches itself. It is made to take input when the behavior starts to handle it, not on every change of IsEnabled
+		// or ShouldMakeChildrenInputTransparent: that would undo an InputTransparent the app gave the layout since.
+		if (inputTransparentToRestore.TryAdd(layout, GetOriginalInputTransparent(layout)))
+		{
+			layout.InputTransparent = false;
+		}
+
 		foreach (var view in layout.Children)
 		{
 			OnLayoutChildAdded(layout, new ElementEventArgs((View)view));
 		}
 
 		layout.ChildAdded += OnLayoutChildAdded;
+		layout.ChildRemoved += OnLayoutChildRemoved;
+		childrenLayout = layout;
 	}
 
 	void OnLayoutChildAdded(object? sender, ElementEventArgs e)
@@ -228,6 +312,8 @@ public partial class TouchBehavior : IDisposable
 			return;
 		}
 
+		inputTransparentToRestore.TryAdd(view, GetOriginalInputTransparent(view));
+
 		if (!ShouldMakeChildrenInputTransparent)
 		{
 			view.InputTransparent = false;
@@ -235,6 +321,51 @@ public partial class TouchBehavior : IDisposable
 		}
 
 		view.InputTransparent = IsEnabled;
+	}
+
+	void OnLayoutChildRemoved(object? sender, ElementEventArgs e)
+	{
+		if (e.Element is View view && inputTransparentToRestore.Remove(view, out var inputTransparent))
+		{
+			GiveBackInputTransparent(view, inputTransparent);
+		}
+	}
+
+	void RestoreInputTransparent()
+	{
+		var views = inputTransparentToRestore.ToArray();
+		inputTransparentToRestore.Clear();
+
+		foreach (var (view, inputTransparent) in views)
+		{
+			GiveBackInputTransparent(view, inputTransparent);
+		}
+	}
+
+	// The element's other TouchBehaviors change the same views: the first one to change a view keeps the view's original value, and the last one
+	// to let go of the view gives it back.
+	IEnumerable<TouchBehavior> GetOtherTouchBehaviors() =>
+		Element?.Behaviors.OfType<TouchBehavior>().Where(other => !ReferenceEquals(other, this)) ?? [];
+
+	bool GetOriginalInputTransparent(View view)
+	{
+		foreach (var other in GetOtherTouchBehaviors())
+		{
+			if (other.inputTransparentToRestore.TryGetValue(view, out var originalInputTransparent))
+			{
+				return originalInputTransparent;
+			}
+		}
+
+		return GetOwnInputTransparent(view);
+	}
+
+	void GiveBackInputTransparent(View view, bool inputTransparent)
+	{
+		if (!GetOtherTouchBehaviors().Any(other => other.inputTransparentToRestore.ContainsKey(view)))
+		{
+			view.InputTransparent = inputTransparent;
+		}
 	}
 
 	partial void PlatformDispose();

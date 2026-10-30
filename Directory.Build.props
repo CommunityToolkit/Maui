@@ -242,11 +242,6 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
       RS1038,RS2007
     </WarningsAsErrors>
 
-    <!--
-      Once the repo moves to .NET 10 SDK, TestingPlatformDotnetTestSupport should be
-      replaced by dotnet.config that opts in the new dotnet test experience for Microsoft.Testing.Platform
-    -->
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
@@ -271,6 +266,9 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
     <InternalsVisibleTo Include="CommunityToolkit.Maui.Analyzers.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests"/>
     <InternalsVisibleTo Include="CommunityToolkit.Maui.SourceGenerators.UnitTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.DeviceTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.MediaElement.DeviceTests"/>
+    <InternalsVisibleTo Include="CommunityToolkit.Maui.Camera.DeviceTests"/>
   </ItemGroup>
 
   <PropertyGroup Condition="('$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true') and $([MSBuild]::IsOSPlatform('windows')) == 'true'">

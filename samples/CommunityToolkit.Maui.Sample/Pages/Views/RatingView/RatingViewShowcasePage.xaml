@@ -47,7 +47,7 @@
                 <HorizontalStackLayout Grid.Row="2" Spacing="8">
                     <toolkit:RatingView
                         Margin="5,0,0,0"
-                        EmptyShapeColor="White"
+                        EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
                         FillColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
@@ -76,9 +76,11 @@
             <Border
                 Margin="0"
                 Padding="10"
-                BackgroundColor="White"
+                BackgroundColor="{AppThemeBinding Light=White,
+                                                  Dark={StaticResource Gray950}}"
                 MaximumWidthRequest="500"
-                Stroke="#E5E5DD"
+                Stroke="{AppThemeBinding Light=#E5E5DD,
+                                         Dark={StaticResource Gray600}}"
                 StrokeThickness="2">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="10" />
@@ -90,7 +92,9 @@
                         Radius="7"
                         Offset="1,1" />
                 </Border.Shadow>
+                <!--  Transparent: the Sample's implicit Grid style would paint the page background over the card  -->
                 <Grid
+                    BackgroundColor="Transparent"
                     ColumnDefinitions="100, *"
                     RowDefinitions="100, 20, *"
                     RowSpacing="10">
@@ -111,7 +115,7 @@
                         Margin="5,0,0,0"
                         Padding="2"
                         CustomShapePath="M296.863,587.059l14.254-3.612 l5.956,18.355L296.863,587.059z M329.668,563.334h-25.091l-7.713-23.627l-7.713,23.627h-25.091l20.307,14.645l-7.713,23.627 l20.307-14.645l12.497-8.982L329.668,563.334L329.668,563.334L329.668,563.334L329.668,563.334z"
-                        EmptyShapeColor="White"
+                        EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
                         FillColor="#04DA8D"
                         HorizontalOptions="Start"
                         IsReadOnly="True"
@@ -127,8 +131,7 @@
                     <Label
                         Grid.Row="1"
                         Grid.Column="0"
-                        Grid.ColumnSpan="2"
-                        TextColor="Black">
+                        Grid.ColumnSpan="2">
                         <Label.FormattedText>
                             <FormattedString>
                                 <FormattedString.Spans>
@@ -143,8 +146,7 @@
                         Grid.Row="2"
                         Grid.Column="0"
                         Grid.ColumnSpan="2"
-                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It's everything I could want and the community are great&#x2026;&#x22;"
-                        TextColor="Black" />
+                        Text="&#x22;I have used the .NET MAUI Community Toolkit in all of my cross-platform projects.  It's everything I could want and the community are great&#x2026;&#x22;" />
 
                 </Grid>
             </Border>
@@ -152,7 +154,7 @@
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyShapeColor="White"
+                EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
                 FillColor="#04DA8D"
                 HorizontalOptions="Start"
                 IsReadOnly="True"
@@ -161,14 +163,14 @@
                 MaximumRating="5"
                 Rating="4.9"
                 FillOption="Background"
-                ShapeBorderColor="Black"
+                ShapeBorderColor="{AppThemeBinding Light=Black, Dark=White}"
                 ShapeBorderThickness="3"
                 Spacing="5" />
             <Label Text="A negative trust review 1 out of 5" />
             <toolkit:RatingView
                 Margin="0"
                 CustomShapePath="M12,17.964l5.214-1.321l2.179,6.714L12,17.964z M24,9.286h-9.179L12,0.643L9.179,9.286 H0l7.429,5.357l-2.821,8.643l7.429-5.357l4.571-3.286L24,9.286L24,9.286L24,9.286L24,9.286z"
-                EmptyShapeColor="White"
+                EmptyShapeColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"
                 FillColor="#FF3722"
                 HorizontalOptions="Start"
                 IsReadOnly="True"

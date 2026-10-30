@@ -12,19 +12,40 @@ public sealed partial class SpeechToTextImplementation
 
 	readonly AVAudioEngine audioEngine = new();
 
+	bool isDisposed;
 	IDispatcherTimer? silenceTimer;
 	SFSpeechRecognizer? speechRecognizer;
 	SFSpeechRecognitionTask? recognitionTask;
 	SFSpeechAudioBufferRecognitionRequest? liveSpeechRequest;
+
+	// The framework can end a recognition that was reported as Listening when its task no longer runs, so the last reported state can differ from CurrentState
+	SpeechToTextState reportedState = SpeechToTextState.Stopped;
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState => recognitionTask?.State is SFSpeechRecognitionTaskState.Running
 		? SpeechToTextState.Listening
 		: SpeechToTextState.Stopped;
 
+	// CurrentState is Stopped while a new recognition task is Starting, until the framework processes audio, so a session is active while the
+	// recognizer exists: from the start of StartListenAsync until StopRecording.
+	bool IsListeningSessionActive => speechRecognizer is not null;
+
 	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
+		isDisposed = true;
+
+		// A later tick would run StopRecording on the disposed audio engine
+		silenceTimer?.Tick -= OnSilenceTimerTick;
+		silenceTimer?.Stop();
+		silenceTimer = null;
+
+		// The framework keeps a recognition task running until its audio ends: a recognition that still runs ends as after StopListenAsync, unreported
+		if (IsListeningSessionActive)
+		{
+			EndRecording();
+		}
+
 		audioEngine.Dispose();
 		speechRecognizer?.Dispose();
 		liveSpeechRequest?.Dispose();
@@ -61,14 +82,12 @@ public sealed partial class SpeechToTextImplementation
 
 	void StopRecording()
 	{
+		var previousState = CurrentState;
+
 		silenceTimer?.Tick -= OnSilenceTimerTick;
 		silenceTimer?.Stop();
 
-		liveSpeechRequest?.EndAudio();
-		recognitionTask?.Finish();
-
-		audioEngine.Stop();
-		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
+		EndRecording();
 
 		recognitionTask?.Dispose();
 		speechRecognizer?.Dispose();
@@ -78,8 +97,28 @@ public sealed partial class SpeechToTextImplementation
 		liveSpeechRequest = null;
 		recognitionTask = null;
 
-		// Dispose all IDisposables before calling `OnSpeechToTextStateChanged` to ensure CurrentState == SpeechToTextState.Stopped
-		OnSpeechToTextStateChanged(CurrentState);
+		// Dispose all IDisposables before reading `CurrentState` to ensure CurrentState == SpeechToTextState.Stopped
+		// StateChanged is not raised when nothing was started, after a failed start or for a second stop
+		if (CurrentState != previousState || CurrentState != reportedState)
+		{
+			ReportState(CurrentState);
+		}
+	}
+
+	// The task is finished, not canceled, so the framework still delivers its final result (or an error)
+	void EndRecording()
+	{
+		liveSpeechRequest?.EndAudio();
+		recognitionTask?.Finish();
+
+		audioEngine.Stop();
+		audioEngine.InputNode.RemoveTapOnBus(audioEngineBusTap);
+	}
+
+	void ReportState(SpeechToTextState state)
+	{
+		reportedState = state;
+		OnSpeechToTextStateChanged(state);
 	}
 
 	Task InternalStopListeningAsync(CancellationToken cancellationToken)
@@ -99,6 +138,20 @@ public sealed partial class SpeechToTextImplementation
 		int currentIndex = 0;
 		return sfSpeechRecognizer.GetRecognitionTask(sfSpeechAudioBufferRecognitionRequest, (result, err) =>
 		{
+			// The framework can still call the handler after DisposeAsync, which released the audio engine that StopRecording uses
+			if (isDisposed)
+			{
+				return;
+			}
+
+			// A recognition that was stopped still delivers its outcome (and partial results) afterwards. Once another recognition has started,
+			// what this one delivers must neither stop the new recognition nor restart its silence timer, and it is not reported: as on Android,
+			// a recognition that a new one replaced reports nothing
+			if (liveSpeechRequest is not null && !ReferenceEquals(liveSpeechRequest, sfSpeechAudioBufferRecognitionRequest))
+			{
+				return;
+			}
+
 			if (err is not null)
 			{
 				currentIndex = 0;
@@ -116,9 +169,11 @@ public sealed partial class SpeechToTextImplementation
 				else
 				{
 					RestartTimer();
-					if (currentIndex <= 0)
+
+					// A partial result can arrive after the stop, when StateChanged has already reported the state
+					if (currentIndex <= 0 && CurrentState != reportedState)
 					{
-						OnSpeechToTextStateChanged(CurrentState);
+						ReportState(CurrentState);
 					}
 
 					currentIndex++;
@@ -148,7 +203,11 @@ public sealed partial class SpeechToTextImplementation
 
 	void RestartTimer()
 	{
-		silenceTimer?.Stop();
-		silenceTimer?.Start();
+		// CreateSilenceTimer leaves the timer stopped (and without an Interval) for the default AutoStopSilenceTimeout, and StopRecording stops it
+		if (silenceTimer is { IsRunning: true } timer)
+		{
+			timer.Stop();
+			timer.Start();
+		}
 	}
 }

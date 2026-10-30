@@ -14,7 +14,7 @@
                 <Style x:Key="Title" TargetType="Label">
                     <Setter Property="FontSize" Value="26" />
                     <Setter Property="FontAttributes" Value="Bold" />
-                    <Setter Property="TextColor" Value="#000" />
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                     <Setter Property="VerticalTextAlignment" Value="Center" />
                     <Setter Property="HorizontalTextAlignment" Value="Center" />
                 </Style>
@@ -46,7 +46,7 @@
 
         <Label Style="{StaticResource Content}" 
                Text="{Binding Message}" 
-               TextColor="Black"/>
+               TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
 
         <ProgressBar Progress="{Binding UpdateProgress}" />
 

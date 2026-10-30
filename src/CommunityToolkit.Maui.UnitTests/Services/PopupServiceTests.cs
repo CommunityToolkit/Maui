@@ -55,8 +55,8 @@ public class PopupServiceTests : BaseViewTest
 		Assert.Contains(services, sd => sd.ServiceType == typeof(PopupViewModel));
 	}
 
-	[Fact]
-	public void ShowPopupAsync_UsingNavigation_WithViewType_ShowsPopup()
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_UsingNavigation_WithViewType_ShowsPopup()
 	{
 		// Arrange
 		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
@@ -66,7 +66,10 @@ public class PopupServiceTests : BaseViewTest
 
 		// Assert
 		var modalPage = Assert.Single(navigation.ModalStack);
-		Assert.IsType<PopupPage>(modalPage);
+		var popupPage = Assert.IsType<PopupPage>(modalPage);
+
+		var popup = (MockSelfClosingPopup)(popupPage.Content.PopupBorder.Content ?? throw new InvalidOperationException("Popup content cannot be null"));
+		await popup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -114,6 +117,8 @@ public class PopupServiceTests : BaseViewTest
 
 		var popup = (ShortLivedSelfClosingPopup)(popupPage.Content.PopupBorder.Content ?? throw new InvalidOperationException("Popup content cannot be null"));
 		Assert.Equal((Color)shellParameters[nameof(View.BackgroundColor)], popup.BackgroundColor);
+
+		await popup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -278,7 +283,7 @@ public class PopupServiceTests : BaseViewTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
 		// Act
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		if (Application.Current?.Windows[0].Page is not Page page)
 		{
@@ -643,8 +648,8 @@ public class PopupServiceTests : BaseViewTest
 		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 	}
 
-	[Fact]
-	public void ShowPopup_WithRegisteredPopup_ShouldOnlyConstructViewModelOnce()
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task ShowPopup_WithRegisteredPopup_ShouldOnlyConstructViewModelOnce()
 	{
 		// Arrange
 		SingleConstructionViewModel.ConstructorCallCount = 0;
@@ -662,6 +667,10 @@ public class PopupServiceTests : BaseViewTest
 
 		// Assert
 		Assert.Equal(1, SingleConstructionViewModel.ConstructorCallCount);
+
+		var popupPage = (PopupPage)page.Navigation.ModalStack[0];
+		var popup = (MockSelfClosingPopup)(popupPage.Content.PopupBorder.Content ?? throw new InvalidOperationException("Popup content cannot be null"));
+		await popup.WaitUntilClosedAsync(TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -727,7 +736,7 @@ sealed class ShortLivedSelfClosingPopup(ShortLivedMockPageViewModel viewModel) :
 
 class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 {
-	readonly TaskCompletionSource popupClosedTCS = new();
+	readonly TaskCompletionSource popupClosedTCS = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 	CancellationTokenSource? cancellationTokenSource;
 
@@ -751,6 +760,10 @@ class MockSelfClosingPopup : Popup<object?>, IQueryAttributable, IDisposable
 	public object? Result { get; }
 
 	public TimeSpan DisplayDuration { get; }
+
+	// A test that shows this popup without awaiting its result awaits this before it ends. If the popup closes itself during a later test, the Shell
+	// navigation of that close resets the static routes .NET MAUI keeps for the later test's Shell, which then fails to navigate and crashes the test process.
+	public Task WaitUntilClosedAsync(CancellationToken token) => popupClosedTCS.Task.WaitAsync(token);
 
 	public void Dispose()
 	{

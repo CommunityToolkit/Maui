@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Adapted from dotnet/maui @ 2067dd42c6032fbc40d2e46245806679a85df5e6, src/Microsoft.Maui.TestUtils.DeviceTests.Runners.targets
+     (Arcade-only DisableArcadeTestFramework and the asset-less xunit.runner.visualstudio reference removed).
+     Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
+     Imported at the end of every device-test app, after its MauiSplashScreen item. -->
+<Project>
+
+  <!-- Inputs of CommunityToolkit.Maui.DeviceTests.Runners.SourceGen, which generates the platform entry points. -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RootNamespace" />
+    <CompilerVisibleProperty Include="ApplicationId" />
+    <CompilerVisibleProperty Include="ApplicationTitle" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsMauiSplashScreen" />
+    <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
+  </ItemGroup>
+
+</Project>

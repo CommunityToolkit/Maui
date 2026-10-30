@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Windows.UI.ViewManagement;
 
@@ -9,7 +9,7 @@ public static partial class KeyboardExtensions
 {
 	static bool HideKeyboard(this FrameworkElement element)
 	{
-		if (TryGetInputPane(out var inputPane))
+		if (element.TryGetInputPane(out var inputPane))
 		{
 			return inputPane.TryHide();
 		}
@@ -19,7 +19,7 @@ public static partial class KeyboardExtensions
 
 	static bool ShowKeyboard(this FrameworkElement element)
 	{
-		if (TryGetInputPane(out var inputPane))
+		if (element.TryGetInputPane(out var inputPane))
 		{
 			return inputPane.TryShow();
 		}
@@ -29,7 +29,7 @@ public static partial class KeyboardExtensions
 
 	static bool IsSoftKeyboardShowing(this FrameworkElement element)
 	{
-		if (TryGetInputPane(out var inputPane))
+		if (element.TryGetInputPane(out var inputPane))
 		{
 			return inputPane.Visible;
 		}
@@ -37,17 +37,20 @@ public static partial class KeyboardExtensions
 		return false;
 	}
 
-	static bool TryGetInputPane([NotNullWhen(true)] out InputPane? inputPane)
+	static bool TryGetInputPane(this FrameworkElement element, [NotNullWhen(true)] out InputPane? inputPane)
 	{
-		var handleId = Process.GetCurrentProcess().MainWindowHandle;
-		if (handleId == IntPtr.Zero)
+		var windowHandle = element.XamlRoot?.ContentIslandEnvironment is Microsoft.UI.Content.ContentIslandEnvironment contentIslandEnvironment
+			? Win32Interop.GetWindowFromWindowId(contentIslandEnvironment.AppWindowId)
+			: IntPtr.Zero;
+
+		if (windowHandle == IntPtr.Zero)
 		{
 			inputPane = null;
 
 			return false;
 		}
 
-		inputPane = InputPaneInterop.GetForWindow(handleId);
+		inputPane = InputPaneInterop.GetForWindow(windowHandle);
 		return true;
 	}
 }

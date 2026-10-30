@@ -10,8 +10,15 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 {
 	public const string DefaultContentType = "public.mpeg-4";
 
+	const string errorDomain = "CommunityToolkit.Maui.MediaElement.StreamAssetResourceLoader";
+
+	// One request can be for the rest of a large resource, even beyond int.MaxValue bytes, so it is answered in responses of at most this length.
+	const int maximumResponseLength = 1024 * 1024;
+
 	readonly Stream stream;
 	readonly string contentType;
+
+	long nonSeekableStreamOffset;
 
 	public StreamAssetResourceLoader(Stream stream, string contentType = DefaultContentType)
 	{
@@ -27,9 +34,10 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 			FillContentInformation(loadingRequest.ContentInformationRequest);
 		}
 
-		if (loadingRequest.DataRequest is not null)
+		if (loadingRequest.DataRequest is not null && FillDataRequest(loadingRequest.DataRequest) is NSError error)
 		{
-			FillDataRequest(loadingRequest.DataRequest);
+			loadingRequest.FinishLoadingWithError(error);
+			return true;
 		}
 
 		loadingRequest.FinishLoading();
@@ -45,6 +53,9 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 		base.Dispose(disposing);
 	}
 
+	static NSError CreateError(string message) =>
+		new(new NSString(errorDomain), 0, NSDictionary.FromObjectAndKey(new NSString(message), NSError.LocalizedDescriptionKey));
+
 	void FillContentInformation(AVAssetResourceLoadingContentInformationRequest contentInformationRequest)
 	{
 		contentInformationRequest.ContentType = contentType;
@@ -52,12 +63,12 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 		contentInformationRequest.ByteRangeAccessSupported = stream.CanSeek;
 	}
 
-	void FillDataRequest(AVAssetResourceLoadingDataRequest dataRequest)
+	NSError? FillDataRequest(AVAssetResourceLoadingDataRequest dataRequest)
 	{
 		try
 		{
 			var requestedOffset = dataRequest.RequestedOffset;
-			var requestedLength = (int)dataRequest.RequestedLength;
+			long requestedLength = dataRequest.RequestedLength;
 
 			// If CurrentOffset is not 0, we're resuming a request
 			if (dataRequest.CurrentOffset != 0)
@@ -70,21 +81,40 @@ sealed class StreamAssetResourceLoader : AVAssetResourceLoaderDelegate
 			{
 				stream.Seek(requestedOffset, SeekOrigin.Begin);
 			}
-
-			// Read the requested data
-			var buffer = new byte[requestedLength];
-			var bytesRead = stream.Read(buffer, 0, requestedLength);
-
-			if (bytesRead > 0)
+			else if (!stream.CanSeek && requestedOffset != nonSeekableStreamOffset)
 			{
-				var data = NSData.FromArray(buffer[..bytesRead]);
-				dataRequest.Respond(data);
+				// A stream that cannot seek only has the bytes from where the previous requests left it: other bytes must not be served
+				return CreateError($"The stream cannot seek to offset {requestedOffset}.");
 			}
+
+			var buffer = new byte[Math.Min(requestedLength, maximumResponseLength)];
+			while (requestedLength > 0)
+			{
+				var bytesRead = stream.Read(buffer, 0, (int)Math.Min(requestedLength, buffer.Length));
+				if (bytesRead <= 0)
+				{
+					break;
+				}
+
+				if (!stream.CanSeek)
+				{
+					nonSeekableStreamOffset += bytesRead;
+				}
+
+				// AVFoundation keeps what it needs of a response, so each one is disposed right away: its native memory would otherwise wait for a
+				// garbage collection, and a request for the rest of a large stream makes thousands of responses.
+				using var data = NSData.FromArray(buffer[..bytesRead]);
+				dataRequest.Respond(data);
+				requestedLength -= bytesRead;
+			}
+
+			return null;
 		}
 		catch (Exception ex)
 		{
-			// Log error but don't throw - let AVFoundation handle it
+			// Don't throw: AVFoundation gets the error with the request.
 			System.Diagnostics.Debug.WriteLine($"Error reading stream data: {ex.Message}");
+			return CreateError(ex.Message);
 		}
 	}
 }

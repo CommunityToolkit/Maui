@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Layouts;
+﻿using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
+
+namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
@@ -110,7 +112,9 @@ public static partial class StateContainer
 	}
 
 	/// <summary>
-	/// Change state using the default fade animation.
+	/// Change state using the default fade animation: the current views fade out, then the views for <paramref name="state"/> replace them and fade in.
+	/// The views that faded out get their <see cref="VisualElement.Opacity"/> back when the state change ends, also when it fails or is canceled, so they are visible the next time they are shown.
+	/// Canceling <paramref name="token"/> ends the fade at once instead of letting it run on: a view that was fading in gets an <see cref="VisualElement.Opacity"/> of 1.
 	/// </summary>
 	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
 	{
@@ -119,6 +123,8 @@ public static partial class StateContainer
 		SetCanStateChange(bindable, false);
 
 		var layout = GetLayoutController(bindable).GetLayout();
+		var replacedViews = layout.Children.OfType<View>().Select(static view => (View: view, view.Opacity)).ToList();
+		List<View> shownViews = [];
 
 		try
 		{
@@ -131,11 +137,37 @@ public static partial class StateContainer
 
 			if (layout.Children.Count > 0)
 			{
-				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeToAsync(1))).WaitAsync(token);
+				shownViews.AddRange(layout.Children.OfType<View>());
+
+				// Fade in from transparent, also the first time a view is shown
+				foreach (var view in shownViews)
+				{
+					view.Opacity = 0;
+				}
+
+				await Task.WhenAll(shownViews.Select(view => view.FadeToAsync(1))).WaitAsync(token);
 			}
 		}
 		finally
 		{
+			// WaitAsync stops waiting when the token is canceled, not the fade: end it here, or it goes on changing Opacity after the state change ended,
+			// and the next state change would give a view the Opacity it had in the middle of the fade
+			foreach (var view in shownViews)
+			{
+				if (view.AbortAnimation(nameof(ViewExtensions.FadeToAsync)))
+				{
+					view.Opacity = 1;
+				}
+			}
+
+			// Otherwise a view that the new state replaced stays transparent when a later state change without the fade animation shows it again,
+			// and the current views stay transparent when the state change fails, for example for a state without a StateView
+			foreach (var (view, opacity) in replacedViews)
+			{
+				view.AbortAnimation(nameof(ViewExtensions.FadeToAsync));
+				view.Opacity = opacity;
+			}
+
 			SetCanStateChange(bindable, true);
 			SetCurrentState(bindable, state);
 		}

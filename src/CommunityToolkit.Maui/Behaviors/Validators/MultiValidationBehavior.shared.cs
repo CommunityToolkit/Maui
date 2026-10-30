@@ -51,11 +51,12 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
+		// Deliberately no ConfigureAwait(false): the code below reads and sets bindable properties, so it must resume on the context the validation started on
 		await Task.WhenAll(children.Select(async validationBehavior =>
 		{
 			validationBehavior.Value = value;
 			await validationBehavior.ValidateNestedAsync(token);
-		})).ConfigureAwait(false);
+		}));
 
 		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();
 

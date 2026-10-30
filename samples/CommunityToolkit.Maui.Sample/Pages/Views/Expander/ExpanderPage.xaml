@@ -90,8 +90,9 @@
                             <mct:Expander.Content>
                                 <VerticalStackLayout>
                                     <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
+                                    <!-- No WidthRequest: the avatar shrinks to the width of its column (AspectFit, at most 100x100), so it does not spill into the next column on a phone -->
                                     <Image Source="{Binding Image}"
-                                           WidthRequest="100"
+                                           Aspect="AspectFit"
                                            HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>
