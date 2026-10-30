@@ -7,7 +7,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 /// Android 5 device (they run API 28 and 36). Each reads its support flag from a private static <see cref="Lazy{T}"/> that evaluates the OS
 /// version once, so this scope replaces the value that the flag holds (the Lazy's private <c>_value</c>) to reach the guard arms that SetColor,
 /// SetStyle, UpdateBarSize and the navigation bar mappings take on an unsupported version. The factory of the Lazy (its Trace.WriteLine and its
-/// false result below API 23) does not run here: that arm needs a real old device and keeps its visible skip.
+/// false result below API 23) does not run here: that arm needs a real old device. The navigation bar tests keep a visible skip for it; StatusBar has
+/// none, because it no longer supports Android 5.
 /// </summary>
 sealed class UnsupportedAndroidVersion : IDisposable
 {

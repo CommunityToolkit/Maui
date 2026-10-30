@@ -28,6 +28,10 @@ public enum StatusBarApplyOn
 /// <summary>
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
+/// <remarks>
+/// Android needs 6.0 (API 23) or later. On Android 5.0 and 5.1 (API 21 and 22) the calls that the behavior makes to <see cref="StatusBar"/> do nothing, so the
+/// behavior changes neither the color nor the style of the status bar.
+/// </remarks>
 [UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS"), UnsupportedOSPlatform("Tizen")]
 public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 {

@@ -3,6 +3,10 @@
 /// <summary>
 /// Class that hold the method to customize the StatusBar
 /// </summary>
+/// <remarks>
+/// Android needs 6.0 (API 23) or later. On Android 5.0 and 5.1 (API 21 and 22) <see cref="SetColor(Color?)"/>, <see cref="SetStyle(StatusBarStyle)"/> and the
+/// other methods do nothing, and the first call writes a message to the trace output.
+/// </remarks>
 public static partial class StatusBar
 {
 	/// <summary>

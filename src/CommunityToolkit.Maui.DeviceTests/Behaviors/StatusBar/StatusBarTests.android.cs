@@ -242,30 +242,9 @@ public partial class StatusBarTests
 		Assert.Equal("Android Activity can't be null.", exception.Message);
 	}
 
-	[Fact]
-	public async Task SetColorStyleAndBarSizeBeforeAndroid6DoNothing()
-	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(23), "Needs an Android 5 (API 21-22) device: StatusBar.IsSupported is false only there (its factory traces and returns false), and the pools have API 28 and 36. The guard arms run on the pools through UnsupportedAndroidVersion.");
-		SetupBuilder();
-		await ResetNativeStateAsync();
-
-		await InvokeOnMainThreadAsync(static () =>
-		{
-			var window = AndroidSystemBars.ActivityWindow;
-			var before = AndroidSystemBars.Flags(window);
-			var lightStatusBarsBefore = AndroidSystemBars.IsLightStatusBars(window);
-			StatusBar.SetColor(Colors.Red);
-			StatusBar.SetStyle(StatusBarStyle.DarkContent);
-			StatusBar.UpdateBarSize();
-
-			Assert.Equal(before, AndroidSystemBars.Flags(window));
-			Assert.Equal(lightStatusBarsBefore, AndroidSystemBars.IsLightStatusBars(window));
-			Assert.Empty(AndroidSystemBars.FindTagged(window, AndroidSystemBars.StatusBarOverlayTag));
-		});
-	}
-
-	// StatusBar.IsSupported is false only on Android 5 (API 21-22), which no pool device runs (see the skipped test above), so these tests
-	// switch the support flag off (UnsupportedAndroidVersion) to reach the guard arms of SetColor, SetStyle and UpdateBarSize.
+	// StatusBar.IsSupported is false only on Android 5 (API 21-22). StatusBar no longer supports it, but an app whose minimum is Android 5 still installs
+	// there, so StatusBar must do nothing and not throw. No test device runs Android 5, so these tests switch the support flag off
+	// (UnsupportedAndroidVersion) to reach the guard arms of SetColor, SetStyle and UpdateBarSize.
 	[Fact]
 	public async Task SetColorDoesNothingWhileTheStatusBarIsMarkedUnsupported()
 	{
