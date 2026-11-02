@@ -109,7 +109,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			token.ThrowIfCancellationRequested();
 
-			TryInheritHideSoftInputFromPresentingPage(shell.CurrentPage);
+			TryInheritHideSoftInputFromPresentingPage(shell.Navigation.ModalStack.Count > 0
+														? GetVisiblePage(shell.Navigation)
+														: shell.CurrentPage);
 
 			if (shellParameters is null)
 			{
@@ -349,7 +351,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 		else if (Microsoft.Maui.Controls.Application.Current?.Windows is { Count: > 0 } windows)
 		{
-			page = windows[0].Page;
+			page = windows
+				.FirstOrDefault(window => window.Page is { } rootPage
+					&& ReferenceEquals(rootPage.Navigation, navigation))
+				?.Page;
 		}
 
 		while (page is not null)

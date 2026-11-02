@@ -631,6 +631,33 @@ public class PopupPageTests : BaseViewTest
 		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_FromVisibleModalPage()
+	{
+		// Arrange
+		const bool shellHideSoftInputOnTapped = true;
+		const bool modalHideSoftInputOnTapped = false;
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage { HideSoftInputOnTapped = shellHideSoftInputOnTapped });
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var modalPage = new ContentPage { HideSoftInputOnTapped = modalHideSoftInputOnTapped };
+		await shell.Navigation.PushModalAsync(modalPage, false);
+
+		// Act
+		shell.ShowPopup(new Label(), new MockPopupOptions());
+
+		// Assert
+		var popupPage = shell.Navigation.ModalStack[^1].As<PopupPage>();
+		popupPage.HideSoftInputOnTapped.Should().Be(modalHideSoftInputOnTapped);
+
+		// Cleanup
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+		await shell.Navigation.PopModalAsync(false);
+	}
+
 	[Fact]
 	public void PopupPageT_Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled()
 	{

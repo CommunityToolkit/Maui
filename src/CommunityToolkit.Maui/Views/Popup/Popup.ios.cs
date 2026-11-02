@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.Views;
 
 public partial class Popup
 {
-    /// <summary>
+	/// <summary>
 	/// Stores the keyboard will show notification observer to manage keyboard lifecycle.
 	/// </summary>
 	NSObject? willShow;
@@ -27,11 +27,10 @@ public partial class Popup
 	UIViewController? viewController;
 
 	UIEdgeInsets? originalAdditionalSafeAreaInsets;
-	nfloat? originalSystemBottomSafeAreaInset;
 
 	partial void OnPlatformPopupOpened()
-    {
-        willShow?.Dispose();
+	{
+		willShow?.Dispose();
 		willHide?.Dispose();
 
 		if (Handler?.PlatformView is UIView view)
@@ -39,14 +38,14 @@ public partial class Popup
 			popupNativeView = view;
 		}
 
-willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKeyboard(args));
+		willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKeyboard(args));
 
 		willHide = UIKeyboard.Notifications.ObserveWillHide((_, args) => ResetSafeArea());
-    }
+	}
 
 	partial void OnPlatformPopupClosed()
-    {
-        willShow?.Dispose();
+	{
+		willShow?.Dispose();
 		willHide?.Dispose();
 
 		willShow = willHide = null;
@@ -55,9 +54,9 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 
 		popupNativeView = null;
 		viewController = null;
-    }
+	}
 
-    /// <summary>
+	/// <summary>
 	/// Adjusts the safe area insets when the keyboard appears on iOS.
 	/// </summary>
 	/// <param name="args">The keyboard event arguments containing the keyboard frame.</param>
@@ -96,13 +95,6 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 
 		originalAdditionalSafeAreaInsets ??= viewController.AdditionalSafeAreaInsets;
 
-		if (originalSystemBottomSafeAreaInset is null)
-		{
-			var systemBottomInset = controllerView.SafeAreaInsets.Bottom - originalAdditionalSafeAreaInsets.Value.Bottom;
-
-			originalSystemBottomSafeAreaInset = systemBottomInset > 0 ? systemBottomInset : 0;
-		}
-
 		var keyboardFrame = controllerView.ConvertRectFromView(args.FrameEnd, null);
 
 		var bounds = controllerView.Bounds;
@@ -123,8 +115,23 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 		}
 
 		var originalInsets = originalAdditionalSafeAreaInsets.Value;
-		var keyboardInset = bottomOverlap - originalSystemBottomSafeAreaInset.Value;
-		var bottomInset = keyboardInset > originalInsets.Bottom ? keyboardInset : originalInsets.Bottom;
+
+		// Recalculate the system-only safe area inset using the current geometry.
+		var currentAdditionalInsets = viewController.AdditionalSafeAreaInsets;
+
+		var systemBottomInset = controllerView.SafeAreaInsets.Bottom
+			- currentAdditionalInsets.Bottom;
+
+		if (systemBottomInset < 0)
+		{
+			systemBottomInset = 0;
+		}
+
+		var keyboardInset = bottomOverlap - systemBottomInset;
+
+		var bottomInset = keyboardInset > originalInsets.Bottom
+			? keyboardInset
+			: originalInsets.Bottom;
 
 		viewController.AdditionalSafeAreaInsets = new UIEdgeInsets(
 			originalInsets.Top,
@@ -145,7 +152,6 @@ willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKe
 		}
 
 		originalAdditionalSafeAreaInsets = null;
-		originalSystemBottomSafeAreaInset = null;
 
 		// viewController?.AdditionalSafeAreaInsets = UIEdgeInsets.Zero;
 	}

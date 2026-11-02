@@ -1,4 +1,3 @@
-
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -73,9 +72,9 @@ public partial class Popup : ContentView
 
 	internal void NotifyPopupIsOpened()
 	{
-		Opened?.Invoke(this, EventArgs.Empty);
-
 		OnPlatformPopupOpened();
+
+		Opened?.Invoke(this, EventArgs.Empty);
 	}
 
 	internal void NotifyPopupIsClosed()
