@@ -184,7 +184,19 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			try
 			{
-				await Navigation.PopModalAsync(false);
+				try
+				{
+					await Navigation.PopModalAsync(false);
+				}
+				catch (Exception ex) when (!(ex is OperationCanceledException or InvalidPopupOperationException))
+				{
+					// MAUI's Shell throws an ArgumentException from its route resolver
+					// (ShellUriHandler.GetNavigationRequest) when a PopupPage is popped from a
+					// Shell in certain navigation states — a framework bug the Popup can't
+					// prevent. Confirm the pop locally so the `await` below doesn't hang, then
+					// keep closing; letting this escape would crash an async-void caller of CloseAsync.
+					popupConfirmedPoppedTcs.TrySetResult();
+				}
 
 				// Clean up Popup resources
 				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
