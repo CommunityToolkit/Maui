@@ -305,6 +305,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.NotifyPopupIsOpened();
 	}
 
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		popup.TeardownPlatform();
+	}
+
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
@@ -339,22 +345,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	static Page? GetVisiblePage(INavigation navigation)
 	{
-		Page? page = null;
+		var page = navigation.ModalStack?.LastOrDefault()
+			?? navigation.NavigationStack?.LastOrDefault();
 
-		if (navigation.ModalStack.Count > 0)
-		{
-			page = navigation.ModalStack[navigation.ModalStack.Count - 1];
-		}
-		else if (navigation.NavigationStack.Count > 0)
-		{
-			page = navigation.NavigationStack[navigation.NavigationStack.Count - 1];
-		}
-		else if (Microsoft.Maui.Controls.Application.Current?.Windows is { Count: > 0 } windows)
+		if (page is null && Microsoft.Maui.Controls.Application.Current?.Windows is { Count: > 0 } windows)
 		{
 			page = windows
-				.FirstOrDefault(window => window.Page is { } rootPage
+				.FirstOrDefault(window => window.Page is Page rootPage
 					&& ReferenceEquals(rootPage.Navigation, navigation))
-				?.Page;
+				?.Page
+				?? windows.LastOrDefault()?.Page;
 		}
 
 		while (page is not null)
@@ -363,6 +363,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			{
 				case Shell shell:
 					page = shell.CurrentPage;
+					break;
+				case Microsoft.Maui.Controls.FlyoutPage flyout:
+					page = flyout.Detail;
 					break;
 				case IPageContainer<Page> container:
 					page = container.CurrentPage;

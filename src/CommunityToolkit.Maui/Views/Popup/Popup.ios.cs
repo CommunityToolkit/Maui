@@ -1,5 +1,6 @@
-using System.Diagnostics;
+using CoreGraphics;
 using Foundation;
+using System.Diagnostics;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Views;
@@ -95,7 +96,21 @@ public partial class Popup
 
 		originalAdditionalSafeAreaInsets ??= viewController.AdditionalSafeAreaInsets;
 
-		var keyboardFrame = controllerView.ConvertRectFromView(args.FrameEnd, null);
+		var window = controllerView.Window;
+
+		if (window is null)
+		{
+			return;
+		}
+
+		var windowOrigin = window.Frame.Location;
+		var keyboardOrigin = args.FrameEnd.Location;
+
+		var keyboardInWindow = new CGRect(
+			new CGPoint(keyboardOrigin.X - windowOrigin.X, keyboardOrigin.Y - windowOrigin.Y),
+			args.FrameEnd.Size
+		);
+		var keyboardFrame = controllerView.ConvertRectFromView(keyboardInWindow, window);
 
 		var bounds = controllerView.Bounds;
 

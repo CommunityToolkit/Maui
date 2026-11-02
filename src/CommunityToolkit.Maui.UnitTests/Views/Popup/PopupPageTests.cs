@@ -658,6 +658,79 @@ public class PopupPageTests : BaseViewTest
 		await shell.Navigation.PopModalAsync(false);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromFlyoutPageDetailContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var detailPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		var flyoutPage = new Microsoft.Maui.Controls.FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = detailPage
+		};
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = flyoutPage;
+
+		var navigation = flyoutPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromRootShell_WhenShownViaWindowNavigation()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var currentPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var shell = new Shell();
+		shell.Items.Add(currentPage);
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		var window = Application.Current.Windows[0];
+		window.Page = shell;
+
+		var navigation = window.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
 	[Fact]
 	public void PopupPageT_Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled()
 	{

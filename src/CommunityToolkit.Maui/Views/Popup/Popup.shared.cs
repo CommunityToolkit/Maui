@@ -79,10 +79,17 @@ public partial class Popup : ContentView
 
 	internal void NotifyPopupIsClosed()
 	{
-		Closed?.Invoke(this, EventArgs.Empty);
-
-		OnPlatformPopupClosed();
+		try
+		{
+			Closed?.Invoke(this, EventArgs.Empty);
+		}
+		finally
+		{
+			TeardownPlatform();
+		}
 	}
+
+	internal void TeardownPlatform() => OnPlatformPopupClosed();
 
 	private protected PopupPage GetPopupPage()
 	{
