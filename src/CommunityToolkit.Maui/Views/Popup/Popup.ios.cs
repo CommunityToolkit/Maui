@@ -29,8 +29,14 @@ public partial class Popup
 
 	UIEdgeInsets? originalAdditionalSafeAreaInsets;
 
+	/// <summary>
+	/// Stores the window whose destruction releases the keyboard observers, so the popup unsubscribes from the same window it subscribed to.
+	/// </summary>
+	Window? observedWindow;
+
 	partial void OnPlatformPopupOpened()
 	{
+		StopObservingWindow();
 		willShow?.Dispose();
 		willHide?.Dispose();
 
@@ -42,10 +48,20 @@ public partial class Popup
 		willShow = UIKeyboard.Notifications.ObserveWillChangeFrame((_, args) => HandleKeyboard(args));
 
 		willHide = UIKeyboard.Notifications.ObserveWillHide((_, args) => ResetSafeArea());
+
+		// The keyboard observers belong to the notification center, which retains the popup through them. A window that is destroyed while
+		// the popup is open, such as the window of a scene that disconnects, neither closes the popup nor navigates away from it, so the
+		// destruction of the window is the only signal left to release them.
+		observedWindow = Window;
+		if (observedWindow is not null)
+		{
+			observedWindow.Destroying += HandleWindowDestroying;
+		}
 	}
 
 	partial void OnPlatformPopupClosed()
 	{
+		StopObservingWindow();
 		willShow?.Dispose();
 		willHide?.Dispose();
 
@@ -55,6 +71,17 @@ public partial class Popup
 
 		popupNativeView = null;
 		viewController = null;
+	}
+
+	void HandleWindowDestroying(object? sender, EventArgs e) => TeardownPlatform();
+
+	void StopObservingWindow()
+	{
+		if (observedWindow is not null)
+		{
+			observedWindow.Destroying -= HandleWindowDestroying;
+			observedWindow = null;
+		}
 	}
 
 	/// <summary>
