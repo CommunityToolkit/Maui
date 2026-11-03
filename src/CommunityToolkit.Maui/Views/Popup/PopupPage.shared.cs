@@ -318,8 +318,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		// .NET MAUI raises NavigatedTo again when a page above this PopupPage on the ModalStack (e.g. another Popup) is popped
 		// A new PopupPage is created every time a Popup is shown, so notify the Popup only the first time this PopupPage is navigated to
+		// .NET MAUI also raised NavigatedFrom on this PopupPage when that page was pushed, which tore down the platform setup of the Popup (e.g. the iOS keyboard observers)
+		// Set it up again, without raising Opened again
 		if (hasNotifiedPopupIsOpened)
 		{
+			popup.SetupPlatform();
 			return;
 		}
 

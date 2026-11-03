@@ -98,7 +98,7 @@ public partial class Popup : ContentView, IPaddingElement, IView
 
 	internal void NotifyPopupIsOpened()
 	{
-		OnPlatformPopupOpened();
+		SetupPlatform();
 
 		Opened?.Invoke(this, EventArgs.Empty);
 	}
@@ -124,6 +124,8 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	// Re-implementing IView maps its members to the public members this class declares, but Popup.Margin is the margin of the PopupBorder,
 	// not of the Popup inside it: keep the implementation of View, which returns View.Margin
 	Thickness IView.Margin => base.Margin;
+
+	internal void SetupPlatform() => OnPlatformPopupOpened();
 
 	internal void TeardownPlatform() => OnPlatformPopupClosed();
 
