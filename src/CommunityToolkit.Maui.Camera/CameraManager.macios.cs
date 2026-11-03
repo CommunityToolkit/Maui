@@ -315,6 +315,11 @@ partial class CameraManager
 	{
 		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
 		{
+			if (videoRecordingState is { } activeRecordingState)
+			{
+				await activeRecordingState.Started.WaitAsync(token);
+			}
+
 			return;
 		}
 
@@ -397,11 +402,8 @@ partial class CameraManager
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		if (captureSession is null
-			|| videoRecordingFileName is null
-			|| videoOutput is null
-			|| videoRecordingStream is null
-			|| videoRecordingState is not { } recordingState)
+		if (videoRecordingState is not { } recordingState
+			|| !await recordingState.TryWaitForStartAsync(token))
 		{
 			return Stream.Null;
 		}
@@ -427,19 +429,26 @@ partial class CameraManager
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 			token.ThrowIfCancellationRequested();
 
-			if (File.Exists(recordingFileName))
+			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal
+			try
 			{
-				await using var inputStream = new FileStream(recordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-				await inputStream.CopyToAsync(recordingStream, CancellationToken.None);
-				await recordingStream.FlushAsync(CancellationToken.None);
-				if (recordingStream.CanSeek)
+				if (File.Exists(recordingFileName))
 				{
-					recordingStream.Position = 0;
+					await using var inputStream = new FileStream(recordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+					await inputStream.CopyToAsync(recordingStream, token);
+					await recordingStream.FlushAsync(token);
+					if (recordingStream.CanSeek)
+					{
+						recordingStream.Position = 0;
+					}
 				}
-			}
 
-			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
-			CleanupVideoRecordingResources(recordingState);
+				ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
+			}
 
 			return recordingStream;
 		}

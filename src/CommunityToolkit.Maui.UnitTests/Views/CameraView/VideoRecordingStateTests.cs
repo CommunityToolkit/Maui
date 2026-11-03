@@ -103,6 +103,42 @@ public class VideoRecordingStateTests
 	}
 
 	[Fact]
+	public async Task TryWaitForStartWaitsForNativeStart()
+	{
+		var recordingState = new VideoRecordingState();
+
+		var waitTask = recordingState.TryWaitForStartAsync(TestContext.Current.CancellationToken);
+		Assert.False(waitTask.IsCompleted);
+
+		recordingState.OnStarted();
+
+		Assert.True(await waitTask);
+	}
+
+	[Fact]
+	public async Task TryWaitForStartReturnsFalseWhenStartFails()
+	{
+		var failedState = new VideoRecordingState();
+		var cancelledState = new VideoRecordingState();
+
+		failedState.OnFinalized(new CameraException("Recording failed."));
+		cancelledState.CancelPendingTasks();
+
+		Assert.False(await failedState.TryWaitForStartAsync(TestContext.Current.CancellationToken));
+		Assert.False(await cancelledState.TryWaitForStartAsync(TestContext.Current.CancellationToken));
+	}
+
+	[Fact]
+	public async Task TryWaitForStartThrowsWhenCallerCancels()
+	{
+		var recordingState = new VideoRecordingState();
+		using var cancellationTokenSource = new CancellationTokenSource();
+		cancellationTokenSource.Cancel();
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recordingState.TryWaitForStartAsync(cancellationTokenSource.Token));
+	}
+
+	[Fact]
 	public async Task TeardownCancelsPendingNativeWaits()
 	{
 		var recordingState = new VideoRecordingState();

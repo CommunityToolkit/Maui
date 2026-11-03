@@ -33,4 +33,18 @@ sealed class VideoRecordingState
 		startedTcs.TrySetCanceled();
 		finalizedTcs.TrySetCanceled();
 	}
+
+	public async Task<bool> TryWaitForStartAsync(CancellationToken token)
+	{
+		try
+		{
+			await Started.WaitAsync(token);
+			return true;
+		}
+		catch (Exception) when (!token.IsCancellationRequested)
+		{
+			// The failed start owns its cleanup and reports its own exception
+			return false;
+		}
+	}
 }

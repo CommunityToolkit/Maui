@@ -437,14 +437,18 @@ partial class CameraManager
 			|| processCameraProvider is null
 			|| cameraPreview is null
 			|| videoCapture is null
-			|| videoRecorder is null
-			|| videoRecordingFile is not null)
+			|| videoRecorder is null)
 		{
 			return;
 		}
 
 		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
 		{
+			if (videoRecordingState is { } activeRecordingState)
+			{
+				await activeRecordingState.Started.WaitAsync(token);
+			}
+
 			return;
 		}
 
@@ -497,10 +501,8 @@ partial class CameraManager
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
-		if (videoRecording is null
-			|| videoRecordingFile is null
-			|| videoRecordingStream is null
-			|| videoRecordingState is not { } recordingState)
+		if (videoRecordingState is not { } recordingState
+			|| !await recordingState.TryWaitForStartAsync(token))
 		{
 			return Stream.Null;
 		}
@@ -524,22 +526,36 @@ partial class CameraManager
 			await recordingState.Finalized.WaitAsync(token);
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 
-			await RestorePhotoSession(recordingState, token);
-			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
-			token.ThrowIfCancellationRequested();
-
-			await using (var inputStream = new FileStream(recordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+			// A cancelled restore can be retried; any other failure would leave the finalized recording occupying the state
+			try
 			{
-				await inputStream.CopyToAsync(recordingStream, CancellationToken.None);
-				await recordingStream.FlushAsync(CancellationToken.None);
+				await RestorePhotoSession(recordingState, token);
+			}
+			catch (System.Exception exception) when (exception is not OperationCanceledException)
+			{
+				CleanupVideoRecordingResources(recordingState);
+				throw;
 			}
 
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
-			CleanupVideoRecordingResources(recordingState);
+			token.ThrowIfCancellationRequested();
 
-			if (recordingStream.CanSeek)
+			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal
+			try
 			{
-				recordingStream.Position = 0;
+				await using var inputStream = new FileStream(recordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+				await inputStream.CopyToAsync(recordingStream, token);
+				await recordingStream.FlushAsync(token);
+				if (recordingStream.CanSeek)
+				{
+					recordingStream.Position = 0;
+				}
+
+				ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
 			}
 
 			return recordingStream;
