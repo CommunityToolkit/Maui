@@ -22,8 +22,9 @@
       (alphabetical, labeled with its line and branch coverage), then, folded, the coverage of each input and the notes; in GitHub
       Actions it is also added to the job summary. Each line and branch coverage (totals, assemblies, classes) gets a flag on Google's
       scale (https://testing.googleblog.com/2020/08/code-coverage-best-practices.html): red below -Acceptable (needs work now), yellow
-      from -Acceptable (acceptable, could be better), green from -Commendable (commendable), blue from -Exemplary (exemplary: more tests
-      rarely pay off). Lines and branches are flagged separately, as tools such as Istanbul and lcov do.
+      from -Acceptable (acceptable, could be better), blue from -Commendable (commendable), green from -Exemplary (exemplary: more tests
+      rarely pay off), in the order of the colors of GitHub Copilot's reviews. Lines and branches are flagged separately, as tools such as
+      Istanbul and lcov do.
     * report/: ReportGenerator's HTML report (index.html), Summary.txt, Summary.json and SummaryGithub.md.
     * inputs/: the rewritten Cobertura files.
 
@@ -333,11 +334,12 @@ else {
     function Format-Coverage([object]$Percent) { if ($null -eq $Percent) { 'n/a' } else { ([double]$Percent).ToString($invariant) + '%' } }
     function Format-Count([long]$Count) { $Count.ToString('N0', $invariant) }
 
+    # Green is the best level and blue the next, as in GitHub Copilot's reviews, so this report and Copilot's read the same way on a pull request
     $blue, $green, $yellow, $red = 0x1F535, 0x1F7E2, 0x1F7E1, 0x1F534 | ForEach-Object { [char]::ConvertFromUtf32($_) }
     function Get-CoverageFlag([object]$Percent) {
         if ($null -eq $Percent -or "$Percent" -eq '') { return '' }
         $value = [double]$Percent
-        if ($value -ge $Exemplary) { $blue } elseif ($value -ge $Commendable) { $green } elseif ($value -ge $Acceptable) { $yellow } else { $red }
+        if ($value -ge $Exemplary) { $green } elseif ($value -ge $Commendable) { $blue } elseif ($value -ge $Acceptable) { $yellow } else { $red }
     }
     function Format-Flagged([object]$Percent) { "$(Get-CoverageFlag $Percent) $(Format-Coverage $Percent)" }
     $acceptableText, $commendableText, $exemplaryText = $Acceptable, $Commendable, $Exemplary | ForEach-Object { $_.ToString($invariant) + '%' }
@@ -346,7 +348,7 @@ else {
     $summary.Add('')
     $summary.Add("All $($total.assemblies) toolkit assemblies, unit tests and device tests together: $(Format-Count $total.coveredlines) of $(Format-Count $total.coverablelines) lines and $(Format-Count $total.coveredbranches) of $(Format-Count $total.totalbranches) branches.")
     $summary.Add('')
-    $summary.Add("$red below ${acceptableText}: needs work now · $yellow $acceptableText to ${commendableText}: acceptable, could be better · $green $commendableText to ${exemplaryText}: commendable · $blue $exemplaryText or more: exemplary, more tests rarely pay off. The scale of [Google's code coverage guidelines](https://testing.googleblog.com/2020/08/code-coverage-best-practices.html), for lines and branches each.")
+    $summary.Add("$red below ${acceptableText}: needs work now · $yellow $acceptableText to ${commendableText}: acceptable, could be better · $blue $commendableText to ${exemplaryText}: commendable · $green $exemplaryText or more: exemplary, more tests rarely pay off. The scale of [Google's code coverage guidelines](https://testing.googleblog.com/2020/08/code-coverage-best-practices.html), for lines and branches each.")
     $summary.Add('')
 
     # ReportGenerator's summary table above the assembly sections is left out: it repeats the totals, and the reports are merged per file, so
