@@ -526,17 +526,7 @@ partial class CameraManager
 			await recordingState.Finalized.WaitAsync(token);
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 
-			// A cancelled restore can be retried; any other failure would leave the finalized recording occupying the state
-			try
-			{
-				await RestorePhotoSession(recordingState, token);
-			}
-			catch (System.Exception exception) when (exception is not OperationCanceledException)
-			{
-				CleanupVideoRecordingResources(recordingState);
-				throw;
-			}
-
+			await RestorePhotoSession(recordingState, token);
 			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 			token.ThrowIfCancellationRequested();
 

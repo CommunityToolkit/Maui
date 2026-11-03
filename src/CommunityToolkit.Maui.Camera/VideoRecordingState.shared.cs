@@ -25,6 +25,8 @@ sealed class VideoRecordingState
 	public void OnFinalized(Exception startException)
 	{
 		startedTcs.TrySetException(startException);
+		// Observe the fault so a start whose waiter already cancelled does not raise UnobservedTaskException
+		_ = startedTcs.Task.Exception;
 		finalizedTcs.TrySetResult();
 	}
 
