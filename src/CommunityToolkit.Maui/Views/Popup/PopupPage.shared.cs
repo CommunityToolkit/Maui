@@ -363,8 +363,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		if (page is null && Microsoft.Maui.Controls.Application.Current?.Windows is { Count: > 0 } windows)
 		{
 			page = windows
-				.FirstOrDefault(window => window.Page is Page rootPage
-					&& ReferenceEquals(rootPage.Navigation, navigation))
+				.FirstOrDefault(window =>
+					ReferenceEquals(window.Navigation, navigation)
+					|| (window.Page is Page rootPage && ReferenceEquals(rootPage.Navigation, navigation)))
 				?.Page
 				?? windows.LastOrDefault()?.Page;
 		}
