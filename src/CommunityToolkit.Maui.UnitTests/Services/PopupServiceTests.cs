@@ -26,6 +26,38 @@ public class PopupServiceTests : BaseViewTest
 	}
 
 	[Fact]
+	public void HideSoftInputOnTapped_PopupShownViaWindowNavigation_InheritsFromPresentingWindowNotLastWindow()
+	{
+		var app = ServiceProvider.GetRequiredService<IApplication>() as MockApplication;
+		Assert.NotNull(app);
+
+		// Window 0 (presenting, NOT the last window): HideSoftInputOnTapped = true.
+		var window0 = Application.Current!.Windows[0];
+		var page0 = new MockPage(new MockPageViewModel());
+		page0.HideSoftInputOnTapped = true;
+		window0.Page = page0;
+
+		// Open a second window (now the LAST window) with the opposite setting: HideSoftInputOnTapped = false.
+		var page1 = new MockPage(new MockPageViewModel());
+		page1.HideSoftInputOnTapped = false;
+		app!.OpenWindow(new Window { Page = page1 });
+
+		// Show a popup via the FIRST (non-last) window's Navigation.
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		popupService.ShowPopup<MockPageViewModel>(window0.Navigation);
+
+		// The popup is pushed onto window0's modal stack; inspect the resulting PopupPage.
+		var modalPage = Assert.Single(window0.Navigation.ModalStack);
+		var popupPage = Assert.IsType<PopupPage>(modalPage);
+
+		// The popup must inherit the PRESENTING window's value (true), not the last window's (false).
+		Assert.True(popupPage.HideSoftInputOnTapped,
+			"Expected the popup to inherit HideSoftInputOnTapped from the PRESENTING window (true). " +
+			"It inherited from the LAST window instead. got: " + popupPage.HideSoftInputOnTapped +
+			", expected: True.");
+	}
+
+	[Fact]
 	public void AddPopup_RegistersViewInServiceCollection()
 	{
 		// Arrange
