@@ -1,4 +1,3 @@
-
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -99,12 +98,21 @@ public partial class Popup : ContentView, IPaddingElement, IView
 
 	internal void NotifyPopupIsOpened()
 	{
+		OnPlatformPopupOpened();
+
 		Opened?.Invoke(this, EventArgs.Empty);
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
-		Closed?.Invoke(this, EventArgs.Empty);
+		try
+		{
+			Closed?.Invoke(this, EventArgs.Empty);
+		}
+		finally
+		{
+			TeardownPlatform();
+		}
 	}
 
 	// .NET MAUI's layout uses an explicit size (IView.Width and IView.Height) even when it is larger than the space available, so a Popup
@@ -116,6 +124,8 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	// Re-implementing IView maps its members to the public members this class declares, but Popup.Margin is the margin of the PopupBorder,
 	// not of the Popup inside it: keep the implementation of View, which returns View.Margin
 	Thickness IView.Margin => base.Margin;
+
+	internal void TeardownPlatform() => OnPlatformPopupClosed();
 
 	internal void SetMaximumDisplaySize(in Size maximumSize)
 	{
@@ -176,6 +186,10 @@ public partial class Popup : ContentView, IPaddingElement, IView
 
 		throw new PopupNotFoundException();
 	}
+
+	partial void OnPlatformPopupOpened();
+
+	partial void OnPlatformPopupClosed();
 }
 
 /// <summary>
