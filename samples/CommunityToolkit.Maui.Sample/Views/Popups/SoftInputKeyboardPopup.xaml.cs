@@ -8,12 +8,12 @@ public partial class SoftInputKeyboardPopup : Popup
 	{
 		InitializeComponent();
 
-		#if IOS
+#if IOS
 		PickerForIOSLabel.IsVisible = true;
 		PickerForIOS.IsVisible = true;
 		DatePickerForIOSLabel.IsVisible = true;
 		DatePickerForIOS.IsVisible = true;
-		#endif
+#endif
 	}
 
 	async void ClosePopup(object? sender, EventArgs eventArgs)
