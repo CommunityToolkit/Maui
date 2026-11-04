@@ -1,6 +1,6 @@
+using System.Diagnostics;
 using CoreGraphics;
 using Foundation;
-using System.Diagnostics;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Views;
