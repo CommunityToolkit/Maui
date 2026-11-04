@@ -15,6 +15,26 @@ public class ToastTests : BaseTest
 		Assert.IsType<IAlert>(toast, exactMatch: false);
 	}
 
+	[Fact]
+	public void EnsureWindowsToastEnabled_NotificationsDisabled_ThrowsSetupException()
+	{
+		var exception = Assert.Throws<InvalidOperationException>(Toast.EnsureWindowsToastEnabled);
+
+		Assert.Contains("UseMauiCommunityToolkit", exception.Message);
+		Assert.Contains(nameof(Options.SetShouldEnableSnackbarOnWindows), exception.Message);
+		Assert.Contains("Package.appxmanifest", exception.Message);
+		Assert.Equal("https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast", exception.HelpLink);
+	}
+
+	[Fact]
+	public void EnsureWindowsToastEnabled_NotificationsEnabled_DoesNotThrow()
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder.UseMauiCommunityToolkit(options => options.SetShouldEnableSnackbarOnWindows(true));
+
+		Toast.EnsureWindowsToastEnabled();
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenExpires()
 	{

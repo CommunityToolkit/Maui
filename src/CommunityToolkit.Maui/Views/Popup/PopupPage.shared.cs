@@ -46,6 +46,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		ArgumentNullException.ThrowIfNull(popup);
 
+		Options.DefaultPopupSettings.OnInitializing?.Invoke(popup);
+
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
@@ -86,6 +88,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			token.ThrowIfCancellationRequested();
+
+			TryInheritHideSoftInputFromPresentingPage(GetVisiblePage(navigation));
+
 			await navigation.PushModalAsync(this, false);
 		}
 		finally
@@ -103,6 +108,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			token.ThrowIfCancellationRequested();
+
+			TryInheritHideSoftInputFromPresentingPage(shell.Navigation.ModalStack.Count > 0
+														? GetVisiblePage(shell.Navigation)
+														: shell.CurrentPage);
+
 			if (shellParameters is null)
 			{
 				await shell.GoToAsync(shellRoute);
@@ -140,7 +150,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
 		switch (Navigation.ModalStack[^1])
 		{
-			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed 
+			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed
 			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
 				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
 
@@ -149,7 +159,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			case IPageContainer<Page> { CurrentPage: not PopupPage }:
 				throw new PopupBlockedException(Navigation.ModalStack[^1]);
 
-			// Handle edge case where the visible modal page is not the Popup to be closed 
+			// Handle edge case where the visible modal page is not the Popup to be closed
 			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
 				throw new PopupBlockedException(currentVisibleModalPage);
 		}
@@ -168,13 +178,25 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		try
 		{
 			// navigationSemaphoreSlim must be in the outer try/finally block to ensure we unsubscribe ModalPopped and NavigatedFrom events when CancellationToken is canceled
-			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully) 
+			// When CancellationToken is canceled during navigationSemaphoreSlim.WaitAsync(), the SemaphoreSlim is never acquired. We only want to release navigationSemaphoreSlim in a finally block if it has been acquired (i.e. after navigationSemaphoreSlim.WaitAsync executes successfully)
 			// The inner try/finally block ensures we release navigationSemaphoreSlim after its acquisition if any subsequent line of code throws an exception or completes successfully
 			await navigationSemaphoreSlim.WaitAsync(token);
 
 			try
 			{
-				await Navigation.PopModalAsync(false);
+				try
+				{
+					await Navigation.PopModalAsync(false);
+				}
+				catch (Exception ex) when (!(ex is OperationCanceledException or InvalidPopupOperationException))
+				{
+					// MAUI's Shell throws an ArgumentException from its route resolver
+					// (ShellUriHandler.GetNavigationRequest) when a PopupPage is popped from a
+					// Shell in certain navigation states — a framework bug the Popup can't
+					// prevent. Confirm the pop locally so the `await` below doesn't hang, then
+					// keep closing; letting this escape would crash an async-void caller of CloseAsync.
+					popupConfirmedPoppedTcs.TrySetResult();
+				}
 
 				// Clean up Popup resources
 				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
@@ -265,7 +287,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		};
 		popup.SetBinding(BackgroundProperty, static (View view) => view.Background, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(BindingContextProperty, static (View view) => view.BindingContext, source: view, mode: BindingMode.OneWay);
-		popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
+		if (view.IsSet(Microsoft.Maui.Controls.VisualElement.BackgroundColorProperty))
+		{
+			popup.SetBinding(BackgroundColorProperty, static (View view) => view.BackgroundColor, source: view, mode: BindingMode.OneWay);
+		}
 		popup.SetBinding(Popup.MarginProperty, static (View view) => view.Margin, source: view, mode: BindingMode.OneWay, converter: new MarginConverter());
 		popup.SetBinding(Popup.VerticalOptionsProperty, static (View view) => view.VerticalOptions, source: view, mode: BindingMode.OneWay);
 		popup.SetBinding(Popup.HorizontalOptionsProperty, static (View view) => view.HorizontalOptions, source: view, mode: BindingMode.OneWay);
@@ -292,9 +317,27 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.NotifyPopupIsOpened();
 	}
 
+	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		popup.TeardownPlatform();
+	}
+
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+
+	bool TryInheritHideSoftInputFromPresentingPage(in Page? presentingPage)
+	{
+		// HideSoftInputOnTapped is only declared on ContentPage, so guard for that type before reading the value.
+		if (presentingPage is not ContentPage contentPage)
+		{
+			return false;
+		}
+
+		HideSoftInputOnTapped = contentPage.HideSoftInputOnTapped;
+		return true;
+	}
 
 	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
@@ -312,6 +355,42 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
+	static Page? GetVisiblePage(INavigation navigation)
+	{
+		var page = navigation.ModalStack?.LastOrDefault()
+			?? navigation.NavigationStack?.LastOrDefault();
+
+		if (page is null && Microsoft.Maui.Controls.Application.Current?.Windows is { Count: > 0 } windows)
+		{
+			page = windows
+				.FirstOrDefault(window =>
+					ReferenceEquals(window.Navigation, navigation)
+					|| (window.Page is Page rootPage && ReferenceEquals(rootPage.Navigation, navigation)))
+				?.Page
+				?? windows.LastOrDefault()?.Page;
+		}
+
+		while (page is not null)
+		{
+			switch (page)
+			{
+				case Shell shell:
+					page = shell.CurrentPage;
+					break;
+				case Microsoft.Maui.Controls.FlyoutPage flyout:
+					page = flyout.Detail;
+					break;
+				case IPageContainer<Page> container:
+					page = container.CurrentPage;
+					break;
+				default:
+					return page;
+			}
+		}
+
+		return null;
+	}
+
 	internal sealed partial class PopupGestureOverlay : BoxView
 	{
 		public PopupGestureOverlay()
@@ -319,6 +398,31 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			BackgroundColor = Colors.Transparent;
 			Background = Brush.Transparent;
 		}
+
+#if ANDROID
+		// .NET MAUI makes the view hosting a TapGestureRecognizer Focusable on Android, causing TalkBack to announce this
+		// transparent overlay as an "unlabeled" element. AutomationProperties only affect Handler.PlatformView, but the
+		// gesture is attached to the ContainerView (WrapperView) when present, so both native views must be hidden.
+		// OnHandlerChanged runs after the HandlerChanged event, i.e. after the GestureManager has configured the native view.
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			HideFromAccessibility(Handler?.ContainerView as Android.Views.View);
+			HideFromAccessibility(Handler?.PlatformView as Android.Views.View);
+
+			static void HideFromAccessibility(Android.Views.View? view)
+			{
+				if (view is null)
+				{
+					return;
+				}
+
+				view.ImportantForAccessibility = Android.Views.ImportantForAccessibility.NoHideDescendants;
+				view.Focusable = false;
+			}
+		}
+#endif
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
@@ -330,13 +434,21 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			this.tryExecuteTapOutsideOfPopupCommand = tryExecuteTapOutsideOfPopupCommand;
 			Background = BackgroundColor = null;
 
+			if (popupContent.BackgroundColor is null)
+			{
+				popupContent.SetAppThemeColor(
+					Popup.BackgroundColorProperty,
+					Options.DefaultPopupSettings.BackgroundColor,
+					Options.DefaultPopupSettings.BackgroundColorDark);
+			}
+
 			PopupBorder = new Border
 			{
-				BackgroundColor = popupContent.BackgroundColor ??= Options.DefaultPopupSettings.BackgroundColor,
+				BackgroundColor = popupContent.BackgroundColor,
 				Content = popupContent
 			};
 
-			// Bind `Popup` values through to Border using OneWay Bindings 
+			// Bind `Popup` values through to Border using OneWay Bindings
 			PopupBorder.SetBinding(Border.MarginProperty, static (Popup popup) => popup.Margin, source: popupContent, mode: BindingMode.OneWay, converter: new MarginConverter());
 			PopupBorder.SetBinding(Border.BackgroundProperty, static (Popup popup) => popup.Background, source: popupContent, mode: BindingMode.OneWay);
 			PopupBorder.SetBinding(Border.BackgroundColorProperty, static (Popup popup) => popup.BackgroundColor, source: popupContent, mode: BindingMode.OneWay, converter: new BackgroundColorConverter());
@@ -375,7 +487,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				return;
 			}
 
-			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder 
+			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder
 			if (PopupBorder.Bounds.Contains(position.Value) is false)
 			{
 				tryExecuteTapOutsideOfPopupCommand();

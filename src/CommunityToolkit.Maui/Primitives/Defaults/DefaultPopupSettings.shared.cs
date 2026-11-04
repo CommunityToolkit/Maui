@@ -27,6 +27,21 @@ public record DefaultPopupSettings
 	public Color BackgroundColor { get; init; } = PopupDefaults.BackgroundColor;
 
 	/// <summary>
+	/// Popup's background color in dark mode.
+	/// </summary>
+	public Color BackgroundColorDark { get; init; } = PopupDefaults.BackgroundColorDark;
+
+	/// <summary>
+	/// Gets the optional callback invoked each time a <see cref="Popup"/> is presented — that is, when the page
+	/// that hosts it is created — after the popup and its content are fully built, but before the popup is
+	/// parented on that page. Use it to customize a popup per presentation (for example adjusting its
+	/// <see cref="VisualElement.BackgroundColor"/>); unlike a constructor-time hook, the popup's content is
+	/// available when this runs. A callback that throws prevents the popup from being presented.
+	/// Defaults to <see langword="null"/>.
+	/// </summary>
+	public Action<Popup>? OnInitializing { get; init; } = PopupDefaults.OnInitializing;
+
+	/// <summary>
 	/// Default Values for <see cref="Popup"/>
 	/// </summary>
 	static class PopupDefaults
@@ -60,5 +75,15 @@ public record DefaultPopupSettings
 		/// Default value for <see cref="VisualElement.BackgroundColor"/> BackgroundColor 
 		/// </summary>
 		public static Color BackgroundColor { get; } = Colors.White;
+
+		/// <summary>
+		/// Default value for Popup's background color in dark mode
+		/// </summary>
+		public static Color BackgroundColorDark { get; } = Colors.Black;
+
+		/// <summary>
+		/// Default value for <see cref="DefaultPopupSettings.OnInitializing"/>
+		/// </summary>
+		public static Action<Popup>? OnInitializing { get; } = null;
 	}
 }

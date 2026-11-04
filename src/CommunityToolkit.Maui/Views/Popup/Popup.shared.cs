@@ -1,4 +1,3 @@
-
 using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Views;
@@ -17,8 +16,8 @@ public partial class Popup : ContentView
 		Padding = Options.DefaultPopupSettings.Padding;
 		HorizontalOptions = Options.DefaultPopupSettings.HorizontalOptions;
 		VerticalOptions = Options.DefaultPopupSettings.VerticalOptions;
-		BackgroundColor = Options.DefaultPopupSettings.BackgroundColor;
 		CanBeDismissedByTappingOutsideOfPopup = Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+		this.SetAppThemeColor(BackgroundColorProperty, Options.DefaultPopupSettings.BackgroundColor, Options.DefaultPopupSettings.BackgroundColorDark);
 	}
 
 	/// <summary>
@@ -73,13 +72,24 @@ public partial class Popup : ContentView
 
 	internal void NotifyPopupIsOpened()
 	{
+		OnPlatformPopupOpened();
+
 		Opened?.Invoke(this, EventArgs.Empty);
 	}
 
 	internal void NotifyPopupIsClosed()
 	{
-		Closed?.Invoke(this, EventArgs.Empty);
+		try
+		{
+			Closed?.Invoke(this, EventArgs.Empty);
+		}
+		finally
+		{
+			TeardownPlatform();
+		}
 	}
+
+	internal void TeardownPlatform() => OnPlatformPopupClosed();
 
 	private protected PopupPage GetPopupPage()
 	{
@@ -97,6 +107,10 @@ public partial class Popup : ContentView
 
 		throw new PopupNotFoundException();
 	}
+
+	partial void OnPlatformPopupOpened();
+
+	partial void OnPlatformPopupClosed();
 }
 
 /// <summary>

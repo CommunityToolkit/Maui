@@ -112,6 +112,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
+	/// <summary>
+	/// Event that is raised when an error occurs.
+	/// </summary>
+	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
 	/// <inheritdoc cref="ICameraView.IsAvailable"/>
 	public bool IsAvailable => (bool)GetValue(IsAvailableProperty);
 
@@ -305,6 +314,11 @@ public partial class CameraView : View, ICameraView, IDisposable
 	void ICameraView.OnMediaCapturedFailed(string failureReason)
 	{
 		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+	}
+
+	void ICameraView.OnErrorOccurred(Exception ex)
+	{
+		weakEventManager.HandleEvent(this, new ErrorOccurredEventArgs(ex), nameof(ErrorOccurred));
 	}
 
 	/// <inheritdoc/>
