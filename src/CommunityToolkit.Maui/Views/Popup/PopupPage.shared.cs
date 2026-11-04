@@ -398,6 +398,31 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			BackgroundColor = Colors.Transparent;
 			Background = Brush.Transparent;
 		}
+
+#if ANDROID
+		// .NET MAUI makes the view hosting a TapGestureRecognizer Focusable on Android, causing TalkBack to announce this
+		// transparent overlay as an "unlabeled" element. AutomationProperties only affect Handler.PlatformView, but the
+		// gesture is attached to the ContainerView (WrapperView) when present, so both native views must be hidden.
+		// OnHandlerChanged runs after the HandlerChanged event, i.e. after the GestureManager has configured the native view.
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			HideFromAccessibility(Handler?.ContainerView as Android.Views.View);
+			HideFromAccessibility(Handler?.PlatformView as Android.Views.View);
+
+			static void HideFromAccessibility(Android.Views.View? view)
+			{
+				if (view is null)
+				{
+					return;
+				}
+
+				view.ImportantForAccessibility = Android.Views.ImportantForAccessibility.NoHideDescendants;
+				view.Focusable = false;
+			}
+		}
+#endif
 	}
 
 	internal sealed partial class PopupPageLayout : Grid
