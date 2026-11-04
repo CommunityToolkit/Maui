@@ -410,6 +410,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			BackgroundColor = Colors.Transparent;
 			Background = Brush.Transparent;
+
+#if ANDROID
+			// .NET MAUI configures the native view for its gestures again, and makes it focusable again, whenever the gesture recognizers
+			// change while the view has a handler. MAUI's own subscription (made in the constructor of View) runs first.
+			if (GestureRecognizers is System.Collections.Specialized.INotifyCollectionChanged gestureRecognizers)
+			{
+				gestureRecognizers.CollectionChanged += (_, _) => HideNativeViewsFromAccessibility();
+			}
+#endif
 		}
 
 #if ANDROID
@@ -421,19 +430,24 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		{
 			base.OnHandlerChanged();
 
+			HideNativeViewsFromAccessibility();
+		}
+
+		void HideNativeViewsFromAccessibility()
+		{
 			HideFromAccessibility(Handler?.ContainerView as Android.Views.View);
 			HideFromAccessibility(Handler?.PlatformView as Android.Views.View);
+		}
 
-			static void HideFromAccessibility(Android.Views.View? view)
+		static void HideFromAccessibility(Android.Views.View? view)
+		{
+			if (view is null)
 			{
-				if (view is null)
-				{
-					return;
-				}
-
-				view.ImportantForAccessibility = Android.Views.ImportantForAccessibility.NoHideDescendants;
-				view.Focusable = false;
+				return;
 			}
+
+			view.ImportantForAccessibility = Android.Views.ImportantForAccessibility.NoHideDescendants;
+			view.Focusable = false;
 		}
 #endif
 	}
