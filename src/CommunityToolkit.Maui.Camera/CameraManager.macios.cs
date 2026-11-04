@@ -33,7 +33,7 @@ partial class CameraManager
 	AVCaptureDeviceRotationCoordinator? rotationCoordinator;
 	AVCaptureMovieFileOutputRecordingDelegate? videoRecordingDelegate;
 	string? videoRecordingFileName;
-	TaskCompletionSource? videoRecordingFinalizeTcs;
+	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 
 	// A start must not release the recording that a stop still waits for AVFoundation to finish (and delete its movie), like on Android
@@ -47,7 +47,6 @@ partial class CameraManager
 		// A StopVideoRecording that still waits for AVFoundation to finish the recording completes with Stream.Null instead of using what is
 		// released here (like on Android)
 		isDisposed = true;
-		var pendingVideoRecordingFinalizeTcs = videoRecordingFinalizeTcs;
 
 		CleanupVideoRecordingResources();
 
@@ -78,9 +77,6 @@ partial class CameraManager
 		motionManager?.StopAccelerometerUpdates();
 		motionManager?.Dispose();
 		motionManager = null;
-
-		// The waiting stop does not depend on AVFoundation reporting the end of a recording whose session is gone (it completes asynchronously)
-		pendingVideoRecordingFinalizeTcs?.TrySetResult();
 	}
 
 	public NativePlatformCameraPreviewView CreatePlatformView()
@@ -386,6 +382,15 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		// A start that arrives while another one still waits for AVFoundation to start the recording waits for that start instead of starting
+		// a second recording. It must not wait for the semaphore first: that is held until the recording started, and the start that then
+		// got the semaphore would replace the recording that just started.
+		if (videoRecordingState is { Started.IsCompleted: false } pendingRecordingState)
+		{
+			await pendingRecordingState.Started.WaitAsync(token);
+			return;
+		}
+
 		await videoRecordingSemaphoreSlim.WaitAsync(token);
 
 		try
@@ -411,81 +416,104 @@ partial class CameraManager
 			throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
 		}
 
+		// Like on Android and Windows, the stream of the latest StartVideoRecording receives the video: the running recording is released
 		CleanupVideoRecordingResources();
 
-		captureSession.BeginConfiguration();
+		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
+		{
+			if (videoRecordingState is { } activeRecordingState)
+			{
+				await activeRecordingState.Started.WaitAsync(token);
+			}
+
+			return;
+		}
+
+		var recordingRequested = false;
 
 		try
 		{
-			var audioDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio);
-			if (audioDevice is not null)
+			token.ThrowIfCancellationRequested();
+			ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
+
+			captureSession.BeginConfiguration();
+
+			try
 			{
-				audioInput = new AVCaptureDeviceInput(audioDevice, out NSError? audioError);
-				if (audioError is null && captureSession.CanAddInput(audioInput))
+				var audioDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio);
+				if (audioDevice is not null)
 				{
-					captureSession.AddInput(audioInput);
-				}
-				else
-				{
-					audioInput?.Dispose();
-					audioInput = null;
+					audioInput = new AVCaptureDeviceInput(audioDevice, out NSError? audioError);
+					if (audioError is null && captureSession.CanAddInput(audioInput))
+					{
+						captureSession.AddInput(audioInput);
+					}
+					else
+					{
+						audioInput?.Dispose();
+						audioInput = null;
+					}
 				}
 			}
+			catch
+			{
+				// Ignore audio configuration issues; proceed with video-only recording
+			}
+
+			try
+			{
+				videoOutput = new AVCaptureMovieFileOutput();
+
+				if (!captureSession.CanAddOutput(videoOutput))
+				{
+					if (audioInput is not null)
+					{
+						captureSession.RemoveInput(audioInput);
+						audioInput.Dispose();
+						audioInput = null;
+					}
+
+					videoOutput.Dispose();
+					videoOutput = null;
+					throw new CameraException("Unable to add video output to capture session.");
+				}
+
+				captureSession.AddOutput(videoOutput);
+			}
+			finally
+			{
+				captureSession.CommitConfiguration();
+			}
+
+			if (!TryConfigureAVCaptureConnection(videoOutput, out var error))
+			{
+				// Without a usable video connection (for example without a camera input) the movie output can only record the microphone
+				Trace.TraceWarning(error);
+			}
+
+			// startRecordingToOutputFileURL:recordingDelegate: raises NSInvalidArgumentException ("No active/enabled connections") when the movie
+			// output has no connection that is active and enabled, for example without a camera input and without a microphone input
+			if (!videoOutput.Connections.Any(static connection => connection.Active && connection.Enabled))
+			{
+				throw new CameraException("Unable to start video recording: no camera or microphone connection is active and enabled.");
+			}
+
+			videoRecordingStream = stream;
+			videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
+
+			var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
+			videoRecordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(recordingState);
+			videoOutput.StartRecordingToOutputFile(outputUrl, videoRecordingDelegate);
+			recordingRequested = true;
+
+			await recordingState.Started.WaitAsync(token);
 		}
 		catch
 		{
-			// Ignore audio configuration issues; proceed with video-only recording
+			// Not cancellable by the token of the start: the cancelled start still has to end the recording and release its state
+			await CancelVideoRecordingStart(recordingState, recordingRequested, CancellationToken.None);
+			throw;
 		}
-
-		try
-		{
-			videoOutput = new AVCaptureMovieFileOutput();
-
-			if (!captureSession.CanAddOutput(videoOutput))
-			{
-				if (audioInput is not null)
-				{
-					captureSession.RemoveInput(audioInput);
-					audioInput.Dispose();
-					audioInput = null;
-				}
-
-				videoOutput.Dispose();
-				videoOutput = null;
-				throw new CameraException("Unable to add video output to capture session.");
-			}
-
-			captureSession.AddOutput(videoOutput);
-		}
-		finally
-		{
-			captureSession.CommitConfiguration();
-		}
-
-		if (!TryConfigureAVCaptureConnection(videoOutput, out var error))
-		{
-			// Without a usable video connection (for example without a camera input) the movie output can only record the microphone
-			Trace.TraceWarning(error);
-		}
-
-		// startRecordingToOutputFileURL:recordingDelegate: raises NSInvalidArgumentException ("No active/enabled connections") when the movie
-		// output has no connection that is active and enabled, for example without a camera input and without a microphone input
-		if (!videoOutput.Connections.Any(static connection => connection.Active && connection.Enabled))
-		{
-			CleanupVideoRecordingResources();
-			throw new CameraException("Unable to start video recording: no camera or microphone connection is active and enabled.");
-		}
-
-		videoRecordingStream = stream;
-
-		// Completed by the recording delegate on a queue of AVFoundation, or by Dispose: the stop that waits for it never continues on that queue
-		// or inside Dispose
-		videoRecordingFinalizeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		videoRecordingFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mov");
-
-		var outputUrl = NSUrl.FromFilename(videoRecordingFileName);
-		videoRecordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(videoRecordingFinalizeTcs);
-		videoOutput.StartRecordingToOutputFile(outputUrl, videoRecordingDelegate);
 	}
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
@@ -496,6 +524,12 @@ partial class CameraManager
 		{
 			return await StopRecordingAsync(token);
 		}
+		catch (Exception exception) when (isDisposed && exception is ObjectDisposedException or OperationCanceledException)
+		{
+			// Dispose released the recording and the stream while the stop waited (the page closed right after the user tapped stop):
+			// there is no video to return, and nothing may escape from the async void StopVideoRecordingCommand (like on Android)
+			return Stream.Null;
+		}
 		finally
 		{
 			videoRecordingSemaphoreSlim.Release();
@@ -504,79 +538,124 @@ partial class CameraManager
 
 	async Task<Stream> StopRecordingAsync(CancellationToken token)
 	{
-		if (captureSession is null
-			|| videoRecordingFileName is null
-			|| videoOutput is null
-			|| videoRecordingStream is null
-			|| videoRecordingFinalizeTcs is null)
+		if (videoRecordingState is not { } recordingState
+			|| !await recordingState.TryWaitForStartAsync(token))
 		{
 			return Stream.Null;
 		}
 
-		// The recording that this stop ends: Dispose can release it while AVFoundation finishes it
-		var finalizeTcs = videoRecordingFinalizeTcs;
-		var recordingDelegate = videoRecordingDelegate;
-		var fileName = videoRecordingFileName;
-		var stream = videoRecordingStream;
-
-		videoOutput.StopRecording();
-		await finalizeTcs.Task.WaitAsync(token);
-
-		// Dispose released the recording (deleted its movie, disposed the stream) while AVFoundation finished it: there is no video to return,
-		// and nothing may escape from the async void StopVideoRecordingCommand (like on Android)
-		if (isDisposed)
-		{
-			return Stream.Null;
-		}
-
+		await recordingState.StopSemaphore.WaitAsync(token);
 		try
 		{
-			var hasMovie = File.Exists(fileName);
-
-			// When AVFoundation still reports the movie as successfully recorded (it stopped early, for example after an interruption or when
-			// the disk filled up), the movie recorded until then is returned. Otherwise there is no usable movie: the caller gets the failure
-			// instead of its stream, which would look like a successful recording
-			if (recordingDelegate?.FailureReason is string failureReason)
+			if (!ReferenceEquals(recordingState, videoRecordingState)
+				|| captureSession is null
+				|| videoRecordingFileName is not { } recordingFileName
+				|| videoOutput is not { } recordingOutput
+				|| videoRecordingStream is not { } recordingStream)
 			{
-				if (!recordingDelegate.IsRecordingSuccessfullyFinished || !hasMovie)
-				{
-					throw new CameraException($"Video recording failed: {failureReason}");
-				}
-
-				Trace.TraceWarning($"The video recording stopped early, the movie recorded until then is returned: {failureReason}");
+				return Stream.Null;
 			}
 
-			if (hasMovie)
+			// The delegate of the recording that this stop ends: Dispose can release it while AVFoundation finishes it
+			var recordingDelegate = videoRecordingDelegate;
+
+			if (!recordingState.Finalized.IsCompleted)
 			{
-				await using var inputStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-				await inputStream.CopyToAsync(stream, token);
-				await stream.FlushAsync(token);
-				if (stream.CanSeek)
-				{
-					stream.Position = 0;
-				}
+				recordingOutput.StopRecording();
 			}
-		}
-		catch (ObjectDisposedException) when (isDisposed)
-		{
-			// Dispose ran while the movie was copied: it disposed the stream
-			return Stream.Null;
+
+			await recordingState.Finalized.WaitAsync(token);
+
+			ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
+
+			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal
+			try
+			{
+				var hasMovie = File.Exists(recordingFileName);
+
+				// When AVFoundation still reports the movie as successfully recorded (it stopped early, for example after an interruption or when
+				// the disk filled up), the movie recorded until then is returned. Otherwise there is no usable movie: the caller gets the failure
+				// instead of its stream, which would look like a successful recording
+				if (recordingDelegate?.FailureReason is string failureReason)
+				{
+					if (!recordingDelegate.IsRecordingSuccessfullyFinished || !hasMovie)
+					{
+						throw new CameraException($"Video recording failed: {failureReason}");
+					}
+
+					Trace.TraceWarning($"The video recording stopped early, the movie recorded until then is returned: {failureReason}");
+				}
+
+				if (hasMovie)
+				{
+					await using var inputStream = new FileStream(recordingFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+					await inputStream.CopyToAsync(recordingStream, token);
+					await recordingStream.FlushAsync(token);
+					if (recordingStream.CanSeek)
+					{
+						recordingStream.Position = 0;
+					}
+				}
+
+				ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
+			}
+
+			return recordingStream;
 		}
 		finally
 		{
-			// Unless Dispose already released it
-			if (ReferenceEquals(videoRecordingFinalizeTcs, finalizeTcs))
-			{
-				CleanupVideoRecordingResources();
-			}
+			recordingState.StopSemaphore.Release();
 		}
-
-		return stream;
 	}
 
-	void CleanupVideoRecordingResources()
+	async Task CancelVideoRecordingStart(VideoRecordingState recordingState, bool recordingRequested, CancellationToken token)
 	{
-		if (captureSession is not null)
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
+		{
+			if (!ReferenceEquals(recordingState, videoRecordingState))
+			{
+				return;
+			}
+
+			if (recordingRequested)
+			{
+				if (!recordingState.Finalized.IsCompleted)
+				{
+					videoOutput?.StopRecording();
+				}
+
+				await recordingState.Finalized.WaitAsync(token);
+			}
+
+			CleanupVideoRecordingResources(recordingState);
+		}
+		catch (Exception exception)
+		{
+			Trace.WriteLine($"Unable to stop video recording after start failed: {exception}");
+		}
+		finally
+		{
+			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	void CleanupVideoRecordingResources(VideoRecordingState? expectedState = null)
+	{
+		if (expectedState is not null && !ReferenceEquals(expectedState, videoRecordingState))
+		{
+			return;
+		}
+
+		videoRecordingState?.CancelPendingTasks();
+
+		// A configuration block makes the running session reconfigure, which a release of a recording that never added anything (a start
+		// that failed before the movie output was added) must not cause
+		if (captureSession is not null && (expectedState is null || audioInput is not null || videoOutput is not null))
 		{
 			captureSession.BeginConfiguration();
 
@@ -624,7 +703,7 @@ partial class CameraManager
 			videoRecordingFileName = null;
 		}
 
-		videoRecordingFinalizeTcs = null;
+		videoRecordingState = null;
 	}
 
 	private async partial ValueTask PlatformTakePicture(CancellationToken token)
@@ -808,7 +887,7 @@ partial class CameraManager
 	}
 }
 
-class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskCompletionSource) : AVCaptureFileOutputRecordingDelegate
+class AVCaptureMovieFileOutputRecordingDelegate(VideoRecordingState recordingState) : AVCaptureFileOutputRecordingDelegate
 {
 	// Written on the queue on which AVFoundation calls the delegate, read on the thread that releases the recording
 	volatile bool hasFinished;
@@ -818,6 +897,11 @@ class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskComplet
 	public string? FailureReason { get; private set; }
 
 	public bool IsRecordingSuccessfullyFinished { get; private set; }
+
+	public override void DidStartRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections)
+	{
+		recordingState.OnStarted();
+	}
 
 	public override void FinishedRecording(AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject[] connections, NSError? error)
 	{
@@ -837,7 +921,8 @@ class AVCaptureMovieFileOutputRecordingDelegate(TaskCompletionSource taskComplet
 
 		hasFinished = true;
 
-		// Dispose may have completed the task already (an exception here would be raised on AVFoundation's queue)
-		taskCompletionSource.TrySetResult();
+		recordingState.OnFinalized(new CameraException(error is null
+			? "Video recording finished before it started."
+			: $"Video recording failed to start: {error.LocalizedDescription}"));
 	}
 }

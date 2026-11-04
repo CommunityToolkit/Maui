@@ -488,6 +488,9 @@ sealed class AppleMovieRecordingStub : IDisposable
 
 	public bool FinishWhenStopped { get; set; } = true;
 
+	// AVFoundation reports the start of a recording to its delegate, which StartVideoRecording waits for
+	public bool AcknowledgeStart { get; set; } = true;
+
 	public IReadOnlyList<Recording> Recordings
 	{
 		get
@@ -532,6 +535,15 @@ sealed class AppleMovieRecordingStub : IDisposable
 		if (MovieBytes is not null)
 		{
 			File.WriteAllBytes(filePath, MovieBytes);
+		}
+
+		if (AcknowledgeStart)
+		{
+			var startedDelegate = Runtime.GetNSObject<AVCaptureFileOutputRecordingDelegate>(recordingDelegate)
+				?? throw new InvalidOperationException("The recording delegate is gone.");
+			var output = Runtime.GetNSObject<AVCaptureFileOutput>(self)
+				?? throw new InvalidOperationException("The movie output is gone.");
+			startedDelegate.DidStartRecording(output, NSUrl.FromFilename(filePath), []);
 		}
 	}
 

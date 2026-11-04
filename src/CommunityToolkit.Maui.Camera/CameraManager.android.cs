@@ -21,9 +21,20 @@ using Object = Java.Lang.Object;
 
 namespace CommunityToolkit.Maui.Core;
 
-public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsumer
+public class CameraConsumer : Object, IConsumer
 {
-	readonly TaskCompletionSource? finalizeTcs = finalizeTcs;
+	readonly TaskCompletionSource? finalizeTcs;
+	readonly VideoRecordingState? recordingState;
+
+	public CameraConsumer(TaskCompletionSource finalizeTcs)
+	{
+		this.finalizeTcs = finalizeTcs;
+	}
+
+	internal CameraConsumer(VideoRecordingState recordingState)
+	{
+		this.recordingState = recordingState;
+	}
 
 	internal int Error { get; private set; } = VideoRecordEvent.Finalize.ErrorNone;
 
@@ -31,20 +42,26 @@ public class CameraConsumer(TaskCompletionSource finalizeTcs) : Object, IConsume
 
 	public void Accept(Object? videoRecordEvent)
 	{
-		if (videoRecordEvent is VideoRecordEvent.Finalize finalizeEvent)
+		switch (videoRecordEvent)
 		{
-			// CameraX finalizes a recording that failed with an error (the storage is full, the camera closed, ...) also when the video
-			// recorded until then is in the file, so the error is kept for StopVideoRecording to decide whether that video can be played
-			if (finalizeEvent.HasError)
-			{
-				Error = finalizeEvent.Error;
-				var error = $"CameraX finalized the recording with VideoRecordEvent.Finalize error code {finalizeEvent.Error}";
-				FailureReason = finalizeEvent.Cause?.Message is { Length: > 0 } causeMessage
-					? $"{error} - {causeMessage}"
-					: error;
-			}
+			case VideoRecordEvent.Start:
+				recordingState?.OnStarted();
+				break;
+			case VideoRecordEvent.Finalize finalizeEvent:
+				// CameraX finalizes a recording that failed with an error (the storage is full, the camera closed, ...) also when the video
+				// recorded until then is in the file, so the error is kept for StopVideoRecording to decide whether that video can be played
+				if (finalizeEvent.HasError)
+				{
+					Error = finalizeEvent.Error;
+					var error = $"CameraX finalized the recording with VideoRecordEvent.Finalize error code {finalizeEvent.Error}";
+					FailureReason = finalizeEvent.Cause?.Message is { Length: > 0 } causeMessage
+						? $"{error} - {causeMessage}"
+						: error;
+				}
 
-			finalizeTcs?.SetResult();
+				recordingState?.OnFinalized(new CameraException($"Video recording finished before it started (CameraX error {finalizeEvent.Error})."));
+				finalizeTcs?.TrySetResult();
+				break;
 		}
 	}
 }
@@ -75,8 +92,8 @@ partial class CameraManager
 	OrientationListener? orientationListener;
 	ActivityResumedObserver? activityResumedObserver;
 	Java.IO.File? videoRecordingFile;
-	TaskCompletionSource? videoRecordingFinalizeTcs;
 	CameraConsumer? videoRecordingConsumer;
+	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 	int extensionMode = ExtensionMode.Auto;
 	bool isDisposed;
@@ -698,6 +715,15 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		// A start that arrives while another one still waits for CameraX to start the recording waits for that start instead of starting a
+		// second recording. It must not wait for the semaphore first: that is held until the recording started, and the start that then
+		// got the semaphore would replace the recording that just started.
+		if (videoRecordingState is { Started.IsCompleted: false } pendingRecordingState)
+		{
+			await pendingRecordingState.Started.WaitAsync(token);
+			return;
+		}
+
 		await videoRecordingSemaphoreSlim.WaitAsync(token);
 
 		try
@@ -721,19 +747,21 @@ partial class CameraManager
 			return;
 		}
 
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
-
-		if (videoRecording is not null && videoRecordingFinalizeTcs is not null)
+		if (videoRecordingState is { } previousRecordingState)
 		{
 			// Like on iOS and Windows, the stream of the latest StartVideoRecording receives the video: the running recording ends and its
-			// video is discarded
+			// video is discarded. A start that is still pending never gets here, PlatformStartVideoRecording lets a concurrent start wait for it.
 			token.ThrowIfCancellationRequested();
-			videoRecording.Stop();
-			await videoRecordingFinalizeTcs.Task.WaitAsync(token);
+			if (!previousRecordingState.Finalized.IsCompleted)
+			{
+				videoRecording?.Stop();
+			}
+
+			await previousRecordingState.Finalized.WaitAsync(token);
 
 			ObjectDisposedException.ThrowIf(isDisposed, this);
 
-			CleanupVideoRecordingResources();
+			CleanupVideoRecordingResources(previousRecordingState);
 
 			// A camera switch that waited for the ended recording completes first: the new recording records with the selected camera
 			if (isCameraSwitchDeferred)
@@ -742,14 +770,29 @@ partial class CameraManager
 			}
 		}
 
-		// The recording file and the recording (which checks RECORD_AUDIO) are prepared before the session changes, and the manager
-		// keeps the recording state only once the recording started: a StartVideoRecording that fails leaves nothing behind
-		var recordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
+		{
+			if (videoRecordingState is { } activeRecordingState)
+			{
+				await activeRecordingState.Started.WaitAsync(token);
+			}
+
+			return;
+		}
+
+		var recordingRequested = false;
+
 		try
 		{
-			recordingFile.CreateNewFile();
+			token.ThrowIfCancellationRequested();
+			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-			var outputOptions = new FileOutputOptions.Builder(recordingFile).Build();
+			// The recording file and the recording (which checks RECORD_AUDIO) are prepared before the session changes, so that a
+			// StartVideoRecording that fails for the permission leaves the photo session as it was
+			videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
+			videoRecordingFile.CreateNewFile();
+
+			var outputOptions = new FileOutputOptions.Builder(videoRecordingFile).Build();
 
 			var pendingRecording = videoRecorder
 				.PrepareRecording(context, outputOptions)
@@ -771,27 +814,22 @@ partial class CameraManager
 				await BindVideoSessionAsync(token);
 			}
 
-			var finalizeTcs = new TaskCompletionSource();
-			var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-			var consumer = new CameraConsumer(finalizeTcs);
+			ObjectDisposedException.ThrowIf(!ReferenceEquals(recordingState, videoRecordingState), this);
 
-			videoRecording = pendingRecording.Start(executor, consumer);
-			videoRecordingConsumer = consumer;
-			videoRecordingFile = recordingFile;
-			videoRecordingFinalizeTcs = finalizeTcs;
+			var executor = ContextCompat.GetMainExecutor(context) ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+			var consumer = new CameraConsumer(recordingState);
+
 			videoRecordingStream = stream;
+			videoRecordingConsumer = consumer;
+			videoRecording = pendingRecording.Start(executor, consumer);
+			recordingRequested = true;
+
+			await recordingState.Started.WaitAsync(token);
 		}
 		catch
 		{
-			recordingFile.Delete();
-			recordingFile.Dispose();
-
-			// No recording runs any more: the running recording ended above, or the session switched to video before the failure
-			if (!IsCapturePhotoSession)
-			{
-				await ReturnToPhotoSessionAsync();
-			}
-
+			// Not cancellable by the token of the start: the cancelled start still has to end the recording and release its state
+			await CancelVideoRecordingStart(recordingState, recordingRequested, CancellationToken.None);
 			throw;
 		}
 	}
@@ -801,8 +839,12 @@ partial class CameraManager
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 
 		// Like on iOS, the recording stops also when the token is cancelled already: the token cancels waiting for CameraX to finalize
-		// the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be called again
-		videoRecording?.Stop();
+		// the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be called again. A recording
+		// that did not start yet is not stopped here: the stop waits for its start below.
+		if (videoRecordingState is { Started.IsCompletedSuccessfully: true, Finalized.IsCompleted: false })
+		{
+			videoRecording?.Stop();
+		}
 
 		await videoRecordingSemaphoreSlim.WaitAsync(token);
 
@@ -810,7 +852,7 @@ partial class CameraManager
 		{
 			return await StopRecordingAsync(token);
 		}
-		catch (ObjectDisposedException) when (isDisposed)
+		catch (System.Exception exception) when (isDisposed && exception is ObjectDisposedException or OperationCanceledException)
 		{
 			// Dispose released the recording and the stream while the stop waited (the page closed right after the user tapped stop):
 			// there is no video to return, and nothing may escape from the async void StopVideoRecordingCommand
@@ -824,52 +866,116 @@ partial class CameraManager
 
 	async Task<Stream> StopRecordingAsync(CancellationToken token)
 	{
-		if (videoRecording is null
-			|| videoRecordingFile is null
-			|| videoRecordingFinalizeTcs is null
-			|| videoRecordingStream is null)
+		if (videoRecordingState is not { } recordingState
+			|| !await recordingState.TryWaitForStartAsync(token))
 		{
 			return Stream.Null;
 		}
 
-		var stream = videoRecordingStream;
-
-		videoRecording.Stop();
-		await videoRecordingFinalizeTcs.Task.WaitAsync(token);
-
-		ObjectDisposedException.ThrowIf(isDisposed, this);
-
+		await recordingState.StopSemaphore.WaitAsync(token);
 		try
 		{
-			// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful
-			// recording; a video recorded until the failure (for example until StopCameraPreview closed the camera) is returned like the
-			// video of a recording that was stopped
-			if (videoRecordingConsumer?.FailureReason is string failureReason)
+			if (!ReferenceEquals(recordingState, videoRecordingState)
+				|| videoRecording is not { } recording
+				|| videoRecordingFile is not { } recordingFile
+				|| videoRecordingStream is not { } recordingStream)
 			{
-				if (!HasPlayableVideo(videoRecordingConsumer.Error, videoRecordingFile))
-				{
-					throw new CameraException($"Video recording failed: {failureReason}");
-				}
-
-				Trace.TraceWarning($"{nameof(CameraManager)}: StopVideoRecording returns the video recorded until the recording failed: {failureReason}");
+				return Stream.Null;
 			}
 
-			await using var inputStream = new FileStream(videoRecordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-			await inputStream.CopyToAsync(stream, token);
-			await stream.FlushAsync(token);
+			if (!recordingState.Finalized.IsCompleted)
+			{
+				recording.Stop();
+			}
+
+			await recordingState.Finalized.WaitAsync(token);
+
+			ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
+
+			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal. The cleanup is the
+			// first thing the finally block does, so that a session that can not be restored never leaves the recording state behind
+			// (every later StartVideoRecording would wait for it)
+			try
+			{
+				// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful
+				// recording; a video recorded until the failure (for example until StopCameraPreview closed the camera) is returned like the
+				// video of a recording that was stopped
+				if (videoRecordingConsumer?.FailureReason is string failureReason)
+				{
+					if (!HasPlayableVideo(videoRecordingConsumer.Error, recordingFile))
+					{
+						throw new CameraException($"Video recording failed: {failureReason}");
+					}
+
+					Trace.TraceWarning($"{nameof(CameraManager)}: StopVideoRecording returns the video recorded until the recording failed: {failureReason}");
+				}
+
+				await using var inputStream = new FileStream(recordingFile.AbsolutePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+				await inputStream.CopyToAsync(recordingStream, token);
+				await recordingStream.FlushAsync(token);
+				if (recordingStream.CanSeek)
+				{
+					recordingStream.Position = 0;
+				}
+
+				ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
+				await ReturnToPhotoSessionAsync();
+			}
+
+			return recordingStream;
 		}
 		finally
 		{
-			CleanupVideoRecordingResources();
-			await ReturnToPhotoSessionAsync();
+			recordingState.StopSemaphore.Release();
 		}
+	}
 
-		if (stream.CanSeek)
+	async Task CancelVideoRecordingStart(VideoRecordingState recordingState, bool recordingRequested, CancellationToken token)
+	{
+		await recordingState.StopSemaphore.WaitAsync(token);
+		try
 		{
-			stream.Position = 0;
-		}
+			if (!ReferenceEquals(recordingState, videoRecordingState))
+			{
+				return;
+			}
 
-		return stream;
+			try
+			{
+				if (recordingRequested)
+				{
+					if (!recordingState.Finalized.IsCompleted)
+					{
+						videoRecording?.Stop();
+					}
+
+					await recordingState.Finalized.WaitAsync(token);
+				}
+			}
+			finally
+			{
+				CleanupVideoRecordingResources(recordingState);
+
+				// No recording runs any more: the session switched to video before the failure is switched back, and a start that failed
+				// before it switched leaves the photo session as it was
+				if (!IsCapturePhotoSession)
+				{
+					await ReturnToPhotoSessionAsync();
+				}
+			}
+		}
+		catch (System.Exception exception)
+		{
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to end the video recording after its start failed: {exception}");
+		}
+		finally
+		{
+			recordingState.StopSemaphore.Release();
+		}
 	}
 
 	// The errors are classified according to the documentation of VideoRecordEvent.Finalize:
@@ -912,8 +1018,15 @@ partial class CameraManager
 		}
 	}
 
-	void CleanupVideoRecordingResources()
+	void CleanupVideoRecordingResources(VideoRecordingState? expectedState = null)
 	{
+		if (expectedState is not null && !ReferenceEquals(expectedState, videoRecordingState))
+		{
+			return;
+		}
+
+		videoRecordingState?.CancelPendingTasks();
+
 		videoRecording?.Dispose();
 		videoRecording = null;
 
@@ -928,8 +1041,8 @@ partial class CameraManager
 			videoRecordingFile = null;
 		}
 
-		videoRecordingFinalizeTcs = null;
 		videoRecordingConsumer = null;
+		videoRecordingState = null;
 	}
 
 	async Task<CameraSelector> EnableModes(CameraInfo selectedCamera, CancellationToken token)

@@ -806,7 +806,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 	[InlineData("fileName")]
 	[InlineData("output")]
 	[InlineData("stream")]
-	[InlineData("tcs")]
+	[InlineData("state")]
 	public async Task StopVideoRecordingWithAnyMissingRecordingPartReturnsTheNullStream(string missingPart)
 	{
 		SetupBuilder();
@@ -820,7 +820,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			scope.Access.VideoRecordingFileName = missingPart is "fileName" ? null : Path.Combine(Path.GetTempPath(), $"fake-{Guid.NewGuid()}.mov");
 			scope.Access.VideoOutput = missingPart is "output" ? null : output;
 			scope.Access.VideoRecordingStream = missingPart is "stream" ? null : stream;
-			scope.Access.VideoRecordingFinalizeTcs = missingPart is "tcs" ? null : new TaskCompletionSource();
+			scope.Access.VideoRecordingState = missingPart is "state" ? null : StartedRecordingState();
 
 			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
 
@@ -846,8 +846,8 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				scope.Manager.CreatePlatformView();
 				using var destination = new MemoryStream();
 				destination.Write([1, 2, 3]);
-				var output = SeedRecordingState(scope, recordedFile, destination, out var finalizeTcs);
-				finalizeTcs.SetResult();
+				var output = SeedRecordingState(scope, recordedFile, destination, out var recordingState);
+				recordingState.OnFinalized(new CameraException("The seeded recording finished."));
 
 				var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
 
@@ -858,7 +858,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				Assert.False(File.Exists(recordedFile));
 				Assert.Null(scope.Access.VideoRecordingFileName);
 				Assert.Null(scope.Access.VideoOutput);
-				Assert.Null(scope.Access.VideoRecordingFinalizeTcs);
+				Assert.Null(scope.Access.VideoRecordingState);
 				Assert.Null(scope.Access.VideoRecordingDelegate);
 				Assert.Equal(NativeHandle.Zero, output.Handle);
 				Assert.Empty(scope.Access.CaptureSession?.Outputs ?? []);
@@ -885,8 +885,8 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				using var scope = new AppleCameraManagerScope(MauiContext);
 				scope.Manager.CreatePlatformView();
 				using var destination = new NonSeekableWriteStream();
-				SeedRecordingState(scope, recordedFile, destination, out var finalizeTcs);
-				finalizeTcs.SetResult();
+				SeedRecordingState(scope, recordedFile, destination, out var recordingState);
+				recordingState.OnFinalized(new CameraException("The seeded recording finished."));
 
 				var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
 
@@ -912,8 +912,8 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			scope.Manager.CreatePlatformView();
 			using var destination = new MemoryStream();
 			var missingFile = Path.Combine(Path.GetTempPath(), $"fake-missing-{Guid.NewGuid()}.mov");
-			SeedRecordingState(scope, missingFile, destination, out var finalizeTcs);
-			finalizeTcs.SetResult();
+			SeedRecordingState(scope, missingFile, destination, out var recordingState);
+			recordingState.OnFinalized(new CameraException("The seeded recording finished."));
 
 			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
 
@@ -921,7 +921,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 			Assert.Equal(0, destination.Length);
 			Assert.Null(scope.Access.VideoRecordingFileName);
 			Assert.Null(scope.Access.VideoOutput);
-			Assert.Null(scope.Access.VideoRecordingFinalizeTcs);
+			Assert.Null(scope.Access.VideoRecordingState);
 		});
 	}
 
@@ -939,7 +939,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				using var scope = new AppleCameraManagerScope(MauiContext);
 				scope.Manager.CreatePlatformView();
 				using var destination = new MemoryStream();
-				SeedRecordingState(scope, recordedFile, destination, out var finalizeTcs);
+				SeedRecordingState(scope, recordedFile, destination, out var recordingState);
 				using var cancellationTokenSource = new CancellationTokenSource();
 
 				var stopTask = scope.Manager.StopVideoRecording(cancellationTokenSource.Token);
@@ -947,7 +947,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				await cancellationTokenSource.CancelAsync();
 
 				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => stopTask);
-				Assert.False(finalizeTcs.Task.IsCompleted);
+				Assert.False(recordingState.Finalized.IsCompleted);
 				Assert.Equal(0, destination.Length);
 			});
 		}
@@ -971,8 +971,8 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				using var scope = new AppleCameraManagerScope(MauiContext);
 				scope.Manager.CreatePlatformView();
 				using var destination = new MemoryStream();
-				var output = SeedRecordingState(scope, recordedFile, destination, out var finalizeTcs);
-				var recordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(finalizeTcs);
+				var output = SeedRecordingState(scope, recordedFile, destination, out var recordingState);
+				var recordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(recordingState);
 
 				var stopTask = scope.Manager.StopVideoRecording(CancellationToken.None);
 				Assert.False(stopTask.IsCompleted);
@@ -1000,17 +1000,17 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 		await InvokeOnMainThreadAsync(() =>
 		{
 			using var output = new AVCaptureMovieFileOutput();
-			var finalizeTcs = new TaskCompletionSource();
-			var recordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(finalizeTcs);
+			var recordingState = StartedRecordingState();
+			var recordingDelegate = new AVCaptureMovieFileOutputRecordingDelegate(recordingState);
 			var error = hasError ? new NSError(new NSString("test-domain"), 7) : null;
 
-			Assert.False(finalizeTcs.Task.IsCompleted);
+			Assert.False(recordingState.Finalized.IsCompleted);
 			recordingDelegate.FinishedRecording(output, NSUrl.FromFilename("/tmp/test.mov"), [], error);
 
 			// The task completes either way, so that StopVideoRecording, which waits for it, does not hang. The delegate keeps why the recording
 			// failed, which StopVideoRecording throws as a CameraException when the recording left no usable movie
 			// (CameraManagerAppleRecordingTests.StopVideoRecordingAfterARecordingWithoutAUsableMovieThrowsCameraException).
-			Assert.True(finalizeTcs.Task.IsCompletedSuccessfully);
+			Assert.True(recordingState.Finalized.IsCompletedSuccessfully);
 			if (error is null)
 			{
 				Assert.Null(recordingDelegate.FailureReason);
@@ -1066,18 +1066,25 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 		});
 	}
 
-	static AVCaptureMovieFileOutput SeedRecordingState(AppleCameraManagerScope scope, string recordedFile, Stream destination, out TaskCompletionSource finalizeTcs)
+	static VideoRecordingState StartedRecordingState()
+	{
+		var recordingState = new VideoRecordingState();
+		recordingState.OnStarted();
+		return recordingState;
+	}
+
+	static AVCaptureMovieFileOutput SeedRecordingState(AppleCameraManagerScope scope, string recordedFile, Stream destination, out VideoRecordingState recordingState)
 	{
 		var session = scope.Access.CaptureSession ?? throw new InvalidOperationException("The manager has no capture session.");
 		var output = new AVCaptureMovieFileOutput();
 		Assert.True(session.CanAddOutput(output));
 		session.AddOutput(output);
 
-		finalizeTcs = new TaskCompletionSource();
+		recordingState = StartedRecordingState();
 		scope.Access.VideoOutput = output;
 		scope.Access.VideoRecordingFileName = recordedFile;
 		scope.Access.VideoRecordingStream = destination;
-		scope.Access.VideoRecordingFinalizeTcs = finalizeTcs;
+		scope.Access.VideoRecordingState = recordingState;
 
 		return output;
 	}

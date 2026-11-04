@@ -48,7 +48,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			using var destination = new MemoryStream();
 			using var trace = new TraceRecorder();
 
-			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await scope.StartVideoRecordingOfAStoppedSessionAsync(destination);
 
 			// Without a camera the session has no video connection to configure: the manager traces a warning and records anyway.
 			Assert.Contains("Unable to determine video connection from media type.", trace.Lines);
@@ -61,7 +61,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			Assert.Equal(AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio)?.UniqueID, audioInput.Device.UniqueID);
 			Assert.Same(destination, scope.Access.VideoRecordingStream);
 			Assert.NotNull(scope.Access.VideoRecordingDelegate);
-			Assert.False(scope.Access.VideoRecordingFinalizeTcs?.Task.IsCompleted);
+			Assert.False(scope.Access.VideoRecordingState?.Finalized.IsCompleted);
 			var fileName = scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file name.");
 			Assert.StartsWith(Path.GetTempPath(), fileName);
 			Assert.EndsWith(".mov", fileName);
@@ -79,14 +79,14 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			using var scope = new AppleCameraManagerScope(MauiContext);
 			scope.Manager.CreatePlatformView();
 			var session = scope.Access.CaptureSession ?? throw new InvalidOperationException("No capture session.");
-			await scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await scope.StartVideoRecordingOfAStoppedSessionAsync(new MemoryStream());
 			var firstInput = scope.Access.AudioInput;
 			var firstOutput = scope.Access.VideoOutput;
 			var firstFileName = scope.Access.VideoRecordingFileName;
 			Assert.NotNull(firstInput);
 			Assert.NotNull(firstOutput);
 
-			await scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await scope.StartVideoRecordingOfAStoppedSessionAsync(new MemoryStream());
 
 			Assert.Equal(NativeHandle.Zero, firstInput.Handle);
 			Assert.Equal(NativeHandle.Zero, firstOutput.Handle);
@@ -109,7 +109,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			using var scope = new AppleCameraManagerScope(MauiContext);
 			scope.Manager.CreatePlatformView();
 			using var destination = new MemoryStream();
-			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await scope.StartVideoRecordingOfAStoppedSessionAsync(destination);
 			using var cancellationTokenSource = new CancellationTokenSource();
 
 			// The session is not running, so the movie output never reports that it finished.
@@ -120,7 +120,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => stop);
 
 			Assert.Equal(0, destination.Length);
-			Assert.False(scope.Access.VideoRecordingFinalizeTcs?.Task.IsCompleted);
+			Assert.False(scope.Access.VideoRecordingState?.Finalized.IsCompleted);
 		});
 	}
 
@@ -135,7 +135,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			using var scope = new AppleCameraManagerScope(MauiContext);
 			scope.Manager.CreatePlatformView();
 			var session = scope.Access.CaptureSession ?? throw new InvalidOperationException("No capture session.");
-			await scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await scope.StartVideoRecordingOfAStoppedSessionAsync(new MemoryStream());
 			var audioInput = scope.Access.AudioInput ?? throw new InvalidOperationException("No audio input.");
 			var movieOutput = scope.Access.VideoOutput ?? throw new InvalidOperationException("No movie output.");
 
@@ -147,7 +147,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 			Assert.Null(scope.Access.AudioInput);
 			Assert.Null(scope.Access.VideoOutput);
 			Assert.Null(scope.Access.VideoRecordingFileName);
-			Assert.Null(scope.Access.VideoRecordingFinalizeTcs);
+			Assert.Null(scope.Access.VideoRecordingState);
 			Assert.Null(scope.Access.VideoRecordingDelegate);
 		});
 	}

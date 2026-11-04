@@ -403,14 +403,14 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
 			await WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
-			var finalized = host.Native<TaskCompletionSource>("videoRecordingFinalizeTcs")!;
+			var finalized = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 			host.View.SelectedCamera = other;
 
 			// CameraX finalizes a recording whose VideoCapture was unbound within about half a second.
 			var window = System.Diagnostics.Stopwatch.StartNew();
-			await WaitUntilAsync(() => finalized.Task.IsCompleted || window.ElapsedMilliseconds >= 2000, "The observation window did not end.");
-			Assert.False(finalized.Task.IsCompleted, "CameraX finalized the recording after the camera switch.");
+			await WaitUntilAsync(() => finalized.Finalized.IsCompleted || window.ElapsedMilliseconds >= 2000, "The observation window did not end.");
+			Assert.False(finalized.Finalized.IsCompleted, "CameraX finalized the recording after the camera switch.");
 			Assert.Equal(first.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera")!));
 			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
 
@@ -446,15 +446,15 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
 			await WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
-			var finalized = host.Native<TaskCompletionSource>("videoRecordingFinalizeTcs")!;
+			var finalized = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 			host.View.SelectedCamera = null;
 			host.View.SelectedCamera = sameCamera;
 
 			// CameraX finalizes a recording whose VideoCapture was unbound within about half a second.
 			var window = System.Diagnostics.Stopwatch.StartNew();
-			await WaitUntilAsync(() => finalized.Task.IsCompleted || window.ElapsedMilliseconds >= 2000, "The observation window did not end.");
-			Assert.False(finalized.Task.IsCompleted, "CameraX finalized the recording after SelectedCamera came back to the camera of the recording.");
+			await WaitUntilAsync(() => finalized.Finalized.IsCompleted || window.ElapsedMilliseconds >= 2000, "The observation window did not end.");
+			Assert.False(finalized.Finalized.IsCompleted, "CameraX finalized the recording after SelectedCamera came back to the camera of the recording.");
 			Assert.Equal(first.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera")!));
 
 			Assert.Same(stream, await host.View.StopVideoRecording().WaitAsync(CameraTimeout));

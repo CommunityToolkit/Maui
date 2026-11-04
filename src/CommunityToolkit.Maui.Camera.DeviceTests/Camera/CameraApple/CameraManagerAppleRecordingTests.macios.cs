@@ -384,7 +384,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Null(recording.Scope.Access.VideoOutput);
 			Assert.Null(recording.Scope.Access.AudioInput);
 			Assert.Null(recording.Scope.Access.VideoRecordingFileName);
-			Assert.Null(recording.Scope.Access.VideoRecordingFinalizeTcs);
+			Assert.Null(recording.Scope.Access.VideoRecordingState);
 			Assert.Null(recording.Scope.Access.VideoRecordingDelegate);
 		});
 	}
@@ -614,7 +614,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Null(recording.Scope.Access.AudioInput);
 			Assert.Null(recording.Scope.Access.VideoOutput);
 			Assert.Null(recording.Scope.Access.VideoRecordingFileName);
-			Assert.Null(recording.Scope.Access.VideoRecordingFinalizeTcs);
+			Assert.Null(recording.Scope.Access.VideoRecordingState);
 			Assert.Null(recording.Scope.Access.VideoRecordingDelegate);
 			Assert.Null(recording.Scope.Access.CaptureSession);
 		});
@@ -639,7 +639,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 			Assert.Same(Stream.Null, result);
 			Assert.False(File.Exists(movieFile));
-			Assert.Null(recording.Scope.Access.VideoRecordingFinalizeTcs);
+			Assert.Null(recording.Scope.Access.VideoRecordingState);
 		});
 	}
 
@@ -833,7 +833,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		var movieOutput = access.VideoOutput ?? throw new InvalidOperationException("No movie output.");
 		Assert.Contains(movieOutput, recording.Session.Outputs);
 		Assert.Same(destination, access.VideoRecordingStream);
-		Assert.False(access.VideoRecordingFinalizeTcs?.Task.IsCompleted);
+		Assert.False(access.VideoRecordingState?.Finalized.IsCompleted);
 		var fileName = access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 		Assert.Equal(Path.GetTempPath(), Path.GetDirectoryName(fileName) + Path.DirectorySeparatorChar);
 		Assert.Equal(".mov", Path.GetExtension(fileName));
@@ -850,7 +850,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		Assert.Null(access.VideoOutput);
 		Assert.Null(access.AudioInput);
 		Assert.Null(access.VideoRecordingFileName);
-		Assert.Null(access.VideoRecordingFinalizeTcs);
+		Assert.Null(access.VideoRecordingState);
 		Assert.Null(access.VideoRecordingDelegate);
 		Assert.Empty(recording.Session.Outputs);
 		Assert.Empty(recording.Session.Inputs);

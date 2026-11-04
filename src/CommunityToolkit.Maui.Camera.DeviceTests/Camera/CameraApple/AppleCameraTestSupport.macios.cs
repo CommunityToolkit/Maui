@@ -171,10 +171,10 @@ sealed class CameraManagerAccessor(CameraManager manager)
 		set => Set("videoRecordingStream", value);
 	}
 
-	public TaskCompletionSource? VideoRecordingFinalizeTcs
+	public VideoRecordingState? VideoRecordingState
 	{
-		get => Get<TaskCompletionSource?>("videoRecordingFinalizeTcs");
-		set => Set("videoRecordingFinalizeTcs", value);
+		get => Get<VideoRecordingState?>("videoRecordingState");
+		set => Set("videoRecordingState", value);
 	}
 
 	public object? VideoRecordingDelegate => Get<object?>("videoRecordingDelegate");
@@ -332,6 +332,17 @@ sealed class AppleCameraManagerScope : IDisposable
 	public int LoadedCount { get; private set; }
 
 	public UIView? PlatformView { get; set; }
+
+	// A real movie output of a session that does not run never tells its delegate that the recording started, which the camera does
+	public async Task StartVideoRecordingOfAStoppedSessionAsync(Stream destination)
+	{
+		var start = Manager.StartVideoRecording(destination, CancellationToken.None);
+
+		// The state of an earlier recording is replaced once the permission answered, so only a state that did not start yet is the new one
+		await AssertionExtensions.AssertEventually(() => Access.VideoRecordingDelegate is not null && Access.VideoRecordingState is { Started.IsCompleted: false } || start.IsCompleted, timeout: 5000, message: "StartVideoRecording never started the recording.");
+		Access.VideoRecordingState?.OnStarted();
+		await start;
+	}
 
 	public void Dispose()
 	{

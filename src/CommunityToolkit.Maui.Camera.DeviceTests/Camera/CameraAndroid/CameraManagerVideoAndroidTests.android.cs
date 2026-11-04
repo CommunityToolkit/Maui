@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraManagerAndroid)]
 [Collection(TestCollections.DisableParallelization)]
-public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
+public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 {
 	static async Task<string> WaitForRecordingFileAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
 	{
@@ -122,11 +122,11 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 	// CameraX finalizes a recording whose VideoCapture was unbound within about half a second, so a recording that is still running after
 	// this window of two seconds was kept.
-	static async Task AssertTheRecordingKeepsRunningAsync(TaskCompletionSource finalized, string cause)
+	static async Task AssertTheRecordingKeepsRunningAsync(VideoRecordingState finalized, string cause)
 	{
 		var window = Stopwatch.StartNew();
-		await AssertionExtensions.AssertEventually(() => finalized.Task.IsCompleted || window.ElapsedMilliseconds >= 2000, 30000, 50, "The observation window did not end.");
-		Assert.False(finalized.Task.IsCompleted, $"CameraX finalized the recording after {cause}.");
+		await AssertionExtensions.AssertEventually(() => finalized.Finalized.IsCompleted || window.ElapsedMilliseconds >= 2000, 30000, 50, "The observation window did not end.");
+		Assert.False(finalized.Finalized.IsCompleted, $"CameraX finalized the recording after {cause}.");
 	}
 
 	// CameraX ends the video at the stop request, but finalizing it can take more than a second (it waits up to a second for the camera
@@ -159,9 +159,9 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Equal(0, stream.Length);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
 
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs");
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState");
 			Assert.NotNull(finalized);
-			Assert.False(finalized.Task.IsCompleted);
+			Assert.False(finalized.Finalized.IsCompleted);
 		}, includeRecordAudio: true);
 	}
 
@@ -234,9 +234,9 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
 			var firstFile = await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await UnbindAllNativeAsync();
-			await AssertionExtensions.AssertEventually(() => finalized.Task.IsCompleted, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
+			await AssertionExtensions.AssertEventually(() => finalized.Finalized.IsCompleted, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
 			Assert.NotNull(GetPrivateField<CameraConsumer>(session.Manager, "videoRecordingConsumer")?.FailureReason);
 
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
@@ -662,7 +662,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	[Theory]
 	[InlineData("videoRecording")]
 	[InlineData("videoRecordingFile")]
-	[InlineData("videoRecordingFinalizeTcs")]
+	[InlineData("videoRecordingState")]
 	[InlineData("videoRecordingStream")]
 	public async Task StopVideoRecordingReturnsStreamNullWhenTheRecordingStateIsIncomplete(string missingField)
 	{
@@ -819,9 +819,9 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await UnbindAllNativeAsync();
-			await AssertionExtensions.AssertEventually(() => finalized.Task.IsCompleted, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
+			await AssertionExtensions.AssertEventually(() => finalized.Finalized.IsCompleted, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
 			Assert.Equal(VideoRecordEvent.Finalize.ErrorSourceInactive, GetPrivateField<CameraConsumer>(session.Manager, "videoRecordingConsumer")?.Error);
 
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
@@ -986,7 +986,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			var path = await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			SetPrivateField(session.Manager, "videoRecordingConsumer", CreateFinalizedConsumer(error));
 
 			// A stop whose token is cancelled already stops the recording and keeps it (StopVideoRecordingWithAnAlreadyCancelledTokenStillStopsTheRecording):
@@ -997,7 +997,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StopVideoRecording(cancellation.Token));
 			}
 
-			await AssertionExtensions.AssertEventually(() => finalized.Task.IsCompleted, 10000, 50, "CameraX did not finalize the stopped recording.");
+			await AssertionExtensions.AssertEventually(() => finalized.Finalized.IsCompleted, 10000, 50, "CameraX did not finalize the stopped recording.");
 			await File.WriteAllBytesAsync(path, new byte[fileLength]);
 
 			var exception = await Assert.ThrowsAsync<CameraException>(() => session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout));
@@ -1043,13 +1043,13 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StopVideoRecording(cancellation.Token));
 
-			await AssertionExtensions.AssertEventually(() => finalized.Task.IsCompleted, 10000, 50, "The StopVideoRecording with an already cancelled token did not stop the recording.");
+			await AssertionExtensions.AssertEventually(() => finalized.Finalized.IsCompleted, 10000, 50, "The StopVideoRecording with an already cancelled token did not stop the recording.");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 		}, includeRecordAudio: true);
 	}
@@ -1152,7 +1152,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.False(stream.CanWrite, "The manager disposes the stream of the recording.");
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecordingFile"));
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecording"));
-			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecordingFinalizeTcs"));
+			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecordingState"));
 			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
 		}, includeRecordAudio: true);
 	}
@@ -1298,7 +1298,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 			var sinceTheRecordingHadData = Stopwatch.StartNew();
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
 			// The recording session is not bound again, so SetExtensionMode has nothing to wait for: it returns at once, also with a token that
 			// is already cancelled (the mode applies when a session is bound next).
@@ -1341,7 +1341,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await start.WaitAsync(CameraTimeout);
 			await extension.WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is not bound.");
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the recording is not bound.");
@@ -1370,7 +1370,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await start.WaitAsync(CameraTimeout);
 			await resolution.WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is not bound.");
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the recording is not bound.");
@@ -1412,7 +1412,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 			var sinceTheRecordingHadData = Stopwatch.StartNew();
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			var loadedBefore = session.LoadedCount;
 
 			await SelectCameraAsync(session, other);
@@ -1448,7 +1448,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 			var sinceTheRecordingHadData = Stopwatch.StartNew();
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
 			await SelectCameraAsync(session, other);
 			await SelectCameraAsync(session, first);
@@ -1492,7 +1492,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			var loadedBefore = session.LoadedCount;
 			await SelectCameraAsync(session, other);
 
@@ -1630,7 +1630,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
 			var firstFile = await WaitForRecordingFileAsync(before);
-			var finalized = GetPrivateField<TaskCompletionSource>(session.Manager, "videoRecordingFinalizeTcs")!;
+			var finalized = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await SelectCameraAsync(session, other);
 			await AssertTheRecordingKeepsRunningAsync(finalized, "the camera switch");
 
@@ -1824,7 +1824,7 @@ public class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	public void CameraConsumerWithoutATaskIgnoresTheFinalizeEvent(int error)
 	{
 		SetupBuilder();
-		var consumer = new CameraConsumer(null!);
+		var consumer = new CameraConsumer((TaskCompletionSource)null!);
 
 		var exception = Record.Exception(() => consumer.Accept(CreateFinalizeEvent(error)));
 
