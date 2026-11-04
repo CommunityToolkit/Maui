@@ -747,7 +747,7 @@ partial class CameraManager
 			return;
 		}
 
-		if (videoRecordingState is { } previousRecordingState)
+		if (videoRecordingState is VideoRecordingState previousRecordingState)
 		{
 			// Like on iOS and Windows, the stream of the latest StartVideoRecording receives the video: the running recording ends and its
 			// video is discarded. A start that is still pending never gets here, PlatformStartVideoRecording lets a concurrent start wait for it.
@@ -892,9 +892,12 @@ partial class CameraManager
 
 			ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
 
+			// A stop cancelled before the export keeps the finalized recording, so a later StopVideoRecording can still export it
+			token.ThrowIfCancellationRequested();
+
 			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal. The cleanup is the
 			// first thing the finally block does, so that a session that can not be restored never leaves the recording state behind
-			// (every later StartVideoRecording would wait for it)
+			// (a later StopVideoRecording would export the recording into its stream a second time)
 			try
 			{
 				// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful

@@ -568,6 +568,9 @@ partial class CameraManager
 
 			ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
 
+			// A stop cancelled before the export keeps the finalized recording, so a later StopVideoRecording can still export it
+			token.ThrowIfCancellationRequested();
+
 			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal
 			try
 			{
