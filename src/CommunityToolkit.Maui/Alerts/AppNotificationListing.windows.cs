@@ -1,10 +1,11 @@
+using System.Runtime.InteropServices;
 using Microsoft.Windows.AppNotifications;
 
 namespace CommunityToolkit.Maui.Alerts;
 
 static class AppNotificationListing
 {
-	// Windows may stop listing notifications, for example when the user turned them off for the app, and Show must not wait for that.
+	// Windows may never list the notification, for example while the user turned notifications off for the app, so the wait is bounded.
 	static readonly TimeSpan listingTimeout = TimeSpan.FromSeconds(1);
 	static readonly TimeSpan pollingInterval = TimeSpan.FromMilliseconds(10);
 
@@ -17,17 +18,21 @@ static class AppNotificationListing
 		try
 		{
 			// Windows never lists a notification that expired, such as the one of a snackbar whose Duration is zero or less
-			while (notification.Expiration > DateTimeOffset.Now && !await IsListedAsync(notification))
+			while (notification.Expiration > DateTimeOffset.Now && !await IsListedAsync(notification, timeoutTokenSource.Token))
 			{
 				await Task.Delay(pollingInterval, timeoutTokenSource.Token);
 			}
 		}
 		catch (OperationCanceledException) when (timeoutTokenSource.IsCancellationRequested)
 		{
-			// Windows lists nothing for the app, so there is nothing more to wait for
+			// Windows did not list the notification in time, so Show goes on without the listing
+		}
+		catch (Exception exception) when (exception is COMException or InvalidOperationException or NotSupportedException or UnauthorizedAccessException)
+		{
+			// Windows showed the notification but cannot list the notifications of the app in this session, and Show must not fail for that
 		}
 	}
 
-	static async Task<bool> IsListedAsync(AppNotification notification) =>
-		(await AppNotificationManager.Default.GetAllAsync()).Any(listed => listed.Id == notification.Id);
+	static async Task<bool> IsListedAsync(AppNotification notification, CancellationToken token) =>
+		(await AppNotificationManager.Default.GetAllAsync().AsTask(token)).Any(listed => listed.Id == notification.Id);
 }
