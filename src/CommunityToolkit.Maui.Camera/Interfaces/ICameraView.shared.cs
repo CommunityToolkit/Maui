@@ -151,13 +151,12 @@ public interface ICameraView : IView
 	/// recording started, because Media Foundation writes into the stream while it records. On Android, iOS and Mac Catalyst, when the camera is
 	/// released while a start waits (for example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS, Mac Catalyst and Windows a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
-	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends
-	/// (on Android, iOS and Mac Catalyst a stop whose token is cancelled before the video is copied leaves the camera on until the next stop,
-	/// see <see cref="StopVideoRecording(CancellationToken)"/>).
-	/// On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a camera or without the camera permission), the start
-	/// throws the failure, and a preview that was stopped stays stopped. On Android a start without a camera returns without recording, and a
-	/// recording without the camera permission records no video: <see cref="StopVideoRecording(CancellationToken)"/> then throws a
-	/// <see cref="CameraException"/>.</para>
+	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends (on
+	/// Android, iOS and Mac Catalyst a stop whose token is cancelled before the video is copied leaves the camera on until the next stop, see
+	/// <see cref="StopVideoRecording(CancellationToken)"/>). On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a
+	/// camera or without the camera permission), the start throws the failure, and a preview that was stopped stays stopped. On Android a start
+	/// without a camera returns without recording, and a recording without the camera permission records no video:
+	/// <see cref="StopVideoRecording(CancellationToken)"/> then throws a <see cref="CameraException"/>.</para>
 	/// <para><see cref="StopCameraPreview"/> cancels a start that has not completed yet, like a cancellation of <paramref name="token"/>: the recording
 	/// does not start, and the start throws <see cref="OperationCanceledException"/>, also when the stop made the start fail. The
 	/// <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when <paramref name="token"/>
@@ -187,13 +186,12 @@ public interface ICameraView : IView
 	/// recording started, because Media Foundation writes into the stream while it records. On Android, iOS and Mac Catalyst, when the camera is
 	/// released while a start waits (for example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS, Mac Catalyst and Windows a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
-	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends
-	/// (on Android, iOS and Mac Catalyst a stop whose token is cancelled before the video is copied leaves the camera on until the next stop,
-	/// see <see cref="StopVideoRecording(CancellationToken)"/>).
-	/// On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a camera or without the camera permission), the start
-	/// throws the failure, and a preview that was stopped stays stopped. On Android a start without a camera returns without recording, and a
-	/// recording without the camera permission records no video: <see cref="StopVideoRecording(CancellationToken)"/> then throws a
-	/// <see cref="CameraException"/>.</para>
+	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends (on
+	/// Android, iOS and Mac Catalyst a stop whose token is cancelled before the video is copied leaves the camera on until the next stop, see
+	/// <see cref="StopVideoRecording(CancellationToken)"/>). On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a
+	/// camera or without the camera permission), the start throws the failure, and a preview that was stopped stays stopped. On Android a start
+	/// without a camera returns without recording, and a recording without the camera permission records no video:
+	/// <see cref="StopVideoRecording(CancellationToken)"/> then throws a <see cref="CameraException"/>.</para>
 	/// <para><see cref="StopCameraPreview"/> cancels a start that has not completed yet, like a cancellation of <paramref name="token"/>: the recording
 	/// does not start, and the start throws <see cref="OperationCanceledException"/>, also when the stop made the start fail. The
 	/// <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when <paramref name="token"/>
