@@ -837,7 +837,8 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	{
 		await RunAsync(async recording =>
 		{
-			using var camera = SelectAFakeCamera(recording);
+			using var camera = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(camera, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
 			using var coordinators = new AppleRotationCoordinatorStub();
 			recording.Session.IsRunning = false;
 			using var destination = new MemoryStream();
@@ -847,23 +848,35 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.True(recording.Session.IsRunning);
 			Assert.True(recording.Scope.Access.IsInitialized);
 			Assert.Equal(1, recording.Scope.LoadedCount);
-			Assert.Same(camera.Device, recording.Scope.Access.CaptureDevice);
+			Assert.Same(camera, recording.Scope.Access.CaptureDevice);
 			AssertRecordingStarted(recording, destination);
+
+			await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.False(recording.Session.IsRunning);
+			Assert.False(recording.Scope.Access.IsInitialized);
 		});
 	}
 
-	static FakeCameraSelection SelectAFakeCamera(RecordingHarness recording)
+	// AVFoundation leaves a session that it cannot start stopped (an interruption, a camera that another app holds), and then reports no recording
+	// either: the start must not wait for it.
+	[Fact]
+	public async Task StartVideoRecordingOnASessionThatCannotStartThrowsCameraExceptionInsteadOfWaitingForever()
 	{
-		var device = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
-		recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(device, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
-		return new FakeCameraSelection(device);
-	}
+		await RunAsync(async recording =>
+		{
+			using var camera = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(camera, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Session.IsRunning = false;
+			recording.Session.StaysStoppedOnStartRunning = true;
 
-	sealed class FakeCameraSelection(FakeCaptureDevice device) : IDisposable
-	{
-		public FakeCaptureDevice Device { get; } = device;
+			var exception = await Assert.ThrowsAsync<CameraException>(() => recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout));
 
-		public void Dispose() => Device.Dispose();
+			Assert.Equal("Unable to start video recording because the camera could not be started.", exception.Message);
+			AssertRecordingReleased(recording);
+			Assert.Empty(recording.Movies.Recordings);
+		});
 	}
 
 	// AVFoundation tells nobody about the end of a recording that never started, which a session that stopped meanwhile does not do. The start

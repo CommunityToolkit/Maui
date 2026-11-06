@@ -33,7 +33,7 @@ sealed partial class CameraManager(
 	// the start of the connection: a StartCameraPreview while the view connects its camera waits for the connection
 	Task pendingConnection = Task.CompletedTask;
 
-	// Whether the latest connection raised ErrorOccurred for its failure
+	// Read by a start that waited for the connection: the connection reported this failure to the view already
 	bool connectionReportedFailure;
 
 	bool isInitialized;

@@ -36,6 +36,9 @@ partial class CameraManager
 	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 
+	// A recording that turned on the camera of a preview that the app stopped turns it off again when it ends, as on Android
+	bool isSessionStartedForTheRecording;
+
 	// A start must not release the recording that a stop still waits for AVFoundation to finish (and delete its movie), like on Android
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 	CMMotionManager? motionManager;
@@ -272,6 +275,8 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		isSessionStartedForTheRecording = false;
+
 		if (captureSession is null)
 		{
 			return;
@@ -367,6 +372,8 @@ partial class CameraManager
 
 	private partial void PlatformStopCameraPreview()
 	{
+		isSessionStartedForTheRecording = false;
+
 		if (captureSession is null)
 		{
 			return;
@@ -434,6 +441,14 @@ partial class CameraManager
 		{
 			await PlatformStartCameraPreview(token);
 			ObjectDisposedException.ThrowIf(isDisposed, this);
+
+			// AVFoundation can leave the session stopped (an interruption, a camera that another app holds) and then reports no recording either
+			if (!captureSession.Running)
+			{
+				throw new CameraException("Unable to start video recording because the camera could not be started.");
+			}
+
+			isSessionStartedForTheRecording = true;
 		}
 
 		// Like on Android and Windows, the stream of the latest StartVideoRecording receives the video: the running recording is released
@@ -620,6 +635,7 @@ partial class CameraManager
 			finally
 			{
 				CleanupVideoRecordingResources(recordingState);
+				StopTheSessionThatTheRecordingStarted();
 			}
 
 			return recordingStream;
@@ -656,6 +672,7 @@ partial class CameraManager
 			}
 
 			CleanupVideoRecordingResources(recordingState);
+			StopTheSessionThatTheRecordingStarted();
 		}
 		catch (Exception exception)
 		{
@@ -664,6 +681,14 @@ partial class CameraManager
 		finally
 		{
 			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	void StopTheSessionThatTheRecordingStarted()
+	{
+		if (isSessionStartedForTheRecording)
+		{
+			PlatformStopCameraPreview();
 		}
 	}
 

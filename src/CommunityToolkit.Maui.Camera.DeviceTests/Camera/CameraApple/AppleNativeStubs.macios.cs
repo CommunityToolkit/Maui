@@ -487,8 +487,8 @@ sealed class AppleMovieOutputConnectionStub : IDisposable
 	}
 }
 
-// A real session without a camera input cannot run (an empty session does not start at all), and CameraManager refuses to start a recording on
-// a session that does not run. This makes one real session report that it runs, while its movie output still never reports a recording.
+// A real session without a camera input cannot run (an empty session does not start at all), and CameraManager starts a session that does not
+// run before it records. This makes one real session report that it runs, while its movie output still never reports a recording.
 sealed class AppleSessionRunningStub : IDisposable
 {
 	readonly ObjCMethodReplacement replacement;
