@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 
-public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
+public partial class SpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
 	const string beginSpeakingPrompt = "Begin speaking...";
@@ -22,9 +22,6 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 		this.speechToText = speechToText;
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
-		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
-		this.speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
-		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
 	public ObservableCollection<Locale> Locales { get; } = [];
@@ -48,15 +45,27 @@ public partial class SpeechToTextViewModel : BaseViewModel, IAsyncDisposable
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand)), NotifyCanExecuteChangedFor(nameof(StopListenWithCanceledTokenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
 
-	public async ValueTask DisposeAsync()
+	public void SubscribeToSpeechToText()
 	{
-		GC.SuppressFinalize(this);
+		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 
-		Locales.CollectionChanged -= HandleLocalesCollectionChanged;
-		this.speechToText.StateChanged -= HandleSpeechToTextStateChanged;
-		this.speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
-		this.speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
-		await speechToText.DisposeAsync();
+		OnPropertyChanged(nameof(State));
+	}
+
+	// The recognizer is a singleton that outlives the page: a session that is left running keeps the microphone open, and the next page would show its state.
+	// The events are released first: Shell can show this page again, which subscribes it anew, before the stop completes
+	public async Task StopListeningAndUnsubscribeFromSpeechToText()
+	{
+		speechToText.StateChanged -= HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
+
+		if (CanStopListenExecute)
+		{
+			await StopListen(CancellationToken.None);
+		}
 	}
 
 	// On iOS and Mac Catalyst, ISpeechToText.RequestPermissions requests the speech recognition permission; on Android and Windows it requests the microphone

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFromStreamViewModel>, IAsyncDisposable
+public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFromStreamViewModel>, IDisposable
 {
 	readonly ILogger logger;
 	readonly HttpClient httpClient;
@@ -28,10 +28,11 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
 	}
 
-	public async ValueTask DisposeAsync()
+	// Not IAsyncDisposable: .NET MAUI disposes the window's service scope synchronously when the window closes, and the scope throws for a service that is only IAsyncDisposable
+	public void Dispose()
 	{
-		GC.SuppressFinalize(this);
-		await ReleaseSourceStream();
+		sourceStream?.Dispose();
+		sourceStreamSemaphore.Dispose();
 	}
 
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)

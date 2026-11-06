@@ -15,9 +15,6 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 	public OfflineSpeechToTextViewModel([FromKeyedServices("Offline")] ISpeechToText offlineTextToSpeech)
 	{
 		speechToText = offlineTextToSpeech;
-		speechToText.StateChanged += HandleSpeechToTextStateChanged;
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
-		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
 	// After StartListenAsync, CurrentState stays Stopped until speech begins on Android, and until the first result on iOS and Mac Catalyst:
@@ -35,6 +32,29 @@ public partial class OfflineSpeechToTextViewModel : BaseViewModel
 
 	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
 	public partial bool CanStopListenExecute { get; set; } = false;
+
+	public void SubscribeToSpeechToText()
+	{
+		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
+
+		OnPropertyChanged(nameof(State));
+	}
+
+	// The recognizer is a singleton that outlives the page: a session that is left running keeps the microphone open, and the next page would show its state.
+	// The events are released first: Shell can show this page again, which subscribes it anew, before the stop completes
+	public async Task StopListeningAndUnsubscribeFromSpeechToText()
+	{
+		speechToText.StateChanged -= HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
+
+		if (CanStopListenExecute)
+		{
+			await StopListen(CancellationToken.None);
+		}
+	}
 
 	// On iOS and Mac Catalyst, ISpeechToText.RequestPermissions requests the speech recognition permission; on Android and Windows it requests the microphone
 	// permission again. It is requested only once the microphone permission is granted, so Android does not show its microphone dialog a second time after a denial
