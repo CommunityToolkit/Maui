@@ -50,9 +50,9 @@ param(
     # Retries for infrastructure failures only. Defaults to 1 on CI and 0 locally.
     [int]$InfraRetries = -1,
 
-    # Collect code coverage of the toolkit assemblies with coverlet: the apps are packaged again with instrumented assemblies before they
-    # run, and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE, which only the CI
-    # jobs set.
+    # Collect code coverage of the toolkit assemblies with coverlet: the apps are built with instrumented assemblies (a -Target testOnly run
+    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
+    # which only the CI jobs set.
     [switch]$Coverage,
 
     # Xcode.app to use. Defaults to the one selected with xcode-select.
@@ -87,22 +87,13 @@ try {
     $runtimeIdentifier = "maccatalyst-$(Get-DeviceTestHostArchitecture)"
     $buildProperties = @("RuntimeIdentifier=$runtimeIdentifier")
 
-    if ($Target -ne 'testOnly') {
-        foreach ($item in $context.Projects) {
-            $framework = Get-DeviceTestTargetFramework -Project $item -Platform 'maccatalyst'
-            [void](Invoke-DeviceTestBuild -Context $context -Project $item -TargetFramework $framework -BuildArgs $BuildArgs -Property $buildProperties)
-        }
-    }
+    $coverageSession = Invoke-DeviceTestAppBuilds -Context $context -Platform 'maccatalyst' -Target $Target -Property $buildProperties -BuildArgs $BuildArgs
 
     if ($Target -ne 'buildOnly') {
         Invoke-DeviceTestToolRestore
         $xcodeRoot = Get-DeviceTestXcodeRoot -Xcode $Xcode
         Write-Host "Xcode:         $xcodeRoot"
         $context.DeviceDescription = "$([System.Environment]::MachineName), macOS $([System.Environment]::OSVersion.Version), $runtimeIdentifier"
-
-        if ($context.Coverage) {
-            $coverageSession = Start-DeviceTestCoverage -Context $context -Platform 'maccatalyst' -Property $buildProperties -BuildArgs $BuildArgs
-        }
 
         foreach ($item in $context.Projects) {
             $itemOutput = Join-Path $context.Results $item.Name

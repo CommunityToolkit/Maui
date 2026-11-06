@@ -54,9 +54,9 @@ param(
     # Retries for infrastructure failures only. Defaults to 1 on CI and 0 locally.
     [int]$InfraRetries = -1,
 
-    # Collect code coverage of the toolkit assemblies with coverlet: the apps are packaged again with instrumented assemblies before they
-    # run, and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE, which only the CI
-    # jobs set.
+    # Collect code coverage of the toolkit assemblies with coverlet: the apps are built with instrumented assemblies (a -Target testOnly run
+    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
+    # which only the CI jobs set.
     [switch]$Coverage,
 
     [string]$DeviceId,
@@ -289,12 +289,7 @@ try {
         $buildProperties += "AndroidSdkDirectory=$sdkRoot"
     }
 
-    if ($Target -ne 'testOnly') {
-        foreach ($item in $context.Projects) {
-            $framework = Get-DeviceTestTargetFramework -Project $item -Platform 'android'
-            [void](Invoke-DeviceTestBuild -Context $context -Project $item -TargetFramework $framework -Property $buildProperties -BuildArgs $BuildArgs)
-        }
-    }
+    $coverageSession = Invoke-DeviceTestAppBuilds -Context $context -Platform 'android' -Target $Target -Property $buildProperties -BuildArgs $BuildArgs
 
     if ($Target -ne 'buildOnly') {
         Invoke-DeviceTestToolRestore
@@ -362,10 +357,6 @@ try {
 
             $apiLevel = Invoke-AndroidShell -Adb $adbPath -Serial $serial -Command @('getprop', 'ro.build.version.sdk')
             $context.DeviceDescription = "$serial, API $apiLevel, $abi"
-        }
-
-        if ($context.Coverage -and -not $deviceError) {
-            $coverageSession = Start-DeviceTestCoverage -Context $context -Platform 'android' -Property $buildProperties -BuildArgs $BuildArgs
         }
 
         foreach ($item in $context.Projects) {

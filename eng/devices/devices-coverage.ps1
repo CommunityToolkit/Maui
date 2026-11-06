@@ -2,10 +2,13 @@
 # devices-shared.ps1. PowerShell 7 only: the Windows device tests collect no coverage.
 #
 # coverlet (pinned in .config/dotnet-tools.json) instruments assemblies on disk, and writes its report once the command it started
-# (its target) exits. The apps run on a device in between, so the target only waits until this script is done with them. The instrumented
-# assemblies replace the toolkit's build outputs, and the apps are packaged again with them (BuildProjectReferences=false keeps the toolkit
-# projects from being rebuilt). The packaged apps keep the instrumented assemblies until the apps are built again: that build packages the
-# original ones (Restore-DeviceTestCoverageAssemblies).
+# (its target) exits. The apps run on a device in between, so the target only waits until this script is done with them. The toolkit
+# projects are built first, coverlet instruments their assemblies, and the instrumented assemblies replace the toolkit's build outputs
+# before the apps are built (BuildProjectReferences=false keeps the toolkit projects from being rebuilt). Each app is compiled and packaged
+# once, and on iOS and Mac Catalyst in Release it is compiled ahead of time once: instrumenting after the apps are packaged would package
+# them, and run that compilation, a second time. The coverlet process lives until the tests have run, so the build and the tests share one
+# script run (Invoke-DeviceTestAppBuilds). The packaged apps keep the instrumented assemblies until the apps are built again: that build
+# packages the original ones (Restore-DeviceTestCoverageAssemblies).
 # The headless runners write the hits files when the tests have run (CoverageRecorder in CommunityToolkit.Maui.DeviceTests.Runners); on
 # Android xharness copies them from the device to the host before it uninstalls the app.
 # Coverage never changes a run's exit code: a run whose coverage fails reports a warning and has no coverage report.
@@ -32,23 +35,29 @@ function Get-DeviceTestCoverageHitsDirectory {
 }
 
 function Get-DeviceTestReferences {
+    # Builds the project references (the toolkit libraries) on the way: ResolveReferences needs them built to know their outputs.
     param(
+        [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)]$Project,
         [Parameter(Mandatory = $true)][string]$TargetFramework,
         [Parameter(Mandatory = $true)][string]$Configuration,
-        [string[]]$Property = @()
+        [string[]]$Property = @(),
+        [string[]]$BuildArgs = @()
     )
 
-    # A build for another platform restores the assets file for its own runtime identifier: without -restore the query then fails with
-    # NETSDK1047, and the apps are tested without coverage.
-    $arguments = @('msbuild', $Project.Path, '-nologo', '-restore', '-target:ResolveReferences', '-getItem:ReferencePath',
-        '-p:BuildProjectReferences=false', "-p:TargetFramework=$TargetFramework", "-p:Configuration=$Configuration")
+    # dotnet build -f, not dotnet msbuild -p:TargetFramework: only the former builds the analyzer and source generator projects that the
+    # toolkit libraries reference for netstandard2.0 (msbuild passes the app's target framework on to them, and they fail with NETSDK1005).
+    # It also restores the assets file for the app's runtime identifier, which another platform's build may have replaced (NETSDK1047).
+    $arguments = @('build', $Project.Path, '-nologo', '-f', $TargetFramework, '-c', $Configuration, '-target:ResolveReferences', '-getItem:ReferencePath', "-bl:$(Get-DeviceTestBinlogPath -Context $Context -Project $Project -Suffix 'references')")
     foreach ($item in $Property) {
         $arguments += "-p:$item"
     }
 
-    # With -restore, msbuild -getItem computes the FullPath of an item whose path is relative (the Android resource designer assembly in
-    # obj) against the folder it runs in, not the project's.
+    # The toolkit libraries are compiled here, so they get the same property switches as the instrumented app build.
+    $arguments += @($BuildArgs | Where-Object { $_ -match '^[-/]p(roperty)?:' })
+
+    # dotnet build restores first, and -getItem then computes the FullPath of an item whose path is relative (the Android resource
+    # designer assembly in obj) against the folder it runs in, not the project's.
     Push-Location -LiteralPath $Project.Directory
     try {
         $result = Invoke-DeviceTestNativeCapture -FilePath 'dotnet' -ArgumentList $arguments
@@ -164,12 +173,13 @@ function Start-DeviceTestCoverage {
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)][string]$Platform,
-        # The properties the platform script builds the apps with: packaging them again needs the same.
+        # The properties the platform script builds the apps with: the reference query and the instrumented build need the same.
         [string[]]$Property = @(),
         [string[]]$BuildArgs = @()
     )
 
-    Write-DeviceTestHeader 'Coverage: instrument the toolkit assemblies with coverlet'
+    Write-DeviceTestHeader 'Coverage: build and instrument the toolkit assemblies with coverlet'
+    Invoke-DeviceTestToolRestore
 
     $directory = Join-Path $Context.Results 'coverage'
     Initialize-DeviceTestResultsDirectory -Path $directory
@@ -197,7 +207,8 @@ function Start-DeviceTestCoverage {
         New-Item -ItemType Directory -Force -Path $session.Stage, $session.Originals | Out-Null
 
         # coverlet resolves what the toolkit assemblies reference while it instruments them, so the staging folder gets every assembly the
-        # apps compile against. The toolkit assemblies are the toolkit projects' build outputs, which packaging takes.
+        # apps compile against. The toolkit assemblies are the toolkit projects' build outputs, which packaging takes. The first query
+        # builds the toolkit projects; the apps share them, so the queries of the other apps find them up to date.
         $toolkit = [ordered]@{}
         foreach ($item in $Context.Projects) {
             if ($Context.BuildFailures.ContainsKey($item.Name)) {
@@ -205,7 +216,7 @@ function Start-DeviceTestCoverage {
             }
 
             $framework = Get-DeviceTestTargetFramework -Project $item -Platform $Platform
-            foreach ($reference in (Get-DeviceTestReferences -Project $item -TargetFramework $framework -Configuration $Context.Configuration -Property $Property)) {
+            foreach ($reference in (Get-DeviceTestReferences -Project $item -TargetFramework $framework -Configuration $Context.Configuration -Property $Property -Context $Context -BuildArgs $BuildArgs)) {
                 $path = [string]$reference.FullPath
                 $name = [System.IO.Path]::GetFileNameWithoutExtension($path)
                 if ($script:DeviceTestCoverageAssemblies -contains $name) {
@@ -279,9 +290,8 @@ function Start-DeviceTestCoverage {
         }
 
         foreach ($entry in $session.Projects) {
-            Write-DeviceTestHeader "Coverage: package $($entry.Project.Name) with the instrumented toolkit assemblies"
             [void](Invoke-DeviceTestBuild -Context $Context -Project $entry.Project -TargetFramework $entry.Framework -BuildArgs $BuildArgs `
-                    -Property ($Property + @('BuildProjectReferences=false')) -Suffix 'coverage')
+                    -Property ($Property + @('BuildProjectReferences=false')))
         }
 
         $handedOver = $true
@@ -297,6 +307,35 @@ function Start-DeviceTestCoverage {
             Close-DeviceTestCoverage -Session $session
         }
     }
+}
+
+function Invoke-DeviceTestAppBuilds {
+    # Builds the apps for a run, and returns the coverage session when the run collects coverage (null otherwise).
+    param(
+        [Parameter(Mandatory = $true)]$Context,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [Parameter(Mandatory = $true)][string]$Target,
+        [string[]]$Property = @(),
+        [string[]]$BuildArgs = @()
+    )
+
+    # A build-only run has no tests to collect hits from, and coverlet's report needs the process that instrumented the assemblies.
+    if ($Context.Coverage -and $Target -ne 'buildOnly') {
+        # Builds the apps too, instrumented. A test-only run builds them here as well: the apps it finds were packaged without coverage.
+        $session = Start-DeviceTestCoverage -Context $Context -Platform $Platform -Property $Property -BuildArgs $BuildArgs
+        if ($null -ne $session) {
+            return $session
+        }
+    }
+
+    if ($Target -ne 'testOnly') {
+        foreach ($item in $Context.Projects) {
+            $framework = Get-DeviceTestTargetFramework -Project $item -Platform $Platform
+            [void](Invoke-DeviceTestBuild -Context $Context -Project $item -TargetFramework $framework -BuildArgs $BuildArgs -Property $Property)
+        }
+    }
+
+    return $null
 }
 
 function Get-DeviceTestCoverageArguments {
@@ -370,6 +409,7 @@ function Complete-DeviceTestCoverage {
     try {
         Write-DeviceTestHeader 'Coverage: collect the hits files and write the report'
         $assemblyNames = @($Session.Assemblies | ForEach-Object { $_.Name })
+        $collected = 0
         $coverletFolder = [System.IO.Path]::GetTempPath()
         foreach ($entry in $Session.Projects) {
             $folder = Get-DeviceTestCoverageHitsDirectory -Context $Session.Context -Project $entry.Project
@@ -389,10 +429,19 @@ function Complete-DeviceTestCoverage {
                 Add-DeviceTestCoverageHits -Path $file.FullName -Destination (Join-Path $coverletFolder $file.Name)
             }
 
+            $collected += $files.Count
             Write-Host "$($entry.Project.Name): $($files.Count) hits file(s) ($(($files | ForEach-Object { $_.Name -replace '_[^_]+$', '' }) -join ', '))"
         }
 
         $stopped = Stop-DeviceTestCoverageProcess -Session $Session
+        if ($collected -eq 0) {
+            # No app ran far enough to write hits (a device that never came up, for example), and a report of zeros would read as 0% in
+            # the merged summary.
+            Remove-Item -LiteralPath $Session.Report -Force -ErrorAction SilentlyContinue
+            Write-DeviceTestWarning 'Coverage: no app wrote hits files, so there is no coverage report.'
+            return
+        }
+
         if (Test-Path -LiteralPath $Session.Log -PathType Leaf) {
             Get-Content -LiteralPath $Session.Log | ForEach-Object { Write-Host $_ }
         }

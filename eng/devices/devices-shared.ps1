@@ -674,19 +674,14 @@ function Invoke-DeviceTestBuild {
         [Parameter(Mandatory = $true)][string]$TargetFramework,
         [string]$Command = 'build',
         [string[]]$Property = @(),
-        [string[]]$BuildArgs = @(),
-        # Names a second build of the app in the same run (its binlog and its row in the summary), such as 'coverage'.
-        [string]$Suffix
+        [string[]]$BuildArgs = @()
     )
 
     $label = $Project.Name
-    if ($Suffix) {
-        $label = "$label ($Suffix)"
-    }
 
     Write-DeviceTestHeader "Build $label ($TargetFramework, $($Context.Configuration))"
 
-    $arguments = @($Command, $Project.Path, '-f', $TargetFramework, '-c', $Context.Configuration, "-bl:$(Get-DeviceTestBinlogPath -Context $Context -Project $Project -Suffix $Suffix)")
+    $arguments = @($Command, $Project.Path, '-f', $TargetFramework, '-c', $Context.Configuration, "-bl:$(Get-DeviceTestBinlogPath -Context $Context -Project $Project)")
     foreach ($item in $Property) {
         $arguments += "-p:$item"
     }

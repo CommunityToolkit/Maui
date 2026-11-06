@@ -53,9 +53,9 @@ env:
 # (eng/devices/LOCAL.md), so this file shows how to run them. -Platform and -Project are explicit because without them run.ps1 runs every
 # platform of the machine and, for a Category= filter, skips what has no test of the category instead of failing with 94.
 jobs:
-    # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") packages the apps a second time with instrumented
-    # toolkit assemblies, so a manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the
-    # tests, and a run started to answer a question does not need the extra packaging. In a called workflow, github.event_name is the
+    # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") builds the apps with instrumented toolkit
+    # assemblies, so a manual run collects none: nothing merges it there, a run of one app or with a filter covers only part of the
+    # tests, and a run started to answer a question does not need the instrumentation. In a called workflow, github.event_name is the
     # caller's event, so != 'workflow_dispatch' is true in a Build run only.
     device_tests_android:
         name: Device Tests (Android API ${{ matrix.api-level }})
@@ -63,7 +63,7 @@ jobs:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
         runs-on: ubuntu-24.04
-        # Coverage (API 36) packages the three apps a second time, which took 6 minutes on an M4 Max.
+        # 110 minutes: the API 36 leg also builds the three apps in its test step (coverage), with the emulator running.
         timeout-minutes: 110
         strategy:
             fail-fast: false
@@ -80,7 +80,7 @@ jobs:
                     -   api-level: 28
                         emulator-features: -feature -GLDMA,-YUVCache,-YUV420888toNV21
         env:
-            # One Android level is enough for the merged coverage report; API 28 runs without the extra packaging.
+            # One Android level is enough for the merged coverage report; API 28 runs without the instrumented build.
             DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' && matrix.api-level == 36 }}
             # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
             # answer, and then every OfflineSpeechToTextTests question waits 30 s (25 rows on API 36), which can exceed the time budget.
@@ -107,9 +107,38 @@ jobs:
                     distribution: 'microsoft'
                     java-version: '17'
 
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # global.json rolls forward to the newest SDK on the runner (10.0.403 on ubuntu-24.04, not the 10.0.100 that setup-dotnet installs),
+            # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-android-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
             # Directory.Build.targets removes the iOS and Mac Catalyst target frameworks on Linux, so restore only needs Android.
             -   name: Install .NET MAUI Android Workload
-                run: dotnet workload install maui-android
+                run: dotnet workload install maui-android --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -136,7 +165,10 @@ jobs:
                     free -h
                     df -h "$GITHUB_WORKSPACE" "$HOME"
 
+            # A job that collects coverage builds in its test step instead: the apps are built once, with the instrumented toolkit assemblies,
+            # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
+                if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
                 run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # Runs even when an app failed to build, so the other apps are still tested.
@@ -160,7 +192,7 @@ jobs:
                     disable-animations: true
                     # 30 minutes per app: the main app took 5.5 minutes on an arm64 emulator on an M4 Max; this one has 4 cores and software rendering.
                     # -ResultsFolder, not -Results: the coverage upload below reads this exact folder, and the coverage report is named after it.
-                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:30:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
+                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:30:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
 
             -   name: Upload device test results
                 if: always()
@@ -184,8 +216,7 @@ jobs:
         permissions:
             contents: read
         runs-on: xcode-27
-        # Release compiles every assembly ahead of time with LLVM, and the coverage packaging compiles them again: 12 and 8 minutes for the
-        # three apps on a busy M4 Max, against 1.5 and 1.5 in Debug.
+        # Release compiles every assembly ahead of time with LLVM: about 12 minutes for the three apps on a busy M4 Max, against 1.5 in Debug.
         timeout-minutes: 120
         env:
             DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
@@ -208,9 +239,38 @@ jobs:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
 
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # global.json rolls forward to the newest SDK on the runner, which can be newer than the one setup-dotnet installed, and the
+            # runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
             # Restore evaluates every target framework of the toolkit libraries, so Android and Mac Catalyst are needed too.
             -   name: Install .NET MAUI Workload
-                run: dotnet workload install maui
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -226,13 +286,16 @@ jobs:
                     xcrun simctl list runtimes
                     system_profiler SPAudioDataType SPCameraDataType || true
 
+            # A job that collects coverage builds in its test step instead: the apps are built once, with the instrumented toolkit assemblies,
+            # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
+                if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
                 run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # 40 minutes per app: the main app took 8 minutes on an M4 Max; the runner has 3 M1 cores.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:40:00
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:40:00
 
             -   name: Upload device test results
                 if: always()
@@ -282,9 +345,38 @@ jobs:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
 
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # global.json rolls forward to the newest SDK on the runner, which can be newer than the one setup-dotnet installed, and the
+            # runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
             # Restore evaluates every target framework of the toolkit libraries, so Android and iOS are needed too.
             -   name: Install .NET MAUI Workload
-                run: dotnet workload install maui
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -341,13 +433,16 @@ jobs:
                     done
                     sudo sqlite3 -cmd '.timeout 5000' "$db" "SELECT service, client, auth_value FROM access WHERE client LIKE 'com.communitytoolkit.maui.%';" || true
 
+            # A job that collects coverage builds in its test step instead: the apps are built once, with the instrumented toolkit assemblies,
+            # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
+                if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
                 run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # 30 minutes per app: the main app took 5.5 minutes on an M4 Max; the runner has 3 M1 cores.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
+                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
 
             -   name: Upload device test results
                 if: always()
@@ -424,6 +519,14 @@ jobs:
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
+
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
 
             # Restore evaluates every target framework of the toolkit libraries, so every MAUI platform is needed.
             -   name: Install .NET MAUI Workload
