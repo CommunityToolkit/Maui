@@ -83,27 +83,23 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	}
 
 	/// <inheritdoc/>
-	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
+	protected override void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
+		// Not async: the exception of an async void method never reaches the caller, it is raised on the synchronization context
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.ConnectHandler(platformView);
 
-		var cameraView = VirtualView;
-
-		// ConnectCamera reports a camera that cannot be connected itself; what fails before it gets that far (for example the camera
-		// discovery) is reported the same way
-		try
-		{
-			await CameraManager.ConnectCamera(CancellationToken.None);
-		}
-		catch (Exception ex)
-		{
-			ReportError(cameraView, "connect the camera", ex);
-		}
+		ConnectCameraAndReportErrors(VirtualView);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.DisconnectHandler(platformView);
 
 		// The CameraManager is already released when the handler was disposed before it was disconnected
@@ -203,5 +199,19 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
 		handler.CameraManager.UpdateZoom(view.ZoomFactor);
+	}
+
+	async void ConnectCameraAndReportErrors(ICameraView cameraView)
+	{
+		// ConnectCamera reports a camera that cannot be connected itself; what fails before it gets that far (for example the camera
+		// discovery) is reported the same way
+		try
+		{
+			await CameraManager.ConnectCamera(CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			ReportError(cameraView, "connect the camera", ex);
+		}
 	}
 }
