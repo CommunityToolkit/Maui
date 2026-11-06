@@ -18,6 +18,9 @@ sealed partial class CameraManager(
 	ICameraProvider cameraProvider,
 	Action onLoaded) : IDisposable
 {
+	// Marks the exception of a start that the view must not report again: the connection that the start waited for reported the same failure
+	internal const string ReportedByTheConnectionKey = "CommunityToolkit.Maui.Camera.ReportedByTheConnection";
+
 	const string cancelledByStopCameraPreviewMessage = $"{nameof(StopCameraPreview)} cancelled the operation.";
 
 	readonly Action onLoaded = onLoaded;
@@ -29,6 +32,9 @@ sealed partial class CameraManager(
 	// On Android the preview can start only once the connection has prepared the camera, which it does also when a StopCameraPreview cancelled
 	// the start of the connection: a StartCameraPreview while the view connects its camera waits for the connection
 	Task pendingConnection = Task.CompletedTask;
+
+	// Whether the latest connection raised ErrorOccurred for its failure
+	bool connectionReportedFailure;
 
 	bool isInitialized;
 
@@ -42,6 +48,7 @@ sealed partial class CameraManager(
 		// the camera on Android, where a later StartCameraPreview needs it
 		var stopCameraPreviewToken = stopCameraPreviewTokenSource.Token;
 		var connection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		connectionReportedFailure = false;
 		pendingConnection = connection.Task;
 
 		try
@@ -55,6 +62,7 @@ sealed partial class CameraManager(
 
 			if (cameraView.SelectedCamera is null)
 			{
+				connectionReportedFailure = true;
 				cameraView.OnErrorOccurred(
 					new CameraException("Couldn't connect to camera; no cameras available"));
 				return;
@@ -70,6 +78,7 @@ sealed partial class CameraManager(
 			}
 			catch (Exception ex)
 			{
+				connectionReportedFailure = true;
 				cameraView.OnErrorOccurred(ex);
 			}
 		}
@@ -96,12 +105,23 @@ sealed partial class CameraManager(
 	/// <returns>A <see cref="Task"/> that can be awaited.</returns>
 	public async Task StartCameraPreview(CancellationToken token)
 	{
+		// Only the Android start waits for the connection (see pendingConnection)
+		var waitsForTheConnection = OperatingSystem.IsAndroid() && !pendingConnection.IsCompleted;
+
 		try
 		{
 			await RunUntilStopped(PlatformStartCameraPreview, stopCameraPreviewTokenSource.Token, token);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
+			// A failure that the connection reported to the view is one failure: the start that waited for the connection throws it to its
+			// caller instead of raising ErrorOccurred a second time
+			if (waitsForTheConnection && connectionReportedFailure)
+			{
+				ex.Data[ReportedByTheConnectionKey] = true;
+				throw;
+			}
+
 			cameraView.OnErrorOccurred(ex);
 		}
 	}

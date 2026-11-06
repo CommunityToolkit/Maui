@@ -389,8 +389,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 	{
 		var cameraView = (CameraView)bindable;
 
-		// StartCameraPreview reports a preview that cannot start through ErrorOccurred itself
-		return new(async token => await ExecuteCommand(() => cameraView.StartCameraPreview(token), cameraView.ReportError, token));
+		// StartCameraPreview reports a preview that cannot start through ErrorOccurred itself, except for a failure that the connection reported
+		// already, which it throws instead
+		return new(async token => await ExecuteCommand(() => cameraView.StartCameraPreview(token), ex =>
+		{
+			if (!ex.Data.Contains(CameraManager.ReportedByTheConnectionKey))
+			{
+				cameraView.ReportError(ex);
+			}
+		}, token));
 	}
 
 	static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
