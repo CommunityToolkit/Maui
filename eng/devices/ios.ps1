@@ -67,8 +67,8 @@ param(
     # Retries for infrastructure failures only. Defaults to 1 on CI and 0 locally.
     [int]$InfraRetries = -1,
 
-    # Collect code coverage of the toolkit assemblies with coverlet: the apps are packaged again with instrumented assemblies before they
-    # run, and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE, which only the CI
+    # Collect code coverage of the toolkit assemblies with coverlet: the apps are built with instrumented assemblies (a -Target testOnly run
+    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE, which only the CI
     # jobs set.
     [switch]$Coverage,
 
@@ -494,12 +494,7 @@ try {
     $runtimeIdentifier = "iossimulator-$(Get-DeviceTestHostArchitecture)"
     $buildProperties = @("RuntimeIdentifier=$runtimeIdentifier", 'CodesignRequireProvisioningProfile=false')
 
-    if ($Target -ne 'testOnly') {
-        foreach ($item in $context.Projects) {
-            $framework = Get-DeviceTestTargetFramework -Project $item -Platform 'ios'
-            [void](Invoke-DeviceTestBuild -Context $context -Project $item -TargetFramework $framework -BuildArgs $BuildArgs -Property $buildProperties)
-        }
-    }
+    $coverageSession = Invoke-DeviceTestAppBuilds -Context $context -Platform 'ios' -Target $Target -Property $buildProperties -BuildArgs $BuildArgs
 
     if ($Target -ne 'buildOnly') {
         Invoke-DeviceTestToolRestore
@@ -580,10 +575,6 @@ try {
 
         if ($null -ne $simulator -and $simulator.Description) {
             $context.DeviceDescription = $simulator.Description
-        }
-
-        if ($context.Coverage -and -not $simulatorError) {
-            $coverageSession = Start-DeviceTestCoverage -Context $context -Platform 'ios' -Property $buildProperties -BuildArgs $BuildArgs
         }
 
         foreach ($item in $context.Projects) {
