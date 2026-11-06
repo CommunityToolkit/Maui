@@ -456,6 +456,55 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it.
+	[Fact]
+	public async Task StopCameraPreviewDuringARecordingEndsItAndAStopVideoRecordingAfterTheNextStartReturnsTheNullStream()
+	{
+		await RunWithRecordingAsync(async (scope, destination) =>
+		{
+			scope.Manager.StopCameraPreview();
+			Assert.Null(scope.Access.MediaRecording);
+			Assert.Null(scope.Access.VideoCaptureStream);
+
+			await scope.Manager.StartCameraPreview(CancellationToken.None);
+
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None));
+		});
+	}
+
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it. The token is cancelled when the start looks for
+	// the frame source, so that SetFormatAsync observes it after the start put the prepared recording in the manager.
+	[Fact]
+	public async Task StartVideoRecordingThatItsTokenCancelsWhileItSetsTheFrameFormatReleasesThePreparedRecording()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			var mediaCapture = scope.Access.MediaCapture ?? throw new InvalidOperationException("No MediaCapture.");
+			Skip.IfNot(mediaCapture.FrameSources.Any(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color),
+				"The camera has no color frame source for MediaStreamType.VideoRecord, so recording does not start.");
+			using var cancellation = new CancellationTokenSource();
+			var findColorVideoFrameSource = scope.Access.FindColorVideoFrameSource;
+			scope.Access.FindColorVideoFrameSource = capture =>
+			{
+				cancellation.Cancel();
+				return findColorVideoFrameSource(capture);
+			};
+			using var cancelled = new MemoryStream();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StartVideoRecording(cancelled, cancellation.Token));
+
+			Assert.Null(scope.Access.MediaRecording);
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None));
+
+			scope.Access.FindColorVideoFrameSource = findColorVideoFrameSource;
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None));
+		});
+	}
+
 	[Fact]
 	public async Task StartAndStopVideoRecordingCopiesAnMp4IntoTheStream()
 	{
@@ -480,6 +529,387 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			Assert.True(destination.Length > 100);
 			byte[] fileTypeBox = "ftyp"u8.ToArray();
 			Assert.Equal(fileTypeBox, destination.ToArray().AsSpan(4, 4).ToArray());
+		});
+	}
+
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it. The camera that the recording turned on is off
+	// again once the recording ended, like on Android, iOS and Mac Catalyst.
+	[Fact]
+	public async Task StartVideoRecordingOnAStoppedPreviewRecordsAndTurnsTheCameraOffAgainWhenTheRecordingEnds()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			Assert.False(scope.Access.IsInitialized);
+			using var destination = new MemoryStream();
+
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.NotNull(scope.Access.MediaCapture);
+			Assert.NotNull(scope.Access.MediaRecording);
+			Assert.Same(destination, scope.Access.VideoCaptureStream);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, result);
+			Assert.True(destination.Length > 100);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A preview that the app started keeps running after the recording.
+	[Fact]
+	public async Task StartVideoRecordingOnAStartedPreviewKeepsThePreviewStartedWhenTheRecordingEnds()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			var mediaCapture = scope.Access.MediaCapture;
+			using var destination = new MemoryStream();
+
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, result);
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Same(mediaCapture, scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A preview that the app starts while a recording runs on the camera that the recording
+	// turned on is the app's: it keeps running after the recording.
+	[Fact]
+	public async Task StartCameraPreviewDuringARecordingThatTurnedTheCameraOnKeepsThePreviewStartedWhenTheRecordingEnds()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			await scope.Manager.StartCameraPreview(CancellationToken.None);
+			await scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.NotNull(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. Media Foundation must finish the recording of the first stop before a second stop turns
+	// the camera off, or the first stop loses its video.
+	[Fact]
+	public async Task ASecondStopVideoRecordingOfARecordingThatTurnedTheCameraOnWaitsForTheFirstWhichReturnsTheVideo()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			var first = scope.Manager.StopVideoRecording(CancellationToken.None);
+			var second = scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, await first);
+			Assert.True(destination.Length > 100);
+			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+			Assert.Same(Stream.Null, await second);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A start right after a stop must not prepare its recording on the camera that the stop
+	// then turns off.
+	[Fact]
+	public async Task StartVideoRecordingWhileStopVideoRecordingFinishesARecordingThatTurnedTheCameraOnWaitsAndRecordsAgain()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			using var secondDestination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			var stop = scope.Manager.StopVideoRecording(CancellationToken.None);
+			var restart = scope.Manager.StartVideoRecording(secondDestination, CancellationToken.None);
+
+			Assert.Same(destination, await stop);
+			Assert.True(destination.Length > 100);
+			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+
+			await restart;
+			Assert.True(scope.Access.IsInitialized);
+			Assert.NotNull(scope.Access.MediaRecording);
+			Assert.Same(secondDestination, scope.Access.VideoCaptureStream);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			Assert.Same(secondDestination, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.True(secondDestination.Length > 100);
+			Assert.True(secondDestination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+			Assert.False(scope.Access.IsInitialized);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A stop that its token cancels while it waits for an earlier stop must not let the
+	// next stop skip the earlier stop, or that one turns the camera off under the earlier stop.
+	[Fact]
+	public async Task AStopVideoRecordingThatItsTokenCancelsWhileAnEarlierStopFinishesTheRecordingLetsTheNextStopWaitForTheEarlierStop()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			var first = scope.Manager.StopVideoRecording(CancellationToken.None);
+			using var cancellation = new CancellationTokenSource();
+			var cancelled = scope.Manager.StopVideoRecording(cancellation.Token);
+			cancellation.Cancel();
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+			Assert.Equal(cancellation.Token, exception.CancellationToken);
+			var third = scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, await first);
+			Assert.True(destination.Length > 100);
+			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+			Assert.Same(Stream.Null, await third);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. The token only cancels waiting for the video, not the stop itself, as on Android, iOS
+	// and Mac Catalyst: the recording is finished and its camera is off, and the next stop returns the video.
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenFinishesTheRecordingThrowsAndTheNextStopReturnsTheVideo()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+
+			Assert.Null(scope.Access.MediaRecording);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.True(destination.Length > 100);
+			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+
+			var result = await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout);
+
+			Assert.Same(destination, result);
+			Assert.Equal(0, result.Position);
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A second cancelled stop keeps the video for the stop that is not cancelled.
+	[Fact]
+	public async Task AStopVideoRecordingWithACancelledTokenAfterTheRecordingWasFinishedKeepsTheVideoForTheNextStop()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+		});
+	}
+
+	static void SkipUnlessTheCameraCanRecord(WindowsCameraManagerScope scope)
+	{
+		var mediaCapture = scope.Access.MediaCapture ?? throw new InvalidOperationException("No MediaCapture.");
+		Skip.IfNot(mediaCapture.FrameSources.Any(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color),
+			"The camera has no color frame source for MediaStreamType.VideoRecord, so recording does not start.");
+	}
+
+	// Needs a camera with a color frame source, see above. The video goes to the stream of the latest start, as on Android, iOS and Mac Catalyst:
+	// the running recording is finished (its MP4 gets no moov box otherwise) and its stream goes back to the length and the position it had at its
+	// start, the camera that the first recording turned on stays on in between, and the new recording turns it off.
+	[Fact]
+	public async Task StartVideoRecordingWhileRecordingFinishesTheRunningRecordingAndRecordsIntoTheNewStream()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var first = new MemoryStream();
+			first.Write(new byte[16]);
+			using var second = new MemoryStream();
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			var firstRecording = scope.Access.MediaRecording;
+			var firstMediaCapture = scope.Access.MediaCapture;
+
+			await scope.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(captureTimeout);
+
+			Assert.NotSame(firstRecording, scope.Access.MediaRecording);
+			Assert.NotNull(scope.Access.MediaRecording);
+			Assert.Same(second, scope.Access.VideoCaptureStream);
+			Assert.True(scope.Access.IsInitialized, "The camera went off between the two recordings.");
+			Assert.Same(firstMediaCapture, scope.Access.MediaCapture);
+			Assert.Equal(16, first.Length);
+			Assert.Equal(16, first.Position);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+			Assert.True(second.Length > 100);
+			Assert.True(second.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+			Assert.Equal(16, first.Length);
+			Assert.False(scope.Access.IsInitialized, "The camera that the first recording turned on is still on.");
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. Without putting the stream back, the stream held the discarded video and then the new one
+	// one after the other, and a player plays only the first.
+	[Fact]
+	public async Task StartVideoRecordingWithTheStreamOfTheRunningRecordingLeavesOnlyTheNewVideoInTheStream()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
+			Assert.Equal(0, destination.Length);
+			Assert.Equal(0, destination.Position);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+			Assert.Equal(0, destination.Position);
+			Assert.Equal(1, CountOccurrences(destination.ToArray(), "moov"u8));
+		});
+	}
+
+	static int CountOccurrences(ReadOnlySpan<byte> data, ReadOnlySpan<byte> pattern)
+	{
+		var count = 0;
+		while (data.IndexOf(pattern) is int index and >= 0)
+		{
+			count++;
+			data = data[(index + pattern.Length)..];
+		}
+
+		return count;
+	}
+
+	// Needs a camera with a color frame source, see above. The video that a cancelled stop left for the next stop is discarded by a start, as the
+	// video of a recording that a start replaces is.
+	[Fact]
+	public async Task StartVideoRecordingAfterAStopThatItsTokenCancelledDiscardsTheVideoOfThatStop()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var first = new MemoryStream();
+			using var second = new MemoryStream();
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+			Assert.True(first.Length > 100);
+
+			await scope.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(captureTimeout);
+
+			Assert.Equal(0, first.Length);
+			Assert.Equal(0, first.Position);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+			Assert.Equal(0, first.Length);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A start with a stream that is refused must not discard the video that a cancelled stop
+	// left for the next stop.
+	[Fact]
+	public async Task StartVideoRecordingWithARefusedStreamAfterAStopThatItsTokenCancelledKeepsTheVideoForTheNextStop()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var first = new MemoryStream();
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+
+			using var refused = new NonSeekableStream();
+			await Assert.ThrowsAsync<NotSupportedException>(() => scope.Manager.StartVideoRecording(refused, CancellationToken.None).WaitAsync(captureTimeout));
+
+			Assert.Same(first, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+			Assert.True(first.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The refused start discarded the video that the cancelled stop kept.");
 		});
 	}
 

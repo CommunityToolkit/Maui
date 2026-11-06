@@ -338,35 +338,27 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		}
 
 		using var errors = new CameraErrorRecorder(session.View);
-		using var cancellation = new CancellationTokenSource();
-		var connect = session.Manager.ConnectCamera(cancellation.Token);
-		try
-		{
-			await AssertionExtensions.AssertEventually(() => connect.IsCompleted || UnhandledAsyncVoidExceptions.Count > 0, 30000, 50,
-				"ConnectCamera neither completed nor did anything escape from its CameraX listener.");
-			await SettleUiThreadAsync();
+		var connect = session.Manager.ConnectCamera(CancellationToken.None);
 
-			Assert.Empty(UnhandledAsyncVoidExceptions);
-			Assert.True(connect.IsCompleted, "ConnectCamera did not complete although its CameraX listener failed.");
-			await connect;
-			var exception = Assert.Single(errors.Errors);
-			if (missing is "lifecycleOwner")
-			{
-				Assert.IsType<InvalidCastException>(exception, exactMatch: false);
-			}
-			else
-			{
-				Assert.Equal(missing, Assert.IsType<ArgumentNullException>(exception, exactMatch: false).ParamName);
-			}
+		await AssertionExtensions.AssertEventually(() => connect.IsCompleted || UnhandledAsyncVoidExceptions.Count > 0, 30000, 50,
+			"ConnectCamera neither completed nor did anything escape from its CameraX listener.");
+		await SettleUiThreadAsync();
 
-			Assert.Equal(0, session.LoadedCount);
-			await AssertEveryCameraIsClosedAsync();
-		}
-		finally
+		Assert.Empty(UnhandledAsyncVoidExceptions);
+		Assert.True(connect.IsCompleted, "ConnectCamera did not complete although its CameraX listener failed.");
+		await connect;
+		var exception = Assert.Single(errors.Errors);
+		if (missing is "lifecycleOwner")
 		{
-			// Should ConnectCamera not complete, only the token ends its wait.
-			await cancellation.CancelAsync();
+			Assert.IsType<InvalidCastException>(exception, exactMatch: false);
 		}
+		else
+		{
+			Assert.Equal(missing, Assert.IsType<ArgumentNullException>(exception, exactMatch: false).ParamName);
+		}
+
+		Assert.Equal(0, session.LoadedCount);
+		await AssertEveryCameraIsClosedAsync();
 	}
 
 	[Fact]

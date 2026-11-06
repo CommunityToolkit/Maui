@@ -146,7 +146,7 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		await RunAsync(async (view, access, context) =>
 		{
 			var recorder = new AppleMediaRecorder(view);
-			access.CaptureSession = new FakeCaptureSession();
+			access.CaptureSession = new FakeCaptureSession { IsRunning = true };
 			using var permission = new AppleRequestAccessStub(videoAnswer: true);
 			using var defaultDevices = new AppleDefaultDeviceStub(video: null, audio: null);
 			using var connections = new AppleMovieOutputConnectionStub(new FakeCaptureConnection());

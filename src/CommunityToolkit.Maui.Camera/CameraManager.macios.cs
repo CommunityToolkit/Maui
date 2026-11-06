@@ -36,6 +36,12 @@ partial class CameraManager
 	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
 
+	// A recording that turned on the camera of a preview that the app stopped turns it off again when it ends, as on Android
+	bool isSessionStartedForTheRecording;
+
+	// The restart of a camera switch keeps a camera that only a recording turned on: it is off again once the recording ends
+	bool isCameraSwitchOfARecordingCamera;
+
 	// A start must not release the recording that a stop still waits for AVFoundation to finish (and delete its movie), like on Android
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 	CMMotionManager? motionManager;
@@ -272,10 +278,17 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		isSessionStartedForTheRecording = isCameraSwitchOfARecordingCamera;
+		isCameraSwitchOfARecordingCamera = false;
+
 		if (captureSession is null)
 		{
 			return;
 		}
+
+		// The start does not wait for anything that observes the token: a start that was cancelled before it began (by its caller, or by a
+		// StopCameraPreview during the yield of the connection) would start the preview all the same
+		token.ThrowIfCancellationRequested();
 
 		captureSession.BeginConfiguration();
 
@@ -359,10 +372,18 @@ partial class CameraManager
 		onLoaded.Invoke();
 	}
 
-	private partial void PlatformStopCameraPreviewForCameraSwitch() => PlatformStopCameraPreview();
+	private partial void PlatformStopCameraPreviewForCameraSwitch()
+	{
+		var isStartedForTheRecording = isSessionStartedForTheRecording;
+		PlatformStopCameraPreview();
+		isCameraSwitchOfARecordingCamera = isStartedForTheRecording;
+	}
 
 	private partial void PlatformStopCameraPreview()
 	{
+		isSessionStartedForTheRecording = false;
+		isCameraSwitchOfARecordingCamera = false;
+
 		if (captureSession is null)
 		{
 			return;
@@ -382,6 +403,20 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		// The permission is requested before the check for a pending start: a double tap makes two starts wait for the permission prompt, and
+		// the one that continues second must find the state that the first one claimed. Asked after that check, the second start would wait
+		// for the semaphore and then replace the recording that just started, where Android lets it join the first start.
+		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
+
+		// AVFoundation answers on a queue of its own and this continuation runs later on the thread of the start: a StopCameraPreview in between
+		// finds the answer already there, which WaitAsync returns
+		token.ThrowIfCancellationRequested();
+
+		if (!isPermissionGranted)
+		{
+			throw new CameraException(cameraPermissionNotGrantedMessage);
+		}
+
 		// A start that arrives while another one still waits for AVFoundation to start the recording waits for that start instead of starting
 		// a second recording. It must not wait for the semaphore first: that is held until the recording started, and the start that then
 		// got the semaphore would replace the recording that just started.
@@ -405,29 +440,49 @@ partial class CameraManager
 
 	async Task StartRecordingAsync(Stream stream, CancellationToken token)
 	{
-		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
-		if (!isPermissionGranted)
-		{
-			throw new CameraException(cameraPermissionNotGrantedMessage);
-		}
-
 		if (captureSession is null)
 		{
 			throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
 		}
 
+		// AVFoundation reports the start of a recording only for a session that runs, so a start on a stopped session (before
+		// StartCameraPreview or after StopCameraPreview) would wait for an answer that never comes. Like on Android, recording turns the camera on.
+		if (!captureSession.Running)
+		{
+			// Like on Android, only a preview that the app stopped (or never started) is off again once the recording ends: a preview that the
+			// app started stays started, also while its session does not run
+			var isPreviewStopped = !isInitialized;
+
+			try
+			{
+				await PlatformStartCameraPreview(token);
+				ObjectDisposedException.ThrowIf(isDisposed, this);
+
+				// AVFoundation can leave the session stopped (an interruption, a camera that another app holds) and then reports no recording either
+				if (!captureSession.Running)
+				{
+					throw new CameraException("Unable to start video recording because the camera could not be started.");
+				}
+			}
+			catch when (isPreviewStopped && !isDisposed)
+			{
+				// The preview that the app stopped stays stopped: AVFoundation would resume an interrupted session by itself once the interruption
+				// ends, and a started preview follows a camera switch
+				captureSession.StopRunning();
+				isInitialized = false;
+				throw;
+			}
+
+			isSessionStartedForTheRecording = isPreviewStopped;
+		}
+
 		// Like on Android and Windows, the stream of the latest StartVideoRecording receives the video: the running recording is released
 		CleanupVideoRecordingResources();
 
-		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
-		{
-			if (videoRecordingState is { } activeRecordingState)
-			{
-				await activeRecordingState.Started.WaitAsync(token);
-			}
-
-			return;
-		}
+		// The semaphore serializes the starts and the cleanup above released the state of the earlier recording: a state that is still there
+		// would be a bug of this class, which must not be mistaken for a start that joins another one
+		var recordingState = VideoRecordingState.TryStart(ref videoRecordingState)
+			?? throw new InvalidOperationException("The state of the previous video recording was not released.");
 
 		var recordingRequested = false;
 
@@ -518,6 +573,24 @@ partial class CameraManager
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
+		if (token.IsCancellationRequested)
+		{
+			// The semaphore is free and there is no recording state: no recording runs and no start is pending, so there is nothing to stop
+			// and no video to wait for (a stop that waits for a pending start or for another stop still throws below)
+			if (videoRecordingState is null && videoRecordingSemaphoreSlim.CurrentCount > 0)
+			{
+				return Stream.Null;
+			}
+
+			// The token cancels waiting for the finished movie and copying it into the stream, not the stop itself: a recording that is stopped
+			// does not keep recording after the app asked for the stop, and the stop can be called again for the movie. A recording that did not
+			// start yet is not stopped here: the stop waits for its start below.
+			if (videoRecordingState is { Started.IsCompletedSuccessfully: true, Finalized.IsCompleted: false })
+			{
+				videoOutput?.StopRecording();
+			}
+		}
+
 		await videoRecordingSemaphoreSlim.WaitAsync(token);
 
 		try
@@ -605,6 +678,7 @@ partial class CameraManager
 			finally
 			{
 				CleanupVideoRecordingResources(recordingState);
+				StopTheSessionThatTheRecordingStarted();
 			}
 
 			return recordingStream;
@@ -632,18 +706,32 @@ partial class CameraManager
 					videoOutput?.StopRecording();
 				}
 
-				await recordingState.Finalized.WaitAsync(token);
+				// AVFoundation reports the end of a recording that never started (a session that does not run any more) to nobody, so waiting
+				// for it would hold the semaphore of the recording until Dispose
+				if (recordingState.Started.IsCompletedSuccessfully)
+				{
+					await recordingState.Finalized.WaitAsync(token);
+				}
 			}
 
 			CleanupVideoRecordingResources(recordingState);
+			StopTheSessionThatTheRecordingStarted();
 		}
 		catch (Exception exception)
 		{
-			Trace.WriteLine($"Unable to stop video recording after start failed: {exception}");
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to end the video recording after its start failed: {exception}");
 		}
 		finally
 		{
 			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	void StopTheSessionThatTheRecordingStarted()
+	{
+		if (isSessionStartedForTheRecording)
+		{
+			PlatformStopCameraPreview();
 		}
 	}
 

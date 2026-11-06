@@ -525,6 +525,9 @@ sealed class FakeCaptureSession : AVCaptureSession
 
 	public bool IsRunning { get; set; }
 
+	// A real session that AVFoundation cannot start (an interruption, a camera that another app holds) returns from startRunning still stopped
+	public bool StaysStoppedOnStartRunning { get; set; }
+
 	public bool IsConfiguring { get; private set; }
 
 	public List<AVCaptureInput> RemovedInputs { get; } = [];
@@ -594,7 +597,7 @@ sealed class FakeCaptureSession : AVCaptureSession
 	public override void StartRunning()
 	{
 		Record("start");
-		IsRunning = true;
+		IsRunning = !StaysStoppedOnStartRunning;
 	}
 
 	public override void StopRunning()

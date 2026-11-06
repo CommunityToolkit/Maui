@@ -20,6 +20,8 @@ public static partial class TestCategory
 
 	public const string CameraPermissionResumeAndroid = nameof(CameraPermissionResumeAndroid);
 
+	public const string CameraStartStopAndroid = nameof(CameraStartStopAndroid);
+
 	public const string CameraApple = nameof(CameraApple);
 
 	public const string CameraWindows = nameof(CameraWindows);

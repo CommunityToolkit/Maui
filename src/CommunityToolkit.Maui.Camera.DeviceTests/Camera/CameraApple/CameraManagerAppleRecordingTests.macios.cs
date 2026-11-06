@@ -15,6 +15,9 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	const string noVideoConnectionMessage = "Unable to determine video connection from media type.";
 	const string unusableVideoConnectionMessage = "The video connection is not active and enabled.";
 
+	// Generous for a scripted AVFoundation, and short enough that a start that waits for an answer that never comes fails the test instead of the run
+	static readonly TimeSpan startTimeout = TimeSpan.FromSeconds(5);
+
 	[Fact]
 	public async Task StartVideoRecordingWithoutCameraPermissionThrowsCameraExceptionBeforeTouchingTheSession()
 	{
@@ -77,7 +80,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			using var destination = new MemoryStream();
 			using var trace = new TraceRecorder();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			// The first begin/commit pair is the cleanup of an earlier recording, which every start runs even when there is none.
 			Assert.Equal(["begin", "commit", "begin", "add-output", "commit"], recording.Session.Calls);
@@ -96,7 +99,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		{
 			using var destination = new MemoryStream();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Equal(["begin", "commit", "begin", "add-input", "add-output", "commit"], recording.Session.Calls);
 			Assert.Same(recording.Microphone, Assert.Single(recording.Inputs.Devices));
@@ -117,7 +120,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			using var destination = new MemoryStream();
 			using var trace = new TraceRecorder();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Contains(noVideoConnectionMessage, trace.Lines);
 			Assert.NotNull(recording.Scope.Access.AudioInput);
@@ -163,7 +166,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			using var destination = new MemoryStream();
 			using var trace = new TraceRecorder();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Contains(unusableVideoConnectionMessage, trace.Lines);
 			Assert.NotNull(recording.Scope.Access.AudioInput);
@@ -205,7 +208,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			recording.Connections.VideoConnection = connection;
 			recording.Scope.View.SelectedCamera = AppleFakeCameras.WithoutCaptureDevice("fake-recording-front", CameraPosition.Front);
 
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Contains(AppleMediaTypes.Video, recording.Connections.RequestedMediaTypes);
 			Assert.False(connection.AutomaticallyAdjusts);
@@ -222,7 +225,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			recording.Session.CanAddInputResult = false;
 			using var destination = new MemoryStream();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Equal(["begin", "commit", "begin", "add-output", "commit"], recording.Session.Calls);
 			Assert.Same(recording.Microphone, Assert.Single(recording.Inputs.Devices));
@@ -243,7 +246,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			// With ThrowOnInitFailure = false the binding reports the initializer's error through the out parameter (audioError).
 			using (new AppleInitFailureBehavior(throwOnInitFailure: false))
 			{
-				await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+				await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			}
 
 			Assert.Equal(["begin", "commit", "begin", "add-output", "commit"], recording.Session.Calls);
@@ -263,7 +266,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			recording.Inputs.FailureFor = device => ReferenceEquals(device, recording.Microphone) ? AppleDeviceInputStub.CreateError("Microphone access denied") : null;
 			using var destination = new MemoryStream();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Equal(["begin", "commit", "begin", "add-output", "commit"], recording.Session.Calls);
 			Assert.Same(recording.Microphone, Assert.Single(recording.Inputs.Devices));
@@ -335,13 +338,13 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	{
 		await RunAsync(async recording =>
 		{
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 			var firstInput = recording.Scope.Access.AudioInput ?? throw new InvalidOperationException("No audio input.");
 			var firstOutput = recording.Scope.Access.VideoOutput ?? throw new InvalidOperationException("No movie output.");
 			var firstFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			Assert.True(File.Exists(firstFile));
 
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 
 			Assert.Equal(
 				["begin", "commit", "begin", "add-input", "add-output", "commit", "begin", "remove-input", "remove-output", "commit", "begin", "add-input", "add-output", "commit"],
@@ -362,7 +365,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			using var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			var audioInput = recording.Scope.Access.AudioInput ?? throw new InvalidOperationException("No audio input.");
 			var movieOutput = recording.Scope.Access.VideoOutput ?? throw new InvalidOperationException("No movie output.");
@@ -396,7 +399,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		{
 			recording.Movies.FinishWhenStopped = false;
 			using var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			using var cancellationTokenSource = new CancellationTokenSource();
 
 			var cancelledStop = recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token);
@@ -423,7 +426,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			await destination.DisposeAsync();
 
 			await Assert.ThrowsAsync<ObjectDisposedException>(() => recording.Scope.Manager.StopVideoRecording(CancellationToken.None));
@@ -438,7 +441,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			await destination.DisposeAsync();
 
@@ -469,7 +472,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			recording.Movies.FinishWhenStopped = false;
 			recording.Movies.MovieBytes = null;
 			using var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var stop = recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 			Assert.False(stop.IsCompleted);
 
@@ -492,7 +495,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		{
 			using var destination = new MemoryStream();
 			using var trace = new TraceRecorder();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			Assert.True(File.Exists(movieFile));
 
@@ -522,7 +525,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		{
 			recording.Movies.MovieBytes = outcome is "finishedWithoutAFile" ? null : recording.Movies.MovieBytes;
 			using var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			Assert.Equal(outcome is not "finishedWithoutAFile", File.Exists(movieFile));
 			var error = outcome switch
@@ -548,12 +551,12 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	{
 		await RunAsync(async recording =>
 		{
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 			recording.Movies.Finish(Assert.Single(recording.Movies.Recordings), CreateUnfinishedRecordingError());
 			await Assert.ThrowsAsync<CameraException>(() => recording.Scope.Manager.StopVideoRecording(CancellationToken.None));
 			using var destination = new MemoryStream();
 
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var result = await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 
 			Assert.Same(destination, result);
@@ -599,7 +602,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 	{
 		await RunAsync(async recording =>
 		{
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 			var audioInput = recording.Scope.Access.AudioInput ?? throw new InvalidOperationException("No audio input.");
 			var movieOutput = recording.Scope.Access.VideoOutput ?? throw new InvalidOperationException("No movie output.");
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
@@ -629,7 +632,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			recording.Movies.FinishWhenStopped = false;
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			var stop = recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 			Assert.False(stop.IsCompleted);
@@ -652,7 +655,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			recording.Movies.FinishWhenStopped = false;
-			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout);
 			var recordingDelegate = (AVCaptureMovieFileOutputRecordingDelegate)(recording.Scope.Access.VideoRecordingDelegate ?? throw new InvalidOperationException("No recording delegate."));
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 			var stop = recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
@@ -677,7 +680,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			using var destination = new StreamThatRunsAnActionOnTheFirstWrite(recording.Scope.Manager.Dispose);
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 
 			var result = await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -697,7 +700,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		{
 			recording.Movies.FinishWhenStopped = false;
 			using var first = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(first, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(startTimeout);
 			var firstRecording = Assert.Single(recording.Movies.Recordings);
 			var firstStop = recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 			using var destination = new MemoryStream();
@@ -735,7 +738,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			using var coordinators = new AppleRotationCoordinatorStub();
 			using var destination = new MemoryStream();
 			await recording.Scope.Manager.StartCameraPreview(CancellationToken.None);
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var movieFile = recording.Scope.Access.VideoRecordingFileName ?? throw new InvalidOperationException("No recording file.");
 
 			recording.Scope.View.SelectedCamera = secondCamera;
@@ -783,7 +786,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await RunAsync(async recording =>
 		{
 			using var destination = new MemoryStream();
-			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
 			var refusal = new ObjCException(new NSException("NSInvalidArgumentException", "*** -[AVCaptureSession removeInput:] Cannot remove input from capture session", null));
 			recording.Session.Failures["remove-input"] = refusal;
 
@@ -813,7 +816,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		{
 			// Real movie output and real recording: only the permission and the (missing) microphone are scripted.
 			using var scope = new AppleCameraManagerScope(MauiContext);
-			var session = new FakeCaptureSession();
+			var session = new FakeCaptureSession { IsRunning = true };
 			scope.Access.CaptureSession = session;
 			using var access = new AppleRequestAccessStub(videoAnswer: true);
 			using var defaultDevices = new AppleDefaultDeviceStub(video: null, audio: null);
@@ -824,6 +827,304 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Null(scope.Access.VideoRecordingFileName);
 			Assert.Empty(session.Outputs);
 			Assert.False(session.IsConfiguring);
+		});
+	}
+
+	// The app stopped the preview (or never started it): like on Android, recording turns the camera on. AVFoundation reports the start of a
+	// recording only for a session that runs, so the start would otherwise wait for an answer that never comes.
+	[Fact]
+	public async Task StartVideoRecordingOnASessionThatDoesNotRunStartsTheSessionAndTheRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			using var camera = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(camera, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Session.IsRunning = false;
+			using var destination = new MemoryStream();
+
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+
+			Assert.True(recording.Session.IsRunning);
+			Assert.True(recording.Scope.Access.IsInitialized);
+			Assert.Equal(1, recording.Scope.LoadedCount);
+			Assert.Same(camera, recording.Scope.Access.CaptureDevice);
+			AssertRecordingStarted(recording, destination);
+
+			await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.False(recording.Session.IsRunning);
+			Assert.False(recording.Scope.Access.IsInitialized);
+		});
+	}
+
+	// The preview that the app started stays started after the recording, also while AVFoundation stopped its session: only a preview that
+	// the app stopped is off again once the recording ends, like on Android.
+	[Fact]
+	public async Task StartVideoRecordingOnAStartedPreviewWhoseSessionDoesNotRunKeepsThePreviewRunningAfterTheRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			using var camera = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(camera, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Scope.Access.IsInitialized = true;
+			recording.Session.IsRunning = false;
+			using var destination = new MemoryStream();
+
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+			await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.True(recording.Session.IsRunning);
+			Assert.True(recording.Scope.Access.IsInitialized);
+		});
+	}
+
+	// The camera switch restarts the preview, which must not forget that only the recording turned the camera on.
+	[Fact]
+	public async Task StopVideoRecordingAfterACameraSwitchDuringARecordingThatTurnedTheCameraOnTurnsTheCameraOff()
+	{
+		await RunAsync(async recording =>
+		{
+			using var firstDevice = new FakeCaptureDevice { Identifier = "fake-recording-first-camera" };
+			using var secondDevice = new FakeCaptureDevice { Identifier = "fake-recording-second-camera" };
+			var secondCamera = AppleFakeCameras.Create(secondDevice, CameraPosition.Front, new FakeCaptureDeviceFormat(640, 480));
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(firstDevice, CameraPosition.Rear, new FakeCaptureDeviceFormat(640, 480));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Session.IsRunning = false;
+			using var destination = new MemoryStream();
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+
+			recording.Scope.View.SelectedCamera = secondCamera;
+			await recording.Scope.Manager.UpdateCurrentCamera(secondCamera, CancellationToken.None);
+			await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.False(recording.Session.IsRunning);
+			Assert.False(recording.Scope.Access.IsInitialized);
+		});
+	}
+
+	// AVFoundation leaves a session that it cannot start stopped (an interruption, a camera that another app holds), and then reports no recording
+	// either: the start must not wait for it.
+	[Fact]
+	public async Task StartVideoRecordingOnASessionThatCannotStartThrowsCameraExceptionInsteadOfWaitingForever()
+	{
+		await RunAsync(async recording =>
+		{
+			using var camera = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(camera, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Session.IsRunning = false;
+			recording.Session.StaysStoppedOnStartRunning = true;
+			var timeline = new List<string>();
+			recording.Session.Timeline = timeline;
+
+			var exception = await Assert.ThrowsAsync<CameraException>(() => recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout));
+
+			Assert.Equal("Unable to start video recording because the camera could not be started.", exception.Message);
+
+			// The preview that the app had stopped stays stopped: AVFoundation resumes an interrupted session by itself
+			Assert.False(recording.Scope.Access.IsInitialized);
+			Assert.Equal("session:stop", timeline[^1]);
+
+			// The session keeps the inputs and outputs of the preview that the start configured, but nothing of the recording
+			var access = recording.Scope.Access;
+			Assert.Null(access.VideoOutput);
+			Assert.Null(access.AudioInput);
+			Assert.Null(access.VideoRecordingFileName);
+			Assert.Null(access.VideoRecordingState);
+			Assert.Null(access.VideoRecordingDelegate);
+			Assert.DoesNotContain(recording.Session.Outputs, static output => output is AVCaptureMovieFileOutput);
+			Assert.False(recording.Session.IsConfiguring);
+			Assert.Empty(recording.Movies.Recordings);
+		});
+	}
+
+	// AVFoundation tells nobody about the end of a recording that never started, which a session that stopped meanwhile does not do. The start
+	// that was cancelled used to wait for that end with no token, and so held the semaphore of the recording until Dispose.
+	[Fact]
+	public async Task StartVideoRecordingCancelledWhileAVFoundationNeverReportsTheStartReturnsAndReleasesTheRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Movies.AcknowledgeStart = false;
+			recording.Movies.FinishWhenStopped = false;
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var start = recording.Scope.Manager.StartVideoRecording(new MemoryStream(), cancellationTokenSource.Token);
+			Assert.False(start.IsCompleted);
+			cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(300));
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => start.WaitAsync(startTimeout));
+			AssertRecordingReleased(recording);
+
+			Assert.Same(Stream.Null, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+
+			recording.Movies.AcknowledgeStart = true;
+			using var destination = new MemoryStream();
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+			Assert.Same(destination, recording.Scope.Access.VideoRecordingStream);
+		});
+	}
+
+	// Both taps wait for the permission prompt. The second start used to wait for the semaphore of the first one, and then replaced its recording.
+	[Fact]
+	public async Task ASecondStartVideoRecordingWhileTheFirstOneWaitsForThePermissionJoinsItAndStartsNoOtherRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Access.VideoAnswer = null;
+			recording.Movies.AcknowledgeStart = false;
+			using var first = new MemoryStream();
+			using var second = new MemoryStream();
+
+			var firstStart = recording.Scope.Manager.StartVideoRecording(first, CancellationToken.None);
+			var secondStart = recording.Scope.Manager.StartVideoRecording(second, CancellationToken.None);
+			Assert.False(firstStart.IsCompleted);
+			Assert.False(secondStart.IsCompleted);
+
+			recording.Access.AnswerPending(true);
+			await AssertionExtensions.AssertEventually(() => recording.Movies.Recordings.Count > 0, timeout: 5000, message: "The start never began the recording after the user granted the permission.");
+			var firstRecording = recording.Movies.Recordings[0];
+			Assert.False(firstStart.IsCompleted);
+			Assert.False(secondStart.IsCompleted);
+
+			recording.Movies.Start(firstRecording);
+			await firstStart.WaitAsync(startTimeout);
+			await secondStart.WaitAsync(startTimeout);
+
+			Assert.Single(recording.Movies.Recordings);
+			Assert.Same(first, recording.Scope.Access.VideoRecordingStream);
+			Assert.Same(first, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			Assert.Equal(recording.Movies.MovieBytes, first.ToArray());
+			Assert.Equal(0, second.Length);
+		});
+	}
+
+	[Fact]
+	public async Task ASecondStartVideoRecordingWhileTheFirstOneWaitsForAVFoundationWaitsForItAndStartsNoOtherRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Movies.AcknowledgeStart = false;
+			using var first = new MemoryStream();
+			using var second = new MemoryStream();
+
+			var firstStart = recording.Scope.Manager.StartVideoRecording(first, CancellationToken.None);
+			var secondStart = recording.Scope.Manager.StartVideoRecording(second, CancellationToken.None);
+			var firstRecording = Assert.Single(recording.Movies.Recordings);
+			Assert.False(firstStart.IsCompleted);
+			Assert.False(secondStart.IsCompleted, "The second StartVideoRecording completed before AVFoundation started the recording of the first one.");
+
+			recording.Movies.Start(firstRecording);
+			await Task.WhenAll(firstStart, secondStart).WaitAsync(startTimeout);
+
+			Assert.Single(recording.Movies.Recordings);
+			Assert.Same(first, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			Assert.Equal(0, second.Length);
+		});
+	}
+
+	[Fact]
+	public async Task StopVideoRecordingWaitsForTheStartOfTheRecordingAndThenReturnsItsVideo()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Movies.AcknowledgeStart = false;
+			using var destination = new MemoryStream();
+			var start = recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var movie = Assert.Single(recording.Movies.Recordings);
+
+			var stop = recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+			Assert.False(stop.IsCompleted, "StopVideoRecording did not wait for the start of the recording.");
+			Assert.Equal(0, movie.StopCount);
+
+			recording.Movies.Start(movie);
+			await start.WaitAsync(startTimeout);
+
+			Assert.Same(destination, await stop.WaitAsync(startTimeout));
+			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			Assert.Equal(1, movie.StopCount);
+		});
+	}
+
+	// The token only cancels waiting for the movie, not the stop itself, so the next StopVideoRecording returns the movie
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenStopsTheRecordingAndThrowsAndTheNextStopReturnsTheMovie()
+	{
+		await RunAsync(async recording =>
+		{
+			using var destination = new MemoryStream();
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+			var movie = Assert.Single(recording.Movies.Recordings);
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token));
+
+			Assert.Equal(1, movie.StopCount);
+			Assert.Equal(0, destination.Length);
+
+			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			Assert.Equal(1, movie.StopCount);
+		});
+	}
+
+	// A start that is still pending has no movie to stop: the stop throws and the start goes on
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenWhileTheStartIsPendingThrowsAndDoesNotStopTheRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Movies.AcknowledgeStart = false;
+			using var destination = new MemoryStream();
+			var start = recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var movie = Assert.Single(recording.Movies.Recordings);
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token));
+			Assert.Equal(0, movie.StopCount);
+
+			recording.Movies.Start(movie);
+			await start.WaitAsync(startTimeout);
+			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+		});
+	}
+
+	// Nothing records, so a cancelled token has nothing to cancel (shipped 6.1.0 returned Stream.Null as well)
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenAndNoRecordingReturnsTheNullStream()
+	{
+		await RunAsync(async recording =>
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			Assert.Same(Stream.Null, await recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token).WaitAsync(startTimeout));
+			Assert.Empty(recording.Movies.Recordings);
+		});
+	}
+
+	[Fact]
+	public async Task ARecordingThatAVFoundationEndsBeforeItStartedFailsTheStartWithCameraExceptionAndLeavesNothingForTheStop()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Movies.AcknowledgeStart = false;
+			using var destination = new MemoryStream();
+			var start = recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var movie = Assert.Single(recording.Movies.Recordings);
+
+			recording.Movies.Finish(movie);
+
+			var exception = await Assert.ThrowsAsync<CameraException>(() => start.WaitAsync(startTimeout));
+			Assert.Equal("Video recording finished before it started.", exception.Message);
+			Assert.Same(Stream.Null, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			AssertRecordingReleased(recording);
+			Assert.Equal(0, destination.Length);
 		});
 	}
 
@@ -864,7 +1165,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			using var scope = new AppleCameraManagerScope(MauiContext);
-			var session = new FakeCaptureSession();
+			var session = new FakeCaptureSession { IsRunning = true };
 			scope.Access.CaptureSession = session;
 			using var microphone = new FakeCaptureDevice { Name = "Fake microphone", Identifier = "fake-microphone" };
 			using var access = new AppleRequestAccessStub(videoAnswer: true);

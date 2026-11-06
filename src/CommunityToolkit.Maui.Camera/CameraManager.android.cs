@@ -75,6 +75,7 @@ partial class CameraManager
 	// StartVideoRecording and StopVideoRecording both wait for CameraX: without this, one could work on a recording that the other one
 	// is ending or replacing
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim cameraPreviewSemaphoreSlim = new(1, 1);
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -104,6 +105,9 @@ partial class CameraManager
 	// connects its camera: a start that failed only for the missing permission is retried once the activity resumes with it, as CameraX opened
 	// the camera by itself before the start checked the permission
 	bool isWaitingForCameraPermission;
+
+	// Counts the starts that completed, so that a start which waited for another one can tell that the other one did its work
+	int completedCameraPreviewStarts;
 
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
 	enum CaptureSessionMode { Photo, Video }
@@ -290,7 +294,7 @@ partial class CameraManager
 		{
 			RebuildCameraPreview();
 			RebuildImageCapture();
-			await PlatformStartCameraPreview(token);
+			await RestartCameraPreview(token);
 		}
 	}
 
@@ -342,7 +346,9 @@ partial class CameraManager
 			}
 		}), ContextCompat.GetMainExecutor(context));
 
-		await cameraProviderTCS.Task.WaitAsync(token);
+		// Not cancelled by the token, which only cancels the start of the preview: a StartCameraPreview while the view connects waits for this
+		// connection, which must have prepared the use cases by then
+		await cameraProviderTCS.Task;
 	}
 
 	void InitializeUseCases()
@@ -585,51 +591,98 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		try
+		{
+			await StartCameraPreviewAsync(token);
+		}
+		catch (System.Exception ex) when (isDisposed && ex is not OperationCanceledException)
+		{
+			// The page closed while the start waited for CameraX: the failure of the released manager (an ObjectDisposedException) has no
+			// view left to show it in, so the start ends quietly like the connection
+		}
+	}
+
+	async Task StartCameraPreviewAsync(CancellationToken token)
+	{
+		// The connection prepares the use cases (see pendingConnection): without this wait, a start while the view connects would do nothing,
+		// although a StopCameraPreview can have cancelled the start of the connection
+		if (processCameraProvider is null && !pendingConnection.IsCompleted)
+		{
+			await pendingConnection.WaitAsync(token);
+		}
+
 		if (previewView is null || processCameraProvider is null || cameraPreview is null || imageCapture is null)
 		{
 			return;
 		}
 
+		// Before the cancellation check: a later start that is cancelled still cancels the retry of an earlier start without the permission
 		isWaitingForCameraPermission = false;
 
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+		// A start that StopCameraPreview cancelled while it waited (for the connection, or for CameraX to run the listener of the connection) must
+		// not wait for the camera permission: the activity would start the stopped preview when it resumes with the permission
+		token.ThrowIfCancellationRequested();
 
-		// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
-		if (isCameraSwitchDeferred && IsRecordingBound())
-		{
-			return;
-		}
+		// The retry of a start without the camera permission (OnActivityResumed) and the start of the app, which asks for the permission and starts
+		// the preview once it has it, can overlap while CameraX binds the camera. The start that comes second waits for the first one and does
+		// not bind and load the view again: only when the first one bound the camera that is selected now, so that a camera switch that waited
+		// for it still opens its camera
+		var startsCompletedBeforeWaiting = completedCameraPreviewStarts;
+		await cameraPreviewSemaphoreSlim.WaitAsync(token);
 
-		// CameraX binds the use cases also without the camera permission, and then keeps trying to open the camera without reporting anything.
-		// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped, until
-		// StartCameraPreview is called again or the activity resumes with the permission (OnActivityResumed)
-		if (!IsCameraPermissionGranted())
+		try
 		{
-			isWaitingForCameraPermission = true;
-			throw new CameraException(cameraPermissionNotGrantedMessage);
-		}
-
-		if (camera is null || !IsPhotoSessionBound())
-		{
-			try
+			if (startsCompletedBeforeWaiting != completedCameraPreviewStarts && isInitialized && !isDisposed && IsPhotoSessionBound() && IsBoundTo(cameraView.SelectedCamera))
 			{
-				await BindPhotoSessionAsync(token);
+				return;
 			}
-			catch (System.Exception ex) when (ex is not OperationCanceledException)
+
+			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+
+			// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
+			if (isCameraSwitchDeferred && IsRecordingBound())
 			{
-				// The selected camera can not be bound (for example an unplugged USB camera): the preview stays started, so that
-				// selecting another camera (UpdateCurrentCamera) opens it
-				isInitialized = true;
-				throw;
+				return;
 			}
+
+			// CameraX binds the use cases also without the camera permission, and then keeps trying to open the camera without reporting anything.
+			// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped, until
+			// StartCameraPreview is called again or the activity resumes with the permission (OnActivityResumed)
+			if (!IsCameraPermissionGranted())
+			{
+				isWaitingForCameraPermission = true;
+				throw new CameraException(cameraPermissionNotGrantedMessage);
+			}
+
+			// The bound camera can be one that was selected before (bound by a start that this start waited for, or by SetExtensionMode while the
+			// preview was stopped): only the selected camera is shown
+			if (camera is null || !IsPhotoSessionBound() || !IsBoundTo(cameraView.SelectedCamera))
+			{
+				try
+				{
+					await BindPhotoSessionAsync(token);
+				}
+				catch (System.Exception ex) when (ex is not OperationCanceledException)
+				{
+					// The selected camera can not be bound (for example an unplugged USB camera): the preview stays started, so that
+					// selecting another camera (UpdateCurrentCamera) opens it
+					isInitialized = true;
+					throw;
+				}
+			}
+
+			var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+			var action = new FocusMeteringAction.Builder(point).Build();
+			camera?.CameraControl?.StartFocusAndMetering(action);
+
+			isInitialized = true;
+			onLoaded.Invoke();
+			completedCameraPreviewStarts++;
 		}
-
-		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
-		var action = new FocusMeteringAction.Builder(point).Build();
-		camera?.CameraControl?.StartFocusAndMetering(action);
-
-		isInitialized = true;
-		onLoaded.Invoke();
+		finally
+		{
+			cameraPreviewSemaphoreSlim.Release();
+		}
 	}
 
 	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred until the
@@ -770,15 +823,10 @@ partial class CameraManager
 			}
 		}
 
-		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
-		{
-			if (videoRecordingState is { } activeRecordingState)
-			{
-				await activeRecordingState.Started.WaitAsync(token);
-			}
-
-			return;
-		}
+		// The semaphore serializes the starts and the code above released the state of the earlier recording: a state that is still there
+		// would be a bug of this class, which must not be mistaken for a start that joins another one
+		var recordingState = VideoRecordingState.TryStart(ref videoRecordingState)
+			?? throw new InvalidOperationException("The state of the previous video recording was not released.");
 
 		var recordingRequested = false;
 
@@ -838,9 +886,16 @@ partial class CameraManager
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 
-		// Like on iOS, the recording stops also when the token is cancelled already: the token cancels waiting for CameraX to finalize
-		// the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be called again. A recording
-		// that did not start yet is not stopped here: the stop waits for its start below.
+		// The semaphore is free and there is no recording state: no recording runs and no start is pending, so a cancelled token has nothing
+		// to stop and no video to wait for (a stop that waits for a pending start or for another stop still throws below)
+		if (token.IsCancellationRequested && videoRecordingState is null && videoRecordingSemaphoreSlim.CurrentCount > 0)
+		{
+			return Stream.Null;
+		}
+
+		// Like on iOS, Mac Catalyst and Windows, the recording stops also when the token is cancelled already: the token cancels waiting
+		// for CameraX to finalize the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be
+		// called again. A recording that did not start yet is not stopped here: the stop waits for its start below.
 		if (videoRecordingState is { Started.IsCompletedSuccessfully: true, Finalized.IsCompleted: false })
 		{
 			videoRecording?.Stop();
@@ -926,7 +981,9 @@ partial class CameraManager
 			finally
 			{
 				CleanupVideoRecordingResources(recordingState);
-				await ReturnToPhotoSessionAsync();
+
+				// A session that can not be restored must neither take the exported video away from the caller nor replace the failure of an export
+				await RestorePhotoSessionReportingItsFailureAsync();
 			}
 
 			return recordingStream;
@@ -934,6 +991,21 @@ partial class CameraManager
 		finally
 		{
 			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	// The caller gets the video, or the failure of the export: a session that can not be restored afterwards is reported through the
+	// ErrorOccurred event of the view instead
+	async Task RestorePhotoSessionReportingItsFailureAsync()
+	{
+		try
+		{
+			await ReturnToPhotoSessionAsync();
+		}
+		catch (System.Exception ex) when (!isDisposed)
+		{
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to restore the photo session after the video recording: {ex}");
+			cameraView.OnErrorOccurred(ex);
 		}
 	}
 

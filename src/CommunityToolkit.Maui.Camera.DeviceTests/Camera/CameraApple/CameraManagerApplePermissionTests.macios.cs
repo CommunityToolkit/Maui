@@ -125,6 +125,51 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	}
 
 	[Fact]
+	public async Task StartVideoRecordingOnARealSessionThatDoesNotRunAndHasNoCameraToStartThrowsCameraExceptionInsteadOfWaitingForever()
+	{
+		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			using var scope = new AppleCameraManagerScope(MauiContext);
+			scope.Manager.CreatePlatformView();
+
+			var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)));
+
+			Assert.Equal("No camera available on device", exception.Message);
+			Assert.Null(scope.Access.VideoOutput);
+			Assert.Null(scope.Access.VideoRecordingState);
+			Assert.Empty(scope.Access.CaptureSession?.Outputs ?? []);
+		});
+	}
+
+	// The session reports that it runs but its movie output never tells the delegate that the recording started, like the output of a session that
+	// stopped after the start began. The cancelled start used to wait for the end of that recording without a token, and never returned.
+	[Fact]
+	public async Task StartVideoRecordingCancelledWhileTheRealMovieOutputNeverReportsTheStartReturnsAndReleasesTheRecording()
+	{
+		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			using var scope = new AppleCameraManagerScope(MauiContext);
+			scope.Manager.CreatePlatformView();
+			var session = scope.Access.CaptureSession ?? throw new InvalidOperationException("No capture session.");
+			using var running = new AppleSessionRunningStub(session);
+			using var cancellationTokenSource = new CancellationTokenSource();
+			cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(300));
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StartVideoRecording(new MemoryStream(), cancellationTokenSource.Token).WaitAsync(TimeSpan.FromSeconds(5)));
+
+			Assert.Null(scope.Access.VideoRecordingState);
+			Assert.Null(scope.Access.VideoOutput);
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)));
+		});
+	}
+
+	[Fact]
 	public async Task DisposeAfterStartingAVideoRecordingReleasesTheInputOutputAndSession()
 	{
 		SkipUnlessCameraAndMicrophoneAreAuthorized();

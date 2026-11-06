@@ -130,8 +130,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// on Android the start of the preview that the activity retries once the app has the camera permission (see
 	/// <see cref="StartCameraPreview(CancellationToken)"/>) and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was
 	/// disconnected are not reported. It also reports a camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an
-	/// exception, on every platform, and the failures of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which
-	/// let no exception escape.
+	/// exception, on every platform except for an Android start that waited for the connection of the view, which throws the failure that the
+	/// connection reported, and the failures of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which
+	/// let no exception escape. A start that <see cref="StopCameraPreview"/> cancels before the preview started is not a failure and is not
+	/// reported.
 	/// </remarks>
 	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
 	{
@@ -166,7 +168,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter
 	/// <para>
 	/// The command lets no exception escape: a preview that cannot start, or a view without a handler, is reported through
-	/// <see cref="ErrorOccurred"/>, once. A start that is cancelled through the token ends without an event.
+	/// <see cref="ErrorOccurred"/>, once. A start that is cancelled through the token, or by <see cref="StopCameraPreview"/> or
+	/// <see cref="StopCameraPreviewCommand"/> before the preview started, ends without an event.
 	/// </para>
 	/// </remarks>
 	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
@@ -189,7 +192,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// The command lets no exception escape: <see cref="System.Windows.Input.ICommand.Execute(object)"/> cannot return the task of the recording,
 	/// so an exception would reach no caller and end the app. A recording that cannot start (an exception of
 	/// <see cref="StartVideoRecording(Stream, CancellationToken)"/>, such as its <see cref="CameraException"/>) is reported through
-	/// <see cref="MediaCaptureFailed"/> with the message of the exception, once.
+	/// <see cref="MediaCaptureFailed"/> with the message of the exception, once. A start that <see cref="StopCameraPreview"/> or
+	/// <see cref="StopCameraPreviewCommand"/> cancels before the recording started ends without an event.
 	/// </para>
 	/// </remarks>
 	public Command<Stream> StartVideoRecordingCommand => (Command<Stream>)GetValue(StartVideoRecordingCommandProperty);
@@ -284,6 +288,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Set Extension Mode
 	/// </summary>
+	/// <remarks>
+	/// While the preview is stopped, a new mode binds the camera again: the camera turns on.
+	/// </remarks>
 	/// <param name="mode">mode</param>
 	/// <param name="token"></param>
 	public Task SetExtensionMode(int mode, CancellationToken token = default)
@@ -386,8 +393,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 	{
 		var cameraView = (CameraView)bindable;
 
-		// StartCameraPreview reports a preview that cannot start through ErrorOccurred itself
-		return new(async token => await ExecuteCommand(() => cameraView.StartCameraPreview(token), cameraView.ReportError, token));
+		// StartCameraPreview reports a preview that cannot start through ErrorOccurred itself, except for a failure that the connection reported
+		// already, which it throws instead
+		return new(async token => await ExecuteCommand(() => cameraView.StartCameraPreview(token), ex =>
+		{
+			if (!ex.Data.Contains(CameraManager.ReportedByTheConnectionKey))
+			{
+				cameraView.ReportError(ex);
+			}
+		}, token));
 	}
 
 	static ICommand CreateStopCameraPreviewCommand(BindableObject bindable)
@@ -449,8 +463,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 		{
 			await work();
 		}
-		catch (OperationCanceledException) when (token.IsCancellationRequested)
+		catch (OperationCanceledException exception) when (token.IsCancellationRequested || exception.CancellationToken.IsCancellationRequested)
 		{
+			// StopCameraPreview cancels a start through a token of its own, which the command does not know
 		}
 		catch (Exception ex)
 		{

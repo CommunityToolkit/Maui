@@ -584,7 +584,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 				await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 				await host.View.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
 				await WaitForRecordingDataAsync(before);
-				var finalized = host.Native<VideoRecordingState>("videoRecordingState")!;
+				var recordingState = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 				host.View.StopVideoRecordingCommand.Execute(CancellationToken.None);
 				((IElementHandler)host.Handler).DisconnectHandler();
@@ -592,13 +592,8 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 				// The stop of the command goes on once Dispose released the recording, which cancels what the recording still awaited
 				// (Finalized included) while CameraX finalizes the recording that Dispose unbound.
-				try
-				{
-					await finalized.Finalized.WaitAsync(CameraTimeout);
-				}
-				catch (OperationCanceledException)
-				{
-				}
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recordingState.Finalized.WaitAsync(CameraTimeout));
+				Assert.True(recordingState.Finalized.IsCanceled, "Dispose did not cancel the pending Finalized task of the recording.");
 
 				await SettleUiThreadAsync();
 				Assert.Empty(UnhandledAsyncVoidExceptions);

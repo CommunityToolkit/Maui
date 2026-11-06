@@ -99,6 +99,30 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 
+	// The app has the permission by the time of the later start, so only the retry of the start of the connection could start the preview when
+	// the activity resumes.
+	[Fact]
+	public async Task ALaterStartThatItsTokenCancelledKeepsThePreviewStoppedWhenTheActivityResumesWithTheCameraPermission()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = await ConnectWithoutTheCameraPermissionAsync(session);
+			context.DeniedPermissions.Clear();
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StartCameraPreview(cancellation.Token).WaitAsync(CameraTimeout));
+
+			await AskForTheCameraPermissionAsync();
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Single(errors.Errors);
+			await AssertThePreviewIsStoppedAsync(session);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
 	[Fact]
 	public async Task StopCameraPreviewAfterAStartWithoutTheCameraPermissionKeepsThePreviewStoppedWhenTheActivityResumesWithIt()
 	{
@@ -145,6 +169,59 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 
+	// The connection checks the camera permission in the listener of CameraX, which runs in a later UI-thread message than the stop and before
+	// the test grants the permission: had the cancelled start still checked it, the resume would have retried that start.
+	[Fact]
+	public async Task StopCameraPreviewWhileTheViewConnectsWithoutTheCameraPermissionKeepsThePreviewStoppedWhenTheActivityResumesWithIt()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = new CameraErrorRecorder(session.View);
+			await session.Manager.UpdateCaptureResolution(Size.Zero, CancellationToken.None);
+
+			var connect = session.Manager.ConnectCamera(CancellationToken.None);
+			Assert.False(connect.IsCompleted, "ConnectCamera completed without waiting for CameraX.");
+			session.Manager.StopCameraPreview();
+			await connect.WaitAsync(CameraTimeout);
+			await WaitForTheListenersOfCameraXAsync();
+			Assert.Empty(errors.Errors);
+
+			context.DeniedPermissions.Clear();
+			await AskForTheCameraPermissionAsync();
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Empty(errors.Errors);
+			await AssertThePreviewIsStoppedAsync(session);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
+	// The app starts the preview itself as soon as it has the permission, in the same resume that makes the manager retry its start: the app's
+	// start comes while the retry still waits for CameraX, and binding the camera for both would load the view twice.
+	[Fact]
+	public async Task AStartOfTheAppWhileTheStartThatTheResumeRetriesWaitsForCameraXJoinsItAndLoadsTheViewOnce()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = await ConnectWithoutTheCameraPermissionAsync(session);
+			context.DeniedPermissions.Clear();
+			Task? startOfTheApp = null;
+
+			await AskForTheCameraPermissionAsync(() => startOfTheApp = session.Manager.StartCameraPreview(CancellationToken.None));
+
+			await (startOfTheApp ?? throw new InvalidOperationException("The test's observer did not run.")).WaitAsync(CameraTimeout);
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Equal(1, session.LoadedCount);
+			Assert.Single(errors.Errors);
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
 	[Fact]
 	public async Task AStartThatTheResumeRetriesAndThatFailsRaisesErrorOccurred()
 	{
@@ -164,6 +241,69 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			Assert.Equal(0, session.LoadedCount);
 			Assert.Empty(UnhandledAsyncVoidExceptions);
 		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
+	// The connection reports its failure to the view: the start that waited for the connection and then fails the same way throws that failure
+	// to its caller, so the app that awaits the start and listens to ErrorOccurred hears about one failure once.
+	[Fact]
+	public async Task AStartThatWaitsForTheConnectionWithoutTheCameraPermissionThrowsWithoutRaisingErrorOccurredASecondTime()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = new CameraErrorRecorder(session.View);
+			await session.Manager.UpdateCaptureResolution(Size.Zero, CancellationToken.None);
+
+			var connect = session.Manager.ConnectCamera(CancellationToken.None);
+			var start = session.Manager.StartCameraPreview(CancellationToken.None);
+			Assert.False(start.IsCompleted, "StartCameraPreview completed without waiting for the connection.");
+
+			await connect.WaitAsync(CameraTimeout);
+			var exception = await Assert.ThrowsAsync<CameraException>(() => start.WaitAsync(CameraTimeout));
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Equal(cameraPermissionNotGrantedMessage, exception.Message);
+			Assert.Equal(cameraPermissionNotGrantedMessage, Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
+			Assert.Equal(0, session.LoadedCount);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
+	// The command reports the failures that StartCameraPreview throws, but not the failure that the connection reported and the start threw again.
+	[Fact]
+	public async Task StartCameraPreviewCommandThatWaitsForTheConnectionWithoutTheCameraPermissionRaisesErrorOccurredOnce()
+	{
+		SetupBuilder();
+		EnsureCameraPermissions();
+		var provider = new GatedCameraProvider(await GetRealCamerasAsync());
+		UseCameraProvider(provider);
+		var context = new ConfigurableContext(AppContext);
+		context.DeniedPermissions.Add(CameraPermission);
+		var view = new CameraView();
+		using var errors = new CameraErrorRecorder(view);
+
+		var handler = await InvokeOnMainThreadAsync(() =>
+		{
+			var created = CreateHandler<CameraViewHandler>(view, new TestMauiContext(MauiContext, context));
+			RegisterHandlerCleanup(created);
+			return created;
+		});
+		PreviewView previewView = handler.PlatformView;
+
+		await HostAsync(async () =>
+		{
+			// The connection waits for the camera discovery, which the test holds back: the start of the command waits for the connection
+			await provider.RefreshStarted.WaitAsync(CameraTimeout);
+			await InvokeOnMainThreadAsync(() => view.StartCameraPreviewCommand.Execute(CancellationToken.None));
+			provider.Release();
+
+			await AssertionExtensions.AssertEventually(() => errors.Errors.Count > 0, 30000, 50, "The connection without the camera permission was not reported.");
+			await WaitForTheListenersOfCameraXAsync();
+			await SettleUiThreadAsync();
+
+			Assert.Equal(cameraPermissionNotGrantedMessage, Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+		}, previewView);
 	}
 
 	async Task<(ConfigurableContext Context, StubCameraProvider Provider)> SetupWithoutTheCameraPermissionAsync([CallerMemberName] string? testName = null)
@@ -238,5 +378,31 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 				resumed.TrySetResult();
 			}
 		}
+	}
+}
+
+sealed class GatedCameraProvider(IReadOnlyList<CommunityToolkit.Maui.Core.CameraInfo> cameras) : CommunityToolkit.Maui.Core.ICameraProvider
+{
+	readonly TaskCompletionSource refreshStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	readonly TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+	public IReadOnlyList<CommunityToolkit.Maui.Core.CameraInfo>? AvailableCameras { get; private set; }
+
+	public Task RefreshStarted => refreshStarted.Task;
+
+	public event EventHandler<IReadOnlyList<CommunityToolkit.Maui.Core.CameraInfo>?>? AvailableCamerasChanged;
+
+	public async Task RefreshAvailableCameras(CancellationToken token)
+	{
+		refreshStarted.TrySetResult();
+		await gate.Task.WaitAsync(token);
+		AvailableCameras = cameras;
+		AvailableCamerasChanged?.Invoke(this, AvailableCameras);
+	}
+
+	public void Release() => gate.TrySetResult();
+
+	public void Dispose()
+	{
 	}
 }

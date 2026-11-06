@@ -333,9 +333,11 @@ sealed class AppleCameraManagerScope : IDisposable
 
 	public UIView? PlatformView { get; set; }
 
-	// A real movie output of a session that does not run never tells its delegate that the recording started, which the camera does
+	// The movie output of a real session that does not run never tells its delegate that the recording started. The session reports that it
+	// runs: the manager would otherwise start it, and the fake provider of the scope has no camera to start.
 	public async Task StartVideoRecordingOfAStoppedSessionAsync(Stream destination)
 	{
+		using var running = new AppleSessionRunningStub(Access.CaptureSession ?? throw new InvalidOperationException("No capture session."));
 		var start = Manager.StartVideoRecording(destination, CancellationToken.None);
 
 		// The state of an earlier recording is replaced once the permission answered, so only a state that did not start yet is the new one

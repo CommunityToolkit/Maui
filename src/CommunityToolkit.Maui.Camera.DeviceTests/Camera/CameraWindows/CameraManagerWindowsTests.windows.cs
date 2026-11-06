@@ -641,28 +641,21 @@ public class CameraManagerWindowsTests : CameraHandlerTestBase
 		});
 	}
 
-	[Theory]
-	[InlineData("notInitialized")]
-	[InlineData("noMediaCapture")]
-	[InlineData("noPlatformView")]
-	public async Task StartVideoRecordingWithoutAStartedPreviewDoesNothing(string missingPart)
+	// Without a platform view the manager has no preview to start: a recording on Windows turns the camera on only for a view that exists.
+	[Fact]
+	public async Task StartVideoRecordingWithoutAPlatformViewDoesNothing()
 	{
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			using var scope = new WindowsCameraManagerScope(MauiContext);
-			if (missingPart is not "noPlatformView")
-			{
-				scope.Manager.CreatePlatformView();
-			}
-
-			scope.Access.IsInitialized = missingPart is not "notInitialized";
-			scope.Access.MediaCapture = missingPart is "noMediaCapture" ? null : WindowsCameraEnvironment.CreateMediaCapture();
 			using var destination = new MemoryStream();
 
 			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
 
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
 			Assert.Null(scope.Access.VideoCaptureStream);
 			Assert.Equal(0, destination.Length);
 		});
