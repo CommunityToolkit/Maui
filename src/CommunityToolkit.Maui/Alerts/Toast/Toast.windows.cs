@@ -106,6 +106,8 @@ public partial class Toast
 			PlatformToast = platformToast;
 
 			_ = RemoveAtTheEndOfTheDurationAsync(platformToast, duration);
+
+			await AppNotificationListing.WaitUntilListedAsync(platformToast);
 		}
 		finally
 		{

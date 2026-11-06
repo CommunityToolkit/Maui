@@ -120,6 +120,8 @@ public partial class Snackbar
 				OnDismissed();
 			});
 
+			await AppNotificationListing.WaitUntilListedAsync(platformSnackbar);
+
 			OnShown();
 
 			// A press of the button may already have dismissed the snackbar, which cancelled the token
