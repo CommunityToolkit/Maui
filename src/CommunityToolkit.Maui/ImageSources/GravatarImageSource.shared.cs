@@ -146,6 +146,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	protected override void OnParentSet()
 	{
 		base.OnParentSet();
+		PlatformOnParentSet();
 
 		if (Parent is not VisualElement parentElement)
 		{
@@ -156,6 +157,8 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement, mode: BindingMode.OneWay));
 		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement, mode: BindingMode.OneWay));
 	}
+
+	partial void PlatformOnParentSet();
 
 	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch
 	{
