@@ -75,6 +75,7 @@ partial class CameraManager
 	// StartVideoRecording and StopVideoRecording both wait for CameraX: without this, one could work on a recording that the other one
 	// is ending or replacing
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
+	readonly SemaphoreSlim cameraPreviewSemaphoreSlim = new(1, 1);
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -104,6 +105,9 @@ partial class CameraManager
 	// connects its camera: a start that failed only for the missing permission is retried once the activity resumes with it, as CameraX opened
 	// the camera by itself before the start checked the permission
 	bool isWaitingForCameraPermission;
+
+	// Counts the starts that completed, so that a start which waited for another one can tell that the other one did its work
+	int completedCameraPreviewStarts;
 
 	CaptureSessionMode currentSessionMode = CaptureSessionMode.Photo;
 	enum CaptureSessionMode { Photo, Video }
@@ -619,44 +623,63 @@ partial class CameraManager
 		// not wait for the camera permission: the activity would start the stopped preview when it resumes with the permission
 		token.ThrowIfCancellationRequested();
 
-		cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+		// The retry of a start without the camera permission (OnActivityResumed) and the start of the app, which asks for the permission and starts
+		// the preview once it has it, can overlap while CameraX binds the camera. The start that comes second waits for the first one and does
+		// not bind and load the view again
+		var startsCompletedBeforeWaiting = completedCameraPreviewStarts;
+		await cameraPreviewSemaphoreSlim.WaitAsync(token);
 
-		// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
-		if (isCameraSwitchDeferred && IsRecordingBound())
+		try
 		{
-			return;
-		}
-
-		// CameraX binds the use cases also without the camera permission, and then keeps trying to open the camera without reporting anything.
-		// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped, until
-		// StartCameraPreview is called again or the activity resumes with the permission (OnActivityResumed)
-		if (!IsCameraPermissionGranted())
-		{
-			isWaitingForCameraPermission = true;
-			throw new CameraException(cameraPermissionNotGrantedMessage);
-		}
-
-		if (camera is null || !IsPhotoSessionBound())
-		{
-			try
+			if (startsCompletedBeforeWaiting != completedCameraPreviewStarts && isInitialized && !isDisposed && IsPhotoSessionBound())
 			{
-				await BindPhotoSessionAsync(token);
+				return;
 			}
-			catch (System.Exception ex) when (ex is not OperationCanceledException)
+
+			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+
+			// The recording keeps its camera until it ends (see PlatformStopCameraPreviewForCameraSwitch)
+			if (isCameraSwitchDeferred && IsRecordingBound())
 			{
-				// The selected camera can not be bound (for example an unplugged USB camera): the preview stays started, so that
-				// selecting another camera (UpdateCurrentCamera) opens it
-				isInitialized = true;
-				throw;
+				return;
 			}
+
+			// CameraX binds the use cases also without the camera permission, and then keeps trying to open the camera without reporting anything.
+			// Like a denied permission on iOS, Mac Catalyst and Windows, a start without the permission fails and leaves the preview stopped, until
+			// StartCameraPreview is called again or the activity resumes with the permission (OnActivityResumed)
+			if (!IsCameraPermissionGranted())
+			{
+				isWaitingForCameraPermission = true;
+				throw new CameraException(cameraPermissionNotGrantedMessage);
+			}
+
+			if (camera is null || !IsPhotoSessionBound())
+			{
+				try
+				{
+					await BindPhotoSessionAsync(token);
+				}
+				catch (System.Exception ex) when (ex is not OperationCanceledException)
+				{
+					// The selected camera can not be bound (for example an unplugged USB camera): the preview stays started, so that
+					// selecting another camera (UpdateCurrentCamera) opens it
+					isInitialized = true;
+					throw;
+				}
+			}
+
+			var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+			var action = new FocusMeteringAction.Builder(point).Build();
+			camera?.CameraControl?.StartFocusAndMetering(action);
+
+			isInitialized = true;
+			onLoaded.Invoke();
+			completedCameraPreviewStarts++;
 		}
-
-		var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
-		var action = new FocusMeteringAction.Builder(point).Build();
-		camera?.CameraControl?.StartFocusAndMetering(action);
-
-		isInitialized = true;
-		onLoaded.Invoke();
+		finally
+		{
+			cameraPreviewSemaphoreSlim.Release();
+		}
 	}
 
 	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred until the

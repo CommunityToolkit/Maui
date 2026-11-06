@@ -197,6 +197,31 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 
+	// The app starts the preview itself as soon as it has the permission, in the same resume that makes the manager retry its start: the app's
+	// start comes while the retry still waits for CameraX, and binding the camera for both would load the view twice.
+	[Fact]
+	public async Task AStartOfTheAppWhileTheStartThatTheResumeRetriesWaitsForCameraXJoinsItAndLoadsTheViewOnce()
+	{
+		var (context, provider) = await SetupWithoutTheCameraPermissionAsync();
+
+		await RunWithSessionAsync(async session =>
+		{
+			using var errors = await ConnectWithoutTheCameraPermissionAsync(session);
+			context.DeniedPermissions.Clear();
+			Task? startOfTheApp = null;
+
+			await AskForTheCameraPermissionAsync(() => startOfTheApp = session.Manager.StartCameraPreview(CancellationToken.None));
+
+			await (startOfTheApp ?? throw new InvalidOperationException("The test's observer did not run.")).WaitAsync(CameraTimeout);
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Equal(1, session.LoadedCount);
+			Assert.Single(errors.Errors);
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+		}, provider, new TestMauiContext(MauiContext, context));
+	}
+
 	[Fact]
 	public async Task AStartThatTheResumeRetriesAndThatFailsRaisesErrorOccurred()
 	{

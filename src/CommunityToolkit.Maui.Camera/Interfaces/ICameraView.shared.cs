@@ -104,6 +104,9 @@ public interface ICameraView : IView
 	/// made the start fail. The <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when
 	/// <paramref name="token"/> cancelled the start.
 	/// On Android, a start while the view connects its camera waits for the connection, then starts the preview.
+	/// On Android, a start that arrives while another start waits for CameraX waits for it too: when the other start started the preview, this
+	/// start returns without starting it a second time. A start that fails because the view was released meanwhile ends without an exception
+	/// and without the ErrorOccurred event.
 	/// </remarks>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled, or <see cref="StopCameraPreview"/> is
 	/// called, before the preview started.</exception>
