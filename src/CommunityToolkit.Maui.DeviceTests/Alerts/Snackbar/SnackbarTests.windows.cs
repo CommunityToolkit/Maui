@@ -288,8 +288,9 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Windows may list a notification only a moment after Show returned, and a removal that reaches it first removes nothing. Each Dismiss
-	// follows its Show at once to give that race room; the notification shown last tells when Windows lists what was shown before it.
+	// Windows lists a notification only a moment after Show returned, and a removal that reaches it first removes nothing, so Show returns once
+	// Windows lists its notification. Each Dismiss follows its Show at once to give that race room; the notification shown last tells when
+	// Windows lists what was shown before it.
 	[Fact]
 	public async Task DismissRightAfterShowDismissesTheSnackbar()
 	{
