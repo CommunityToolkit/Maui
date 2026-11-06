@@ -39,6 +39,9 @@ partial class CameraManager
 	// A recording that turned on the camera of a preview that the app stopped turns it off again when it ends, as on Android
 	bool isSessionStartedForTheRecording;
 
+	// The restart of a camera switch keeps a camera that only a recording turned on: it is off again once the recording ends
+	bool isCameraSwitchOfARecordingCamera;
+
 	// A start must not release the recording that a stop still waits for AVFoundation to finish (and delete its movie), like on Android
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 	CMMotionManager? motionManager;
@@ -275,7 +278,8 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
-		isSessionStartedForTheRecording = false;
+		isSessionStartedForTheRecording = isCameraSwitchOfARecordingCamera;
+		isCameraSwitchOfARecordingCamera = false;
 
 		if (captureSession is null)
 		{
@@ -368,11 +372,17 @@ partial class CameraManager
 		onLoaded.Invoke();
 	}
 
-	private partial void PlatformStopCameraPreviewForCameraSwitch() => PlatformStopCameraPreview();
+	private partial void PlatformStopCameraPreviewForCameraSwitch()
+	{
+		var isStartedForTheRecording = isSessionStartedForTheRecording;
+		PlatformStopCameraPreview();
+		isCameraSwitchOfARecordingCamera = isStartedForTheRecording;
+	}
 
 	private partial void PlatformStopCameraPreview()
 	{
 		isSessionStartedForTheRecording = false;
+		isCameraSwitchOfARecordingCamera = false;
 
 		if (captureSession is null)
 		{
@@ -439,16 +449,31 @@ partial class CameraManager
 		// StartCameraPreview or after StopCameraPreview) would wait for an answer that never comes. Like on Android, recording turns the camera on.
 		if (!captureSession.Running)
 		{
-			await PlatformStartCameraPreview(token);
-			ObjectDisposedException.ThrowIf(isDisposed, this);
+			// Like on Android, only a preview that the app stopped (or never started) is off again once the recording ends: a preview that the
+			// app started stays started, also while its session does not run
+			var isPreviewStopped = !isInitialized;
 
-			// AVFoundation can leave the session stopped (an interruption, a camera that another app holds) and then reports no recording either
-			if (!captureSession.Running)
+			try
 			{
-				throw new CameraException("Unable to start video recording because the camera could not be started.");
+				await PlatformStartCameraPreview(token);
+				ObjectDisposedException.ThrowIf(isDisposed, this);
+
+				// AVFoundation can leave the session stopped (an interruption, a camera that another app holds) and then reports no recording either
+				if (!captureSession.Running)
+				{
+					throw new CameraException("Unable to start video recording because the camera could not be started.");
+				}
+			}
+			catch when (isPreviewStopped && !isDisposed)
+			{
+				// The preview that the app stopped stays stopped: AVFoundation would resume an interrupted session by itself once the interruption
+				// ends, and a started preview follows a camera switch
+				captureSession.StopRunning();
+				isInitialized = false;
+				throw;
 			}
 
-			isSessionStartedForTheRecording = true;
+			isSessionStartedForTheRecording = isPreviewStopped;
 		}
 
 		// Like on Android and Windows, the stream of the latest StartVideoRecording receives the video: the running recording is released

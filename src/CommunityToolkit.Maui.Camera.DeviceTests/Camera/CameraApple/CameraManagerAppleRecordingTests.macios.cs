@@ -858,6 +858,52 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
+	// The preview that the app started stays started after the recording, also while AVFoundation stopped its session: only a preview that
+	// the app stopped is off again once the recording ends, like on Android.
+	[Fact]
+	public async Task StartVideoRecordingOnAStartedPreviewWhoseSessionDoesNotRunKeepsThePreviewRunningAfterTheRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			using var camera = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(camera, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Scope.Access.IsInitialized = true;
+			recording.Session.IsRunning = false;
+			using var destination = new MemoryStream();
+
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+			await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.True(recording.Session.IsRunning);
+			Assert.True(recording.Scope.Access.IsInitialized);
+		});
+	}
+
+	// The camera switch restarts the preview, which must not forget that only the recording turned the camera on.
+	[Fact]
+	public async Task StopVideoRecordingAfterACameraSwitchDuringARecordingThatTurnedTheCameraOnTurnsTheCameraOff()
+	{
+		await RunAsync(async recording =>
+		{
+			using var firstDevice = new FakeCaptureDevice { Identifier = "fake-recording-first-camera" };
+			using var secondDevice = new FakeCaptureDevice { Identifier = "fake-recording-second-camera" };
+			var secondCamera = AppleFakeCameras.Create(secondDevice, CameraPosition.Front, new FakeCaptureDeviceFormat(640, 480));
+			recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(firstDevice, CameraPosition.Rear, new FakeCaptureDeviceFormat(640, 480));
+			using var coordinators = new AppleRotationCoordinatorStub();
+			recording.Session.IsRunning = false;
+			using var destination = new MemoryStream();
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+
+			recording.Scope.View.SelectedCamera = secondCamera;
+			await recording.Scope.Manager.UpdateCurrentCamera(secondCamera, CancellationToken.None);
+			await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.False(recording.Session.IsRunning);
+			Assert.False(recording.Scope.Access.IsInitialized);
+		});
+	}
+
 	// AVFoundation leaves a session that it cannot start stopped (an interruption, a camera that another app holds), and then reports no recording
 	// either: the start must not wait for it.
 	[Fact]
@@ -870,10 +916,16 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			using var coordinators = new AppleRotationCoordinatorStub();
 			recording.Session.IsRunning = false;
 			recording.Session.StaysStoppedOnStartRunning = true;
+			var timeline = new List<string>();
+			recording.Session.Timeline = timeline;
 
 			var exception = await Assert.ThrowsAsync<CameraException>(() => recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout));
 
 			Assert.Equal("Unable to start video recording because the camera could not be started.", exception.Message);
+
+			// The preview that the app had stopped stays stopped: AVFoundation resumes an interrupted session by itself
+			Assert.False(recording.Scope.Access.IsInitialized);
+			Assert.Equal("session:stop", timeline[^1]);
 
 			// The session keeps the inputs and outputs of the preview that the start configured, but nothing of the recording
 			var access = recording.Scope.Access;
