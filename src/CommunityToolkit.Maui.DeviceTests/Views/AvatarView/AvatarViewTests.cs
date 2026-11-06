@@ -473,7 +473,8 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// A binding fills the source after the first load, as a person typing the Email of a bound GravatarImageSource does.
+	// A binding fills the source after the first load. It changes the Stream of a StreamImageSource, which raises OnSourceChanged directly, so it does
+	// not cover the GravatarImageSource path, where a new Email only sets the Uri once the image has been laid out.
 	[Fact]
 	public async Task ImageIsShownWhenAnEmptyImageSourceGetsItsStream()
 	{
