@@ -231,6 +231,7 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 
 				await WaitUntilAsync(() => secondPlayer.CurrentTime.Seconds > 0.3, "The playhead of the new player did not advance.");
 				Assert.True(secondPlayer.Rate > 0);
+				await WaitUntilAsync(() => mediaElement.Position > TimeSpan.FromSeconds(0.3), "Position did not follow the new player: the status timer did not start again.");
 			});
 		}
 		finally
@@ -284,6 +285,21 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 			Assert.Equal(NativeHandle.Zero, controller.Handle);
 
 			Assert.Null(Record.Exception(() => handler.DisposeCore(disposing: true)));
+		});
+	}
+
+	[Fact]
+	public async Task DisposeAfterDisconnectHandlerDoesNotThrow()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, handler =>
+		{
+			handler.Disconnect();
+
+			Assert.Null(Record.Exception(handler.Dispose));
+			return Task.CompletedTask;
 		});
 	}
 
