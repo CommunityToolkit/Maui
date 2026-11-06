@@ -416,8 +416,8 @@ public class GravatarImageSourceTests : BaseViewTest
 		await using var firstStream = await firstLoad.WaitAsync(TestContext.Current.CancellationToken);
 		await using var secondStream = await secondLoad.WaitAsync(TestContext.Current.CancellationToken);
 
-		firstStream.Should().NotBeNull();
-		secondStream.Should().NotBeNull();
+		firstStream.Length.Should().Be(3);
+		secondStream.Length.Should().Be(3);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
