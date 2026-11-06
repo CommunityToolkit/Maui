@@ -1,3 +1,4 @@
+using AndroidX.Camera.Video;
 using CommunityToolkit.Maui.Core;
 using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 
@@ -132,6 +133,34 @@ public partial class CameraManagerVideoAndroidTests
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before, "The StartVideoRecording after the failed stop recorded nothing (no recording file received data).");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, second));
+		}, includeRecordAudio: true);
+	}
+
+	// The export fails (CameraX keeps no video) and the session can not be restored either: the caller gets the failure of the export, and the
+	// failure of the restore goes to ErrorOccurred.
+	[Fact]
+	public async Task AStopVideoRecordingWhoseExportFailsAndThatCanNotRestoreThePhotoSessionThrowsTheFailureOfTheExportAndReportsTheFailureOfTheRestore()
+	{
+		SetupBuilder();
+		RequireVideoRecording();
+		var before = ListRecordingFiles();
+		var stream = new MemoryStream();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			using var errors = new CameraErrorRecorder(session.View);
+			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
+			await WaitForRecordingFileAsync(before);
+			SetPrivateField(session.Manager, "videoRecordingConsumer", CreateFinalizedConsumer(VideoRecordEvent.Finalize.ErrorNoValidData));
+			session.View.SelectedCamera = new CameraInfo("Selector-less camera", "no-selector", CameraPosition.Rear, false, 1, 1, [], null!);
+
+			var exception = await Assert.ThrowsAsync<CameraException>(() => session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout));
+
+			Assert.Equal($"Video recording failed: CameraX finalized the recording with VideoRecordEvent.Finalize error code {VideoRecordEvent.Finalize.ErrorNoValidData}", exception.Message);
+			var error = Assert.IsType<CameraException>(Assert.Single(errors.Errors));
+			Assert.Equal("Unable to retrieve CameraSelector", error.Message);
+			Assert.Equal(0, stream.Length);
+			Assert.Null(GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState"));
 		}, includeRecordAudio: true);
 	}
 

@@ -644,6 +644,26 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		});
 	}
 
+	// A new mode binds the camera again while the preview is stopped: the camera turns on (the behavior of SetExtensionMode, kept as it is).
+	[Fact]
+	public async Task SetExtensionModeAfterStopCameraPreviewBindsThePhotoSessionAgain()
+	{
+		SetupBuilder();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var cameraId = session.View.SelectedCamera!.DeviceId;
+			session.Manager.StopCameraPreview();
+			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+
+			await session.Manager.SetExtensionMode(ExtensionMode.None, CancellationToken.None).WaitAsync(CameraTimeout);
+
+			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
+			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
+			await WaitForNativeCameraStateAsync(cameraId, "OPEN");
+		});
+	}
+
 	[Fact]
 	public async Task SetExtensionModeWithoutAPreviewDoesNotRebind()
 	{

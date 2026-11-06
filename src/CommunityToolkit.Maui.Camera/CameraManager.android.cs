@@ -625,13 +625,14 @@ partial class CameraManager
 
 		// The retry of a start without the camera permission (OnActivityResumed) and the start of the app, which asks for the permission and starts
 		// the preview once it has it, can overlap while CameraX binds the camera. The start that comes second waits for the first one and does
-		// not bind and load the view again
+		// not bind and load the view again: only when the first one bound the camera that is selected now, so that a camera switch that waited
+		// for it still opens its camera
 		var startsCompletedBeforeWaiting = completedCameraPreviewStarts;
 		await cameraPreviewSemaphoreSlim.WaitAsync(token);
 
 		try
 		{
-			if (startsCompletedBeforeWaiting != completedCameraPreviewStarts && isInitialized && !isDisposed && IsPhotoSessionBound())
+			if (startsCompletedBeforeWaiting != completedCameraPreviewStarts && isInitialized && !isDisposed && IsPhotoSessionBound() && IsBoundTo(cameraView.SelectedCamera))
 			{
 				return;
 			}
@@ -943,7 +944,6 @@ partial class CameraManager
 			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal. The cleanup is the
 			// first thing the finally block does, so that a session that can not be restored never leaves the recording state behind
 			// (a later StopVideoRecording would export the recording into its stream a second time)
-			var isVideoExported = false;
 			try
 			{
 				// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful
@@ -968,20 +968,14 @@ partial class CameraManager
 				}
 
 				ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
-				isVideoExported = true;
 			}
 			finally
 			{
 				CleanupVideoRecordingResources(recordingState);
 
-				// The failure of an export is the one to report; the session is restored after a failed export all the same
-				if (!isVideoExported)
-				{
-					await ReturnToPhotoSessionAsync();
-				}
+				// A session that can not be restored must neither take the exported video away from the caller nor replace the failure of an export
+				await RestorePhotoSessionReportingItsFailureAsync();
 			}
-
-			await RestorePhotoSessionAfterExportAsync();
 
 			return recordingStream;
 		}
@@ -991,9 +985,9 @@ partial class CameraManager
 		}
 	}
 
-	// The video is exported already: a session that can not be restored must not take it away from the caller, who has no other way to
-	// get it, so the failure goes to the ErrorOccurred event of the view instead
-	async Task RestorePhotoSessionAfterExportAsync()
+	// The caller gets the video, or the failure of the export: a session that can not be restored afterwards is reported through the
+	// ErrorOccurred event of the view instead
+	async Task RestorePhotoSessionReportingItsFailureAsync()
 	{
 		try
 		{

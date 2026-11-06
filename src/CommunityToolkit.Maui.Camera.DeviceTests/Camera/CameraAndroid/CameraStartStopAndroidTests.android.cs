@@ -285,6 +285,32 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 		});
 	}
 
+	// The restart for a new capture resolution holds CameraX when the user selects another camera: the start of the camera switch waits for the
+	// restart, which binds the camera that was selected before. The switch must still open its own camera.
+	[Fact]
+	public async Task ACameraSwitchWhoseStartWaitedForTheRestartOfTheOldCameraStillOpensTheNewCamera()
+	{
+		SetupBuilder();
+		var cameras = await GetRealCamerasAsync();
+		Skip.If(cameras.Count < 2, "The device has only one camera.");
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var cameraA = session.View.SelectedCamera ?? throw new InvalidOperationException("The connected session has no selected camera.");
+			var cameraB = cameras.First(camera => camera.DeviceId != cameraA.DeviceId);
+
+			var restart = session.Manager.UpdateCaptureResolution(SmallResolution, CancellationToken.None).AsTask();
+			session.View.SelectedCamera = cameraB;
+			var cameraSwitch = session.Manager.UpdateCurrentCamera(cameraB, CancellationToken.None).AsTask();
+
+			await Task.WhenAll(restart, cameraSwitch).WaitAsync(CameraTimeout);
+			await WaitForTheListenersOfCameraXAsync();
+
+			await WaitForNativeCameraStateAsync(cameraB.DeviceId, "OPEN");
+			await WaitForNativeCameraStateAsync(cameraA.DeviceId, "CLOSED");
+		});
+	}
+
 	static async Task StopThePreviewAsync(ManagerSession session)
 	{
 		var cameraId = session.View.SelectedCamera?.DeviceId ?? throw new InvalidOperationException("The connected session has no selected camera.");
