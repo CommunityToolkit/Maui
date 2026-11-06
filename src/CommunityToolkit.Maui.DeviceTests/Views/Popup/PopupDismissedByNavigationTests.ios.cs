@@ -1,7 +1,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -68,7 +67,8 @@ public partial class PopupDismissedByNavigationTests
 			Assert.Equal(1, closedCount);
 		});
 
-	// A regression guard, not a proof of the Dispatcher: the same test also passes on iOS when the result is raised synchronously. The unit test with a queueing dispatcher proves the deferral.
+	// A regression guard: with a Shell as the root page, .NET MAUI raises no NavigatedTo from its modal stack, so this test passes with a synchronous raise too.
+	// The unit test with a ContentPage root and a queueing dispatcher proves why the raise is dispatched.
 	// The Closed handler of a popup that navigation removed shows another popup right away, and that popup must be shown on top of the page .NET MAUI has finished removing
 	[Fact]
 	public Task ClosedHandlerOfAPopupRemovedByNavigationCanShowAnotherPopup() =>

@@ -399,8 +399,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 	}
 
-	// Navigation removed the PopupPage without CloseAsync. The result is raised through the Dispatcher because MAUI raises these events in the middle of its navigation,
-	// and a Closed handler that shows another popup would re-enter navigation before the removal has finished
+	// Navigation removed the PopupPage without CloseAsync. Outside a Shell, .NET MAUI raises the NavigatedFrom and NavigatedTo of the removal after Window.ModalPopped, for the page on top by then,
+	// so the result is raised through the Dispatcher: a Closed handler that shows another popup must not run before .NET MAUI has finished the removal
 	void RaisePopupClosedForDismissalByNavigation()
 	{
 		if (!TryMarkPopupClosed())
@@ -414,8 +414,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		Dispatcher.Dispatch(() => InvokePopupClosed(result));
 	}
 
-	// .NET MAUI raises NavigatedTo after the push completes, and not at all while the Window has no handler, so navigation can remove the PopupPage before OnNavigatedTo observes it.
-	// ObserveDismissalByNavigation unsubscribes first, so the call from OnNavigatedTo that follows is harmless
+	// A Window without a handler makes a Shell raise no NavigatedTo on the pages it pushes, so OnNavigatedTo alone would never observe a removal that follows the push.
+	// ObserveDismissalByNavigation unsubscribes first, so observing here and in OnNavigatedTo, in either order, subscribes once
 	void ObserveDismissalByNavigationIfNotClosed()
 	{
 		if (!hasRaisedPopupClosed)

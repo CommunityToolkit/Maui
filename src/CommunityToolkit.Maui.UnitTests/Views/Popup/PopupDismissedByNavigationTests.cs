@@ -225,7 +225,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Equal(1, closedCount);
 	}
 
-	// .NET MAUI raises NavigatedTo after the push completes, and not at all in a Window without a handler, so a removal can come first
+	// A NavigationPage without a handler raises no NavigatedTo on a pushed page, as a Shell does in a Window without a handler, so the removal comes before any NavigatedTo
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task PopupClosed_ShouldBeRaisedOnce_WhenNavigationRemovesThePopupPageBeforeNavigatedTo()
 	{
@@ -268,6 +268,35 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.Equal(1, closedCount);
+	}
+
+	// Outside a Shell, .NET MAUI raises the NavigatedFrom and NavigatedTo of a modal pop right after Window.ModalPopped, for the page that is on top by then.
+	// A Closed handler that ran inside ModalPopped and showed another popup would give that popup the NavigatedTo of the removal, and the page below none
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldLetThePageBelowReceiveNavigatedTo_WhenAClosedHandlerShowsAnotherPopupAfterNavigationRemovedThePopupPage()
+	{
+		var dispatchedActions = new Queue<Action>();
+		DispatcherProvider.SetCurrent(new QueueingDispatcherProvider(dispatchedActions));
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var rootPage = Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Unable to locate the root page");
+		var firstPopup = new Popup();
+		var secondPopup = new Popup();
+		Task<IPopupResult>? secondShowPopupTask = null;
+		firstPopup.Closed += (_, _) => secondShowPopupTask = navigation.ShowPopupAsync(secondPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var firstShowPopupTask = navigation.ShowPopupAsync(firstPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var rootPageNavigatedToCount = 0;
+		rootPage.NavigatedTo += (_, _) => rootPageNavigatedToCount++;
+
+		await navigation.PopModalAsync(false);
+		while (dispatchedActions.TryDequeue(out var action))
+		{
+			action();
+		}
+
+		await firstShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.Equal(1, rootPageNavigatedToCount);
+		Assert.NotNull(secondShowPopupTask);
+		Assert.Single(navigation.ModalStack.OfType<PopupPage>());
 	}
 
 	// A CloseAsync that waited while navigation removed its PopupPage must not pop the page that is on top of the navigation stack by then
@@ -387,6 +416,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Equal(1, closedCount);
 	}
 
+	// A regression guard: MockDispatcher runs the dispatched raise synchronously, so this test cannot tell a dispatched raise from a synchronous one
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldLetAClosedHandlerShowAnotherPopup_WhenShellSwitchesToAnotherShellElement()
 	{
