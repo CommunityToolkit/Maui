@@ -91,9 +91,9 @@ public interface ICameraView : IView
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
 	/// A preview that cannot start is reported through the ErrorOccurred event of the view instead of an exception, on every platform (except
 	/// the Android start that waited for the connection of the view, see below): for example no camera is available, the camera permission is
-	/// not granted, or the selected camera cannot be opened (another app uses it, or it was unplugged). A preview whose selected camera cannot be opened counts as started: selecting another camera starts the preview with
-	/// that camera (see <see cref="SelectedCamera"/>). A preview without the camera permission stays stopped until this method is called again
-	/// once the app has the permission.
+	/// not granted, or the selected camera cannot be opened (another app uses it, or it was unplugged). A preview whose selected camera cannot
+	/// be opened counts as started: selecting another camera starts the preview with that camera (see <see cref="SelectedCamera"/>). A preview
+	/// without the camera permission stays stopped until this method is called again once the app has the permission.
 	/// On Android, a start that failed only because the app did not have the camera permission (it had not asked for it yet, or the user denied
 	/// it) is retried when the activity of the view resumes with the permission granted, for example once the user allowed it in the permission
 	/// dialog or in the settings of the app: a view that connects its camera while the app asks for the permission starts its preview without a
@@ -146,8 +146,9 @@ public interface ICameraView : IView
 	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
 	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
-	/// that recording: it ends, its video is discarded, and the video goes to the new stream. When the camera is released while a start waits (for
-	/// example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
+	/// that recording: the video goes to the new stream, and on Android, iOS and Mac Catalyst the recording that ran before ends and its video
+	/// is discarded. On Android, iOS and Mac Catalyst, when the camera is released while a start waits (for example because the handler of the
+	/// view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
 	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends.
 	/// On iOS and Mac Catalyst, when the camera cannot start (for example without a camera or without the camera permission), the start throws
@@ -175,8 +176,9 @@ public interface ICameraView : IView
 	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
 	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
-	/// that recording: it ends, its video is discarded, and the video goes to the new stream. When the camera is released while a start waits (for
-	/// example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
+	/// that recording: the video goes to the new stream, and on Android, iOS and Mac Catalyst the recording that ran before ends and its video
+	/// is discarded. On Android, iOS and Mac Catalyst, when the camera is released while a start waits (for example because the handler of the
+	/// view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
 	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends.
 	/// On iOS and Mac Catalyst, when the camera cannot start (for example without a camera or without the camera permission), the start throws

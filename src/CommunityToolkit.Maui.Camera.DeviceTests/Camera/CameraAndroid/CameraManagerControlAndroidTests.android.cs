@@ -652,7 +652,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 		await RunWithStreamingSessionAsync(async session =>
 		{
-			var cameraId = session.View.SelectedCamera!.DeviceId;
+			var cameraId = (session.View.SelectedCamera ?? throw new InvalidOperationException("The streaming session has no selected camera.")).DeviceId;
 			session.Manager.StopCameraPreview();
 			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
 
@@ -675,7 +675,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 		await RunWithStreamingSessionAsync(async session =>
 		{
-			var first = session.View.SelectedCamera!;
+			var first = session.View.SelectedCamera ?? throw new InvalidOperationException("The streaming session has no selected camera.");
 			var second = cameras.First(camera => camera.DeviceId != first.DeviceId);
 			session.Manager.StopCameraPreview();
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");

@@ -654,7 +654,8 @@ partial class CameraManager
 				throw new CameraException(cameraPermissionNotGrantedMessage);
 			}
 
-			// The bound camera can be one that was selected before (bound by a start that this start waited for, or by SetExtensionMode while the preview was stopped): only the selected camera is shown
+			// The bound camera can be one that was selected before (bound by a start that this start waited for, or by SetExtensionMode while the
+			// preview was stopped): only the selected camera is shown
 			if (camera is null || !IsPhotoSessionBound() || !IsBoundTo(cameraView.SelectedCamera))
 			{
 				try
