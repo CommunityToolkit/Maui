@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Alerts;
+﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
@@ -321,6 +321,46 @@ public partial class ToastTests
 			Assert.Equal(new[] { "Shown" }, AlertsWindows.Parse(platformToast).Texts);
 			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Shown"), timeout: 10000, message: "Windows does not list the toast of the Show.");
 			Assert.Equal(new[] { "Shown" }, await GetDisplayedTextsAsync());
+		});
+	}
+
+	// RemoveAllAsync would also remove the notifications that the app shows itself: the toolkit removes only its own.
+	[Fact]
+	public async Task DismissKeepsTheOtherNotificationsOfTheApp()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var toast = Toast.Make("Dismissed", ToastDuration.Long);
+			await ShowAndWaitForDisplayAsync(toast);
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Another notification of the app").BuildNotification());
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Another notification of the app"), timeout: 10000, message: "Windows does not list the other notification of the app.");
+
+			await toast.Dismiss();
+
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()) is ["Another notification of the app"], timeout: 10000, message: "Windows does not list only the other notification of the app after the Dismiss.");
+		});
+	}
+
+	[Fact]
+	public async Task ShowAgainKeepsTheOtherNotificationsOfTheApp()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("First", ToastDuration.Long));
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Another notification of the app").BuildNotification());
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Another notification of the app"), timeout: 10000, message: "Windows does not list the other notification of the app.");
+
+			await Toast.Make("Second", ToastDuration.Long).Show();
+
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Second"), timeout: 10000, message: "Windows does not list the second toast.");
+			Assert.Contains("Another notification of the app", await GetDisplayedTextsAsync());
+			Assert.DoesNotContain("First", await GetDisplayedTextsAsync());
 		});
 	}
 

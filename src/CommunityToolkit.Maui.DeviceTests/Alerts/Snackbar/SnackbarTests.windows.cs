@@ -25,6 +25,8 @@ public partial class SnackbarTests
 	static async Task<IReadOnlyList<string>> GetVisibleActionTextsAsync() =>
 		[.. (await AlertsWindows.GetDisplayedAsync()).Where(notification => notification.IsSnackbar).Select(notification => Assert.Single(notification.Buttons).Content)];
 
+	static async Task<IReadOnlyList<string>> GetAllDisplayedTextsAsync() => [.. (await AlertsWindows.GetDisplayedAsync()).Select(notification => notification.Text)];
+
 	static Task<bool> ClickVisibleActionAsync() => throw new SkipException(ActionCannotBeClickedReason ?? string.Empty);
 
 	[Fact]
@@ -429,6 +431,46 @@ public partial class SnackbarTests
 			Assert.Empty(AlertsWindows.GetRegisteredActions());
 			Assert.InRange(notification.Expiration, before - expirationMargin, after + expirationMargin);
 			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 0, timeout: 10000, message: "Windows still lists the dismissed notification.");
+		});
+	}
+
+	// RemoveAllAsync would also remove the notifications that the app shows itself: the toolkit removes only its own.
+	[Fact]
+	public async Task DismissKeepsTheOtherNotificationsOfTheApp()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var snackbar = Snackbar.Make("Dismissed", () => { }, "Undo", longDuration);
+			await snackbar.Show();
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Another notification of the app").BuildNotification());
+			await AssertEventually(async () => (await GetAllDisplayedTextsAsync()).Contains("Another notification of the app"), timeout: 10000, message: "Windows does not list the other notification of the app.");
+
+			await snackbar.Dismiss().WaitAsync(dismissTimeout);
+
+			await AssertEventually(async () => (await GetAllDisplayedTextsAsync()) is ["Another notification of the app"], timeout: 10000, message: "Windows does not list only the other notification of the app after the Dismiss.");
+		});
+	}
+
+	[Fact]
+	public async Task ShowAgainKeepsTheOtherNotificationsOfTheApp()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("First", () => { }, "Undo", longDuration).Show();
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Another notification of the app").BuildNotification());
+			await AssertEventually(async () => (await GetAllDisplayedTextsAsync()).Contains("Another notification of the app"), timeout: 10000, message: "Windows does not list the other notification of the app.");
+
+			await Snackbar.Make("Second", () => { }, "Undo", longDuration).Show();
+
+			await AssertEventually(async () => (await GetAllDisplayedTextsAsync()).Contains("Second"), timeout: 10000, message: "Windows does not list the second snackbar.");
+			Assert.Contains("Another notification of the app", await GetAllDisplayedTextsAsync());
+			Assert.DoesNotContain("First", await GetAllDisplayedTextsAsync());
 		});
 	}
 
