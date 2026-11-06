@@ -277,7 +277,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 
 	async void HandleSoftInputKeyboardPopupClicked(object? sender, EventArgs eventArgs)
 	{
-		await popupService.ShowPopupAsync<SoftInputKeyboardPopup>(Navigation);
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<SoftInputKeyboardPopup>(Navigation));
 	}
 
 	async void HandlePopupAppThemeButtonClicked(object? sender, EventArgs e)
