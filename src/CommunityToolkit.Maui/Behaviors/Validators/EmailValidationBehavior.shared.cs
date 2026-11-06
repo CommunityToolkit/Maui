@@ -39,8 +39,11 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	}
 
 	/// <inheritdoc /> 
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		// Assign Keyboard.Email if the user has not specified a specific Keyboard layout
 		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Default)
 		{
@@ -51,8 +54,11 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	}
 
 	/// <inheritdoc /> 
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		// Assign Keyboard.Default if the user has not specified a different Keyboard layout
 		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Email)
 		{

@@ -47,8 +47,12 @@ public partial class TouchBehavior
 	/// </summary>
 	/// <param name="bindable">Maui Visual Element</param>
 	/// <param name="platformView">Native View</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable, AView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		// The attach makes the view clickable (also through the click listener): the detach gives the view these values back. Another
@@ -91,8 +95,12 @@ public partial class TouchBehavior
 	/// </summary>
 	/// <param name="bindable">Maui Visual Element</param>
 	/// <param name="platformView">Native View</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(VisualElement bindable, AView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		// Element must be cleared before the base class clears View (which Element returns): the Element setter undoes what the attach did
 		// to the element (the layout's ChildAdded subscription, the children's InputTransparent) only while it still knows the element.
 		Element = null;

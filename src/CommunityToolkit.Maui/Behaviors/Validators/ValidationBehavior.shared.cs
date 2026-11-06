@@ -167,19 +167,12 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <param name="bindable"></param>
 	/// <param name="oldValue"></param>
 	/// <param name="newValue"></param>
-	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected static void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		try
-		{
-			var validationBehavior = (ValidationBehavior)bindable;
+		ArgumentNullException.ThrowIfNull(bindable);
 
-			// The last result can be stale even when Flags does not include the current state of the view, for example ValidateOnValueChanged after the view lost the focus
-			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, validationBehavior.hasValidated);
-		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
-		{
-			Trace.TraceInformation("{0}", ex);
-		}
+		UpdateStateAfterValidationPropertyChanged(bindable);
 	}
 
 	/// <summary>
@@ -212,28 +205,22 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	protected virtual object? Decorate(object? value) => value;
 
 	/// <inheritdoc/>
-	protected override async void OnAttachedTo(VisualElement bindable)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
-		await isAttachingSemaphoreSlim.WaitAsync();
-
-		try
-		{
-			currentStatus = ValidationFlags.ValidateOnAttaching;
-
-			OnValuePropertyNamePropertyChanged();
-			await UpdateStateAsync(View, Flags, false);
-		}
-		finally
-		{
-			isAttachingSemaphoreSlim.Release();
-		}
+		ValidateOnAttaching();
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		RemoveBinding(ValueProperty);
 
 		currentStatus = ValidationFlags.None;
@@ -242,8 +229,12 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	}
 
 	/// <inheritdoc/>
-	protected override async void OnViewPropertyChanged(VisualElement sender, PropertyChangedEventArgs e)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="sender"/> or <paramref name="e"/> is <see langword="null"/>.</exception>
+	protected override void OnViewPropertyChanged(VisualElement sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == VisualElement.IsFocusedProperty.PropertyName)
@@ -254,7 +245,23 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 				false => ValidationFlags.ValidateOnUnfocused
 			};
 
-			await UpdateStateAsync(View, Flags, false);
+			UpdateStateOnFocusChanged();
+		}
+	}
+
+	// An async void method reports a null argument through the synchronization context instead of to its caller, so the protected members validate their arguments before they call it
+	static async void UpdateStateAfterValidationPropertyChanged(BindableObject bindable)
+	{
+		try
+		{
+			var validationBehavior = (ValidationBehavior)bindable;
+
+			// The last result can be stale even when Flags does not include the current state of the view, for example ValidateOnValueChanged after the view lost the focus
+			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, validationBehavior.hasValidated);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceInformation("{0}", ex);
 		}
 	}
 
@@ -287,6 +294,25 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		=> ((ValidationBehavior)bindable).DefaultValuePropertyName;
 
 	void OnIsValidPropertyChanged() => IsNotValid = !IsValid;
+
+	async void ValidateOnAttaching()
+	{
+		await isAttachingSemaphoreSlim.WaitAsync();
+
+		try
+		{
+			currentStatus = ValidationFlags.ValidateOnAttaching;
+
+			OnValuePropertyNamePropertyChanged();
+			await UpdateStateAsync(View, Flags, false);
+		}
+		finally
+		{
+			isAttachingSemaphoreSlim.Release();
+		}
+	}
+
+	async void UpdateStateOnFocusChanged() => await UpdateStateAsync(View, Flags, false);
 
 	async Task OnValuePropertyChanged(CancellationToken token)
 	{

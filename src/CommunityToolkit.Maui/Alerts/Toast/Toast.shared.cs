@@ -52,11 +52,14 @@ public partial class Toast : IToast
 	/// <param name="duration">Toast duration</param>
 	/// <param name="textSize">Toast font size</param>
 	/// <returns>New instance of Toast</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
 	public static IToast Make(
 		string message,
 		ToastDuration duration = ToastDuration.Short,
 		double textSize = AlertDefaults.FontSize)
 	{
+		ArgumentNullException.ThrowIfNull(message);
+
 		return new Toast
 		{
 			Text = message,

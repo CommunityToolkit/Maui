@@ -28,12 +28,24 @@ public static partial class NavigationBar
 	/// <summary>
 	/// Gets Color for the <paramref name = "bindable"/> child element.
 	/// </summary>
-	public static Color GetColor(BindableObject bindable) => (Color)bindable.GetValue(ColorProperty);
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Color GetColor(BindableObject bindable)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return (Color)bindable.GetValue(ColorProperty);
+	}
 
 	/// <summary>
 	/// Sets Color for the <paramref name = "bindable"/> child element.
 	/// </summary>
-	public static void SetColor(BindableObject bindable, Color value) => bindable.SetValue(ColorProperty, value);
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static void SetColor(BindableObject bindable, Color value)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		bindable.SetValue(ColorProperty, value);
+	}
 
 	/// <summary>
 	/// Sets the color of the navigation bar.
@@ -41,8 +53,11 @@ public static partial class NavigationBar
 	/// <param name="config">The platform element configuration.</param>
 	/// <param name="value">The color to set.</param>
 	/// <returns>The platform element configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static IPlatformElementConfiguration<MAndroid, MauiElement> SetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config, Color value)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		SetColor(config.Element, value);
 		return config;
 	}
@@ -52,8 +67,11 @@ public static partial class NavigationBar
 	/// </summary>
 	/// <param name="config">The platform element configuration.</param>
 	/// <returns>The color of the navigation bar.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static Color GetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		return GetColor(config.Element);
 	}
 
@@ -63,8 +81,11 @@ public static partial class NavigationBar
 	/// <param name="config">The platform element configuration.</param>
 	/// <param name="value">The style to set.</param>
 	/// <returns>The platform element configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static IPlatformElementConfiguration<MAndroid, MauiElement> SetStyle(this IPlatformElementConfiguration<MAndroid, MauiElement> config, NavigationBarStyle value)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		SetStyle(config.Element, value);
 		return config;
 	}
@@ -74,8 +95,11 @@ public static partial class NavigationBar
 	/// </summary>
 	/// <param name="config">The platform element configuration.</param>
 	/// <returns>The style of the navigation bar.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static NavigationBarStyle GetStyle(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		return GetStyle(config.Element);
 	}
 

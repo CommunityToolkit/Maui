@@ -215,7 +215,16 @@ public sealed class PopupNotFoundException() : InvalidPopupOperationException($"
 /// <summary>
 /// An <see cref="InvalidOperationException"/> thrown when attempting to close a <see cref="Popup"/> that is blocked by a visible modal page.
 /// </summary>
-public sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException($"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}");
+/// <exception cref="ArgumentNullException">Thrown when <paramref name="currentVisibleModalPage"/> is <see langword="null"/>.</exception>
+public sealed class PopupBlockedException(in Page currentVisibleModalPage) : InvalidPopupOperationException(CreateMessage(currentVisibleModalPage))
+{
+	static string CreateMessage(Page currentVisibleModalPage)
+	{
+		ArgumentNullException.ThrowIfNull(currentVisibleModalPage);
+
+		return $"Unable to close Popup because it is blocked by the Modal Page {currentVisibleModalPage.GetType().FullName}. Please call `{nameof(Page.Navigation)}.{nameof(Page.Navigation.PopModalAsync)}()` to first remove {currentVisibleModalPage.GetType().FullName} from the {nameof(Page.Navigation.ModalStack)}";
+	}
+}
 
 /// <summary>
 /// An <see cref="InvalidOperationException"/> thrown when an invalid operation is performed on a <see cref="Popup"/>.

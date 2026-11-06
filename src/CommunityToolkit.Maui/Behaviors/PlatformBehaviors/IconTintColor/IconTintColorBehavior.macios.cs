@@ -22,8 +22,12 @@ public partial class IconTintColorBehavior
 	UIImageView? observedButtonImageView;
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="sender"/> or <paramref name="e"/> is <see langword="null"/>.</exception>
 	protected override void OnViewPropertyChanged(View sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		// MAUI maps Button.TextColor to the tint color and the title colors of the UIButton (ButtonExtensions.UpdateTextColor) after this
@@ -49,8 +53,12 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(View bindable, UIView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		ApplyTintColor(platformView, bindable, TintColor);
@@ -66,8 +74,12 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(View bindable, UIView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		PropertyChanged -= OnIconTintColorBehaviorPropertyChanged;

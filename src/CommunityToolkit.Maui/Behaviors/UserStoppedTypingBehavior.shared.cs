@@ -64,13 +64,17 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 	}
 
 	/// <inheritdoc/>
-	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="sender"/> or <paramref name="e"/> is <see langword="null"/>.</exception>
+	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			await OnTextPropertyChanged(sender, sender.Text);
+			HandleTextPropertyChanged(sender);
 		}
 	}
 
@@ -90,6 +94,9 @@ public partial class UserStoppedTypingBehavior : BaseBehavior<InputView>, IDispo
 
 	// Task.Delay throws ArgumentOutOfRangeException for a delay below -1 and never completes for -1 (Timeout.Infinite)
 	static bool ValidateStoppedTypingTimeThreshold(BindableObject bindable, object value) => value is int threshold && threshold >= 0;
+
+	// An async void method reports a null argument through the synchronization context instead of to its caller, so the override validates its arguments before it calls it
+	async void HandleTextPropertyChanged(InputView view) => await OnTextPropertyChanged(view, view.Text);
 
 	async Task OnTextPropertyChanged(InputView view, string? text)
 	{

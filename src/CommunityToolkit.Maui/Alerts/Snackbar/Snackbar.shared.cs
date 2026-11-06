@@ -17,6 +17,8 @@ public static class SnackbarVisualElementExtension
 	/// <param name="duration">Snackbar duration</param>
 	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <param name="token">Cancellation token</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="actionButtonText"/> is <see langword="null"/>.</exception>
 	public static Task DisplaySnackbar(
 		this VisualElement? visualElement,
 		string message,
@@ -24,7 +26,13 @@ public static class SnackbarVisualElementExtension
 		string actionButtonText = AlertDefaults.ActionButtonText,
 		TimeSpan? duration = null,
 		SnackbarOptions? visualOptions = null,
-		CancellationToken token = default) => Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
+		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(message);
+		ArgumentNullException.ThrowIfNull(actionButtonText);
+
+		return Snackbar.Make(message, action, actionButtonText, duration, visualOptions, visualElement).Show(token);
+	}
 }
 
 /// <inheritdoc/>
@@ -130,6 +138,8 @@ public partial class Snackbar : ISnackbar
 	/// <param name="visualOptions">Snackbar visual options</param>
 	/// <param name="anchor">Snackbar anchor</param>
 	/// <returns>New instance of Snackbar</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="actionButtonText"/> is <see langword="null"/>.</exception>
 	public static ISnackbar Make(
 		string message,
 		Action? action = null,
@@ -138,6 +148,9 @@ public partial class Snackbar : ISnackbar
 		SnackbarOptions? visualOptions = null,
 		IView? anchor = null)
 	{
+		ArgumentNullException.ThrowIfNull(message);
+		ArgumentNullException.ThrowIfNull(actionButtonText);
+
 		return new Snackbar
 		{
 			Text = message,

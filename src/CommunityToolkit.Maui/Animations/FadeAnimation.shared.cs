@@ -26,9 +26,17 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 	public partial double Opacity { get; set; } = FadeAnimationDefaults.Opacity;
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
+
+		return FadeAsync(view, token);
+	}
+
+	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	async Task FadeAsync(VisualElement view, CancellationToken token)
+	{
 		token.ThrowIfCancellationRequested();
 
 		var fades = viewFades.GetValue(view, static _ => new ViewFades());
