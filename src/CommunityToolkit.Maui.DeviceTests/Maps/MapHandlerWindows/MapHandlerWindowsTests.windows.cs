@@ -45,7 +45,7 @@ public class MapHandlerWindowsTests : MapTestBase
 		nameof(MapHandlerWindows.MapPins),
 	};
 
-	static Task InvokeMapping(string mapping, IMapHandler? handler, IMap? map)
+	static Task InvokeMapping(string mapping, IMapHandler? handler, Microsoft.Maui.Maps.IMap? map)
 	{
 #pragma warning disable CS8604 // Possible null reference argument.
 		return mapping switch
