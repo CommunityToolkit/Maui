@@ -995,7 +995,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 			var handler = await InvokeOnMainThreadAsync(() => CreateHandler<WinMediaHandler>(view));
 			await OpenAsync(view, VideoSource);
 
-			// OnMediaElementMediaOpened raises MediaOpened, which starts the status timer, and creates the Metadata helper right after it, so once the helper exists the timer runs.
+			// Setting the Source started the status timer, a root while it runs. OnMediaElementMediaOpened creates the Metadata helper after it raised MediaOpened, so once the helper exists the open has finished before the disconnect.
 			var openedManager = new WeakReference(handler.Manager);
 			await WaitUntilAsync(() => openedManager.Target is MediaManager manager && WinMediaReflection.GetField<object?>(manager, "metadata") is not null,
 				"Opening the media did not finish (no Metadata helper), so the status timer this test covers may not run.");
@@ -1030,10 +1030,20 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 			return createdHandler;
 		});
 
+		// The same call while the handler is connected starts the timer, so the null at the end comes from the disconnect and not from a
+		// MediaOpened that never starts the timer.
+		await InvokeOnMainThreadAsync(() => Assert.Null(WinMediaReflection.GetField<object?>(view, "timer")));
+		await Task.Run(() => ((IMediaElement)view).MediaOpened());
+		await FlushDispatcherAsync();
+		await InvokeOnMainThreadAsync(() => Assert.NotNull(WinMediaReflection.GetField<object?>(view, "timer")));
+
 		await InvokeOnMainThreadAsync(() =>
 		{
 			((IElementHandler)handler).DisconnectHandler();
-			view.Handler = null;
+
+			// MediaElement relies on DisconnectHandler clearing Handler, as it does when a page is left, so the test checks that instead of clearing it.
+			Assert.Null(view.Handler);
+			Assert.Null(WinMediaReflection.GetField<object?>(view, "timer"));
 		});
 
 		// The player raises MediaOpened on its own worker thread, so an open that was already running when the page disconnected the handler reaches
