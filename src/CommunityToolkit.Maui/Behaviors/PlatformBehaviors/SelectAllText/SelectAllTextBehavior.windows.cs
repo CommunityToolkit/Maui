@@ -34,11 +34,6 @@ public partial class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox
 
 	void ApplyEffect(bool apply, TextBox editText)
 	{
-		if (editText is null)
-		{
-			throw new InvalidOperationException("The Platform View can't be null.");
-		}
-
 		editText.GotFocus -= OnGotFocus;
 
 		if (apply)

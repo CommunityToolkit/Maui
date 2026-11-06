@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents information about a camera device.
 /// </summary>
-/// <exception cref="ArgumentNullException">Thrown when <c>name</c>, <c>deviceId</c> or <c>supportedResolutions</c> is <see langword="null"/>; on iOS and Mac Catalyst also when <c>supportedFormats</c> is <see langword="null"/>; on Windows also when <c>frameSourceGroup</c> or <c>imageEncodingProperties</c> is <see langword="null"/>.</exception>
+/// <exception cref="ArgumentNullException">Thrown when <c>name</c>, <c>deviceId</c> or <c>supportedResolutions</c> is <see langword="null"/>; on iOS and Mac Catalyst also when <c>supportedFormats</c> is <see langword="null"/>; on Windows also when <c>imageEncodingProperties</c> is <see langword="null"/>.</exception>
 public class CameraInfo(
 	string name,
 	string deviceId,
@@ -83,7 +83,7 @@ public class CameraInfo(
 #endif
 
 #if WINDOWS
-    internal MediaFrameSourceGroup FrameSourceGroup { get; } = frameSourceGroup ?? throw new ArgumentNullException(nameof(frameSourceGroup));
+    internal MediaFrameSourceGroup FrameSourceGroup { get; } = frameSourceGroup;
 	internal IReadOnlyList<ImageEncodingProperties> ImageEncodingProperties { get; } = [.. imageEncodingProperties ?? throw new ArgumentNullException(nameof(imageEncodingProperties))];
 #endif
 
