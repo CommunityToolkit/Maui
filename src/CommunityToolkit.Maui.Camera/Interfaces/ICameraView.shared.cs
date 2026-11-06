@@ -89,9 +89,9 @@ public interface ICameraView : IView
 	/// <remarks>
 	/// To customize the behavior of starting the camera preview, consider overriding the behavior through
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.StartCameraPreview), ADD YOUR METHOD);</c>.
-	/// A preview that cannot start is reported through the ErrorOccurred event of the view instead of an exception, on every platform (except the Android start that waited for the connection of the view, see below): for
-	/// example no camera is available, the camera permission is not granted, or the selected camera cannot be opened (another app uses it, or
-	/// it was unplugged). A preview whose selected camera cannot be opened counts as started: selecting another camera starts the preview with
+	/// A preview that cannot start is reported through the ErrorOccurred event of the view instead of an exception, on every platform (except
+	/// the Android start that waited for the connection of the view, see below): for example no camera is available, the camera permission is
+	/// not granted, or the selected camera cannot be opened (another app uses it, or it was unplugged). A preview whose selected camera cannot be opened counts as started: selecting another camera starts the preview with
 	/// that camera (see <see cref="SelectedCamera"/>). A preview without the camera permission stays stopped until this method is called again
 	/// once the app has the permission.
 	/// On Android, a start that failed only because the app did not have the camera permission (it had not asked for it yet, or the user denied
@@ -107,8 +107,8 @@ public interface ICameraView : IView
 	/// reported that failure through the ErrorOccurred event, the start that waited for it and fails as well throws the failure to its caller
 	/// without raising the event a second time.
 	/// On Android, a start that arrives while another start waits for CameraX waits for it too: when the other start started the preview with the
-	/// selected camera, this start returns without starting it a second time. A start that fails because the view was released meanwhile ends without an exception
-	/// and without the ErrorOccurred event.
+	/// selected camera, this start returns without starting it a second time. A start that fails because the view was released meanwhile ends
+	/// without an exception and without the ErrorOccurred event.
 	/// </remarks>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled, or <see cref="StopCameraPreview"/> is
 	/// called, before the preview started.</exception>
