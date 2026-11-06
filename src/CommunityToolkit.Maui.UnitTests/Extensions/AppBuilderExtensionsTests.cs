@@ -266,5 +266,14 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
+
+	[Fact]
+	public void UseMauiCommunityToolkitCore_NullBuilder_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => Core.AppBuilderExtensions.UseMauiCommunityToolkitCore(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("builder", exception.ParamName);
+	}
 }
-#pragma warning restore CA1416

@@ -39,6 +39,7 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
+		ArgumentNullException.ThrowIfNull(options);
 
 		// CurrentState is still Stopped while a session starts (Android: until speech begins; iOS and Mac Catalyst: while the recognition task is starting)
 		if (CurrentState is not SpeechToTextState.Stopped || IsListeningSessionActive)

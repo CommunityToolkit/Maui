@@ -15,8 +15,13 @@ public static class AndroidPathExtensions
 	/// It returns <see langword="null"/> if the <see cref="Uri"/> is not resolvable, such as a document of the Downloads provider whose id
 	/// is the number of a download or the id of a file in MediaStore, which holds no path.
 	/// </summary>
+	/// <param name="uri">The <see cref="Uri"/> to convert.</param>
+	/// <returns>The absolute path, or <see langword="null"/> if <paramref name="uri"/> is not resolvable.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="uri"/> is null.</exception>
 	public static string? ToPhysicalPath(this Uri uri)
 	{
+		ArgumentNullException.ThrowIfNull(uri);
+
 		const string uriSchemeFolder = "content";
 		if (uri.Scheme is null || !uri.Scheme.Equals(uriSchemeFolder, StringComparison.OrdinalIgnoreCase))
 		{

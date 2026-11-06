@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
+using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
@@ -96,5 +97,48 @@ public class FolderPickerTests : BaseTest
 		result.Folder.Should().BeNull();
 		result.IsSuccessful.Should().BeFalse();
 		Assert.Throws<NotImplementedException>(result.EnsureSuccess);
+	}
+
+	[Fact]
+	public void Folder_NullPath_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new Folder(null, "name"));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("Path", exception.ParamName);
+	}
+
+	[Fact]
+	public void Folder_NullName_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new Folder("path", null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("Name", exception.ParamName);
+	}
+
+	[Fact]
+	public void Folder_WithNullPath_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new Folder("path", "name") with { Path = null });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("Path", exception.ParamName);
+	}
+
+	[Fact]
+	public void Folder_KeepsItsArgumentsAndSupportsDeconstruction()
+	{
+		var folder = new Folder("path", "name");
+
+		var (path, name) = folder;
+
+		Assert.Equal("path", path);
+		Assert.Equal("name", name);
+		Assert.Equal(new Folder("path", "name"), folder);
+		Assert.Equal("other", (folder with { Name = "other" }).Name);
 	}
 }

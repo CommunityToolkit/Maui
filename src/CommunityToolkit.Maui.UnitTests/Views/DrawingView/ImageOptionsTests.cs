@@ -88,4 +88,44 @@ public class ImageOptionsTests : BaseViewTest
 		ImageLineOptions.FullCanvas([], new Size(100, 50), null, null).CanvasSize.Should().BeNull();
 		ImageLineOptions.JustLines([], new Size(100, 50), null).CanvasSize.Should().BeNull();
 	}
+
+	[Fact]
+	public void ImagePointOptions_NullPoints_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new ImagePointOptions(null, new Size(10, 10), 5, Colors.Black, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("points", exception.ParamName);
+	}
+
+	[Fact]
+	public void ImagePointOptions_NullStrokeColor_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new ImagePointOptions([], new Size(10, 10), 5, null, null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("strokeColor", exception.ParamName);
+	}
+
+	[Fact]
+	public void JustLines_NullLines_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => ImageLineOptions.JustLines(null, new Size(10, 10), null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("lines", exception.ParamName);
+	}
+
+	[Fact]
+	public void FullCanvas_NullLines_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => ImageLineOptions.FullCanvas(null, new Size(10, 10), null, null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("lines", exception.ParamName);
+	}
 }

@@ -43,6 +43,8 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	/// <inheritdoc/>
 	public override void SetVirtualView(IView view)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		base.SetVirtualView(view);
 #if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
 		if (PlatformView is MauiSemanticOrderView semanticOrderView)

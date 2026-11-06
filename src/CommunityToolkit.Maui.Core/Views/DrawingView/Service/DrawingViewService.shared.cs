@@ -8,8 +8,13 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream, or <see cref="Stream.Null"/> when there is nothing to draw (no points, or an image below one pixel).</returns>
-	public static ValueTask<Stream> GetImageStream(ImagePointOptions options, CancellationToken token = default) =>
-		GetPlatformImageStream(options, token);
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetImageStream(ImagePointOptions options, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(options);
+
+		return GetPlatformImageStream(options, token);
+	}
 
 	/// <summary>
 	/// Get image stream from lines
@@ -17,8 +22,13 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
-	public static ValueTask<Stream> GetImageStream(ImageLineOptions options, CancellationToken token = default) =>
-		GetPlatformImageStream(options, token);
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetImageStream(ImageLineOptions options, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(options);
+
+		return GetPlatformImageStream(options, token);
+	}
 }
 
 /// <summary>
@@ -74,31 +84,46 @@ public abstract class ImageOptions(Size desiredSize, Paint? background, Size? ca
 /// <summary>
 /// Represents a set of options that controls how a set of points will be output to an image.
 /// </summary>
-/// <param name="points">The points that will result in a single line.</param>
-/// <param name="desiredSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
-/// <param name="lineWidth">The width of the line to render.</param>
-/// <param name="strokeColor">The <see cref="Color"/> of the line to render.</param>
-/// <param name="background">The background <see cref="Paint"/> to apply to the output image.</param>
-/// <param name="canvasSize">The actual size of the canvas being displayed.
-/// if a value is provided then the contents of the drawing inside these dimensions will be included in the output,
-/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.</param>
-/// <exception cref="ArgumentException">Thrown when the width or the height of <paramref name="desiredSize"/> is NaN, or when both are positive infinity; or when the width or the height of <paramref name="canvasSize"/> is NaN or positive infinity.</exception>
-public class ImagePointOptions(IList<PointF> points, Size desiredSize, float lineWidth, Color strokeColor, Paint? background, Size? canvasSize) : ImageOptions(desiredSize, background, canvasSize)
+public class ImagePointOptions : ImageOptions
 {
+	/// <summary>
+	/// Initializes a new instance of <see cref="ImagePointOptions"/>.
+	/// </summary>
+	/// <param name="points">The points that will result in a single line.</param>
+	/// <param name="desiredSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
+	/// <param name="lineWidth">The width of the line to render.</param>
+	/// <param name="strokeColor">The <see cref="Color"/> of the line to render.</param>
+	/// <param name="background">The background <see cref="Paint"/> to apply to the output image.</param>
+	/// <param name="canvasSize">The actual size of the canvas being displayed.
+	/// if a value is provided then the contents of the drawing inside these dimensions will be included in the output,
+	/// if <c>null</c> is provided then the resulting output will be the area covered by the top-left to the bottom-right most points.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="points"/> or <paramref name="strokeColor"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown when the width or the height of <paramref name="desiredSize"/> is NaN, or when both are positive infinity; or when the width or the height of <paramref name="canvasSize"/> is NaN or positive infinity.</exception>
+	public ImagePointOptions(IList<PointF> points, Size desiredSize, float lineWidth, Color strokeColor, Paint? background, Size? canvasSize)
+		: base(desiredSize, background, canvasSize)
+	{
+		ArgumentNullException.ThrowIfNull(points);
+		ArgumentNullException.ThrowIfNull(strokeColor);
+
+		Points = points;
+		LineWidth = lineWidth;
+		StrokeColor = strokeColor;
+	}
+
 	/// <summary>
 	/// Gets the points that will result in a single line.
 	/// </summary>
-	public IList<PointF> Points { get; } = points;
+	public IList<PointF> Points { get; }
 
 	/// <summary>
 	/// Gets the width of the line to render.
 	/// </summary>
-	public float LineWidth { get; } = lineWidth;
+	public float LineWidth { get; }
 
 	/// <summary>
 	/// Gets the <see cref="Color"/> of the line to render.
 	/// </summary>
-	public Color StrokeColor { get; } = strokeColor;
+	public Color StrokeColor { get; }
 }
 
 /// <summary>
@@ -124,9 +149,12 @@ public class ImageLineOptions : ImageOptions
 	/// <param name="desiredSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
 	/// <param name="background">The background <see cref="Paint"/> to apply to the output image.</param>
 	/// <returns>An instance of <see cref="ImageLineOptions"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="lines"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown when the width or the height of <paramref name="desiredSize"/> is NaN, or when both are positive infinity.</exception>
 	public static ImageLineOptions JustLines(IList<IDrawingLine> lines, Size desiredSize, Paint? background)
 	{
+		ArgumentNullException.ThrowIfNull(lines);
+
 		return new ImageLineOptions(lines, desiredSize, background, null);
 	}
 
@@ -138,9 +166,12 @@ public class ImageLineOptions : ImageOptions
 	/// <param name="background">The background <see cref="Paint"/> to apply to the output image.</param>
 	/// <param name="canvasSize">The actual size of the canvas being displayed.</param>
 	/// <returns>An instance of <see cref="ImageLineOptions"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="lines"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown when the width or the height of <paramref name="desiredSize"/> is NaN, or when both are positive infinity; or when the width or the height of <paramref name="canvasSize"/> is NaN or positive infinity.</exception>
 	public static ImageLineOptions FullCanvas(IList<IDrawingLine> lines, Size desiredSize, Paint? background, Size? canvasSize)
 	{
+		ArgumentNullException.ThrowIfNull(lines);
+
 		return new ImageLineOptions(lines, desiredSize, background, canvasSize);
 	}
 }
