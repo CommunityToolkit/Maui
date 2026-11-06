@@ -121,7 +121,15 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <remarks>Ensure that the stream is properly disposed of after the recording is complete. The recording will be cancelled if cancellation token is triggered. Call <see cref="ICameraView.StopVideoRecording"/> to return the recorded <see cref="Stream"/>.
 	/// A start while <see cref="StopVideoRecording(CancellationToken)"/> waits for the platform to finish the previous recording waits until that
-	/// stop has returned its video (Android, iOS and Mac Catalyst).</remarks>
+	/// stop has returned its video (Android, iOS and Mac Catalyst).
+	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
+	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
+	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
+	/// that recording: it ends, its video is discarded, and the video goes to the new stream. When the camera is released while a start waits (for
+	/// example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
+	/// <para>On iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>
+	/// or after <see cref="StopCameraPreview"/>) throws <see cref="CameraException"/> at once, because the platform never reports the start of a
+	/// recording then. On Android a start without the camera permission throws <see cref="CameraException"/> as well.</para></remarks>
 	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
 	/// <returns>A task that represents the asynchronous video recording operation.</returns>
 	/// <exception cref="CameraException">Thrown when the recording cannot start, for example on iOS and Mac Catalyst when the camera permission is
@@ -133,7 +141,15 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <remarks>Be sure to properly disposed of the provided <see cref="Stream"/> parameter after the recording has completed. The recording will stop if the cancellation token is triggered.
 	/// A start while <see cref="StopVideoRecording(CancellationToken)"/> waits for the platform to finish the previous recording waits until that
-	/// stop has returned its video (Android, iOS and Mac Catalyst).</remarks>
+	/// stop has returned its video (Android, iOS and Mac Catalyst).
+	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
+	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
+	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
+	/// that recording: it ends, its video is discarded, and the video goes to the new stream. When the camera is released while a start waits (for
+	/// example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
+	/// <para>On iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>
+	/// or after <see cref="StopCameraPreview"/>) throws <see cref="CameraException"/> at once, because the platform never reports the start of a
+	/// recording then. On Android a start without the camera permission throws <see cref="CameraException"/> as well.</para></remarks>
 	/// <param name="stream">The stream to which the video data will be written. The stream must be writable and remain open for the duration of the recording.</param>
 	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
 	/// <returns>A task that represents the asynchronous video recording operation.</returns>
