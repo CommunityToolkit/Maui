@@ -151,7 +151,8 @@ public interface ICameraView : IView
 	/// recording started, because Media Foundation writes into the stream while it records. On Android, iOS and Mac Catalyst, when the camera is
 	/// released while a start waits (for example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS, Mac Catalyst and Windows a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
-	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends.
+	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends
+	/// (on Android, iOS and Mac Catalyst once a StopVideoRecording has returned the video, see <see cref="StopVideoRecording(CancellationToken)"/>).
 	/// On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a camera or without the camera permission), the start
 	/// throws the failure, and a preview that was stopped stays stopped. On Android a start without a camera returns without recording, and a
 	/// recording without the camera permission records no video: <see cref="StopVideoRecording(CancellationToken)"/> then throws a
@@ -185,7 +186,8 @@ public interface ICameraView : IView
 	/// recording started, because Media Foundation writes into the stream while it records. On Android, iOS and Mac Catalyst, when the camera is
 	/// released while a start waits (for example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS, Mac Catalyst and Windows a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
-	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends.
+	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends
+	/// (on Android, iOS and Mac Catalyst once a StopVideoRecording has returned the video, see <see cref="StopVideoRecording(CancellationToken)"/>).
 	/// On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a camera or without the camera permission), the start
 	/// throws the failure, and a preview that was stopped stays stopped. On Android a start without a camera returns without recording, and a
 	/// recording without the camera permission records no video: <see cref="StopVideoRecording(CancellationToken)"/> then throws a
@@ -212,16 +214,21 @@ public interface ICameraView : IView
 	/// <remarks>This method is called to terminate the video recording process. Ensure that either <see cref="StartVideoRecording(CancellationToken)"/> or <see cref="StartVideoRecording(Stream, CancellationToken)"/> has been called before invoking this method. The operation can be cancelled by passing a cancellation token.
 	/// <para>The token only cancels waiting for the video, not the stop itself (Android, iOS, Mac Catalyst and Windows): a token that is cancelled
 	/// already, or while the stop waits for the video, still stops a recording that runs, and the stop throws <see cref="OperationCanceledException"/>
-	/// instead of returning the video. The next <see cref="StopVideoRecording(CancellationToken)"/> returns the video. A token that is cancelled
+	/// instead of returning the video. The next <see cref="StopVideoRecording(CancellationToken)"/> returns the video. On Android, iOS and Mac
+	/// Catalyst a camera that the recording turned on stays on until then, and on iOS and Mac Catalyst the microphone stays connected to the camera
+	/// session; on Windows that camera is off again when the cancelled stop throws. On Android, iOS and Mac Catalyst a token that is cancelled while
+	/// the video is being copied into the stream ends the recording without it: the stream holds part of the video, and the next stop returns
+	/// <see cref="Stream.Null"/>. A token that is cancelled
 	/// while a start or an earlier stop is still pending throws without stopping anything, and the start goes on. With no recording and nothing
 	/// pending, a cancelled token returns <see cref="Stream.Null"/>.</para></remarks>
 	/// <param name="token">A cancellation token that can be used to cancel the stop operation.</param>
 	/// <returns>A task that represents the asynchronous stop operation. Its result is the stream that received the video, or
-	/// <see cref="Stream.Null"/> when no recording runs (for example on a second call after the recording was stopped); on Android, iOS and Mac
+	/// <see cref="Stream.Null"/> when no recording runs (for example on a second call after a stop returned the video); on Android, iOS and Mac
 	/// Catalyst also when the camera is released (for example because the page closed) while the stop waits for the platform to finish the
 	/// recording.</returns>
-	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled while a recording runs or a start or an earlier
-	/// stop is pending. The recording that runs has stopped all the same, and the next stop returns its video.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled while a recording runs: the recording has
+	/// stopped all the same, and the next stop returns its video. Also thrown, without stopping anything, when <paramref name="token"/> is cancelled
+	/// while a start or an earlier stop is still pending.</exception>
 	/// <exception cref="CameraException">Thrown on Android, iOS and Mac Catalyst when the platform reports that the recording failed and wrote no
 	/// usable video, for example because it stopped before any frame was recorded; nothing is written to the stream then. When the platform ended
 	/// the recording early but the video recorded until then is usable (for example after an interruption, or when the storage filled up), the
