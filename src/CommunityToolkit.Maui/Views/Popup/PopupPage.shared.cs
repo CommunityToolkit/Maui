@@ -71,7 +71,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			}
 			catch (OperationCanceledException)
 			{
-				// The tap passes no token, so .NET MAUI canceled the pop (its NavigationPage on iOS and Mac Catalyst cancels a PopAsync that waited for a navigation that failed).
+				// The tap passes no token, so the pop was canceled: by the app (in Window.ModalPopping, Application.ModalPopping or Shell.Navigating), or by .NET MAUI (its NavigationPage on iOS and Mac Catalyst cancels a PopAsync that waited for a navigation that failed).
 				// The popup is still open and a later tap can close it; the command runs as async void, so an exception here would crash the app
 			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
@@ -212,6 +212,13 @@ partial class PopupPage : ContentPage, IQueryAttributable
 					// prevent. Confirm the pop locally so the `await` below doesn't hang, then
 					// keep closing; letting this escape would crash an async-void caller of CloseAsync.
 					popupConfirmedPoppedTcs.TrySetResult();
+				}
+
+				// .NET MAUI returns without popping, and without an exception, when the app cancels the pop in Window.ModalPopping, Application.ModalPopping or Shell.Navigating.
+				// ModalPopped and NavigatedFrom never come then: waiting for them would hold the static semaphore forever and block every popup of the app
+				if (!popupConfirmedPoppedTcs.Task.IsCompleted && IsOnModalStack(parentWindow))
+				{
+					throw new OperationCanceledException("The Popup was not closed because the app canceled the navigation that removes it, for example in a Window.ModalPopping, Application.ModalPopping or Shell.Navigating handler. The Popup is still open.");
 				}
 
 				ReleasePopupResources();
@@ -530,14 +537,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			return;
 		}
 
-		var isStillOnNavigationStack = window.Navigation.ModalStack.Any(modalPage => modalPage == this
-			|| (modalPage is NavigationPage navigationPage && navigationPage.Navigation.NavigationStack.Contains(this)));
-
-		if (!isStillOnNavigationStack)
+		if (!IsOnModalStack(window))
 		{
 			RaisePopupClosedForDismissalByNavigation();
 		}
 	}
+
+	// A PopupPage that is the only page of a modal NavigationPage is on the ModalStack through that NavigationPage
+	bool IsOnModalStack(Window window) => window.Navigation.ModalStack.Any(modalPage => modalPage == this
+		|| (modalPage is IPageContainer<Page> container && container.CurrentPage == this)
+		|| (modalPage is NavigationPage navigationPage && navigationPage.Navigation.NavigationStack.Contains(this)));
 
 	bool TryInheritHideSoftInputFromPresentingPage(in Page? presentingPage)
 	{
