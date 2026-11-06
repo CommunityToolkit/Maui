@@ -43,7 +43,8 @@ public partial class MapHandlerWindows : MapHandler
 	internal static string? MapPage { get; private set; }
 
 	/// <summary>
-	/// Maps Map type
+	/// Maps Map type: <see cref="MapType.Street"/> shows the road map, <see cref="MapType.Satellite"/> shows aerial imagery without labels,
+	/// <see cref="MapType.Hybrid"/> shows aerial imagery with labels, and any other value shows the road map.
 	/// </summary>
 	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
@@ -351,13 +352,17 @@ public partial class MapHandlerWindows : MapHandler
 			
 							function setMapType(mauiMapType)
 							{
+								// Bing draws the labels of an aerial map unless they are hidden, so Satellite hides them and Hybrid does not.
+								// Every type sets the labels explicitly because setView keeps the label overlay of the previous view.
 								var mapTypeID = Microsoft.Maps.MapTypeId.road;
+								var labelOverlay = Microsoft.Maps.LabelOverlay.visible;
 								switch(mauiMapType) {
 								  case 'Street':
 								    mapTypeID = Microsoft.Maps.MapTypeId.road;
 								    break;
 								  case 'Satellite':
 								    mapTypeID = Microsoft.Maps.MapTypeId.aerial;
+								    labelOverlay = Microsoft.Maps.LabelOverlay.hidden;
 								    break;
 								  case 'Hybrid':
 								    mapTypeID = Microsoft.Maps.MapTypeId.aerial;
@@ -366,7 +371,8 @@ public partial class MapHandlerWindows : MapHandler
 									mapTypeID = Microsoft.Maps.MapTypeId.road;
 								}
 								map.setView({
-									mapTypeId: mapTypeID
+									mapTypeId: mapTypeID,
+									labelOverlay: labelOverlay
 								});
 							}
 

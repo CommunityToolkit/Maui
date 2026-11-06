@@ -392,6 +392,7 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 			function describeView(options) {
 				var view = {};
 				if (options.mapTypeId !== undefined) view.mapTypeId = options.mapTypeId;
+				if (options.labelOverlay !== undefined) view.labelOverlay = options.labelOverlay;
 				if (options.center !== undefined) view.center = describeLocation(options.center);
 				if (options.bounds !== undefined) view.bounds = { center: describeLocation(options.bounds.center), width: options.bounds.width, height: options.bounds.height };
 				return view;
@@ -461,6 +462,7 @@ public abstract class MapTestBase : CommunityToolkitHandlerTestBase
 			window.Microsoft = {
 				Maps: {
 					MapTypeId: { road: 'road', aerial: 'aerial' },
+					LabelOverlay: { hidden: 'hidden', visible: 'visible' },
 					Location: Location,
 					LocationRect: LocationRect,
 					Pushpin: Pushpin,
