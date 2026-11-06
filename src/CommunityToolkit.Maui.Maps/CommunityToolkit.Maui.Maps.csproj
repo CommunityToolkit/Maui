@@ -37,7 +37,7 @@
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>CommunityToolkit.Maui.Maps</Title>
-    <Description>The .NET MAUI Community Maps Toolkit is a collection of Maps. DEPRECATED: this package will be removed in a future release. Microsoft is retiring Bing Maps for Enterprise, which it uses on Windows. Use the .NET MAUI Map (Microsoft.Maui.Controls.Maps), which supports Windows starting with .NET MAUI 10.0.70. See https://github.com/CommunityToolkit/Maui/issues/3190</Description>
+    <Description>Deprecated: use Microsoft.Maui.Controls.Maps (Windows supported since .NET MAUI 10). The .NET MAUI Community Maps Toolkit is a collection of Maps. This package will be removed in a future release. See https://github.com/CommunityToolkit/Maui/issues/3190</Description>
     <PackageIcon>icon.png</PackageIcon>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <Version>1.0.0-pre1</Version>
