@@ -36,8 +36,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
 
+	NavigationPage? navigationPageObservedForDismissal;
+	Window? windowObservedForDismissal;
 	bool hasNotifiedPopupIsOpened;
-
+	bool isCloseAsyncRunning;
+	bool hasRaisedPopupClosed;
 
 	public PopupPage(View view, IPopupOptions? popupOptions)
 		: this(view as Popup ?? CreatePopupFromView<Popup>(view), popupOptions)
@@ -57,7 +60,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
-			await CloseAsync(new PopupResult(true));
+
+			try
+			{
+				await CloseAsync(new PopupResult(true));
+			}
+			catch (PopupNotFoundException)
+			{
+				// An earlier tap, the back button or navigation already closed this popup; the command runs as async void, so an exception here would crash the app
+			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
@@ -95,6 +106,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			TryInheritHideSoftInputFromPresentingPage(GetVisiblePage(navigation));
 
 			await navigation.PushModalAsync(this, false);
+			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
 		{
@@ -124,6 +136,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			{
 				await shell.GoToAsync(shellRoute, shellParameters);
 			}
+
+			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
 		{
@@ -177,7 +191,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		parentWindow.ModalPopped += HandleModalPagePopped;
 		NavigatedFrom += HandleNavigatedFrom;
 
-
 		try
 		{
 			// navigationSemaphoreSlim must be in the outer try/finally block to ensure we unsubscribe ModalPopped and NavigatedFrom events when CancellationToken is canceled
@@ -187,9 +200,32 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			try
 			{
+				// Navigation removed this PopupPage while CloseAsync waited for the semaphore, and that removal already reported the result.
+				// Continuing would pop whichever page is on top of the navigation stack now.
+				if (hasRaisedPopupClosed)
+				{
+					throw new PopupNotFoundException();
+				}
+
+				// CloseAsync reports the result itself, so the pop it causes must not be reported again as a dismissal by navigation.
+				// Set only after the semaphore is acquired, otherwise a removal that happens while CloseAsync waits would be ignored.
+				isCloseAsyncRunning = true;
+
 				try
 				{
-					await Navigation.PopModalAsync(false);
+					// With a Shell as the root page, .NET MAUI pushes a popup that is shown on top of a modal NavigationPage onto the navigation stack of that NavigationPage.
+					// PopModalAsync would remove the whole NavigationPage, and never report the PopupPage as popped.
+					if (navigationPageOnModalStackContainingPopupPage is NavigationPage { Navigation.NavigationStack.Count: > 1 } navigationPageContainingPopupPage)
+					{
+						await navigationPageContainingPopupPage.Navigation.PopAsync(false);
+
+						// Popping within a NavigationPage raises neither ModalPopped nor a NavigatedFrom that CloseAsync accepts when the page below is another PopupPage
+						popupConfirmedPoppedTcs.TrySetResult();
+					}
+					else
+					{
+						await Navigation.PopModalAsync(false);
+					}
 				}
 				catch (Exception ex) when (!(ex is OperationCanceledException or InvalidPopupOperationException))
 				{
@@ -201,13 +237,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 					popupConfirmedPoppedTcs.TrySetResult();
 				}
 
-				// Clean up Popup resources
-				Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-				popup.PropertyChanged -= HandlePopupPropertyChanged;
-				if (popupOptions is BindableObject bindablePopupOptions)
-				{
-					bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
-				}
+				ReleasePopupResources();
 
 				// Wait for MAUI to confirm the PopupPage has been popped before invoking the PopupClosed event and notifying the Popup that it may invoke its `Popup.Closed` event.
 				// This guarantees the Popup has been removed from MAUI's ModalStack
@@ -215,12 +245,14 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			}
 			finally
 			{
+				// Cleared by the holder of the semaphore only: a concurrent CloseAsync that is canceled while it waits never set the flag, and must not clear the flag of the CloseAsync that is popping this page.
+				// Nothing awaits between here and RaisePopupClosed, so no navigation event can be mistaken for a dismissal in between.
+				isCloseAsyncRunning = false;
 				navigationSemaphoreSlim.Release();
 			}
 
 			// Raised after navigationSemaphoreSlim is released because PopupClosed completes ShowPopupAsync, whose caller may show another popup right away
-			PopupClosed?.Invoke(this, result);
-			popup.NotifyPopupIsClosed();
+			RaisePopupClosed(result);
 		}
 		finally
 		{
@@ -230,7 +262,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
 		{
-			if (e.Modal == this)
+			// A PopupPage that is the only page of a modal NavigationPage is popped together with it, and ModalPopped reports the NavigationPage
+			if (e.Modal == this || (e.Modal is IPageContainer<Page> container && container.CurrentPage == this))
 			{
 				popupConfirmedPoppedTcs.TrySetResult();
 			}
@@ -327,6 +360,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 
 		hasNotifiedPopupIsOpened = true;
+		ObserveDismissalByNavigation();
 		popup.NotifyPopupIsOpened();
 	}
 
@@ -334,6 +368,154 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	{
 		base.OnNavigatedFrom(args);
 		popup.TeardownPlatform();
+	}
+
+	// Static PopupOptions (e.g. PopupOptions.Empty) outlive the PopupPage, so every path that closes the popup must unsubscribe from them; the -= calls are idempotent
+	void ReleasePopupResources()
+	{
+		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+		popup.PropertyChanged -= HandlePopupPropertyChanged;
+		if (popupOptions is BindableObject bindablePopupOptions)
+		{
+			bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
+		}
+	}
+
+	// Claims the right to report the result; the first caller wins, so PopupClosed and Popup.Closed are raised once whichever path closes the popup
+	bool TryMarkPopupClosed()
+	{
+		if (hasRaisedPopupClosed)
+		{
+			return false;
+		}
+
+		hasRaisedPopupClosed = true;
+		StopObservingDismissalByNavigation();
+		return true;
+	}
+
+	void InvokePopupClosed(IPopupResult result)
+	{
+		PopupClosed?.Invoke(this, result);
+		popup.NotifyPopupIsClosed();
+	}
+
+	void RaisePopupClosed(IPopupResult result)
+	{
+		if (TryMarkPopupClosed())
+		{
+			InvokePopupClosed(result);
+		}
+	}
+
+	// Navigation removed the PopupPage without CloseAsync. Outside a Shell, .NET MAUI raises the NavigatedFrom and NavigatedTo of the removal after Window.ModalPopped, for the page on top by then,
+	// so the result is raised through the Dispatcher: a Closed handler that shows another popup must not run before .NET MAUI has finished the removal
+	void RaisePopupClosedForDismissalByNavigation()
+	{
+		if (!TryMarkPopupClosed())
+		{
+			return;
+		}
+
+		ReleasePopupResources();
+
+		var result = new PopupResult(true);
+		Dispatcher.Dispatch(() => InvokePopupClosed(result));
+	}
+
+	// A Window without a handler makes a Shell raise no NavigatedTo on the pages it pushes, so OnNavigatedTo alone would never observe a removal that follows the push.
+	// ObserveDismissalByNavigation unsubscribes first, so observing here and in OnNavigatedTo, in either order, subscribes once
+	void ObserveDismissalByNavigationIfNotClosed()
+	{
+		if (!hasRaisedPopupClosed)
+		{
+			ObserveDismissalByNavigation();
+		}
+	}
+
+	// A PopupPage that navigation removes without CloseAsync (e.g. Shell popping the whole modal stack, or PopModalAsync called by other code) never reaches the end of CloseAsync,
+	// leaving the task of ShowPopupAsync pending forever and Popup.Closed never raised
+	void ObserveDismissalByNavigation()
+	{
+		StopObservingDismissalByNavigation();
+
+		// A PopupPage that is not hosted by a Window (e.g. raised NavigatedTo directly) cannot be removed by navigation
+		if (Window is null)
+		{
+			return;
+		}
+
+		windowObservedForDismissal = Window;
+		windowObservedForDismissal.ModalPopped += HandleModalPoppedWithoutCloseAsync;
+		windowObservedForDismissal.PropertyChanged += HandleWindowPropertyChangedWithoutCloseAsync;
+
+		// Removing a page from a NavigationPage (PopAsync, PopToRootAsync, RemovePage, or Shell popping it) raises neither ModalPopped nor PropertyChanged of the Window
+		if (Parent is NavigationPage containingNavigationPage)
+		{
+			navigationPageObservedForDismissal = containingNavigationPage;
+			containingNavigationPage.ChildRemoved += HandleChildRemovedWithoutCloseAsync;
+		}
+	}
+
+	void StopObservingDismissalByNavigation()
+	{
+		if (windowObservedForDismissal is not null)
+		{
+			windowObservedForDismissal.ModalPopped -= HandleModalPoppedWithoutCloseAsync;
+			windowObservedForDismissal.PropertyChanged -= HandleWindowPropertyChangedWithoutCloseAsync;
+			windowObservedForDismissal = null;
+		}
+
+		if (navigationPageObservedForDismissal is not null)
+		{
+			navigationPageObservedForDismissal.ChildRemoved -= HandleChildRemovedWithoutCloseAsync;
+			navigationPageObservedForDismissal = null;
+		}
+	}
+
+	void HandleModalPoppedWithoutCloseAsync(object? sender, ModalPoppedEventArgs e)
+	{
+		if (isCloseAsyncRunning)
+		{
+			return;
+		}
+
+		// A popup in a custom IPageContainer (e.g. a NavigationPage) is popped together with its container
+		var wasThisPopupPagePopped = e.Modal == this
+			|| (e.Modal is IPageContainer<Page> container && container.CurrentPage == this)
+			|| (e.Modal is NavigationPage navigationPage && navigationPage.Navigation.NavigationStack.Contains(this));
+
+		if (wasThisPopupPagePopped)
+		{
+			RaisePopupClosedForDismissalByNavigation();
+		}
+	}
+
+	void HandleChildRemovedWithoutCloseAsync(object? sender, ElementEventArgs e)
+	{
+		if (!isCloseAsyncRunning && e.Element == this)
+		{
+			RaisePopupClosedForDismissalByNavigation();
+		}
+	}
+
+	// Replacing Window.Page drops the whole modal stack without raising ModalPopped
+	void HandleWindowPropertyChangedWithoutCloseAsync(object? sender, PropertyChangedEventArgs e)
+	{
+		if (isCloseAsyncRunning
+			|| e.PropertyName != nameof(Window.Page)
+			|| sender is not Window window)
+		{
+			return;
+		}
+
+		var isStillOnNavigationStack = window.Navigation.ModalStack.Any(modalPage => modalPage == this
+			|| (modalPage is NavigationPage navigationPage && navigationPage.Navigation.NavigationStack.Contains(this)));
+
+		if (!isStillOnNavigationStack)
+		{
+			RaisePopupClosedForDismissalByNavigation();
+		}
 	}
 
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
