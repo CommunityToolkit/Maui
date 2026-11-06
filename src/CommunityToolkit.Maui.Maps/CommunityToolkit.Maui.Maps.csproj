@@ -37,7 +37,7 @@
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <Title>CommunityToolkit.Maui.Maps</Title>
-    <Description>The .NET MAUI Community Maps Toolkit is a collection of Maps</Description>
+    <Description>The .NET MAUI Community Maps Toolkit is a collection of Maps. DEPRECATED: this package will be removed in a future release because Bing Maps, which it uses on Windows, was retired. See https://github.com/CommunityToolkit/Maui/issues/3190.</Description>
     <PackageIcon>icon.png</PackageIcon>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
     <Version>1.0.0-pre1</Version>

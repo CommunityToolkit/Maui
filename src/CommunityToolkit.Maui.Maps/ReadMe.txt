@@ -1,5 +1,7 @@
 ﻿﻿.NET MAUI Community Toolkit
 
+DEPRECATED: CommunityToolkit.Maui.Maps will be removed in a future release because Bing Maps, which it uses on Windows, was retired. See https://github.com/CommunityToolkit/Maui/issues/3190
+
 ## Initializing
 
 In order to use the .NET MAUI Community Toolkit Maps you need to call the extension method in your `MauiProgram.cs` file as follows:

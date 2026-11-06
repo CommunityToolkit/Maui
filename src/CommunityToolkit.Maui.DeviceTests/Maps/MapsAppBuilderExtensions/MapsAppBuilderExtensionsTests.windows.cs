@@ -1,3 +1,6 @@
+// These tests stay until the deprecated Maps library is removed, so CS0618 is suppressed for this file.
+#pragma warning disable CS0618
+
 using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Maps.Handlers;
 using Microsoft.Maui.Controls.Maps;

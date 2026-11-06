@@ -25,7 +25,7 @@ The release versions of .NET MAUI Community Toolkit are available at Nuget.org a
 ```bash
 dotnet add package CommunityToolkit.Maui
 dotnet add package CommunityToolkit.Maui.MediaElement
-dotnet add package CommunityToolkit.Maui.Maps
+dotnet add package CommunityToolkit.Maui.Maps # Deprecated, see https://github.com/CommunityToolkit/Maui/issues/3190
 dotnet add package CommunityToolkit.Maui.Camera
 ```
 

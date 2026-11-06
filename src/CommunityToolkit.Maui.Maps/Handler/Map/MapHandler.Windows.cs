@@ -18,6 +18,7 @@ using IMap = Microsoft.Maui.Maps.IMap;
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
 /// <inheritdoc />
+[Obsolete(DeprecationMessages.Maps)]
 public partial class MapHandlerWindows : MapHandler
 {
 	static readonly ConditionalWeakTable<WebView2, Task> pendingInitializations = new();
@@ -27,6 +28,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MapHandlerWindows"/> class.
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
 		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, _) => MapMapType(handler, map));
@@ -45,6 +47,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps Map type
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
 		return TryCallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
@@ -53,6 +56,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps IsZoomEnabled
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
 		return TryCallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
@@ -61,6 +65,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps IsScrollEnabled
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
 		return TryCallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
@@ -69,6 +74,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps IsTrafficEnabled
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
 		return TryCallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
@@ -77,6 +83,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps IsShowingUser
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new async Task MapIsShowingUser(IMapHandler handler, IMap map)
 	{
 		if (map.IsShowingUser)
@@ -101,6 +108,7 @@ public partial class MapHandlerWindows : MapHandler
 	/// The info window that a click on a pin opens shows the pin's <see cref="Pin.Label"/> and <see cref="Pin.Address"/> as plain text: markup in
 	/// them is shown as it is written, not rendered as HTML.
 	/// </remarks>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new async Task MapPins(IMapHandler handler, IMap map)
 	{
 		// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
@@ -127,11 +135,13 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Map Elements
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new void MapElements(IMapHandler handler, IMap map) { }
 
 	/// <summary>
 	/// Maps MoveToRegion
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new async Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
 		if (arg is not MapSpan newRegion)

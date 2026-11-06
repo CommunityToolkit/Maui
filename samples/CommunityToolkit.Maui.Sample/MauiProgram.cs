@@ -83,7 +83,10 @@ public static class MauiProgram
 								})
 
 #if WINDOWS
+// The sample keeps demonstrating the deprecated Maps library until it is removed; CS0618 is suppressed only around this call.
+#pragma warning disable CS0618
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from https://bingmapsportal.com
+#pragma warning restore CS0618
 #else
 								.UseMauiMaps()
 #endif
