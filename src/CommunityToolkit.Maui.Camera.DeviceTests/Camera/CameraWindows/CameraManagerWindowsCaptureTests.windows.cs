@@ -849,6 +849,40 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		return count;
 	}
 
+	// Needs a camera with a color frame source, see above. The video that a cancelled stop left for the next stop is discarded by a start, as the
+	// video of a recording that a start replaces is.
+	[Fact]
+	public async Task StartVideoRecordingAfterAStopThatItsTokenCancelledDiscardsTheVideoOfThatStop()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var first = new MemoryStream();
+			using var second = new MemoryStream();
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token));
+			Assert.True(first.Length > 100);
+
+			await scope.Manager.StartVideoRecording(second, CancellationToken.None);
+
+			Assert.Equal(0, first.Length);
+			Assert.Equal(0, first.Position);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Equal(0, first.Length);
+		});
+	}
+
 	[Fact]
 	public async Task UpdateCurrentCameraSwitchesThePreviewToTheOtherCamera()
 	{

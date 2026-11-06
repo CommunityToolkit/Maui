@@ -454,9 +454,6 @@ partial class CameraManager
 		// also without a camera, whose failure the start of the camera would report first
 		token.ThrowIfCancellationRequested();
 
-		// A start replaces the video that a cancelled stop left for the next stop, as on Android, iOS and Mac Catalyst
-		finishedVideoStream = null;
-
 		// Like on Android, iOS and Mac Catalyst, recording turns the camera on. A preview that is marked as started but has no MediaCapture (its
 		// camera could not be opened) is started again as well, and stays marked as started when that fails
 		var isCameraTurnedOnHere = await DiscardTheRunningRecordingAsync(stream);
@@ -487,6 +484,13 @@ partial class CameraManager
 	// cannot start, as when the new recording turns the camera on itself.
 	async Task<bool> DiscardTheRunningRecordingAsync(Stream newStream)
 	{
+		// A start replaces the video that a cancelled stop left for the next stop, as on Android, iOS and Mac Catalyst
+		if (finishedVideoStream is Stream finishedStream)
+		{
+			finishedVideoStream = null;
+			RestoreTheStreamOfTheDiscardedRecording(finishedStream);
+		}
+
 		if (mediaRecording is null || videoCaptureStream is null)
 		{
 			return false;
