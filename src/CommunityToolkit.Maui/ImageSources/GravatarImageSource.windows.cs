@@ -84,8 +84,8 @@ public partial class GravatarImageSource
 				return;
 
 			case BitmapImage bitmap when bitmap.PixelHeight > 0:
-				// Before its first layout the Button has no room to give: a picture measured with it would size the Button, and .NET MAUI measures the text of a
-				// Button with its picture above or below only in the room the picture leaves.
+				// Before its first layout the Button has no room to give: a picture measured with it would size the Button, and .NET MAUI
+				// measures the text of a Button with its picture above or below only in the room the picture leaves.
 				hostButtonImage.Height = hostButton.Height < 0
 					? 0
 					: Math.Min(bitmap.GetImageSourceSize(platformButton).Height, GetRoomForPicture(platformButton, hostButton));
