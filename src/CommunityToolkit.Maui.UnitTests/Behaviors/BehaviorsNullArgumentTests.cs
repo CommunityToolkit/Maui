@@ -64,7 +64,6 @@ public class BehaviorsNullArgumentTests : BaseTest
 		NullArgumentAssert.Throws("bindable", () => behavior.InvokeOnDetachingFrom(null));
 		NullArgumentAssert.Throws("sender", () => behavior.InvokeOnViewPropertyChanged(null, eventArgs));
 		NullArgumentAssert.Throws("e", () => behavior.InvokeOnViewPropertyChanged(entry, null));
-		NullArgumentAssert.Throws("bindable", () => ExposedRequiredStringValidationBehavior.InvokeOnValidationPropertyChanged(null));
 	}
 
 	[Fact]
@@ -147,8 +146,6 @@ public class BehaviorsNullArgumentTests : BaseTest
 
 	sealed class ExposedRequiredStringValidationBehavior : RequiredStringValidationBehavior
 	{
-		public static void InvokeOnValidationPropertyChanged(BindableObject bindable) => OnValidationPropertyChanged(bindable, new object(), new object());
-
 		public void InvokeOnAttachedTo(VisualElement bindable) => OnAttachedTo(bindable);
 
 		public void InvokeOnDetachingFrom(VisualElement bindable) => OnDetachingFrom(bindable);

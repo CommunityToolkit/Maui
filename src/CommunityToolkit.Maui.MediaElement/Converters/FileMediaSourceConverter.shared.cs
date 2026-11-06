@@ -12,7 +12,7 @@ public sealed class FileMediaSourceConverter : TypeConverter
 {
 	/// <inheritdoc/>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
-	/// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is <see langword="null"/> or empty.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is empty or white space.</exception>
 	public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
 		ArgumentNullException.ThrowIfNull(value);
@@ -20,7 +20,7 @@ public sealed class FileMediaSourceConverter : TypeConverter
 		var filePath = value.ToString() ?? string.Empty;
 
 		return string.IsNullOrWhiteSpace(filePath)
-			? (FileMediaSource)MediaSource.FromFile(filePath)
-			: throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(FileMediaSource)}");
+			? throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(FileMediaSource)}")
+			: (FileMediaSource)MediaSource.FromFile(filePath);
 	}
 }

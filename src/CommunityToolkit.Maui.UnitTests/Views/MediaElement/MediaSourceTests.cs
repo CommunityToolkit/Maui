@@ -86,7 +86,9 @@ public class MediaSourceTests : BaseTest
 	{
 		Uri? uri = null;
 
-		Assert.Throws<ArgumentNullException>(() => (MediaSource)uri);
+		var exception = Assert.Throws<ArgumentNullException>(() => (MediaSource)uri);
+
+		exception.ParamName.Should().Be("uri");
 	}
 #pragma warning restore CS8600, CS8604, CS8625
 }

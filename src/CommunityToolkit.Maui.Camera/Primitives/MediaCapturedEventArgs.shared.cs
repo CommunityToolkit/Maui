@@ -3,12 +3,22 @@
 /// <summary>
 /// Event args containing all contextual information related to media capture event.
 /// </summary>
-/// <param name="stream">The <see cref="Stream"/> pointing to the newly captured media.</param>
-/// <exception cref="ArgumentNullException">Thrown when <paramref name="stream"/> is <see langword="null"/>.</exception>
-public class MediaCapturedEventArgs(Stream stream) : EventArgs
+public class MediaCapturedEventArgs : EventArgs
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MediaCapturedEventArgs"/> class.
+	/// </summary>
+	/// <param name="stream">The <see cref="Stream"/> pointing to the newly captured media.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="stream"/> is <see langword="null"/>.</exception>
+	public MediaCapturedEventArgs(Stream stream)
+	{
+		ArgumentNullException.ThrowIfNull(stream);
+
+		Media = stream;
+	}
+
 	/// <summary>
 	/// Gets the <see cref="Stream"/> pointing to the newly captured media.
 	/// </summary>
-	public Stream Media { get; } = stream ?? throw new ArgumentNullException(nameof(stream));
+	public Stream Media { get; }
 }

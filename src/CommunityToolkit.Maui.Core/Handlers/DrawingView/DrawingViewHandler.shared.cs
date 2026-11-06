@@ -202,6 +202,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <inheritdoc />
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void ConnectHandler(MauiDrawingView platformView)
 	{
 		ArgumentNullException.ThrowIfNull(platformView);
@@ -220,6 +221,7 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingV
 	}
 
 	/// <inheritdoc />
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiDrawingView platformView)
 	{
 		ArgumentNullException.ThrowIfNull(platformView);

@@ -113,11 +113,10 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="lineColor">line color</param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> or <paramref name="lineColor"/> is null.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetLineColor(this MauiDrawingView mauiDrawingView, Color lineColor)
 	{
 		ArgumentNullException.ThrowIfNull(mauiDrawingView);
-		ArgumentNullException.ThrowIfNull(lineColor);
 
 		mauiDrawingView.LineColor = lineColor;
 	}
@@ -140,11 +139,10 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="background">background</param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> or <paramref name="background"/> is null.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetPaint(this MauiDrawingView mauiDrawingView, Paint background)
 	{
 		ArgumentNullException.ThrowIfNull(mauiDrawingView);
-		ArgumentNullException.ThrowIfNull(background);
 
 		mauiDrawingView.Paint = background;
 	}

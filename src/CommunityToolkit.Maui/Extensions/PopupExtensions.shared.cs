@@ -16,7 +16,7 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <remarks>
-	/// <para>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </para>
+	/// <para>This method returns before the popup is displayed and closed. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </para>
 	/// <para>When <paramref name="page"/> is on a modal page that is being removed from the <see cref="INavigation.ModalStack"/>, for example when this method is called in <see cref="Page.OnDisappearing"/> after <see cref="INavigation.PopModalAsync()"/>, the popup is displayed once the modal page has been removed, on the page below it.</para>
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
@@ -41,7 +41,7 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <remarks>
-	/// <para>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</para>
+	/// <para>This method returns before the popup is displayed and closed. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</para>
 	/// <para>.NET MAUI removes a modal page that is pushed while another modal page is being removed from the <see cref="INavigation.ModalStack"/>. To display a popup from <see cref="Page.OnDisappearing"/> of a modal page, use <see cref="ShowPopup(Page,View,CommunityToolkit.Maui.IPopupOptions?)"/>, which waits until the modal page has been removed.</para>
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="navigation"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
@@ -60,7 +60,7 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	/// <remarks>This method returns before the popup is displayed and closed. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="shell"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
 	public static void ShowPopup(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null)
 	{

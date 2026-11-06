@@ -227,17 +227,17 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/>, <paramref name="mediaElement"/> or <paramref name="args"/> is <see langword="null"/>. The method is <see langword="async"/> <see langword="void"/>, so the exception is raised on the <see cref="System.Threading.SynchronizationContext"/> of the caller, not thrown to it.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mediaElement"/> or <paramref name="args"/> is <see langword="null"/>. The method is <see langword="async"/> <see langword="void"/>, so the exception is raised on the <see cref="System.Threading.SynchronizationContext"/> of the caller, not thrown to it.</exception>
 	public static async void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		ArgumentNullException.ThrowIfNull(handler);
-		ArgumentNullException.ThrowIfNull(mediaElement);
 		ArgumentNullException.ThrowIfNull(args);
 
 		if (args is not MediaSeekRequestedEventArgs positionArgs)
 		{
 			return;
 		}
+
+		ArgumentNullException.ThrowIfNull(mediaElement);
 
 		// Captured before the await: a SeekTo whose token ends its wait cancels this task (so the later result or failure of this seek changes
 		// nothing) and replaces it for the next request

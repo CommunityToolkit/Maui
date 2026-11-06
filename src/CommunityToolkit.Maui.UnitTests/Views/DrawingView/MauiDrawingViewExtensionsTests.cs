@@ -104,16 +104,6 @@ public class MauiDrawingViewExtensionsTests : BaseTest
 	}
 
 	[Fact]
-	public void SetLineColor_NullLineColor_ThrowsArgumentNullException()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var exception = Assert.Throws<ArgumentNullException>(() => new MauiDrawingView().SetLineColor(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		Assert.Equal("lineColor", exception.ParamName);
-	}
-
-	[Fact]
 	public void SetLineWidth_NullMauiDrawingView_ThrowsArgumentNullException()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
@@ -131,16 +121,6 @@ public class MauiDrawingViewExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		Assert.Equal("mauiDrawingView", exception.ParamName);
-	}
-
-	[Fact]
-	public void SetPaint_NullBackground_ThrowsArgumentNullException()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var exception = Assert.Throws<ArgumentNullException>(() => new MauiDrawingView().SetPaint(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		Assert.Equal("background", exception.ParamName);
 	}
 
 	[Fact]

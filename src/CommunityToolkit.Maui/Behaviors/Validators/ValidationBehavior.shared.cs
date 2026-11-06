@@ -167,11 +167,8 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <param name="bindable"></param>
 	/// <param name="oldValue"></param>
 	/// <param name="newValue"></param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected static void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		ArgumentNullException.ThrowIfNull(bindable);
-
 		UpdateStateAfterValidationPropertyChanged(bindable);
 	}
 
