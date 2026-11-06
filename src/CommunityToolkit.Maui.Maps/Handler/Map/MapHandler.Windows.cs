@@ -352,8 +352,8 @@ public partial class MapHandlerWindows : MapHandler
 			
 							function setMapType(mauiMapType)
 							{
-								// Bing draws the labels of an aerial map unless they are hidden, so Satellite hides them and Hybrid does not.
-								// Every type sets the labels explicitly because setView keeps the label overlay of the previous view.
+								// Bing draws the labels of an aerial map unless they are hidden.
+								// setView keeps the label overlay of the previous view, even for a road map.
 								var mapTypeID = Microsoft.Maps.MapTypeId.road;
 								var labelOverlay = Microsoft.Maps.LabelOverlay.visible;
 								switch(mauiMapType) {
