@@ -42,7 +42,7 @@ and then install the packages as follows:
 ```bash
 dotnet add package CommunityToolkit.Maui --version 99.0.0-preview980
 dotnet add package CommunityToolkit.Maui.MediaElement --version 99.0.0-preview980
-dotnet add package CommunityToolkit.Maui.Maps --version 99.0.0-preview980
+dotnet add package CommunityToolkit.Maui.Maps --version 99.0.0-preview980 # Deprecated, see https://github.com/CommunityToolkit/Maui/issues/3190
 dotnet add package CommunityToolkit.Maui.Camera --version 99.0.0-preview980
 ```
 

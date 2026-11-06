@@ -1,6 +1,6 @@
 ﻿﻿.NET MAUI Community Toolkit
 
-DEPRECATED: CommunityToolkit.Maui.Maps will be removed in a future release because Bing Maps, which it uses on Windows, was retired. See https://github.com/CommunityToolkit/Maui/issues/3190
+DEPRECATED: CommunityToolkit.Maui.Maps will be removed in a future release. Microsoft is retiring Bing Maps for Enterprise, which it uses on Windows. Use the .NET MAUI Map (Microsoft.Maui.Controls.Maps), which supports Windows starting with .NET MAUI 10.0.70. See https://github.com/CommunityToolkit/Maui/issues/3190
 
 ## Initializing
 
