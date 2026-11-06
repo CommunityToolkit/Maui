@@ -542,6 +542,7 @@ public partial class DrawingViewServiceTests
 	}
 
 	// Windows used to keep the natural size. An infinite side of the desired size fits the image to the other side instead of being rejected.
+	// A height of 61: 61 / 28 * 28 is 60.99999999999999 in floating point, which Android truncated to a 104 x 60 image.
 	[Theory]
 	[InlineData(96, 200, 96, 56)]
 	[InlineData(24, 100, 24, 14)]
@@ -549,6 +550,7 @@ public partial class DrawingViewServiceTests
 	[InlineData(480, 280, 480, 280)]
 	[InlineData(double.PositiveInfinity, 14, 24, 14)]
 	[InlineData(24, double.PositiveInfinity, 24, 14)]
+	[InlineData(double.PositiveInfinity, 61, 105, 61)]
 	public async Task PointsAreScaledProportionallyToFitTheDesiredSize(double desiredWidth, double desiredHeight, int expectedWidth, int expectedHeight)
 	{
 		var options = new ImagePointOptions(ToPoints(lShape), new Size(desiredWidth, desiredHeight), 4, red, new SolidPaint(white), null);
@@ -560,10 +562,12 @@ public partial class DrawingViewServiceTests
 		DrawingPixelAssert.SizeIs(image, expectedWidth, expectedHeight);
 	}
 
+	// A width of 61: 61 / 56 * 56 is 60.99999999999999 in floating point, which Android truncated to a 60 x 39 image.
 	[Theory]
 	[InlineData(112, 200, 112, 72)]
 	[InlineData(28, 100, 28, 18)]
 	[InlineData(double.PositiveInfinity, 18, 28, 18)]
+	[InlineData(61, 100, 61, 39)]
 	public async Task LinesAreScaledProportionallyToFitTheDesiredSize(double desiredWidth, double desiredHeight, int expectedWidth, int expectedHeight)
 	{
 		var lines = new List<IDrawingLine> { CreateLine(red, 8, (10, 10), (50, 10)), CreateLine(blue, 8, (10, 30), (50, 30)) };

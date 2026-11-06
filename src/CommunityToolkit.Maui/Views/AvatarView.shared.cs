@@ -42,6 +42,7 @@ public partial class AvatarView : Border, IAvatarView
 	RoundRectangle? defaultStrokeShape;
 	bool wasImageLoading;
 	bool currentLoadSucceeded;
+	ImageSource? sourceAwaitingImageLayout;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AvatarView"/> class.
@@ -61,6 +62,7 @@ public partial class AvatarView : Border, IAvatarView
 		avatarImage.SourceLoadStarted += HandleImageSourceLoadStarted;
 		avatarImage.SourceLoaded += HandleImageSourceLoaded;
 		avatarImage.SourceFailedToLoad += HandleImageSourceFailedToLoad;
+		avatarImage.SizeChanged += HandleImageSizeChanged;
 	}
 
 	/// <summary>
@@ -112,6 +114,9 @@ public partial class AvatarView : Border, IAvatarView
 	/// <summary>
 	/// Gets or sets a value of the control corner radius property.
 	/// </summary>
+	/// <remarks>
+	/// A negative radius is drawn by the <see cref="RoundRectangle"/> geometry of .NET MAUI, which gives notched shapes. Use radii of 0 or more.
+	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
 	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
 
@@ -295,11 +300,12 @@ public partial class AvatarView : Border, IAvatarView
 
 	void HandleImageChanged(ImageSource? newValue)
 	{
+		sourceAwaitingImageLayout = null;
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
 			// An empty source gets the image too: an image that was never the Content has no handler to load the source when it stops being empty
-			// (the Email of a GravatarImageSource, for example), and the text replaces the image once the load is reported.
+			// (the Email of a GravatarImageSource, for example), and the text replaces the image once the load is reported and the image is laid out.
 			RefreshAvatarImage();
 			Content = avatarImage;
 		}
@@ -309,7 +315,11 @@ public partial class AvatarView : Border, IAvatarView
 		}
 	}
 
-	void HandleImageSourceLoadStarted(object? sender, EventArgs e) => currentLoadSucceeded = false;
+	void HandleImageSourceLoadStarted(object? sender, EventArgs e)
+	{
+		currentLoadSucceeded = false;
+		sourceAwaitingImageLayout = null;
+	}
 
 	// A failed load can be followed by a successful one without ImageSource being set again: the source itself can change, a UriImageSource's Uri for example.
 	void HandleImageSourceLoaded(object? sender, EventArgs e)
@@ -326,7 +336,7 @@ public partial class AvatarView : Border, IAvatarView
 			// iOS, Mac Catalyst and Windows report the load of an empty source as a success, and Android as a failure: the text shows on all of them.
 			if (loadedSource is null || loadedSource.IsEmpty)
 			{
-				Content = avatarLabel;
+				ShowTextOnceImageIsLaidOut(loadedSource);
 			}
 			else if (ReferenceEquals(Content, avatarLabel))
 			{
@@ -357,8 +367,44 @@ public partial class AvatarView : Border, IAvatarView
 			}
 			else
 			{
-				Content = avatarLabel;
+				ShowTextOnceImageIsLaidOut(failedSource);
 			}
+		});
+	}
+
+	// A source can depend on the size of its image: a GravatarImageSource requests its picture only once its Image has a size. An image that
+	// leaves the tree before its first layout never gets one, so a source that fails or is empty at once (offline, or without an Email) would
+	// never load again, whatever changes later. The image stays the Content until it is laid out, and the text replaces it then.
+	void ShowTextOnceImageIsLaidOut(ImageSource? source)
+	{
+		if (avatarImage.Width < 0 || avatarImage.Height < 0)
+		{
+			sourceAwaitingImageLayout = source;
+			return;
+		}
+
+		Content = avatarLabel;
+	}
+
+	void HandleImageSizeChanged(object? sender, EventArgs e)
+	{
+		var awaitingSource = sourceAwaitingImageLayout;
+		if (awaitingSource is null || avatarImage.Width < 0 || avatarImage.Height < 0)
+		{
+			return;
+		}
+
+		// Checked again when the change runs: a load that starts or a source that is set in between clears sourceAwaitingImageLayout, and the text
+		// must not hide the picture of that newer load.
+		PostContentChange(() =>
+		{
+			if (!ReferenceEquals(sourceAwaitingImageLayout, awaitingSource) || !ReferenceEquals(avatarImage.Source, awaitingSource) || !ReferenceEquals(Content, avatarImage))
+			{
+				return;
+			}
+
+			sourceAwaitingImageLayout = null;
+			Content = avatarLabel;
 		});
 	}
 

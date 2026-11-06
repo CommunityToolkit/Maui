@@ -158,20 +158,24 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 	static void AssertTapsInTheMarginAreOutsideOfThePopup(PopupPage popupPage, Rect layoutArea, double margin)
 	{
 		var popupBorder = popupPage.Content.PopupBorder;
+
+		foreach (var point in GetPointsInTheMargin(layoutArea, margin))
+		{
+			Assert.False(popupBorder.Bounds.Contains(point), $"A tap at {point} in the margin should be outside of the popup's Border at {popupBorder.Bounds}.");
+		}
+	}
+
+	static Point[] GetPointsInTheMargin(Rect layoutArea, double margin)
+	{
 		var center = layoutArea.Center;
 
-		Point[] pointsInTheMargin =
+		return
 		[
 			new(layoutArea.Left + margin / 2, center.Y),
 			new(layoutArea.Right - margin / 2, center.Y),
 			new(center.X, layoutArea.Top + margin / 2),
 			new(center.X, layoutArea.Bottom - margin / 2)
 		];
-
-		foreach (var point in pointsInTheMargin)
-		{
-			Assert.False(popupBorder.Bounds.Contains(point), $"A tap at {point} in the margin should be outside of the popup's Border at {popupBorder.Bounds}.");
-		}
 	}
 
 	static bool IsClose(Rect actual, Rect expected) =>

@@ -14,6 +14,12 @@ public class AvatarViewImageTests : BaseViewTest
 		Assert.IsType<IAvatarView>(new Maui.Views.AvatarView(), exactMatch: false);
 	}
 
+	public enum FirstLoadEnd
+	{
+		Fails,
+		Empty,
+	}
+
 	public enum EmptyImageSourceKind
 	{
 		File,
@@ -229,6 +235,7 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 
 		ReportLoadFailure(image);
 
@@ -240,6 +247,7 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 
 		ReportLoadSuccess(image);
 
@@ -251,7 +259,9 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		ReportLoadFailure(image);
+		avatarView.Content.Should().BeOfType<Label>();
 
 		ReportLoadSuccess(image);
 
@@ -263,7 +273,9 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		ReportLoadFailure(image);
+		avatarView.Content.Should().BeOfType<Label>();
 		var otherSource = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
 
 		avatarView.ImageSource = otherSource;
@@ -278,6 +290,7 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 
 		((IImageSourcePartEvents)image).LoadingStarted();
 		((IImageSourcePartEvents)image).LoadingCompleted(false);
@@ -308,6 +321,7 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = new Maui.Views.AvatarView { Text = "GL", ImageSource = CreateEmptyImageSource(kind) };
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 
 		ReportLoadSuccess(image);
 
@@ -320,6 +334,7 @@ public class AvatarViewImageTests : BaseViewTest
 		var source = new UriImageSource();
 		var avatarView = new Maui.Views.AvatarView { Text = "GL", ImageSource = source };
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		ReportLoadSuccess(image);
 		avatarView.Content.Should().BeOfType<Label>();
 		source.Uri = new Uri("https://aka.ms/campus.jpg");
@@ -335,6 +350,7 @@ public class AvatarViewImageTests : BaseViewTest
 		var source = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
 		var avatarView = new Maui.Views.AvatarView { Text = "GL", ImageSource = source };
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		ReportLoadSuccess(image);
 		avatarView.Content.Should().BeSameAs(image);
 		source.ClearValue(UriImageSource.UriProperty);
@@ -349,6 +365,7 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		ReportLoadSuccess(image);
 
 		ReportLoadFailure(image);
@@ -382,6 +399,7 @@ public class AvatarViewImageTests : BaseViewTest
 	{
 		var avatarView = CreateAvatarViewWithAnImageSource();
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		var loadEvents = (IImageSourcePartEvents)image;
 		loadEvents.LoadingStarted();
 		avatarView.ImageSource = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
@@ -394,6 +412,60 @@ public class AvatarViewImageTests : BaseViewTest
 		avatarView.Content.Should().BeSameAs(image);
 	}
 
+	// A GravatarImageSource requests its picture only once its Image has a size, and an image that the text replaced before its first layout never
+	// gets one: the text waits for the layout, and a later load or source cancels it.
+	[Theory]
+	[InlineData(FirstLoadEnd.Fails)]
+	[InlineData(FirstLoadEnd.Empty)]
+	public void TextReplacesTheImageOnlyOnceTheImageIsLaidOut(FirstLoadEnd firstLoadEnd)
+	{
+		var avatarView = firstLoadEnd is FirstLoadEnd.Fails
+			? CreateAvatarViewWithAnImageSource()
+			: new Maui.Views.AvatarView { Text = "GL", ImageSource = new UriImageSource() };
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+
+		if (firstLoadEnd is FirstLoadEnd.Fails)
+		{
+			ReportLoadFailure(image);
+		}
+		else
+		{
+			ReportLoadSuccess(image);
+		}
+
+		avatarView.Content.Should().BeSameAs(image);
+
+		LayOut(image);
+
+		avatarView.Content.Should().BeOfType<Label>();
+	}
+
+	[Fact]
+	public void ImageStaysWhenALoadStartsBeforeTheImageIsLaidOut()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadFailure(image);
+		((IImageSourcePartEvents)image).LoadingStarted();
+
+		LayOut(image);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
+	[Fact]
+	public void ImageStaysWhenTheImageSourceIsReplacedBeforeTheImageIsLaidOut()
+	{
+		var avatarView = CreateAvatarViewWithAnImageSource();
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		ReportLoadFailure(image);
+		avatarView.ImageSource = new UriImageSource { Uri = new Uri("https://aka.ms/campus.jpg") };
+
+		LayOut(image);
+
+		avatarView.Content.Should().BeSameAs(image);
+	}
+
 	// After a failed load the text replaces the image, which leaves the tree, where an Element loses the BindingContext it inherits: the bindings
 	// of the image source keep working, so a source that a binding changes (the Email of a GravatarImageSource, for example) loads and shows the image.
 	[Fact]
@@ -402,7 +474,9 @@ public class AvatarViewImageTests : BaseViewTest
 		var viewModel = new AvatarViewModel { Uri = new Uri("https://example.invalid/avatar.png") };
 		var avatarView = CreateAvatarViewWithABoundImageSource(viewModel, out var source);
 		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
 		ReportLoadFailure(image);
+		avatarView.Content.Should().BeOfType<Label>();
 
 		viewModel.Uri = new Uri("https://aka.ms/campus.jpg");
 
@@ -416,7 +490,10 @@ public class AvatarViewImageTests : BaseViewTest
 	public void ImageSourceTakesANewBindingContextWhileTheTextIsShown()
 	{
 		var avatarView = CreateAvatarViewWithABoundImageSource(new AvatarViewModel { Uri = new Uri("https://example.invalid/avatar.png") }, out var source);
-		ReportLoadFailure(avatarView.Content.Should().BeAssignableTo<Image>().Subject);
+		var image = avatarView.Content.Should().BeAssignableTo<Image>().Subject;
+		LayOut(image);
+		ReportLoadFailure(image);
+		avatarView.Content.Should().BeOfType<Label>();
 		var otherViewModel = new AvatarViewModel { Uri = new Uri("https://aka.ms/campus.jpg") };
 
 		avatarView.BindingContext = otherViewModel;
@@ -455,6 +532,14 @@ public class AvatarViewImageTests : BaseViewTest
 			Uri = new Uri("https://example.invalid/avatar.png"),
 		},
 	};
+
+	// The text replaces a failed or empty image only once the image is laid out (a GravatarImageSource requests its picture only once its Image has a
+	// size), and nothing lays out a view in a unit test.
+	static void LayOut(Image image)
+	{
+		((IView)image).Arrange(new Rect(0, 0, 48, 48));
+		image.Width.Should().BeGreaterThanOrEqualTo(0);
+	}
 
 	// The image handler reports how a load of the image source ended through IImageSourcePartEvents, so the tests report it the same way.
 	static void ReportLoadFailure(Image image)

@@ -103,7 +103,7 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		{
 			var log = await page.WaitForLogAsync(entries => Entries(entries, "push").Count >= 2, "The two pins never reached the page.");
 
-			Assert.Contains(Entries(log, "setView"), entry => entry.GetProperty("view").TryGetProperty("mapTypeId", out var type) && type.GetString() == "aerial");
+			Assert.Contains(Entries(log, "setView"), entry => GetViewOption(entry, "mapTypeId") == "aerial" && GetViewOption(entry, "labelOverlay") == "visible");
 			Assert.Contains(Entries(log, "setView"), entry => HasBoundsCenter(entry, 47.5, -122.25));
 			Assert.Contains(Entries(log, "setOptions"), entry => entry.GetProperty("options").TryGetProperty("disableZooming", out var disabled) && disabled.GetBoolean());
 			Assert.Contains(Entries(log, "setOptions"), entry => entry.GetProperty("options").TryGetProperty("disablePanning", out var disabled) && disabled.GetBoolean());
@@ -120,16 +120,31 @@ public class MapHandlerWindowsPageTests : MapTestBase
 		});
 	}
 
-	[Theory]
-	[InlineData(MapType.Street, "road")]
-	[InlineData(MapType.Satellite, "aerial")]
-	[InlineData(MapType.Hybrid, "aerial")]
-	[InlineData((MapType)99, "road")]
-	public async Task MapTypeChangeIsSentToThePageAsARoadOrAerialMap(MapType mapType, string expectedPageType)
+	[Fact]
+	public async Task SatelliteMapHidesTheLabelsWhenThePageLoads()
 	{
 		SetupMapBuilder();
-		// Starts with a type whose page type differs from the expected one, so that the change is a real change.
-		var map = new Map { MapType = expectedPageType == "road" ? MapType.Satellite : MapType.Street };
+		var map = new Map { MapType = MapType.Satellite };
+
+		await WithMapPageAsync(map, async (_, page) =>
+		{
+			var log = await page.WaitForLogAsync(entries => Entries(entries, "setView").Any(entry => GetViewOption(entry, "mapTypeId") is not null), "The map type never reached the page.");
+
+			Assert.Contains(Entries(log, "setView"), entry => GetViewOption(entry, "mapTypeId") == "aerial" && GetViewOption(entry, "labelOverlay") == "hidden");
+		});
+	}
+
+	[Theory]
+	[InlineData(MapType.Street, "road", "visible")]
+	[InlineData(MapType.Satellite, "aerial", "hidden")]
+	[InlineData(MapType.Hybrid, "aerial", "visible")]
+	[InlineData((MapType)99, "road", "visible")]
+	public async Task MapTypeChangeIsSentToThePageAsARoadOrAerialMap(MapType mapType, string expectedPageType, string expectedLabelOverlay)
+	{
+		SetupMapBuilder();
+		// Satellite and Hybrid differ only in their labels, so each case starts from the type with the other labels: the change is a real change,
+		// and leaving Satellite has to show the labels again.
+		var map = new Map { MapType = mapType is MapType.Satellite ? MapType.Hybrid : MapType.Satellite };
 
 		await WithMapPageAsync(map, async (handler, page) =>
 		{
@@ -139,7 +154,9 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			map.MapType = mapType;
 
 			var log = await page.WaitForLogAsync(entries => Entries(entries, "setView").Count == 1, $"MapType {mapType} never reached the page.");
-			Assert.Equal(expectedPageType, Entries(log, "setView")[0].GetProperty("view").GetProperty("mapTypeId").GetString());
+			var setView = Entries(log, "setView")[0];
+			Assert.Equal(expectedPageType, GetViewOption(setView, "mapTypeId"));
+			Assert.Equal(expectedLabelOverlay, GetViewOption(setView, "labelOverlay"));
 			Assert.True(await ScriptRanAsync(MapHandlerWindows.MapMapType(handler, map)));
 		});
 	}
@@ -722,6 +739,9 @@ public class MapHandlerWindowsPageTests : MapTestBase
 			return null;
 		}
 	}
+
+	static string? GetViewOption(JsonElement setView, string option) =>
+		setView.GetProperty("view").TryGetProperty(option, out var value) ? value.GetString() : null;
 
 	static bool HasBoundsCenter(JsonElement setView, double latitude, double longitude) =>
 		setView.GetProperty("view").TryGetProperty("bounds", out var bounds)

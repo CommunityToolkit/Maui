@@ -164,8 +164,10 @@ public static partial class DrawingViewService
 		var sourceSize = sourceImage.Size;
 		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
 
-		var width = Math.Max(maxResizeFactor * sourceSize.Width.Value, 1);
-		var height = Math.Max(maxResizeFactor * sourceSize.Height.Value, 1);
+		// In floating point the factor times a side can be a hair off a whole number (1920 / 411 * 411 = 1919.9999999999998): the size is rounded to whole
+		// pixels here, half away from zero as Win2D rounds it on Windows, so the image has exactly the desired size on every platform.
+		var width = Math.Round(Math.Max(maxResizeFactor * sourceSize.Width.Value, 1), MidpointRounding.AwayFromZero);
+		var height = Math.Round(Math.Max(maxResizeFactor * sourceSize.Height.Value, 1), MidpointRounding.AwayFromZero);
 
 		UIGraphics.BeginImageContext(new CGSize(width, height));
 		sourceImage.Draw(new CGRect(0, 0, width, height));

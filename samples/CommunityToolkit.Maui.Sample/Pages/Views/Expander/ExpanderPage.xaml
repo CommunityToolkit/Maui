@@ -39,10 +39,10 @@
                 <mct:Expander.Content>
                     <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
-                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
+                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold" TextColor="Black"/>
                         </mct:Expander.Header>
                         <mct:Expander.Content>
-                            <Label Text="Item 1" />
+                            <Label Text="Item 1" TextColor="Black" />
                         </mct:Expander.Content>
                     </mct:Expander>
                 </mct:Expander.Content>

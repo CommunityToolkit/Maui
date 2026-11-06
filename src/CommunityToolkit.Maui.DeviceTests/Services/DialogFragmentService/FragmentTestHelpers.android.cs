@@ -33,8 +33,64 @@ public class ProbeDialogFragment : ADialogFragment
 
 	public Func<Context, ADialog>? DialogFactory { get; set; }
 
+	public AWindow DialogWindow => Dialog?.Window ?? throw new InvalidOperationException("The dialog fragment has no dialog window yet.");
+
 	public override ADialog OnCreateDialog(Bundle? savedInstanceState) =>
 		DialogFactory?.Invoke(RequireContext()) ?? new AppCompatDialog(RequireContext());
+}
+
+// .NET MAUI shows a modal page in a full screen dialog of its own theme. The floating window of an AppCompatDialog does not reach the status bar, so
+// it cannot show where a page ends up relative to it. The content fits the system windows, as a page with safe area edges keeps clear of the system bars.
+public sealed class ModalPageFragment : ADialogFragment
+{
+	AView? pageTop;
+
+	public AWindow DialogWindow => Dialog?.Window ?? throw new InvalidOperationException("The modal page has no dialog window yet.");
+
+	public bool IsPageLaidOut => pageTop is AView top && top.IsLaidOut && top.Height > 0;
+
+	public int PageTopInset => View?.PaddingTop ?? throw new InvalidOperationException("The modal page has no content view yet.");
+
+	public int PageTopOnScreen
+	{
+		get
+		{
+			var top = pageTop ?? throw new InvalidOperationException("The modal page has no content view yet.");
+			var location = new int[2];
+			top.GetLocationOnScreen(location);
+
+			return location[1];
+		}
+	}
+
+	public override void OnCreate(Bundle? savedInstanceState)
+	{
+		base.OnCreate(savedInstanceState);
+
+		var context = RequireContext();
+		var themeId = context.Resources?.GetIdentifier("Maui.MainTheme.NoActionBar", "style", context.PackageName);
+		SetStyle(StyleNormal, themeId > 0 ? themeId.Value : throw new InvalidOperationException("The app has no Maui.MainTheme.NoActionBar style: .NET MAUI changed the theme of the dialog of a modal page."));
+	}
+
+	public override ADialog OnCreateDialog(Bundle? savedInstanceState) => new AppCompatDialog(RequireContext(), Theme);
+
+	public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
+	{
+		var context = RequireContext();
+		var page = new Android.Widget.FrameLayout(context);
+		page.SetFitsSystemWindows(true);
+		pageTop = new AView(context);
+		pageTop.SetBackgroundColor(AColor.Red);
+		page.AddView(pageTop, new Android.Widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 100));
+
+		return page;
+	}
+
+	public override void OnStart()
+	{
+		base.OnStart();
+		Dialog?.Window?.SetLayout(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent);
+	}
 }
 
 // The overridden Window is what managed code reads: the framework (Java) still has its real window.
@@ -355,6 +411,9 @@ public sealed class SpyWindow : AWindow
 
 	public IWindowInsetsController? ReportedInsetsController { get; set; }
 
+	// WindowCompat.SetDecorFitsSystemWindows sets system UI flags on the decor view before Android 15.
+	public AView? ReportedDecorView { get; set; }
+
 	public IReadOnlyList<int> StatusBarColorCalls => Snapshot(statusBarColorCalls);
 
 	public IReadOnlyList<bool> DecorFitsSystemWindowsCalls => Snapshot(decorFitsSystemWindowsCalls);
@@ -403,7 +462,7 @@ public sealed class SpyWindow : AWindow
 
 	public override AView? CurrentFocus => throw new NotSupportedException();
 
-	public override AView DecorView => throw new NotSupportedException();
+	public override AView DecorView => ReportedDecorView ?? throw new NotSupportedException();
 
 	public override bool IsFloating => throw new NotSupportedException();
 

@@ -53,7 +53,7 @@
                             </LinearGradientBrush>
                         </Setter>
                         <Setter Property="FontSize" Value="14" />
-                        <Setter Property="TextColor" Value="Silver" />
+                        <Setter Property="TextColor" Value="Black" />
                     </Style>
                 </ResourceDictionary>
             </VerticalStackLayout.Resources>

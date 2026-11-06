@@ -76,4 +76,9 @@ public partial class Expander
 			}
 		}
 	}
+
+	partial void UpdateHeaderAccessibility()
+	{
+		(ContentGrid.Handler?.PlatformView as ExpanderLayoutPanel)?.UpdateHeaderAccessibility();
+	}
 }

@@ -2,7 +2,9 @@
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Platform;
 using CommunityToolkit.Maui.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using AColor = Android.Graphics.Color;
@@ -225,60 +227,13 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		}));
 	}
 
-	[Fact]
-	public async Task StartedDrawsTheSystemBarBackgroundForAnOpaqueStatusBarOnAndroid10AndOlder()
-	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(30), "Window flags are only used below Android 11 (API 30).");
-		var service = new DialogFragmentService();
-
-		await WithActivityStatusBarAsync(distinctOpaqueColor, () => WithShownDialogFragmentAsync((activity, fragment) =>
-		{
-			var dialogWindow = fragment.Dialog!.Window!;
-			dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-			dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-			var before = Capture(dialogWindow);
-			Assert.False(before.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds));
-			Assert.True(before.HasFlag(WindowManagerFlags.LayoutNoLimits));
-
-			service.OnFragmentStarted(activity.SupportFragmentManager, fragment);
-
-			var after = Capture(dialogWindow);
-			Assert.Equal(distinctOpaqueColor, after.StatusBarColor);
-			Assert.True(after.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds));
-			Assert.False(after.HasFlag(WindowManagerFlags.LayoutNoLimits));
-			return Task.CompletedTask;
-		}));
-	}
-
-	[Fact]
-	public async Task StartedLaysOutBehindATransparentStatusBarOnAndroid10AndOlder()
-	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(30), "Window flags are only used below Android 11 (API 30).");
-		var service = new DialogFragmentService();
-
-		await WithActivityStatusBarAsync(transparentColor, () => WithShownDialogFragmentAsync((activity, fragment) =>
-		{
-			var dialogWindow = fragment.Dialog!.Window!;
-			dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			var before = Capture(dialogWindow);
-			Assert.True(before.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds));
-			Assert.False(before.HasFlag(WindowManagerFlags.LayoutNoLimits));
-
-			service.OnFragmentStarted(activity.SupportFragmentManager, fragment);
-
-			var after = Capture(dialogWindow);
-			Assert.Equal(transparentColor, after.StatusBarColor);
-			Assert.False(after.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds));
-			Assert.True(after.HasFlag(WindowManagerFlags.LayoutNoLimits));
-			return Task.CompletedTask;
-		}));
-	}
-
 	[Theory]
+	[InlineData(0xFF336699u)]
+	[InlineData(0x80336699u)]
+	[InlineData(0x00000000u)]
 	[InlineData(0x00FF0000u)]
 	[InlineData(0x00FFFFFFu)]
-	public async Task StartedLaysOutBehindAFullyTransparentStatusBarOfAnotherHueOnAndroid10AndOlder(uint argb)
+	public async Task StartedLaysTheDialogOutLikeThePageWindowForEveryStatusBarColorOnAndroid10AndOlder(uint argb)
 	{
 		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(30), "Window flags are only used below Android 11 (API 30).");
 		var service = new DialogFragmentService();
@@ -286,18 +241,80 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 		await WithActivityStatusBarAsync(activityColor, () => WithShownDialogFragmentAsync((activity, fragment) =>
 		{
-			var dialogWindow = fragment.Dialog!.Window!;
-			dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+			// The dialog starts with the layout a transparent status bar used to give it, so that each of the flags is seen changing.
+			var dialogWindow = fragment.DialogWindow;
+			dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+			dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+			var before = Capture(dialogWindow);
+			Assert.False(before.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds));
+			Assert.True(before.HasFlag(WindowManagerFlags.LayoutNoLimits));
+			Assert.Equal(0, AndroidSystemBars.SystemUiVisibility(dialogWindow) & AndroidSystemBars.LayoutSystemUiFlags);
 
 			service.OnFragmentStarted(activity.SupportFragmentManager, fragment);
 
 			var after = Capture(dialogWindow);
 			Assert.Equal(activityColor, after.StatusBarColor);
-			Assert.False(after.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds), "The dialog keeps drawing the system bar background behind a status bar color without alpha, which is as transparent as 0x00000000.");
-			Assert.True(after.HasFlag(WindowManagerFlags.LayoutNoLimits), "The dialog does not lay out behind a status bar color without alpha, which is as transparent as 0x00000000.");
+			Assert.True(after.HasFlag(WindowManagerFlags.DrawsSystemBarBackgrounds));
+			Assert.False(after.HasFlag(WindowManagerFlags.LayoutNoLimits));
+			Assert.Equal(AndroidSystemBars.LayoutSystemUiFlags, AndroidSystemBars.SystemUiVisibility(dialogWindow) & AndroidSystemBars.LayoutSystemUiFlags);
 			return Task.CompletedTask;
 		}));
+	}
+
+	// A page keeps clear of the status bar with the window insets that it receives, and the dialog used to keep them from it: laid out without
+	// limits for a transparent status bar on Android 10 and older (#2351), or with a decor view that fit the system windows for the other colors.
+	[Theory]
+	[InlineData(0xFF336699u)]
+	[InlineData(0x80336699u)]
+	[InlineData(0x00000000u)]
+	[InlineData(0x00FF0000u)]
+	[InlineData(0x00FFFFFFu)]
+	public async Task ModalPageLaysOutBelowTheStatusBarLikeThePageWindowForEveryStatusBarColor(uint argb)
+	{
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(23), "StatusBar does nothing before Android 6 (API 23), so the page's window has no layout to compare with.");
+		var color = Color.FromUint(argb);
+		var lifecycleCallbacks = new FragmentLifecycleManager(new DialogFragmentService());
+		var modalPage = new ModalPageFragment();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var fragmentManager = HostActivity.SupportFragmentManager;
+			var pageWindow = HostActivity.Window ?? throw new InvalidOperationException("The runner's activity has no window.");
+			AndroidSystemBars.CaptureOriginalState(pageWindow);
+			await AndroidSystemBars.FlushPostedActions(pageWindow);
+			AndroidSystemBars.Reset(pageWindow);
+
+			try
+			{
+				StatusBar.SetColor(color);
+				await AndroidSystemBars.FlushPostedActions(pageWindow);
+				var pageWindowLayout = ReadSystemBarLayout(pageWindow);
+				Assert.True(pageWindowLayout.StatusBarInset > 0, "The runner's window reports no status bar, so a page below it cannot be told apart from a page behind it.");
+
+				fragmentManager.RegisterFragmentLifecycleCallbacks(lifecycleCallbacks, false);
+				try
+				{
+					modalPage.ShowNow(fragmentManager, $"test-modal-page-{Guid.NewGuid():N}");
+					await AssertHelpers.AssertEventually(() => modalPage.IsPageLaidOut, timeout: 10000, interval: 50, message: "The modal page was never laid out.");
+
+					Assert.Equal(pageWindowLayout.StatusBarInset, modalPage.PageTopInset);
+					Assert.Equal(pageWindowLayout.StatusBarInset, modalPage.PageTopOnScreen);
+					Assert.Equal(pageWindowLayout, ReadSystemBarLayout(modalPage.DialogWindow));
+				}
+				finally
+				{
+					fragmentManager.UnregisterFragmentLifecycleCallbacks(lifecycleCallbacks);
+					if (modalPage.IsAdded)
+					{
+						modalPage.DismissNow();
+					}
+				}
+			}
+			finally
+			{
+				AndroidSystemBars.Reset(pageWindow);
+			}
+		});
 	}
 
 	[Fact]
@@ -413,7 +430,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	[Theory]
 	[InlineData(0x00FF0000u)]
 	[InlineData(0x00FFFFFFu)]
-	public async Task StartedTreatsAStatusBarColorWithoutAlphaAsTransparentOnAndroid11AndNewer(uint argb)
+	public async Task StartedTreatsAStatusBarColorWithoutAlphaLikeAnyOtherColorOnAndroid11AndNewer(uint argb)
 	{
 		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(30), "WindowInsetsController needs Android 11 (API 30).");
 		var service = new DialogFragmentService();
@@ -424,7 +441,8 @@ public class DialogFragmentServiceTests : FragmentTestBase
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
 			Assert.Equal([activityColor], scenario.DialogWindow.StatusBarColorCalls);
-			Assert.Equal((0, lightStatusBarsBit), Assert.Single(scenario.DialogController!.AppearanceCalls));
+			Assert.NotNull(scenario.DialogController);
+			Assert.Equal((lightStatusBarsBit, lightStatusBarsBit), Assert.Single(scenario.DialogController.AppearanceCalls));
 			Assert.Equal([false], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
 			return Task.CompletedTask;
 		});
@@ -433,6 +451,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	[Theory]
 	[InlineData(0xFF336699u)]
 	[InlineData(0x80336699u)]
+	[InlineData(0x00FF0000u)]
 	[InlineData(0u)]
 	public async Task StartedSetsTheStatusBarColorOfTheActivityOnTheDialogWindow(uint argb)
 	{
@@ -451,37 +470,42 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		});
 	}
 
-	// Android 15 and newer go through WindowCompat.SetDecorFitsSystemWindows, Android 11-14 call Window.SetDecorFitsSystemWindows themselves.
-	// Both end in Window.SetDecorFitsSystemWindows of the dialog window, which is what the spy window records, so the two tests share
-	// their body and only the OS version that can run them differs.
+	// From Android 11 on, WindowCompat.SetDecorFitsSystemWindows ends in Window.SetDecorFitsSystemWindows of the dialog window, which is what the
+	// spy window records. Below Android 15 it also sets the stable layout flag on the decor view, so Android 11-14 have a test of their own, which
+	// the API 28 and API 36 device-test emulators report as skipped.
 	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public async Task StartedSetsDecorFitsSystemWindowsOnlyForAStatusBarThatIsNotTransparentOnAndroid15AndNewer(bool transparent)
+	[InlineData(0xFF336699u)]
+	[InlineData(0x80336699u)]
+	[InlineData(0x00000000u)]
+	[InlineData(0x00FF0000u)]
+	public async Task StartedKeepsTheDecorFromFittingTheSystemWindowsForEveryStatusBarColorOnAndroid15AndNewer(uint argb)
 	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35), "The WindowCompat arm of the service is used on Android 15 (API 35) and newer.");
-		await AssertDecorFitsSystemWindowsAsync(transparent);
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35), "WindowCompat only calls Window.SetDecorFitsSystemWindows from Android 15 (API 35) on.");
+		await AssertDecorDoesNotFitSystemWindowsAsync(unchecked((int)argb));
 	}
 
 	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public async Task StartedSetsDecorFitsSystemWindowsOnlyForAStatusBarThatIsNotTransparentOnAndroid11To14(bool transparent)
+	[InlineData(0xFF336699u)]
+	[InlineData(0x80336699u)]
+	[InlineData(0x00000000u)]
+	[InlineData(0x00FF0000u)]
+	public async Task StartedKeepsTheDecorFromFittingTheSystemWindowsForEveryStatusBarColorOnAndroid11To14(uint argb)
 	{
 		Skip.IfNot(
 			OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(35),
-			"The Window.SetDecorFitsSystemWindows arm of the service is only used on Android 11-14 (API 30-34). The device-test emulators are API 28 and API 36, so this arm needs an API 30-34 device or emulator.");
-		await AssertDecorFitsSystemWindowsAsync(transparent);
+			"Only on Android 11-14 (API 30-34) does WindowCompat set the stable layout flag on the decor view next to calling Window.SetDecorFitsSystemWindows. The device-test emulators are API 28 and API 36, so this test needs an API 30-34 device or emulator.");
+		await AssertDecorDoesNotFitSystemWindowsAsync(unchecked((int)argb));
 	}
 
 	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public async Task StartedWritesOnlyTheLegacyColorAndFlagsToTheDialogWindowOnAndroid10AndOlder(bool transparent)
+	[InlineData(0xFF336699u)]
+	[InlineData(0x00000000u)]
+	[InlineData(0x00FF0000u)]
+	public async Task StartedWritesOnlyTheLegacyColorAndLayoutToTheDialogWindowOnAndroid10AndOlder(uint argb)
 	{
 		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(30), "Window flags are only used below Android 11 (API 30).");
 		var service = new DialogFragmentService();
-		var activityColor = transparent ? transparentColor : distinctOpaqueColor;
+		var activityColor = unchecked((int)argb);
 
 		await WithSpyScenarioAsync(activityColor, activityAppearance: null, dialogHasInsetsController: false, scenario =>
 		{
@@ -489,18 +513,12 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 			var dialogWindow = scenario.DialogWindow;
 			Assert.Equal([activityColor], dialogWindow.StatusBarColorCalls);
-			Assert.Empty(dialogWindow.DecorFitsSystemWindowsCalls);
-			if (transparent)
-			{
-				Assert.Equal([WindowManagerFlags.DrawsSystemBarBackgrounds], dialogWindow.ClearFlagsCalls);
-				Assert.Equal([(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits)], dialogWindow.SetFlagsCalls);
-			}
-			else
-			{
-				Assert.Equal([WindowManagerFlags.LayoutNoLimits], dialogWindow.ClearFlagsCalls);
-				Assert.Equal([(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds)], dialogWindow.SetFlagsCalls);
-			}
+			Assert.Equal([WindowManagerFlags.LayoutNoLimits], dialogWindow.ClearFlagsCalls);
+			Assert.Equal([(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds)], dialogWindow.SetFlagsCalls);
 
+			// Window.SetDecorFitsSystemWindows needs Android 11: WindowCompat lays the decor view out behind the system bars with system UI flags instead.
+			Assert.Empty(dialogWindow.DecorFitsSystemWindowsCalls);
+			Assert.Equal(AndroidSystemBars.LayoutSystemUiFlags, AndroidSystemBars.SystemUiVisibility(dialogWindow) & AndroidSystemBars.LayoutSystemUiFlags);
 			return Task.CompletedTask;
 		});
 	}
@@ -561,6 +579,8 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		await AssertionExtensions.WaitForGC(serviceReference, dialogFragmentReference, activityReference, hostReference);
 	}
 
+	readonly record struct SystemBarLayout(bool LayoutNoLimits, bool DrawsSystemBarBackgrounds, int SystemUiLayoutFlags, int StatusBarInset);
+
 	sealed record SpyScenario(SpyActivity Activity, SpyWindow ActivityWindow, SpyInsetsController? ActivityController, ProbeDialogFragment Fragment, SpyWindow DialogWindow, SpyInsetsController? DialogController);
 
 	static Task WithSpyScenarioAsync(int activityStatusBarColor, int? activityAppearance, bool dialogHasInsetsController, Func<SpyScenario, Task> body, int dialogAppearance = 0) =>
@@ -570,7 +590,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 			var activityController = activityAppearance is int appearance ? new SpyInsetsController { ReportedAppearance = appearance } : null;
 			var dialogController = dialogHasInsetsController ? new SpyInsetsController { ReportedAppearance = dialogAppearance } : null;
 			var activityWindow = new SpyWindow(host) { ReportedStatusBarColor = activityStatusBarColor, ReportedInsetsController = activityController };
-			var dialogWindow = new SpyWindow(host) { ReportedInsetsController = dialogController };
+			var dialogWindow = new SpyWindow(host) { ReportedInsetsController = dialogController, ReportedDecorView = new Android.Widget.FrameLayout(host) };
 			var spyActivity = new SpyActivity { SpyWindow = activityWindow };
 			var fragment = new ProbeDialogFragment { DialogFactory = context => new SpyDialog(context) };
 
@@ -596,16 +616,26 @@ public class DialogFragmentServiceTests : FragmentTestBase
 			}
 		});
 
-	static async Task AssertDecorFitsSystemWindowsAsync(bool transparent)
+	static SystemBarLayout ReadSystemBarLayout(AWindow window) => new(
+		AndroidSystemBars.HasFlag(window, WindowManagerFlags.LayoutNoLimits),
+		AndroidSystemBars.HasFlag(window, WindowManagerFlags.DrawsSystemBarBackgrounds),
+		AndroidSystemBars.SystemUiVisibility(window) & AndroidSystemBars.LayoutSystemUiFlags,
+		ViewCompat.GetRootWindowInsets(window.DecorView)?.GetInsets(WindowInsetsCompat.Type.SystemBars())?.Top ?? 0);
+
+	static async Task AssertDecorDoesNotFitSystemWindowsAsync(int activityColor)
 	{
 		var service = new DialogFragmentService();
 
-		await WithSpyScenarioAsync(transparent ? transparentColor : distinctOpaqueColor, activityAppearance: 0, dialogHasInsetsController: true, scenario =>
+		await WithSpyScenarioAsync(activityColor, activityAppearance: 0, dialogHasInsetsController: true, scenario =>
 		{
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
-			// The decor fits the system windows (insets are applied as padding) only when the status bar has a color to show.
-			Assert.Equal([!transparent], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
+			Assert.Equal([false], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
+			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
+			{
+				Assert.Equal(AndroidSystemBars.LayoutStableSystemUiFlag, AndroidSystemBars.SystemUiVisibility(scenario.DialogWindow) & AndroidSystemBars.LayoutStableSystemUiFlag);
+			}
+
 			return Task.CompletedTask;
 		});
 	}

@@ -3,6 +3,13 @@ using System.Reflection;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
+using WControl = Microsoft.UI.Xaml.Controls.Control;
+using WFocusState = Microsoft.UI.Xaml.FocusState;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WGridView = Microsoft.UI.Xaml.Controls.GridView;
@@ -10,6 +17,7 @@ using WGridViewItem = Microsoft.UI.Xaml.Controls.GridViewItem;
 using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WListViewItem = Microsoft.UI.Xaml.Controls.ListViewItem;
 using WPoint = Windows.Foundation.Point;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -22,6 +30,15 @@ public partial class ExpanderTests
 	static readonly TimeSpan windowsLayoutTimeout = TimeSpan.FromSeconds(5);
 
 	static bool IsPlatformViewVisible(IView view) => ((WFrameworkElement)view.Handler!.PlatformView!).Visibility == WVisibility.Visible;
+
+	static ExpanderLayoutPanel GetLayoutPanel(Expander expander) => Assert.IsType<ExpanderLayoutPanel>(((ContentView)expander).Content?.Handler?.PlatformView);
+
+	static AutomationPeer GetAutomationPeer(Expander expander) =>
+		FrameworkElementAutomationPeer.CreatePeerForElement(GetLayoutPanel(expander)) ?? throw new InvalidOperationException("The layout of the Expander has no automation peer.");
+
+	static IExpandCollapseProvider GetExpandCollapseProvider(AutomationPeer peer) => Assert.IsType<IExpandCollapseProvider>(peer.GetPattern(PatternInterface.ExpandCollapse), exactMatch: false);
+
+	static IInvokeProvider GetInvokeProvider(AutomationPeer peer) => Assert.IsType<IInvokeProvider>(peer.GetPattern(PatternInterface.Invoke), exactMatch: false);
 
 	static double GetRowHeight(ListView listView, int row) => GetListViewItem(listView, row)?.ActualHeight ?? 0;
 
@@ -471,6 +488,302 @@ public partial class ExpanderTests
 
 		Assert.Null(exception);
 		Assert.True(expander.IsExpanded);
+	}
+
+	[Fact]
+	public async Task UIAutomationExposesTheHeaderAsAKeyboardFocusableButtonNamedAfterTheHeader()
+	{
+		SetupBuilder();
+		var expander = CreateExpander();
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+			var peer = GetAutomationPeer(expander);
+
+			Assert.True(panel.IsTabStop, "Tab does not stop at the header.");
+			Assert.True(peer.IsKeyboardFocusable());
+			Assert.True(peer.IsEnabled());
+			Assert.True(peer.IsControlElement(), "The Expander is missing from the control view, which Narrator reads.");
+			Assert.True(peer.IsContentElement());
+			Assert.Equal(AutomationControlType.Button, peer.GetAutomationControlType());
+			Assert.Equal(nameof(Expander), peer.GetClassName());
+			Assert.Equal("Header", peer.GetName());
+			Assert.Equal(ExpandCollapseState.Collapsed, GetExpandCollapseProvider(peer).ExpandCollapseState);
+			GetInvokeProvider(peer);
+
+			Assert.True(panel.Focus(WFocusState.Keyboard), "The header does not take the keyboard focus.");
+			await AssertionExtensions.AssertEventually(peer.HasKeyboardFocus, message: "UI Automation does not report the keyboard focus on the header.");
+		});
+	}
+
+	[Fact]
+	public async Task UIAutomationExpandsCollapsesAndInvokesTheHeaderAndItsStateFollowsIsExpanded()
+	{
+		SetupBuilder();
+		var expander = CreateExpander();
+		List<bool> expandedChanges = [];
+		List<object?> commandParameters = [];
+		expander.ExpandedChanged += (_, e) => expandedChanges.Add(e.IsExpanded);
+		expander.Command = new Command(parameter => commandParameters.Add(parameter));
+		expander.CommandParameter = nameof(Expander.CommandParameter);
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			var expandCollapse = GetExpandCollapseProvider(GetAutomationPeer(expander));
+			var invoke = GetInvokeProvider(GetAutomationPeer(expander));
+
+			expandCollapse.Expand();
+
+			Assert.True(expander.IsExpanded);
+			Assert.Equal(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState);
+			await AssertionExtensions.AssertEventually(() => IsPlatformViewVisible(expander.Content), message: "Expand did not show the content.");
+
+			expandCollapse.Expand();
+			Assert.True(expander.IsExpanded);
+
+			expandCollapse.Collapse();
+			Assert.False(expander.IsExpanded);
+			Assert.Equal(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState);
+
+			expandCollapse.Collapse();
+			Assert.False(expander.IsExpanded);
+
+			invoke.Invoke();
+			Assert.True(expander.IsExpanded);
+
+			invoke.Invoke();
+			Assert.False(expander.IsExpanded);
+
+			Assert.Equal<bool>([true, false, true, false], expandedChanges);
+			Assert.Equal<object?>([.. Enumerable.Repeat(nameof(Expander.CommandParameter), 4)], commandParameters);
+
+			expander.IsExpanded = true;
+			Assert.Equal(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState);
+
+			expander.IsExpanded = false;
+			Assert.Equal(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState);
+		});
+	}
+
+	// WinUI cannot construct KeyRoutedEventArgs and the test app cannot inject keys (InputInjector needs the restricted inputInjectionBrokered
+	// capability), so the test drives HandleKey, which the KeyDown and KeyUp handlers of the focused layout call.
+	[Fact]
+	public async Task EnterAndSpaceToggleTheHeaderLikeTheyClickAButton()
+	{
+		SetupBuilder();
+		var expander = CreateExpander();
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+
+			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
+			Assert.True(expander.IsExpanded);
+
+			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: true));
+			Assert.False(panel.HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
+			Assert.True(expander.IsExpanded);
+
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: true, isRepeat: false));
+			Assert.True(expander.IsExpanded);
+
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
+			Assert.False(expander.IsExpanded);
+
+			Assert.False(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
+			Assert.False(panel.HandleKey(VirtualKey.A, isKeyDown: true, isRepeat: false));
+			Assert.False(expander.IsExpanded);
+		});
+	}
+
+	[Fact]
+	public async Task TabMovesTheFocusFromThePreviousControlToTheHeader()
+	{
+		SetupBuilder();
+		var previousControl = new Button { Text = "Previous" };
+		var expander = CreateExpander();
+		var layout = new VerticalStackLayout { previousControl, expander };
+
+		await AttachAndRun(layout, async _ =>
+		{
+			await layout.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+			var xamlRoot = panel.XamlRoot ?? throw new InvalidOperationException("The Expander is not in a XAML tree.");
+
+			Assert.True(Assert.IsType<WControl>(previousControl.Handler?.PlatformView, exactMatch: false).Focus(WFocusState.Keyboard), "The Button does not take the keyboard focus.");
+			Assert.True(FocusManager.TryMoveFocus(FocusNavigationDirection.Next, new FindNextElementOptions { SearchRoot = xamlRoot.Content }), "Tab finds no element after the Button.");
+
+			await AssertionExtensions.AssertEventually(() => ReferenceEquals(FocusManager.GetFocusedElement(xamlRoot), panel), message: "Tab does not move the focus from the Button to the header.");
+		});
+	}
+
+	[Theory]
+	[InlineData(ExpandDirection.Down)]
+	[InlineData(ExpandDirection.Up)]
+	public async Task TheFocusVisualFramesOnlyTheRowOfTheHeader(ExpandDirection direction)
+	{
+		SetupBuilder();
+		var expander = CreateExpander(direction);
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+			await AssertionExtensions.AssertEventually(() => IsAbout(panel.FocusVisualMargin, new WThickness(0)), message: $"The focus visual of the collapsed Expander has the margin {panel.FocusVisualMargin} instead of none.");
+
+			expander.IsExpanded = true;
+
+			var expectedMargin = direction is ExpandDirection.Down ? new WThickness(0, 0, 0, contentHeight) : new WThickness(0, contentHeight, 0, 0);
+			await AssertionExtensions.AssertEventually(() => IsAbout(panel.FocusVisualMargin, expectedMargin), timeout: 5000, message: $"The focus visual of the expanded Expander does not frame only the header: its margin is {panel.FocusVisualMargin} instead of {expectedMargin}.");
+		});
+
+		static bool IsAbout(WThickness actual, WThickness expected) =>
+			Math.Abs(actual.Left - expected.Left) < 1 && Math.Abs(actual.Top - expected.Top) < 1 && Math.Abs(actual.Right - expected.Right) < 1 && Math.Abs(actual.Bottom - expected.Bottom) < 1;
+	}
+
+	[Theory]
+	[InlineData(nameof(Expander.IsEnabled))]
+	[InlineData(nameof(Expander.Header) + nameof(VisualElement.IsEnabled))]
+	[InlineData(nameof(Expander.Header) + nameof(VisualElement.IsVisible))]
+	[InlineData(nameof(Expander.Header) + nameof(VisualElement.InputTransparent))]
+	public async Task AHeaderThatATapCannotToggleIsNoTabStopAndUIAutomationCannotToggleIt(string blockingProperty)
+	{
+		SetupBuilder();
+		var expander = CreateExpander();
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+			var peer = GetAutomationPeer(expander);
+			Assert.True(panel.IsTabStop);
+
+			SetHeaderActivationBlocked(expander, blockingProperty, isBlocked: true);
+
+			Assert.False(panel.IsTabStop, "Tab stops at a header that a tap cannot toggle.");
+			Assert.False(peer.IsEnabled());
+			Assert.Throws<ElementNotEnabledException>(() => GetInvokeProvider(peer).Invoke());
+			Assert.Throws<ElementNotEnabledException>(() => GetExpandCollapseProvider(peer).Expand());
+			panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false);
+			Assert.False(expander.IsExpanded);
+
+			SetHeaderActivationBlocked(expander, blockingProperty, isBlocked: false);
+
+			Assert.True(panel.IsTabStop);
+			Assert.True(peer.IsEnabled());
+		});
+	}
+
+	[Fact]
+	public async Task UIAutomationNamesTheExpanderAfterWhatALayoutHeaderHolds()
+	{
+		SetupBuilder();
+		var expander = new Expander
+		{
+			Header = new HorizontalStackLayout
+			{
+				new BoxView { Color = Colors.Blue, WidthRequest = 20, HeightRequest = 20 },
+				new Label { Text = "Brandon" },
+				new Label { Text = "Minnick" }
+			},
+			Content = new Label { Text = "Content" }
+		};
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+
+			Assert.Equal("Brandon, Minnick", GetAutomationPeer(expander).GetName());
+		});
+	}
+
+	[Fact]
+	public async Task UIAutomationNamesTheExpanderAfterTheSemanticDescriptionOfTheHeader()
+	{
+		SetupBuilder();
+		var header = new Label { Text = "Header" };
+		SemanticProperties.SetDescription(header, "Described header");
+		var expander = new Expander { Header = header, Content = new Label { Text = "Content" } };
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+
+			Assert.Equal("Described header", GetAutomationPeer(expander).GetName());
+		});
+	}
+
+	[Fact]
+	public async Task UIAutomationReadsTheSemanticHintOfTheHeaderAsTheHelpTextOfTheExpander()
+	{
+		SetupBuilder();
+		var header = new Label { Text = "Header" };
+		SemanticProperties.SetHint(header, "Shows the content");
+		var expander = new Expander { Header = header, Content = new Label { Text = "Content" } };
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+
+			Assert.Equal("Shows the content", GetAutomationPeer(expander).GetHelpText());
+		});
+	}
+
+	[Fact]
+	public async Task KeyboardAndUIAutomationActivationsResizeTheItemContainerOfTheirExpanderInACollectionView()
+	{
+		SetupBuilder();
+		var (collectionView, expanders) = CreateCollectionView(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), itemCount: 3);
+
+		await AttachAndRun(collectionView, async handler =>
+		{
+			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
+			await WaitForRealizedItemsAsync(native, 3);
+			var heightsBefore = GetItemContainerHeights(native, 3);
+			var expander = GetExpanderOfItem(expanders, 1);
+
+			Assert.True(GetLayoutPanel(expander).HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
+
+			Assert.True(expander.IsExpanded);
+			var expandedHeight = expander.Measure(double.PositiveInfinity, double.PositiveInfinity).Height;
+			Assert.True(expandedHeight >= headerHeight + contentHeight - 1, $"The expanded Expander should measure at least header + content but measured {expandedHeight}.");
+			Assert.Equal(expandedHeight, GetItemContainer(native, 1).Height, precision: 1);
+			Assert.Equal(heightsBefore[0], GetItemContainer(native, 0).Height);
+			Assert.Equal(heightsBefore[2], GetItemContainer(native, 2).Height);
+
+			GetInvokeProvider(GetAutomationPeer(expander)).Invoke();
+
+			Assert.False(expander.IsExpanded);
+			Assert.Equal(headerHeight, GetItemContainer(native, 1).Height, precision: 1);
+		});
+	}
+
+	[Fact]
+	public async Task TheExpanderIsCollectedAfterUIAutomationToggledIt()
+	{
+		SetupBuilder();
+		var expanderReference = new WeakReference(null);
+		var panelReference = new WeakReference(null);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var expander = CreateExpander();
+			var handler = CreateHandler<ContentViewHandler>(expander);
+			GetInvokeProvider(GetAutomationPeer(expander)).Invoke();
+			Assert.True(expander.IsExpanded);
+
+			expanderReference.Target = expander;
+			panelReference.Target = GetLayoutPanel(expander);
+
+			((IElementHandler)handler).DisconnectHandler();
+			expander.Handler = null;
+		});
+
+		await AssertionExtensions.WaitForGC(expanderReference, panelReference);
 	}
 
 	// A plain Grid as platform view reaches the branches for a platform view that is neither a ListView nor a GridView.

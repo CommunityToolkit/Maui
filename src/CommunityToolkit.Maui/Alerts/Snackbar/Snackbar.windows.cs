@@ -14,6 +14,12 @@ public partial class Snackbar
 	// of the shown snackbar (PlatformSnackbar, platformSnackbarIdentifier, onPlatformSnackbarDismissed and actions) changes under this lock
 	static readonly Lock platformSnackbarLock = new();
 
+	// Show and Dismiss take turns, in the order they are called. Otherwise a Show or Dismiss that starts while a Show waits for the removal of
+	// the displayed snackbar can remove the notifications before that Show displays its own, which then stays on screen, dismissed and
+	// without its action, in front of any later snackbar. WaitAsync can also hand the turn to a call whose token was cancelled while it
+	// waited, so each call checks its token once its turn came.
+	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
+
 	static Dictionary<string, Action?> actions = [];
 
 	static string? platformSnackbarIdentifier;
@@ -69,14 +75,16 @@ public partial class Snackbar
 	{
 		token.ThrowIfCancellationRequested();
 
-		if (PlatformSnackbar is null)
+		await showAndDismissSemaphore.WaitAsync(token);
+		try
 		{
-			return;
+			token.ThrowIfCancellationRequested();
+			await RemovePlatformSnackbarAsync();
 		}
-
-		await AppNotificationManager.Default.RemoveAllAsync();
-
-		OnPlatformSnackbarRemoved();
+		finally
+		{
+			showAndDismissSemaphore.Release();
+		}
 	}
 
 	/// <summary>
@@ -84,32 +92,43 @@ public partial class Snackbar
 	/// </summary>
 	async Task ShowPlatform(CancellationToken token)
 	{
-		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
 
-		var id = Guid.NewGuid().ToString();
-		var platformSnackbar = new AppNotificationBuilder()
-			.AddText(Text)
-			.AddButton(new AppNotificationButton(ActionButtonText)
-				.AddArgument(snackbarIdentifierArgumentKey, id))
-			.BuildNotification();
-		platformSnackbar.Expiration = DateTimeOffset.Now.Add(Duration);
-
-		AppNotificationManager.Default.Show(platformSnackbar);
-
-		var dismissAfterDurationTokenSource = new CancellationTokenSource();
-		var dismissAfterDurationToken = dismissAfterDurationTokenSource.Token;
-		SetPlatformSnackbar(platformSnackbar, id, Action, () =>
+		await showAndDismissSemaphore.WaitAsync(token);
+		try
 		{
-			dismissAfterDurationTokenSource.Cancel();
-			dismissAfterDurationTokenSource.Dispose();
-			OnDismissed();
-		});
+			token.ThrowIfCancellationRequested();
+			await RemovePlatformSnackbarAsync();
+			token.ThrowIfCancellationRequested();
 
-		OnShown();
+			var id = Guid.NewGuid().ToString();
+			var platformSnackbar = new AppNotificationBuilder()
+				.AddText(Text)
+				.AddButton(new AppNotificationButton(ActionButtonText)
+					.AddArgument(snackbarIdentifierArgumentKey, id))
+				.BuildNotification();
+			platformSnackbar.Expiration = DateTimeOffset.Now.Add(Duration);
 
-		// A Shown handler may already have dismissed the snackbar, which cancelled the token
-		_ = DismissAfterDurationAsync(platformSnackbar, id, Duration, dismissAfterDurationToken);
+			AppNotificationManager.Default.Show(platformSnackbar);
+
+			var dismissAfterDurationTokenSource = new CancellationTokenSource();
+			var dismissAfterDurationToken = dismissAfterDurationTokenSource.Token;
+			SetPlatformSnackbar(platformSnackbar, id, Action, () =>
+			{
+				dismissAfterDurationTokenSource.Cancel();
+				dismissAfterDurationTokenSource.Dispose();
+				OnDismissed();
+			});
+
+			OnShown();
+
+			// A press of the button may already have dismissed the snackbar, which cancelled the token
+			_ = DismissAfterDurationAsync(platformSnackbar, id, Duration, dismissAfterDurationToken);
+		}
+		finally
+		{
+			showAndDismissSemaphore.Release();
+		}
 	}
 
 	// Windows removes a notification once it expires without telling the app, so the toolkit dismisses the snackbar itself at the end of its
@@ -157,6 +176,18 @@ public partial class Snackbar
 			actions.Add(id, action);
 			onPlatformSnackbarDismissed = onDismissed;
 		}
+	}
+
+	static async Task RemovePlatformSnackbarAsync()
+	{
+		if (PlatformSnackbar is null)
+		{
+			return;
+		}
+
+		await AppNotificationManager.Default.RemoveAllAsync();
+
+		OnPlatformSnackbarRemoved();
 	}
 
 	// Dismiss: RemoveAllAsync removed every notification of the app. Another dismissal may have dismissed the snackbar while RemoveAllAsync

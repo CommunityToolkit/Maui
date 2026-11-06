@@ -1,15 +1,175 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class MauiDrawingViewTests
 {
-	// The pointer overrides of MauiDrawingView (OnPointerPressed, OnPointerMoved, OnPointerReleased and OnPointerCanceled) read a
-	// PointerRoutedEventArgs, which WinUI cannot construct, and the test app cannot inject pointer input (InputInjector needs the restricted
-	// capability inputInjectionBrokered). The shared OnStart/OnMoving/OnFinish/OnCancel logic that they call is covered through reflection by
-	// the other tests; the DrawingView page of the Sample logs each pointer event while a person draws.
+	const uint otherPointerId = 2;
+
+	// The pointer overrides of MauiDrawingView (OnPointerPressed, OnPointerMoved, OnPointerReleased, OnPointerCanceled and OnPointerCaptureLost)
+	// read a PointerRoutedEventArgs, which WinUI cannot construct, and the test app cannot inject pointer input (InputInjector needs the restricted
+	// capability inputInjectionBrokered). So the tests call the methods behind them through reflection, and the pointer capture itself is checked
+	// on the DrawingView page of the Sample, which logs each pointer event while a person draws.
+
+	// On Windows a release also reaches the view when the press began on another element, and with ShouldClearOnFinish a finished line clears the lines.
+	[Fact]
+	public Task TouchUpWithoutTouchDownKeepsTheLinesWhenShouldClearOnFinishIsSet() => WithView(view =>
+	{
+		view.ShouldClearOnFinish = true;
+		var line = new MauiDrawingLine { Points = [new(10, 10), new(50, 50)] };
+		view.Lines.Add(line);
+		var recorder = new GestureRecorder(view);
+
+		DrawingViewTestPlatform.TouchUp(view, 50, 50);
+
+		Assert.Same(line, Assert.Single(view.Lines));
+		Assert.Empty(recorder.Completed);
+		Assert.Equal(0, recorder.Cancelled);
+	});
+
+	[Fact]
+	public Task CaptureLossWhileDrawingRaisesDrawingCancelledAndAddsNoLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+
+		LoseCapture(view);
+
+		Assert.Equal(1, recorder.Cancelled);
+		Assert.Empty(recorder.Completed);
+		Assert.Empty(view.Lines);
+	});
+
+	[Fact]
+	public Task MovesAndTheTouchUpAfterACaptureLossNeitherDrawNorCompleteALine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		LoseCapture(view);
+
+		DrawingViewTestPlatform.TouchMove(view, 60, 60);
+		DrawingViewTestPlatform.TouchUp(view, 60, 60);
+
+		AssertPoint(30, 30, Assert.Single(recorder.Points));
+		Assert.Empty(recorder.Completed);
+		Assert.Empty(view.Lines);
+		Assert.Equal(1, recorder.Cancelled);
+	});
+
+	[Fact]
+	public Task CaptureLossAfterTheTouchUpRaisesNothing() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.Stroke(view, (10, 10), (30, 30));
+
+		LoseCapture(view);
+
+		Assert.Equal(0, recorder.Cancelled);
+		Assert.Same(Assert.Single(recorder.Completed), Assert.Single(view.Lines));
+	});
+
+	[Fact]
+	public Task CaptureLossWithoutATouchDownRaisesNothing() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+
+		LoseCapture(view);
+
+		Assert.Equal(0, recorder.Cancelled);
+	});
+
+	// WinUI raises PointerCaptureLost during DrawingLineCompleted when a handler of that event removes the view from its window.
+	[Fact]
+	public Task CaptureLossDuringDrawingLineCompletedDoesNotCancelTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		var captureLoss = new CaptureLossOnDrawingLineCompleted(view);
+
+		DrawingViewTestPlatform.Stroke(view, (10, 10), (30, 30));
+
+		Assert.Equal(1, captureLoss.Count);
+		Assert.Equal(0, recorder.Cancelled);
+		Assert.Same(Assert.Single(recorder.Completed), Assert.Single(view.Lines));
+	});
+
+	[Fact]
+	public Task PressOfAnotherPointerWhileALineIsDrawnStartsNoLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchDown(view, otherPointerId, 80, 80);
+		DrawingViewTestPlatform.TouchUp(view, 10, 10);
+		DrawingViewTestPlatform.TouchMove(view, otherPointerId, 90, 90);
+		DrawingViewTestPlatform.TouchUp(view, otherPointerId);
+
+		AssertPoint(10, 10, Assert.Single(recorder.Started));
+		Assert.Empty(recorder.Points);
+		AssertPoint(10, 10, Assert.Single(Assert.Single(recorder.Completed).Points));
+	});
+
+	[Fact]
+	public Task MovesOfAnotherPointerDoNotExtendTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchMove(view, otherPointerId, 80, 80);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		AssertPoint(30, 30, Assert.Single(recorder.Points));
+		var line = Assert.Single(recorder.Completed);
+		Assert.Equal(2, line.Points.Count);
+		AssertPoint(30, 30, line.Points[1]);
+	});
+
+	[Fact]
+	public Task ReleaseOfAnotherPointerDoesNotEndTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchUp(view, otherPointerId);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		AssertPoint(30, 30, Assert.Single(recorder.Points));
+		Assert.Equal(2, Assert.Single(recorder.Completed).Points.Count);
+	});
+
+	[Fact]
+	public Task CancelOfAnotherPointerDoesNotCancelTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		DrawingViewTestPlatform.TouchCancel(view, otherPointerId);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		Assert.Equal(0, recorder.Cancelled);
+		Assert.Equal(2, Assert.Single(recorder.Completed).Points.Count);
+	});
+
+	[Fact]
+	public Task CaptureLossOfAnotherPointerDoesNotCancelTheLine() => WithView(view =>
+	{
+		var recorder = new GestureRecorder(view);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+
+		LoseCapture(view, otherPointerId);
+		DrawingViewTestPlatform.TouchMove(view, 30, 30);
+		DrawingViewTestPlatform.TouchUp(view, 30, 30);
+
+		Assert.Equal(0, recorder.Cancelled);
+		Assert.Equal(2, Assert.Single(recorder.Completed).Points.Count);
+	});
 
 	[Fact]
 	public async Task InitializeOnWindowsOlderThan18362LeavesTheDrawableUnset()
@@ -108,6 +268,9 @@ public partial class MauiDrawingViewTests
 	static bool IsDisposed(MauiDrawingView view) =>
 		(bool)typeof(MauiDrawingView).GetField("isDisposed", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(view)!;
 
+	static void LoseCapture(MauiDrawingView view, uint pointerId = DrawingViewTestPlatform.DefaultPointerId) =>
+		DrawingViewTestPlatform.Invoke(view, "OnCaptureLost", pointerId);
+
 	sealed class DisposeProbe : MauiDrawingView
 	{
 		public void CallDispose(bool disposing) => Dispose(disposing);
@@ -122,6 +285,26 @@ public partial class MauiDrawingViewTests
 		{
 			Calls.Enqueue(disposing);
 			base.Dispose(disposing);
+		}
+	}
+
+	// A plain instance method is the handler because the view keeps its subscribers weakly.
+	sealed class CaptureLossOnDrawingLineCompleted
+	{
+		readonly MauiDrawingView view;
+
+		public CaptureLossOnDrawingLineCompleted(MauiDrawingView view)
+		{
+			this.view = view;
+			view.DrawingLineCompleted += OnDrawingLineCompleted;
+		}
+
+		public int Count { get; private set; }
+
+		void OnDrawingLineCompleted(object? sender, MauiDrawingLineCompletedEventArgs e)
+		{
+			Count++;
+			LoseCapture(view);
 		}
 	}
 }

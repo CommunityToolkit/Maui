@@ -743,12 +743,15 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingPixelAssert.ColorAtUnits(image, 197, 50, Colors.Yellow, tolerance: 60, because: "the DrawAction's gradient band is drawn");
 	});
 
-	// Defensive branch of OnMoving that input cannot reach, so isDrawing is set through reflection.
+	// Defensive branch of OnMoving that input cannot reach, so the line of the started gesture is dropped through reflection.
 	[Fact]
 	public Task MoveWhileDrawingWithoutACurrentLineStillReportsThePoint() => WithView(view =>
 	{
 		var recorder = new GestureRecorder(view);
-		typeof(MauiDrawingView).GetField("isDrawing", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(view, true);
+		DrawingViewTestPlatform.TouchDown(view, 10, 10);
+		var currentLine = typeof(MauiDrawingView).GetField("currentLine", BindingFlags.Instance | BindingFlags.NonPublic)
+			?? throw new InvalidOperationException($"{nameof(MauiDrawingView)}.currentLine was not found.");
+		currentLine.SetValue(view, null);
 
 		DrawingViewTestPlatform.TouchMove(view, 25, 25);
 

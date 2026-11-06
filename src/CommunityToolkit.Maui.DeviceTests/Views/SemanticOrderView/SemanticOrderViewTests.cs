@@ -295,8 +295,8 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Android and Windows keep the current native order, iOS and Mac Catalyst fall back to UIKit's default (nil); whatever a platform does,
-	// it must not declare that the container has no accessible children (see the Apple partial).
+	// Android keeps the current native order, iOS and Mac Catalyst fall back to UIKit's default (nil) and Windows to WinUI's default tab focus
+	// children; whatever a platform does, it must not declare that the container has no accessible children (see the Apple partial).
 	[Fact]
 	public async Task PlatformViewWithoutAVirtualViewIsHandledWhenUpdatingTheOrder()
 	{

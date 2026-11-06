@@ -13,6 +13,12 @@ public partial class Toast
 	// toast itself at the end of its Duration, and the notification expires only after that, to leave the Action Center if the app ends first.
 	static readonly TimeSpan expirationAfterTheEndOfTheDuration = TimeSpan.FromMinutes(1);
 
+	// Show and Dismiss take turns, in the order they are called. Otherwise a Show that starts while an earlier one waits for the removal of the
+	// displayed toast can remove the notifications before the earlier toast is shown, and its own toast then waits behind that banner until
+	// both are removed at the end of their Duration. WaitAsync can also hand the turn to a call whose token was cancelled while it waited, so
+	// each call checks its token once its turn came.
+	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
+
 	static AppNotification? PlatformToast { get; set; }
 
 	/// <summary>
@@ -32,18 +38,15 @@ public partial class Toast
 	{
 		token.ThrowIfCancellationRequested();
 
-		if (PlatformToast is null)
+		await showAndDismissSemaphore.WaitAsync(token);
+		try
 		{
-			return;
+			token.ThrowIfCancellationRequested();
+			await RemovePlatformToastAsync();
 		}
-
-		await AppNotificationManager.Default.RemoveAllAsync();
-
-		// Verify PlatformToast is not null again after `await`
-		if (PlatformToast is not null)
+		finally
 		{
-			PlatformToast.Expiration = DateTimeOffset.Now;
-			PlatformToast = null;
+			showAndDismissSemaphore.Release();
 		}
 	}
 
@@ -54,9 +57,8 @@ public partial class Toast
 		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
 	};
 
-	// The notification is removed by its Id, so the other notifications of the app stay, and also when PlatformToast is another toast by then:
-	// two Show calls that overlap can both show their notification. When Show or Dismiss removed it first, there is nothing left to remove.
-	// Best effort: nothing awaits the removal, and the notification expires a minute later anyway.
+	// The notification is removed by its Id, so the other notifications of the app stay. When Show or Dismiss removed it first, there is
+	// nothing left to remove. Best effort: nothing awaits the removal, and the notification expires a minute later anyway.
 	static async Task RemoveAtTheEndOfTheDurationAsync(AppNotification platformToast, TimeSpan duration)
 	{
 		await Task.Delay(duration).ConfigureAwait(false);
@@ -64,24 +66,46 @@ public partial class Toast
 		_ = AppNotificationManager.Default.RemoveByIdAsync(platformToast.Id);
 	}
 
+	static async Task RemovePlatformToastAsync()
+	{
+		if (PlatformToast is not AppNotification platformToast)
+		{
+			return;
+		}
+
+		await AppNotificationManager.Default.RemoveAllAsync();
+
+		platformToast.Expiration = DateTimeOffset.Now;
+		PlatformToast = null;
+	}
+
 	async Task ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		EnsureWindowsToastEnabled();
 
-		await DismissPlatform(token);
-		token.ThrowIfCancellationRequested();
+		await showAndDismissSemaphore.WaitAsync(token);
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			await RemovePlatformToastAsync();
+			token.ThrowIfCancellationRequested();
 
-		var duration = GetDuration(Duration);
-		var platformToast = new AppNotificationBuilder()
-			.AddText(Text)
-			.SetDuration(GetAppNotificationDuration(Duration))
-			.BuildNotification();
-		platformToast.Expiration = DateTimeOffset.Now.Add(duration + expirationAfterTheEndOfTheDuration);
+			var duration = GetDuration(Duration);
+			var platformToast = new AppNotificationBuilder()
+				.AddText(Text)
+				.SetDuration(GetAppNotificationDuration(Duration))
+				.BuildNotification();
+			platformToast.Expiration = DateTimeOffset.Now.Add(duration + expirationAfterTheEndOfTheDuration);
 
-		PlatformToast = platformToast;
-		AppNotificationManager.Default.Show(platformToast);
+			PlatformToast = platformToast;
+			AppNotificationManager.Default.Show(platformToast);
 
-		_ = RemoveAtTheEndOfTheDurationAsync(platformToast, duration);
+			_ = RemoveAtTheEndOfTheDurationAsync(platformToast, duration);
+		}
+		finally
+		{
+			showAndDismissSemaphore.Release();
+		}
 	}
 }
