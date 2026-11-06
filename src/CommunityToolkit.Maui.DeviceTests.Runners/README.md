@@ -24,7 +24,7 @@ path and lists each toolkit change. The authoring guide for the tests is
     categories to `devicetestcategories.txt` next to the results path, and `<App>.exe "<results.xml>" <index>` runs only the
     category on that line (0-based) and writes `<results>_<Category>.xml`.
 - **Visual runner**: the app started without arguments. It lists the test assemblies and runs tests by hand.
-- **Source generator**: generates each app's platform entry points from `ApplicationId`, `ApplicationTitle` and
+- **Source generator**: generates the app's platform entry points from `ApplicationId`, `ApplicationTitle` and
   `RootNamespace`:
   - Android: `MainApplication`, `MainActivity`, and `TestActivity` + `TestInstrumentation` with fixed Java names.
   - iOS and Mac Catalyst: `Program.Main`, which picks the headless or the visual app delegate.
@@ -65,7 +65,7 @@ path and lists each toolkit change. The authoring guide for the tests is
 - **MSBuild files**: `CommunityToolkit.Maui.DeviceTests.Runners.targets` drops upstream's Arcade-only property and an
   asset-less `xunit.runner.visualstudio` reference. `CommunityToolkit.Maui.DeviceTests.Runners.props` names the unpackaged
   Windows switch `_CtmDeviceTestUnpackaged` (dotnet/maui: `_MauiDeviceTestUnpackaged`) and also sets the CsWinRT settings for
-  the apps.
+  the app.
 
 Keep `Microsoft.DotNet.XHarness.TestRunners.Xunit` (in the `.csproj`) on the same version as the `xharness` tool in
 `.config/dotnet-tools.json`. Update the two together, along with the dotnet/maui commit above.

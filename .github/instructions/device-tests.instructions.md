@@ -1,11 +1,11 @@
 ---
 description: 'Writing device tests for the .NET MAUI Community Toolkit: what belongs in a device test, file layout, base classes, categories, hosting views in a window, run-time skips and running a single category'
-applyTo: 'src/CommunityToolkit.Maui.DeviceTests*/**,src/CommunityToolkit.Maui.MediaElement.DeviceTests/**,src/CommunityToolkit.Maui.Camera.DeviceTests/**'
+applyTo: 'src/CommunityToolkit.Maui.DeviceTests*/**'
 ---
 
 # Device Tests
 
-The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running the tests is described in `eng/devices/README.md` and, for a local machine, in `eng/devices/LOCAL.md`. The apps use dotnet/maui's device-test architecture: xUnit v2, a vendored runner, XHarness on CI. There is one app per shipped feature package: `CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `CommunityToolkit.Maui.MediaElement.DeviceTests` and `CommunityToolkit.Maui.Camera.DeviceTests`.
+The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running the tests is described in `eng/devices/README.md` and, for a local machine, in `eng/devices/LOCAL.md`. The app uses dotnet/maui's device-test architecture: xUnit v2, a vendored runner, XHarness on CI. There is one app for every shipped package: `CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and `.Maps`).
 
 ## Rules
 

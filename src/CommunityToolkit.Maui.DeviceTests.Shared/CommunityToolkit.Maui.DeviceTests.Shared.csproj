@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Does not reference the toolkit: each device-test app adds its own package (see README.md of
+  <!-- Does not reference the toolkit: the device-test app adds the packages (see README.md of
        CommunityToolkit.Maui.DeviceTests). -->
 
   <PropertyGroup>

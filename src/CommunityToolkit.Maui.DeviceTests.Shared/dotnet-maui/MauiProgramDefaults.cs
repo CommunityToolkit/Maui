@@ -3,7 +3,7 @@
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
 // Toolkit change: namespace changed from Microsoft.Maui(.DeviceTests) to CommunityToolkit.Maui.DeviceTests.
 // Toolkit change: UI.Xaml.Window is fully qualified and Microsoft.Maui is imported (the enclosing Microsoft(.Maui) namespaces no longer resolve them).
-// Toolkit change: CreateMauiApp takes an optional configureApp callback so each app registers its toolkit package on the runner's MauiApp.
+// Toolkit change: CreateMauiApp takes an optional configureApp callback so the app registers the toolkit packages on the runner's MauiApp.
 using System;
 using System.Collections.Generic;
 using System.Linq;

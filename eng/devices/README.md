@@ -13,7 +13,7 @@ These scripts build the device test apps and run them headless on Android, iOS, 
 | `devices-coverage.ps1` | code coverage (`-Coverage`), dot-sourced by `android.ps1`, `ios.ps1` and `catalyst.ps1` | coverlet |
 | `Run-PackagedAppAndWait.ps1` | starts a packaged Windows app and waits for its process | vendored from dotnet/maui (toolkit changes listed in its header) |
 
-There is one test app per shipped feature package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `src/CommunityToolkit.Maui.MediaElement.DeviceTests` and `src/CommunityToolkit.Maui.Camera.DeviceTests`. `dotnet test` does not run them.
+There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and, on Windows, `.Maps`). `dotnet test` does not run it.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Run these from the repository root. Each command builds the app and runs its tes
 
 ```bash
 # Everything this machine can run: on a Mac the iOS simulator and Mac Catalyst, on Windows the packaged and the unpackaged app, and Android
-# when an emulator is running or an AVD exists; all three apps, then one summary (see run.ps1 below)
+# when an emulator is running or an AVD exists; then one summary (see run.ps1 below)
 pwsh eng/devices/run.ps1
 
 # Android: boot an existing AVD on port 5560, run the tests, shut the emulator down afterwards
@@ -53,7 +53,7 @@ powershell -ExecutionPolicy Bypass -File eng\devices\windows.ps1 -Packaging unpa
 powershell -ExecutionPolicy Bypass -File eng\devices\windows.ps1 -Packaging packaged
 ```
 
-Run all three apps with `-Project All`, or one with `-Project MediaElement` (`Maui`, `MediaElement`, `Camera`, a project name or a `.csproj` path; comma-separated values are fine). Build once and test many times with `-Target buildOnly` and `-Target testOnly`.
+`-Project` takes `Maui` or `All` (both mean the one app, which is the default), the project name or a `.csproj` path. The tests of one package are a category of the app: `-TestFilter 'Category=<name>'` (see [Choosing tests](#choosing-tests-testfilter-and-categories)). Build once and test many times with `-Target buildOnly` and `-Target testOnly`.
 
 Create an AVD for Android once, for example:
 
@@ -64,7 +64,7 @@ echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n CTM_
 
 ## One command: run.ps1
 
-`run.ps1` detects the operating system and the platforms it can run, runs the platform scripts on each with `-Target buildAndTest` (all three apps, `Debug`), and ends with one summary. It needs no setup beyond the [prerequisites](#prerequisites). [LOCAL.md](LOCAL.md) is the guide for using it, and the [CI](#ci) jobs run it too, one `-Platform` each.
+`run.ps1` detects the operating system and the platforms it can run, runs the platform scripts on each with `-Target buildAndTest` (`Debug`), and ends with one summary. It needs no setup beyond the [prerequisites](#prerequisites). [LOCAL.md](LOCAL.md) is the guide for using it, and the [CI](#ci) jobs run it too, one `-Platform` each.
 
 ```bash
 pwsh eng/devices/run.ps1                                                   # everything this machine can run
@@ -85,7 +85,7 @@ Android runs on, in this order: the device named by `-DeviceId` (without `-Avd`)
 | Parameter | Default | Meaning |
 | --- | --- | --- |
 | `-Platform` | every platform this machine can run | `ios`, `maccatalyst` (`catalyst`), `android`, `windows-packaged` (`packaged`), `windows-unpackaged` (`unpackaged`) and `windows` for both; comma-separated values are fine |
-| `-Project` | `All` | `Maui`, `MediaElement`, `Camera`, `All`, a project name or a `.csproj` path. With `-TestFilter 'Category=<name>'` and no `-Project`, only the apps that declare the category (the names are case-sensitive) run, because an app that runs 0 tests fails with 94 |
+| `-Project` | `All` | `Maui` or `All` (both mean the one app), the project name or a `.csproj` path; `MediaElement` and `Camera` fail with a message that names the filter to use. A `Category=<name>` filter that no category of the app matches (the names are case-sensitive) is an error, and a platform with no test of the category fails with 94 |
 | `-TestFilter` | `$env:TEST_FILTER` | as in the other scripts |
 | `-Configuration` | `Debug` | CI builds `Release` |
 | `-Target` | `buildAndTest` | `buildOnly`, `testOnly` or `buildAndTest` |
@@ -106,9 +106,9 @@ Common to every script:
 | Parameter | Default | Meaning |
 | --- | --- | --- |
 | `-Target` | `buildAndTest` | `buildOnly`, `testOnly` or `buildAndTest` |
-| `-Project` | `CommunityToolkit.Maui.DeviceTests` | app(s) to build and run |
+| `-Project` | `CommunityToolkit.Maui.DeviceTests` | app to build and run |
 | `-Configuration` | `Debug` | build configuration; CI builds and runs `Release` (see [CI](#ci)) |
-| `-Results` | `artifacts/device-tests/<platform>` | results root; every app writes to `<Results>/<project name>/` |
+| `-Results` | `artifacts/device-tests/<platform>` | results root; the app writes to `<Results>/<project name>/` |
 | `-BinlogDir` | `artifacts/logs` | one binlog per build |
 | `-TestFilter` | `$env:TEST_FILTER` | `Category=<name>` or `SkipCategories=<name>,<name>` (see below) |
 | `-SkipCapabilities` | `$env:DEVICE_TEST_SKIP_CAPABILITIES` | capabilities this machine lacks; their tests are skipped (see [Capability declarations](#capability-declarations)) |
@@ -140,16 +140,21 @@ Platform parameters:
 
 Every test class has `[Category(TestCategory.X)]`, and `TestFilter` uses dotnet/maui's syntax:
 
-* `Category=X` runs only category X. The apps skip every other `TestCategory` constant, so a test without a category would run too.
+* `Category=X` runs only category X. The app skips every other `TestCategory` constant, so a test without a category would run too.
 * `SkipCategories=A,B` runs everything except A and B.
 
-Each app has its own `TestCategory` class, and an app that runs 0 tests fails with 94. So pass a `Category=` filter together with the app that defines the category, for example `-Project MediaElement`; with `-Project All` the other apps fail.
+The app has one `TestCategory` class, spread over partial files: the MediaElement constants are in `MediaElement/TestCategory.MediaElement.cs` and the Camera constants in `Camera/TestCategory.Camera.cs`. A platform that has no test of the category runs 0 tests and fails with 94, so name the platform when you pass a `Category=` filter, for example `-Platform android -TestFilter 'Category=MediaElementAndroid'`.
+
+If one package's tests crash the app and lose the results of the whole platform, rerun everything except that package with `SkipCategories`. These two lists are generated from the two files above; regenerate them with `for f in Camera/TestCategory.Camera.cs MediaElement/TestCategory.MediaElement.cs; do grep -h -o 'const string [A-Za-z]*' src/CommunityToolkit.Maui.DeviceTests/$f | sed 's/const string //' | paste -sd, -; done`:
+
+* Everything but Camera: `SkipCategories=CameraViewExtensionsAndroid,CameraInfoAndroid,CameraProviderAndroid,CameraManagerAndroid,CameraViewHandlerAndroid,CameraViewAndroid,CameraSwitchStopAndroid,CameraPermissionResumeAndroid,CameraStartStopAndroid,CameraApple,CameraWindows`
+* Everything but MediaElement: `SkipCategories=MediaElementAndroid,MediaElementApple,MediaManagerWindows,MediaManagerPlaybackWindows,MediaManagerSourceWindows,MediaElementHandlerWindows,MauiMediaElementWindows,CustomTransportControlsWindows,HttpRandomAccessStreamWindows,MediaMetadataWindows,AppPackageServiceWindows`
 
 The scripts pass it the way dotnet/maui does: `--arg TestFilter=...` on Android, `--set-env TestFilter=...` on iOS and Mac Catalyst. On Windows a packaged app started through package activation does not inherit the caller's environment, so a filter uses dotnet/maui's category protocol instead: the app is launched once with `-1` to list its categories and then once per selected category, skipping every other category. Without a filter one launch runs every test.
 
-So every test has exactly one feature category (plus, optionally, `RequiresUserInteraction`): a test with two would be skipped by both `Category=` runs and by every Windows category launch. Each app's `EveryTestHasOneFeatureCategory` infrastructure test enforces it.
+So every test has exactly one feature category (plus, optionally, `RequiresUserInteraction`): a test with two would be skipped by both `Category=` runs and by every Windows category launch. The app's `EveryTestHasOneFeatureCategory` infrastructure test enforces it.
 
-`RequiresUserInteraction` marks tests that need a person. Headless runs never execute them (the apps skip that category, and the scripts always add it to `SkipCategories`); run them by hand from the visual runner by starting the app without arguments. Without `-TestFilter` the filter is `SkipCategories=RequiresUserInteraction`.
+`RequiresUserInteraction` marks tests that need a person. Headless runs never execute them (the app skips that category, and the scripts always add it to `SkipCategories`); run them by hand from the visual runner by starting the app without arguments. Without `-TestFilter` the filter is `SkipCategories=RequiresUserInteraction`.
 
 ```bash
 pwsh eng/devices/ios.ps1 -Target testOnly -Project Maui -TestFilter 'Category=IconTintColorBehavior'
@@ -162,7 +167,7 @@ Some tests need something that a machine may lack: a camera, a second camera, a 
 * `-SkipCapabilities A,B` (`DEVICE_TEST_SKIP_CAPABILITIES`): the tests that need A or B are skipped without probing, with a reason that names the declaration.
 * `-RequireCapabilities C` (`DEVICE_TEST_REQUIRE_CAPABILITIES`): the tests that need C fail, instead of skipping, when the probe finds it missing.
 
-Only the CI jobs set the variables, so local script runs and the visual runner declare nothing and run everything. The scripts pass the lists the way they pass `TestFilter`: `--arg SkipCapabilities=...` on Android, `--set-env SkipCapabilities=...` on iOS and Mac Catalyst, and on Windows a `devicetestcapabilities.txt` file next to the results file, because a packaged app does not inherit the environment. A name in both lists is an invalid argument (3), and each app's `DeclaredCapabilitiesAreValid` infrastructure test fails on a name that is not a capability. The run header and `summary.md` show the declarations. To see what a CI job skips, replay it locally with its lists:
+Only the CI jobs set the variables, so local script runs and the visual runner declare nothing and run everything. The scripts pass the lists the way they pass `TestFilter`: `--arg SkipCapabilities=...` on Android, `--set-env SkipCapabilities=...` on iOS and Mac Catalyst, and on Windows a `devicetestcapabilities.txt` file next to the results file, because a packaged app does not inherit the environment. A name in both lists is an invalid argument (3), and the app's `DeclaredCapabilitiesAreValid` infrastructure test fails on a name that is not a capability. The run header and `summary.md` show the declarations. To see what a CI job skips, replay it locally with its lists:
 
 ```bash
 pwsh eng/devices/run.ps1 -Platform maccatalyst -Project All -SkipCapabilities Camera
@@ -170,13 +175,13 @@ pwsh eng/devices/run.ps1 -Platform maccatalyst -Project All -SkipCapabilities Ca
 
 ## Results and exit codes
 
-`<Results>/<project>/` contains everything the run produced: the xUnit v2 results (`testResults.xml` on Android, `xunit-test-*.xml` on iOS and Mac Catalyst, `TestResults-*.xml` on Windows), `xharness-result.json`, `xharness-console.log`, logcat or the app log, crash reports, a screenshot after a failure, and `gate.json` with the verdict. `<Results>/summary.md` has a table per app and the first 50 failures; in GitHub Actions it is also added to the job summary.
+`<Results>/<project>/` contains everything the run produced: the xUnit v2 results (`testResults.xml` on Android, `xunit-test-*.xml` on iOS and Mac Catalyst, `TestResults-*.xml` on Windows), `xharness-result.json`, `xharness-console.log`, logcat or the app log, crash reports, a screenshot after a failure, and `gate.json` with the verdict. `<Results>/summary.md` has a table for the app and the first 50 failures; in GitHub Actions it is also added to the job summary.
 
 The scripts exit with XHarness's exit codes, on every platform:
 
 | Code | Name | Meaning |
 | --- | --- | --- |
-| 0 | SUCCESS | every app ran at least one test and none failed |
+| 0 | SUCCESS | the app ran at least one test and none failed |
 | 1 | TESTS_FAILED | a test failed, or the results contain errors |
 | 3 | INVALID_ARGUMENTS | bad parameter, for example an unknown `TestFilter` form |
 | 4 | PACKAGE_NOT_FOUND | the app was not built (run `-Target buildOnly` first) |
@@ -199,11 +204,11 @@ Only infrastructure failures (78, 81, 83, 84, 86, 88, 89, 90, 91, 92) are retrie
 
 `-Coverage` measures which lines of the toolkit assemblies (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`) the device tests run, with [coverlet](https://github.com/coverlet-coverage/coverlet) on Android, the iOS simulator and Mac Catalyst. In a test run (`testOnly` or `buildAndTest`; a `buildOnly` run collects nothing) the script:
 
-1. builds the toolkit projects the apps reference, copies their assemblies, with everything the apps compile against, into a temporary folder, instruments them there with coverlet, puts the instrumented copies in place of the toolkit projects' build outputs, and then builds each app with `/p:BuildProjectReferences=false`, so the app is compiled and packaged once, with the instrumented assemblies (in Release on iOS and Mac Catalyst, that includes the ahead-of-time compilation, which therefore runs once per app). Instrumenting before the build is why a `-Coverage` run builds the apps itself, also with `-Target testOnly`: the coverlet process that instrumented the assemblies writes the report, so it must still run when the tests have run, and apps that an earlier run packaged without coverage are built again;
-2. runs the apps as usual, with `CTM_COVERAGE_DIRECTORY` (an XHarness `--set-env` on iOS and Mac Catalyst, an instrumentation `--arg` on Android). When the tests have run, the headless runner writes the hits of each instrumented assembly there (`CoverageRecorder` in `CommunityToolkit.Maui.DeviceTests.Runners`): on iOS and Mac Catalyst to `<Results>/<project>/coverage/`, on Android to the app's external files folder, which XHarness copies to the same place (`--device-out-folder`);
-3. adds up the hits of all apps, lets coverlet write `<Results>/coverage/<name of the Results folder>.cobertura.xml` (`ios.cobertura.xml` by default; its log is `coverlet.log` there) and puts the original toolkit assemblies back, newer than the apps' instrumented copies (it also gives the toolkit projects' intermediate assemblies in `obj` the current time, because building a toolkit project copies them over its build output). The packaged apps keep the instrumented assemblies until the apps are built again; that build packages the original ones. A run that fails or is stopped (Ctrl+C) puts the original assemblies back as well.
+1. builds the toolkit projects the app references, copies their assemblies, with everything the app compiles against, into a temporary folder, instruments them there with coverlet, puts the instrumented copies in place of the toolkit projects' build outputs, and then builds the app with `/p:BuildProjectReferences=false`, so the app is compiled and packaged once, with the instrumented assemblies (in Release on iOS and Mac Catalyst, that includes the ahead-of-time compilation, which therefore runs once). Instrumenting before the build is why a `-Coverage` run builds the app itself, also with `-Target testOnly`: the coverlet process that instrumented the assemblies writes the report, so it must still run when the tests have run, and an app that an earlier run packaged without coverage is built again;
+2. runs the app as usual, with `CTM_COVERAGE_DIRECTORY` (an XHarness `--set-env` on iOS and Mac Catalyst, an instrumentation `--arg` on Android). When the tests have run, the headless runner writes the hits of each instrumented assembly there (`CoverageRecorder` in `CommunityToolkit.Maui.DeviceTests.Runners`): on iOS and Mac Catalyst to `<Results>/<project>/coverage/`, on Android to the app's external files folder, which XHarness copies to the same place (`--device-out-folder`);
+3. lets coverlet write `<Results>/coverage/<name of the Results folder>.cobertura.xml` (`ios.cobertura.xml` by default; its log is `coverlet.log` there) and puts the original toolkit assemblies back, newer than the app's instrumented copies (it also gives the toolkit projects' intermediate assemblies in `obj` the current time, because building a toolkit project copies them over its build output). The packaged app keeps the instrumented assemblies until it is built again; that build packages the original ones. A run that fails or is stopped (Ctrl+C) puts the original assemblies back as well.
 
-Coverage never changes the exit code: when it fails, for example because an app crashed before it wrote its hits, the script warns and the report covers fewer apps or is missing. Every test of the three apps, the leak tests included, had the same outcome with and without coverage on all three platforms, and the runs took about as long.
+Coverage never changes the exit code: when it fails, for example because the app crashed before it wrote its hits, the script warns and the report is missing. Every test of the three apps that were merged into one, the leak tests included, had the same outcome with and without coverage on all three platforms, and the runs took about as long.
 
 The Windows device tests collect no coverage: `windows.ps1` has no `-Coverage`, because no way of collecting it there has been verified yet. In CI, the Android API 36, iOS simulator and Mac Catalyst jobs collect it, and the `Code Coverage` job of the `Build` workflow publishes one report that merges it with the unit tests' coverage: its job summary in the `Build` run and the `code-coverage-report` artifact (see [CI](#ci)).
 
@@ -231,9 +236,9 @@ The scripts only touch devices they create or that you name; `run.ps1` follows t
 
 ## CI
 
-The device test jobs, in `.github/workflows/device-tests.yml`, run every app on Android (API 36 and 28, x86_64 emulators on `ubuntu-24.04`), the iOS simulator and Mac Catalyst (`xcode-27`), and Windows packaged and unpackaged (`windows-2025`), and upload `artifacts/device-tests` and `artifacts/logs` from every job. The `Build` workflow (`dotnet-build.yml`) runs them as its `Device Tests` job (a reusable workflow) for pushes to `main` and pull requests, not for tags, and they load the .NET and Xcode versions from `.github/workflows/shared.env`, as the `Build` jobs do. The `Device Tests / Device Tests` job fails when any of the others fails; make it the required status check. To run a subset, start the `Device Tests` workflow from the Actions tab (`workflow_dispatch`) and choose the inputs `project` (`All`, `Maui`, `MediaElement` or `Camera`) and `test-filter`.
+The device test jobs, in `.github/workflows/device-tests.yml`, run the app on Android (API 36 and 28, x86_64 emulators on `ubuntu-24.04`), the iOS simulator and Mac Catalyst (`xcode-27`), and Windows packaged and unpackaged (`windows-2025`), and upload `artifacts/device-tests` and `artifacts/logs` from every job. The `Build` workflow (`dotnet-build.yml`) runs them as its `Device Tests` job (a reusable workflow) for pushes to `main` and pull requests, not for tags, and they load the .NET and Xcode versions from `.github/workflows/shared.env`, as the `Build` jobs do. The `Device Tests / Device Tests` job fails when any of the others fails; make it the required status check. To run a subset, start the `Device Tests` workflow from the Actions tab (`workflow_dispatch`) and choose the input `test-filter`, for example `Category=MediaElementAndroid`; a platform with no test of the category fails with 94.
 
-Every job builds and tests with [`run.ps1`](#one-command-runps1), the command that runs the device tests on your machine: its `Build device test apps` step runs it with `-Target buildOnly` and its `Run device tests` step with `-Target testOnly`, so the job lines in `device-tests.yml` show how to run each platform. A job that collects coverage skips its build step and runs `-Target buildAndTest` in the test step, because [coverage](#code-coverage) builds the apps itself. The jobs restore the NuGet packages (and, on Linux and macOS, the .NET workload packs) from `actions/cache`; the workload packs' key names the SDK that runs and the newest workload set of its feature band, and the workload install of those jobs pins that version, so a new workload release starts a new cache (Windows has no workload cache, and its install is not pinned). A line names its `-Platform` and its `-Project` (`DEVICE_TEST_PROJECT`: `All`, or the app that a manual run chose) and passes the `-Configuration` (`DEVICE_TEST_CONFIGURATION`); the test step adds the `-Timeout`. Without `-Platform` and `-Project`, `run.ps1` runs every platform that the machine can run and, for a `Category=` filter, leaves out the apps and platforms that have no test of the category; a job runs what it names, and an app that runs 0 tests fails it with 94.
+Every job builds and tests with [`run.ps1`](#one-command-runps1), the command that runs the device tests on your machine: its `Build device test apps` step runs it with `-Target buildOnly` and its `Run device tests` step with `-Target testOnly`, so the job lines in `device-tests.yml` show how to run each platform. A job that collects coverage skips its build step and runs `-Target buildAndTest` in the test step, because [coverage](#code-coverage) builds the app itself. The jobs restore the NuGet packages (and, on Linux and macOS, the .NET workload packs) from `actions/cache`; the workload packs' key names the SDK that runs and the newest workload set of its feature band, and the workload install of those jobs pins that version, so a new workload release starts a new cache (Windows has no workload cache, and its install is not pinned). A line names its `-Platform` and passes the `-Configuration` (`DEVICE_TEST_CONFIGURATION`); the test step adds the `-Timeout`. Without `-Platform`, `run.ps1` runs every platform that the machine can run and, for a `Category=` filter, leaves out the platforms that have no test of the category; a job runs what it names, and a platform that runs 0 tests fails it with 94.
 
 | Job | `-Platform` | Results folder, below `artifacts/device-tests/` |
 | --- | --- | --- |
@@ -245,16 +250,16 @@ Every job builds and tests with [`run.ps1`](#one-command-runps1), the command th
 The platform script runs in the process of `run.ps1`, so a step gets the script's exit code (such as 94 for an app that produced no results, which fails the step), its `::error` and `::warning` annotations, and the table that it appends to the job summary (`$GITHUB_STEP_SUMMARY`). A Windows step ends with exit code 1 for every failure, because the runner starts a `shell: powershell` step as `powershell -command ". '<script>'"`, which turns a non-zero exit code into 1; the code itself is in the step's annotation and in the last line that `run.ps1` prints (`Exit code: 94 (TEST_RESULTS_MISSING)`). The script reads the `env` of the job (`DEVICE_TEST_COVERAGE`, `DEVICE_TEST_SKIP_CAPABILITIES`, `DEVICE_TEST_REQUIRE_CAPABILITIES` and `TEST_FILTER`), and the log gains the plan that `run.ps1` prints first and its summary last. To replay a job on your machine, set its `env` and run its lines, for example Mac Catalyst:
 
 ```bash
-export DEVICE_TEST_PROJECT=All DEVICE_TEST_CONFIGURATION=Release DEVICE_TEST_SKIP_CAPABILITIES=Camera
-pwsh eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION"
-pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly -Project "$DEVICE_TEST_PROJECT" -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
+export DEVICE_TEST_CONFIGURATION=Release DEVICE_TEST_SKIP_CAPABILITIES=Camera
+pwsh eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
 ```
 
-The jobs build and run the apps in `Release` (`DEVICE_TEST_CONFIGURATION`), the configuration that apps ship in; a manual run can choose `Debug` (the `configuration` input) for readable BCL exception messages and line numbers in stack traces. Debug runs every assembly in the Mono interpreter on Android, iOS and Mac Catalyst (MAUI sets `UseInterpreter` for Debug) and trims nothing, which no shipped app does, so it cannot show what only a Release build does:
+The jobs build and run the app in `Release` (`DEVICE_TEST_CONFIGURATION`), the configuration that apps ship in; a manual run can choose `Debug` (the `configuration` input) for readable BCL exception messages and line numbers in stack traces. Debug runs every assembly in the Mono interpreter on Android, iOS and Mac Catalyst (MAUI sets `UseInterpreter` for Debug) and trims nothing, which no shipped app does, so it cannot show what only a Release build does:
 
 * Android trims the toolkit and its bindings, and runs compiled code: the methods in the startup profiles of .NET for Android and MAUI ahead of time (profiled AOT), everything else with the JIT. A Java object whose class has a binding that nothing names arrives as a plain `Java.Lang.Object`, because the trimmer removed that binding: cast it to a binding interface with `JavaCast<T>()`, not with a C# cast.
 * iOS and Mac Catalyst compile everything ahead of time, with no JIT and no interpreter. Native code can only call a static method marked `[MonoPInvokeCallback]`, and a delegate type that `Marshal.GetDelegateForFunctionPointer` creates needs `[UnmanagedFunctionPointer]`; anything else fails at run time with "Attempting to JIT compile method ... while running in aot-only mode".
-* Windows compiles the apps ReadyToRun.
+* Windows compiles the app ReadyToRun.
 * Compiled code is faster than the interpreter, so a test that depends on how long something takes behaves differently, and Mono's conservative stack scanning finds stale references in other places (the leak checks therefore overwrite the main thread's unused stack before they collect).
 * UIKit's thread checks are off; the Maui device test app turns them back on (`CheckForIllegalCrossThreadCalls` in its project), because six tests check that the toolkit lets `UIKitThreadAccessException` through.
 * BCL exception messages are resource keys on Android, iOS and Mac Catalyst (`System.Resources.UseSystemResourceKeys`), so a test must not compare BCL exception text.

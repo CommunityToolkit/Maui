@@ -129,7 +129,7 @@ Here we will have some:
 
 ## Device tests
 
-Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test apps `src/CommunityToolkit.Maui.DeviceTests`, `src/CommunityToolkit.Maui.MediaElement.DeviceTests` and `src/CommunityToolkit.Maui.Camera.DeviceTests`. The `Device Tests` check of every pull request builds and runs them on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them.
+Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test app `src/CommunityToolkit.Maui.DeviceTests`. The `Device Tests` check of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them.
 
 Run them on your machine before you push, with one command from the repository root:
 

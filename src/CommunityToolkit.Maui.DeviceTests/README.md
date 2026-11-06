@@ -18,31 +18,30 @@ How to run the tests on your machine (one command for every platform, your IDE, 
 
 | Project (`src/`) | What it is | ApplicationId |
 |---|---|---|
-| `CommunityToolkit.Maui.DeviceTests` | test app for `CommunityToolkit.Maui` + `CommunityToolkit.Maui.Core` (and `CommunityToolkit.Maui.Maps` on Windows) | `com.communitytoolkit.maui.devicetests` |
-| `CommunityToolkit.Maui.MediaElement.DeviceTests` | test app for `CommunityToolkit.Maui.MediaElement` | `com.communitytoolkit.maui.mediaelement.devicetests` |
-| `CommunityToolkit.Maui.Camera.DeviceTests` | test app for `CommunityToolkit.Maui.Camera` | `com.communitytoolkit.maui.camera.devicetests` |
+| `CommunityToolkit.Maui.DeviceTests` | test app for `CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` (and `.Maps` on Windows) | `com.communitytoolkit.maui.devicetests` |
 | `CommunityToolkit.Maui.DeviceTests.Shared` | base classes and helpers (`dotnet-maui/` = vendored and ported dotnet/maui code) | |
 | `CommunityToolkit.Maui.DeviceTests.Runners` (+ `.SourceGen`) | dotnet/maui's runner, vendored; see its [README](../CommunityToolkit.Maui.DeviceTests.Runners/README.md) | |
 
-There is one app per shipped feature package, as in dotnet/maui (Core, Controls, Essentials): the main app covers
-`CommunityToolkit.Maui`, `CommunityToolkit.Maui.Core` and `CommunityToolkit.Maui.Maps`, the other two apps cover MediaElement and
-Camera. Each app references only its packages, plus the analyzers and source generators that the packages add to a consumer's app. Assembly names equal the project names. Every
-app and `Shared` uses the root namespace `CommunityToolkit.Maui.DeviceTests`.
+One app holds the tests of every shipped package, like the unit tests. It references the packages under test, plus the analyzers and
+source generators that the packages add to a consumer's app. Assembly names equal the project names. The app and `Shared` use the
+root namespace `CommunityToolkit.Maui.DeviceTests`.
 
 ## Layout
 
 ```
 CommunityToolkit.Maui.DeviceTests/
   Alerts/  Behaviors/  Essentials/  Extensions/  Maps/  PlatformConfiguration/  Services/  Views/   feature folders
+  Camera/{CameraAndroid, CameraApple, CameraWindows}/   the Camera tests
+  MediaElement/{MediaElementAndroid, MediaElementApple, MediaElementWindows}/   the MediaElement tests
   Infrastructure/                 smoke tests of the device-test infrastructure itself
   Resources/Images/**             MauiImage: test images, e.g. Resources/Images/red.png -> Source = "red.png"
   Resources/Raw/**                MauiAsset: test media and files, e.g. FileSystem.OpenAppPackageFileAsync("audio/a.mp3")
   Platforms/<Android|iOS|MacCatalyst|Windows>/   app heads (manifests, scene delegates, Windows App)
-  CommunityToolkitHandlerTestBase.cs  base class of this app's tests
+  CommunityToolkitHandlerTestBase.cs  base class of the tests of CommunityToolkit.Maui, .Core and .Maps
+  MediaElementHandlerTestBase.cs  base class of the MediaElement tests
+  CameraHandlerTestBase.cs        base class of the Camera tests
   TestCategory.cs                 category constants (partial class)
   MauiProgram.cs                  the runner's app configuration
-CommunityToolkit.Maui.MediaElement.DeviceTests/   MediaElement/{MediaElementAndroid, MediaElementApple, MediaElementWindows}/, Infrastructure/, MediaElementHandlerTestBase.cs, ...
-CommunityToolkit.Maui.Camera.DeviceTests/         Camera/{CameraAndroid, CameraApple, CameraWindows}/, Infrastructure/, CameraHandlerTestBase.cs, ...
 ```
 
 - **Folders and files.** Put each feature in its folder, as `<Folder>/<Feature>/<Feature>Tests.cs` plus platform partials. A feature
@@ -125,8 +124,8 @@ TestBase                         InvokeOnMainThreadAsync (4 overloads), WaitForG
     └ HandlerTestBase            adds the .NET MAUI Controls handlers; CreateHandler(Async), GetValueAsync, OnLoadedAsync,
        │                         OnUnloadedAsync
        ├ CommunityToolkitHandlerTestBase  (CommunityToolkit.Maui.DeviceTests)
-       ├ MediaElementHandlerTestBase      (CommunityToolkit.Maui.MediaElement.DeviceTests)
-       └ CameraHandlerTestBase            (CommunityToolkit.Maui.Camera.DeviceTests)
+       ├ MediaElementHandlerTestBase      (the MediaElement tests)
+       └ CameraHandlerTestBase            (the Camera tests)
 ```
 
 xUnit creates one instance of the class per test. Each test gets its own `MauiApp`, built by `MauiApp.CreateBuilder()` with the
@@ -157,7 +156,7 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
 
 **Two MauiApps are involved.**
 - **The test's MauiApp** (`MauiContext`, `ApplicationServices`). Handlers created in the test come from it.
-- **The runner's MauiApp**, built by each app's `MauiProgram`. It provides `IPlatformApplication.Current.Services`,
+- **The runner's MauiApp**, built by the app's `MauiProgram`. It provides `IPlatformApplication.Current.Services`,
   `Application.Current` (the visual runner's application) and the app lifecycle events. Some toolkit code resolves services
   from the runner's MauiApp, not from the handler's `MauiContext`:
   - `CameraView` and `CameraViewHandler` resolve `ICameraProvider` there.
@@ -200,15 +199,15 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
 
 - **Categories.** Every test class has `[Category(TestCategory.X)]`. `X` is a `public const string` of the app's `TestCategory`,
   which is a `public static partial class`. Add a feature's constant to the `TestCategory.<Folder>.cs` partial of the top-level
-  folder of its tests (`Behaviors/TestCategory.Behaviors.cs`; `MediaElement/TestCategory.MediaElement.cs` and
-  `Camera/TestCategory.Camera.cs` in the other apps). Two partial files cannot declare the same constant, so name each one after its feature
+  folder of its tests (`Behaviors/TestCategory.Behaviors.cs`, `MediaElement/TestCategory.MediaElement.cs` and
+  `Camera/TestCategory.Camera.cs`). Two partial files cannot declare the same constant, so name each one after its feature
   (`IconTintColorBehavior`), never after a kind of test (`Memory`, `Behaviors`).
   - `TestFilter=Category=X` runs only X by skipping every other constant. A test with no category, or with a string literal,
     therefore runs in every filtered run.
   - `SkipCategories=A,B` skips A and B.
   - Every test has exactly one feature category, on its class (or on the method). A test is skipped if any of its categories
     is skipped, so a test with two would be skipped by both `Category=` runs, and by every launch of a filtered Windows run
-    (one launch per category). The only category that may be added is `RequiresUserInteraction`. Each app's
+    (one launch per category). The only category that may be added is `RequiresUserInteraction`. The app's
     `EveryTestHasOneFeatureCategory` infrastructure test fails on a test without a category, with two feature categories, or
     with a string that is not a `TestCategory` constant.
 - **`TestCategory.RequiresUserInteraction`** marks tests that need a person (pickers, permission prompts, hardware). Keep the
@@ -221,12 +220,17 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
   host views in the window or change app-wide state: toolkit options, the status bar, `Application.Current`, `Preferences`,
   permissions, files at fixed paths, or focus. XHarness already runs every test sequentially
   (`[collection-per-class, non-parallel]`); the collection protects the visual runner, which runs collections in parallel. xUnit
-  v2 only discovers collection definitions in the test assembly, so every app declares this one in
+  v2 only discovers collection definitions in the test assembly, so the app declares this one in
   `DisableParallelizationCollection.cs`.
+- **`[Collection(TestCollections.PermanentAndroidGrants)]`** (Android only) is for the classes that derive from
+  `CameraAndroidTestBase`: their tests grant CAMERA and RECORD_AUDIO with `pm grant`, and the app keeps a grant until XHarness
+  uninstalls it, because revoking one kills the process. `PermanentGrantsLastOrderer`, an assembly-level
+  `TestCollectionOrderer`, runs this collection after every other one, so the SpeechToText tests that need RECORD_AUDIO denied run
+  first. The base class's constructor fails a test whose class forgot the attribute.
 
-Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the app that declares the category
-and the platforms that build a test of it; see [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its
-script (`-Project Maui|MediaElement|Camera|All`; see
+Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the platforms that build a test
+of the category; see [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its
+script (`-Project Maui|All`, both the one app; see
 [`eng/devices/README.md`](../../eng/devices/README.md)):
 
 ```bash
@@ -328,8 +332,9 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - **OS-version branches.** Platform code can branch on `OperatingSystem.IsAndroidVersionAtLeast(n)`, `IsIOSVersionAtLeast`,
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
-  - The apps' minimum versions are the library minimums (Android 21, 26 for MediaElement; iOS 15; Windows 10.0.17763.0), so
-    older emulators can run the old branches. Mac Catalyst's minimum is 17.0, forced by the Xcode 27 SDK packs.
+  - The app's minimum versions are the library minimums (iOS 15; Windows 10.0.17763.0) except Android, which is 26, MediaElement's
+    minimum: one app holds every package's tests, so the other packages' Android branches below 26 have no device test. Mac Catalyst's
+    minimum is 17.0, forced by the Xcode 27 SDK packs.
   - Never `return` early: a test that returns early is reported as Passed.
 - **Run-time skips.** When a test cannot run on this device (no camera, an API that needs a newer OS than the test asserts),
   skip it visibly. A bare `return` is a silent pass and is not allowed.

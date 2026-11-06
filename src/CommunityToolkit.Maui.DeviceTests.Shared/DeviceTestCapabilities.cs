@@ -81,7 +81,7 @@ public static class DeviceTestCapabilities
 	}
 
 	/// <summary>
-	/// A misspelled capability name would silently skip or require nothing, so the DeviceTestsInfrastructure tests of every app
+	/// A misspelled capability name would silently skip or require nothing, so the DeviceTestsInfrastructure tests of the app
 	/// fail on any problem.
 	/// </summary>
 	public static IReadOnlyList<string> GetDeclarationProblems()

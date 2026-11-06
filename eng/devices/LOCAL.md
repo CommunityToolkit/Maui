@@ -1,6 +1,6 @@
 # Running the device tests on your machine
 
-The device tests are three .NET MAUI apps, one per shipped feature package, that run the tests on a real platform: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core` and `.Maps`), `src/CommunityToolkit.Maui.MediaElement.DeviceTests` and `src/CommunityToolkit.Maui.Camera.DeviceTests`. `dotnet test` does not run them. The `Device Tests` job of every pull request builds and runs them on Android, iOS, Mac Catalyst and Windows with the `run.ps1` command that this guide starts with (its lines are in `.github/workflows/device-tests.yml`); this guide is for running them on your own machine.
+The device tests are one .NET MAUI app that runs the tests of every shipped package on a real platform: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and, on Windows, `.Maps`). `dotnet test` does not run it. The `Device Tests` job of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows with the `run.ps1` command that this guide starts with (its lines are in `.github/workflows/device-tests.yml`); this guide is for running them on your own machine.
 
 * [Run everything with one command](#run-everything-with-one-command)
 * [Run an app from your IDE](#run-an-app-from-your-ide)
@@ -21,7 +21,7 @@ pwsh eng/devices/run.ps1
 powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
 ```
 
-`run.ps1` finds out what your machine can run, prints the plan, builds and runs the apps on each platform with the scripts of this folder, and ends with one summary: the passed, failed and skipped tests per platform and app, and the folder of their results.
+`run.ps1` finds out what your machine can run, prints the plan, builds and runs the app on each platform with the scripts of this folder, and ends with one summary: the passed, failed and skipped tests per platform, and the folder of their results.
 
 | Your machine | What runs by default |
 | --- | --- |
@@ -31,7 +31,7 @@ powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
 
 * A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, several emulators running (it does not guess; `-DeviceId` or `-Avd` chooses) or no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
 * It never uses a physical Android device unless you name it with `-DeviceId`, and it never touches a simulator that it did not create unless you name it with `-Udid`.
-* All three apps run (the platform scripts alone run the main app unless `-Project` says otherwise). The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
+* The tests of every package run. The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
 * The platforms run one after the other, and each takes tens of minutes. A packaged Windows run needs an elevated PowerShell the first time, to trust its signing certificate.
 
 Choose what runs:
@@ -39,22 +39,20 @@ Choose what runs:
 ```bash
 pwsh eng/devices/run.ps1 -DryRun                                        # print the plan, run nothing (also -WhatIf)
 pwsh eng/devices/run.ps1 -Platform ios,maccatalyst                      # only these platforms
-pwsh eng/devices/run.ps1 -Project MediaElement                          # only this app (Maui, MediaElement, Camera or All)
+pwsh eng/devices/run.ps1 -TestFilter 'Category=MediaElementAndroid'     # the tests of one package are categories of the one app
 pwsh eng/devices/run.ps1 -TestFilter 'Category=IconTintColorBehavior'   # one test category, where it has tests
 pwsh eng/devices/run.ps1 -TestFilter 'SkipCategories=Snackbar,Badge'   # everything except these categories
 pwsh eng/devices/run.ps1 -Configuration Release                         # what CI builds
 pwsh eng/devices/run.ps1 -Target buildOnly                              # build without a device, then run with -Target testOnly as often as you like
 ```
 
-The platform names are `ios`, `maccatalyst`, `android`, `windows-packaged` and `windows-unpackaged` (`catalyst`, `packaged`, `unpackaged` and `windows`, for both Windows platforms, are short forms). A category is a constant of `TestCategory` in `src/<app>/**/TestCategory*.cs`; every test class has exactly one. With a `Category=` filter, `run.ps1` leaves out the apps (unless you name them with `-Project`) and the platforms (unless you name them with `-Platform`) that have no test of the category, such as iOS for a category whose tests are all in `*.android.cs` files, because a run of 0 tests fails. [README.md](README.md#choosing-tests-testfilter-and-categories) explains the filters, and its [run.ps1](README.md#one-command-runps1) section lists every parameter, among them the ones that choose the Android device (`-Avd`, `-DeviceId`), the simulator (`-Udid`) and the Xcode (`-Xcode`).
+The platform names are `ios`, `maccatalyst`, `android`, `windows-packaged` and `windows-unpackaged` (`catalyst`, `packaged`, `unpackaged` and `windows`, for both Windows platforms, are short forms). A category is a constant of `TestCategory` in `src/<app>/**/TestCategory*.cs`; every test class has exactly one. With a `Category=` filter, `run.ps1` leaves out the platforms (unless you name them with `-Platform`) that have no test of the category, such as iOS for a category whose tests are all in `*.android.cs` files, because a run of 0 tests fails. [README.md](README.md#choosing-tests-testfilter-and-categories) explains the filters, and its [run.ps1](README.md#one-command-runps1) section lists every parameter, among them the ones that choose the Android device (`-Avd`, `-DeviceId`), the simulator (`-Udid`) and the Xcode (`-Xcode`).
 
 The summary looks like this (the numbers are an example):
 
 ```text
 Platform            App           Result   Total  Passed  Failed Skipped  Time     Results
-ios                 Maui          PASS      6012    5990       0      22  9m 12s   artifacts/device-tests/ios/CommunityToolkit.Maui.DeviceTests
-                    MediaElement  PASS       300     290       0      10           artifacts/device-tests/ios/CommunityToolkit.Maui.MediaElement.DeviceTests
-                    Camera        FAIL       120     110       2       8           artifacts/device-tests/ios/CommunityToolkit.Maui.Camera.DeviceTests
+ios                 Maui          FAIL      6432    6400       2      30  9m 12s   artifacts/device-tests/ios/CommunityToolkit.Maui.DeviceTests
 maccatalyst         (all)         FAIL         -       -       -       -  0s       artifacts/device-tests/maccatalyst
 
 2 of 4 passed in 9m 40s
@@ -65,7 +63,7 @@ Failed:
 Exit code: 1 (TESTS_FAILED)
 ```
 
-The exit code is the first non-zero exit code of the scripts (see [Results and exit codes](README.md#results-and-exit-codes)), or 0. Every app writes to `artifacts/device-tests/<platform>/<app>/`: the xUnit results, the logs, `gate.json` with its verdict and, on iOS, a screenshot after a failure. Next to the apps, `summary.md` lists up to 50 failed tests of each app. The build logs (`*.binlog`) are in `artifacts/logs/`.
+The exit code is the first non-zero exit code of the scripts (see [Results and exit codes](README.md#results-and-exit-codes)), or 0. The app writes to `artifacts/device-tests/<platform>/<app>/`: the xUnit results, the logs, `gate.json` with its verdict and, on iOS, a screenshot after a failure. Next to the app, `summary.md` lists up to 50 failed tests. The build logs (`*.binlog`) are in `artifacts/logs/`.
 
 ## Run an app from your IDE
 
@@ -75,7 +73,7 @@ An IDE runs a device test app like any .NET MAUI app. Started without arguments,
 
 Install the .NET Multi-platform App UI development workload.
 
-1. Open `src/CommunityToolkit.Maui.slnx`. The apps are in the `Tests/Device Tests` folder.
+1. Open `src/CommunityToolkit.Maui.slnx`. The app is in the `Tests/Device Tests` folder.
 1. Right-click `CommunityToolkit.Maui.DeviceTests` (or the MediaElement or Camera app) and choose Set as Startup Project.
 1. In the debug target list of the toolbar choose the target framework (`Framework`) and the device:
     * Android emulator: `net10.0-android` and an emulator under `Android Emulators`. Create one in Tools > Android > Android Device Manager; Visual Studio starts it.
@@ -84,12 +82,12 @@ Install the .NET Multi-platform App UI development workload.
     * Mac Catalyst runs on a Mac only, so use Rider or Visual Studio Code there.
 1. Press F5 to debug, or Ctrl+F5 to run.
 
-The launch profile of the apps is the packaged one. For the unpackaged app, build and start it from a terminal as described below.
+The launch profile of the app is the packaged one. For the unpackaged app, build and start it from a terminal as described below.
 
 ### Rider (macOS and Windows)
 
 1. Open `src/CommunityToolkit.Maui.slnx`.
-1. Choose the app (`CommunityToolkit.Maui.DeviceTests`, `CommunityToolkit.Maui.MediaElement.DeviceTests` or `CommunityToolkit.Maui.Camera.DeviceTests`) in the run configurations.
+1. Choose the app (`CommunityToolkit.Maui.DeviceTests`) in the run configurations.
 1. In the toolbar, choose the target framework and the device next to it: an Android emulator (Device Manager creates one), an iOS simulator (macOS) or the Mac (`net10.0-maccatalyst`).
 1. Run, or Debug.
 
@@ -98,7 +96,7 @@ For Windows, and for anything the toolbar does not offer, use a terminal command
 ### Visual Studio Code (macOS and Windows)
 
 1. Install the C# Dev Kit and the .NET MAUI extension, and open the repository folder.
-1. Make one of the three apps the startup project.
+1. Make `CommunityToolkit.Maui.DeviceTests` the startup project.
 1. Choose the target in the status bar: an Android emulator, an iOS simulator, Mac Catalyst, or Windows Machine.
 1. Start debugging (F5), or run without debugging (Ctrl+F5).
 
@@ -148,7 +146,7 @@ Some answers can only be given once. The system remembers a permission, so the t
 | --- | --- | --- |
 | Maui | `BadgeTests` (iOS only; on Mac Catalyst they run without you) | Answer the "Would Like to Send You Notifications" prompt that the first test shows, with Allow or Don't Allow. The tests that do not fit your answer skip. Uninstall the app from the simulator to be asked again. |
 | Maui | `SpeechToTextTests` (also matches `OfflineSpeechToTextTests`) | `StartListenAsyncRecognizesWhatAPersonSays`: allow speech recognition and the microphone, say something in English, and then keep quiet for 3 seconds. `RequestPermissionsReturnsTheDecisionOfTheUser`: answer the speech recognition prompt. |
-| Camera | `CameraAppleUserInteractionTests` | A Mac with a camera, so Mac Catalyst (the simulator has none, and the tests skip). `AllowingTheCameraPromptLetsTheCameraViewPreviewAndCaptureAPhoto`: tap Allow. `DenyingTheCameraPromptMakesStartVideoRecordingThrowCameraException`: tap Don't Allow. The system remembers the first answer, so run one test, then `tccutil reset Camera com.communitytoolkit.maui.camera.devicetests` and run the other. |
+| Camera | `CameraAppleUserInteractionTests` | A Mac with a camera, so Mac Catalyst (the simulator has none, and the tests skip). `AllowingTheCameraPromptLetsTheCameraViewPreviewAndCaptureAPhoto`: tap Allow. `DenyingTheCameraPromptMakesStartVideoRecordingThrowCameraException`: tap Don't Allow. The system remembers the first answer, so run one test, then `tccutil reset Camera com.communitytoolkit.maui.devicetests` and run the other. |
 
 ### Android emulator
 
@@ -169,7 +167,7 @@ The Maui app needs a person for these tests:
 | `SpeechToTextTests` (also matches `OfflineSpeechToTextTests`) | A machine with a microphone and an installed speech language. `StartListenAsyncStartsTheContinuousRecognitionSession` (two rows): allow the microphone when Windows asks; in the second row stay silent for 25 seconds after the start. `RequestPermissionsReturnsTheDecisionOfTheUser`: answer the microphone consent prompt. |
 | `MapHandlerWindowsPageTests` | `ShowingTheUserAddsALocationPinWhenTheLocationIsAllowed`: allow the app to use your location when Windows asks. |
 
-The MediaElement app has three tests (`MediaMetadataWindowsTests`) that wait for a key of the keyboard or for the system media overlay, within a minute. `PressingThePauseMediaKeyPausesTheMediaElement`: press Pause or Play/Pause. `PressingThePlayMediaKeyPlaysTheMediaElement`: press Play or Play/Pause. `PressingAnyOtherMediaKeyLeavesThePlaybackAlone`: press Next track or Stop, not Play or Pause.
+The MediaElement tests include three tests (`MediaMetadataWindowsTests`) that wait for a key of the keyboard or for the system media overlay, within a minute. `PressingThePauseMediaKeyPausesTheMediaElement`: press Pause or Play/Pause. `PressingThePlayMediaKeyPlaysTheMediaElement`: press Play or Play/Pause. `PressingAnyOtherMediaKeyLeavesThePlaybackAlone`: press Next track or Stop, not Play or Pause.
 
 ## What your machine does differently from CI
 
@@ -177,24 +175,24 @@ The CI jobs run `run.ps1` as you do, one platform per job, but they prepare thei
 
 ### Mac Catalyst asks for camera, microphone and speech recognition
 
-macOS shows a privacy prompt the first time an app uses the camera, the microphone or speech recognition, and the answer belongs to that app: each of the three test apps asks for itself, because their bundle ids differ (`com.communitytoolkit.maui.devicetests`, `com.communitytoolkit.maui.camera.devicetests` and `com.communitytoolkit.maui.mediaelement.devicetests`). The CI job answers the prompts in advance by writing into the TCC database of its runner, which needs a virtual machine with System Integrity Protection off. Your Mac cannot do that, and a headless run cannot answer a prompt, so the tests that need one of the permissions are written to skip, with the reason, while the app has no answer yet. An unattended run on your Mac therefore passes with those tests skipped, and the summary counts them. Mac Catalyst may also ask whether the app may send notifications (the Badge tests); either answer is fine.
+macOS shows a privacy prompt the first time an app uses the camera, the microphone or speech recognition, and the answer belongs to that app: the test app's bundle id is `com.communitytoolkit.maui.devicetests`. The CI job answers the prompts in advance by writing into the TCC database of its runner, which needs a virtual machine with System Integrity Protection off. Your Mac cannot do that, and a headless run cannot answer a prompt, so the tests that need one of the permissions are written to skip, with the reason, while the app has no answer yet. An unattended run on your Mac therefore passes with those tests skipped, and the summary counts them. Mac Catalyst may also ask whether the app may send notifications (the Badge tests); either answer is fine.
 
-Answer a prompt when one shows. To run the permission-gated tests, give the apps their answers once:
+Answer a prompt when one shows. To run the permission-gated tests, give the app its answers once:
 
-1. Build the apps without running them: `pwsh eng/devices/catalyst.ps1 -Project All -Target buildOnly`.
-1. Open the app that needs the permission from that build, without building it again, for example `open src/CommunityToolkit.Maui.DeviceTests/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/CommunityToolkit.Maui.DeviceTests.app` (`maccatalyst-x64` on an Intel Mac). Run the tests in [Run the tests that need a person](#run-the-tests-that-need-a-person) that ask for the permission, and click Allow. Once an app has asked, you can also switch it on under System Settings > Privacy & Security > Camera, Microphone or Speech Recognition.
-1. Run the tests without building the apps again: `pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly`. The apps are signed ad hoc, so macOS remembers an answer for the app as it was built, and a build that changes the app brings the prompts back. `tccutil reset Camera|Microphone|SpeechRecognition <bundle id>` takes an answer back.
+1. Build the app without running it: `pwsh eng/devices/catalyst.ps1 -Target buildOnly`.
+1. Open the app from that build, without building it again, for example `open src/CommunityToolkit.Maui.DeviceTests/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/CommunityToolkit.Maui.DeviceTests.app` (`maccatalyst-x64` on an Intel Mac). Run the tests in [Run the tests that need a person](#run-the-tests-that-need-a-person) that ask for the permission, and click Allow. Once an app has asked, you can also switch it on under System Settings > Privacy & Security > Camera, Microphone or Speech Recognition.
+1. Run the tests without building the app again: `pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly`. The app is signed ad hoc, so macOS remembers an answer for the app as it was built, and a build that changes the app brings the prompts back. `tccutil reset Camera|Microphone|SpeechRecognition <bundle id>` takes an answer back.
 
 ### iOS simulator: your own simulator gets no grants
 
-Without `-Udid`, `ios.ps1` creates a simulator, grants the camera, the microphone and speech recognition to the test apps on it, and deletes it afterwards. With `-Udid <simulator>` it grants nothing on your simulator, so the tests that need these permissions skip until the apps have them. Grant them yourself before the run, once per simulator:
+Without `-Udid`, `ios.ps1` creates a simulator, grants the camera, the microphone and speech recognition to the test app on it, and deletes it afterwards. With `-Udid <simulator>` it grants nothing on your simulator, so the tests that need these permissions skip until the app has them. Grant them yourself before the run, once per simulator:
 
 ```bash
-xcrun simctl privacy <udid> grant camera com.communitytoolkit.maui.camera.devicetests
-xcrun simctl privacy <udid> grant microphone com.communitytoolkit.maui.camera.devicetests
+xcrun simctl privacy <udid> grant camera com.communitytoolkit.maui.devicetests
+xcrun simctl privacy <udid> grant microphone com.communitytoolkit.maui.devicetests
 ```
 
-Do the same for the other two bundle ids from the list above. `simctl` has no service for speech recognition; `Grant-SimulatorPrivacy` in `ios.ps1` writes that row into the TCC database of the simulator, and on your own simulator you can answer the prompt in the visual runner instead. Notifications cannot be granted either (see the Badge tests above). The simulator has no camera, so the tests that need one skip on it whatever you grant.
+If you ran an earlier version of the test apps on this simulator, the old bundle ids `com.communitytoolkit.maui.camera.devicetests` and `com.communitytoolkit.maui.mediaelement.devicetests` can be uninstalled (`xcrun simctl uninstall <udid> <bundle id>`); on a Mac, `tccutil reset All <bundle id>` clears their answers. `simctl` has no service for speech recognition; `Grant-SimulatorPrivacy` in `ios.ps1` writes that row into the TCC database of the simulator, and on your own simulator you can answer the prompt in the visual runner instead. Notifications cannot be granted either (see the Badge tests above). The simulator has no camera, so the tests that need one skip on it whatever you grant.
 
 ### Windows: consent, Developer Mode and the certificate
 

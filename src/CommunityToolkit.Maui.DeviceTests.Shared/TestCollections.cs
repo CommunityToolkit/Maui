@@ -13,7 +13,7 @@ public static class TestCollections
 	/// sequentially; this protects the visual runner, which runs collections in parallel.
 	/// </summary>
 	/// <remarks>
-	/// xUnit v2 discovers collection definitions only in the test assembly, so every device-test app declares
+	/// xUnit v2 discovers collection definitions only in the test assembly, so the device-test app declares
 	/// <c>[CollectionDefinition(TestCollections.DisableParallelization, DisableParallelization = true)]</c>.
 	/// </remarks>
 	public const string DisableParallelization = nameof(DisableParallelization);
