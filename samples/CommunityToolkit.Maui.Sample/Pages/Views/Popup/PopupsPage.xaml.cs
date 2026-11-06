@@ -4,6 +4,7 @@ using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
@@ -259,11 +260,11 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 					{
 						new Button()
 							.Text("Show Popup")
-							.Invoke(button => button.Command = new Command(async () => await popupService.ShowPopupAsync<ButtonPopup>(Shell.Current))),
+							.Invoke(button => button.Command = new AsyncRelayCommand(() => popupService.ShowPopupAsync<ButtonPopup>(Shell.Current))),
 
 						new Button()
 							.Text("Back")
-							.Invoke(button => button.Command = new Command(async () => await Navigation.PopModalAsync()))
+							.Invoke(button => button.Command = new AsyncRelayCommand(() => Navigation.PopModalAsync()))
 					}
 				}.Center()
 			};
