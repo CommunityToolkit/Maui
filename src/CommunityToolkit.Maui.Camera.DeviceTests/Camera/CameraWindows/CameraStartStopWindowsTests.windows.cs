@@ -609,6 +609,26 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		}, new WindowsFakeCameraProvider());
 	}
 
+	// ICameraView documents OperationCanceledException for a start whose token is cancelled, also when the start of the camera would fail first.
+	[Fact]
+	public async Task StartVideoRecordingWithACancelledTokenOnAStoppedPreviewWithoutACameraThrowsOperationCanceledException()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+			using var cancellation = new CancellationTokenSource();
+			cancellation.Cancel();
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StartVideoRecording(destination, cancellation.Token).WaitAsync(timeout));
+
+			Assert.Equal(cancellation.Token, exception.CancellationToken);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Empty(mediaFoundation.Initializations);
+			Assert.Empty(errors.Errors);
+		}, new WindowsFakeCameraProvider());
+	}
+
 	// A preview that the app started, whose camera could not be opened, counts as started (selecting another camera starts it): a recording that
 	// fails to open the camera again keeps that, like on iOS and Mac Catalyst, where such a preview stays started.
 	[Fact]

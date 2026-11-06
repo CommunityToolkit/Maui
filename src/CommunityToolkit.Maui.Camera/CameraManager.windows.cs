@@ -440,6 +440,10 @@ partial class CameraManager
 		await WaitForTheEarlierOperationAsync(pendingVideoRecordingStop, token);
 		await WaitForTheEarlierOperationAsync(pendingPreviewStart, token);
 
+		// A start whose token is cancelled already throws OperationCanceledException before it turns the camera on, as on Android, iOS and Mac Catalyst,
+		// also without a camera, whose failure the start of the camera would report first
+		token.ThrowIfCancellationRequested();
+
 		// Like on Android, iOS and Mac Catalyst, recording turns the camera on. A preview that is marked as started but has no MediaCapture (its
 		// camera could not be opened) is started again as well, and stays marked as started when that fails
 		var isCameraTurnedOnHere = false;
@@ -578,10 +582,22 @@ partial class CameraManager
 	private partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
 		// Read before the first await: a start or a stop that arrives later waits for this stop, so this stop must not wait for it
-		var stop = StopVideoRecordingAsync(pendingVideoRecordingStop, pendingVideoRecordingStart, token);
-		pendingVideoRecordingStop = stop;
+		var earlierStop = pendingVideoRecordingStop;
+		var stop = StopVideoRecordingAsync(earlierStop, pendingVideoRecordingStart, token);
+
+		// A stop that its token cancels while it waits for the earlier stop ends before that stop: the start or stop that comes next still waits for the
+		// earlier stop, as the semaphore of Android, iOS and Mac Catalyst makes it wait. Without it that call turned the camera off under the earlier
+		// stop, which lost its video, or prepared its recording on the camera that the earlier stop then released.
+		pendingVideoRecordingStop = WhenBothEndAsync(earlierStop, stop);
 
 		return stop;
+	}
+
+	// Never faults: the failure of a stop goes to the caller of that stop, not to the start or stop that waits for it
+	static async Task WhenBothEndAsync(Task earlierStop, Task stop)
+	{
+		await WaitForTheEarlierOperationAsync(earlierStop, CancellationToken.None);
+		await WaitForTheEarlierOperationAsync(stop, CancellationToken.None);
 	}
 
 	async Task<Stream> StopVideoRecordingAsync(Task earlierStop, Task earlierStart, CancellationToken token)
