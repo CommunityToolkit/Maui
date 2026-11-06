@@ -401,6 +401,18 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
+	public async Task MediaElementWithOpenedMediaIsCollectedAfterItsHandlerDisconnectsWithoutDisposingIt()
+	{
+		SetupProbeBuilder();
+
+		var references = await OpenAndDisconnectWithoutDisposingAsync();
+
+		// Opening the media started the status timer of the MediaElement, which the Looper roots while it runs and whose tick handler references the MediaElement.
+		// Nothing disposes the MediaElement here (a page only disconnects its handler), so only the handler stopping that timer lets it be collected.
+		await AssertionExtensions.WaitForGC(references);
+	}
+
+	[Fact]
 	public async Task PlayRequestStartsPlaybackAndPauseRequestPausesIt()
 	{
 		SetupProbeBuilder();
@@ -684,5 +696,27 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		var shutter = playerView.FindViewById(GetResourceId(playerView, "exo_shutter"));
 		Assert.NotNull(shutter);
 		return Assert.IsType<ColorDrawable>(shutter.Background).Color;
+	}
+
+	// Its own method, so that no local of the test keeps the MediaElement alive while the garbage collector runs, and without HostAsync, which keeps the element in a field until the teardown.
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	async Task<WeakReference[]> OpenAndDisconnectWithoutDisposingAsync()
+	{
+		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var handler = await InvokeOnMainThreadAsync(() => CreateHandler<AndroidMediaElementProbeHandler>(mediaElement));
+		await InvokeOnMainThreadAsync(() => mediaElement.Source = MediaSource.FromResource(toneAsset));
+		await WaitUntilLoadedAsync(mediaElement, recorder);
+
+		return await InvokeOnMainThreadAsync(() =>
+		{
+			var platformView = handler.PlatformView;
+			var playerView = GetPlayerView(platformView);
+			WeakReference[] references = [new(mediaElement), new(handler), new(platformView), new(playerView), new(handler.Manager), new(playerView.Player)];
+
+			((IElementHandler)handler).DisconnectHandler();
+			mediaElement.Handler = null;
+			return references;
+		});
 	}
 }

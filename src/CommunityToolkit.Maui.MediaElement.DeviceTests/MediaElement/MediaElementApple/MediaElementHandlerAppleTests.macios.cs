@@ -231,6 +231,7 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 
 				await WaitUntilAsync(() => secondPlayer.CurrentTime.Seconds > 0.3, "The playhead of the new player did not advance.");
 				Assert.True(secondPlayer.Rate > 0);
+				await WaitUntilAsync(() => mediaElement.Position > TimeSpan.FromSeconds(0.3), "Position did not follow the new player: the status timer did not start again.");
 			});
 		}
 		finally
@@ -284,6 +285,21 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 			Assert.Equal(NativeHandle.Zero, controller.Handle);
 
 			Assert.Null(Record.Exception(() => handler.DisposeCore(disposing: true)));
+		});
+	}
+
+	[Fact]
+	public async Task DisposeAfterDisconnectHandlerDoesNotThrow()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, handler =>
+		{
+			handler.Disconnect();
+
+			Assert.Null(Record.Exception(handler.Dispose));
+			return Task.CompletedTask;
 		});
 	}
 
@@ -668,5 +684,57 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(mediaElementReference, pageReference, handlerReference, platformViewReference, managerReference);
+	}
+
+	[Fact]
+	public async Task MediaElementThatPlayedASourceIsCollectedAfterItsPageIsPopped()
+	{
+		SetupApple();
+		WeakReference[] references = [];
+		var root = new ContentPage();
+		var navigation = new NavigationPage(root);
+
+		await AttachAndRun(navigation, async _ =>
+		{
+			await root.OnLoadedAsync();
+			references = await PushPlayAndPopMediaPageAsync(navigation);
+		});
+
+		await AssertionExtensions.WaitForGC(references);
+	}
+
+	// Its own method, so that no local of the test keeps the popped page or its MediaElement alive while the garbage collector runs.
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	async Task<WeakReference[]> PushPlayAndPopMediaPageAsync(NavigationPage navigation)
+	{
+		var mediaElement = CreateMediaElement();
+		var mediaPage = new ContentPage { Content = new VerticalStackLayout { mediaElement } };
+
+		// The way the Sample's pages release their player. Neither the page nor the app disposes the MediaElement: the handler only disconnects.
+		mediaPage.NavigatedFrom += (_, _) =>
+		{
+			mediaElement.Stop();
+			mediaElement.Handler?.DisconnectHandler();
+		};
+
+		await navigation.PushAsync(mediaPage, false);
+		await mediaPage.OnLoadedAsync();
+		var handler = Assert.IsType<AppleMediaElementHandler>(mediaElement.Handler);
+		mediaElement.Source = ResourceSource(VideoResource);
+		var manager = handler.Manager;
+		Assert.NotNull(manager);
+		await manager.TakeSourceUpdates();
+		await WaitUntilReadyAsync(handler);
+		mediaElement.Play();
+		var player = manager.NativePlayer;
+		Assert.NotNull(player);
+		await WaitUntilAsync(() => player.CurrentTime.Seconds > 0.3, "The playhead did not advance.");
+		WeakReference[] references = [new(mediaElement), new(mediaPage), new(handler), new(handler.PlatformView), new(manager), new(player)];
+
+		await navigation.PopAsync(false);
+
+		// The pop reaches the handlers through the main queue
+		await DrainMainQueueAsync();
+		return references;
 	}
 }

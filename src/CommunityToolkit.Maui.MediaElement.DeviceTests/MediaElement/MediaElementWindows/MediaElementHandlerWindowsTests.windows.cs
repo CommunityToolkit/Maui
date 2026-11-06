@@ -973,4 +973,85 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 			});
 		}
 	}
+
+	[Fact]
+	public async Task HandlerOfAMediaElementWithOpenedMediaIsCollectedWithoutDisposingIt()
+	{
+		SetupWindowsBuilder();
+		await RequireDecoderAsync();
+
+		var (viewReference, handlerReference, platformViewReference, managerReference) = await OpenAndDisconnectAsync();
+
+		// The MediaElement is not disposed (a page only disconnects its handler), so only the handler stopping the status timer, a root while it runs
+		// whose tick handler references the MediaElement, lets it be collected.
+		if (!await AssertionExtensions.WaitForCollect(viewReference, handlerReference, platformViewReference, managerReference))
+		{
+			Assert.Fail($"Still alive after 40 collections: MediaElement {viewReference.IsAlive}, handler {handlerReference.IsAlive}, platform view {platformViewReference.IsAlive}, manager {managerReference.IsAlive}.");
+		}
+
+		async Task<(WeakReference View, WeakReference Handler, WeakReference PlatformView, WeakReference Manager)> OpenAndDisconnectAsync()
+		{
+			var view = NewMediaElement();
+			var handler = await InvokeOnMainThreadAsync(() => CreateHandler<WinMediaHandler>(view));
+			await OpenAsync(view, VideoSource);
+
+			// Setting the Source started the status timer, a root while it runs. OnMediaElementMediaOpened creates the Metadata helper after it raised MediaOpened, so once the helper exists the open has finished before the disconnect.
+			var openedManager = new WeakReference(handler.Manager);
+			await WaitUntilAsync(() => openedManager.Target is MediaManager manager && WinMediaReflection.GetField<object?>(manager, "metadata") is not null,
+				"Opening the media did not finish (no Metadata helper), so the status timer this test covers may not run.");
+
+			return await InvokeOnMainThreadAsync(() =>
+			{
+				(WeakReference View, WeakReference Handler, WeakReference PlatformView, WeakReference Manager) references = (new(view), new(handler), new(handler.PlatformView), new(handler.Manager));
+
+				((IElementHandler)handler).DisconnectHandler();
+				view.Handler = null;
+				return references;
+			});
+		}
+	}
+
+	[Fact]
+	public async Task StatusTimerDoesNotRestartWhenMediaOpensAfterTheHandlerDisconnected()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+
+		var view = NewMediaElement();
+
+		// A timer that the red run starts would otherwise keep ticking into the tests that follow.
+		RegisterCleanup(view.Dispose);
+		var handler = await InvokeOnMainThreadAsync(() =>
+		{
+			var createdHandler = CreateHandler<WinMediaHandler>(view);
+
+			// Resolved on the UI thread because the worker thread below has no dispatcher of its own to find it with.
+			_ = view.Dispatcher;
+			return createdHandler;
+		});
+
+		// The same call while the handler is connected starts the timer, so the null at the end comes from the disconnect and not from a
+		// MediaOpened that never starts the timer.
+		await InvokeOnMainThreadAsync(() => Assert.Null(WinMediaReflection.GetField<object?>(view, "timer")));
+		await Task.Run(() => ((IMediaElement)view).MediaOpened());
+		await FlushDispatcherAsync();
+		await InvokeOnMainThreadAsync(() => Assert.NotNull(WinMediaReflection.GetField<object?>(view, "timer")));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			((IElementHandler)handler).DisconnectHandler();
+
+			// MediaElement relies on DisconnectHandler clearing Handler, as it does when a page is left, so the test checks that instead of clearing it.
+			Assert.Null(view.Handler);
+			Assert.Null(WinMediaReflection.GetField<object?>(view, "timer"));
+		});
+
+		// The player raises MediaOpened on its own worker thread, so an open that was already running when the page disconnected the handler reaches
+		// MediaElement after the disconnect stopped the status timer. A real open cannot be held at that point, so this raises the same call on a worker thread.
+		await Task.Run(() => ((IMediaElement)view).MediaOpened());
+		await FlushDispatcherAsync();
+
+		// The timer is a root whose tick handler references the MediaElement, so one that started after the disconnect keeps a page that only disconnected alive.
+		await InvokeOnMainThreadAsync(() => Assert.Null(WinMediaReflection.GetField<object?>(view, "timer")));
+	}
 }

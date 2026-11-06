@@ -532,9 +532,22 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		RaiseEvent(args, nameof(MediaFailed));
 	}
 
+	internal void StopPositionTimer() => ClearTimer();
+
 	internal void OnMediaOpened()
 	{
-		InitializeTimer();
+		// Windows raises MediaOpened on the player's worker thread, so an open that was already running when the handler disconnected arrives after
+		// StopPositionTimer. Starting the timer there would leave a root for the MediaElement that nothing stops again. Handler is checked on the
+		// UI thread, where DisconnectHandler clears it, so a disconnect cannot run between the check and the start.
+		if (Dispatcher.IsDispatchRequired)
+		{
+			Dispatcher.Dispatch(InitializeTimerWhileConnected);
+		}
+		else
+		{
+			InitializeTimerWhileConnected();
+		}
+
 		RaiseEvent(EventArgs.Empty, nameof(MediaOpened));
 	}
 
@@ -637,6 +650,16 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		OnPositionRequested();
 		OnUpdateStatus();
 		Handler?.Invoke(nameof(StatusUpdated));
+	}
+
+	void InitializeTimerWhileConnected()
+	{
+		if (Handler is null)
+		{
+			return;
+		}
+
+		InitializeTimer();
 	}
 
 	void InitializeTimer()
