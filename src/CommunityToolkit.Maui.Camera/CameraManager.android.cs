@@ -770,15 +770,10 @@ partial class CameraManager
 			}
 		}
 
-		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
-		{
-			if (videoRecordingState is { } activeRecordingState)
-			{
-				await activeRecordingState.Started.WaitAsync(token);
-			}
-
-			return;
-		}
+		// The semaphore serializes the starts and the code above released the state of the earlier recording: a state that is still there
+		// would be a bug of this class, which must not be mistaken for a start that joins another one
+		var recordingState = VideoRecordingState.TryStart(ref videoRecordingState)
+			?? throw new InvalidOperationException("The state of the previous video recording was not released.");
 
 		var recordingRequested = false;
 
@@ -898,6 +893,7 @@ partial class CameraManager
 			// Once export begins the recording cannot be retried without appending it twice, so any failure is terminal. The cleanup is the
 			// first thing the finally block does, so that a session that can not be restored never leaves the recording state behind
 			// (a later StopVideoRecording would export the recording into its stream a second time)
+			var isVideoExported = false;
 			try
 			{
 				// Without a video that can be played the caller gets the failure instead of its stream, which would look like a successful
@@ -922,18 +918,41 @@ partial class CameraManager
 				}
 
 				ObjectDisposedException.ThrowIf(isDisposed || !ReferenceEquals(recordingState, videoRecordingState), this);
+				isVideoExported = true;
 			}
 			finally
 			{
 				CleanupVideoRecordingResources(recordingState);
-				await ReturnToPhotoSessionAsync();
+
+				// The failure of an export is the one to report; the session is restored after a failed export all the same
+				if (!isVideoExported)
+				{
+					await ReturnToPhotoSessionAsync();
+				}
 			}
+
+			await RestorePhotoSessionAfterExportAsync();
 
 			return recordingStream;
 		}
 		finally
 		{
 			recordingState.StopSemaphore.Release();
+		}
+	}
+
+	// The video is exported already: a session that can not be restored must not take it away from the caller, who has no other way to
+	// get it, so the failure goes to the ErrorOccurred event of the view instead
+	async Task RestorePhotoSessionAfterExportAsync()
+	{
+		try
+		{
+			await ReturnToPhotoSessionAsync();
+		}
+		catch (System.Exception ex) when (!isDisposed)
+		{
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to restore the photo session after the video recording: {ex}");
+			cameraView.OnErrorOccurred(ex);
 		}
 	}
 

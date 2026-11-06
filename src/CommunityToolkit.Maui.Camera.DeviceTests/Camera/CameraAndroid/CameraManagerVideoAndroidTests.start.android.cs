@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -83,7 +82,14 @@ public partial class CameraManagerVideoAndroidTests
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
-			await Assert.ThrowsAnyAsync<Exception>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
+			if (failure is "cacheDirectory")
+			{
+				await Assert.ThrowsAsync<Java.IO.IOException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
+			}
+			else
+			{
+				await Assert.ThrowsAsync<Java.Lang.SecurityException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
+			}
 
 			var stopped = await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
 
@@ -92,10 +98,11 @@ public partial class CameraManagerVideoAndroidTests
 		}, mauiContext: new TestMauiContext(MauiContext, context));
 	}
 
-	// The session can not be restored after the recording here (its camera has no CameraSelector), which StopVideoRecording reports. The
-	// recording state and the recording file are released all the same, otherwise every later StartVideoRecording would be rejected.
+	// The session can not be restored after the recording here (its camera has no CameraSelector). The video is exported by then, and the caller
+	// has no other way to get it: the stop returns it, and the failure of the restore goes to ErrorOccurred. The recording state and the recording
+	// file are released all the same, otherwise every later StartVideoRecording would be rejected.
 	[Fact]
-	public async Task AStopVideoRecordingThatCanNotRestoreThePhotoSessionStillReleasesTheRecordingForTheNextStart()
+	public async Task AStopVideoRecordingThatCanNotRestoreThePhotoSessionStillReturnsTheVideoReportsTheFailureAndReleasesTheRecordingForTheNextStart()
 	{
 		SetupBuilder();
 		RequireVideoRecording();
@@ -105,14 +112,17 @@ public partial class CameraManagerVideoAndroidTests
 
 		await RunWithStreamingSessionAsync(async session =>
 		{
+			using var errors = new CameraErrorRecorder(session.View);
 			var camera = session.View.SelectedCamera!;
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 			session.View.SelectedCamera = new CameraInfo("Selector-less camera", "no-selector", CameraPosition.Rear, false, 1, 1, [], null!);
 
-			var exception = await Assert.ThrowsAsync<CameraException>(() => session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout));
+			var video = await StopAndReadAsync(session, first);
 
-			Assert.Equal("Unable to retrieve CameraSelector", exception.Message);
+			AssertIsAPlayableVideo(video);
+			var error = Assert.IsType<CameraException>(Assert.Single(errors.Errors));
+			Assert.Equal("Unable to retrieve CameraSelector", error.Message);
 			Assert.Null(GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState"));
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecording"));
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecordingFile"));
@@ -122,6 +132,33 @@ public partial class CameraManagerVideoAndroidTests
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before, "The StartVideoRecording after the failed stop recorded nothing (no recording file received data).");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, second));
+		}, includeRecordAudio: true);
+	}
+
+	// #3311: CameraX finalizes a recording before it started. The start reports it, and nothing is left for the stop that was called meanwhile.
+	[Fact]
+	public async Task AStartVideoRecordingThatCameraXFinalizesBeforeItStartedThrowsCameraExceptionAndTheStopReturnsStreamNull()
+	{
+		SetupBuilder();
+		RequireVideoRecording();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			using var destination = new MemoryStream();
+			var start = session.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState");
+			Assert.NotNull(recordingState);
+			Assert.False(start.IsCompleted);
+			var stop = session.Manager.StopVideoRecording(CancellationToken.None);
+
+			recordingState.OnFinalized(new CameraException("CameraX finalized the recording before it started."));
+
+			var exception = await Assert.ThrowsAsync<CameraException>(() => start.WaitAsync(CameraTimeout));
+			Assert.Equal("CameraX finalized the recording before it started.", exception.Message);
+			Assert.Same(Stream.Null, await stop.WaitAsync(CameraTimeout));
+			Assert.Same(Stream.Null, await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout));
+			Assert.Null(GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState"));
+			Assert.Equal(0, destination.Length);
 		}, includeRecordAudio: true);
 	}
 
