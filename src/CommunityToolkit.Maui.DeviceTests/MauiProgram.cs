@@ -45,7 +45,10 @@ public static class MauiProgram
 
 #if WINDOWS
 		// The Maps tests answer the request for the Bing control with a stand-in, so no real Bing Maps key is needed.
+		// The Maps device tests stay until the deprecated library is removed, so CS0618 is suppressed only around this call.
+#pragma warning disable CS0618
 		builder.UseMauiCommunityToolkitMaps("device-tests-placeholder-key");
+#pragma warning restore CS0618
 #endif
 	}
 }

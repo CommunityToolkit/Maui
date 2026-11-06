@@ -11,6 +11,7 @@ namespace CommunityToolkit.Maui.Maps;
 [SupportedOSPlatform("Android21.0")]
 [SupportedOSPlatform("Windows10.0.17763")]
 [SupportedOSPlatform("Tizen6.5")]
+[Obsolete(DeprecationMessages.Maps)]
 public static class AppBuilderExtensions
 {
 	/// <summary>
@@ -44,6 +45,7 @@ public static class AppBuilderExtensions
 	/// </code>
 	/// </example>
 	/// 
+	[Obsolete(DeprecationMessages.Maps)]
 	public static MauiAppBuilder UseMauiCommunityToolkitMaps(this MauiAppBuilder builder, string key)
 	{
 		builder.ConfigureMauiHandlers(handlers =>
