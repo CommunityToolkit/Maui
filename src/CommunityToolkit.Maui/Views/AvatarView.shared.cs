@@ -168,6 +168,16 @@ public partial class AvatarView : Border, IAvatarView
 		wasImageLoading = isLoading;
 	}
 
+	/// <inheritdoc/>
+	protected override void OnBindingContextChanged()
+	{
+		base.OnBindingContextChanged();
+
+		// The image is the Content only while it shows: after a failed load the text replaces it, and an Element out of the tree loses the
+		// BindingContext it inherits, and with it the bindings of its ImageSource (the Email of a GravatarImageSource, for example).
+		avatarImage.BindingContext = BindingContext;
+	}
+
 	static void OnCharacterSpacingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var avatarView = (AvatarView)bindable;
@@ -286,16 +296,6 @@ public partial class AvatarView : Border, IAvatarView
 			FontAutoScalingEnabled);
 		Handler?.UpdateValue(nameof(ITextStyle.Font));
 		InvalidateMeasure();
-	}
-
-	/// <inheritdoc/>
-	protected override void OnBindingContextChanged()
-	{
-		base.OnBindingContextChanged();
-
-		// The image is the Content only while it shows: after a failed load the text replaces it, and an Element out of the tree loses the
-		// BindingContext it inherits, and with it the bindings of its ImageSource (the Email of a GravatarImageSource, for example).
-		avatarImage.BindingContext = BindingContext;
 	}
 
 	void HandleImageChanged(ImageSource? newValue)

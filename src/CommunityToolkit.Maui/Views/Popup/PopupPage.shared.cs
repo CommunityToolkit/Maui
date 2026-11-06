@@ -370,6 +370,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		popup.TeardownPlatform();
 	}
 
+	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
+	// If either value is false, do not dismiss Popup
+	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+
 	// Static PopupOptions (e.g. PopupOptions.Empty) outlive the PopupPage, so every path that closes the popup must unsubscribe from them; the -= calls are idempotent
 	void ReleasePopupResources()
 	{
@@ -517,10 +521,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			RaisePopupClosedForDismissalByNavigation();
 		}
 	}
-
-	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
-	// If either value is false, do not dismiss Popup
-	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
 
 	bool TryInheritHideSoftInputFromPresentingPage(in Page? presentingPage)
 	{

@@ -91,10 +91,24 @@ public partial class Popup : ContentView, IPaddingElement, IView
 		set => base.Padding = value;
 	}
 
+	// .NET MAUI's layout uses an explicit size (IView.Width and IView.Height) even when it is larger than the space available, so a Popup
+	// whose WidthRequest or HeightRequest is larger than the window would cover the window, edge to edge, with no space left to tap outside of it.
+	double IView.Width => GetExplicitSize(WidthRequestProperty, maximumDisplaySize.Width);
+
+	double IView.Height => GetExplicitSize(HeightRequestProperty, maximumDisplaySize.Height);
+
+	// Re-implementing IView maps its members to the public members this class declares, but Popup.Margin is the margin of the PopupBorder,
+	// not of the Popup inside it: keep the implementation of View, which returns View.Margin
+	Thickness IView.Margin => base.Margin;
+
 	/// <summary>
 	/// Close the Popup.
 	/// </summary>
 	public virtual Task CloseAsync(CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult(false), token);
+
+	// Padding is the inherited PaddingElement.PaddingProperty; its default value comes from IPaddingElement.PaddingDefaultValueCreator
+	// Like the default values created below, it has a lower precedence than a Style, unlike a value set in the constructor
+	Thickness IPaddingElement.PaddingDefaultValueCreator() => Options.DefaultPopupSettings.Padding;
 
 	internal void NotifyPopupIsOpened()
 	{
@@ -114,16 +128,6 @@ public partial class Popup : ContentView, IPaddingElement, IView
 			TeardownPlatform();
 		}
 	}
-
-	// .NET MAUI's layout uses an explicit size (IView.Width and IView.Height) even when it is larger than the space available, so a Popup
-	// whose WidthRequest or HeightRequest is larger than the window would cover the window, edge to edge, with no space left to tap outside of it.
-	double IView.Width => GetExplicitSize(WidthRequestProperty, maximumDisplaySize.Width);
-
-	double IView.Height => GetExplicitSize(HeightRequestProperty, maximumDisplaySize.Height);
-
-	// Re-implementing IView maps its members to the public members this class declares, but Popup.Margin is the margin of the PopupBorder,
-	// not of the Popup inside it: keep the implementation of View, which returns View.Margin
-	Thickness IView.Margin => base.Margin;
 
 	internal void SetupPlatform() => OnPlatformPopupOpened();
 
@@ -148,30 +152,6 @@ public partial class Popup : ContentView, IPaddingElement, IView
 		}
 	}
 
-	// Same as VisualElement's IView.Width and IView.Height, but limited to maximumSize
-	double GetExplicitSize(BindableProperty sizeRequestProperty, double maximumSize)
-	{
-		var sizeRequest = (double)GetValue(sizeRequestProperty);
-		if (!IsSet(sizeRequestProperty) || sizeRequest is -1d)
-		{
-			return double.NaN;
-		}
-
-		return Math.Min(Math.Max(sizeRequest, 0), maximumSize);
-	}
-
-	// Padding is the inherited PaddingElement.PaddingProperty; its default value comes from IPaddingElement.PaddingDefaultValueCreator
-	// Like the default values created below, it has a lower precedence than a Style, unlike a value set in the constructor
-	Thickness IPaddingElement.PaddingDefaultValueCreator() => Options.DefaultPopupSettings.Padding;
-
-	static object CreateDefaultMargin(BindableObject bindable) => Options.DefaultPopupSettings.Margin;
-
-	static object CreateDefaultHorizontalOptions(BindableObject bindable) => Options.DefaultPopupSettings.HorizontalOptions;
-
-	static object CreateDefaultVerticalOptions(BindableObject bindable) => Options.DefaultPopupSettings.VerticalOptions;
-
-	static object CreateDefaultCanBeDismissedByTappingOutsideOfPopup(BindableObject bindable) => Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
-
 	private protected PopupPage GetPopupPage()
 	{
 		var parent = Parent;
@@ -187,6 +167,26 @@ public partial class Popup : ContentView, IPaddingElement, IView
 		}
 
 		throw new PopupNotFoundException();
+	}
+
+	static object CreateDefaultMargin(BindableObject bindable) => Options.DefaultPopupSettings.Margin;
+
+	static object CreateDefaultHorizontalOptions(BindableObject bindable) => Options.DefaultPopupSettings.HorizontalOptions;
+
+	static object CreateDefaultVerticalOptions(BindableObject bindable) => Options.DefaultPopupSettings.VerticalOptions;
+
+	static object CreateDefaultCanBeDismissedByTappingOutsideOfPopup(BindableObject bindable) => Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+
+	// Same as VisualElement's IView.Width and IView.Height, but limited to maximumSize
+	double GetExplicitSize(BindableProperty sizeRequestProperty, double maximumSize)
+	{
+		var sizeRequest = (double)GetValue(sizeRequestProperty);
+		if (!IsSet(sizeRequestProperty) || sizeRequest is -1d)
+		{
+			return double.NaN;
+		}
+
+		return Math.Min(Math.Max(sizeRequest, 0), maximumSize);
 	}
 
 	partial void OnPlatformPopupOpened();

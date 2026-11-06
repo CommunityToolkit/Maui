@@ -105,6 +105,13 @@ public static partial class NavigationBar
 
 	internal static partial void RemapForControls();
 
+#if !ANDROID
+	internal static partial void RemapForControls()
+	{
+
+	}
+#endif
+
 	// A page clearing its value is detected in the coerce callbacks: .NET MAUI coerces the value on every SetValue and ClearValue, also when clearing it
 	// changes no value (a value equal to the default) and so raises no PropertyChanged for the page handler's mappings.
 	static object CoerceColor(BindableObject bindable, object value)
@@ -122,11 +129,4 @@ public static partial class NavigationBar
 	static partial void RestoreNavigationBarColorIfCleared(BindableObject bindable);
 
 	static partial void RestoreNavigationBarAppearanceIfCleared(BindableObject bindable);
-
-#if !ANDROID
-	internal static partial void RemapForControls()
-	{
-
-	}
-#endif
 }

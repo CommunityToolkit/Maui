@@ -271,16 +271,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 	}
 
-	// Disposing cancels the token sources, which only ends the waits for the state animations: the element has to stop them too, and a
-	// state change that still waits for its abort must not start new ones. The animations are taken before the cancellation: a state update
-	// that the cancellation ends lets go of them.
-	StateAnimations? StopStateUpdates()
-	{
-		Interlocked.Increment(ref stateChangeCount);
-
-		return Interlocked.Exchange(ref stateAnimations, null);
-	}
-
 	static void OnTappedCompleted(in TouchBehavior touchBehavior)
 	{
 		if (!touchBehavior.CanExecute || (touchBehavior.LongPressCommand is not null && touchBehavior.CurrentInteractionStatus is TouchInteractionStatus.Completed))
@@ -536,6 +526,36 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		};
 
 		VisualStateManager.GoToState(visualElement, state);
+	}
+
+	// A value of the element itself is replaced by a colour the behavior sets, while one that MAUI applies from a binding, DynamicResource,
+	// AppThemeBinding or Style is only hidden by it. Clearing the element's value tells them apart: it changes nothing in the second case, and
+	// in the first the value is set back at once.
+	static bool IsLocalBackgroundColor(VisualElement element)
+	{
+		var backgroundColor = element.BackgroundColor;
+		element.ClearValue(VisualElement.BackgroundColorProperty);
+
+		if (IsSameColor(element.BackgroundColor, backgroundColor))
+		{
+			return false;
+		}
+
+		element.SetValue(VisualElement.BackgroundColorProperty, backgroundColor);
+
+		return true;
+	}
+
+	static bool IsSameColor(Color? color, Color? other) => color?.Equals(other) ?? other is null;
+
+	// Disposing cancels the token sources, which only ends the waits for the state animations: the element has to stop them too, and a
+	// state change that still waits for its abort must not start new ones. The animations are taken before the cancellation: a state update
+	// that the cancellation ends lets go of them.
+	StateAnimations? StopStateUpdates()
+	{
+		Interlocked.Increment(ref stateChangeCount);
+
+		return Interlocked.Exchange(ref stateAnimations, null);
 	}
 
 	async Task<bool> SetOpacity(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, TimeSpan duration, Easing? easing, CancellationToken token)
@@ -1130,26 +1150,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		isBackgroundColorApplied = false;
 		defaultBackgroundColor = appliedBackgroundColor = element.BackgroundColor;
 	}
-
-	// A value of the element itself is replaced by a colour the behavior sets, while one that MAUI applies from a binding, DynamicResource,
-	// AppThemeBinding or Style is only hidden by it. Clearing the element's value tells them apart: it changes nothing in the second case, and
-	// in the first the value is set back at once.
-	static bool IsLocalBackgroundColor(VisualElement element)
-	{
-		var backgroundColor = element.BackgroundColor;
-		element.ClearValue(VisualElement.BackgroundColorProperty);
-
-		if (IsSameColor(element.BackgroundColor, backgroundColor))
-		{
-			return false;
-		}
-
-		element.SetValue(VisualElement.BackgroundColorProperty, backgroundColor);
-
-		return true;
-	}
-
-	static bool IsSameColor(Color? color, Color? other) => color?.Equals(other) ?? other is null;
 
 	async Task<bool> RunAnimationTask(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)
 	{

@@ -256,6 +256,16 @@ public class DockLayoutTests : BaseTest
 
 	#endregion
 
+	[Fact]
+	public void DockLayoutManager_NullDockLayout_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new DockLayoutManager(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("dockLayout", exception.ParamName);
+	}
+
 	class TestView : View
 	{
 		readonly Size size;
@@ -273,15 +283,5 @@ public class DockLayoutTests : BaseTest
 		{
 			return new Size(Math.Min(size.Width, widthConstraint), Math.Min(size.Height, heightConstraint));
 		}
-	}
-
-	[Fact]
-	public void DockLayoutManager_NullDockLayout_ThrowsArgumentNullException()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var exception = Assert.Throws<ArgumentNullException>(() => new DockLayoutManager(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		Assert.Equal("dockLayout", exception.ParamName);
 	}
 }

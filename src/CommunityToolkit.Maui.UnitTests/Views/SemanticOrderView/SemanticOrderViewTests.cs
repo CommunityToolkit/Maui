@@ -47,14 +47,6 @@ public class SemanticOrderViewTests : BaseViewTest
 		Assert.Equal(entry, semanticOrderView.ViewOrder.Skip(1).First());
 	}
 
-	class MockSemanticOrderView : Maui.Views.SemanticOrderView
-	{
-		public MockSemanticOrderView()
-		{
-
-		}
-	}
-
 	[Fact]
 	public void SetVirtualView_NullView_ThrowsArgumentNullException()
 	{
@@ -63,5 +55,13 @@ public class SemanticOrderViewTests : BaseViewTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		Assert.Equal("view", exception.ParamName);
+	}
+
+	class MockSemanticOrderView : Maui.Views.SemanticOrderView
+	{
+		public MockSemanticOrderView()
+		{
+
+		}
 	}
 }

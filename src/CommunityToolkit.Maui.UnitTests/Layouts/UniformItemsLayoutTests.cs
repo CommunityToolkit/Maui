@@ -119,6 +119,16 @@ public class UniformItemsLayoutTests : BaseTest
 		Assert.Equal(UniformItemLayoutDefaults.MaxColumns, layout.MaxColumns);
 	}
 
+	[Fact]
+	public void UniformItemsLayoutManager_NullUniformItemsLayout_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new UniformItemsLayoutManager(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("uniformItemsLayout", exception.ParamName);
+	}
+
 	class TestView : View
 	{
 		readonly Size size;
@@ -136,15 +146,5 @@ public class UniformItemsLayoutTests : BaseTest
 		{
 			return size;
 		}
-	}
-
-	[Fact]
-	public void UniformItemsLayoutManager_NullUniformItemsLayout_ThrowsArgumentNullException()
-	{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		var exception = Assert.Throws<ArgumentNullException>(() => new UniformItemsLayoutManager(null));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-
-		Assert.Equal("uniformItemsLayout", exception.ParamName);
 	}
 }

@@ -124,6 +124,9 @@ public partial class MauiDrawingView
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
 
+	internal void RaiseAttachedToWindow() =>
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(AttachedToWindow));
+
 	void OnStart(PointF point)
 	{
 		isDrawing = true;
@@ -209,9 +212,6 @@ public partial class MauiDrawingView
 	// DrawingCancelled is declared with MauiDrawingStartedEventArgs, so it is raised with them: the point where the cancelled drawing started
 	void OnDrawingCancelled() =>
 		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(previousPoint), nameof(DrawingCancelled));
-
-	internal void RaiseAttachedToWindow() =>
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(AttachedToWindow));
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 

@@ -210,16 +210,6 @@ public partial class TouchBehavior : IDisposable
 		touchBehavior.SetChildrenInputTransparent(touchBehavior.ShouldMakeChildrenInputTransparent);
 	}
 
-	async Task HandleLongPress(CancellationToken token)
-	{
-		if (Element is null)
-		{
-			return;
-		}
-
-		await gestureManager.HandleLongPress(this, token);
-	}
-
 	// Another TouchBehavior attached to the same element relies on what the attach changed on the platform view (Android: clickable, iOS and
 	// Mac Catalyst: user interaction): the first behavior to attach reads the view's own values, the last one to detach gives them back.
 	static TouchBehavior? GetOtherAttachedTouchBehavior(VisualElement element, TouchBehavior behavior) =>
@@ -259,6 +249,16 @@ public partial class TouchBehavior : IDisposable
 		}
 
 		return true;
+	}
+
+	async Task HandleLongPress(CancellationToken token)
+	{
+		if (Element is null)
+		{
+			return;
+		}
+
+		await gestureManager.HandleLongPress(this, token);
 	}
 
 	void SetChildrenInputTransparent(bool shouldSetTransparent)
