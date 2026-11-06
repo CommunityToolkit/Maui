@@ -30,6 +30,11 @@ partial class CameraManager
 	// camera recording, and a double tap failed the first start by replacing its MediaCapture.
 	Task pendingVideoRecordingStart = Task.CompletedTask;
 
+	// A stop waits for an earlier stop, and a start for a stop, as on Android, iOS and Mac Catalyst: the stop of a recording that turned the camera
+	// on turns the camera off only once Media Foundation has finished the recording. Without it a second stop (a double tap) turned the camera off
+	// under the first stop, which lost its video, and a start right after a stop prepared its recording on the camera that the stop then released.
+	Task pendingVideoRecordingStop = Task.CompletedTask;
+
 	// The start of the preview and the start of a recording wait for each other instead of replacing each other's MediaCapture: a recording
 	// that replaced the app's pending preview would turn off a preview that the app started
 	Task pendingPreviewStart = Task.CompletedTask;
@@ -184,7 +189,7 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
-		await WaitForTheOtherStartAsync(pendingVideoRecordingStart, token);
+		await WaitForTheEarlierOperationAsync(pendingVideoRecordingStart, token);
 
 		// A preview that the app starts is the app's to stop, also when a recording had turned the camera on before. The flag is set after the wait,
 		// because the recording that was waited for sets it. Only the restart of a camera switch keeps the camera of a recording.
@@ -196,15 +201,22 @@ partial class CameraManager
 		await start;
 	}
 
-	static async Task WaitForTheOtherStartAsync(Task otherStart, CancellationToken token)
+	static async Task WaitForTheEarlierOperationAsync(Task earlierOperation, CancellationToken token)
 	{
+		if (earlierOperation.IsCompleted)
+		{
+			// Nothing to wait for: the operation behaves as it did before the wait existed, also with a token that is cancelled already (a
+			// StopVideoRecording with a cancelled token still stops the recording)
+			return;
+		}
+
 		try
 		{
-			await otherStart.WaitAsync(token);
+			await earlierOperation.WaitAsync(token);
 		}
 		catch (Exception) when (!token.IsCancellationRequested)
 		{
-			// The other start reports its own failure
+			// The earlier operation reports its own failure to its caller
 		}
 
 		token.ThrowIfCancellationRequested();
@@ -425,7 +437,8 @@ partial class CameraManager
 			return;
 		}
 
-		await WaitForTheOtherStartAsync(pendingPreviewStart, token);
+		await WaitForTheEarlierOperationAsync(pendingVideoRecordingStop, token);
+		await WaitForTheEarlierOperationAsync(pendingPreviewStart, token);
 
 		// Like on Android, iOS and Mac Catalyst, recording turns the camera on. A preview that is marked as started but has no MediaCapture (its
 		// camera could not be opened) is started again as well, and stays marked as started when that fails
@@ -562,9 +575,19 @@ partial class CameraManager
 		}
 	}
 
-	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
+	private partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
-		await WaitForTheOtherStartAsync(pendingVideoRecordingStart, token);
+		// Read before the first await: a start or a stop that arrives later waits for this stop, so this stop must not wait for it
+		var stop = StopVideoRecordingAsync(pendingVideoRecordingStop, pendingVideoRecordingStart, token);
+		pendingVideoRecordingStop = stop;
+
+		return stop;
+	}
+
+	async Task<Stream> StopVideoRecordingAsync(Task earlierStop, Task earlierStart, CancellationToken token)
+	{
+		await WaitForTheEarlierOperationAsync(earlierStop, token);
+		await WaitForTheEarlierOperationAsync(earlierStart, token);
 
 		if (!isInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
 		{

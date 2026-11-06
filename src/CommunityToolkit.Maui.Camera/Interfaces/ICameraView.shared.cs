@@ -142,7 +142,7 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <remarks>Ensure that the stream is properly disposed of after the recording is complete. The recording will be cancelled if cancellation token is triggered. Call <see cref="ICameraView.StopVideoRecording"/> to return the recorded <see cref="Stream"/>.
 	/// A start while <see cref="StopVideoRecording(CancellationToken)"/> waits for the platform to finish the previous recording waits until that
-	/// stop has returned its video (Android, iOS and Mac Catalyst).
+	/// stop has returned its video (Android, iOS, Mac Catalyst and Windows).
 	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
 	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
@@ -175,7 +175,7 @@ public interface ICameraView : IView
 	/// </summary>
 	/// <remarks>Be sure to properly disposed of the provided <see cref="Stream"/> parameter after the recording has completed. The recording will stop if the cancellation token is triggered.
 	/// A start while <see cref="StopVideoRecording(CancellationToken)"/> waits for the platform to finish the previous recording waits until that
-	/// stop has returned its video (Android, iOS and Mac Catalyst).
+	/// stop has returned its video (Android, iOS, Mac Catalyst and Windows).
 	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
 	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces

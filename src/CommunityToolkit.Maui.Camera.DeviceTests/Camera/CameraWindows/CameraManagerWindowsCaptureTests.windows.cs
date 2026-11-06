@@ -602,6 +602,69 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
+	// Needs a camera with a color frame source, see above. Media Foundation must finish the recording of the first stop before a second stop turns
+	// the camera off, or the first stop loses its video.
+	[Fact]
+	public async Task ASecondStopVideoRecordingOfARecordingThatTurnedTheCameraOnWaitsForTheFirstWhichReturnsTheVideo()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			var first = scope.Manager.StopVideoRecording(CancellationToken.None);
+			var second = scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, await first);
+			Assert.True(destination.Length > 100);
+			Assert.Same(Stream.Null, await second);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A start right after a stop must not prepare its recording on the camera that the stop
+	// then turns off.
+	[Fact]
+	public async Task StartVideoRecordingWhileStopVideoRecordingFinishesARecordingThatTurnedTheCameraOnWaitsAndRecordsAgain()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			using var secondDestination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			var stop = scope.Manager.StopVideoRecording(CancellationToken.None);
+			var restart = scope.Manager.StartVideoRecording(secondDestination, CancellationToken.None);
+
+			Assert.Same(destination, await stop);
+			Assert.True(destination.Length > 100);
+
+			await restart;
+			Assert.True(scope.Access.IsInitialized);
+			Assert.NotNull(scope.Access.MediaRecording);
+			Assert.Same(secondDestination, scope.Access.VideoCaptureStream);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			Assert.Same(secondDestination, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.True(secondDestination.Length > 100);
+			Assert.False(scope.Access.IsInitialized);
+		});
+	}
+
 	static void SkipUnlessTheCameraCanRecord(WindowsCameraManagerScope scope)
 	{
 		var mediaCapture = scope.Access.MediaCapture ?? throw new InvalidOperationException("No MediaCapture.");

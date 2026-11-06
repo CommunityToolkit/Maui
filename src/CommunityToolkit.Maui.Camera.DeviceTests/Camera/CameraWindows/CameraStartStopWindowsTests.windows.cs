@@ -532,9 +532,7 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 			Assert.Same(initialization.MediaCapture, preparation.MediaCapture);
 			Assert.False(recording.IsCompleted, "StartVideoRecording completed without waiting for Media Foundation to prepare the recording.");
 
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-			preparation.Answer.SetResult(null);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+			PrepareWithoutARecording(preparation);
 			await recording.WaitAsync(timeout);
 
 			Assert.True(scope.Access.IsInitialized);
@@ -962,6 +960,66 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 			Assert.False(scope.Access.IsInitialized);
 			Assert.Null(scope.Access.MediaCapture);
 			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The camera that the recording turned on is still on.");
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	// Before the stop waited for nothing that was complete, a token that was cancelled already made the stop throw without stopping, and the
+	// camera that only the recording turned on stayed on
+	[Fact]
+	public async Task StopVideoRecordingWithACancelledTokenAfterARecordingThatTurnedTheCameraOnStillTurnsTheCameraOff()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			initialization.Answer.SetResult(true);
+			await AssertHelpers.AssertEventually(() => mediaFoundation.RecordingPreparations.Count > 0, (int)timeout.TotalMilliseconds,
+				message: "The recording was not prepared once Media Foundation opened the camera.");
+			PrepareWithoutARecording(Assert.Single(mediaFoundation.RecordingPreparations));
+			await recording.WaitAsync(timeout);
+
+			using var cancellation = new CancellationTokenSource();
+			cancellation.Cancel();
+
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(timeout));
+
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The camera that the recording turned on is still on.");
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	// The token of a stop still cancels the wait for a start that is pending: the start goes on and records
+	[Fact]
+	public async Task StopVideoRecordingWhoseTokenCancelsWhileItWaitsForAStartThrowsAndTheStartStillRecords()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+
+			using var cancellation = new CancellationTokenSource();
+			var stop = scope.Manager.StopVideoRecording(cancellation.Token);
+			cancellation.Cancel();
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => stop.WaitAsync(timeout));
+			Assert.Equal(cancellation.Token, exception.CancellationToken);
+
+			initialization.Answer.SetResult(true);
+			await AssertHelpers.AssertEventually(() => mediaFoundation.RecordingPreparations.Count > 0, (int)timeout.TotalMilliseconds,
+				message: "The recording was not prepared once Media Foundation opened the camera.");
+			PrepareWithoutARecording(Assert.Single(mediaFoundation.RecordingPreparations));
+			await recording.WaitAsync(timeout);
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Same(destination, scope.Access.VideoCaptureStream);
+
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(timeout));
+			Assert.False(scope.Access.IsInitialized);
 			Assert.Empty(errors.Errors);
 		});
 	}
