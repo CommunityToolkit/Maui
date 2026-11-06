@@ -484,6 +484,17 @@ partial class CameraManager
 	// cannot start, as when the new recording turns the camera on itself.
 	async Task<bool> DiscardTheRunningRecordingAsync(Stream newStream)
 	{
+		var recording = mediaRecording;
+		var stream = videoCaptureStream;
+		if ((recording is null || stream is null) && finishedVideoStream is null)
+		{
+			return false;
+		}
+
+		// A stream that is refused (AsRandomAccessStream throws for a stream that cannot seek) must neither end the recording that runs nor discard
+		// the video that a cancelled stop left for the next stop
+		_ = newStream.AsRandomAccessStream();
+
 		// A start replaces the video that a cancelled stop left for the next stop, as on Android, iOS and Mac Catalyst
 		if (finishedVideoStream is Stream finishedStream)
 		{
@@ -491,18 +502,13 @@ partial class CameraManager
 			RestoreTheStreamOfTheDiscardedRecording(finishedStream);
 		}
 
-		if (mediaRecording is null || videoCaptureStream is null)
+		if (recording is null || stream is null)
 		{
 			return false;
 		}
 
-		// A stream that is refused (AsRandomAccessStream throws for a stream that cannot seek) must not end the recording that runs
-		_ = newStream.AsRandomAccessStream();
-
 		// A recording that is not finished leaves an MP4 without its moov box, and Media Foundation writes into the stream while it records.
 		// The camera stays on: the new recording prepares on the same MediaCapture.
-		var recording = mediaRecording;
-		var stream = videoCaptureStream;
 		mediaRecording = null;
 		videoCaptureStream = null;
 
@@ -510,6 +516,13 @@ partial class CameraManager
 		{
 			await recording.StopAsync();
 			await recording.FinishAsync();
+		}
+		catch (Exception exception)
+		{
+			// Nobody gets the video of the discarded recording: its failure (Media Foundation ended the recording already, or a camera switch released its
+			// MediaCapture) does not fail the new start, as the end of a replaced recording never does on Android, iOS and Mac Catalyst. A MediaCapture
+			// that cannot record any more fails the preparation below, which turns the camera that the recording turned on off again
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to finish the video recording that a new start replaces: {exception}");
 		}
 		finally
 		{

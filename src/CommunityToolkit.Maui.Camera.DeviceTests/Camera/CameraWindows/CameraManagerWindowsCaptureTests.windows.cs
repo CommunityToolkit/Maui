@@ -711,7 +711,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			SkipUnlessTheCameraCanRecord(scope);
 			scope.Manager.StopCameraPreview();
 			using var destination = new MemoryStream();
-			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
 
 			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
 			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
@@ -720,18 +720,18 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
 
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
 
 			Assert.Null(scope.Access.MediaRecording);
 			Assert.False(scope.Access.IsInitialized);
 			Assert.True(destination.Length > 100);
 			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
 
-			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
+			var result = await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout);
 
 			Assert.Same(destination, result);
 			Assert.Equal(0, result.Position);
-			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
 		});
 	}
 
@@ -744,7 +744,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			SkipUnlessTheCameraCanRecord(scope);
 			scope.Manager.StopCameraPreview();
 			using var destination = new MemoryStream();
-			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
 
 			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
 			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
@@ -752,10 +752,10 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token));
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
 
-			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
 			Assert.True(destination.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
 		});
 	}
@@ -780,26 +780,28 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			using var first = new MemoryStream();
 			first.Write(new byte[16]);
 			using var second = new MemoryStream();
-			await scope.Manager.StartVideoRecording(first, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(captureTimeout);
 
 			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
 			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
 			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
 			var firstRecording = scope.Access.MediaRecording;
+			var firstMediaCapture = scope.Access.MediaCapture;
 
-			await scope.Manager.StartVideoRecording(second, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(captureTimeout);
 
 			Assert.NotSame(firstRecording, scope.Access.MediaRecording);
 			Assert.NotNull(scope.Access.MediaRecording);
 			Assert.Same(second, scope.Access.VideoCaptureStream);
 			Assert.True(scope.Access.IsInitialized, "The camera went off between the two recordings.");
+			Assert.Same(firstMediaCapture, scope.Access.MediaCapture);
 			Assert.Equal(16, first.Length);
 			Assert.Equal(16, first.Position);
 
 			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
 			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
 
-			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
 			Assert.True(second.Length > 100);
 			Assert.True(second.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
 			Assert.Equal(16, first.Length);
@@ -818,20 +820,20 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			SkipUnlessTheCameraCanRecord(scope);
 			scope.Manager.StopCameraPreview();
 			using var destination = new MemoryStream();
-			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
 
 			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
 			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
 			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
 
-			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(captureTimeout);
 			Assert.Equal(0, destination.Length);
 			Assert.Equal(0, destination.Position);
 
 			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
 			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
 
-			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
 			Assert.Equal(0, destination.Position);
 			Assert.Equal(1, CountOccurrences(destination.ToArray(), "moov"u8));
 		});
@@ -860,7 +862,7 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			scope.Manager.StopCameraPreview();
 			using var first = new MemoryStream();
 			using var second = new MemoryStream();
-			await scope.Manager.StartVideoRecording(first, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(captureTimeout);
 
 			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
 			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
@@ -868,18 +870,46 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
 			Assert.True(first.Length > 100);
 
-			await scope.Manager.StartVideoRecording(second, CancellationToken.None);
+			await scope.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(captureTimeout);
 
 			Assert.Equal(0, first.Length);
 			Assert.Equal(0, first.Position);
 
 			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
 			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
-			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
 			Assert.Equal(0, first.Length);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A start with a stream that is refused must not discard the video that a cancelled stop
+	// left for the next stop.
+	[Fact]
+	public async Task StartVideoRecordingWithARefusedStreamAfterAStopThatItsTokenCancelledKeepsTheVideoForTheNextStop()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var first = new MemoryStream();
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(captureTimeout);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StopVideoRecording(cancellation.Token).WaitAsync(captureTimeout));
+
+			using var refused = new NonSeekableStream();
+			await Assert.ThrowsAsync<NotSupportedException>(() => scope.Manager.StartVideoRecording(refused, CancellationToken.None).WaitAsync(captureTimeout));
+
+			Assert.Same(first, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(captureTimeout));
+			Assert.True(first.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The refused start discarded the video that the cancelled stop kept.");
 		});
 	}
 
