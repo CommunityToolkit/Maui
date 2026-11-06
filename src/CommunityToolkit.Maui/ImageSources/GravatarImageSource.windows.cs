@@ -83,14 +83,16 @@ public partial class GravatarImageSource
 				// MAUI collapses an Image without a source; keeping the height avoids a jump when the next picture arrives.
 				return;
 
-			case BitmapSource bitmap when bitmap.PixelHeight > 0:
-				var height = bitmap.GetImageSourceSize(platformButton).Height;
-				if (hostButton.Height >= 0)
-				{
-					height = Math.Min(height, GetRoomForPicture(platformButton, hostButton));
-				}
+			case BitmapImage bitmap when bitmap.PixelHeight > 0:
+				// Before its first layout the Button has no room to give: a picture measured with it would size the Button, and .NET MAUI measures the text of a
+				// Button with its picture above or below only in the room the picture leaves.
+				hostButtonImage.Height = hostButton.Height < 0
+					? 0
+					: Math.Min(bitmap.GetImageSourceSize(platformButton).Height, GetRoomForPicture(platformButton, hostButton));
+				return;
 
-				hostButtonImage.Height = height;
+			case BitmapSource:
+				// IconTintColorBehavior swaps in a blank WriteableBitmap whose pixels are the drawn size in DIP: the drawn size must stay.
 				return;
 
 			default:
