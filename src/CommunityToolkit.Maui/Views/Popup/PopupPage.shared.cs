@@ -111,7 +111,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			TryInheritHideSoftInputFromPresentingPage(GetVisiblePage(navigation));
 
 			await navigation.PushModalAsync(this, false);
-			ThrowIfTheAppCanceledThePush();
+			ThrowIfTheAppCanceledThePush(navigation);
 			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
@@ -143,7 +143,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				await shell.GoToAsync(shellRoute, shellParameters);
 			}
 
-			ThrowIfTheAppCanceledThePush();
+			ThrowIfTheAppCanceledThePush(shell.Navigation);
 			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
@@ -551,10 +551,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		|| (modalPage is NavigationPage navigationPage && navigationPage.Navigation.NavigationStack.Contains(this)));
 
 	// .NET MAUI's Shell returns without pushing, and without an exception, when a Shell.Navigating handler cancels the navigation.
-	// Nothing could close a PopupPage that was never pushed, so ShowPopupAsync would wait forever, and a static IPopupOptions (e.g. PopupOptions.Empty) would keep this PopupPage alive
-	void ThrowIfTheAppCanceledThePush()
+	// Nothing could close a PopupPage that was never pushed, so ShowPopupAsync would wait forever, and a static IPopupOptions (e.g. PopupOptions.Empty) would keep this PopupPage alive.
+	// A page that is not in a Window yet also leaves the PopupPage without a Parent, but keeps it on its ModalStack and pushes it once the page is attached: that push was not canceled
+	void ThrowIfTheAppCanceledThePush(INavigation navigation)
 	{
-		if (Parent is null && !hasRaisedPopupClosed)
+		if (Parent is null && !hasRaisedPopupClosed && !navigation.ModalStack.Contains(this))
 		{
 			ReleasePopupResources();
 			throw new OperationCanceledException("The Popup was not shown because the app canceled the navigation that displays it, for example in a Shell.Navigating handler.");
