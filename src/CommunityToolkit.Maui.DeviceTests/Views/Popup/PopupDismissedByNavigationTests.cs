@@ -21,7 +21,7 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 			var popupClosedCount = 0;
 			var popupPageClosedCount = 0;
 			popup.Closed += (_, _) => popupClosedCount++;
-			var popupPage = new PopupPage(popup, new PopupOptions { Shape = null });
+			var popupPage = new NavigablePopupPage(popup);
 			popupPage.PopupClosed += (_, result) =>
 			{
 				popupPageClosedCount++;
@@ -29,7 +29,7 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 			};
 			var window = new Window(popupPage);
 
-			RaiseNavigatedTo(popupPage);
+			popupPage.RaiseNavigatedTo();
 			RaiseModalPopped(window, popupPage);
 			RaiseModalPopped(window, popupPage);
 
@@ -44,18 +44,25 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 	}
 
 	[Fact]
-	public void PopupClosedIsNotRaisedWhenNavigationRemovesAnotherModalPage()
+	public Task PopupClosedIsNotRaisedWhenNavigationRemovesAnotherModalPage()
 	{
 		SetupBuilder();
-		var popupPageClosedCount = 0;
-		var popupPage = new PopupPage(new Popup(), new PopupOptions { Shape = null });
-		popupPage.PopupClosed += (_, _) => popupPageClosedCount++;
-		var window = new Window(popupPage);
 
-		RaiseNavigatedTo(popupPage);
-		RaiseModalPopped(window, new ContentPage());
+		return InvokeOnMainThreadAsync(async () =>
+		{
+			var popupPageClosedCount = 0;
+			var popupPage = new NavigablePopupPage(new Popup());
+			popupPage.PopupClosed += (_, _) => popupPageClosedCount++;
+			var window = new Window(popupPage);
 
-		Assert.Equal(0, popupPageClosedCount);
+			popupPage.RaiseNavigatedTo();
+			RaiseModalPopped(window, new ContentPage());
+
+			// A wrong report is raised through the Dispatcher, so it arrives after the call that caused it: give it time to arrive, as the positive test does
+			await Task.Delay(100);
+
+			Assert.Equal(0, popupPageClosedCount);
+		});
 	}
 
 	protected override async ValueTask DisposeAsyncCore()
@@ -88,11 +95,9 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 		onModalPopped.Invoke(window, [modalPage]);
 	}
 
-	// PopupPage.OnNavigatedTo is protected, and the constructors of the event arguments are internal to .NET MAUI, which PopupPage does not read
-	static void RaiseNavigatedTo(PopupPage popupPage)
+	sealed class NavigablePopupPage(Popup popup) : PopupPage(popup, new PopupOptions { Shape = null })
 	{
-		var onNavigatedTo = typeof(Page).GetMethod("OnNavigatedTo", BindingFlags.Instance | BindingFlags.NonPublic)
-			?? throw new InvalidOperationException("Page.OnNavigatedTo was not found");
-		onNavigatedTo.Invoke(popupPage, [RuntimeHelpers.GetUninitializedObject(typeof(NavigatedToEventArgs))]);
+		// The constructors of the event arguments are internal to .NET MAUI, and PopupPage does not read them
+		public void RaiseNavigatedTo() => OnNavigatedTo((NavigatedToEventArgs)RuntimeHelpers.GetUninitializedObject(typeof(NavigatedToEventArgs)));
 	}
 }

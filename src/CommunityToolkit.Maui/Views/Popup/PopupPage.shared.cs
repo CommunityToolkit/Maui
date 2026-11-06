@@ -98,6 +98,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			TryInheritHideSoftInputFromPresentingPage(GetVisiblePage(navigation));
 
 			await navigation.PushModalAsync(this, false);
+			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
 		{
@@ -127,6 +128,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			{
 				await shell.GoToAsync(shellRoute, shellParameters);
 			}
+
+			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
 		{
@@ -234,6 +237,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			}
 			finally
 			{
+				// Cleared by the holder of the semaphore only: a concurrent CloseAsync that is canceled while it waits never set the flag, and must not clear the flag of the CloseAsync that is popping this page.
+				// Nothing awaits between here and RaisePopupClosed, so no navigation event can be mistaken for a dismissal in between.
+				isCloseAsyncRunning = false;
 				navigationSemaphoreSlim.Release();
 			}
 
@@ -242,7 +248,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		}
 		finally
 		{
-			isCloseAsyncRunning = false;
 			parentWindow.ModalPopped -= HandleModalPagePopped;
 			NavigatedFrom -= HandleNavigatedFrom;
 		}
@@ -407,6 +412,16 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		var result = new PopupResult(true);
 		Dispatcher.Dispatch(() => InvokePopupClosed(result));
+	}
+
+	// .NET MAUI raises NavigatedTo after the push completes, and not at all while the Window has no handler, so navigation can remove the PopupPage before OnNavigatedTo observes it.
+	// ObserveDismissalByNavigation unsubscribes first, so the call from OnNavigatedTo that follows is harmless
+	void ObserveDismissalByNavigationIfNotClosed()
+	{
+		if (!hasRaisedPopupClosed)
+		{
+			ObserveDismissalByNavigation();
+		}
 	}
 
 	// A PopupPage that navigation removes without CloseAsync (e.g. Shell popping the whole modal stack, or PopModalAsync called by other code) never reaches the end of CloseAsync,

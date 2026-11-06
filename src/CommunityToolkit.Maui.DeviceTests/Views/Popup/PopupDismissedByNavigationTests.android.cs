@@ -9,8 +9,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // The headless runner has no .NET MAUI Window and its activity cannot host a Window handler, so the tests run against a test-owned application whose Window
 // has no handler (the way the Alerts tests do). .NET MAUI's own navigation runs, but a Window without a handler makes a Shell raise no NavigatedTo on the pages it
-// pushes, which is when a popup starts to watch for its removal by navigation. A Shell that removes the popup by switching to another element or by popping the
-// modal NavigationPage is therefore only covered on iOS, and so is replacing the page of the Window, which .NET MAUI cannot do without a Window handler.
+// pushes, so Opened is never raised here. Replacing the page of the Window is only covered on iOS, because .NET MAUI cannot do it without a Window handler.
 public partial class PopupDismissedByNavigationTests
 {
 	[Theory]
@@ -22,7 +21,26 @@ public partial class PopupDismissedByNavigationTests
 		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
 
 		return RunInWindowAsync(shell, firstPage, hostShell: true, _ =>
-			PopupDismissedByNavigationScenarios.CloseTwoPopupsOneAfterTheOther(shell, closeWithClosePopupAsync, static _ => Task.CompletedTask));
+			PopupDismissedByNavigationScenarios.CloseTwoPopupsOneAfterTheOther(shell, closeWithClosePopupAsync, static (_, _) => Task.CompletedTask));
+	}
+
+	// A Window without a handler makes a Shell raise no NavigatedTo on the pages it pushes, so these two cover a PopupPage that navigation removes before NavigatedTo
+	[Fact]
+	public Task ShowPopupAsyncCompletesWhenShellPopsThePopupFromTheModalNavigationPage()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupDismissedByNavigationScenarios.CompleteWhenShellPopsThePopupFromTheModalNavigationPage(shell, isOpenedRaised: false));
+	}
+
+	[Fact]
+	public Task ShowPopupAsyncCompletesWhenShellSwitchesToAnotherShellElement()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupDismissedByNavigationScenarios.CompleteWhenShellSwitchesToAnotherShellElement(shell, isOpenedRaised: false));
 	}
 
 	[Fact]

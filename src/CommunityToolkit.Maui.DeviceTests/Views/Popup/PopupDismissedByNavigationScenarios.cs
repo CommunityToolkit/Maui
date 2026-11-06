@@ -25,11 +25,12 @@ static class PopupDismissedByNavigationScenarios
 	}
 
 	// Two popups on top of a modal NavigationPage were never closed: CloseAsync popped the whole NavigationPage, and ShowPopupAsync never completed.
-	public static async Task CloseTwoPopupsOneAfterTheOther(Shell shell, bool closeWithClosePopupAsync, Func<bool, Task> checkPlatformState)
+	public static async Task CloseTwoPopupsOneAfterTheOther(Shell shell, bool closeWithClosePopupAsync, Func<NavigationPage, int?, Task> checkPlatformState)
 	{
 		var modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal" });
 		await shell.Navigation.PushModalAsync(modalNavigationPage, false);
-		await checkPlatformState(true);
+		// null: the platform state before any popup is shown
+		await checkPlatformState(modalNavigationPage, null);
 
 		var lowerPopup = CreatePopup("Lower");
 		var upperPopup = CreatePopup("Upper");
@@ -42,14 +43,14 @@ static class PopupDismissedByNavigationScenarios
 		await upperTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 		Assert.Equal(1, CountPopupPages(modalNavigationPage));
 		Assert.Equal(2, modalNavigationPage.Navigation.NavigationStack.Count());
-		await checkPlatformState(false);
+		await checkPlatformState(modalNavigationPage, 2);
 
 		await Close(shell, lowerPopup, closeWithClosePopupAsync);
 		await lowerTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 		Assert.Equal(0, CountPopupPages(modalNavigationPage));
 		Assert.Single(modalNavigationPage.Navigation.NavigationStack);
 		Assert.Same(modalNavigationPage, Assert.Single(shell.Navigation.ModalStack));
-		await checkPlatformState(false);
+		await checkPlatformState(modalNavigationPage, 1);
 
 		// Closing the popups must leave Shell able to navigate: it neither throws nor keeps the routes of the closed popups
 		await shell.GoToAsync("..").WaitAsync(TimeSpan.FromMilliseconds(timeout));
@@ -57,8 +58,8 @@ static class PopupDismissedByNavigationScenarios
 		Assert.DoesNotContain("PopupPage", shell.CurrentState.Location.OriginalString, StringComparison.Ordinal);
 	}
 
-	// Shell pops the modal NavigationPage with ModalStack[^1].Navigation.PopAsync, which raises no Window.ModalPopped
-	public static async Task CompleteWhenShellPopsTheModalNavigationPageThatContainsThePopup(Shell shell)
+	// Shell's GoToAsync("..") pops the PopupPage from the modal NavigationPage with ModalStack[^1].Navigation.PopAsync, which raises no Window.ModalPopped
+	public static async Task CompleteWhenShellPopsThePopupFromTheModalNavigationPage(Shell shell, bool isOpenedRaised = true)
 	{
 		var modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal" });
 		await shell.Navigation.PushModalAsync(modalNavigationPage, false);
@@ -69,7 +70,7 @@ static class PopupDismissedByNavigationScenarios
 		popup.Opened += (_, _) => hasOpened = true;
 
 		var showPopupTask = shell.ShowPopupAsync(popup, CreateOptions(), token: CancellationToken.None);
-		await AssertionExtensions.AssertEventually(() => CountPopupPages(modalNavigationPage) == 1 && hasOpened, timeout: timeout, message: "The popup was never shown.");
+		await AssertionExtensions.AssertEventually(() => CountPopupPages(modalNavigationPage) == 1 && (hasOpened || !isOpenedRaised), timeout: timeout, message: "The popup was never shown.");
 
 		await shell.GoToAsync("..");
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
@@ -77,9 +78,11 @@ static class PopupDismissedByNavigationScenarios
 		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.Equal(1, closedCount);
 		Assert.DoesNotContain("PopupPage", shell.CurrentState.Location.OriginalString, StringComparison.Ordinal);
+		Assert.Same(modalNavigationPage, Assert.Single(shell.Navigation.ModalStack));
+		Assert.Single(modalNavigationPage.Navigation.NavigationStack);
 	}
 
-	public static async Task CompleteWhenShellSwitchesToAnotherShellElement(Shell shell)
+	public static async Task CompleteWhenShellSwitchesToAnotherShellElement(Shell shell, bool isOpenedRaised = true)
 	{
 		var popup = CreatePopup("Popup");
 		var closedCount = 0;
@@ -87,9 +90,9 @@ static class PopupDismissedByNavigationScenarios
 		popup.Closed += (_, _) => closedCount++;
 		popup.Opened += (_, _) => hasOpened = true;
 
-		// Opened is raised when .NET MAUI reports that the PopupPage was navigated to, which is when the popup starts to watch for its removal by navigation
+		// Opened is raised when .NET MAUI reports that the PopupPage was navigated to. A Window without a handler never reports it, and the removal must be observed regardless
 		var showPopupTask = shell.ShowPopupAsync(popup, CreateOptions(), token: CancellationToken.None);
-		await AssertionExtensions.AssertEventually(() => shell.Navigation.ModalStack.OfType<PopupPage>().Count() == 1 && hasOpened, timeout: timeout, message: "The popup was never shown.");
+		await AssertionExtensions.AssertEventually(() => shell.Navigation.ModalStack.OfType<PopupPage>().Count() == 1 && (hasOpened || !isOpenedRaised), timeout: timeout, message: "The popup was never shown.");
 
 		await shell.GoToAsync("//second");
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));

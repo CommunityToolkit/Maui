@@ -11,6 +11,13 @@ namespace CommunityToolkit.Maui.UnitTests.Views;
 
 public class PopupDismissedByNavigationTests : BaseViewTest
 {
+	public enum NavigationPageRemoval
+	{
+		PopAsync,
+		RemovePage,
+		PopToRootAsync
+	}
+
 	[Theory(Timeout = (int)TestDuration.Short)]
 	[InlineData(RootPageType.Shell)]
 	[InlineData(RootPageType.ContentPage)]
@@ -180,9 +187,9 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public async Task ShowPopupAsync_ShouldCompleteAsDismissedAndRaiseClosedOnce_WhenShellPopsTheModalNavigationPageContainingThePopup()
+	public async Task ShowPopupAsync_ShouldCompleteAsDismissedAndRaiseClosedOnce_WhenShellPopsThePopupFromTheModalNavigationPage()
 	{
-		var (navigation, _, popup, task, closedCount) = await ShowOnePopupOnTopOfAModalNavigationPageAsync(RootPageType.Shell);
+		var (navigation, modalNavigationPage, _, task, closedCount) = await ShowOnePopupOnTopOfAModalNavigationPageAsync(RootPageType.Shell);
 		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
 
 		await shell.GoToAsync("..");
@@ -191,33 +198,110 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.Equal(1, closedCount());
 		Assert.Empty(navigation.ModalStack.OfType<PopupPage>());
-		Assert.NotNull(popup);
+
+		// GoToAsync("..") pops one page: the PopupPage leaves the modal NavigationPage, and the NavigationPage stays on the modal stack
+		Assert.Same(modalNavigationPage, Assert.Single(navigation.ModalStack));
+		Assert.Single(modalNavigationPage.Navigation.NavigationStack);
 	}
 
-	[Fact]
-	public async Task ShowPopupAsync_ShouldCompleteAsDismissedAndRaiseClosedOnce_WhenPopupIsRemovedFromAModalNavigationPageByOtherCode()
+	// PopAsync, RemovePage and PopToRootAsync each remove the PopupPage from the NavigationPage without raising Window.ModalPopped
+	[Theory]
+	[InlineData(NavigationPageRemoval.PopAsync)]
+	[InlineData(NavigationPageRemoval.RemovePage)]
+	[InlineData(NavigationPageRemoval.PopToRootAsync)]
+	public async Task PopupClosed_ShouldBeRaisedOnce_WhenPopupIsRemovedFromAModalNavigationPageByOtherCode(NavigationPageRemoval removal)
 	{
-		// PopAsync, RemovePage and PopToRootAsync each remove the PopupPage from the NavigationPage without raising Window.ModalPopped
-		foreach (var removal in new Func<NavigationPage, PopupPage, Task>[]
-		{
-			(navigationPage, _) => navigationPage.Navigation.PopAsync(false),
-			(navigationPage, popupPage) => { navigationPage.Navigation.RemovePage(popupPage); return Task.CompletedTask; },
-			(navigationPage, _) => navigationPage.Navigation.PopToRootAsync(false),
-		})
-		{
-			var navigation = SetRootPage(RootPageType.ContentPage);
-			var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
-			var closedCount = 0;
-			popupPage.PopupClosed += (_, _) => closedCount++;
-			var modalNavigationPage = new NavigationPage(new ContentPage());
-			await navigation.PushModalAsync(modalNavigationPage, false);
-			await modalNavigationPage.Navigation.PushAsync(popupPage, false);
-			RaiseNavigatedTo(popupPage);
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var closedCount = 0;
+		popupPage.PopupClosed += (_, _) => closedCount++;
+		var modalNavigationPage = new NavigationPage(new ContentPage());
+		await navigation.PushModalAsync(modalNavigationPage, false);
+		await modalNavigationPage.Navigation.PushAsync(popupPage, false);
+		RaiseNavigatedTo(popupPage);
 
-			await removal(modalNavigationPage, popupPage);
+		await RemoveFromNavigationPageAsync(modalNavigationPage, popupPage, removal);
 
-			Assert.Equal(1, closedCount);
+		Assert.Equal(1, closedCount);
+	}
+
+	// .NET MAUI raises NavigatedTo after the push completes, and not at all in a Window without a handler, so a removal can come first
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupClosed_ShouldBeRaisedOnce_WhenNavigationRemovesThePopupPageBeforeNavigatedTo()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var closedCount = 0;
+		popupPage.PopupClosed += (_, _) => closedCount++;
+		var modalNavigationPage = new NavigationPage(new ContentPage());
+		await navigation.PushModalAsync(modalNavigationPage, false);
+
+		await popupPage.ShowAsync(new PushesIntoNavigationPage(modalNavigationPage), TestContext.Current.CancellationToken);
+		Assert.Equal(0, closedCount);
+		await modalNavigationPage.Navigation.PopAsync(false);
+
+		Assert.Equal(1, closedCount);
+	}
+
+	// MockDispatcher runs an action synchronously, which would hide whether the result is raised from inside the navigation that removed the PopupPage
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldRaiseClosedAfterTheNavigationThatRemovedThePopupPageHasFinished()
+	{
+		var dispatchedActions = new Queue<Action>();
+		DispatcherProvider.SetCurrent(new QueueingDispatcherProvider(dispatchedActions));
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		await navigation.PopModalAsync(false);
+
+		Assert.Equal(0, closedCount);
+		Assert.False(showPopupTask.IsCompleted);
+
+		while (dispatchedActions.TryDequeue(out var action))
+		{
+			action();
 		}
+
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+	}
+
+	// A CloseAsync that waited while navigation removed its PopupPage must not pop the page that is on top of the navigation stack by then
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task CloseAsync_ShouldThrowPopupNotFoundException_WhenNavigationRemovesThePopupPageWhileItWaitsForOtherNavigation()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var navigationSemaphore = GetNavigationSemaphore();
+		var otherPage = new ContentPage();
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		Task closeTask;
+		try
+		{
+			closeTask = popupPage.CloseAsync(new PopupResult(false), CancellationToken.None);
+			await navigation.PopModalAsync(false);
+			await navigation.PushModalAsync(otherPage, false);
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => closeTask);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Same(otherPage, Assert.Single(navigation.ModalStack));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -277,8 +361,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		popup.Closed += (_, _) => closedCount++;
 		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
 		var popupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
-		var navigationSemaphore = (SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
-			?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
+		var navigationSemaphore = GetNavigationSemaphore();
 		using var closeCancellationTokenSource = new CancellationTokenSource();
 
 		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
@@ -334,6 +417,26 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Single(shell.Navigation.ModalStack.OfType<PopupPage>());
 	}
 
+	static SemaphoreSlim GetNavigationSemaphore() =>
+		(SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
+		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
+
+	static Task RemoveFromNavigationPageAsync(NavigationPage navigationPage, PopupPage popupPage, NavigationPageRemoval removal)
+	{
+		switch (removal)
+		{
+			case NavigationPageRemoval.PopAsync:
+				return navigationPage.Navigation.PopAsync(false);
+			case NavigationPageRemoval.RemovePage:
+				navigationPage.Navigation.RemovePage(popupPage);
+				return Task.CompletedTask;
+			case NavigationPageRemoval.PopToRootAsync:
+				return navigationPage.Navigation.PopToRootAsync(false);
+			default:
+				throw new NotSupportedException($"{removal} is not supported");
+		}
+	}
+
 	// The unit test environment has no NavigationPage handler, so PushAsync does not raise NavigatedTo, which starts the observation of the PopupPage.
 	// The constructors of the event arguments are internal to .NET MAUI, and PopupPage does not read them
 	static void RaiseNavigatedTo(PopupPage popupPage)
@@ -344,7 +447,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	}
 
 	// Not inlined, so that no local of the test keeps the PopupPage or the Popup alive
-	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	static async Task<(Task<IPopupResult> ShowPopupTask, WeakReference PopupReference, WeakReference PopupPageReference)> ShowAndDismissWithoutKeepingReferencesAsync(INavigation navigation)
 	{
 		var popup = new Popup();
@@ -397,4 +500,60 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 
 	static int CountPopupPages(INavigation navigation, NavigationPage modalNavigationPage) =>
 		navigation.ModalStack.OfType<PopupPage>().Count() + modalNavigationPage.Navigation.NavigationStack.OfType<PopupPage>().Count();
+
+	sealed class QueueingDispatcherProvider(Queue<Action> dispatchedActions) : IDispatcherProvider
+	{
+		readonly QueueingDispatcher dispatcher = new(dispatchedActions);
+
+		public IDispatcher? GetForCurrentThread() => dispatcher;
+	}
+
+	sealed class QueueingDispatcher(Queue<Action> dispatchedActions) : IDispatcher
+	{
+		public bool IsDispatchRequired => true;
+
+		public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
+
+		public bool Dispatch(Action action)
+		{
+			dispatchedActions.Enqueue(action);
+			return true;
+		}
+
+		public bool DispatchDelayed(TimeSpan delay, Action action) => Dispatch(action);
+	}
+
+	// Pushes the PopupPage into the modal NavigationPage the way .NET MAUI does for a popup shown on top of one, which raises no NavigatedTo in the unit test environment
+	sealed class PushesIntoNavigationPage(NavigationPage navigationPage) : INavigation
+	{
+		readonly INavigation navigation = navigationPage.Navigation;
+
+		public IReadOnlyList<Page> NavigationStack => navigation.NavigationStack;
+
+		public IReadOnlyList<Page> ModalStack => navigation.ModalStack;
+
+		public void InsertPageBefore(Page page, Page before) => navigation.InsertPageBefore(page, before);
+
+		public Task<Page> PopAsync() => navigation.PopAsync();
+
+		public Task<Page> PopAsync(bool animated) => navigation.PopAsync(animated);
+
+		public Task<Page> PopModalAsync() => navigation.PopModalAsync();
+
+		public Task<Page> PopModalAsync(bool animated) => navigation.PopModalAsync(animated);
+
+		public Task PopToRootAsync() => navigation.PopToRootAsync();
+
+		public Task PopToRootAsync(bool animated) => navigation.PopToRootAsync(animated);
+
+		public Task PushAsync(Page page) => navigation.PushAsync(page);
+
+		public Task PushAsync(Page page, bool animated) => navigation.PushAsync(page, animated);
+
+		public Task PushModalAsync(Page page) => navigation.PushAsync(page);
+
+		public Task PushModalAsync(Page page, bool animated) => navigation.PushAsync(page, animated);
+
+		public void RemovePage(Page page) => navigation.RemovePage(page);
+	}
 }
