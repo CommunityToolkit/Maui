@@ -17,7 +17,7 @@ static class AppNotificationListing
 
 		try
 		{
-			// Windows never lists a notification that expired, such as the one of a snackbar whose Duration is zero or less
+			// Windows may never list a notification that expired, such as the one of a snackbar whose Duration is zero or less
 			while (notification.Expiration > DateTimeOffset.Now && !await IsListedAsync(notification, timeoutTokenSource.Token))
 			{
 				await Task.Delay(pollingInterval, timeoutTokenSource.Token);

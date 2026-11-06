@@ -122,7 +122,7 @@ public partial class SnackbarTests
 		});
 	}
 
-	// Windows never lists a notification that expired at once, so a Show that waited for its listing would hold the turn of the next Show
+	// Windows may never list a notification that expired at once, so a Show that waited for its listing could hold the turn of the next Show
 	// or Dismiss for the whole bound of that wait.
 	[Theory]
 	[InlineData(0)]
