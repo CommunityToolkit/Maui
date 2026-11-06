@@ -7,7 +7,7 @@ Deprecated: use Microsoft.Maui.Controls.Maps (Windows supported since .NET MAUI 
 In order to use the .NET MAUI Community Toolkit Maps you need to call the extension method in your `MauiProgram.cs` file as follows:
 
 ```csharp
-using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Maps;
 
 public static class MauiProgram
 {
