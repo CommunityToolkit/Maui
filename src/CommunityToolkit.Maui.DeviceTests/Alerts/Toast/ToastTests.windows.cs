@@ -247,6 +247,28 @@ public partial class ToastTests
 		});
 	}
 
+	// Windows may list a notification only a moment after Show returned, and a removal that reaches it first removes nothing. Each Dismiss
+	// follows its Show at once to give that race room; the notification shown last tells when Windows lists what was shown before it.
+	[Fact]
+	public async Task DismissRightAfterShowRemovesTheToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			for (var i = 0; i < 20; i++)
+			{
+				await Toast.Make($"Shown {i}", ToastDuration.Long).Show();
+				await Toast.Make("Other instance").Dismiss();
+			}
+
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Shown after the Dismisses").BuildNotification());
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Shown after the Dismisses"), timeout: 10000, message: "Windows does not list the notification shown after the Dismisses.");
+			Assert.Equal(new[] { "Shown after the Dismisses" }, await GetDisplayedTextsAsync());
+		});
+	}
+
 	// The displayed toast keeps the first Show waiting for its removal, so the token of the second Show is cancelled before the second Show
 	// can remove anything.
 	[Fact]

@@ -288,6 +288,28 @@ public partial class SnackbarTests
 		});
 	}
 
+	// Windows may list a notification only a moment after Show returned, and a removal that reaches it first removes nothing. Each Dismiss
+	// follows its Show at once to give that race room; the notification shown last tells when Windows lists what was shown before it.
+	[Fact]
+	public async Task DismissRightAfterShowDismissesTheSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			for (var i = 0; i < 20; i++)
+			{
+				await Snackbar.Make($"Shown {i}", () => { }, "Undo", longDuration).Show();
+				await Snackbar.Make("Other instance").Dismiss().WaitAsync(dismissTimeout);
+			}
+
+			AppNotificationManager.Default.Show(new AppNotificationBuilder().AddText("Shown after the Dismisses").BuildNotification());
+			await AssertEventually(async () => (await GetAllDisplayedTextsAsync()).Contains("Shown after the Dismisses"), timeout: 10000, message: "Windows does not list the notification shown after the Dismisses.");
+			Assert.Equal(new[] { "Shown after the Dismisses" }, await GetAllDisplayedTextsAsync());
+		});
+	}
+
 	// The Dismiss starts while the Show waits for the removal of the displayed snackbar. The notification shown last tells when Windows lists
 	// what was shown before it, such as a snackbar that the Show displayed after the Dismiss had removed the displayed snackbar.
 	[Fact]
