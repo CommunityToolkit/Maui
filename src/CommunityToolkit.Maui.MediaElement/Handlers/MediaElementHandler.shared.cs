@@ -70,8 +70,11 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapAspect(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateAspect();
 	}
 
@@ -81,8 +84,12 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="mediaElement"/> is <see langword="null"/>.</exception>
 	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(mediaElement);
+
 		handler.MediaManager?.UpdateShouldShowPlaybackControls();
 		handler.PlatformRefreshPlaybackControlsVisibility(mediaElement.ShouldShowPlaybackControls);
 	}
@@ -99,8 +106,11 @@ public partial class MediaElementHandler
 	/// <see cref="MediaElement.Source"/>). Any other exception of the update propagates: to the caller while the update runs synchronously, and on
 	/// the dispatcher once the update continues asynchronously.
 	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		if (handler.MediaManager is not null)
 		{
 			UpdateSource(handler.MediaManager.UpdateSource());
@@ -115,8 +125,11 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateSpeed();
 	}
 
@@ -127,8 +140,11 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateStatus();
 	}
 
@@ -138,8 +154,11 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateVolume();
 	}
 
@@ -149,8 +168,11 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateShouldKeepScreenOn();
 	}
 
@@ -160,8 +182,11 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapShouldMute(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateShouldMute();
 	}
 
@@ -172,8 +197,11 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.Play();
 	}
 
@@ -184,8 +212,11 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.Pause();
 	}
 
@@ -196,8 +227,11 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/>, <paramref name="mediaElement"/> or <paramref name="args"/> is <see langword="null"/>. The method is <see langword="async"/> <see langword="void"/>, so the exception is raised on the <see cref="System.Threading.SynchronizationContext"/> of the caller, not thrown to it.</exception>
 	public static async void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(mediaElement);
 		ArgumentNullException.ThrowIfNull(args);
 
 		if (args is not MediaSeekRequestedEventArgs positionArgs)
@@ -229,8 +263,11 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.Stop();
 	}
 

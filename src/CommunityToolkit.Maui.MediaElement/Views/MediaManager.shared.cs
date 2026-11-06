@@ -29,6 +29,7 @@ public partial class MediaManager
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/>, <paramref name="mediaElement"/> or <paramref name="dispatcher"/> is <see langword="null"/>.</exception>
 	public MediaManager(Microsoft.Maui.IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
 		ArgumentNullException.ThrowIfNull(context);

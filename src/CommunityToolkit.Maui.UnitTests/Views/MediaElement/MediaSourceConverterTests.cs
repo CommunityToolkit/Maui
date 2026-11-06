@@ -43,4 +43,16 @@ public class MediaSourceConverterTests : BaseTest
 
 		mediaSource.Should().BeAssignableTo<FileMediaSource>();
 	}
+
+#pragma warning disable CS8600, CS8604, CS8625 // The tests pass null to parameters that are not nullable on purpose
+	[Fact]
+	public void FileMediaSourceConverterConvertFromNullShouldThrowArgumentNullException()
+	{
+		var fileMediaSourceConverter = new FileMediaSourceConverter();
+
+		var exception = Assert.Throws<ArgumentNullException>(() => fileMediaSourceConverter.ConvertFrom(null, CultureInfo.InvariantCulture, null));
+
+		exception.ParamName.Should().Be("value");
+	}
+#pragma warning restore CS8600, CS8604, CS8625
 }

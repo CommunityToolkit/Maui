@@ -11,9 +11,12 @@ namespace CommunityToolkit.Maui.Converters;
 public sealed class FileMediaSourceConverter : TypeConverter
 {
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is <see langword="null"/> or empty.</exception>
 	public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 	{
+		ArgumentNullException.ThrowIfNull(value);
+
 		var filePath = value.ToString() ?? string.Empty;
 
 		return string.IsNullOrWhiteSpace(filePath)

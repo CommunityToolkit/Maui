@@ -112,4 +112,16 @@ public class MediaElementOptionsTests : BaseViewTest
 		options.SetDefaultAndroidViewType(MediaElementOptions.DefaultAndroidViewType);
 		options.SetIsAndroidForegroundServiceEnabled(false);
 	}
+
+#pragma warning disable CS8600, CS8604, CS8625 // The tests pass null to parameters that are not nullable on purpose
+	[Fact]
+	public void UseMauiCommunityToolkitMediaElement_NullBuilder_ThrowsArgumentNullException()
+	{
+		MauiAppBuilder? builder = null;
+
+		var exception = Assert.Throws<ArgumentNullException>(() => builder.UseMauiCommunityToolkitMediaElement(false));
+
+		exception.ParamName.Should().Be("builder");
+	}
+#pragma warning restore CS8600, CS8604, CS8625
 }

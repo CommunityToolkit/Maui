@@ -59,9 +59,12 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="playerView"/> is <see langword="null"/>.</exception>
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
-	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
+	public MauiMediaElement(Context context, PlayerView playerView) : base(context ?? throw new ArgumentNullException(nameof(context)))
 	{
+		ArgumentNullException.ThrowIfNull(playerView);
+
 		this.playerView = playerView;
 		this.playerView.SetBackgroundColor(global::Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
