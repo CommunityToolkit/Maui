@@ -9,9 +9,11 @@ public class MapsAppBuilderExtensionsTests : BaseTest
 	[Fact]
 	public void UseMauiCommunityToolkitMaps_NullBuilder_ThrowsArgumentNullException()
 	{
+#pragma warning disable CS0618 // The test covers the deprecated Maps library until #3331 removes it
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var exception = Assert.Throws<ArgumentNullException>(() => Maps.AppBuilderExtensions.UseMauiCommunityToolkitMaps(null, "key"));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS0618
 
 		exception.ParamName.Should().Be("builder");
 	}
