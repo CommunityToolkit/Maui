@@ -65,9 +65,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			{
 				await CloseAsync(new PopupResult(true));
 			}
-			catch (PopupNotFoundException)
+			catch (InvalidPopupOperationException)
 			{
-				// An earlier tap, the back button or navigation already closed this popup; the command runs as async void, so an exception here would crash the app
+				// An earlier tap, the back button or navigation already closed this popup, or another page was shown above it while the tap waited; the command runs as async void, so an exception here would crash the app
 			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
@@ -152,39 +152,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		// It may feel a bit redundant, given that we again call `ThrowIfCancellationRequested` later in this method, however, this ensures we propagate the correct Exception to the developer.
 		token.ThrowIfCancellationRequested();
 
-		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
-		var navigationPageOnModalStackContainingPopupPage = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
-		if (navigationPageOnModalStackContainingPopupPage is not null && navigationPageOnModalStackContainingPopupPage.CurrentPage is not PopupPage)
-		{
-			navigationPageOnModalStackContainingPopupPage = null;
-		}
-
-		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
-							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
-							   ?? throw new PopupNotFoundException();
-
-		// PopModalAsync will pop the last (top) page from the ModalStack
-		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
-		switch (Navigation.ModalStack[^1])
-		{
-			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed
-			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
-				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
-
-			// Handle edge case where the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage
-			// (e.g. a modal NavigationPage pushed after showing a popup).
-			case IPageContainer<Page> { CurrentPage: not PopupPage }:
-				throw new PopupBlockedException(Navigation.ModalStack[^1]);
-
-			// Handle edge case where the visible modal page is not the Popup to be closed
-			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
-				throw new PopupBlockedException(currentVisibleModalPage);
-		}
-
-		if (popupPageToClose.Content != Content)
-		{
-			throw new PopupBlockedException(popupPageToClose);
-		}
+		var navigationPageOnModalStackContainingPopupPage = GetContainerAndThrowIfNotOnTopOfModalStack();
 
 		var popupConfirmedPoppedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var parentWindow = GetParentWindow();
@@ -206,6 +174,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				{
 					throw new PopupNotFoundException();
 				}
+
+				// Another page (e.g. a popup whose ShowAsync waited for the semaphore before this CloseAsync) may have been pushed above this PopupPage while CloseAsync waited.
+				// Popping now would remove that page, and the confirmation that this PopupPage was popped would never come, leaving the semaphore held.
+				navigationPageOnModalStackContainingPopupPage = GetContainerAndThrowIfNotOnTopOfModalStack();
 
 				// CloseAsync reports the result itself, so the pop it causes must not be reported again as a dismissal by navigation.
 				// Set only after the semaphore is acquired, otherwise a removal that happens while CloseAsync waits would be ignored.
@@ -373,6 +345,46 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	// Only dismiss when a user taps outside Popup when **both** Popup.CanBeDismissedByTappingOutsideOfPopup and PopupOptions.CanBeDismissedByTappingOutsideOfPopup are true
 	// If either value is false, do not dismiss Popup
 	static bool GetCanBeDismissedByTappingOutsideOfPopup(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByTappingOutsideOfPopup & popupOptions.CanBeDismissedByTappingOutsideOfPopup;
+
+	// Called again once CloseAsync holds the semaphore, because the ModalStack can change while CloseAsync waits.
+	IPageContainer<Page>? GetContainerAndThrowIfNotOnTopOfModalStack()
+	{
+		// Handle edge case where a Popup was pushed inside a custom IPageContainer (e.g. a NavigationPage) on the Modal Stack
+		var navigationPageOnModalStackContainingPopupPage = Navigation.ModalStack.OfType<IPageContainer<Page>>().LastOrDefault();
+		if (navigationPageOnModalStackContainingPopupPage is not null && navigationPageOnModalStackContainingPopupPage.CurrentPage is not PopupPage)
+		{
+			navigationPageOnModalStackContainingPopupPage = null;
+		}
+
+		var popupPageToClose = navigationPageOnModalStackContainingPopupPage?.CurrentPage as PopupPage
+							   ?? Navigation.ModalStack.OfType<PopupPage>().LastOrDefault()
+							   ?? throw new PopupNotFoundException();
+
+		// PopModalAsync will pop the last (top) page from the ModalStack
+		// Ensure that the PopupPage the user is attempting to close is the last (top) page on the Modal stack before calling Navigation.PopModalAsync
+		switch (Navigation.ModalStack[^1])
+		{
+			// Handle the edge case where the visible modal page is a navigation page containing a Popup that is not the Popup to be closed
+			case IPageContainer<Page> { CurrentPage: PopupPage visiblePopupPageInCustomPageContainer } when visiblePopupPageInCustomPageContainer.Content != Content:
+				throw new PopupBlockedException(visiblePopupPageInCustomPageContainer);
+
+			// Handle edge case where the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage
+			// (e.g. a modal NavigationPage pushed after showing a popup).
+			case IPageContainer<Page> { CurrentPage: not PopupPage }:
+				throw new PopupBlockedException(Navigation.ModalStack[^1]);
+
+			// Handle edge case where the visible modal page is not the Popup to be closed
+			case ContentPage currentVisibleModalPage when currentVisibleModalPage.Content != Content:
+				throw new PopupBlockedException(currentVisibleModalPage);
+		}
+
+		if (popupPageToClose.Content != Content)
+		{
+			throw new PopupBlockedException(popupPageToClose);
+		}
+
+		return navigationPageOnModalStackContainingPopupPage;
+	}
 
 	// Static PopupOptions (e.g. PopupOptions.Empty) outlive the PopupPage, so every path that closes the popup must unsubscribe from them; the -= calls are idempotent
 	void ReleasePopupResources()

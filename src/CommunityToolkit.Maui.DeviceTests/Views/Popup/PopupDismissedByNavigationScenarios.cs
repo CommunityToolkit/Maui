@@ -1,3 +1,4 @@
+using System.Reflection;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
@@ -121,6 +122,60 @@ static class PopupDismissedByNavigationScenarios
 		Assert.Equal(1, closedCount);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
+
+	// A CloseAsync that waited while ShowAsync pushed another popup above its popup popped that popup, and then waited forever for its own pop while it held the semaphore
+	public static async Task CloseThatWaitedWhileAnotherPopupWasShownThrowsPopupBlockedException(Shell shell, bool onTopOfAModalNavigationPage)
+	{
+		NavigationPage? modalNavigationPage = null;
+		if (onTopOfAModalNavigationPage)
+		{
+			modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal" });
+			await shell.Navigation.PushModalAsync(modalNavigationPage, false);
+		}
+
+		int CountShownPopupPages() => modalNavigationPage is null
+			? shell.Navigation.ModalStack.OfType<PopupPage>().Count()
+			: CountPopupPages(modalNavigationPage);
+
+		var lowerPopup = CreatePopup("Lower");
+		var upperPopup = CreatePopup("Upper");
+		var lowerTask = shell.ShowPopupAsync(lowerPopup, CreateOptions(), token: CancellationToken.None);
+		await AssertionExtensions.AssertEventually(() => CountShownPopupPages() == 1, timeout: timeout, message: "The lower popup was never shown.");
+
+		var navigationSemaphore = GetNavigationSemaphore();
+		Assert.True(await navigationSemaphore.WaitAsync(timeout));
+		Task<IPopupResult> upperTask;
+		Task closeTask;
+		try
+		{
+			// The semaphore is handed to its waiters in order, so ShowAsync pushes the upper popup before CloseAsync runs
+			upperTask = shell.ShowPopupAsync(upperPopup, CreateOptions(), token: CancellationToken.None);
+			closeTask = lowerPopup.CloseAsync();
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		await Assert.ThrowsAsync<PopupBlockedException>(() => closeTask.WaitAsync(TimeSpan.FromMilliseconds(timeout)));
+		await AssertionExtensions.AssertEventually(() => CountShownPopupPages() == 2, timeout: timeout, message: "The upper popup was never shown.");
+		Assert.False(lowerTask.IsCompleted);
+		Assert.False(upperTask.IsCompleted);
+		Assert.Equal(1, navigationSemaphore.CurrentCount);
+
+		await Close(shell, upperPopup, closeWithClosePopupAsync: false);
+		await upperTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		await Close(shell, lowerPopup, closeWithClosePopupAsync: false);
+		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(0, CountShownPopupPages());
+	}
+
+	// Reflection, because the semaphore is private to PopupPage; it throws so that a trimmed build fails loudly instead of passing for the wrong reason
+	internal static SemaphoreSlim GetNavigationSemaphore() =>
+		(SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
+		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
 
 	// Bounded, because CloseAsync waits for .NET MAUI to confirm that the PopupPage was popped, which never happens when it pops the wrong page
 	static Task Close(Shell shell, Popup popup, bool closeWithClosePopupAsync) =>
