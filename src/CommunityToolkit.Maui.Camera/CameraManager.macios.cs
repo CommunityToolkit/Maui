@@ -573,6 +573,24 @@ partial class CameraManager
 
 	private async partial Task<Stream> PlatformStopVideoRecording(CancellationToken token)
 	{
+		if (token.IsCancellationRequested)
+		{
+			// The semaphore is free and there is no recording state: no recording runs and no start is pending, so there is nothing to stop
+			// and no video to wait for (a stop that waits for a pending start or for another stop still throws below)
+			if (videoRecordingState is null && videoRecordingSemaphoreSlim.CurrentCount > 0)
+			{
+				return Stream.Null;
+			}
+
+			// The token cancels waiting for the finished movie and copying it into the stream, not the stop itself: a recording that is stopped
+			// does not keep recording after the app asked for the stop, and the stop can be called again for the movie. A recording that did not
+			// start yet is not stopped here: the stop waits for its start below.
+			if (videoRecordingState is { Started.IsCompletedSuccessfully: true, Finalized.IsCompleted: false })
+			{
+				videoOutput?.StopRecording();
+			}
+		}
+
 		await videoRecordingSemaphoreSlim.WaitAsync(token);
 
 		try

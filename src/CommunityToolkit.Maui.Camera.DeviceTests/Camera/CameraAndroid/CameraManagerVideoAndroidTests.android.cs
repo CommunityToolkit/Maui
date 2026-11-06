@@ -1054,6 +1054,22 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		}, includeRecordAudio: true);
 	}
 
+	// With no recording there is nothing to wait for, so a cancelled token has nothing to cancel (shipped 6.1.0 returned Stream.Null as well)
+	[Fact]
+	public async Task StopVideoRecordingWithACancelledTokenAndNoRecordingReturnsTheNullStream()
+	{
+		SetupBuilder();
+		RequireVideoRecording();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			using var cancellation = new CancellationTokenSource();
+			await cancellation.CancelAsync();
+
+			Assert.Same(Stream.Null, await session.Manager.StopVideoRecording(cancellation.Token).WaitAsync(CameraTimeout));
+		}, includeRecordAudio: true);
+	}
+
 	// StopCameraPreview during a recording unbinds its VideoCapture and closes the camera, so CameraX finalizes the recording with an error
 	// (ERROR_SOURCE_INACTIVE) and keeps the video recorded until then.
 	[Fact]

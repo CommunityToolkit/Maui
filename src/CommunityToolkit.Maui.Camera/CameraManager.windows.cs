@@ -18,6 +18,10 @@ partial class CameraManager
 	LowLagMediaRecording? mediaRecording;
 	Stream? videoCaptureStream;
 
+	// The video of a stop that its token cancelled after the recording was finished: the next StopVideoRecording returns it, as on Android, iOS
+	// and Mac Catalyst, where the token only cancels waiting for the video
+	Stream? finishedVideoStream;
+
 	// A recording that turned on the camera of a preview that the app had stopped turns it off again when the recording ends, as on Android, iOS
 	// and Mac Catalyst. A preview that the app started (also one whose camera could not be opened) stays started.
 	bool isCameraStartedForTheRecording;
@@ -63,6 +67,7 @@ partial class CameraManager
 
 	public void Dispose()
 	{
+		finishedVideoStream = null;
 		PlatformStopCameraPreview();
 		mediaCapture?.Dispose();
 	}
@@ -444,6 +449,9 @@ partial class CameraManager
 		// also without a camera, whose failure the start of the camera would report first
 		token.ThrowIfCancellationRequested();
 
+		// A start replaces the video that a cancelled stop left for the next stop, as on Android, iOS and Mac Catalyst
+		finishedVideoStream = null;
+
 		// Like on Android, iOS and Mac Catalyst, recording turns the camera on. A preview that is marked as started but has no MediaCapture (its
 		// camera could not be opened) is started again as well, and stays marked as started when that fails
 		var isCameraTurnedOnHere = false;
@@ -605,6 +613,15 @@ partial class CameraManager
 		await WaitForTheEarlierOperationAsync(earlierStop, token);
 		await WaitForTheEarlierOperationAsync(earlierStart, token);
 
+		if (finishedVideoStream is Stream finishedStream)
+		{
+			// A stop that its token cancelled finished the recording already: the token only cancels waiting for the video
+			token.ThrowIfCancellationRequested();
+			finishedVideoStream = null;
+
+			return finishedStream;
+		}
+
 		if (!isInitialized || mediaElement is null || mediaRecording is null || videoCaptureStream is null)
 		{
 			// No recording is left to stop (a camera switch, or a start that was cancelled, released it): the camera that only a recording turned
@@ -643,6 +660,13 @@ partial class CameraManager
 		if (stream.CanSeek)
 		{
 			stream.Position = 0;
+		}
+
+		if (token.IsCancellationRequested)
+		{
+			// The recording is finished, so the next StopVideoRecording returns its video, as on Android, iOS and Mac Catalyst
+			finishedVideoStream = stream;
+			token.ThrowIfCancellationRequested();
 		}
 
 		return stream;

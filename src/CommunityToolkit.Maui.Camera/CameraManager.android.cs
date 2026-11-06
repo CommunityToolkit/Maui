@@ -886,9 +886,16 @@ partial class CameraManager
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
 
-		// Like on iOS, the recording stops also when the token is cancelled already: the token cancels waiting for CameraX to finalize
-		// the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be called again. A recording
-		// that did not start yet is not stopped here: the stop waits for its start below.
+		// The semaphore is free and there is no recording state: no recording runs and no start is pending, so a cancelled token has nothing
+		// to stop and no video to wait for (a stop that waits for a pending start or for another stop still throws below)
+		if (token.IsCancellationRequested && videoRecordingState is null && videoRecordingSemaphoreSlim.CurrentCount > 0)
+		{
+			return Stream.Null;
+		}
+
+		// Like on iOS, Mac Catalyst and Windows, the recording stops also when the token is cancelled already: the token cancels waiting
+		// for CameraX to finalize the recording and copying it into the stream, and a stop whose token was cancelled while it waited can be
+		// called again. A recording that did not start yet is not stopped here: the stop waits for its start below.
 		if (videoRecordingState is { Started.IsCompletedSuccessfully: true, Finalized.IsCompleted: false })
 		{
 			videoRecording?.Stop();

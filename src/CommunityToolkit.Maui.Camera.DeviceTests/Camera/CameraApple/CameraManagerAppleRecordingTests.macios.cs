@@ -1048,6 +1048,66 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
+	// The token only cancels waiting for the movie, not the stop itself, so the next StopVideoRecording returns the movie
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenStopsTheRecordingAndThrowsAndTheNextStopReturnsTheMovie()
+	{
+		await RunAsync(async recording =>
+		{
+			using var destination = new MemoryStream();
+			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+			var movie = Assert.Single(recording.Movies.Recordings);
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token));
+
+			Assert.Equal(1, movie.StopCount);
+			Assert.Equal(0, destination.Length);
+
+			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			Assert.Equal(1, movie.StopCount);
+		});
+	}
+
+	// A start that is still pending has no movie to stop: the stop throws and the start goes on
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenWhileTheStartIsPendingThrowsAndDoesNotStopTheRecording()
+	{
+		await RunAsync(async recording =>
+		{
+			recording.Movies.AcknowledgeStart = false;
+			using var destination = new MemoryStream();
+			var start = recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var movie = Assert.Single(recording.Movies.Recordings);
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token));
+			Assert.Equal(0, movie.StopCount);
+
+			recording.Movies.Start(movie);
+			await start.WaitAsync(startTimeout);
+			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
+			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+		});
+	}
+
+	// Nothing records, so a cancelled token has nothing to cancel (shipped 6.1.0 returned Stream.Null as well)
+	[Fact]
+	public async Task StopVideoRecordingWithAnAlreadyCancelledTokenAndNoRecordingReturnsTheNullStream()
+	{
+		await RunAsync(async recording =>
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			Assert.Same(Stream.Null, await recording.Scope.Manager.StopVideoRecording(cancellationTokenSource.Token).WaitAsync(startTimeout));
+			Assert.Empty(recording.Movies.Recordings);
+		});
+	}
+
 	[Fact]
 	public async Task ARecordingThatAVFoundationEndsBeforeItStartedFailsTheStartWithCameraExceptionAndLeavesNothingForTheStop()
 	{
