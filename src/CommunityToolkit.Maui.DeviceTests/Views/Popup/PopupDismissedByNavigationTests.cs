@@ -80,8 +80,8 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
 	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
 	{
-		var navigationSemaphore = (SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null);
-		if (navigationSemaphore is not null && navigationSemaphore.CurrentCount == 0)
+		var navigationSemaphore = PopupDismissedByNavigationScenarios.GetNavigationSemaphore();
+		if (navigationSemaphore.CurrentCount == 0)
 		{
 			navigationSemaphore.Release();
 		}

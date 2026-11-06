@@ -43,6 +43,18 @@ public partial class PopupDismissedByNavigationTests
 		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupDismissedByNavigationScenarios.CompleteWhenShellSwitchesToAnotherShellElement(shell, isOpenedRaised: false));
 	}
 
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public Task CloseThatWaitedWhileAnotherPopupWasShownThrowsPopupBlockedException(bool onTopOfAModalNavigationPage)
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ =>
+			PopupDismissedByNavigationScenarios.CloseThatWaitedWhileAnotherPopupWasShownThrowsPopupBlockedException(shell, onTopOfAModalNavigationPage));
+	}
+
 	[Fact]
 	public Task ShowPopupAsyncCompletesWhenOtherCodePopsTheModalPage()
 	{

@@ -516,6 +516,276 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Single(shell.Navigation.ModalStack.OfType<PopupPage>());
 	}
 
+	// PopModalAsync pops the page on top of the navigation stack: a CloseAsync that waited while another popup was shown above its PopupPage must not pop that popup
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage, false)]
+	[InlineData(RootPageType.ContentPage, true)]
+	[InlineData(RootPageType.NavigationPage, false)]
+	[InlineData(RootPageType.NavigationPage, true)]
+	[InlineData(RootPageType.Shell, false)]
+	[InlineData(RootPageType.Shell, true)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedExceptionAndPopNothing_WhenAnotherPopupIsShownWhileItWaitsForOtherNavigation(RootPageType rootPageType, bool closeWithClosePopupAsync)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var lowerPopup = new Popup();
+		var upperPopup = new Popup();
+		var closedCounts = new int[2];
+		lowerPopup.Closed += (_, _) => closedCounts[0]++;
+		upperPopup.Closed += (_, _) => closedCounts[1]++;
+		var lowerTask = navigation.ShowPopupAsync(lowerPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var lowerPopupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var navigationSemaphore = GetNavigationSemaphore();
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		Task<IPopupResult> upperTask;
+		Task closeTask;
+		try
+		{
+			// The semaphore is handed to its waiters in order, so the upper popup is pushed before CloseAsync runs
+			upperTask = navigation.ShowPopupAsync(upperPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+			closeTask = closeWithClosePopupAsync
+				? navigation.ClosePopupAsync(CancellationToken.None)
+				: lowerPopupPage.CloseAsync(new PopupResult(false), CancellationToken.None);
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		await Assert.ThrowsAsync<PopupBlockedException>(() => closeTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		Assert.Equal(2, navigation.ModalStack.Count);
+		Assert.Same(lowerPopupPage, navigation.ModalStack[0]);
+		Assert.IsType<PopupPage>(navigation.ModalStack[1]);
+		Assert.Equal([0, 0], closedCounts);
+		Assert.False(lowerTask.IsCompleted);
+		Assert.False(upperTask.IsCompleted);
+		Assert.Equal(1, navigationSemaphore.CurrentCount);
+
+		await upperPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await upperTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await lowerPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal([1, 1], closedCounts);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedExceptionAndPopNothing_WhenOtherCodePushesAModalPageWhileItWaitsForOtherNavigation()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var navigationSemaphore = GetNavigationSemaphore();
+		var otherPage = new ContentPage();
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		Task closeTask;
+		try
+		{
+			closeTask = popupPage.CloseAsync(new PopupResult(false), CancellationToken.None);
+			await navigation.PushModalAsync(otherPage, false);
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		await Assert.ThrowsAsync<PopupBlockedException>(() => closeTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		Assert.Equal(2, navigation.ModalStack.Count);
+		Assert.Same(popupPage, navigation.ModalStack[0]);
+		Assert.Same(otherPage, navigation.ModalStack[1]);
+		Assert.Equal(0, closedCount);
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Equal(1, navigationSemaphore.CurrentCount);
+
+		await navigation.PopModalAsync(false);
+		await popup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+	}
+
+	// Shell.ShowPopupAsync pushes the popup with Shell.GoToAsync, which adds it to the ModalStack only after awaiting, while ShowAsync holds the semaphore
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedExceptionAndPopNothing_WhenShellShowsAnotherPopupWhileItWaitsForOtherNavigation()
+	{
+		var navigation = SetRootPage(RootPageType.Shell);
+		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
+		var lowerPopup = new Popup();
+		var upperPopup = new Popup();
+		var closedCounts = new int[2];
+		lowerPopup.Closed += (_, _) => closedCounts[0]++;
+		upperPopup.Closed += (_, _) => closedCounts[1]++;
+		var lowerTask = shell.ShowPopupAsync(lowerPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
+		for (var i = 0; i < 200 && navigation.ModalStack.Count == 0; i++)
+		{
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+
+		var lowerPopupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var navigationSemaphore = GetNavigationSemaphore();
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		Task<IPopupResult> upperTask;
+		Task closeTask;
+		try
+		{
+			upperTask = shell.ShowPopupAsync(upperPopup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
+			closeTask = lowerPopup.CloseAsync(CancellationToken.None);
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		await Assert.ThrowsAsync<PopupBlockedException>(() => closeTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		Assert.Equal(2, navigation.ModalStack.Count);
+		Assert.Same(lowerPopupPage, navigation.ModalStack[0]);
+		Assert.Equal([0, 0], closedCounts);
+		Assert.False(lowerTask.IsCompleted);
+		Assert.False(upperTask.IsCompleted);
+		Assert.Equal(1, navigationSemaphore.CurrentCount);
+
+		await shell.ClosePopupAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await upperTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await shell.ClosePopupAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal([1, 1], closedCounts);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	// With a Shell as the root page, both popups are pushed onto the navigation stack of the modal NavigationPage, where CloseAsync pops with PopAsync
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedExceptionAndPopNothing_WhenAnotherPopupIsShownInTheModalNavigationPageWhileItWaitsForOtherNavigation(bool closeWithClosePopupAsync)
+	{
+		var (navigation, modalNavigationPage, lowerPopup, lowerTask, lowerClosedCount) = await ShowOnePopupOnTopOfAModalNavigationPageAsync(RootPageType.Shell);
+		var upperPopup = new Popup();
+		var upperClosedCount = 0;
+		upperPopup.Closed += (_, _) => upperClosedCount++;
+		var navigationSemaphore = GetNavigationSemaphore();
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		Task<IPopupResult> upperTask;
+		Task closeTask;
+		try
+		{
+			upperTask = navigation.ShowPopupAsync(upperPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+			closeTask = closeWithClosePopupAsync
+				? navigation.ClosePopupAsync(CancellationToken.None)
+				: lowerPopup.CloseAsync(CancellationToken.None);
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		await Assert.ThrowsAsync<PopupBlockedException>(() => closeTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		Assert.Equal(2, CountPopupPages(navigation, modalNavigationPage));
+		Assert.Equal(0, lowerClosedCount());
+		Assert.Equal(0, upperClosedCount);
+		Assert.False(lowerTask.IsCompleted);
+		Assert.False(upperTask.IsCompleted);
+		Assert.Equal(1, navigationSemaphore.CurrentCount);
+
+		await upperPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await upperTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await lowerPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(0, CountPopupPages(navigation, modalNavigationPage));
+		Assert.Same(modalNavigationPage, Assert.Single(navigation.ModalStack));
+	}
+
+	// The tap command runs as async void: a tap whose CloseAsync finds another popup on top must neither pop that popup nor crash the app
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task TapOutsideOfPopup_ShouldNotThrowAndPopNothing_WhenAnotherPopupIsShownWhileTheTapWaitsForOtherNavigation()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var lowerPopup = new Popup();
+		var upperPopup = new Popup();
+		var closedCounts = new int[2];
+		lowerPopup.Closed += (_, _) => closedCounts[0]++;
+		upperPopup.Closed += (_, _) => closedCounts[1]++;
+		var lowerTask = navigation.ShowPopupAsync(lowerPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var lowerPopupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var navigationSemaphore = GetNavigationSemaphore();
+		var uiThread = new SingleThreadedSynchronizationContext();
+		var originalSynchronizationContext = SynchronizationContext.Current;
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		Task<IPopupResult> upperTask;
+		try
+		{
+			upperTask = navigation.ShowPopupAsync(upperPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+			// The async void command lambda captures the SynchronizationContext that is current when the command executes
+			SynchronizationContext.SetSynchronizationContext(uiThread);
+			try
+			{
+				Assert.True(lowerPopupPage.TryExecuteTapOutsideOfPopupCommand());
+			}
+			finally
+			{
+				SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
+			}
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		// The semaphore is handed to its waiters in order, so this wait ends once the CloseAsync of the tap has released it
+		Assert.True(await navigationSemaphore.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		navigationSemaphore.Release();
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.Empty(uiThread.UnhandledExceptions);
+		Assert.Equal(2, navigation.ModalStack.Count);
+		Assert.Same(lowerPopupPage, navigation.ModalStack[0]);
+		Assert.Equal([0, 0], closedCounts);
+		Assert.False(lowerTask.IsCompleted);
+		Assert.False(upperTask.IsCompleted);
+
+		await upperPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await upperTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await lowerPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.Equal([1, 1], closedCounts);
+	}
+
+	protected override async ValueTask DisposeAsyncCore()
+	{
+		try
+		{
+			await base.DisposeAsyncCore();
+		}
+		finally
+		{
+			ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted();
+		}
+	}
+
+	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
+	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
+	{
+		var navigationSemaphore = GetNavigationSemaphore();
+		if (navigationSemaphore.CurrentCount == 0)
+		{
+			navigationSemaphore.Release();
+		}
+	}
+
 	static SemaphoreSlim GetNavigationSemaphore() =>
 		(SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
 		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
