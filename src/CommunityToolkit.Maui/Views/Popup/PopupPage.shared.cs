@@ -433,12 +433,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			HideNativeViewsFromAccessibility();
 		}
 
-		void HideNativeViewsFromAccessibility()
-		{
-			HideFromAccessibility(Handler?.ContainerView as Android.Views.View);
-			HideFromAccessibility(Handler?.PlatformView as Android.Views.View);
-		}
-
 		static void HideFromAccessibility(Android.Views.View? view)
 		{
 			if (view is null)
@@ -448,6 +442,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 			view.ImportantForAccessibility = Android.Views.ImportantForAccessibility.NoHideDescendants;
 			view.Focusable = false;
+		}
+
+		void HideNativeViewsFromAccessibility()
+		{
+			HideFromAccessibility(Handler?.ContainerView as Android.Views.View);
+			HideFromAccessibility(Handler?.PlatformView as Android.Views.View);
 		}
 #endif
 	}

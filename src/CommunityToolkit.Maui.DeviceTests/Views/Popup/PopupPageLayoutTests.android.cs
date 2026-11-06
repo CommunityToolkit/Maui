@@ -124,7 +124,8 @@ public partial class PopupPageLayoutTests
 		}
 	}
 
-	// .NET MAUI applies the changes of the gesture recognizers to the native view on the UI thread, after the collection changed
+	// A fixed delay: the assertions check that the native view stays hidden, so no state change exists to poll for, and a regression only shows
+	// once .NET MAUI has applied the changed gesture recognizers to the native view from the UI thread
 	static Task SettleGestureConfiguration() => Task.Delay(500);
 
 	static async Task<Rect> WaitForPopupPageLayout(PopupPage.PopupPageLayout layout)
