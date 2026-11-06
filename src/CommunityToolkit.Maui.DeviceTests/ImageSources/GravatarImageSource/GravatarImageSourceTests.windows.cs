@@ -102,7 +102,7 @@ public partial class GravatarImageSourceTests
 		}, checkGrowth: true, pictureBeforeFirstLayout);
 	}
 
-	static async Task RunWithGravatarButtonAsync(HttpClient client, Button.ButtonContentLayout.ImagePosition position, Func<Button, WButton, WImage, Task> assertAfterReload, bool checkGrowth, bool pictureBeforeFirstLayout)
+	async Task RunWithGravatarButtonAsync(HttpClient client, Button.ButtonContentLayout.ImagePosition position, Func<Button, WButton, WImage, Task> assertAfterReload, bool checkGrowth, bool pictureBeforeFirstLayout)
 	{
 		var source = new GravatarImageSource { Email = "a@example.org" };
 		var sizedRequests = 0;
@@ -112,9 +112,11 @@ public partial class GravatarImageSourceTests
 		// its picture.
 		source.Stream = async token =>
 		{
+			// The Uri gains the Button's size as soon as the Button has one, before the gate opens: it must be read when the picture is requested.
+			var isSizedRequest = source.Uri.Query.Contains("s=", StringComparison.Ordinal);
 			await firstLayoutDone.Task.WaitAsync(token);
 
-			if (source.Uri.Query.Contains("s=", StringComparison.Ordinal))
+			if (isSizedRequest)
 			{
 				Interlocked.Increment(ref sizedRequests);
 			}
