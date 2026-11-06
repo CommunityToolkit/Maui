@@ -103,7 +103,9 @@ public interface ICameraView : IView
 	/// stopped, the start throws <see cref="OperationCanceledException"/>, and the ErrorOccurred event is not raised for it, also when the stop
 	/// made the start fail. The <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when
 	/// <paramref name="token"/> cancelled the start.
-	/// On Android, a start while the view connects its camera waits for the connection, then starts the preview.
+	/// On Android, a start while the view connects its camera waits for the connection, then starts the preview. When the connection failed and
+	/// reported that failure through the ErrorOccurred event, the start that waited for it and fails as well throws the failure to its caller
+	/// without raising the event a second time.
 	/// On Android, a start that arrives while another start waits for CameraX waits for it too: when the other start started the preview, this
 	/// start returns without starting it a second time. A start that fails because the view was released meanwhile ends without an exception
 	/// and without the ErrorOccurred event.
@@ -127,7 +129,8 @@ public interface ICameraView : IView
 	/// when it connects its camera, a change of <see cref="SelectedCamera"/> that still waits for the platform and, on Android, the restart of
 	/// the preview for a new capture resolution and the start that the activity would retry once the app has the camera permission (see
 	/// <see cref="StartCameraPreview(CancellationToken)"/>). None of the cancelled work is reported as a failure. The preview stays stopped
-	/// until <see cref="StartCameraPreview(CancellationToken)"/> is called.
+	/// until <see cref="StartCameraPreview(CancellationToken)"/> or a start of a video recording (<see cref="StartVideoRecording(CancellationToken)"/>)
+	/// is called, because recording turns the camera on.
 	/// </remarks>
 	void StopCameraPreview();
 
@@ -142,9 +145,9 @@ public interface ICameraView : IView
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
 	/// that recording: it ends, its video is discarded, and the video goes to the new stream. When the camera is released while a start waits (for
 	/// example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
-	/// <para>On iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>
-	/// or after <see cref="StopCameraPreview"/>) throws <see cref="CameraException"/> at once, because the platform never reports the start of a
-	/// recording then. On Android a start without the camera permission throws <see cref="CameraException"/> as well.</para>
+	/// <para>On Android, iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
+	/// or after <see cref="StopCameraPreview"/>) turns the camera on: the start makes the preview run again, then starts the recording. When
+	/// the camera cannot start, for example without a camera or without the camera permission, the start throws the failure.</para>
 	/// <para><see cref="StopCameraPreview"/> cancels a start that has not completed yet, like a cancellation of <paramref name="token"/>: the recording
 	/// does not start, and the start throws <see cref="OperationCanceledException"/>, also when the stop made the start fail. The
 	/// <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when <paramref name="token"/>
@@ -168,9 +171,9 @@ public interface ICameraView : IView
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
 	/// that recording: it ends, its video is discarded, and the video goes to the new stream. When the camera is released while a start waits (for
 	/// example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
-	/// <para>On iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>
-	/// or after <see cref="StopCameraPreview"/>) throws <see cref="CameraException"/> at once, because the platform never reports the start of a
-	/// recording then. On Android a start without the camera permission throws <see cref="CameraException"/> as well.</para>
+	/// <para>On Android, iOS and Mac Catalyst a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
+	/// or after <see cref="StopCameraPreview"/>) turns the camera on: the start makes the preview run again, then starts the recording. When
+	/// the camera cannot start, for example without a camera or without the camera permission, the start throws the failure.</para>
 	/// <para><see cref="StopCameraPreview"/> cancels a start that has not completed yet, like a cancellation of <paramref name="token"/>: the recording
 	/// does not start, and the start throws <see cref="OperationCanceledException"/>, also when the stop made the start fail. The
 	/// <see cref="OperationCanceledException.CancellationToken"/> of the exception is <paramref name="token"/> only when <paramref name="token"/>
