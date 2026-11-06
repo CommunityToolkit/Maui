@@ -50,7 +50,8 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		}
 	}
 
-	// UI Automation and the keyboard can activate a button again before its popup or page covers this page, which would open a second one
+	// A popup or page covers this page only once its push is done, so quick taps, a repeated key or UI Automation would open a second one;
+	// UI Automation can even invoke a button that an open popup covers
 	async Task OpenOneAtATimeAsync(Func<Task> open)
 	{
 		if (isOpenInProgress)
