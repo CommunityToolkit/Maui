@@ -219,7 +219,6 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 	{
 		await OpenOneAtATimeAsync(async () =>
 		{
-			var complexPopupOpenedCancellationTokenSource = new CancellationTokenSource();
 			var complexPopupOptions = new PopupOptions
 			{
 				BindingContext = this.BindingContext,
@@ -235,10 +234,11 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 			var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions, CancellationToken.None);
 
 			// Trigger Command in ViewModel to Rotate PopupOptions.PageOverlayColorProperty
-			BindingContext.ComplexPopupOpenedCommand.Execute(complexPopupOpenedCancellationTokenSource.Token);
+			// The AsyncRelayCommand ignores the parameter of Execute and passes its own CancellationToken to OnComplexPopupOpened, so only its Cancel stops the rotation
+			BindingContext.ComplexPopupOpenedCommand.Execute(null);
 
 			var popupResult = await popupResultTask;
-			await complexPopupOpenedCancellationTokenSource.CancelAsync();
+			BindingContext.ComplexPopupOpenedCommand.Cancel();
 
 			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
 			{
