@@ -14,9 +14,9 @@ public partial class Toast
 	static readonly TimeSpan expirationAfterTheEndOfTheDuration = TimeSpan.FromMinutes(1);
 
 	// Show and Dismiss take turns, in the order they are called. Otherwise a Show that starts while an earlier one waits for the removal of the
-	// displayed toast can remove the notifications before the earlier toast is shown, and its own toast then waits behind that banner until
-	// both are removed at the end of their Duration. WaitAsync can also hand the turn to a call whose token was cancelled while it waited, so
-	// each call checks its token once its turn came.
+	// displayed toast removes that same toast again, so nothing removes the toast of the earlier Show, and its own toast then waits behind
+	// that banner until both are removed at the end of their Duration. WaitAsync can also hand the turn to a call whose token was cancelled
+	// while it waited, so each call checks its token once its turn came.
 	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
 
 	static AppNotification? PlatformToast { get; set; }

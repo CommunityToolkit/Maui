@@ -15,8 +15,8 @@ public partial class Snackbar
 	static readonly Lock platformSnackbarLock = new();
 
 	// Show and Dismiss take turns, in the order they are called. Otherwise a Show or Dismiss that starts while a Show waits for the removal of
-	// the displayed snackbar can remove the notifications before that Show displays its own, which then stays on screen, dismissed and
-	// without its action, in front of any later snackbar. WaitAsync can also hand the turn to a call whose token was cancelled while it
+	// the displayed snackbar removes that same snackbar again instead of the snackbar of that Show, which then stays on screen, dismissed
+	// and without its action, in front of any later snackbar. WaitAsync can also hand the turn to a call whose token was cancelled while it
 	// waited, so each call checks its token once its turn came.
 	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
 

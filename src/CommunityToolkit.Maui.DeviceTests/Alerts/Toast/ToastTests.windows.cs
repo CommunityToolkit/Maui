@@ -201,7 +201,7 @@ public partial class ToastTests
 	}
 
 	// The displayed toast gives both Show calls a notification to remove, so the second Show starts while the first one waits for that
-	// removal, as when PopupsPage shows "Popup Opened" right after "Opening Popup". Had the second Show removed the notifications before
+	// removal, as when PopupsPage shows "Popup Opened" right after "Opening Popup". Had the second Show removed the displayed toast before
 	// the first one showed its own, the second toast would wait behind the banner of the first one.
 	[Fact]
 	public async Task OverlappingShowCallsShowOnlyTheLaterToast()
@@ -225,7 +225,7 @@ public partial class ToastTests
 	}
 
 	// The Dismiss starts while the Show waits for the removal of the displayed toast. The notification shown last tells when Windows lists
-	// what was shown before it, such as a toast that the Show displayed after the Dismiss had removed the notifications.
+	// what was shown before it, such as a toast that the Show displayed after the Dismiss had removed the displayed toast.
 	[Fact]
 	public async Task DismissDuringAShowRemovesTheToastOfThatShow()
 	{

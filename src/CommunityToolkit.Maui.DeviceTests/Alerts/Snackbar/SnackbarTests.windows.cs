@@ -259,7 +259,7 @@ public partial class SnackbarTests
 	}
 
 	// The displayed snackbar gives both Show calls a notification to remove, so the second Show starts while the first one waits for that
-	// removal. Had the second Show removed the notifications before the first one showed its own, the first snackbar would stay on screen,
+	// removal. Had the second Show removed the displayed snackbar before the first one showed its own, the first snackbar would stay on screen,
 	// dismissed and without its action, and hide the second one.
 	[Fact]
 	public async Task OverlappingShowCallsShowOnlyTheLaterSnackbar()
@@ -289,7 +289,7 @@ public partial class SnackbarTests
 	}
 
 	// The Dismiss starts while the Show waits for the removal of the displayed snackbar. The notification shown last tells when Windows lists
-	// what was shown before it, such as a snackbar that the Show displayed after the Dismiss had removed the notifications.
+	// what was shown before it, such as a snackbar that the Show displayed after the Dismiss had removed the displayed snackbar.
 	[Fact]
 	public async Task DismissDuringAShowDismissesTheSnackbarOfThatShow()
 	{
