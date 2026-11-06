@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
+using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WPoint = Windows.Foundation.Point;
 using WSize = Windows.Foundation.Size;
 using WThickness = Microsoft.UI.Xaml.Thickness;
@@ -164,7 +165,7 @@ sealed partial class ExpanderLayoutPanel : LayoutPanel
 			var helpText = base.GetHelpTextCore();
 			if (string.IsNullOrEmpty(helpText) && HeaderPlatformView is UIElement header)
 			{
-				return AutomationProperties.GetHelpText(header);
+				return WAutomationProperties.GetHelpText(header);
 			}
 
 			return helpText;
