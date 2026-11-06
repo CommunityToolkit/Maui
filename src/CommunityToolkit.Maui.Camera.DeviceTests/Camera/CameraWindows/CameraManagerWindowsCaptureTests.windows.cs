@@ -767,6 +767,88 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 			"The camera has no color frame source for MediaStreamType.VideoRecord, so recording does not start.");
 	}
 
+	// Needs a camera with a color frame source, see above. The video goes to the stream of the latest start, as on Android, iOS and Mac Catalyst:
+	// the running recording is finished (its MP4 gets no moov box otherwise) and its stream goes back to the length and the position it had at its
+	// start, the camera that the first recording turned on stays on in between, and the new recording turns it off.
+	[Fact]
+	public async Task StartVideoRecordingWhileRecordingFinishesTheRunningRecordingAndRecordsIntoTheNewStream()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var first = new MemoryStream();
+			first.Write(new byte[16]);
+			using var second = new MemoryStream();
+			await scope.Manager.StartVideoRecording(first, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			var firstRecording = scope.Access.MediaRecording;
+
+			await scope.Manager.StartVideoRecording(second, CancellationToken.None);
+
+			Assert.NotSame(firstRecording, scope.Access.MediaRecording);
+			Assert.NotNull(scope.Access.MediaRecording);
+			Assert.Same(second, scope.Access.VideoCaptureStream);
+			Assert.True(scope.Access.IsInitialized, "The camera went off between the two recordings.");
+			Assert.Equal(16, first.Length);
+			Assert.Equal(16, first.Position);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			Assert.Same(second, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.True(second.Length > 100);
+			Assert.True(second.ToArray().AsSpan().IndexOf("moov"u8) >= 0, "The stop returned an MP4 that Media Foundation did not finish.");
+			Assert.Equal(16, first.Length);
+			Assert.False(scope.Access.IsInitialized, "The camera that the first recording turned on is still on.");
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. Without putting the stream back, the stream held the discarded video and then the new one
+	// one after the other, and a player plays only the first.
+	[Fact]
+	public async Task StartVideoRecordingWithTheStreamOfTheRunningRecordingLeavesOnlyTheNewVideoInTheStream()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			Assert.Equal(0, destination.Length);
+			Assert.Equal(0, destination.Position);
+
+			var secondRecordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => secondRecordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None));
+			Assert.Equal(0, destination.Position);
+			Assert.Equal(1, CountOccurrences(destination.ToArray(), "moov"u8));
+		});
+	}
+
+	static int CountOccurrences(ReadOnlySpan<byte> data, ReadOnlySpan<byte> pattern)
+	{
+		var count = 0;
+		while (data.IndexOf(pattern) is int index and >= 0)
+		{
+			count++;
+			data = data[(index + pattern.Length)..];
+		}
+
+		return count;
+	}
+
 	[Fact]
 	public async Task UpdateCurrentCameraSwitchesThePreviewToTheOtherCamera()
 	{

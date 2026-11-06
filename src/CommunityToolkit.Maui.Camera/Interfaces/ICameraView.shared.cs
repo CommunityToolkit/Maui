@@ -146,9 +146,10 @@ public interface ICameraView : IView
 	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
 	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
-	/// that recording: the video goes to the new stream, and on Android, iOS and Mac Catalyst the recording that ran before ends and its video
-	/// is discarded. On Android, iOS and Mac Catalyst, when the camera is released while a start waits (for example because the handler of the
-	/// view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
+	/// that recording: the video goes to the new stream, and the recording that ran before ends and its video is discarded. On Windows
+	/// the camera stays on in between, and the stream of the recording that ended goes back to the length and the position it had when that
+	/// recording started, because Media Foundation writes into the stream while it records. On Android, iOS and Mac Catalyst, when the camera is
+	/// released while a start waits (for example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS, Mac Catalyst and Windows a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
 	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends.
 	/// On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a camera or without the camera permission), the start
@@ -179,9 +180,10 @@ public interface ICameraView : IView
 	/// <para>The returned task completes once the platform has started the recording (Android, iOS and Mac Catalyst). A start that arrives while
 	/// an earlier start still waits for the platform joins it: it returns when that recording started, the stream that it received gets no
 	/// video, and when the earlier start fails, the later start throws the same failure. A start after a recording that has started replaces
-	/// that recording: the video goes to the new stream, and on Android, iOS and Mac Catalyst the recording that ran before ends and its video
-	/// is discarded. On Android, iOS and Mac Catalyst, when the camera is released while a start waits (for example because the handler of the
-	/// view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
+	/// that recording: the video goes to the new stream, and the recording that ran before ends and its video is discarded. On Windows
+	/// the camera stays on in between, and the stream of the recording that ended goes back to the length and the position it had when that
+	/// recording started, because Media Foundation writes into the stream while it records. On Android, iOS and Mac Catalyst, when the camera is
+	/// released while a start waits (for example because the handler of the view is disconnected), the start throws <see cref="TaskCanceledException"/>.</para>
 	/// <para>On Android, iOS, Mac Catalyst and Windows a start while the camera preview is not running (before <see cref="StartCameraPreview(CancellationToken)"/>,
 	/// or after <see cref="StopCameraPreview"/>) turns the camera on for the recording, and the camera is off again once the recording ends.
 	/// On iOS, Mac Catalyst and Windows, when the camera cannot start (for example without a camera or without the camera permission), the start

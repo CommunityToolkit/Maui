@@ -30,6 +30,11 @@ partial class CameraManager
 	// it off, as on iOS and Mac Catalyst. Without it a camera switch during such a recording left the camera on for good.
 	bool isCameraSwitchOfARecordingCamera;
 
+	// The length and the position that the stream of the recording had when the recording was prepared: a recording that a later start replaces
+	// is discarded, so its stream goes back to them, as the stream of a discarded recording stays untouched on Android, iOS and Mac Catalyst
+	long videoCaptureStreamLength;
+	long videoCaptureStreamPosition;
+
 	// A second start joins the first, and a stop waits for it, as on Android, iOS and Mac Catalyst. Without it a stop during the camera-on left the
 	// camera recording, and a double tap failed the first start by replacing its MediaCapture.
 	Task pendingVideoRecordingStart = Task.CompletedTask;
@@ -454,7 +459,7 @@ partial class CameraManager
 
 		// Like on Android, iOS and Mac Catalyst, recording turns the camera on. A preview that is marked as started but has no MediaCapture (its
 		// camera could not be opened) is started again as well, and stays marked as started when that fails
-		var isCameraTurnedOnHere = false;
+		var isCameraTurnedOnHere = await DiscardTheRunningRecordingAsync(stream);
 		if (!isInitialized || mediaCapture is null)
 		{
 			await TurnTheCameraOnForTheRecordingAsync(token);
@@ -474,6 +479,53 @@ partial class CameraManager
 			}
 
 			throw;
+		}
+	}
+
+	// Like on Android, iOS and Mac Catalyst, the stream of the latest start receives the video and the recording that ran before is discarded.
+	// Returns whether the camera belongs to the new recording because the discarded one had turned it on: it is off again when the new recording
+	// cannot start, as when the new recording turns the camera on itself.
+	async Task<bool> DiscardTheRunningRecordingAsync(Stream newStream)
+	{
+		if (mediaRecording is null || videoCaptureStream is null)
+		{
+			return false;
+		}
+
+		// A stream that is refused (AsRandomAccessStream throws for a stream that cannot seek) must not end the recording that runs
+		_ = newStream.AsRandomAccessStream();
+
+		// A recording that is not finished leaves an MP4 without its moov box, and Media Foundation writes into the stream while it records.
+		// The camera stays on: the new recording prepares on the same MediaCapture.
+		var recording = mediaRecording;
+		var stream = videoCaptureStream;
+		mediaRecording = null;
+		videoCaptureStream = null;
+
+		try
+		{
+			await recording.StopAsync();
+			await recording.FinishAsync();
+		}
+		finally
+		{
+			RestoreTheStreamOfTheDiscardedRecording(stream);
+		}
+
+		return isCameraStartedForTheRecording;
+	}
+
+	void RestoreTheStreamOfTheDiscardedRecording(Stream stream)
+	{
+		// A stream that the app disposed or made read-only meanwhile keeps what it holds: the discarded video is not worth failing the new start
+		if (stream.CanSeek && stream.CanWrite)
+		{
+			stream.SetLength(videoCaptureStreamLength);
+		}
+
+		if (stream.CanSeek)
+		{
+			stream.Position = videoCaptureStreamPosition;
 		}
 	}
 
@@ -523,7 +575,10 @@ partial class CameraManager
 
 		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
 		var recordingMediaCapture = mediaCapture;
-		var preparedRecording = await prepareLowLagRecording(mediaCapture, profile, stream.AsRandomAccessStream(), token);
+		var randomAccessStream = stream.AsRandomAccessStream();
+		var streamLength = stream.Length;
+		var streamPosition = stream.Position;
+		var preparedRecording = await prepareLowLagRecording(mediaCapture, profile, randomAccessStream, token);
 
 		// Media Foundation can complete the preparation before a StopCameraPreview that ran before this continuation and released the MediaCapture
 		// of the prepared recording: StopVideoRecording must not find the recording of a start that the stop cancelled
@@ -544,6 +599,8 @@ partial class CameraManager
 		// Only a recording that could be prepared replaces the stream: a stream that is refused (AsRandomAccessStream throws for a stream
 		// that cannot seek) must not replace the stream of a recording that is running
 		videoCaptureStream = stream;
+		videoCaptureStreamLength = streamLength;
+		videoCaptureStreamPosition = streamPosition;
 
 		var isRecordingStarted = false;
 
