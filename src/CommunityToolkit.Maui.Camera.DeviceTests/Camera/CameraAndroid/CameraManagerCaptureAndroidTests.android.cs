@@ -12,7 +12,7 @@ using ImageReader = Android.Media.ImageReader;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraManagerAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 {
 	// The events of the CameraView are raised on CameraX's executor thread, hence the concurrent queues.

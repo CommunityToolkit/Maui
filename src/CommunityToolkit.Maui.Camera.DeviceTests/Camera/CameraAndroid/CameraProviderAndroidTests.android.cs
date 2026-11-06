@@ -13,7 +13,7 @@ using ICameraProvider = CommunityToolkit.Maui.Core.ICameraProvider;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraProviderAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraProviderAndroidTests : CameraAndroidTestBase
 {
 	static CameraCharacteristics GetCamera2Characteristics(string cameraId)

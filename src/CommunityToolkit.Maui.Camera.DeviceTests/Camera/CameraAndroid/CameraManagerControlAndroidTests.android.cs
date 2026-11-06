@@ -13,7 +13,7 @@ using Runnable = Java.Lang.Runnable;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraManagerAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 {
 	static async Task<CameraInfo> GetCameraAsync(Func<CameraInfo, bool> predicate, string skipReason)

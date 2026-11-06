@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // Every start below waits for CameraX, whose answer the UI thread receives in a later message, so a StopCameraPreview in the same message as the
 // start lands while the start waits.
 [Category(TestCategory.CameraStartStopAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraStartStopAndroidTests : CameraAndroidTestBase
 {
 	[Fact]

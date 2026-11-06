@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // No public call reaches most of these guards, because every caller checks the same preconditions first, so the tests call the private
 // helpers of CameraManager through reflection.
 [Category(TestCategory.CameraManagerAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraManagerGuardAndroidTests : CameraAndroidTestBase
 {
 	static object? InvokePrivate(CameraManager manager, string method, params object[] arguments)

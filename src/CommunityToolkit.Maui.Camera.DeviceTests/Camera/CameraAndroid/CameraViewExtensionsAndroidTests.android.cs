@@ -7,7 +7,7 @@ using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraViewExtensionsAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraViewExtensionsAndroidTests : CameraAndroidTestBase
 {
 	// CameraX: FLASH_MODE_AUTO = 0, FLASH_MODE_ON = 1, FLASH_MODE_OFF = 2.

@@ -36,6 +36,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	bool asyncVoidGuardInstalled;
 	bool usedCameraSession;
 
+	// Every test of a class that derives from this base may grant permissions for good (EnsureCameraPermissions), so the class must run in
+	// the PermanentAndroidGrants collection.
+	protected CameraAndroidTestBase() => TestCollections.EnsureInPermanentAndroidGrantsCollection(GetType());
+
 	protected static Context AppContext => MauiProgramDefaults.DefaultContext;
 
 	protected void SetupBuilder(Action<MauiAppBuilder>? configureBuilder = null, [CallerMemberName] string? testName = null)

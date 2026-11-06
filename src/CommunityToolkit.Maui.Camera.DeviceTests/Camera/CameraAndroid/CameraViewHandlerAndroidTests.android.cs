@@ -10,7 +10,7 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraViewHandlerAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 {
 	static Task WaitUntilAsync(Func<bool> condition, string message) => AssertionExtensions.AssertEventually(condition, 30000, 50, message);

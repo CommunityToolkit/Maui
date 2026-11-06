@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // the permission that the app has still shows the permission activity in front of the runner's, which finishes at once: the runner's activity
 // pauses and resumes as it does behind the permission dialog.
 [Category(TestCategory.CameraPermissionResumeAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 {
 	const string cameraPermissionNotGrantedMessage = "Camera permission is not granted. Please enable it in the app settings.";

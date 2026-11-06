@@ -8,7 +8,7 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraViewAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraViewAndroidTests : CameraAndroidTestBase
 {
 	static async Task<byte[]> CaptureJpegAsync(CameraView view)

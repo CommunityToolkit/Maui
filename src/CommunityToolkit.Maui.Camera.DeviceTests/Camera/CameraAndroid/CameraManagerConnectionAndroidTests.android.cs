@@ -9,7 +9,7 @@ using ICameraProvider = CommunityToolkit.Maui.Core.ICameraProvider;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraManagerAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 {
 	[Fact]

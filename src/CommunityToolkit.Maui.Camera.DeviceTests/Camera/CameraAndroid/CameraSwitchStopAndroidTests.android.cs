@@ -6,7 +6,7 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraSwitchStopAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 {
 	[Fact]

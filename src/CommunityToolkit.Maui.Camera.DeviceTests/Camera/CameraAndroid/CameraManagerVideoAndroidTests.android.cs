@@ -12,7 +12,7 @@ using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.CameraManagerAndroid)]
-[Collection(TestCollections.DisableParallelization)]
+[Collection(TestCollections.PermanentAndroidGrants)]
 public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 {
 	static async Task<string> WaitForRecordingFileAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
