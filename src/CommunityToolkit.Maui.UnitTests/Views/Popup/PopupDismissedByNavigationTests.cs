@@ -1021,6 +1021,95 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.False(popupReference.IsAlive);
 	}
 
+	// A page that is not in a Window yet keeps a modal page pushed on it, without a Parent, and .NET MAUI pushes that modal page once the page is attached: the push was not canceled
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ShowPopupAsync_ShouldDisplayThePopupOnceThePageIsAttached_WhenThePageIsNotInAWindowYet(bool attachWithPushAsync)
+	{
+		var page = new ContentPage();
+		var attachAsync = PrepareToAttach(page, attachWithPushAsync);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+
+		var showPopupTask = page.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await attachAsync();
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		var popupPage = await WaitForSinglePopupPageAsync(window.Navigation);
+
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+
+		var uiThread = new SingleThreadedSynchronizationContext();
+		TapOutsideOfPopupOn(uiThread, popupPage);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(window.Navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ShowPopup_ShouldDisplayThePopupOnceThePageIsAttached_WhenThePageIsNotInAWindowYet(bool attachWithPushAsync)
+	{
+		var page = new ContentPage();
+		var attachAsync = PrepareToAttach(page, attachWithPushAsync);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var uiThread = new SingleThreadedSynchronizationContext();
+
+		RunOn(uiThread, () => page.ShowPopup(popup, PopupOptions.Empty));
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+		await attachAsync();
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		var popupPage = await WaitForSinglePopupPageAsync(window.Navigation);
+
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+
+		await popup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, closedCount);
+		Assert.Empty(window.Navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
+	// A Shell that is not in a Window yet keeps the PopupPage of Shell.ShowPopupAsync on its ModalStack, without a Parent, and pushes it once the Shell is attached
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task ShowPopupAsync_ShouldDisplayThePopupOnceTheShellIsAttached_WhenTheShellIsNotInAWindowYet()
+	{
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		window.Page = new ContentPage();
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage());
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+
+		var showPopupTask = shell.ShowPopupAsync(popup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
+		window.Page = shell;
+		var popupPage = await WaitForSinglePopupPageAsync(window.Navigation);
+
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+
+		var uiThread = new SingleThreadedSynchronizationContext();
+		TapOutsideOfPopupOn(uiThread, popupPage);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(window.Navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -1090,6 +1179,26 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		}
 
 		return (showPopupTask, new WeakReference(popup), new WeakReference(popupPage ?? throw new InvalidOperationException("The PopupPage of the Popup was not found")));
+	}
+
+	// The root page must not contain page, so that page stays outside the Window until the returned attach runs
+	static Func<Task> PrepareToAttach(ContentPage page, bool attachWithPushAsync)
+	{
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+
+		if (attachWithPushAsync)
+		{
+			var navigationPage = new NavigationPage(new ContentPage());
+			window.Page = navigationPage;
+			return () => navigationPage.PushAsync(page, false);
+		}
+
+		window.Page = new ContentPage();
+		return () =>
+		{
+			window.Page = page;
+			return Task.CompletedTask;
+		};
 	}
 
 	static Task RemoveFromNavigationPageAsync(NavigationPage navigationPage, PopupPage popupPage, NavigationPageRemoval removal)
