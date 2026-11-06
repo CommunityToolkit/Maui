@@ -166,6 +166,23 @@ sealed class AppleRequestAccessStub : IDisposable
 		}
 	}
 
+	// The user answers the prompt that a null answer left open
+	public void AnswerPending(bool isGranted)
+	{
+		IntPtr[] completions;
+		lock (pendingCompletions)
+		{
+			completions = [.. pendingCompletions];
+			pendingCompletions.Clear();
+		}
+
+		foreach (var completion in completions)
+		{
+			ObjCNative.InvokeBlockWithBool(completion, isGranted);
+			ObjCNative.ReleaseBlock(completion);
+		}
+	}
+
 	public void Dispose()
 	{
 		replacement.Dispose();
@@ -470,6 +487,26 @@ sealed class AppleMovieOutputConnectionStub : IDisposable
 	}
 }
 
+// A real session without a camera input cannot run (an empty session does not start at all), and CameraManager refuses to start a recording on
+// a session that does not run. This makes one real session report that it runs, while its movie output still never reports a recording.
+sealed class AppleSessionRunningStub : IDisposable
+{
+	readonly ObjCMethodReplacement replacement;
+	readonly IntPtr session;
+
+	public AppleSessionRunningStub(AVCaptureSession session)
+	{
+		this.session = session.Handle.Handle;
+		replacement = ObjCMethodReplacement.OfInstanceMethod(typeof(AVCaptureSession), "isRunning", new ObjCImplementationInteger(IsRunning));
+	}
+
+	public void Dispose() => replacement.Dispose();
+
+	nint IsRunning(IntPtr self, IntPtr selector) => self == session
+		? 1
+		: replacement.GetOriginal<ObjCImplementationInteger>()(self, selector);
+}
+
 // A real recording needs a running session with a camera.
 sealed class AppleMovieRecordingStub : IDisposable
 {
@@ -502,6 +539,17 @@ sealed class AppleMovieRecordingStub : IDisposable
 		}
 	}
 
+	// AVFoundation tells the delegate that the recording started, which a start with AcknowledgeStart = false leaves to the test
+	public void Start(Recording recording)
+	{
+		var startedDelegate = Runtime.GetNSObject<AVCaptureFileOutputRecordingDelegate>(recording.Delegate)
+			?? throw new InvalidOperationException("The recording delegate is gone.");
+		var output = Runtime.GetNSObject<AVCaptureFileOutput>(recording.Output)
+			?? throw new InvalidOperationException("The movie output is gone.");
+
+		startedDelegate.DidStartRecording(output, NSUrl.FromFilename(recording.FilePath), []);
+	}
+
 	public void Finish(Recording recording, NSError? error = null)
 	{
 		if (recording.IsFinished)
@@ -527,9 +575,10 @@ sealed class AppleMovieRecordingStub : IDisposable
 	void StartRecording(IntPtr self, IntPtr selector, IntPtr url, IntPtr recordingDelegate)
 	{
 		var filePath = Runtime.GetNSObject<NSUrl>(url)?.Path ?? string.Empty;
+		var recording = new Recording(self, filePath, recordingDelegate);
 		lock (recordings)
 		{
-			recordings.Add(new Recording(self, filePath, recordingDelegate));
+			recordings.Add(recording);
 		}
 
 		if (MovieBytes is not null)
@@ -539,11 +588,7 @@ sealed class AppleMovieRecordingStub : IDisposable
 
 		if (AcknowledgeStart)
 		{
-			var startedDelegate = Runtime.GetNSObject<AVCaptureFileOutputRecordingDelegate>(recordingDelegate)
-				?? throw new InvalidOperationException("The recording delegate is gone.");
-			var output = Runtime.GetNSObject<AVCaptureFileOutput>(self)
-				?? throw new InvalidOperationException("The movie output is gone.");
-			startedDelegate.DidStartRecording(output, NSUrl.FromFilename(filePath), []);
+			Start(recording);
 		}
 	}
 

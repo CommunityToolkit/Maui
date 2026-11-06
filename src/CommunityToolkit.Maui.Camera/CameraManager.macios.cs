@@ -382,6 +382,15 @@ partial class CameraManager
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
 	{
+		// The permission is requested before the check for a pending start: a double tap makes two starts wait for the permission prompt, and
+		// the one that continues second must find the state that the first one claimed. Asked after that check, the second start would wait
+		// for the semaphore and then replace the recording that just started, where Android lets it join the first start.
+		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
+		if (!isPermissionGranted)
+		{
+			throw new CameraException(cameraPermissionNotGrantedMessage);
+		}
+
 		// A start that arrives while another one still waits for AVFoundation to start the recording waits for that start instead of starting
 		// a second recording. It must not wait for the semaphore first: that is held until the recording started, and the start that then
 		// got the semaphore would replace the recording that just started.
@@ -405,29 +414,25 @@ partial class CameraManager
 
 	async Task StartRecordingAsync(Stream stream, CancellationToken token)
 	{
-		var isPermissionGranted = await AVCaptureDevice.RequestAccessForMediaTypeAsync(AVAuthorizationMediaType.Video).WaitAsync(token);
-		if (!isPermissionGranted)
-		{
-			throw new CameraException(cameraPermissionNotGrantedMessage);
-		}
-
 		if (captureSession is null)
 		{
 			throw new CameraException("Capture session is not initialized. Call ConnectCamera first.");
 		}
 
+		// AVFoundation reports the start of a recording only for a session that runs, so a start on a stopped session (before
+		// StartCameraPreview or after StopCameraPreview) would wait for an answer that never comes
+		if (!captureSession.Running)
+		{
+			throw new CameraException("Unable to start video recording because the camera preview is not running. Start the camera preview first.");
+		}
+
 		// Like on Android and Windows, the stream of the latest StartVideoRecording receives the video: the running recording is released
 		CleanupVideoRecordingResources();
 
-		if (VideoRecordingState.TryStart(ref videoRecordingState) is not { } recordingState)
-		{
-			if (videoRecordingState is { } activeRecordingState)
-			{
-				await activeRecordingState.Started.WaitAsync(token);
-			}
-
-			return;
-		}
+		// The semaphore serializes the starts and the cleanup above released the state of the earlier recording: a state that is still there
+		// would be a bug of this class, which must not be mistaken for a start that joins another one
+		var recordingState = VideoRecordingState.TryStart(ref videoRecordingState)
+			?? throw new InvalidOperationException("The state of the previous video recording was not released.");
 
 		var recordingRequested = false;
 
@@ -632,14 +637,19 @@ partial class CameraManager
 					videoOutput?.StopRecording();
 				}
 
-				await recordingState.Finalized.WaitAsync(token);
+				// AVFoundation reports the end of a recording that never started (a session that does not run any more) to nobody, so waiting
+				// for it would hold the semaphore of the recording until Dispose
+				if (recordingState.Started.IsCompletedSuccessfully)
+				{
+					await recordingState.Finalized.WaitAsync(token);
+				}
 			}
 
 			CleanupVideoRecordingResources(recordingState);
 		}
 		catch (Exception exception)
 		{
-			Trace.WriteLine($"Unable to stop video recording after start failed: {exception}");
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to end the video recording after its start failed: {exception}");
 		}
 		finally
 		{
