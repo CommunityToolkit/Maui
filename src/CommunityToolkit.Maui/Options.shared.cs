@@ -153,8 +153,11 @@ public class Options : Core.Options
 	/// </summary>
 	/// <param name="globalPopupSettings"></param>
 	/// <remarks>The settings passed in here apply to every <see cref="Popup"/>. <see cref="CommunityToolkit.Maui.DefaultPopupSettings"/> describes the values that take precedence over them.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="globalPopupSettings"/> is <see langword="null"/>.</exception>
 	public void SetPopupDefaults(DefaultPopupSettings globalPopupSettings)
 	{
+		ArgumentNullException.ThrowIfNull(globalPopupSettings);
+
 		DefaultPopupSettings = globalPopupSettings;
 	}
 
@@ -163,8 +166,11 @@ public class Options : Core.Options
 	/// </summary>
 	/// <param name="globalPopupOptionsSettings"></param>
 	/// <remarks>The settings passed in here are the <see cref="IPopupOptions"/> of a <see cref="Popup"/> displayed with <see langword="null"/> options, for example by <see cref="PopupExtensions.ShowPopup(Microsoft.Maui.Controls.Page,Microsoft.Maui.Controls.View,CommunityToolkit.Maui.IPopupOptions?)"/>, and the initial values of every <see cref="PopupOptions"/> created afterwards.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="globalPopupOptionsSettings"/> is <see langword="null"/>.</exception>
 	public void SetPopupOptionsDefaults(DefaultPopupOptionsSettings globalPopupOptionsSettings)
 	{
+		ArgumentNullException.ThrowIfNull(globalPopupOptionsSettings);
+
 		DefaultPopupOptionsSettings = globalPopupOptionsSettings;
 	}
 

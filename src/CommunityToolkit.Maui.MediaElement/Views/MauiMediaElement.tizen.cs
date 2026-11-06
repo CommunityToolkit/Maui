@@ -14,8 +14,11 @@ public class MauiMediaElement : Tizen.NUI.BaseComponents.View
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="videoView">The VideoView that acts as the platform media player.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="videoView"/> is <see langword="null"/>.</exception>
 	public MauiMediaElement(VideoView videoView)
 	{
+		ArgumentNullException.ThrowIfNull(videoView);
+
 		this.videoView = videoView;
 		Add(videoView);
 	}

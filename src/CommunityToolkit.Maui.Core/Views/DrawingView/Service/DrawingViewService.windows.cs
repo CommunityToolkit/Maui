@@ -28,8 +28,11 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
 	public static ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(options);
+
 		token.ThrowIfCancellationRequested();
 
 		var canvas = GetImageInternal(options.Lines, options.Background, options.CanvasSize);
@@ -43,8 +46,11 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
 	public static ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(options);
+
 		token.ThrowIfCancellationRequested();
 
 		var canvas = GetImageInternal(options.Points, options.LineWidth, options.StrokeColor, options.Background, options.CanvasSize);

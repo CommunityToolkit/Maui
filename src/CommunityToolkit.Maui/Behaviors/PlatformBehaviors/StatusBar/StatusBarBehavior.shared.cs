@@ -80,6 +80,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 
 #if !(WINDOWS || MACCATALYST || TIZEN)
 	/// <inheritdoc /> 
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 #if IOS
 	protected override void OnAttachedTo(Page page, UIKit.UIView platformView)
 #elif ANDROID
@@ -88,6 +89,9 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	protected override void OnAttachedTo(Page page, object platformView)
 #endif
 	{
+		ArgumentNullException.ThrowIfNull(page);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnAttachedTo(page, platformView);
 
 		DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
@@ -109,6 +113,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	}
 
 	/// <inheritdoc /> 
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 #if IOS
 	protected override void OnDetachedFrom(Page page, UIKit.UIView platformView)
 #elif ANDROID
@@ -117,6 +122,9 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	protected override void OnDetachedFrom(Page page, object platformView)
 #endif
 	{
+		ArgumentNullException.ThrowIfNull(page);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 #if IOS
 		page.SizeChanged -= OnPageSizeChanged;
 #endif

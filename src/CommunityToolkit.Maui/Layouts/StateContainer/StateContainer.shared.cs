@@ -30,12 +30,50 @@ public static partial class StateContainer
 	/// <summary>
 	/// Change state with custom animation.
 	/// </summary>
-	public static async Task ChangeStateWithAnimation(
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(
 		BindableObject bindable,
 		string? state,
 		Animation? beforeStateChange,
 		Animation? afterStateChange,
 		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, beforeStateChange, afterStateChange, token);
+	}
+
+	/// <summary>
+	/// Change state with custom animation.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(
+		BindableObject bindable,
+		string? state,
+		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
+		Func<VisualElement, CancellationToken, Task>? afterStateChange,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, beforeStateChange, afterStateChange, cancellationToken);
+	}
+
+	/// <summary>
+	/// Change state using the default fade animation: the current views fade out, then the views for <paramref name="state"/> replace them and fade in.
+	/// The views that faded out get their <see cref="VisualElement.Opacity"/> back when the state change ends, also when it fails or is canceled, so they are visible the next time they are shown.
+	/// Canceling <paramref name="token"/> ends the fade at once instead of letting it run on: a view that was fading in gets an <see cref="VisualElement.Opacity"/> of 1.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, token);
+	}
+
+	// ChangeStateWithAnimation validates its arguments before it calls these methods: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, Animation? beforeStateChange, Animation? afterStateChange, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
@@ -69,15 +107,7 @@ public static partial class StateContainer
 		}
 	}
 
-	/// <summary>
-	/// Change state with custom animation.
-	/// </summary>
-	public static async Task ChangeStateWithAnimation(
-		BindableObject bindable,
-		string? state,
-		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
-		Func<VisualElement, CancellationToken, Task>? afterStateChange,
-		CancellationToken cancellationToken = default)
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, Func<VisualElement, CancellationToken, Task>? beforeStateChange, Func<VisualElement, CancellationToken, Task>? afterStateChange, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
@@ -111,12 +141,7 @@ public static partial class StateContainer
 		}
 	}
 
-	/// <summary>
-	/// Change state using the default fade animation: the current views fade out, then the views for <paramref name="state"/> replace them and fade in.
-	/// The views that faded out get their <see cref="VisualElement.Opacity"/> back when the state change ends, also when it fails or is canceled, so they are visible the next time they are shown.
-	/// Canceling <paramref name="token"/> ends the fade at once instead of letting it run on: a view that was fading in gets an <see cref="VisualElement.Opacity"/> of 1.
-	/// </summary>
-	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		ValidateCanStateChange(bindable);

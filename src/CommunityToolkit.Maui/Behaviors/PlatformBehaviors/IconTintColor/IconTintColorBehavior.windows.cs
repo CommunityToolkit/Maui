@@ -27,8 +27,12 @@ public partial class IconTintColorBehavior
 	Action? cancelPendingTint;
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(View bindable, FrameworkElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		ApplyTintColor(platformView, bindable, TintColor);
@@ -38,8 +42,12 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(View bindable, FrameworkElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		bindable.PropertyChanged -= OnElementPropertyChanged;

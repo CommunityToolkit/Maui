@@ -63,13 +63,16 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	}
 
 	/// <inheritdoc />
-	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="e"/> is <see langword="null"/>.</exception>
+	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			await OnTextPropertyChanged(CancellationToken.None);
+			HandleTextPropertyChanged();
 		}
 	}
 
@@ -88,6 +91,9 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		var maskedBehavior = (MaskedBehavior)bindable;
 		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask, CancellationToken.None).ConfigureAwait(false);
 	}
+
+	// An async void method reports a null argument through the synchronization context instead of to its caller, so the overrides validate their arguments before they call it
+	async void HandleTextPropertyChanged() => await OnTextPropertyChanged(CancellationToken.None);
 
 	Task OnTextPropertyChanged(CancellationToken token)
 	{

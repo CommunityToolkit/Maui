@@ -38,6 +38,72 @@ public class MapHandlerWindowsTests : MapTestBase
 		Assert.Equal("You need to specify a Bing Maps Key", exception.Message);
 	}
 
+	public static TheoryData<string> MappingsWithAHandlerAndAMap => new()
+	{
+		nameof(MapHandlerWindows.MapMapType),
+		nameof(MapHandlerWindows.MapIsZoomEnabled),
+		nameof(MapHandlerWindows.MapIsScrollEnabled),
+		nameof(MapHandlerWindows.MapIsTrafficEnabled),
+		nameof(MapHandlerWindows.MapIsShowingUser),
+		nameof(MapHandlerWindows.MapPins),
+	};
+
+	static Task InvokeMapping(string mapping, IMapHandler? handler, Microsoft.Maui.Maps.IMap? map)
+	{
+#pragma warning disable CS8604 // Possible null reference argument.
+		return mapping switch
+		{
+			nameof(MapHandlerWindows.MapMapType) => MapHandlerWindows.MapMapType(handler, map),
+			nameof(MapHandlerWindows.MapIsZoomEnabled) => MapHandlerWindows.MapIsZoomEnabled(handler, map),
+			nameof(MapHandlerWindows.MapIsScrollEnabled) => MapHandlerWindows.MapIsScrollEnabled(handler, map),
+			nameof(MapHandlerWindows.MapIsTrafficEnabled) => MapHandlerWindows.MapIsTrafficEnabled(handler, map),
+			nameof(MapHandlerWindows.MapIsShowingUser) => MapHandlerWindows.MapIsShowingUser(handler, map),
+			nameof(MapHandlerWindows.MapPins) => MapHandlerWindows.MapPins(handler, map),
+			_ => throw new ArgumentOutOfRangeException(nameof(mapping), mapping, null)
+		};
+#pragma warning restore CS8604 // Possible null reference argument.
+	}
+
+	[Theory]
+	[MemberData(nameof(MappingsWithAHandlerAndAMap))]
+	public async Task MappingWithoutAHandlerThrowsArgumentNullException(string mapping)
+	{
+		SetupMapBuilder();
+
+		// The mappings throw from the call, before a Task exists; ThrowsAsync accepts that and a faulted Task alike
+		var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => InvokeMapping(mapping, null, new Map()));
+
+		Assert.Equal("handler", exception.ParamName);
+	}
+
+	[Theory]
+	[MemberData(nameof(MappingsWithAHandlerAndAMap))]
+	public async Task MappingWithoutAMapThrowsArgumentNullException(string mapping)
+	{
+		SetupMapBuilder();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var handler = CreateHandler<NoWebViewMapHandler>(new Map());
+
+			var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => InvokeMapping(mapping, handler, null));
+
+			Assert.Equal("map", exception.ParamName);
+		});
+	}
+
+	[Fact]
+	public async Task MoveToRegionWithoutAHandlerThrowsArgumentNullException()
+	{
+		SetupMapBuilder();
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => MapHandlerWindows.MapMoveToRegion(null, new Map(), new MapSpan(new Location(1, 2), 1, 1)));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("handler", exception.ParamName);
+	}
+
 	[Fact]
 	public async Task CreatingThePlatformViewReturnsAMauiWebViewAndBuildsTheMapPageWithTheKey()
 	{

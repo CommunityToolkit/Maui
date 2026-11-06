@@ -38,8 +38,11 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="e"/> is <see langword="null"/>.</exception>
 	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)

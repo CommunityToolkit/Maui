@@ -138,10 +138,15 @@ public partial class DrawingView : View, IDrawingView
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
 	public static ValueTask<Stream> GetImageStream(
 		ImageLineOptions options,
-		CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(options, token);
+		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(options);
+
+		return DrawingViewService.GetImageStream(options, token);
+	}
 
 	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
 	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) =>

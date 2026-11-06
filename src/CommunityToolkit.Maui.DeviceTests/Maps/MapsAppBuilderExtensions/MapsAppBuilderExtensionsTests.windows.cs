@@ -32,6 +32,16 @@ public class MapsAppBuilderExtensionsTests : MapTestBase
 	}
 
 	[Fact]
+	public void UseMauiCommunityToolkitMapsWithoutABuilderThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => CommunityToolkit.Maui.Maps.AppBuilderExtensions.UseMauiCommunityToolkitMaps(null, "any-key"));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("builder", exception.ParamName);
+	}
+
+	[Fact]
 	public async Task UseMauiCommunityToolkitMapsRegistersMapHandlerWindowsForMap()
 	{
 		RequireWebView2Runtime();

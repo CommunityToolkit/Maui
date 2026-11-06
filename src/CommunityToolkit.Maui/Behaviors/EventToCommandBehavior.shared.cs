@@ -44,15 +44,21 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 	public partial IValueConverter? EventArgsConverter { get; set; }
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 		RegisterEvent();
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		UnregisterEvent();
 		base.OnDetachingFrom(bindable);
 	}

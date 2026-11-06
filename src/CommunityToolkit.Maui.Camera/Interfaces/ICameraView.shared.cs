@@ -199,6 +199,7 @@ public interface ICameraView : IView
 	/// <param name="stream">The stream to which the video data will be written. The stream must be writable and remain open for the duration of the recording.</param>
 	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
 	/// <returns>A task that represents the asynchronous video recording operation.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="stream"/> is <see langword="null"/>. Implementations should throw it before the returned <see cref="Task"/> is created.</exception>
 	/// <exception cref="CameraException">Thrown when the recording cannot start, for example on iOS and Mac Catalyst when the camera permission is
 	/// not granted, or on Windows when no camera is available or the camera cannot be opened. Exceptions are not caught: they propagate to the
 	/// caller.</exception>

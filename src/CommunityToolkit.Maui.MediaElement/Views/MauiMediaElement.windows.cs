@@ -32,8 +32,11 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="mediaPlayerElement"></param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mediaPlayerElement"/> is <see langword="null"/>.</exception>
 	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
 	{
+		ArgumentNullException.ThrowIfNull(mediaPlayerElement);
+
 		LoadResourceDictionary();
 		this.mediaPlayerElement = mediaPlayerElement;
 		customTransportControls = SetTransportControls();

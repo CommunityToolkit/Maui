@@ -57,8 +57,11 @@ public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 	/// Adds a <see cref="UIView"/> to <see cref="Children"/>
 	/// </summary>
 	/// <param name="child"></param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="child"/> is null.</exception>
 	public void AddChild(UIView child)
 	{
+		ArgumentNullException.ThrowIfNull(child);
+
 		children.Add(child);
 		Container.AddArrangedSubview(child);
 	}

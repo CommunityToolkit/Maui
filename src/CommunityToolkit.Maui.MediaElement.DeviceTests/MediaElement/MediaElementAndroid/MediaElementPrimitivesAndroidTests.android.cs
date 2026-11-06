@@ -27,6 +27,16 @@ public class MediaElementPrimitivesAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
+	public void PlayerViewChangedEventArgsWithoutAPlayerViewThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // The test passes null to a parameter that is not nullable on purpose
+		var exception = Assert.Throws<ArgumentNullException>(() => new PlayerViewChangedEventArgs(null));
+#pragma warning restore CS8625
+
+		Assert.Equal("playerView", exception.ParamName);
+	}
+
+	[Fact]
 	public void MediaControlsServiceIsRegisteredAsASingletonService()
 	{
 		IServiceCollection? services = null;

@@ -57,10 +57,12 @@ static partial class NavigationBar
 	/// </remarks>
 	/// <param name="handler"></param>
 	/// <param name="view"></param>
-	/// <exception cref="NullReferenceException"></exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	/// <exception cref="NotSupportedException"></exception>
 	public static void MapNavigationStyleProperty(IPageHandler handler, IContentView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		if (view is not Page page)
 		{
 			return;
@@ -130,10 +132,12 @@ static partial class NavigationBar
 	/// </remarks>
 	/// <param name="handler"></param>
 	/// <param name="view"></param>
-	/// <exception cref="NullReferenceException"></exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	/// <exception cref="NotSupportedException"></exception>
 	public static void MapNavigationColorProperty(IPageHandler handler, IContentView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		if (view is not Page page)
 		{
 			return;

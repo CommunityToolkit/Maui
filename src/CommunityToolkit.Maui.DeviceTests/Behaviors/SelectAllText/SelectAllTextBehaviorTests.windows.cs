@@ -44,7 +44,7 @@ public partial class SelectAllTextBehaviorTests
 	}
 
 	[Fact]
-	public async Task MissingPlatformViewThrowsInvalidOperationExceptionWhenTheBehaviorAttachesOrDetaches()
+	public async Task MissingPlatformViewThrowsArgumentNullExceptionWhenTheBehaviorAttachesOrDetaches()
 	{
 		SetupBuilder();
 
@@ -53,11 +53,13 @@ public partial class SelectAllTextBehaviorTests
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			var attachException = Assert.Throws<InvalidOperationException>(() => probe.AttachTo(entry, null!));
-			var detachException = Assert.Throws<InvalidOperationException>(() => probe.DetachFrom(entry, null!));
+#pragma warning disable CS8625 // The test passes null to a parameter that is not nullable on purpose
+			var attachException = Assert.Throws<ArgumentNullException>(() => probe.AttachTo(entry, null));
+			var detachException = Assert.Throws<ArgumentNullException>(() => probe.DetachFrom(entry, null));
+#pragma warning restore CS8625
 
-			Assert.Equal("The Platform View can't be null.", attachException.Message);
-			Assert.Equal("The Platform View can't be null.", detachException.Message);
+			Assert.Equal("platformView", attachException.ParamName);
+			Assert.Equal("platformView", detachException.ParamName);
 		});
 	}
 }

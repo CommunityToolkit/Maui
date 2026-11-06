@@ -9,16 +9,24 @@ namespace CommunityToolkit.Maui.Behaviors;
 public partial class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox>
 {
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(InputView bindable, TextBox platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		ApplyEffect(true, platformView);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(InputView bindable, TextBox platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		ApplyEffect(false, platformView);
@@ -26,11 +34,6 @@ public partial class SelectAllTextBehavior : PlatformBehavior<InputView, TextBox
 
 	void ApplyEffect(bool apply, TextBox editText)
 	{
-		if (editText is null)
-		{
-			throw new InvalidOperationException("The Platform View can't be null.");
-		}
-
 		editText.GotFocus -= OnGotFocus;
 
 		if (apply)

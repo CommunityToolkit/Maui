@@ -14,6 +14,7 @@ public interface IFileSaver
 	/// <param name="fileName">File name with extension. Must not be null.</param>
 	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
@@ -27,6 +28,7 @@ public interface IFileSaver
 	/// <param name="fileName">File name with extension. Must not be null.</param>
 	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
@@ -42,6 +44,7 @@ public interface IFileSaver
 	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="progress">Saving file progress in percentage</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
@@ -56,6 +59,7 @@ public interface IFileSaver
 	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="progress">Saving file progress in percentage</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]

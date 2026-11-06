@@ -14,31 +14,39 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
 	{
-		token.ThrowIfCancellationRequested();
+		ArgumentNullException.ThrowIfNull(options);
 
-		var image = GetBitmapForPoints(options.Points, options.LineWidth, options.StrokeColor, options.Background, options.CanvasSize);
+		return PlatformImageStreamCore();
 
-		if (image is null)
+		async ValueTask<Stream> PlatformImageStreamCore()
 		{
-			return Stream.Null;
-		}
+			token.ThrowIfCancellationRequested();
 
-		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
-		var stream = await Task.Run<Stream>(() =>
-		{
-			var resized = image.Resize(new SKImageInfo((int)options.DesiredSize.Width, (int)options.DesiredSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
-			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+			var image = GetBitmapForPoints(options.Points, options.LineWidth, options.StrokeColor, options.Background, options.CanvasSize);
 
-			var stream = new MemoryStream();
-			data.SaveTo(stream);
-			stream.Seek(0, SeekOrigin.Begin);
+			if (image is null)
+			{
+				return Stream.Null;
+			}
+
+			// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
+			var stream = await Task.Run<Stream>(() =>
+			{
+				var resized = image.Resize(new SKImageInfo((int)options.DesiredSize.Width, (int)options.DesiredSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+				var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+
+				var stream = new MemoryStream();
+				data.SaveTo(stream);
+				stream.Seek(0, SeekOrigin.Begin);
+
+				return stream;
+			}, token);
 
 			return stream;
-		}, token);
-
-		return stream;
+		}
 	}
 
 	/// <summary>
@@ -47,31 +55,39 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static async ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
 	{
-		token.ThrowIfCancellationRequested();
+		ArgumentNullException.ThrowIfNull(options);
 
-		var image = GetBitmapForLines(options.Lines, options.Background, options.CanvasSize);
+		return PlatformImageStreamCore();
 
-		if (image is null)
+		async ValueTask<Stream> PlatformImageStreamCore()
 		{
-			return Stream.Null;
-		}
+			token.ThrowIfCancellationRequested();
 
-		// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
-		var stream = await Task.Run<Stream>(() =>
-		{
-			var resized = image.Resize(new SKImageInfo((int)options.DesiredSize.Width, (int)options.DesiredSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
-			var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+			var image = GetBitmapForLines(options.Lines, options.Background, options.CanvasSize);
 
-			var stream = new MemoryStream();
-			data.SaveTo(stream);
-			stream.Seek(0, SeekOrigin.Begin);
+			if (image is null)
+			{
+				return Stream.Null;
+			}
+
+			// Defer to thread pool thread https://github.com/CommunityToolkit/Maui/pull/692#pullrequestreview-1150202727
+			var stream = await Task.Run<Stream>(() =>
+			{
+				var resized = image.Resize(new SKImageInfo((int)options.DesiredSize.Width, (int)options.DesiredSize.Height, SKColorType.Bgra8888, SKAlphaType.Opaque), SKFilterQuality.High);
+				var data = resized.Encode(SKEncodedImageFormat.Png, 100);
+
+				var stream = new MemoryStream();
+				data.SaveTo(stream);
+				stream.Seek(0, SeekOrigin.Begin);
+
+				return stream;
+			}, token);
 
 			return stream;
-		}, token);
-
-		return stream;
+		}
 	}
 
 	static (SKBitmap?, SizeF offset) GetBitmap(in ICollection<PointF> points, float maxLineWidth, Size? canvasSize)

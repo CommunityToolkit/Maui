@@ -48,56 +48,81 @@ public partial class MapHandlerWindows : MapHandler
 	/// Maps Map type: <see cref="MapType.Street"/> shows the road map, <see cref="MapType.Satellite"/> shows aerial imagery without labels,
 	/// <see cref="MapType.Hybrid"/> shows aerial imagery with labels, and any other value shows the road map.
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
 	}
 
 	/// <summary>
 	/// Maps IsZoomEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsScrollEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsTrafficEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsShowingUser
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
-	public static new async Task MapIsShowingUser(IMapHandler handler, IMap map)
+	public static new Task MapIsShowingUser(IMapHandler handler, IMap map)
 	{
-		if (map.IsShowingUser)
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
+		return MapIsShowingUserCore();
+
+		async Task MapIsShowingUserCore()
 		{
-			var location = await GetCurrentLocation();
-			if (location is not null)
+			if (map.IsShowingUser)
 			{
-				await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				var location = await GetCurrentLocation();
+				if (location is not null)
+				{
+					await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				}
 			}
-		}
-		else
-		{
-			await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
+			else
+			{
+				await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
+			}
 		}
 	}
 
@@ -109,28 +134,37 @@ public partial class MapHandlerWindows : MapHandler
 	/// The info window that a click on a pin opens shows the pin's <see cref="Pin.Label"/> and <see cref="Pin.Address"/> as plain text: markup in
 	/// them is shown as it is written, not rendered as HTML.
 	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
-	public static new async Task MapPins(IMapHandler handler, IMap map)
+	public static new Task MapPins(IMapHandler handler, IMap map)
 	{
-		// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
-		// times in a row (added in a loop) end up on the map once each. A removal sent on its own ran before the additions of the earlier changes,
-		// which, built after an await, each added the latest pins again
-		var script = new StringBuilder("removeAllPins();");
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
 
-		foreach (var pin in map.Pins)
+		return MapPinsCore();
+
+		async Task MapPinsCore()
 		{
-			// A Pin has no Location until one is set (a Map only requires its Label): there is no position to show it at
-			if (pin.Location is null)
+			// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
+			// times in a row (added in a loop) end up on the map once each. A removal sent on its own ran before the additions of the earlier changes,
+			// which, built after an await, each added the latest pins again
+			var script = new StringBuilder("removeAllPins();");
+
+			foreach (var pin in map.Pins)
 			{
-				continue;
+				// A Pin has no Location until one is set (a Map only requires its Label): there is no position to show it at
+				if (pin.Location is null)
+				{
+					continue;
+				}
+
+				// The label and the address are text of the app: encoded for the JavaScript string literals, so that none of their characters ends the literal or runs as script
+				script.Append($"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
+					$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{JavaScriptEncoder.Default.Encode(pin.Label ?? string.Empty)}', '{JavaScriptEncoder.Default.Encode(pin.Address ?? string.Empty)}', '{(pin as Pin)?.Id}');");
 			}
 
-			// The label and the address are text of the app: encoded for the JavaScript string literals, so that none of their characters ends the literal or runs as script
-			script.Append($"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
-				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{JavaScriptEncoder.Default.Encode(pin.Label ?? string.Empty)}', '{JavaScriptEncoder.Default.Encode(pin.Address ?? string.Empty)}', '{(pin as Pin)?.Id}');");
+			await TryCallJSMethod(handler.PlatformView, script.ToString());
 		}
-
-		await TryCallJSMethod(handler.PlatformView, script.ToString());
 	}
 
 	/// <summary>
@@ -142,20 +176,28 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps MoveToRegion
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	[Obsolete(DeprecationMessages.Maps)]
-	public static new async Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+	public static new Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
-		if (arg is not MapSpan newRegion)
-		{
-			return;
-		}
+		ArgumentNullException.ThrowIfNull(handler);
 
-		if (handler is MapHandlerWindows mapHandler)
-		{
-			mapHandler.regionToGo = newRegion;
-		}
+		return MapMoveToRegionCore();
 
-		await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+		async Task MapMoveToRegionCore()
+		{
+			if (arg is not MapSpan newRegion)
+			{
+				return;
+			}
+
+			if (handler is MapHandlerWindows mapHandler)
+			{
+				mapHandler.regionToGo = newRegion;
+			}
+
+			await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+		}
 	}
 
 	/// <inheritdoc/>

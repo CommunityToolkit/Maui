@@ -15,8 +15,11 @@ public partial class IconTintColorBehavior
 	AndroidView? nativeView;
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(View bindable, AndroidView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable, platformView);
 		nativeView = platformView;
 
@@ -27,8 +30,11 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(View bindable, AndroidView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		ClearTintColor(platformView);

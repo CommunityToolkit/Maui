@@ -320,8 +320,13 @@ public partial class CameraView : View, ICameraView, IDisposable
 		StartVideoRecording(new MemoryStream(), token);
 
 	/// <inheritdoc cref="ICameraView.StartVideoRecording(Stream,CancellationToken)"/>
-	public Task StartVideoRecording(Stream stream, CancellationToken token = default) =>
-		Handler.CameraManager.StartVideoRecording(stream, token);
+	public Task StartVideoRecording(Stream stream, CancellationToken token = default)
+	{
+		// Before the Handler lookup, so that a null stream is reported as such and not as a missing handler
+		ArgumentNullException.ThrowIfNull(stream);
+
+		return Handler.CameraManager.StartVideoRecording(stream, token);
+	}
 
 	/// <summary>
 	/// Stops the ongoing video recording operation and returns the stream that received the video as a <typeparamref name="TStream"/>.
