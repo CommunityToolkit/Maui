@@ -102,7 +102,31 @@ public partial class GravatarImageSourceTests
 		}, checkGrowth: true, pictureBeforeFirstLayout);
 	}
 
-	async Task RunWithGravatarButtonAsync(HttpClient client, Button.ButtonContentLayout.ImagePosition position, Func<Button, WButton, WImage, Task> assertAfterReload, bool checkGrowth, bool pictureBeforeFirstLayout)
+	// A picture gets room in a Button without text only from a size request, such as the MinimumHeightRequest of the app template's style.
+	[Fact]
+	public async Task ButtonWithoutTextDrawsALargeGravatarPictureWholeInsideItsMinimumHeight()
+	{
+		SetupBuilder();
+		using var client = new HttpClient(new PictureHandler(largeRedPngBase64));
+
+		await RunWithGravatarButtonAsync(client, Button.ButtonContentLayout.ImagePosition.Left, async (button, platformButton, image) =>
+		{
+			AssertInside();
+			await InvokeOnMainThreadAsync(platformButton.UpdateLayout);
+			AssertInside();
+
+			void AssertInside()
+			{
+				var picture = image.TransformToVisual(platformButton).TransformBounds(new WRect(0, 0, image.ActualWidth, image.ActualHeight));
+				var message = $"The picture is at {picture} but the Button is {button.Width}x{button.Height} DIP (MaxHeight {image.MaxHeight}, Height {image.Height}).";
+
+				Assert.True(picture.Height > 0, message);
+				Assert.True(picture.Left >= -0.5 && picture.Top >= -0.5 && picture.Right <= button.Width + 0.5 && picture.Bottom <= button.Height + 0.5, message);
+			}
+		}, checkGrowth: true, pictureBeforeFirstLayout: false, withText: false);
+	}
+
+	async Task RunWithGravatarButtonAsync(HttpClient client, Button.ButtonContentLayout.ImagePosition position, Func<Button, WButton, WImage, Task> assertAfterReload, bool checkGrowth, bool pictureBeforeFirstLayout, bool withText = true)
 	{
 		var source = new GravatarImageSource { Email = "a@example.org" };
 		var sizedRequests = 0;
@@ -128,18 +152,25 @@ public partial class GravatarImageSourceTests
 		// HeightRequest gives.
 		var button = new Button
 		{
-			Text = "Button",
+			Text = withText ? "Button" : string.Empty,
 			ImageSource = source,
 			ContentLayout = new Button.ButtonContentLayout(position, 10),
 		};
 
 		var reference = new Button
 		{
-			Text = "Button",
+			Text = withText ? "Button" : string.Empty,
 			ContentLayout = new Button.ButtonContentLayout(position, 10),
 		};
 
-		if (position is Button.ButtonContentLayout.ImagePosition.Top or Button.ButtonContentLayout.ImagePosition.Bottom)
+		if (!withText)
+		{
+			// On Windows a Button without text is only as tall as its padding and border: the .NET MAUI app template's Button style gives it a
+			// MinimumHeightRequest of 44, which leaves room for a picture.
+			button.MinimumHeightRequest = 44;
+			reference.MinimumHeightRequest = 44;
+		}
+		else if (position is Button.ButtonContentLayout.ImagePosition.Top or Button.ButtonContentLayout.ImagePosition.Bottom)
 		{
 			button.HeightRequest = 120;
 			reference.HeightRequest = 120;
@@ -161,7 +192,7 @@ public partial class GravatarImageSourceTests
 					await InvokeOnMainThreadAsync(() => button.ToHandler(MauiContext));
 					firstLayoutDone.SetResult();
 
-					await AssertEventually(() => GetNativeImage(Assert.IsAssignableFrom<IPlatformViewHandler>(button.Handler))?.Source is BitmapSource { PixelHeight: > 0 }, timeout: pictureTimeout, message: "The Button never showed a picture before its first layout.");
+					await AssertEventually(() => GetNativeImage(Assert.IsType<IPlatformViewHandler>(button.Handler, exactMatch: false))?.Source is BitmapSource { PixelHeight: > 0 }, timeout: pictureTimeout, message: "The Button never showed a picture before its first layout.");
 					await InvokeOnMainThreadAsync(() => layout.Children.Add(button));
 				}
 
@@ -189,7 +220,8 @@ public partial class GravatarImageSourceTests
 				await AssertEventually(() => image.Source is BitmapSource { PixelHeight: > 0 }, timeout: pictureTimeout, message: "The Button never showed a picture.");
 				var firstPicture = image.Source;
 
-				// The first picture is the default one, requested before the Button has a size: the picture of the Button's size comes with a second request.
+				// The first picture is the default one, requested before the Button has a size: the picture of the Button's size comes with a second
+				// request.
 				await AssertEventually(() => Volatile.Read(ref sizedRequests) > 0 && image.Source is BitmapSource { PixelHeight: > 0 } latest && !ReferenceEquals(latest, firstPicture), timeout: pictureTimeout * 2, message: $"The Button never showed the picture of its size. The Uri of the source is {source.Uri}.");
 
 				await assertAfterReload(button, platformButton, image);
