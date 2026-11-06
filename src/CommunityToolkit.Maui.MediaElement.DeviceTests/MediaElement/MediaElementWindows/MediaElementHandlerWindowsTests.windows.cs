@@ -973,4 +973,44 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 			});
 		}
 	}
+
+	[Fact]
+	public async Task HandlerOfAMediaElementWithOpenedMediaIsCollectedWithoutDisposingIt()
+	{
+		SetupWindowsBuilder();
+		await RequireDecoderAsync();
+		WeakReference viewReference = null!, handlerReference = null!, platformViewReference = null!, managerReference = null!;
+
+		await OpenAndDisconnectAsync();
+
+		// The MediaElement is not disposed (a page only disconnects its handler), so only the handler stopping the status timer, a root while it runs
+		// whose tick handler references the MediaElement, lets it be collected.
+		if (!await AssertionExtensions.WaitForCollect(viewReference, handlerReference, platformViewReference, managerReference))
+		{
+			Assert.Fail($"Still alive after 40 collections: MediaElement {viewReference.IsAlive}, handler {handlerReference.IsAlive}, platform view {platformViewReference.IsAlive}, manager {managerReference.IsAlive}.");
+		}
+
+		async Task OpenAndDisconnectAsync()
+		{
+			var view = NewMediaElement();
+			var handler = await InvokeOnMainThreadAsync(() => CreateHandler<WinMediaHandler>(view));
+			await OpenAsync(view, VideoSource);
+
+			// OnMediaElementMediaOpened raises MediaOpened first and creates the Metadata helper right after it.
+			var openedManager = new WeakReference(handler.Manager);
+			await WaitUntilAsync(() => openedManager.Target is MediaManager manager && WinMediaReflection.GetField<object?>(manager, "metadata") is not null,
+				"Opening the media did not create the Metadata helper, so this test would not cover its subscription.");
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				viewReference = new(view);
+				handlerReference = new(handler);
+				platformViewReference = new(handler.PlatformView);
+				managerReference = new(handler.Manager);
+
+				((IElementHandler)handler).DisconnectHandler();
+				view.Handler = null;
+			});
+		}
+	}
 }
