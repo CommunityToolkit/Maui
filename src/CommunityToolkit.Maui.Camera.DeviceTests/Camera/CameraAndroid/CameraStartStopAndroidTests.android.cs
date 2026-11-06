@@ -35,6 +35,30 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 		});
 	}
 
+	// The page closes while the start waits for CameraX: the handler disconnects and releases the manager, so the start fails with the
+	// ObjectDisposedException of the released manager. The view is gone, so the app has nothing to show for it.
+	[Fact]
+	public async Task DisposeWhileStartCameraPreviewWaitsForCameraXEndsTheStartWithoutRaisingErrorOccurred()
+	{
+		SetupBuilder();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			using var errors = new CameraErrorRecorder(session.View);
+			await StopThePreviewAsync(session);
+
+			var start = session.Manager.StartCameraPreview(CancellationToken.None);
+			Assert.False(start.IsCompleted, "StartCameraPreview completed without waiting for CameraX.");
+			session.Manager.Dispose();
+
+			await start.WaitAsync(CameraTimeout);
+			await WaitForTheListenersOfCameraXAsync();
+
+			Assert.Empty(errors.Errors);
+			Assert.Empty(UnhandledAsyncVoidExceptions);
+		});
+	}
+
 	// The token of the start is linked with the token that StopCameraPreview cancels: the exception still has the type of the platform's
 	// cancellation and names the caller's token.
 	[Fact]

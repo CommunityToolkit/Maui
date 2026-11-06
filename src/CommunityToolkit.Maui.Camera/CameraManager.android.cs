@@ -587,6 +587,19 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		try
+		{
+			await StartCameraPreviewAsync(token);
+		}
+		catch (System.Exception ex) when (isDisposed && ex is not OperationCanceledException)
+		{
+			// The page closed while the start waited for CameraX: the failure of the released manager (an ObjectDisposedException) has no
+			// view left to show it in, so the start ends quietly like the connection
+		}
+	}
+
+	async Task StartCameraPreviewAsync(CancellationToken token)
+	{
 		// The connection prepares the use cases (see pendingConnection): without this wait, a start while the view connects would do nothing,
 		// although a StopCameraPreview can have cancelled the start of the connection
 		if (processCameraProvider is null && !pendingConnection.IsCompleted)
