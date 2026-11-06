@@ -456,6 +456,50 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it.
+	[Fact]
+	public async Task StopCameraPreviewDuringARecordingEndsItAndAStopVideoRecordingAfterTheNextStartReturnsTheNullStream()
+	{
+		await RunWithRecordingAsync(async (scope, destination) =>
+		{
+			scope.Manager.StopCameraPreview();
+			Assert.Null(scope.Access.MediaRecording);
+			Assert.Null(scope.Access.VideoCaptureStream);
+
+			await scope.Manager.StartCameraPreview(CancellationToken.None);
+
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None));
+		});
+	}
+
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it.
+	[Fact]
+	public async Task StartVideoRecordingThatItsTokenCancelsLeavesNoRecordingThatStopVideoRecordingWouldStop()
+	{
+		await RunWithRecordingAsync(async (scope, destination) =>
+		{
+			var runningRecording = scope.Access.MediaRecording;
+			using var cancellation = new CancellationTokenSource();
+			using var second = new MemoryStream();
+
+			var start = scope.Manager.StartVideoRecording(second, cancellation.Token);
+			cancellation.Cancel();
+
+			try
+			{
+				await start;
+			}
+			catch (OperationCanceledException)
+			{
+			}
+
+			Assert.True(scope.Access.MediaRecording is null || ReferenceEquals(scope.Access.MediaRecording, runningRecording));
+			Assert.True(scope.Access.VideoCaptureStream is null || ReferenceEquals(scope.Access.VideoCaptureStream, destination));
+
+			await scope.Manager.StopVideoRecording(CancellationToken.None);
+		});
+	}
+
 	[Fact]
 	public async Task StartAndStopVideoRecordingCopiesAnMp4IntoTheStream()
 	{

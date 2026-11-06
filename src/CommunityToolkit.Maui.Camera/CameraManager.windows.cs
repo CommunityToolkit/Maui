@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Extensions;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
 using Windows.Media.Capture.Frames;
@@ -176,8 +177,8 @@ partial class CameraManager
 		// that hangs never does). That start ends without reporting anything, as it does when a StopCameraPreview releases its MediaCapture.
 		mediaCapture?.Dispose();
 
-		// In the field while Media Foundation initializes it, so that StopCameraPreview and Dispose release it at once. Another start can replace
-		// it there meanwhile, so this start only ever releases its own MediaCapture
+		// In the field while Media Foundation initializes it, so that StopCameraPreview and Dispose release it at once. A newer start can replace and
+		// release it there meanwhile, so this start releases only its own MediaCapture
 		var startedMediaCapture = new MediaCapture();
 		mediaCapture = startedMediaCapture;
 
@@ -306,6 +307,7 @@ partial class CameraManager
 		// has nothing to stop, and a preview that starts again does not find a recording of the released MediaCapture
 		mediaRecording = null;
 		videoCaptureStream = null;
+		frameSource = null;
 
 		mediaCapture = null;
 		isInitialized = false;
@@ -351,28 +353,57 @@ partial class CameraManager
 		// that cannot seek) must not replace the stream of a recording that is running
 		videoCaptureStream = stream;
 
-		frameSource = findColorVideoFrameSource(mediaCapture);
+		var isRecordingStarted = false;
 
-		if (frameSource is not null)
+		try
 		{
-			var frameFormat = frameSource.SupportedFormats
-					.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height)
-					.FirstOrDefault();
+			frameSource = findColorVideoFrameSource(mediaCapture);
 
-			if (frameFormat is not null)
+			if (frameSource is not null)
 			{
-				await frameSource.SetFormatAsync(frameFormat).AsTask(token);
+				var frameFormat = frameSource.SupportedFormats
+						.OrderByDescending(f => f.VideoFormat.Width * f.VideoFormat.Height)
+						.FirstOrDefault();
 
-				// The source that a StopCameraPreview cleared meanwhile stays cleared
-				token.ThrowIfCancellationRequested();
+				if (frameFormat is not null)
+				{
+					await frameSource.SetFormatAsync(frameFormat).AsTask(token);
 
-				mediaElement.AutoPlay = true;
-				mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
-				await preparedRecording.StartAsync();
+					// The source that a StopCameraPreview cleared meanwhile stays cleared
+					token.ThrowIfCancellationRequested();
 
-				// A StopCameraPreview during the start released the MediaCapture and with it the recording, which the start did not wait for
-				token.ThrowIfCancellationRequested();
+					mediaElement.AutoPlay = true;
+					mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
+					await preparedRecording.StartAsync();
+					isRecordingStarted = true;
+
+					// A StopCameraPreview during the start released the MediaCapture and with it the recording, which the start did not wait for
+					token.ThrowIfCancellationRequested();
+				}
 			}
+		}
+		catch (OperationCanceledException) when (ReferenceEquals(mediaRecording, preparedRecording))
+		{
+			// The caller's token cancelled the start (a StopCameraPreview forgets the recording itself): StopVideoRecording must not find a
+			// recording that its start reported as cancelled
+			mediaRecording = null;
+			videoCaptureStream = null;
+
+			try
+			{
+				if (isRecordingStarted)
+				{
+					await preparedRecording.StopAsync();
+				}
+
+				await preparedRecording.FinishAsync();
+			}
+			catch (Exception exception)
+			{
+				Trace.TraceWarning($"{nameof(CameraManager)}: unable to release the cancelled video recording: {exception}");
+			}
+
+			throw;
 		}
 	}
 

@@ -163,8 +163,8 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		});
 	}
 
-	// Without a stop in between, the newer start owns the preview from the moment it put its MediaCapture in the manager: the older start
-	// releases its own MediaCapture when Media Foundation answers, and reports nothing.
+	// Without a stop in between, the newer start owns the preview from the moment it put its MediaCapture in the manager, and releases the
+	// MediaCapture of the older start at once: the older start reports nothing when Media Foundation answers.
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -246,12 +246,13 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		}, observesCancellation: true);
 	}
 
-	// The newer start replaces the MediaCapture of the older start in the manager without releasing it, so the stop releases only the newer one.
+	// The older start shows its preview while Media Foundation applies the capture resolution: a newer start does nothing then, and the
+	// StopCameraPreview that follows cancels the older start, which releases its own MediaCapture.
 	[Theory]
 	[InlineData("observesTheCancellation")]
 	[InlineData("failsTheReleasedMediaCapture")]
 	[InlineData("appliesTheResolutionAllTheSame")]
-	public async Task AStartThatANewerStartReplacedWhileMediaFoundationAppliedTheCaptureResolutionReleasesItsMediaCaptureWhenStopCameraPreviewCancelsIt(string answer)
+	public async Task AStartWhileAnOlderStartWaitsForMediaFoundationToApplyTheCaptureResolutionDoesNothingAndStopCameraPreviewReleasesTheOlderMediaCapture(string answer)
 	{
 		await RunAsync(async (scope, mediaFoundation, errors) =>
 		{
@@ -259,18 +260,17 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 
 			var olderStart = scope.Manager.StartCameraPreview(CancellationToken.None);
 			var olderResolution = await OpenTheCameraOfTheLatestStartAsync(mediaFoundation);
-			var newerStart = scope.Manager.StartCameraPreview(CancellationToken.None);
-			var newer = mediaFoundation.Initializations[1];
-			Assert.Same(newer.MediaCapture, scope.Access.MediaCapture);
+			await scope.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(timeout);
+
+			Assert.Single(mediaFoundation.Initializations);
+			Assert.Same(olderResolution.MediaCapture, scope.Access.MediaCapture);
+			Assert.False(await WindowsCameraEnvironment.IsClosedAsync(olderResolution.MediaCapture), "The newer start released the MediaCapture of the preview that shows.");
 
 			scope.Manager.StopCameraPreview();
 			AnswerTheResolution(olderResolution, answer);
-			Answer(newer, "failsTheReleasedMediaCapture");
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => olderStart.WaitAsync(timeout));
-			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => newerStart.WaitAsync(timeout));
 			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(olderResolution.MediaCapture), "The older start did not release its own MediaCapture.");
-			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(newer.MediaCapture), "The MediaCapture of the newer start was not released.");
 			Assert.Empty(errors.Errors);
 			Assert.False(scope.Access.IsInitialized);
 			Assert.Null(scope.Access.MediaCapture);
@@ -473,10 +473,10 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		});
 	}
 
-	// Releasing the MediaCapture ends its recording, like unbinding the use cases on Android. The recording and its stream are forgotten, so that
-	// a preview that starts again does not find a recording of the released MediaCapture.
+	// Releasing the MediaCapture ends its recording, like unbinding the use cases on Android. The scripted preparation has no LowLagMediaRecording,
+	// so the stream is the part of the recording that is observable: the stop forgets it, and a preview that starts again does not find it.
 	[Fact]
-	public async Task StopCameraPreviewDuringARecordingEndsTheRecordingAndAStopVideoRecordingAfterTheNextStartReturnsTheNullStream()
+	public async Task StopCameraPreviewDuringARecordingForgetsTheStreamOfTheRecording()
 	{
 		await RunAsync(async (scope, mediaFoundation, errors) =>
 		{
