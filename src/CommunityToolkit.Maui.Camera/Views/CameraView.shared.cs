@@ -130,7 +130,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// on Android the start of the preview that the activity retries once the app has the camera permission (see
 	/// <see cref="StartCameraPreview(CancellationToken)"/>) and, on Windows, updating <see cref="IsAvailable"/>. Failures after the handler was
 	/// disconnected are not reported. It also reports a camera that <see cref="StartCameraPreview(CancellationToken)"/> cannot start, instead of an
-	/// exception, on every platform, and the failures of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which
+	/// exception, on every platform except for an Android start that waited for the connection of the view, which throws the failure that the
+	/// connection reported, and the failures of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which
 	/// let no exception escape. A start that <see cref="StopCameraPreview"/> cancels before the preview started is not a failure and is not
 	/// reported.
 	/// </remarks>
@@ -287,6 +288,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// <summary>
 	/// Set Extension Mode
 	/// </summary>
+	/// <remarks>
+	/// While the preview is stopped, a new mode binds the camera again: the camera turns on.
+	/// </remarks>
 	/// <param name="mode">mode</param>
 	/// <param name="token"></param>
 	public Task SetExtensionMode(int mode, CancellationToken token = default)
