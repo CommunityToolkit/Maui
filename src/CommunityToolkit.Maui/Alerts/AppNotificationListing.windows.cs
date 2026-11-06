@@ -16,7 +16,8 @@ static class AppNotificationListing
 
 		try
 		{
-			while (!(await AppNotificationManager.Default.GetAllAsync()).Any(listed => listed.Id == notification.Id))
+			// Windows never lists a notification that expired, such as the one of a snackbar whose Duration is zero or less
+			while (notification.Expiration > DateTimeOffset.Now && !await IsListedAsync(notification))
 			{
 				await Task.Delay(pollingInterval, timeoutTokenSource.Token);
 			}
@@ -26,4 +27,7 @@ static class AppNotificationListing
 			// Windows lists nothing for the app, so there is nothing more to wait for
 		}
 	}
+
+	static async Task<bool> IsListedAsync(AppNotification notification) =>
+		(await AppNotificationManager.Default.GetAllAsync()).Any(listed => listed.Id == notification.Id);
 }

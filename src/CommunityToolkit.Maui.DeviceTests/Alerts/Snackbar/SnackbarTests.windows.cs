@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CommunityToolkit.Maui.Alerts;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
@@ -118,6 +119,28 @@ public partial class SnackbarTests
 			var after = DateTimeOffset.Now;
 			var expiration = (AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.")).Expiration;
 			Assert.InRange(expiration, before + duration - expirationMargin, after + duration + expirationMargin);
+		});
+	}
+
+	// Windows never lists a notification that expired at once, so a Show that waited for its listing would hold the turn of the next Show
+	// or Dismiss for the whole bound of that wait.
+	[Theory]
+	[InlineData(0)]
+	[InlineData(-1)]
+	[InlineData(-2)]
+	public async Task ZeroOrNegativeDurationShowReturnsWithoutWaitingForTheListing(int durationMilliseconds)
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var stopwatch = Stopwatch.StartNew();
+
+			await Snackbar.Make("Expires at once", duration: TimeSpan.FromMilliseconds(durationMilliseconds)).Show();
+
+			stopwatch.Stop();
+			Assert.True(stopwatch.Elapsed < TimeSpan.FromMilliseconds(500), $"Show of a snackbar whose duration is {durationMilliseconds} ms took {stopwatch.ElapsedMilliseconds} ms.");
 		});
 	}
 
