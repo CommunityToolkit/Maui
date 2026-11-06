@@ -43,7 +43,7 @@ param(
 
     [string]$Configuration = 'Debug',
 
-    # Defaults to artifacts/device-tests/ios; each app writes to a sub-folder named after the project.
+    # Defaults to artifacts/device-tests/ios; the app writes to a sub-folder named after the project.
     [string]$Results,
 
     # Defaults to artifacts/logs.
@@ -67,8 +67,8 @@ param(
     # Retries for infrastructure failures only. Defaults to 1 on CI and 0 locally.
     [int]$InfraRetries = -1,
 
-    # Collect code coverage of the toolkit assemblies with coverlet: the apps are built with instrumented assemblies (a -Target testOnly run
-    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
+    # Collect code coverage of the toolkit assemblies with coverlet: the app is built with instrumented assemblies (a -Target testOnly run
+    # builds it too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
     # which only the CI jobs set.
     [switch]$Coverage,
 
@@ -104,7 +104,7 @@ $ErrorActionPreference = 'Stop'
 
 # simctl talks to CoreSimulatorService, which can take minutes to answer on a busy CI runner (3 cores): the first device listing loads every
 # simulator of the runner image, and a create or a delete waits for the service. Every simctl call therefore has a timeout, and no simctl
-# failure ends the run with a script error: a simulator that cannot be prepared is an infrastructure verdict (88) for each app.
+# failure ends the run with a script error: a simulator that cannot be prepared is an infrastructure verdict (88) for the app.
 function Invoke-Simctl {
     param([string[]]$ArgumentList, [int]$TimeoutSeconds = 120)
 

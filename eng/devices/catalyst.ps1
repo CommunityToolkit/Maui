@@ -26,7 +26,7 @@ param(
 
     [string]$Configuration = 'Debug',
 
-    # Defaults to artifacts/device-tests/maccatalyst; each app writes to a sub-folder named after the project.
+    # Defaults to artifacts/device-tests/maccatalyst; the app writes to a sub-folder named after the project.
     [string]$Results,
 
     # Defaults to artifacts/logs.
@@ -50,8 +50,8 @@ param(
     # Retries for infrastructure failures only. Defaults to 1 on CI and 0 locally.
     [int]$InfraRetries = -1,
 
-    # Collect code coverage of the toolkit assemblies with coverlet: the apps are built with instrumented assemblies (a -Target testOnly run
-    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
+    # Collect code coverage of the toolkit assemblies with coverlet: the app is built with instrumented assemblies (a -Target testOnly run
+    # builds it too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
     # which only the CI jobs set.
     [switch]$Coverage,
 

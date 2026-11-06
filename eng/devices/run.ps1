@@ -3,9 +3,9 @@
     Runs the CommunityToolkit.Maui device tests on every platform this machine can run, with one command.
 
 .DESCRIPTION
-    Builds and runs the device test apps with the platform scripts (ios.ps1, catalyst.ps1, android.ps1, windows.ps1) and prints one summary at
-    the end: the passed, failed and skipped tests per platform and app, and the folder of their results. The exit code is the first non-zero
-    exit code of the platform scripts (xharness's vocabulary, see eng/devices/README.md), or 0 when every app passed.
+    Builds and runs the device test app with the platform scripts (ios.ps1, catalyst.ps1, android.ps1, windows.ps1) and prints one summary at
+    the end: the passed, failed and skipped tests per platform, and the folder of their results. The exit code is the first non-zero
+    exit code of the platform scripts (xharness's vocabulary, see eng/devices/README.md), or 0 when every platform passed.
 
     Without -Platform it runs, on
       macOS    the iOS simulator and Mac Catalyst (both need Xcode), and Android
@@ -16,7 +16,7 @@
     -DeviceId names it. A platform that this machine cannot run is skipped, and the plan and the summary say why; so is a platform that builds
     no test of the category that -TestFilter 'Category=<name>' selects. When nothing can run, the exit code is 71.
 
-    The plan (the platforms, the apps and the commands) is printed first. -DryRun prints it and stops.
+    The plan (the platforms, the app and the commands) is printed first. -DryRun prints it and stops.
 
     The platforms run one after the other, in this PowerShell process, and the output of the platform scripts is shown as they print it.
 
@@ -27,9 +27,10 @@
     here that cannot run is an error, not a skip.
 
 .PARAMETER Project
-    The app(s) to build and run: Maui, MediaElement, Camera, All (the default), a project name or a .csproj path. Comma-separated values are
-    fine. With -TestFilter 'Category=<name>' and no -Project, only the apps that declare that category run, because an app that runs
-    0 tests fails with 94.
+    The app to build and run: Maui or All (the default; both mean the one app, which tests every package), the project name or a .csproj
+    path. MediaElement and Camera are not apps any more: their tests are in CommunityToolkit.Maui.DeviceTests, and those tokens fail with a
+    message that names the filter to use. With -TestFilter 'Category=<name>' and no -Project, the app runs only on the platforms that build
+    a test of that category, because a platform that runs 0 tests fails with 94.
 
 .PARAMETER TestFilter
     dotnet/maui syntax: 'Category=<name>' or 'SkipCategories=<name>,<name>'. Defaults to $env:TEST_FILTER. The tests that need a person
@@ -47,7 +48,7 @@
     to <platform>/<app>/.
 
 .PARAMETER ResultsFolder
-    The folder of the one platform that runs, in place of <Results>/<platform>: each app writes to <ResultsFolder>/<app>/. For a job
+    The folder of the one platform that runs, in place of <Results>/<platform>: the app writes to <ResultsFolder>/<app>/. For a job
     whose later steps read an exact folder, such as the CI jobs of the Android API levels (artifacts/device-tests/android-api36), where
     the coverage report is named after the folder. Not with -Results, and an error for a run of several platforms (the skipped ones
     count), which would share the folder.
@@ -95,7 +96,7 @@
 
 .EXAMPLE
     pwsh eng/devices/run.ps1
-    Every platform this machine can run, all three apps.
+    Every platform this machine can run.
 
 .EXAMPLE
     pwsh eng/devices/run.ps1 -DryRun
@@ -103,11 +104,11 @@
 
 .EXAMPLE
     pwsh eng/devices/run.ps1 -Platform ios,maccatalyst -TestFilter 'Category=IconTintColorBehavior'
-    One category on the Apple platforms; it runs in the app that declares it.
+    One category on the Apple platforms.
 
 .EXAMPLE
-    powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1 -Platform unpackaged -Project MediaElement
-    The MediaElement app, unpackaged, on Windows.
+    powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1 -Platform unpackaged -TestFilter 'Category=MediaElementHandlerWindows'
+    The MediaElement handler tests on Windows, unpackaged.
 #>
 [CmdletBinding()]
 param(
@@ -189,7 +190,7 @@ $script:RunPlatformsOfSourceName = @{
     'windows' = @('windows-packaged', 'windows-unpackaged')
 }
 
-# Emulator images that are not for phones and tablets: the apps are not made for them.
+# Emulator images that are not for phones and tablets: the app is not made for them.
 $script:RunUnsuitableAvdTags = 'wear|tv|automotive|desktop|xr'
 
 function Get-RunOperatingSystem {
@@ -305,7 +306,7 @@ function Get-RunSourceFiles {
 }
 
 function Test-RunProjectDeclaresCategory {
-    # The categories of an app are the constants of its TestCategory*.cs files (src/<app>/**/TestCategory*.cs). The apps compare the names
+    # The categories of the app are the constants of its TestCategory*.cs files (src/<app>/**/TestCategory*.cs). The app compares the names
     # case-sensitively, so a name in another case would select no test.
     param($Project, [string]$Category)
 
@@ -320,8 +321,8 @@ function Test-RunProjectDeclaresCategory {
 }
 
 function Select-RunProjectsForCategory {
-    # A 'Category=' filter selects the tests of one app. An app that declares no such category runs 0 tests and fails with 94, so the
-    # apps that do not declare it are left out when the person did not choose the apps.
+    # A 'Category=' filter selects the tests of the categories of the app. An app that declares no such category runs 0 tests and fails
+    # with 94, so a category that no app declares is an error before anything is built.
     param($Projects, [string]$Category)
 
     $declaring = @($Projects | Where-Object { Test-RunProjectDeclaresCategory -Project $_ -Category $Category })
@@ -564,7 +565,7 @@ function Get-RunAppleEntry {
 
     # The platform scripts create or choose a device only to run the tests, so a build needs none.
     if ($BuildOnly) {
-        return New-RunPlanEntry -Id $Id -Available $true -Detail 'builds the apps' -Arguments $arguments
+        return New-RunPlanEntry -Id $Id -Available $true -Detail 'builds the app' -Arguments $arguments
     }
 
     if ($Id -eq 'maccatalyst') {
@@ -602,7 +603,7 @@ function Get-RunAndroidEntry {
 
     # android.ps1 boots or chooses a device only to run the tests, so a build needs none.
     if ($BuildOnly) {
-        return New-RunPlanEntry -Id 'android' -Available $true -Detail 'builds the apps'
+        return New-RunPlanEntry -Id 'android' -Available $true -Detail 'builds the app'
     }
 
     $adb = Get-AndroidTool -SdkRoot $sdkRoot -Folder 'platform-tools' -Name 'adb'
@@ -1121,7 +1122,7 @@ try {
             if ($declaring.Count -lt $projects.Count) {
                 $projects = $declaring
                 $projectArguments = @($projects | ForEach-Object { $_.Name })
-                $projectNote = " (the apps that declare the category; -Project chooses others)"
+                $projectNote = " (the app declares the category)"
             }
         }
 

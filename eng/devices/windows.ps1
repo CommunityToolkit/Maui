@@ -8,7 +8,7 @@
       App.exe "<results.xml>"           runs every test and writes xUnit XML to <results.xml>
       App.exe "<results.xml>" -1        writes the test categories to devicetestcategories.txt next to <results.xml>
       App.exe "<results.xml>" <index>   runs only that category and writes <results>_<Category>.xml
-    Without -TestFilter one launch runs every test (the apps skip the human-only category themselves). A TestFilter
+    Without -TestFilter one launch runs every test (the app skips the human-only category itself). A TestFilter
     (dotnet/maui syntax, Category=<name> or SkipCategories=<a>,<b>) is applied the way dotnet/maui runs
     Controls.DeviceTests: discover the categories, then launch the app once per selected category.
 
@@ -48,7 +48,7 @@ param(
 
     [string]$Configuration = 'Debug',
 
-    # Defaults to artifacts\device-tests\windows-<packaging>; each app writes to a sub-folder named after the project.
+    # Defaults to artifacts\device-tests\windows-<packaging>; the app writes to a sub-folder named after the project.
     # Keep it outside %LOCALAPPDATA%, %APPDATA% and %TEMP%: MSIX redirects a packaged app's writes there.
     [string]$Results,
 
@@ -492,7 +492,7 @@ function Invoke-WindowsAttempt {
     $dumpKey = Enable-CrashDumps -ExecutableName "$($Run.ProcessName).exe" -Folder (Join-Path $Run.Output 'dumps')
     try {
         if ($Context.TestFilter -eq "SkipCategories=$script:HumanOnlyTestCategory") {
-            # The default filter only skips the human-only category, which the apps skip on their own in headless runs,
+            # The default filter only skips the human-only category, which the app skips on its own in headless runs,
             # so one launch runs everything (dotnet/maui does the same for every project except Controls.DeviceTests).
             Invoke-WholeRun -Context $Context -Run $Run -Outcome $outcome
         }

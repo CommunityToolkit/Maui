@@ -2,12 +2,12 @@
 # devices-shared.ps1. PowerShell 7 only: the Windows device tests collect no coverage.
 #
 # coverlet (pinned in .config/dotnet-tools.json) instruments assemblies on disk, and writes its report once the command it started
-# (its target) exits. The apps run on a device in between, so the target only waits until this script is done with them. The toolkit
+# (its target) exits. The app runs on a device in between, so the target only waits until this script is done with it. The toolkit
 # projects are built first, coverlet instruments their assemblies, and the instrumented assemblies replace the toolkit's build outputs
-# before the apps are built (BuildProjectReferences=false keeps the toolkit projects from being rebuilt). Each app is compiled and packaged
-# once, and on iOS and Mac Catalyst in Release it is compiled ahead of time once: instrumenting after the apps are packaged would package
-# them, and run that compilation, a second time. The coverlet process lives until the tests have run, so the build and the tests share one
-# script run (Invoke-DeviceTestAppBuilds). The packaged apps keep the instrumented assemblies until the apps are built again: that build
+# before the app is built (BuildProjectReferences=false keeps the toolkit projects from being rebuilt). The app is compiled and packaged
+# once, and on iOS and Mac Catalyst in Release it is compiled ahead of time once: instrumenting after the app is packaged would package
+# it, and run that compilation, a second time. The coverlet process lives until the tests have run, so the build and the tests share one
+# script run (Invoke-DeviceTestAppBuilds). The packaged app keeps the instrumented assemblies until the app is built again: that build
 # packages the original ones (Restore-DeviceTestCoverageAssemblies).
 # The headless runners write the hits files when the tests have run (CoverageRecorder in CommunityToolkit.Maui.DeviceTests.Runners); on
 # Android xharness copies them from the device to the host before it uninstalls the app.
@@ -87,8 +87,8 @@ function Copy-DeviceTestAssembly {
 }
 
 function Restore-DeviceTestCoverageAssemblies {
-    # The restored assemblies and the toolkit projects' intermediate assemblies (obj) get the current time. The next build of the apps
-    # packages the original assemblies again only when they are newer than the apps' instrumented copies, and the toolkit projects' part of
+    # The restored assemblies and the toolkit projects' intermediate assemblies (obj) get the current time. The next build of the app
+    # packages the original assemblies again only when they are newer than the app's instrumented copies, and the toolkit projects' part of
     # that build copies each intermediate assembly over the restored one with the intermediate assembly's time.
     param([Parameter(Mandatory = $true)]$Session)
 
@@ -173,7 +173,7 @@ function Start-DeviceTestCoverage {
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)][string]$Platform,
-        # The properties the platform script builds the apps with: the reference query and the instrumented build need the same.
+        # The properties the platform script builds the app with: the reference query and the instrumented build need the same.
         [string[]]$Property = @(),
         [string[]]$BuildArgs = @()
     )
@@ -231,7 +231,7 @@ function Start-DeviceTestCoverage {
         }
 
         if ($toolkit.Count -eq 0) {
-            Write-DeviceTestWarning 'Coverage: the apps reference no toolkit assembly to instrument.'
+            Write-DeviceTestWarning 'Coverage: the app references no toolkit assembly to instrument.'
             return $null
         }
 
@@ -253,7 +253,7 @@ function Start-DeviceTestCoverage {
             Write-Host "Instrumenting $path"
         }
 
-        # The target only waits: until this script is done with the apps, or is gone. It is passed encoded, because coverlet hands
+        # The target only waits: until this script is done with the app, or is gone. It is passed encoded, because coverlet hands
         # --targetargs to the target as one command line.
         $quote = { param([string]$Value) "'" + $Value.Replace("'", "''") + "'" }
         $wait = "[System.IO.File]::WriteAllText($(& $quote $session.StartMarker), ''); " +
@@ -280,7 +280,7 @@ function Start-DeviceTestCoverage {
                 $tail = (Get-Content -LiteralPath $session.Log -Tail 20) -join "`n"
             }
 
-            Write-DeviceTestWarning "Coverage: coverlet did not instrument the toolkit assemblies; the apps are tested without coverage. The end of its log ($($session.Log)):`n$tail"
+            Write-DeviceTestWarning "Coverage: coverlet did not instrument the toolkit assemblies; the app is tested without coverage. The end of its log ($($session.Log)):`n$tail"
             return $null
         }
 
@@ -298,7 +298,7 @@ function Start-DeviceTestCoverage {
         return $session
     }
     catch {
-        Write-DeviceTestWarning "Coverage: $($_.Exception.Message) The apps are tested without coverage."
+        Write-DeviceTestWarning "Coverage: $($_.Exception.Message) The app is tested without coverage."
         return $null
     }
     finally {
@@ -310,7 +310,7 @@ function Start-DeviceTestCoverage {
 }
 
 function Invoke-DeviceTestAppBuilds {
-    # Builds the apps for a run, and returns the coverage session when the run collects coverage (null otherwise).
+    # Builds the app for a run, and returns the coverage session when the run collects coverage (null otherwise).
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)][string]$Platform,
@@ -321,7 +321,7 @@ function Invoke-DeviceTestAppBuilds {
 
     # A build-only run has no tests to collect hits from, and coverlet's report needs the process that instrumented the assemblies.
     if ($Context.Coverage -and $Target -ne 'buildOnly') {
-        # Builds the apps too, instrumented. A test-only run builds them here as well: the apps it finds were packaged without coverage.
+        # Builds the app too, instrumented. A test-only run builds it here as well: the app it finds was packaged without coverage.
         $session = Start-DeviceTestCoverage -Context $Context -Platform $Platform -Property $Property -BuildArgs $BuildArgs
         if ($null -ne $session) {
             return $session
