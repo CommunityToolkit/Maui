@@ -1010,4 +1010,38 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 			});
 		}
 	}
+
+	[Fact]
+	public async Task StatusTimerDoesNotRestartWhenMediaOpensAfterTheHandlerDisconnected()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+
+		var view = NewMediaElement();
+
+		// A timer that the red run starts would otherwise keep ticking into the tests that follow.
+		RegisterCleanup(view.Dispose);
+		var handler = await InvokeOnMainThreadAsync(() =>
+		{
+			var createdHandler = CreateHandler<WinMediaHandler>(view);
+
+			// Resolved on the UI thread because the worker thread below has no dispatcher of its own to find it with.
+			_ = view.Dispatcher;
+			return createdHandler;
+		});
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			((IElementHandler)handler).DisconnectHandler();
+			view.Handler = null;
+		});
+
+		// The player raises MediaOpened on its own worker thread, so an open that was already running when the page disconnected the handler reaches
+		// MediaElement after the disconnect stopped the status timer. A real open cannot be held at that point, so this raises the same call on a worker thread.
+		await Task.Run(() => ((IMediaElement)view).MediaOpened());
+		await FlushDispatcherAsync();
+
+		// The timer is a root whose tick handler references the MediaElement, so one that started after the disconnect keeps a page that only disconnected alive.
+		await InvokeOnMainThreadAsync(() => Assert.Null(WinMediaReflection.GetField<object?>(view, "timer")));
+	}
 }
