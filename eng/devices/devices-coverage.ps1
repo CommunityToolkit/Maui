@@ -56,8 +56,8 @@ function Get-DeviceTestReferences {
     # The toolkit libraries are compiled here, so they get the same property switches as the instrumented app build.
     $arguments += @($BuildArgs | Where-Object { $_ -match '^[-/]p(roperty)?:' })
 
-    # dotnet build restores first, and -getItem then computes the FullPath of an item whose path is relative (the Android resource designer assembly in
-    # obj) against the folder it runs in, not the project's.
+    # dotnet build restores first, and -getItem then computes the FullPath of an item whose path is relative (the Android resource
+    # designer assembly in obj) against the folder it runs in, not the project's.
     Push-Location -LiteralPath $Project.Directory
     try {
         $result = Invoke-DeviceTestNativeCapture -FilePath 'dotnet' -ArgumentList $arguments
@@ -435,7 +435,8 @@ function Complete-DeviceTestCoverage {
 
         $stopped = Stop-DeviceTestCoverageProcess -Session $Session
         if ($collected -eq 0) {
-            # No app ran far enough to write hits (a device that never came up, for example), and a report of zeros would read as 0 % in the merged summary.
+            # No app ran far enough to write hits (a device that never came up, for example), and a report of zeros would read as 0% in
+            # the merged summary.
             Remove-Item -LiteralPath $Session.Report -Force -ErrorAction SilentlyContinue
             Write-DeviceTestWarning 'Coverage: no app wrote hits files, so there is no coverage report.'
             return
