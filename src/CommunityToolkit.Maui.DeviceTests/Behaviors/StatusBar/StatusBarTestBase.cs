@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 /// The status bar belongs to the runner's window, which every test shares: <see cref="ResetNativeStateAsync"/> puts the platform window in
 /// a known state before a test arranges its scenario and again when the test ends, so no test depends on what an earlier one left behind.
 /// </summary>
-public abstract partial class StatusBarTestBase : CommunityToolkitHandlerTestBase
+public abstract partial class StatusBarTestBase : MauiWindowHostTestBase
 {
 	protected partial Task ResetNativeStateAsync();
 
