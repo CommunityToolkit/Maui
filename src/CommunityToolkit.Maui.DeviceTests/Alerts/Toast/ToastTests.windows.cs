@@ -269,6 +269,67 @@ public partial class ToastTests
 		});
 	}
 
+	// The end of its Duration removed the toast, but the toolkit still holds it, so the next Show removes it by its Id once more. That Id
+	// belongs to a notification that Windows no longer has, and the Show must still show its own toast.
+	[Fact]
+	public async Task ShowAfterTheEndOfTheDurationShowsTheNextToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Removed at the end of its Duration", ToastDuration.Short));
+			await AssertEventually(async () => !await IsDisplayedAsync(), timeout: 10000, message: "Windows still lists the toast after the end of its Duration.");
+
+			await Toast.Make("Next", ToastDuration.Long).Show().WaitAsync(TimeSpan.FromSeconds(10));
+
+			var platformToast = AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("No notification was shown.");
+			Assert.Equal(new[] { "Next" }, AlertsWindows.Parse(platformToast).Texts);
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Next"), timeout: 10000, message: "Windows does not list the next toast.");
+			Assert.Equal(new[] { "Next" }, await GetDisplayedTextsAsync());
+		});
+	}
+
+	// The same Id of a removed notification, here removed the way a person does by clearing it from the Action Center.
+	[Fact]
+	public async Task ShowAfterThePersonClearedTheToastShowsTheNextToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Cleared", ToastDuration.Long));
+			await AppNotificationManager.Default.RemoveByIdAsync((AlertsWindows.GetPlatformToast() ?? throw new InvalidOperationException("No notification was shown.")).Id);
+			await AssertEventually(async () => !await IsDisplayedAsync(), timeout: 10000, message: "Windows still lists the cleared toast.");
+
+			await Toast.Make("Next", ToastDuration.Long).Show().WaitAsync(TimeSpan.FromSeconds(10));
+
+			await AssertEventually(async () => (await GetDisplayedTextsAsync()).Contains("Next"), timeout: 10000, message: "Windows does not list the next toast.");
+			Assert.Equal(new[] { "Next" }, await GetDisplayedTextsAsync());
+		});
+	}
+
+	// A Dismiss also removes a toast that Windows no longer has, and afterwards the toolkit holds no toast.
+	[Fact]
+	public async Task DismissAfterTheEndOfTheDurationForgetsTheToast()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await ShowAndWaitForDisplayAsync(Toast.Make("Removed at the end of its Duration", ToastDuration.Short));
+			await AssertEventually(async () => !await IsDisplayedAsync(), timeout: 10000, message: "Windows still lists the toast after the end of its Duration.");
+
+			await Toast.Make("Other instance").Dismiss().WaitAsync(TimeSpan.FromSeconds(10));
+
+			Assert.Null(AlertsWindows.GetPlatformToast());
+			Assert.False(await IsDisplayedAsync(), "Windows lists a toast after the Dismiss.");
+		});
+	}
+
 	// The displayed toast keeps the first Show waiting for its removal, so the token of the second Show is cancelled before the second Show
 	// can remove anything.
 	[Fact]

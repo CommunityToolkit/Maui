@@ -310,6 +310,53 @@ public partial class SnackbarTests
 		});
 	}
 
+	// A person cleared the notification from the Action Center, but the snackbar is still shown for the toolkit: the Dismiss removes the Id
+	// of a notification that Windows no longer has, and must still dismiss the snackbar.
+	[Fact]
+	public async Task DismissAfterThePersonClearedTheNotificationDismissesTheSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Cleared", () => { }, "Undo", longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("Cleared"), timeout: 10000, message: "Windows does not list the snackbar that was shown.");
+			await AppNotificationManager.Default.RemoveByIdAsync((AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.")).Id);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 0, timeout: 10000, message: "Windows still lists the cleared snackbar.");
+			using var recorder = new SnackbarEventRecorder();
+
+			await Snackbar.Make("Other instance").Dismiss().WaitAsync(dismissTimeout);
+
+			Assert.Null(AlertsWindows.GetPlatformSnackbar());
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed) }, recorder.Sequence);
+			Assert.False(Snackbar.IsShown);
+		});
+	}
+
+	// The same for a Show, which dismisses the cleared snackbar before it shows its own.
+	[Fact]
+	public async Task ShowAfterThePersonClearedTheNotificationShowsTheNextSnackbar()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			await Snackbar.Make("Cleared", () => { }, "Undo", longDuration).Show();
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("Cleared"), timeout: 10000, message: "Windows does not list the snackbar that was shown.");
+			await AppNotificationManager.Default.RemoveByIdAsync((AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.")).Id);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Count == 0, timeout: 10000, message: "Windows still lists the cleared snackbar.");
+			using var recorder = new SnackbarEventRecorder();
+
+			await Snackbar.Make("Next", () => { }, "Undo", longDuration).Show().WaitAsync(dismissTimeout);
+
+			Assert.Equal(new[] { nameof(Snackbar.Dismissed), nameof(Snackbar.Shown) }, recorder.Sequence);
+			await AssertEventually(async () => (await GetVisibleMessagesAsync()).Contains("Next"), timeout: 10000, message: "Windows does not list the next snackbar.");
+			Assert.Equal(new[] { "Next" }, await GetVisibleMessagesAsync());
+		});
+	}
+
 	// The Dismiss starts while the Show waits for the removal of the displayed snackbar. The notification shown last tells when Windows lists
 	// what was shown before it, such as a snackbar that the Show displayed after the Dismiss had removed the displayed snackbar.
 	[Fact]
