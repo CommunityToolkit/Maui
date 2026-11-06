@@ -664,6 +664,31 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		});
 	}
 
+	// SetExtensionMode binds the camera that was selected when the preview was stopped. A camera that is selected afterwards is the one that
+	// the next start shows, not the one that SetExtensionMode bound.
+	[Fact]
+	public async Task StartCameraPreviewAfterSetExtensionModeWhileStoppedAndANewSelectedCameraShowsTheSelectedCamera()
+	{
+		SetupBuilder();
+		var cameras = await GetRealCamerasAsync();
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.SecondCamera, cameras.Count >= 2, "Needs two cameras to tell the selected one from the one that SetExtensionMode bound; this device has one.");
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var first = session.View.SelectedCamera!;
+			var second = cameras.First(camera => camera.DeviceId != first.DeviceId);
+			session.Manager.StopCameraPreview();
+			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await session.Manager.SetExtensionMode(ExtensionMode.None, CancellationToken.None).WaitAsync(CameraTimeout);
+			session.View.SelectedCamera = second;
+
+			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
+
+			await WaitForNativeCameraStateAsync(second.DeviceId, "OPEN");
+			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+		});
+	}
+
 	[Fact]
 	public async Task SetExtensionModeWithoutAPreviewDoesNotRebind()
 	{
