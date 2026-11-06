@@ -29,7 +29,7 @@ public partial class TouchBehaviorLifecycleTests
 			label.Behaviors.Add(behavior);
 			await WaitUntilAsync(() => behavior.Element is not null, "The behavior did not attach.");
 
-			Assert.True(OperatingSystem.IsIOSVersionAtLeast(13), "The hover recognizer needs iOS 13; the apps' minimum is iOS 15.");
+			Assert.True(OperatingSystem.IsIOSVersionAtLeast(13), "The hover recognizer needs iOS 13; the app's minimum is iOS 15.");
 			Assert.NotNull(GetHoverRecognizer(view));
 			Assert.True(view.UserInteractionEnabled, "The behavior must enable user interaction on a view MAUI made input transparent.");
 		});

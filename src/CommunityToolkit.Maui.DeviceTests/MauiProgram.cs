@@ -43,6 +43,12 @@ public static class MauiProgram
 			options.SetShouldEnableSnackbarOnWindows(true);
 		});
 
+		// CameraViewHandler resolves ICameraProvider from IPlatformApplication.Current.Services, which belong to this MauiApp.
+		builder.UseMauiCommunityToolkitCamera();
+
+		// The foreground service stays off app-wide; tests that need it pass isAndroidForegroundServiceEnabled to SetupBuilder.
+		builder.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
+
 #if WINDOWS
 		// The Maps tests answer the request for the Bing control with a stand-in, so no real Bing Maps key is needed.
 		// The Maps device tests stay until the deprecated library is removed, so CS0618 is suppressed only around this call.

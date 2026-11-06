@@ -37,16 +37,10 @@
     </Project>
   </Folder>
   <Folder Name="/Tests/Device Tests/">
-    <Project Path="../src/CommunityToolkit.Maui.Camera.DeviceTests/CommunityToolkit.Maui.Camera.DeviceTests.csproj">
-      <Deploy />
-    </Project>
     <Project Path="../src/CommunityToolkit.Maui.DeviceTests.Runners.SourceGen/CommunityToolkit.Maui.DeviceTests.Runners.SourceGen.csproj" />
     <Project Path="../src/CommunityToolkit.Maui.DeviceTests.Runners/CommunityToolkit.Maui.DeviceTests.Runners.csproj" />
     <Project Path="../src/CommunityToolkit.Maui.DeviceTests.Shared/CommunityToolkit.Maui.DeviceTests.Shared.csproj" />
     <Project Path="../src/CommunityToolkit.Maui.DeviceTests/CommunityToolkit.Maui.DeviceTests.csproj">
-      <Deploy />
-    </Project>
-    <Project Path="../src/CommunityToolkit.Maui.MediaElement.DeviceTests/CommunityToolkit.Maui.MediaElement.DeviceTests.csproj">
       <Deploy />
     </Project>
   </Folder>

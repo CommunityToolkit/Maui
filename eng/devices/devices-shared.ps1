@@ -9,12 +9,10 @@ $script:DeviceTestsRepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScript
 $script:DeviceTestsOnWindows = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
 
 $script:DeviceTestProjects = [ordered]@{
-    'CommunityToolkit.Maui.DeviceTests'              = 'Maui'
-    'CommunityToolkit.Maui.MediaElement.DeviceTests' = 'MediaElement'
-    'CommunityToolkit.Maui.Camera.DeviceTests'       = 'Camera'
+    'CommunityToolkit.Maui.DeviceTests' = 'Maui'
 }
 
-# The apps never run this category headless; the scripts also add it to every SkipCategories filter so the CI default
+# The app never runs this category headless; the scripts also add it to every SkipCategories filter so the CI default
 # can never select it.
 $script:HumanOnlyTestCategory = 'RequiresUserInteraction'
 
@@ -324,6 +322,9 @@ function Resolve-DeviceTestProjects {
                 $candidates += Join-Path $script:DeviceTestsRepoRoot (Join-Path 'src' (Join-Path $name "$name.csproj"))
             }
         }
+        elseif (@('MediaElement', 'Camera', 'CommunityToolkit.Maui.MediaElement.DeviceTests', 'CommunityToolkit.Maui.Camera.DeviceTests') -contains $token) {
+            throw (New-Object System.ArgumentException "The $token tests are in CommunityToolkit.Maui.DeviceTests: use -TestFilter 'Category=<name>' with a name from src/CommunityToolkit.Maui.DeviceTests/MediaElement/TestCategory.MediaElement.cs or Camera/TestCategory.Camera.cs.")
+        }
         else {
             $resolved = Resolve-DeviceTestPath $token
             if (Test-Path -LiteralPath $resolved -PathType Container) {
@@ -423,7 +424,7 @@ function Resolve-DeviceTestFilter {
 }
 
 function Resolve-DeviceTestCapabilities {
-    # Only the form of each name is checked here: the apps check the names against their capabilities (DeviceTestCapabilities
+    # Only the form of each name is checked here: the app checks the names against its capabilities (DeviceTestCapabilities
     # in CommunityToolkit.Maui.DeviceTests.Shared).
     param(
         [string[]]$Value,
@@ -459,7 +460,7 @@ function Resolve-DeviceTestCapabilities {
 }
 
 function Get-DeviceTestCapabilityDeclarations {
-    # The format must match what the apps read (DeviceTestCapabilities).
+    # The format must match what the app reads (DeviceTestCapabilities).
     param([Parameter(Mandatory = $true)]$Context)
 
     if ($Context.SkipCapabilities.Count -gt 0) {

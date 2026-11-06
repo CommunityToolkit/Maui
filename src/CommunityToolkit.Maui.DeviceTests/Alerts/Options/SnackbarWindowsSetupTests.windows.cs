@@ -27,7 +27,8 @@ public partial class SnackbarWindowsSetupTests
 
 			var exception = Assert.Throws<InvalidOperationException>(() => new Options().SetShouldEnableSnackbarOnWindows(true));
 
-			Assert.Contains(nameof(AppBuilderExtensions.UseMauiCommunityToolkit), exception.Message);
+			// A literal: CommunityToolkit.Maui.AppBuilderExtensions exists in CommunityToolkit.Maui, .MediaElement and .Camera, all of which this app references, so nameof cannot name it (CS0433).
+			Assert.Contains("UseMauiCommunityToolkit", exception.Message);
 			Assert.Equal(documentationUrl, exception.HelpLink);
 			Assert.Equal(before, Options.ShouldEnableSnackbarOnWindows);
 

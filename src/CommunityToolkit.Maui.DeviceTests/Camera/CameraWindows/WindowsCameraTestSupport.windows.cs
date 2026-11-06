@@ -11,6 +11,7 @@ using Windows.Media.Core;
 using Windows.Media.MediaProperties;
 using Windows.Security.Authorization.AppCapabilityAccess;
 using Windows.Storage.Streams;
+using WindowsMediaSource = Windows.Media.Core.MediaSource;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -142,7 +143,7 @@ static class WindowsCameraEnvironment
 	{
 		try
 		{
-			mediaElement.Source = MediaSource.CreateFromStream(new InMemoryRandomAccessStream(), "video/mp4");
+			mediaElement.Source = WindowsMediaSource.CreateFromStream(new InMemoryRandomAccessStream(), "video/mp4");
 		}
 		catch (Exception exception) when (IsMediaFoundationUnavailable(exception))
 		{

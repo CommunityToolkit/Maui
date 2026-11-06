@@ -55,5 +55,10 @@
 	<string>Device tests use speech recognition.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Device tests save media to the photo library.</string>
+	<!-- MediaElement keeps playing (and updates the Now Playing controls) in the background. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>

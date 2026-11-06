@@ -1,29 +1,16 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
-using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Every run reports two Skipped tests from this class on purpose: RuntimeSkipIsReportedAsSkipped and one row of
-// RuntimeSkipAppliesToASingleTheoryRow prove that run-time skips reach the results as Skipped.
 [Category(TestCategory.DeviceTestsInfrastructure)]
 [Collection(TestCollections.DisableParallelization)]
-public class DeviceTestsInfrastructureTests : MediaElementHandlerTestBase
+public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 {
 	static IServiceProvider? previousRowServices;
 	static (bool IsAndroidForegroundServiceEnabled, AndroidViewType DefaultAndroidViewType)? optionsBeforeFirstRow;
-
-	[Fact]
-	public void RunnerUsesThisAppsTestOptions()
-	{
-		var options = TestServices.Services.GetRequiredService<TestOptions>();
-
-		Assert.Contains(typeof(DeviceTestsInfrastructureTests).Assembly, options.Assemblies);
-		Assert.Contains($"Category={TestCategory.RequiresUserInteraction}", options.SkipCategories);
-		Assert.True(TestCollections.DeclaresDisableParallelizationCollection(typeof(DeviceTestsInfrastructureTests).Assembly));
-	}
 
 	[Fact]
 	public void RunnerAppIsThePlatformApplicationWithMediaElement()
@@ -68,23 +55,6 @@ public class DeviceTestsInfrastructureTests : MediaElementHandlerTestBase
 
 		Assert.Equal((!original.IsAndroidForegroundServiceEnabled, changedViewType), (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType));
 		previousRowServices = ApplicationServices;
-	}
-
-	[Fact]
-	public void EveryTestHasOneFeatureCategory()
-	{
-		var violations = typeof(TestCategory).GetCategoryRuleViolations(typeof(DeviceTestsInfrastructureTests).Assembly, TestCategory.RequiresUserInteraction);
-
-		Assert.True(violations.Count is 0, string.Join(Environment.NewLine, violations));
-	}
-
-	// A misspelled capability name in a CI job would silently skip or require nothing.
-	[Fact]
-	public void DeclaredCapabilitiesAreValid()
-	{
-		var problems = DeviceTestCapabilities.GetDeclarationProblems();
-
-		Assert.True(problems.Count is 0, string.Join(Environment.NewLine, problems));
 	}
 
 	// On iOS and Mac Catalyst MauiMediaElement needs a parent Page (or a window in Application.Current.Windows) when its
@@ -161,20 +131,6 @@ public class DeviceTestsInfrastructureTests : MediaElementHandlerTestBase
 
 		Assert.Equal(1, behavior.AttachedCount);
 		Assert.Equal(1, behavior.DetachedCount);
-	}
-
-	[Fact]
-	public void RuntimeSkipIsReportedAsSkipped() =>
-		Skip.If(true, "Expected skip: proves that a run-time skip is reported as Skipped, not Passed.");
-
-	[Theory]
-	[InlineData(false)]
-	[InlineData(true)]
-	public void RuntimeSkipAppliesToASingleTheoryRow(bool skip)
-	{
-		Skip.If(skip, "Expected skip: proves that a run-time skip of one theory row leaves the other rows passing.");
-
-		Assert.False(skip);
 	}
 
 	// Releases the platform player.

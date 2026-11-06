@@ -58,8 +58,9 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-    <!-- SpeechToText -->
+    <!-- SpeechToText, and CameraView records its videos with audio (a packaged app records audio only when it declares the microphone capability). -->
     <DeviceCapability Name="microphone" />
+    <DeviceCapability Name="webcam" />
   </Capabilities>
 
 </Package>
