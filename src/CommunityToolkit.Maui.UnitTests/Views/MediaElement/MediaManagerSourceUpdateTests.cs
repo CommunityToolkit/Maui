@@ -175,9 +175,6 @@ public class MediaManagerSourceUpdateTests : BaseTest
 		mediaElement.CurrentState.Should().Be(MediaElementState.Playing);
 		failures.Should().Equal($"{reportPrefix}System.InvalidOperationException: The MediaOpened handler of the app failed.");
 		loggerFactory.Errors.Should().ContainSingle().Which.Exception.Should().BeSameAs(handlerException);
-
-		// MediaOpened started the status timer.
-		mediaElement.Dispose();
 	}
 
 	static List<string> RecordFailures(MediaElement mediaElement)
