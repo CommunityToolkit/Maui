@@ -654,7 +654,8 @@ partial class CameraManager
 				throw new CameraException(cameraPermissionNotGrantedMessage);
 			}
 
-			if (camera is null || !IsPhotoSessionBound())
+			// A start that waited for another start can find the camera that was selected before it: only this start knows the camera selected now
+			if (camera is null || !IsPhotoSessionBound() || (startsCompletedBeforeWaiting != completedCameraPreviewStarts && !IsBoundTo(cameraView.SelectedCamera)))
 			{
 				try
 				{
