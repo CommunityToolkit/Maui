@@ -874,7 +874,16 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			var exception = await Assert.ThrowsAsync<CameraException>(() => recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout));
 
 			Assert.Equal("Unable to start video recording because the camera could not be started.", exception.Message);
-			AssertRecordingReleased(recording);
+
+			// The session keeps the inputs and outputs of the preview that the start configured, but nothing of the recording
+			var access = recording.Scope.Access;
+			Assert.Null(access.VideoOutput);
+			Assert.Null(access.AudioInput);
+			Assert.Null(access.VideoRecordingFileName);
+			Assert.Null(access.VideoRecordingState);
+			Assert.Null(access.VideoRecordingDelegate);
+			Assert.DoesNotContain(recording.Session.Outputs, static output => output is AVCaptureMovieFileOutput);
+			Assert.False(recording.Session.IsConfiguring);
 			Assert.Empty(recording.Movies.Recordings);
 		});
 	}
