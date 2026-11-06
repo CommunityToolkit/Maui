@@ -532,6 +532,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		RaiseEvent(args, nameof(MediaFailed));
 	}
 
+	internal void StopPositionTimer() => ClearTimer();
+
 	internal void OnMediaOpened()
 	{
 		InitializeTimer();

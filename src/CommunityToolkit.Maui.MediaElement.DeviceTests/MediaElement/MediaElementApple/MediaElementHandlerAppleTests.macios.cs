@@ -669,4 +669,53 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 
 		await AssertionExtensions.WaitForGC(mediaElementReference, pageReference, handlerReference, platformViewReference, managerReference);
 	}
+
+	[Fact]
+	public async Task MediaElementThatPlayedASourceIsCollectedAfterItsPageIsPopped()
+	{
+		SetupApple();
+		WeakReference[] references = [];
+		var root = new ContentPage();
+		var navigation = new NavigationPage(root);
+
+		await AttachAndRun(navigation, async _ =>
+		{
+			await root.OnLoadedAsync();
+			references = await PushPlayAndPopMediaPageAsync(navigation);
+		});
+
+		await AssertionExtensions.WaitForGC(references);
+	}
+
+	// Its own method, so that no local of the test keeps the popped page or its MediaElement alive while the garbage collector runs.
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	async Task<WeakReference[]> PushPlayAndPopMediaPageAsync(NavigationPage navigation)
+	{
+		var mediaElement = CreateMediaElement();
+		var mediaPage = new ContentPage { Content = new VerticalStackLayout { mediaElement } };
+
+		// The way the Sample's pages release their player. Neither the page nor the app disposes the MediaElement: the handler only disconnects.
+		mediaPage.NavigatedFrom += (_, _) =>
+		{
+			mediaElement.Stop();
+			mediaElement.Handler?.DisconnectHandler();
+		};
+
+		await navigation.PushAsync(mediaPage, false);
+		await mediaPage.OnLoadedAsync();
+		var handler = (AppleMediaElementHandler)mediaElement.Handler!;
+		mediaElement.Source = ResourceSource(VideoResource);
+		await handler.Manager!.TakeSourceUpdates();
+		await WaitUntilReadyAsync(handler);
+		mediaElement.Play();
+		var player = handler.Manager.NativePlayer!;
+		await WaitUntilAsync(() => player.CurrentTime.Seconds > 0.3, "The playhead did not advance.");
+		WeakReference[] references = [new(mediaElement), new(mediaPage), new(handler), new(handler.PlatformView), new(handler.Manager), new(player)];
+
+		await navigation.PopAsync(false);
+
+		// The pop reaches the handlers through the main queue
+		await DrainMainQueueAsync();
+		return references;
+	}
 }

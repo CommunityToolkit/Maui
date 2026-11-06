@@ -280,6 +280,11 @@ public partial class MediaElementHandler
 			MediaManager?.Dispose();
 			MediaManager = null;
 			PlatformDispose();
+
+			// The dispatcher timer of the MediaElement is rooted by the platform (the run loop on iOS and Mac Catalyst) and its tick handler references the
+			// MediaElement, so a MediaElement that is not disposed (a page only disconnects its handler) would stay alive, with its page, after it is left.
+			// A handler that is connected later opens the media again, which starts the timer again.
+			VirtualView?.StopPositionTimer();
 		}
 	}
 
