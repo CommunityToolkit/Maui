@@ -211,6 +211,11 @@ public partial class GravatarImageSourceTests
 				var image = GetNativeImage((IPlatformViewHandler)button.Handler);
 				Assert.NotNull(image);
 
+				// A load that starts cancels the one before it, so a picture set once a sized request has passed the gate is the picture of the Button's size,
+				// even when it is the first one the Button shows.
+				var showedSizedPicture = false;
+				var sourceCallbackToken = image.RegisterPropertyChangedCallback(WImage.SourceProperty, (_, _) => showedSizedPicture |= Volatile.Read(ref sizedRequests) > 0 && image.Source is BitmapSource { PixelHeight: > 0 });
+
 				if (!pictureBeforeFirstLayout)
 				{
 					Assert.Null(image.Source);
@@ -218,11 +223,9 @@ public partial class GravatarImageSourceTests
 				}
 
 				await AssertEventually(() => image.Source is BitmapSource { PixelHeight: > 0 }, timeout: pictureTimeout, message: "The Button never showed a picture.");
-				var firstPicture = image.Source;
 
-				// The first picture is the default one, requested before the Button has a size: the picture of the Button's size comes with a second
-				// request.
-				await AssertEventually(() => Volatile.Read(ref sizedRequests) > 0 && image.Source is BitmapSource { PixelHeight: > 0 } latest && !ReferenceEquals(latest, firstPicture), timeout: pictureTimeout * 2, message: $"The Button never showed the picture of its size. The Uri of the source is {source.Uri}.");
+				await AssertEventually(() => showedSizedPicture && image.Source is BitmapSource { PixelHeight: > 0 }, timeout: pictureTimeout * 2, message: $"The Button never showed the picture of its size. The Uri of the source is {source.Uri}.");
+				image.UnregisterPropertyChangedCallback(WImage.SourceProperty, sourceCallbackToken);
 
 				await assertAfterReload(button, platformButton, image);
 
