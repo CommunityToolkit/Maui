@@ -112,21 +112,22 @@ sealed class FakeImageProxy(AImage? image) : Java.Lang.Object, IImageProxy
 	public IImageProxyPlaneProxy[] GetPlanes() => [];
 }
 
-// android.media.Image can not be subclassed, so real images are produced through an ImageReader/ImageWriter pair.
-sealed class ImageSource : IDisposable
+// android.media.Image can not be subclassed, so real images are produced through an ImageReader/ImageWriter pair. Not named ImageSource: that
+// would hide Microsoft.Maui.Controls.ImageSource for every test of the app that holds the tests of every package.
+sealed class CameraImageSource : IDisposable
 {
 	readonly ImageReader reader;
 	readonly ImageWriter writer;
 	readonly TaskCompletionSource available = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-	ImageSource(ImageFormatType format, int size)
+	CameraImageSource(ImageFormatType format, int size)
 	{
 		reader = ImageReader.NewInstance(size, size, format, 2)!;
 		reader.SetOnImageAvailableListener(new Listener(available), new Android.OS.Handler(Android.OS.Looper.MainLooper!));
 		writer = ImageWriter.NewInstance(reader.Surface!, 2)!;
 	}
 
-	public static ImageSource Create(ImageFormatType format, int size = 8) => new(format, size);
+	public static CameraImageSource Create(ImageFormatType format, int size = 8) => new(format, size);
 
 	public Task<AImage> NextAsync(sbyte fill) => NextAsync(_ => fill);
 
@@ -202,7 +203,7 @@ sealed class LiveDataRecorder : Java.Lang.Object, IObserver
 	public void Stop() => liveData.RemoveObserver(this);
 }
 
-sealed class NonSeekableStream(System.IO.Stream inner) : System.IO.Stream
+sealed class CameraNonSeekableStream(System.IO.Stream inner) : System.IO.Stream
 {
 	public System.IO.Stream Inner => inner;
 

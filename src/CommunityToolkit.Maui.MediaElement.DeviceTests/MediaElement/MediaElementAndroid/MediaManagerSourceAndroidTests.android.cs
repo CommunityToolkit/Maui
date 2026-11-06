@@ -7,6 +7,7 @@ using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -15,8 +16,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 {
-	const string package = "com.communitytoolkit.maui.mediaelement.devicetests";
-
 	public enum EmptySourceKind
 	{
 		UriWithoutUri,
@@ -25,6 +24,9 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		ResourceWithoutPath,
 		StreamWithoutStream,
 	}
+
+	// MediaElement builds asset URIs from the player's Context.PackageName, so the expected URI uses the running app's package name.
+	static string Package => MauiPlatform.AppContext.PackageName ?? throw new InvalidOperationException("The app context has no package name.");
 
 	[Fact]
 	public async Task ResourceSourcePlaysTheAssetFromTheApk()
@@ -51,8 +53,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(shortToneDuration, mediaElement.Duration);
 			Assert.Equal(PlayerConsts.StateEnded, player.PlaybackState);
 			Assert.Equal(1, player.MediaItemCount);
-			Assert.Equal($"asset://{package}:Assets/{shortToneAsset}", player.CurrentMediaItem!.MediaId);
-			Assert.Equal($"asset://{package}:Assets/{shortToneAsset}", player.CurrentMediaItem.PlaybackProperties!.Uri!.ToString());
+			Assert.Equal($"asset://{Package}:Assets/{shortToneAsset}", player.CurrentMediaItem!.MediaId);
+			Assert.Equal($"asset://{Package}:Assets/{shortToneAsset}", player.CurrentMediaItem.PlaybackProperties!.Uri!.ToString());
 		});
 	}
 

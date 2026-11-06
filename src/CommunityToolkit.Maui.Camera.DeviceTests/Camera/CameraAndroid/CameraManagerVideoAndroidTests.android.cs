@@ -721,7 +721,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		RequireVideoRecording();
 		var before = ListRecordingFiles();
 		var inner = new MemoryStream();
-		var stream = new NonSeekableStream(inner);
+		var stream = new CameraNonSeekableStream(inner);
 
 		await RunWithStreamingSessionAsync(async session =>
 		{

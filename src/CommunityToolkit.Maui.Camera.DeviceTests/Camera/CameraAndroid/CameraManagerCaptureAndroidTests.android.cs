@@ -308,7 +308,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	public async Task GetFirstPlaneIsTheFirstOfTheImagePlanes()
 	{
 		SetupBuilder();
-		using var source = ImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
+		using var source = CameraImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
 		using var image = await source.NextAsync(5);
 		var planes = image.GetPlanes()!;
 		Assert.True(planes.Length > 1, "A YUV image has several planes.");
@@ -326,7 +326,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var view = new CameraView();
 		var recorder = new CaptureRecorder(view);
 		var callback = CreateImageCallback(view);
-		using var source = ImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
+		using var source = CameraImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
 		using var image = await source.NextAsync(index => (sbyte)(index * 7 + 3));
 		var expected = ReadPlane(image);
 		Assert.True(expected.Length > 0);
@@ -350,7 +350,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var recorder = new CaptureRecorder(view);
 		var callback = CreateImageCallback(view);
 		view.MediaCaptured += ThrowingSubscriber;
-		using var source = ImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
+		using var source = CameraImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
 		using var image = await source.NextAsync(1);
 		var proxy = new FakeImageProxy(image);
 
