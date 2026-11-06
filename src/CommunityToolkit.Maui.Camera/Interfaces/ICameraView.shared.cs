@@ -162,7 +162,10 @@ public interface ICameraView : IView
 	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
 	/// <returns>A task that represents the asynchronous video recording operation.</returns>
 	/// <exception cref="CameraException">Thrown when the recording cannot start, for example on iOS and Mac Catalyst when the camera permission is
-	/// not granted. Exceptions are not caught: they propagate to the caller.</exception>
+	/// not granted, or on Windows when no camera is available or the camera cannot be opened. Exceptions are not caught: they propagate to the
+	/// caller.</exception>
+	/// <exception cref="UnauthorizedAccessException">Thrown on Windows by a start that turns the camera on when the privacy settings block the
+	/// camera.</exception>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled, or <see cref="StopCameraPreview"/> is
 	/// called, before the recording started.</exception>
 	Task StartVideoRecording(CancellationToken token = default);
@@ -193,7 +196,10 @@ public interface ICameraView : IView
 	/// <param name="token">A cancellation token that can be used to cancel the video recording operation.</param>
 	/// <returns>A task that represents the asynchronous video recording operation.</returns>
 	/// <exception cref="CameraException">Thrown when the recording cannot start, for example on iOS and Mac Catalyst when the camera permission is
-	/// not granted. Exceptions are not caught: they propagate to the caller.</exception>
+	/// not granted, or on Windows when no camera is available or the camera cannot be opened. Exceptions are not caught: they propagate to the
+	/// caller.</exception>
+	/// <exception cref="UnauthorizedAccessException">Thrown on Windows by a start that turns the camera on when the privacy settings block the
+	/// camera.</exception>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is cancelled, or <see cref="StopCameraPreview"/> is
 	/// called, before the recording started.</exception>
 	Task StartVideoRecording(Stream stream, CancellationToken token = default);
