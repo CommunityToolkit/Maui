@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Sample.Constants;
@@ -8,7 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
-public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFromStreamViewModel>, IDisposable
+// Not disposable: the window's service scope keeps every disposable page that DI creates, with the video it holds in memory, until the window closes, on Android for the
+// life of the app; and it throws at window close for a page that is only IAsyncDisposable
+[SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "OnDisappearing releases the stream")]
+public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFromStreamViewModel>
 {
 	readonly ILogger logger;
 	readonly HttpClient httpClient;
@@ -26,13 +30,6 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 		this.logger = logger;
 		this.httpClient = httpClient;
 		MediaElement.PropertyChanged += MediaElement_PropertyChanged;
-	}
-
-	// Not IAsyncDisposable: .NET MAUI disposes the window's service scope synchronously when the window closes, and the scope throws for a service that is only IAsyncDisposable
-	public void Dispose()
-	{
-		sourceStream?.Dispose();
-		sourceStreamSemaphore.Dispose();
 	}
 
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
