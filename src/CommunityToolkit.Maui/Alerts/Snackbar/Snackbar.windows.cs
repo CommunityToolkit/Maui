@@ -180,18 +180,18 @@ public partial class Snackbar
 
 	static async Task RemovePlatformSnackbarAsync()
 	{
-		if (PlatformSnackbar is null)
+		if (PlatformSnackbar is not AppNotification platformSnackbar)
 		{
 			return;
 		}
 
-		await AppNotificationManager.Default.RemoveAllAsync();
+		// Removed by its Id: RemoveAllAsync would also remove the notifications that the app shows itself, such as those of a Toast.
+		await AppNotificationManager.Default.RemoveByIdAsync(platformSnackbar.Id);
 
 		OnPlatformSnackbarRemoved();
 	}
 
-	// Dismiss: RemoveAllAsync removed every notification of the app. Another dismissal may have dismissed the snackbar while RemoveAllAsync
-	// ran: only the first one forgets it and raises Dismissed.
+	// Another dismissal may have dismissed the snackbar while its removal ran: only the first one forgets it and raises Dismissed.
 	static void OnPlatformSnackbarRemoved()
 	{
 		AppNotification platformSnackbar;

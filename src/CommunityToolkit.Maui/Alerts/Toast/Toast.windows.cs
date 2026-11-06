@@ -66,6 +66,8 @@ public partial class Toast
 		_ = AppNotificationManager.Default.RemoveByIdAsync(platformToast.Id);
 	}
 
+	// Removed by its Id, as at the end of the Duration: RemoveAllAsync would also remove the notifications that the app shows itself, such as
+	// those of a Snackbar.
 	static async Task RemovePlatformToastAsync()
 	{
 		if (PlatformToast is not AppNotification platformToast)
@@ -73,7 +75,7 @@ public partial class Toast
 			return;
 		}
 
-		await AppNotificationManager.Default.RemoveAllAsync();
+		await AppNotificationManager.Default.RemoveByIdAsync(platformToast.Id);
 
 		platformToast.Expiration = DateTimeOffset.Now;
 		PlatformToast = null;
