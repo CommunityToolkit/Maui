@@ -31,8 +31,15 @@ public enum DefaultImage
 	Blank,
 }
 /// <summary>Gravatar image source.</summary>
-/// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public partial class GravatarImageSource : StreamImageSource, IDisposable
+/// <remarks>
+/// Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!
+/// <para>
+/// Cancellation: <see cref="StreamImageSource.Stream"/> and <see cref="IStreamImageSource.GetStreamAsync(CancellationToken)"/> throw an <see cref="OperationCanceledException"/>
+/// only when the <see cref="CancellationToken"/> you pass is canceled. A load that you start with <see cref="CancellationToken.None"/>, or that .NET MAUI starts for you, never throws it,
+/// because each load is canceled only by its own caller's token. As a result, <see cref="ImageSource.Cancel"/> does not stop a load of a <see cref="GravatarImageSource"/>.
+/// </para>
+/// </remarks>
+public partial class GravatarImageSource : StreamImageSource, IStreamImageSource, IDisposable
 {
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
@@ -122,6 +129,11 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
+
+	// .NET MAUI's StreamImageSource gives all the loads of a source one token, which the next load cancels, even for a caller that passed no token,
+	// and .NET MAUI awaits some loads in async void methods that cannot catch (on Android, a Shell's FlyoutIcon and its bottom tab icons).
+	Task<System.IO.Stream> IStreamImageSource.GetStreamAsync(CancellationToken cancellationToken) =>
+		IsEmpty ? Task.FromResult(System.IO.Stream.Null) : Stream(cancellationToken);
 
 	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
 	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
