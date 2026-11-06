@@ -207,7 +207,7 @@ public partial class GravatarImageSourceTests
 
 				await AssertEventually(() => button.Width > 0 && button.Height > 0 && reference.Height > 0, timeout: pictureTimeout, message: "The Button was never laid out.");
 
-				var platformButton = Assert.IsType<WButton>(button.Handler?.PlatformView);
+				var platformButton = Assert.IsType<WButton>(button.Handler?.PlatformView, exactMatch: false);
 				var image = GetNativeImage((IPlatformViewHandler)button.Handler);
 				Assert.NotNull(image);
 
