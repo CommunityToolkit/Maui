@@ -111,6 +111,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			TryInheritHideSoftInputFromPresentingPage(GetVisiblePage(navigation));
 
 			await navigation.PushModalAsync(this, false);
+			ThrowIfTheAppCanceledThePush();
 			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
@@ -142,6 +143,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				await shell.GoToAsync(shellRoute, shellParameters);
 			}
 
+			ThrowIfTheAppCanceledThePush();
 			ObserveDismissalByNavigationIfNotClosed();
 		}
 		finally
@@ -547,6 +549,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	bool IsOnModalStack(Window window) => window.Navigation.ModalStack.Any(modalPage => modalPage == this
 		|| (modalPage is IPageContainer<Page> container && container.CurrentPage == this)
 		|| (modalPage is NavigationPage navigationPage && navigationPage.Navigation.NavigationStack.Contains(this)));
+
+	// .NET MAUI's Shell returns without pushing, and without an exception, when a Shell.Navigating handler cancels the navigation.
+	// Nothing could close a PopupPage that was never pushed, so ShowPopupAsync would wait forever, and a static IPopupOptions (e.g. PopupOptions.Empty) would keep this PopupPage alive
+	void ThrowIfTheAppCanceledThePush()
+	{
+		if (Parent is null && !hasRaisedPopupClosed)
+		{
+			ReleasePopupResources();
+			throw new OperationCanceledException("The Popup was not shown because the app canceled the navigation that displays it, for example in a Shell.Navigating handler.");
+		}
+	}
 
 	bool TryInheritHideSoftInputFromPresentingPage(in Page? presentingPage)
 	{
