@@ -16,6 +16,9 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
 
+	// A page can be left while a permission prompt is open: on Mac Catalyst the prompt is another process's window, so Back and the flyout stay usable
+	bool isPageShown;
+
 	public SpeechToTextViewModel(ITextToSpeech textToSpeech, [FromKeyedServices("Online")] ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
@@ -47,6 +50,8 @@ public partial class SpeechToTextViewModel : BaseViewModel
 
 	public void SubscribeToSpeechToText()
 	{
+		isPageShown = true;
+
 		speechToText.StateChanged += HandleSpeechToTextStateChanged;
 		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
 		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
@@ -58,6 +63,8 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	// The events are released first: Shell can show this page again, which subscribes it anew, before the stop completes
 	public async Task StopListeningAndUnsubscribeFromSpeechToText()
 	{
+		isPageShown = false;
+
 		speechToText.StateChanged -= HandleSpeechToTextStateChanged;
 		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
 		speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
@@ -131,6 +138,15 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		CanStartListenExecute = false;
 
 		var isGranted = await ArePermissionsGranted(speechToText);
+
+		// The teardown of a page that was left during the prompts found no session to stop and released the page's handlers, so the singleton
+		// recognizer must not start: it would listen with no page to show its results or to stop it
+		if (!isPageShown)
+		{
+			CanStartListenExecute = true;
+			return;
+		}
+
 		if (!isGranted)
 		{
 			await Toast.Make("Permission not granted").Show(cancellationToken);
