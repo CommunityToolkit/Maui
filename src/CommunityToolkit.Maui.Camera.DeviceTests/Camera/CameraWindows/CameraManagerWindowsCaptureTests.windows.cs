@@ -472,31 +472,36 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
-	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it.
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it. The token is cancelled when the start looks for
+	// the frame source, so that SetFormatAsync observes it after the start put the prepared recording in the manager.
 	[Fact]
-	public async Task StartVideoRecordingThatItsTokenCancelsLeavesNoRecordingThatStopVideoRecordingWouldStop()
+	public async Task StartVideoRecordingThatItsTokenCancelsWhileItSetsTheFrameFormatReleasesThePreparedRecording()
 	{
-		await RunWithRecordingAsync(async (scope, destination) =>
+		await RunWithConnectedCameraAsync(async (scope, _) =>
 		{
-			var runningRecording = scope.Access.MediaRecording;
+			var mediaCapture = scope.Access.MediaCapture ?? throw new InvalidOperationException("No MediaCapture.");
+			Skip.IfNot(mediaCapture.FrameSources.Any(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color),
+				"The camera has no color frame source for MediaStreamType.VideoRecord, so recording does not start.");
 			using var cancellation = new CancellationTokenSource();
-			using var second = new MemoryStream();
-
-			var start = scope.Manager.StartVideoRecording(second, cancellation.Token);
-			cancellation.Cancel();
-
-			try
+			var findColorVideoFrameSource = scope.Access.FindColorVideoFrameSource;
+			scope.Access.FindColorVideoFrameSource = capture =>
 			{
-				await start;
-			}
-			catch (OperationCanceledException)
-			{
-			}
+				cancellation.Cancel();
+				return findColorVideoFrameSource(capture);
+			};
+			using var cancelled = new MemoryStream();
 
-			Assert.True(scope.Access.MediaRecording is null || ReferenceEquals(scope.Access.MediaRecording, runningRecording));
-			Assert.True(scope.Access.VideoCaptureStream is null || ReferenceEquals(scope.Access.VideoCaptureStream, destination));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => scope.Manager.StartVideoRecording(cancelled, cancellation.Token));
 
-			await scope.Manager.StopVideoRecording(CancellationToken.None);
+			Assert.Null(scope.Access.MediaRecording);
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None));
+
+			scope.Access.FindColorVideoFrameSource = findColorVideoFrameSource;
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			Assert.Same(destination, await scope.Manager.StopVideoRecording(CancellationToken.None));
 		});
 	}
 

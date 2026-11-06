@@ -113,6 +113,23 @@ partial class CameraManager
 		await PlatformUpdateResolution(resolution, token);
 	}
 
+	static async Task ReleaseTheCancelledRecordingAsync(LowLagMediaRecording recording, bool isRecordingStarted)
+	{
+		try
+		{
+			if (isRecordingStarted)
+			{
+				await recording.StopAsync();
+			}
+
+			await recording.FinishAsync();
+		}
+		catch (Exception exception)
+		{
+			Trace.TraceWarning($"{nameof(CameraManager)}: unable to release the cancelled video recording: {exception}");
+		}
+	}
+
 	private partial void PlatformDisconnect()
 	{
 	}
@@ -341,11 +358,22 @@ partial class CameraManager
 		}
 
 		var profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
+		var recordingMediaCapture = mediaCapture;
 		var preparedRecording = await prepareLowLagRecording(mediaCapture, profile, stream.AsRandomAccessStream(), token);
 
 		// Media Foundation can complete the preparation before a StopCameraPreview that ran before this continuation and released the MediaCapture
 		// of the prepared recording: StopVideoRecording must not find the recording of a start that the stop cancelled
-		token.ThrowIfCancellationRequested();
+		if (token.IsCancellationRequested)
+		{
+			// A preparation that only the caller's token cancelled belongs to the MediaCapture that still shows the preview: it is released like a
+			// start that its token cancelled later
+			if (ReferenceEquals(mediaCapture, recordingMediaCapture))
+			{
+				await ReleaseTheCancelledRecordingAsync(preparedRecording, isRecordingStarted: false);
+			}
+
+			token.ThrowIfCancellationRequested();
+		}
 
 		mediaRecording = preparedRecording;
 
@@ -389,19 +417,7 @@ partial class CameraManager
 			mediaRecording = null;
 			videoCaptureStream = null;
 
-			try
-			{
-				if (isRecordingStarted)
-				{
-					await preparedRecording.StopAsync();
-				}
-
-				await preparedRecording.FinishAsync();
-			}
-			catch (Exception exception)
-			{
-				Trace.TraceWarning($"{nameof(CameraManager)}: unable to release the cancelled video recording: {exception}");
-			}
+			await ReleaseTheCancelledRecordingAsync(preparedRecording, isRecordingStarted);
 
 			throw;
 		}
