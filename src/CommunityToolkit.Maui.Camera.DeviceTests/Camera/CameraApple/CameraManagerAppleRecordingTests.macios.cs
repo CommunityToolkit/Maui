@@ -830,25 +830,40 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 		});
 	}
 
+	// The app stopped the preview (or never started it): like on Android, recording turns the camera on. AVFoundation reports the start of a
+	// recording only for a session that runs, so the start would otherwise wait for an answer that never comes.
 	[Fact]
-	public async Task StartVideoRecordingOnASessionThatDoesNotRunThrowsCameraExceptionInsteadOfWaitingForAnAnswerThatNeverComes()
+	public async Task StartVideoRecordingOnASessionThatDoesNotRunStartsTheSessionAndTheRecording()
 	{
 		await RunAsync(async recording =>
 		{
+			using var camera = SelectAFakeCamera(recording);
+			using var coordinators = new AppleRotationCoordinatorStub();
 			recording.Session.IsRunning = false;
-
-			var exception = await Assert.ThrowsAsync<CameraException>(() => recording.Scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(startTimeout));
-
-			Assert.Equal("Unable to start video recording because the camera preview is not running. Start the camera preview first.", exception.Message);
-			AssertRecordingReleased(recording);
-			Assert.Empty(recording.Session.Calls);
-			Assert.Empty(recording.Movies.Recordings);
-
-			recording.Session.IsRunning = true;
 			using var destination = new MemoryStream();
+
 			await recording.Scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(startTimeout);
+
+			Assert.True(recording.Session.IsRunning);
+			Assert.True(recording.Scope.Access.IsInitialized);
+			Assert.Equal(1, recording.Scope.LoadedCount);
+			Assert.Same(camera.Device, recording.Scope.Access.CaptureDevice);
 			AssertRecordingStarted(recording, destination);
 		});
+	}
+
+	static FakeCameraSelection SelectAFakeCamera(RecordingHarness recording)
+	{
+		var device = new FakeCaptureDevice { Identifier = "fake-recording-camera" };
+		recording.Scope.View.SelectedCamera = AppleFakeCameras.Create(device, CameraPosition.Rear, new FakeCaptureDeviceFormat(1280, 720));
+		return new FakeCameraSelection(device);
+	}
+
+	sealed class FakeCameraSelection(FakeCaptureDevice device) : IDisposable
+	{
+		public FakeCaptureDevice Device { get; } = device;
+
+		public void Dispose() => Device.Dispose();
 	}
 
 	// AVFoundation tells nobody about the end of a recording that never started, which a session that stopped meanwhile does not do. The start

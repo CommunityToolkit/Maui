@@ -429,10 +429,11 @@ partial class CameraManager
 		}
 
 		// AVFoundation reports the start of a recording only for a session that runs, so a start on a stopped session (before
-		// StartCameraPreview or after StopCameraPreview) would wait for an answer that never comes
+		// StartCameraPreview or after StopCameraPreview) would wait for an answer that never comes. Like on Android, recording turns the camera on.
 		if (!captureSession.Running)
 		{
-			throw new CameraException("Unable to start video recording because the camera preview is not running. Start the camera preview first.");
+			await PlatformStartCameraPreview(token);
+			ObjectDisposedException.ThrowIf(isDisposed, this);
 		}
 
 		// Like on Android and Windows, the stream of the latest StartVideoRecording receives the video: the running recording is released

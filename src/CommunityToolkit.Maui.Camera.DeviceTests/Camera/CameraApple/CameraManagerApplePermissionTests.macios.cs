@@ -125,7 +125,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	}
 
 	[Fact]
-	public async Task StartVideoRecordingOnARealSessionThatDoesNotRunThrowsCameraExceptionInsteadOfWaitingForever()
+	public async Task StartVideoRecordingOnARealSessionThatDoesNotRunAndHasNoCameraToStartThrowsCameraExceptionInsteadOfWaitingForever()
 	{
 		SkipUnlessCameraAndMicrophoneAreAuthorized();
 		SetupBuilder();
@@ -137,7 +137,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 
 			var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)));
 
-			Assert.Equal("Unable to start video recording because the camera preview is not running. Start the camera preview first.", exception.Message);
+			Assert.Equal("No camera available on device", exception.Message);
 			Assert.Null(scope.Access.VideoOutput);
 			Assert.Null(scope.Access.VideoRecordingState);
 			Assert.Empty(scope.Access.CaptureSession?.Outputs ?? []);
