@@ -75,7 +75,7 @@ public partial class GravatarImageSourceTests : CommunityToolkitHandlerTestBase
 
 			pictureHandler.ReleaseFirstRequest();
 
-			// The load that was replaced fails asynchronously and nothing signals its end, so the test can only wait before it checks.
+			// The load that was replaced ends asynchronously and nothing signals its end, so the test can only wait before it checks.
 			await Task.Delay(1000);
 
 			Assert.True(HasPicture(view, handler), $"The {kind} lost its picture when the load it replaced ended.");

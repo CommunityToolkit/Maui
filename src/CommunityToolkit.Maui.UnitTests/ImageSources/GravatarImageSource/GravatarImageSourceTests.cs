@@ -391,8 +391,7 @@ public class GravatarImageSourceTests : BaseViewTest
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var gravatarImageSource = new GravatarImageSource();
 		cts.Cancel();
-		Stream stream = await gravatarImageSource.Stream(cts.Token);
-		Assert.Equal(Stream.Null, stream);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => gravatarImageSource.Stream(cts.Token));
 	}
 
 	[Fact]
