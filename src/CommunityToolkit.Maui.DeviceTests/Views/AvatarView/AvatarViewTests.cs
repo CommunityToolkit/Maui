@@ -405,7 +405,8 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 	}
 
 	// After a failed load the text replaces the image, which leaves the tree: a binding of the image source still applies there, and the image
-	// replaces the text once the source that the binding changes loads (a GravatarImageSource whose bound Email changes, for example).
+	// replaces the text once the source that the binding changes loads. It changes the Stream of a StreamImageSource, which raises OnSourceChanged
+	// directly, so it does not cover the GravatarImageSource path, where a new Email only sets the Uri once the image has been laid out.
 	[Fact]
 	public async Task ImageIsShownWhenABindingChangesTheImageSourceAfterAFailure()
 	{
