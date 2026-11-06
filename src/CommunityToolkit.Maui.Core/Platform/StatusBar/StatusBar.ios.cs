@@ -74,7 +74,7 @@ static partial class StatusBar
 	// above the app windows; painting them leaves the status bar on top of any modal or overlay.
 	static IReadOnlyList<UIWindow> GetApplicationWindows()
 	{
-		var applicationWindows = IPlatformApplication.Current?.Application.Windows
+		var applicationWindows = IPlatformApplication.Current?.Application?.Windows
 			.Select(static window => window.Handler?.PlatformView)
 			.OfType<UIWindow>()
 			.ToList();
