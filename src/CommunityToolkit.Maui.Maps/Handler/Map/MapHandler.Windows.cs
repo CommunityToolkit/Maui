@@ -45,40 +45,60 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps Map type
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
 	}
 
 	/// <summary>
 	/// Maps IsZoomEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	public static new Task MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsScrollEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	public static new Task MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsTrafficEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	public static new Task MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsShowingUser
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	public static new async Task MapIsShowingUser(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		if (map.IsShowingUser)
 		{
 			var location = await GetCurrentLocation();
@@ -101,8 +121,12 @@ public partial class MapHandlerWindows : MapHandler
 	/// The info window that a click on a pin opens shows the pin's <see cref="Pin.Label"/> and <see cref="Pin.Address"/> as plain text: markup in
 	/// them is shown as it is written, not rendered as HTML.
 	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
 	public static new async Task MapPins(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
 		// times in a row (added in a loop) end up on the map once each. A removal sent on its own ran before the additions of the earlier changes,
 		// which, built after an await, each added the latest pins again
@@ -132,8 +156,11 @@ public partial class MapHandlerWindows : MapHandler
 	/// <summary>
 	/// Maps MoveToRegion
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static new async Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		if (arg is not MapSpan newRegion)
 		{
 			return;
