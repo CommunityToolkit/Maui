@@ -383,6 +383,9 @@ public static class PopupExtensions
 			throw new PopupNotFoundException();
 		}
 
+		// A popup shown inside a modal NavigationPage is the CurrentPage of that NavigationPage
+		currentVisibleModalPage = currentVisibleModalPage is IPageContainer<Page> { CurrentPage: PopupPage popupPageInContainer } ? popupPageInContainer : currentVisibleModalPage;
+
 		if (currentVisibleModalPage is not PopupPage popupPage)
 		{
 			throw new PopupBlockedException(currentVisibleModalPage);
