@@ -67,7 +67,7 @@ public class MapHandlerWindowsTests : MapTestBase
 	{
 		SetupMapBuilder();
 
-		// The async mappings deliver the exception through the returned Task, like DispatchIfRequiredAsync does
+		// The mappings throw from the call, before a Task exists; ThrowsAsync accepts that and a faulted Task alike
 		var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => InvokeMapping(mapping, null, new Map()));
 
 		Assert.Equal("handler", exception.ParamName);

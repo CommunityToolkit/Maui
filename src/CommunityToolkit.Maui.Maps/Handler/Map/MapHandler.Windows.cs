@@ -94,22 +94,27 @@ public partial class MapHandlerWindows : MapHandler
 	/// Maps IsShowingUser
 	/// </summary>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
-	public static new async Task MapIsShowingUser(IMapHandler handler, IMap map)
+	public static new Task MapIsShowingUser(IMapHandler handler, IMap map)
 	{
 		ArgumentNullException.ThrowIfNull(handler);
 		ArgumentNullException.ThrowIfNull(map);
 
-		if (map.IsShowingUser)
+		return MapIsShowingUserCore();
+
+		async Task MapIsShowingUserCore()
 		{
-			var location = await GetCurrentLocation();
-			if (location is not null)
+			if (map.IsShowingUser)
 			{
-				await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				var location = await GetCurrentLocation();
+				if (location is not null)
+				{
+					await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				}
 			}
-		}
-		else
-		{
-			await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
+			else
+			{
+				await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
+			}
 		}
 	}
 
@@ -122,30 +127,35 @@ public partial class MapHandlerWindows : MapHandler
 	/// them is shown as it is written, not rendered as HTML.
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
-	public static new async Task MapPins(IMapHandler handler, IMap map)
+	public static new Task MapPins(IMapHandler handler, IMap map)
 	{
 		ArgumentNullException.ThrowIfNull(handler);
 		ArgumentNullException.ThrowIfNull(map);
 
-		// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
-		// times in a row (added in a loop) end up on the map once each. A removal sent on its own ran before the additions of the earlier changes,
-		// which, built after an await, each added the latest pins again
-		var script = new StringBuilder("removeAllPins();");
+		return MapPinsCore();
 
-		foreach (var pin in map.Pins)
+		async Task MapPinsCore()
 		{
-			// A Pin has no Location until one is set (a Map only requires its Label): there is no position to show it at
-			if (pin.Location is null)
+			// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
+			// times in a row (added in a loop) end up on the map once each. A removal sent on its own ran before the additions of the earlier changes,
+			// which, built after an await, each added the latest pins again
+			var script = new StringBuilder("removeAllPins();");
+
+			foreach (var pin in map.Pins)
 			{
-				continue;
+				// A Pin has no Location until one is set (a Map only requires its Label): there is no position to show it at
+				if (pin.Location is null)
+				{
+					continue;
+				}
+
+				// The label and the address are text of the app: encoded for the JavaScript string literals, so that none of their characters ends the literal or runs as script
+				script.Append($"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
+					$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{JavaScriptEncoder.Default.Encode(pin.Label ?? string.Empty)}', '{JavaScriptEncoder.Default.Encode(pin.Address ?? string.Empty)}', '{(pin as Pin)?.Id}');");
 			}
 
-			// The label and the address are text of the app: encoded for the JavaScript string literals, so that none of their characters ends the literal or runs as script
-			script.Append($"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
-				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{JavaScriptEncoder.Default.Encode(pin.Label ?? string.Empty)}', '{JavaScriptEncoder.Default.Encode(pin.Address ?? string.Empty)}', '{(pin as Pin)?.Id}');");
+			await TryCallJSMethod(handler.PlatformView, script.ToString());
 		}
-
-		await TryCallJSMethod(handler.PlatformView, script.ToString());
 	}
 
 	/// <summary>
@@ -157,21 +167,26 @@ public partial class MapHandlerWindows : MapHandler
 	/// Maps MoveToRegion
 	/// </summary>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
-	public static new async Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+	public static new Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
 		ArgumentNullException.ThrowIfNull(handler);
 
-		if (arg is not MapSpan newRegion)
-		{
-			return;
-		}
+		return MapMoveToRegionCore();
 
-		if (handler is MapHandlerWindows mapHandler)
+		async Task MapMoveToRegionCore()
 		{
-			mapHandler.regionToGo = newRegion;
-		}
+			if (arg is not MapSpan newRegion)
+			{
+				return;
+			}
 
-		await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+			if (handler is MapHandlerWindows mapHandler)
+			{
+				mapHandler.regionToGo = newRegion;
+			}
+
+			await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+		}
 	}
 
 	/// <inheritdoc/>
