@@ -167,9 +167,19 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <param name="bindable"></param>
 	/// <param name="oldValue"></param>
 	/// <param name="newValue"></param>
-	protected static void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		UpdateStateAfterValidationPropertyChanged(bindable);
+		try
+		{
+			var validationBehavior = (ValidationBehavior)bindable;
+
+			// The last result can be stale even when Flags does not include the current state of the view, for example ValidateOnValueChanged after the view lost the focus
+			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, validationBehavior.hasValidated);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceInformation("{0}", ex);
+		}
 	}
 
 	/// <summary>
@@ -243,22 +253,6 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			};
 
 			UpdateStateOnFocusChanged();
-		}
-	}
-
-	// An async void method reports a null argument through the synchronization context instead of to its caller, so the protected members validate their arguments before they call it
-	static async void UpdateStateAfterValidationPropertyChanged(BindableObject bindable)
-	{
-		try
-		{
-			var validationBehavior = (ValidationBehavior)bindable;
-
-			// The last result can be stale even when Flags does not include the current state of the view, for example ValidateOnValueChanged after the view lost the focus
-			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, validationBehavior.hasValidated);
-		}
-		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
-		{
-			Trace.TraceInformation("{0}", ex);
 		}
 	}
 

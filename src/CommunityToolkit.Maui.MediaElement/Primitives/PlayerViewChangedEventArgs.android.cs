@@ -2,6 +2,9 @@
 
 namespace CommunityToolkit.Maui.Core;
 
+/// <summary>
+/// Event arguments that carry the <see cref="PlayerView"/> that a MediaElement uses after it changes.
+/// </summary>
 public sealed class PlayerViewChangedEventArgs : EventArgs
 {
 	/// <summary>
@@ -16,5 +19,8 @@ public sealed class PlayerViewChangedEventArgs : EventArgs
 		UpdatedPlayerView = playerView;
 	}
 
+	/// <summary>
+	/// Gets the updated <see cref="PlayerView"/>.
+	/// </summary>
 	public PlayerView UpdatedPlayerView { get; }
 }

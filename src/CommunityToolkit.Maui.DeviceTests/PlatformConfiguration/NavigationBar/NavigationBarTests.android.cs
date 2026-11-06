@@ -469,7 +469,9 @@ public partial class NavigationBarTests
 		var page = CreatePage();
 		NavigationBar.SetColor(page, Colors.Red);
 
-		var exception = await InvokeOnMainThreadAsync(() => Assert.Throws<ArgumentNullException>(() => NavigationBar.MapNavigationColorProperty(null!, page)));
+#pragma warning disable CS8625 // The test passes null to a parameter that is not nullable on purpose
+		var exception = await InvokeOnMainThreadAsync(() => Assert.Throws<ArgumentNullException>(() => NavigationBar.MapNavigationColorProperty(null, page)));
+#pragma warning restore CS8625
 
 		Assert.Equal("handler", exception.ParamName);
 
@@ -665,7 +667,9 @@ public partial class NavigationBarTests
 		var page = CreatePage();
 		NavigationBar.SetStyle(page, NavigationBarStyle.DarkContent);
 
-		var exception = await InvokeOnMainThreadAsync(() => Assert.Throws<ArgumentNullException>(() => NavigationBar.MapNavigationStyleProperty(null!, page)));
+#pragma warning disable CS8625 // The test passes null to a parameter that is not nullable on purpose
+		var exception = await InvokeOnMainThreadAsync(() => Assert.Throws<ArgumentNullException>(() => NavigationBar.MapNavigationStyleProperty(null, page)));
+#pragma warning restore CS8625
 
 		Assert.Equal("handler", exception.ParamName);
 
