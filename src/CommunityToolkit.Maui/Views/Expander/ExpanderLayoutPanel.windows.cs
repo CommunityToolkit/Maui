@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
+// Microsoft.Maui.Controls.AutomationProperties comes in through the implicit global using, so the unqualified name is ambiguous (CS0104)
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WPoint = Windows.Foundation.Point;
 using WSize = Windows.Foundation.Size;
