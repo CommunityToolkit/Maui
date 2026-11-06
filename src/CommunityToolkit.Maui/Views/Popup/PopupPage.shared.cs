@@ -60,7 +60,15 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		tapOutsideOfPopupCommand = new Command(async () =>
 		{
 			popupOptions.OnTappingOutsideOfPopup?.Invoke();
-			await CloseAsync(new PopupResult(true));
+
+			try
+			{
+				await CloseAsync(new PopupResult(true));
+			}
+			catch (PopupNotFoundException)
+			{
+				// An earlier tap, the back button or navigation already closed this popup; the command runs as async void, so an exception here would crash the app
+			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
@@ -254,7 +262,8 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		void HandleModalPagePopped(object? sender, ModalPoppedEventArgs e)
 		{
-			if (e.Modal == this)
+			// A PopupPage that is the only page of a modal NavigationPage is popped together with it, and ModalPopped reports the NavigationPage
+			if (e.Modal == this || (e.Modal is IPageContainer<Page> container && container.CurrentPage == this))
 			{
 				popupConfirmedPoppedTcs.TrySetResult();
 			}

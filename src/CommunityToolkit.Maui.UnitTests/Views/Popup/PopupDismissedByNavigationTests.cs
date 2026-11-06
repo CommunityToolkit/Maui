@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
@@ -345,6 +346,74 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Equal(1, closedCount());
 	}
 
+	// ModalPopped reports the NavigationPage, not the PopupPage, when CloseAsync pops a NavigationPage whose only page is the popup
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.ContentPage, false)]
+	[InlineData(RootPageType.ContentPage, true)]
+	[InlineData(RootPageType.Shell, false)]
+	[InlineData(RootPageType.Shell, true)]
+	public async Task CloseAsync_ShouldComplete_WhenThePopupPageIsTheOnlyPageOfAModalNavigationPage(RootPageType rootPageType, bool closeWithClosePopupAsync)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var closedCount = 0;
+		popupPage.PopupClosed += (_, _) => closedCount++;
+		await navigation.PushModalAsync(new NavigationPage(popupPage), false);
+
+		await (closeWithClosePopupAsync
+			? navigation.ClosePopupAsync(TestContext.Current.CancellationToken)
+			: popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken)).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, closedCount);
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+	}
+
+	// A second tap while another popup operation holds the semaphore queues a second CloseAsync, which finds its page already closed and must not crash the async void command
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task TapOutsideOfPopup_ShouldNotThrow_WhenAnEarlierTapAlreadyClosedThePopupWhileItWaitedForOtherNavigation()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var navigationSemaphore = GetNavigationSemaphore();
+		var uiThread = new SingleThreadedSynchronizationContext();
+		var originalSynchronizationContext = SynchronizationContext.Current;
+
+		await navigationSemaphore.WaitAsync(TestContext.Current.CancellationToken);
+		try
+		{
+			// The async void command lambda captures the SynchronizationContext that is current when the command executes
+			SynchronizationContext.SetSynchronizationContext(uiThread);
+			try
+			{
+				Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand());
+				Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand());
+			}
+			finally
+			{
+				SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
+			}
+		}
+		finally
+		{
+			navigationSemaphore.Release();
+		}
+
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+
+		// The queued second CloseAsync runs after the first one released the semaphore
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, closedCount);
+		Assert.Empty(uiThread.UnhandledExceptions);
+		Assert.Equal(1, navigationSemaphore.CurrentCount);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ShowPopupAsync_ShouldCompleteAsDismissedAndRaiseClosedOnce_WhenThePageOfTheWindowIsReplaced()
 	{
@@ -585,5 +654,74 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		public Task PushModalAsync(Page page, bool animated) => navigation.PushAsync(page, animated);
 
 		public void RemovePage(Page page) => navigation.RemovePage(page);
+	}
+
+	// Runs the posted callbacks one at a time, in order, like a UI thread: a continuation that is queued by a Release of the semaphore cannot run before the code that called Release has finished
+	sealed class SingleThreadedSynchronizationContext : SynchronizationContext
+	{
+		readonly Lock gate = new();
+		readonly Queue<(SendOrPostCallback Callback, object? State)> callbacks = new();
+		bool isRunning;
+
+		public ConcurrentQueue<Exception> UnhandledExceptions { get; } = new();
+
+		public override void Post(SendOrPostCallback d, object? state)
+		{
+			lock (gate)
+			{
+				callbacks.Enqueue((d, state));
+				if (isRunning)
+				{
+					return;
+				}
+
+				isRunning = true;
+			}
+
+			ThreadPool.QueueUserWorkItem(_ => Drain());
+		}
+
+		public async Task WaitUntilIdleAsync(CancellationToken token)
+		{
+			while (true)
+			{
+				lock (gate)
+				{
+					if (!isRunning)
+					{
+						return;
+					}
+				}
+
+				await Task.Delay(10, token);
+			}
+		}
+
+		void Drain()
+		{
+			SetSynchronizationContext(this);
+
+			while (true)
+			{
+				(SendOrPostCallback Callback, object? State) next;
+				lock (gate)
+				{
+					if (!callbacks.TryDequeue(out next))
+					{
+						isRunning = false;
+						return;
+					}
+				}
+
+				try
+				{
+					next.Callback(next.State);
+				}
+				catch (Exception ex)
+				{
+					UnhandledExceptions.Enqueue(ex);
+				}
+			}
+		}
 	}
 }
