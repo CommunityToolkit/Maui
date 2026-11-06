@@ -166,6 +166,16 @@ partial class CameraManager
 		// A start that StopCameraPreview cancelled before it began (on the connection of the view) must not open a camera
 		token.ThrowIfCancellationRequested();
 
+		// A preview that runs is not started again: a second MediaCapture would replace the one that shows the preview and was never released
+		if (isInitialized && mediaCapture is not null)
+		{
+			return;
+		}
+
+		// The MediaCapture of a start that still waits for Media Foundation is released now, not when Media Foundation answers (which a camera
+		// that hangs never does). That start ends without reporting anything, as it does when a StopCameraPreview releases its MediaCapture.
+		mediaCapture?.Dispose();
+
 		// In the field while Media Foundation initializes it, so that StopCameraPreview and Dispose release it at once. Another start can replace
 		// it there meanwhile, so this start only ever releases its own MediaCapture
 		var startedMediaCapture = new MediaCapture();
@@ -292,6 +302,11 @@ partial class CameraManager
 		mediaElement.Source = null;
 		mediaCapture?.Dispose();
 
+		// Releasing the MediaCapture ends the recording that it runs, so the recording is forgotten with its stream: a later StopVideoRecording
+		// has nothing to stop, and a preview that starts again does not find a recording of the released MediaCapture
+		mediaRecording = null;
+		videoCaptureStream = null;
+
 		mediaCapture = null;
 		isInitialized = false;
 	}
@@ -353,7 +368,10 @@ partial class CameraManager
 
 				mediaElement.AutoPlay = true;
 				mediaElement.Source = MediaSource.CreateFromMediaFrameSource(frameSource);
-				await mediaRecording.StartAsync();
+				await preparedRecording.StartAsync();
+
+				// A StopCameraPreview during the start released the MediaCapture and with it the recording, which the start did not wait for
+				token.ThrowIfCancellationRequested();
 			}
 		}
 	}

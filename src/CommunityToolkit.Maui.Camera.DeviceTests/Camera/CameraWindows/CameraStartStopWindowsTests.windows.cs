@@ -421,6 +421,94 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		});
 	}
 
+	// A second MediaCapture would replace the one that shows the preview, and nothing would release the first one.
+	[Fact]
+	public async Task StartCameraPreviewWhileThePreviewRunsChangesNothing()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			var firstStart = scope.Manager.StartCameraPreview(CancellationToken.None);
+			var first = Assert.Single(mediaFoundation.Initializations);
+			first.Answer.SetResult(true);
+			await firstStart.WaitAsync(timeout);
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Equal(1, scope.LoadedCount);
+
+			await scope.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(timeout);
+
+			Assert.Single(mediaFoundation.Initializations);
+			Assert.Same(first.MediaCapture, scope.Access.MediaCapture);
+			Assert.False(await WindowsCameraEnvironment.IsClosedAsync(first.MediaCapture), "The second start released the MediaCapture of the running preview.");
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Equal(1, scope.LoadedCount);
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	// Media Foundation answers a camera that hangs never, and nothing else would release the MediaCapture of the older start.
+	[Fact]
+	public async Task AStartThatReplacesAStartThatStillWaitsForMediaFoundationReleasesTheMediaCaptureOfTheOlderStartAtOnce()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			var olderStart = scope.Manager.StartCameraPreview(CancellationToken.None);
+			var older = Assert.Single(mediaFoundation.Initializations);
+
+			var newerStart = scope.Manager.StartCameraPreview(CancellationToken.None);
+
+			var newer = mediaFoundation.Initializations[1];
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(older.MediaCapture), "The newer start did not release the MediaCapture of the older start before Media Foundation answered it.");
+			Assert.False(await WindowsCameraEnvironment.IsClosedAsync(newer.MediaCapture));
+			Assert.Same(newer.MediaCapture, scope.Access.MediaCapture);
+
+			older.Answer.SetResult(true);
+			await olderStart.WaitAsync(timeout);
+			newer.Answer.SetResult(true);
+			await newerStart.WaitAsync(timeout);
+
+			Assert.Same(newer.MediaCapture, scope.Access.MediaCapture);
+			Assert.False(await WindowsCameraEnvironment.IsClosedAsync(newer.MediaCapture));
+			Assert.Equal(1, scope.LoadedCount);
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	// Releasing the MediaCapture ends its recording, like unbinding the use cases on Android. The recording and its stream are forgotten, so that
+	// a preview that starts again does not find a recording of the released MediaCapture.
+	[Fact]
+	public async Task StopCameraPreviewDuringARecordingEndsTheRecordingAndAStopVideoRecordingAfterTheNextStartReturnsTheNullStream()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			var recorder = new WindowsMediaRecorder(scope.View);
+			scope.Access.MediaCapture = WindowsCameraEnvironment.CreateMediaCapture();
+			scope.Access.IsInitialized = true;
+			using var destination = new MemoryStream();
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			// Only a real camera prepares a recording: the scripted answer has none, and the stream is the part of the recording that is observable
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+			Assert.Single(mediaFoundation.RecordingPreparations).Answer.SetResult(null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+			await recording.WaitAsync(timeout);
+			Assert.Same(destination, scope.Access.VideoCaptureStream);
+
+			scope.Manager.StopCameraPreview();
+
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Null(scope.Access.MediaRecording);
+
+			var start = scope.Manager.StartCameraPreview(CancellationToken.None);
+			mediaFoundation.Initializations[^1].Answer.SetResult(true);
+			await start.WaitAsync(timeout);
+
+			Assert.Same(Stream.Null, await scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(timeout));
+			Assert.Empty(recorder.Failures);
+			Assert.Empty(errors.Errors);
+			GC.KeepAlive(recorder);
+		});
+	}
+
 	// A start releases its own MediaCapture also when StopCameraPreview, a camera switch or the release of the view released it before.
 	[Fact]
 	public async Task AMediaCaptureCanBeReleasedTwice()
