@@ -100,8 +100,10 @@ public partial class Toast
 				.BuildNotification();
 			platformToast.Expiration = DateTimeOffset.Now.Add(duration + expirationAfterTheEndOfTheDuration);
 
-			PlatformToast = platformToast;
 			AppNotificationManager.Default.Show(platformToast);
+			// Assigned once Show returned: Windows gives the notification its Id in Show, and RemoveByIdAsync rejects the Id 0 of a notification
+			// that was never posted.
+			PlatformToast = platformToast;
 
 			_ = RemoveAtTheEndOfTheDurationAsync(platformToast, duration);
 		}
