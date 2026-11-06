@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
@@ -340,7 +340,8 @@ public partial class ToastTests
 
 			await toast.Dismiss();
 
-			await AssertEventually(async () => (await GetDisplayedTextsAsync()) is ["Another notification of the app"], timeout: 10000, message: "Windows does not list only the other notification of the app after the Dismiss.");
+			await AssertEventually(async () => !(await GetDisplayedTextsAsync()).Contains("Dismissed"), timeout: 10000, message: "Windows still lists the dismissed toast.");
+			Assert.Equal(new[] { "Another notification of the app" }, await GetDisplayedTextsAsync());
 		});
 	}
 

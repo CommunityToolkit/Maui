@@ -450,7 +450,8 @@ public partial class SnackbarTests
 
 			await snackbar.Dismiss().WaitAsync(dismissTimeout);
 
-			await AssertEventually(async () => (await GetAllDisplayedTextsAsync()) is ["Another notification of the app"], timeout: 10000, message: "Windows does not list only the other notification of the app after the Dismiss.");
+			await AssertEventually(async () => !(await GetAllDisplayedTextsAsync()).Contains("Dismissed"), timeout: 10000, message: "Windows still lists the dismissed snackbar.");
+			Assert.Equal(new[] { "Another notification of the app" }, await GetAllDisplayedTextsAsync());
 		});
 	}
 
