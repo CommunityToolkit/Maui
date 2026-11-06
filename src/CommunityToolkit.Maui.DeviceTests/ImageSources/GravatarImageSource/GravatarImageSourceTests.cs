@@ -15,6 +15,9 @@ public partial class GravatarImageSourceTests : CommunityToolkitHandlerTestBase
 
 	const int pictureSize = 16;
 
+	// A 200x200 solid red PNG: larger than the room a Button has for a picture at any display scale of the test runners.
+	const string largeRedPngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAABcklEQVR42u3SMQ0AAAjAsPk3DSY4OJpUwbKm4JwEGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBBBgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsbCWBJgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAs3lnRh6zWL0rapgAAAABJRU5ErkJggg==";
+
 	// Decoding and showing the picture are asynchronous: a generous polling timeout keeps slow CI machines green without hiding a wrong state
 	// (the assertion still fails once it is over).
 	const int pictureTimeout = 5000;
@@ -66,10 +69,10 @@ public partial class GravatarImageSourceTests : CommunityToolkitHandlerTestBase
 	};
 
 	// A real server answers with a stream that cannot seek, which a MemoryStream does not reproduce.
-	sealed class PictureHandler : HttpMessageHandler
+	sealed class PictureHandler(string pngBase64 = redPngBase64) : HttpMessageHandler
 	{
 		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-			Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new NonSeekableStream(Convert.FromBase64String(redPngBase64))) });
+			Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new NonSeekableStream(Convert.FromBase64String(pngBase64))) });
 	}
 
 	sealed class NonSeekableStream(byte[] content) : Stream
