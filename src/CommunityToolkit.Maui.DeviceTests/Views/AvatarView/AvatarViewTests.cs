@@ -60,6 +60,12 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 		Gravatar,
 	}
 
+	public enum GravatarFirstLoad
+	{
+		Fails,
+		Empty,
+	}
+
 	public enum FrameSide
 	{
 		Width,
@@ -451,10 +457,19 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 		await AttachAndRun(avatar, async handler =>
 		{
-			await LoadedAndLaidOutAsync(avatar);
+			try
+			{
+				await LoadedAndLaidOutAsync(avatar);
 
-			await AssertNativeContentAsync(handler, NativeContent.Label);
-			Assert.Equal("AB", Assert.IsType<Label>(avatar.Content).Text);
+				await AssertNativeContentAsync(handler, NativeContent.Label);
+				Assert.Equal("AB", Assert.IsType<Label>(avatar.Content).Text);
+			}
+			finally
+			{
+				// Once its image has a size, a GravatarImageSource raises SourceChanged 737 ms later, after this test has ended and its MauiApp is disposed:
+				// the image's handler would then load the source with disposed services and crash the app.
+				avatar.ImageSource = null;
+			}
 		});
 	}
 
@@ -483,6 +498,77 @@ public partial class AvatarViewTests : CommunityToolkitHandlerTestBase
 
 			await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
 			await AssertNativeContentAsync(handler, NativeContent.Image);
+		});
+	}
+
+	// Offline, DownloadStreamAsync returns Stream.Null within about 0.1 s, and an empty Email ends its load at once: the text then replaces an image
+	// that was never laid out, and a GravatarImageSource requests its picture only once its Image has a size. A StreamImageSource does not cover
+	// this: a change of its Stream raises OnSourceChanged directly.
+	[Theory]
+	[InlineData(GravatarFirstLoad.Fails)]
+	[InlineData(GravatarFirstLoad.Empty)]
+	public async Task GravatarPictureIsShownWhenTheEmailChangesAfterAFirstLoadThatEndedBeforeTheFirstLayout(GravatarFirstLoad firstLoad)
+	{
+		SetupBuilder();
+		var isOffline = new StrongBox<bool>(true);
+		var avatar = await CreateAvatarViewAsync(strokeThickness: 1, padding: new Thickness(1), withImage: false, avatar =>
+		{
+			avatar.Text = "AB";
+			avatar.ImageSource = new GravatarImageSource
+			{
+				Email = firstLoad is GravatarFirstLoad.Fails ? "a@example.org" : null,
+				Stream = token => Volatile.Read(ref isOffline.Value) ? UndecodableImageStreamAsync(token) : RedImageStreamAsync(token),
+			};
+		});
+		var source = Assert.IsType<GravatarImageSource>(avatar.ImageSource);
+
+		// A handler without a window and without a layout pass: AttachAndRun would otherwise lay the avatar out before the first load ends, and
+		// the image would get its size before the text could replace it.
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var handler = new BorderHandler();
+			handler.SetMauiContext(MauiContext);
+			handler.SetVirtualView(avatar);
+		});
+
+		// Bounded, not asserted: a text that waits for the layout is the fix, and the text then shows only once the avatar is laid out.
+		var textShownBeforeAttach = await AssertHelpers.Wait(() => avatar.Content is Label, timeout: layoutTimeout);
+
+		await AttachAndRun(avatar, async handler =>
+		{
+			try
+			{
+				await avatar.OnLoadedAsync();
+
+				// The handler above was made without InitializeViewHandler, which is what lays out a view that AttachAndRun hosts on its own on Android and
+				// iOS (LoadedAndLaidOutAsync lays it out only on Windows): the avatar is laid out here, as its parent would lay it out.
+				var size = ((IView)avatar).Measure(avatar.WidthRequest, avatar.HeightRequest);
+				((IView)avatar).Arrange(new Rect(0, 0, size.Width, size.Height));
+
+				await LoadedAndLaidOutAsync(avatar);
+				await AssertNativeContentAsync(handler, NativeContent.Label);
+
+				Volatile.Write(ref isOffline.Value, false);
+				source.Email = "b@example.org";
+
+				try
+				{
+					await AssertPixelAsync(handler, avatarSize / 2, avatarSize / 2, Colors.Red);
+				}
+				catch (XunitException exception)
+				{
+					// A Uri without "s=" means that the image never got a size, so the source never requested its picture.
+					throw new XunitException($"{exception.Message} The Uri of the source is {source.Uri}. The text replaced the image before the avatar was attached: {textShownBeforeAttach}.");
+				}
+
+				await AssertNativeContentAsync(handler, NativeContent.Image);
+			}
+			finally
+			{
+				// Once its image has a size, a GravatarImageSource raises SourceChanged 737 ms later, after this test has ended and its MauiApp is disposed:
+				// the image's handler would then load the source with disposed services and crash the app.
+				avatar.ImageSource = null;
+			}
 		});
 	}
 
