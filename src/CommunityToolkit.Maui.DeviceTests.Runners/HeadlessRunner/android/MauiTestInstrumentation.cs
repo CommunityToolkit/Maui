@@ -4,6 +4,7 @@
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
 // Toolkit change: moved from HeadlessRunner/Android to HeadlessRunner/android (toolkit platform-folder convention).
 // Toolkit change: OnStart writes the coverage of the instrumented toolkit assemblies (CoverageRecorder) before it finishes, in coverage runs only.
+// Toolkit change: OnTestActivityRecreated points the pass at the activity that Android recreated (MauiTestActivity).
 #nullable enable
 using System;
 using System.IO;
@@ -39,6 +40,8 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 		public HeadlessRunnerOptions RunnerOptions { get; private set; } = null!;
 
 		public Context? CurrentExecutionContext { get; private set; }
+
+		internal void OnTestActivityRecreated(Activity activity) => CurrentExecutionContext = activity;
 
 		public override void OnCreate(Bundle? arguments)
 		{

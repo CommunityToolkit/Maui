@@ -2,6 +2,7 @@
 // Original path: src/TestUtils/src/DeviceTests.Runners/TestWindow.cs
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
+// Toolkit change: on Android a recreated test activity replaces the destroyed one that the pass started in.
 #nullable enable
 using System;
 using System.Linq;
@@ -28,6 +29,12 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners
 		{
 			get
 			{
+#if __ANDROID__
+				// A recreated test activity replaces the one the pass started in (MauiTestActivity).
+				if (s_platformWindow is Android.App.Activity activity && activity.IsDestroyed)
+					s_platformWindow = null;
+#endif
+
 				if (s_platformWindow is null)
 				{
 #if __ANDROID__

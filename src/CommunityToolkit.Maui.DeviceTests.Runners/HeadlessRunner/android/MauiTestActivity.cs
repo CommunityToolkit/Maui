@@ -4,6 +4,7 @@
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
 // Toolkit change: moved from HeadlessRunner/Android to HeadlessRunner/android (toolkit platform-folder convention).
 // Toolkit change: TaskCompletionSource uses RunContinuationsAsynchronously, so the instrumentation awaiting it never resumes inline on the test worker before the activity finishes.
+// Toolkit change: one test pass per process. Android recreates the activity for a configuration change that the generated ConfigurationChanges does not list (an overlay, locale or font-scale change), and OnCreate used to start a second pass next to the first.
 #nullable enable
 using System;
 using System.Threading.Tasks;
@@ -15,30 +16,41 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 {
 	public abstract class MauiTestActivity : AppCompatActivity
 	{
+		// One test pass per process. OnCreate runs on the main thread, so this needs no lock.
+		static Task<Bundle>? testPass;
+
 		public TaskCompletionSource<Bundle> TaskCompletionSource { get; } = new TaskCompletionSource<Bundle>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
 
-			// Do the work on the background thread to avoid a keyDispatchingTimedOut ANR
-			Task.Run(async () =>
+			if (testPass is not null)
 			{
-				try
-				{
-					var runner = MauiTestInstrumentation.Current.Services.GetRequiredService<HeadlessTestRunner>();
+				MauiTestInstrumentation.Current.OnTestActivityRecreated(this);
+				Android.Util.Log.Warn("CtmDeviceTests", "The test activity was recreated; the running test pass continues in it.");
+			}
+			else
+			{
+				// Do the work on the background thread to avoid a keyDispatchingTimedOut ANR
+				testPass = Task.Run(async () => await MauiTestInstrumentation.Current.Services.GetRequiredService<HeadlessTestRunner>().RunTestsAsync());
+			}
 
-					var bundle = await runner.RunTestsAsync();
+			_ = CompleteWhenThePassEndsAsync(testPass);
+		}
 
-					TaskCompletionSource.TrySetResult(bundle);
-				}
-				catch (Exception ex)
-				{
-					TaskCompletionSource.TrySetException(ex);
-				}
+		async Task CompleteWhenThePassEndsAsync(Task<Bundle> pass)
+		{
+			try
+			{
+				TaskCompletionSource.TrySetResult(await pass);
+			}
+			catch (Exception ex)
+			{
+				TaskCompletionSource.TrySetException(ex);
+			}
 
-				Finish();
-			});
+			Finish();
 		}
 	}
 }
