@@ -51,8 +51,8 @@ param(
     [int]$InfraRetries = -1,
 
     # Collect code coverage of the toolkit assemblies with coverlet: the apps are built with instrumented assemblies (a -Target testOnly run
-    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE, which only the CI
-    # jobs set.
+    # builds them too), and <Results>/coverage/<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
+    # which only the CI jobs set.
     [switch]$Coverage,
 
     # Xcode.app to use. Defaults to the one selected with xcode-select.
