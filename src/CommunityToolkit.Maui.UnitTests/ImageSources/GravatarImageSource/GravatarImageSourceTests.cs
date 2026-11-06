@@ -441,6 +441,70 @@ public class GravatarImageSourceTests : BaseViewTest
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => load);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancelEndsALoadStartedWithoutATokenWithoutThrowing()
+	{
+		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = async cancellationToken =>
+			{
+				await release.Task.WaitAsync(cancellationToken);
+				return new MemoryStream([1, 2, 3]);
+			}
+		};
+
+		var load = ((IStreamImageSource)gravatarImageSource).GetStreamAsync(CancellationToken.None);
+		var wasCanceled = await gravatarImageSource.Cancel();
+		release.SetResult();
+
+		var stream = await load.WaitAsync(TestContext.Current.CancellationToken);
+
+		wasCanceled.Should().BeTrue();
+		stream.Should().BeSameAs(System.IO.Stream.Null);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancelDoesNotEndALoadStartedWithACancelableToken()
+	{
+		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var callerCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = async cancellationToken =>
+			{
+				await release.Task.WaitAsync(cancellationToken);
+				return new MemoryStream([1, 2, 3]);
+			}
+		};
+
+		var load = ((IStreamImageSource)gravatarImageSource).GetStreamAsync(callerCancellationTokenSource.Token);
+		await gravatarImageSource.Cancel();
+		release.SetResult();
+
+		await using var stream = await load.WaitAsync(TestContext.Current.CancellationToken);
+
+		stream.Length.Should().Be(3);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task LoadStartedWithoutATokenAfterCancelReturnsThePicture()
+	{
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = _ => Task.FromResult<System.IO.Stream>(new MemoryStream([1, 2, 3]))
+		};
+
+		await gravatarImageSource.Cancel();
+
+		await using var stream = await ((IStreamImageSource)gravatarImageSource).GetStreamAsync(CancellationToken.None).WaitAsync(TestContext.Current.CancellationToken);
+
+		stream.Length.Should().Be(3);
+	}
+
 	[Fact]
 	public void TestElementAppLinkEntry()
 	{
