@@ -63,7 +63,7 @@ jobs:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
         runs-on: ubuntu-24.04
-        # Coverage (API 36) builds the three apps in the test step, with the emulator running.
+        # 110 minutes: the API 36 leg also builds the three apps in its test step (coverage), with the emulator running.
         timeout-minutes: 110
         strategy:
             fail-fast: false
@@ -80,7 +80,7 @@ jobs:
                     -   api-level: 28
                         emulator-features: -feature -GLDMA,-YUVCache,-YUV420888toNV21
         env:
-            # One Android level is enough for the merged coverage report; API 28 runs without the extra packaging.
+            # One Android level is enough for the merged coverage report; API 28 runs without the instrumented build.
             DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' && matrix.api-level == 36 }}
             # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
             # answer, and then every OfflineSpeechToTextTests question waits 30 s (25 rows on API 36), which can exceed the time budget.
@@ -97,7 +97,6 @@ jobs:
                 uses: ./.github/actions/load-shared-env
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                id: sdk
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
@@ -111,10 +110,14 @@ jobs:
             -   name: Locate the .NET install
                 id: dotnet-root
                 shell: bash
-                run: echo "path=$(dirname "$(readlink -f "$(command -v dotnet)")")" | tee -a "$GITHUB_OUTPUT"
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
 
-            # The workload install after it runs whatever this restores: it adds the packs and manifests that the cache lacks, so a stale or
-            # partial cache costs time only. The key names the SDK that was installed, because the manifests and packs belong to its feature band.
+            # global.json rolls forward to the newest SDK on the runner (10.0.403 on ubuntu-24.04, not the 10.0.100 that setup-dotnet installs),
+            # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
             -   name: Cache .NET workload packs
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
@@ -123,21 +126,19 @@ jobs:
                         ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
                         ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
                         ${{ steps.dotnet-root.outputs.path }}/template-packs
-                    key: dotnet-workload-maui-android-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-${{ hashFiles('global.json', '.github/workflows/shared.env') }}
+                    key: dotnet-workload-maui-android-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
 
-            # Keyed on the files that decide which packages a restore needs. The cache is saved when the job succeeds, so the first run of a
-            # changed key restores everything from nuget.org and the runs after it restore from the cache.
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
             -   name: Cache NuGet packages
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
                     path: ~/.nuget/packages
                     key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
-                    restore-keys: |
-                        nuget-${{ runner.os }}-${{ runner.arch }}-
 
             # Directory.Build.targets removes the iOS and Mac Catalyst target frameworks on Linux, so restore only needs Android.
             -   name: Install .NET MAUI Android Workload
-                run: dotnet workload install maui-android
+                run: dotnet workload install maui-android --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -233,7 +234,6 @@ jobs:
 
             # The apps build against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                id: sdk
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
@@ -242,10 +242,14 @@ jobs:
             -   name: Locate the .NET install
                 id: dotnet-root
                 shell: bash
-                run: echo "path=$(dirname "$(readlink -f "$(command -v dotnet)")")" | tee -a "$GITHUB_OUTPUT"
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
 
-            # The workload install after it runs whatever this restores: it adds the packs and manifests that the cache lacks, so a stale or
-            # partial cache costs time only. The key names the SDK that was installed, because the manifests and packs belong to its feature band.
+            # global.json rolls forward to the newest SDK on the runner (10.0.403 on ubuntu-24.04, not the 10.0.100 that setup-dotnet installs),
+            # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
             -   name: Cache .NET workload packs
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
@@ -254,21 +258,19 @@ jobs:
                         ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
                         ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
                         ${{ steps.dotnet-root.outputs.path }}/template-packs
-                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-${{ hashFiles('global.json', '.github/workflows/shared.env') }}
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
 
-            # Keyed on the files that decide which packages a restore needs. The cache is saved when the job succeeds, so the first run of a
-            # changed key restores everything from nuget.org and the runs after it restore from the cache.
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
             -   name: Cache NuGet packages
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
                     path: ~/.nuget/packages
                     key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
-                    restore-keys: |
-                        nuget-${{ runner.os }}-${{ runner.arch }}-
 
             # Restore evaluates every target framework of the toolkit libraries, so Android and Mac Catalyst are needed too.
             -   name: Install .NET MAUI Workload
-                run: dotnet workload install maui
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -338,7 +340,6 @@ jobs:
 
             # The apps build against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                id: sdk
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
@@ -347,10 +348,14 @@ jobs:
             -   name: Locate the .NET install
                 id: dotnet-root
                 shell: bash
-                run: echo "path=$(dirname "$(readlink -f "$(command -v dotnet)")")" | tee -a "$GITHUB_OUTPUT"
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
 
-            # The workload install after it runs whatever this restores: it adds the packs and manifests that the cache lacks, so a stale or
-            # partial cache costs time only. The key names the SDK that was installed, because the manifests and packs belong to its feature band.
+            # global.json rolls forward to the newest SDK on the runner (10.0.403 on ubuntu-24.04, not the 10.0.100 that setup-dotnet installs),
+            # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
             -   name: Cache .NET workload packs
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
@@ -359,21 +364,19 @@ jobs:
                         ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
                         ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
                         ${{ steps.dotnet-root.outputs.path }}/template-packs
-                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-${{ hashFiles('global.json', '.github/workflows/shared.env') }}
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
 
-            # Keyed on the files that decide which packages a restore needs. The cache is saved when the job succeeds, so the first run of a
-            # changed key restores everything from nuget.org and the runs after it restore from the cache.
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
             -   name: Cache NuGet packages
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
                     path: ~/.nuget/packages
                     key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
-                    restore-keys: |
-                        nuget-${{ runner.os }}-${{ runner.arch }}-
 
             # Restore evaluates every target framework of the toolkit libraries, so Android and iOS are needed too.
             -   name: Install .NET MAUI Workload
-                run: dotnet workload install maui
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -512,26 +515,23 @@ jobs:
                     Get-WindowsFeature -Name Server-Media-Foundation | Format-Table -AutoSize Name, InstallState
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                id: sdk
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            # Keyed on the files that decide which packages a restore needs. The cache is saved when the job succeeds, so the first run of a
-            # changed key restores everything from nuget.org and the runs after it restore from the cache.
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
             -   name: Cache NuGet packages
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
                     path: ~/.nuget/packages
                     key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
-                    restore-keys: |
-                        nuget-${{ runner.os }}-${{ runner.arch }}-
 
             # Restore evaluates every target framework of the toolkit libraries, so every MAUI platform is needed.
             -   name: Install .NET MAUI Workload
                 id: workload
-                run: dotnet workload install maui
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Display dotnet info
                 run: dotnet --info

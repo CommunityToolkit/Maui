@@ -37,21 +37,26 @@ function Get-DeviceTestCoverageHitsDirectory {
 function Get-DeviceTestReferences {
     # Builds the project references (the toolkit libraries) on the way: ResolveReferences needs them built to know their outputs.
     param(
+        [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)]$Project,
         [Parameter(Mandatory = $true)][string]$TargetFramework,
         [Parameter(Mandatory = $true)][string]$Configuration,
-        [string[]]$Property = @()
+        [string[]]$Property = @(),
+        [string[]]$BuildArgs = @()
     )
 
     # dotnet build -f, not dotnet msbuild -p:TargetFramework: only the former builds the analyzer and source generator projects that the
     # toolkit libraries reference for netstandard2.0 (msbuild passes the app's target framework on to them, and they fail with NETSDK1005).
     # It also restores the assets file for the app's runtime identifier, which another platform's build may have replaced (NETSDK1047).
-    $arguments = @('build', $Project.Path, '-nologo', '-f', $TargetFramework, '-c', $Configuration, '-target:ResolveReferences', '-getItem:ReferencePath')
+    $arguments = @('build', $Project.Path, '-nologo', '-f', $TargetFramework, '-c', $Configuration, '-target:ResolveReferences', '-getItem:ReferencePath', "-bl:$(Get-DeviceTestBinlogPath -Context $Context -Project $Project -Suffix 'references')")
     foreach ($item in $Property) {
         $arguments += "-p:$item"
     }
 
-    # With -restore, msbuild -getItem computes the FullPath of an item whose path is relative (the Android resource designer assembly in
+    # The toolkit libraries are compiled here, so they get the same property switches as the instrumented app build.
+    $arguments += @($BuildArgs | Where-Object { $_ -match '^[-/]p(roperty)?:' })
+
+    # dotnet build restores first, and -getItem then computes the FullPath of an item whose path is relative (the Android resource designer assembly in
     # obj) against the folder it runs in, not the project's.
     Push-Location -LiteralPath $Project.Directory
     try {
@@ -168,7 +173,7 @@ function Start-DeviceTestCoverage {
     param(
         [Parameter(Mandatory = $true)]$Context,
         [Parameter(Mandatory = $true)][string]$Platform,
-        # The properties the platform script builds the apps with: packaging them again needs the same.
+        # The properties the platform script builds the apps with: the reference query and the instrumented build need the same.
         [string[]]$Property = @(),
         [string[]]$BuildArgs = @()
     )
@@ -211,7 +216,7 @@ function Start-DeviceTestCoverage {
             }
 
             $framework = Get-DeviceTestTargetFramework -Project $item -Platform $Platform
-            foreach ($reference in (Get-DeviceTestReferences -Project $item -TargetFramework $framework -Configuration $Context.Configuration -Property $Property)) {
+            foreach ($reference in (Get-DeviceTestReferences -Project $item -TargetFramework $framework -Configuration $Context.Configuration -Property $Property -Context $Context -BuildArgs $BuildArgs)) {
                 $path = [string]$reference.FullPath
                 $name = [System.IO.Path]::GetFileNameWithoutExtension($path)
                 if ($script:DeviceTestCoverageAssemblies -contains $name) {
@@ -404,6 +409,7 @@ function Complete-DeviceTestCoverage {
     try {
         Write-DeviceTestHeader 'Coverage: collect the hits files and write the report'
         $assemblyNames = @($Session.Assemblies | ForEach-Object { $_.Name })
+        $collected = 0
         $coverletFolder = [System.IO.Path]::GetTempPath()
         foreach ($entry in $Session.Projects) {
             $folder = Get-DeviceTestCoverageHitsDirectory -Context $Session.Context -Project $entry.Project
@@ -423,10 +429,18 @@ function Complete-DeviceTestCoverage {
                 Add-DeviceTestCoverageHits -Path $file.FullName -Destination (Join-Path $coverletFolder $file.Name)
             }
 
+            $collected += $files.Count
             Write-Host "$($entry.Project.Name): $($files.Count) hits file(s) ($(($files | ForEach-Object { $_.Name -replace '_[^_]+$', '' }) -join ', '))"
         }
 
         $stopped = Stop-DeviceTestCoverageProcess -Session $Session
+        if ($collected -eq 0) {
+            # No app ran far enough to write hits (a device that never came up, for example), and a report of zeros would read as 0 % in the merged summary.
+            Remove-Item -LiteralPath $Session.Report -Force -ErrorAction SilentlyContinue
+            Write-DeviceTestWarning 'Coverage: no app wrote hits files, so there is no coverage report.'
+            return
+        }
+
         if (Test-Path -LiteralPath $Session.Log -PathType Leaf) {
             Get-Content -LiteralPath $Session.Log | ForEach-Object { Write-Host $_ }
         }
