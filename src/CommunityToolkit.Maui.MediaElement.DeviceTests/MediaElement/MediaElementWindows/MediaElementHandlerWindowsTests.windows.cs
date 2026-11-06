@@ -979,9 +979,8 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 	{
 		SetupWindowsBuilder();
 		await RequireDecoderAsync();
-		WeakReference viewReference = null!, handlerReference = null!, platformViewReference = null!, managerReference = null!;
 
-		await OpenAndDisconnectAsync();
+		var (viewReference, handlerReference, platformViewReference, managerReference) = await OpenAndDisconnectAsync();
 
 		// The MediaElement is not disposed (a page only disconnects its handler), so only the handler stopping the status timer, a root while it runs
 		// whose tick handler references the MediaElement, lets it be collected.
@@ -990,26 +989,24 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 			Assert.Fail($"Still alive after 40 collections: MediaElement {viewReference.IsAlive}, handler {handlerReference.IsAlive}, platform view {platformViewReference.IsAlive}, manager {managerReference.IsAlive}.");
 		}
 
-		async Task OpenAndDisconnectAsync()
+		async Task<(WeakReference View, WeakReference Handler, WeakReference PlatformView, WeakReference Manager)> OpenAndDisconnectAsync()
 		{
 			var view = NewMediaElement();
 			var handler = await InvokeOnMainThreadAsync(() => CreateHandler<WinMediaHandler>(view));
 			await OpenAsync(view, VideoSource);
 
-			// OnMediaElementMediaOpened raises MediaOpened first and creates the Metadata helper right after it.
+			// OnMediaElementMediaOpened raises MediaOpened, which starts the status timer, and creates the Metadata helper right after it, so once the helper exists the timer runs.
 			var openedManager = new WeakReference(handler.Manager);
 			await WaitUntilAsync(() => openedManager.Target is MediaManager manager && WinMediaReflection.GetField<object?>(manager, "metadata") is not null,
-				"Opening the media did not create the Metadata helper, so this test would not cover its subscription.");
+				"Opening the media did not finish (no Metadata helper), so the status timer this test covers may not run.");
 
-			await InvokeOnMainThreadAsync(() =>
+			return await InvokeOnMainThreadAsync(() =>
 			{
-				viewReference = new(view);
-				handlerReference = new(handler);
-				platformViewReference = new(handler.PlatformView);
-				managerReference = new(handler.Manager);
+				(WeakReference View, WeakReference Handler, WeakReference PlatformView, WeakReference Manager) references = (new(view), new(handler), new(handler.PlatformView), new(handler.Manager));
 
 				((IElementHandler)handler).DisconnectHandler();
 				view.Handler = null;
+				return references;
 			});
 		}
 	}
