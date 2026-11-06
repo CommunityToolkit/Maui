@@ -532,6 +532,83 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 		});
 	}
 
+	// Needs a camera with a color frame source: the CI legs and the VM have none, so they skip it. The camera that the recording turned on is off
+	// again once the recording ended, like on Android, iOS and Mac Catalyst.
+	[Fact]
+	public async Task StartVideoRecordingOnAStoppedPreviewRecordsAndTurnsTheCameraOffAgainWhenTheRecordingEnds()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			Assert.False(scope.Access.IsInitialized);
+			using var destination = new MemoryStream();
+
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.NotNull(scope.Access.MediaCapture);
+			Assert.NotNull(scope.Access.MediaRecording);
+			Assert.Same(destination, scope.Access.VideoCaptureStream);
+
+			// Exception to the house rule against fixed-time waits, see StartAndStopVideoRecordingCopiesAnMp4IntoTheStream
+			var recordingTime = System.Diagnostics.Stopwatch.StartNew();
+			await AssertHelpers.AssertEventually(() => recordingTime.ElapsedMilliseconds >= 1000, timeout: 5000, message: "The recording time did not elapse.");
+			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, result);
+			Assert.True(destination.Length > 100);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A preview that the app started keeps running after the recording.
+	[Fact]
+	public async Task StartVideoRecordingOnAStartedPreviewKeepsThePreviewStartedWhenTheRecordingEnds()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			var mediaCapture = scope.Access.MediaCapture;
+			using var destination = new MemoryStream();
+
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.Same(destination, result);
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Same(mediaCapture, scope.Access.MediaCapture);
+		});
+	}
+
+	// Needs a camera with a color frame source, see above. A preview that the app starts while a recording runs on the camera that the recording
+	// turned on is the app's: it keeps running after the recording.
+	[Fact]
+	public async Task StartCameraPreviewDuringARecordingThatTurnedTheCameraOnKeepsThePreviewStartedWhenTheRecordingEnds()
+	{
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			SkipUnlessTheCameraCanRecord(scope);
+			scope.Manager.StopCameraPreview();
+			using var destination = new MemoryStream();
+			await scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+
+			await scope.Manager.StartCameraPreview(CancellationToken.None);
+			await scope.Manager.StopVideoRecording(CancellationToken.None);
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.NotNull(scope.Access.MediaCapture);
+		});
+	}
+
+	static void SkipUnlessTheCameraCanRecord(WindowsCameraManagerScope scope)
+	{
+		var mediaCapture = scope.Access.MediaCapture ?? throw new InvalidOperationException("No MediaCapture.");
+		Skip.IfNot(mediaCapture.FrameSources.Any(source => source.Value.Info.MediaStreamType == MediaStreamType.VideoRecord && source.Value.Info.SourceKind == MediaFrameSourceKind.Color),
+			"The camera has no color frame source for MediaStreamType.VideoRecord, so recording does not start.");
+	}
+
 	[Fact]
 	public async Task UpdateCurrentCameraSwitchesThePreviewToTheOtherCamera()
 	{

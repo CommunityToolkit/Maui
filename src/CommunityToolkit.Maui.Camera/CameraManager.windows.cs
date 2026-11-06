@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Media.Capture;
@@ -16,6 +17,10 @@ partial class CameraManager
 	MediaFrameSource? frameSource;
 	LowLagMediaRecording? mediaRecording;
 	Stream? videoCaptureStream;
+
+	// A recording that turned on the camera of a preview that the app had stopped turns it off again when the recording ends, as on Android, iOS
+	// and Mac Catalyst. A preview that the app started (also one whose camera could not be opened) stays started.
+	bool isCameraStartedForTheRecording;
 
 	// The device tests replace them: their machines have no camera, so they script when and how Media Foundation answers a start, and the frame
 	// source of a MediaCapture that it never initialized
@@ -167,6 +172,16 @@ partial class CameraManager
 
 	private async partial Task PlatformStartCameraPreview(CancellationToken token)
 	{
+		// A preview that the app starts is the app's to stop, also when a recording had turned the camera on before
+		isCameraStartedForTheRecording = false;
+
+		await StartPreviewAsync(cameraView.OnErrorOccurred, token);
+	}
+
+	// The failures of the start go to reportFailure: the preview reports them through ErrorOccurred, while a recording that turns the camera on
+	// throws the failure to its caller, as on iOS and Mac Catalyst, so that the failure is reported once
+	async Task StartPreviewAsync(Action<Exception> reportFailure, CancellationToken token)
+	{
 		if (mediaElement is null)
 		{
 			return;
@@ -176,8 +191,7 @@ partial class CameraManager
 
 		if (cameraView.SelectedCamera is null)
 		{
-			cameraView.OnErrorOccurred(
-				new CameraException("Couldn't start camera preview; no cameras available"));
+			reportFailure(new CameraException("Couldn't start camera preview; no cameras available"));
 			return;
 		}
 
@@ -243,7 +257,7 @@ partial class CameraManager
 			// (UnauthorizedAccessException) leaves it stopped until StartCameraPreview is called again
 			isInitialized = ex is not UnauthorizedAccessException;
 
-			cameraView.OnErrorOccurred(ex);
+			reportFailure(ex);
 
 			return;
 		}
@@ -328,6 +342,7 @@ partial class CameraManager
 
 		mediaCapture = null;
 		isInitialized = false;
+		isCameraStartedForTheRecording = false;
 	}
 
 	async Task PlatformUpdateResolution(Size resolution, CancellationToken token)
@@ -351,6 +366,65 @@ partial class CameraManager
 	}
 
 	private async partial Task PlatformStartVideoRecording(Stream stream, CancellationToken token)
+	{
+		if (mediaElement is null)
+		{
+			return;
+		}
+
+		// Like on Android, iOS and Mac Catalyst, recording turns the camera on. A preview that is marked as started but has no MediaCapture (its
+		// camera could not be opened) is started again as well, and stays marked as started when that fails
+		var isCameraTurnedOnHere = false;
+		if (!isInitialized || mediaCapture is null)
+		{
+			await TurnTheCameraOnForTheRecordingAsync(token);
+			isCameraTurnedOnHere = isCameraStartedForTheRecording;
+		}
+
+		try
+		{
+			await RecordAsync(stream, token);
+		}
+		catch
+		{
+			// The camera that this start turned on is off again when its recording cannot start. A recording that runs already keeps its camera
+			if (isCameraTurnedOnHere && isCameraStartedForTheRecording)
+			{
+				PlatformStopCameraPreview();
+			}
+
+			throw;
+		}
+	}
+
+	async Task TurnTheCameraOnForTheRecordingAsync(CancellationToken token)
+	{
+		var isPreviewStopped = !isInitialized;
+		Exception? failure = null;
+
+		await StartPreviewAsync(exception => failure ??= exception, token);
+
+		if (failure is not null)
+		{
+			// The preview that the app stopped stays stopped: the failed start marks a preview whose camera cannot be opened as started
+			if (isPreviewStopped)
+			{
+				isInitialized = false;
+			}
+
+			ExceptionDispatchInfo.Capture(failure).Throw();
+		}
+
+		// A newer start replaced the MediaCapture of this start, which is not initialized yet: the recording has no camera to record with
+		if (!isInitialized || mediaCapture is null)
+		{
+			throw new CameraException("Unable to start video recording because the camera could not be started.");
+		}
+
+		isCameraStartedForTheRecording = isPreviewStopped;
+	}
+
+	async Task RecordAsync(Stream stream, CancellationToken token)
 	{
 		if (!isInitialized || mediaCapture is null || mediaElement is null)
 		{
@@ -437,10 +511,21 @@ partial class CameraManager
 		mediaRecording = null;
 		videoCaptureStream = null;
 
-		await recording.StopAsync();
+		try
+		{
+			await recording.StopAsync();
 
-		// Releases the resources of the recording; LowLagMediaRecording cannot be started again after FinishAsync
-		await recording.FinishAsync();
+			// Releases the resources of the recording; LowLagMediaRecording cannot be started again after FinishAsync
+			await recording.FinishAsync();
+		}
+		finally
+		{
+			// The camera that the recording turned on is off again, also when the recording cannot be stopped
+			if (isCameraStartedForTheRecording)
+			{
+				PlatformStopCameraPreview();
+			}
+		}
 
 		if (stream.CanSeek)
 		{

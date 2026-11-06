@@ -509,6 +509,249 @@ public class CameraStartStopWindowsTests : CameraHandlerTestBase
 		});
 	}
 
+	// Like on Android, iOS and Mac Catalyst, a recording on a stopped preview turns the camera on. The scripted preparation has no
+	// LowLagMediaRecording, so the stream is the part of the recording that is observable.
+	[Fact]
+	public async Task StartVideoRecordingOnAStoppedPreviewTurnsTheCameraOnAndPreparesTheRecording()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+			Assert.False(scope.Access.IsInitialized);
+
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			Assert.False(recording.IsCompleted, "StartVideoRecording completed without waiting for Media Foundation to open the camera.");
+			Assert.Empty(mediaFoundation.RecordingPreparations);
+
+			initialization.Answer.SetResult(true);
+			await AssertHelpers.AssertEventually(() => mediaFoundation.RecordingPreparations.Count > 0, (int)timeout.TotalMilliseconds,
+				message: "The recording was not prepared once Media Foundation opened the camera.");
+			var preparation = Assert.Single(mediaFoundation.RecordingPreparations);
+			Assert.Same(initialization.MediaCapture, preparation.MediaCapture);
+			Assert.False(recording.IsCompleted, "StartVideoRecording completed without waiting for Media Foundation to prepare the recording.");
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+			preparation.Answer.SetResult(null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+			await recording.WaitAsync(timeout);
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Same(initialization.MediaCapture, scope.Access.MediaCapture);
+			Assert.Same(destination, scope.Access.VideoCaptureStream);
+			Assert.Equal(1, scope.LoadedCount);
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	// A start that cannot turn the camera on throws the failure instead of raising ErrorOccurred (the command of the view reports it once), and a
+	// stopped preview stays stopped: the preview alone would count a camera that cannot be opened as started.
+	[Theory]
+	[InlineData("cannotBeOpened")]
+	[InlineData("accessIsDenied")]
+	public async Task StartVideoRecordingOnAStoppedPreviewWhoseCameraCannotBeTurnedOnThrowsAndLeavesThePreviewStopped(string failure)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			if (failure is "accessIsDenied")
+			{
+				initialization.Answer.SetException(new UnauthorizedAccessException("The camera is blocked by the privacy settings."));
+			}
+			else
+			{
+				initialization.Answer.SetResult(false);
+			}
+
+			if (failure is "accessIsDenied")
+			{
+				await Assert.ThrowsAsync<UnauthorizedAccessException>(() => recording.WaitAsync(timeout));
+			}
+			else
+			{
+				var exception = await Assert.ThrowsAsync<CameraException>(() => recording.WaitAsync(timeout));
+				Assert.Equal(CameraManagerWindowsTests.CameraThatCannotBeOpenedMessage, exception.Message);
+			}
+
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The MediaCapture of the failed start was not released.");
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Empty(mediaFoundation.RecordingPreparations);
+			Assert.Empty(errors.Errors);
+			Assert.Equal(0, scope.LoadedCount);
+
+			// The failed recording left no state behind: a start of the preview opens the camera again
+			var start = scope.Manager.StartCameraPreview(CancellationToken.None);
+			Assert.Equal(2, mediaFoundation.Initializations.Count);
+			mediaFoundation.Initializations[^1].Answer.SetResult(true);
+			await start.WaitAsync(timeout);
+			Assert.True(scope.Access.IsInitialized);
+		});
+	}
+
+	[Fact]
+	public async Task StartVideoRecordingOnAStoppedPreviewWithoutACameraThrowsAndLeavesThePreviewStopped()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+
+			var exception = await Assert.ThrowsAsync<CameraException>(() => scope.Manager.StartVideoRecording(destination, CancellationToken.None).WaitAsync(timeout));
+
+			Assert.Equal("Couldn't start camera preview; no cameras available", exception.Message);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Empty(mediaFoundation.Initializations);
+			Assert.Empty(errors.Errors);
+		}, new WindowsFakeCameraProvider());
+	}
+
+	// A preview that the app started, whose camera could not be opened, counts as started (selecting another camera starts it): a recording that
+	// fails to open the camera again keeps that, like on iOS and Mac Catalyst, where such a preview stays started.
+	[Fact]
+	public async Task StartVideoRecordingOnAStartedPreviewWithoutAMediaCaptureThatCannotBeTurnedOnKeepsThePreviewStarted()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			scope.Access.IsInitialized = true;
+			using var destination = new MemoryStream();
+
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			Assert.Single(mediaFoundation.Initializations).Answer.SetResult(false);
+
+			await Assert.ThrowsAsync<CameraException>(() => recording.WaitAsync(timeout));
+
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.Empty(errors.Errors);
+		});
+	}
+
+	// The cancellation of the camera that the recording turns on is the cancellation of the start of the preview: the exception names the token
+	// that cancelled, the camera is released and nothing is reported.
+	[Theory]
+	[InlineData("observesTheCancellation")]
+	[InlineData("failsTheReleasedMediaCapture")]
+	[InlineData("opensTheCameraAllTheSame")]
+	public async Task StartVideoRecordingThatItsTokenCancelsWhileMediaFoundationOpensTheCameraThrowsAndLeavesThePreviewStopped(string answer)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var cancellation = new CancellationTokenSource();
+			using var destination = new MemoryStream();
+
+			var recording = scope.Manager.StartVideoRecording(destination, cancellation.Token);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			cancellation.Cancel();
+			Answer(initialization, answer);
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.WaitAsync(timeout));
+
+			Assert.Equal(cancellation.Token, exception.CancellationToken);
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The MediaCapture of the cancelled start was not released.");
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Empty(mediaFoundation.RecordingPreparations);
+			Assert.Empty(errors.Errors);
+			Assert.Equal(0, scope.LoadedCount);
+		}, observesCancellation: answer is "observesTheCancellation");
+	}
+
+	[Theory]
+	[InlineData("observesTheCancellation")]
+	[InlineData("failsTheReleasedMediaCapture")]
+	[InlineData("opensTheCameraAllTheSame")]
+	public async Task StopCameraPreviewWhileMediaFoundationOpensTheCameraForARecordingCancelsTheRecording(string answer)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var destination = new MemoryStream();
+
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			scope.Manager.StopCameraPreview();
+			Answer(initialization, answer);
+
+			var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.WaitAsync(timeout));
+
+			Assert.True(exception.CancellationToken.IsCancellationRequested, "The exception does not name the token that cancelled the recording.");
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The MediaCapture of the cancelled start was not released.");
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Empty(mediaFoundation.RecordingPreparations);
+			Assert.Empty(errors.Errors);
+			Assert.Equal(0, scope.LoadedCount);
+		}, observesCancellation: answer is "observesTheCancellation");
+	}
+
+	// The camera that the recording turned on is off again when the recording cannot be prepared, whether the token cancelled the preparation
+	// or Media Foundation failed it.
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task StartVideoRecordingOnAStoppedPreviewTurnsTheCameraOffAgainWhenTheRecordingCannotBePrepared(bool cancelledByTheToken)
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			using var cancellation = new CancellationTokenSource();
+			using var destination = new MemoryStream();
+
+			var recording = scope.Manager.StartVideoRecording(destination, cancellation.Token);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			initialization.Answer.SetResult(true);
+			await AssertHelpers.AssertEventually(() => mediaFoundation.RecordingPreparations.Count > 0, (int)timeout.TotalMilliseconds,
+				message: "The recording was not prepared once Media Foundation opened the camera.");
+			Assert.True(scope.Access.IsInitialized);
+
+			if (cancelledByTheToken)
+			{
+				cancellation.Cancel();
+				await Assert.ThrowsAnyAsync<OperationCanceledException>(() => recording.WaitAsync(timeout));
+			}
+			else
+			{
+				Assert.Single(mediaFoundation.RecordingPreparations).Answer.SetException(new InvalidOperationException("Media Foundation cannot prepare the recording."));
+				await Assert.ThrowsAsync<InvalidOperationException>(() => recording.WaitAsync(timeout));
+			}
+
+			Assert.False(scope.Access.IsInitialized);
+			Assert.Null(scope.Access.MediaCapture);
+			Assert.True(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The MediaCapture that the recording opened was not released.");
+			Assert.Null(scope.Access.VideoCaptureStream);
+			Assert.Empty(errors.Errors);
+		}, observesCancellation: cancelledByTheToken);
+	}
+
+	// A preview that the app started is not the recording's to turn off, and the recording does not open the camera a second time.
+	[Fact]
+	public async Task StartVideoRecordingOnAStartedPreviewThatCannotBePreparedKeepsThePreviewStarted()
+	{
+		await RunAsync(async (scope, mediaFoundation, errors) =>
+		{
+			var start = scope.Manager.StartCameraPreview(CancellationToken.None);
+			var initialization = Assert.Single(mediaFoundation.Initializations);
+			initialization.Answer.SetResult(true);
+			await start.WaitAsync(timeout);
+			using var destination = new MemoryStream();
+
+			var recording = scope.Manager.StartVideoRecording(destination, CancellationToken.None);
+			Assert.Single(mediaFoundation.RecordingPreparations).Answer.SetException(new InvalidOperationException("Media Foundation cannot prepare the recording."));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => recording.WaitAsync(timeout));
+
+			Assert.Single(mediaFoundation.Initializations);
+			Assert.True(scope.Access.IsInitialized);
+			Assert.Same(initialization.MediaCapture, scope.Access.MediaCapture);
+			Assert.False(await WindowsCameraEnvironment.IsClosedAsync(initialization.MediaCapture), "The failed recording released the camera of the preview that the app started.");
+			Assert.Empty(errors.Errors);
+		});
+	}
+
 	// A start releases its own MediaCapture also when StopCameraPreview, a camera switch or the release of the view released it before.
 	[Fact]
 	public async Task AMediaCaptureCanBeReleasedTwice()
