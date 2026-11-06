@@ -719,14 +719,17 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 
 		await navigation.PushAsync(mediaPage, false);
 		await mediaPage.OnLoadedAsync();
-		var handler = (AppleMediaElementHandler)mediaElement.Handler!;
+		var handler = Assert.IsType<AppleMediaElementHandler>(mediaElement.Handler);
 		mediaElement.Source = ResourceSource(VideoResource);
-		await handler.Manager!.TakeSourceUpdates();
+		var manager = handler.Manager;
+		Assert.NotNull(manager);
+		await manager.TakeSourceUpdates();
 		await WaitUntilReadyAsync(handler);
 		mediaElement.Play();
-		var player = handler.Manager.NativePlayer!;
+		var player = manager.NativePlayer;
+		Assert.NotNull(player);
 		await WaitUntilAsync(() => player.CurrentTime.Seconds > 0.3, "The playhead did not advance.");
-		WeakReference[] references = [new(mediaElement), new(mediaPage), new(handler), new(handler.PlatformView), new(handler.Manager), new(player)];
+		WeakReference[] references = [new(mediaElement), new(mediaPage), new(handler), new(handler.PlatformView), new(manager), new(player)];
 
 		await navigation.PopAsync(false);
 
