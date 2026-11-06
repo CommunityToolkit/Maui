@@ -23,7 +23,7 @@ public abstract partial class KeyboardDismissalTestBase
 		var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
 
 		Assert.True(await input.ShowKeyboardAsync(), "ShowKeyboardAsync returned false.");
-		Assert.True(await Wait(() => frame.ShowsKeyboard, SoftKeyboardHelpers.Timeout), $"The soft keyboard did not show: {frame}.");
+		Assert.True(await frame.WaitUntilTheKeyboardShowsSteadilyAsync(SoftKeyboardHelpers.Timeout), $"The soft keyboard did not show steadily: {frame}.");
 		Assert.True(input.IsFocused, "The view does not have the focus while its soft keyboard shows.");
 
 		return frame;
