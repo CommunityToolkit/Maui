@@ -2,9 +2,10 @@
 // Original path: src/Core/tests/DeviceTests.Shared/Stubs/ContextStub.cs
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
 // Toolkit change: renamed ContextStub -> DeviceTestMauiContext, namespace CommunityToolkit.Maui.DeviceTests.
-// Toolkit change: public MAUI API only: no NavigationRootManager service (its window-scope plumbing is internal), the Android
-//                 context falls back to Platform.CurrentActivity, the iOS UIWindow comes from the runner (TestWindow) and
-//                 CreateNew (internal GetActivity/ContextThemeWrapper) was dropped.
+// Toolkit change: public MAUI API only: the Android context falls back to Platform.CurrentActivity, the iOS UIWindow comes from the
+//                 runner (TestWindow) and CreateNew (internal GetActivity/ContextThemeWrapper) was dropped.
+// Toolkit change: only the Android context provides a NavigationRootManager (upstream also creates one on Windows): no Windows test
+//                 hosts a NavigationPage, a TabbedPage or a Shell.
 #nullable enable
 using System;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ namespace CommunityToolkit.Maui.DeviceTests
 		IAnimationManager? _manager;
 #if ANDROID
 		IFontManager? _fontManager;
+		global::Microsoft.Maui.Platform.NavigationRootManager? _navigationRootManager;
 #endif
 
 #if WINDOWS
@@ -53,6 +55,12 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 			if (serviceType == typeof(global::Android.Content.Context))
 				return Context;
+
+			// .NET MAUI creates the NavigationRootManager in the scope of a window (MakeWindowScope), and views created with this context
+			// have none. The StackNavigationManager of a NavigationPage, and from .NET MAUI 11 on the one of every ShellContent, reads it
+			// when its fragment resumes.
+			if (serviceType == typeof(global::Microsoft.Maui.Platform.NavigationRootManager))
+				return _navigationRootManager ??= new global::Microsoft.Maui.Platform.NavigationRootManager(this);
 #elif IOS || MACCATALYST
 			if (serviceType == typeof(UIKit.UIWindow))
 				return TestWindow.PlatformWindow;
