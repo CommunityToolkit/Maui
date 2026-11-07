@@ -7,12 +7,13 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // Call it on the UI thread.
 static class IosStatusBarViews
 {
-	// The tag that StatusBar.ios.cs puts on the view it adds to every window.
+	// The tag that StatusBar.ios.cs puts on the view it adds to every window of the app.
 	public const int StatusBarTag = 38482;
 
 	// Not only the runner's window: once a text input of the app was first responder (in any earlier test of the app run), UIKit keeps a
-	// second window of the runner's scene listed, which gets a status bar view of its own. So assert per window, never on the number of
-	// status bar views of all windows.
+	// second window of the runner's scene listed, which gets a status bar view of its own too, because the runner's app has no .NET MAUI window
+	// and StatusBar then takes every listed window for one of the app's. So assert per window, never on the number of status bar views of all
+	// windows.
 	public static UIWindow[] Windows => UIApplication.SharedApplication.Windows;
 
 	public static List<UIView> TaggedSubviews(UIWindow window) => window.Subviews.Where(static view => view.Tag == StatusBarTag).ToList();

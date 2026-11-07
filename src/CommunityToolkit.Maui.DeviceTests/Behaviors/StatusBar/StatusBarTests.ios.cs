@@ -138,8 +138,10 @@ public partial class StatusBarTests
 		});
 	}
 
+	// The runner's app has no .NET MAUI window, so StatusBar cannot tell the app's windows from the others and colors every window that
+	// UIApplication lists.
 	[Fact]
-	public async Task SetColorColorsEveryWindowOfTheApp()
+	public async Task SetColorColorsEveryWindowOfAnAppWithoutMauiWindows()
 	{
 		SetupBuilder();
 		await ResetNativeStateAsync();
@@ -165,6 +167,59 @@ public partial class StatusBarTests
 			{
 				IosStatusBarViews.RemoveWindow(secondWindow);
 			}
+		});
+	}
+
+	// IPlatformApplication.Current is null until .NET MAUI starts, and MauiUIApplicationDelegate sets it when it is created but has an Application
+	// only from FinishedLaunching on.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task SetColorColorsEveryWindowWhenTheWindowsOfTheAppAreUnknown(bool hasPlatformApplication)
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var secondWindow = IosStatusBarViews.AddWindow();
+
+			try
+			{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+				var platformApplication = hasPlatformApplication ? new StubPlatformApplication(MauiContext.Services, null) : null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+				WithPlatformApplication(platformApplication, static () => StatusBar.SetColor(Colors.Red));
+
+				var windows = IosStatusBarViews.WindowsWithStatusBar();
+				Assert.Contains(windows, window => ReferenceEquals(window, secondWindow));
+				foreach (var window in windows)
+				{
+					IosStatusBarViews.AssertColor(Colors.Red, Assert.Single(IosStatusBarViews.TaggedSubviews(window)).BackgroundColor);
+				}
+			}
+			finally
+			{
+				IosStatusBarViews.RemoveWindow(secondWindow);
+			}
+		});
+	}
+
+	// UIApplication.Windows also lists windows that are not the app's, e.g. the UITextEffectsWindow that UIKit adds once a text input was first
+	// responder and that lies above the app's windows: a status bar view in it would cover the app's modal pages.
+	[Fact]
+	public async Task SetColorColorsOnlyTheWindowsOfTheApp()
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, CreateStyleTestPage(), mauiWindow =>
+		{
+			var statusBarView = AssertOnlyTheWindowOfTheAppGetsAStatusBarView(mauiWindow, static () => StatusBar.SetColor(Colors.Blue));
+
+			IosStatusBarViews.AssertColor(Colors.Blue, statusBarView.BackgroundColor);
+			return Task.CompletedTask;
 		});
 	}
 
@@ -241,7 +296,22 @@ public partial class StatusBarTests
 	}
 
 	[Fact]
-	public async Task SetBarSizeAddsAStatusBarViewToEveryWindowOfTheApp()
+	public async Task SetBarSizeAddsAStatusBarViewOnlyToTheWindowsOfTheApp()
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+
+		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, CreateStyleTestPage(), mauiWindow =>
+		{
+			var statusBarView = AssertOnlyTheWindowOfTheAppGetsAStatusBarView(mauiWindow, static () => StatusBar.SetBarSize(false));
+
+			Assert.Null(statusBarView.BackgroundColor);
+			return Task.CompletedTask;
+		});
+	}
+
+	[Fact]
+	public async Task SetBarSizeAddsAStatusBarViewToEveryWindowOfAnAppWithoutMauiWindows()
 	{
 		SetupBuilder();
 		await ResetNativeStateAsync();
@@ -789,7 +859,7 @@ public partial class StatusBarTests
 	// On .NET 11 SetStyle leaves the update to the WindowHandler of each .NET MAUI window, whose StatusBarTheme it sets, so it is not in the list
 	// below.
 	[Fact]
-	public async Task StatusBarCallsAskTheRootViewControllerOfEveryWindow()
+	public async Task StatusBarCallsAskTheRootViewControllerOfEveryWindowOfAnAppWithoutMauiWindows()
 	{
 		SetupBuilder();
 		await ResetNativeStateAsync();
@@ -985,6 +1055,22 @@ public partial class StatusBarTests
 		Assert.DoesNotContain(appearanceUpdateFailedMessage, listener.Messages);
 	}
 
+	// Only around a synchronous call on the UI thread: the runner reads IPlatformApplication.Current too.
+	static void WithPlatformApplication(IPlatformApplication? platformApplication, Action action)
+	{
+		var runnerPlatformApplication = IPlatformApplication.Current;
+		IPlatformApplication.Current = platformApplication;
+
+		try
+		{
+			action();
+		}
+		finally
+		{
+			IPlatformApplication.Current = runnerPlatformApplication;
+		}
+	}
+
 	static void WithAWindowWithoutSceneBeforeAnotherWindow(Action<UIWindow, UIWindow> action)
 	{
 		var windowWithoutScene = new SceneHidingWindow(IosStatusBarViews.RunnerScene) { Frame = new CGRect(0, 0, 100, 100), Hidden = false };
@@ -1025,5 +1111,39 @@ public partial class StatusBarTests
 		{
 			appView.RemoveFromSuperview();
 		}
+	}
+
+	// The runner's app has no .NET MAUI window, so the hosted window becomes the app's only one for the call. Another window of the runner's scene
+	// stands in for a window that is not the app's, and the runner's own window is not the app's either.
+	UIView AssertOnlyTheWindowOfTheAppGetsAStatusBarView(HostedMauiWindow mauiWindow, Action statusBarCall)
+	{
+		var otherRootViewController = new QueryCountingViewController();
+		var otherWindow = IosStatusBarViews.AddWindow(otherRootViewController);
+
+		try
+		{
+			IosStatusBarViews.Reset();
+			var appearanceUpdateRequestsBefore = otherRootViewController.AppearanceUpdateRequests;
+
+			WithPlatformApplication(new StubPlatformApplication(MauiContext.Services, mauiWindow.Application), statusBarCall);
+
+			Assert.Empty(IosStatusBarViews.TaggedSubviews(otherWindow));
+			Assert.Empty(IosStatusBarViews.TaggedSubviews(TestWindow.PlatformWindow));
+			Assert.Equal(appearanceUpdateRequestsBefore, otherRootViewController.AppearanceUpdateRequests);
+
+			return Assert.Single(IosStatusBarViews.TaggedSubviews(mauiWindow.PlatformWindow));
+		}
+		finally
+		{
+			IosStatusBarViews.RemoveWindow(otherWindow);
+		}
+	}
+
+	// StatusBar finds the app's windows through IPlatformApplication.Current, which in the runner is the runner's own application delegate.
+	sealed class StubPlatformApplication(IServiceProvider services, IApplication application) : IPlatformApplication
+	{
+		public IServiceProvider Services => services;
+
+		public IApplication Application => application;
 	}
 }
