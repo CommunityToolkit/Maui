@@ -2,14 +2,16 @@ using System.Reflection;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
 using Microsoft.UI.Xaml;
+using WPoint = Windows.Foundation.Point;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // WinUI's PointerRoutedEventArgs cannot be constructed and real pointer input cannot be injected into the test window (WinUI's
 // InputInjector needs the restricted inputInjectionBrokered capability, which the test app's manifest does not declare), so the handlers
 // are invoked through reflection with null arguments and the touch status they act on is prepared with the internal HandleTouch. Entered,
-// exited, canceled and capture lost never read their arguments; OnPointerReleased reads them only at its end (e.Handled) and
-// OnPointerPressed right after its guard (e.Pointer), so their decisions up to that point are run.
+// exited, canceled and capture lost never read their arguments; OnPointerPressed reads them right after its guard (e.Pointer), so its
+// decisions up to that point are run; OnPointerReleased reads the release point first and hands it to the internal HandlePointerReleased,
+// which the tests call with a point.
 public partial class TouchBehaviorInputTests
 {
 	const string pointerPressed = "OnPointerPressed";
@@ -22,13 +24,16 @@ public partial class TouchBehaviorInputTests
 	const string isPressedField = "isPressed";
 	const string isIntentionalCaptureLossField = "isIntentionalCaptureLoss";
 
-	// OnPointerReleased decides about the touch before it reads its arguments (e.Handled = true is its last statement but two), so its
-	// three arms run with null arguments; the NullReferenceException at e.Handled is expected, everything before it has happened.
+	// Where the pointer is released decides how a press ends, as on Android and iOS, whatever the hover status says: the status can be
+	// Exited while the pointer is over the element.
 	[Theory]
-	[InlineData(true, HoverStatus.Entered, TouchStatus.Completed)]
-	[InlineData(false, HoverStatus.Entered, TouchStatus.Canceled)]
-	[InlineData(true, HoverStatus.Exited, TouchStatus.Started)]
-	public async Task PointerReleasedDecidesTheTouchFromThePressAndTheHover(bool isPressed, HoverStatus hoverStatus, TouchStatus expectedStatus)
+	[InlineData(true, HoverStatus.Entered, HostCenter, HostCenter, TouchStatus.Completed)]
+	[InlineData(true, HoverStatus.Exited, HostCenter, HostCenter, TouchStatus.Completed)]
+	[InlineData(true, HoverStatus.Entered, OutsideOffset, HostCenter, TouchStatus.Canceled)]
+	[InlineData(true, HoverStatus.Exited, OutsideOffset, HostCenter, TouchStatus.Canceled)]
+	[InlineData(true, HoverStatus.Entered, HostCenter, -1d, TouchStatus.Canceled)]
+	[InlineData(false, HoverStatus.Entered, HostCenter, HostCenter, TouchStatus.Canceled)]
+	public async Task PointerReleasedEndsThePressWhereThePointerIsReleased(bool isPressed, HoverStatus hoverStatus, double x, double y, TouchStatus expectedStatus)
 	{
 		SetupBuilder();
 
@@ -38,22 +43,78 @@ public partial class TouchBehaviorInputTests
 		await RunAttachedAsync(CreateHost(), behavior, handler =>
 		{
 			var view = GetPlatformView(handler);
-			behavior.HandleUserInteraction(TouchInteractionStatus.Started);
-			behavior.HandleTouch(TouchStatus.Started);
+			Assert.InRange(view.ActualWidth, HostCenter + 1, OutsideOffset - 1);
+			Assert.InRange(view.ActualHeight, HostCenter + 1, OutsideOffset - 1);
+
 			if (hoverStatus is HoverStatus.Entered)
 			{
 				InvokePointerHandler(behavior, pointerEntered, view);
 			}
 
+			behavior.HandleUserInteraction(TouchInteractionStatus.Started);
+			behavior.HandleTouch(TouchStatus.Started);
 			SetPrivateField(behavior, isPressedField, isPressed);
 
-			var exception = Assert.Throws<TargetInvocationException>(() => InvokePointerHandler(behavior, pointerReleased, view));
+			behavior.HandlePointerReleased(view, new WPoint(x, y));
 
-			Assert.IsType<NullReferenceException>(exception.InnerException);
-			Assert.Equal(hoverStatus, behavior.CurrentHoverStatus);
 			Assert.Equal(expectedStatus, behavior.CurrentTouchStatus);
+			Assert.Equal(TouchState.Default, behavior.CurrentTouchState);
 			Assert.Equal(TouchInteractionStatus.Completed, behavior.CurrentInteractionStatus);
+			Assert.Equal(hoverStatus, behavior.CurrentHoverStatus);
 			Assert.Equal(expectedStatus is TouchStatus.Completed ? 1 : 0, command.ExecuteCount);
+			Assert.False(GetPrivateField<bool>(behavior, isPressedField));
+			Assert.True(GetPrivateField<bool>(behavior, isIntentionalCaptureLossField));
+		});
+	}
+
+	// The Sample's "Image | Toggle" clicks on Windows: during a press the hover status became Exited while the pointer stayed on the image, and WinUI
+	// raised no PointerEntered for the next clicks at the same spot. Each click must still run the Command and leave the element unpressed.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ClicksOfAPointerThatDoesNotMoveRunTheCommandAfterAnExit(bool isImageTouchBehavior)
+	{
+		SetupBuilder();
+
+		var command = new CountingCommand();
+		var image = new Image { WidthRequest = HostSize, HeightRequest = HostSize };
+		TouchBehavior behavior = isImageTouchBehavior
+			? new ImageTouchBehavior { Command = command, DefaultImageSource = ImageSource.FromFile("touch_red.png"), PressedImageSource = ImageSource.FromFile("touch_blue.png") }
+			: new TouchBehavior { Command = command };
+		VisualElement host = isImageTouchBehavior ? image : CreateHost();
+		var center = new WPoint(HostCenter, HostCenter);
+
+		await RunAttachedAsync(host, behavior, async handler =>
+		{
+			var view = GetPlatformView(handler);
+			InvokePointerHandler(behavior, pointerEntered, view);
+
+			PressAsOnPointerPressed(behavior);
+			InvokePointerHandler(behavior, pointerExited, view);
+			behavior.HandlePointerReleased(view, center);
+
+			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
+			Assert.Equal(1, command.ExecuteCount);
+
+			PressAsOnPointerPressed(behavior);
+			Assert.Equal(TouchState.Pressed, behavior.CurrentTouchState);
+
+			if (isImageTouchBehavior)
+			{
+				await WaitUntilAsync(() => image.Source is FileImageSource { File: "touch_blue.png" }, "The pressed image was not applied.");
+			}
+
+			behavior.HandlePointerReleased(view, center);
+
+			Assert.Equal(TouchStatus.Completed, behavior.CurrentTouchStatus);
+			Assert.Equal(TouchState.Default, behavior.CurrentTouchState);
+			Assert.Equal(TouchInteractionStatus.Completed, behavior.CurrentInteractionStatus);
+			Assert.Equal(2, command.ExecuteCount);
+
+			if (isImageTouchBehavior)
+			{
+				await WaitUntilAsync(() => image.Source is FileImageSource { File: "touch_red.png" }, "The image must show its default source after the release, not stay pressed.");
+			}
 		});
 	}
 
@@ -354,5 +415,14 @@ public partial class TouchBehaviorInputTests
 			Assert.False(GetPrivateField<bool>(behavior, isPressedField));
 			Assert.Null(behavior.Element);
 		});
+	}
+
+	// What OnPointerPressed does apart from CapturePointer(e.Pointer), which needs event arguments that the tests cannot construct.
+	static void PressAsOnPointerPressed(TouchBehavior behavior)
+	{
+		SetPrivateField(behavior, isPressedField, true);
+		behavior.HandleUserInteraction(TouchInteractionStatus.Started);
+		behavior.HandleTouch(TouchStatus.Started);
+		SetPrivateField(behavior, isIntentionalCaptureLossField, false);
 	}
 }
