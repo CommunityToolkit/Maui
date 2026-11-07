@@ -77,6 +77,17 @@ public abstract partial class FilesTestBase : CommunityToolkitHandlerTestBase
 		{
 			failures.Add(ex);
 		}
+#elif WINDOWS
+		// A picker dialog that is still open would make the next test's CountOpenDialogs() see it (a test that fails before it answers the picker
+		// leaves it there, and a picker started without a token never closes by itself).
+		try
+		{
+			await CloseOpenDialogsAsync();
+		}
+		catch (Exception ex)
+		{
+			failures.Add(ex);
+		}
 #endif
 
 		if (failures.Count is 1)

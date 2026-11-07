@@ -12,6 +12,7 @@ public abstract partial class FilesTestBase
 
 	const int hideWindow = 0;
 	const int showWindowWithoutActivating = 4;
+	const uint wmClose = 0x0010;
 	const string commonDialogClass = "#32770";
 
 	delegate bool EnumWindowsProc(IntPtr window, IntPtr parameter);
@@ -51,6 +52,16 @@ public abstract partial class FilesTestBase
 	protected static int CountOpenDialogs() =>
 		FindTopLevelWindows(static window => IsWindowVisible(window) && ClassName(window) == commonDialogClass).Count;
 
+	static async Task CloseOpenDialogsAsync()
+	{
+		foreach (var dialog in FindTopLevelWindows(static window => IsWindowVisible(window) && ClassName(window) == commonDialogClass))
+		{
+			PostMessage(dialog, wmClose, IntPtr.Zero, IntPtr.Zero);
+		}
+
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "A picker dialog is still open after it was asked to close.");
+	}
+
 	static List<IntPtr> FindTopLevelWindows(Func<IntPtr, bool> predicate)
 	{
 		var processId = (uint)Environment.ProcessId;
@@ -89,6 +100,10 @@ public abstract partial class FilesTestBase
 	[DllImport("user32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	static extern bool ShowWindow(IntPtr window, int command);
+
+	[DllImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	static extern bool PostMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
 
 	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 	static extern int GetClassName(IntPtr window, StringBuilder className, int maxCount);
