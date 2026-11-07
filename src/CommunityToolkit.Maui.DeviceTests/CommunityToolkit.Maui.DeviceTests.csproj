@@ -52,6 +52,8 @@
     <MauiImage Include="Resources\Images\**" />
     <!-- Raw files keep their path without the Resources\Raw prefix. -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Only the Android tests use this 0-byte PNG. The .NET 11 Apple SDK optimizes every PNG of a Release build and fails with a missing file when it is empty. -->
+    <MauiAsset Remove="Resources\Raw\exoplayer\empty.png" Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst'" />
   </ItemGroup>
 
   <ItemGroup>
