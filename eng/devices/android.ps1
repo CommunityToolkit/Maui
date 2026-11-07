@@ -246,6 +246,10 @@ function Invoke-AndroidDeviceTests {
             return $goneVerdict
         }
 
+        # The default main log buffer holds only a few minutes of a long run, so the logs of a test that failed early were already rotated out
+        # when the run ended. Each attempt sets it again because the size does not survive a restart of the device.
+        [void](Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'logcat', '-G', '64M') -TimeoutSeconds 30)
+
         $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
         $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
         if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
