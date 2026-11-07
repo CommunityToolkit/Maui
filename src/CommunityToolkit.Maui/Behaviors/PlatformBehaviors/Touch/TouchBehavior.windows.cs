@@ -25,6 +25,27 @@ public partial class TouchBehavior
 	// A WinUI button (MAUI's Button and ImageButton) raises its Click, which MAUI turns into Clicked, for the pointer and the keyboard itself
 	internal bool IsClickedRaisedByPlatformView => view is Microsoft.UI.Xaml.Controls.Primitives.ButtonBase;
 
+	// As on Android and iOS, a press ends where the pointer is released. The hover status cannot decide it: it can be Exited while the
+	// pointer is over the element, and WinUI raises no PointerEntered for a pointer that does not move, so a press that starts then would
+	// never end and its Command would not run.
+	internal void HandlePointerReleased(FrameworkElement container, Windows.Foundation.Point position)
+	{
+		if (isPressed)
+		{
+			var isReleasedOverElement = position.X >= 0 && position.Y >= 0 && position.X <= container.ActualWidth && position.Y <= container.ActualHeight;
+			HandleTouch(isReleasedOverElement ? TouchStatus.Completed : TouchStatus.Canceled);
+		}
+		else if (CurrentHoverStatus is not HoverStatus.Exited)
+		{
+			HandleTouch(TouchStatus.Canceled);
+		}
+
+		HandleUserInteraction(TouchInteractionStatus.Completed);
+
+		isPressed = false;
+		isIntentionalCaptureLoss = true;
+	}
+
 	/// <inheritdoc/>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable, FrameworkElement platformView)
@@ -192,25 +213,13 @@ public partial class TouchBehavior
 
 	void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
 	{
-		if (Element is null || !IsEnabled)
+		if (Element is null || !IsEnabled || sender is not FrameworkElement container)
 		{
 			return;
 		}
 
-		if (isPressed && (CurrentHoverStatus is HoverStatus.Entered))
-		{
-			HandleTouch(TouchStatus.Completed);
-		}
-		else if (CurrentHoverStatus is not HoverStatus.Exited)
-		{
-			HandleTouch(TouchStatus.Canceled);
-		}
-
-		HandleUserInteraction(TouchInteractionStatus.Completed);
+		HandlePointerReleased(container, e.GetCurrentPoint(container).Position);
 		e.Handled = true;
-
-		isPressed = false;
-		isIntentionalCaptureLoss = true;
 	}
 
 	void OnPointerPressed(object? sender, PointerRoutedEventArgs e)
