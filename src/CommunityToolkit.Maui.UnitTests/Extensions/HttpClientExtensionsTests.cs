@@ -127,7 +127,7 @@ public class HttpClientExtensionsTests : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task DownloadStreamAsync_CanceledWhileWaitingForTheHeaders_ReturnsStreamNull()
+	public async Task DownloadStreamAsync_CanceledWhileWaitingForTheHeaders_ThrowsOperationCanceledException()
 	{
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var handler = new StubHttpMessageHandler(WaitUntilCanceledAsync);
@@ -137,12 +137,12 @@ public class HttpClientExtensionsTests : BaseTest
 
 		await cancellationTokenSource.CancelAsync();
 
-		(await download).Should().BeSameAs(Stream.Null);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => download);
 		handler.WasCanceled.Should().BeTrue();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task DownloadStreamAsync_CanceledWhileTheBodyIsDownloading_ReturnsStreamNullAndReleasesTheServerStream()
+	public async Task DownloadStreamAsync_CanceledWhileTheBodyIsDownloading_ThrowsOperationCanceledExceptionAndReleasesTheServerStream()
 	{
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var serverStream = new ServerStream(CreateBody(length: 1_000), maxBytesPerRead: 100, blockAfterBytes: 300);
@@ -152,7 +152,7 @@ public class HttpClientExtensionsTests : BaseTest
 
 		await cancellationTokenSource.CancelAsync();
 
-		(await download).Should().BeSameAs(Stream.Null);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => download);
 		serverStream.IsDisposed.Should().BeTrue();
 	}
 
@@ -180,15 +180,13 @@ public class HttpClientExtensionsTests : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task DownloadStreamAsync_TokenIsAlreadyCanceled_ReturnsStreamNull()
+	public async Task DownloadStreamAsync_TokenIsAlreadyCanceled_ThrowsOperationCanceledException()
 	{
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 		using var client = new HttpClient(new StubHttpMessageHandler(WaitUntilCanceledAsync));
 
-		var stream = await client.DownloadStreamAsync(avatarUri, cancellationTokenSource.Token);
-
-		stream.Should().BeSameAs(Stream.Null);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.DownloadStreamAsync(avatarUri, cancellationTokenSource.Token));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

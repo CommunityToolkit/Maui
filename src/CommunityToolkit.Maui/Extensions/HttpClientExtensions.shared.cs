@@ -12,8 +12,9 @@ static partial class HttpClientExtensions
 	/// <returns>
 	/// A readable, seekable stream that holds the whole response body, positioned at its start.
 	/// <see cref="Stream.Null"/> when the whole response does not arrive within <see cref="HttpClient.Timeout"/>,
-	/// the response has an error status code, the request is canceled, or the download fails.
+	/// the response has an error status code, or the download fails.
 	/// </returns>
+	/// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> is canceled.</exception>
 	public static async Task<Stream> DownloadStreamAsync(this HttpClient client, Uri uri, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(client);
@@ -37,6 +38,11 @@ static partial class HttpClientExtensions
 			// which throws for a stream that cannot seek.
 			var content = await response.Content.ReadAsByteArrayAsync(downloadTimeout.Token).ConfigureAwait(false);
 			return new MemoryStream(content, writable: false);
+		}
+		// A canceled load must stay a cancellation: .NET MAUI clears the picture of a view when a load fails, even a load that a newer one replaced.
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+		{
+			throw;
 		}
 		catch (Exception ex)
 		{

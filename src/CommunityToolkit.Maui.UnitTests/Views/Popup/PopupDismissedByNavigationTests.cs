@@ -764,6 +764,50 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Equal([1, 1], closedCounts);
 	}
 
+	// .NET MAUI's NavigationPage on iOS and Mac Catalyst cancels a PopAsync that waited for a navigation that failed (TaskCanceledException), and CloseAsync lets an
+	// OperationCanceledException through; the tap command runs as async void, so it must not let that reach the app, and the popup it could not close must stay usable
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task TapOutsideOfPopup_ShouldNotThrowAndKeepThePopupOpen_WhenNavigationCancelsThePop()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+		var uiThread = new SingleThreadedSynchronizationContext();
+
+		// PopModalAsync raises Window.ModalPopping before it removes the page, so an exception of the handler is an exception of PopModalAsync
+		window.ModalPopping += CancelPop;
+		try
+		{
+			TapOutsideOfPopupOn(uiThread, popupPage);
+			await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+		}
+		finally
+		{
+			window.ModalPopping -= CancelPop;
+		}
+
+		Assert.Empty(uiThread.UnhandledExceptions);
+		Assert.Same(popupPage, Assert.Single(navigation.ModalStack));
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Equal(0, closedCount);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+
+		TapOutsideOfPopupOn(uiThread, popupPage);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+
+		static void CancelPop(object? sender, ModalPoppingEventArgs e) => throw new TaskCanceledException();
+	}
+
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -789,6 +833,21 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	static SemaphoreSlim GetNavigationSemaphore() =>
 		(SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
 		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
+
+	// The async void command lambda captures the SynchronizationContext that is current when the command executes
+	static void TapOutsideOfPopupOn(SynchronizationContext uiThread, PopupPage popupPage)
+	{
+		var originalSynchronizationContext = SynchronizationContext.Current;
+		SynchronizationContext.SetSynchronizationContext(uiThread);
+		try
+		{
+			Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand());
+		}
+		finally
+		{
+			SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
+		}
+	}
 
 	static Task RemoveFromNavigationPageAsync(NavigationPage navigationPage, PopupPage popupPage, NavigationPageRemoval removal)
 	{

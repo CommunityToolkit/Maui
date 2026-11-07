@@ -69,6 +69,11 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			{
 				// An earlier tap, the back button or navigation already closed this popup, or another page was shown above it while the tap waited; the command runs as async void, so an exception here would crash the app
 			}
+			catch (OperationCanceledException)
+			{
+				// The tap passes no token, so .NET MAUI canceled the pop (its NavigationPage on iOS and Mac Catalyst cancels a PopAsync that waited for a navigation that failed).
+				// The popup is still open and a later tap can close it; the command runs as async void, so an exception here would crash the app
+			}
 		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
