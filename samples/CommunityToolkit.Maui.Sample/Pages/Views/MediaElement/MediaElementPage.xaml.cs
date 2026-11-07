@@ -65,6 +65,11 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			logger.LogInformation("Duration: {NewDuration}", MediaElement.Duration);
 			PositionSlider.Maximum = MediaElement.Duration.TotalSeconds;
 		}
+		else if (e.PropertyName == MediaElement.SourceProperty.PropertyName)
+		{
+			// Change Source and Load set a new source, which has none of the headers that were added to the previous one
+			UpdateHeadersSummary(MediaElement.Source);
+		}
 	}
 
 	void OnMediaOpened(object? sender, EventArgs? e) => logger.LogInformation("Media opened.");
@@ -238,11 +243,14 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		logger.LogInformation("Custom HTTP headers cleared.");
 	}
 
-	void UpdateHeadersSummary(in UriMediaSource uriMediaSource)
+	void UpdateHeadersSummary(MediaSource? mediaSource)
 	{
-		HeadersSummaryLabel.Text = uriMediaSource.HttpHeaders.Count <= 0
-			? "No headers defined"
-			: string.Join(", ", uriMediaSource.HttpHeaders.Keys);
+		HeadersSummaryLabel.Text = mediaSource switch
+		{
+			UriMediaSource { HttpHeaders.Count: > 0 } uriMediaSource => string.Join(", ", uriMediaSource.HttpHeaders.Keys),
+			UriMediaSource => "No headers defined",
+			_ => "Headers apply only to a URL source"
+		};
 	}
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
