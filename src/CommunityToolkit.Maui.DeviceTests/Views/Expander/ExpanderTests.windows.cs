@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
+using LayoutPanel = Microsoft.Maui.Platform.LayoutPanel;
 using WControl = Microsoft.UI.Xaml.Controls.Control;
 using WFocusState = Microsoft.UI.Xaml.FocusState;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
@@ -487,6 +488,49 @@ public partial class ExpanderTests
 		}));
 
 		Assert.Null(exception);
+		Assert.True(expander.IsExpanded);
+	}
+
+	// MAUI's LayoutHandler.PlatformViewFactory creates the platform view of every layout handler, so an app that sets it replaces the
+	// ExpanderLayoutPanel of the Expander's layout too
+	[Fact]
+	public async Task AnExpanderWhoseLayoutGotItsPlatformViewFromTheLayoutFactoryOfTheAppTogglesAndDoesNotThrow()
+	{
+		SetupBuilder();
+		var expander = CreateExpander();
+		var platformViewsOfTheFactory = new List<LayoutPanel>();
+		IViewHandler? layoutHandler = null;
+		object? layoutPlatformView = null;
+
+		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() =>
+		{
+			var previousFactory = LayoutHandler.PlatformViewFactory;
+			LayoutHandler.PlatformViewFactory = _ =>
+			{
+				var platformView = new LayoutPanel();
+				platformViewsOfTheFactory.Add(platformView);
+				return platformView;
+			};
+			try
+			{
+				var handler = CreateHandler<ContentViewHandler>(expander);
+				layoutHandler = ((ContentView)expander).Content?.Handler;
+				layoutPlatformView = layoutHandler?.PlatformView;
+
+				expander.HandleHeaderTap(new TappedEventArgs(null));
+				((IElementHandler)handler).DisconnectHandler();
+			}
+			finally
+			{
+				LayoutHandler.PlatformViewFactory = previousFactory;
+			}
+		}));
+
+		Assert.Null(exception);
+
+		// MAUI's own LayoutHandler takes the same factory and has no cast, so the test proves nothing unless the layout keeps the toolkit's handler
+		Assert.IsType<ExpanderLayoutHandler>(layoutHandler);
+		Assert.Contains(Assert.IsType<LayoutPanel>(layoutPlatformView), platformViewsOfTheFactory);
 		Assert.True(expander.IsExpanded);
 	}
 
