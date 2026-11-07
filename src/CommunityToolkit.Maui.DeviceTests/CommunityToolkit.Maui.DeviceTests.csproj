@@ -36,8 +36,7 @@
   </PropertyGroup>
 
   <!-- The library minimums, so version-gated branches can run on older devices, except Android: 26, MediaElement's minimum,
-       because this one app holds the tests of every package (the other packages' Android branches below 26 have no device test).
-       Mac Catalyst is 17.0: the Microsoft.MacCatalyst.Sdk 27.0 packs (Xcode 27) reject lower values for apps. -->
+       because this one app holds the tests of every package (the other packages' Android branches below 26 have no device test). -->
   <PropertyGroup>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
