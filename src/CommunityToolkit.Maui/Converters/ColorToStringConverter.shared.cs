@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using CommunityToolkit.Maui.Core.Extensions;
@@ -50,7 +51,45 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 	/// <inheritdoc/>
 	public override Color ConvertBackTo(string value, CultureInfo? culture)
 	{
-		return Color.TryParse(value, out var color) ? color : DefaultConvertBackReturnValue;
+		if (Color.TryParse(value, out var color))
+		{
+			return color;
+		}
+
+		// ConvertFrom writes the alpha with the culture ("RGBA(255,0,0,0,5)" in de-DE), which the invariant Color.TryParse rejects.
+		return culture is not null && TryParseCultureAwareRgba(value, culture, out color)
+			? color
+			: DefaultConvertBackReturnValue;
+	}
+
+	static bool TryParseCultureAwareRgba(string? value, CultureInfo culture, [NotNullWhen(true)] out Color? color)
+	{
+		color = null;
+
+		const string prefix = "RGBA(";
+		var text = value?.Trim();
+		if (text is null
+			|| text.Length <= prefix.Length
+			|| !text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+			|| text[^1] is not ')')
+		{
+			return false;
+		}
+
+		// The alpha's decimal separator can be a comma, so only the first three commas separate components.
+		var components = text[prefix.Length..^1].Split(',', 4);
+		if (components.Length is not 4
+			|| !byte.TryParse(components[0], NumberStyles.None, CultureInfo.InvariantCulture, out var red)
+			|| !byte.TryParse(components[1], NumberStyles.None, CultureInfo.InvariantCulture, out var green)
+			|| !byte.TryParse(components[2], NumberStyles.None, CultureInfo.InvariantCulture, out var blue)
+			|| !float.TryParse(components[3], NumberStyles.Float, culture, out var alpha)
+			|| alpha is < 0 or > 1)
+		{
+			return false;
+		}
+
+		color = Color.FromRgba(red / 255f, green / 255f, blue / 255f, alpha);
+		return true;
 	}
 
 	/// <inheritdoc/>
@@ -155,7 +194,7 @@ public partial class ColorToCmykStringConverter : BaseConverterOneWay<Color, str
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToCmykString();
+		return value.ToCmykString(culture);
 	}
 }
 
@@ -189,7 +228,7 @@ public partial class ColorToHslStringConverter : BaseConverterOneWay<Color, stri
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
-		return value.ToHslString();
+		return value.ToHslString(culture);
 	}
 }
 

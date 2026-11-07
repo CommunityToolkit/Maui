@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using FluentAssertions.Equivalency;
+using CommunityToolkit.Maui.Core.Extensions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -139,9 +141,10 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 	{
 		var converter = new ColorToHslStringConverter();
 		var color = new Color(red, green, blue, alpha);
+		var culture = new CultureInfo("en-US");
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
-		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -155,5 +158,29 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact]
+	public void ColorToHslStringConverter_UsesPassedCulture_NotCurrentCulture()
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("en-US");
+
+			var result = new ColorToHslStringConverter().ConvertFrom(Colors.Red, new CultureInfo("de-DE"));
+
+			Assert.Equal("HSL(360,100 %,50 %)", result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
+	}
+
+	[Fact]
+	public void ToHslString_WithCulture_FormatsPercentWithThatCulture()
+	{
+		Assert.Equal("HSL(360,%100,%50)", Colors.Red.ToHslString(new CultureInfo("tr-TR")));
 	}
 }
