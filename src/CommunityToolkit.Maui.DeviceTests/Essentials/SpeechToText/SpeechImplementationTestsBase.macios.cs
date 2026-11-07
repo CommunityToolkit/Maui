@@ -60,6 +60,31 @@ public abstract partial class SpeechImplementationTestsBase
 	protected static Task<IDispatcherTimer> CreateSilenceTimerAsync(ISpeechToText speech, SpeechToTextOptions options, CancellationToken cancellationToken = default) =>
 		(Task<IDispatcherTimer>)SpeechInternals.Invoke(speech, "CreateSilenceTimer", options, cancellationToken)!;
 
+	// The main thread stays busy (at most 30 s) until body calls the action it gets, so that a start from a background thread waits in
+	// CreateSilenceTimer for its hop to the main thread meanwhile. Call it on a thread-pool thread: the runner resumes a test's awaits on the
+	// main thread.
+	protected static async Task<T> WithTheMainThreadHeldAsync<T>(Func<Action, Task<T>> body)
+	{
+		var mainThreadIsBusy = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var releaseMainThread = new ManualResetEventSlim();
+		var busyMainThread = InvokeOnMainThreadAsync(() =>
+		{
+			mainThreadIsBusy.SetResult();
+			releaseMainThread.Wait(TimeSpan.FromSeconds(30));
+		});
+		await mainThreadIsBusy.Task.ConfigureAwait(false);
+
+		try
+		{
+			return await body(releaseMainThread.Set).ConfigureAwait(false);
+		}
+		finally
+		{
+			releaseMainThread.Set();
+			await busyMainThread.ConfigureAwait(false);
+		}
+	}
+
 	protected static void AssertStartedRecordingIsReleased(ISpeechToText speech, AppleStart start, SpeechFakeTask task, SFSpeechRecognizer recognizer, IntPtr requestHandle)
 	{
 		Assert.Equal<string>(["installTap", "prepare", "start", "stop", "removeTap"], start.EngineCalls);
@@ -1202,6 +1227,127 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.True(elapsed < TimeSpan.FromSeconds(5), $"The cancelled wait took {elapsed}.");
 
 		await speech.DisposeAsync();
+	}
+
+	// A start from a background thread waits in CreateSilenceTimer for the main thread, which the test holds until a stop (or DisposeAsync)
+	// from the background thread has released the recognizer and the request of that start. The released start must end without a recognition
+	// and without an exception, so that the failure handling of StartListenAsync stops nothing, and the silence timer that it gets afterwards
+	// must be stopped and detached, not kept. Every wait is bounded.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StopOrDisposeWhileABackgroundStartWaitsForTheMainThreadEndsTheStartWithoutARecognition(bool dispose)
+	{
+		var speech = CreateSpeech();
+		using var start = AppleStart.Create(speech);
+		var events = new SpeechEventRecorder(speech);
+		var timer = new SpeechFakeDispatcherTimer();
+		var options = new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.FromMinutes(10) };
+		var original = DispatcherProvider.Current;
+		DispatcherProvider.SetCurrent(new FakeTimerDispatcherProvider(original, timer));
+		try
+		{
+			var (exception, startWaited) = await Task.Run(() => WithTheMainThreadHeldAsync(async releaseMainThread =>
+			{
+				var pendingStart = speech.StartListenAsync(options);
+				var waits = !pendingStart.IsCompleted;
+				await (dispose ? speech.DisposeAsync().AsTask() : speech.StopListenAsync()).ConfigureAwait(false);
+				releaseMainThread();
+
+				return (await Record.ExceptionAsync(() => pendingStart.WaitAsync(TimeSpan.FromSeconds(10))).ConfigureAwait(false), waits);
+			}));
+
+			Assert.True(startWaited, "The start did not wait for the main thread, so the stop did not interrupt it.");
+			Assert.Null(exception);
+			Assert.Equal(1, timer.StartCount);
+			Assert.False(timer.IsRunning);
+			Assert.Equal(0, timer.TickSubscriberCount);
+			Assert.Null(GetSilenceTimer(speech));
+			Assert.Equal(0, start.Framework.RecognitionTaskCalls);
+			Assert.Equal<string>(["installTap", "prepare", "start", "stop", "removeTap"], start.EngineCalls);
+			Assert.Null(GetTask(speech));
+			Assert.Null(GetRecognizer(speech));
+			Assert.Null(GetRequest(speech));
+			Assert.Empty(events.Entries);
+			Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		}
+		finally
+		{
+			DispatcherProvider.SetCurrent(original);
+		}
+
+		await speech.DisposeAsync();
+	}
+
+	// As above, but a newer start follows the stop while the stopped start still waits for the main thread, which runs the two hops in the
+	// order of the starts. The stopped start must neither create a recognition from the recognizer and the request of the newer start nor
+	// keep its silence timer: the newer start keeps the only recognition and its own timer.
+	[Fact]
+	public async Task NewerStartWhileAStoppedBackgroundStartWaitsForTheMainThreadKeepsTheOnlyRecognition()
+	{
+		var speech = CreateSpeech();
+		using var start = AppleStart.Create(speech);
+		var events = new SpeechEventRecorder(speech);
+		var stoppedStartTimer = new SpeechFakeDispatcherTimer();
+		var newerStartTimer = new SpeechFakeDispatcherTimer();
+		var options = new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.FromMinutes(10) };
+		var original = DispatcherProvider.Current;
+		DispatcherProvider.SetCurrent(new FakeTimerDispatcherProvider(original, stoppedStartTimer, newerStartTimer));
+		try
+		{
+			var (stoppedStartException, newerStartException, bothWaited) = await Task.Run(() => WithTheMainThreadHeldAsync(async releaseMainThread =>
+			{
+				var stoppedStart = speech.StartListenAsync(options);
+				var stoppedStartWaits = !stoppedStart.IsCompleted;
+				await speech.StopListenAsync().ConfigureAwait(false);
+				var newerStart = speech.StartListenAsync(options);
+				var newerStartWaits = !newerStart.IsCompleted;
+				releaseMainThread();
+
+				var stoppedStartFailure = await Record.ExceptionAsync(() => stoppedStart.WaitAsync(TimeSpan.FromSeconds(10))).ConfigureAwait(false);
+				var newerStartFailure = await Record.ExceptionAsync(() => newerStart.WaitAsync(TimeSpan.FromSeconds(10))).ConfigureAwait(false);
+				return (stoppedStartFailure, newerStartFailure, stoppedStartWaits && newerStartWaits);
+			}));
+
+			Assert.True(bothWaited, "A start did not wait for the main thread, so the stop and the newer start did not happen while the stopped start waited.");
+			Assert.Null(stoppedStartException);
+			Assert.Null(newerStartException);
+			Assert.Equal(1, start.Framework.RecognitionTaskCalls);
+			Assert.Same(start.Framework.LastTask, GetTask(speech));
+			Assert.Same(newerStartTimer, GetSilenceTimer(speech));
+			Assert.False(stoppedStartTimer.IsRunning);
+			Assert.Equal(0, stoppedStartTimer.TickSubscriberCount);
+			Assert.True(newerStartTimer.IsRunning);
+			Assert.Equal(1, newerStartTimer.TickSubscriberCount);
+			Assert.Empty(events.Entries);
+		}
+		finally
+		{
+			DispatcherProvider.SetCurrent(original);
+		}
+
+		await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
+		await speech.DisposeAsync();
+	}
+
+	// Hands CreateSilenceTimer the given timers in turn (it creates its timer on the main thread, one start after the other) and leaves
+	// everything else to the dispatcher of the calling thread.
+	sealed class FakeTimerDispatcherProvider(IDispatcherProvider provider, params IDispatcherTimer[] timers) : IDispatcherProvider
+	{
+		readonly Queue<IDispatcherTimer> remainingTimers = new(timers);
+
+		public IDispatcher? GetForCurrentThread() => provider.GetForCurrentThread() is IDispatcher dispatcher ? new FakeTimerDispatcher(dispatcher, remainingTimers) : null;
+
+		sealed class FakeTimerDispatcher(IDispatcher dispatcher, Queue<IDispatcherTimer> timers) : IDispatcher
+		{
+			public bool IsDispatchRequired => dispatcher.IsDispatchRequired;
+
+			public bool Dispatch(Action action) => dispatcher.Dispatch(action);
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) => dispatcher.DispatchDelayed(delay, action);
+
+			public IDispatcherTimer CreateTimer() => timers.Dequeue();
+		}
 	}
 
 	sealed class NoDispatcherProvider : IDispatcherProvider

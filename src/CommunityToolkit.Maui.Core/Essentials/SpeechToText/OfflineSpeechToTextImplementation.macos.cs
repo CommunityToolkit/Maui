@@ -56,7 +56,21 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		token.ThrowIfCancellationRequested();
 
-		silenceTimer = await CreateSilenceTimer(options, token);
-		recognitionTask = CreateSpeechRecognizerTask(speechRecognizer, liveSpeechRequest);
+		var recognizer = speechRecognizer;
+		var request = liveSpeechRequest;
+		var timer = await CreateSilenceTimer(options, token);
+
+		// Off the main thread the start waits here for the main thread, and a stop meanwhile releases what the start created. The released start
+		// ends without a recognition and without an exception, so that the failure handling of StartListenAsync stops nothing, and its timer
+		// must not stop a newer recognition when it elapses
+		if (!ReferenceEquals(recognizer, speechRecognizer))
+		{
+			timer.Tick -= OnSilenceTimerTick;
+			timer.Stop();
+			return;
+		}
+
+		silenceTimer = timer;
+		recognitionTask = CreateSpeechRecognizerTask(recognizer, request);
 	}
 }
