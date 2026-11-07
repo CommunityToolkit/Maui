@@ -36,10 +36,7 @@ public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 		// Entries without an Android platform view (not realized yet, or with a platform view of another type) cannot be ordered, so they are left out
 		var viewOrder = VirtualView.ViewOrder.Select(static view => view.Handler?.PlatformView).OfType<AView>().ToList();
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(22))
-		{
-			RemoveLinksOfThePreviousOrder(viewOrder);
-		}
+		RemoveLinksOfThePreviousOrder(viewOrder);
 
 		for (var i = 1; i < viewOrder.Count; i++)
 		{
