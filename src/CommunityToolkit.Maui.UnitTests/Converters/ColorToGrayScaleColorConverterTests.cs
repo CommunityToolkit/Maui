@@ -63,8 +63,9 @@ public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<Color
 		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(Color.FromInt(initialColor), typeof(Color), null, null);
 		var convertedColorFrom = converter.ConvertFrom(Color.FromInt(initialColor));
 
-		Assert.Equal(Color.FromInt(expectedColor), convertedColor);
-		Assert.Equal(Color.FromInt(expectedColor), convertedColorFrom);
+		// The expected colors are packed into 8-bit channels to stay serializable theory data; comparing packed values is exact, while Color.Equals would accept a result one 8-bit step off
+		Assert.Equal(expectedColor, Assert.IsType<Color>(convertedColor).ToInt());
+		Assert.Equal(expectedColor, convertedColorFrom.ToInt());
 	}
 
 	[Theory]
