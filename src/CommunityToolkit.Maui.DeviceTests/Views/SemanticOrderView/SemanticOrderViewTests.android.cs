@@ -341,6 +341,8 @@ public partial class SemanticOrderViewTests
 	static void AssertPlatformOrderWithoutVirtualView(SemanticOrderViewHandler handler, params IView[] previousOrder) =>
 		AssertPlatformOrder(handler, previousOrder);
 
+	static PlatformContentViewGroup CreatePlatformViewOfTheApp(ViewHandler<IContentView, PlatformContentViewGroup> handler) => new(handler.Context);
+
 	const string noAndroidContextMessage = "Android Context is null, please ensure your MauiApplication is initialized.";
 
 	// Exposes the protected CreatePlatformView so that its guard is reached without going through MAUI's SetVirtualView first.
@@ -352,6 +354,11 @@ public partial class SemanticOrderViewTests
 	sealed class PlainPlatformViewHandler : SemanticOrderViewHandler
 	{
 		protected override PlatformContentViewGroup CreatePlatformView() => new(MauiContext!.Context!);
+	}
+
+	sealed class PlatformViewThatCannotBeCreatedHandler : SemanticOrderViewHandler
+	{
+		protected override PlatformContentViewGroup CreatePlatformView() => throw new InvalidOperationException(platformViewThatCannotBeCreatedMessage);
 	}
 
 	sealed class MauiContextWithoutAndroidContext(IMauiContext inner) : IMauiContext

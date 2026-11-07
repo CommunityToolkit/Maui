@@ -379,6 +379,147 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
+	// An app's ContentViewHandler.PlatformViewFactory creates the platform view of every ContentViewHandler, and SemanticOrderViewHandler is one, but
+	// no platform view of the app can apply the order
+	[Fact]
+	public async Task ViewOrderIsAppliedWhenTheAppSetsTheContentViewPlatformViewFactory()
+	{
+		SetupBuilder();
+		var view = CreateSemanticOrderView(out var buttons);
+		var contentViewInside = new ContentView { Content = new Label { Text = "Inside" } };
+		Assert.IsType<VerticalStackLayout>(view.Content).Add(contentViewInside);
+		view.ViewOrder = [buttons[2], buttons[0], buttons[1]];
+		var contentViewBeside = new ContentView { Content = new Label { Text = "Beside" } };
+		var layout = new VerticalStackLayout { view, contentViewBeside };
+		var handlersOfTheFactory = new List<IViewHandler>();
+		var platformViewsOfTheFactory = new List<object?>();
+		var factoriesThatTheAppRead = new List<object?>();
+		object? platformViewFactoryOfTheApp = null;
+		object? platformViewFactoryAfterwards = null;
+
+		// HandlerChanging is code of the app that runs while the SemanticOrderView sets its own handler up, so it must find the factory of the app
+		contentViewInside.HandlerChanging += (_, _) => factoriesThatTheAppRead.Add(ContentViewHandler.PlatformViewFactory);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousFactory = ContentViewHandler.PlatformViewFactory;
+			ContentViewHandler.PlatformViewFactory = handler =>
+			{
+				handlersOfTheFactory.Add(handler);
+				var platformView = CreatePlatformViewOfTheApp(handler);
+				platformViewsOfTheFactory.Add(platformView);
+				return platformView;
+			};
+			platformViewFactoryOfTheApp = ContentViewHandler.PlatformViewFactory;
+			try
+			{
+				CreateHandler(layout);
+				platformViewFactoryAfterwards = ContentViewHandler.PlatformViewFactory;
+			}
+			finally
+			{
+				ContentViewHandler.PlatformViewFactory = previousFactory;
+			}
+
+			var semanticOrderViewHandler = Assert.IsType<SemanticOrderViewHandler>(view.Handler);
+			AssertPlatformOrder(semanticOrderViewHandler, buttons[2], buttons[0], buttons[1]);
+			Assert.IsType<MauiSemanticOrderView>(semanticOrderViewHandler.PlatformView);
+			Assert.DoesNotContain(semanticOrderViewHandler, handlersOfTheFactory);
+
+			// The content views inside the SemanticOrderView get their handlers while it sets its own handler up
+			Assert.Contains(contentViewInside.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(contentViewBeside.Handler?.PlatformView, platformViewsOfTheFactory);
+		});
+
+		Assert.Same(platformViewFactoryOfTheApp, platformViewFactoryAfterwards);
+		Assert.Same(platformViewFactoryOfTheApp, Assert.Single(factoriesThatTheAppRead));
+	}
+
+	// The inner SemanticOrderView gets its handler while the outer one sets its own handler up
+	[Fact]
+	public async Task NestedSemanticOrderViewsApplyTheirOrdersWhenTheAppSetsTheContentViewPlatformViewFactory()
+	{
+		SetupBuilder();
+		var inner = CreateSemanticOrderView(out var innerButtons);
+		inner.ViewOrder = [innerButtons[1], innerButtons[0]];
+		var outer = CreateSemanticOrderView(out var outerButtons);
+		Assert.IsType<VerticalStackLayout>(outer.Content).Add(inner);
+		outer.ViewOrder = [outerButtons[2], outerButtons[0]];
+		var handlersOfTheFactory = new List<IViewHandler>();
+		object? platformViewFactoryOfTheApp = null;
+		object? platformViewFactoryAfterwards = null;
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousFactory = ContentViewHandler.PlatformViewFactory;
+			ContentViewHandler.PlatformViewFactory = handler =>
+			{
+				handlersOfTheFactory.Add(handler);
+				return CreatePlatformViewOfTheApp(handler);
+			};
+			platformViewFactoryOfTheApp = ContentViewHandler.PlatformViewFactory;
+			try
+			{
+				CreateHandler(outer);
+				platformViewFactoryAfterwards = ContentViewHandler.PlatformViewFactory;
+			}
+			finally
+			{
+				ContentViewHandler.PlatformViewFactory = previousFactory;
+			}
+
+			AssertPlatformOrder(Assert.IsType<SemanticOrderViewHandler>(outer.Handler), outerButtons[2], outerButtons[0]);
+			AssertPlatformOrder(Assert.IsType<SemanticOrderViewHandler>(inner.Handler), innerButtons[1], innerButtons[0]);
+			Assert.Empty(handlersOfTheFactory);
+		});
+
+		Assert.Same(platformViewFactoryOfTheApp, platformViewFactoryAfterwards);
+	}
+
+	// MAUI keeps the virtual view of a SetVirtualView whose platform view could not be created, so a second SetVirtualView with that view returns
+	// before MAUI asks for a platform view: only the handler can put the factory of the app back then
+	[Fact]
+	public async Task TheContentViewPlatformViewFactoryOfTheAppIsBackInPlaceWhenTheHandlerCannotCreateItsPlatformView()
+	{
+		SetupBuilder();
+		var view = CreateSemanticOrderView(out _);
+		var handlersOfTheFactory = new List<IViewHandler>();
+		object? platformViewFactoryOfTheApp = null;
+		object? platformViewFactoryAfterwards = null;
+		Exception? exceptionOfTheFirstCall = null;
+		Exception? exceptionOfTheSecondCall = null;
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var semanticOrderViewHandler = new PlatformViewThatCannotBeCreatedHandler();
+			semanticOrderViewHandler.SetMauiContext(MauiContext);
+			var previousFactory = ContentViewHandler.PlatformViewFactory;
+			ContentViewHandler.PlatformViewFactory = contentViewHandler =>
+			{
+				handlersOfTheFactory.Add(contentViewHandler);
+				return CreatePlatformViewOfTheApp(contentViewHandler);
+			};
+			platformViewFactoryOfTheApp = ContentViewHandler.PlatformViewFactory;
+			try
+			{
+				exceptionOfTheFirstCall = Record.Exception(() => semanticOrderViewHandler.SetVirtualView(view));
+				exceptionOfTheSecondCall = Record.Exception(() => semanticOrderViewHandler.SetVirtualView(view));
+				platformViewFactoryAfterwards = ContentViewHandler.PlatformViewFactory;
+			}
+			finally
+			{
+				ContentViewHandler.PlatformViewFactory = previousFactory;
+			}
+		});
+
+		Assert.Equal(platformViewThatCannotBeCreatedMessage, Assert.IsType<InvalidOperationException>(exceptionOfTheFirstCall).Message);
+
+		// The handler still has no platform view, which ContentViewHandler.SetVirtualView rejects after base.SetVirtualView returned
+		Assert.IsType<InvalidOperationException>(exceptionOfTheSecondCall);
+		Assert.Empty(handlersOfTheFactory);
+		Assert.Same(platformViewFactoryOfTheApp, platformViewFactoryAfterwards);
+	}
+
 	[Fact]
 	public async Task HandlerWithoutMappersUsesTheDefaultPropertyMapper()
 	{
@@ -560,6 +701,8 @@ public partial class SemanticOrderViewTests : CommunityToolkitHandlerTestBase
 
 		return references;
 	}
+
+	const string platformViewThatCannotBeCreatedMessage = "This handler cannot create its platform view.";
 
 	sealed class ForeignView : VisualElement
 	{

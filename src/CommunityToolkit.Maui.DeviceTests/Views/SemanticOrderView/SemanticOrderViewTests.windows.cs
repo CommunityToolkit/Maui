@@ -2,6 +2,7 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
@@ -215,8 +216,15 @@ public partial class SemanticOrderViewTests
 		Assert.True(isDefault, $"Expected WinUI's default order without a virtual view, actual {DescribeNativeOrder(handler, previousOrder)}.");
 	}
 
+	static ContentPanel CreatePlatformViewOfTheApp(ViewHandler<IContentView, ContentPanel> handler) => new();
+
 	sealed class PlainPlatformViewHandler : SemanticOrderViewHandler
 	{
 		protected override ContentPanel CreatePlatformView() => new();
+	}
+
+	sealed class PlatformViewThatCannotBeCreatedHandler : SemanticOrderViewHandler
+	{
+		protected override ContentPanel CreatePlatformView() => throw new InvalidOperationException(platformViewThatCannotBeCreatedMessage);
 	}
 }

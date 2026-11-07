@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Foundation;
+using Microsoft.Maui.Handlers;
 using UIKit;
 using PlatformContentView = Microsoft.Maui.Platform.ContentView;
 
@@ -322,8 +323,15 @@ public partial class SemanticOrderViewTests
 		Assert.True(keptOrDefault, $"Expected the previous order [{string.Join(", ", previousOrder.Select(NameOf))}] or nil, actual {DescribeNativeOrder(handler, previousOrder)}.");
 	}
 
+	static PlatformContentView CreatePlatformViewOfTheApp(ViewHandler<IContentView, PlatformContentView> handler) => new();
+
 	sealed class PlainPlatformViewHandler : SemanticOrderViewHandler
 	{
 		protected override PlatformContentView CreatePlatformView() => new();
+	}
+
+	sealed class PlatformViewThatCannotBeCreatedHandler : SemanticOrderViewHandler
+	{
+		protected override PlatformContentView CreatePlatformView() => throw new InvalidOperationException(platformViewThatCannotBeCreatedMessage);
 	}
 }
