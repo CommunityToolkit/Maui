@@ -182,6 +182,46 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
+	// Windows lets a second start through while the first one compiles, because an idle recognizer reports the state Stopped. The second start
+	// releases the recognizer of the first and stores its own, so the first start must end without listening and without an exception: its
+	// failure handling would otherwise release the recognizer of the second start. Both starts and the stop run in one main-thread turn, so
+	// neither start reaches the session, with or without the fix, and no consent dialog can appear.
+	[Fact]
+	public async Task NewerStartWhileTheStartCompilesTheConstraintsEndsTheOlderStartWithoutAnException()
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		var (olderStart, newerStart) = await InvokeOnMainThreadAsync(async () =>
+		{
+			var pendingOlderStart = speech.StartListenAsync(DefaultOptions);
+			Assert.False(pendingOlderStart.IsCompleted, $"The older start ended before it waited for the compilation: {pendingOlderStart.Exception}");
+			var olderRecognizer = Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+
+			var pendingNewerStart = speech.StartListenAsync(DefaultOptions);
+			Assert.False(pendingNewerStart.IsCompleted, $"The newer start ended before it waited for the compilation: {pendingNewerStart.Exception}");
+			Assert.NotSame(olderRecognizer, Assert.IsType<SpeechRecognizer>(GetRecognizer(speech)));
+
+			await speech.StopListenAsync();
+			Assert.Null(GetRecognizer(speech));
+
+			return (pendingOlderStart, pendingNewerStart);
+		});
+
+		// Bounded, so that a start that still waits for a released recognizer fails this test instead of stopping the run
+		var olderStartException = await Record.ExceptionAsync(() => olderStart.WaitAsync(TimeSpan.FromSeconds(30)));
+		var newerStartException = await Record.ExceptionAsync(() => newerStart.WaitAsync(TimeSpan.FromSeconds(30)));
+
+		Assert.Null(olderStartException);
+		Assert.Null(newerStartException);
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		Assert.Empty(events.Results);
+
+		await speech.DisposeAsync();
+	}
+
 	// A session that ended by itself (after AutoStopSilenceTimeout or an error) leaves its idle recognizer stored and subscribed to the
 	// implementation, as Initialize with a cancelled token does. The next start must release that recognizer before it stores its own: a
 	// recognizer that is only replaced keeps its StateChanged subscription, which keeps the implementation alive for as long as the recognizer

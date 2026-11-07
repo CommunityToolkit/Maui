@@ -16,8 +16,9 @@ public sealed partial class SpeechToTextImplementation
 	SpeechRecognizer? speechRecognizer;
 	SpeechToTextOptions? speechToTextOptions;
 
-	// A closed recognizer need not end the operations that it runs, so a start that waits for one of them stops waiting when StopRecording completes this
-	TaskCompletionSource? speechRecognizerReleased;
+	// A closed recognizer need not end the operations that it runs, so a start or a stop that waits for one of them stops waiting when StopRecording
+	// completes this
+	TaskCompletionSource speechRecognizerReleased = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState
@@ -125,7 +126,7 @@ public sealed partial class SpeechToTextImplementation
 			if (recognizer.State != SpeechRecognizerState.Idle)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-				await recognizer.ContinuousRecognitionSession.StopAsync().AsTask(cancellationToken);
+				await IsStillStoredAfter(recognizer.ContinuousRecognitionSession.StopAsync().AsTask(cancellationToken), recognizer, released);
 			}
 		}
 		catch
@@ -139,7 +140,7 @@ public sealed partial class SpeechToTextImplementation
 			if (ReferenceEquals(recognizer, speechRecognizer))
 			{
 				speechRecognizer = null;
-				released?.TrySetResult();
+				released.TrySetResult();
 
 				recognizer.StateChanged -= SpeechRecognizer_StateChanged;
 				recognizer.ContinuousRecognitionSession.ResultGenerated -= ResultGenerated;
@@ -149,7 +150,8 @@ public sealed partial class SpeechToTextImplementation
 		}
 	}
 
-	// False once the recognizer was released: the start must not wait for the operation then. Otherwise the operation's own failure is rethrown
+	// A released recognizer need not end the operations that it runs, so waiting for one of them could hang the caller. A recognizer that is still stored
+	// reports the failure of its operation (cancellation, declined privacy statement) to the caller, which handles it
 	async Task<bool> IsStillStoredAfter(Task operation, SpeechRecognizer recognizer, TaskCompletionSource released)
 	{
 		await Task.WhenAny(operation, released.Task);
