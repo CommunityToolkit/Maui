@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -163,6 +164,41 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 		TriggerEventToCommandBehavior(behavior, nullArgs);
 
 		Assert.Equal(cappuccino, convertedValue);
+	}
+
+	[Fact]
+	public void EventArgsConverterCulture_IsPassedToEventArgsConverter()
+	{
+		var culture = new CultureInfo("de-DE");
+		var spy = new CultureSpyConverter();
+		var behavior = new EventToCommandBehavior<Coffee>
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = spy,
+			EventArgsConverterCulture = culture,
+			Command = new Command(() => { })
+		};
+
+		TriggerEventToCommandBehavior(behavior, [null, null]);
+
+		Assert.Same(culture, spy.ReceivedCulture);
+	}
+
+	[Fact]
+	public void EventArgsConverterCulture_DefaultsToInvariantCulture()
+	{
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+		var spy = new CultureSpyConverter();
+		var behavior = new EventToCommandBehavior<Coffee>
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = spy,
+			Command = new Command(() => { })
+		};
+
+		TriggerEventToCommandBehavior(behavior, [null, null]);
+
+		Assert.Same(CultureInfo.InvariantCulture, spy.ReceivedCulture);
 	}
 
 	static void TriggerEventToCommandBehavior<T>(EventToCommandBehavior<T> eventToCommand, object?[] args)

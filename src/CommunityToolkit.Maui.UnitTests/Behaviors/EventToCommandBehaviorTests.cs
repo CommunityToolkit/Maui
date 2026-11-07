@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Behaviors;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -102,5 +104,58 @@ public class EventToCommandBehaviorTests() : BaseBehaviorTest<EventToCommandBeha
 		Assert.True(didEventToCommandBehaviorFire);
 
 		void HandleSelectionChanged() => didEventToCommandBehaviorFire = true;
+	}
+
+	[Fact]
+	public void EventArgsConverterCulture_DefaultsToNullAndConverterReceivesInvariantCulture()
+	{
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+		var spy = new CultureSpyConverter();
+		var behavior = new EventToCommandBehavior
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = spy,
+			Command = new Command(() => { })
+		};
+
+		Assert.Null(behavior.EventArgsConverterCulture);
+
+		TriggerOnTriggerHandled(behavior);
+
+		Assert.Same(CultureInfo.InvariantCulture, spy.ReceivedCulture);
+	}
+
+	[Fact]
+	public void EventArgsConverterCulture_IsPassedToEventArgsConverter()
+	{
+		var culture = new CultureInfo("de-DE");
+		var spy = new CultureSpyConverter();
+		var behavior = new EventToCommandBehavior
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = spy,
+			EventArgsConverterCulture = culture,
+			Command = new Command(() => { })
+		};
+
+		TriggerOnTriggerHandled(behavior);
+
+		Assert.Same(culture, spy.ReceivedCulture);
+	}
+
+	[Fact]
+	public void EventArgsConverterCulture_CanBeSetFromXamlWithACultureName()
+	{
+		var page = new EventToCommandBehaviorCulturePage();
+
+		Assert.Equal(new CultureInfo("de-DE"), page.GermanBehavior.EventArgsConverterCulture);
+		Assert.Null(page.DefaultBehavior.EventArgsConverterCulture);
+		Assert.Equal(new CultureInfo("de-DE"), page.GenericGermanBehavior.EventArgsConverterCulture);
+	}
+
+	static void TriggerOnTriggerHandled(EventToCommandBehavior behavior)
+	{
+		var method = typeof(EventToCommandBehavior).GetMethod("OnTriggerHandled", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+		method?.Invoke(behavior, [null, null]);
 	}
 }

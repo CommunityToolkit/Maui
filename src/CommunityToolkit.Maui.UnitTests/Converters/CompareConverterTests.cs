@@ -225,4 +225,36 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).ConvertBack(new object(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[Fact]
+	public void CompareConverter_UsesPassedCultureToCollateStrings()
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "z",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// "\u00e4" sorts after "z" in Swedish but before it in English
+		Assert.Equal(true, converter.ConvertFrom("\u00e4", new CultureInfo("sv-SE")));
+		Assert.Equal(false, converter.ConvertFrom("\u00e4", new CultureInfo("en-US")));
+	}
+
+	[Fact]
+	public void CompareConverter_WithoutCulture_CollatesStringsWithCurrentCulture()
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "z",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("sv-SE");
+		Assert.Equal(true, converter.ConvertFrom("\u00e4", null));
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		Assert.Equal(false, converter.ConvertFrom("\u00e4", null));
+	}
 }

@@ -258,4 +258,78 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => new MultiMathExpressionConverter().Convert([0.0, 7], typeof(bool), null, null));
 	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("fr-FR")]
+	[InlineData("en-US")]
+	[InlineData("ru-RU")]
+	public void MathExpressionConverter_NumberLiteralsAreCultureInvariant(string currentCultureName)
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo(currentCultureName);
+
+		var result = new MathExpressionConverter().ConvertFrom(1d, "3.5 + x", CultureInfo.InvariantCulture);
+
+		((double)result!).Should().BeApproximately(4.5d, tolerance);
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void MathExpressionConverter_SyntaxIsNotAffectedByTurkishCasing(string currentCultureName)
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo(currentCultureName);
+		var converter = new MathExpressionConverter();
+
+		((double)converter.ConvertFrom(0d, "PI")!).Should().BeApproximately(Math.PI, tolerance);
+		converter.ConvertFrom(0d, "IF(true, 1, 2)").Should().Be(1d);
+	}
+
+	[Fact]
+	public void MathExpressionConverter_ParsesStringInputWithPassedCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		var result = new MathExpressionConverter().ConvertFrom("3,5", "x * 2", new CultureInfo("de-DE"));
+
+		((double)result!).Should().BeApproximately(7d, tolerance);
+	}
+
+	[Fact]
+	public void MathExpressionConverter_WithoutCulture_ParsesStringInputWithCurrentCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+
+		var result = new MathExpressionConverter().ConvertFrom("3,5", "x * 2");
+
+		((double)result!).Should().BeApproximately(7d, tolerance);
+	}
+
+	[Fact]
+	public void MathExpressionConverter_FormatsStrWithPassedCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		new MathExpressionConverter().ConvertFrom(3.5d, "str(x)", new CultureInfo("de-DE")).Should().Be("3,5");
+	}
+
+	[Fact]
+	public void MultiMathExpressionConverter_ParsesStringValuesWithPassedCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		var result = new MultiMathExpressionConverter().Convert(["3,5", "2"], typeof(double), "x0 * x1", new CultureInfo("de-DE"));
+
+		((double)result!).Should().BeApproximately(7d, tolerance);
+	}
+
+	[Fact]
+	public void MultiMathExpressionConverter_WithoutCulture_ParsesStringValuesWithCurrentCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+
+		var result = new MultiMathExpressionConverter().Convert(["3,5", "2"], typeof(double), "x0 * x1", null);
+
+		((double)result!).Should().BeApproximately(7d, tolerance);
+	}
 }

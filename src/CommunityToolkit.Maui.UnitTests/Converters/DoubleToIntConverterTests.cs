@@ -85,4 +85,37 @@ public class DoubleToIntConverterTests : BaseConverterTest<DoubleToIntConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).ConvertBack(null, typeof(int), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("en-US")]
+	[InlineData("fr-FR")]
+	public void DoubleToIntConverter_StringParameterWithDotIsInvariant(string cultureName)
+	{
+		var culture = new CultureInfo(cultureName);
+		Thread.CurrentThread.CurrentCulture = culture;
+		var converter = new DoubleToIntConverter();
+
+		Assert.Equal(5, converter.ConvertFrom(2, "2.5", culture));
+		Assert.Equal(5, converter.ConvertFrom(2, "2.5", null));
+		Assert.Equal(2d, converter.ConvertBackTo(5, "2.5", culture));
+	}
+
+	[Fact]
+	public void DoubleToIntConverter_StringParameterWithCommaUsesPassedCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		var converter = new DoubleToIntConverter();
+
+		Assert.Equal(5, converter.ConvertFrom(2, "2,5", new CultureInfo("de-DE")));
+		Assert.Equal(2d, converter.ConvertBackTo(5, "2,5", new CultureInfo("de-DE")));
+	}
+
+	[Fact]
+	public void DoubleToIntConverter_StringParameterWithCommaWithoutCultureUsesCurrentCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+
+		Assert.Equal(5, new DoubleToIntConverter().ConvertFrom(2, "2,5"));
+	}
 }
