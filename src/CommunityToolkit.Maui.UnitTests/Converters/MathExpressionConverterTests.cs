@@ -268,7 +268,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	{
 		Thread.CurrentThread.CurrentCulture = new CultureInfo(currentCultureName);
 
-		var result = new MathExpressionConverter().ConvertFrom(1d, "3.5 + x", CultureInfo.InvariantCulture);
+		var result = new MathExpressionConverter().ConvertFrom(1d, "3.5 + x", new CultureInfo(currentCultureName));
 
 		((double)result!).Should().BeApproximately(4.5d, tolerance);
 	}

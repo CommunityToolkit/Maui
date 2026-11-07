@@ -584,6 +584,36 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 	}
 
 	[Fact]
+	public void IsInRangeConverter_MinValueOnly_UsesPassedCultureToCollateStrings()
+	{
+		var converter = new IsInRangeConverter
+		{
+			MinValue = "z"
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// In Swedish "\u00e4" sorts after "z"; in English it sorts before "z"
+		Assert.Equal(true, converter.ConvertFrom("\u00e4", new CultureInfo("sv-SE")));
+		Assert.Equal(false, converter.ConvertFrom("\u00e4", new CultureInfo("en-US")));
+	}
+
+	[Fact]
+	public void IsInRangeConverter_MaxValueOnly_UsesPassedCultureToCollateStrings()
+	{
+		var converter = new IsInRangeConverter
+		{
+			MaxValue = "z"
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// In Swedish "\u00e4" sorts after "z"; in English it sorts before "z"
+		Assert.Equal(false, converter.ConvertFrom("\u00e4", new CultureInfo("sv-SE")));
+		Assert.Equal(true, converter.ConvertFrom("\u00e4", new CultureInfo("en-US")));
+	}
+
+	[Fact]
 	public void IsInRangeConverter_WithoutCulture_CollatesStringsWithCurrentCulture()
 	{
 		var converter = new IsInRangeConverter

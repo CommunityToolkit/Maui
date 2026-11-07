@@ -16,7 +16,7 @@ public partial class MathExpressionConverter : BaseConverterOneWay<object?, obje
 	/// </summary>
 	/// <param name="inputValue">The variable X for an expression</param>
 	/// <param name="parameter">The expression to calculate.</param>
-	/// <param name="culture">The culture used to convert string inputs to numbers and to format values for <c>str()</c> and <c>len()</c>. When <see langword="null"/>, <see cref="CultureInfo.CurrentCulture"/> is used. The syntax of the expression itself, such as numeric literals, is always culture-invariant.</param>
+	/// <param name="culture">The culture used to convert string inputs to numbers and to format values for <c>str()</c> and <c>len()</c>. When <see langword="null"/>, <see cref="CultureInfo.CurrentCulture"/> is used. The syntax of the expression itself, such as numeric literals, is always culture-invariant, but quoted string literals in the expression are treated as values and are converted with this culture.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
 	public override object? ConvertFrom(object? inputValue, string parameter, CultureInfo? culture = null)
 	{
