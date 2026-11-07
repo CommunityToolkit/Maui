@@ -20,7 +20,7 @@ There is one test app for every shipped package: `src/CommunityToolkit.Maui.Devi
 * The .NET SDK from `global.json` and the MAUI workload (`dotnet workload install maui`; `maui-android` is enough on Linux).
 * PowerShell 7 (`pwsh`) on macOS and Linux. On Windows use Windows PowerShell 5.1 (`powershell`) or PowerShell 7.
 * XHarness is a local tool pinned in `.config/dotnet-tools.json`; the scripts run `dotnet tool restore` themselves. It comes from the public `dotnet-eng` feed, which `NuGet.config` maps to `Microsoft.DotNet.XHarness.*` only. coverlet and ReportGenerator, for [code coverage](#code-coverage), are pinned there too.
-* Android: the Android SDK (`ANDROID_HOME`, or the default SDK location) with platform-tools and the emulator, and JDK 17 or later (`JAVA_HOME`).
+* Android: the Android SDK (`ANDROID_HOME`, or the default SDK location) with platform-tools and the emulator, and JDK 21 or later (`JAVA_HOME`; the .NET 11 Android workload declares 21 as its minimum).
 * iOS and Mac Catalyst: macOS with the Xcode version that the installed iOS workload requires.
 * Windows: Windows 10 1809 or later. The first packaged run needs an elevated shell to trust its signing certificate.
 
