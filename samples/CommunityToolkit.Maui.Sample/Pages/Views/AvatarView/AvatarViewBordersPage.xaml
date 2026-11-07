@@ -50,7 +50,7 @@
                         BasedOn="{StaticResource AvatarViewBordersDefault}"
                         TargetType="mct:AvatarView">
                         <Setter Property="BorderWidth" Value="1" />
-                        <Setter Property="BorderColor" Value="{AppThemeBinding Light=White, Dark=Black}" />
+                        <Setter Property="BorderColor" Value="Red" />
                     </Style>
                     <Style
                         x:Key="AvatarViewBordersThickColour"
