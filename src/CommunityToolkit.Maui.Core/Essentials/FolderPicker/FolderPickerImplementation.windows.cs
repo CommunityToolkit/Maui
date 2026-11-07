@@ -41,6 +41,9 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		folderPicker.FileTypeFilter.Add("*");
 #endif
 
+#if NET11_0_OR_GREATER
+		var folder = await PickerCancellation.PickAsync(hwnd, folderPicker.PickSingleFolderAsync, cancellationToken);
+#else
 		var folderPickerOperation = folderPicker.PickSingleFolderAsync();
 
 		void CancelFolderPickerOperation()
@@ -50,6 +53,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		await using var _ = cancellationToken.Register(CancelFolderPickerOperation);
 		var folder = await folderPickerOperation;
+#endif
 		if (folder is null)
 		{
 			throw new OperationCanceledException("Operation cancelled.");

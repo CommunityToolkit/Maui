@@ -49,9 +49,13 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 		savePicker.FileTypeChoices.Add("All files", allFilesExtension);
 
+#if NET11_0_OR_GREATER
+		var file = await PickerCancellation.PickAsync(hwnd, savePicker.PickSaveFileAsync, cancellationToken);
+#else
 		var filePickerOperation = savePicker.PickSaveFileAsync();
 		await using var _ = cancellationToken.Register(CancelFilePickerOperation);
 		var file = await filePickerOperation;
+#endif
 		if (file is null)
 		{
 			throw new OperationCanceledException("Operation cancelled.");
@@ -65,10 +69,12 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		await WriteStream(stream, file.Path, progress, cancellationToken).ConfigureAwait(false);
 		return file.Path;
 
+#if !NET11_0_OR_GREATER
 		void CancelFilePickerOperation()
 		{
 			filePickerOperation.Cancel();
 		}
+#endif
 	}
 
 	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
