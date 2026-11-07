@@ -19,6 +19,13 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		PopToRootAsync
 	}
 
+	public enum NavigationCancellation
+	{
+		WindowModalPopping,
+		ApplicationModalPopping,
+		ShellNavigating
+	}
+
 	[Theory(Timeout = (int)TestDuration.Short)]
 	[InlineData(RootPageType.Shell)]
 	[InlineData(RootPageType.ContentPage)]
@@ -808,6 +815,301 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		static void CancelPop(object? sender, ModalPoppingEventArgs e) => throw new TaskCanceledException();
 	}
 
+	// A Window.ModalPopping or Application.ModalPopping handler that sets Cancel, or a Shell.Navigating handler that cancels, makes .NET MAUI return from the pop without popping
+	// and without an exception; CloseAsync must not wait for a pop that never comes while it holds the semaphore that every popup of the app needs
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.WindowModalPopping, false)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.WindowModalPopping, true)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.ApplicationModalPopping, false)]
+	[InlineData(RootPageType.NavigationPage, NavigationCancellation.WindowModalPopping, false)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.WindowModalPopping, false)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.ShellNavigating, false)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.ShellNavigating, true)]
+	public async Task CloseAsync_ShouldThrowOperationCanceledExceptionAndKeepThePopupOpen_WhenTheAppCancelsThePop(RootPageType rootPageType, NavigationCancellation cancellation, bool closeWithClosePopupAsync)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+
+		using (new NavigationCanceler(cancellation))
+		{
+			var closeTask = closeWithClosePopupAsync
+				? navigation.ClosePopupAsync(CancellationToken.None)
+				: popup.CloseAsync(CancellationToken.None);
+
+			await Assert.ThrowsAsync<OperationCanceledException>(() => closeTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		}
+
+		Assert.Same(popupPage, Assert.Single(navigation.ModalStack));
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Equal(0, closedCount);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+
+		await popup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	// PopModalAsync removes the whole modal NavigationPage of a PopupPage that is its only page, so ModalPopping reports the NavigationPage
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.WindowModalPopping)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.WindowModalPopping)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.ShellNavigating)]
+	public async Task CloseAsync_ShouldThrowOperationCanceledExceptionAndKeepThePopupOpen_WhenTheAppCancelsThePopOfTheModalNavigationPageThatContainsOnlyThePopup(RootPageType rootPageType, NavigationCancellation cancellation)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var closedCount = 0;
+		popupPage.PopupClosed += (_, _) => closedCount++;
+		var modalNavigationPage = new NavigationPage(popupPage);
+		await navigation.PushModalAsync(modalNavigationPage, false);
+
+		using (new NavigationCanceler(cancellation))
+		{
+			await Assert.ThrowsAsync<OperationCanceledException>(() => popupPage.CloseAsync(new PopupResult(false), CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		}
+
+		Assert.Same(modalNavigationPage, Assert.Single(navigation.ModalStack));
+		Assert.Equal(0, closedCount);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, closedCount);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	// The tap command and the Back button run as async void: a pop that the app cancels must neither crash the app nor leave the popup unusable
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.WindowModalPopping)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.ApplicationModalPopping)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.ShellNavigating)]
+	public async Task TapOutsideOfPopup_ShouldNotThrowAndKeepThePopupOpen_WhenTheAppCancelsThePop(RootPageType rootPageType, NavigationCancellation cancellation)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var showPopupTask = navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+		var uiThread = new SingleThreadedSynchronizationContext();
+
+		using (new NavigationCanceler(cancellation))
+		{
+			TapOutsideOfPopupOn(uiThread, popupPage);
+			await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+		}
+
+		Assert.Empty(uiThread.UnhandledExceptions);
+		Assert.Same(popupPage, Assert.Single(navigation.ModalStack));
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Equal(0, closedCount);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+
+		TapOutsideOfPopupOn(uiThread, popupPage);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
+	// A Shell.Navigating handler that cancels makes Shell.GoToAsync, and a PushModalAsync that a Shell sends through it, return without pushing and without an exception;
+	// ShowPopupAsync must not wait for a popup that is never displayed
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ShowPopupAsync_ShouldThrowOperationCanceledExceptionAndShowNothing_WhenShellNavigatingCancelsThePush(bool showWithShellRoute)
+	{
+		var navigation = SetRootPage(RootPageType.Shell);
+		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
+		var popup = new Popup();
+		var openedCount = 0;
+		var closedCount = 0;
+		popup.Opened += (_, _) => openedCount++;
+		popup.Closed += (_, _) => closedCount++;
+
+		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
+		{
+			var showPopupTask = showWithShellRoute
+				? shell.ShowPopupAsync(popup, PopupOptions.Empty, token: TestContext.Current.CancellationToken)
+				: navigation.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+			await Assert.ThrowsAsync<OperationCanceledException>(() => showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		}
+
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(0, openedCount);
+		Assert.Equal(0, closedCount);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+
+		var nextPopup = new Popup();
+		var nextShowPopupTask = navigation.ShowPopupAsync(nextPopup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(navigation);
+		await nextPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var result = await nextShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	// ShowPopup returns before the popup is displayed, so nothing could catch the exception of a push that a Shell.Navigating handler canceled
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ShowPopup_ShouldNotThrowAndShowNothing_WhenShellNavigatingCancelsThePush(bool showWithShellRoute)
+	{
+		var navigation = SetRootPage(RootPageType.Shell);
+		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
+		var uiThread = new SingleThreadedSynchronizationContext();
+
+		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
+		{
+			RunOn(uiThread, () =>
+			{
+				if (showWithShellRoute)
+				{
+					shell.ShowPopup(new Popup(), PopupOptions.Empty);
+				}
+				else
+				{
+					navigation.ShowPopup(new Popup(), PopupOptions.Empty);
+				}
+			});
+			await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+		}
+
+		Assert.Empty(uiThread.UnhandledExceptions);
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+	}
+
+	// A static IPopupOptions (PopupOptions.Empty) outlives the PopupPage that subscribes to it, and Shell routing keeps the route of the popup until ShowPopupAsync ends.
+	// Shell.ShowPopupAsync only: when it is canceled, a PushModalAsync that a Shell sends through Shell.GoToAsync leaves the page in the static implicit routes of .NET MAUI until the next Shell navigation completes
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldReleasePopupPageAndPopup_WhenShellNavigatingCancelsThePushOfShellShowPopupAsync()
+	{
+		SetRootPage(RootPageType.Shell);
+		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
+
+		Task<IPopupResult> showPopupTask;
+		WeakReference popupReference;
+		WeakReference popupPageReference;
+		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
+		{
+			(showPopupTask, popupReference, popupPageReference) = ShowWithoutKeepingReferences(shell);
+			await Assert.ThrowsAsync<OperationCanceledException>(() => showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken));
+		}
+
+		for (var i = 0; i < 10 && (popupReference.IsAlive || popupPageReference.IsAlive); i++)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+
+		Assert.False(popupPageReference.IsAlive);
+		Assert.False(popupReference.IsAlive);
+	}
+
+	// A page that is not in a Window yet keeps a modal page pushed on it, without a Parent, and .NET MAUI pushes that modal page once the page is attached: the push was not canceled
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ShowPopupAsync_ShouldDisplayThePopupOnceThePageIsAttached_WhenThePageIsNotInAWindowYet(bool attachWithPushAsync)
+	{
+		var page = new ContentPage();
+		var attachAsync = PrepareToAttach(page, attachWithPushAsync);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+
+		var showPopupTask = page.ShowPopupAsync(popup, PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await attachAsync();
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		var popupPage = await WaitForSinglePopupPageAsync(window.Navigation);
+
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+
+		var uiThread = new SingleThreadedSynchronizationContext();
+		TapOutsideOfPopupOn(uiThread, popupPage);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(window.Navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task ShowPopup_ShouldDisplayThePopupOnceThePageIsAttached_WhenThePageIsNotInAWindowYet(bool attachWithPushAsync)
+	{
+		var page = new ContentPage();
+		var attachAsync = PrepareToAttach(page, attachWithPushAsync);
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+		var uiThread = new SingleThreadedSynchronizationContext();
+
+		RunOn(uiThread, () => page.ShowPopup(popup, PopupOptions.Empty));
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+		await attachAsync();
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		var popupPage = await WaitForSinglePopupPageAsync(window.Navigation);
+
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+
+		await popup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, closedCount);
+		Assert.Empty(window.Navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
+	// A Shell that is not in a Window yet keeps the PopupPage of Shell.ShowPopupAsync on its ModalStack, without a Parent, and pushes it once the Shell is attached
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public async Task ShowPopupAsync_ShouldDisplayThePopupOnceTheShellIsAttached_WhenTheShellIsNotInAWindowYet()
+	{
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		window.Page = new ContentPage();
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage());
+		var popup = new Popup();
+		var closedCount = 0;
+		popup.Closed += (_, _) => closedCount++;
+
+		var showPopupTask = shell.ShowPopupAsync(popup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
+		window.Page = shell;
+		var popupPage = await WaitForSinglePopupPageAsync(window.Navigation);
+
+		Assert.False(showPopupTask.IsCompleted);
+		Assert.Single(popupPage.Content.TapGestureGestureOverlay.GestureRecognizers);
+
+		var uiThread = new SingleThreadedSynchronizationContext();
+		TapOutsideOfPopupOn(uiThread, popupPage);
+		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.Equal(1, closedCount);
+		Assert.Empty(window.Navigation.ModalStack);
+		Assert.Empty(uiThread.UnhandledExceptions);
+	}
+
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
@@ -835,18 +1137,68 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
 
 	// The async void command lambda captures the SynchronizationContext that is current when the command executes
-	static void TapOutsideOfPopupOn(SynchronizationContext uiThread, PopupPage popupPage)
+	static void TapOutsideOfPopupOn(SynchronizationContext uiThread, PopupPage popupPage) => RunOn(uiThread, () => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+
+	// An async void method captures the SynchronizationContext that is current when it starts, and posts its exception there
+	static void RunOn(SynchronizationContext uiThread, Action action)
 	{
 		var originalSynchronizationContext = SynchronizationContext.Current;
 		SynchronizationContext.SetSynchronizationContext(uiThread);
 		try
 		{
-			Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand());
+			action();
 		}
 		finally
 		{
 			SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
 		}
+	}
+
+	// A Shell pushes a popup only after awaiting, so the PopupPage is not on the ModalStack yet when ShowPopupAsync returns its Task
+	static async Task<PopupPage> WaitForSinglePopupPageAsync(INavigation navigation)
+	{
+		for (var i = 0; i < 200 && navigation.ModalStack.Count == 0; i++)
+		{
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+
+		return Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+	}
+
+	// Not inlined, so that no local of the test keeps the PopupPage or the Popup alive; the PopupPage is never pushed, so it is found through the parents of the Popup
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static (Task<IPopupResult> ShowPopupTask, WeakReference PopupReference, WeakReference PopupPageReference) ShowWithoutKeepingReferences(Shell shell)
+	{
+		var popup = new Popup();
+		var showPopupTask = shell.ShowPopupAsync(popup, PopupOptions.Empty, token: TestContext.Current.CancellationToken);
+
+		Element? popupPage = popup;
+		while (popupPage is not null and not PopupPage)
+		{
+			popupPage = popupPage.Parent;
+		}
+
+		return (showPopupTask, new WeakReference(popup), new WeakReference(popupPage ?? throw new InvalidOperationException("The PopupPage of the Popup was not found")));
+	}
+
+	// The root page must not contain page, so that page stays outside the Window until the returned attach runs
+	static Func<Task> PrepareToAttach(ContentPage page, bool attachWithPushAsync)
+	{
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+
+		if (attachWithPushAsync)
+		{
+			var navigationPage = new NavigationPage(new ContentPage());
+			window.Page = navigationPage;
+			return () => navigationPage.PushAsync(page, false);
+		}
+
+		window.Page = new ContentPage();
+		return () =>
+		{
+			window.Page = page;
+			return Task.CompletedTask;
+		};
 	}
 
 	static Task RemoveFromNavigationPageAsync(NavigationPage navigationPage, PopupPage popupPage, NavigationPageRemoval removal)
@@ -983,6 +1335,58 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		public Task PushModalAsync(Page page, bool animated) => navigation.PushAsync(page, animated);
 
 		public void RemovePage(Page page) => navigation.RemovePage(page);
+	}
+
+	// Cancels every navigation the way the handler of an app does, until it is disposed
+	sealed class NavigationCanceler : IDisposable
+	{
+		readonly NavigationCancellation cancellation;
+		readonly Application application;
+		readonly Window window;
+		readonly Shell? shell;
+
+		public NavigationCanceler(NavigationCancellation cancellation)
+		{
+			this.cancellation = cancellation;
+			application = Application.Current ?? throw new InvalidOperationException("Unable to locate Application");
+			window = application.Windows[0];
+			shell = window.Page as Shell;
+
+			switch (cancellation)
+			{
+				case NavigationCancellation.WindowModalPopping:
+					window.ModalPopping += CancelPop;
+					break;
+				case NavigationCancellation.ApplicationModalPopping:
+					application.ModalPopping += CancelPop;
+					break;
+				case NavigationCancellation.ShellNavigating:
+					(shell ?? throw new InvalidOperationException("The root page is not a Shell")).Navigating += CancelShellNavigation;
+					break;
+				default:
+					throw new NotSupportedException($"{cancellation} is not supported");
+			}
+		}
+
+		public void Dispose()
+		{
+			switch (cancellation)
+			{
+				case NavigationCancellation.WindowModalPopping:
+					window.ModalPopping -= CancelPop;
+					break;
+				case NavigationCancellation.ApplicationModalPopping:
+					application.ModalPopping -= CancelPop;
+					break;
+				case NavigationCancellation.ShellNavigating when shell is not null:
+					shell.Navigating -= CancelShellNavigation;
+					break;
+			}
+		}
+
+		static void CancelPop(object? sender, ModalPoppingEventArgs e) => e.Cancel = true;
+
+		static void CancelShellNavigation(object? sender, ShellNavigatingEventArgs e) => e.Cancel();
 	}
 
 	// Runs the posted callbacks one at a time, in order, like a UI thread: a continuation that is queued by a Release of the semaphore cannot run before the code that called Release has finished

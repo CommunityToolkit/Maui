@@ -104,6 +104,7 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	/// <summary>
 	/// Close the Popup.
 	/// </summary>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
 	public virtual Task CloseAsync(CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult(false), token);
 
 	// Padding is the inherited PaddingElement.PaddingProperty; its default value comes from IPaddingElement.PaddingDefaultValueCreator
@@ -204,6 +205,7 @@ public partial class Popup<T> : Popup
 	/// </summary>
 	/// <param name="result">Popup result</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
 	public virtual Task CloseAsync(T result, CancellationToken token = default) => GetPopupPage().CloseAsync(new PopupResult<T>(result, false), token);
 }
 
