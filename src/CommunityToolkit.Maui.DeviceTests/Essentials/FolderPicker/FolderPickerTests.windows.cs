@@ -101,6 +101,70 @@ public partial class FolderPickerTests
 		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The folder dialog is still open after the token was canceled.");
 	}
 
+	// A Cancel button runs the callbacks of the token inline inside Cancel(), on the UI thread, which must not wait for the dialog's modal loop.
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task PickAsyncClosesTheFolderDialogAndReturnsACanceledResultWhenTheTokenIsCanceledOnTheMainThread()
+	{
+		// Person: only watch; the token closes the real dialog.
+		using var cancellation = new CancellationTokenSource();
+		var operation = await StartOnMainThreadAsync(() => FolderPicker.Default.PickAsync(cancellation.Token));
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() > 0, timeout: 15000, message: "The folder dialog did not open.");
+
+		await InvokeOnMainThreadAsync(cancellation.Cancel);
+		var result = await operation.WaitAsync(operationTimeout);
+
+		Assert.True(result.IsCancelled);
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The folder dialog is still open after the token was canceled.");
+	}
+
+	// The picker may be before its dialog, between its token check and its dialog, or inside its modal loop when the token is canceled.
+	[Theory]
+	[Category(TestCategory.RequiresUserInteraction)]
+	[InlineData(0)]
+	[InlineData(10)]
+	[InlineData(50)]
+	[InlineData(100)]
+	[InlineData(200)]
+	[InlineData(400)]
+	public async Task PickAsyncReturnsACanceledResultAndLeavesNoDialogWhenTheTokenIsCanceledAtAnyTimeAfterTheStart(int cancelAfterMilliseconds)
+	{
+		// Person: only watch; the token cancels without waiting for the dialog.
+		using var cancellation = new CancellationTokenSource();
+		var operation = await StartOnMainThreadAsync(() => FolderPicker.Default.PickAsync(cancellation.Token));
+
+		await Task.Delay(cancelAfterMilliseconds);
+		await cancellation.CancelAsync();
+		var result = await operation.WaitAsync(operationTimeout);
+
+		Assert.True(result.IsCancelled);
+		// A fixed wait, not AssertEventually: a dialog that opens after the canceled result must fail the test too.
+		await Task.Delay(TimeSpan.FromSeconds(2));
+		Assert.Equal(0, CountOpenDialogs());
+	}
+
+	// The picker only closes the dialog that it opened: a dialog that the app had already opened on the same window stays.
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task PickAsyncKeepsAMessageBoxOfTheAppThatWasOpenBeforeTheStartOpenWhenTheTokenIsCanceled()
+	{
+		// Person: only watch; the message box stays and the test closes it.
+		var messageBox = await ShowAMessageBoxOnTheAppWindowAsync();
+		using var cancellation = new CancellationTokenSource();
+		var operation = await StartOnMainThreadAsync(() => FolderPicker.Default.PickAsync(cancellation.Token));
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 2, timeout: 15000, message: "The folder dialog did not open next to the message box.");
+
+		await cancellation.CancelAsync();
+		var result = await operation.WaitAsync(operationTimeout);
+
+		Assert.True(result.IsCancelled);
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 1, timeout: 5000, message: "The folder dialog is still open after the token was canceled.");
+		// A fixed wait, not AssertEventually: a late close of the message box must fail the test too.
+		await Task.Delay(TimeSpan.FromSeconds(2));
+		Assert.True(IsWindowOpen(messageBox), "The message box of the app was closed.");
+		Assert.Equal(1, CountOpenDialogs());
+	}
+
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static Task AssertNoPickerWasStartedAsync()
