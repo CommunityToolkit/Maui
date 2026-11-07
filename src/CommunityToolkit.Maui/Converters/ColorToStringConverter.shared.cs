@@ -62,6 +62,13 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 			: DefaultConvertBackReturnValue;
 	}
 
+	/// <inheritdoc/>
+	public override string ConvertFrom(Color value, CultureInfo? culture = null)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return value.ToRgbaString(culture);
+	}
+
 	static bool TryParseCultureAwareRgba(string? value, CultureInfo culture, [NotNullWhen(true)] out Color? color)
 	{
 		color = null;
@@ -90,13 +97,6 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 
 		color = Color.FromRgba(red / 255f, green / 255f, blue / 255f, Math.Clamp(alpha, 0f, 1f));
 		return true;
-	}
-
-	/// <inheritdoc/>
-	public override string ConvertFrom(Color value, CultureInfo? culture = null)
-	{
-		ArgumentNullException.ThrowIfNull(value);
-		return value.ToRgbaString(culture);
 	}
 }
 

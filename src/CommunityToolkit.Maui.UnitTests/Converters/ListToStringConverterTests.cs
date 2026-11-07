@@ -114,8 +114,6 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	protected override object? GetInvalidConvertFromValue() => null;
-
 	[Theory]
 	[InlineData("de-DE", "1,5;2,5")]
 	[InlineData("en-US", "1.5;2.5")]
@@ -137,4 +135,6 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 			CultureInfo.CurrentCulture = originalCulture;
 		}
 	}
+
+	protected override object? GetInvalidConvertFromValue() => null;
 }

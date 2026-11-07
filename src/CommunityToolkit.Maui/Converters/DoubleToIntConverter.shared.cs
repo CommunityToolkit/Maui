@@ -39,6 +39,11 @@ public partial class DoubleToIntConverter : BaseConverter<double, int, object?>
 	public override double ConvertBackTo(int value, object? parameter = null, CultureInfo? culture = null)
 		=> value / GetParameter(parameter, culture);
 
+	// Invariant first so a XAML literal such as "2.5" means the same number for every user, like any other XAML numeric literal; the culture is only a fallback for locale-formatted input such as "2,5".
+	static bool TryParseNumber(string text, CultureInfo? culture, out double result)
+		=> double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out result)
+		|| double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture ?? CultureInfo.CurrentCulture, out result);
+
 	double GetParameter(object? parameter, CultureInfo? culture) => parameter switch
 	{
 		null => Ratio,
@@ -47,9 +52,4 @@ public partial class DoubleToIntConverter : BaseConverter<double, int, object?>
 		string s => TryParseNumber(s, culture, out var result) ? result : throw new ArgumentException("Cannot parse number from the string.", nameof(parameter)),
 		_ => throw new ArgumentException("Parameter must be a valid number.")
 	};
-
-	// Invariant first so a XAML literal such as "2.5" means the same number for every user, like any other XAML numeric literal; the culture is only a fallback for locale-formatted input such as "2,5".
-	static bool TryParseNumber(string text, CultureInfo? culture, out double result)
-		=> double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out result)
-		|| double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, culture ?? CultureInfo.CurrentCulture, out result);
 }
