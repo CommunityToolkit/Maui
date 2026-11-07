@@ -145,6 +145,78 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 	}
 
+	// StartListenAsync runs synchronously until Initialize waits for CompileConstraintsAsync, and the stop releases an idle recognizer without
+	// waiting, so a stop in the same main-thread turn always releases the recognizer while the start waits for its compilation. Whatever the
+	// released recognizer then does with that compilation (it completes, fails or never ends), the start must end at once, without listening
+	// and without an exception. The start never gets as far as the session, with or without the fix, so no consent dialog can appear.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StopOrDisposeWhileTheStartCompilesTheConstraintsEndsTheStartWithoutAnException(bool dispose)
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		var start = await InvokeOnMainThreadAsync(async () =>
+		{
+			var pendingStart = speech.StartListenAsync(DefaultOptions);
+			Assert.False(pendingStart.IsCompleted, $"The start ended before it waited for the compilation: {pendingStart.Exception}");
+			Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+
+			var stop = dispose ? speech.DisposeAsync().AsTask() : speech.StopListenAsync();
+			Assert.Null(GetRecognizer(speech));
+			await stop;
+
+			return pendingStart;
+		});
+
+		// Bounded, so that a start that still waits for the released recognizer fails this test instead of stopping the run
+		var exception = await Record.ExceptionAsync(() => start.WaitAsync(TimeSpan.FromSeconds(30)));
+
+		Assert.Null(exception);
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		Assert.Empty(events.Results);
+
+		await speech.DisposeAsync();
+	}
+
+	// A session that ended by itself (after AutoStopSilenceTimeout or an error) leaves its idle recognizer stored and subscribed to the
+	// implementation, as Initialize with a cancelled token does. The next start must release that recognizer before it stores its own: a
+	// recognizer that is only replaced keeps its StateChanged subscription, which keeps the implementation alive for as long as the recognizer
+	// lives (here the test keeps it). The start is cancelled while it creates its recognizer, so nothing is compiled or started.
+	[Fact]
+	public async Task StartListenAsyncReleasesTheRecognizerThatAnEndedSessionLeft()
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		SetupBuilder();
+		WeakReference? speechReference = null;
+		object? leftRecognizer = null;
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var speech = CreateImplementation();
+			speechReference = new WeakReference(speech);
+			using var cancelled = new CancellationTokenSource();
+			await cancelled.CancelAsync();
+			var initialization = Assert.IsType<Task>(SpeechInternals.Invoke(speech, "Initialize", DefaultOptions, cancelled.Token), exactMatch: false);
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => initialization);
+			leftRecognizer = Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+
+			using var cancellation = new CancellationTokenSource();
+			var options = new SpeechToTextOptions { Culture = new SpeechCancellingCulture("en-US", cancellation) };
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => speech.StartListenAsync(options, cancellation.Token));
+
+			Assert.Null(GetRecognizer(speech));
+			await speech.DisposeAsync();
+		});
+
+		Assert.NotNull(speechReference);
+		await AssertionExtensions.WaitForGC(speechReference);
+		GC.KeepAlive(leftRecognizer);
+	}
+
 	// The handler reads neither its sender nor its arguments (it announces CurrentState), so the test passes none.
 	[Theory]
 	[InlineData(false)]
