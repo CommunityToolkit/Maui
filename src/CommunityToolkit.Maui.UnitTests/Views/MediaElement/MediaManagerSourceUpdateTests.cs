@@ -14,11 +14,15 @@ public class MediaManagerSourceUpdateTests : BaseTest
 
 	readonly CapturingLoggerFactory loggerFactory = new();
 
+	// MediaElement holds the targets of its event handlers weakly, so the handler that records the failures is a method of this instance, which
+	// lives as long as the test: a closure that only the subscription referenced could be collected before the update reports.
+	readonly List<string> failures = [];
+
 	[Fact]
 	public async Task ExceptionOfAStateChangedHandlerDoesNotEndTheUpdateAndIsReportedOnceThroughMediaFailed()
 	{
 		var mediaElement = new MediaElement();
-		var failures = RecordFailures(mediaElement);
+		RecordFailures(mediaElement);
 		var handlerException = new InvalidOperationException("The StateChanged handler of the app failed.");
 		mediaElement.StateChanged += (_, e) =>
 		{
@@ -54,7 +58,7 @@ public class MediaManagerSourceUpdateTests : BaseTest
 	public async Task ExceptionOfAPropertyChangedHandlerLeavesDurationAndPositionUpdatable()
 	{
 		var mediaElement = new MediaElement();
-		var failures = RecordFailures(mediaElement);
+		RecordFailures(mediaElement);
 		var handlerException = new InvalidOperationException("The PropertyChanged handler of the app failed.");
 		mediaElement.PropertyChanged += (_, e) =>
 		{
@@ -88,7 +92,7 @@ public class MediaManagerSourceUpdateTests : BaseTest
 	public async Task ExceptionOfAPropertyChangingHandlerLeavesDurationAndCurrentStateUpdatable()
 	{
 		var mediaElement = new MediaElement();
-		var failures = RecordFailures(mediaElement);
+		RecordFailures(mediaElement);
 		var handlerException = new InvalidOperationException("The PropertyChanging handler of the app failed.");
 		mediaElement.PropertyChanging += (_, e) =>
 		{
@@ -125,7 +129,7 @@ public class MediaManagerSourceUpdateTests : BaseTest
 	public async Task ExceptionOfAMediaFailedHandlerWhileItIsReportedIsOnlyLogged()
 	{
 		var mediaElement = new MediaElement();
-		var failures = RecordFailures(mediaElement);
+		RecordFailures(mediaElement);
 		var handlerException = new InvalidOperationException("The MediaFailed handler of the app failed.");
 		mediaElement.MediaFailed += (_, _) => throw handlerException;
 
@@ -154,7 +158,7 @@ public class MediaManagerSourceUpdateTests : BaseTest
 	public async Task ExceptionOfAHandlerAfterTheUpdateAwaitedIsReportedWhenTheUpdateEnds()
 	{
 		var mediaElement = new MediaElement();
-		var failures = RecordFailures(mediaElement);
+		RecordFailures(mediaElement);
 		var handlerException = new InvalidOperationException("The MediaOpened handler of the app failed.");
 		mediaElement.MediaOpened += (_, _) => throw handlerException;
 		var resume = new TaskCompletionSource();
@@ -177,12 +181,9 @@ public class MediaManagerSourceUpdateTests : BaseTest
 		loggerFactory.Errors.Should().ContainSingle().Which.Exception.Should().BeSameAs(handlerException);
 	}
 
-	static List<string> RecordFailures(MediaElement mediaElement)
-	{
-		var failures = new List<string>();
-		mediaElement.MediaFailed += (_, e) => failures.Add(e.ErrorMessage);
-		return failures;
-	}
+	void RecordFailures(MediaElement mediaElement) => mediaElement.MediaFailed += OnMediaFailed;
+
+	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => failures.Add(e.ErrorMessage);
 
 	TestMediaManager CreateManager(MediaElement mediaElement, Func<IMediaElement, ValueTask> updateSource) =>
 		new(new LoggingMauiContext(loggerFactory), mediaElement, updateSource);
