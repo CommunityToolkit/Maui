@@ -10,6 +10,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	readonly string imagePath;
 
 	Stream videoRecordingStream = Stream.Null;
+	bool havePermissionsBeenRequested;
 
 	public CameraViewPage(CameraViewViewModel viewModel, IFileSystem fileSystem, IFileSaver fileSaver) : base(viewModel)
 	{
@@ -25,6 +26,14 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
+
+		// The page appears again when ImageViewPage closes or Shell comes back to it: a permission that was denied would show its alert each time
+		if (havePermissionsBeenRequested)
+		{
+			return;
+		}
+
+		havePermissionsBeenRequested = true;
 
 		var cameraPermissionsRequest = await Permissions.RequestAsync<Permissions.Camera>();
 		if (cameraPermissionsRequest is not PermissionStatus.Granted)
