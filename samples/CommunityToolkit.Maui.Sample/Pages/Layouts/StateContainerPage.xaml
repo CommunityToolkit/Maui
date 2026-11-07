@@ -183,7 +183,7 @@
                     BackgroundColor="Orange" />
             </Grid>
 
-            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
+            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Change to Nonexistent State" />
             <Label TextColor="Red">
                 <Label.FormattedText>
                     <FormattedString >

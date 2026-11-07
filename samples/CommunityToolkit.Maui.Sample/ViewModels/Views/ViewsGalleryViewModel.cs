@@ -25,7 +25,7 @@ public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<MediaElementFromStreamViewModel>("MediaElement from Stream", Colors.Red, "MediaElement can load media from a Stream source"),
 	SectionModel.Create<MediaElementCarouselViewViewModel>("MediaElement in CarouselView", Colors.Red, "MediaElement can be used inside a DataTemplate in a CarouselView"),
 	SectionModel.Create<MediaElementCollectionViewViewModel>("MediaElement in CollectionView", Colors.Red, "MediaElement can be used inside a DataTemplate in a CollectionView"),
-	SectionModel.Create<MediaElementMultipleWindowsViewModel>("MediaElement in a Multi-Window Application", Colors.Red, "Demonstrates that MediaElement can be used inside a DataTemplate simultaneously on multiple windows"),
+	SectionModel.Create<MediaElementMultipleWindowsViewModel>("MediaElement in a Multi-Window Application", Colors.Red, "Demonstrates that MediaElement can play in two windows at the same time (Mac Catalyst and Windows)"),
 	SectionModel.Create<RatingViewShowcaseViewModel>("RatingView Showcase Page", Colors.Red, "A page with showcase examples for the RatingView control."),
 	SectionModel.Create<RatingViewXamlViewModel>("RatingView XAML Page", Colors.Red, "A page demonstrating the RatingView control and possible uses using XAML"),
 	SectionModel.Create<RatingViewCsharpViewModel>("RatingView C# Page", Colors.Red, "A page demonstrating the RatingView control and possible uses using C#"),

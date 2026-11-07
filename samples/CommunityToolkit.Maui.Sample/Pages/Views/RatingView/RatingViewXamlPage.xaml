@@ -452,7 +452,7 @@
                 Increment="1"
                 Maximum="10"
                 Minimum="0"
-                SemanticProperties.Hint="Change the rating view padding left."
+                SemanticProperties.Hint="Change the left shape padding."
                 VerticalOptions="Center"
                 Value="{Binding RatingViewShapePaddingLeft}" />
             <Label
@@ -475,7 +475,7 @@
                 Increment="1"
                 Maximum="10"
                 Minimum="0"
-                SemanticProperties.Hint="Change the rating view padding top."
+                SemanticProperties.Hint="Change the top shape padding."
                 VerticalOptions="Center"
                 Value="{Binding RatingViewShapePaddingTop}" />
             <Label
@@ -498,7 +498,7 @@
                 Increment="1"
                 Maximum="10"
                 Minimum="0"
-                SemanticProperties.Hint="Change the rating view padding right."
+                SemanticProperties.Hint="Change the right shape padding."
                 VerticalOptions="Center"
                 Value="{Binding RatingViewShapePaddingRight}" />
             <Label
@@ -521,7 +521,7 @@
                 Increment="1"
                 Maximum="10"
                 Minimum="0"
-                SemanticProperties.Hint="Change the rating view padding bottom."
+                SemanticProperties.Hint="Change the bottom shape padding."
                 Value="{Binding RatingViewShapePaddingBottom}" />
             <Label
                 Grid.Row="33"

@@ -67,7 +67,7 @@ public partial class TouchBehaviorInputTests
 		});
 	}
 
-	// The Sample's "Image | Toggle" clicks on Windows: during a press the hover status became Exited while the pointer stayed on the image, and WinUI
+	// The Sample's "Image | Pressed Image" clicks on Windows: during a press the hover status became Exited while the pointer stayed on the image, and WinUI
 	// raised no PointerEntered for the next clicks at the same spot. Each click must still run the Command and leave the element unpressed.
 	[Theory]
 	[InlineData(false)]

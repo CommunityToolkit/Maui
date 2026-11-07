@@ -15,7 +15,7 @@
         <Label Grid.Row="0"
                Grid.ColumnSpan="6"
                HorizontalTextAlignment="Center"
-               Text="Popup allows you to position it on the page using its LayoutAlignmentOptions, HorizontalOptions and VerticalOptions" />
+               Text="Popup allows you to position it on the page using its HorizontalOptions and VerticalOptions" />
 
         <Label Grid.Row="1"
                Grid.Column="0"

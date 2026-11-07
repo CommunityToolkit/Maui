@@ -88,7 +88,7 @@
                 WidthRequest="48" />
             <mct:AvatarView
                 HeightRequest="48"
-                SemanticProperties.Description="Sample AvatarView showing black border, blue background and yellow text."
+                SemanticProperties.Description="Sample AvatarView showing black border (white in dark theme), blue background and yellow text."
                 Style="{StaticResource AvatarViewBlackBlueYellow}"
                 WidthRequest="48" />
             <mct:AvatarView

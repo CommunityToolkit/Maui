@@ -34,7 +34,7 @@
                     HorizontalTextAlignment="Center"
                     Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
-                <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
+                <Label Style="{StaticResource SectionHeader}" Text="Image | Pressed Image" />
                 <Image HeightRequest="100" WidthRequest="100" x:Name="TestButton">
                     <Image.Behaviors>
                         <mct:ImageTouchBehavior
@@ -152,7 +152,7 @@
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
-                <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
+                <Label Style="{StaticResource SectionHeader}" Text="Nested TouchBehaviors" />
 
                 <ContentView
                     Padding="50"
@@ -191,7 +191,7 @@
                             <x:String>Capuchin Monkey</x:String>
                             <x:String>Blue Monkey</x:String>
                             <x:String>Squirrel Monkey</x:String>
-                            <x:String>Golden Lion Tamarind</x:String>
+                            <x:String>Golden Lion Tamarin</x:String>
                             <x:String>Howler Monkey</x:String>
                             <x:String>Japanese Macaque</x:String>
                         </x:Array>

@@ -32,7 +32,7 @@
 
 		<Label Style="{StaticResource Title}" Text="Simple Popup That Cannot Be Dismissed By Tapping Outside of the Popup" />
 		<BoxView Style="{StaticResource Divider}" />
-		<Label Style="{StaticResource Content}" Text="This is a platform specific popup with a .NET MAUI View being rendered. The behaviors of the popup will conform to 100% this platform look and feel, but still allows you to use your .NET MAUI controls." />
+		<Label Style="{StaticResource Content}" Text="Tapping outside of this popup does not close it, and neither does the Android back button. Tap Close to close it." />
 		<Button
 			Clicked="Button_Clicked"
 			Text="Close"

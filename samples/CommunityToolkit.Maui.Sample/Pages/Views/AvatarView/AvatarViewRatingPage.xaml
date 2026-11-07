@@ -96,7 +96,7 @@
                 <mct:AvatarView
                     Grid.Column="4"
                     HeightRequest="48"
-                    SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
+                    SemanticProperties.Description="Sample AvatarView using a polyline stroke shape to draw a star, clipped to its left half."
                     StrokeShape="Polyline 24,0 29,16 48,18 34,30 38,48 24,37 10,48 14,30 0,18 19,16"
                     Style="{StaticResource Rating}"
                     Text="5"
@@ -130,7 +130,7 @@
                     Grid.Column="2"
                     HeightRequest="48"
                     ImageSource="avatar_icon.png"
-                    SemanticProperties.Description="Sample AvatarView idea using a polyline stroke shape to override the corder radius to draw a star, cliped by parent size."
+                    SemanticProperties.Description="Sample AvatarView using a polyline stroke shape to draw a star, clipped to its left half."
                     StrokeShape="Polyline 24,0 29,16 48,18 34,30 38,48 24,37 10,48 14,30 0,18 19,16"
                     Style="{StaticResource Rating}"
                     Text="3"

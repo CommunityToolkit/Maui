@@ -125,7 +125,7 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		}
 		catch (TaskCanceledException)
 		{
-			await Toast.Make("Playback automatically stopped after 5 seconds").Show(cancellationToken);
+			await Toast.Make("Playback did not finish within 5 seconds").Show(cancellationToken);
 #if IOS
 			await Toast.Make("If you did not hear playback, test again on a physical iOS device").Show(cancellationToken);
 #endif

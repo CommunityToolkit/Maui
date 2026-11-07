@@ -13,7 +13,7 @@
     <Grid RowDefinitions="Auto, Auto, Auto, *" RowSpacing="8">
         <Label
             Grid.Row="0"
-            Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
+            Text="The StringToListConverter splits a string into an array of substrings. This page sets its Separators to ',', '.' and ';' and removes empty entries."
             TextColor="{StaticResource NormalLabelTextColor}" />
 
         <Label

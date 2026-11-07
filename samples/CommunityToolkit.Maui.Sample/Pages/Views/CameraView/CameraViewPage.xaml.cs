@@ -38,7 +38,7 @@ public sealed partial class CameraViewPage : BasePage<CameraViewViewModel>
 			var microphonePermissionsRequest = await Permissions.RequestAsync<Permissions.Microphone>();
 			if (microphonePermissionsRequest is not PermissionStatus.Granted)
 			{
-				await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "Audio recording will not be available without the Microphone permission, and captured video will be silent.", "OK");
+				await Shell.Current.CurrentPage.DisplayAlertAsync("Microphone permission is not granted.", "On Android, video recording needs the Microphone permission. On iOS, Mac Catalyst and Windows, recorded videos will have no sound.", "OK");
 			}
 		}
 		catch (FileNotFoundException) when (OperatingSystem.IsWindows()) // Unpackaged Windows Apps do not generate the required file AppxManifest.xml 

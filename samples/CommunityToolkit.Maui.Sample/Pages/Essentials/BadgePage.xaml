@@ -60,7 +60,7 @@
             Grid.ColumnSpan="2"
             HorizontalTextAlignment="Center"
             FontAttributes="Bold"
-            Text="Note: Android requires device-specific implementation to support app icon badge counts. Windows shows the taskbar badge only for a packaged app. See the .NET MAUI Community Toolkit documentation for more information" />
+            Text="Note: Android requires device-specific implementation to support app icon badge counts. Windows shows the taskbar badge only for a packaged app, and this Sample is built unpackaged. See the .NET MAUI Community Toolkit documentation for more information" />
 
     </Grid>
     

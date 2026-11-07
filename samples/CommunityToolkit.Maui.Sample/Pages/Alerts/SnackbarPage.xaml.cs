@@ -88,6 +88,11 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	void Snackbar_Dismissed(object? sender, EventArgs e)
 	{
 		SnackbarShownStatus.Text = $"Snackbar dismissed. Snackbar.IsShown={Snackbar.IsShown}";
+
+		if (ReferenceEquals(sender, customSnackbar))
+		{
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
+		}
 	}
 
 	void Snackbar_Shown(object? sender, EventArgs e)
@@ -103,14 +108,14 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				.CenterHorizontal()
 				.Text("Display Snackbar");
 			button.Command = new AsyncRelayCommand(token => button.DisplaySnackbar(
-				"This Snackbar is anchored to the Display Snackbar button at the bottom of the Page to avoid clipping the Snackbar on the top of the Page.",
+				"On Android, iOS and Mac Catalyst, this Snackbar is anchored to the Display Snackbar button at the bottom of the Page to avoid clipping it at the top of the Page.",
 				() => { },
 				"Close",
 				TimeSpan.FromSeconds(5), token: token));
 
 			var backButton = new Button()
 				.CenterHorizontal()
-				.Text("Back to Snackbar MainPage");
+				.Text("Back to Snackbar Page");
 			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
 
 			var modalPage = new ContentPage

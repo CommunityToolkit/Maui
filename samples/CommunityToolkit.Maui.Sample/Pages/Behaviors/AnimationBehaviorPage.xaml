@@ -115,7 +115,7 @@
                     TextColor="Black" />
             </Border>
 
-            <Button Command="{Binding TriggerAnimationCommand}" Text="Animate the frame above" />
+            <Button Command="{Binding TriggerAnimationCommand}" Text="Animate the Border above" />
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

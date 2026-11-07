@@ -28,7 +28,7 @@
                  BackgroundColor="Transparent"/>
 
              <Label
-                 Text="This label should be true if the collection item is not null or not empty"
+                 Text="The label below is True when the list is not null and not empty"
                  TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label

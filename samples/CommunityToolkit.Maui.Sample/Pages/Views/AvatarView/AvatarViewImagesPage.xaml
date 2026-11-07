@@ -96,7 +96,7 @@
                 <Button
                     Margin="10"
                     Clicked="SetImageSourceButtonClicked"
-                    Text="Press me" />
+                    Text="Set Image Source" />
 
                 <mct:AvatarView
                     BorderColor="Red"

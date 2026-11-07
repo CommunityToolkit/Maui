@@ -501,7 +501,7 @@ public partial class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 						.Bind(Stepper.ValueProperty,
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingLeft,
 							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingLeft = value)
-						.Assign(out Stepper stepperPaddingLeft).SemanticHint("Change the rating view padding left."),
+						.Assign(out Stepper stepperPaddingLeft).SemanticHint("Change the left shape padding."),
 
 					new Label()
 						.Row(Row.PaddingLeftStepper).Column(Column.Result)
@@ -528,7 +528,7 @@ public partial class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingTop,
 							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingTop = value)
 						.Assign(out Stepper stepperPaddingTop)
-						.SemanticHint("Change the rating view padding top."),
+						.SemanticHint("Change the top shape padding."),
 
 					new Label()
 						.Row(Row.PaddingTopStepper).Column(Column.Result)
@@ -555,7 +555,7 @@ public partial class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingRight,
 							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingRight = value)
 						.Assign(out Stepper stepperPaddingRight)
-						.SemanticHint("Change the rating view padding right."),
+						.SemanticHint("Change the right shape padding."),
 
 					new Label()
 						.Row(Row.PaddingRightStepper).Column(Column.Result)
@@ -582,7 +582,7 @@ public partial class RatingViewCsharpPage : BasePage<RatingViewCsharpViewModel>
 							getter: static (RatingViewCsharpViewModel vm) => vm.RatingViewShapePaddingBottom,
 							setter: static (RatingViewCsharpViewModel vm, double value) => vm.RatingViewShapePaddingBottom = value)
 						.Assign(out Stepper stepperPaddingBottom)
-						.SemanticHint("Change the rating view padding bottom."),
+						.SemanticHint("Change the bottom shape padding."),
 
 					new Label()
 						.Row(Row.PaddingBottomStepper).Column(Column.Result)

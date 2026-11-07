@@ -104,7 +104,7 @@ public partial class MapsPinsPage : BasePage<MapsPinsViewModel>
 
 		microsoftPin.MarkerClicked += (s, a) =>
 		{
-			DisplayAlertAsync("Marker", "OK", "OK");
+			DisplayAlertAsync("Marker Clicked", "Microsoft Visitors Center", "OK");
 			a.HideInfoWindow = true;
 		};
 

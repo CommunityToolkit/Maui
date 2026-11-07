@@ -41,17 +41,17 @@ public partial class ToastPage : BasePage<ToastViewModel>
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(token => Toast.Make("Toast in a Modal MainPage").Show(token)) }
+						new Button { Command = new AsyncRelayCommand(token => Toast.Make("Toast in a Modal Page").Show(token)) }
 							.Top().CenterHorizontal()
 							.Text("Display Toast"),
 
 						new Label()
 							.Center().TextCenter()
-							.Text("This is a Modal MainPage"),
+							.Text("This is a Modal Page"),
 
 						new Button { Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync) }
 							.Bottom().CenterHorizontal()
-							.Text("Back to Toast MainPage")
+							.Text("Back to Toast Page")
 					}
 				}.Center()
 			}.Padding(12);

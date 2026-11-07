@@ -13,7 +13,7 @@
     <VerticalStackLayout Spacing="20">
         <Label Text="The EventToCommandBehavior is a behavior that allows the user to invoke an  ICommand through an event. It is designed to associate Commands to events exposed by controls that were not designed to support Commands. It allows you to map any arbitrary event on a control to a Command." TextColor="{StaticResource NormalLabelTextColor}" />
 
-        <Label Text="This sample demonstrates how to use EventToCommandBehavior. Here we observe Clicked event of the button and trigger IncrementCommand from ViewModel." />
+        <Label Text="This sample demonstrates how to use EventToCommandBehavior. Both buttons observe their Clicked event: the first triggers IncrementCommand, the second triggers IncrementWithArgsCommand and passes the EventArgs." />
 
         <Label Text="{Binding ClickCount, StringFormat='{0} clicks'}" />
 
@@ -30,7 +30,7 @@
         </Button>
 
         
-        <Button Text="Click Me (Pass event args)"
+        <Button Text="Increment (Pass EventArgs)"
                     TextColor="White"
                     BackgroundColor="{StaticResource NormalButtonBackgroundColor}"
                     x:Name="EventArgsButton">
