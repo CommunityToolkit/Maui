@@ -22,9 +22,9 @@ public partial class PopupsViewModel(IPopupService popupService) : BaseViewModel
 	}
 
 	[RelayCommand]
-	void OnUpdatingPopup()
+	async Task OnUpdatingPopup()
 	{
-		popupService.ShowPopup<UpdatingPopupViewModel>(currentNavigation);
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentNavigation);
 	}
 
 	[RelayCommand]
