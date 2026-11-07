@@ -31,6 +31,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
 		if (OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			platformView.DetachFromParentViewController();
