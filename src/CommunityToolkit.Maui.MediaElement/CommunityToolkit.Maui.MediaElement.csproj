@@ -7,6 +7,9 @@
     <SingleProject>true</SingleProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- Microsoft.Maui.Controls turns off the trim analyzer unless TrimMode is full (https://github.com/xamarin/xamarin-macios/pull/21351).
+         TrimMode has no other effect on a library, so set it to keep the trim analyzer enabled by IsAotCompatible. -->
+    <TrimMode>full</TrimMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     
