@@ -56,7 +56,7 @@
                     <Entry.Behaviors>
                         <mct:MultiValidationBehavior InvalidStyle="{StaticResource InvalidEntryStyle}"  
                                                      ValidStyle="{StaticResource ValidEntryStyle}"
-                                                     Flags="ValidateOnValueChanged">
+                                                     Flags="ValidateOnAttaching,ValidateOnValueChanged">
                             <mct:CharactersValidationBehavior x:Name="DigitValidation" 
                                                               CharacterType="Digit" 
                                                               MinimumCharacterTypeCount="1" 
