@@ -184,6 +184,8 @@ public class GravatarImageSourceTests : BaseViewTest
 	{
 		Button testControl = new()
 		{
+			WidthRequest = 37,
+			HeightRequest = 73,
 			ImageSource = new GravatarImageSource(),
 		};
 		testControl.Arrange(new Rect(0, 0, 37, 73));
@@ -196,11 +198,95 @@ public class GravatarImageSourceTests : BaseViewTest
 	{
 		Button testControl = new()
 		{
+			WidthRequest = 37,
+			HeightRequest = 73,
 			ImageSource = new GravatarImageSource() { Email = email },
 		};
 		testControl.Arrange(new Rect(0, 0, 37, 73));
 		Assert.True(testControl.ImageSource is GravatarImageSource);
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	[Fact]
+	public void ButtonWithoutSizeRequestsRequestsTheDefaultSize()
+	{
+		Button testControl = new()
+		{
+			ImageSource = new GravatarImageSource { Email = email },
+		};
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		Assert.Equal(new Uri($"https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s={GravatarImageSourceDefaults.GravatarSize}&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	// A Button sizes itself to its picture, so a request that followed the Button's laid-out size would grow with each picture.
+	[Fact]
+	public void ButtonThatGrowsForItsPictureRequestsTheSameSize()
+	{
+		var gravatarImageSource = new GravatarImageSource { Email = email };
+		Button testControl = new()
+		{
+			ImageSource = gravatarImageSource,
+		};
+		testControl.Arrange(new Rect(0, 0, 300, 44));
+		var requestedUri = gravatarImageSource.Uri;
+
+		testControl.Arrange(new Rect(0, 0, 300, 124));
+
+		Assert.Equal(new Uri($"https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s={GravatarImageSourceDefaults.GravatarSize}&d=mp"), requestedUri);
+		Assert.Equal(requestedUri, gravatarImageSource.Uri);
+	}
+
+	[Theory]
+	[InlineData(37d, 73d, 37)]
+	[InlineData(-1d, 44d, 44)]
+	[InlineData(120d, -1d, 120)]
+	public void ButtonRequestsTheSmallerOfItsSizeRequests(double widthRequest, double heightRequest, int expectedSize)
+	{
+		Button testControl = new()
+		{
+			WidthRequest = widthRequest,
+			HeightRequest = heightRequest,
+			ImageSource = new GravatarImageSource { Email = email },
+		};
+
+		Assert.Equal(new Uri($"https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s={expectedSize}&d=mp"), ((GravatarImageSource)testControl.ImageSource).Uri);
+	}
+
+	[Fact]
+	public void ButtonRequestsANewSizeWhenItsSizeRequestChanges()
+	{
+		Button testControl = new()
+		{
+			HeightRequest = 44,
+			ImageSource = new GravatarImageSource { Email = email },
+		};
+		var gravatarImageSource = (GravatarImageSource)testControl.ImageSource;
+
+		testControl.HeightRequest = 60;
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=60&d=mp"), gravatarImageSource.Uri);
+
+		testControl.HeightRequest = -1;
+		Assert.Equal(new Uri($"https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s={GravatarImageSourceDefaults.GravatarSize}&d=mp"), gravatarImageSource.Uri);
+	}
+
+	[Fact]
+	public void SourceMovedFromAButtonToAnImageRequestsTheSizeOfTheImage()
+	{
+		var gravatarImageSource = new GravatarImageSource { Email = email };
+		Button button = new()
+		{
+			ImageSource = gravatarImageSource,
+		};
+		button.ImageSource = null;
+
+		Image testControl = new()
+		{
+			Source = gravatarImageSource,
+		};
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), gravatarImageSource.Uri);
 	}
 
 	[Fact]

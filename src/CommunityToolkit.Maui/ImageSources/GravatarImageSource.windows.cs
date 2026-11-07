@@ -68,8 +68,8 @@ public partial class GravatarImageSource
 
 	// .NET MAUI keeps the picture of a Windows Button at its natural size only from BitmapImage.ImageOpened, which a BitmapImage decoded from a
 	// stream, like every GravatarImageSource picture, has already raised when the Button subscribes: the picture would fill the Button's width.
-	// The picture must also fit the room the Button already has: this source asks for a picture as large as the Button, so a Button that grew
-	// for its picture would ask for a larger one each time.
+	// The picture must also fit the room the Button already has: a larger picture, such as the 80-pixel one that a Button without size
+	// requests asks for, would make the Button grow for it.
 	void FitHostButtonImage()
 	{
 		if (hostButtonImage is null || hostButton?.Handler?.PlatformView is not WButton platformButton)

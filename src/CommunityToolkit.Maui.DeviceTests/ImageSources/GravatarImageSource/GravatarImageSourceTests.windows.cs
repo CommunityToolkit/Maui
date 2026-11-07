@@ -31,8 +31,8 @@ public partial class GravatarImageSourceTests
 		Assert.Equal((pictureSize, pictureSize), decodedSize);
 	}
 
-	// A picture is requested at the size of its Button and the Button has no size request for Left and Right, so a picture that fills the Button's
-	// width, like the one .NET MAUI draws for a picture decoded from a stream, is wider than the Button's text line is tall.
+	// .NET MAUI draws a picture decoded from a stream as wide as its Button, and a Button without a size request for Left and Right is wider
+	// than its text line is tall.
 	[Theory]
 	[InlineData(Button.ButtonContentLayout.ImagePosition.Left)]
 	[InlineData(Button.ButtonContentLayout.ImagePosition.Right)]
@@ -61,7 +61,7 @@ public partial class GravatarImageSourceTests
 		}, checkGrowth: false, pictureBeforeFirstLayout: false);
 	}
 
-	// The picture is requested at the size of its Button, so a Button that grew for its picture would request a larger one each time.
+	// A Button sizes itself to its picture: a picture larger than the room the Button has would make the Button grow.
 	[Theory]
 	[InlineData(Button.ButtonContentLayout.ImagePosition.Left, false)]
 	[InlineData(Button.ButtonContentLayout.ImagePosition.Right, false)]
@@ -136,7 +136,7 @@ public partial class GravatarImageSourceTests
 		// its picture.
 		source.Stream = async token =>
 		{
-			// The Uri gains the Button's size as soon as the Button has one, before the gate opens: it must be read when the picture is requested.
+			// The Uri gains its size when the source is set on the Button, before the gate opens: it must be read when the picture is requested.
 			var isSizedRequest = source.Uri.Query.Contains("s=", StringComparison.Ordinal);
 			await firstLayoutDone.Task.WaitAsync(token);
 
@@ -211,10 +211,13 @@ public partial class GravatarImageSourceTests
 				var image = GetNativeImage((IPlatformViewHandler)button.Handler);
 				Assert.NotNull(image);
 
-				// A load that starts cancels the one before it, so a picture set once a sized request has passed the gate is the picture of the Button's size,
-				// even when it is the first one the Button shows.
-				var showedSizedPicture = false;
-				var sourceCallbackToken = image.RegisterPropertyChangedCallback(WImage.SourceProperty, (_, _) => showedSizedPicture |= Volatile.Read(ref sizedRequests) > 0 && image.Source is BitmapSource { PixelHeight: > 0 });
+				// A load that starts cancels the one before it, so a picture set once a sized request has passed the gate is the picture of the size
+				// the source asks for in a Button, even when it is the first one the Button shows. The source asks for that size as soon as it is set
+				// on the Button, so with a picture before the first layout that picture can be showing already.
+				var showedSizedPicture = HasSizedPicture();
+				var sourceCallbackToken = image.RegisterPropertyChangedCallback(WImage.SourceProperty, (_, _) => showedSizedPicture |= HasSizedPicture());
+
+				bool HasSizedPicture() => Volatile.Read(ref sizedRequests) > 0 && image.Source is BitmapSource { PixelHeight: > 0 };
 
 				if (!pictureBeforeFirstLayout)
 				{
@@ -238,12 +241,14 @@ public partial class GravatarImageSourceTests
 			{
 				firstLayoutDone.TrySetResult();
 
-				// Once its Button has a size, the source raises SourceChanged 737 ms later, after this test has ended and its MauiApp is disposed: the
-				// handler would then load the source with disposed services and crash the app.
+				// Once it is set on the Button, the source raises SourceChanged 737 ms later, after this test may have ended and its MauiApp is disposed:
+				// the handler would then load the source with disposed services and crash the app.
 				button.ImageSource = null;
 			}
 		});
 	}
+
+	static bool HasAnyPicture(IPlatformViewHandler handler) => GetNativeImage(handler)?.Source is BitmapSource { PixelHeight: > 0 };
 
 	static bool HasPicture(IPlatformViewHandler handler) => GetNativeImage(handler)?.Source is BitmapImage { PixelWidth: pictureSize, PixelHeight: pictureSize };
 

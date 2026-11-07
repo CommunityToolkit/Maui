@@ -1,5 +1,11 @@
+using System.Buffers.Binary;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.IO.Compression;
 using System.Net;
+using System.Text;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.ImageSources;
 using CommunityToolkit.Maui.Views;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 
@@ -82,6 +88,61 @@ public partial class GravatarImageSourceTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
+	// Gravatar answers with a picture of the requested size, and a Button sizes itself to its picture: a picture requested at the Button's
+	// laid-out size made the Button larger and requested a larger picture each time, until the Button was as wide as its layout.
+	[Fact]
+	public async Task ButtonDoesNotKeepGrowingForItsGravatarPicture()
+	{
+		SetupBuilder();
+		var requestedSizes = new ConcurrentQueue<int>();
+		var source = new GravatarImageSource { Email = "a@example.org" };
+
+		// Like the default Stream function, the stub reads the Uri when the picture is requested.
+		source.Stream = _ =>
+		{
+			var size = GetRequestedSize(source.Uri);
+			requestedSizes.Enqueue(size);
+			return Task.FromResult<Stream>(new MemoryStream(CreateSquarePng(size)));
+		};
+
+		var button = new Button { Text = "Button", ImageSource = source };
+		var reference = new Button { Text = "Button" };
+		var layout = new VerticalStackLayout { WidthRequest = 300, Children = { reference, button } };
+
+		await AttachAndRun(layout, async handler =>
+		{
+			try
+			{
+				await layout.OnLoadedAsync();
+
+				// On Windows, a view that is not loaded cannot be measured by InitializeViewHandler, and no MAUI parent lays this layout out later.
+				if (!await AssertHelpers.Wait(() => button.Width > 0 && button.Height > 0, timeout: pictureTimeout))
+				{
+					var size = ((IView)layout).Measure(layout.WidthRequest, double.PositiveInfinity);
+					((IView)layout).Arrange(new Rect(0, 0, size.Width, size.Height));
+				}
+
+				await AssertEventually(() => button.Height > 0 && reference.Height > 0 && button.Handler is IPlatformViewHandler buttonHandler && HasAnyPicture(buttonHandler), timeout: pictureTimeout, message: "The Button never showed a picture.");
+
+				// The source waits 737 ms after a size change before it asks for a new picture, so a Button that keeps growing asks for one in every window.
+				await Task.Delay(TimeSpan.FromMilliseconds(737 * 3));
+				var settledHeight = button.Height;
+				var settledRequestCount = requestedSizes.Count;
+				await Task.Delay(TimeSpan.FromMilliseconds(737 * 2));
+
+				var message = $"Requested sizes {string.Join(", ", requestedSizes)}; the Button is {button.Width}x{button.Height} DIP, {settledHeight} DIP a moment before, the same Button without a picture {reference.Height} DIP.";
+				Assert.True(requestedSizes.Count == settledRequestCount, message);
+				Assert.True(Math.Abs(button.Height - settledHeight) <= 0.5, message);
+				Assert.True(button.Height <= reference.Height + GravatarImageSourceDefaults.GravatarSize + 1, message);
+			}
+			finally
+			{
+				// The source raises SourceChanged 737 ms after a change, which could reach a handler whose MauiApp this test has disposed.
+				button.ImageSource = null;
+			}
+		});
+	}
+
 	static View CreatePictureView(PictureKind kind, StreamImageSource source) => kind switch
 	{
 		PictureKind.Image => new Image { Source = source, WidthRequest = 40, HeightRequest = 40 },
@@ -98,6 +159,72 @@ public partial class GravatarImageSourceTests : CommunityToolkitHandlerTestBase
 		AvatarView => false,
 		_ => HasPicture(handler),
 	};
+
+	// Gravatar answers a Uri without a size with its default size.
+	static int GetRequestedSize(Uri uri) => uri.Query.TrimStart('?').Split('&')
+		.Select(static parameter => parameter.Split('='))
+		.Where(static pair => pair is ["s", _])
+		.Select(static pair => int.Parse(pair[1], CultureInfo.InvariantCulture))
+		.DefaultIfEmpty(GravatarImageSourceDefaults.GravatarSize)
+		.First();
+
+	// A solid red square PNG of any size, because Gravatar answers with a picture of the requested size.
+	static byte[] CreateSquarePng(int size)
+	{
+		using var pixels = new MemoryStream();
+		using (var zlib = new ZLibStream(pixels, CompressionLevel.Fastest, leaveOpen: true))
+		{
+			// PNG starts each row with its filter type: 0, none.
+			var row = new byte[1 + (size * 3)];
+			for (var x = 0; x < size; x++)
+			{
+				row[1 + (x * 3)] = 0xFF;
+			}
+
+			for (var y = 0; y < size; y++)
+			{
+				zlib.Write(row);
+			}
+		}
+
+		using var png = new MemoryStream();
+		png.Write([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+		WritePngChunk(png, "IHDR", [.. ToBigEndian(size), .. ToBigEndian(size), 8, 2, 0, 0, 0]);
+		WritePngChunk(png, "IDAT", pixels.ToArray());
+		WritePngChunk(png, "IEND", []);
+
+		return png.ToArray();
+	}
+
+	static void WritePngChunk(Stream png, string type, byte[] data)
+	{
+		byte[] typeAndData = [.. Encoding.ASCII.GetBytes(type), .. data];
+		png.Write(ToBigEndian(data.Length));
+		png.Write(typeAndData);
+		png.Write(ToBigEndian(unchecked((int)Crc32(typeAndData))));
+	}
+
+	static byte[] ToBigEndian(int value)
+	{
+		var bytes = new byte[4];
+		BinaryPrimitives.WriteInt32BigEndian(bytes, value);
+		return bytes;
+	}
+
+	static uint Crc32(byte[] bytes)
+	{
+		var crc = 0xFFFFFFFFu;
+		foreach (var value in bytes)
+		{
+			crc ^= value;
+			for (var bit = 0; bit < 8; bit++)
+			{
+				crc = (crc & 1) is 1 ? (crc >> 1) ^ 0xEDB88320u : crc >> 1;
+			}
+		}
+
+		return ~crc;
+	}
 
 	// A real server answers with a stream that cannot seek, which a MemoryStream does not reproduce.
 	sealed class PictureHandler(string pngBase64 = redPngBase64) : HttpMessageHandler

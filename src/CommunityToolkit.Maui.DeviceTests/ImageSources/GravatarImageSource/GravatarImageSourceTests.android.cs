@@ -5,6 +5,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class GravatarImageSourceTests
 {
+	static bool HasAnyPicture(IPlatformViewHandler handler) => HasPicture(handler);
+
 	static bool HasPicture(IPlatformViewHandler handler) => handler.PlatformView switch
 	{
 		AImageView imageView => imageView.Drawable is not null,

@@ -39,6 +39,11 @@ public enum DefaultImage
 /// A load that you start with <see cref="CancellationToken.None"/> never throws it, and .NET MAUI catches it for the loads that it cancels itself.
 /// <see cref="ImageSource.Cancel"/> ends the loads that were started without a cancelable token, which then return <see cref="System.IO.Stream.Null"/>.
 /// </para>
+/// <para>
+/// The picture is requested at the smaller of the width and the height of the view that shows it. A <see cref="Button"/> sizes itself to its
+/// picture, so for a <see cref="Button"/> the picture is requested at the smaller of the <see cref="VisualElement.WidthRequest"/> and the
+/// <see cref="VisualElement.HeightRequest"/> that the Button sets, or at 80 pixels when it sets neither.
+/// </para>
 /// </remarks>
 public partial class GravatarImageSource : StreamImageSource, IStreamImageSource, IDisposable
 {
@@ -88,11 +93,11 @@ public partial class GravatarImageSource : StreamImageSource, IStreamImageSource
 	[System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.Controls.UriTypeConverter))]
 	public Uri Uri { get; set; } = GravatarImageSourceDefaults.Uri;
 
-	/// <summary>Gets the parent height.</summary>
+	/// <summary>Gets the parent height, or the <see cref="VisualElement.HeightRequest"/> of a parent <see cref="Button"/>.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
 	internal partial int ParentHeight { get; set; } = GravatarImageSourceDefaults.ParentHeight;
 
-	/// <summary>Gets the parent width.</summary>
+	/// <summary>Gets the parent width, or the <see cref="VisualElement.WidthRequest"/> of a parent <see cref="Button"/>.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnSizePropertyChanged))]
 	internal partial int ParentWidth { get; set; } = GravatarImageSourceDefaults.ParentWidth;
 
@@ -203,6 +208,18 @@ public partial class GravatarImageSource : StreamImageSource, IStreamImageSource
 			return;
 		}
 
+		if (parentElement is Button)
+		{
+			// A Button sizes itself to its picture, so a picture requested at the Button's laid-out size made the Button larger, which requested a
+			// larger picture, until the Button was as wide as the screen. Its size requests are sizes that its picture cannot change.
+			SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: parentElement, mode: BindingMode.OneWay));
+			SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: parentElement, mode: BindingMode.OneWay));
+
+			// A binding raises no change when a request equals the value the property already has.
+			RequestButtonPicture();
+			return;
+		}
+
 		SetBinding(ParentWidthProperty, BindingBase.Create<VisualElement, double>(static p => p.Width, source: parentElement, mode: BindingMode.OneWay));
 		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement, mode: BindingMode.OneWay));
 	}
@@ -234,12 +251,20 @@ public partial class GravatarImageSource : StreamImageSource, IStreamImageSource
 
 	static async void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
+		var gravatarImageSource = (GravatarImageSource)bindable;
+
+		// For a Button these are its size requests, and a request that is removed (-1) changes the size of its picture too.
+		if (gravatarImageSource.Parent is Button)
+		{
+			gravatarImageSource.RequestButtonPicture();
+			return;
+		}
+
 		if (newValue is not (int intNewValue and > -1))
 		{
 			return;
 		}
 
-		var gravatarImageSource = (GravatarImageSource)bindable;
 		if (gravatarImageSource.GravatarSize is null)
 		{
 			gravatarImageSource.GravatarSize = intNewValue;
@@ -248,6 +273,21 @@ public partial class GravatarImageSource : StreamImageSource, IStreamImageSource
 
 		gravatarImageSource.GravatarSize = Math.Min(gravatarImageSource.ParentWidth, gravatarImageSource.ParentHeight);
 		await gravatarImageSource.HandleNewUriRequested(gravatarImageSource.Email, gravatarImageSource.Image, CancellationToken.None);
+	}
+
+	// OnParentSet cannot await.
+	async void RequestButtonPicture()
+	{
+		// A size request that is not set is -1.
+		GravatarSize = (ParentWidth, ParentHeight) switch
+		{
+			( > -1, > -1) => Math.Min(ParentWidth, ParentHeight),
+			( > -1, _) => ParentWidth,
+			(_, > -1) => ParentHeight,
+			_ => GravatarImageSourceDefaults.GravatarSize,
+		};
+
+		await HandleNewUriRequested(Email, Image, CancellationToken.None);
 	}
 
 	Task HandleNewUriRequested(string? email, DefaultImage image, CancellationToken token)
