@@ -12,6 +12,11 @@
 //                 GetImageFromCurrentImageContext return nullable types in the iOS and Mac Catalyst bindings of .NET 11 and of
 //                 26.4 or later on .NET 10 (the 26.0 bindings that net10.0-ios and net10.0-maccatalyst compile against return
 //                 non-null types), so the upstream code fails CS8604 and CS8619 (nullable warnings are errors).
+// Toolkit change: AssertContainsColor and AssertDoesNotContainColor render the image once and compare its bytes on the calling thread.
+//                 Upstream renders the whole image again and creates a UIColor for every pixel, on the thread pool, where the CoreCLR
+//                 runtime of iOS and Mac Catalyst (.NET 11) can collect that UIColor while its CGColor is read (dotnet/macios#10146): a
+//                 .NET 11 run crashed there on iOS and hung on Mac Catalyst. dotnet/maui reads the bytes once in AssertContainsColor only
+//                 (dotnet/maui#36121); GetPixel and GetPixelData are its code, except that a missing CGImage throws.
 #nullable enable
 using System;
 using System.Threading;
@@ -29,6 +34,11 @@ namespace CommunityToolkit.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
+		const int PixelComponentCount = 4;
+
+		// ColorComparison.ARGBEquivalent's default, which upstream compares every pixel with.
+		const double MinColorTolerance = 0.000001;
+
 		public static bool IsLoadedOnPlatform(this UIView view) => view.Window is not null;
 
 		public static async Task WaitForFocused(this UIView view, int timeout = 1000)
@@ -289,26 +299,9 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		public static byte[] GetPixel(this UIImage bitmap, int x, int y)
 		{
-			var cgImage = bitmap.CGImage!;
-			var width = cgImage.Width;
-			var height = cgImage.Height;
-			var colorSpace = CGColorSpace.CreateDeviceRGB();
-			var bitsPerComponent = 8;
-			var bytesPerRow = 4 * width;
-			var componentCount = 4;
+			var dataBytes = GetPixelData(bitmap, out _, out _, out var bytesPerRow);
 
-			var dataBytes = new byte[width * height * componentCount];
-
-			using var context = new CGBitmapContext(
-				dataBytes,
-				width, height,
-				bitsPerComponent, bytesPerRow,
-				colorSpace,
-				CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast);
-
-			context.DrawImage(new CGRect(0, 0, width, height), cgImage);
-
-			var pixelLocation = (bytesPerRow * y) + componentCount * x;
+			var pixelLocation = (bytesPerRow * y) + PixelComponentCount * x;
 
 			var pixel = new byte[]
 			{
@@ -319,6 +312,69 @@ namespace CommunityToolkit.Maui.DeviceTests
 			};
 
 			return pixel;
+		}
+
+		static byte[] GetPixelData(UIImage bitmap, out int width, out int height, out int bytesPerRow)
+		{
+			var cgImage = bitmap.CGImage ?? throw new InvalidOperationException("The bitmap has no CGImage.");
+			width = (int)cgImage.Width;
+			height = (int)cgImage.Height;
+			bytesPerRow = PixelComponentCount * width;
+
+			var dataBytes = new byte[width * height * PixelComponentCount];
+			using var colorSpace = CGColorSpace.CreateDeviceRGB();
+			using var context = new CGBitmapContext(
+				dataBytes,
+				width,
+				height,
+				8,
+				bytesPerRow,
+				colorSpace,
+				CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast);
+
+			context.DrawImage(new CGRect(0, 0, width, height), cgImage);
+			return dataBytes;
+		}
+
+		// Keeps upstream's scan, column by column with the Width and Height of the rect as its right and bottom edges, so the results and the
+		// pixel a failure names stay the same.
+		static (int X, int Y)? FindPixel(UIImage bitmap, Func<Microsoft.Maui.Graphics.RectF, Microsoft.Maui.Graphics.RectF>? withinRectModifier, UIColor color, double tolerance)
+		{
+			var imageRect = new Microsoft.Maui.Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			var left = (int)imageRect.X;
+			var top = (int)imageRect.Y;
+			var right = (int)imageRect.Width;
+			var bottom = (int)imageRect.Height;
+
+			// Upstream renders nothing when it scans no pixel, and an empty image (ToBitmap makes one for a view without a size) cannot be rendered.
+			if (left >= right || top >= bottom)
+			{
+				return null;
+			}
+
+			var pixelData = GetPixelData(bitmap, out _, out _, out var bytesPerRow);
+			color.GetRGBA(out var red, out var green, out var blue, out var alpha);
+
+			for (int x = left; x < right; x++)
+			{
+				for (int y = top; y < bottom; y++)
+				{
+					var pixelLocation = (bytesPerRow * y) + PixelComponentCount * x;
+					if (Math.Abs(pixelData[pixelLocation] / 255.0 - red) <= tolerance
+						&& Math.Abs(pixelData[pixelLocation + 1] / 255.0 - green) <= tolerance
+						&& Math.Abs(pixelData[pixelLocation + 2] / 255.0 - blue) <= tolerance
+						&& Math.Abs(pixelData[pixelLocation + 3] / 255.0 - alpha) <= tolerance)
+					{
+						return (x, y);
+					}
+				}
+			}
+
+			return null;
 		}
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y, double? tolerance = null)
@@ -404,26 +460,12 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		public static Task<UIImage> AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Func<Microsoft.Maui.Graphics.RectF, Microsoft.Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
-			return Task.Run(() =>
+			if (FindPixel(bitmap, withinRectModifier, expectedColor, tolerance ?? MinColorTolerance) is not null)
 			{
-				var imageRect = new Microsoft.Maui.Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+				return Task.FromResult(bitmap);
+			}
 
-				if (withinRectModifier is not null)
-					imageRect = withinRectModifier.Invoke(imageRect);
-
-				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
-				{
-					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
-					{
-						if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor, tolerance))
-						{
-							return bitmap;
-						}
-					}
-				}
-
-				throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
-			});
+			return Task.FromException<UIImage>(new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found.")));
 		}
 
 		public static Task<UIImage> AssertDoesNotContainColor(this UIImage bitmap, Microsoft.Maui.Graphics.Color unexpectedColor, Func<Microsoft.Maui.Graphics.RectF, Microsoft.Maui.Graphics.RectF>? withinRectModifier = null)
@@ -431,26 +473,14 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		public static Task<UIImage> AssertDoesNotContainColor(this UIImage bitmap, UIColor unexpectedColor, Func<Microsoft.Maui.Graphics.RectF, Microsoft.Maui.Graphics.RectF>? withinRectModifier = null)
 		{
-			return Task.Run(() =>
+			var found = FindPixel(bitmap, withinRectModifier, unexpectedColor, MinColorTolerance);
+
+			if (found.HasValue)
 			{
-				var imageRect = new Microsoft.Maui.Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+				return Task.FromException<UIImage>(new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {found.Value.X}, {found.Value.Y}.")));
+			}
 
-				if (withinRectModifier is not null)
-					imageRect = withinRectModifier.Invoke(imageRect);
-
-				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
-				{
-					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
-					{
-						if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), unexpectedColor))
-						{
-							throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
-						}
-					}
-				}
-
-				return bitmap;
-			});
+			return Task.FromResult(bitmap);
 		}
 
 		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)

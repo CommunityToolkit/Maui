@@ -4,6 +4,7 @@
 // Toolkit change: namespace changed from Microsoft.Maui(.DeviceTests) to CommunityToolkit.Maui.DeviceTests.
 // Toolkit change: renamed to the toolkit's platform suffix (ColorComparison.macios.cs).
 // Toolkit change: #nullable enable added: the upstream project enables nullable reference types, these copies are compiled as generated code.
+// Toolkit change: ARGBEquivalent keeps both colors alive until GetRGBA has returned (the comment there says why).
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,13 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 			color1.GetRGBA(out nfloat red1, out nfloat green1, out nfloat blue1, out nfloat alpha1);
 			color2.GetRGBA(out nfloat red2, out nfloat green2, out nfloat blue2, out nfloat alpha2);
+
+			// GetRGBA reads the CGColor of the native UIColor, and the bindings do not keep the managed UIColor alive meanwhile
+			// (dotnet/macios#10146). CoreCLR, the runtime of iOS and Mac Catalyst from .NET 11 on, can then collect a color that nothing else
+			// references, such as the one ColorAtPoint returns, during the call; off the main thread, the release that its finalizer queues to
+			// the main thread can free that CGColor while it is still read.
+			GC.KeepAlive(color1);
+			GC.KeepAlive(color2);
 
 			return Equal(red1, red2, tolerance.Value)
 				&& Equal(green1, green2, tolerance.Value)
