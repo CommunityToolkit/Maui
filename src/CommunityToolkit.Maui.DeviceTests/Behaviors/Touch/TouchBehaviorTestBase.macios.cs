@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Behaviors;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
@@ -15,6 +16,7 @@ public abstract partial class TouchBehaviorTestBase
 
 	UITouch? activeTouch;
 	UIEvent? activeEvent;
+	readonly ReduceMotionTickerOverride reduceMotionOverride = new();
 
 	protected static bool SupportsNativePointerInput => true;
 
@@ -54,8 +56,17 @@ public abstract partial class TouchBehaviorTestBase
 	// Managed objects with a native peer are released by the normal collections.
 	protected static Task ReleaseNativeReferencesAsync() => Task.CompletedTask;
 
-	// Core Animation always animates: there is no system switch that makes MAUI skip animations.
-	protected Task EnableAnimationsAsync(IPlatformViewHandler handler) => Task.CompletedTask;
+	// With Reduce Motion on, MAUI 11 jumps to the end of every animation, so no timing or intermediate step could be observed.
+	protected async Task EnableAnimationsAsync(IPlatformViewHandler handler)
+	{
+		string? error = null;
+		await InvokeOnMainThreadAsync(() => error = reduceMotionOverride.TryEnable(handler));
+
+		Skip.If(error is not null, $"Reduce Motion is on and MAUI's animations could not be switched on for this process ({error}), so MAUI jumps to the end of every animation.");
+
+		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker;
+		Assert.True(ticker is null || ticker.SystemEnabled, "MAUI's ticker must see the enabled animations.");
+	}
 
 	protected static (UIView Parent, UIView Child) CreateDetachedPlatformViews()
 	{
@@ -310,7 +321,7 @@ public abstract partial class TouchBehaviorTestBase
 	ValueTask PlatformDisposeAsync()
 	{
 		ReleaseTouch();
-		return ValueTask.CompletedTask;
+		return new ValueTask(InvokeOnMainThreadAsync(reduceMotionOverride.Restore));
 	}
 
 	protected static UITouch CreateTouch(UIView view, double x, double y, UITouchPhase phase)
