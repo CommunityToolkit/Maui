@@ -77,6 +77,26 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
 	}
 
+	[Theory]
+	[InlineData("istanbul", TextCaseType.FirstUpperRestLower, "tr-TR", "İstanbul")]
+	[InlineData("ISTANBUL", TextCaseType.Lower, "tr-TR", "ıstanbul")]
+	[InlineData("istanbul", TextCaseType.Upper, "tr-TR", "İSTANBUL")]
+	[InlineData("ISTANBUL", TextCaseType.Lower, "az-Latn-AZ", "ıstanbul")]
+	[InlineData("istanbul", TextCaseType.Upper, "en-US", "ISTANBUL")]
+	[InlineData("istanbul", TextCaseType.FirstUpperRestLower, null, "Istanbul")]
+	[InlineData("ISTANBUL", TextCaseType.Lower, null, "istanbul")]
+	public void TextCaseConverter_UsesCultureCasingRules(string value, TextCaseType textCaseType, string? cultureName, string expectedResult)
+	{
+		var textCaseConverter = new TextCaseConverter();
+		var culture = cultureName is null ? null : new CultureInfo(cultureName);
+
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value, typeof(string), textCaseType, culture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value, textCaseType, culture);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
 	[Fact]
 	public void TextCaseConverterDefaultValues()
 	{
@@ -92,7 +112,7 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	{
 		var textCaseConverter = new TextCaseConverter();
 
-		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.InvariantCulture);
 		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), comparedValue);
 
 		Assert.Equal(expectedResult, convertResult);
@@ -110,7 +130,7 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 			Type = textCaseType.Value
 		};
 
-		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.InvariantCulture);
 		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString());
 
 		Assert.Equal(expectedResult, convertResult);

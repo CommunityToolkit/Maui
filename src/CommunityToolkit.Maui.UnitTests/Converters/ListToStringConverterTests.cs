@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -114,4 +115,26 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 	}
 
 	protected override object? GetInvalidConvertFromValue() => null;
+
+	[Theory]
+	[InlineData("de-DE", "1,5;2,5")]
+	[InlineData("en-US", "1.5;2.5")]
+	[InlineData(null, "1.5;2.5")]
+	public void ListToStringConverter_FormatsFormattableItemsWithPassedCulture(string? cultureName, string expectedResult)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("en-US");
+			var culture = cultureName is null ? null : new CultureInfo(cultureName);
+
+			var result = new ListToStringConverter().ConvertFrom(new List<double> { 1.5, 2.5 }, ";", culture);
+
+			Assert.Equal(expectedResult, result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
+	}
 }
