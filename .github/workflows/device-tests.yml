@@ -105,7 +105,7 @@ jobs:
                     echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
                     wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
 
-            # global.json rolls forward to the newest SDK on the runner (10.0.403 on ubuntu-24.04, not the 10.0.100 that setup-dotnet installs),
+            # global.json rolls forward to the newest SDK on the runner, which can be newer than the one setup-dotnet installs (TOOLKIT_NET_VERSION),
             # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
             # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
             -   name: Cache .NET workload packs
