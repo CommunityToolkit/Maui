@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui;
 /// <summary>
 /// This class contains CameraView's <see cref="MauiAppBuilder"/> extensions.
 /// </summary>
-[SupportedOSPlatform("windows10.0.10240.0")]
+[SupportedOSPlatform("windows10.0.17763.0")]
 [SupportedOSPlatform("android24.0")]
 [SupportedOSPlatform("ios15.0")]
 [SupportedOSPlatform("maccatalyst17.0")]
