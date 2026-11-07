@@ -20,6 +20,14 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <!-- .NET MAUI 11 makes CollectionViewHandler2 (a WinUI ItemsView) the Windows default. It throws COMException 0x800F1000, which ends the
+       app, when an item root that needs a WrapperView after it loaded is wrapped (a Label or Image whose Background TouchBehavior sets),
+       and the Windows CollectionView and Expander tests target the ListView handler. Remove once the toolkit mitigates
+       https://github.com/CommunityToolkit/Maui/issues/3375 -->
+  <PropertyGroup>
+    <UseWindowsCollectionView2Handler>false</UseWindowsCollectionView2Handler>
+  </PropertyGroup>
+
   <!-- UIKit's thread checks, which the SDK keeps in Debug builds only: six tests verify that the toolkit lets UIKitThreadAccessException
        through when it is called off the main thread, and CI runs the device tests in Release. -->
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
