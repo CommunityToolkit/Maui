@@ -31,7 +31,7 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// <inheritdoc/>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
-		if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		if (OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			platformView.DetachFromParentViewController();
 		}

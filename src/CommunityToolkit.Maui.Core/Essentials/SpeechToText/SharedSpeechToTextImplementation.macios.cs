@@ -49,10 +49,7 @@ public sealed partial class SpeechToTextImplementation
 	static void InitializeAvAudioSession(out AVAudioSession sharedAvAudioSession)
 	{
 		sharedAvAudioSession = AVAudioSession.SharedInstance();
-		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
-		{
-			sharedAvAudioSession.SetSupportsMultichannelContent(true, out _);
-		}
+		sharedAvAudioSession.SetSupportsMultichannelContent(true, out _);
 
 		sharedAvAudioSession.SetCategory(
 			AVAudioSessionCategory.PlayAndRecord,

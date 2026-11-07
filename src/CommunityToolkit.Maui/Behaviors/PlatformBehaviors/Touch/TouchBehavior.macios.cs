@@ -25,11 +25,8 @@ public partial class TouchBehavior
 
 		platformView.AddGestureRecognizer(touchGesture);
 
-		if (OperatingSystem.IsIOSVersionAtLeast(13))
-		{
-			hoverGesture = new UIHoverGestureRecognizer(OnHover);
-			platformView.AddGestureRecognizer(hoverGesture);
-		}
+		hoverGesture = new UIHoverGestureRecognizer(OnHover);
+		platformView.AddGestureRecognizer(hoverGesture);
 
 		platformView.UserInteractionEnabled = true;
 	}

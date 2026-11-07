@@ -82,7 +82,6 @@ public class MauiMediaElement : UIView
 	/// here to avoid leaving a stale/disposed child controller in the parent view controller.
 	/// </remarks>
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	public void DetachFromParentViewController()
 	{
 		if (playerViewController.ParentViewController is not null)
@@ -100,7 +99,7 @@ public class MauiMediaElement : UIView
 
 	void TryAttachToParentViewController(bool forceReattach = false)
 	{
-		if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		if (!OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			return;
 		}
@@ -139,7 +138,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	bool IsAdditionalSafeAreaInsetsStale(UIView parentView)
 	{
 		UIEdgeInsets expected = CreateSafeAreaInsets(parentView);
@@ -152,14 +150,12 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	void ApplySafeAreaInsets(UIView parentView)
 	{
 		playerViewController.AdditionalSafeAreaInsets = CreateSafeAreaInsets(parentView);
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
 	{
 		UIEdgeInsets insets = parentView.SafeAreaInsets;
@@ -167,7 +163,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
 	{
 		viewController = GetViewControllerFromResponderChain();
@@ -175,7 +170,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	UIViewController? GetViewControllerFromResponderChain()
 	{
 		for (UIResponder? responder = NextResponder; responder is not null; responder = responder.NextResponder)

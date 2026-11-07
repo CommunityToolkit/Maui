@@ -1,5 +1,4 @@
-﻿using System.Runtime.Versioning;
-using Android.Content;
+﻿using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Camera.Core;
@@ -48,7 +47,6 @@ public class CameraConsumer : Object, IConsumer
 		}
 	}
 }
-[SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
 	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");

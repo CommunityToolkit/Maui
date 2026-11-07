@@ -4,8 +4,8 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFileSaver" />
-[SupportedOSPlatform("iOS14.0")]
-[SupportedOSPlatform("MacCatalyst14.0")]
+[SupportedOSPlatform("iOS")]
+[SupportedOSPlatform("MacCatalyst")]
 public sealed partial class FileSaverImplementation : IFileSaver
 {
 	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)

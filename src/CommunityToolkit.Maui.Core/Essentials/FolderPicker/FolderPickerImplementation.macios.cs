@@ -6,8 +6,8 @@ using UniformTypeIdentifiers;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFolderPicker" />
-[SupportedOSPlatform("iOS14.0")]
-[SupportedOSPlatform("MacCatalyst14.0")]
+[SupportedOSPlatform("iOS")]
+[SupportedOSPlatform("MacCatalyst")]
 public sealed partial class FolderPickerImplementation : IFolderPicker
 {
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)

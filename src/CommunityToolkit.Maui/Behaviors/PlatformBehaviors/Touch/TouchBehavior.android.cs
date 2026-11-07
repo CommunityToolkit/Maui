@@ -1,11 +1,9 @@
 using Android.Content;
-using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Platform;
-using static System.OperatingSystem;
 using AView = Android.Views.View;
 using MColor = Microsoft.Maui.Graphics.Color;
 using Trace = System.Diagnostics.Trace;
@@ -54,11 +52,6 @@ public partial class TouchBehavior
 			accessibilityListener = new AccessibilityListener(this);
 			accessibilityManager.AddAccessibilityStateChangeListener(accessibilityListener);
 			accessibilityManager.AddTouchExplorationStateChangeListener(accessibilityListener);
-		}
-
-		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop))
-		{
-			return;
 		}
 
 		platformView.Clickable = true;

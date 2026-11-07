@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.Versioning;
-using Android.Content;
+﻿using Android.Content;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
@@ -13,7 +11,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// Initialize <see cref="MauiSemanticOrderView"/>
 /// </remarks>
 /// <param name="context">Android Context</param>
-[SupportedOSPlatform("Android22.0")]
 public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 {
 	internal ISemanticOrderView? VirtualView
@@ -55,15 +52,8 @@ public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 				view2.Id = GenerateViewId();
 			}
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(22))
-			{
-				view2.AccessibilityTraversalAfter = view1.Id;
-				view1.AccessibilityTraversalBefore = view2.Id;
-			}
-			else
-			{
-				Trace.WriteLine($"{nameof(ISemanticOrderView)} is only supported on Android 22.0 and higher");
-			}
+			view2.AccessibilityTraversalAfter = view1.Id;
+			view1.AccessibilityTraversalBefore = view2.Id;
 		}
 	}
 

@@ -11,20 +11,6 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 
 static partial class NavigationBar
 {
-	static readonly Lazy<bool> isSupportedHandler = new(() =>
-	{
-		if (OperatingSystem.IsAndroidVersionAtLeast(23))
-		{
-			return true;
-		}
-
-		System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is 23.0");
-
-		return false;
-	});
-
-	static bool IsSupported => isSupportedHandler.Value;
-
 	/// <summary>
 	/// Map Navigation Style Property
 	/// </summary>
@@ -39,7 +25,7 @@ static partial class NavigationBar
 			return;
 		}
 
-		if (!page.IsSet(StyleProperty) || !IsSupported)
+		if (!page.IsSet(StyleProperty))
 		{
 			return;
 		}
@@ -86,7 +72,7 @@ static partial class NavigationBar
 			return;
 		}
 
-		if (!page.IsSet(ColorProperty) || !IsSupported)
+		if (!page.IsSet(ColorProperty))
 		{
 			return;
 		}
@@ -125,13 +111,9 @@ static partial class NavigationBar
 
 			navigationBarOverlay.SetBackgroundColor(color);
 		}
-		else if (OperatingSystem.IsAndroidVersionAtLeast(23))
-		{
-			window.SetNavigationBarColor(color);
-		}
 		else
 		{
-			System.Diagnostics.Trace.WriteLine($"{nameof(NavigationBar)} {nameof(Style)} + {nameof(Color)} functionality is not supported on this version of the Android operating system. Minimum supported Android API is 23");
+			window.SetNavigationBarColor(color);
 		}
 	}
 

@@ -15,8 +15,8 @@ public interface IFileSaver
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	[SupportedOSPlatform("Android26.0")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken = default);
 
@@ -27,8 +27,8 @@ public interface IFileSaver
 	/// <param name="stream"><see cref="Stream"/></param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	[SupportedOSPlatform("Android")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken = default);
 
@@ -41,8 +41,8 @@ public interface IFileSaver
 	/// <param name="progress">Saving file progress in percentage</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	[SupportedOSPlatform("Android26.0")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default);
 
@@ -54,8 +54,8 @@ public interface IFileSaver
 	/// <param name="progress">Saving file progress in percentage</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	[SupportedOSPlatform("Android")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default);
 }
