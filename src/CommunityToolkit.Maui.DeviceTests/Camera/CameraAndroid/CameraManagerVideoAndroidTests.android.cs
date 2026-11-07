@@ -1704,8 +1704,14 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
 			var firstFile = await WaitForRecordingFileAsync(before);
+			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState");
+			Assert.NotNull(recordingState);
 			(await GetNativeCameraProviderAsync()).Unbind(session.ImageCapture);
 			Assert.False(await IsNativelyBoundAsync(session.ImageCapture));
+			// Unbinding the ImageCapture makes CameraX reset its capture session, and a rebind during that reset once left CameraX without an open
+			// camera (the new recording file stayed empty). CameraX publishes no state for the end of the reset, so the test lets the two seconds of
+			// AssertTheRecordingKeepsRunningAsync pass, which also proves that the second start comes during a recording.
+			await AssertTheRecordingKeepsRunningAsync(recordingState, "the unbind of the ImageCapture");
 
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
