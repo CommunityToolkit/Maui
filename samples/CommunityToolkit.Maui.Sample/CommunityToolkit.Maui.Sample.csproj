@@ -34,8 +34,10 @@
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
                  AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'
-                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'">
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'ios'">
     <!-- Windows + MacCatalyt error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
+    <!-- iOS: the .NET 11 iOS SDK rejects any explicit PublishTrimmed value; its default (MtouchLink=SdkOnly) already trims like TrimMode=partial -->
     <PublishAot>false</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
