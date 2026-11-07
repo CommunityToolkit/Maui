@@ -46,8 +46,6 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		// The compiler reports the deprecated Maps call at the start of the builder statement, so only a pragma around the whole statement covers it.
-#pragma warning disable CS0618
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
 								.UseMauiCommunityToolkit(static options =>
@@ -88,7 +86,6 @@ public static class MauiProgram
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
-#pragma warning restore CS0618
 
 		builder.ConfigureLifecycleEvents(events =>
 		{

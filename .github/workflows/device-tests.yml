@@ -659,8 +659,8 @@ jobs:
             # passing. Camera: the runner has none; delete it if the job gains one (for example a virtual camera).
             DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'VideoRendering,Camera' || '' }}
             # MediaPlayback: this job installs Media Foundation, so the MediaElement tests fail, instead of skipping, when no MediaPlayer or
-            # H.264 decoder works. WebView2: the image has the runtime that the map tests host.
-            DEVICE_TEST_REQUIRE_CAPABILITIES: 'MediaPlayback,WebView2'
+            # H.264 decoder works.
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'MediaPlayback'
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

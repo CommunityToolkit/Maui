@@ -77,11 +77,6 @@
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- The toolkit's Maps package only has Windows code (other platforms use MAUI's own map handlers). -->
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <ProjectReference Include="..\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
-  </ItemGroup>
-
   <Import Project="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.targets" />
 
 </Project>

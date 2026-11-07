@@ -18,7 +18,7 @@ How to run the tests on your machine (one command for every platform, your IDE, 
 
 | Project (`src/`) | What it is | ApplicationId |
 |---|---|---|
-| `CommunityToolkit.Maui.DeviceTests` | test app for `CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` (and `.Maps` on Windows) | `com.communitytoolkit.maui.devicetests` |
+| `CommunityToolkit.Maui.DeviceTests` | test app for `CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera` | `com.communitytoolkit.maui.devicetests` |
 | `CommunityToolkit.Maui.DeviceTests.Shared` | base classes and helpers (`dotnet-maui/` = vendored and ported dotnet/maui code) | |
 | `CommunityToolkit.Maui.DeviceTests.Runners` (+ `.SourceGen`) | dotnet/maui's runner, vendored; see its [README](../CommunityToolkit.Maui.DeviceTests.Runners/README.md) | |
 
@@ -30,14 +30,14 @@ root namespace `CommunityToolkit.Maui.DeviceTests`.
 
 ```
 CommunityToolkit.Maui.DeviceTests/
-  Alerts/  Behaviors/  Essentials/  Extensions/  Maps/  PlatformConfiguration/  Services/  Views/   feature folders
+  Alerts/  Behaviors/  Essentials/  Extensions/  PlatformConfiguration/  Services/  Views/   feature folders
   Camera/{CameraAndroid, CameraApple, CameraWindows}/   the Camera tests
   MediaElement/{MediaElementAndroid, MediaElementApple, MediaElementWindows}/   the MediaElement tests
   Infrastructure/                 smoke tests of the device-test infrastructure itself
   Resources/Images/**             MauiImage: test images, e.g. Resources/Images/red.png -> Source = "red.png"
   Resources/Raw/**                MauiAsset: test media and files, e.g. FileSystem.OpenAppPackageFileAsync("audio/a.mp3")
   Platforms/<Android|iOS|MacCatalyst|Windows>/   app heads (manifests, scene delegates, Windows App)
-  CommunityToolkitHandlerTestBase.cs  base class of the tests of CommunityToolkit.Maui, .Core and .Maps
+  CommunityToolkitHandlerTestBase.cs  base class of the tests of CommunityToolkit.Maui and .Core
   MediaElementHandlerTestBase.cs  base class of the MediaElement tests
   CameraHandlerTestBase.cs        base class of the Camera tests
   TestCategory.cs                 category constants (partial class)
@@ -347,7 +347,7 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
     reason, and the run is not failed.
   - For a skip known at compile time, use `[Fact(Skip = "reason, issue link")]` under `#if`.
   - When the missing thing is a machine capability that a CI runner may lack (a camera, a second camera, video rendering, media
-    playback, an on-device speech service, the WebView2 Runtime), guard it with `DeviceTestCapabilities` (in
+    playback, an on-device speech service), guard it with `DeviceTestCapabilities` (in
     `CommunityToolkit.Maui.DeviceTests.Shared`) instead, so that each CI job can declare it missing or required:
 
     ```csharp

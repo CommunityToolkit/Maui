@@ -13,7 +13,7 @@ These scripts build the device test apps and run them headless on Android, iOS, 
 | `devices-coverage.ps1` | code coverage (`-Coverage`), dot-sourced by `android.ps1`, `ios.ps1` and `catalyst.ps1` | coverlet |
 | `Run-PackagedAppAndWait.ps1` | starts a packaged Windows app and waits for its process | vendored from dotnet/maui (toolkit changes listed in its header) |
 
-There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and, on Windows, `.Maps`). `dotnet test` does not run it.
+There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`). `dotnet test` does not run it.
 
 ## Prerequisites
 
@@ -275,7 +275,7 @@ Each job declares its capabilities in its `env` (see [Capability declarations](#
 | Android API 36 and 28 | `OnDeviceSpeech`: the image's on-device recognizer may never answer, and each question would wait 30 s | `SecondCamera`: the emulator has a back and a front camera, so the two-camera tests fail instead of skipping if it loses one |
 | iOS simulator | | |
 | Mac Catalyst | `Camera`: the runner has none | |
-| Windows packaged and unpackaged | `VideoRendering`: the runner has no GPU, and whether it renders the H.264 test clip is unknown (48 MediaElement tests); `Camera` | `MediaPlayback`: the job installs Media Foundation (`Server-Media-Foundation`, which the Windows Server runner images do not include); `WebView2` |
+| Windows packaged and unpackaged | `VideoRendering`: the runner has no GPU, and whether it renders the H.264 test clip is unknown (48 MediaElement tests); `Camera` | `MediaPlayback`: the job installs Media Foundation (`Server-Media-Foundation`, which the Windows Server runner images do not include) |
 
 A skipped capability is the CI's statement that its runner cannot run those tests; local runs execute them (a Windows 11 ARM64 VM in Parallels, for example, opens the clip but renders no video, so its probe skips the 48 tests visibly). To find out whether a runner can run them now, start the `Device Tests` workflow by hand with `run-everything` checked, which empties the skip lists; when the tests pass, delete the entry from the job.
 

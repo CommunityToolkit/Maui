@@ -1,6 +1,6 @@
 # Running the device tests on your machine
 
-The device tests are one .NET MAUI app that runs the tests of every shipped package on a real platform: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and, on Windows, `.Maps`). `dotnet test` does not run it. The `Device Tests` job of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows with the `run.ps1` command that this guide starts with (its lines are in `.github/workflows/device-tests.yml`); this guide is for running them on your own machine.
+The device tests are one .NET MAUI app that runs the tests of every shipped package on a real platform: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`). `dotnet test` does not run it. The `Device Tests` job of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows with the `run.ps1` command that this guide starts with (its lines are in `.github/workflows/device-tests.yml`); this guide is for running them on your own machine.
 
 * [Run everything with one command](#run-everything-with-one-command)
 * [Run an app from your IDE](#run-an-app-from-your-ide)
@@ -166,7 +166,6 @@ The Maui app needs a person for these tests:
 | `FolderPickerTests` | A folder dialog opens. `PickAsyncReturnsThePathAndTheNameOfTheFolderThatThePersonPicks`: pick the folder `files-test-folder` that the test creates in the temporary folder (the dialog may open elsewhere). `PickAsyncReturnsACanceledResultWhenThePersonCancelsTheFolderDialog`: press Cancel. `PickAsyncFailsWhenThePersonPicksAFolderWithoutAFileSystemPath`: pick a folder without a file system path. `PickAsyncClosesTheFolderDialogAndReturnsACanceledResultWhenTheTokenIsCanceled`: only watch. |
 | `SnackbarTests` | `PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar`: press OK on the Windows notification "Press OK on this notification" within a minute. Notifications must be on for the app; the test skips when Windows does not list the notification. |
 | `SpeechToTextTests` (also matches `OfflineSpeechToTextTests`) | A machine with a microphone and an installed speech language. `StartListenAsyncStartsTheContinuousRecognitionSession` (two rows): allow the microphone when Windows asks; in the second row stay silent for 25 seconds after the start. `RequestPermissionsReturnsTheDecisionOfTheUser`: answer the microphone consent prompt. |
-| `MapHandlerWindowsPageTests` | `ShowingTheUserAddsALocationPinWhenTheLocationIsAllowed`: allow the app to use your location when Windows asks. |
 
 The MediaElement tests include three tests (`MediaMetadataWindowsTests`) that wait for a key of the keyboard or for the system media overlay, within a minute. `PressingThePauseMediaKeyPausesTheMediaElement`: press Pause or Play/Pause. `PressingThePlayMediaKeyPlaysTheMediaElement`: press Play or Play/Pause. `PressingAnyOtherMediaKeyLeavesThePlaybackAlone`: press Next track or Stop, not Play or Pause.
 
