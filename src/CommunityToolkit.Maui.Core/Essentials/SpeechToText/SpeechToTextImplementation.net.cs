@@ -23,4 +23,9 @@ public sealed partial class SpeechToTextImplementation
 	{
 		throw new NotSupportedException();
 	}
+
+	Task<SpeechToTextResult> InternalRecognizeAsync(Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
+		throw new NotSupportedException();
+	}
 }
