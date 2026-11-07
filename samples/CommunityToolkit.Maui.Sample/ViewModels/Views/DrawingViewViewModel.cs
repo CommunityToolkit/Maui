@@ -97,7 +97,17 @@ public partial class DrawingViewViewModel : BaseViewModel
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);
 
-			await fileSaver.SaveAsync("drawing.png", stream, cancellationToken);
+			// FileSaver reports a failure in its result instead of throwing it, so the catch blocks below never see it. A save that the user
+			// cancelled needs no message
+			var fileSaverResult = await fileSaver.SaveAsync("drawing.png", stream, cancellationToken);
+			if (fileSaverResult.IsSuccessful)
+			{
+				await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);
+			}
+			else if (!fileSaverResult.IsCancelled)
+			{
+				await Toast.Make($"Save Failed: {fileSaverResult.Exception.Message}").Show(cancellationToken);
+			}
 		}
 		catch (PermissionException e)
 		{
