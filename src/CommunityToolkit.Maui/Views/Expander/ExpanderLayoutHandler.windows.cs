@@ -1,9 +1,14 @@
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Views;
 
 sealed partial class ExpanderLayoutHandler
 {
+	// An app's LayoutHandler.PlatformViewFactory creates the platform view of every layout handler, this one included, and only an
+	// ExpanderLayoutPanel gives the header its keyboard and UI Automation support
+	public override void SetVirtualView(IView view) => this.SetVirtualViewWithItsOwnPlatformView(view, base.SetVirtualView, CreatePlatformView);
+
 	protected override LayoutPanel CreatePlatformView() => new ExpanderLayoutPanel
 	{
 		CrossPlatformLayout = VirtualView
@@ -13,8 +18,8 @@ sealed partial class ExpanderLayoutHandler
 	{
 		base.ConnectHandler(platformView);
 
-		// An app's LayoutHandler.PlatformViewFactory also creates the platform view of this handler, in place of CreatePlatformView, and the header
-		// then has no keyboard or UI Automation support, as before the Expander had its own handler
+		// SetVirtualView gets the ExpanderLayoutPanel even with an app's LayoutHandler.PlatformViewFactory only because MAUI creates the platform view
+		// inside SetVirtualView, so if a later MAUI does not, the header loses its keyboard and UI Automation support instead of making the Expander throw
 		(platformView as ExpanderLayoutPanel)?.UpdateHeaderAccessibility();
 	}
 }

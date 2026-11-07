@@ -6,6 +6,7 @@ using Foundation;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
+using LayoutView = Microsoft.Maui.Platform.LayoutView;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -242,6 +243,72 @@ public partial class ExpanderTests
 			await expander.OnLoadedAsync();
 
 			Assert.Equal("Brandon, Minnick", GetHeaderAccessibilityElement(expander).AccessibilityLabel);
+		});
+	}
+
+	// MAUI's LayoutHandler.PlatformViewFactory creates the platform view of every layout handler, and ExpanderLayoutHandler is one, but only an
+	// ExpanderLayoutView makes VoiceOver read the header as one button
+	[Fact]
+	public async Task VoiceOverReadsTheHeaderAsOneButtonWhenTheAppSetsTheLayoutPlatformViewFactory()
+	{
+		SetupBuilder();
+		var headerLayout = new HorizontalStackLayout { new Label { Text = "Brandon" }, new Label { Text = "Minnick" } };
+		var contentLayout = new VerticalStackLayout { new Label { Text = "Content" } };
+		var expander = new Expander { Header = headerLayout, Content = contentLayout };
+		var gridBeside = new Grid { new Label { Text = "Beside" } };
+		var page = new VerticalStackLayout { expander, gridBeside };
+		var handlersOfTheFactory = new List<IViewHandler>();
+		var platformViewsOfTheFactory = new List<object?>();
+		var factoriesThatTheAppRead = new List<object?>();
+		object? platformViewFactoryOfTheApp = null;
+		object? platformViewFactoryAfterwards = null;
+
+		// HandlerChanging is code of the app that runs while the layout of the Expander sets its own handler up, so it must find the factory of the app
+		headerLayout.HandlerChanging += (_, _) => factoriesThatTheAppRead.Add(LayoutHandler.PlatformViewFactory);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousFactory = LayoutHandler.PlatformViewFactory;
+			LayoutHandler.PlatformViewFactory = handler =>
+			{
+				handlersOfTheFactory.Add(handler);
+				var platformView = new LayoutView();
+				platformViewsOfTheFactory.Add(platformView);
+				return platformView;
+			};
+			platformViewFactoryOfTheApp = LayoutHandler.PlatformViewFactory;
+			try
+			{
+				CreateHandler(page);
+				platformViewFactoryAfterwards = LayoutHandler.PlatformViewFactory;
+			}
+			finally
+			{
+				LayoutHandler.PlatformViewFactory = previousFactory;
+			}
+		});
+
+		Assert.Same(platformViewFactoryOfTheApp, platformViewFactoryAfterwards);
+		Assert.Same(platformViewFactoryOfTheApp, Assert.Single(factoriesThatTheAppRead));
+
+		await AttachAndRun(page, async _ =>
+		{
+			await page.OnLoadedAsync();
+			var layoutHandler = Assert.IsType<ExpanderLayoutHandler>(((ContentView)expander).Content?.Handler);
+			Assert.IsType<ExpanderLayoutView>(layoutHandler.PlatformView);
+			Assert.DoesNotContain(layoutHandler, handlersOfTheFactory);
+
+			// The layouts in the Header and the Content get their handlers while the layout of the Expander sets its own handler up
+			Assert.Contains(headerLayout.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(contentLayout.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(gridBeside.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(page.Handler?.PlatformView, platformViewsOfTheFactory);
+
+			var headerElement = Assert.IsType<UIAccessibilityElement>(Assert.Single(GetAccessibilityElements(expander) ?? []), exactMatch: false);
+			Assert.Equal("Brandon, Minnick", headerElement.AccessibilityLabel);
+			Assert.Equal(UIAccessibilityTrait.Button, (UIAccessibilityTrait)headerElement.AccessibilityTraits);
+			Assert.True(AccessibilityActivate(headerElement));
+			Assert.True(expander.IsExpanded);
 		});
 	}
 

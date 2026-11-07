@@ -491,47 +491,79 @@ public partial class ExpanderTests
 		Assert.True(expander.IsExpanded);
 	}
 
-	// MAUI's LayoutHandler.PlatformViewFactory creates the platform view of every layout handler, so an app that sets it replaces the
-	// ExpanderLayoutPanel of the Expander's layout too
+	// MAUI's LayoutHandler.PlatformViewFactory creates the platform view of every layout handler, and ExpanderLayoutHandler is one, but only an
+	// ExpanderLayoutPanel gives the header its keyboard and UI Automation support
 	[Fact]
-	public async Task AnExpanderWhoseLayoutGotItsPlatformViewFromTheLayoutFactoryOfTheAppTogglesAndDoesNotThrow()
+	public async Task TheHeaderKeepsItsKeyboardAndUIAutomationSupportWhenTheAppSetsTheLayoutPlatformViewFactory()
 	{
 		SetupBuilder();
-		var expander = CreateExpander();
-		var platformViewsOfTheFactory = new List<LayoutPanel>();
-		IViewHandler? layoutHandler = null;
-		object? layoutPlatformView = null;
+		var headerLayout = new HorizontalStackLayout { new Label { Text = "Brandon" }, new Label { Text = "Minnick" } };
+		var contentLayout = new VerticalStackLayout { new Label { Text = "Content" } };
+		var expander = new Expander { Header = headerLayout, Content = contentLayout };
+		var gridBeside = new Grid { new Label { Text = "Beside" } };
+		var page = new VerticalStackLayout { expander, gridBeside };
+		var handlersOfTheFactory = new List<IViewHandler>();
+		var platformViewsOfTheFactory = new List<object?>();
+		var factoriesThatTheAppRead = new List<object?>();
+		object? platformViewFactoryOfTheApp = null;
+		object? platformViewFactoryAfterwards = null;
 
-		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() =>
+		// HandlerChanging is code of the app that runs while the layout of the Expander sets its own handler up, so it must find the factory of the app
+		headerLayout.HandlerChanging += (_, _) => factoriesThatTheAppRead.Add(LayoutHandler.PlatformViewFactory);
+
+		await InvokeOnMainThreadAsync(() =>
 		{
 			var previousFactory = LayoutHandler.PlatformViewFactory;
-			LayoutHandler.PlatformViewFactory = _ =>
+			LayoutHandler.PlatformViewFactory = handler =>
 			{
+				handlersOfTheFactory.Add(handler);
 				var platformView = new LayoutPanel();
 				platformViewsOfTheFactory.Add(platformView);
 				return platformView;
 			};
+			platformViewFactoryOfTheApp = LayoutHandler.PlatformViewFactory;
 			try
 			{
-				var handler = CreateHandler<ContentViewHandler>(expander);
-				layoutHandler = ((ContentView)expander).Content?.Handler;
-				layoutPlatformView = layoutHandler?.PlatformView;
-
-				expander.HandleHeaderTap(new TappedEventArgs(null));
-				((IElementHandler)handler).DisconnectHandler();
+				CreateHandler(page);
+				platformViewFactoryAfterwards = LayoutHandler.PlatformViewFactory;
 			}
 			finally
 			{
 				LayoutHandler.PlatformViewFactory = previousFactory;
 			}
-		}));
+		});
 
-		Assert.Null(exception);
+		Assert.Same(platformViewFactoryOfTheApp, platformViewFactoryAfterwards);
+		Assert.Same(platformViewFactoryOfTheApp, Assert.Single(factoriesThatTheAppRead));
 
-		// MAUI's own LayoutHandler takes the same factory and has no cast, so the test proves nothing unless the layout keeps the toolkit's handler
-		Assert.IsType<ExpanderLayoutHandler>(layoutHandler);
-		Assert.Contains(Assert.IsType<LayoutPanel>(layoutPlatformView), platformViewsOfTheFactory);
-		Assert.True(expander.IsExpanded);
+		await AttachAndRun(page, async _ =>
+		{
+			await page.OnLoadedAsync();
+			var layoutHandler = Assert.IsType<ExpanderLayoutHandler>(((ContentView)expander).Content?.Handler);
+			var panel = Assert.IsType<ExpanderLayoutPanel>(layoutHandler.PlatformView);
+			Assert.DoesNotContain(layoutHandler, handlersOfTheFactory);
+
+			// The layouts in the Header and the Content get their handlers while the layout of the Expander sets its own handler up
+			Assert.Contains(headerLayout.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(contentLayout.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(gridBeside.Handler?.PlatformView, platformViewsOfTheFactory);
+			Assert.Contains(page.Handler?.PlatformView, platformViewsOfTheFactory);
+
+			var peer = GetAutomationPeer(expander);
+			Assert.True(panel.IsTabStop, "Tab does not stop at the header.");
+			Assert.Equal(AutomationControlType.Button, peer.GetAutomationControlType());
+			Assert.Equal("Brandon, Minnick", peer.GetName());
+			Assert.True(panel.Focus(WFocusState.Keyboard), "The header does not take the keyboard focus.");
+			await AssertionExtensions.AssertEventually(peer.HasKeyboardFocus, message: "UI Automation does not report the keyboard focus on the header.");
+
+			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
+			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
+			Assert.True(expander.IsExpanded);
+			Assert.Equal(ExpandCollapseState.Expanded, GetExpandCollapseProvider(peer).ExpandCollapseState);
+
+			GetInvokeProvider(peer).Invoke();
+			Assert.False(expander.IsExpanded);
+		});
 	}
 
 	[Fact]
