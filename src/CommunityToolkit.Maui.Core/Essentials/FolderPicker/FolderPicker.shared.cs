@@ -16,7 +16,6 @@ public static class FolderPicker
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default) =>
 		Default.PickAsync(initialPath, cancellationToken);
@@ -25,7 +24,6 @@ public static class FolderPicker
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);

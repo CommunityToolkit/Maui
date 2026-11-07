@@ -40,12 +40,6 @@ jobs:
                     dotnet workload install maui
                     dotnet workload update
 
-            -   name: Install Tizen Workload
-                run: |
-                    Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-                    .\workload-install.ps1
-                shell: pwsh
-
             -   name: Display dotnet info
                 run: dotnet --info
 

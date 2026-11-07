@@ -16,7 +16,6 @@ public static class FileSaver
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken = default) =>
 		Default.SaveAsync(initialPath, fileName, stream, cancellationToken);
@@ -25,7 +24,6 @@ public static class FileSaver
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken = default) =>
 		Default.SaveAsync(fileName, stream, cancellationToken);
@@ -34,7 +32,6 @@ public static class FileSaver
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default) =>
 		Default.SaveAsync(initialPath, fileName, stream, progress, cancellationToken);
@@ -43,7 +40,6 @@ public static class FileSaver
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FileSaverResult> SaveAsync(string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default) =>
 		Default.SaveAsync(fileName, stream, progress, cancellationToken);

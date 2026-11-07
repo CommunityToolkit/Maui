@@ -30,12 +30,6 @@
     <Compile Remove="**\windows\**\*.cs" />
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-tizen')) != true ">
-    <Compile Remove="**\*.tizen.cs" />
-    <None Include="**\*.tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Remove="**\tizen\**\*.cs" />
-    <None Include="**\tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup> 
   <ItemGroup Condition="!($(TargetFramework.StartsWith('net')) == true AND $(TargetFramework.EndsWith('.0')) == true AND $(TargetFramework.Contains('-')) != true)"> <!-- e.g net6.0 or net7.0 -->
     <Compile Remove="**\*.net.cs" />
     <None Include="**\*.net.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -47,7 +41,6 @@
   <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('osx')) AND !$([MSBuild]::IsOSPlatform('windows')) AND ($(TargetFrameworks.Contains('-ios')) OR $(TargetFrameworks.Contains('-maccatalyst')))">
      <TargetFrameworks>$(NetVersion);$(NetVersion)-android</TargetFrameworks>
      <TargetFrameworks Condition="'$(OutputType)' == 'Exe'">$(NetVersion)-android</TargetFrameworks>
-     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
   </PropertyGroup>
 
   <!--

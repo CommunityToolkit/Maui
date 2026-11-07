@@ -16,7 +16,6 @@ public interface IFolderPicker
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default);
 
@@ -28,7 +27,6 @@ public interface IFolderPicker
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS14.0")]
 	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
 	[SupportedOSPlatform("Windows")]
 	Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken = default);
 }

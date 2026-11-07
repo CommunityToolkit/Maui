@@ -25,7 +25,7 @@ public enum StatusBarApplyOn
 /// <summary>
 /// <see cref="PlatformBehavior{TView,TPlatformView}"/> that controls the Status bar color
 /// </summary>
-[UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS"), UnsupportedOSPlatform("Tizen")]
+[UnsupportedOSPlatform("Windows"), UnsupportedOSPlatform("MacCatalyst"), UnsupportedOSPlatform("MacOS")]
 public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
@@ -47,7 +47,7 @@ public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 	public partial StatusBarApplyOn ApplyOn { get; set; } = StatusBarBehaviorDefaults.ApplyOn;
 
 
-#if !(WINDOWS || MACCATALYST || TIZEN)
+#if !(WINDOWS || MACCATALYST)
 	/// <inheritdoc /> 
 #if IOS
 	protected override void OnAttachedTo(Page page, UIKit.UIView platformView)

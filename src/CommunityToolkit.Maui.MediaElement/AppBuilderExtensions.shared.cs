@@ -13,7 +13,6 @@ namespace CommunityToolkit.Maui;
 [SupportedOSPlatform("MacCatalyst17.0")]
 [SupportedOSPlatform("Android26.0")]
 [SupportedOSPlatform("Windows10.0.17763")]
-[SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
 	/// <summary>
