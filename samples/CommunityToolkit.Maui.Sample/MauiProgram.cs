@@ -126,11 +126,8 @@ public static class MauiProgram
 #endif
 		});
 
-		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
-
-		builder.Services.AddHttpClient<MediaElementFromStreamPage>()
-			.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
+		// Typed-client registrations don't work here: AddTransientWithShellRoute later re-registers each page and view model, replacing the typed client, so they would get a plain HttpClient without this handler
+		builder.Services.ConfigureHttpClientDefaults(static http => http.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions()));
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);

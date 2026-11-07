@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Sample.Constants;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
@@ -64,9 +65,9 @@ public sealed partial class MediaElementFromStreamPage : BasePage<MediaElementFr
 			await using var networkStream = await httpClient.GetStreamAsync(StreamingUrls.BuckBunny);
 			await UpdateSourceStream(networkStream);
 		}
-		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or ExecutionRejectedException)
 		{
-			// For example, the device is offline (HttpRequestException) or the download timed out (TaskCanceledException)
+			// For example, the device is offline (HttpRequestException), the download timed out (TaskCanceledException), or the resilience handler that MauiProgram adds to every HttpClient gave up (ExecutionRejectedException, e.g. its 30-second total timeout)
 			logger.LogError(ex, "Failed to download the video");
 			await Toast.Make("Failed to download the video. Check the internet connection.").Show();
 		}
