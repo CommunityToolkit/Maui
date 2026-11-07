@@ -35,7 +35,7 @@ public enum DefaultImage
 /// Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!
 /// <para>
 /// Cancellation: <see cref="IStreamImageSource.GetStreamAsync(CancellationToken)"/> and the default <see cref="StreamImageSource.Stream"/> function throw an <see cref="OperationCanceledException"/>
-/// only when the <see cref="CancellationToken"/> passed to them is canceled, because each load is canceled only by its own caller's token.
+/// only when the <see cref="CancellationToken"/> passed to them is canceled, because one load of a <see cref="GravatarImageSource"/> never cancels another.
 /// A load that you start with <see cref="CancellationToken.None"/> never throws it, and .NET MAUI catches it for the loads that it cancels itself.
 /// <see cref="ImageSource.Cancel"/> ends the loads that were started without a cancelable token, which then return <see cref="System.IO.Stream.Null"/>.
 /// </para>
@@ -139,7 +139,7 @@ public partial class GravatarImageSource : StreamImageSource, IStreamImageSource
 	{
 		// .NET MAUI calls Cancel() when a recycled ListView or TableView ImageCell disappears, and it applies whatever picture loads last.
 		// Loads with a cancelable token are not touched: .NET MAUI's image handlers cancel those through their own token.
-		// The canceled source is not disposed because a load that has just read its token would throw an ObjectDisposedException.
+		// The canceled source is not disposed: a load can read the field just before the swap, and getting Token from a disposed source throws an ObjectDisposedException.
 		Interlocked.Exchange(ref tokenlessLoadsTokenSource, new CancellationTokenSource()).Cancel();
 
 		return Task.FromResult(true);
