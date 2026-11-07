@@ -1,0 +1,339 @@
+using CommunityToolkit.Maui.Media;
+using Windows.Globalization;
+using Windows.Media.SpeechRecognition;
+
+namespace CommunityToolkit.Maui.DeviceTests;
+
+// Starting a recognizer for real needs an installed speech language, a microphone, the "online speech recognition" privacy setting and,
+// for a packaged app, the system's microphone consent dialog (which blocks the start until a person answers it), so no test starts a
+// recognition session: most tests use a recognizer that is created but never started (Idle). The WinRT event arguments that drive
+// OnCompleted and ResultGenerated have no public constructors, so only a running session can create them.
+// What only a running session produces is checked by hand in the SpeechToText page of the Sample (Essentials): the listening states, the
+// partial and the final results, the status of the completed session, the PermissionException of a declined online speech privacy
+// statement, the microphone consent and StopListenAsync with a canceled token while the recognizer listens.
+public sealed partial class SpeechToTextTests
+{
+	static async Task<SpeechRecognizer> CreateIdleRecognizerOrSkipAsync(string languageTag = "en-US")
+	{
+		try
+		{
+			return await InvokeOnMainThreadAsync(() => new SpeechRecognizer(new Language(languageTag)));
+		}
+		catch (Exception exception)
+		{
+			throw new SkipException($"A Windows speech recognizer for {languageTag} cannot be created on this machine ({exception.GetType().Name}: {exception.Message}).");
+		}
+	}
+
+	// Nothing was started: the null check of StopRecording short-circuits, so neither the token nor StopAsync is reached.
+	[Fact]
+	public async Task StopListenAsyncWithACancelledTokenAndNothingStartedDoesNotThrow()
+	{
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+		using var cancellation = new CancellationTokenSource();
+		await cancellation.CancelAsync();
+
+		await InvokeOnMainThreadAsync(() => speech.StopListenAsync(cancellation.Token));
+
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		Assert.Null(GetRecognizer(speech));
+		Assert.Empty(events.Entries);
+
+		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	public async Task IdleRecognizerIsStoppedAndStopListenAsyncReleasesIt()
+	{
+		var speech = CreateSpeech();
+		var recognizer = await CreateIdleRecognizerOrSkipAsync();
+		SpeechInternals.SetField(speech, "speechRecognizer", recognizer);
+		Assert.Equal(SpeechRecognizerState.Idle, recognizer.State);
+
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+
+		await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
+
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+
+		await speech.DisposeAsync();
+	}
+
+	// The token is only checked for a recognizer that is not idle.
+	[Fact]
+	public async Task StopListenAsyncWithACancelledTokenStillReleasesAnIdleRecognizer()
+	{
+		var speech = CreateSpeech();
+		var recognizer = await CreateIdleRecognizerOrSkipAsync();
+		SpeechInternals.SetField(speech, "speechRecognizer", recognizer);
+		using var cancellation = new CancellationTokenSource();
+		await cancellation.CancelAsync();
+
+		await InvokeOnMainThreadAsync(() => speech.StopListenAsync(cancellation.Token));
+
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+
+		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	public async Task DisposeAsyncReleasesAnIdleRecognizer()
+	{
+		var speech = CreateSpeech();
+		var recognizer = await CreateIdleRecognizerOrSkipAsync();
+		SpeechInternals.SetField(speech, "speechRecognizer", recognizer);
+
+		await speech.DisposeAsync();
+
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+	}
+
+	// Initialize checks the token before it compiles the constraints, so calling it with a cancelled token keeps the recognizer in the
+	// field and its options can be read back.
+	[Fact]
+	public async Task InitializeCreatesASilentRecognizerAndStopListenAsyncReleasesIt()
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		var speech = CreateSpeech();
+		var options = new SpeechToTextOptions { Culture = EnglishUnitedStates, ShouldReportPartialResults = true };
+		using var cancellation = new CancellationTokenSource();
+		await cancellation.CancelAsync();
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => InvokeOnMainThreadAsync(() => (Task)SpeechInternals.Invoke(speech, "Initialize", options, cancellation.Token)!));
+
+		var recognizer = Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+		Assert.Equal("en-US", recognizer.CurrentLanguage.LanguageTag);
+		Assert.Equal(string.Empty, recognizer.UIOptions.AudiblePrompt);
+		Assert.False(recognizer.UIOptions.IsReadBackEnabled);
+		Assert.False(recognizer.UIOptions.ShowConfirmation);
+		Assert.Equal(SpeechRecognizerState.Idle, recognizer.State);
+		Assert.Same(options, SpeechInternals.GetField<SpeechToTextOptions>(speech, "speechToTextOptions"));
+		Assert.Equal(string.Empty, SpeechInternals.GetField<string>(speech, "recognitionText"));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+
+		await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
+
+		Assert.Null(GetRecognizer(speech));
+		await speech.DisposeAsync();
+	}
+
+	// The culture's tag is read while the recognizer is created, after the first token check of StartListenAsync and before the one of
+	// Initialize, so cancelling there is deterministic. The probe establishes first that this machine can create an en-US recognizer, so
+	// any other exception is a failure.
+	[Fact]
+	public async Task StartListenAsyncCancelledWhileTheRecognizerIsCreatedReleasesItAndRethrows()
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+		using var cancellation = new CancellationTokenSource();
+		var culture = new SpeechCancellingCulture("en-US", cancellation);
+		var options = new SpeechToTextOptions { Culture = culture };
+
+		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() => speech.StartListenAsync(options, cancellation.Token)));
+
+		Assert.IsType<OperationCanceledException>(exception, exactMatch: false);
+		Assert.True(culture.Reads >= 1, "The culture was never read: the start did not get as far as creating the recognizer.");
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		Assert.Null(GetRecognizer(speech));
+		Assert.Empty(events.Entries);
+
+		await speech.DisposeAsync();
+	}
+
+	// StartListenAsync runs synchronously until Initialize waits for CompileConstraintsAsync, and the stop releases an idle recognizer without
+	// waiting, so a stop in the same main-thread turn always releases the recognizer while the start waits for its compilation. Whatever the
+	// released recognizer then does with that compilation (it completes, fails or never ends), the start must end at once, without listening
+	// and without an exception. The start never gets as far as the session, with or without the fix, so no consent dialog can appear.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StopOrDisposeWhileTheStartCompilesTheConstraintsEndsTheStartWithoutAnException(bool dispose)
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		var start = await InvokeOnMainThreadAsync(async () =>
+		{
+			var pendingStart = speech.StartListenAsync(DefaultOptions);
+			Assert.False(pendingStart.IsCompleted, $"The start ended before it waited for the compilation: {pendingStart.Exception}");
+			Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+
+			var stop = dispose ? speech.DisposeAsync().AsTask() : speech.StopListenAsync();
+			Assert.Null(GetRecognizer(speech));
+			await stop;
+
+			return pendingStart;
+		});
+
+		// Bounded, so that a start that still waits for the released recognizer fails this test instead of stopping the run
+		var exception = await Record.ExceptionAsync(() => start.WaitAsync(TimeSpan.FromSeconds(30)));
+
+		Assert.Null(exception);
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		Assert.Empty(events.Results);
+
+		await speech.DisposeAsync();
+	}
+
+	// Windows lets a second start through while the first one compiles, because an idle recognizer reports the state Stopped. The second start
+	// releases the recognizer of the first and stores its own, so the first start must end without listening and without an exception: its
+	// failure handling would otherwise release the recognizer of the second start. Both starts and the stop run in one main-thread turn, so
+	// neither start reaches the session, with or without the fix, and no consent dialog can appear.
+	[Fact]
+	public async Task NewerStartWhileTheStartCompilesTheConstraintsEndsTheOlderStartWithoutAnException()
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		var (olderStart, newerStart) = await InvokeOnMainThreadAsync(async () =>
+		{
+			var pendingOlderStart = speech.StartListenAsync(DefaultOptions);
+			Assert.False(pendingOlderStart.IsCompleted, $"The older start ended before it waited for the compilation: {pendingOlderStart.Exception}");
+			var olderRecognizer = Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+
+			var pendingNewerStart = speech.StartListenAsync(DefaultOptions);
+			Assert.False(pendingNewerStart.IsCompleted, $"The newer start ended before it waited for the compilation: {pendingNewerStart.Exception}");
+			Assert.NotSame(olderRecognizer, Assert.IsType<SpeechRecognizer>(GetRecognizer(speech)));
+
+			await speech.StopListenAsync();
+			Assert.Null(GetRecognizer(speech));
+
+			return (pendingOlderStart, pendingNewerStart);
+		});
+
+		// Bounded, so that a start that still waits for a released recognizer fails this test instead of stopping the run
+		var olderStartException = await Record.ExceptionAsync(() => olderStart.WaitAsync(TimeSpan.FromSeconds(30)));
+		var newerStartException = await Record.ExceptionAsync(() => newerStart.WaitAsync(TimeSpan.FromSeconds(30)));
+
+		Assert.Null(olderStartException);
+		Assert.Null(newerStartException);
+		Assert.Null(GetRecognizer(speech));
+		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
+		Assert.Empty(events.Results);
+
+		await speech.DisposeAsync();
+	}
+
+	// A session that ended by itself (after AutoStopSilenceTimeout or an error) leaves its idle recognizer stored and subscribed to the
+	// implementation, as Initialize with a cancelled token does. The next start must release that recognizer before it stores its own: a
+	// recognizer that is only replaced keeps its StateChanged subscription, which keeps the implementation alive for as long as the recognizer
+	// lives (here the test keeps it). The start is cancelled while it creates its recognizer, so nothing is compiled or started.
+	[Fact]
+	public async Task StartListenAsyncReleasesTheRecognizerThatAnEndedSessionLeft()
+	{
+		using var probe = await CreateIdleRecognizerOrSkipAsync();
+		SetupBuilder();
+		WeakReference? speechReference = null;
+		object? leftRecognizer = null;
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var speech = CreateImplementation();
+			speechReference = new WeakReference(speech);
+			using var cancelled = new CancellationTokenSource();
+			await cancelled.CancelAsync();
+			var initialization = Assert.IsType<Task>(SpeechInternals.Invoke(speech, "Initialize", DefaultOptions, cancelled.Token), exactMatch: false);
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => initialization);
+			leftRecognizer = Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+
+			using var cancellation = new CancellationTokenSource();
+			var options = new SpeechToTextOptions { Culture = new SpeechCancellingCulture("en-US", cancellation) };
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => speech.StartListenAsync(options, cancellation.Token));
+
+			Assert.Null(GetRecognizer(speech));
+			await speech.DisposeAsync();
+		});
+
+		Assert.NotNull(speechReference);
+		await AssertionExtensions.WaitForGC(speechReference);
+		GC.KeepAlive(leftRecognizer);
+	}
+
+	// The handler reads neither its sender nor its arguments (it announces CurrentState), so the test passes none.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task RecognizerStateChangedHandlerRaisesStateChangedWithTheCurrentState(bool withIdleRecognizer)
+	{
+		var speech = CreateSpeech();
+		if (withIdleRecognizer)
+		{
+			SpeechInternals.SetField(speech, "speechRecognizer", await CreateIdleRecognizerOrSkipAsync());
+		}
+
+		var events = new SpeechEventRecorder(speech);
+
+		await InvokeOnMainThreadAsync(() => SpeechInternals.Invoke(speech, "SpeechRecognizer_StateChanged", null, null));
+
+		events.AssertEntries("StateChanged:Stopped");
+		Assert.Same(speech, Assert.Single(events.Senders));
+
+		await speech.DisposeAsync();
+		Assert.Null(GetRecognizer(speech));
+	}
+
+	// Needs a machine with a speech language and a microphone, where a person answers the consent dialog. Every start with the default
+	// options passes TimeSpan.MaxValue ("auto-stop disabled", long.MaxValue ticks) to the WinRT session: the setter must accept it, and the
+	// session must not end by itself after WinRT's own default timeout (20 s), so for that row the person stays silent for 25 seconds
+	// after the start.
+	[Theory]
+	[Category(TestCategory.RequiresUserInteraction)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task StartListenAsyncStartsTheContinuousRecognitionSession(bool withDefaultTimeout)
+	{
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+		var options = withDefaultTimeout
+			? new SpeechToTextOptions { Culture = EnglishUnitedStates }
+			: new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.FromSeconds(5) };
+
+		await InvokeOnMainThreadAsync(() => speech.StartListenAsync(options));
+		try
+		{
+			var recognizer = Assert.IsType<SpeechRecognizer>(GetRecognizer(speech));
+			Assert.NotEqual(SpeechRecognizerState.Idle, recognizer.State);
+			var sessionTimeout = recognizer.ContinuousRecognitionSession.AutoStopSilenceTimeout;
+			if (withDefaultTimeout)
+			{
+				var ended = await AssertHelpers.Wait(() => events.Results.Count > 0, 25_000, 250);
+
+				Assert.False(ended, $"The session ended by itself although auto-stop is disabled (session timeout {sessionTimeout}): {string.Join(", ", events.Entries)}");
+				Assert.NotEqual(SpeechRecognizerState.Idle, recognizer.State);
+			}
+			else
+			{
+				Assert.Equal(options.AutoStopSilenceTimeout, sessionTimeout);
+			}
+		}
+		finally
+		{
+			await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
+		}
+
+		Assert.Null(GetRecognizer(speech));
+		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task RequestPermissionsReturnsTheDecisionOfTheUser()
+	{
+		var speech = CreateSpeech();
+
+		var granted = await InvokeOnMainThreadAsync(() => speech.RequestPermissions());
+
+		var status = await Microsoft.Maui.ApplicationModel.Permissions.CheckStatusAsync<Microsoft.Maui.ApplicationModel.Permissions.Microphone>();
+		Assert.Equal(status is Microsoft.Maui.ApplicationModel.PermissionStatus.Granted, granted);
+
+		await speech.DisposeAsync();
+	}
+}

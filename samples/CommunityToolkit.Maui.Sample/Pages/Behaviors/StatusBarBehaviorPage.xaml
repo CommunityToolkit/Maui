@@ -16,10 +16,10 @@
 
     <ContentPage.Resources>
         <ControlTemplate x:Key="RadioButtonTemplate">
-            <Border Stroke="#F3F2F1"
+            <Border Stroke="{AppThemeBinding Light=#F3F2F1, Dark={StaticResource Gray900}}"
                     StrokeThickness="2"
                     StrokeShape="RoundRectangle 10"
-                    BackgroundColor="#F3F2F1"
+                    BackgroundColor="{AppThemeBinding Light=#F3F2F1, Dark={StaticResource Gray900}}"
                     HeightRequest="90"
                     WidthRequest="90"
                     HorizontalOptions="Start"
@@ -51,7 +51,8 @@
                           WidthRequest="18"
                           HeightRequest="18"
                           HorizontalOptions="End"
-                          VerticalOptions="Start">
+                          VerticalOptions="Start"
+                          BackgroundColor="Transparent">
                         <Ellipse Stroke="Blue"
                                  Fill="White"
                                  WidthRequest="16"
@@ -65,13 +66,16 @@
                                  HorizontalOptions="Center"
                                  VerticalOptions="Center" />
                     </Grid>
-                    <ContentPresenter />
+                    <ContentPresenter Margin="10,0,0,0"
+                                      VerticalOptions="Center" />
                 </Grid>
             </Border>
         </ControlTemplate>
 
         <Style TargetType="RadioButton">
             <Setter Property="ControlTemplate" Value="{StaticResource RadioButtonTemplate}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+            <Setter Property="FontSize" Value="14" />
         </Style>
     </ContentPage.Resources>
 
@@ -85,6 +89,9 @@
     <ScrollView Padding="{StaticResource ContentPadding}">
 
         <VerticalStackLayout Padding="15,0" Spacing="30" IgnoreSafeArea="False">
+
+            <Label Text="NOTE: StatusBarBehavior changes the status bar on Android and iOS only. It has no effect on Mac Catalyst and Windows."
+                   IsVisible="{OnPlatform Default='false', MacCatalyst='true', WinUI='true'}" />
 
             <Label Text="Slide to change StatusBar color" />
 
@@ -133,38 +140,17 @@
             <Label Text="Select StatusBar and NavigationBar style" />
 
             <HorizontalStackLayout Spacing="15">
-                <RadioButton IsChecked="{Binding IsDefaultChecked}"
-                             VerticalOptions="Center">
-                    <RadioButton.Content>
-                        <Label
-                            Margin="10,0,0,0"
-                            Text="Default"
-                            VerticalOptions="Center"
-                            VerticalTextAlignment="Center" />
-                    </RadioButton.Content>
-                </RadioButton>
+                <RadioButton Content="Default"
+                             IsChecked="{Binding IsDefaultChecked}"
+                             VerticalOptions="Center" />
 
-                <RadioButton IsChecked="{Binding IsLightContentChecked}"
-                             VerticalOptions="Center">
-                    <RadioButton.Content>
-                        <Label
-                            Margin="10,0,0,0"
-                            Text="Light&#10;Content"
-                            VerticalOptions="Center"
-                            VerticalTextAlignment="Center" />
-                    </RadioButton.Content>
-                </RadioButton>
+                <RadioButton Content="Light&#10;Content"
+                             IsChecked="{Binding IsLightContentChecked}"
+                             VerticalOptions="Center" />
 
-                <RadioButton IsChecked="{Binding IsDarkContentChecked}"
-                             VerticalOptions="Center">
-                    <RadioButton.Content>
-                        <Label
-                            Margin="10,0,0,0"
-                            Text="Dark&#10;Content"
-                            VerticalOptions="Center"
-                            VerticalTextAlignment="Center" />
-                    </RadioButton.Content>
-                </RadioButton>
+                <RadioButton Content="Dark&#10;Content"
+                             IsChecked="{Binding IsDarkContentChecked}"
+                             VerticalOptions="Center" />
 
             </HorizontalStackLayout>
 

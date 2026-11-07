@@ -10,21 +10,26 @@
     x:TypeArguments="vm:StringToListConverterViewModel"
     x:DataType="vm:StringToListConverterViewModel">
 
-    <VerticalStackLayout Spacing="8">
+    <Grid RowDefinitions="Auto, Auto, Auto, *" RowSpacing="8">
         <Label
+            Grid.Row="0"
             Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
             TextColor="{StaticResource NormalLabelTextColor}" />
 
         <Label
+            Grid.Row="1"
             FontAttributes="Bold"
             Text="Enter some text separated by ',' or '.' or ';'" />
 
         <Entry
+            Grid.Row="2"
             FontSize="12"
             Placeholder="Enter some text separated by ',' or '.' or ';'"
-            Text="{Binding LabelText, Mode=OneWayToSource}" />
+            Text="{Binding LabelText, Mode=TwoWay}" />
 
+        <!-- The star row gives the CollectionView a bounded height, so it shows items added later and scrolls when they do not fit -->
         <CollectionView
+            Grid.Row="3"
             ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
@@ -33,5 +38,5 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-    </VerticalStackLayout>
+    </Grid>
 </pages:BasePage>

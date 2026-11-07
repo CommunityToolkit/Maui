@@ -8,104 +8,114 @@
     xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
     xmlns:system="clr-namespace:System;assembly=netstandard"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+    Padding="0"
     x:DataType="vm:AnimationBehaviorViewModel"
     x:TypeArguments="vm:AnimationBehaviorViewModel">
 
-    <VerticalStackLayout Padding="12" Spacing="15">
-        <Label>
-            <Label.FormattedText>
-                <FormattedString>
-                    <FormattedString.Spans>
-                        <Span Text="AnimationBehavior is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
-                        <Span Text="{x:Static system:Environment.NewLine}" />
-                        <Span Text="* use the default of a TapGestureRecognizer being added to the attached VisualElement" />
-                        <Span Text="{x:Static system:Environment.NewLine}" />
-                        <Span Text="* define an EventName that will trigger the animation" />
-                        <Span Text="{x:Static system:Environment.NewLine}" />
-                        <Span Text="* trigger the animation through the AnimateCommand property" />
-                    </FormattedString.Spans>
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
+    <!--  A ScrollView clips its content to its bounds, so it fills the page (Padding="0" above) and the 1.2x scale animations below are not cut off at its edges  -->
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="15">
+            <Label>
+                <Label.FormattedText>
+                    <FormattedString>
+                        <FormattedString.Spans>
+                            <Span Text="AnimationBehavior is a Behavior that can be attached to any VisualElement, allowing developers to: trigger animations via: ICommand AnimateCommand." />
+                            <Span Text="{x:Static system:Environment.NewLine}" />
+                            <Span Text="* set AnimateOnTap to add a TapGestureRecognizer to the attached VisualElement" />
+                            <Span Text="{x:Static system:Environment.NewLine}" />
+                            <Span Text="* define an EventName that will trigger the animation" />
+                            <Span Text="{x:Static system:Environment.NewLine}" />
+                            <Span Text="* trigger the animation through the AnimateCommand property" />
+                        </FormattedString.Spans>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
 
-        <Button Margin="16,0" Text="Click this Button">
-            <Button.Behaviors>
-                <mct:AnimationBehavior EventName="Clicked">
-                    <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
-                    </mct:AnimationBehavior.AnimationType>
-                </mct:AnimationBehavior>
-            </Button.Behaviors>
-        </Button>
+            <Button Margin="16,0" Text="Click this Button">
+                <Button.Behaviors>
+                    <mct:AnimationBehavior EventName="Clicked">
+                        <mct:AnimationBehavior.AnimationType>
+                            <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Button.Behaviors>
+            </Button>
 
-        <Entry Margin="16,0" Placeholder="Animate on Focused and Unfocused">
-            <Entry.Behaviors>
-                <mct:AnimationBehavior EventName="Focused">
-                    <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleToAnimation
-                            Easing="{x:Static Easing.Linear}"
-                            Length="100"
-                            Scale="1.05" />
-                    </mct:AnimationBehavior.AnimationType>
-                </mct:AnimationBehavior>
+            <Entry Margin="16,0" Placeholder="Animate on Focused and Unfocused">
+                <Entry.Behaviors>
+                    <mct:AnimationBehavior EventName="Focused">
+                        <mct:AnimationBehavior.AnimationType>
+                            <behaviorPages:SampleScaleToAnimation
+                                Easing="{x:Static Easing.Linear}"
+                                Length="100"
+                                Scale="1.05" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
 
-                <mct:AnimationBehavior EventName="Unfocused">
-                    <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleToAnimation
-                            Easing="{x:Static Easing.Linear}"
-                            Length="100"
-                            Scale="1" />
-                    </mct:AnimationBehavior.AnimationType>
-                </mct:AnimationBehavior>
-            </Entry.Behaviors>
-        </Entry>
+                    <mct:AnimationBehavior EventName="Unfocused">
+                        <mct:AnimationBehavior.AnimationType>
+                            <behaviorPages:SampleScaleToAnimation
+                                Easing="{x:Static Easing.Linear}"
+                                Length="100"
+                                Scale="1" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Entry.Behaviors>
+            </Entry>
 
-        <Entry Margin="16,0" Placeholder="Animate on tap">
-            <Entry.Behaviors>
-                <mct:AnimationBehavior AnimateOnTap="{Binding Source={x:Reference AnimateOnTapToggle}, Path=IsToggled, x:DataType=Switch}">
-                    <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
-                    </mct:AnimationBehavior.AnimationType>
-                </mct:AnimationBehavior>
-            </Entry.Behaviors>
-        </Entry>
-        <HorizontalStackLayout Margin="16,0" Spacing="10">
-            <Label Text="Toggle animate on tap: " VerticalTextAlignment="Center" />
-            <Switch x:Name="AnimateOnTapToggle" />
-        </HorizontalStackLayout>
+            <Entry Margin="16,0" Placeholder="Animate on tap">
+                <Entry.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="{Binding Source={x:Reference AnimateOnTapToggle}, Path=IsToggled, x:DataType=Switch}">
+                        <mct:AnimationBehavior.AnimationType>
+                            <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Entry.Behaviors>
+            </Entry>
+            <HorizontalStackLayout Margin="16,0" Spacing="10">
+                <Label Text="Toggle animate on tap: " VerticalTextAlignment="Center" />
+                <Switch x:Name="AnimateOnTapToggle" />
+            </HorizontalStackLayout>
 
 
-        <!--  Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers  -->
-        <Label
-            Margin="16,0"
-            HorizontalOptions="Center"
-            Text="Click this Label">
-            <Label.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding AnimationCommand}" />
-            </Label.GestureRecognizers>
-            <Label.Behaviors>
-                <mct:AnimationBehavior>
-                    <mct:AnimationBehavior.AnimationType>
-                        <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
-                    </mct:AnimationBehavior.AnimationType>
-                </mct:AnimationBehavior>
-            </Label.Behaviors>
-        </Label>
+            <!--  Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers  -->
+            <Label
+                Margin="16,0"
+                HorizontalOptions="Center"
+                Text="Click this Label">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding AnimationCommand}" />
+                </Label.GestureRecognizers>
+                <Label.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <behaviorPages:SampleScaleAnimation Easing="{x:Static Easing.Linear}" Length="100" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Label.Behaviors>
+            </Label>
 
-        <Border
-            x:Name="AnimatedBorder"
-            Margin="16,0"
-            BackgroundColor="LightGreen">
-            <Border.Behaviors>
-                <mct:AnimationBehavior AnimateCommand="{Binding AnimateFromViewModelCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference AnimatedBorder}, x:DataType=Border}">
-                    <mct:AnimationBehavior.AnimationType>
-                        <mct:FadeAnimation Opacity="0.2" />
-                    </mct:AnimationBehavior.AnimationType>
-                </mct:AnimationBehavior>
-            </Border.Behaviors>
-            <Label HorizontalOptions="Center" Text="Click Inside This Border" />
-        </Border>
+            <Border
+                x:Name="AnimatedBorder"
+                Margin="16,0"
+                BackgroundColor="LightGreen">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior
+                        AnimateCommand="{Binding AnimateFromViewModelCommand}"
+                        AnimateOnTap="True"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference AnimatedBorder}, x:DataType=Border}">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:FadeAnimation Opacity="0.2" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label
+                    HorizontalOptions="Center"
+                    Text="Click Inside This Border"
+                    TextColor="Black" />
+            </Border>
 
-        <Button Command="{Binding TriggerAnimationCommand}" Text="Animate the frame above" />
-    </VerticalStackLayout>
+            <Button Command="{Binding TriggerAnimationCommand}" Text="Animate the frame above" />
+        </VerticalStackLayout>
+    </ScrollView>
 </pages:BasePage>

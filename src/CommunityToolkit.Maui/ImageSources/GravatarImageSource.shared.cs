@@ -31,14 +31,24 @@ public enum DefaultImage
 	Blank,
 }
 /// <summary>Gravatar image source.</summary>
-/// <remarks>Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!</remarks>
-public partial class GravatarImageSource : StreamImageSource, IDisposable
+/// <remarks>
+/// Note that <see cref="UriImageSource"/> is sealed and can't be used as a parent!
+/// <para>
+/// Cancellation: <see cref="IStreamImageSource.GetStreamAsync(CancellationToken)"/> and the default <see cref="StreamImageSource.Stream"/> function throw an <see cref="OperationCanceledException"/>
+/// only when the <see cref="CancellationToken"/> passed to them is canceled, because one load of a <see cref="GravatarImageSource"/> never cancels another.
+/// A load that you start with <see cref="CancellationToken.None"/> never throws it, and .NET MAUI catches it for the loads that it cancels itself.
+/// <see cref="ImageSource.Cancel"/> ends the loads that were started without a cancelable token, which then return <see cref="System.IO.Stream.Null"/>.
+/// </para>
+/// </remarks>
+public partial class GravatarImageSource : StreamImageSource, IStreamImageSource, IDisposable
 {
 	static readonly Lazy<HttpClient> singletonHttpClientHolder = new();
 
 	readonly TimeSpan cancellationTokenSourceTimeout = TimeSpan.FromMilliseconds(737);
 
 	CancellationTokenSource? uriUpdateTokenSource;
+
+	CancellationTokenSource tokenlessLoadsTokenSource = new();
 
 	Uri? lastDispatch;
 
@@ -62,6 +72,11 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	public partial bool CachingEnabled { get; set; } = GravatarImageSourceDefaults.CachingEnabled;
 
 	/// <summary>Gets or sets the email address.</summary>
+	/// <remarks>
+	/// As Gravatar requires, the address is trimmed and converted to lower case before it is hashed,
+	/// so <c>" User@Example.com "</c> and <c>"user@example.com"</c> load the same image.
+	/// The value of this property is not changed.
+	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnEmailPropertyChanged))]
 	public partial string? Email { get; set; } = GravatarImageSourceDefaults.Email;
 
@@ -118,6 +133,45 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		GC.SuppressFinalize(this);
 	}
 
+	/// <summary>Ends the loads that were started without a cancelable token.</summary>
+	/// <returns>A task that completes with <see langword="true"/>.</returns>
+	public override Task<bool> Cancel()
+	{
+		// .NET MAUI calls Cancel() when a recycled ListView or TableView ImageCell disappears, and it applies whatever picture loads last.
+		// Loads with a cancelable token are not touched: .NET MAUI's image handlers cancel those through their own token.
+		// The canceled source is not disposed: a load can read the field just before the swap, and getting Token from a disposed source throws an ObjectDisposedException.
+		Interlocked.Exchange(ref tokenlessLoadsTokenSource, new CancellationTokenSource()).Cancel();
+
+		return Task.FromResult(true);
+	}
+
+	// .NET MAUI's StreamImageSource gives all the loads of a source one token, which the next load cancels, even for a caller that passed no token,
+	// and .NET MAUI awaits some loads in async void methods that cannot catch (on Android, a Shell's FlyoutIcon and its bottom tab icons).
+	async Task<System.IO.Stream> IStreamImageSource.GetStreamAsync(CancellationToken cancellationToken)
+	{
+		if (IsEmpty)
+		{
+			return System.IO.Stream.Null;
+		}
+
+		if (cancellationToken.CanBeCanceled)
+		{
+			return await Stream(cancellationToken);
+		}
+
+		var tokenlessLoadsToken = tokenlessLoadsTokenSource.Token;
+
+		try
+		{
+			return await Stream(tokenlessLoadsToken);
+		}
+		catch (OperationCanceledException) when (tokenlessLoadsToken.IsCancellationRequested)
+		{
+			// A caller without a token cannot handle the exception, and .NET MAUI awaits some of these loads in async void methods.
+			return System.IO.Stream.Null;
+		}
+	}
+
 	/// <summary>Disposes the resources used by the <see cref="GravatarImageSource"/>.</summary>
 	/// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
 	protected virtual void Dispose(bool disposing)
@@ -141,6 +195,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 	protected override void OnParentSet()
 	{
 		base.OnParentSet();
+		PlatformOnParentSet();
 
 		if (Parent is not VisualElement parentElement)
 		{
@@ -152,12 +207,18 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 		SetBinding(ParentHeightProperty, BindingBase.Create<VisualElement, double>(static p => p.Height, source: parentElement, mode: BindingMode.OneWay));
 	}
 
+	partial void PlatformOnParentSet();
+
 	static string DefaultGravatarName(DefaultImage defaultGravatar) => defaultGravatar switch
 	{
 		DefaultImage.FileNotFound => "404",
 		DefaultImage.MysteryPerson => "mp",
 		_ => defaultGravatar.ToString().ToLower(),
 	};
+
+	// Gravatar hashes the address with leading and trailing white space removed and in lower case (https://docs.gravatar.com/rest/hash/),
+	// and it still accepts the MD5 hash used here.
+	static string? GetGravatarHash(string? email) => email?.Trim().ToLowerInvariant().GetMd5Hash(string.Empty).ToLowerInvariant();
 
 	static async void OnDefaultImagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -198,7 +259,7 @@ public partial class GravatarImageSource : StreamImageSource, IDisposable
 
 		Uri = IsEmpty
 			? new Uri($"{GravatarImageSourceDefaults.Url}?s={GravatarSize}")
-			: new Uri($"{GravatarImageSourceDefaults.Url}{email?.GetMd5Hash(string.Empty).ToLowerInvariant()}?s={GravatarSize}&d={DefaultGravatarName(image)}");
+			: new Uri($"{GravatarImageSourceDefaults.Url}{GetGravatarHash(email)}?s={GravatarSize}&d={DefaultGravatarName(image)}");
 
 		return OnUriChanged(token);
 	}

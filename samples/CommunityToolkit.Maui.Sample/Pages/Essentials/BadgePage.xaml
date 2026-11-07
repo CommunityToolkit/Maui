@@ -9,7 +9,7 @@
                 Title="Badge">
     
     <Grid
-        RowDefinitions="40,60,*,*,80"
+        RowDefinitions="40,60,*,*,Auto"
         ColumnDefinitions="*,*"
         ColumnSpacing="12"
         RowSpacing="12">
@@ -55,11 +55,12 @@
 
         <Label
             BackgroundColor="LightYellow"
+            TextColor="Black"
             Grid.Row="4"
             Grid.ColumnSpan="2"
             HorizontalTextAlignment="Center"
             FontAttributes="Bold"
-            Text="Note: Android requires device-specific implementation to support app icon badge counts. See the .NET MAUI Community Toolkit documentation for more information" />
+            Text="Note: Android requires device-specific implementation to support app icon badge counts. Windows shows the taskbar badge only for a packaged app. See the .NET MAUI Community Toolkit documentation for more information" />
 
     </Grid>
     

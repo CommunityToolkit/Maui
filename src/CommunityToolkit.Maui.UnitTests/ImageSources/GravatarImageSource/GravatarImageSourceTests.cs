@@ -282,6 +282,51 @@ public class GravatarImageSourceTests : BaseViewTest
 		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=monsterid"), ((GravatarImageSource)testControl.Source).Uri);
 	}
 
+	[Theory]
+	[InlineData("dsiegel@avantipoint.com")]
+	[InlineData("DSIEGEL@AVANTIPOINT.COM")]
+	[InlineData("DSiegel@AvantiPoint.com")]
+	[InlineData(" dsiegel@avantipoint.com ")]
+	[InlineData("\tDSiegel@AvantiPoint.com\r\n")]
+	public void UriUsesHashOfTrimmedLowerCaseEmail(string emailAddress)
+	{
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = emailAddress
+		};
+
+		Image testControl = new()
+		{
+			Source = gravatarImageSource
+		};
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), gravatarImageSource.Uri);
+		Assert.Equal(emailAddress, gravatarImageSource.Email);
+	}
+
+	[Theory]
+	[InlineData("dsiegel@avantipoint.com")]
+	[InlineData("DSIEGEL@AVANTIPOINT.COM")]
+	[InlineData("DSiegel@AvantiPoint.com")]
+	[InlineData(" dsiegel@avantipoint.com ")]
+	[InlineData("\tDSiegel@AvantiPoint.com\r\n")]
+	public void ChangingEmailUpdatesUriWithHashOfTrimmedLowerCaseEmail(string emailAddress)
+	{
+		var gravatarImageSource = new GravatarImageSource();
+
+		Image testControl = new()
+		{
+			Source = gravatarImageSource
+		};
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		gravatarImageSource.Email = emailAddress;
+
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), gravatarImageSource.Uri);
+		Assert.Equal(emailAddress, gravatarImageSource.Email);
+	}
+
 	[Fact]
 	public void TestControlPage()
 	{
@@ -346,8 +391,120 @@ public class GravatarImageSourceTests : BaseViewTest
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var gravatarImageSource = new GravatarImageSource();
 		cts.Cancel();
-		Stream stream = await gravatarImageSource.Stream(cts.Token);
-		Assert.Equal(Stream.Null, stream);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => gravatarImageSource.Stream(cts.Token));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task OverlappingLoadsWithoutATokenBothReturnThePicture()
+	{
+		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = async cancellationToken =>
+			{
+				await release.Task.WaitAsync(cancellationToken);
+				return new MemoryStream([1, 2, 3]);
+			}
+		};
+		var streamImageSource = (IStreamImageSource)gravatarImageSource;
+
+		var firstLoad = streamImageSource.GetStreamAsync(CancellationToken.None);
+		var secondLoad = streamImageSource.GetStreamAsync(CancellationToken.None);
+		release.SetResult();
+
+		await using var firstStream = await firstLoad.WaitAsync(TestContext.Current.CancellationToken);
+		await using var secondStream = await secondLoad.WaitAsync(TestContext.Current.CancellationToken);
+
+		firstStream.Length.Should().Be(3);
+		secondStream.Length.Should().Be(3);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task LoadCanceledByItsCallerThrowsOperationCanceledException()
+	{
+		var neverReleased = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var callerCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = async cancellationToken =>
+			{
+				await neverReleased.Task.WaitAsync(cancellationToken);
+				return new MemoryStream([1, 2, 3]);
+			}
+		};
+
+		var load = ((IStreamImageSource)gravatarImageSource).GetStreamAsync(callerCancellationTokenSource.Token);
+		callerCancellationTokenSource.Cancel();
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => load);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancelEndsALoadStartedWithoutATokenWithoutThrowing()
+	{
+		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = async cancellationToken =>
+			{
+				await release.Task.WaitAsync(cancellationToken);
+				return new MemoryStream([1, 2, 3]);
+			}
+		};
+
+		var load = ((IStreamImageSource)gravatarImageSource).GetStreamAsync(CancellationToken.None);
+		var wasCanceled = await gravatarImageSource.Cancel();
+		release.SetResult();
+
+		var stream = await load.WaitAsync(TestContext.Current.CancellationToken);
+
+		wasCanceled.Should().BeTrue();
+		stream.Should().BeSameAs(System.IO.Stream.Null);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CancelDoesNotEndALoadStartedWithACancelableToken()
+	{
+		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var callerCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = async cancellationToken =>
+			{
+				await release.Task.WaitAsync(cancellationToken);
+				return new MemoryStream([1, 2, 3]);
+			}
+		};
+
+		var load = ((IStreamImageSource)gravatarImageSource).GetStreamAsync(callerCancellationTokenSource.Token);
+		await gravatarImageSource.Cancel();
+		release.SetResult();
+
+		await using var stream = await load.WaitAsync(TestContext.Current.CancellationToken);
+
+		stream.Length.Should().Be(3);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task LoadStartedWithoutATokenAfterCancelReturnsThePicture()
+	{
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = email,
+			Stream = cancellationToken => cancellationToken.IsCancellationRequested
+				? Task.FromCanceled<System.IO.Stream>(cancellationToken)
+				: Task.FromResult<System.IO.Stream>(new MemoryStream([1, 2, 3]))
+		};
+
+		await gravatarImageSource.Cancel();
+
+		await using var stream = await ((IStreamImageSource)gravatarImageSource).GetStreamAsync(CancellationToken.None).WaitAsync(TestContext.Current.CancellationToken);
+
+		stream.Length.Should().Be(3);
 	}
 
 	[Fact]

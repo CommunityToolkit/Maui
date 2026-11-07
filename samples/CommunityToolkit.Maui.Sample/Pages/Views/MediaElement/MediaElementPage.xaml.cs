@@ -37,8 +37,20 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
 	{
 		base.OnNavigatedFrom(args);
-		MediaElement.Stop();
-		MediaElement.Handler?.DisconnectHandler();
+
+		switch (args.NavigationType)
+		{
+			case NavigationType.Pop or NavigationType.PopToRoot or NavigationType.Remove:
+				MediaElement.Stop();
+				MediaElement.Handler?.DisconnectHandler();
+				break;
+
+			// The page stays in the navigation stack and can be shown again, for example after the Popup (a modal page) closes,
+			// or when Shell comes back to this flyout item: keep the player, and only pause the media
+			default:
+				MediaElement.Pause();
+				break;
+		}
 	}
 
 	async void HandleMediaOpened(object? sender, EventArgs e)
@@ -158,13 +170,23 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		if (string.IsNullOrWhiteSpace(CustomSourceEntry.Text))
 		{
 			await DisplayAlertAsync("Error Loading URL Source", "No value was found to load as a media source. " +
-																"When you do enter a value, make sure it's a valid URL. No additional validation is done.",
+																"When you do enter a value, make sure it's a valid URL.",
 				"OK");
 
 			return;
 		}
 
-		var customSource = new UriMediaSource { Uri = new Uri(CustomSourceEntry.Text) };
+		// UriMediaSource only accepts an absolute URI
+		if (!Uri.TryCreate(CustomSourceEntry.Text.Trim(), UriKind.Absolute, out var customUri))
+		{
+			await DisplayAlertAsync("Error Loading URL Source", $"\"{CustomSourceEntry.Text}\" is not a valid URL. " +
+																"Enter an absolute URL, for example https://example.com/video.mp4.",
+				"OK");
+
+			return;
+		}
+
+		var customSource = new UriMediaSource { Uri = customUri };
 		MediaElement.Source = customSource;
 	}
 
@@ -225,8 +247,16 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 	async void ChangeSourceClicked(object? sender, EventArgs? e)
 	{
-		var result = await DisplayActionSheetAsync("Choose a source", "Cancel", null,
+		const string cancel = "Cancel";
+
+		var result = await DisplayActionSheetAsync("Choose a source", cancel, null,
 			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+
+		// Cancel, or dismissing the action sheet without a choice, keeps the current source
+		if (result is null or cancel)
+		{
+			return;
+		}
 
 		MediaElement.Stop();
 		MediaElement.Source = null;
@@ -348,7 +378,8 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 		await this.ShowPopupAsync(popupMediaElement);
 
+		// The Popup has closed: release the player of its MediaElement (on Android also its media session and notification)
 		popupMediaElement.Stop();
-		popupMediaElement.Source = null;
+		popupMediaElement.Handler?.DisconnectHandler();
 	}
 }

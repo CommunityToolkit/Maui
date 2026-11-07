@@ -42,55 +42,58 @@
         </VerticalStackLayout.Resources>
         <Label Style="{StaticResource Description}" Text="AvatarView supports gestures." />
         <Line Style="{StaticResource HR}" />
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView providing drag gesture recognizer."
-            Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Drag"
-            WidthRequest="48">
-            <mct:AvatarView.GestureRecognizers>
-                <DragGestureRecognizer DragStarting="DragGestureRecognizer_DragStarting" />
-            </mct:AvatarView.GestureRecognizers>
-        </mct:AvatarView>
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView providing pinch gesture recognizer."
-            Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Pinch"
-            WidthRequest="48">
-            <mct:AvatarView.GestureRecognizers>
-                <PinchGestureRecognizer PinchUpdated="PinchGestureRecognizer_PinchUpdated" />
-            </mct:AvatarView.GestureRecognizers>
-        </mct:AvatarView>
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView providing pan gesture recognizer."
-            Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Pan"
-            WidthRequest="48">
-            <mct:AvatarView.GestureRecognizers>
-                <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
-            </mct:AvatarView.GestureRecognizers>
-        </mct:AvatarView>
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView providing swipe gesture recognizer."
-            Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Swipe"
-            WidthRequest="48">
-            <mct:AvatarView.GestureRecognizers>
-                <SwipeGestureRecognizer Direction="Left" Swiped="SwipeGestureRecognizer_Swiped" />
-            </mct:AvatarView.GestureRecognizers>
-        </mct:AvatarView>
-        <mct:AvatarView
-            HeightRequest="48"
-            SemanticProperties.Description="Sample AvatarView providing tap gesture recognizer."
-            Style="{StaticResource AvatarViewGesturesDefault}"
-            Text="Tap"
-            WidthRequest="48">
-            <mct:AvatarView.GestureRecognizers>
-                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
-            </mct:AvatarView.GestureRecognizers>
-        </mct:AvatarView>
+        <!--  One row of avatars fits in phone landscape, so this page needs no ScrollView: on Android a vertical ScrollView takes vertical drags from the Pan avatar, even when it has nothing to scroll  -->
+        <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView providing drag gesture recognizer."
+                Style="{StaticResource AvatarViewGesturesDefault}"
+                Text="Drag"
+                WidthRequest="48">
+                <mct:AvatarView.GestureRecognizers>
+                    <DragGestureRecognizer DragStarting="DragGestureRecognizer_DragStarting" />
+                </mct:AvatarView.GestureRecognizers>
+            </mct:AvatarView>
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView providing pinch gesture recognizer."
+                Style="{StaticResource AvatarViewGesturesDefault}"
+                Text="Pinch"
+                WidthRequest="48">
+                <mct:AvatarView.GestureRecognizers>
+                    <PinchGestureRecognizer PinchUpdated="PinchGestureRecognizer_PinchUpdated" />
+                </mct:AvatarView.GestureRecognizers>
+            </mct:AvatarView>
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView providing pan gesture recognizer."
+                Style="{StaticResource AvatarViewGesturesDefault}"
+                Text="Pan"
+                WidthRequest="48">
+                <mct:AvatarView.GestureRecognizers>
+                    <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
+                </mct:AvatarView.GestureRecognizers>
+            </mct:AvatarView>
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView providing swipe gesture recognizer."
+                Style="{StaticResource AvatarViewGesturesDefault}"
+                Text="Swipe"
+                WidthRequest="48">
+                <mct:AvatarView.GestureRecognizers>
+                    <SwipeGestureRecognizer Direction="Left" Swiped="SwipeGestureRecognizer_Swiped" />
+                </mct:AvatarView.GestureRecognizers>
+            </mct:AvatarView>
+            <mct:AvatarView
+                HeightRequest="48"
+                SemanticProperties.Description="Sample AvatarView providing tap gesture recognizer."
+                Style="{StaticResource AvatarViewGesturesDefault}"
+                Text="Tap"
+                WidthRequest="48">
+                <mct:AvatarView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
+                </mct:AvatarView.GestureRecognizers>
+            </mct:AvatarView>
+        </HorizontalStackLayout>
     </VerticalStackLayout>
 </pages:BasePage>

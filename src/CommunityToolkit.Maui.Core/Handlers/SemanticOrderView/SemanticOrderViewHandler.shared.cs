@@ -41,8 +41,11 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 	public override void SetVirtualView(IView view)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		base.SetVirtualView(view);
 #if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
 		if (PlatformView is MauiSemanticOrderView semanticOrderView)

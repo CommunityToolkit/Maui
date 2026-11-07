@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.Extensions;
@@ -14,10 +15,21 @@ public static class PopupExtensions
 	/// <param name="page">The current page that provides access to the <see cref="INavigation"/> implementation.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </remarks>
+	/// <remarks>
+	/// <para>This method returns before the popup is displayed and closed. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method and return <see cref="PopupResult{T}"/> </para>
+	/// <para>When <paramref name="page"/> is on a modal page that is being removed from the <see cref="INavigation.ModalStack"/>, for example when this method is called in <see cref="Page.OnDisappearing"/> after <see cref="INavigation.PopModalAsync()"/>, the popup is displayed once the modal page has been removed, on the page below it.</para>
+	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
 	public static void ShowPopup(this Page page, View view, IPopupOptions? options = null)
 	{
 		ArgumentNullException.ThrowIfNull(page);
+		ArgumentNullException.ThrowIfNull(view);
+
+		if (TryGetModalPageBeingPopped(page, out var window, out var modalPageBeingPopped))
+		{
+			ShowPopupWhenModalPageIsPopped(window, modalPageBeingPopped, view, options);
+			return;
+		}
 
 		ShowPopup(page.Navigation, view, options);
 	}
@@ -28,15 +40,17 @@ public static class PopupExtensions
 	/// <param name="navigation">The <see cref="INavigation"/> implementation responsible for displaying the popup. Make sure to use the one associated with the <see cref="Window"/> that you wish the popup to be displayed on.</param>
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public static async void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null)
+	/// <remarks>
+	/// <para>This method returns before the popup is displayed and closed. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</para>
+	/// <para>.NET MAUI removes a modal page that is pushed while another modal page is being removed from the <see cref="INavigation.ModalStack"/>. To display a popup from <see cref="Page.OnDisappearing"/> of a modal page, use <see cref="ShowPopup(Page,View,CommunityToolkit.Maui.IPopupOptions?)"/>, which waits until the modal page has been removed.</para>
+	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="navigation"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	public static void ShowPopup(this INavigation navigation, View view, IPopupOptions? options = null)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
 
-		var popupPage = new PopupPage(view, options);
-
-		await popupPage.ShowAsync(navigation);
+		ShowPopupCore(navigation, view, options);
 	}
 
 	/// <summary>
@@ -46,13 +60,14 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
-	/// <remarks>This is an <see langword="async"/> <see langword="void"/> method. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
-	public static async void ShowPopup(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null)
+	/// <remarks>This method returns before the popup is displayed and closed. Use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/> to <see langword="await"/> this method</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="shell"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	public static void ShowPopup(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null)
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 		ArgumentNullException.ThrowIfNull(view);
 
-		await shell.ShowPopupAsync(view, options, shellParameters);
+		ShowPopupCore(shell, view, options, shellParameters);
 	}
 
 	/// <summary>
@@ -62,10 +77,19 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <remarks>When <paramref name="page"/> is on a modal page that is being removed from the <see cref="INavigation.ModalStack"/>, for example when this method is called in <see cref="Page.OnDisappearing"/> after <see cref="INavigation.PopModalAsync()"/>, the popup is displayed once the modal page has been removed, on the page below it.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
+		ArgumentNullException.ThrowIfNull(view);
+
+		if (TryGetModalPageBeingPopped(page, out var window, out var modalPageBeingPopped))
+		{
+			return ShowPopupWhenModalPageIsPoppedAsync<TResult>(window, modalPageBeingPopped, view, options, token);
+		}
 
 		return page.Navigation.ShowPopupAsync<TResult>(view, options, token);
 	}
@@ -77,12 +101,16 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult{T}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
+	/// <returns>An <see cref="IPopupResult{T}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <remarks>.NET MAUI removes a modal page that is pushed while another modal page is being removed from the <see cref="INavigation.ModalStack"/>. To display a popup from <see cref="Page.OnDisappearing"/> of a modal page, use <see cref="ShowPopupAsync{TResult}(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/>, which waits until the modal page has been removed.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="navigation"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
+	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this INavigation navigation, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
-		var result = await ShowPopupAsync(navigation, view, options, token);
+		ArgumentNullException.ThrowIfNull(navigation);
+		ArgumentNullException.ThrowIfNull(view);
 
-		return GetPopupResult<TResult>(result);
+		return GetPopupResultAsync<TResult>(ShowPopupAsync(navigation, view, options, token));
 	}
 
 	/// <summary>
@@ -93,12 +121,15 @@ public static class PopupExtensions
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult{T}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	/// <returns>An <see cref="IPopupResult{T}"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="shell"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
+	public static Task<IPopupResult<TResult>> ShowPopupAsync<TResult>(this Shell shell, View view, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
 	{
-		var result = await ShowPopupAsync(shell, view, options, shellParameters, token);
+		ArgumentNullException.ThrowIfNull(shell);
+		ArgumentNullException.ThrowIfNull(view);
 
-		return GetPopupResult<TResult>(result);
+		return GetPopupResultAsync<TResult>(ShowPopupAsync(shell, view, options, shellParameters, token));
 	}
 
 	/// <summary>
@@ -108,10 +139,19 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <remarks>When <paramref name="page"/> is on a modal page that is being removed from the <see cref="INavigation.ModalStack"/>, for example when this method is called in <see cref="Page.OnDisappearing"/> after <see cref="INavigation.PopModalAsync()"/>, the popup is displayed once the modal page has been removed, on the page below it.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	public static Task<IPopupResult> ShowPopupAsync(this Page page, View view, IPopupOptions? options = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(page);
+		ArgumentNullException.ThrowIfNull(view);
+
+		if (TryGetModalPageBeingPopped(page, out var window, out var modalPageBeingPopped))
+		{
+			return ShowPopupWhenModalPageIsPoppedAsync(window, modalPageBeingPopped, view, options, token);
+		}
 
 		return ShowPopupAsync(page.Navigation, view, options, token);
 	}
@@ -123,12 +163,114 @@ public static class PopupExtensions
 	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is canceled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <remarks>.NET MAUI removes a modal page that is pushed while another modal page is being removed from the <see cref="INavigation.ModalStack"/>. To display a popup from <see cref="Page.OnDisappearing"/> of a modal page, use <see cref="ShowPopupAsync(Page,View,CommunityToolkit.Maui.IPopupOptions?,CancellationToken)"/>, which waits until the modal page has been removed.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="navigation"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
+	public static Task<IPopupResult> ShowPopupAsync(this INavigation navigation, View view, IPopupOptions? options, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 		ArgumentNullException.ThrowIfNull(view);
 
+		return ShowPopupCoreAsync(navigation, view, options, token);
+	}
+
+	/// <summary>
+	/// Shows a popup with the specified options.
+	/// </summary>
+	/// <param name="shell">Current <see cref="Shell"/></param>
+	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
+	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
+	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
+	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="shell"/> or <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
+	public static Task<IPopupResult> ShowPopupAsync(this Shell shell, View view, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(shell);
+		ArgumentNullException.ThrowIfNull(view);
+
+		return ShowPopupCoreAsync(shell, view, options, shellParameters, token);
+	}
+
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
+	public static Task<IPopupResult> ClosePopupAsync(this Page page, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(page);
+
+		return ClosePopupAsync(page.Navigation, token);
+	}
+
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="navigation"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
+	public static Task<IPopupResult> ClosePopupAsync(this INavigation navigation, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+
+		return ClosePopupCoreAsync(navigation, token);
+	}
+
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="page"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
+	public static Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this Page page, TResult result, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(page);
+
+		return ClosePopupAsync(page.Navigation, result, token);
+	}
+
+	/// <summary>
+	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="navigation"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
+	public static Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this INavigation navigation, TResult result, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(navigation);
+
+		return ClosePopupCoreAsync(navigation, result, token);
+	}
+
+	// The public members validate their arguments before they call these methods: in an async method or an async void method, a null argument would fault the returned Task or reach the synchronization context, away from the call that passed it
+	static async void ShowPopupCore(INavigation navigation, View view, IPopupOptions? options)
+	{
+		var popupPage = new PopupPage(view, options);
+
+		try
+		{
+			await popupPage.ShowAsync(navigation);
+		}
+		catch (OperationCanceledException)
+		{
+			// ShowPopup passes no token, so the app canceled the navigation that displays the popup (e.g. in Shell.Navigating); ShowPopup returns before the popup is displayed, so nothing could catch this
+		}
+	}
+
+	static async void ShowPopupCore(Shell shell, View view, IPopupOptions? options, IDictionary<string, object>? shellParameters)
+	{
+		try
+		{
+			await shell.ShowPopupAsync(view, options, shellParameters);
+		}
+		catch (OperationCanceledException)
+		{
+			// ShowPopup passes no token, so the app canceled the navigation that displays the popup (e.g. in Shell.Navigating); ShowPopup returns before the popup is displayed, so nothing could catch this
+		}
+	}
+
+	static async Task<IPopupResult> ShowPopupCoreAsync(INavigation navigation, View view, IPopupOptions? options, CancellationToken token)
+	{
 		token.ThrowIfCancellationRequested();
 
 		TaskCompletionSource<IPopupResult> taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -147,20 +289,8 @@ public static class PopupExtensions
 		}
 	}
 
-	/// <summary>
-	/// Shows a popup with the specified options.
-	/// </summary>
-	/// <param name="shell">Current <see cref="Shell"/></param>
-	/// <param name="view">The <see cref="View"/> that will be displayed as the content in the popup.</param>
-	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
-	/// <param name="shellParameters">Parameters that will be passed into the <paramref name="view"/> or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
-	/// <param name="token">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="token"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
-	public static async Task<IPopupResult> ShowPopupAsync(this Shell shell, View view, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
+	static async Task<IPopupResult> ShowPopupCoreAsync(Shell shell, View view, IPopupOptions? options, IDictionary<string, object>? shellParameters, CancellationToken token)
 	{
-		ArgumentNullException.ThrowIfNull(shell);
-		ArgumentNullException.ThrowIfNull(view);
-
 		token.ThrowIfCancellationRequested();
 
 		var popupPageRoute = $"{nameof(PopupPage)}" + Guid.NewGuid(); // Add a GUID to the PopupPage Route to avoid duplicate Routes being added to Shell Routing
@@ -189,22 +319,8 @@ public static class PopupExtensions
 		}
 	}
 
-	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
-	/// </summary>
-	public static Task<IPopupResult> ClosePopupAsync(this Page page, CancellationToken token = default)
+	static async Task<IPopupResult> ClosePopupCoreAsync(INavigation navigation, CancellationToken token)
 	{
-		ArgumentNullException.ThrowIfNull(page);
-
-		return ClosePopupAsync(page.Navigation, token);
-	}
-
-	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult"/> that provides details about the closure.
-	/// </summary>
-	public static async Task<IPopupResult> ClosePopupAsync(this INavigation navigation, CancellationToken token = default)
-	{
-		ArgumentNullException.ThrowIfNull(navigation);
 		token.ThrowIfCancellationRequested();
 
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
@@ -224,22 +340,8 @@ public static class PopupExtensions
 		}
 	}
 
-	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
-	/// </summary>
-	public static Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this Page page, TResult result, CancellationToken token = default)
+	static async Task<IPopupResult<TResult>> ClosePopupCoreAsync<TResult>(INavigation navigation, TResult result, CancellationToken token)
 	{
-		ArgumentNullException.ThrowIfNull(page);
-
-		return ClosePopupAsync(page.Navigation, result, token);
-	}
-
-	/// <summary>
-	/// Closes the most recent popup and returns an <see cref="IPopupResult{TResult}"/> that provides details about the closure.
-	/// </summary>
-	public static async Task<IPopupResult<TResult>> ClosePopupAsync<TResult>(this INavigation navigation, TResult result, CancellationToken token = default)
-	{
-		ArgumentNullException.ThrowIfNull(navigation);
 		token.ThrowIfCancellationRequested();
 
 		var popupClosedTCS = new TaskCompletionSource<IPopupResult>();
@@ -260,6 +362,90 @@ public static class PopupExtensions
 		}
 	}
 
+	static async Task<IPopupResult<TResult>> GetPopupResultAsync<TResult>(Task<IPopupResult> popupResultTask) => GetPopupResult<TResult>(await popupResultTask);
+
+	// .NET MAUI's PopModalAsync removes a modal page from the ModalStack and raises its Disappearing event (Page.OnDisappearing) before it dismisses the page,
+	// removes it from its Window and raises Window.ModalPopped. A modal page pushed in between, like a popup displayed in OnDisappearing, is removed again:
+	// Shell pops every modal page above its destination, and other root pages remove it when they sync the modal stack of the platform.
+	static bool TryGetModalPageBeingPopped(Page page, [NotNullWhen(true)] out Window? window, [NotNullWhen(true)] out Page? modalPageBeingPopped)
+	{
+		Element rootElement = page;
+		while (rootElement.Parent is Element parent and not Window)
+		{
+			rootElement = parent;
+		}
+
+		// IsLoaded excludes a modal page that .NET MAUI dropped from the ModalStack without popping it, e.g. when the Page of the Window was replaced:
+		// it is no longer displayed, and it is never removed from the Window. It reads the platform view, so keep it last
+		if (rootElement is Page rootPage
+			&& rootPage.Parent is Window parentWindow
+			&& rootPage != parentWindow.Page
+			&& !parentWindow.Navigation.ModalStack.Contains(rootPage)
+			&& rootPage.IsLoaded)
+		{
+			window = parentWindow;
+			modalPageBeingPopped = rootPage;
+			return true;
+		}
+
+		window = null;
+		modalPageBeingPopped = null;
+		return false;
+	}
+
+	// The INavigation of the popped page no longer displays anything, so the popup goes to the page that is on top of the window once it is removed
+	static async Task<INavigation> GetNavigationWhenModalPageIsPoppedAsync(Window window, Page modalPageBeingPopped, CancellationToken token)
+	{
+		// RunContinuationsAsynchronously: the popup is pushed after the code that removed the modal page from the window has returned, so that .NET MAUI first
+		// finishes the navigation that popped the modal page, e.g. the loop of Shell.GoToAsync("..") that pops every modal page above its destination
+		var modalPageRemovedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		// ParentChanged rather than Window.ModalPopped: PopModalAsync removes the modal page from the window right before it raises ModalPopped, after the platform
+		// has dismissed the page, but the sync of the platform's modal stack removes it without raising ModalPopped
+		modalPageBeingPopped.ParentChanged += HandleParentChanged;
+
+		try
+		{
+			await modalPageRemovedTcs.Task.WaitAsync(token);
+		}
+		finally
+		{
+			modalPageBeingPopped.ParentChanged -= HandleParentChanged;
+		}
+
+		var currentPage = window.Navigation.ModalStack.Count > 0 ? window.Navigation.ModalStack[^1] : window.Page;
+		return currentPage?.Navigation ?? window.Navigation;
+
+		void HandleParentChanged(object? sender, EventArgs e)
+		{
+			if (modalPageBeingPopped.Parent != window)
+			{
+				modalPageRemovedTcs.TrySetResult();
+			}
+		}
+	}
+
+	static async void ShowPopupWhenModalPageIsPopped(Window window, Page modalPageBeingPopped, View view, IPopupOptions? options)
+	{
+		var navigation = await GetNavigationWhenModalPageIsPoppedAsync(window, modalPageBeingPopped, CancellationToken.None);
+		ShowPopup(navigation, view, options);
+	}
+
+	static async Task<IPopupResult> ShowPopupWhenModalPageIsPoppedAsync(Window window, Page modalPageBeingPopped, View view, IPopupOptions? options, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		var navigation = await GetNavigationWhenModalPageIsPoppedAsync(window, modalPageBeingPopped, token);
+		return await ShowPopupAsync(navigation, view, options, token);
+	}
+
+	static async Task<IPopupResult<TResult>> ShowPopupWhenModalPageIsPoppedAsync<TResult>(Window window, Page modalPageBeingPopped, View view, IPopupOptions? options, CancellationToken token)
+	{
+		var result = await ShowPopupWhenModalPageIsPoppedAsync(window, modalPageBeingPopped, view, options, token);
+
+		return GetPopupResult<TResult>(result);
+	}
+
 	static PopupPage GetMostRecentPopupPage(in INavigation navigation)
 	{
 		var currentVisibleModalPage = Shell.Current is null
@@ -270,6 +456,9 @@ public static class PopupExtensions
 		{
 			throw new PopupNotFoundException();
 		}
+
+		// A popup shown inside a modal NavigationPage is the CurrentPage of that NavigationPage
+		currentVisibleModalPage = currentVisibleModalPage is IPageContainer<Page> { CurrentPage: PopupPage popupPageInContainer } ? popupPageInContainer : currentVisibleModalPage;
 
 		if (currentVisibleModalPage is not PopupPage popupPage)
 		{

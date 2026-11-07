@@ -223,13 +223,14 @@
                     Text="Maximum Ratings" />
                 <Line Grid.Row="2" Style="{StaticResource HR}" />
             </Grid>
+            <!--  RatingView throws an ArgumentOutOfRangeException when MaximumRating is greater than 10, so the Stepper stops at 10  -->
             <Stepper
                 x:Name="MaximumRatingStepper"
                 Grid.Row="13"
                 Grid.Column="0"
                 HorizontalOptions="End"
                 Increment="1"
-                Maximum="25"
+                Maximum="10"
                 Minimum="1"
                 SemanticProperties.Hint="Change the maximum number of ratings."
                 Value="1" />

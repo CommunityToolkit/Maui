@@ -5,14 +5,21 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Contains last drawing line
 /// </summary>
-/// <remarks>
-/// Initializes last drawing line
-/// </remarks>
-/// <param name="line">Last drawing line</param>
-public class MauiDrawingLineCompletedEventArgs(MauiDrawingLine line) : EventArgs
+public class MauiDrawingLineCompletedEventArgs : EventArgs
 {
+	/// <summary>
+	/// Initializes last drawing line
+	/// </summary>
+	/// <param name="line">Last drawing line</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="line"/> is null.</exception>
+	public MauiDrawingLineCompletedEventArgs(MauiDrawingLine line)
+	{
+		ArgumentNullException.ThrowIfNull(line);
+		Line = line;
+	}
+
 	/// <summary>
 	/// Last drawing line
 	/// </summary>
-	public MauiDrawingLine Line { get; } = line;
+	public MauiDrawingLine Line { get; }
 }

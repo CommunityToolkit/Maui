@@ -7,6 +7,18 @@ namespace CommunityToolkit.Maui.Alerts;
 
 public partial class Toast
 {
+	// Windows shows the banner of a notification for its own time (about 6 s for AppNotificationDuration.Default, up to 25 s for Long), and
+	// it queues a notification that arrives while a banner is shown. Removing a notification takes its banner off screen only while the
+	// notification has not expired, and an expired notification that waits in the queue is never shown. The toolkit therefore removes the
+	// toast itself at the end of its Duration, and the notification expires only after that, to leave the Action Center if the app ends first.
+	static readonly TimeSpan expirationAfterTheEndOfTheDuration = TimeSpan.FromMinutes(1);
+
+	// Show and Dismiss take turns, in the order they are called. Otherwise a Show that starts while an earlier one waits for the removal of the
+	// displayed toast removes that same toast again, so nothing removes the toast of the earlier Show, and its own toast then waits behind
+	// that banner until both are removed at the end of their Duration. WaitAsync can also hand the turn to a call whose token was cancelled
+	// while it waited, so each call checks its token once its turn came.
+	static readonly SemaphoreSlim showAndDismissSemaphore = new(1, 1);
+
 	static AppNotification? PlatformToast { get; set; }
 
 	/// <summary>
@@ -24,19 +36,17 @@ public partial class Toast
 
 	static async Task DismissPlatform(CancellationToken token)
 	{
-		if (PlatformToast is null)
-		{
-			return;
-		}
-
 		token.ThrowIfCancellationRequested();
-		await AppNotificationManager.Default.RemoveAllAsync();
 
-		// Verify PlatformToast is not null again after `await`
-		if (PlatformToast is not null)
+		await showAndDismissSemaphore.WaitAsync(token);
+		try
 		{
-			PlatformToast.Expiration = DateTimeOffset.Now;
-			PlatformToast = null;
+			token.ThrowIfCancellationRequested();
+			await RemovePlatformToastAsync();
+		}
+		finally
+		{
+			showAndDismissSemaphore.Release();
 		}
 	}
 
@@ -47,18 +57,61 @@ public partial class Toast
 		_ => throw new InvalidEnumArgumentException(nameof(Duration), (int)duration, typeof(ToastDuration))
 	};
 
+	// The notification is removed by its Id, so the other notifications of the app stay. When Show or Dismiss removed it first, there is
+	// nothing left to remove. Best effort: nothing awaits the removal, and the notification expires a minute later anyway.
+	static async Task RemoveAtTheEndOfTheDurationAsync(AppNotification platformToast, TimeSpan duration)
+	{
+		await Task.Delay(duration).ConfigureAwait(false);
+
+		_ = AppNotificationManager.Default.RemoveByIdAsync(platformToast.Id);
+	}
+
+	// Removed by its Id, as at the end of the Duration: RemoveAllAsync would also remove the notifications that the app shows itself, such as
+	// those of a Snackbar.
+	static async Task RemovePlatformToastAsync()
+	{
+		if (PlatformToast is not AppNotification platformToast)
+		{
+			return;
+		}
+
+		await AppNotificationManager.Default.RemoveByIdAsync(platformToast.Id);
+
+		platformToast.Expiration = DateTimeOffset.Now;
+		PlatformToast = null;
+	}
+
 	async Task ShowPlatform(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		EnsureWindowsToastEnabled();
 
-		await DismissPlatform(token);
-		token.ThrowIfCancellationRequested();
-		PlatformToast = new AppNotificationBuilder()
-			.AddText(Text)
-			.SetDuration(GetAppNotificationDuration(Duration))
-			.BuildNotification();
-		PlatformToast.Expiration = DateTimeOffset.Now.Add(GetDuration(Duration));
-		AppNotificationManager.Default.Show(PlatformToast);
+		await showAndDismissSemaphore.WaitAsync(token);
+		try
+		{
+			token.ThrowIfCancellationRequested();
+			await RemovePlatformToastAsync();
+			token.ThrowIfCancellationRequested();
+
+			var duration = GetDuration(Duration);
+			var platformToast = new AppNotificationBuilder()
+				.AddText(Text)
+				.SetDuration(GetAppNotificationDuration(Duration))
+				.BuildNotification();
+			platformToast.Expiration = DateTimeOffset.Now.Add(duration + expirationAfterTheEndOfTheDuration);
+
+			AppNotificationManager.Default.Show(platformToast);
+			// Assigned once Show returned: Windows gives the notification its Id in Show, and RemoveByIdAsync rejects the Id 0 of a notification
+			// that was never posted.
+			PlatformToast = platformToast;
+
+			_ = RemoveAtTheEndOfTheDurationAsync(platformToast, duration);
+
+			await AppNotificationListing.WaitUntilListedAsync(platformToast);
+		}
+		finally
+		{
+			showAndDismissSemaphore.Release();
+		}
 	}
 }

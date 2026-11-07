@@ -124,4 +124,158 @@ public class CameraViewTests : BaseViewTest
 			errorOccurredTcs.SetResult(e);
 		}
 	}
+
+	// ICommand.Execute cannot return the task of the work that a command starts: an exception that escaped a command would reach no caller and
+	// end the app, and an app that binds the command in XAML cannot catch it. Without a handler (a view that is not shown, or whose handler was
+	// disconnected) every command fails: the failure must reach the app once, through the event that describes it.
+	[Fact]
+	public void CaptureImageCommand_WithoutHandler_RaisesMediaCaptureFailedOnceAndLetsNothingEscape()
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> handleMediaCaptureFailed = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += handleMediaCaptureFailed;
+
+		var escaped = ExecuteRecordingEscapedExceptions(() => cameraView.CaptureImageCommand.Execute(CancellationToken.None));
+
+		Assert.Empty(escaped);
+		Assert.Equal("Unable to retrieve Handler", Assert.Single(failures));
+		GC.KeepAlive(handleMediaCaptureFailed);
+	}
+
+	[Fact]
+	public void CaptureImageCommand_WithCancelledToken_EndsWithoutEventAndLetsNothingEscape()
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> handleMediaCaptureFailed = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += handleMediaCaptureFailed;
+		using var cancellationTokenSource = new CancellationTokenSource();
+		cancellationTokenSource.Cancel();
+
+		var escaped = ExecuteRecordingEscapedExceptions(() => cameraView.CaptureImageCommand.Execute(cancellationTokenSource.Token));
+
+		Assert.Empty(escaped);
+		Assert.Empty(failures);
+		GC.KeepAlive(handleMediaCaptureFailed);
+	}
+
+	[Fact]
+	public void StartCameraPreviewCommand_WithoutHandler_RaisesErrorOccurredOnceAndLetsNothingEscape()
+	{
+		var errors = new List<Exception>();
+		EventHandler<ErrorOccurredEventArgs> handleErrorOccurred = (_, e) => errors.Add(e.Exception);
+		cameraView.ErrorOccurred += handleErrorOccurred;
+
+		var escaped = ExecuteRecordingEscapedExceptions(() => cameraView.StartCameraPreviewCommand.Execute(CancellationToken.None));
+
+		Assert.Empty(escaped);
+		Assert.Equal("Unable to retrieve Handler", Assert.IsType<InvalidOperationException>(Assert.Single(errors)).Message);
+		GC.KeepAlive(handleErrorOccurred);
+	}
+
+	[Fact]
+	public void StopCameraPreviewCommand_WithoutHandler_RaisesErrorOccurredOnceAndLetsNothingEscape()
+	{
+		var errors = new List<Exception>();
+		EventHandler<ErrorOccurredEventArgs> handleErrorOccurred = (_, e) => errors.Add(e.Exception);
+		cameraView.ErrorOccurred += handleErrorOccurred;
+
+		var escaped = ExecuteRecordingEscapedExceptions(() => cameraView.StopCameraPreviewCommand.Execute(null));
+
+		Assert.Empty(escaped);
+		Assert.Equal("Unable to retrieve Handler", Assert.IsType<InvalidOperationException>(Assert.Single(errors)).Message);
+		GC.KeepAlive(handleErrorOccurred);
+	}
+
+	[Fact]
+	public void StartVideoRecordingCommand_WithoutHandler_RaisesMediaCaptureFailedOnceAndLetsNothingEscape()
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> handleMediaCaptureFailed = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += handleMediaCaptureFailed;
+		using var stream = new MemoryStream();
+
+		var escaped = ExecuteRecordingEscapedExceptions(() => cameraView.StartVideoRecordingCommand.Execute(stream));
+
+		Assert.Empty(escaped);
+		Assert.Equal("Unable to retrieve Handler", Assert.Single(failures));
+		GC.KeepAlive(handleMediaCaptureFailed);
+	}
+
+	[Fact]
+	public void StopVideoRecordingCommand_WithoutHandler_RaisesMediaCaptureFailedOnceAndLetsNothingEscape()
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> handleMediaCaptureFailed = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += handleMediaCaptureFailed;
+
+		var escaped = ExecuteRecordingEscapedExceptions(() => cameraView.StopVideoRecordingCommand.Execute(CancellationToken.None));
+
+		Assert.Empty(escaped);
+		Assert.Equal("Unable to retrieve Handler", Assert.Single(failures));
+		GC.KeepAlive(handleMediaCaptureFailed);
+	}
+
+	// An async void command posts its exceptions to the SynchronizationContext that was current when it started, which rethrows them in an
+	// app, and the app ends.
+	static IReadOnlyList<Exception> ExecuteRecordingEscapedExceptions(Action execute)
+	{
+		var recorder = new AsyncVoidExceptionRecorder();
+		var previous = SynchronizationContext.Current;
+		SynchronizationContext.SetSynchronizationContext(recorder);
+
+		try
+		{
+			execute();
+		}
+		catch (Exception ex)
+		{
+			recorder.Add(ex);
+		}
+		finally
+		{
+			SynchronizationContext.SetSynchronizationContext(previous);
+		}
+
+		return recorder.Exceptions;
+	}
+
+	sealed class AsyncVoidExceptionRecorder : SynchronizationContext
+	{
+		readonly List<Exception> exceptions = [];
+
+		public IReadOnlyList<Exception> Exceptions
+		{
+			get
+			{
+				lock (exceptions)
+				{
+					return [.. exceptions];
+				}
+			}
+		}
+
+		public void Add(Exception exception)
+		{
+			lock (exceptions)
+			{
+				exceptions.Add(exception);
+			}
+		}
+
+		public override void Post(SendOrPostCallback d, object? state)
+		{
+			try
+			{
+				d(state);
+			}
+			catch (Exception ex)
+			{
+				Add(ex);
+			}
+		}
+
+		public override void Send(SendOrPostCallback d, object? state) => Post(d, state);
+
+		public override SynchronizationContext CreateCopy() => this;
+	}
 }

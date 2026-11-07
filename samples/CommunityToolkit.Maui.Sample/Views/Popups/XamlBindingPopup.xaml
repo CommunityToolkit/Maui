@@ -44,7 +44,6 @@
         <Label Style="{StaticResource Content}" 
                HorizontalTextAlignment="Center"
                TextColor="Black"
-               MaxLines="5"
                LineBreakMode="WordWrap"
                Text="{Binding Message}" />
     </VerticalStackLayout>

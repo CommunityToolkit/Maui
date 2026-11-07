@@ -47,6 +47,8 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		// The compiler reports the deprecated Maps call at the start of the builder statement, so only a pragma around the whole statement covers it.
+#pragma warning disable CS0618
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
 								.UseMauiCommunityToolkit(static options =>
@@ -75,10 +77,15 @@ public static class MauiProgram
 #if IOS || MACCATALYST
 									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 									handlers.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+#elif ANDROID
+									// Material Components limit a button to 320dp (mtrl_btn_max_width). MAUI measures a Button within that limit, so a long
+									// caption wraps at 320dp even when the Button is laid out wider, and a full-width Button keeps the height of the wrapped caption
+									Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("RemoveMaterialMaximumWidth", static (handler, _) => handler.PlatformView.SetMaxWidth(int.MaxValue));
 #endif
 								})
 
 #if WINDOWS
+								// The sample keeps demonstrating the deprecated Maps library on Windows until the library is removed in the .NET 11 update (#3331).
 								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from https://bingmapsportal.com
 #else
 								.UseMauiMaps()
@@ -89,6 +96,7 @@ public static class MauiProgram
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
+#pragma warning restore CS0618
 
 		builder.ConfigureLifecycleEvents(events =>
 		{
@@ -123,8 +131,6 @@ public static class MauiProgram
 
 		builder.Services.AddHttpClient<MediaElementFromStreamPage>()
 			.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
-
-		builder.Services.AddSingleton<AppShell>();
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);

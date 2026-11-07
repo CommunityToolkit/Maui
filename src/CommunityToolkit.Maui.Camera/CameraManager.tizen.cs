@@ -20,6 +20,8 @@ partial class CameraManager
 
 	protected virtual partial void PlatformStopCameraPreview() => throw new NotSupportedException(notSupportedMessage);
 
+	private partial void PlatformStopCameraPreviewForCameraSwitch() => throw new NotSupportedException(notSupportedMessage);
+
 	protected virtual partial Task PlatformConnectCamera(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 
 	protected virtual partial void PlatformDisconnect() => throw new NotSupportedException(notSupportedMessage);

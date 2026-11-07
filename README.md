@@ -25,7 +25,7 @@ The release versions of .NET MAUI Community Toolkit are available at Nuget.org a
 ```bash
 dotnet add package CommunityToolkit.Maui
 dotnet add package CommunityToolkit.Maui.MediaElement
-dotnet add package CommunityToolkit.Maui.Maps
+dotnet add package CommunityToolkit.Maui.Maps # Deprecated: use Microsoft.Maui.Controls.Maps (Windows supported since .NET MAUI 10), see https://github.com/CommunityToolkit/Maui/issues/3190
 dotnet add package CommunityToolkit.Maui.Camera
 ```
 
@@ -42,7 +42,7 @@ and then install the packages as follows:
 ```bash
 dotnet add package CommunityToolkit.Maui --version 99.0.0-preview980
 dotnet add package CommunityToolkit.Maui.MediaElement --version 99.0.0-preview980
-dotnet add package CommunityToolkit.Maui.Maps --version 99.0.0-preview980
+dotnet add package CommunityToolkit.Maui.Maps --version 99.0.0-preview980 # Deprecated: use Microsoft.Maui.Controls.Maps (Windows supported since .NET MAUI 10), see https://github.com/CommunityToolkit/Maui/issues/3190
 dotnet add package CommunityToolkit.Maui.Camera --version 99.0.0-preview980
 ```
 
@@ -121,7 +121,7 @@ Once a Proposal has been championed and has received a majority approval from th
 ### 5. Pull Request Approved
 After a Pull Request has been submitted, it will be reviewed and approved by the Proposal Champion. 
 
-Every new feature also requires an associated sample to be added to the .NET MAUI Toolkit Sample app.
+Every new feature also requires an associated sample to be added to the .NET MAUI Toolkit Sample app. Code that is specific to a platform also needs device tests, which run on every pull request and on your machine with one command, `pwsh eng/devices/run.ps1`: see [Device tests](CONTRIBUTING.md#device-tests), the [guide for running them locally](eng/devices/LOCAL.md) and the [reference for the scripts and CI](eng/devices/README.md).
 
 ### 6. Documentation Complete 
 Before a Pull Request can be merged into the .NET MAUI Toolkit, the Pull Request Author must also submit the documentation to [documentation repository](https://github.com/MicrosoftDocs/CommunityToolkit).
