@@ -91,7 +91,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 	static Task RunAfterQueuedMainLooperMessagesAsync(Action action)
 	{
 		var actionCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var mainLooperHandler = new Handler(Looper.MainLooper!);
+		using var mainLooperHandler = new Handler(Looper.MainLooper ?? throw new InvalidOperationException("Android has not prepared the main looper of the app."));
 		mainLooperHandler.Post(() =>
 		{
 			action();
