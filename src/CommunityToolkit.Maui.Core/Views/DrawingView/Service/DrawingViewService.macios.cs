@@ -128,7 +128,7 @@ public static partial class DrawingViewService
 
 	static void DrawStrokes(CGContext context, IList<PointF> points, nfloat lineWidth, Color strokeColor, Size offset)
 	{
-		context.SetStrokeColor(strokeColor.ToCGColor());
+		context.SetStrokeColor(strokeColor.ToCGColorKeepingThePlatformColorAlive());
 		context.SetLineWidth(lineWidth);
 		context.SetLineCap(CGLineCap.Round);
 		context.SetLineJoin(CGLineJoin.Round);
@@ -161,7 +161,7 @@ public static partial class DrawingViewService
 		switch (brush)
 		{
 			case SolidPaint solidColorBrush:
-				context.SetFillColor(solidColorBrush.Color?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.AsCGColor());
+				context.SetFillColor(solidColorBrush.Color?.ToCGColorKeepingThePlatformColorAlive() ?? DrawingViewDefaults.BackgroundColor.AsCGColor());
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 			case LinearGradientPaint linearGradientBrush:
@@ -199,7 +199,7 @@ public static partial class DrawingViewService
 					break;
 				}
 			default:
-				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColor());
+				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColorKeepingThePlatformColorAlive());
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 		}
@@ -255,5 +255,15 @@ public static partial class DrawingViewService
 		path.AddLineToPoint(rect.Width, rect.GetMinY());
 		path.CloseSubpath();
 		return path;
+	}
+
+	// Color.ToCGColor is ToPlatform().CGColor: nothing references that new UIColor while its CGColor is read, and the bindings do not keep
+	// it alive either (dotnet/macios#10146). CoreCLR, the default runtime of iOS and Mac Catalyst from .NET 11 on, can then finalize it
+	// during the call, and when the image is drawn off the main thread (GetImageStream allows it) the release that the finalizer queues to
+	// the main thread can free the CGColor before the binding retains it.
+	static CGColor ToCGColorKeepingThePlatformColorAlive(this Color color)
+	{
+		using var platformColor = color.ToPlatform();
+		return platformColor.CGColor;
 	}
 }
