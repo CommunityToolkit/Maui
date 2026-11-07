@@ -20,13 +20,14 @@ namespace CommunityToolkit.Maui.Views;
 // CsWinRT requires partial on Windows (CsWinRT1028).
 sealed partial class ExpanderLayoutPanel : LayoutPanel
 {
-	bool isSpaceKeyPressed;
+	bool isEnterOrSpacePressed;
 
 	public ExpanderLayoutPanel()
 	{
 		UseSystemFocusVisuals = true;
 		KeyDown += OnKeyDown;
 		KeyUp += OnKeyUp;
+		LostFocus += OnLostFocus;
 	}
 
 	Expander? ParentExpander => CrossPlatformLayout is Expander.ExpanderLayout { Parent: Expander expander } ? expander : null;
@@ -37,31 +38,35 @@ sealed partial class ExpanderLayoutPanel : LayoutPanel
 		(FrameworkElementAutomationPeer.FromElement(this) as ExpanderLayoutAutomationPeer)?.RaiseExpandCollapseStateChanged();
 	}
 
-	// Like a Button, the Expander toggles when Enter is pressed and when Space is released.
+	// Like a Button, Enter and Space toggle the Expander when they are released, and another key or the focus leaving the header drops the press.
+	// Unlike a Button, a key already held when the header got the focus (a repeat) does not press it, so holding Enter on a control that moves
+	// the focus to the header does not also toggle the header.
 	internal bool HandleKey(VirtualKey key, bool isKeyDown, bool isRepeat)
 	{
-		switch (key)
+		if (key is not (VirtualKey.Enter or VirtualKey.Space))
 		{
-			case VirtualKey.Enter when isKeyDown:
-				if (!isRepeat)
-				{
-					ActivateHeader();
-				}
+			if (isKeyDown)
+			{
+				isEnterOrSpacePressed = false;
+			}
 
-				return true;
-
-			case VirtualKey.Space when isKeyDown:
-				isSpaceKeyPressed = true;
-				return true;
-
-			case VirtualKey.Space when isSpaceKeyPressed:
-				isSpaceKeyPressed = false;
-				ActivateHeader();
-				return true;
-
-			default:
-				return false;
+			return false;
 		}
+
+		if (isKeyDown)
+		{
+			isEnterOrSpacePressed |= !isRepeat;
+			return true;
+		}
+
+		if (!isEnterOrSpacePressed)
+		{
+			return false;
+		}
+
+		isEnterOrSpacePressed = false;
+		ActivateHeader();
+		return true;
 	}
 
 	protected override AutomationPeer OnCreateAutomationPeer() => new ExpanderLayoutAutomationPeer(this);
@@ -108,6 +113,15 @@ sealed partial class ExpanderLayoutPanel : LayoutPanel
 		if (ReferenceEquals(e.OriginalSource, this) && HandleKey(e.Key, isKeyDown: false, isRepeat: false))
 		{
 			e.Handled = true;
+		}
+	}
+
+	// Like a Button, a press is dropped when the focus leaves the header, so a later key-up on it does not toggle it.
+	void OnLostFocus(object sender, RoutedEventArgs e)
+	{
+		if (ReferenceEquals(e.OriginalSource, this))
+		{
+			isEnterOrSpacePressed = false;
 		}
 	}
 

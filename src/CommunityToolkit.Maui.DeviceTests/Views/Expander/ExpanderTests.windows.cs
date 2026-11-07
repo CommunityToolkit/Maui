@@ -582,10 +582,10 @@ public partial class ExpanderTests
 			var panel = GetLayoutPanel(expander);
 
 			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
-			Assert.True(expander.IsExpanded);
-
 			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: true));
-			Assert.False(panel.HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
+			Assert.False(expander.IsExpanded);
+
+			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
 			Assert.True(expander.IsExpanded);
 
 			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: true, isRepeat: false));
@@ -597,6 +597,64 @@ public partial class ExpanderTests
 			Assert.False(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
 			Assert.False(panel.HandleKey(VirtualKey.A, isKeyDown: true, isRepeat: false));
 			Assert.False(expander.IsExpanded);
+		});
+	}
+
+	[Fact]
+	public async Task ASpacePressIsDroppedWhenTheFocusLeavesTheHeader()
+	{
+		SetupBuilder();
+		var previousControl = new Button { Text = "Previous" };
+		var expander = CreateExpander();
+		var layout = new VerticalStackLayout { previousControl, expander };
+
+		await AttachAndRun(layout, async _ =>
+		{
+			await layout.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+
+			Assert.True(panel.Focus(WFocusState.Keyboard), "The header does not take the keyboard focus.");
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: true, isRepeat: false));
+
+			// WinUI raises LostFocus asynchronously, and the handler of the panel, subscribed in its constructor, runs before this one.
+			var lostFocus = new TaskCompletionSource();
+			panel.LostFocus += (_, _) => lostFocus.TrySetResult();
+			Assert.True(Assert.IsType<WControl>(previousControl.Handler?.PlatformView, exactMatch: false).Focus(WFocusState.Keyboard), "The Button does not take the keyboard focus.");
+			await lostFocus.Task.WaitAsync(windowsLayoutTimeout);
+
+			Assert.True(panel.Focus(WFocusState.Keyboard), "The header does not take the keyboard focus again.");
+			Assert.False(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
+			Assert.False(expander.IsExpanded);
+		});
+	}
+
+	// Like a Button, only one press at a time toggles, and any other key pressed meanwhile cancels it.
+	[Fact]
+	public async Task AnotherKeyDropsAPressAndTwoPressKeysToggleOnce()
+	{
+		SetupBuilder();
+		var expander = CreateExpander();
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			var panel = GetLayoutPanel(expander);
+
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: true, isRepeat: false));
+			Assert.False(panel.HandleKey(VirtualKey.Escape, isKeyDown: true, isRepeat: false));
+			Assert.False(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
+			Assert.False(expander.IsExpanded);
+
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: true, isRepeat: false));
+			Assert.True(panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
+			Assert.False(panel.HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
+			Assert.True(expander.IsExpanded);
+
+			// Unlike a Button, a key already held when the header got the focus (a repeat) does not press it.
+			Assert.True(panel.HandleKey(VirtualKey.Space, isKeyDown: true, isRepeat: true));
+			Assert.False(panel.HandleKey(VirtualKey.Space, isKeyDown: false, isRepeat: false));
+			Assert.True(expander.IsExpanded);
 		});
 	}
 
@@ -669,6 +727,7 @@ public partial class ExpanderTests
 			Assert.Throws<ElementNotEnabledException>(() => GetInvokeProvider(peer).Invoke());
 			Assert.Throws<ElementNotEnabledException>(() => GetExpandCollapseProvider(peer).Expand());
 			panel.HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false);
+			panel.HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false);
 			Assert.False(expander.IsExpanded);
 
 			SetHeaderActivationBlocked(expander, blockingProperty, isBlocked: false);
@@ -747,6 +806,7 @@ public partial class ExpanderTests
 			var expander = GetExpanderOfItem(expanders, 1);
 
 			Assert.True(GetLayoutPanel(expander).HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
+			Assert.True(GetLayoutPanel(expander).HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
 
 			Assert.True(expander.IsExpanded);
 			var expandedHeight = expander.Measure(double.PositiveInfinity, double.PositiveInfinity).Height;
