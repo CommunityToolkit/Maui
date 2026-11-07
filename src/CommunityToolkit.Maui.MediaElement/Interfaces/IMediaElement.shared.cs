@@ -161,4 +161,9 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaElementState newState);
+
+	/// <summary>
+	/// Gets the Android player identifier used to route media session connections.
+	/// </summary>
+	internal string AndroidPlayerId { get; }
 }
