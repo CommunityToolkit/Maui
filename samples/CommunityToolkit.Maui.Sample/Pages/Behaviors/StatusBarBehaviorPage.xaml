@@ -161,7 +161,7 @@
              <Button
                 Clicked="OnBrokenShellButtonClicked"
                 HorizontalOptions="Center"
-                Text="Go to Broken Shell.TitleView"
+                Text="Go to Shell.TitleView"
                 VerticalOptions="Center" />
         </VerticalStackLayout>
     </ScrollView>

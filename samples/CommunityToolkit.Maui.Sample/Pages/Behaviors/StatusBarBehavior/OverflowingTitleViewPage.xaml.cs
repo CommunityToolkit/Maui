@@ -7,8 +7,11 @@ public partial class OverflowingTitleViewPage : ContentPage
 		InitializeComponent();
 	}
 
-	async void OnNavigateToMainPageButtonClicked(object? sender, EventArgs e)
+	void OnBackButtonClicked(object? sender, EventArgs e)
 	{
-		await Shell.Current.GoToAsync("//MainPage");
+		if (Window?.Page is BrokenTitleViewShell brokenTitleViewShell)
+		{
+			brokenTitleViewShell.ReturnToPreviousPage();
+		}
 	}
 }
