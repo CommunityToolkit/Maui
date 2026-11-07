@@ -10,6 +10,11 @@ public partial class Snackbar
 	// Task.Delay waits at most uint.MaxValue - 1 milliseconds (about 49.7 days)
 	static readonly TimeSpan maximumDismissDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 
+	// DateTimeOffset.Add throws past MaxValue/MinValue, and C#/WinRT throws when reading back an Expiration whose local time passes DateTime.MaxValue
+	// (AppNotificationListing does that right after Show), so the latest expiration leaves a day for any UTC offset;
+	// DismissAfterDurationAsync also treats such a Duration as never
+	static readonly DateTimeOffset latestExpiration = DateTimeOffset.MaxValue.AddDays(-1);
+
 	// Show and Dismiss run on the thread that calls them, a press of the notification's button arrives on a background thread: the state
 	// of the shown snackbar (PlatformSnackbar, platformSnackbarIdentifier, onPlatformSnackbarDismissed and actions) changes under this lock
 	static readonly Lock platformSnackbarLock = new();
@@ -107,7 +112,8 @@ public partial class Snackbar
 				.AddButton(new AppNotificationButton(ActionButtonText)
 					.AddArgument(snackbarIdentifierArgumentKey, id))
 				.BuildNotification();
-			platformSnackbar.Expiration = DateTimeOffset.Now.Add(Duration);
+			var now = DateTimeOffset.Now;
+			platformSnackbar.Expiration = Duration <= TimeSpan.Zero ? now : Duration >= latestExpiration - now ? latestExpiration : now.Add(Duration);
 
 			AppNotificationManager.Default.Show(platformSnackbar);
 

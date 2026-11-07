@@ -101,6 +101,46 @@ public partial class SnackbarTests
 		});
 	}
 
+	[Fact]
+	public async Task ShowWithADurationOfTimeSpanMaxValueDoesNotThrowAndTheSnackbarCanBeDismissed()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var snackbar = Snackbar.Make("Never expires", duration: TimeSpan.MaxValue);
+
+			await snackbar.Show().WaitAsync(dismissTimeout);
+
+			await AssertEventually(() => Snackbar.IsShown, timeout: 10000, message: "The snackbar was never shown.");
+
+			var expiration = (AlertsWindows.GetPlatformSnackbar() ?? throw new InvalidOperationException("No notification was shown.")).Expiration;
+			Assert.True(expiration > DateTimeOffset.Now.AddYears(1000));
+			Assert.True(expiration.UtcDateTime <= DateTime.MaxValue - TimeSpan.FromHours(14));
+
+			await snackbar.Dismiss().WaitAsync(dismissTimeout);
+
+			await AssertEventually(async () => !Snackbar.IsShown && (await GetVisibleMessagesAsync()).Count == 0, timeout: 10000, message: "The snackbar was not dismissed.");
+		});
+	}
+
+	[Fact]
+	public async Task ShowWithADurationOfTimeSpanMinValueDoesNotThrowAndTheSnackbarDismissesItself()
+	{
+		SetupBuilder();
+		await PreparePlatformAsync();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var snackbar = Snackbar.Make("Already expired", duration: TimeSpan.MinValue);
+
+			await snackbar.Show().WaitAsync(dismissTimeout);
+
+			await AssertEventually(() => !Snackbar.IsShown, timeout: 10000, message: "The snackbar did not dismiss itself.");
+		});
+	}
+
 	[Theory]
 	[InlineData(0)]
 	[InlineData(-2)]
