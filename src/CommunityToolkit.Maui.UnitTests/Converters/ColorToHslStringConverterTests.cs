@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using CommunityToolkit.Maui.Core.Extensions;
 using FluentAssertions.Equivalency;
 using Xunit;
 

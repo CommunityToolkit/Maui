@@ -24,7 +24,7 @@ public partial class ListToStringConverter : BaseConverterOneWay<IEnumerable, st
 	} = string.Empty;
 
 	/// <summary>
-	/// Concatenates the items of a collection, using the specified <see cref="Separator"/> between each item. On each item ToString() will be called.
+	/// Concatenates the items of a collection, using the specified <see cref="Separator"/> between each item. Items that implement <see cref="IFormattable"/> are formatted with the culture; other items use ToString().
 	/// </summary>
 	/// <param name="value">The collection to convert.</param>
 	/// <param name="parameter">The separator that should be between each collection item. This overrides the value in <see cref="Separator"/>.</param>
