@@ -249,11 +249,14 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		}
 	}
 
-	// The speech-to-text events can come on a background thread (Windows): the view model handles them on the main thread, where the buttons are updated
+	// The speech-to-text events can come on a background thread (Windows): the view model handles them on the main thread, where the buttons are updated.
+	// On Android, iOS and Mac Catalyst each update carries all the text recognized so far; on Windows it carries only the phrase just recognized
 	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
 	{
 		IsWaitingForSpeech = false;
-		RecognitionText = RecognitionText is beginSpeakingPrompt ? e.RecognitionResult : $"{RecognitionText} {e.RecognitionResult}";
+		RecognitionText = OperatingSystem.IsWindows() && RecognitionText is not beginSpeakingPrompt
+			? $"{RecognitionText} {e.RecognitionResult}"
+			: e.RecognitionResult;
 	});
 
 	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
