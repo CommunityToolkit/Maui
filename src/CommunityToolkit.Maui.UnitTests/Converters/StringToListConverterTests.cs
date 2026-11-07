@@ -85,6 +85,43 @@ public class StringToListConverterTests : BaseOneWayConverterTest<StringToListCo
 	}
 
 	[Fact]
+	public void StringToListConverterSingleSeparatorsEntryTest()
+	{
+		const string valueToConvert = "MAUI;Toolkit Converter;Test";
+		var expectedResult = new[] { "MAUI", "Toolkit Converter", "Test" };
+
+		var stringToListConverter = new StringToListConverter
+		{
+			Separators = [";"]
+		};
+
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
+		var convertResult = (string[]?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
+	public void StringToListConverterSingleSeparatorsEntrySupersedesSeparatorTest()
+	{
+		const string valueToConvert = "MAUI@Toolkit~Converter@Test";
+		var expectedResult = new[] { "MAUI", "Toolkit~Converter", "Test" };
+
+		var stringToListConverter = new StringToListConverter
+		{
+			Separator = "~",
+			Separators = ["@"]
+		};
+
+		var convertFromResult = stringToListConverter.ConvertFrom(valueToConvert);
+		var convertResult = (string[]?)((ICommunityToolkitValueConverter)stringToListConverter).Convert(valueToConvert, typeof(IList<string>), null, null);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
+	[Fact]
 	public void StringToListConverterSeparatorTest()
 	{
 		const string valueToConvert = "MAUI~Toolkit~Converter~Test";
