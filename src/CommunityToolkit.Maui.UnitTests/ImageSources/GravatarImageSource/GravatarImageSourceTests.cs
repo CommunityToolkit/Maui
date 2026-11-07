@@ -495,7 +495,9 @@ public class GravatarImageSourceTests : BaseViewTest
 		var gravatarImageSource = new GravatarImageSource
 		{
 			Email = email,
-			Stream = _ => Task.FromResult<System.IO.Stream>(new MemoryStream([1, 2, 3]))
+			Stream = cancellationToken => cancellationToken.IsCancellationRequested
+				? Task.FromCanceled<System.IO.Stream>(cancellationToken)
+				: Task.FromResult<System.IO.Stream>(new MemoryStream([1, 2, 3]))
 		};
 
 		await gravatarImageSource.Cancel();
