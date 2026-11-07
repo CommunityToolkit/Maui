@@ -1,12 +1,9 @@
-#if NET11_0_OR_GREATER
-using CommunityToolkit.Maui.Core.Primitives;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.UI;
-using Microsoft.Windows.AppLifecycle;
-using Microsoft.Windows.Storage.Pickers;
-#else
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
+#if NET11_0_OR_GREATER
+using Microsoft.UI;
+using Microsoft.Windows.Storage.Pickers;
+#else
 using Windows.Storage.Pickers;
 #endif
 
@@ -18,14 +15,18 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-#if NET11_0_OR_GREATER
-		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
+
+		// Process.MainWindowHandle, as on .NET 10, rather than Application.Windows[0]: it is zero only when no window of the app is visible,
+		// and it still finds the host's window when .NET MAUI is embedded in a WinUI app, whose window is not a MauiWinUIWindow.
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
 		{
 			throw new FolderPickerException(
 				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
 		}
 
-		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(window.AppWindow.Id)
+#if NET11_0_OR_GREATER
+		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(Win32Interop.GetWindowIdFromWindow(hwnd))
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
 			SuggestedFolder = initialPath
@@ -35,13 +36,6 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 		};
-
-		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
-		if (hwnd == IntPtr.Zero)
-		{
-			throw new FolderPickerException(
-				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
-		}
 
 		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, hwnd);
 		folderPicker.FileTypeFilter.Add("*");

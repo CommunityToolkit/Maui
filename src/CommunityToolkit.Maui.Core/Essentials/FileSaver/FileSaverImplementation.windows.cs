@@ -1,7 +1,8 @@
+using System.Diagnostics;
 #if NET11_0_OR_GREATER
+using Microsoft.UI;
 using Microsoft.Windows.Storage.Pickers;
 #else
-using System.Diagnostics;
 using Windows.Storage.Pickers;
 #endif
 
@@ -14,14 +15,17 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
-#if NET11_0_OR_GREATER
-		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
+		// Process.MainWindowHandle, as on .NET 10, rather than Application.Windows[0]: it is zero only when no window of the app is visible,
+		// and it still finds the host's window when .NET MAUI is embedded in a WinUI app, whose window is not a MauiWinUIWindow.
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
 		{
 			throw new FileSaveException(
 				"Cannot present file picker: No active window found. Ensure the app is active with a visible window.");
 		}
 
-		var savePicker = new FileSavePicker(window.AppWindow.Id)
+#if NET11_0_OR_GREATER
+		var savePicker = new FileSavePicker(Win32Interop.GetWindowIdFromWindow(hwnd))
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
 			SuggestedFolder = initialPath,
@@ -33,13 +37,6 @@ public sealed partial class FileSaverImplementation : IFileSaver
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
 			SuggestedFileName = Path.GetFileNameWithoutExtension(fileName)
 		};
-
-		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
-		if (hwnd == IntPtr.Zero)
-		{
-			throw new FileSaveException(
-				"Cannot present file picker: No active window found. Ensure the app is active with a visible window.");
-		}
 
 		WinRT.Interop.InitializeWithWindow.Initialize(savePicker, hwnd);
 #endif
