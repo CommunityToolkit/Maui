@@ -126,6 +126,88 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 		});
 	}
 
+	// An app's CameraViewHandler.PlatformViewFactory creates the platform view in place of CreatePlatformView, which was the only place that
+	// created the CameraManager: the first mapper that needed it threw, so the page with the CameraView could not be shown
+	[Fact]
+	public async Task AHandlerWhosePlatformViewIsAMediaPlayerElementOfThePlatformViewFactoryOfTheAppShowsThePreviewInIt()
+	{
+		SetupBuilder();
+		var provider = new WindowsFakeCameraProvider { AvailableCameras = [] };
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var view = new CameraView();
+			using var errors = new CameraErrorRecorder(view);
+			var mediaElementOfTheApp = new MediaPlayerElement { Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill };
+
+			var (handler, exception, unhandled) = CreateHandlerWithThePlatformViewFactoryOfTheApp(view, provider, mediaElementOfTheApp);
+
+			try
+			{
+				Assert.Null(exception);
+				Assert.Empty(unhandled);
+				Assert.NotNull(handler);
+				Assert.Same(mediaElementOfTheApp, handler.PlatformView);
+
+				// The handler connected the camera through its CameraManager, which found no camera
+				Assert.Equal("Couldn't connect to camera; no cameras available", Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
+				Assert.Same(mediaElementOfTheApp, new WindowsCameraManagerAccessor(handler.CameraManager).MediaElement);
+
+				// The stretch that the app gave its element, not the Uniform default of the element that the handler creates
+				Assert.Equal(Microsoft.UI.Xaml.Media.Stretch.UniformToFill, mediaElementOfTheApp.Stretch);
+
+				// Without a camera no preview starts, so a placeholder stands in for its source: stopping the preview clears it from the element of the app
+				WindowsCameraEnvironment.AssignPlaceholderSource(mediaElementOfTheApp);
+				view.StopCameraPreview();
+				Assert.Null(mediaElementOfTheApp.Source);
+			}
+			finally
+			{
+				DisconnectAndRelease(view);
+			}
+		});
+	}
+
+	// Only a MediaPlayerElement can show the preview: with another element of an app's factory the camera works without a preview, and that element
+	// stays as the app made it
+	[Fact]
+	public async Task AHandlerWhosePlatformViewOfThePlatformViewFactoryOfTheAppCannotShowAPreviewStillStartsTheCameraAndLeavesThatViewAlone()
+	{
+		SetupBuilder();
+		var provider = new WindowsFakeCameraProvider { AvailableCameras = [] };
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var view = new CameraView();
+			using var errors = new CameraErrorRecorder(view);
+			var gridOfTheApp = new Microsoft.UI.Xaml.Controls.Grid();
+
+			var (handler, exception, unhandled) = CreateHandlerWithThePlatformViewFactoryOfTheApp(view, provider, gridOfTheApp);
+
+			try
+			{
+				Assert.Null(exception);
+				Assert.Empty(unhandled);
+				Assert.NotNull(handler);
+				Assert.Same(gridOfTheApp, handler.PlatformView);
+				Assert.Empty(gridOfTheApp.Children);
+				var mediaElement = new WindowsCameraManagerAccessor(handler.CameraManager).MediaElement;
+				Assert.NotNull(mediaElement);
+				Assert.Null(mediaElement.Parent);
+
+				// Without a MediaPlayerElement a start returns without trying to open a camera (CameraManager.windows.cs StartPreviewAsync); this
+				// one tries, and finds no camera
+				await view.StartCameraPreview(CancellationToken.None);
+
+				Assert.Equal(["Couldn't connect to camera; no cameras available", "Couldn't start camera preview; no cameras available"], errors.Errors.Select(error => error.Message));
+			}
+			finally
+			{
+				DisconnectAndRelease(view);
+			}
+		});
+	}
+
 	// MapSelectedCamera is `async void`, so nothing may escape the mapper: an exception there reaches no caller and terminates the app. The
 	// trigger is the restart of the preview, which cannot open a camera that no device has: PlatformStartCameraPreview reports that through
 	// ErrorOccurred.
@@ -353,5 +435,31 @@ public class CameraViewHandlerWindowsConnectTests : CameraHandlerTestBase
 				DisconnectAndRelease(view);
 			}
 		});
+	}
+
+	// The factory is static: it is set only while the handler is created, so that no other handler gets a view from it. The provider is resolved
+	// when the handler is created (CameraViewHandler.cameraProvider), so its override only needs to last that long too.
+	(CameraViewHandler? Handler, Exception? Exception, IReadOnlyList<Exception> Unhandled) CreateHandlerWithThePlatformViewFactoryOfTheApp(CameraView view, ICameraProvider provider, Microsoft.UI.Xaml.FrameworkElement platformViewOfTheApp)
+	{
+		var context = new WindowsRecordingSynchronizationContext();
+		var previousFactory = CameraViewHandler.PlatformViewFactory;
+		CameraViewHandler? handler = null;
+		Exception? exception;
+
+		CameraViewHandler.PlatformViewFactory = _ => platformViewOfTheApp;
+		try
+		{
+			using (new WindowsCameraProviderOverride(provider))
+			using (context.Install())
+			{
+				exception = Record.Exception(() => { handler = CreateHandler<CameraViewHandler>(view); });
+			}
+		}
+		finally
+		{
+			CameraViewHandler.PlatformViewFactory = previousFactory;
+		}
+
+		return (handler, exception, context.Drain());
 	}
 }

@@ -46,6 +46,7 @@ partial class CameraManager
 	readonly SemaphoreSlim videoRecordingSemaphoreSlim = new(1, 1);
 	CMMotionManager? motionManager;
 	bool isDisposed;
+	bool isPreviewViewInAViewOfTheApp;
 
 	/// <inheritdoc />
 	public void Dispose()
@@ -70,6 +71,13 @@ partial class CameraManager
 
 		photoOutput?.Dispose();
 		photoOutput = null;
+
+		// A view of an app's CameraViewHandler.PlatformViewFactory can outlive the manager, for example when the app reuses it, and must not keep
+		// a released preview in front of the next one
+		if (isPreviewViewInAViewOfTheApp)
+		{
+			previewView?.RemoveFromSuperview();
+		}
 
 		previewView?.Dispose();
 		previewView = null;
@@ -107,6 +115,17 @@ partial class CameraManager
 		UpdateVideoOrientation();
 
 		return previewView;
+	}
+
+	// A UIView of an app's CameraViewHandler.PlatformViewFactory has no preview layer: the preview view of the manager shows the camera in it,
+	// behind the subviews of the app and at its size
+	public void AdoptPlatformView(NativePlatformCameraPreviewView platformView)
+	{
+		var preview = CreatePlatformView();
+		preview.Frame = platformView.Bounds;
+		preview.AutoresizingMask = UIViewAutoresizing.FlexibleDimensions;
+		platformView.InsertSubview(preview, 0);
+		isPreviewViewInAViewOfTheApp = true;
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)

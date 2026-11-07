@@ -896,4 +896,92 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 		return (view!, handler!, previewView!);
 	}
+
+	// An app's CameraViewHandler.PlatformViewFactory creates the PreviewView in place of CreatePlatformView, which was the only place that created
+	// the CameraManager: the first mapper that needed it threw, so the page with the CameraView could not be shown. RunWithCameraViewAsync waits
+	// until the camera streams into the platform view of the handler, which is the view of the app.
+	[Fact]
+	public async Task HandlerWhosePreviewViewCameFromThePlatformViewFactoryOfTheAppStreamsTheCameraIntoThatView()
+	{
+		SetupBuilder();
+		EnsureCameraPermissions();
+		var view = new CameraView();
+		var previewViewOfTheApp = await ConnectWithThePlatformViewFactoryOfTheAppAsync(view);
+
+		await RunWithCameraViewAsync(host =>
+		{
+			Assert.Same(previewViewOfTheApp, host.Handler.PlatformView);
+			Assert.Same(previewViewOfTheApp, host.Native<PreviewView>("previewView"));
+
+			// The scale type that the app gave its view, not the FitCenter of the views that the handler creates
+			Assert.Equal(PreviewView.ScaleType.FillStart, previewViewOfTheApp.GetScaleType());
+
+			host.View.CameraFlashMode = CameraFlashMode.On;
+
+			var imageCapture = host.Native<ImageCapture>("imageCapture");
+			Assert.NotNull(imageCapture);
+			Assert.Equal(ImageCapture.FlashModeOn, imageCapture.FlashMode);
+			return Task.CompletedTask;
+		}, view, disconnectWhenDone: false);
+	}
+
+	// The PreviewView of an app's factory stays the app's, which may keep or reuse it: the handler closes the camera but leaves that view usable
+	[Fact]
+	public async Task DisconnectingAHandlerWhosePreviewViewCameFromThePlatformViewFactoryOfTheAppClosesTheCameraAndLeavesThatViewToTheApp()
+	{
+		SetupBuilder();
+		EnsureCameraPermissions();
+		var view = new CameraView();
+		var previewViewOfTheApp = await ConnectWithThePlatformViewFactoryOfTheAppAsync(view);
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			var cameraId = host.SelectedCameraId;
+			var streamState = previewViewOfTheApp.PreviewStreamState;
+
+			((IElementHandler)host.Handler).DisconnectHandler();
+
+			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitUntilAsync(() => streamState.Value?.ToString() == "IDLE", "The preview kept streaming after the handler disconnected.");
+			var exception = Assert.Throws<InvalidOperationException>(() => host.Handler.CameraManager);
+			Assert.Equal("CameraManager cannot be used until the native view has been created", exception.Message);
+			Assert.NotEqual(IntPtr.Zero, previewViewOfTheApp.Handle);
+			Assert.Equal(PreviewView.ScaleType.FillStart, previewViewOfTheApp.GetScaleType());
+		}, view, disconnectWhenDone: false);
+	}
+
+	// The factory is static: it is set only while the handler is created, on the main thread, so that no other handler gets a view from it. The
+	// handler is connected before the view is hosted, as on a page that an app creates, and RunWithCameraViewAsync then hosts that handler.
+	async Task<PreviewView> ConnectWithThePlatformViewFactoryOfTheAppAsync(CameraView view)
+	{
+		PreviewView? previewViewOfTheApp = null;
+
+		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() =>
+		{
+			var handler = new CameraViewHandler();
+			RegisterHandlerCleanup(handler);
+			var previousFactory = CameraViewHandler.PlatformViewFactory;
+			CameraViewHandler.PlatformViewFactory = viewHandler =>
+			{
+				previewViewOfTheApp = new PreviewView(viewHandler.Context);
+				previewViewOfTheApp.SetScaleType(PreviewView.ScaleType.FillStart ?? throw new InvalidOperationException("AndroidX has no FillStart scale type."));
+				return previewViewOfTheApp;
+			};
+
+			try
+			{
+				handler.SetMauiContext(MauiContext);
+				handler.SetVirtualView(view);
+			}
+			finally
+			{
+				CameraViewHandler.PlatformViewFactory = previousFactory;
+			}
+		}));
+
+		Assert.Null(exception);
+		Assert.NotNull(previewViewOfTheApp);
+
+		return previewViewOfTheApp;
+	}
 }

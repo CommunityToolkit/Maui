@@ -8,6 +8,8 @@ partial class CameraManager
 
 	public NativePlatformCameraPreviewView CreatePlatformView() => throw new NotSupportedException(notSupportedMessage);
 
+	public void AdoptPlatformView(NativePlatformCameraPreviewView platformView) => throw new NotSupportedException(notSupportedMessage);
+
 	public partial void UpdateFlashMode(CameraFlashMode flashMode) => throw new NotSupportedException(notSupportedMessage);
 
 	public partial void UpdateIsTorchOn(bool isTorchOn) => throw new NotSupportedException(notSupportedMessage);

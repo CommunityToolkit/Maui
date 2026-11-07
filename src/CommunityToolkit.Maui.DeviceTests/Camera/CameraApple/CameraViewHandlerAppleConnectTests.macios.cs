@@ -1,7 +1,10 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using AVFoundation;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Views;
+using CoreGraphics;
 using ObjCRuntime;
+using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -175,6 +178,145 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 			Assert.True(access.IsInitialized);
 			access.CaptureDevice = null;
 			DisconnectAndRelease(view);
+		});
+	}
+
+	// An app's CameraViewHandler.PlatformViewFactory creates the platform view in place of CreatePlatformView, which was the only place that
+	// created the CameraManager: the first mapper that needed it threw, so the page with the CameraView could not be shown
+	[Fact]
+	public async Task AHandlerWhosePlatformViewCameFromThePlatformViewFactoryOfTheAppShowsThePreviewInThatView()
+	{
+		SetupBuilder();
+		var provider = new AppleFakeCameraProvider { AvailableCameras = [] };
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var view = new CameraView();
+			using var errors = new CameraErrorRecorder(view);
+			var platformViewOfTheApp = new UIView();
+			var subviewOfTheApp = new UIView();
+			platformViewOfTheApp.AddSubview(subviewOfTheApp);
+
+			var (handler, exception, unhandled) = CreateHandlerWithThePlatformViewFactoryOfTheApp(view, provider, () => platformViewOfTheApp);
+
+			try
+			{
+				Assert.Null(exception);
+				Assert.Empty(unhandled);
+				Assert.NotNull(handler);
+				Assert.Same(platformViewOfTheApp, handler.PlatformView);
+
+				// The handler connected the camera through its CameraManager, which found no camera
+				Assert.Equal("Couldn't connect to camera; no cameras available", Assert.IsType<CameraException>(Assert.Single(errors.Errors)).Message);
+
+				var access = new CameraManagerAccessor(handler.CameraManager);
+				var previewView = access.PreviewView;
+				Assert.NotNull(previewView);
+				Assert.Collection(platformViewOfTheApp.Subviews, first => Assert.Same(previewView, first), second => Assert.Same(subviewOfTheApp, second));
+				var previewLayer = Assert.IsType<AVCaptureVideoPreviewLayer>(previewView.Layer, exactMatch: false);
+				Assert.Same(access.CaptureSession, previewLayer.Session);
+
+				platformViewOfTheApp.Frame = new CGRect(0, 0, 320, 240);
+				platformViewOfTheApp.LayoutIfNeeded();
+				Assert.Equal(platformViewOfTheApp.Bounds, previewView.Frame);
+
+				view.CameraFlashMode = CameraFlashMode.On;
+				Assert.Equal(AVCaptureFlashMode.On, access.FlashMode);
+			}
+			finally
+			{
+				DisconnectAndRelease(view);
+			}
+		});
+	}
+
+	// The view of an app's factory stays the app's, which may keep or reuse it: the handler takes out and releases only the preview that it put in
+	[Fact]
+	public async Task DisconnectingAHandlerWhosePlatformViewCameFromThePlatformViewFactoryOfTheAppTakesThePreviewOutOfThatViewAndLeavesItToTheApp()
+	{
+		SetupBuilder();
+		var provider = new AppleFakeCameraProvider { AvailableCameras = [] };
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var view = new CameraView();
+			var platformViewOfTheApp = new UIView();
+			var subviewOfTheApp = new UIView();
+			platformViewOfTheApp.AddSubview(subviewOfTheApp);
+
+			var (handler, exception, _) = CreateHandlerWithThePlatformViewFactoryOfTheApp(view, provider, () => platformViewOfTheApp);
+
+			try
+			{
+				Assert.Null(exception);
+				Assert.NotNull(handler);
+				var access = new CameraManagerAccessor(handler.CameraManager);
+				var previewView = access.PreviewView;
+				var session = access.CaptureSession;
+				Assert.NotNull(previewView);
+				Assert.NotNull(session);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				var managerException = Assert.Throws<InvalidOperationException>(() => handler.CameraManager);
+				Assert.Equal("CameraManager cannot be used until the native view has been created", managerException.Message);
+				Assert.Same(subviewOfTheApp, Assert.Single(platformViewOfTheApp.Subviews));
+				Assert.NotEqual(NativeHandle.Zero, platformViewOfTheApp.Handle);
+				Assert.Equal(NativeHandle.Zero, session.Handle);
+
+				// A disposed subclass of UIView, such as the preview view, keeps its handle until UIKit deallocates it, which for a view that was in a
+				// view hierarchy can happen only after the current turn of the main loop
+				await AssertionExtensions.AssertEventually(() => previewView.Handle == NativeHandle.Zero, timeout: 5000, interval: 50, message: "The preview view that the handler took out of the view of the app was never released.");
+			}
+			finally
+			{
+				DisconnectAndRelease(view);
+			}
+		});
+	}
+
+	// DisconnectHandler releases the CameraManager and MAUI forgets the platform view, so a handler that is connected again gets a new view from
+	// the factory and needs a new CameraManager for it
+	[Fact]
+	public async Task AHandlerConnectedAgainShowsThePreviewInTheNextViewOfThePlatformViewFactoryOfTheApp()
+	{
+		SetupBuilder();
+		var provider = new AppleFakeCameraProvider { AvailableCameras = [] };
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var view = new CameraView();
+			var platformViewsOfTheApp = new List<UIView>();
+			UIView CreatePlatformViewOfTheApp()
+			{
+				var platformView = new UIView();
+				platformViewsOfTheApp.Add(platformView);
+				return platformView;
+			}
+
+			var (handler, exception, _) = CreateHandlerWithThePlatformViewFactoryOfTheApp(view, provider, CreatePlatformViewOfTheApp);
+
+			try
+			{
+				Assert.Null(exception);
+				Assert.NotNull(handler);
+				var firstManager = handler.CameraManager;
+				((IElementHandler)handler).DisconnectHandler();
+
+				WithThePlatformViewFactoryOfTheApp(CreatePlatformViewOfTheApp, () => InitializeViewHandler(view, handler));
+
+				Assert.Equal(2, platformViewsOfTheApp.Count);
+				Assert.Same(platformViewsOfTheApp[1], handler.PlatformView);
+				Assert.NotSame(firstManager, handler.CameraManager);
+				var previewView = new CameraManagerAccessor(handler.CameraManager).PreviewView;
+				Assert.NotNull(previewView);
+				Assert.Same(platformViewsOfTheApp[1], previewView.Superview);
+				Assert.Empty(platformViewsOfTheApp[0].Subviews);
+			}
+			finally
+			{
+				DisconnectAndRelease(view);
+			}
 		});
 	}
 
@@ -517,6 +659,38 @@ public class CameraViewHandlerAppleConnectTests : CameraHandlerTestBase
 				DisconnectAndRelease(view);
 			}
 		});
+	}
+
+	// The provider is resolved when the handler is created (CameraViewHandler.cameraProvider), so the override only needs to last that long
+	(CameraViewHandler? Handler, Exception? Exception, IReadOnlyList<Exception> Unhandled) CreateHandlerWithThePlatformViewFactoryOfTheApp(CameraView view, ICameraProvider provider, Func<UIView> createPlatformView)
+	{
+		var context = new AppleRecordingSynchronizationContext();
+		CameraViewHandler? handler = null;
+		Exception? exception = null;
+
+		using (AppleCameraProviderOverride.With(provider))
+		using (context.Install())
+		{
+			WithThePlatformViewFactoryOfTheApp(createPlatformView, () => exception = Record.Exception(() => { handler = CreateHandler<CameraViewHandler>(view); }));
+		}
+
+		return (handler, exception, context.Drain());
+	}
+
+	// The factory is static: it is set only while a handler creates its platform view, so that no other handler gets a view from it
+	static void WithThePlatformViewFactoryOfTheApp(Func<UIView> createPlatformView, Action action)
+	{
+		var previousFactory = CameraViewHandler.PlatformViewFactory;
+		CameraViewHandler.PlatformViewFactory = _ => createPlatformView();
+
+		try
+		{
+			action();
+		}
+		finally
+		{
+			CameraViewHandler.PlatformViewFactory = previousFactory;
+		}
 	}
 
 	static void DisconnectAndRelease(CameraView view)

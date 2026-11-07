@@ -67,19 +67,9 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// </summary>
 	protected override NativePlatformCameraPreviewView CreatePlatformView()
 	{
-		ArgumentNullException.ThrowIfNull(MauiContext);
-		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
+		cameraManager = CreateCameraManager();
 
 		return CameraManager.CreatePlatformView();
-
-		// When camera is loaded(switched), map the current flash mode to the platform view,
-		// reset the zoom factor to 1
-		void Init(ICameraView view)
-		{
-			MapCameraFlashMode(this, view);
-			MapIsTorchOn(this, view);
-			view.ZoomFactor = 1.0f;
-		}
 	}
 
 	/// <inheritdoc/>
@@ -88,6 +78,14 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	{
 		// Not async: the exception of an async void method never reaches the caller, it is raised on the synchronization context
 		ArgumentNullException.ThrowIfNull(platformView);
+
+		// An app's CameraViewHandler.PlatformViewFactory creates the platform view in place of CreatePlatformView, which then created no
+		// CameraManager: the mappers that MAUI runs after ConnectHandler need one, and it must use the view of the app
+		if (cameraManager is null)
+		{
+			cameraManager = CreateCameraManager();
+			cameraManager.AdoptPlatformView(platformView);
+		}
 
 		base.ConnectHandler(platformView);
 
@@ -212,6 +210,22 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		catch (Exception ex)
 		{
 			ReportError(cameraView, "connect the camera", ex);
+		}
+	}
+
+	CameraManager CreateCameraManager()
+	{
+		ArgumentNullException.ThrowIfNull(MauiContext);
+
+		return new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
+
+		// When camera is loaded(switched), map the current flash mode to the platform view,
+		// reset the zoom factor to 1
+		void Init(ICameraView view)
+		{
+			MapCameraFlashMode(this, view);
+			MapIsTorchOn(this, view);
+			view.ZoomFactor = 1.0f;
 		}
 	}
 }

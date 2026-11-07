@@ -70,6 +70,21 @@ partial class CameraManager
 		return mediaElement;
 	}
 
+	// Only a MediaPlayerElement can show the preview, so a MediaPlayerElement of an app's CameraViewHandler.PlatformViewFactory shows it with the
+	// settings that the app gave it. Any other element has no place for it: the camera works all the same, with a MediaPlayerElement that is not
+	// shown
+	public void AdoptPlatformView(NativePlatformCameraPreviewView platformView)
+	{
+		if (platformView is MediaPlayerElement mediaPlayerElement)
+		{
+			mediaElement = mediaPlayerElement;
+			return;
+		}
+
+		Trace.TraceWarning($"CameraView: the {platformView.GetType().FullName} that CameraViewHandler.PlatformViewFactory returned cannot show the camera preview; return a {nameof(MediaPlayerElement)} to show it");
+		mediaElement = new MediaPlayerElement();
+	}
+
 	public void Dispose()
 	{
 		finishedVideoStream = null;

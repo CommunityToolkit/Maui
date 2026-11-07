@@ -99,6 +99,8 @@ partial class CameraManager
 	int extensionMode = ExtensionMode.Auto;
 	bool isDisposed;
 
+	bool isPreviewViewOfTheApp;
+
 	bool isCameraSwitchDeferred;
 
 	// Android cannot tell a camera permission that the app has not asked for yet from a denied one, and an app often asks for it while the view
@@ -183,7 +185,12 @@ partial class CameraManager
 		videoRecorder?.Dispose();
 		videoRecorder = null;
 
-		previewView?.Dispose();
+		// The PreviewView of an app's CameraViewHandler.PlatformViewFactory stays the app's (see AdoptPlatformView)
+		if (!isPreviewViewOfTheApp)
+		{
+			previewView?.Dispose();
+		}
+
 		previewView = null;
 
 		resolutionSelector?.Dispose();
@@ -210,26 +217,23 @@ partial class CameraManager
 	// IN the future change the return type to be an alias
 	public NativePlatformCameraPreviewView CreatePlatformView()
 	{
-		imageCallback = new ImageCallBack(cameraView);
-		previewView = new NativePlatformCameraPreviewView(context);
+		var platformView = new NativePlatformCameraPreviewView(context);
 		if (NativePlatformCameraPreviewView.ScaleType.FitCenter is not null)
 		{
-			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
+			platformView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
 
-		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
-		orientationListener = new OrientationListener(OnOrientationChanged, context);
-		orientationListener.Enable();
+		UsePreviewView(platformView);
 
-		// Observed for the lifetime of the manager rather than only while a start waits for the camera permission: a lifecycle accepts
-		// observers only on the main thread, on which the platform view is created and disposed, while a start can fail on any thread
-		if (activityResumedObserver is null && context is ILifecycleOwner lifecycleOwner)
-		{
-			activityResumedObserver = new ActivityResumedObserver(OnActivityResumed);
-			lifecycleOwner.Lifecycle.AddObserver(activityResumedObserver);
-		}
+		return platformView;
+	}
 
-		return previewView;
+	// The PreviewView of an app's CameraViewHandler.PlatformViewFactory keeps the scale type that the app gave it, and stays the app's: Dispose
+	// leaves its managed peer alone, through which the app may still use the view
+	public void AdoptPlatformView(NativePlatformCameraPreviewView platformView)
+	{
+		isPreviewViewOfTheApp = true;
+		UsePreviewView(platformView);
 	}
 
 	public partial void UpdateFlashMode(CameraFlashMode flashMode)
@@ -305,6 +309,24 @@ partial class CameraManager
 		>= 225 and < 315 => (int)SurfaceOrientation.Rotation90,
 		_ => (int)SurfaceOrientation.Rotation0
 	};
+
+	void UsePreviewView(NativePlatformCameraPreviewView platformView)
+	{
+		imageCallback = new ImageCallBack(cameraView);
+		previewView = platformView;
+
+		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+		orientationListener = new OrientationListener(OnOrientationChanged, context);
+		orientationListener.Enable();
+
+		// Observed for the lifetime of the manager rather than only while a start waits for the camera permission: a lifecycle accepts
+		// observers only on the main thread, on which the platform view is created and disposed, while a start can fail on any thread
+		if (activityResumedObserver is null && context is ILifecycleOwner lifecycleOwner)
+		{
+			activityResumedObserver = new ActivityResumedObserver(OnActivityResumed);
+			lifecycleOwner.Lifecycle.AddObserver(activityResumedObserver);
+		}
+	}
 
 	private async partial Task PlatformConnectCamera(CancellationToken token)
 	{
