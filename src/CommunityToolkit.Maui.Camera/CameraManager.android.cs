@@ -749,7 +749,7 @@ partial class CameraManager
 	{
 		if (wasStopped)
 		{
-			RestoreZoomOfTheReopenedCamera();
+			RestoreZoomAndTorchOfTheReopenedCamera();
 		}
 
 		if (isWaitingForCameraPermission && IsCameraPermissionGranted())
@@ -758,18 +758,26 @@ partial class CameraManager
 		}
 	}
 
-	// CameraX closes the camera of a stopped activity, which resets its zoom ratio to 1, and opens it again when the activity starts, while
-	// ZoomFactor keeps the zoom of the view. The activity resumes after CameraX queued the restart on its camera thread, where this request
-	// follows it. Only bound use cases are opened again: a preview that the app stopped stays closed, and use cases that are being replaced get
-	// the zoom of the view when they are bound (OnCameraBound).
-	void RestoreZoomOfTheReopenedCamera()
+	// CameraX closes the camera of a stopped activity, which resets its zoom ratio to 1 and turns its torch off (TorchControl.setActive(false)),
+	// and opens it again when the activity starts, while ZoomFactor and IsTorchOn keep the state of the view. The activity resumes after CameraX
+	// queued the restart on its camera thread, where these requests follow it. Only bound use cases are opened again: a preview that the app
+	// stopped stays closed, and use cases that are being replaced get the zoom and the torch of the view when they are bound (OnCameraBound).
+	void RestoreZoomAndTorchOfTheReopenedCamera()
 	{
-		if (cameraView.ZoomFactor is 1.0f || cameraPreview is null || processCameraProvider?.IsBound(cameraPreview) is not true)
+		if (cameraPreview is null || processCameraProvider?.IsBound(cameraPreview) is not true)
 		{
 			return;
 		}
 
-		RequestZoomOfTheView();
+		if (cameraView.ZoomFactor is not 1.0f)
+		{
+			RequestZoomOfTheView();
+		}
+
+		if (cameraView.IsTorchOn)
+		{
+			UpdateIsTorchOn(true);
+		}
 	}
 
 	// No caller awaits a start that the resume of the activity retries, so an exception that escaped would end the app: its failure is reported

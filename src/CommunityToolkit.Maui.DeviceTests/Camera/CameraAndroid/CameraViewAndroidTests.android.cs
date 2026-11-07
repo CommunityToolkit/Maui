@@ -888,6 +888,37 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		}, new CameraView { SelectedCamera = camera });
 	}
 
+	// CameraX closes the camera of the activity when another activity covers it and TorchControl.setActive(false) turns the torch off with it,
+	// while CameraView.IsTorchOn stays true
+	[Fact]
+	public async Task TorchOfTheViewStillDescribesTheNativeTorchAfterAnotherActivityWasInFront()
+	{
+		SetupBuilder();
+		var camera = (await GetRealCamerasAsync()).FirstOrDefault(camera => camera.IsFlashSupported);
+		Skip.If(camera is null, "No camera of this device has a flash unit, so the torch can not be switched on.");
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			using var errors = new CameraErrorRecorder(host.View);
+			host.View.IsTorchOn = true;
+			await WaitForNativeTorchAsync(camera.DeviceId, true);
+
+			await using (await FilesPickerSession.StartAsync())
+			{
+				await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+				await WaitForNativeTorchAsync(camera.DeviceId, false, message: $"CameraX did not turn the torch of camera {camera.DeviceId} off when the activity stopped.");
+			}
+
+			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
+			await WaitForStreamingAsync(host.PreviewView);
+
+			Assert.True(host.View.IsTorchOn);
+			await WaitForNativeTorchAsync(camera.DeviceId, true,
+				message: $"After another activity was in front the native torch of camera {camera.DeviceId} is not on although CameraView.IsTorchOn is {host.View.IsTorchOn}.");
+			Assert.Empty(errors.Errors);
+		}, new CameraView { SelectedCamera = camera });
+	}
+
 	[Fact]
 	public async Task TorchOfTheViewStillDescribesTheNativeTorchAfterARecording()
 	{
