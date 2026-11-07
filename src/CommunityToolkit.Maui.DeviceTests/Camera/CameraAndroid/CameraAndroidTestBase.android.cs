@@ -234,10 +234,11 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// "Transitioning camera internal state: REOPENING --> OPENED" without a following "Publishing new public camera state ... OPEN").
 	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
 	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
-	protected static Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView)
+	// The handler selects a camera only once its camera provider has found the cameras, which takes longest for the first camera of the process
+	protected static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView)
 	{
-		ArgumentNullException.ThrowIfNull(view.SelectedCamera);
-		return WaitForStreamingAsync(previewView);
+		await AssertionExtensions.AssertEventually(() => view.SelectedCamera is not null, 30000, 50, "The handler never selected a camera.");
+		await WaitForStreamingAsync(previewView);
 	}
 
 	protected static Task WaitForNativeTorchAsync(string cameraId, bool on, int timeoutMilliseconds = 30000, string? message = null) =>
