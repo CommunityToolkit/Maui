@@ -77,9 +77,9 @@ Install the .NET Multi-platform App UI development workload.
 1. Open `src/CommunityToolkit.Maui.slnx`. The app is in the `Tests/Device Tests` folder.
 1. Right-click `CommunityToolkit.Maui.DeviceTests` (or the MediaElement or Camera app) and choose Set as Startup Project.
 1. In the debug target list of the toolbar choose the target framework (`Framework`) and the device:
-    * Android emulator: `net10.0-android` and an emulator under `Android Emulators`. Create one in Tools > Android > Android Device Manager; Visual Studio starts it.
-    * Windows, packaged: `net10.0-windows10.0.19041.0` and `Windows Machine`. Visual Studio registers the app from its build folder, which needs Developer Mode (Settings > System > For developers).
-    * iOS simulator: `net10.0-ios` with a Mac paired through Pair to Mac. On the Mac itself, use Rider or Visual Studio Code.
+    * Android emulator: `net11.0-android` and an emulator under `Android Emulators`. Create one in Tools > Android > Android Device Manager; Visual Studio starts it.
+    * Windows, packaged: `net11.0-windows10.0.19041.0` and `Windows Machine`. Visual Studio registers the app from its build folder, which needs Developer Mode (Settings > System > For developers).
+    * iOS simulator: `net11.0-ios` with a Mac paired through Pair to Mac. On the Mac itself, use Rider or Visual Studio Code.
     * Mac Catalyst runs on a Mac only, so use Rider or Visual Studio Code there.
 1. Press F5 to debug, or Ctrl+F5 to run.
 
@@ -89,7 +89,7 @@ The launch profile of the app is the packaged one. For the unpackaged app, build
 
 1. Open `src/CommunityToolkit.Maui.slnx`.
 1. Choose the app (`CommunityToolkit.Maui.DeviceTests`) in the run configurations.
-1. In the toolbar, choose the target framework and the device next to it: an Android emulator (Device Manager creates one), an iOS simulator (macOS) or the Mac (`net10.0-maccatalyst`).
+1. In the toolbar, choose the target framework and the device next to it: an Android emulator (Device Manager creates one), an iOS simulator (macOS) or the Mac (`net11.0-maccatalyst`).
 1. Run, or Debug.
 
 For Windows, and for anything the toolbar does not offer, use a terminal command from below; the Rider terminal is a good place for it.
@@ -107,11 +107,11 @@ The IDEs run these builds. They work in every shell, and they are the quickest w
 
 | Target | Command |
 | --- | --- |
-| Mac Catalyst | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-maccatalyst -t:Build,Run` |
-| iOS simulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-ios -t:Build,Run -p:_DeviceName=:v2:udid=<simulator UDID>` |
-| Android emulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net10.0-android -t:Run -p:AdbTarget="-s emulator-5554"` |
+| Mac Catalyst | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net11.0-maccatalyst -t:Build,Run` |
+| iOS simulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net11.0-ios -t:Build,Run -p:_DeviceName=:v2:udid=<simulator UDID>` |
+| Android emulator | `dotnet build src/CommunityToolkit.Maui.DeviceTests -f net11.0-android -t:Run -p:AdbTarget="-s emulator-5554"` |
 
-On iOS and Mac Catalyst the `Run` target only starts the app as it was last built, so `Build,Run` builds it first; on Android `Run` builds and installs the app itself. `net10.0` is the `NetVersion` of `Directory.Build.props`. `xcrun simctl list devices available` lists the simulators with their UDIDs. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
+On iOS and Mac Catalyst the `Run` target only starts the app as it was last built, so `Build,Run` builds it first; on Android `Run` builds and installs the app itself. `net11.0` is the `NetVersion` of `Directory.Build.props`. `xcrun simctl list devices available` lists the simulators with their UDIDs. `adb devices` lists the serial of an emulator, and the Android emulator has to be running already (`$ANDROID_HOME/emulator/emulator -avd <name>`).
 
 On Windows the scripts build the app, and you start it yourself. The first packaged build needs an elevated PowerShell to trust its signing certificate.
 
@@ -180,7 +180,7 @@ macOS shows a privacy prompt the first time an app uses the camera, the micropho
 Answer a prompt when one shows. To run the permission-gated tests, give the app its answers once:
 
 1. Build the app without running it: `pwsh eng/devices/catalyst.ps1 -Target buildOnly`.
-1. Open the app from that build, without building it again, for example `open src/CommunityToolkit.Maui.DeviceTests/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/CommunityToolkit.Maui.DeviceTests.app` (`maccatalyst-x64` on an Intel Mac). Run the tests in [Run the tests that need a person](#run-the-tests-that-need-a-person) that ask for the permission, and click Allow. Once an app has asked, you can also switch it on under System Settings > Privacy & Security > Camera, Microphone or Speech Recognition.
+1. Open the app from that build, without building it again, for example `open src/CommunityToolkit.Maui.DeviceTests/bin/Debug/net11.0-maccatalyst/maccatalyst-arm64/CommunityToolkit.Maui.DeviceTests.app` (`maccatalyst-x64` on an Intel Mac). Run the tests in [Run the tests that need a person](#run-the-tests-that-need-a-person) that ask for the permission, and click Allow. Once an app has asked, you can also switch it on under System Settings > Privacy & Security > Camera, Microphone or Speech Recognition.
 1. Run the tests without building the app again: `pwsh eng/devices/run.ps1 -Platform maccatalyst -Target testOnly`. The app is signed ad hoc, so macOS remembers an answer for the app as it was built, and a build that changes the app brings the prompts back. `tccutil reset Camera|Microphone|SpeechRecognition <bundle id>` takes an answer back.
 
 ### iOS simulator: your own simulator gets no grants

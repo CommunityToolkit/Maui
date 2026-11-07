@@ -1,7 +1,7 @@
 # CommunityToolkit.Maui device tests
 
 Device tests run inside a real app on Android, iOS, Mac Catalyst and Windows. They cover the toolkit code that the
-`net10.0` unit tests cannot reach: platform-specific source (`*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`,
+`net11.0` unit tests cannot reach: platform-specific source (`*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`,
 `*.windows.cs`), handlers and their platform views, behaviors attached to native views, and platform services. The
 architecture is dotnet/maui's (`src/Controls/tests/DeviceTests`): xUnit v2 tests, a headless runner driven by XHarness on CI,
 and a visual runner for running tests by hand.
@@ -332,9 +332,8 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - **OS-version branches.** Platform code can branch on `OperatingSystem.IsAndroidVersionAtLeast(n)`, `IsIOSVersionAtLeast`,
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
-  - The app's minimum versions are the library minimums (iOS 15; Windows 10.0.17763.0) except Android, which is 26, MediaElement's
-    minimum: one app holds every package's tests, so the other packages' Android branches below 26 have no device test. Mac Catalyst's
-    minimum is 17.0, forced by the Xcode 27 SDK packs.
+  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Windows 10.0.17763.0) except Android, which is 26,
+    MediaElement's minimum: one app holds every package's tests, so the other packages' Android branches below 26 have no device test.
   - Never `return` early: a test that returns early is reported as Passed.
 - **Run-time skips.** When a test cannot run on this device (no camera, an API that needs a newer OS than the test asserts),
   skip it visibly. A bare `return` is a silent pass and is not allowed.
