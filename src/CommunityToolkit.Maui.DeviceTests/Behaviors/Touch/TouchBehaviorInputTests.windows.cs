@@ -24,7 +24,7 @@ public partial class TouchBehaviorInputTests
 	const string isPressedField = "isPressed";
 	const string isIntentionalCaptureLossField = "isIntentionalCaptureLoss";
 
-	// Where the pointer is released decides how a press ends, as on Android and iOS, whatever the hover status says: the status can be
+	// Where the pointer is released decides how a press ends, as on Android, whatever the hover status says: the status can be
 	// Exited while the pointer is over the element.
 	[Theory]
 	[InlineData(true, HoverStatus.Entered, HostCenter, HostCenter, TouchStatus.Completed)]

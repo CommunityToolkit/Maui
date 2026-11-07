@@ -25,9 +25,9 @@ public partial class TouchBehavior
 	// A WinUI button (MAUI's Button and ImageButton) raises its Click, which MAUI turns into Clicked, for the pointer and the keyboard itself
 	internal bool IsClickedRaisedByPlatformView => view is Microsoft.UI.Xaml.Controls.Primitives.ButtonBase;
 
-	// As on Android and iOS, a press ends where the pointer is released. The hover status cannot decide it: it can be Exited while the
-	// pointer is over the element, and WinUI raises no PointerEntered for a pointer that does not move, so a press that starts then would
-	// never end and its Command would not run.
+	// As on Android, a press ends where the pointer is released (iOS also cancels a touch for good once it has left the view). The hover
+	// status cannot decide it: it can be Exited while the pointer is over the element, and WinUI raises no PointerEntered for a pointer that
+	// does not move, so a press that starts then would never end and its Command would not run.
 	internal void HandlePointerReleased(FrameworkElement container, Windows.Foundation.Point position)
 	{
 		if (isPressed)
