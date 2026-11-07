@@ -16,7 +16,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 	/// <param name="values">The array of variables for an expression</param>
 	/// <param name="targetType">The type of the binding target property. This is not implemented.</param>
 	/// <param name="parameter">The expression to calculate.</param>
-	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
+	/// <param name="culture">The culture used to convert string values to numbers and to format values for <c>str()</c> and <c>len()</c>. When <see langword="null"/>, <see cref="CultureInfo.CurrentCulture"/> is used. The syntax of the expression itself, such as numeric literals, is always culture-invariant.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
 	public object? Convert(object?[]? values, Type targetType, [NotNull] object? parameter, CultureInfo? culture = null)
 	{
@@ -30,7 +30,7 @@ public class MultiMathExpressionConverter : MultiValueConverterExtension, ICommu
 
 		return values is null
 			? null
-			: new MathExpression(expression, values).CalculateResult();
+			: new MathExpression(expression, values, culture).CalculateResult();
 	}
 
 	/// <summary>
