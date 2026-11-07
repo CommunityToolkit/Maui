@@ -5,9 +5,12 @@ namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 public partial class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryViewModel>
 {
 #if ANDROID || IOS
+	// On iOS 26 and later a status bar color is drawn in front of the window and cuts off the glass of a pressed navigation bar button, so iOS leaves it
+	// transparent and the navigation bar's own background fills the status bar area. The default style then shows a dark clock on the navigation bar (white in
+	// Dark theme), which also stays readable over the open flyout's background.
 	readonly CommunityToolkit.Maui.Behaviors.StatusBarBehavior statusBarBehavior = new()
 	{
-		StatusBarStyle = Core.StatusBarStyle.LightContent,
+		StatusBarStyle = OperatingSystem.IsIOS() ? Core.StatusBarStyle.Default : Core.StatusBarStyle.LightContent,
 		ApplyOn = CommunityToolkit.Maui.Behaviors.StatusBarApplyOn.OnPageNavigatedTo,
 	};
 #endif
@@ -45,6 +48,14 @@ public partial class BehaviorsGalleryPage : BaseGalleryPage<BehaviorsGalleryView
 	// The Shell style in Styles.xaml gives the navigation bar NavBarColor in the Light theme and Gray950 in the Dark theme
 	void SetStatusBarColor(AppTheme appTheme)
 	{
+		// On iOS the navigation bar's own background shows that color in the status bar area. A transparent color, rather than none, also clears a
+		// color that another page, such as StatusBarBehaviorPage, left in front of the navigation bar
+		if (OperatingSystem.IsIOS())
+		{
+			statusBarBehavior.StatusBarColor = Colors.Transparent;
+			return;
+		}
+
 		var resources = Application.Current?.Resources ?? throw new InvalidOperationException($"{nameof(Application)}.{nameof(Application.Current)} cannot be null");
 		statusBarBehavior.StatusBarColor = (Color)resources[appTheme is AppTheme.Dark ? "Gray950" : "NavBarColor"];
 	}

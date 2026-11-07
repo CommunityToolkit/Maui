@@ -36,8 +36,14 @@ public enum StatusBarApplyOn
 public partial class StatusBarBehavior : BasePlatformBehavior<Page>
 {
 	/// <summary>
-	/// Property that holds the value of the Status bar color. 
+	/// Property that holds the value of the Status bar color.
 	/// </summary>
+	/// <remarks>
+	/// iOS 26 and later: the color is drawn in front of the window's other views, the navigation bar included (see <see cref="StatusBar.SetColor(Color?)"/>),
+	/// so it cuts off the Liquid Glass of a pressed navigation bar button where the glass grows above the navigation bar. With a transparent color, the
+	/// default, the navigation bar's own background fills the status bar area: on a page with a navigation bar, leave the color transparent on iOS, for
+	/// example with <c>{OnPlatform iOS=Transparent, Default=...}</c>.
+	/// </remarks>
 	[BindableProperty]
 	public partial Color StatusBarColor { get; set; } = StatusBarBehaviorDefaults.StatusBarColor;
 
