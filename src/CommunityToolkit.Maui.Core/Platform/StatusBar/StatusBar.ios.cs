@@ -21,7 +21,7 @@ static partial class StatusBar
 	/// </remarks>
 	public static void SetBarSize(bool isUsingSafeArea)
 	{
-		foreach (var window in UIApplication.SharedApplication.Windows)
+		foreach (var window in GetApplicationWindows())
 		{
 			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
 			if (statusBarFrame is null)
@@ -42,7 +42,7 @@ static partial class StatusBar
 	{
 		var uiColor = color.ToPlatform();
 
-		foreach (var window in UIApplication.SharedApplication.Windows)
+		foreach (var window in GetApplicationWindows())
 		{
 			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
 			if (statusBarFrame is null)
@@ -64,6 +64,21 @@ static partial class StatusBar
 
 			TryUpdateStatusBarAppearance(window);
 		}
+	}
+
+	// Only the app's own windows get a status bar view. UIApplication.Windows also contains
+	// system windows (e.g. UITextEffectsWindow, created after a text input gets focus), which sit
+	// above the app windows; painting them leaves the status bar on top of any modal or overlay.
+	static IReadOnlyList<UIWindow> GetApplicationWindows()
+	{
+		var applicationWindows = IPlatformApplication.Current?.Application?.Windows
+			.Select(static window => window.Handler?.PlatformView)
+			.OfType<UIWindow>()
+			.ToList();
+
+		return applicationWindows is { Count: > 0 }
+			? applicationWindows
+			: UIApplication.SharedApplication.Windows;
 	}
 
 	// The status bar view is a subview of the window itself, of the toolkit's own type: UIView.ViewWithTag would also find an app view with the same tag
@@ -105,7 +120,7 @@ static partial class StatusBar
 	{
 		var didUpdateAllStatusBars = true;
 
-		foreach (var window in UIApplication.SharedApplication.Windows)
+		foreach (var window in GetApplicationWindows())
 		{
 			didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);
 		}
