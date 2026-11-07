@@ -50,4 +50,18 @@
      <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
   </PropertyGroup>
 
+  <!--
+    .NET 11 "runtime async" (C# 15 / .NET 11) sets bit 0x2000 on the MethodImplAttributes of every async
+    method (a.k.a. MethodImplOptions.Async). It is a CoreCLR-only preview feature: Mono
+    (Android/iOS with UseMonoRuntime=true, and Blazor WebAssembly) cannot execute runtime-async IL.
+    #3331 enables it ONLY on the net11.0-windows TFM (CoreCLR). The bare net11.0 asset - consumed by a
+    Blazor WebAssembly app or a UseMonoRuntime=true MAUI app - must contain no runtime-async methods; the
+    UnitTests guard (Tests_RuntimeAsync_ShippedAssemblies) enforces that.
+  -->
+  <PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows'
+                      AND '$([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))' == '11.0'
+                      AND !$(Features.Contains('runtime-async'))">
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
+
 </Project>
