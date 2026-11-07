@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluentAssertions;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
@@ -21,54 +22,50 @@ namespace CommunityToolkit.Maui.UnitTests;
 /// </summary>
 public class Tests_RuntimeAsync_ShippedAssemblies
 {
-    // .NET 11 runtime-async flag on MethodImplAttributes. There is no named member for this bit before
-    // .NET 10, so it is set by numeric cast (the compiler's "async" IL flag, 0x2000).
-    private const MethodImplAttributes RuntimeAsyncFlag = (MethodImplAttributes)0x2000;
+	const BindingFlags allDeclared =
+		BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-    private const BindingFlags AllDeclared =
-        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+	[Theory]
+	[InlineData("CommunityToolkit.Maui")]
+	[InlineData("CommunityToolkit.Maui.Core")]
+	[InlineData("CommunityToolkit.Maui.Camera")]
+	[InlineData("CommunityToolkit.Maui.MediaElement")]
+	public void ShippedAssembly_HasNoRuntimeAsyncMethods(string assemblyName)
+	{
+		var assembly = Assembly.Load(assemblyName);
+		var runtimeAsyncMethods = FindRuntimeAsyncMethods(assembly);
 
-    [Theory]
-    [InlineData("CommunityToolkit.Maui")]
-    [InlineData("CommunityToolkit.Maui.Core")]
-    [InlineData("CommunityToolkit.Maui.Camera")]
-    [InlineData("CommunityToolkit.Maui.MediaElement")]
-    public void ShippedAssembly_HasNoRuntimeAsyncMethods(string assemblyName)
-    {
-        var assembly = Assembly.Load(assemblyName);
-        var runtimeAsyncMethods = FindRuntimeAsyncMethods(assembly);
+		runtimeAsyncMethods.Should().BeEmpty(
+			because: $"'{assemblyName}' is the Mono-capable bare net11.0 asset and must not contain runtime-async IL. " +
+					 "Runtime async is enabled only on the net11.0-windows TFM (CoreCLR-only).");
+	}
 
-        runtimeAsyncMethods.Should().BeEmpty(
-            because: $"'{assemblyName}' is the Mono-capable bare net11.0 asset and must not contain runtime-async IL. " +
-                     "Runtime async is enabled only on the net11.0-windows TFM (CoreCLR-only).");
-    }
+	static IEnumerable<string> FindRuntimeAsyncMethods(Assembly assembly)
+	{
+		Type[] types;
+		try
+		{
+			types = assembly.GetTypes();
+		}
+		catch (ReflectionTypeLoadException ex)
+		{
+			// Some types reference assemblies that are not loadable in the test context;
+			// scan the ones that did load rather than failing the whole scan.
+			types = [.. ex.Types.OfType<Type>()];
+		}
 
-    static IEnumerable<string> FindRuntimeAsyncMethods(Assembly assembly)
-    {
-        Type[] types;
-        try
-        {
-            types = assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            // Some types reference assemblies that are not loadable in the test context;
-            // scan the ones that did load rather than failing the whole scan.
-            types = ex.Types.Where(t => t is not null).ToArray();
-        }
+		foreach (var type in types)
+		{
+			var members = type.GetMethods(allDeclared).Cast<MethodBase>()
+				.Concat(type.GetConstructors(allDeclared).Cast<MethodBase>());
 
-        foreach (var type in types)
-        {
-            var members = type.GetMethods(AllDeclared).Cast<MethodBase>()
-                .Concat(type.GetConstructors(AllDeclared).Cast<MethodBase>());
-
-            foreach (var method in members)
-            {
-                if ((method.GetMethodImplementationFlags() & RuntimeAsyncFlag) != 0)
-                {
-                    yield return $"{type.FullName}.{method.Name}";
-                }
-            }
-        }
-    }
+			foreach (var method in members)
+			{
+				if ((method.GetMethodImplementationFlags() & MethodImplAttributes.Async) != 0)
+				{
+					yield return $"{type.FullName}.{method.Name}";
+				}
+			}
+		}
+	}
 }
