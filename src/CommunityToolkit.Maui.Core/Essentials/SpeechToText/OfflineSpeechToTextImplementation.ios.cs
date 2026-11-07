@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
+using Microsoft.Maui.Dispatching;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
@@ -49,7 +50,17 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		var recognizer = speechRecognizer;
 		var request = liveSpeechRequest;
-		var timer = await CreateSilenceTimer(options, token);
+		IDispatcherTimer timer;
+		try
+		{
+			timer = await CreateSilenceTimer(options, token);
+		}
+		catch (OperationCanceledException) when (!ReferenceEquals(recognizer, speechRecognizer))
+		{
+			// A stop released this start while it waited, so cancelling its token afterwards is not a failure of the start: the failure handling
+			// of StartListenAsync would stop the recognition of a newer start
+			return;
+		}
 
 		// Off the main thread the start waits here for the main thread, and a stop meanwhile releases what the start created. The released start
 		// ends without a recognition and without an exception, so that the failure handling of StartListenAsync stops nothing, and its timer
