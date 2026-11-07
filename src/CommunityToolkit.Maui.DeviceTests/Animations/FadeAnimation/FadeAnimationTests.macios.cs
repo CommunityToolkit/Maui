@@ -5,7 +5,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class FadeAnimationTests
 {
-	readonly ReduceMotionTickerOverride reduceMotionOverride = new();
+	readonly SystemAnimationsTickerOverride reduceMotionOverride = new(static () => UIAccessibility.IsReduceMotionEnabled);
 
 	static double GetNativeOpacity(IPlatformViewHandler handler) => ((UIView)(handler.ContainerView ?? handler.PlatformView!)).Alpha;
 

@@ -16,7 +16,7 @@ public abstract partial class TouchBehaviorTestBase
 
 	UITouch? activeTouch;
 	UIEvent? activeEvent;
-	readonly ReduceMotionTickerOverride reduceMotionOverride = new();
+	readonly SystemAnimationsTickerOverride reduceMotionOverride = new(static () => UIAccessibility.IsReduceMotionEnabled);
 
 	protected static bool SupportsNativePointerInput => true;
 
