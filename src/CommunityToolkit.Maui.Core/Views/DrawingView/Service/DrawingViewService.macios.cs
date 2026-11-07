@@ -194,7 +194,7 @@ public static partial class DrawingViewService
 			// CGGradient needs one color or more. A gradient without stops only comes from GradientPaint.SetGradientStops (the GradientStops setter
 			// replaces an empty array with two white stops): it is filled with the default background, as on Android.
 			case GradientPaint { GradientStops.Length: 0 }:
-				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColor());
+				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColorKeepingThePlatformColorAlive());
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 			case LinearGradientPaint linearGradientBrush:
