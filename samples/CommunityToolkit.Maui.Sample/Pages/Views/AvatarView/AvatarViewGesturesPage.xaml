@@ -81,7 +81,11 @@
                 Text="Swipe"
                 WidthRequest="48">
                 <mct:AvatarView.GestureRecognizers>
+                    <!--  One recognizer per direction: on iOS a recognizer whose Direction combines horizontal and vertical directions recognizes only the horizontal swipes  -->
                     <SwipeGestureRecognizer Direction="Left" Swiped="SwipeGestureRecognizer_Swiped" />
+                    <SwipeGestureRecognizer Direction="Right" Swiped="SwipeGestureRecognizer_Swiped" />
+                    <SwipeGestureRecognizer Direction="Up" Swiped="SwipeGestureRecognizer_Swiped" />
+                    <SwipeGestureRecognizer Direction="Down" Swiped="SwipeGestureRecognizer_Swiped" />
                 </mct:AvatarView.GestureRecognizers>
             </mct:AvatarView>
             <mct:AvatarView
