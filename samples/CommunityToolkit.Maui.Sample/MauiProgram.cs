@@ -160,6 +160,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<ToastPage, ToastViewModel>();
 
 		// Add AvatarView pages + ViewModels
+		services.AddTransientWithShellRoute<AvatarViewsPage, AvatarViewsViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewBindablePropertiesPage, AvatarViewBindablePropertiesViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewBordersPage, AvatarViewBordersViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewColorsPage, AvatarViewColorsViewModel>();
@@ -257,7 +258,9 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
+		services.AddTransientWithShellRoute<MapsPage, MapsViewModel>();
 		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
+		services.AddTransientWithShellRoute<MediaElementsPage, MediaElementsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 		services.AddTransientWithShellRoute<MediaElementFromStreamPage, MediaElementFromStreamViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
@@ -266,6 +269,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupsPage, PopupsViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
+		services.AddTransientWithShellRoute<RatingViewsPage, RatingViewsViewModel>();
 		services.AddTransientWithShellRoute<RatingViewCsharpPage, RatingViewCsharpViewModel>();
 		services.AddTransientWithShellRoute<RatingViewShowcasePage, RatingViewShowcaseViewModel>();
 		services.AddTransientWithShellRoute<RatingViewXamlPage, RatingViewXamlViewModel>();
