@@ -819,6 +819,75 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		}, new CameraView { SelectedCamera = camera }, includeRecordAudio: true);
 	}
 
+	// CameraX closes the camera of the activity when another activity covers it (FileSaver's save dialog, Home) and opens it again with zoom
+	// ratio 1 when the activity starts, without the toolkit binding anything
+	[Fact]
+	public async Task ZoomFactorOfTheViewStillDescribesTheNativeZoomAfterAnotherActivityWasInFront()
+	{
+		SetupBuilder();
+		var camera = (await GetRealCamerasAsync()).FirstOrDefault(camera => camera.MaximumZoomFactor > 1f);
+		Skip.If(camera is null, "No camera of this device can zoom in.");
+		var ratio = Math.Min(2f, camera.MaximumZoomFactor);
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			using var errors = new CameraErrorRecorder(host.View);
+			host.View.ZoomFactor = ratio;
+			await WaitForNativeZoomAsync(camera.DeviceId, ratio);
+
+			await using (await FilesPickerSession.StartAsync())
+			{
+				await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+				await WaitForNativeZoomAsync(camera.DeviceId, 1f, message: $"CameraX did not reset the zoom ratio of camera {camera.DeviceId} when the activity stopped.");
+			}
+
+			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
+			await WaitForStreamingAsync(host.PreviewView);
+
+			Assert.Equal(ratio, host.View.ZoomFactor);
+			await WaitForNativeZoomAsync(camera.DeviceId, ratio,
+				message: $"After another activity was in front the native zoom ratio of camera {camera.DeviceId} is not CameraView.ZoomFactor ({host.View.ZoomFactor}).");
+			Assert.Empty(errors.Errors);
+		}, new CameraView { SelectedCamera = camera });
+	}
+
+	// A camera that is bound again while the activity is stopped is not active, so CameraX rejects the zoom that the bind requests and opens the
+	// camera with zoom ratio 1 when the activity starts
+	[Fact]
+	public async Task ZoomFactorOfTheViewStillDescribesTheNativeZoomAfterSetExtensionModeWhileAnotherActivityWasInFront()
+	{
+		SetupBuilder();
+		var camera = (await GetRealCamerasAsync()).FirstOrDefault(camera => camera.MaximumZoomFactor > 1f);
+		Skip.If(camera is null, "No camera of this device can zoom in.");
+		var ratio = Math.Min(2f, camera.MaximumZoomFactor);
+
+		await RunWithCameraViewAsync(async host =>
+		{
+			using var errors = new CameraErrorRecorder(host.View);
+			host.View.ZoomFactor = ratio;
+			await WaitForNativeZoomAsync(camera.DeviceId, ratio);
+
+			await using (await FilesPickerSession.StartAsync())
+			{
+				await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+				await host.View.SetExtensionMode(ExtensionMode.None).WaitAsync(CameraTimeout);
+
+				Assert.True(await IsNativelyBoundAsync(host.Native<Preview>("cameraPreview") ?? throw new InvalidOperationException("The manager has no Preview.")),
+					"SetExtensionMode did not bind the use cases again while the activity was stopped.");
+				await WaitForNativeZoomAsync(camera.DeviceId, 1f, message: $"CameraX applied the zoom to camera {camera.DeviceId} while the activity was stopped.");
+				Assert.Equal("CLOSED", await GetNativeCameraStateAsync(camera.DeviceId));
+			}
+
+			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
+			await WaitForStreamingAsync(host.PreviewView);
+
+			Assert.Equal(ratio, host.View.ZoomFactor);
+			await WaitForNativeZoomAsync(camera.DeviceId, ratio,
+				message: $"After SetExtensionMode while another activity was in front the native zoom ratio of camera {camera.DeviceId} is not CameraView.ZoomFactor ({host.View.ZoomFactor}).");
+			Assert.Empty(errors.Errors);
+		}, new CameraView { SelectedCamera = camera });
+	}
+
 	[Fact]
 	public async Task TorchOfTheViewStillDescribesTheNativeTorchAfterARecording()
 	{

@@ -575,12 +575,15 @@ partial class CameraManager
 		camera = boundCamera;
 		cameraControl = boundCamera.CameraControl;
 
-		// CameraX starts a camera that is bound again with its defaults (zoom ratio 1, torch off). Its camera thread resets the published
-		// zoom state when it detaches the use cases, which can come after this zoom request was published (the request itself still reaches
-		// the camera), so the zoom of the view is requested again once CameraX answered.
-		cameraControl?.SetZoomRatio(cameraView.ZoomFactor)?.AddListener(new Runnable(() => UpdateZoom(cameraView.ZoomFactor)), ContextCompat.GetMainExecutor(context));
+		// CameraX starts a camera that is bound again with its defaults (zoom ratio 1, torch off)
+		RequestZoomOfTheView();
 		UpdateIsTorchOn(cameraView.IsTorchOn);
 	}
+
+	// CameraX's camera thread publishes zoom ratio 1 when it detaches the use cases, which can come after this zoom request was published (the
+	// request itself still reaches the camera), so the zoom of the view is requested again once CameraX answered
+	void RequestZoomOfTheView() =>
+		cameraControl?.SetZoomRatio(cameraView.ZoomFactor)?.AddListener(new Runnable(() => UpdateZoom(cameraView.ZoomFactor)), ContextCompat.GetMainExecutor(context));
 
 	Task RebindCurrentSessionAsync(CancellationToken token) => BindSessionAsync(null, token);
 
@@ -742,12 +745,31 @@ partial class CameraManager
 	bool IsCameraPermissionGranted() =>
 		ContextCompat.CheckSelfPermission(context, Android.Manifest.Permission.Camera) is Android.Content.PM.Permission.Granted;
 
-	void OnActivityResumed()
+	void OnActivityResumed(bool wasStopped)
 	{
+		if (wasStopped)
+		{
+			RestoreZoomOfTheReopenedCamera();
+		}
+
 		if (isWaitingForCameraPermission && IsCameraPermissionGranted())
 		{
 			StartCameraPreviewWithTheGrantedPermission();
 		}
+	}
+
+	// CameraX closes the camera of a stopped activity, which resets its zoom ratio to 1, and opens it again when the activity starts, while
+	// ZoomFactor keeps the zoom of the view. The activity resumes after CameraX queued the restart on its camera thread, where this request
+	// follows it. Only bound use cases are opened again: a preview that the app stopped stays closed, and use cases that are being replaced get
+	// the zoom of the view when they are bound (OnCameraBound).
+	void RestoreZoomOfTheReopenedCamera()
+	{
+		if (cameraView.ZoomFactor is 1.0f || cameraPreview is null || processCameraProvider?.IsBound(cameraPreview) is not true)
+		{
+			return;
+		}
+
+		RequestZoomOfTheView();
 	}
 
 	// No caller awaits a start that the resume of the activity retries, so an exception that escaped would end the app: its failure is reported
@@ -1276,13 +1298,22 @@ partial class CameraManager
 		}
 	}
 
-	sealed class ActivityResumedObserver(Action onResumed) : Object, ILifecycleEventObserver
+	// Tells whether the activity stopped since it last resumed: CameraX closed the camera then, and opened it again when the activity started
+	sealed class ActivityResumedObserver(Action<bool> onResumed) : Object, ILifecycleEventObserver
 	{
+		bool wasStopped;
+
 		public void OnStateChanged(ILifecycleOwner source, Lifecycle.Event e)
 		{
-			if (e.Equals(Lifecycle.Event.OnResume))
+			if (e.Equals(Lifecycle.Event.OnStop))
 			{
-				onResumed.Invoke();
+				wasStopped = true;
+			}
+			else if (e.Equals(Lifecycle.Event.OnResume))
+			{
+				var resumedAfterStop = wasStopped;
+				wasStopped = false;
+				onResumed.Invoke(resumedAfterStop);
 			}
 		}
 	}
