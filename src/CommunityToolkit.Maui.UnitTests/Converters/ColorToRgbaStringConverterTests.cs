@@ -196,6 +196,21 @@ public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStri
 	}
 
 	[Theory]
+	[InlineData("RGBA(255,0,0,0,5)", 1f, 0f, 0f, 0.5f)]
+	[InlineData("RGBA(255, 0, 0, 0,5)", 1f, 0f, 0f, 0.5f)]
+	[InlineData("RGBA(255,0,0,1,5)", 1f, 0f, 0f, 1f)]
+	[InlineData("RGBA(255,0,0,-0,5)", 1f, 0f, 0f, 0f)]
+	public void ColorToRgbaStringConverter_ConvertBack_CommaDecimalInput_ParsesAndClampsAlpha(string colorString, float red, float green, float blue, float alpha)
+	{
+		var result = new ColorToRgbaStringConverter().ConvertBackTo(colorString, new System.Globalization.CultureInfo("de-DE"));
+
+		Assert.Equal(red, result.Red, 2);
+		Assert.Equal(green, result.Green, 2);
+		Assert.Equal(blue, result.Blue, 2);
+		Assert.Equal(alpha, result.Alpha, 2);
+	}
+
+	[Theory]
 	[InlineData("RGBA(256,0,0,0,5)")]
 	[InlineData("RGBA(255,0,0,abc)")]
 	[InlineData("RGBA(255,0,0)")]

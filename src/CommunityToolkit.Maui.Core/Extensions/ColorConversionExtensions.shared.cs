@@ -44,7 +44,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
-	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/>).
+	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/> in en-US). The numbers are formatted with <see cref="CultureInfo.CurrentCulture"/>, the same as passing <see langword="null"/> to <see cref="ToCmykString(Color, CultureInfo?)"/>.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykString(this Color color) => color.ToCmykString(null);
@@ -72,7 +72,7 @@ public static class ColorConversionExtensions
 	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
-	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(0%,100%,100%,0%,1)</c> for <see cref="Colors.Red"/>).
+	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(0%,100%,100%,0%,1)</c> for <see cref="Colors.Red"/> in en-US).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo = null)
@@ -88,6 +88,7 @@ public static class ColorConversionExtensions
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
 	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/> in en-US).
+	/// The numbers are formatted with <see cref="CultureInfo.CurrentCulture"/>, the same as passing <see langword="null"/> to <see cref="ToHslString(Color, CultureInfo?)"/>.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslString(this Color color) => color.ToHslString(null);
@@ -115,7 +116,7 @@ public static class ColorConversionExtensions
 	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(360,100%,50%,1)</c> for <see cref="Colors.Red"/>).
+	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(360,100%,50%,1)</c> for <see cref="Colors.Red"/> in en-US).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslaString(this Color color, CultureInfo? cultureInfo = null)

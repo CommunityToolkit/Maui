@@ -179,10 +179,4 @@ public class ColorToCmykStringConverterTests : BaseOneWayConverterTest<ColorToCm
 			CultureInfo.CurrentCulture = originalCulture;
 		}
 	}
-
-	[Fact]
-	public void ToCmykString_WithCulture_FormatsPercentWithThatCulture()
-	{
-		Assert.Equal("CMYK(%0,%100,%100,%0)", Colors.Red.ToCmykString(new CultureInfo("tr-TR")));
-	}
 }

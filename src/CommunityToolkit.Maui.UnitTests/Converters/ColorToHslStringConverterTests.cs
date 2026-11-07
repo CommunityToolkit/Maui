@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using CommunityToolkit.Maui.Converters;
-using FluentAssertions.Equivalency;
 using CommunityToolkit.Maui.Core.Extensions;
+using FluentAssertions.Equivalency;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -176,11 +176,5 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		{
 			CultureInfo.CurrentCulture = originalCulture;
 		}
-	}
-
-	[Fact]
-	public void ToHslString_WithCulture_FormatsPercentWithThatCulture()
-	{
-		Assert.Equal("HSL(360,%100,%50)", Colors.Red.ToHslString(new CultureInfo("tr-TR")));
 	}
 }

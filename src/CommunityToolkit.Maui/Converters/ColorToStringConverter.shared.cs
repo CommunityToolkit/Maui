@@ -79,16 +79,16 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 		// The alpha's decimal separator can be a comma, so only the first three commas separate components.
 		var components = text[prefix.Length..^1].Split(',', 4);
 		if (components.Length is not 4
-			|| !byte.TryParse(components[0], NumberStyles.None, CultureInfo.InvariantCulture, out var red)
-			|| !byte.TryParse(components[1], NumberStyles.None, CultureInfo.InvariantCulture, out var green)
-			|| !byte.TryParse(components[2], NumberStyles.None, CultureInfo.InvariantCulture, out var blue)
+			|| !byte.TryParse(components[0], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture, out var red)
+			|| !byte.TryParse(components[1], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture, out var green)
+			|| !byte.TryParse(components[2], NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture, out var blue)
 			|| !float.TryParse(components[3], NumberStyles.Float, culture, out var alpha)
-			|| alpha is < 0 or > 1)
+			|| float.IsNaN(alpha))
 		{
 			return false;
 		}
 
-		color = Color.FromRgba(red / 255f, green / 255f, blue / 255f, alpha);
+		color = Color.FromRgba(red / 255f, green / 255f, blue / 255f, Math.Clamp(alpha, 0f, 1f));
 		return true;
 	}
 

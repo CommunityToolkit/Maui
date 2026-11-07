@@ -161,6 +161,29 @@ public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHs
 	}
 
 	[Fact]
+	public void ColorToHslaStringConverter_UsesPassedCultureForAllComponents()
+	{
+		var originalCulture = System.Globalization.CultureInfo.CurrentCulture;
+		try
+		{
+			System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+			var converter = new ColorToHslaStringConverter();
+			var color = Colors.Red.WithAlpha(0.5f);
+			var culture = new System.Globalization.CultureInfo("de-DE");
+
+			var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+			var resultConvertFrom = converter.ConvertFrom(color, culture);
+
+			Assert.Equal("HSLA(360,100 %,50 %,0,5)", resultConvert);
+			Assert.Equal("HSLA(360,100 %,50 %,0,5)", resultConvertFrom);
+		}
+		finally
+		{
+			System.Globalization.CultureInfo.CurrentCulture = originalCulture;
+		}
+	}
+
+	[Fact]
 	public void ColorToRgbStringConverterNullInputTest()
 	{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.

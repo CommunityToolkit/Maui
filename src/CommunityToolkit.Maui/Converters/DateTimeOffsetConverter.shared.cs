@@ -33,14 +33,7 @@ public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, Dat
 	/// <returns>The <see cref="DateTimeOffset"/> value.</returns>
 	public override DateTimeOffset ConvertBackTo(DateTime value, CultureInfo? culture = null)
 	{
-		var offset = value.Kind switch
-		{
-			DateTimeKind.Local => TimeZoneInfo.Local.GetUtcOffset(value),
-			DateTimeKind.Utc => TimeZoneInfo.Utc.GetUtcOffset(value),
-			_ => TimeSpan.Zero,
-		};
-
 		// A DateTime's components are always Gregorian, so culture.Calendar must not reinterpret them.
-		return value.Kind is DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset);
+		return value.Kind is DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, TimeSpan.Zero);
 	}
 }

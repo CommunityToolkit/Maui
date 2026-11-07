@@ -1,10 +1,23 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Core.Extensions;
 using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class ColorConversionExtensionsTests : BaseTest
 {
 	const double tolerance = 0.000001;
+
+	[Fact]
+	public void ToCmykString_WithCulture_FormatsPercentWithThatCulture()
+	{
+		Assert.Equal("CMYK(%0,%100,%100,%0)", Colors.Red.ToCmykString(new CultureInfo("tr-TR")));
+	}
+
+	[Fact]
+	public void ToHslString_WithCulture_FormatsPercentWithThatCulture()
+	{
+		Assert.Equal("HSL(360,%100,%50)", Colors.Red.ToHslString(new CultureInfo("tr-TR")));
+	}
 
 	public static TheoryData<ColorTestDefinition> ColorTestData { get; } =
 	[
