@@ -365,7 +365,7 @@ jobs:
                 run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
 
             # A zipped artifact loses file modes (actions/upload-artifact, "Permission Loss"), and the app's executable must stay executable.
-            # The glob follows the repo's NetVersion and the runner's architecture instead of naming net10.0-ios/iossimulator-arm64.
+            # The glob follows the repo's NetVersion and the runner's architecture instead of naming net11.0-ios/iossimulator-arm64.
             -   name: Pack the app
                 shell: bash
                 run: |
@@ -398,7 +398,7 @@ jobs:
 
     # The app of device_tests_ios_app on the iOS versions that the xcode-27 image has no simulator runtime for (it has iOS 27.x only).
     # The macos-26 image has the iOS 26.2, 26.4 and 26.5 runtimes (its readme, "Installed Simulators"), so nothing is downloaded, and
-    # XHarness brings its own mlaunch, so the app that Xcode 27.1 built (minimum iOS 15.0) runs here under Xcode 26.x. No coverage:
+    # XHarness brings its own mlaunch, so the app that Xcode 27 built (minimum iOS 15.0) runs here under Xcode 26.x. No coverage:
     # device_tests_ios collects the iOS coverage.
     device_tests_ios_runtime:
         name: Device Tests (iOS ${{ matrix.ios-version }} Simulator)
@@ -429,7 +429,8 @@ jobs:
                 with:
                     xcode-version: ${{ matrix.xcode }}
 
-            # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework.
+            # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework. Xcode 26.x
+            # is fine for that: the .NET 11 workload checks for its exact Xcode (E0191, see shared.env) only in a build, and this job builds nothing.
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
                 with:
@@ -444,7 +445,7 @@ jobs:
                     echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
                     wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
 
-            # Same key as the xcode-27 jobs: both images have .NET SDK 10.0.403 today, so this restores their cache.
+            # Same key as the xcode-27 jobs, which run the .NET 11 SDK that setup-dotnet installs, as this job does: it restores their cache.
             -   name: Cache .NET workload packs
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
