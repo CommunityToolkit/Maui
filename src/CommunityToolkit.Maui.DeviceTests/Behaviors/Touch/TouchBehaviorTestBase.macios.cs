@@ -14,9 +14,9 @@ public abstract partial class TouchBehaviorTestBase
 {
 	const string objCLibrary = "/usr/lib/libobjc.dylib";
 
+	readonly SystemAnimationsTickerOverride reduceMotionOverride = new(static () => UIAccessibility.IsReduceMotionEnabled);
 	UITouch? activeTouch;
 	UIEvent? activeEvent;
-	readonly SystemAnimationsTickerOverride reduceMotionOverride = new(static () => UIAccessibility.IsReduceMotionEnabled);
 
 	protected static bool SupportsNativePointerInput => true;
 
