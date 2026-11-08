@@ -123,6 +123,27 @@ public class GeneratorCultureTests
 		Assert.DoesNotContain("protectedorinternal", allText, StringComparison.Ordinal);
 	}
 
+	// The generated code is CRLF-formatted, but a literal copied from the user's code is a value and must keep the line endings of the user's source
+	[Theory]
+	[InlineData("\n")]
+	[InlineData("\r\n")]
+	public void MultiLineVerbatimInitializer_KeepsItsLineEndings(string eol)
+	{
+		var source = "using CommunityToolkit.Maui;" + eol
+			+ "using Microsoft.Maui.Controls;" + eol
+			+ "namespace TestNamespace;" + eol
+			+ "public partial class TestView : View" + eol
+			+ "{" + eol
+			+ "\t[BindableProperty]" + eol
+			+ "\tpublic partial string Text { get; set; } = @\"line1" + eol + "line2\";" + eol
+			+ "}" + eol;
+
+		var generatedText = string.Concat(RunGenerators(source, CultureInfo.InvariantCulture, out var errors).Values);
+
+		Assert.Empty(errors);
+		Assert.Contains("@\"line1" + eol + "line2\"", generatedText, StringComparison.Ordinal);
+	}
+
 	static Dictionary<string, string> RunGenerators(string source, CultureInfo culture, out List<Diagnostic> errors)
 	{
 		var originalCulture = CultureInfo.CurrentCulture;

@@ -42,7 +42,8 @@ public abstract class BaseTest
 
 		foreach (var generatedFile in expectedGeneratedFilesList.Where(static x => !string.IsNullOrEmpty(x.GeneratedFile)))
 		{
-			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(generatedFile.GeneratedFile, System.Text.Encoding.UTF8);
+			// The generated code is formatted with CRLF, while the expected raw strings carry the line endings of the checkout (LF on macOS and Linux)
+			var expectedGeneratedText = Microsoft.CodeAnalysis.Text.SourceText.From(generatedFile.GeneratedFile.ReplaceLineEndings("\r\n"), System.Text.Encoding.UTF8);
 			var generatedFilePath = Path.Combine(sourceGeneratorNamespace, sourceGeneratorFullName, generatedFile.FileName);
 			test.TestState.GeneratedSources.Add((generatedFilePath, expectedGeneratedText));
 		}
