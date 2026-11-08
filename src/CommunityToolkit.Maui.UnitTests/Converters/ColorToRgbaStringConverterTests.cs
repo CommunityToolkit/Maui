@@ -182,6 +182,8 @@ public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStri
 	[InlineData("fr-FR")]
 	[InlineData("en-US")]
 	[InlineData("uk-UA")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
 	public void ColorToRgbaStringConverter_RoundTripsWithCulture(string cultureName)
 	{
 		var culture = new System.Globalization.CultureInfo(cultureName);
@@ -232,6 +234,23 @@ public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStri
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	[InlineData("en-US")]
+	public void ColorToRgbaStringConverter_NullCulture_RoundTripsWithCurrentCulture(string cultureName)
+	{
+		Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(cultureName);
+		var converter = new ColorToRgbaStringConverter();
+		var color = new Color(1f, 0f, 0f, 0.5f);
+
+		var colorString = converter.ConvertFrom(color, null);
+		var result = converter.ConvertBackTo(colorString, null);
+
+		AssertColorComparison(color, result);
+		Assert.Equal(color.Alpha, result.Alpha, 2);
 	}
 
 	static void AssertColorComparison(Color expectedResult, Color? result)

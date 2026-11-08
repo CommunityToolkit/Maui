@@ -56,8 +56,8 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 			return color;
 		}
 
-		// ConvertFrom writes the alpha with the culture ("RGBA(255,0,0,0,5)" in de-DE), which the invariant Color.TryParse rejects.
-		return culture is not null && TryParseCultureAwareRgba(value, culture, out color)
+		// ConvertFrom writes the alpha with the culture ("RGBA(255,0,0,0,5)" in de-DE), which the invariant Color.TryParse rejects. A null culture means CurrentCulture here too, as in ConvertFrom.
+		return TryParseCultureAwareRgba(value, culture ?? CultureInfo.CurrentCulture, out color)
 			? color
 			: DefaultConvertBackReturnValue;
 	}
