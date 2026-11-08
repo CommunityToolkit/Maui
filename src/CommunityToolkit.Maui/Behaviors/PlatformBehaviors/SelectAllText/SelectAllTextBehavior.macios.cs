@@ -9,17 +9,35 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 {
+	// Static, so that the handler removed when the behavior detaches is the one added when it attached.
+	// Internal for the device tests: .NET MAUI raises Focused only with IsFocused true, so only a direct call reaches the other branch.
+	internal static void OnTextViewFocussed(object? sender, FocusEventArgs e)
+	{
+		if (e.IsFocused && sender is VisualElement { Handler.PlatformView: UITextView textView })
+		{
+			textView.SelectAll(textView);
+		}
+	}
+
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(InputView bindable, UIView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		ApplyBehaviorToControl(true, bindable, platformView);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> or <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(InputView bindable, UIView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		ApplyBehaviorToControl(false, bindable, platformView);
@@ -33,8 +51,8 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 				ApplyToTextField(textField, apply);
 				break;
 
-			case (Editor editor, UITextView uiTextView):
-				ApplyToTextView(editor, uiTextView, apply);
+			case (Editor editor, UITextView):
+				ApplyToTextView(editor, apply);
 				break;
 
 			default:
@@ -70,7 +88,7 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 	}
 
 	// MacCatalyst support blocked: https://github.com/xamarin/xamarin-macios/issues/15156
-	static void ApplyToTextView(VisualElement mauiControl, UITextView textView, bool shouldApply)
+	static void ApplyToTextView(VisualElement mauiControl, bool shouldApply)
 	{
 		if (OperatingSystem.IsMacCatalyst())
 		{
@@ -84,14 +102,6 @@ public class SelectAllTextBehavior : BasePlatformBehavior<InputView>
 		else
 		{
 			mauiControl.Focused -= OnTextViewFocussed;
-		}
-
-		void OnTextViewFocussed(object? sender, FocusEventArgs e)
-		{
-			if (e.IsFocused)
-			{
-				textView.SelectAll(textView);
-			}
 		}
 	}
 }

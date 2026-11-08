@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Core;
@@ -81,6 +82,25 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Gets or sets the source of the media to play.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A source without data (a <see cref="UriMediaSource"/> without <see cref="UriMediaSource.Uri"/>, a <see cref="FileMediaSource"/> or
+	/// <see cref="ResourceMediaSource"/> without a path, a <see cref="StreamMediaSource"/> without a stream) empties the player and reports
+	/// <see cref="MediaElementState.None"/>, like a <see langword="null"/> source. On iOS and Mac Catalyst, a <see cref="ResourceMediaSource"/> whose
+	/// file is not in the app bundle, or whose path has no extension, is handled the same way, and a warning is logged. A kind of
+	/// <see cref="MediaSource"/> that the platform does not support is reported through <see cref="MediaFailed(MediaFailedEventArgs)"/>.
+	/// </para>
+	/// <para>
+	/// A source that cannot be applied or played is reported through <see cref="MediaFailed(MediaFailedEventArgs)"/>. The change of the source raises
+	/// events while it applies the source: <see cref="StateChanged"/> (for example for <see cref="MediaElementState.Opening"/>), PropertyChanging and
+	/// PropertyChanged (for example of <see cref="Position"/> or <see cref="Duration"/>), MediaFailed for a source that cannot be applied and, on
+	/// Android, MediaOpened. An exception thrown by one of their handlers is not a failure of the source, and does not reach the code that set the
+	/// source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the source, and once the change has
+	/// ended the first of these exceptions is reported through MediaFailed, without setting <see cref="CurrentState"/> to
+	/// <see cref="MediaElementState.Failed"/> (see <see cref="MediaFailed(MediaFailedEventArgs)"/>). The events that the player raises afterwards,
+	/// for example MediaOpened on iOS, Mac Catalyst and Windows, are not part of the change.
+	/// </para>
+	/// </remarks>
 	MediaSource? Source { get; set; }
 
 	/// <summary>
@@ -121,6 +141,17 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// Occurs when the media has failed loading.
 	/// </summary>
 	/// <param name="args">Event arguments containing extra information about this event.</param>
+	/// <remarks>
+	/// <para>
+	/// A source that cannot be applied, for example a stream that cannot be read, is reported like a source that cannot be played.
+	/// </para>
+	/// <para>
+	/// The event is also raised, once per change of the source, when event handlers threw exceptions while the source changed (see
+	/// <see cref="Source"/>). Its <see cref="MediaFailedEventArgs.ErrorMessage"/> then names the first exception: its type and its message. The source
+	/// stays applied and <see cref="CurrentState"/> is not set to <see cref="MediaElementState.Failed"/>. An exception that a MediaFailed handler throws
+	/// while such an exception is reported is only logged.
+	/// </para>
+	/// </remarks>
 	void MediaFailed(MediaFailedEventArgs args);
 
 	/// <summary>
@@ -136,19 +167,40 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// <summary>
 	/// Starts playing the loaded media.
 	/// </summary>
+	/// <remarks>Media that has played to its end starts again from its start.</remarks>
 	void Play();
 
 	/// <summary>
 	/// Seek to a specific position in the currently playing media.
 	/// </summary>
 	/// <param name="position">The requested position to seek to.</param>
-	/// <param name="token"><see cref="CancellationToken"/>.</param>
-	/// <remarks>If <paramref name="position"/> is outside of the range of the current media item, nothing will happen.</remarks>
+	/// <param name="token">
+	/// <see cref="CancellationToken"/> that ends the wait for the seek, with an <see cref="OperationCanceledException"/>. The seek itself goes on, and
+	/// whether it then ends or fails is not reported to this call.
+	/// </param>
+	/// <remarks>
+	/// <para>
+	/// A <paramref name="position"/> outside of the current media item is clamped to it: a position before the start seeks to the start, and a
+	/// position beyond <see cref="Duration"/> seeks to the end, like <see cref="Duration"/> itself. The seek then completes and raises
+	/// <see cref="MediaElement.SeekCompleted"/> like any other.
+	/// </para>
+	/// <para>
+	/// On Android, iOS and Mac Catalyst the returned task completes, and <see cref="MediaElement.SeekCompleted"/> is raised, once the seek has
+	/// ended, also when something else interrupted it: <see cref="Stop"/>, another seek, the playback controls or the restart of a looping media.
+	/// </para>
+	/// <para>
+	/// On Windows the returned task completes once the player has been given the position, and <see cref="MediaElement.SeekCompleted"/> is
+	/// raised when the player reports that the seek has ended. Nothing is sought while no media is loaded or the loaded media cannot seek: the
+	/// returned task completes, and <see cref="MediaElement.SeekCompleted"/> is not raised.
+	/// </para>
+	/// </remarks>
+	/// <exception cref="InvalidOperationException">The platform player cannot seek yet: it is not initialized, or (on iOS and Mac Catalyst) it has no media item or its media is not ready to play.</exception>
 	Task SeekTo(TimeSpan position, CancellationToken token = default);
 
 	/// <summary>
 	/// Stops playing the currently playing media and resets the <see cref="Position"/>.
 	/// </summary>
+	/// <remarks>On Windows the position is reset only when the loaded media can seek.</remarks>
 	void Stop();
 
 	/// <summary>
@@ -161,4 +213,10 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	/// </summary>
 	/// <param name="newState">The new state the <see cref="MediaElement"/> transitioned to.</param>
 	internal void CurrentStateChanged(MediaElementState newState);
+
+	/// <summary>
+	/// Runs the platform's update for a change of <see cref="Source"/>, catching the exceptions of the event handlers that it raises (see
+	/// <see cref="Source"/>).
+	/// </summary>
+	internal ValueTask RunSourceUpdate(Func<ValueTask> updateSource, ILogger logger);
 }

@@ -7,8 +7,11 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>
 {
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement MediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateShouldLoopPlayback();
 	}
 
@@ -25,8 +28,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		platformView.Dispose();
 		base.DisconnectHandler(platformView);
 	}

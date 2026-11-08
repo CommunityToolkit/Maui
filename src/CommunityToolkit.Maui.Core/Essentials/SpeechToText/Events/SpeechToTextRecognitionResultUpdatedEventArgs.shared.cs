@@ -8,8 +8,11 @@ public class SpeechToTextRecognitionResultUpdatedEventArgs : EventArgs
 	/// <summary>
 	/// Initialize a new instance of <see cref="SpeechToTextRecognitionResultUpdatedEventArgs"/>
 	/// </summary>
+	/// <param name="recognitionResult">Speech recognition result</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="recognitionResult"/> is null.</exception>
 	public SpeechToTextRecognitionResultUpdatedEventArgs(string recognitionResult)
 	{
+		ArgumentNullException.ThrowIfNull(recognitionResult);
 		RecognitionResult = recognitionResult;
 	}
 

@@ -12,16 +12,20 @@ public static partial class ColorAnimationExtensions
 	/// </summary>
 	/// <param name="element"></param>
 	/// <param name="color">The target color to animate the VisualElement's BackgroundColor to</param>
-	/// <param name="rate">The time, in milliseconds, between the frames of the animation</param>
+	/// <param name="rate">The time, in milliseconds, between the frames of the animation. Must be greater than 0.</param>
 	/// <param name="length">The duration, in milliseconds, of the animation</param>
 	/// <param name="easing">The easing function to be used in the animation</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Value indicating if the animation completed successfully or not</returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rate"/> is 0. It is thrown by the call itself, before the animation starts.</exception>
 	public static Task<bool> BackgroundColorTo(this VisualElement element, Color color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 	{
 		token.ThrowIfCancellationRequested();
 		ArgumentNullException.ThrowIfNull(element);
 		ArgumentNullException.ThrowIfNull(color);
+
+		// .NET MAUI divides by the rate on every frame of the animation, on the platform's animation ticker: a rate of 0 would throw there, where no caller can catch it, and terminate the app
+		ArgumentOutOfRangeException.ThrowIfZero(rate);
 
 		// Although BackgroundColor is defined as not-nullable, it CAN be null
 		// If null => set it to Transparent as Animation will crash on null BackgroundColor
