@@ -87,7 +87,7 @@ jobs:
                 uses: ./.github/actions/load-shared-env
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -225,7 +225,7 @@ jobs:
 
             # The app builds against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -329,7 +329,7 @@ jobs:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -431,7 +431,7 @@ jobs:
 
             # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework.
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -520,7 +520,7 @@ jobs:
 
             # The app builds against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -695,7 +695,7 @@ jobs:
                     Get-WindowsFeature -Name Server-Media-Foundation | Format-Table -AutoSize Name, InstallState
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
