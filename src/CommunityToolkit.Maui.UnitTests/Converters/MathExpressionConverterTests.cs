@@ -270,7 +270,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = new MathExpressionConverter().ConvertFrom(1d, "3.5 + x", new CultureInfo(currentCultureName));
 
-		((double)result!).Should().BeApproximately(4.5d, tolerance);
+		Assert.IsType<double>(result).Should().BeApproximately(4.5d, tolerance);
 	}
 
 	[Theory]
@@ -281,7 +281,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 		Thread.CurrentThread.CurrentCulture = new CultureInfo(currentCultureName);
 		var converter = new MathExpressionConverter();
 
-		((double)converter.ConvertFrom(0d, "PI")!).Should().BeApproximately(Math.PI, tolerance);
+		Assert.IsType<double>(converter.ConvertFrom(0d, "PI")).Should().BeApproximately(Math.PI, tolerance);
 		converter.ConvertFrom(0d, "IF(true, 1, 2)").Should().Be(1d);
 	}
 
@@ -292,7 +292,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = new MathExpressionConverter().ConvertFrom("3,5", "x * 2", new CultureInfo("de-DE"));
 
-		((double)result!).Should().BeApproximately(7d, tolerance);
+		Assert.IsType<double>(result).Should().BeApproximately(7d, tolerance);
 	}
 
 	[Fact]
@@ -302,7 +302,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = new MathExpressionConverter().ConvertFrom("3,5", "x * 2");
 
-		((double)result!).Should().BeApproximately(7d, tolerance);
+		Assert.IsType<double>(result).Should().BeApproximately(7d, tolerance);
 	}
 
 	[Fact]
@@ -320,7 +320,7 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = new MultiMathExpressionConverter().Convert(["3,5", "2"], typeof(double), "x0 * x1", new CultureInfo("de-DE"));
 
-		((double)result!).Should().BeApproximately(7d, tolerance);
+		Assert.IsType<double>(result).Should().BeApproximately(7d, tolerance);
 	}
 
 	[Fact]
@@ -330,6 +330,6 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 
 		var result = new MultiMathExpressionConverter().Convert(["3,5", "2"], typeof(double), "x0 * x1", null);
 
-		((double)result!).Should().BeApproximately(7d, tolerance);
+		Assert.IsType<double>(result).Should().BeApproximately(7d, tolerance);
 	}
 }
