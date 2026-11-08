@@ -429,7 +429,8 @@ public partial class StatusBarTests
 	}
 
 	// The replacement runs once per process. Run again (its guard taken away), it finds the toolkit's implementations in place and keeps the ones that it
-	// replaced: Default calls UIKit's implementation, not the toolkit's own again until the stack overflows.
+	// replaced: Default calls UIKit's implementation, not the toolkit's own again until the stack overflows. UIKit's UINavigationController returns
+	// DarkContent or LightContent on iOS 26, not Default.
 	[Fact]
 	public async Task ASecondReplacementKeepsTheReplacedImplementations()
 	{
@@ -456,7 +457,7 @@ public partial class StatusBarTests
 			StatusBar.SetStyle(StatusBarStyle.Default);
 
 			Assert.Equal(UIStatusBarStyle.Default, viewController.PreferredStatusBarStyle());
-			Assert.Equal(UIStatusBarStyle.Default, navigationController.PreferredStatusBarStyle());
+			Assert.Equal(IosStatusBarStyle.UIKitStyle(navigationController), navigationController.PreferredStatusBarStyle());
 		});
 	}
 

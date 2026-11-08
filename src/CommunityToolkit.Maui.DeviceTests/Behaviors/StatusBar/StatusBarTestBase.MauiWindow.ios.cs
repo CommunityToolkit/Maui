@@ -61,15 +61,17 @@ public abstract partial class StatusBarTestBase
 	protected Task RunInMauiWindowAsync(StatusBarWindowPage kind, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		RunInMauiWindowAsync(CreateRootPage(kind, page), kind is StatusBarWindowPage.ModalPage, page, action);
 
+	// Default gives the view controller its own style back (IosStatusBarStyle.UIKitStyle), which on iOS 26 is not Default for a UINavigationController.
 	protected static async Task AssertStatusBarStyleAsync(HostedMauiWindow mauiWindow, UIStatusBarStyle expected)
 	{
 		var provider = IosStatusBarStyle.StyleProvider(mauiWindow.PlatformWindow);
+		var expectedStyle = expected is UIStatusBarStyle.Default ? IosStatusBarStyle.UIKitStyle(provider) : expected;
 		var preferred = provider.PreferredStatusBarStyle();
-		Assert.True(preferred == expected, $"{provider.GetType().Name}, which UIKit asks for the status bar style of the window, returned {IosStatusBarStyle.Name(preferred)} instead of {IosStatusBarStyle.Name(expected)}.");
+		Assert.True(preferred == expectedStyle, $"{provider.GetType().Name}, which UIKit asks for the status bar style of the window, returned {IosStatusBarStyle.Name(preferred)} instead of {IosStatusBarStyle.Name(expectedStyle)}{(expected is UIStatusBarStyle.Default ? ", the style of UIKit's own implementation" : string.Empty)}.");
 
 		var statusBarManager = mauiWindow.Scene.StatusBarManager ?? throw new InvalidOperationException("The scene has no status bar.");
-		var isApplied = await AssertHelpers.Wait(() => statusBarManager.StatusBarStyle == expected, timeout: 3000, interval: 20);
-		Assert.True(isApplied, $"UIKit shows {IosStatusBarStyle.Name(statusBarManager.StatusBarStyle)} in the status bar of the scene instead of {IosStatusBarStyle.Name(expected)}.");
+		var isApplied = await AssertHelpers.Wait(() => statusBarManager.StatusBarStyle == expectedStyle, timeout: 3000, interval: 20);
+		Assert.True(isApplied, $"UIKit shows {IosStatusBarStyle.Name(statusBarManager.StatusBarStyle)} in the status bar of the scene instead of {IosStatusBarStyle.Name(expectedStyle)}.");
 
 		// Default is not read from the screen: UIKit chooses its color itself (on iOS 27 the content kept its previous color over the same page).
 		if (expected is UIStatusBarStyle.LightContent or UIStatusBarStyle.DarkContent)
