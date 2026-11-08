@@ -44,11 +44,13 @@ public class MediaSourceConverterTests : BaseTest
 		mediaSource.Should().BeAssignableTo<FileMediaSource>();
 	}
 
-	[Fact]
-	public void UppercasePrefixesAreRecognizedInTurkish()
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void UppercasePrefixesAreRecognizedInTurkish(string cultureName)
 	{
 		// The I in FILESYSTEM lower-cases to a dotless ı with a culture-sensitive lower-casing, so it is the canary for the prefix checks.
-		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+		Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
 		var mediaSourceConverter = new MediaSourceConverter();
 
 		var resource = mediaSourceConverter.ConvertFrom(null, CultureInfo.InvariantCulture, "EMBED://file.mp4");

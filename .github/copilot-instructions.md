@@ -33,6 +33,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Write comments only to explain **why** (a non-intuitive decision, a platform quirk or workaround, code that looks out of scope); never to explain **what** the code does. Use descriptive names instead.
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
+* Code that reads or formats with **CurrentCulture** or takes a **CultureInfo** must be tested in Turkish (tr-TR, az-Latn-AZ) and the other notorious cultures; see `.github/instructions/culture.instructions.md`.
 
 ### Element Positioning (enforced as build warnings)
 StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **build warnings** via `.editorconfig`. Always write new and modified C# code in the correct order so no warnings are introduced:
