@@ -11,8 +11,15 @@ public static class AppThemeObjectExtensions
 	/// <param name="self">The <see cref="BindableObject"/> on which the <paramref name="appThemeColor"/> will be applied to the provided property in <paramref name="targetProperty"/>.</param>
 	/// <param name="targetProperty">The <see cref="BindableProperty"/> on which to set the <paramref name="appThemeColor"/>.</param>
 	/// <param name="appThemeColor">The <see cref="AppThemeColor"/> to apply to <paramref name="targetProperty"/>.</param>
-	public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, AppThemeColor appThemeColor) =>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="self"/>, <paramref name="targetProperty"/> or <paramref name="appThemeColor"/> is <see langword="null"/>.</exception>
+	public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, AppThemeColor appThemeColor)
+	{
+		ArgumentNullException.ThrowIfNull(self);
+		ArgumentNullException.ThrowIfNull(targetProperty);
+		ArgumentNullException.ThrowIfNull(appThemeColor);
+
 		self.SetBinding(targetProperty, appThemeColor.GetBinding(targetProperty));
+	}
 
 	/// <summary>
 	/// Sets the <see cref="AppThemeObject"/> to the provided <see cref="BindableProperty"/> of the given <see cref="BindableObject"/>.
@@ -20,6 +27,13 @@ public static class AppThemeObjectExtensions
 	/// <param name="self">The <see cref="BindableObject"/> on which the <paramref name="appThemeResource"/> will be applied to the provided property in <paramref name="targetProperty"/>.</param>
 	/// <param name="targetProperty">The <see cref="BindableProperty"/> on which to set the <paramref name="appThemeResource"/>.</param>
 	/// <param name="appThemeResource">The <see cref="AppThemeObject"/> to apply to <paramref name="targetProperty"/>.</param>
-	public static void SetAppTheme<T>(this BindableObject self, BindableProperty targetProperty, AppThemeObject<T> appThemeResource) =>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="self"/>, <paramref name="targetProperty"/> or <paramref name="appThemeResource"/> is <see langword="null"/>.</exception>
+	public static void SetAppTheme<T>(this BindableObject self, BindableProperty targetProperty, AppThemeObject<T> appThemeResource)
+	{
+		ArgumentNullException.ThrowIfNull(self);
+		ArgumentNullException.ThrowIfNull(targetProperty);
+		ArgumentNullException.ThrowIfNull(appThemeResource);
+
 		self.SetBinding(targetProperty, appThemeResource.GetBinding(targetProperty));
+	}
 }

@@ -11,9 +11,10 @@ public interface IFileSaver
 	/// Saves a file to a target folder on the file system
 	/// </summary>
 	/// <param name="initialPath">Initial path. Must not be null.</param>
-	/// <param name="fileName">File name with extension</param>
-	/// <param name="stream"><see cref="Stream"/></param>
+	/// <param name="fileName">File name with extension. Must not be null.</param>
+	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS")]
 	[SupportedOSPlatform("MacCatalyst")]
@@ -23,9 +24,10 @@ public interface IFileSaver
 	/// <summary>
 	/// Saves a file to the default folder on the file system
 	/// </summary>
-	/// <param name="fileName">File name with extension</param>
-	/// <param name="stream"><see cref="Stream"/></param>
+	/// <param name="fileName">File name with extension. Must not be null.</param>
+	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS")]
 	[SupportedOSPlatform("MacCatalyst")]
@@ -36,10 +38,11 @@ public interface IFileSaver
 	/// Saves a file to a target folder on the file system
 	/// </summary>
 	/// <param name="initialPath">Initial path. Must not be null.</param>
-	/// <param name="fileName">File name with extension</param>
-	/// <param name="stream"><see cref="Stream"/></param>
+	/// <param name="fileName">File name with extension. Must not be null.</param>
+	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="progress">Saving file progress in percentage</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android26.0")]
 	[SupportedOSPlatform("iOS")]
 	[SupportedOSPlatform("MacCatalyst")]
@@ -49,10 +52,11 @@ public interface IFileSaver
 	/// <summary>
 	/// Saves a file to the default folder on the file system
 	/// </summary>
-	/// <param name="fileName">File name with extension</param>
-	/// <param name="stream"><see cref="Stream"/></param>
+	/// <param name="fileName">File name with extension. Must not be null.</param>
+	/// <param name="stream"><see cref="Stream"/>. Must not be null.</param>
 	/// <param name="progress">Saving file progress in percentage</param>
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android")]
 	[SupportedOSPlatform("iOS")]
 	[SupportedOSPlatform("MacCatalyst")]

@@ -24,8 +24,11 @@ public static class AppBuilderExtensions
 	/// </param>
 	/// <param name="options"><see cref="MediaElementOptions"/>.</param>
 	/// <returns><see cref="MauiAppBuilder"/> initialized for <see cref="MediaElement"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
 	public static MauiAppBuilder UseMauiCommunityToolkitMediaElement(this MauiAppBuilder builder, bool isAndroidForegroundServiceEnabled, Action<MediaElementOptions>? options = null)
 	{
+		ArgumentNullException.ThrowIfNull(builder);
+
 		// Update the default MediaElementOptions for MediaElement if Action is not null
 		var mediaElementOptions = new MediaElementOptions(builder);
 		options?.Invoke(mediaElementOptions);

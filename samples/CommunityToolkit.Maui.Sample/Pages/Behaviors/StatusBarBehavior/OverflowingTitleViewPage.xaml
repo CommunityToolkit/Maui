@@ -31,11 +31,10 @@
                 Text="Welcome to &#10;.NET Multi-platform App UI" />
 
             <Button
-                Clicked="OnNavigateToMainPageButtonClicked"
+                Clicked="OnBackButtonClicked"
                 HorizontalOptions="Fill"
-                SemanticProperties.Hint="Navigate to MainPage"
-                Text="Click me"
-                x:Name="CounterBtn" />
+                SemanticProperties.Hint="Returns to the StatusBarBehavior page"
+                Text="Back" />
         </VerticalStackLayout>
 
         <Label

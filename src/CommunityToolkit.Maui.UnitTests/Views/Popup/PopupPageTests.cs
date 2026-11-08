@@ -998,6 +998,100 @@ public class PopupPageTests : BaseViewTest
 		Assert.True(eventTriggered);
 	}
 
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task OpenedEvent_ShouldNotBeRaisedAgain_WhenPopupAboveItIsClosed(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+
+		var lowerPopup = new Popup();
+		var lowerPopupOpenedCount = 0;
+		lowerPopup.Opened += HandleLowerPopupOpened;
+
+		var lowerPopupPage = new PopupPage(lowerPopup, PopupOptions.Empty);
+		var upperPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+
+		await lowerPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await upperPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, lowerPopupOpenedCount);
+		Assert.Equal(2, navigation.ModalStack.Count);
+
+		await upperPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Same(lowerPopupPage, Assert.Single(navigation.ModalStack));
+		Assert.Equal(1, lowerPopupOpenedCount);
+
+		await lowerPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(1, lowerPopupOpenedCount);
+
+		void HandleLowerPopupOpened(object? sender, EventArgs e) => lowerPopupOpenedCount++;
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task OpenedEvent_ShouldBeRaisedOncePerShow_WhenTheSamePopupIsShownAgain(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+
+		var popup = new Popup();
+		var openedCount = 0;
+		popup.Opened += HandlePopupOpened;
+
+		var firstPopupPage = new PopupPage(popup, PopupOptions.Empty);
+		await firstPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, openedCount);
+
+		var secondPopupPage = new PopupPage(popup, PopupOptions.Empty);
+		await secondPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await secondPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Equal(2, openedCount);
+
+		void HandlePopupOpened(object? sender, EventArgs e) => openedCount++;
+	}
+
+	// PopupPage sets the platform of its Popup up again when it is navigated to again, which only restores what the Popup had before when the
+	// page above it has already torn its own setup down (e.g. Android's soft input mode, which each Popup saves and restores)
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task NavigationEvents_ShouldTearDownThePageAboveBeforeTheLowerPageIsNavigatedToAgain(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+		List<string> navigationEvents = [];
+
+		var lowerPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var upperPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		lowerPopupPage.NavigatedTo += (_, _) => navigationEvents.Add("lower NavigatedTo");
+		lowerPopupPage.NavigatedFrom += (_, _) => navigationEvents.Add("lower NavigatedFrom");
+		upperPopupPage.NavigatedTo += (_, _) => navigationEvents.Add("upper NavigatedTo");
+		upperPopupPage.NavigatedFrom += (_, _) => navigationEvents.Add("upper NavigatedFrom");
+
+		await lowerPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await upperPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await upperPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Equal(
+			[
+				"lower NavigatedTo",
+				"lower NavigatedFrom",
+				"upper NavigatedTo",
+				"upper NavigatedFrom",
+				"lower NavigatedTo"
+			],
+			navigationEvents);
+	}
+
 	[Fact]
 	public void TappingOutside_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
 	{

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Maui.Core.Views;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -41,9 +42,15 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 	public override void SetVirtualView(IView view)
 	{
-		base.SetVirtualView(view);
+		ArgumentNullException.ThrowIfNull(view);
+
+		// An app's ContentViewHandler.PlatformViewFactory creates the platform view of every ContentViewHandler, this one included, and only a
+		// MauiSemanticOrderView applies ViewOrder
+		this.SetVirtualViewWithItsOwnPlatformView(view, base.SetVirtualView, CreatePlatformView);
+
 #if WINDOWS || IOS || MACCATALYST || ANDROID
 		if (PlatformView is MauiSemanticOrderView semanticOrderView)
 		{

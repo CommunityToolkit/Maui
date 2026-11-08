@@ -22,6 +22,9 @@ sealed partial class MediaControlsService : Service
 	PlayerNotificationManager? playerNotificationManager;
 	NotificationCompat.Builder? notificationBuilder;
 
+	MediaSession? notificationSession;
+	PlatformMediaElement? legacyNotificationPlayer;
+
 	public event EventHandler TaskRemoved
 	{
 		add => taskRemovedEventManager.AddEventHandler(value);
@@ -52,6 +55,7 @@ sealed partial class MediaControlsService : Service
 		taskRemovedEventManager.HandleEvent(this, EventArgs.Empty, nameof(TaskRemoved));
 
 		playerNotificationManager?.SetPlayer(null);
+		legacyNotificationPlayer = null;
 		NotificationManager?.CancelAll();
 	}
 
@@ -60,6 +64,11 @@ sealed partial class MediaControlsService : Service
 		base.OnDestroy();
 
 		playerNotificationManager?.SetPlayer(null);
+		legacyNotificationPlayer = null;
+		// The binder of a former binding can keep the destroyed service alive: the MediaStyle of its notification must not keep the media
+		// session alive with it (and, through the session's player, the MediaElement's platform view)
+		notificationBuilder?.SetStyle(null);
+		notificationSession = null;
 		NotificationManager?.CancelAll();
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
@@ -88,6 +97,7 @@ sealed partial class MediaControlsService : Service
 		}
 
 		notificationBuilder.SetStyle(style);
+		notificationSession = session;
 		NotificationManagerCompat.From(Platform.AppContext)?.Notify(1, notificationBuilder.Build());
 	}
 
@@ -95,8 +105,11 @@ sealed partial class MediaControlsService : Service
 	public void SetLegacyNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
 	{
 		ArgumentNullException.ThrowIfNull(session);
-		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1").Build()
-									  ?? throw new InvalidOperationException("PlayerNotificationManager cannot be null");
+		// Its notification replaces the one of the service (same id): like that one, it opens the app when it is tapped
+		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1")
+			.SetMediaDescriptionAdapter(new DefaultMediaDescriptionAdapter(CreateActivityPendingIntent()))
+			?.Build()
+			?? throw new InvalidOperationException("PlayerNotificationManager cannot be null");
 
 		playerNotificationManager.SetUseFastForwardAction(true);
 		playerNotificationManager.SetUseFastForwardActionInCompactView(true);
@@ -111,11 +124,30 @@ sealed partial class MediaControlsService : Service
 		playerNotificationManager.SetVisibility(NotificationCompat.VisibilityPublic);
 		playerNotificationManager.SetMediaSessionToken(session.PlatformToken);
 		playerNotificationManager.SetPlayer(mediaElement);
+		legacyNotificationPlayer = mediaElement;
 		playerNotificationManager.SetColorized(true);
 		playerNotificationManager.SetShowPlayButtonIfPlaybackIsSuppressed(true);
 		playerNotificationManager.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
 		playerNotificationManager.SetPriority(NotificationCompat.PriorityDefault);
 		playerNotificationManager.SetUseChronometer(true);
+	}
+
+	// The service keeps running while another MediaElement is bound to it, so OnDestroy does not run when one of them goes away: the
+	// notification must then forget the session and the player of that MediaElement, or it keeps them (and, through the player, the
+	// MediaElement's platform view) alive. The notification of another MediaElement is left alone.
+	public void ForgetSession(in MediaSession session, in PlatformMediaElement mediaElement)
+	{
+		if (ReferenceEquals(notificationSession, session))
+		{
+			notificationBuilder?.SetStyle(null);
+			notificationSession = null;
+		}
+
+		if (ReferenceEquals(legacyNotificationPlayer, mediaElement))
+		{
+			playerNotificationManager?.SetPlayer(null);
+			legacyNotificationPlayer = null;
+		}
 	}
 
 	protected override void Dispose(bool disposing)
@@ -129,6 +161,7 @@ sealed partial class MediaControlsService : Service
 
 				playerNotificationManager?.Dispose();
 				playerNotificationManager = null;
+				legacyNotificationPlayer = null;
 
 				if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 				{
