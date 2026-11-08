@@ -936,6 +936,21 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.Equal(realColor, newColor.GetByteGreen());
 	}
 
+	[Fact]
+	public void ToCmykString_WithAzerbaijaniCulture_PutsPercentAfterNumber()
+	{
+		// Azerbaijani formats percent as "50%" while Turkish formats it as "%50", so the output must come from the culture's NumberFormatInfo.
+		Assert.Equal("CMYK(0%,100%,100%,0%)", Colors.Red.ToCmykString(new CultureInfo("az-Latn-AZ")));
+	}
+
+	[Fact]
+	public void ToRgbaString_NullCulture_UsesTurkishCurrentCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+
+		Assert.Equal("RGBA(255,0,0,0,5)", new Color(1f, 0f, 0f, 0.5f).ToRgbaString(null));
+	}
+
 	public class ColorTestDefinition
 	{
 		internal ColorTestDefinition(float r, float g, float b, float a,

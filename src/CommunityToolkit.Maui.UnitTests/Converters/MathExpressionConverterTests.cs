@@ -264,6 +264,8 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 	[InlineData("fr-FR")]
 	[InlineData("en-US")]
 	[InlineData("ru-RU")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
 	public void MathExpressionConverter_NumberLiteralsAreCultureInvariant(string currentCultureName)
 	{
 		Thread.CurrentThread.CurrentCulture = new CultureInfo(currentCultureName);
@@ -329,6 +331,37 @@ public class MathExpressionConverterTests : BaseOneWayConverterTest<MathExpressi
 		Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
 
 		var result = new MultiMathExpressionConverter().Convert(["3,5", "2"], typeof(double), "x0 * x1", null);
+
+		Assert.IsType<double>(result).Should().BeApproximately(7d, tolerance);
+	}
+
+	[Fact]
+	public void MathExpressionConverter_ParsesStringInputWithTurkishCulture()
+	{
+		var turkish = new CultureInfo("tr-TR");
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		var converter = new MathExpressionConverter();
+
+		Assert.IsType<double>(converter.ConvertFrom("3,5", "x * 2", turkish)).Should().BeApproximately(7d, tolerance);
+
+		Thread.CurrentThread.CurrentCulture = turkish;
+		Assert.IsType<double>(converter.ConvertFrom("3,5", "x * 2", null)).Should().BeApproximately(7d, tolerance);
+	}
+
+	[Fact]
+	public void MathExpressionConverter_FormatsStrWithTurkishCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		new MathExpressionConverter().ConvertFrom(3.5d, "str(x)", new CultureInfo("tr-TR")).Should().Be("3,5");
+	}
+
+	[Fact]
+	public void MultiMathExpressionConverter_ParsesStringValuesWithTurkishCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		var result = new MultiMathExpressionConverter().Convert(["3,5", "2"], typeof(double), "x0 * x1", new CultureInfo("tr-TR"));
 
 		Assert.IsType<double>(result).Should().BeApproximately(7d, tolerance);
 	}

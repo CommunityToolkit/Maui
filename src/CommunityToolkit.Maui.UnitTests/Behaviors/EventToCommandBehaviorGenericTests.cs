@@ -184,10 +184,12 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 		Assert.Same(culture, spy.ReceivedCulture);
 	}
 
-	[Fact]
-	public void EventArgsConverterCulture_DefaultsToInvariantCulture()
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	public void EventArgsConverterCulture_DefaultsToInvariantCulture(string uiCultureName)
 	{
-		Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCultureName);
 		var spy = new CultureSpyConverter();
 		var behavior = new EventToCommandBehavior<Coffee>
 		{

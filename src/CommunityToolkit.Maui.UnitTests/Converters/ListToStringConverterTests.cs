@@ -116,6 +116,7 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 
 	[Theory]
 	[InlineData("de-DE", "1,5;2,5")]
+	[InlineData("tr-TR", "1,5;2,5")]
 	[InlineData("en-US", "1.5;2.5")]
 	[InlineData(null, "1.5;2.5")]
 	public void ListToStringConverter_FormatsFormattableItemsWithPassedCulture(string? cultureName, string expectedResult)
@@ -134,6 +135,21 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 		{
 			CultureInfo.CurrentCulture = originalCulture;
 		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void ListToStringConverter_FormatsDatesWithPassedCulture(string cultureName)
+	{
+		var culture = new CultureInfo(cultureName);
+		var item = new DateTime(2026, 11, 7, 13, 37, 0);
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		var result = new ListToStringConverter().ConvertFrom(new List<DateTime> { item }, ";", culture);
+
+		Assert.Equal(item.ToString(culture), result);
+		Assert.NotEqual(item.ToString(new CultureInfo("en-US")), result);
 	}
 
 	protected override object? GetInvalidConvertFromValue() => null;

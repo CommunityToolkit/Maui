@@ -628,4 +628,36 @@ public class IsInRangeConverterTests : BaseOneWayConverterTest<IsInRangeConverte
 		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 		Assert.Equal(false, converter.ConvertFrom("\u00e4", null));
 	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void IsInRangeConverter_UsesTurkishCollation(string cultureName)
+	{
+		var converter = new IsInRangeConverter
+		{
+			MinValue = "h",
+			MaxValue = "i"
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// Dotless "\u0131" is its own letter between "h" and "i" in Turkish and Azerbaijani; English sorts it after "i".
+		Assert.Equal(true, converter.ConvertFrom("\u0131", new CultureInfo(cultureName)));
+		Assert.Equal(false, converter.ConvertFrom("\u0131", new CultureInfo("en-US")));
+	}
+
+	[Fact]
+	public void IsInRangeConverter_WithoutCulture_UsesTurkishCurrentCulture()
+	{
+		var converter = new IsInRangeConverter
+		{
+			MinValue = "h",
+			MaxValue = "i"
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+
+		Assert.Equal(true, converter.ConvertFrom("\u0131", null));
+	}
 }

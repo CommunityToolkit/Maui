@@ -106,10 +106,12 @@ public class EventToCommandBehaviorTests() : BaseBehaviorTest<EventToCommandBeha
 		void HandleSelectionChanged() => didEventToCommandBehaviorFire = true;
 	}
 
-	[Fact]
-	public void EventArgsConverterCulture_DefaultsToNullAndConverterReceivesInvariantCulture()
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	public void EventArgsConverterCulture_DefaultsToNullAndConverterReceivesInvariantCulture(string uiCultureName)
 	{
-		Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCultureName);
 		var spy = new CultureSpyConverter();
 		var behavior = new EventToCommandBehavior
 		{

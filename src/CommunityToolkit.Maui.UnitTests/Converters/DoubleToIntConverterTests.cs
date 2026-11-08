@@ -90,6 +90,8 @@ public class DoubleToIntConverterTests : BaseConverterTest<DoubleToIntConverter>
 	[InlineData("de-DE")]
 	[InlineData("en-US")]
 	[InlineData("fr-FR")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
 	public void DoubleToIntConverter_StringParameterWithDotIsInvariant(string cultureName)
 	{
 		var culture = new CultureInfo(cultureName);
@@ -117,5 +119,28 @@ public class DoubleToIntConverterTests : BaseConverterTest<DoubleToIntConverter>
 		Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
 
 		Assert.Equal(5, new DoubleToIntConverter().ConvertFrom(2, "2,5"));
+	}
+
+	[Fact]
+	public void DoubleToIntConverter_StringParameterWithCommaUsesTurkishCulture()
+	{
+		var turkish = new CultureInfo("tr-TR");
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		var converter = new DoubleToIntConverter();
+
+		Assert.Equal(5, converter.ConvertFrom(2, "2,5", turkish));
+		Assert.Equal(2d, converter.ConvertBackTo(5, "2,5", turkish));
+
+		Thread.CurrentThread.CurrentCulture = turkish;
+		Assert.Equal(5, converter.ConvertFrom(2, "2,5", null));
+	}
+
+	[Fact]
+	public void DoubleToIntConverter_StringParameterWithTurkishThousandsSeparator()
+	{
+		// The invariant parse fails on the comma, so the Turkish parse with its dot as group separator applies.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		Assert.Equal(2469, new DoubleToIntConverter().ConvertFrom(2, "1.234,5", new CultureInfo("tr-TR")));
 	}
 }

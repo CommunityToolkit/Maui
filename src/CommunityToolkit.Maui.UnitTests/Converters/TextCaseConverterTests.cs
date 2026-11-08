@@ -83,6 +83,11 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	[InlineData("istanbul", TextCaseType.Upper, "tr-TR", "İSTANBUL")]
 	[InlineData("ISTANBUL", TextCaseType.Lower, "az-Latn-AZ", "ıstanbul")]
 	[InlineData("istanbul", TextCaseType.Upper, "en-US", "ISTANBUL")]
+	[InlineData("edit", TextCaseType.Upper, "tr-TR", "EDİT")]
+	[InlineData("ılık", TextCaseType.Upper, "tr-TR", "ILIK")]
+	[InlineData("İZMİR", TextCaseType.Lower, "tr-TR", "izmir")]
+	[InlineData("TITLE", TextCaseType.Lower, "az-Latn-AZ", "tıtle")]
+	[InlineData("edit", TextCaseType.Upper, null, "EDIT")]
 	[InlineData("istanbul", TextCaseType.FirstUpperRestLower, null, "Istanbul")]
 	[InlineData("ISTANBUL", TextCaseType.Lower, null, "istanbul")]
 	public void TextCaseConverter_UsesCultureCasingRules(string value, TextCaseType textCaseType, string? cultureName, string expectedResult)
@@ -144,6 +149,16 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TextCaseConverter()).Convert(string.Empty, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TextCaseConverter()).ConvertBack(string.Empty, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact]
+	public void TextCaseConverter_NullCulture_IgnoresTurkishCurrentCulture()
+	{
+		// A null culture keeps the invariant casing that earlier releases always used, so a Turkish device does not turn "edit" into "EDİT" for direct callers.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo("tr-TR");
+
+		Assert.Equal("EDIT", new TextCaseConverter().ConvertFrom("edit", TextCaseType.Upper, null));
 	}
 
 	record MockItem(string Title, bool Completed)

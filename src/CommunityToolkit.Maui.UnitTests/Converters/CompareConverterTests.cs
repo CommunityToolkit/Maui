@@ -257,4 +257,36 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 		Assert.Equal(false, converter.ConvertFrom("\u00e4", null));
 	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void CompareConverter_UsesTurkishCollation(string cultureName)
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "cz",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// Turkish and Azerbaijani sort "\u00e7" (c-cedilla) as its own letter after "c", so "\u00e7a" is greater than "cz"; English sorts it next to "c".
+		Assert.Equal(true, converter.ConvertFrom("\u00e7a", new CultureInfo(cultureName)));
+		Assert.Equal(false, converter.ConvertFrom("\u00e7a", new CultureInfo("en-US")));
+	}
+
+	[Fact]
+	public void CompareConverter_WithoutCulture_UsesTurkishCurrentCulture()
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "cz",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+
+		Assert.Equal(true, converter.ConvertFrom("\u00e7a", null));
+	}
 }

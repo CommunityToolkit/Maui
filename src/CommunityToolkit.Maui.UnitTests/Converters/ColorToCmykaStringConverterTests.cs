@@ -172,4 +172,17 @@ public class ColorToCmykaStringConverterTests : BaseOneWayConverterTest<ColorToC
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToCmykaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[Fact]
+	public void ColorToCmykaStringConverter_UsesTurkishPercentAndDecimal()
+	{
+		// Turkish writes the percent sign first and uses a comma decimal; both come from the culture, not from the converter.
+		Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+		var turkish = new System.Globalization.CultureInfo("tr-TR");
+		var color = new Color(1f, 0f, 0f, 0.5f);
+		var converter = new ColorToCmykaStringConverter();
+
+		Assert.Equal("CMYKA(%0,%100,%100,%0,0,5)", converter.ConvertFrom(color, turkish));
+		Assert.Equal("CMYKA(%0,%100,%100,%0,0,5)", ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, turkish));
+	}
 }
