@@ -16,9 +16,9 @@ public sealed partial class SpeechToTextImplementation
 	SpeechRecognizer? speechRecognizer;
 	SpeechToTextOptions? speechToTextOptions;
 
-	// A closed recognizer need not end the operations that it runs, so a start or a stop that waits for one of them stops waiting when StopRecording
-	// completes this
-	TaskCompletionSource speechRecognizerReleased = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	// Initialize stores the lifetime before the recognizer, and a stop reads the recognizer before the lifetime, so a stop that sees a recognizer also
+	// sees its lifetime: releasing it through an older lifetime would close it while it compiles
+	SpeechRecognizerLifetime speechRecognizerLifetime = new();
 
 	/// <inheritdoc/>
 	public SpeechToTextState CurrentState
@@ -52,11 +52,11 @@ public sealed partial class SpeechToTextImplementation
 		// Initialize stores the recognizer before it compiles the constraints, so StopListenAsync, DisposeAsync or a newer start can release it while this
 		// start waits. A released start ends without listening and without an exception, so that the failure handling of StartListenAsync cannot release
 		// the recognizer of a newer start
-		var recognizer = speechRecognizer;
-		var released = speechRecognizerReleased;
+		var recognizer = Volatile.Read(ref speechRecognizer);
+		var lifetime = speechRecognizerLifetime;
 		try
 		{
-			if (!await IsStillStoredAfter(initialization, recognizer, released))
+			if (!await IsStillStoredAfter(initialization, recognizer, lifetime))
 			{
 				return;
 			}
@@ -68,7 +68,9 @@ public sealed partial class SpeechToTextImplementation
 			{
 				if (recognizer.State == SpeechRecognizerState.Idle)
 				{
-					await IsStillStoredAfter(recognizer.ContinuousRecognitionSession.StartAsync().AsTask(cancellationToken), recognizer, released);
+					// StartAsync gets no token (see SpeechRecognizerLifetime.Run), so a start cancelled after its compilation must not open the session
+					cancellationToken.ThrowIfCancellationRequested();
+					await IsStillStoredAfter(lifetime.Run(() => recognizer.ContinuousRecognitionSession.StartAsync().AsTask()).WaitAsync(cancellationToken), recognizer, lifetime);
 				}
 			}
 			catch (Exception ex) when ((uint)ex.HResult is privacyStatementDeclinedCode)
@@ -114,8 +116,8 @@ public sealed partial class SpeechToTextImplementation
 
 	async Task StopRecording(CancellationToken cancellationToken)
 	{
-		var recognizer = speechRecognizer;
-		var released = speechRecognizerReleased;
+		var recognizer = Volatile.Read(ref speechRecognizer);
+		var lifetime = speechRecognizerLifetime;
 		if (recognizer is null)
 		{
 			return;
@@ -126,7 +128,7 @@ public sealed partial class SpeechToTextImplementation
 			if (recognizer.State != SpeechRecognizerState.Idle)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-				await IsStillStoredAfter(recognizer.ContinuousRecognitionSession.StopAsync().AsTask(cancellationToken), recognizer, released);
+				await IsStillStoredAfter(lifetime.Run(() => recognizer.ContinuousRecognitionSession.StopAsync().AsTask()).WaitAsync(cancellationToken), recognizer, lifetime);
 			}
 		}
 		catch
@@ -140,21 +142,21 @@ public sealed partial class SpeechToTextImplementation
 			if (ReferenceEquals(recognizer, speechRecognizer))
 			{
 				speechRecognizer = null;
-				released.TrySetResult();
 
+				// The handlers come off first: Release can close the recognizer at once
 				recognizer.StateChanged -= SpeechRecognizer_StateChanged;
 				recognizer.ContinuousRecognitionSession.ResultGenerated -= ResultGenerated;
 				recognizer.ContinuousRecognitionSession.Completed -= OnCompleted;
-				recognizer.Dispose();
+				lifetime.Release(recognizer);
 			}
 		}
 	}
 
-	// A released recognizer need not end the operations that it runs, so waiting for one of them could hang the caller. A recognizer that is still stored
-	// reports the failure of its operation (cancellation, declined privacy statement) to the caller, which handles it
-	async Task<bool> IsStillStoredAfter(Task operation, SpeechRecognizer recognizer, TaskCompletionSource released)
+	// A released recognizer's operations get no token, so they may take long or never end: waiting for one could hang the caller. A recognizer that is
+	// still stored reports the failure of its operation (cancellation, declined privacy statement) to the caller, which handles it
+	async Task<bool> IsStillStoredAfter(Task operation, SpeechRecognizer recognizer, SpeechRecognizerLifetime lifetime)
 	{
-		await Task.WhenAny(operation, released.Task);
+		await Task.WhenAny(operation, lifetime.Released);
 
 		if (ReferenceEquals(recognizer, speechRecognizer))
 		{
@@ -167,25 +169,121 @@ public sealed partial class SpeechToTextImplementation
 		return false;
 	}
 
-	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer), nameof(speechRecognizerReleased), nameof(speechToTextOptions))]
+	[MemberNotNull(nameof(recognitionText), nameof(speechRecognizer), nameof(speechToTextOptions))]
 	async Task Initialize(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		speechToTextOptions = options;
 		recognitionText = string.Empty;
-		speechRecognizerReleased = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		speechRecognizer = new SpeechRecognizer(new Language(options.Culture.IetfLanguageTag));
+		var lifetime = speechRecognizerLifetime = new SpeechRecognizerLifetime();
+		var recognizer = new SpeechRecognizer(new Language(options.Culture.IetfLanguageTag));
+		Volatile.Write(ref speechRecognizer, recognizer);
 
-		speechRecognizer.UIOptions.AudiblePrompt = string.Empty;
-		speechRecognizer.UIOptions.IsReadBackEnabled = false;
-		speechRecognizer.UIOptions.ShowConfirmation = false;
+		recognizer.UIOptions.AudiblePrompt = string.Empty;
+		recognizer.UIOptions.IsReadBackEnabled = false;
+		recognizer.UIOptions.ShowConfirmation = false;
 
-		speechRecognizer.StateChanged += SpeechRecognizer_StateChanged;
+		recognizer.StateChanged += SpeechRecognizer_StateChanged;
 		cancellationToken.ThrowIfCancellationRequested();
-		await speechRecognizer.CompileConstraintsAsync().AsTask(cancellationToken);
+		await lifetime.Run(() => recognizer.CompileConstraintsAsync().AsTask()).WaitAsync(cancellationToken);
 	}
 
 	void SpeechRecognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
 	{
 		OnSpeechToTextStateChanged(CurrentState);
+	}
+
+	// Windows.Media.Speech goes on with the work of an operation after its recognizer is closed, and a compilation that did so crashed the app (an access
+	// violation on a thread-pool thread), so a released recognizer is closed only once the last operation started on it has ended
+	sealed class SpeechRecognizerLifetime
+	{
+		readonly Lock operationsLock = new();
+		readonly TaskCompletionSource released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		int runningOperations;
+		bool isReleased;
+		SpeechRecognizer? recognizerToClose;
+
+		public Task Released => released.Task;
+
+		// AsTask with a token completes its task as soon as the token is cancelled, before the native operation ends, so an operation gets no token
+		// and a caller stops waiting with WaitAsync
+		public Task Run(Func<Task> startOperation)
+		{
+			lock (operationsLock)
+			{
+				if (isReleased)
+				{
+					return Task.CompletedTask;
+				}
+
+				runningOperations++;
+			}
+
+			Task operation;
+			try
+			{
+				operation = startOperation();
+			}
+			catch
+			{
+				OnOperationEnded();
+				throw;
+			}
+
+			// Not ExecuteSynchronously: the operation's task completes in its own completion handler, which must not close the recognizer it runs on
+			_ = operation.ContinueWith(task =>
+			{
+				// A caller that stopped waiting no longer observes the failure
+				_ = task.Exception;
+				OnOperationEnded();
+			}, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+
+			return operation;
+		}
+
+		public void Release(SpeechRecognizer recognizer)
+		{
+			bool closesNow;
+			lock (operationsLock)
+			{
+				isReleased = true;
+				closesNow = runningOperations is 0;
+				if (!closesNow)
+				{
+					recognizerToClose = recognizer;
+				}
+			}
+
+			released.TrySetResult();
+
+			if (closesNow)
+			{
+				recognizer.Dispose();
+			}
+		}
+
+		void OnOperationEnded()
+		{
+			SpeechRecognizer? recognizer;
+			lock (operationsLock)
+			{
+				runningOperations--;
+				if (runningOperations > 0 || recognizerToClose is null)
+				{
+					return;
+				}
+
+				recognizer = recognizerToClose;
+				recognizerToClose = null;
+			}
+
+			try
+			{
+				recognizer.Dispose();
+			}
+			catch (Exception)
+			{
+				// Nothing awaits a deferred close, so its failure must not become an unobserved task exception
+			}
+		}
 	}
 }
