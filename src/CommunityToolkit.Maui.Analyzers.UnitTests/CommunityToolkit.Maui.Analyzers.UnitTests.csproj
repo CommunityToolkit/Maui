@@ -37,4 +37,8 @@
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Compile Include="..\Shared\TestReferenceAssemblies.cs" Link="TestReferenceAssemblies.cs" />
+  </ItemGroup>
+
 </Project>

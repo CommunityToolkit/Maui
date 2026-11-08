@@ -18,12 +18,7 @@ public abstract class BaseTest
 
 		var test = new MediaElementSourceGeneratorTest<TSourceGenerator>
 		{
-#if NET11_0
-			// Microsoft.CodeAnalysis.Testing 1.1.4 has no ReferenceAssemblies.Net.Net110 preset; use it once it ships
-			ReferenceAssemblies = new Microsoft.CodeAnalysis.Testing.ReferenceAssemblies("net11.0", new Microsoft.CodeAnalysis.Testing.PackageIdentity("Microsoft.NETCore.App.Ref", "11.0.0-rc.3.26522.148"), Path.Combine("ref", "net11.0")),
-#else
-#error ReferenceAssemblies must be updated to current version of .NET
-#endif
+			ReferenceAssemblies = TestReferenceAssemblies.Current,
 			TestState =
 			{
 				Sources = { source },
