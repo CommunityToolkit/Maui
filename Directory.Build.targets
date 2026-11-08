@@ -52,7 +52,7 @@
     UnitTests guard (Tests_RuntimeAsync_ShippedAssemblies) enforces that.
   -->
   <PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows'
-                      AND '$([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))' == '11.0'
+                      AND '$([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))' >= '11.0'
                       AND !$(Features.Contains('runtime-async'))">
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
