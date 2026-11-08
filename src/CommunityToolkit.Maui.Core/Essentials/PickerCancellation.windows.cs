@@ -1,4 +1,3 @@
-#if NET11_0_OR_GREATER
 using System.Runtime.InteropServices;
 using Windows.Foundation;
 
@@ -167,4 +166,3 @@ static partial class PickerCancellation
 	[return: MarshalAs(UnmanagedType.Bool)]
 	private static partial bool PostMessage(IntPtr window, uint message, nint wParam, nint lParam);
 }
-#endif
