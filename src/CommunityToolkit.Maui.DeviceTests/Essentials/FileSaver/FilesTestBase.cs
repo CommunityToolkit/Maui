@@ -29,8 +29,9 @@ public abstract partial class FilesTestBase : CommunityToolkitHandlerTestBase
 		return Task.CompletedTask;
 	});
 
-	// For an operation that the test may not get to answer (a failed test).
-	protected CancellationToken CanceledWhenTheTestEnds()
+	// For a pick that the test cancels itself: a pick that a failed test left waiting for its turn on Windows would open its dialog after the cleanup
+	// closed the open ones, in the middle of the next test.
+	protected CancellationTokenSource CancellationEndedWithTheTest()
 	{
 		var cancellation = new CancellationTokenSource();
 		AddCleanup(() =>
@@ -39,8 +40,11 @@ public abstract partial class FilesTestBase : CommunityToolkitHandlerTestBase
 			cancellation.Dispose();
 		});
 
-		return cancellation.Token;
+		return cancellation;
 	}
+
+	// For an operation that the test may not get to answer (a failed test).
+	protected CancellationToken CanceledWhenTheTestEnds() => CancellationEndedWithTheTest().Token;
 
 	protected override async ValueTask DisposeAsyncCore()
 	{

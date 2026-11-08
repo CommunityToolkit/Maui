@@ -211,6 +211,73 @@ public partial class FileSaverTests
 		Assert.Equal(1, CountOpenDialogs());
 	}
 
+	// Two picks that start together on one window: the folder pick waits for the save dialog, and the save's cancel leaves it running.
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task SaveAsyncCanceledByItsTokenLeavesAFolderPickStartedAtTheSameTimeRunning()
+	{
+		// Person: only watch; the save dialog closes, a folder dialog opens, and the test closes it.
+		var saveCancellation = CancellationEndedWithTheTest();
+		var pickCancellation = CancellationEndedWithTheTest();
+		var stream = new FilesScriptedStream([1, 2, 3]);
+		var (save, pick) = await StartTogetherOnMainThreadAsync(
+			() => FileSaver.Default.SaveAsync("files-test-overlap.txt", stream, saveCancellation.Token),
+			() => FolderPicker.Default.PickAsync(pickCancellation.Token));
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() > 0, timeout: 15000, message: "The save dialog did not open.");
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(save, "The save ended before its token was canceled.");
+		Assert.False(pick.IsCompleted, "The folder pick ended while it waited for the save dialog.");
+
+		var saveDialogs = OpenDialogs();
+		await saveCancellation.CancelAsync();
+		var saveResult = await save.WaitAsync(operationTimeout);
+
+		Assert.True(saveResult.IsCancelled);
+		Assert.Equal(0, stream.ReadCalls);
+		await AssertionExtensions.AssertEventually(() => OpenDialogs().Except(saveDialogs).Any(), timeout: 15000, message: "The folder dialog did not open after the save ended.");
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(pick, "The folder pick ended when the token of the save was canceled.");
+
+		await pickCancellation.CancelAsync();
+		var pickResult = await pick.WaitAsync(operationTimeout);
+
+		Assert.True(pickResult.IsCancelled);
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The folder dialog is still open after its token was canceled.");
+	}
+
+	// A pick that waits for an earlier pick on the same window ends at once when its token is canceled, and the earlier dialog stays.
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task SaveAsyncCanceledByItsTokenWhileItWaitsForAnEarlierSaveLeavesTheEarlierSaveRunning()
+	{
+		// Person: only watch; one save dialog opens and the test closes it.
+		var firstCancellation = CancellationEndedWithTheTest();
+		var secondCancellation = CancellationEndedWithTheTest();
+		var firstStream = new FilesScriptedStream([1, 2, 3]);
+		var secondStream = new FilesScriptedStream([1, 2, 3]);
+		var (first, second) = await StartTogetherOnMainThreadAsync(
+			() => FileSaver.Default.SaveAsync("files-test-overlap-first.txt", firstStream, firstCancellation.Token),
+			() => FileSaver.Default.SaveAsync("files-test-overlap-second.txt", secondStream, secondCancellation.Token));
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() > 0, timeout: 15000, message: "The first save dialog did not open.");
+
+		// Without turns the two saves open their dialogs in either order, and a first dialog that opened after the second save ended would
+		// escape that save's cancel; waiting as long as the one-dialog check of the other tests lets both be on screen first.
+		await Task.Delay(TimeSpan.FromSeconds(2));
+		Assert.False(second.IsCompleted, "The second save ended while it waited for the first save dialog.");
+
+		await secondCancellation.CancelAsync();
+		var secondResult = await second.WaitAsync(operationTimeout);
+
+		Assert.True(secondResult.IsCancelled);
+		Assert.Equal(0, secondStream.ReadCalls);
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(first, "The first save ended when the token of the second was canceled.");
+
+		await firstCancellation.CancelAsync();
+		var firstResult = await first.WaitAsync(operationTimeout);
+
+		Assert.True(firstResult.IsCancelled);
+		Assert.Equal(0, firstStream.ReadCalls);
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The first save dialog is still open after its token was canceled.");
+	}
+
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static Task AssertNoPickerWasStartedAsync()

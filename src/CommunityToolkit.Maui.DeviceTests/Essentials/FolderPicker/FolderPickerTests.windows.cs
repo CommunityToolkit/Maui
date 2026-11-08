@@ -165,6 +165,67 @@ public partial class FolderPickerTests
 		Assert.Equal(1, CountOpenDialogs());
 	}
 
+	// A save that starts while the folder dialog is open waits for it, and the folder pick's cancel leaves the save running.
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task PickAsyncCanceledByItsTokenLeavesASaveStartedWhileItsDialogWasOpenRunning()
+	{
+		// Person: only watch; the folder dialog closes, a save dialog opens, and the test closes it.
+		var pickCancellation = CancellationEndedWithTheTest();
+		var saveCancellation = CancellationEndedWithTheTest();
+		var stream = new FilesScriptedStream([1, 2, 3]);
+		var pick = await StartOnMainThreadAsync(() => FolderPicker.Default.PickAsync(pickCancellation.Token));
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() > 0, timeout: 15000, message: "The folder dialog did not open.");
+		var save = await StartOnMainThreadAsync(() => FileSaver.Default.SaveAsync("files-test-overlap.txt", stream, saveCancellation.Token));
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(pick, "The folder pick ended before its token was canceled.");
+		Assert.False(save.IsCompleted, "The save ended while it waited for the folder dialog.");
+
+		var pickDialogs = OpenDialogs();
+		await pickCancellation.CancelAsync();
+		var pickResult = await pick.WaitAsync(operationTimeout);
+
+		Assert.True(pickResult.IsCancelled);
+		await AssertionExtensions.AssertEventually(() => OpenDialogs().Except(pickDialogs).Any(), timeout: 15000, message: "The save dialog did not open after the folder pick ended.");
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(save, "The save ended when the token of the folder pick was canceled.");
+
+		await saveCancellation.CancelAsync();
+		var saveResult = await save.WaitAsync(operationTimeout);
+
+		Assert.True(saveResult.IsCancelled);
+		Assert.Equal(0, stream.ReadCalls);
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The save dialog is still open after its token was canceled.");
+	}
+
+	// Two folder picks that start together on one window: the second waits for the first dialog, and the first one's cancel leaves it running.
+	[Fact]
+	[Category(TestCategory.RequiresUserInteraction)]
+	public async Task PickAsyncCanceledByItsTokenLeavesAFolderPickStartedAtTheSameTimeRunning()
+	{
+		// Person: only watch; a folder dialog closes, a second one opens, and the test closes it.
+		var firstCancellation = CancellationEndedWithTheTest();
+		var secondCancellation = CancellationEndedWithTheTest();
+		var (first, second) = await StartTogetherOnMainThreadAsync(
+			() => FolderPicker.Default.PickAsync(firstCancellation.Token),
+			() => FolderPicker.Default.PickAsync(secondCancellation.Token));
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() > 0, timeout: 15000, message: "The first folder dialog did not open.");
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(first, "The first folder pick ended before its token was canceled.");
+		Assert.False(second.IsCompleted, "The second folder pick ended while it waited for the first dialog.");
+
+		var firstDialogs = OpenDialogs();
+		await firstCancellation.CancelAsync();
+		var firstResult = await first.WaitAsync(operationTimeout);
+
+		Assert.True(firstResult.IsCancelled);
+		await AssertionExtensions.AssertEventually(() => OpenDialogs().Except(firstDialogs).Any(), timeout: 15000, message: "The second folder dialog did not open after the first pick ended.");
+		await AssertKeepsRunningAsTheOnlyOpenDialogAsync(second, "The second folder pick ended when the token of the first was canceled.");
+
+		await secondCancellation.CancelAsync();
+		var secondResult = await second.WaitAsync(operationTimeout);
+
+		Assert.True(secondResult.IsCancelled);
+		await AssertionExtensions.AssertEventually(() => CountOpenDialogs() is 0, timeout: 5000, message: "The second folder dialog is still open after its token was canceled.");
+	}
+
 	Task PrepareHostAsync() => Task.CompletedTask;
 
 	static Task AssertNoPickerWasStartedAsync()

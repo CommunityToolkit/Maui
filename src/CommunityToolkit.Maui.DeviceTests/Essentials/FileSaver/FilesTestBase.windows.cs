@@ -51,8 +51,27 @@ public abstract partial class FilesTestBase
 		return !ProcessHasMainWindow();
 	}
 
-	protected static int CountOpenDialogs() =>
-		FindTopLevelWindows(static window => IsWindowVisible(window) && ClassName(window) == commonDialogClass).Count;
+	protected static int CountOpenDialogs() => OpenDialogs().Count;
+
+	protected static List<IntPtr> OpenDialogs() =>
+		FindTopLevelWindows(static window => IsWindowVisible(window) && ClassName(window) == commonDialogClass);
+
+	// Both picks start in one pass of the UI thread, so the second starts before the first one's dialog is on screen.
+	protected static async Task<(Task<TFirst> First, Task<TSecond> Second)> StartTogetherOnMainThreadAsync<TFirst, TSecond>(Func<Task<TFirst>> startFirst, Func<Task<TSecond>> startSecond)
+	{
+		(Task<TFirst> First, Task<TSecond> Second) operations = default;
+		await InvokeOnMainThreadAsync(() => { operations = (startFirst(), startSecond()); });
+		return operations;
+	}
+
+	// A pick that waits for its turn has no dialog yet, and a pick that another pick's cancel ended has completed.
+	protected static async Task AssertKeepsRunningAsTheOnlyOpenDialogAsync(Task pick, string endedMessage)
+	{
+		// A fixed wait, not AssertEventually: a late close or a second dialog must fail the test too.
+		await Task.Delay(TimeSpan.FromSeconds(2));
+		Assert.False(pick.IsCompleted, endedMessage);
+		Assert.Equal(1, CountOpenDialogs());
+	}
 
 	protected static bool IsWindowOpen(IntPtr window) => IsWindowVisible(window);
 
@@ -90,7 +109,7 @@ public abstract partial class FilesTestBase
 
 	static async Task CloseOpenDialogsAsync()
 	{
-		foreach (var dialog in FindTopLevelWindows(static window => IsWindowVisible(window) && ClassName(window) == commonDialogClass))
+		foreach (var dialog in OpenDialogs())
 		{
 			PostMessage(dialog, wmClose, IntPtr.Zero, IntPtr.Zero);
 		}
