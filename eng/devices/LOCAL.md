@@ -39,6 +39,7 @@ Choose what runs:
 ```bash
 pwsh eng/devices/run.ps1 -DryRun                                        # print the plan, run nothing (also -WhatIf)
 pwsh eng/devices/run.ps1 -Platform ios,maccatalyst                      # only these platforms
+pwsh eng/devices/run.ps1 -Platform ios -Runtime 26.5                    # a simulator of this iOS runtime; it must be installed (Xcode > Settings > Components)
 pwsh eng/devices/run.ps1 -TestFilter 'Category=MediaElementAndroid'     # the tests of one package are categories of the one app
 pwsh eng/devices/run.ps1 -TestFilter 'Category=IconTintColorBehavior'   # one test category, where it has tests
 pwsh eng/devices/run.ps1 -TestFilter 'SkipCategories=Snackbar,Badge'   # everything except these categories

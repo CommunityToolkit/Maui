@@ -82,6 +82,9 @@
 .PARAMETER Udid
     iOS: use this simulator instead of creating one. The scripts grant nothing on it (see eng/devices/LOCAL.md).
 
+.PARAMETER Runtime
+    iOS: the simulator runtime of the simulator that ios.ps1 creates: an identifier, a short form (iOS-26-5) or a version (26.5). Without it, the newest runtime that lists an iPhone with one built-in screen. The device type is still the runtime's first iPhone with one built-in screen. Not with -Udid.
+
 .PARAMETER Xcode
     iOS and Mac Catalyst: the Xcode.app to use instead of the one that xcode-select -p selects.
 
@@ -145,6 +148,8 @@ param(
 
     [string]$Udid,
 
+    [string]$Runtime,
+
     [string]$Xcode,
 
     [switch]$KeepDevice,
@@ -178,7 +183,7 @@ $script:RunPlatformAliases = @{
 $script:RunOperatingSystemNames = @{ 'macos' = 'macOS'; 'windows' = 'Windows'; 'linux' = 'Linux' }
 
 $script:RunArgumentOrder = @('Packaging', 'Target', 'Project', 'Configuration', 'TestFilter', 'Results', 'BinlogDir', 'SkipCapabilities', 'RequireCapabilities',
-    'Timeout', 'InfraRetries', 'Avd', 'EmulatorPort', 'DeviceId', 'Udid', 'Xcode', 'KeepDevice', 'BuildArgs')
+    'Timeout', 'InfraRetries', 'Avd', 'EmulatorPort', 'DeviceId', 'Udid', 'Runtime', 'Xcode', 'KeepDevice', 'BuildArgs')
 
 # As Directory.Build.targets builds them: a *.macos.cs file (or a file in a macos folder) for Mac Catalyst only, a *.macios.cs file for both
 # Apple platforms.
@@ -551,7 +556,7 @@ function New-RunPlanEntry {
 }
 
 function Get-RunAppleEntry {
-    param([string]$Id, [string]$Xcode, [string]$Udid, [bool]$KeepDevice, [bool]$BuildOnly)
+    param([string]$Id, [string]$Xcode, [string]$Udid, [string]$Runtime, [bool]$KeepDevice, [bool]$BuildOnly)
 
     $problem = Get-RunXcodeProblem -Xcode $Xcode
     if ($problem) {
@@ -585,9 +590,15 @@ function Get-RunAppleEntry {
         return New-RunPlanEntry -Id $Id -Available $false -Detail 'no iOS simulator runtime is installed. Install one in Xcode (Settings > Components).'
     }
 
-    $detail = 'creates a simulator (first listed iPhone with one built-in screen, of the newest iOS runtime that lists one) and deletes it afterwards'
+    $runtimeText = 'of the newest iOS runtime that lists one'
+    if ($Runtime) {
+        $arguments['Runtime'] = $Runtime
+        $runtimeText = "of the iOS $Runtime runtime"
+    }
+
+    $detail = "creates a simulator (first listed iPhone with one built-in screen, $runtimeText) and deletes it afterwards"
     if ($KeepDevice) {
-        $detail = 'creates a simulator (first listed iPhone with one built-in screen, of the newest iOS runtime that lists one) and keeps it'
+        $detail = "creates a simulator (first listed iPhone with one built-in screen, $runtimeText) and keeps it"
     }
 
     return New-RunPlanEntry -Id $Id -Available $true -Detail $detail -Arguments $arguments
@@ -706,6 +717,7 @@ function Get-RunPlan {
         [int]$EmulatorPort,
         [string]$DeviceId,
         [string]$Udid,
+        [string]$Runtime,
         [string]$Xcode,
         [bool]$KeepDevice,
         [string]$Category,
@@ -737,7 +749,7 @@ function Get-RunPlan {
 
         try {
             switch ($id) {
-                'ios' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice -BuildOnly $buildOnly }
+                'ios' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -Runtime $Runtime -KeepDevice $KeepDevice -BuildOnly $buildOnly }
                 'maccatalyst' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice -BuildOnly $buildOnly }
                 'android' { Get-RunAndroidEntry -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId -KeepDevice $KeepDevice -BuildOnly $buildOnly }
                 default { Get-RunWindowsEntry -Id $id -KeepDevice $KeepDevice -BuildOnly $buildOnly }
@@ -1107,6 +1119,11 @@ try {
         throw (New-Object System.ArgumentException '-Results and -ResultsFolder both say where the results go. Use one of them.')
     }
 
+    # Rejected before Get-RunPlan, which turns a throw from an entry into "could not find out whether it can run".
+    if ($Runtime -and $Udid) {
+        throw (New-Object System.ArgumentException '-Runtime chooses the runtime of the simulator that ios.ps1 creates; -Udid names an existing simulator. Use one of them.')
+    }
+
     $operatingSystem = Get-RunOperatingSystem
     $projects = Resolve-DeviceTestProjects -Project $Project
     $filter = Resolve-DeviceTestFilter -TestFilter $TestFilter -IsBound $PSBoundParameters.ContainsKey('TestFilter')
@@ -1137,7 +1154,7 @@ try {
     }
 
     $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
-        -Udid $Udid -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target)
+        -Udid $Udid -Runtime $Runtime -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target)
 
     # The plan counts the skipped platforms too, so that whether a command is valid depends on the operating system, not on what the machine
     # can run.

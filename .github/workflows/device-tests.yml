@@ -37,6 +37,8 @@ env:
 # No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
+# The iOS app is built once, without coverage, for the older iOS versions (device_tests_ios_app, device_tests_ios_runtime); the iOS 27.2 job builds its own,
+# instrumented one.
 # Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
 # (eng/devices/LOCAL.md), so this file shows how to run them. -Platform is explicit because without it run.ps1 runs every platform of the
 # machine and, for a Category= filter, skips a platform that has no test of the category instead of failing with 94.
@@ -302,6 +304,195 @@ jobs:
                     name: coverage-device-tests-ios
                     path: artifacts/device-tests/ios/coverage/*.cobertura.xml
                     if-no-files-found: warn
+
+    # Builds the iOS simulator app once, without coverage, for device_tests_ios_runtime. device_tests_ios cannot share it: it collects
+    # coverage, so it builds an instrumented app in its test step.
+    device_tests_ios_app:
+        name: Device Tests (iOS app for older iOS versions)
+        permissions:
+            contents: read
+        runs-on: xcode-27
+        # The Release build took 9.4 to 16.7 minutes on this runner (three runs, 2026-11-07/08).
+        timeout-minutes: 60
+        env:
+            DEVICE_TEST_COVERAGE: false
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
+
+            -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
+            -   name: Install .NET MAUI Workload
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Build device test app
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+
+            # A zipped artifact loses file modes (actions/upload-artifact, "Permission Loss"), and the app's executable must stay executable.
+            # The glob follows the repo's NetVersion and the runner's architecture instead of naming net10.0-ios/iossimulator-arm64.
+            -   name: Pack the app
+                shell: bash
+                run: |
+                    cd src/CommunityToolkit.Maui.DeviceTests
+                    shopt -s nullglob
+                    apps=(bin/"$DEVICE_TEST_CONFIGURATION"/net*-ios/iossimulator-*/*.app)
+                    if [ "${#apps[@]}" -ne 1 ]; then
+                        echo "::error::Expected one iOS simulator app, found ${#apps[@]}: ${apps[*]}"
+                        exit 1
+                    fi
+                    tar -czf "$RUNNER_TEMP/ios-simulator-app.tgz" "${apps[0]}"
+                    ls -l "$RUNNER_TEMP/ios-simulator-app.tgz"
+
+            -   name: Upload the app
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: ios-simulator-app
+                    path: ${{ runner.temp }}/ios-simulator-app.tgz
+                    compression-level: 0
+                    # 3 days, so that re-running only a failed iOS 26.5 job a day later still finds the app.
+                    retention-days: 3
+                    if-no-files-found: error
+
+            -   name: Upload build logs
+                if: failure()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-ios-app-logs
+                    path: artifacts/logs/
+
+    # The app of device_tests_ios_app on the iOS versions that the xcode-27 image has no simulator runtime for (it has iOS 27.x only).
+    # The macos-26 image has the iOS 26.2, 26.4 and 26.5 runtimes (its readme, "Installed Simulators"), so nothing is downloaded, and
+    # XHarness brings its own mlaunch, so the app that Xcode 27.1 built (minimum iOS 15.0) runs here under Xcode 26.x. No coverage:
+    # device_tests_ios collects the iOS coverage.
+    device_tests_ios_runtime:
+        name: Device Tests (iOS ${{ matrix.ios-version }} Simulator)
+        needs: [ device_tests_ios_app ]
+        permissions:
+            contents: read
+        runs-on: ${{ matrix.runner }}
+        timeout-minutes: 90
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    # iOS 26.5: 9 StatusBar tests failed on it (a maintainer's run, 2026-11) while they pass on iOS 27.2.
+                    -   ios-version: '26.5'
+                        runner: macos-26
+                        xcode: '26.6'
+        env:
+            DEVICE_TEST_COVERAGE: false
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ matrix.xcode }}
+
+            # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework.
+            -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # Same key as the xcode-27 jobs: both images have .NET SDK 10.0.403 today, so this restores their cache.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            # No NuGet cache: this job restores no project, and a cache it saved would hold only the tools.
+            -   name: Install .NET MAUI Workload
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Runner diagnostics
+                run: |
+                    sw_vers
+                    sysctl -n hw.ncpu hw.memsize
+                    xcrun simctl list runtimes
+
+            -   name: Download the app
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    name: ios-simulator-app
+                    path: ${{ runner.temp }}
+
+            -   name: Unpack the app
+                id: unpack
+                run: tar -xzf "$RUNNER_TEMP/ios-simulator-app.tgz" -C src/CommunityToolkit.Maui.DeviceTests
+
+            # 60 minutes, as device_tests_ios. -Runtime picks the runtime by version; the device type is still the runtime's first iPhone with
+            # one built-in screen.
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' && steps.unpack.outcome == 'success' }}
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -Runtime '${{ matrix.ios-version }}' -Timeout 01:00:00 -ResultsFolder 'artifacts/device-tests/ios-${{ matrix.ios-version }}'
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-ios-${{ matrix.ios-version }}
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
 
     device_tests_maccatalyst:
         name: Device Tests (Mac Catalyst)
@@ -573,7 +764,8 @@ jobs:
     device_tests:
         name: Device Tests
         if: ${{ always() }}
-        needs: [ device_tests_android, device_tests_ios, device_tests_maccatalyst, device_tests_windows ]
+        # A failed app build skips device_tests_ios_runtime, and the check below counts a skipped job as not succeeded.
+        needs: [ device_tests_android, device_tests_ios, device_tests_ios_app, device_tests_ios_runtime, device_tests_maccatalyst, device_tests_windows ]
         runs-on: ubuntu-latest
         permissions: {}
         timeout-minutes: 5
