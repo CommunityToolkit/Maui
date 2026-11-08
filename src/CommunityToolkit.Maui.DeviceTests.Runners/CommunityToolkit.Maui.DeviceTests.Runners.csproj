@@ -44,7 +44,7 @@
   <ItemGroup>
     <!-- Keep Microsoft.DotNet.XHarness.TestRunners.Xunit on the same version as the xharness CLI in .config/dotnet-tools.json.
          It comes from the dotnet-eng feed (see NuGet.config); dotnet/maui main pins the same version. -->
-    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26466.1" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26556.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.11" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
     <PackageReference Include="xunit" Version="2.9.3" />
