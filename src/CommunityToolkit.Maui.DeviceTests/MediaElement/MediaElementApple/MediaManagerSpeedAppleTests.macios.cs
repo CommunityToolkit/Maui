@@ -270,7 +270,10 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			player.Pause();
 			await DrainMainQueueAsync();
 
-			Assert.Equal(0f, player.Rate);
+			// AVPlayer reports each rate again on the main queue once its FigPlayer has applied it: after a rate of 1.5 and a pause in one
+			// main-loop turn, the rate reads 1.5 again for a moment before it is 0 again (iOS 18 and 26, not 27). The pause's rate is the one
+			// that the player settles at.
+			await WaitUntilAsync(() => player.Rate is 0, "The native pause did not stop the player.");
 			Assert.Equal(1.5, mediaElement.Speed);
 		});
 	}
