@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Behaviors;
 
-public partial class BrokenTitleViewShell : Shell
+public partial class TitleViewShell : Shell
 {
 	// The same instance, not a new AppShell: its navigation stack and its pages, with their view models, stay alive while this Shell is shown,
 	// so the user returns to the page as they left it
@@ -15,7 +15,7 @@ public partial class BrokenTitleViewShell : Shell
 	Action? removeOnBackPressedCallback;
 #endif
 
-	public BrokenTitleViewShell(Page previousPage)
+	public TitleViewShell(Page previousPage)
 	{
 		this.previousPage = previousPage;
 
@@ -78,9 +78,9 @@ public partial class BrokenTitleViewShell : Shell
 		removeOnBackPressedCallback = onBackPressedCallback.Remove;
 	}
 
-	sealed class ReturnToPreviousPageOnBackPressedCallback(BrokenTitleViewShell brokenTitleViewShell) : AndroidX.Activity.OnBackPressedCallback(true)
+	sealed class ReturnToPreviousPageOnBackPressedCallback(TitleViewShell titleViewShell) : AndroidX.Activity.OnBackPressedCallback(true)
 	{
-		public override void HandleOnBackPressed() => brokenTitleViewShell.ReturnToPreviousPage();
+		public override void HandleOnBackPressed() => titleViewShell.ReturnToPreviousPage();
 	}
 #endif
 }

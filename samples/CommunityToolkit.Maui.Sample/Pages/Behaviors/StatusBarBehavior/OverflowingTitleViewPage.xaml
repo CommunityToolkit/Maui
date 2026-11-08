@@ -34,8 +34,7 @@
                 Clicked="OnBackButtonClicked"
                 HorizontalOptions="Fill"
                 SemanticProperties.Hint="Returns to the StatusBarBehavior page"
-                Text="Back"
-                x:Name="CounterBtn" />
+                Text="Back" />
         </VerticalStackLayout>
 
         <Label

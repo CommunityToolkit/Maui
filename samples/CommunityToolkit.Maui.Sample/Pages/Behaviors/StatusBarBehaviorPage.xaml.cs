@@ -128,12 +128,12 @@ public partial class StatusBarBehaviorPage : BasePage<StatusBarBehaviorViewModel
 		});
 	}
 
-	void OnBrokenShellButtonClicked(object? sender, EventArgs e)
+	void OnTitleViewShellButtonClicked(object? sender, EventArgs e)
 	{
 		if (Window?.Page is Page previousPage)
 		{
 			scrollYToRestore = ((ScrollView)Content).ScrollY;
-			Window.Page = new BrokenTitleViewShell(previousPage);
+			Window.Page = new TitleViewShell(previousPage);
 		}
 	}
 }

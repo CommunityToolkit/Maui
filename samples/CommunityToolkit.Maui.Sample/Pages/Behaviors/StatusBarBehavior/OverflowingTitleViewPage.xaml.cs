@@ -9,9 +9,9 @@ public partial class OverflowingTitleViewPage : ContentPage
 
 	void OnBackButtonClicked(object? sender, EventArgs e)
 	{
-		if (Window?.Page is BrokenTitleViewShell brokenTitleViewShell)
+		if (Window?.Page is TitleViewShell titleViewShell)
 		{
-			brokenTitleViewShell.ReturnToPreviousPage();
+			titleViewShell.ReturnToPreviousPage();
 		}
 	}
 }

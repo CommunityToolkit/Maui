@@ -159,7 +159,7 @@
                 HorizontalOptions="Center"
                 VerticalOptions="Center" />
              <Button
-                Clicked="OnBrokenShellButtonClicked"
+                Clicked="OnTitleViewShellButtonClicked"
                 HorizontalOptions="Center"
                 Text="Go to Shell.TitleView"
                 VerticalOptions="Center" />
