@@ -509,7 +509,8 @@ public partial class StatusBarBehaviorTests
 	}
 
 	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to
-	// false (with false it shows the style of the whole app, which the runner ignores).
+	// false (with false it shows the style of the whole app, which an app built with the iOS 27 SDK cannot set). UIKit's answer is recorded,
+	// not asked: on iOS 26 the scene already shows the window's LightContent when the toolkit reads it back, so the real call looks applied there.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -524,7 +525,7 @@ public partial class StatusBarBehaviorTests
 
 		await RunInMauiWindowAsync(StatusBarWindowPage.ContentPage, page, mauiWindow =>
 		{
-			var listener = CaptureTraceWithViewControllerBasedStatusBarAppearance(viewControllerBasedStatusBarAppearance, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
+			var (listener, _) = CaptureStylesOfTheWholeApp(viewControllerBasedStatusBarAppearance, isAppliedByUIKit: false, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
 
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
 			Assert.Equal(isTraced, listener.Messages.Contains(styleIgnoredByUIKitMessage));
