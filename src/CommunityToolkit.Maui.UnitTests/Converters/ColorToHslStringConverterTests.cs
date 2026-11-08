@@ -159,17 +159,19 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact]
-	public void ColorToHslStringConverter_UsesPassedCulture_NotCurrentCulture()
+	[Theory]
+	[InlineData("de-DE", "HSL(360,100 %,50 %)")]
+	[InlineData("tr-TR", "HSL(360,%100,%50)")]
+	public void ColorToHslStringConverter_UsesPassedCulture_NotCurrentCulture(string cultureName, string expectedResult)
 	{
 		var originalCulture = CultureInfo.CurrentCulture;
 		try
 		{
 			CultureInfo.CurrentCulture = new CultureInfo("en-US");
 
-			var result = new ColorToHslStringConverter().ConvertFrom(Colors.Red, new CultureInfo("de-DE"));
+			var result = new ColorToHslStringConverter().ConvertFrom(Colors.Red, new CultureInfo(cultureName));
 
-			Assert.Equal("HSL(360,100 %,50 %)", result);
+			Assert.Equal(expectedResult, result);
 		}
 		finally
 		{

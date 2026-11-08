@@ -133,6 +133,7 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	[InlineData("fa-IR")]
 	[InlineData("ar-SA")]
 	[InlineData("en-US")]
+	[InlineData("tr-TR")]
 	public void DateTimeOffsetConverterBack_IgnoresCultureCalendar(string cultureName)
 	{
 		var value = new DateTime(2026, 3, 15, 13, 37, 0, DateTimeKind.Utc).AddTicks(1234567);

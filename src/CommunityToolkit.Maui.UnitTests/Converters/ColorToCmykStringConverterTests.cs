@@ -161,17 +161,19 @@ public class ColorToCmykStringConverterTests : BaseOneWayConverterTest<ColorToCm
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Fact]
-	public void ColorToCmykStringConverter_UsesPassedCulture_NotCurrentCulture()
+	[Theory]
+	[InlineData("de-DE", "CMYK(0 %,100 %,100 %,0 %)")]
+	[InlineData("tr-TR", "CMYK(%0,%100,%100,%0)")]
+	public void ColorToCmykStringConverter_UsesPassedCulture_NotCurrentCulture(string cultureName, string expectedResult)
 	{
 		var originalCulture = CultureInfo.CurrentCulture;
 		try
 		{
 			CultureInfo.CurrentCulture = new CultureInfo("en-US");
 
-			var result = new ColorToCmykStringConverter().ConvertFrom(Colors.Red, new CultureInfo("de-DE"));
+			var result = new ColorToCmykStringConverter().ConvertFrom(Colors.Red, new CultureInfo(cultureName));
 
-			Assert.Equal("CMYK(0 %,100 %,100 %,0 %)", result);
+			Assert.Equal(expectedResult, result);
 		}
 		finally
 		{

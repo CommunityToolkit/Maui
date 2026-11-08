@@ -103,36 +103,28 @@ public class DoubleToIntConverterTests : BaseConverterTest<DoubleToIntConverter>
 		Assert.Equal(2d, converter.ConvertBackTo(5, "2.5", culture));
 	}
 
-	[Fact]
-	public void DoubleToIntConverter_StringParameterWithCommaUsesPassedCulture()
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void DoubleToIntConverter_StringParameterWithCommaUsesPassedCulture(string cultureName)
 	{
 		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 		var converter = new DoubleToIntConverter();
 
-		Assert.Equal(5, converter.ConvertFrom(2, "2,5", new CultureInfo("de-DE")));
-		Assert.Equal(2d, converter.ConvertBackTo(5, "2,5", new CultureInfo("de-DE")));
+		Assert.Equal(5, converter.ConvertFrom(2, "2,5", new CultureInfo(cultureName)));
+		Assert.Equal(2d, converter.ConvertBackTo(5, "2,5", new CultureInfo(cultureName)));
 	}
 
-	[Fact]
-	public void DoubleToIntConverter_StringParameterWithCommaWithoutCultureUsesCurrentCulture()
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void DoubleToIntConverter_StringParameterWithCommaWithoutCultureUsesCurrentCulture(string cultureName)
 	{
-		Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+		Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
 
 		Assert.Equal(5, new DoubleToIntConverter().ConvertFrom(2, "2,5"));
-	}
-
-	[Fact]
-	public void DoubleToIntConverter_StringParameterWithCommaUsesTurkishCulture()
-	{
-		var turkish = new CultureInfo("tr-TR");
-		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-		var converter = new DoubleToIntConverter();
-
-		Assert.Equal(5, converter.ConvertFrom(2, "2,5", turkish));
-		Assert.Equal(2d, converter.ConvertBackTo(5, "2,5", turkish));
-
-		Thread.CurrentThread.CurrentCulture = turkish;
-		Assert.Equal(5, converter.ConvertFrom(2, "2,5", null));
 	}
 
 	[Fact]
