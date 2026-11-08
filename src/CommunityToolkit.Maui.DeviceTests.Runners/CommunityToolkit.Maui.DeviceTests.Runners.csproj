@@ -52,10 +52,4 @@
     <PackageReference Include="xunit.runner.utility" Version="2.9.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="VisualRunner\Pages\TestAssemblyPage.xaml.cs">
-      <DependentUpon>TestAssemblyPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
 </Project>
