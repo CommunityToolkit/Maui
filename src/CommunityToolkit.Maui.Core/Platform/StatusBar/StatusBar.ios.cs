@@ -394,6 +394,10 @@ static partial class StatusBar
 				&& sizedFor != new StatusBarGeometry(window.Bounds.Size, window.SafeAreaInsets, statusBarFrame))
 			{
 				SizeToStatusBar(window, statusBarFrame, isUsingSafeArea);
+
+				// iOS 26 lays out the window of a rotation before it updates the status bar frame (still empty when an iPhone turns back to portrait),
+				// and nothing lays the view out after the update: one more layout once UIKit has finished the current update reads the new frame.
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(SetNeedsLayout);
 			}
 		}
 	}
