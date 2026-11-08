@@ -54,7 +54,7 @@ public partial class FileSaverTests
 		Assert.Equal(100, progress.Values[^1]);
 	}
 
-	// The .NET 10 build hands the dialog no folder to start in (only the .NET 11 arm sets SuggestedFolder), so the person may save anywhere.
+	// SuggestedFolder only picks the folder that the dialog starts in, so the person may save anywhere.
 	[Theory]
 	[Category(TestCategory.RequiresUserInteraction)]
 	[InlineData(0)]
