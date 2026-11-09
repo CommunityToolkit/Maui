@@ -18,7 +18,7 @@
 
 	<VerticalStackLayout VerticalOptions="Start" Spacing="12">
         <Label HorizontalOptions="Center"
-               Text="The StateToBoolConverter is a one way converter that returns a boolean result based on whether the supplied value is of a specific LayoutState."/>
+               Text="The StateToBooleanConverter is a one way converter that returns a boolean result based on whether the supplied value is of a specific LayoutState."/>
 
 		<Button HorizontalOptions="Center"
                 Command="{Binding ChangeLayoutCommand}" 

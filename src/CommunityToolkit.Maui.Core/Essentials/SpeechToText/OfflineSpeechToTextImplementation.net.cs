@@ -6,6 +6,9 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class OfflineSpeechToTextImplementation
 {
 	/// <inheritdoc />
+	public SpeechToTextState CurrentState { get; } = SpeechToTextState.Stopped;
+
+	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
 		return ValueTask.CompletedTask;
@@ -20,7 +23,4 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		throw new NotSupportedException();
 	}
-
-	/// <inheritdoc />
-	public SpeechToTextState CurrentState { get; } = SpeechToTextState.Stopped;
 }

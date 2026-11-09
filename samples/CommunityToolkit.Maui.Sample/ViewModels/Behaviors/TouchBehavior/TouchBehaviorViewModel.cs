@@ -11,27 +11,30 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	[ObservableProperty]
 	public partial int LongPressCount { get; private set; }
 
-	static Task DisplayAlert(string title, CancellationToken token)
-		=> Shell.Current.DisplayAlert(title, null, "Ok").WaitAsync(token);
+	[ObservableProperty]
+	public partial int ImageTouchCount { get; private set; }
+
+	static Task DisplayAlertAsync(string title, CancellationToken token)
+		=> Shell.Current.DisplayAlertAsync(title, null, "Ok").WaitAsync(token);
 
 	[RelayCommand]
 	static Task ParentClicked(CancellationToken token)
-		=> DisplayAlert("Parent Clicked", token);
+		=> DisplayAlertAsync("Parent Clicked", token);
 
 	[RelayCommand]
 	static Task ChildClicked(CancellationToken token)
-		=> DisplayAlert("Child Clicked", token);
+		=> DisplayAlertAsync("Child Clicked", token);
 
 	[RelayCommand]
 	async Task MonkeySelected(string? monkey, CancellationToken token)
 	{
 		if (string.IsNullOrEmpty(monkey))
 		{
-			await DisplayAlert("No monkey selected", token);
+			await DisplayAlertAsync("No monkey selected", token);
 			return;
 		}
 
-		await DisplayAlert($"Selected monkey: {monkey}", token);
+		await DisplayAlertAsync($"Selected monkey: {monkey}", token);
 	}
 
 	[RelayCommand]
@@ -44,5 +47,13 @@ public partial class TouchBehaviorViewModel : BaseViewModel
 	void IncreaseLongPressCount()
 	{
 		LongPressCount++;
+	}
+
+	// A touch of the image is also one of the page's touches
+	[RelayCommand]
+	void IncreaseImageTouchCount()
+	{
+		ImageTouchCount++;
+		TouchCount++;
 	}
 }

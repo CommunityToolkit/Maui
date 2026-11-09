@@ -1,19 +1,22 @@
-using CommunityToolkit.Maui.Sample.Models;
-using CommunityToolkit.Maui.Views;
-
 namespace CommunityToolkit.Maui.Sample.Views.Popups;
 
-public partial class ButtonPopup : Popup
+public partial class ButtonPopup : Maui.Views.Popup
 {
-	public ButtonPopup(PopupSizeConstants popupSizeConstants)
+	public ButtonPopup()
 	{
 		InitializeComponent();
-		Size = popupSizeConstants.Medium;
 	}
 
 	async void Button_Clicked(object? sender, EventArgs e)
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await CloseAsync(token: cts.Token);
+		await CloseAsync();
+	}
+
+	void Label_Loaded(object? sender, EventArgs e)
+	{
+		if (sender is Label label)
+		{
+			label.SetSemanticFocus();
+		}
 	}
 }

@@ -12,24 +12,31 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateShouldLoopPlayback();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateShouldLoopPlayback();
 	}
 
 
 	protected override MauiMediaElement CreatePlatformView()
 	{
-		mediaManager ??= new(MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null"),
+		MediaManager ??= new(MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null"),
 								VirtualView,
 								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
-		var (_, playerView) = mediaManager.CreatePlatformView();
+		var (_, playerView) = MediaManager.CreatePlatformView(VirtualView.AndroidViewType, VirtualView.IsAndroidForegroundServiceEnabled);
 		return new(Context, playerView);
 	}
 
+	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		platformView.Dispose();
 		Dispose();
 		base.DisconnectHandler(platformView);

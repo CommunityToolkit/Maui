@@ -6,85 +6,145 @@ namespace CommunityToolkit.Maui.Storage;
 /// <inheritdoc cref="IFileSaver" />
 [SupportedOSPlatform("iOS14.0")]
 [SupportedOSPlatform("MacCatalyst14.0")]
-public sealed partial class FileSaverImplementation : IFileSaver, IDisposable
+public sealed partial class FileSaverImplementation : IFileSaver
 {
-	UIDocumentPickerViewController? documentPickerViewController;
-	TaskCompletionSource<string>? taskCompetedSource;
+	// The dismissal takes under a second: the timeout only bounds a dismissal that UIKit never reports done
+	static readonly TimeSpan dismissalTimeout = TimeSpan.FromSeconds(3);
 
-	/// <inheritdoc />
-	public void Dispose()
+	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
 	{
-		InternalDispose();
+		return InternalSaveAsync(string.Empty, fileName, stream, progress, cancellationToken);
 	}
 
-	async Task<string> InternalSaveAsync(string initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
+	async Task<string> InternalSaveAsync(
+		string initialPath,
+		string fileName,
+		Stream stream,
+		IProgress<double>? progress,
+		CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
+
+		// Not Platform.GetCurrentUIViewController(): it throws a NullReferenceException instead of returning null
+		var currentViewController = WindowStateManager.Default.GetCurrentUIViewController()
+									?? throw new FileSaveException(
+										"Cannot present file picker: No active view controller found. Ensure the app is active with a visible window.");
+
 		var fileManager = NSFileManager.DefaultManager;
-		var tempDirectoryPath = fileManager.GetTemporaryDirectory().Append(Guid.NewGuid().ToString(), true);
-		var isDirectoryCreated = fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error);
-		if (!isDirectoryCreated)
+
+		var tempDirectoryPath = fileManager
+			.GetTemporaryDirectory()
+			.Append(Guid.NewGuid().ToString(), true);
+
+		if (!fileManager.CreateDirectory(tempDirectoryPath, true, null, out var error))
 		{
 			throw new FileSaveException(error?.LocalizedDescription ?? "Unable to create temp directory.");
 		}
 
 		var fileUrl = tempDirectoryPath.Append(fileName, false);
-		await WriteStream(stream, fileUrl.Path ?? throw new Exception("Path cannot be null."), progress, cancellationToken);
 
-		cancellationToken.ThrowIfCancellationRequested();
-		taskCompetedSource?.TrySetCanceled(CancellationToken.None);
-		var tcs = taskCompetedSource = new(cancellationToken);
-
-		documentPickerViewController = new([fileUrl])
-		{
-			DirectoryUrl = NSUrl.FromString(initialPath)
-		};
-		documentPickerViewController.DidPickDocumentAtUrls += DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-		documentPickerViewController.WasCancelled += DocumentPickerViewControllerOnWasCancelled;
-
-		var currentViewController = Platform.GetCurrentUIViewController();
-		if (currentViewController is not null)
-		{
-			currentViewController.PresentViewController(documentPickerViewController, true, null);
-		}
-		else
-		{
-			throw new FileSaveException("Unable to get a window where to present the file saver UI.");
-		}
-
-		return await tcs.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
-	}
-
-	Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
-	{
-		return InternalSaveAsync("/", fileName, stream, progress, cancellationToken);
-	}
-
-	void DocumentPickerViewControllerOnWasCancelled(object? sender, EventArgs e)
-	{
-		taskCompetedSource?.TrySetException(new FileSaveException("Operation cancelled."));
-		InternalDispose();
-	}
-
-	void DocumentPickerViewControllerOnDidPickDocumentAtUrls(object? sender, UIDocumentPickedAtUrlsEventArgs e)
-	{
 		try
 		{
-			taskCompetedSource?.TrySetResult(e.Urls[0].Path ?? throw new FileSaveException("Unable to retrieve the path of the saved file."));
+			await WriteStream(
+				stream,
+				fileUrl.Path ?? throw new FileSaveException("Path cannot be null."),
+				progress,
+				cancellationToken);
+		}
+		catch
+		{
+			// The temporary folder is otherwise removed once the picker is done, and the picker is never presented for a failed or canceled copy
+			fileManager.Remove(tempDirectoryPath, out _);
+			throw;
+		}
+
+		var tcs = new TaskCompletionSource<string>(
+			TaskCreationOptions.RunContinuationsAsynchronously);
+
+		await using var registration = cancellationToken.Register(() =>
+			tcs.TrySetCanceled(cancellationToken));
+
+		using var picker = new UIDocumentPickerViewController([fileUrl], true);
+		// NSUrl.FromString would give a URL without a scheme, which the picker ignores, so a path is made a file URL; a file URL string
+		// ("file:///..."), the form that worked before paths did, is still taken as the URL it is.
+		picker.DirectoryUrl = string.IsNullOrEmpty(initialPath)
+			? null
+			: initialPath.StartsWith("file:", StringComparison.OrdinalIgnoreCase) ? NSUrl.FromString(initialPath) : NSUrl.CreateFileUrl(initialPath, true);
+
+		picker.DidPickDocumentAtUrls += OnPicked;
+		picker.WasCancelled += OnCancelled;
+
+		var isPresented = false;
+		var dismissWhenPresented = false;
+
+		try
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			currentViewController.PresentViewController(picker, true, OnPresented);
+
+			return await tcs.Task.WaitAsync(cancellationToken);
+		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+		{
+			// The token, not the person, canceled the save: UIKit only dismisses the picker when the person picks or cancels
+			if (!isPresented)
+			{
+				// UIKit presents the picker some time after PresentViewController, and a picker can only be dismissed once it is presented
+				dismissWhenPresented = true;
+			}
+			else if (picker.PresentedViewController is null && picker.PresentingViewController is UIViewController presentingViewController)
+			{
+				// Only a picker that nothing covers: dismissing one would also take what is presented on top of it off the screen, such as
+				// the picker of another call, which would then never complete. A covered picker stays until the person closes it.
+				// The save returns once the picker is off the screen: until then the picker is the view controller on top, which a call made as
+				// soon as this one returns presents its picker from, and UIKit drops a presentation from a view controller that is being
+				// dismissed. The wait is bounded, so that a dismissal that UIKit never reports done cannot hold the cancellation.
+				await Task.WhenAny(presentingViewController.DismissViewControllerAsync(true), Task.Delay(dismissalTimeout, CancellationToken.None));
+			}
+
+			throw;
 		}
 		finally
 		{
-			InternalDispose();
-		}
-	}
+			fileManager.Remove(tempDirectoryPath, out _);
 
-	void InternalDispose()
-	{
-		if (documentPickerViewController is not null)
+			picker.DidPickDocumentAtUrls -= OnPicked;
+			picker.WasCancelled -= OnCancelled;
+		}
+
+		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
 		{
-			documentPickerViewController.DidPickDocumentAtUrls -= DocumentPickerViewControllerOnDidPickDocumentAtUrls;
-			documentPickerViewController.WasCancelled -= DocumentPickerViewControllerOnWasCancelled;
-			documentPickerViewController.Dispose();
+			if (e.Urls.Length is 0)
+			{
+				tcs.TrySetException(new FileSaveException("No file was selected."));
+				return;
+			}
+
+			var path = e.Urls[0].Path;
+			if (path is null)
+			{
+				tcs.TrySetException(new FileSaveException("File path cannot be null."));
+				return;
+			}
+
+			tcs.TrySetResult(path);
+		}
+
+		void OnCancelled(object? sender, EventArgs e)
+		{
+			tcs.TrySetCanceled(cancellationToken);
+		}
+
+		void OnPresented()
+		{
+			isPresented = true;
+
+			// The save is over and its picker disposed: the picker is reached through the view controller that presented it, and only
+			// dismissed when nothing covers it
+			if (dismissWhenPresented && currentViewController.PresentedViewController is UIDocumentPickerViewController { PresentedViewController: null } presentedPicker)
+			{
+				presentedPicker.DismissViewController(true, null);
+			}
 		}
 	}
 }

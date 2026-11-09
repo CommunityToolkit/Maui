@@ -1,0 +1,60 @@
+using Microsoft.Maui.Controls;
+namespace CommunityToolkit.Maui.Extensions;
+
+// Since MediaElement can't access .NET MAUI internals we have to copy this code here
+// https://github.com/dotnet/maui/blob/main/src/Controls/src/Core/Platform/PageExtensions.cs
+static class PageExtensions
+{
+	internal static Page GetCurrentPage(this Window window) => GetCurrentPage(window.Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
+
+	internal static Page GetCurrentPage(this Page currentPage)
+	{
+		if (currentPage.Navigation.ModalStack.LastOrDefault() is Page modal)
+		{
+			return modal;
+		}
+		else if (currentPage is FlyoutPage fp)
+		{
+			return GetCurrentPage(fp.Detail);
+		}
+		else if (currentPage is Shell shell && shell.CurrentPage is Page shellPage)
+		{
+			return GetCurrentPage(shellPage);
+		}
+		else if (currentPage is IPageContainer<Page> pc)
+		{
+			return GetCurrentPage(pc.CurrentPage);
+		}
+		else
+		{
+			return currentPage;
+		}
+	}
+
+	internal record struct ParentWindow
+	{
+		/// <summary>
+		/// Checks if the parent window is null.
+		/// </summary>
+		public static bool Exists
+		{
+			get
+			{
+				var currentPage = CurrentPage;
+				if (currentPage?.GetParentWindow() is null)
+				{
+					return false;
+				}
+				if (currentPage.GetParentWindow().Handler is null)
+				{
+					return false;
+				}
+
+				return currentPage.GetParentWindow().Handler?.PlatformView is not null;
+			}
+		}
+
+		// The last window of the application can have no page (yet): then there is no page whose parent window could exist
+		static Page? CurrentPage => Application.Current?.Windows.LastOrDefault() is { Page: not null } window ? window.GetCurrentPage() : null;
+	}
+}

@@ -2,7 +2,6 @@
 using Android.Content.PM;
 using AndroidX.Camera.Core;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Extensions;
 

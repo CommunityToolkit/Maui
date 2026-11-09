@@ -2,8 +2,4 @@
 
 public partial class MediaElementViewModel : BaseViewModel
 {
-	public MediaElementViewModel()
-	{
-
-	}
 }

@@ -1,6 +1,14 @@
+#if NET11_0_OR_GREATER
+using CommunityToolkit.Maui.Core.Primitives;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.UI;
+using Microsoft.Windows.AppLifecycle;
+using Microsoft.Windows.Storage.Pickers;
+#else
 using System.Diagnostics;
 using CommunityToolkit.Maui.Core.Primitives;
 using Windows.Storage.Pickers;
+#endif
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -10,12 +18,35 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		var folderPicker = new Windows.Storage.Pickers.FolderPicker()
+#if NET11_0_OR_GREATER
+		if (IPlatformApplication.Current?.Application.Windows[0].Handler?.PlatformView is not MauiWinUIWindow window)
+		{
+			throw new FolderPickerException(
+				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		var folderPicker = new Microsoft.Windows.Storage.Pickers.FolderPicker(window.AppWindow.Id)
+		{
+			SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+			SuggestedFolder = initialPath
+		};
+#else
+		var folderPicker = new Windows.Storage.Pickers.FolderPicker
 		{
 			SuggestedStartLocation = PickerLocationId.DocumentsLibrary
 		};
-		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, Process.GetCurrentProcess().MainWindowHandle);
+
+		var hwnd = Process.GetCurrentProcess().MainWindowHandle;
+		if (hwnd == IntPtr.Zero)
+		{
+			throw new FolderPickerException(
+				"Cannot present folder picker: No active window found. Ensure the app is active with a visible window.");
+		}
+
+		WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, hwnd);
 		folderPicker.FileTypeFilter.Add("*");
+#endif
+
 		var folderPickerOperation = folderPicker.PickSingleFolderAsync();
 
 		void CancelFolderPickerOperation()
@@ -27,10 +58,15 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		var folder = await folderPickerOperation;
 		if (folder is null)
 		{
-			throw new FolderPickerException("Operation cancelled or Folder doesn't exist.");
+			throw new OperationCanceledException("Operation cancelled.");
 		}
 
-		return new Folder(folder.Path, folder.Name);
+		if (string.IsNullOrEmpty(folder.Path))
+		{
+			throw new FolderPickerException("Folder doesn't exist.");
+		}
+
+		return new Folder(folder.Path, new DirectoryInfo(folder.Path).Name);
 	}
 
 	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)

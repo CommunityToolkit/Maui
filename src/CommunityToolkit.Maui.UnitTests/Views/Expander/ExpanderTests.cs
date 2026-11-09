@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class ExpanderTests : BaseHandlerTest
+public class ExpanderTests : BaseViewTest
 {
 	readonly Maui.Views.Expander expander = new();
 
@@ -63,21 +63,98 @@ public class ExpanderTests : BaseHandlerTest
 	}
 
 	[Fact]
+	public void BoundDirectionFollowsEveryChangeOfTheSource()
+	{
+		var header = new MockView();
+		var content = new MockView();
+		var viewModel = new DirectionViewModel();
+
+		expander.Header = header;
+		expander.Content = content;
+		expander.BindingContext = viewModel;
+		expander.SetBinding(Maui.Views.Expander.DirectionProperty, nameof(DirectionViewModel.Direction));
+
+		foreach (var direction in new[] { ExpandDirection.Up, ExpandDirection.Down, ExpandDirection.Up, ExpandDirection.Down })
+		{
+			viewModel.Direction = direction;
+
+			Assert.Equal(direction, expander.Direction);
+			Assert.Equal(direction is ExpandDirection.Down ? 0 : 1, Grid.GetRow(header));
+			Assert.Equal(direction is ExpandDirection.Down ? 1 : 0, Grid.GetRow(content));
+		}
+	}
+
+	[Fact]
+	public void ImplicitGridStyleDoesNotReachTheGridThatHoldsHeaderAndContent()
+	{
+		Application.Current!.Resources.Add(new Style(typeof(Grid))
+		{
+			Setters =
+			{
+				new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.White },
+				new Setter { Property = Grid.RowSpacingProperty, Value = 20d },
+				new Setter { Property = Layout.PaddingProperty, Value = new Thickness(10) }
+			}
+		});
+
+		var header = new MockView();
+		var appGrid = new Grid();
+		expander.BackgroundColor = Colors.LightGray;
+		expander.Header = header;
+		expander.Content = new MockView();
+		ShowOnPage(new VerticalStackLayout { expander, appGrid });
+
+		var expanderGrid = Assert.IsType<Grid>(header.Parent, exactMatch: false);
+		Assert.Same(expander, expanderGrid.Parent);
+		Assert.Equal(Colors.White, appGrid.BackgroundColor);
+
+		Assert.Null(((IView)expanderGrid).Background);
+		Assert.Equal(0d, expanderGrid.RowSpacing);
+		Assert.Equal(Thickness.Zero, expanderGrid.Padding);
+		Assert.Equal(Colors.LightGray, expander.BackgroundColor);
+	}
+
+	[Fact]
+	public void GridStyleThatAppliesToDerivedTypesDoesNotPaintOverTheExpanderBackground()
+	{
+		Application.Current!.Resources.Add(new Style(typeof(Grid))
+		{
+			ApplyToDerivedTypes = true,
+			Setters =
+			{
+				new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.White },
+				new Setter { Property = VisualElement.BackgroundProperty, Value = new SolidColorBrush(Colors.White) }
+			}
+		});
+
+		var header = new MockView();
+		expander.BackgroundColor = Colors.LightGray;
+		expander.Header = header;
+		expander.Content = new MockView();
+		ShowOnPage(expander);
+
+		var expanderGrid = Assert.IsType<Grid>(header.Parent, exactMatch: false);
+		Assert.Null(((IView)expanderGrid).Background);
+		Assert.Equal(Colors.LightGray, expander.BackgroundColor);
+	}
+
+	[Fact]
 	public void EnsureExpandedChanged()
 	{
 		var isExpanded_Initial = expander.IsExpanded;
 
-		var header = new View();
+		var header = new MockView();
 		expander.Header = header;
+		Assert.IsType<TapGestureRecognizer>(Assert.Single(header.GestureRecognizers));
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 		var isExpanded_Final = expander.IsExpanded;
 
 		Assert.True(isExpanded_Final);
 		Assert.False(isExpanded_Initial);
 		Assert.NotEqual(isExpanded_Initial, isExpanded_Final);
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 
 		Assert.False(expander.IsExpanded);
 	}
@@ -88,18 +165,18 @@ public class ExpanderTests : BaseHandlerTest
 		int handleHeaderTappedCount = 0;
 		bool didHandleHeaderTappedExecute = false;
 
-		var header = new View();
-		expander.Header = new View();
+		var header = new MockView();
+		expander.Header = new MockView();
 		expander.HandleHeaderTapped = HandleHeaderTapped;
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 
 		Assert.True(didHandleHeaderTappedExecute);
 		Assert.Equal(1, handleHeaderTappedCount);
 
 		expander.HandleHeaderTapped = null;
 
-		expander.HeaderTapGestureRecognizer.SendTapped(header);
+		expander.HandleHeaderTap(new TappedEventArgs(header));
 
 		Assert.True(didHandleHeaderTappedExecute);
 		Assert.Equal(1, handleHeaderTappedCount);
@@ -108,6 +185,89 @@ public class ExpanderTests : BaseHandlerTest
 		{
 			handleHeaderTappedCount++;
 			didHandleHeaderTappedExecute = true;
+		}
+	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var expander = new Maui.Views.Expander();
+		Assert.Equal(ExpanderDefaults.Direction, expander.Direction);
+	}
+
+	[Fact]
+	public void SetIsExpandedFromHeaderTapsTheHeaderOnlyWhenTheStateChanges()
+	{
+		var handleHeaderTappedCount = 0;
+		List<bool> expandedChanges = [];
+		expander.Header = new MockView();
+		expander.HandleHeaderTapped = _ => handleHeaderTappedCount++;
+		expander.ExpandedChanged += (_, e) => expandedChanges.Add(e.IsExpanded);
+
+		expander.SetIsExpandedFromHeader(false, new TappedEventArgs(null));
+
+		Assert.False(expander.IsExpanded);
+		Assert.Equal(0, handleHeaderTappedCount);
+
+		expander.SetIsExpandedFromHeader(true, new TappedEventArgs(null));
+		expander.SetIsExpandedFromHeader(true, new TappedEventArgs(null));
+
+		Assert.True(expander.IsExpanded);
+		Assert.Equal(1, handleHeaderTappedCount);
+
+		expander.SetIsExpandedFromHeader(false, new TappedEventArgs(null));
+
+		Assert.False(expander.IsExpanded);
+		Assert.Equal(2, handleHeaderTappedCount);
+		Assert.Equal<bool>([true, false], expandedChanges);
+	}
+
+	[Fact]
+	public void IsHeaderActivatableOnlyWhileATapCanToggleTheHeader()
+	{
+		Assert.False(expander.IsHeaderActivatable);
+
+		var header = new MockView();
+		expander.Header = header;
+		Assert.True(expander.IsHeaderActivatable);
+
+		header.IsVisible = false;
+		Assert.False(expander.IsHeaderActivatable);
+		header.IsVisible = true;
+
+		header.IsEnabled = false;
+		Assert.False(expander.IsHeaderActivatable);
+		header.IsEnabled = true;
+
+		header.InputTransparent = true;
+		Assert.False(expander.IsHeaderActivatable);
+		header.InputTransparent = false;
+
+		expander.IsEnabled = false;
+		Assert.False(expander.IsHeaderActivatable);
+		expander.IsEnabled = true;
+
+		Assert.True(expander.IsHeaderActivatable);
+	}
+
+	// Implicit Styles in Application.Resources reach the elements of the Window's Page
+	static void ShowOnPage(View view) => Application.Current!.Windows[0].Page = new ContentPage { Content = view };
+
+	sealed class DirectionViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public ExpandDirection Direction
+		{
+			get;
+			set
+			{
+				if (value != field)
+				{
+					field = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Direction)));
+				}
+			}
 		}
 	}
 }

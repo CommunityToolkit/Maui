@@ -31,18 +31,40 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 		remove => speechToTextStateChangedWeakEventManager.RemoveEventHandler(value);
 	}
 
+#if !ANDROID && !IOS && !MACCATALYST
+	// The other platforms guard StartListenAsync with CurrentState alone
+	bool IsListeningSessionActive => false;
+#endif
+
 	/// <inheritdoc/>
-	public async Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	public Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
-		cancellationToken.ThrowIfCancellationRequested();
+		// Thrown by the call, not faulted into the returned Task: a usage error is not an outcome of the listening session
+		ArgumentNullException.ThrowIfNull(options);
 
-		var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
-		if (!isPermissionGranted)
+		return StartListenAsyncCore();
+
+		async Task StartListenAsyncCore()
 		{
-			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
-		}
+			cancellationToken.ThrowIfCancellationRequested();
 
-		await InternalStartListening(options, cancellationToken);
+			// CurrentState is still Stopped while a session starts (Android: until speech begins; iOS and Mac Catalyst: while the recognition task is starting)
+			if (CurrentState is not SpeechToTextState.Stopped || IsListeningSessionActive)
+			{
+				return;
+			}
+
+			try
+			{
+				await InternalStartListening(options, cancellationToken);
+			}
+			catch (Exception)
+			{
+				// Use CancellationToken.None to ensure StopListenAsync completes successfully even when `cancellationToken` has been cancelled
+				await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+				throw;
+			}
+		}
 	}
 
 	/// <inheritdoc/>
@@ -52,6 +74,15 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 		InternalStopListening();
 		return Task.CompletedTask;
 	}
+
+#if !MACCATALYST && !IOS
+	/// <inheritdoc/>
+	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
+	{
+		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		return status is PermissionStatus.Granted;
+	}
+#endif
 
 	void OnRecognitionResultUpdated(string recognitionResult)
 	{
@@ -67,19 +98,4 @@ public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
 	{
 		speechToTextStateChangedWeakEventManager.HandleEvent(this, new SpeechToTextStateChangedEventArgs(speechToTextState), nameof(StateChanged));
 	}
-
-#if !MACCATALYST && !IOS
-	/// <inheritdoc/>
-	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
-	{
-		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
-
-	static async Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		var status = await Permissions.CheckStatusAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
-#endif
 }

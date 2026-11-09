@@ -1,70 +1,68 @@
 name: Benchmarks
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - '*'
-    paths-ignore:
-      - README.md
-  pull_request:
-    branches:
-      - '*'
+    push:
+        branches:
+            - main
+        tags:
+            - '*'
+        paths-ignore:
+            - README.md
+    pull_request:
+        branches:
+            - '*'
 
 env:
-  LATEST_NET_VERSION: '9.0.x'
-  PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    PathToCommunityToolkitAnalyzersBenchmarksCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
+    PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  run_benchmarks:
-    name: Run Benchmarks
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-15]
+    run_benchmarks:
+        name: Run Benchmarks
+        runs-on: windows-latest            
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@main
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        if: runner.os == 'macOS'
-        with:
-          xcode-version: latest-stable
+            -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
 
-      - name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.LATEST_NET_VERSION }}
-          dotnet-quality: 'ga'
+            -   name: Install .NET MAUI Workload
+                run: |
+                    dotnet workload install maui
+                    dotnet workload update
 
-      - name: Install .NET MAUI Workload
-        run: |
-          dotnet workload install maui
-          dotnet workload update
+            -   name: Install Tizen Workload
+                run: |
+                    Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+                    .\workload-install.ps1
+                shell: pwsh
 
-      - name: Install Tizen Workload
-        run: |
-          Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-          .\workload-install.ps1
-        shell: pwsh
+            -   name: Display dotnet info
+                run: dotnet --info
 
-      - name: Display dotnet info
-        run: dotnet --info
+            -   name: Run Analyzer Benchmarks
+                run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
-      - name: Run Benchmarks
-        run: dotnet run --project ${{ env.PathToCommunityToolkitAnalyzersBenchmarkCsproj }} -c Release -- -a ${{ runner.temp }}
+            -   name: Run Source Generator Benchmarks
+                run: |
+                    dotnet build-server shutdown
+                    dotnet build ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -m:1 --disable-build-servers
+                    dotnet run --no-build --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
-      - name: Publish Benchmarks
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Benchmarks
-          path: |
-            ${{ runner.temp }}/**/*.md
+            -   name: Publish Benchmarks
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: Benchmarks
+                    path: |
+                        ${{ runner.temp }}/**/*.md

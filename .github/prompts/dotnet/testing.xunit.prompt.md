@@ -151,7 +151,7 @@ Tests should be reliable, maintainable, provide meaningful coverage, and provide
 		};
 
 		// Act
-		testControl.Layout(new Rect(0, 0, 37, 73));
+		testControl.Arrange(new Rect(0, 0, 37, 73));
 		var gravatarImageSource = (GravatarImageSource)testControl.Source;
 		bool isDisposedBefore = gravatarImageSource.IsDisposed;
 		gravatarImageSource.Dispose();

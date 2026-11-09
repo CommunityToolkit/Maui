@@ -75,7 +75,6 @@ public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, T
 			parameter = Type;
 		}
 
-
 		return parameter switch
 		{
 			TextCaseType.Lower => value.ToLowerInvariant(),

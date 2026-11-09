@@ -47,9 +47,9 @@
             <Label Text="This sample demonstrates how to use the MultiConverter with the IsNotEqualConverter and the TextCaseConverter. It converts the entered text to Upper Case and checks that it is Not Equal to the string 'MAUI'."/>
             <Entry Text="{Binding EnteredName}"/>
             <Label Text="{Binding EnteredName, Converter={StaticResource MyUpperCaseConverter}, ConverterParameter={StaticResource UpperCaseParams}, Mode=OneWay}"
-                   HorizontalOptions="CenterAndExpand"/>
+                   HorizontalOptions="Center"/>
             <Label Text="{Binding EnteredName, Converter={StaticResource MyMultiConverter}, ConverterParameter={StaticResource MultiParams}, Mode=OneWay}"
-                   HorizontalOptions="CenterAndExpand"/>
+                   HorizontalOptions="Center"/>
 
             <VerticalStackLayout
                 Padding="30,0"
@@ -61,7 +61,7 @@
                     </MultiBinding>
                 </VerticalStackLayout.IsEnabled>
 
-                <Button Text="This button doesn't perform any action but helps to prove that the multi converter works when not using a compiled binding" />
+                <Button Text="This button does nothing. A MultiBinding keeps it disabled: VariableMultiValueConverter (All) gets two InvertedBoolConverter results, and both are false." />
             </VerticalStackLayout>
         </VerticalStackLayout>
     </pages:BasePage.Content>

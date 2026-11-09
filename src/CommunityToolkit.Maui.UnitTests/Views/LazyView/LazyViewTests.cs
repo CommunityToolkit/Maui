@@ -3,7 +3,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class LazyViewTests : BaseHandlerTest
+public class LazyViewTests : BaseViewTest
 {
 	[Fact]
 	public void CheckHasLoadedFalseAfterConstruction()
@@ -19,8 +19,7 @@ public class LazyViewTests : BaseHandlerTest
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 		var lazyView = new LazyView<Button>();
 
-		// Ensure CancellationToken Expired
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await lazyView.LoadViewAsync(cts.Token));
 	}
@@ -28,7 +27,7 @@ public class LazyViewTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task LoadViewAsync_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		var lazyView = new LazyView<Button>();
 
 		// Ensure CancellationToken Expired

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
+﻿
 using CommunityToolkit.Maui.Extensions;
 using Windows.Devices.Enumeration;
 using Windows.Media.Capture;
@@ -9,18 +9,34 @@ namespace CommunityToolkit.Maui.Core;
 
 partial class CameraProvider
 {
-	public async partial ValueTask RefreshAvailableCameras(CancellationToken token)
+	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
 	{
+		// AsTask only asks the WinRT operations to cancel, and an enumeration that completes first still returns its devices
+		token.ThrowIfCancellationRequested();
+
 		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
 		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
 		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
-		var mediaCapture = new MediaCapture();
 
 		var availableCameras = new List<CameraInfo>();
 
 		foreach (var sourceGroup in videoCaptureSourceGroup)
 		{
-			await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token);
+			using var mediaCapture = new MediaCapture();
+
+			try
+			{
+				if (!await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token))
+				{
+					// The VideoDeviceController, read below, throws for a MediaCapture that is not initialized
+					continue;
+				}
+			}
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				// can't use that camera
+				continue;
+			}
 
 			CameraPosition position = CameraPosition.Unknown;
 			var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
@@ -67,5 +83,4 @@ partial class CameraProvider
 
 		AvailableCameras = availableCameras;
 	}
-
 }

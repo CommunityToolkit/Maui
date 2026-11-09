@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Layouts;
 using CommunityToolkit.Maui.Layouts;
 using Xunit;
 
@@ -39,6 +40,18 @@ public class DockLayoutTests : BaseTest
 		DockLayout.SetDockPosition(childLeftView, DockPosition.Left);
 		DockLayout.SetDockPosition(childRightView, DockPosition.Right);
 		DockLayout.SetDockPosition(childBottomView, DockPosition.Bottom);
+	}
+
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var layout = new DockLayout();
+		var view = new MockView();
+
+		Assert.Equal(DockLayoutDefaults.ShouldExpandLastChild, layout.ShouldExpandLastChild);
+		Assert.Equal(DockLayoutDefaults.HorizontalSpacing, layout.HorizontalSpacing);
+		Assert.Equal(DockLayoutDefaults.VerticalSpacing, layout.VerticalSpacing);
+		Assert.Equal(DockLayoutDefaults.DockPosition, DockLayout.GetDockPosition(view));
 	}
 
 	#region Measure
@@ -138,7 +151,7 @@ public class DockLayoutTests : BaseTest
 
 		var measuredSize = dockLayout.CrossPlatformMeasure(widthLimit, heightLimit);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(widthLimit, heightLimit);
@@ -151,7 +164,7 @@ public class DockLayoutTests : BaseTest
 	{
 		var measuredSize = dockLayout.CrossPlatformMeasure(500, 500);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(2 * childWidth + contentWidth, 2 * childHeight + contentHeight);
@@ -164,7 +177,7 @@ public class DockLayoutTests : BaseTest
 	{
 		var measuredSize = dockLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(2 * childWidth + contentWidth, 2 * childHeight + contentHeight);
@@ -181,7 +194,7 @@ public class DockLayoutTests : BaseTest
 		dockLayout.Padding = new Thickness(10, 20);
 		var measuredSize = dockLayout.CrossPlatformMeasure(widthLimit, heightLimit);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(widthLimit, heightLimit);
@@ -195,7 +208,7 @@ public class DockLayoutTests : BaseTest
 		dockLayout.Padding = new Thickness(10, 20);
 		var measuredSize = dockLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(2 * childWidth + contentWidth + dockLayout.Padding.HorizontalThickness,
@@ -215,7 +228,7 @@ public class DockLayoutTests : BaseTest
 		dockLayout.VerticalSpacing = 10;
 		var measuredSize = dockLayout.CrossPlatformMeasure(widthLimit, heightLimit);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(widthLimit, heightLimit);
@@ -231,7 +244,7 @@ public class DockLayoutTests : BaseTest
 		dockLayout.VerticalSpacing = 10;
 		var measuredSize = dockLayout.CrossPlatformMeasure(double.PositiveInfinity, double.PositiveInfinity);
 		var rect = new Rect(0, 0, measuredSize.Width, measuredSize.Height);
-		dockLayout.Layout(rect);
+		dockLayout.Arrange(rect);
 		var actualSize = dockLayout.CrossPlatformArrange(rect);
 
 		var expectedSize = new Size(
@@ -242,6 +255,16 @@ public class DockLayoutTests : BaseTest
 	}
 
 	#endregion
+
+	[Fact]
+	public void DockLayoutManager_NullDockLayout_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new DockLayoutManager(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("dockLayout", exception.ParamName);
+	}
 
 	class TestView : View
 	{

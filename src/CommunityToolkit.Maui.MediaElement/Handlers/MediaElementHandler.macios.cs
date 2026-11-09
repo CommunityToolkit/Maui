@@ -18,18 +18,27 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 		}
 
-		mediaManager ??= new(MauiContext,
+		MediaManager ??= new(MauiContext,
 			VirtualView,
 			Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
-		(_, playerViewController) = mediaManager.CreatePlatformView();
+
+		(_, playerViewController) = MediaManager.CreatePlatformView();
 
 		return new(playerViewController, VirtualView);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
+		if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		{
+			platformView.DetachFromParentViewController();
+		}
+
 		platformView.Dispose();
 		Dispose();
 
@@ -40,5 +49,14 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		playerViewController?.Dispose();
 		playerViewController = null;
+	}
+
+	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
+	{
+		// The mapper also runs while the handler has no platform view (after DisconnectHandler), and the PlatformView property throws then
+		if (((IElementHandler)this).PlatformView is MauiMediaElement platformView)
+		{
+			platformView.RefreshPlaybackControlsVisibility(shouldShowPlaybackControls);
+		}
 	}
 }

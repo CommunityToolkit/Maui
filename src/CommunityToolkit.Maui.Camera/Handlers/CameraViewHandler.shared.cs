@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Extensions;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Handlers;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
@@ -6,19 +7,16 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// <summary>
 /// Handler definition for the <see cref="ICameraView"/> implementation on each platform.
 /// </summary>
-#if TIZEN
-public class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>
-#else
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
-#endif
 {
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
-	/// properties on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// properties on the <see cref="NativePlatformCameraPreviewView"/>.
 	/// </summary>
 	public static IPropertyMapper<ICameraView, CameraViewHandler> PropertyMapper = new PropertyMapper<ICameraView, CameraViewHandler>(ViewMapper)
 	{
 		[nameof(ICameraView.CameraFlashMode)] = MapCameraFlashMode,
+		[nameof(ICameraView.IsTorchOn)] = MapIsTorchOn,
 		[nameof(ICameraView.IsAvailable)] = MapIsAvailable,
 		[nameof(ICameraView.ZoomFactor)] = MapZoomFactor,
 		[nameof(ICameraView.ImageCaptureResolution)] = MapImageCaptureResolution,
@@ -27,14 +25,9 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	/// <summary>
 	/// The currently defined mappings between commands on the <see cref="ICameraView"/> and
-	/// commands on the <see cref="NativePlatformCameraPreviewView"/>. 
+	/// commands on the <see cref="NativePlatformCameraPreviewView"/>.
 	/// </summary>
-	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper)
-	{
-		[nameof(ICameraView.CaptureImage)] = MapCaptureImage,
-		[nameof(ICameraView.StartCameraPreview)] = MapStartCameraPreview,
-		[nameof(ICameraView.StopCameraPreview)] = MapStopCameraPreview
-	};
+	public static CommandMapper<ICameraView, CameraViewHandler> CommandMapper = new(ViewCommandMapper);
 
 	readonly ICameraProvider cameraProvider = IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException($"{nameof(CameraProvider)} not found");
 
@@ -59,6 +52,9 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	}
 
+	internal CameraManager CameraManager => cameraManager
+		?? throw new InvalidOperationException($"{nameof(CameraManager)} cannot be used until the native view has been created");
+
 	/// <inheritdoc/>
 	public void Dispose()
 	{
@@ -71,34 +67,42 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// </summary>
 	protected override NativePlatformCameraPreviewView CreatePlatformView()
 	{
-		ArgumentNullException.ThrowIfNull(MauiContext);
-		cameraManager = new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
+		cameraManager = CreateCameraManager();
 
-		return (NativePlatformCameraPreviewView)cameraManager.CreatePlatformView();
-
-		// When camera is loaded(switched), map the current flash mode to the platform view,
-		// reset the zoom factor to 1
-		void Init(ICameraView view)
-		{
-			MapCameraFlashMode(this, view);
-			view.ZoomFactor = 1.0f;
-		}
+		return CameraManager.CreatePlatformView();
 	}
 
 	/// <inheritdoc/>
-	protected override async void ConnectHandler(NativePlatformCameraPreviewView platformView)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
+	protected override void ConnectHandler(NativePlatformCameraPreviewView platformView)
 	{
+		// Not async: the exception of an async void method never reaches the caller, it is raised on the synchronization context
+		ArgumentNullException.ThrowIfNull(platformView);
+
+		// An app's CameraViewHandler.PlatformViewFactory creates the platform view in place of CreatePlatformView, which then created no
+		// CameraManager: the mappers that MAUI runs after ConnectHandler need one, and it must use the view of the app
+		if (cameraManager is null)
+		{
+			cameraManager = CreateCameraManager();
+			cameraManager.AdoptPlatformView(platformView);
+		}
+
 		base.ConnectHandler(platformView);
 
-		await (cameraManager?.ArePermissionsGranted() ?? Task.CompletedTask);
-		await (cameraManager?.ConnectCamera(CancellationToken.None) ?? Task.CompletedTask);
-		await cameraProvider.RefreshAvailableCameras(CancellationToken.None);
+		ConnectCameraAndReportErrors(VirtualView);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(NativePlatformCameraPreviewView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		base.DisconnectHandler(platformView);
+
+		// The CameraManager is already released when the handler was disposed before it was disconnected
+		cameraManager?.Disconnect();
+
 		Dispose();
 	}
 
@@ -121,14 +125,21 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	static void MapIsAvailable(CameraViewHandler handler, ICameraView view)
 #endif
 	{
-		var cameraAvailability = (ICameraView)handler.VirtualView;
+		var cameraView = (ICameraView)handler.VirtualView;
 
 #if ANDROID
-		cameraAvailability.UpdateAvailability(handler.Context);
+		cameraView.UpdateAvailability(handler.Context);
 #elif WINDOWS
-		await cameraAvailability.UpdateAvailability(CancellationToken.None);
+		try
+		{
+			await cameraView.UpdateAvailability(CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			handler.ReportError(cameraView, "update the camera availability", ex);
+		}
 #elif IOS || MACCATALYST
-		cameraAvailability.UpdateAvailability();
+		cameraView.UpdateAvailability();
 #elif TIZEN
 		throw new NotSupportedException("Tizen is not yet supported");
 #elif NET
@@ -136,40 +147,85 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 #endif
 	}
 
-	static async void MapCaptureImage(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		await (handler.cameraManager?.TakePicture(CancellationToken.None) ?? ValueTask.CompletedTask);
-		view.HandlerCompleteTCS.SetResult();
-	}
-
-	static async void MapStartCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		await (handler.cameraManager?.StartCameraPreview(CancellationToken.None) ?? Task.CompletedTask);
-		view.HandlerCompleteTCS.SetResult();
-	}
-
 	static async void MapImageCaptureResolution(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None) ?? ValueTask.CompletedTask);
+		try
+		{
+			await handler.CameraManager.UpdateCaptureResolution(view.ImageCaptureResolution, CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			handler.ReportError(view, "update the capture resolution", ex);
+		}
 	}
 
 	static async void MapSelectedCamera(CameraViewHandler handler, ICameraView view)
 	{
-		await (handler.cameraManager?.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None) ?? ValueTask.CompletedTask);
-	}
-
-	static void MapStopCameraPreview(CameraViewHandler handler, ICameraView view, object? arg3)
-	{
-		handler.cameraManager?.StopCameraPreview();
+		try
+		{
+			await handler.CameraManager.UpdateCurrentCamera(view.SelectedCamera, CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			handler.ReportError(view, "switch to the selected camera", ex);
+		}
 	}
 
 	static void MapCameraFlashMode(CameraViewHandler handler, ICameraView view)
 	{
-		handler.cameraManager?.UpdateFlashMode(view.CameraFlashMode);
+		handler.CameraManager.UpdateFlashMode(view.CameraFlashMode);
+	}
+
+	static void MapIsTorchOn(CameraViewHandler handler, ICameraView view)
+	{
+		handler.CameraManager.UpdateIsTorchOn(view.IsTorchOn);
 	}
 
 	static void MapZoomFactor(CameraViewHandler handler, ICameraView view)
 	{
-		handler.cameraManager?.UpdateZoom(view.ZoomFactor);
+		handler.CameraManager.UpdateZoom(view.ZoomFactor);
+	}
+
+	// Work that the handler starts on its own runs in async void methods: no caller awaits them, and an exception that escaped from one would
+	// terminate the app, so their failures are reported through the view's ErrorOccurred event instead. A failure after the handler was
+	// disconnected (the view is gone, for example because its page closed while the camera connected) is only traced
+	void ReportError(ICameraView view, string work, Exception exception)
+	{
+		Trace.TraceError($"{nameof(CameraViewHandler)}: unable to {work}: {exception}");
+
+		if (cameraManager is not null)
+		{
+			view.OnErrorOccurred(exception);
+		}
+	}
+
+	async void ConnectCameraAndReportErrors(ICameraView cameraView)
+	{
+		// ConnectCamera reports a camera that cannot be connected itself; what fails before it gets that far (for example the camera
+		// discovery) is reported the same way
+		try
+		{
+			await CameraManager.ConnectCamera(CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			ReportError(cameraView, "connect the camera", ex);
+		}
+	}
+
+	CameraManager CreateCameraManager()
+	{
+		ArgumentNullException.ThrowIfNull(MauiContext);
+
+		return new(MauiContext, VirtualView, cameraProvider, () => Init(VirtualView));
+
+		// When camera is loaded(switched), map the current flash mode to the platform view,
+		// reset the zoom factor to 1
+		void Init(ICameraView view)
+		{
+			MapCameraFlashMode(this, view);
+			MapIsTorchOn(this, view);
+			view.ZoomFactor = 1.0f;
+		}
 	}
 }

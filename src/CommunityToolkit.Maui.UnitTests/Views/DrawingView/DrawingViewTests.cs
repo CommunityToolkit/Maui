@@ -9,7 +9,7 @@ using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
 [Collection(nameof(DrawingViewTests)), CollectionDefinition(nameof(DrawingViewTests), DisableParallelization = true)]
-public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerTest
+public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseViewTest
 {
 	[Fact]
 	public void DrawingViewShouldBeAssignedToIDrawingView()
@@ -156,8 +156,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken Expired
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		ImageLineOptions options = ImageLineOptions.JustLines([new DrawingLine()], Size.Zero, Colors.Transparent.AsPaint());
 
@@ -167,7 +166,7 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStream_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();
@@ -440,5 +439,15 @@ public class DrawingViewTests(ITestOutputHelper testOutputHelper) : BaseHandlerT
 		drawingView.PointDrawn -= action;
 
 		currentPoint.Should().BeEquivalentTo(expectedPoint);
+	}
+	[Fact]
+	public void EnsureDefaults()
+	{
+		var drawingView = new DrawingView();
+		Assert.Equal(DrawingViewDefaults.LineWidth, drawingView.LineWidth);
+		Assert.Equal(DrawingViewDefaults.LineColor, drawingView.LineColor);
+		Assert.Equal(DrawingViewDefaults.IsMultiLineModeEnabled, drawingView.IsMultiLineModeEnabled);
+		Assert.Equal(DrawingViewDefaults.ShouldClearOnFinish, drawingView.ShouldClearOnFinish);
+		Assert.Equal(DrawingViewDefaults.BackgroundColor, drawingView.BackgroundColor);
 	}
 }

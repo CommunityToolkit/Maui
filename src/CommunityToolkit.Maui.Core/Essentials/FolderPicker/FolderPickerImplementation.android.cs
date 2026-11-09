@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using System.Web;
 using Android.Content;
 using Android.Provider;
 using CommunityToolkit.Maui.Core.Essentials;
@@ -24,26 +23,15 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		Folder? folder = null;
 
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			var statusRead = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
-			if (statusRead is not PermissionStatus.Granted)
-			{
-				throw new PermissionException("Storage permission is not granted.");
-			}
-		}
-
-		if (Android.OS.Environment.ExternalStorageDirectory is not null)
-		{
-			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
-		}
-
-		var initialFolderUri = AndroidUri.Parse(AndroidStorageConstants.ExternalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
-
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
-		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 
-		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
+		// No storage volume holds a folder of the app's private storage: the picker then starts where it chooses.
+		if (AndroidPathExtensions.ToExternalStorageDocumentUri(initialPath) is AndroidUri initialFolderUri)
+		{
+			intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
+		}
+
+		await ActivityResultManager.StartAsync(intent, AndroidRequestCode.RequestCodeFolderPicker, OnResult, cancellationToken);
 
 		return folder ?? throw new FolderPickerException("Unable to get folder.");
 

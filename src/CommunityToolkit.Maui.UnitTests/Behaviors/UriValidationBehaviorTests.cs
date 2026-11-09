@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavior, VisualElement>(new UriValidationBehavior(), new View())
+public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavior, VisualElement>(new UriValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData(@"http://microsoft.com", UriKind.Absolute, true)]
@@ -39,12 +40,10 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -61,7 +60,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -74,5 +73,38 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenUriKindChangesAfterTheViewLostFocus()
+	{
+		var behavior = new UriValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			UriKind = UriKind.Absolute
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "microsoft/xamarin/news";
+		((IView)entry).IsFocused = false;
+
+		Assert.False(behavior.IsValid);
+
+		behavior.UriKind = UriKind.Relative;
+
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new UriValidationBehavior();
+
+		// Act Assert
+		Assert.Equal(UriValidationBehaviorDefaults.UriKind, behavior.UriKind);
 	}
 }

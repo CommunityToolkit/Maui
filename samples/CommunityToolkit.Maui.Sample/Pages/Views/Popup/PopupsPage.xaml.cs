@@ -1,0 +1,300 @@
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Markup;
+using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
+using CommunityToolkit.Maui.Sample.Views.Popups;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls.Shapes;
+
+namespace CommunityToolkit.Maui.Sample.Pages.Views;
+
+public partial class PopupsPage : BasePage<PopupsViewModel>
+{
+	readonly IPopupService popupService;
+
+	bool isOpenInProgress;
+
+	public PopupsPage(PopupsViewModel multiplePopupViewModel, IPopupService popupService)
+		: base(multiplePopupViewModel)
+	{
+		this.popupService = popupService;
+
+		InitializeComponent();
+	}
+
+	protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+	{
+		base.OnNavigatedTo(args);
+		if (args.WasPreviousPageACommunityToolkitPopupPage())
+		{
+			await Toast.Make("Popup Closed").Show();
+		}
+	}
+
+	protected override async void OnNavigatedFrom(NavigatedFromEventArgs args)
+	{
+		base.OnNavigatedFrom(args);
+		if (args.IsDestinationPageACommunityToolkitPopupPage())
+		{
+			await Toast.Make("Popup Opened").Show();
+		}
+	}
+
+	protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
+	{
+		base.OnNavigatingFrom(args);
+		if (args.IsDestinationPageACommunityToolkitPopupPage())
+		{
+			await Toast.Make("Opening Popup").Show();
+		}
+	}
+
+	// A popup or page covers this page only once its push is done, so quick taps, a repeated key or UI Automation would open a second one;
+	// UI Automation can even invoke a button that an open popup covers
+	async Task OpenOneAtATimeAsync(Func<Task> open)
+	{
+		if (isOpenInProgress)
+		{
+			return;
+		}
+
+		isOpenInProgress = true;
+
+		try
+		{
+			await open();
+		}
+		finally
+		{
+			isOpenInProgress = false;
+		}
+	}
+
+	async void HandleSimplePopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			var queryAttributes = new Dictionary<string, object>
+			{
+				["DescriptionLabel"] = "This is a popup where this text is being passed in using IQueryAttributable"
+			};
+
+			await popupService.ShowPopupAsync<SimplePopup>(Shell.Current, new PopupOptions
+			{
+				Shape = new RoundRectangle
+				{
+					CornerRadius = new CornerRadius(4),
+					Stroke = Colors.White
+				}
+			}, queryAttributes, CancellationToken.None);
+		});
+	}
+
+	async void HandleButtonPopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<ButtonPopup>(Navigation));
+	}
+
+	async void HandleMultipleButtonPopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<MultipleButtonPopup, bool>(Navigation));
+	}
+
+	async void HandleNoOutsideTapDismissPopupClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			await popupService.ShowPopupAsync<NoOutsideTapDismissPopup>(Navigation, new PopupOptions
+			{
+				CanBeDismissedByTappingOutsideOfPopup = false,
+			});
+		});
+	}
+
+	async void HandleToggleSizePopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<ToggleSizePopup>(Navigation));
+	}
+
+	async void HandleTransparentPopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<TransparentPopup>(Navigation));
+	}
+
+	async void HandleOpenedEventSimplePopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			await popupService.ShowPopupAsync<OpenedEventSimplePopup>(Navigation, new PopupOptions
+			{
+				Shape = new RoundRectangle
+				{
+					CornerRadius = new CornerRadius(20, 20, 20, 20),
+					StrokeThickness = 20,
+					Stroke = Colors.Blue
+				},
+			});
+		});
+	}
+
+	async void HandleReturnResultPopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			var result = await popupService.ShowPopupAsync<ReturnResultPopup, string>(Navigation);
+
+			await DisplayAlertAsync("Popup Result Returned", $"Result: {result.Result ?? "Closed without the CLOSE button"}", "OK");
+		});
+	}
+
+	async void HandleXamlBindingPopupPopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<XamlBindingPopup>(Navigation));
+	}
+
+	async void HandlePopupPositionButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new PopupPositionPage(new PopupPositionViewModel())));
+	}
+
+	async void HandlePopupLayoutAlignmentButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new PopupLayoutAlignmentPage(new PopupLayoutAlignmentViewModel())));
+	}
+
+	async void HandlePopupSizingIssuesButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new PopupSizingIssuesPage(new PopupSizingIssuesViewModel())));
+	}
+
+	async void HandleShowPopupInOnAppearingButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new ShowPopupInOnAppearingPage(new ShowPopupInOnAppearingPageViewModel(), popupService)));
+	}
+
+	async void HandleStylePopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new StylePopupPage(new StylePopupViewModel())));
+	}
+
+	async void HandleOnDisappearingPopupClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushModalAsync(new PopupOnDisappearingPage()));
+	}
+
+	async void HandleSelfClosingPopupButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			this.ShowPopup(new Label().Text("This Popup Will Close Automatically in 2 Seconds"), new PopupOptions
+			{
+				CanBeDismissedByTappingOutsideOfPopup = false
+			});
+
+			await Task.Delay(TimeSpan.FromSeconds(2));
+
+			await this.ClosePopupAsync();
+		});
+	}
+
+	async void HandleCollectionViewPopupClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			var popupResult = await popupService.ShowPopupAsync<CollectionViewPopup, string>(
+				Navigation,
+				PopupOptions.Empty,
+				CancellationToken.None);
+
+			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+			{
+				// Display Popup Result as a Toast
+				await Toast.Make($"You selected {popupResult.Result}").Show(CancellationToken.None);
+			}
+		});
+	}
+
+	async void HandleComplexPopupClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			var complexPopupOptions = new PopupOptions
+			{
+				BindingContext = this.BindingContext,
+				Shape = new RoundRectangle
+				{
+					CornerRadius = new CornerRadius(4),
+					StrokeThickness = 12,
+					Stroke = Colors.Orange
+				}
+			};
+			complexPopupOptions.SetBinding<PopupsViewModel, Color>(PopupOptions.PageOverlayColorProperty, static x => x.PageOverlayBackgroundColor);
+
+			var popupResultTask = popupService.ShowPopupAsync<ComplexPopup, string>(Navigation, complexPopupOptions, CancellationToken.None);
+
+			// Trigger Command in ViewModel to Rotate PopupOptions.PageOverlayColorProperty
+			// The AsyncRelayCommand ignores the parameter of Execute and passes its own CancellationToken to OnComplexPopupOpened, so only its Cancel stops the rotation
+			BindingContext.ComplexPopupOpenedCommand.Execute(null);
+
+			var popupResult = await popupResultTask;
+			BindingContext.ComplexPopupOpenedCommand.Cancel();
+
+			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+			{
+				// Display Popup Result as a Toast
+				await Toast.Make($"You entered {popupResult.Result}").Show(CancellationToken.None);
+			}
+		});
+	}
+
+	async void HandleModalPopupInCustomNavigationPage(object? sender, EventArgs eventArgs)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			var modalPopupPage = new ContentPage
+			{
+				Content = new VerticalStackLayout
+				{
+					Spacing = 24,
+					Children =
+					{
+						new Button()
+							.Text("Show Popup")
+							.Invoke(button => button.Command = new AsyncRelayCommand(() => popupService.ShowPopupAsync<ButtonPopup>(Shell.Current))),
+
+						new Button()
+							.Text("Back")
+							.Invoke(button => button.Command = new AsyncRelayCommand(() => Navigation.PopModalAsync()))
+					}
+				}.Center()
+			};
+
+			var customNavigationPage = new NavigationPage(modalPopupPage);
+			await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		});
+	}
+
+	async void HandleSoftInputKeyboardPopupClicked(object? sender, EventArgs eventArgs)
+	{
+		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<SoftInputKeyboardPopup>(Navigation));
+	}
+
+	async void HandlePopupAppThemeButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(async () =>
+		{
+			var application = Application.Current ?? throw new InvalidOperationException("Application cannot be null");
+			var previousTheme = application.UserAppTheme;
+
+			try
+			{
+				await popupService.ShowPopupAsync<AppThemePopup>(Navigation);
+			}
+			finally
+			{
+				application.UserAppTheme = previousTheme;
+			}
+		});
+	}
+}

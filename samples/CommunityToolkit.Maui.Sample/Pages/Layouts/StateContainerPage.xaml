@@ -43,7 +43,7 @@
             <Button Command="{Binding CycleStatesCommand}" Text="Cycle States Without Animation" />
             <Label Text="This will show several states at an interval of 2 seconds." />
             <Label
-                FontSize="Small"
+                FontSize="8"
                 Text="{Binding CurrentState, StringFormat='Current State: {0}'}"
                 VerticalTextAlignment="Center" />
 
@@ -183,7 +183,7 @@
                     BackgroundColor="Orange" />
             </Grid>
 
-            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
+            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Change to Nonexistent State" />
             <Label TextColor="Red">
                 <Label.FormattedText>
                     <FormattedString >
@@ -192,6 +192,10 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <Label
+                IsVisible="{Binding NotFoundStateExceptionMessage, Converter={mct:IsStringNotNullOrEmptyConverter}}"
+                Text="{Binding NotFoundStateExceptionMessage}"
+                TextColor="Red" />
 
             <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" >
 

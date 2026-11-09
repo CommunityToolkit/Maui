@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class SemanticOrderViewTests : BaseHandlerTest
+public class SemanticOrderViewTests : BaseViewTest
 {
 	readonly ISemanticOrderView semanticOrderView = new MockSemanticOrderView();
 
@@ -44,6 +45,16 @@ public class SemanticOrderViewTests : BaseHandlerTest
 		Assert.Equal(2, semanticOrderView.ViewOrder.Count());
 		Assert.Equal(button, semanticOrderView.ViewOrder.First());
 		Assert.Equal(entry, semanticOrderView.ViewOrder.Skip(1).First());
+	}
+
+	[Fact]
+	public void SetVirtualView_NullView_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new SemanticOrderViewHandler().SetVirtualView(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("view", exception.ParamName);
 	}
 
 	class MockSemanticOrderView : Maui.Views.SemanticOrderView

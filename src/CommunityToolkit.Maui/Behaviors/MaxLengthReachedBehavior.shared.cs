@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -11,36 +13,6 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	readonly WeakEventManager maxLengthReachedEventManager = new();
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Command"/> property.
-	/// </summary>
-	public static readonly BindableProperty CommandProperty
-		= BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(MaxLengthReachedBehavior));
-
-	/// <summary>
-	/// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
-	/// </summary>
-	public ICommand? Command
-	{
-		get => (ICommand?)GetValue(CommandProperty);
-		set => SetValue(CommandProperty, value);
-	}
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ShouldDismissKeyboardAutomatically"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShouldDismissKeyboardAutomaticallyProperty
-		= BindableProperty.Create(nameof(ShouldDismissKeyboardAutomatically), typeof(bool), typeof(MaxLengthReachedBehavior), false);
-
-	/// <summary>
-	/// Indicates whether or not the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
-	/// </summary>
-	public bool ShouldDismissKeyboardAutomatically
-	{
-		get => (bool)GetValue(ShouldDismissKeyboardAutomaticallyProperty);
-		set => SetValue(ShouldDismissKeyboardAutomaticallyProperty, value);
-	}
-
-	/// <summary>
 	/// Event that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="Command"/> and this event are triggered. This is a bindable property.
 	/// </summary>
 	public event EventHandler<MaxLengthReachedEventArgs> MaxLengthReached
@@ -49,9 +21,28 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 		remove => maxLengthReachedEventManager.RemoveEventHandler(value);
 	}
 
+	/// <summary>
+	/// Command that is triggered when the value configured in <see cref="InputView.MaxLength" /> is reached. Both the <see cref="MaxLengthReached"/> event and this command are triggered. This is a bindable property.
+	/// </summary>
+	[BindableProperty]
+	public partial ICommand? Command { get; set; } = MaxLengthReachedBehaviorDefaults.Command;
+
+	/// <summary>
+	/// Indicates whether the keyboard should be dismissed automatically after the maximum length is reached. This is a bindable property.
+	/// </summary>
+	/// <remarks>
+	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>. The keyboard is only dismissed while the <see cref="InputView"/> has the focus,
+	/// so the keyboard of another view that the user types in stays open.
+	/// </remarks>
+	[BindableProperty]
+	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;
+
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="e"/> is <see langword="null"/>.</exception>
 	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
@@ -69,7 +60,7 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 
 		if (ShouldDismissKeyboardAutomatically)
 		{
-			View.Unfocus();
+			View.DismissKeyboard();
 		}
 
 		var newTextValue = View.Text[..View.MaxLength];

@@ -25,6 +25,15 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 		{
 			["A", "B", "C"], null, "ABC"
 		},
+		{
+			["A", "   ", "C"], ",", "A,C"
+		},
+		{
+			["A", "\t", "C"], ",", "A,C"
+		},
+		{
+			["A", "\n", "C"], ",", "A,C"
+		},
 	};
 
 	[Theory]

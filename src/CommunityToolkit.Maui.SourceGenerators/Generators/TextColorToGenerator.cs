@@ -26,6 +26,14 @@ class TextColorToGenerator : IIncrementalGenerator
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
+		// Look
+		var shouldDisableTextColorToGenerator = context.AnalyzerConfigOptionsProvider
+			.Select(static (provider, _) =>
+			{
+				provider.GlobalOptions.TryGetValue("build_property.DisableTextColorToGenerator", out var shouldDisableSourceGenerator);
+				return shouldDisableSourceGenerator == "true";
+			});
+
 		// Get All Classes in User Library
 		var userGeneratedClassesProvider = context.SyntaxProvider.CreateSyntaxProvider(
 			static (syntaxNode, cancellationToken) => syntaxNode is ClassDeclarationSyntax { BaseList: not null },
@@ -97,13 +105,20 @@ class TextColorToGenerator : IIncrementalGenerator
 		var inputs = userGeneratedClassesProvider.Collect()
 			.Combine(mauiControlsAssemblySymbolProvider)
 			.SelectMany(static (x, _) => Deduplicate(x.Left, x.Right).ToImmutableArray())
-			.Select(static (x, _) => GenerateMetadata(x));
+			.Combine(shouldDisableTextColorToGenerator)
+			.Select(static (x, _) => GenerateMetadata(x.Left, x.Right));
+
 
 		context.RegisterSourceOutput(inputs, Execution);
 	}
 
 	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
 	{
+		if (textStyleClassMetadata.ShouldDisableTextColorToGenerator)
+		{
+			return;
+		}
+
 		var className = typeof(TextColorToGenerator).FullName;
 		var assemblyVersion = typeof(TextColorToGenerator).Assembly.GetName().Version.ToString();
 
@@ -137,11 +152,12 @@ class TextColorToGenerator : IIncrementalGenerator
 			  	/// </summary>
 			  	/// <param name="element"></param>
 			  	/// <param name="color">The target color to animate the <see cref="Microsoft.Maui.ITextStyle.TextColor"/> to</param>
-			  	/// <param name="rate">The time, in milliseconds, between the frames of the animation</param>
+			  	/// <param name="rate">The time, in milliseconds, between the frames of the animation. Must be greater than 0.</param>
 			  	/// <param name="length">The duration, in milliseconds, of the animation</param>
 			  	/// <param name="easing">The easing function to be used in the animation</param>
 			  	/// <param name="token"><see cref="CancellationToken"/></param>
 			  	/// <returns>Value indicating if the animation completed successfully or not</returns>
+			  	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rate"/> is 0. It is thrown by the call itself, before the animation starts.</exception>
 			  	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 			  {{textStyleClassMetadata.GenericConstraints}}
 			  	{
@@ -151,6 +167,9 @@ class TextColorToGenerator : IIncrementalGenerator
 			  
 			  		if(element is not Microsoft.Maui.ITextStyle)
 			  			throw new ArgumentException($"Element must implement {nameof(Microsoft.Maui.ITextStyle)}", nameof(element));
+			  
+			  		// .NET MAUI divides by the rate on every frame of the animation, on the platform's animation ticker: a rate of 0 would throw there, where no caller can catch it, and terminate the app
+			  		ArgumentOutOfRangeException.ThrowIfZero(rate);
 			  
 			  		//Although TextColor is defined as not-nullable, it CAN be null
 			  		//If null => set it to Transparent as Animation will crash on null BackgroundColor
@@ -199,13 +218,13 @@ class TextColorToGenerator : IIncrementalGenerator
 		context.AddSource($"{textStyleClassMetadata.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
-	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol)
+	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol, bool shouldGenerateTextColorTo)
 	{
 		var accessModifier = mauiControlsAssembly == namedTypeSymbol.ContainingNamespace.ToDisplayString()
 			? "internal"
 			: GetClassAccessModifier(namedTypeSymbol);
 
-		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString());
+		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo);
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -234,7 +253,8 @@ class TextColorToGenerator : IIncrementalGenerator
 
 	static IEnumerable<INamedTypeSymbol> GetMauiInterfaceImplementors(IAssemblySymbol mauiControlsAssemblySymbolProvider, INamedTypeSymbol iAnimatableSymbol, INamedTypeSymbol itextStyleSymbol)
 	{
-		return mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.AllInterfaces.Contains(itextStyleSymbol, SymbolEqualityComparer.Default)
+		return mauiControlsAssemblySymbolProvider.GlobalNamespace.GetNamedTypeSymbols().Where(x => x.DeclaredAccessibility == Accessibility.Public
+			&& x.AllInterfaces.Contains(itextStyleSymbol, SymbolEqualityComparer.Default)
 			&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
 	}
 
@@ -245,5 +265,5 @@ class TextColorToGenerator : IIncrementalGenerator
 		_ => string.Empty
 	};
 
-	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints);
+	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator);
 }

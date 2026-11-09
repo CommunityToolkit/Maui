@@ -16,9 +16,7 @@
        Padding="4,0,0,0"
        x:Name="flyout"
        Title="{OnPlatform WinUI='Toolkit Features', Default={x:Null}}"
-       FlyoutBackgroundColor="{OnPlatform WinUI=Transparent,
-                                          Default={AppThemeBinding Light= White,
-                                                                   Dark= Black}}"
+       FlyoutBackgroundColor="{AppThemeBinding Light={OnPlatform WinUI=Transparent, Default=White}, Dark={OnPlatform WinUI=Transparent, Default=Black}}"
        FlyoutBehavior="{OnPlatform WinUI=Locked, Default=Flyout}">
 
     <Shell.FlyoutHeader>

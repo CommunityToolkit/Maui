@@ -19,7 +19,7 @@
                 <Setter Property="Margin" Value="0,16,0,6" />
                 <Setter Property="FontAttributes" Value="Bold" />
                 <Setter Property="HorizontalOptions" Value="Center" />
-                <Setter Property="FontSize" Value="Large" />
+                <Setter Property="FontSize" Value="24" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -29,12 +29,12 @@
 
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
                 <Label
-                    FontSize="Body"
+                    FontSize="14"
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
                     Text="{Binding TouchCount, StringFormat='Touches: {0}'}" />
 
-                <Label Style="{StaticResource SectionHeader}" Text="Image | Toggle" />
+                <Label Style="{StaticResource SectionHeader}" Text="Image | Pressed Image" />
                 <Image HeightRequest="100" WidthRequest="100" x:Name="TestButton">
                     <Image.Behaviors>
                         <mct:ImageTouchBehavior
@@ -46,7 +46,7 @@
                 </Image>
 
                 <Label Style="{StaticResource SectionHeader}" Text="Scale | Fade | Animated" />
-                <HorizontalStackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="Center">
+                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
@@ -77,23 +77,24 @@
 
                 <Label
                     Margin="0,0,0,6"
-                    FontSize="Body"
-                    HorizontalOptions="CenterAndExpand"
+                    FontSize="12"
+                    HorizontalOptions="Center"
                     Text="{Binding LongPressCount, StringFormat='Long press count: {0}'}" />
+                <!-- TouchBehavior animates BackgroundColor: a Background brush would hide the hovered colour -->
                 <HorizontalStackLayout
                     Padding="20"
-                    Background="Black"
-                    HorizontalOptions="CenterAndExpand">
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource Gray600}}"
+                    HorizontalOptions="Center">
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
                             Command="{Binding IncreaseTouchCountCommand}"
-                            HoveredBackgroundColor="{StaticResource Gray900}"
+                            HoveredBackgroundColor="{StaticResource Gray500}"
                             HoveredScale="1.2"
                             LongPressCommand="{Binding IncreaseLongPressCountCommand}" />
                     </HorizontalStackLayout.Behaviors>
                     <Label
-                        FontSize="Large"
+                        FontSize="24"
                         Text="TITLE"
                         TextColor="White"
                         VerticalOptions="Start" />
@@ -106,7 +107,7 @@
                 <HorizontalStackLayout
                     Padding="20"
                     BackgroundColor="Gold"
-                    HorizontalOptions="CenterAndExpand">
+                    HorizontalOptions="Center">
 
                     <HorizontalStackLayout.Behaviors>
                         <mct:TouchBehavior
@@ -120,14 +121,20 @@
                     </HorizontalStackLayout.Behaviors>
 
                     <Label
-                        FontSize="Large"
+                        FontSize="24"
                         Text="TITLE"
                         TextColor="White" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
-            <Label Style="{StaticResource SectionHeader}" Text="Image | Native" />
-            <Border StrokeThickness="1">
+            <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
+                <Label Style="{StaticResource SectionHeader}" Text="Image | Translation | Spring" />
+
+                <Label
+                    Margin="0,0,0,6"
+                    FontSize="12"
+                    HorizontalOptions="Center"
+                    Text="{Binding ImageTouchCount, StringFormat='Image touches: {0}'}" />
                 <Image
                     HeightRequest="100"
                     Source="button.png"
@@ -135,13 +142,17 @@
                     <Image.Behaviors>
                         <mct:TouchBehavior
                             BindingContext="{Binding Path=BindingContext, Source={x:Reference CurrentPage}, x:DataType=ContentPage}"
-                            Command="{Binding IncreaseTouchCountCommand}" />
+                            Command="{Binding IncreaseImageTouchCountCommand}"
+                            DefaultAnimationDuration="600"
+                            DefaultAnimationEasing="{x:Static Easing.SpringOut}"
+                            PressedAnimationDuration="100"
+                            PressedTranslationY="10" />
                     </Image.Behaviors>
                 </Image>
-            </Border>
+            </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="{StaticResource SectionSpacing}">
-                <Label Style="{StaticResource SectionHeader}" Text="Nested effect" />
+                <Label Style="{StaticResource SectionHeader}" Text="Nested TouchBehaviors" />
 
                 <ContentView
                     Padding="50"
@@ -180,7 +191,7 @@
                             <x:String>Capuchin Monkey</x:String>
                             <x:String>Blue Monkey</x:String>
                             <x:String>Squirrel Monkey</x:String>
-                            <x:String>Golden Lion Tamarind</x:String>
+                            <x:String>Golden Lion Tamarin</x:String>
                             <x:String>Howler Monkey</x:String>
                             <x:String>Japanese Macaque</x:String>
                         </x:Array>

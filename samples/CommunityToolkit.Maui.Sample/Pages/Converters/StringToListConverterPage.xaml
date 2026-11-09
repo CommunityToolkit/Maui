@@ -10,28 +10,33 @@
     x:TypeArguments="vm:StringToListConverterViewModel"
     x:DataType="vm:StringToListConverterViewModel">
 
-    <VerticalStackLayout Spacing="8">
+    <Grid RowDefinitions="Auto, Auto, Auto, *" RowSpacing="8">
         <Label
-            Text="The StringToListConverter returns a string array that contains the substrings in this string that are delimited by Separator"
+            Grid.Row="0"
+            Text="The StringToListConverter splits a string into an array of substrings. This page sets its Separators to ',', '.' and ';' and removes empty entries."
             TextColor="{StaticResource NormalLabelTextColor}" />
 
         <Label
+            Grid.Row="1"
             FontAttributes="Bold"
             Text="Enter some text separated by ',' or '.' or ';'" />
 
         <Entry
-            FontSize="Medium"
+            Grid.Row="2"
+            FontSize="12"
             Placeholder="Enter some text separated by ',' or '.' or ';'"
-            Text="{Binding LabelText, Mode=OneWayToSource}" />
+            Text="{Binding LabelText, Mode=TwoWay}" />
 
+        <!-- The star row gives the CollectionView a bounded height, so it shows items added later and scrolls when they do not fit -->
         <CollectionView
+            Grid.Row="3"
             ItemsSource="{Binding LabelText, Mode=OneWay, Converter={StaticResource StringToListConverter}}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
-                    <Label FontSize="Medium" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
+                    <Label FontSize="12" Text="{Binding .}" TextColor="{StaticResource NormalLabelTextColor}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-    </VerticalStackLayout>
+    </Grid>
 </pages:BasePage>

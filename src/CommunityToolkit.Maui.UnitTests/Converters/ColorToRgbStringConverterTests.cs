@@ -161,16 +161,6 @@ public class ColorToRgbStringConverterTests : BaseConverterTest<ColorToRgbString
 		AssertColorComparison(expectedResult, resultConvertBackTo);
 	}
 
-	static void AssertColorComparison(Color expectedResult, Color? result)
-	{
-		const int precision = 2;
-
-		Assert.NotNull(result);
-		Assert.Equal(expectedResult.Red, result.Red, precision);
-		Assert.Equal(expectedResult.Green, result.Green, precision);
-		Assert.Equal(expectedResult.Blue, result.Blue, precision);
-	}
-
 	[Fact]
 	public void ColorToRgbStringConverterNullInputTest()
 	{
@@ -179,5 +169,15 @@ public class ColorToRgbStringConverterTests : BaseConverterTest<ColorToRgbString
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	static void AssertColorComparison(Color expectedResult, Color? result)
+	{
+		const int precision = 2;
+
+		Assert.NotNull(result);
+		Assert.Equal(expectedResult.Red, result.Red, precision);
+		Assert.Equal(expectedResult.Green, result.Green, precision);
+		Assert.Equal(expectedResult.Blue, result.Blue, precision);
 	}
 }

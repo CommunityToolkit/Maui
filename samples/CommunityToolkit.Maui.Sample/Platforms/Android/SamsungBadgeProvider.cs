@@ -13,7 +13,7 @@ class SamsungBadgeProvider : IBadgeProvider
 
 	public void SetCount(uint count)
 	{
-		var contentUri = Android.Net.Uri.Parse(contentStringUri);
+		var contentUri = global::Android.Net.Uri.Parse(contentStringUri);
 		if (contentUri is null)
 		{
 			return;

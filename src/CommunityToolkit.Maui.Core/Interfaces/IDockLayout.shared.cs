@@ -3,7 +3,7 @@
 /// <summary>
 /// DockLayout is a layout where views can be docked to the sides (top, left, right, bottom) of the layout container.
 /// </summary>
-public interface IDockLayout : ILayout
+public interface IDockLayout : Microsoft.Maui.ILayout
 {
 	/// <summary>
 	/// If true, the last child is expanded to fill the remaining space (default: true).

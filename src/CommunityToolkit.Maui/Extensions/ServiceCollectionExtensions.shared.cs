@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 
 // Using root CommunityToolkit.Maui namespace so these extension methods
@@ -13,6 +14,127 @@ namespace CommunityToolkit.Maui;
 public static class ServiceCollectionExtensions
 {
 	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/>
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+	public static IServiceCollection AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services)
+		where TPopupView : View
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		PopupService.AddPopup<TPopupView>(services, ServiceLifetime.Transient);
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
+	/// <see cref="INotifyPropertyChanged"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+	public static IServiceCollection AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
+		where TPopupView : View
+		where TPopupViewModel : notnull
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, ServiceLifetime.Transient);
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+	public static IServiceCollection AddSingletonPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services)
+		where TPopupView : View
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		PopupService.AddPopup<TPopupView>(services, ServiceLifetime.Singleton);
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
+	/// <see cref="INotifyPropertyChanged"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+	public static IServiceCollection AddSingletonPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
+		where TPopupView : View
+		where TPopupViewModel : notnull
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, ServiceLifetime.Singleton);
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+	public static IServiceCollection AddScopedPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView>(this IServiceCollection services)
+		where TPopupView : View
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		PopupService.AddPopup<TPopupView>(services, ServiceLifetime.Scoped);
+
+		return services;
+	}
+
+	/// <summary>
+	/// Adds a <see cref="View"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
+	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
+	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
+	/// </summary>
+	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="View"/></typeparam>
+	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
+	/// <see cref="INotifyPropertyChanged"/></typeparam>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+	/// <returns>A reference to this instance after the operation has completed.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+	public static IServiceCollection AddScopedPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
+		where TPopupView : View
+		where TPopupViewModel : notnull
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		PopupService.AddPopup<TPopupView, TPopupViewModel>(services, ServiceLifetime.Scoped);
+
+		return services;
+	}
+
+
+	/// <summary>
 	/// Adds a <see cref="BindableObject"/> of the type specified in <typeparamref name="TView"/> and a ViewModel
 	/// of the type specified in <typeparamref name="TViewModel"/> to the specified
 	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
@@ -25,32 +147,16 @@ public static class ServiceCollectionExtensions
 	/// <remarks>Developers are still responsible for assigning the injected instance of 
 	/// <typeparamref name="TViewModel" />
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
 	public static IServiceCollection AddTransient<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services)
 		where TView : BindableObject
 		where TViewModel : class, INotifyPropertyChanged
 	{
+		ArgumentNullException.ThrowIfNull(services);
+
 		return services
 			.AddTransient<TViewModel>()
 			.AddTransient<TView>();
-	}
-
-	/// <summary>
-	/// Adds a <see cref="Popup"/> of the type specified in <typeparamref name="TPopupView"/> and a ViewModel
-	/// of the type specified in <typeparamref name="TPopupViewModel"/> to the specified
-	/// <see cref="IServiceCollection"/> with <see cref="ServiceLifetime.Transient"/> lifetime.
-	/// </summary>
-	/// <typeparam name="TPopupView">The type of the Popup to add. Constrained to <see cref="Popup"/></typeparam>
-	/// <typeparam name="TPopupViewModel">The type of the ViewModel to add. Constrained to 
-	/// <see cref="INotifyPropertyChanged"/></typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-	/// <returns>A reference to this instance after the operation has completed.</returns>
-	public static IServiceCollection AddTransientPopup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPopupViewModel>(this IServiceCollection services)
-		where TPopupView : Popup
-		where TPopupViewModel : INotifyPropertyChanged
-	{
-		PopupService.AddTransientPopup<TPopupView, TPopupViewModel>(services);
-
-		return services;
 	}
 
 	/// <summary>
@@ -70,10 +176,14 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="route"/> is <see langword="null"/>.</exception>
 	public static IServiceCollection AddTransientWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(route);
+
 		RegisterShellRoute<TView>(route, factory);
 		return services.AddTransient<TView, TViewModel>();
 	}
@@ -90,10 +200,13 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
 	public static IServiceCollection AddSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services)
 		where TView : BindableObject
 		where TViewModel : class, INotifyPropertyChanged
 	{
+		ArgumentNullException.ThrowIfNull(services);
+
 		return services
 			.AddSingleton<TViewModel>()
 			.AddSingleton<TView>();
@@ -116,10 +229,14 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="route"/> is <see langword="null"/>.</exception>
 	public static IServiceCollection AddSingletonWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(route);
+
 		RegisterShellRoute<TView>(route, factory);
 		return services.AddSingleton<TView, TViewModel>();
 	}
@@ -136,10 +253,13 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
 	public static IServiceCollection AddScoped<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services)
 		where TView : BindableObject
 		where TViewModel : class, INotifyPropertyChanged
 	{
+		ArgumentNullException.ThrowIfNull(services);
+
 		return services
 			.AddScoped<TViewModel>()
 			.AddScoped<TView>();
@@ -162,10 +282,14 @@ public static class ServiceCollectionExtensions
 	/// <returns>A reference to this instance after the operation has completed.</returns>
 	/// <remarks>Developers are still responsible for assigning the injected instance of <typeparamref name="TViewModel" /> 
 	/// to the BindingContext property of <typeparamref name="TView" />.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="route"/> is <see langword="null"/>.</exception>
 	public static IServiceCollection AddScopedWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TView, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services, string route, RouteFactory? factory = null)
 		where TView : NavigableElement
 		where TViewModel : class, INotifyPropertyChanged
 	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(route);
+
 		RegisterShellRoute<TView>(route, factory);
 		return services.AddScoped<TView, TViewModel>();
 	}

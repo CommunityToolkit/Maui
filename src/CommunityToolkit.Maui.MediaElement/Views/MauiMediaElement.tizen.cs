@@ -1,13 +1,12 @@
 ﻿using CommunityToolkit.Maui.Views;
 using Tizen.NUI.BaseComponents;
-using Tizen.UIExtensions.NUI;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Tizen.
 /// </summary>
-public class MauiMediaElement : ViewGroup
+public class MauiMediaElement : Tizen.NUI.BaseComponents.View
 {
 	VideoView videoView;
 
@@ -15,10 +14,13 @@ public class MauiMediaElement : ViewGroup
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="videoView">The VideoView that acts as the platform media player.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="videoView"/> is <see langword="null"/>.</exception>
 	public MauiMediaElement(VideoView videoView)
 	{
+		ArgumentNullException.ThrowIfNull(videoView);
+
 		this.videoView = videoView;
-		Children.Add(videoView);
+		Add(videoView);
 	}
 
 	/// <summary>
