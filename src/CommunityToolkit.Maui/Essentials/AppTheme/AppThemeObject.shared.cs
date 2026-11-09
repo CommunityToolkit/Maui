@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
@@ -46,10 +47,7 @@ public abstract partial class AppThemeObject<T>
 	/// <returns>A <see cref="BindingBase"/> instance with the respective theme values.</returns>
 	public virtual BindingBase GetBinding()
 	{
-		return new Binding(
-			nameof(AppThemeSource.RequestedTheme),
-			converter: new AppThemeObjectConverter(Light, Dark, Default),
-			source: AppThemeSource.Instance);
+		return CreateThemeBinding(new AppThemeObjectConverter(Light, Dark, Default));
 	}
 
 	internal BindingBase GetBinding(BindableProperty targetProperty)
@@ -61,10 +59,18 @@ public abstract partial class AppThemeObject<T>
 			Bindings =
 			{
 				new Binding(Binding.SelfPath, source: RelativeBindingSource.Self),
-				new Binding(nameof(AppThemeSource.RequestedTheme), source: AppThemeSource.Instance)
+				CreateThemeBinding(null)
 			}
 		};
 	}
+
+	// The binding accesses this property by name; its getter also subscribes to theme changes.
+	[DynamicDependency(nameof(AppThemeSource.RequestedTheme), typeof(AppThemeObject<>.AppThemeSource))]
+	static Binding CreateThemeBinding(IValueConverter? converter) =>
+		new(
+			nameof(AppThemeSource.RequestedTheme),
+			converter: converter,
+			source: AppThemeSource.Instance);
 
 	sealed class AppThemeObjectConverter(T? light, T? dark, T? defaultValue) : IValueConverter, IMultiValueConverter
 	{

@@ -62,10 +62,14 @@ public class Options : Core.Options
 	public void SetShouldSuppressExceptionsInBehaviors(bool value) => ShouldSuppressExceptionsInBehaviors = value;
 
 	/// <summary>
-	/// Enables <see cref="Alerts.Snackbar"/> for Windows
+	/// Enables <see cref="Alerts.Snackbar"/> and <see cref="Alerts.Toast"/> for Windows
 	/// </summary>
 	/// <remarks>
-	/// Additional setup is required in the Package.appxmanifest file to enable <see cref="Alerts.Snackbar"/> on Windows. See the <a href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar">Snackbar Platform Specific Initialization Documentation</a> for more information. Default value is false.
+	/// This option registers the Windows notification manager used by both alerts.
+	/// Packaged Windows apps require additional setup in Package.appxmanifest. See the
+	/// <a href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast">Toast Platform Specific Initialization Documentation</a>
+	/// and <a href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar">Snackbar Platform Specific Initialization Documentation</a>
+	/// for more information. Default value is false.
 	/// </remarks>
 	public void SetShouldEnableSnackbarOnWindows(bool value)
 	{
@@ -148,9 +152,12 @@ public class Options : Core.Options
 	/// Sets the default settings for <see cref="Popup"/>
 	/// </summary>
 	/// <param name="globalPopupSettings"></param>
-	/// <remarks>The settings passed in here will be set on initialization of every new Popup</remarks>
+	/// <remarks>The settings passed in here apply to every <see cref="Popup"/>. <see cref="CommunityToolkit.Maui.DefaultPopupSettings"/> describes the values that take precedence over them.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="globalPopupSettings"/> is <see langword="null"/>.</exception>
 	public void SetPopupDefaults(DefaultPopupSettings globalPopupSettings)
 	{
+		ArgumentNullException.ThrowIfNull(globalPopupSettings);
+
 		DefaultPopupSettings = globalPopupSettings;
 	}
 
@@ -158,9 +165,12 @@ public class Options : Core.Options
 	/// Sets the default settings for <see cref="PopupOptions"/>
 	/// </summary>
 	/// <param name="globalPopupOptionsSettings"></param>
-	/// <remarks>The settings passed in here will be used when <see cref="PopupExtensions.ShowPopup(Microsoft.Maui.Controls.Page,Microsoft.Maui.Controls.View,CommunityToolkit.Maui.IPopupOptions?)"/> is called the <see cref="CommunityToolkit.Maui.IPopupOptions"/> parameter is null</remarks>
+	/// <remarks>The settings passed in here are the <see cref="IPopupOptions"/> of a <see cref="Popup"/> displayed with <see langword="null"/> options, for example by <see cref="PopupExtensions.ShowPopup(Microsoft.Maui.Controls.Page,Microsoft.Maui.Controls.View,CommunityToolkit.Maui.IPopupOptions?)"/>, and the initial values of every <see cref="PopupOptions"/> created afterwards.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="globalPopupOptionsSettings"/> is <see langword="null"/>.</exception>
 	public void SetPopupOptionsDefaults(DefaultPopupOptionsSettings globalPopupOptionsSettings)
 	{
+		ArgumentNullException.ThrowIfNull(globalPopupOptionsSettings);
+
 		DefaultPopupOptionsSettings = globalPopupOptionsSettings;
 	}
 

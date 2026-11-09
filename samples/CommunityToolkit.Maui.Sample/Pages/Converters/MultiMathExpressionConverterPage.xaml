@@ -19,7 +19,7 @@
 
         <Grid RowSpacing="20"
               ColumnSpacing="12"
-              ColumnDefinitions="*,*,*,*,*,*,*"
+              ColumnDefinitions="*,Auto,*,Auto,*,Auto,*"
               RowDefinitions="100, *">
             <Label Grid.ColumnSpan="7"
                    Grid.Row="0"

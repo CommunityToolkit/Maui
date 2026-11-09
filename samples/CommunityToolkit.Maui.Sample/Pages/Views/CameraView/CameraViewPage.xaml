@@ -4,10 +4,14 @@
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
                 Title="CameraView"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.CameraViewPage"
                 x:TypeArguments="viewModels:CameraViewViewModel"
                 x:DataType="viewModels:CameraViewViewModel">
+    <pages:BasePage.Resources>
+        <converters:SizeToStringConverter x:Key="SizeToStringConverter" />
+    </pages:BasePage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="3*,*">
         <toolkit:CameraView
@@ -19,7 +23,8 @@
             ImageCaptureResolution="{Binding SelectedResolution}"
             SelectedCamera="{Binding SelectedCamera}"/>
 
-        <Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto" BackgroundColor="#80CCCCCC">
+        <!--  The panels on the camera preview have the page's background color, 80% opaque: the theme's text colors stay readable on any preview  -->
+        <Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto" BackgroundColor="{AppThemeBinding Light=#CCFAFAFA, Dark=#CC050505}">
 
             <VerticalStackLayout Spacing="5" Padding="5" >
                 <Label Text="{Binding CameraNameText}" />
@@ -29,14 +34,15 @@
                 <Label Text="{Binding ResolutionText}" />
                 <Picker 
                     Title="Available Resolutions"
-                    ItemsSource="{Binding SelectedCamera.SupportedResolutions, FallbackValue='', x:DataType={x:Null}}"
+                    ItemsSource="{Binding SupportedResolutions}"
+                    ItemDisplayBinding="{Binding ., Converter={StaticResource SizeToStringConverter}, x:DataType={x:Null}}"
                     SelectedItem="{Binding SelectedResolution}" />
                 <Label x:Name="debugText"/>
 
             </VerticalStackLayout>
         </Grid>
 
-        <ContentView Grid.Column="1" Grid.Row="0" ZIndex="100" BackgroundColor="#80CCCCCC">
+        <ContentView Grid.Column="1" Grid.Row="0" ZIndex="100" BackgroundColor="{AppThemeBinding Light=#CCFAFAFA, Dark=#CC050505}">
             <Image x:Name="image" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnImageTapped" />
@@ -57,7 +63,7 @@
             <Button Clicked="ZoomIn" Text="Zoom +" Grid.Column="2"/>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" BackgroundColor="#80CCCCCC">
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" BackgroundColor="#80CCCCCC">
 
             <FlexLayout Margin="5" JustifyContent="SpaceBetween" Wrap="Wrap">
 
@@ -78,8 +84,10 @@
                     <Label Text="Torch" VerticalOptions="Center" />
                 </HorizontalStackLayout>
 
-                <Button Command="{Binding StartCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}"
-                        CommandParameter="{Binding Token}"
+                <!--  The CameraView methods throw when the camera fails: no camera, preview not started, permission not granted, ...
+                      CameraView's commands, such as CaptureImageCommand, cannot hand those exceptions to the page, so they would end the app:
+                      these buttons call the methods in CameraViewPage.xaml.cs and catch their exceptions. StopCameraPreview does not throw.  -->
+                <Button Clicked="StartCameraPreview"
                         Text="Start Camera Preview" />
 
                 <Button Command="{Binding StopCameraPreviewCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
@@ -90,13 +98,11 @@
                         Text="Start Video Recording" />
 
                 <Button  Clicked="StopCameraRecording"
-                         CommandParameter="{Binding Token}"
                          Text="Stop Video Recording" />
 
                 <Button Clicked="SaveVideo" Text="Save Video Recording" />
 
-                <Button Command="{Binding CaptureImageCommand, Source={x:Reference Camera}, x:DataType=toolkit:CameraView}" 
-                        CommandParameter="{Binding Token}"
+                <Button Clicked="CaptureImage"
                         Text="Capture Image"/>
 
                 <Button Clicked="SetNightMode" Text="Set Night Mode (Android)" />

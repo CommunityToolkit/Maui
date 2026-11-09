@@ -8,6 +8,8 @@ partial class CameraManager
 
 	public NativePlatformCameraPreviewView CreatePlatformView() => throw new NotSupportedException(notSupportedMessage);
 
+	public void AdoptPlatformView(NativePlatformCameraPreviewView platformView) => throw new NotSupportedException(notSupportedMessage);
+
 	public partial void UpdateFlashMode(CameraFlashMode flashMode) => throw new NotSupportedException(notSupportedMessage);
 
 	public partial void UpdateIsTorchOn(bool isTorchOn) => throw new NotSupportedException(notSupportedMessage);
@@ -19,6 +21,8 @@ partial class CameraManager
 	protected virtual partial Task PlatformStartCameraPreview(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 
 	protected virtual partial void PlatformStopCameraPreview() => throw new NotSupportedException(notSupportedMessage);
+
+	private partial void PlatformStopCameraPreviewForCameraSwitch() => throw new NotSupportedException(notSupportedMessage);
 
 	protected virtual partial Task PlatformConnectCamera(CancellationToken token) => throw new NotSupportedException(notSupportedMessage);
 

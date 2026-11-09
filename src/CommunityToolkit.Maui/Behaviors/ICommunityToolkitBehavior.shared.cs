@@ -33,8 +33,11 @@ public interface ICommunityToolkitBehavior<TView> where TView : Element
 	/// <param name="sender"><see cref="Behavior"/></param>
 	/// <param name="e"><see cref="PropertyChangedEventArgs"/> </param>
 	/// <exception cref="ArgumentException">Throws when <paramref name="sender"/> is not of type <typeparamref name="TView"/></exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="e"/> is <see langword="null"/>.</exception>
 	protected void OnViewPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(e);
+
 		if (sender is not TView view)
 		{
 			throw new ArgumentException($"Behavior can only be attached to {typeof(TView)}");

@@ -1,5 +1,9 @@
 ﻿using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps;
@@ -14,13 +18,17 @@ using IMap = Microsoft.Maui.Maps.IMap;
 namespace CommunityToolkit.Maui.Maps.Handlers;
 
 /// <inheritdoc />
+[Obsolete(DeprecationMessages.Maps)]
 public partial class MapHandlerWindows : MapHandler
 {
+	static readonly ConditionalWeakTable<WebView2, Task> pendingInitializations = new();
+
 	MapSpan? regionToGo;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MapHandlerWindows"/> class.
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public MapHandlerWindows() : base(Mapper, CommandMapper)
 	{
 		Mapper.ModifyMapping(nameof(IMap.MapType), (handler, map, _) => MapMapType(handler, map));
@@ -37,95 +45,159 @@ public partial class MapHandlerWindows : MapHandler
 	internal static string? MapPage { get; private set; }
 
 	/// <summary>
-	/// Maps Map type
+	/// Maps Map type: <see cref="MapType.Street"/> shows the road map, <see cref="MapType.Satellite"/> shows aerial imagery without labels,
+	/// <see cref="MapType.Hybrid"/> shows aerial imagery with labels, and any other value shows the road map.
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapMapType(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"setMapType('{map.MapType}');");
 	}
 
 	/// <summary>
 	/// Maps IsZoomEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsZoomEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disableMapZoom({(!map.IsZoomEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsScrollEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsScrollEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disablePanning({(!map.IsScrollEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsTrafficEnabled
 	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new Task MapIsTrafficEnabled(IMapHandler handler, IMap map)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
 		return TryCallJSMethod(handler.PlatformView, $"disableTraffic({(!map.IsTrafficEnabled).ToString().ToLower()});");
 	}
 
 	/// <summary>
 	/// Maps IsShowingUser
 	/// </summary>
-	public static new async Task MapIsShowingUser(IMapHandler handler, IMap map)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
+	public static new Task MapIsShowingUser(IMapHandler handler, IMap map)
 	{
-		if (map.IsShowingUser)
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
+
+		return MapIsShowingUserCore();
+
+		async Task MapIsShowingUserCore()
 		{
-			var location = await GetCurrentLocation();
-			if (location is not null)
+			if (map.IsShowingUser)
 			{
-				await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				var location = await GetCurrentLocation();
+				if (location is not null)
+				{
+					await TryCallJSMethod(handler.PlatformView, $"addLocationPin({location.Latitude.ToString(CultureInfo.InvariantCulture)},{location.Longitude.ToString(CultureInfo.InvariantCulture)});");
+				}
 			}
-		}
-		else
-		{
-			await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
+			else
+			{
+				await TryCallJSMethod(handler.PlatformView, "removeLocationPin();");
+			}
 		}
 	}
 
 	/// <summary>
-	/// Map Pins
+	/// Maps Pins: replaces the pins of the map page with the pins of <paramref name="map"/>, so that pins added one after the other are each on
+	/// the map once. A pin without a <see cref="IMapPin.Location"/> is left out.
 	/// </summary>
-	public static new async Task MapPins(IMapHandler handler, IMap map)
+	/// <remarks>
+	/// The info window that a click on a pin opens shows the pin's <see cref="Pin.Label"/> and <see cref="Pin.Address"/> as plain text: markup in
+	/// them is shown as it is written, not rendered as HTML.
+	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="map"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
+	public static new Task MapPins(IMapHandler handler, IMap map)
 	{
-		await TryCallJSMethod(handler.PlatformView, "removeAllPins();");
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(map);
 
-		var addPinTaskList = new List<Task>();
+		return MapPinsCore();
 
-		foreach (var pin in map.Pins)
+		async Task MapPinsCore()
 		{
-			addPinTaskList.Add(TryCallJSMethod(handler.PlatformView, $"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
-				$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{pin.Label}', '{pin.Address}', '{(pin as Pin)?.Id}');"));
-		}
+			// One script per change replaces the pins with those of this moment. The scripts run in the order they are sent, so pins changed several
+			// times in a row (added in a loop) end up on the map once each. A removal sent on its own ran before the additions of the earlier changes,
+			// which, built after an await, each added the latest pins again
+			var script = new StringBuilder("removeAllPins();");
 
-		await Task.WhenAll(addPinTaskList);
+			foreach (var pin in map.Pins)
+			{
+				// A Pin has no Location until one is set (a Map only requires its Label): there is no position to show it at
+				if (pin.Location is null)
+				{
+					continue;
+				}
+
+				// The label and the address are text of the app: encoded for the JavaScript string literals, so that none of their characters ends the literal or runs as script
+				script.Append($"addPin({pin.Location.Latitude.ToString(CultureInfo.InvariantCulture)}," +
+					$"{pin.Location.Longitude.ToString(CultureInfo.InvariantCulture)},'{JavaScriptEncoder.Default.Encode(pin.Label ?? string.Empty)}', '{JavaScriptEncoder.Default.Encode(pin.Address ?? string.Empty)}', '{(pin as Pin)?.Id}');");
+			}
+
+			await TryCallJSMethod(handler.PlatformView, script.ToString());
+		}
 	}
 
 	/// <summary>
 	/// Map Elements
 	/// </summary>
+	[Obsolete(DeprecationMessages.Maps)]
 	public static new void MapElements(IMapHandler handler, IMap map) { }
 
 	/// <summary>
 	/// Maps MoveToRegion
 	/// </summary>
-	public static new async Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
+	[Obsolete(DeprecationMessages.Maps)]
+	public static new Task MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 	{
-		if (arg is not MapSpan newRegion)
-		{
-			return;
-		}
+		ArgumentNullException.ThrowIfNull(handler);
 
-		if (handler is MapHandlerWindows mapHandler)
-		{
-			mapHandler.regionToGo = newRegion;
-		}
+		return MapMoveToRegionCore();
 
-		await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+		async Task MapMoveToRegionCore()
+		{
+			if (arg is not MapSpan newRegion)
+			{
+				return;
+			}
+
+			if (handler is MapHandlerWindows mapHandler)
+			{
+				mapHandler.regionToGo = newRegion;
+			}
+
+			await TryCallJSMethod(handler.PlatformView, $"setRegion({newRegion.Center.Latitude.ToString(CultureInfo.InvariantCulture)},{newRegion.Center.Longitude.ToString(CultureInfo.InvariantCulture)},{newRegion.LatitudeDegrees.ToString(CultureInfo.InvariantCulture)},{newRegion.LongitudeDegrees.ToString(CultureInfo.InvariantCulture)});");
+		}
 	}
 
 	/// <inheritdoc/>
@@ -170,6 +242,27 @@ public partial class MapHandlerWindows : MapHandler
 		base.DisconnectHandler(platformView);
 	}
 
+	// WebView2.EnsureCoreWebView2Async completes only the first and the last of the calls made while the CoreWebView2 is being created (six calls
+	// in a row: the four in between never complete), and what awaits such a call stays alive with it: the mapping that called TryCallJSMethod,
+	// with the handler and the map. The handler connects with a script call per property, so a WebView2 that is being initialized has one
+	// initialization, which every script call awaits; once it has completed, a call initializes (or finds closed) the WebView2 itself.
+	static Task WaitForCoreWebView2Async(WebView2 webView2)
+	{
+		if (pendingInitializations.TryGetValue(webView2, out var pendingInitialization))
+		{
+			return pendingInitialization;
+		}
+
+		var initialization = webView2.EnsureCoreWebView2Async().AsTask();
+		if (!initialization.IsCompleted)
+		{
+			pendingInitializations.AddOrUpdate(webView2, initialization);
+			_ = initialization.ContinueWith(_ => pendingInitializations.Remove(webView2), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+		}
+
+		return initialization;
+	}
+
 	static async Task<bool> TryCallJSMethod(FrameworkElement platformWebView, string script)
 	{
 		if (platformWebView is not WebView2 webView2)
@@ -177,13 +270,29 @@ public partial class MapHandlerWindows : MapHandler
 			return false;
 		}
 
-		await webView2.EnsureCoreWebView2Async();
+		try
+		{
+			await WaitForCoreWebView2Async(webView2);
+		}
+		catch (ObjectDisposedException)
+		{
+			// The WebView2 was closed (WebView2.Close, e.g. when its window closed): EnsureCoreWebView2Async fails with RO_E_CLOSED and no script runs any more
+			return false;
+		}
 
-		var tcs = new TaskCompletionSource();
+		var tcs = new TaskCompletionSource<bool>();
 		var isEnqueueSuccessful = webView2.DispatcherQueue.TryEnqueue(async () =>
 		{
-			await webView2.ExecuteScriptAsync(script);
-			tcs.SetResult();
+			try
+			{
+				await webView2.ExecuteScriptAsync(script);
+				tcs.SetResult(true);
+			}
+			catch (InvalidOperationException)
+			{
+				// The WebView2 was closed after EnsureCoreWebView2Async: without its CoreWebView2, ExecuteScriptAsync fails with E_ILLEGAL_METHOD_CALL
+				tcs.SetResult(false);
+			}
 		});
 
 		if (!isEnqueueSuccessful)
@@ -191,9 +300,7 @@ public partial class MapHandlerWindows : MapHandler
 			return false;
 		}
 
-		await tcs.Task;
-
-		return true;
+		return await tcs.Task;
 	}
 
 	static string GetMapHtmlPage(string key)
@@ -209,6 +316,7 @@ public partial class MapHandlerWindows : MapHandler
 			                var map;
 							var locationPin;
 							var trafficManager;
+							var isTrafficDisabled;
 							var infobox;
 
 			                function loadMap() {
@@ -259,11 +367,21 @@ public partial class MapHandlerWindows : MapHandler
 							{
 								Microsoft.Maps.loadModule('Microsoft.Maps.Traffic', function () {
 									 trafficManager = new Microsoft.Maps.Traffic.TrafficManager(map);
+
+									// Bing loads the module asynchronously: apply the traffic setting that arrived before the module
+									if (isTrafficDisabled !== undefined)
+										disableTraffic(isTrafficDisabled);
 								});
 							}
 
 							function disableTraffic(disable)
 							{
+								isTrafficDisabled = disable;
+
+								// Without the Traffic module there is no TrafficManager yet: the module applies the setting once it has loaded
+								if (trafficManager === undefined)
+									return;
+
 								if(disable)
 									trafficManager.hide();
 								else
@@ -286,13 +404,17 @@ public partial class MapHandlerWindows : MapHandler
 			
 							function setMapType(mauiMapType)
 							{
+								// Bing draws the labels of an aerial map unless they are hidden.
+								// setView keeps the label overlay of the previous view, even for a road map.
 								var mapTypeID = Microsoft.Maps.MapTypeId.road;
+								var labelOverlay = Microsoft.Maps.LabelOverlay.visible;
 								switch(mauiMapType) {
 								  case 'Street':
 								    mapTypeID = Microsoft.Maps.MapTypeId.road;
 								    break;
 								  case 'Satellite':
 								    mapTypeID = Microsoft.Maps.MapTypeId.aerial;
+								    labelOverlay = Microsoft.Maps.LabelOverlay.hidden;
 								    break;
 								  case 'Hybrid':
 								    mapTypeID = Microsoft.Maps.MapTypeId.aerial;
@@ -301,13 +423,15 @@ public partial class MapHandlerWindows : MapHandler
 									mapTypeID = Microsoft.Maps.MapTypeId.road;
 								}
 								map.setView({
-									mapTypeId: mapTypeID
+									mapTypeId: mapTypeID,
+									labelOverlay: labelOverlay
 								});
 							}
 
 							function setRegion(latitude, longitude, latitudeDegrees, longitudeDegrees)
 							{
-								map.setView({bounds: new Microsoft.Maps.LocationRect(new Microsoft.Maps.Location(latitude, longitude), latitudeDegrees, longitudeDegrees) });
+								// LocationRect(center, width, height): the width is the longitude extent and the height the latitude extent
+								map.setView({bounds: new Microsoft.Maps.LocationRect(new Microsoft.Maps.Location(latitude, longitude), longitudeDegrees, latitudeDegrees) });
 							}
 
 							function addLocationPin(latitude, longitude)
@@ -336,7 +460,7 @@ public partial class MapHandlerWindows : MapHandler
 								{
 									map.entities.push(locationPin);
 									map.setView({
-										center: location
+										center: locationPin.getLocation()
 									});
 								}
 							}
@@ -360,7 +484,7 @@ public partial class MapHandlerWindows : MapHandler
 									infobox.setOptions({
 										location: e.target.getLocation(),
 										title: e.target.getTitle(),
-										description: e.target.getSubTitle(),
+										description: encodeHtml(e.target.getSubTitle()),
 										visible: true
 									});
 
@@ -374,6 +498,18 @@ public partial class MapHandlerWindows : MapHandler
 									};
 									invokeHandlerAction('PinClicked', clickedPin);
 								});
+							}
+
+							// The infobox shows its title as text, but renders its description as HTML. The address of a pin is text: its markup characters
+							// are encoded for the description, so that it shows as it is and no markup in it can run script in this page.
+							function encodeHtml(text)
+							{
+								return String(text === undefined || text === null ? '' : text)
+									.replace(/&/g, '&amp;')
+									.replace(/</g, '&lt;')
+									.replace(/>/g, '&gt;')
+									.replace(/""/g, '&quot;')
+									.replace(/'/g, '&#39;');
 							}
 
 							function invokeHandlerAction(id, data)
@@ -453,7 +589,7 @@ public partial class MapHandlerWindows : MapHandler
 			return;
 		}
 
-		var eventMessage = JsonSerializer.Deserialize<EventMessage>(args.WebMessageAsJson, SerializerContext.Default.EventMessage);
+		var eventMessage = DeserializeOrDefault(args.WebMessageAsJson, SerializerContext.Default.EventMessage);
 
 		// The web message (or it's ID) could not be deserialized to something we recognize
 		if (eventMessage is null || !Enum.TryParse<EventIdentifier>(eventMessage.Id, true, out var eventId))
@@ -472,7 +608,7 @@ public partial class MapHandlerWindows : MapHandler
 		switch (eventId)
 		{
 			case EventIdentifier.BoundsChanged:
-				var mapRect = JsonSerializer.Deserialize<Bounds>(payloadAsString, SerializerContext.Default.Bounds);
+				var mapRect = DeserializeOrDefault(payloadAsString, SerializerContext.Default.Bounds);
 				if (mapRect?.Center is not null)
 				{
 					VirtualView.VisibleRegion = new MapSpan(new Location(mapRect.Center.Latitude, mapRect.Center.Longitude),
@@ -480,7 +616,7 @@ public partial class MapHandlerWindows : MapHandler
 				}
 				break;
 			case EventIdentifier.MapClicked:
-				var clickedLocation = JsonSerializer.Deserialize<Location>(payloadAsString, SerializerContext.Default.Location);
+				var clickedLocation = DeserializeOrDefault(payloadAsString, SerializerContext.Default.Location);
 				if (clickedLocation is not null)
 				{
 					VirtualView.Clicked(clickedLocation);
@@ -488,12 +624,13 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.InfoWindowClicked:
-				var clickedInfoWindowWebView = JsonSerializer.Deserialize<InfoWindow>(payloadAsString, SerializerContext.Default.InfoWindow);
+				var clickedInfoWindowWebView = DeserializeOrDefault(payloadAsString, SerializerContext.Default.InfoWindow);
 				var clickedInfoWindowWebViewId = clickedInfoWindowWebView?.InfoWindowMarkerId;
 
 				if (!string.IsNullOrEmpty(clickedInfoWindowWebViewId))
 				{
-					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
+					// The same Pin can be in Map.Pins more than once
+					var clickedPin = VirtualView.Pins.FirstOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedInfoWindowWebViewId) ?? false);
 
 					var hideInfoWindow = clickedPin?.SendInfoWindowClick();
 					if (hideInfoWindow is not false)
@@ -504,12 +641,13 @@ public partial class MapHandlerWindows : MapHandler
 				break;
 
 			case EventIdentifier.PinClicked:
-				var clickedPinWebView = JsonSerializer.Deserialize<Pin>(payloadAsString, SerializerContext.Default.Pin);
+				var clickedPinWebView = DeserializeOrDefault(payloadAsString, SerializerContext.Default.ClickedPin);
 				var clickedPinWebViewId = clickedPinWebView?.MarkerId?.ToString();
 
 				if (!string.IsNullOrEmpty(clickedPinWebViewId))
 				{
-					var clickedPin = VirtualView.Pins.SingleOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
+					// The same Pin can be in Map.Pins more than once
+					var clickedPin = VirtualView.Pins.FirstOrDefault(p => (p as Pin)?.Id.ToString().Equals(clickedPinWebViewId) ?? false);
 
 					var hideInfoWindow = clickedPin?.SendMarkerClick();
 					if (hideInfoWindow is not false)
@@ -518,6 +656,20 @@ public partial class MapHandlerWindows : MapHandler
 					}
 				}
 				break;
+		}
+	}
+
+	// Valid JSON of another shape than the page posts (a message that is no object, a payload the type cannot hold) is ignored like an
+	// unknown message: JsonSerializer throws for it, and nothing may escape the async void WebMessageReceived handler.
+	static T? DeserializeOrDefault<T>(string json, JsonTypeInfo<T> jsonTypeInfo) where T : class
+	{
+		try
+		{
+			return JsonSerializer.Deserialize(json, jsonTypeInfo);
+		}
+		catch (JsonException)
+		{
+			return null;
 		}
 	}
 

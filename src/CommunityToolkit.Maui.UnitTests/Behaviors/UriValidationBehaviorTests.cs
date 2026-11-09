@@ -40,12 +40,10 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -62,7 +60,7 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -75,6 +73,29 @@ public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavi
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenUriKindChangesAfterTheViewLostFocus()
+	{
+		var behavior = new UriValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			UriKind = UriKind.Absolute
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "microsoft/xamarin/news";
+		((IView)entry).IsFocused = false;
+
+		Assert.False(behavior.IsValid);
+
+		behavior.UriKind = UriKind.Relative;
+
+		Assert.True(behavior.IsValid);
 	}
 
 	[Fact]

@@ -20,10 +20,11 @@ public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 		"Item 5"
 	];
 
+	// The SelectedItemEventArgsConverter passes SelectedItemChangedEventArgs.SelectedItem: null when the selection is cleared below
 	[RelayCommand]
-	void HandleItemSelected(string text)
+	void HandleItemSelected(string? text)
 	{
-		if (ItemSelected is not null)
+		if (text is not null)
 		{
 			LabelText = $"{text} has been selected";
 			ItemSelected = null;

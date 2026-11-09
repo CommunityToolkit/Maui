@@ -191,6 +191,57 @@ public class UseCommunityToolkitInitializationAnalyzerTests
 		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
+	[Fact]
+	public async Task VerifyCodeFixInitializesToolkitBeforeBuild()
+	{
+		const string source =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						return {|#0:MauiApp.CreateBuilder().UseMauiApp<Microsoft.Maui.Controls.Application>()|}.Build();
+					}
+				}
+			}
+			""";
+
+		const string fixedSource =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+			using CommunityToolkit.Maui;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						return MauiApp.CreateBuilder().UseMauiApp<Microsoft.Maui.Controls.Application>().UseMauiCommunityToolkit().Build();
+					}
+				}
+			}
+			""";
+
+		var normalizedFixedSource = Microsoft.CodeAnalysis.CSharp.SyntaxFactory
+			.ParseCompilationUnit(fixedSource)
+			.NormalizeWhitespace()
+			.ToFullString();
+
+		await VerifyCodeFixAsync(
+			source,
+			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
+			normalizedFixedSource,
+			typeof(Options),
+			typeof(Core.Options));
+	}
+
 	static Task VerifyMauiToolkitAnalyzer(string source, params IReadOnlyList<DiagnosticResult> expected)
 	{
 		return VerifyAnalyzerAsync(

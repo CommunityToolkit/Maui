@@ -24,6 +24,30 @@ updates:
         - dependency-name: "Xamarin.AndroidX.Collection"
         - dependency-name: "Xamarin.AndroidX.Lifecycle.LiveData"
         - dependency-name: "Xamarin.AndroidX.Collection.Ktx"
+        # The entry below updates these: this one finds them too, the runner package through the solution and .config/dotnet-tools.json from /samples up to the root.
+        - dependency-name: "Microsoft.DotNet.XHarness.TestRunners.Xunit"
+        - dependency-name: "microsoft.dotnet.xharness.cli"
+        - dependency-name: "coverlet.console"
+        - dependency-name: "dotnet-reportgenerator-globaltool"
+# The xharness CLI of .config/dotnet-tools.json (found from this directory up to the root) must stay on the version of the device tests'
+# XHarness runner package, and XHarness publishes several prereleases a week: one weekly pull request moves both, another the other tools.
+- package-ecosystem: nuget
+  directory: "/src/CommunityToolkit.Maui.DeviceTests.Runners"
+  schedule:
+    interval: "weekly"
+  allow:
+    - dependency-name: "Microsoft.DotNet.XHarness.TestRunners.Xunit"
+    - dependency-name: "microsoft.dotnet.xharness.cli"
+    - dependency-name: "coverlet.console"
+    - dependency-name: "dotnet-reportgenerator-globaltool"
+  groups:
+    xharness:
+      patterns:
+        - "Microsoft.DotNet.XHarness.*"
+        - "microsoft.dotnet.xharness.*"
+    dotnet-tools:
+      patterns:
+        - "*"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
