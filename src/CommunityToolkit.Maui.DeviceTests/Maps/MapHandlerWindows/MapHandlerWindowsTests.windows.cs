@@ -4,12 +4,12 @@
 using System.Reflection;
 using CommunityToolkit.Maui.Maps.Handlers;
 using Microsoft.Maui.Controls.Maps;
-using Map = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.Platform;
+using Map = Microsoft.Maui.Controls.Maps.Map;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 

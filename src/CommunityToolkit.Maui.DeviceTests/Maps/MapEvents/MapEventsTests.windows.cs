@@ -1,8 +1,8 @@
 using System.Text.Json;
 using CommunityToolkit.Maui.Maps.Handlers;
 using Microsoft.Maui.Controls.Maps;
-using Map = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Devices.Sensors;
+using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 

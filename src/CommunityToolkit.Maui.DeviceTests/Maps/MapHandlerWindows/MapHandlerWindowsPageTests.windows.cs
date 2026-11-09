@@ -6,12 +6,12 @@ using System.Reflection;
 using System.Text.Json;
 using CommunityToolkit.Maui.Maps.Handlers;
 using Microsoft.Maui.Controls.Maps;
-using Map = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Devices.Sensors;
-using IMap = Microsoft.Maui.Maps.IMap;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.Platform;
+using IMap = Microsoft.Maui.Maps.IMap;
+using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 

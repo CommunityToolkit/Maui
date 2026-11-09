@@ -7,11 +7,11 @@ using System.Text.Json;
 using CommunityToolkit.Maui.Maps;
 using CommunityToolkit.Maui.Maps.Handlers;
 using Microsoft.Maui.Controls.Maps;
-using Map = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.Platform;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage.Streams;
+using Map = Microsoft.Maui.Controls.Maps.Map;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WWebView2 = Microsoft.UI.Xaml.Controls.WebView2;
 
