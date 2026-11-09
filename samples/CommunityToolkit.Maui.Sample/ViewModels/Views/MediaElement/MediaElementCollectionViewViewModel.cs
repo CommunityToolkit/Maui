@@ -7,8 +7,8 @@ public partial class MediaElementCollectionViewViewModel : BaseViewModel
 {
 	public ObservableCollection<MediaElementDataSource> ItemSource { get; } =
 	[
-		new(new Uri(StreamingVideoUrls.BuckBunny), "Buck Bunny", 720, 1280),
-		new(new Uri(StreamingVideoUrls.ElephantsDream), "Elephants Dream", 720, 1280),
-		new(new Uri(StreamingVideoUrls.Sintel), "Sintel", 546, 1280)
+		new(new Uri(StreamingUrls.BuckBunny), "Buck Bunny", 720, 1280),
+		new(new Uri(StreamingUrls.Jellyfish), "Jellyfish", 720, 1280),
+		new(new Uri(StreamingUrls.Sintel), "Sintel", 546, 1280)
 	];
 }

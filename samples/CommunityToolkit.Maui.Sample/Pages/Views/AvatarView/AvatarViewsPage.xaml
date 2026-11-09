@@ -1,0 +1,38 @@
+﻿<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Views.AvatarViewsPage"
+                Title="AvatarViews Page"
+                x:TypeArguments="viewModels:AvatarViewsViewModel"
+                x:DataType="viewModels:AvatarViewsViewModel">
+
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Spacing="12">
+                <Button Text="AvatarView Bindable Properties Page" Clicked="HandleAvatarViewBindablePropertiesButtonClicked" />
+
+                <Button Text="AvatarView Borders Page" Clicked="HandleAvatarViewBordersButtonClicked" />
+
+                <Button Text="AvatarView Colors Page" Clicked="HandleAvatarViewColorsButtonClicked" />
+
+                <Button Text="AvatarView Day of Week Page" Clicked="HandleAvatarViewDayOfWeekButtonClicked" />
+
+                <Button Text="AvatarView Gestures Page" Clicked="HandleAvatarViewGesturesButtonClicked" />
+
+                <Button Text="AvatarView Images Page" Clicked="HandleAvatarViewImagesButtonClicked" />
+
+                <Button Text="AvatarView Keyboard Page" Clicked="HandleAvatarViewKeyboardButtonClicked" />
+
+                <Button Text="AvatarView Rating Page" Clicked="HandleAvatarViewRatingButtonClicked" />
+
+                <Button Text="AvatarView Shadows Page" Clicked="HandleAvatarViewShadowsButtonClicked" />
+
+                <Button Text="AvatarView Shapes Page" Clicked="HandleAvatarViewShapesButtonClicked" />
+
+                <Button Text="AvatarView Sizes Page" Clicked="HandleAvatarViewSizesButtonClicked" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+
+</pages:BasePage>

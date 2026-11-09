@@ -21,7 +21,7 @@
             Spacing="10"
             VerticalOptions="Fill">
             <Label Text="The IntToBoolConverter is a converter that allows users to convert an incoming int value to a bool. If the incoming int value is 0, it will be converted to false. Any other incoming value will be converted to true." TextColor="{StaticResource NormalLabelTextColor}" />
-            <Label Text="Please enter 0 for false anyting else for True" TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label Text="Enter 0 for False or any other integer for True" TextColor="{StaticResource NormalLabelTextColor}" />
             <Entry
                 Placeholder="0 for false other for true"
                 Text="{Binding Number}"

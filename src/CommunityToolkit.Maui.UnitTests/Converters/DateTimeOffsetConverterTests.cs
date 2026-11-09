@@ -166,14 +166,14 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 		public bool Equals(DateTimeOffset x, DateTimeOffset y)
 		{
 			return x.Year == y.Year
-			       && x.Month == y.Month
-			       && x.Day == y.Day
-			       && x.Hour == y.Hour
-			       && x.Minute == y.Minute
-			       && x.Second == y.Second
-			       && x.Millisecond == y.Millisecond
-			       && x.Microsecond == y.Microsecond
-			       && x.Offset == y.Offset;
+				   && x.Month == y.Month
+				   && x.Day == y.Day
+				   && x.Hour == y.Hour
+				   && x.Minute == y.Minute
+				   && x.Second == y.Second
+				   && x.Millisecond == y.Millisecond
+				   && x.Microsecond == y.Microsecond
+				   && x.Offset == y.Offset;
 		}
 
 		public int GetHashCode(DateTimeOffset obj)

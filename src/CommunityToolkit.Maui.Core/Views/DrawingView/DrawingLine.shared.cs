@@ -42,10 +42,15 @@ public class DrawingLine : IDrawingLine
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
 	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
 	public static ValueTask<Stream> GetImageStream(
 		ImagePointOptions options,
-		CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(options, token);
+		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(options);
+
+		return DrawingViewService.GetImageStream(options, token);
+	}
 
 	/// <inheritdoc cref="IDrawingLine.GetImageStream(double, double, Paint, Size?, CancellationToken)"/>
 	public ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default) =>

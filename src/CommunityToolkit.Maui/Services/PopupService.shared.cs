@@ -17,9 +17,12 @@ public class PopupService : IPopupService
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
 	[ActivatorUtilitiesConstructor]
 	public PopupService(IServiceProvider serviceProvider)
 	{
+		ArgumentNullException.ThrowIfNull(serviceProvider);
+
 		this.serviceProvider = serviceProvider;
 	}
 
@@ -180,14 +183,14 @@ public class PopupService : IPopupService
 
 	View GetPopupContent<T>()
 	{
-		if (viewModelToViewMappings.TryGetValue(typeof(T), out var viewType) 
-		    && serviceProvider.GetRequiredService(viewType) is View content)
+		if (viewModelToViewMappings.TryGetValue(typeof(T), out var viewType)
+			&& serviceProvider.GetRequiredService(viewType) is View content)
 		{
 			return content;
 		}
 
 		var bindingContext = serviceProvider.GetRequiredService(typeof(T));
-			
+
 		if (bindingContext is View view)
 		{
 			return view;

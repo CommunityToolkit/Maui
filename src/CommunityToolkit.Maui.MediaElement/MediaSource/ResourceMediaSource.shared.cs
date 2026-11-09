@@ -17,18 +17,6 @@ public sealed partial class ResourceMediaSource : MediaSource
 		= BindableProperty.Create(nameof(Path), typeof(string), typeof(ResourceMediaSource), propertyChanged: OnResourceMediaSourceMediaSourceChanged);
 
 	/// <summary>
-	/// An implicit operator to convert a string value into a <see cref="ResourceMediaSource"/>.
-	/// </summary>
-	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
-	public static implicit operator ResourceMediaSource(string path) => (ResourceMediaSource)FromFile(path);
-
-	/// <summary>
-	/// An implicit operator to convert a <see cref="ResourceMediaSource"/> into a string value.
-	/// </summary>
-	/// <param name="resourceMediaSource">A <see cref="ResourceMediaSource"/> instance to convert to a string value.</param>
-	public static implicit operator string?(ResourceMediaSource? resourceMediaSource) => resourceMediaSource?.Path;
-
-	/// <summary>
 	/// Gets or sets the full path to the resource file to use as a media source.
 	/// This is a bindable property.
 	/// </summary>
@@ -41,6 +29,18 @@ public sealed partial class ResourceMediaSource : MediaSource
 		get => (string?)GetValue(PathProperty);
 		set => SetValue(PathProperty, value);
 	}
+
+	/// <summary>
+	/// An implicit operator to convert a string value into a <see cref="ResourceMediaSource"/>.
+	/// </summary>
+	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
+	public static implicit operator ResourceMediaSource(string path) => (ResourceMediaSource)FromFile(path);
+
+	/// <summary>
+	/// An implicit operator to convert a <see cref="ResourceMediaSource"/> into a string value.
+	/// </summary>
+	/// <param name="resourceMediaSource">A <see cref="ResourceMediaSource"/> instance to convert to a string value.</param>
+	public static implicit operator string?(ResourceMediaSource? resourceMediaSource) => resourceMediaSource?.Path;
 
 	/// <inheritdoc/>
 	public override string ToString() => $"Resource: {Path}";

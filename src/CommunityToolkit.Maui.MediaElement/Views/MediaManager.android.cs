@@ -8,7 +8,9 @@ using Android.Widget;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
+using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.ExoPlayer.Source;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Media.Services;
@@ -23,11 +25,12 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
+	const int idleState = 1;
 	const int bufferState = 2;
 	const int readyState = 3;
 	const int endedState = 4;
 
-	static readonly HttpClient client = new();
+	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
 
@@ -37,8 +40,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	TaskCompletionSource? seekToTaskCompletionSource;
 	CancellationTokenSource? cancellationTokenSource;
 	MediaSession? session;
-	MediaItem.Builder? mediaItem;
 	BoundServiceConnection? connection;
+	StreamDataSourceFactory? currentStreamDataSourceFactory;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
@@ -92,26 +95,34 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
+		// ExoPlayer reports Media3's Player.STATE_* values (idleState to endedState), not android.media.session.PlaybackState values: the
+		// PlaybackState arms only map the values that are not Media3 states.
 		var newState = playbackState switch
 		{
-			PlaybackState.StateFastForwarding
-				or PlaybackState.StateRewinding
+			// ExoPlayer is idle until a source is prepared: a source that is opening has not stopped, and a failed one stays failed
+			idleState => MediaElement.CurrentState is MediaElementState.Opening or MediaElementState.Failed
+				? MediaElement.CurrentState
+				: MediaElementState.Stopped,
+
+			bufferState => MediaElementState.Buffering,
+
+			readyState => playWhenReady
+				? MediaElementState.Playing
+				: MediaElementState.Paused,
+
+			endedState => MediaElementState.Stopped,
+
+			PlaybackState.StateRewinding
 				or PlaybackState.StateSkippingToNext
 				or PlaybackState.StateSkippingToPrevious
-				or PlaybackState.StateSkippingToQueueItem
-				or PlaybackState.StatePlaying => playWhenReady
+				or PlaybackState.StateSkippingToQueueItem => playWhenReady
 					? MediaElementState.Playing
 					: MediaElementState.Paused,
-
-			PlaybackState.StatePaused => MediaElementState.Paused,
 
 			PlaybackState.StateConnecting
 				or PlaybackState.StateBuffering => MediaElementState.Buffering,
 
 			PlaybackState.StateNone => MediaElementState.None,
-			PlaybackState.StateStopped => MediaElement.CurrentState is not MediaElementState.Failed
-				? MediaElementState.Stopped
-				: MediaElementState.Failed,
 
 			PlaybackState.StateError => MediaElementState.Failed,
 
@@ -286,11 +297,149 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Volume = volume;
 	}
 
+	#region PlayerListener implementation method stubs
+
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes)
+	{
+	}
+
+	public void OnAudioSessionIdChanged(int audioSessionId)
+	{
+	}
+
+	public void OnAvailableCommandsChanged(PlayerCommands? player)
+	{
+	}
+
+	public void OnCues(CueGroup? cues)
+	{
+	}
+
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo)
+	{
+	}
+
+	public void OnDeviceVolumeChanged(int volume, bool muted)
+	{
+	}
+
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
+	{
+	}
+
+	public void OnIsLoadingChanged(bool isLoading)
+	{
+	}
+
+	public void OnIsPlayingChanged(bool isPlaying)
+	{
+	}
+
+	public void OnLoadingChanged(bool isLoading)
+	{
+	}
+
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs)
+	{
+	}
+
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason)
+	{
+	}
+
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
+	{
+	}
+
+	public void OnMetadata(Metadata? metadata)
+	{
+	}
+
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
+	{
+	}
+
+	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason)
+	{
+	}
+
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason)
+	{
+	}
+
+	public void OnPlayerErrorChanged(PlaybackException? error)
+	{
+	}
+
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata)
+	{
+	}
+
+	public void OnRenderedFirstFrame()
+	{
+	}
+
+	public void OnRepeatModeChanged(int repeatMode)
+	{
+	}
+
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs)
+	{
+	}
+
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs)
+	{
+	}
+
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled)
+	{
+	}
+
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled)
+	{
+	}
+
+	public void OnSurfaceSizeChanged(int width, int height)
+	{
+	}
+
+	public void OnTimelineChanged(Timeline? timeline, int reason)
+	{
+	}
+
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters)
+	{
+	}
+
+	public void OnTracksChanged(Tracks? tracks)
+	{
+	}
+
 	protected virtual partial void PlatformPlay()
 	{
 		if (Player is null || MediaElement.Source is null)
 		{
 			return;
+		}
+
+		// The player has no media: prepared, it would end at once and report MediaEnded for a media that never played
+		if (Player.MediaItemCount is 0)
+		{
+			// A source that is still loading (its artwork downloads) plays once it is loaded. A source without data, or one that could not be
+			// applied, has nothing to play, like a null Source.
+			if (MediaElement.CurrentState is MediaElementState.Opening)
+			{
+				Player.PlayWhenReady = true;
+			}
+
+			return;
+		}
+
+		// Media that played to its end stays there on play() (ExoPlayer's ended state). Like the play button of Media3's own controls
+		// (Util.handlePlayButtonAction), Play() first seeks to the default position: the start of the media, or the live edge of a live stream
+		if (Player.PlaybackState is endedState)
+		{
+			Player.SeekToDefaultPosition();
 		}
 
 		Player.Prepare();
@@ -344,12 +493,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.SeekTo(0);
 		Player.Stop();
 		MediaElement.Position = TimeSpan.Zero;
+
+		// The stopped player is idle: it reports no ready state for a seek that Stop() interrupted, which has ended all the same. SeekTo completes
+		// and raises SeekCompleted (IMediaElement.SeekTo), once the player has stopped, instead of waiting for its two minute timeout
+		seekToTaskCompletionSource?.TrySetResult();
 	}
 
 	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
-		var hasSetSource = false;
-
 		if (Player is null)
 		{
 			return;
@@ -360,39 +511,146 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			StartService();
 		}
 
+		// This source replaces one that may still be loading (its artwork can take a while to download): that load must not finish
+		cancellationTokenSource?.Cancel();
+		cancellationTokenSource?.Dispose();
+		cancellationTokenSource = null;
+
 		if (MediaElement.Source is null)
 		{
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			return;
 		}
 
-		MediaElement.CurrentStateChanged(MediaElementState.Opening);
-		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
-		cancellationTokenSource ??= new();
-		// ConfigureAwait(true) is required to prevent crash on startup
-		var result = await SetPlayerData(cancellationTokenSource.Token).ConfigureAwait(true);
-		var item = result?.Build();
-
-		if (item?.MediaMetadata is not null)
+		// Clear previous stream data source if switching sources
+		if (MediaElement.Source is not StreamMediaSource)
 		{
-			Player.SetMediaItem(item);
-			Player.Prepare();
-			hasSetSource = true;
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
 		}
 
-		if (hasSetSource)
+		// The load has its token before Opening is raised: a StateChanged handler can set another Source then, whose update replaces this one
+		cancellationTokenSource = new();
+		var token = cancellationTokenSource.Token;
+		MediaElement.CurrentStateChanged(MediaElementState.Opening);
+		if (token.IsCancellationRequested)
 		{
-			if (Player.PlayerError is null)
+			return;
+		}
+
+		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
+
+		// Only a failure to apply the source (to create its media item or media source, or to hand it to the player) is a failure of the source.
+		// An exception of an event handler is not, whether the handler is that of an event raised after this part (MediaOpened, or None for a
+		// source without data) or that of an event the player raises while it takes the source: the MediaElement catches it and reports it once
+		// the update has ended (UpdateSource), so it does not stop the update
+		MediaItem? item;
+		var isPlayerTakingTheSource = false;
+		try
+		{
+			// ConfigureAwait(true) is required to prevent crash on startup
+			var result = await SetPlayerData(token).ConfigureAwait(true);
+
+			// A newer source, or the disconnection of the handler, replaced this source while it was loading
+			if (token.IsCancellationRequested)
 			{
-				MediaElement.MediaOpened();
+				return;
 			}
-			if (isAndroidForegroundServiceEnabled)
+
+			item = result?.Build();
+			if (item?.MediaMetadata is not null)
 			{
-				UpdateNotifications();
+				IMediaSource? mediaSource = null;
+
+				// If we have a custom stream data source, we need to set the media source differently
+				if (currentStreamDataSourceFactory is not null && MediaElement.Source is StreamMediaSource)
+				{
+					mediaSource = new AndroidX.Media3.ExoPlayer.Source.ProgressiveMediaSource.Factory(currentStreamDataSourceFactory)
+						.CreateMediaSource(item);
+				}
+				else if (MediaElement.Source is UriMediaSource uriMediaSource && uriMediaSource.HttpHeaders.Count > 0)
+				{
+					var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
+					httpDataSourceFactory.SetDefaultRequestProperties(uriMediaSource.HttpHeaders);
+
+					var mediaSourceFactory = new DefaultMediaSourceFactory(httpDataSourceFactory);
+					mediaSource = mediaSourceFactory.CreateMediaSource(item);
+				}
+
+				// The player raises its events synchronously while it takes the source (StateChanged for Buffering, for example): from here on, only
+				// an exception of the player itself, a Java exception, is a failure of the source
+				isPlayerTakingTheSource = true;
+				if (mediaSource is not null)
+				{
+					Player.SetMediaSource(mediaSource);
+				}
+				else
+				{
+					Player.SetMediaItem(item);
+				}
+
+				Player.Prepare();
 			}
+		}
+		catch (Exception exception) when (!isPlayerTakingTheSource || exception is Java.Lang.Throwable)
+		{
+			// A newer source, or the disconnection of the handler, replaced this source while it was loading: the failure is that of a source the
+			// MediaElement no longer has
+			if (token.IsCancellationRequested)
+			{
+				return;
+			}
+
+			// Like a source that cannot be played, a source that cannot be applied replaced the previous media, which must not keep playing nor
+			// report its end for this source. It is reported through MediaFailed, which also resets the duration.
+			Player.Stop();
+			Player.ClearMediaItems();
+
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
+			MediaElement.MediaFailed(new MediaFailedEventArgs(exception.Message));
+			Logger.LogError(exception, "{LogMessage}", exception.Message);
+
+			return;
+		}
+
+		// A StateChanged handler that the player raised while it took the source can set another Source, whose update replaces this one, or
+		// disconnect the handler: this source then reports nothing more
+		if (token.IsCancellationRequested)
+		{
+			return;
+		}
+
+		if (item?.MediaMetadata is null)
+		{
+			// A source without data (a Uri, File, Resource or Stream source with nothing in it) loads nothing, like a null Source. The player
+			// is stopped first: emptying the playlist of a prepared player would end the previous media, and report MediaEnded, for this source
+			Player.Stop();
+			Player.ClearMediaItems();
+			MediaElement.Duration = TimeSpan.Zero;
+			MediaElement.CurrentStateChanged(MediaElementState.None);
+
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
+			return;
+		}
+
+		if (Player.PlayerError is null)
+		{
+			MediaElement.MediaOpened();
+		}
+
+		if (isAndroidForegroundServiceEnabled)
+		{
+			UpdateNotifications();
 		}
 	}
 
@@ -499,9 +757,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		// We're going to mute state. Capture the current volume first so we can restore later.
+		// That volume is the MediaElement's: the player's is not set yet when the handler connects to a MediaElement that is muted already
 		if (MediaElement.ShouldMute)
 		{
-			volumeBeforeMute = Player.Volume;
+			volumeBeforeMute = (float)MediaElement.Volume;
 		}
 		else if (!AreFloatingPointNumbersEqual(volumeBeforeMute, Player.Volume) && Player.Volume > 0)
 		{
@@ -527,10 +786,25 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (disposing)
 		{
+			// A seek that waits for the ready state of the released player would only end after its two minute timeout. It ends like a cancelled
+			// seek, once the handler has finished disconnecting: no continuation of SeekTo may run in the middle of the disconnection
+			if (seekToTaskCompletionSource is { Task.IsCompleted: false } pendingSeek)
+			{
+				Dispatcher.Dispatch(() => pendingSeek.TrySetCanceled());
+			}
+
+			// The service keeps running while another MediaElement is bound to it: its notification must forget this session and player
+			if (session is not null && Player is not null)
+			{
+				connection?.Binder?.Service.ForgetSession(session, Player);
+			}
+
 			session?.Release();
 			session?.Dispose();
 			session = null;
 
+			// A source that is still loading must not finish loading into the released player
+			cancellationTokenSource?.Cancel();
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
 
@@ -541,11 +815,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				connection = null;
 			}
 
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
 			client.Dispose();
 		}
 	}
 
-	static async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
+	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 		{
@@ -566,18 +843,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			{
 				var request = new HttpRequestMessage(HttpMethod.Head, url);
 				var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-				contentLength = contentLengthResponse.Content.Headers.ContentLength ?? 0;
+				contentLength = contentLengthResponse.Content.Headers.ContentLength;
 
 				var response = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
 				stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
 			}
-			// Absolute File Path
 			else if (uri is not null && uri.Scheme == Uri.UriSchemeFile)
 			{
-				var normalizedFilePath = NormalizeFilePath(url);
+				// An absolute path parses as a file URI too: a file URI names its file by its local path, an absolute path is the path itself
+				var normalizedFilePath = url.StartsWith($"{Uri.UriSchemeFile}:", StringComparison.OrdinalIgnoreCase) ? uri.LocalPath : NormalizeFilePath(url);
 
-				stream = File.Open(normalizedFilePath, FileMode.Create);
-				contentLength = await GetByteCountFromStream(stream, cancellationToken);
+				stream = File.OpenRead(normalizedFilePath);
 			}
 			// Relative File Path
 			else if (Uri.TryCreate(url, UriKind.Relative, out _))
@@ -585,19 +861,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				var normalizedFilePath = NormalizeFilePath(url);
 
 				stream = Platform.AppContext.Assets?.Open(normalizedFilePath) ?? throw new InvalidOperationException("Assets cannot be null");
-				contentLength = await GetByteCountFromStream(stream, cancellationToken);
 			}
 
 			if (stream is not null)
 			{
-				if (!contentLength.HasValue)
-				{
-					throw new InvalidOperationException($"{nameof(contentLength)} must be set when {nameof(stream)} is not null");
-				}
-
-				artworkData = new byte[contentLength.Value];
-				using var memoryStream = new MemoryStream(artworkData);
+				// A length announced by the server only sizes the buffer at first: a server can announce none (a chunked response) or a wrong one,
+				// and the length of an asset stream (which cannot seek) is only known once it has been read
+				using var memoryStream = new MemoryStream(contentLength is > 0 and <= int.MaxValue ? (int)contentLength.Value : 0);
 				await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+				artworkData = memoryStream.ToArray();
 			}
 
 			return artworkData;
@@ -617,26 +889,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
-
-		static async ValueTask<long> GetByteCountFromStream(Stream stream, CancellationToken token)
-		{
-			if (stream.CanSeek)
-			{
-				return stream.Length;
-			}
-
-			long countedStreamBytes = 0;
-
-			var buffer = new byte[8192];
-			int bytesRead;
-
-			while ((bytesRead = await stream.ReadAsync(buffer, token)) > 0)
-			{
-				countedStreamBytes += bytesRead;
-			}
-
-			return countedStreamBytes;
-		}
 	}
 
 	void StartService()
@@ -645,6 +897,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
+
 		var intent = new Intent(global::Android.App.Application.Context, typeof(MediaControlsService));
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
@@ -659,6 +912,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			return;
 		}
+
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
@@ -709,11 +963,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 					break;
 				}
+			case StreamMediaSource streamMediaSource:
+				{
+					if (streamMediaSource.Stream is not null)
+					{
+						return await CreateMediaItemFromStream(streamMediaSource.Stream, cancellationToken).ConfigureAwait(false);
+					}
+
+					break;
+				}
 			default:
 				throw new NotSupportedException($"{MediaElement.Source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
 		}
 
-		return mediaItem;
+		return null;
 	}
 
 	async Task<MediaItem.Builder> CreateMediaItem(string url, CancellationToken cancellationToken = default)
@@ -727,7 +990,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
 		}
 
-		mediaItem = new MediaItem.Builder();
+		var mediaItem = new MediaItem.Builder();
 		mediaItem.SetUri(url);
 		mediaItem.SetMediaId(url);
 		mediaItem.SetMediaMetadata(mediaMetaData.Build());
@@ -735,36 +998,37 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
-	#region PlayerListener implementation method stubs
-	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
-	public void OnAudioSessionIdChanged(int audioSessionId) { }
-	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
-	public void OnCues(CueGroup? cues) { }
-	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
-	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
-	public void OnIsLoadingChanged(bool isLoading) { }
-	public void OnIsPlayingChanged(bool isPlaying) { }
-	public void OnLoadingChanged(bool isLoading) { }
-	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
-	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
-	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnMetadata(Metadata? metadata) { }
-	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
-	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
-	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
-	public void OnPlayerErrorChanged(PlaybackException? error) { }
-	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
-	public void OnRenderedFirstFrame() { }
-	public void OnRepeatModeChanged(int repeatMode) { }
-	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
-	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
-	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
-	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
-	public void OnSurfaceSizeChanged(int width, int height) { }
-	public void OnTimelineChanged(Timeline? timeline, int reason) { }
-	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
-	public void OnTracksChanged(Tracks? tracks) { }
+	async Task<MediaItem.Builder> CreateMediaItemFromStream(Stream stream, CancellationToken cancellationToken)
+	{
+		MediaMetadata.Builder mediaMetaData = new();
+		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
+		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+		if (data is not null && data.Length > 0)
+		{
+			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
+		}
+
+		// Create MediaItem with metadata
+		// The stream will be handled via custom data source factory when needed
+		var mediaItem = new MediaItem.Builder();
+		mediaItem.SetUri("stream://media");
+		mediaItem.SetMediaId("stream://media");
+		mediaItem.SetMediaMetadata(mediaMetaData.Build());
+
+		// A source that was replaced while its artwork loaded is not played: its stream must not replace the data source of the current media
+		if (!cancellationToken.IsCancellationRequested)
+		{
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
+			// Store the stream for later use with custom MediaSource
+			currentStreamDataSourceFactory = new StreamDataSourceFactory(stream);
+		}
+
+		return mediaItem;
+	}
+
 	#endregion
 
 	static class PlaybackState
@@ -783,6 +1047,4 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		public const int StateStopped = 1;
 		public const int StateError = 7;
 	}
-
-
 }
