@@ -53,6 +53,8 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	bool isDisposed;
 
+	bool hasValidated;
+
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
 	/// </summary>
@@ -102,6 +104,10 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <summary>
 	/// Provides an enumerated value that specifies how to handle validation. This is a bindable property.
 	/// </summary>
+	/// <remarks>
+	/// The flags decide when <see cref="Value"/> is validated. Once the behavior has validated a value, a change of a validation rule (for example <see cref="TextValidationBehavior.MinimumLength"/>), of <see cref="ValidStyle"/>, of <see cref="InvalidStyle"/> or of <see cref="Flags"/> validates the current <see cref="Value"/>, whatever the flags, so that <see cref="IsValid"/> follows the current rules.
+	/// <see cref="ValidationFlags.ForceMakeValidWhenFocused"/> still keeps a focused view valid.
+	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
 	public partial ValidationFlags Flags { get; set; } = ValidationBehaviorDefaults.Flags;
 
@@ -151,6 +157,32 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	internal ValueTask ValidateNestedAsync(CancellationToken token) => UpdateStateAsync(View, Flags, true, token);
 
 	/// <summary>
+	/// Used when a property in <see cref="ValidationBehavior"/> changes to update the validation state
+	/// </summary>
+	/// <remarks>
+	/// Once the behavior has validated a value, this method validates the current <see cref="Value"/> whatever <see cref="Flags"/> includes, so that <see cref="IsValid"/> follows the new property value.
+	/// Before that, it validates the value only when <see cref="Flags"/> includes the current state of the view, as for a new <see cref="Value"/>.
+	/// <see cref="ValidationFlags.ForceMakeValidWhenFocused"/> still keeps a focused view valid.
+	/// </remarks>
+	/// <param name="bindable"></param>
+	/// <param name="oldValue"></param>
+	/// <param name="newValue"></param>
+	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		try
+		{
+			var validationBehavior = (ValidationBehavior)bindable;
+
+			// The last result can be stale even when Flags does not include the current state of the view, for example ValidateOnValueChanged after the view lost the focus
+			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, validationBehavior.hasValidated);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceInformation("{0}", ex);
+		}
+	}
+
+	/// <summary>
 	/// Validate value
 	/// </summary>
 	protected abstract ValueTask<bool> ValidateAsync(object? value, CancellationToken token);
@@ -180,37 +212,36 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	protected virtual object? Decorate(object? value) => value;
 
 	/// <inheritdoc/>
-	protected override async void OnAttachedTo(VisualElement bindable)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
-		await isAttachingSemaphoreSlim.WaitAsync();
-
-		try
-		{
-			currentStatus = ValidationFlags.ValidateOnAttaching;
-
-			OnValuePropertyNamePropertyChanged();
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
-		}
-		finally
-		{
-			isAttachingSemaphoreSlim.Release();
-		}
+		ValidateOnAttaching();
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		RemoveBinding(ValueProperty);
 
 		currentStatus = ValidationFlags.None;
+		hasValidated = false;
 		base.OnDetachingFrom(bindable);
 	}
 
 	/// <inheritdoc/>
-	protected override async void OnViewPropertyChanged(VisualElement sender, PropertyChangedEventArgs e)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="sender"/> or <paramref name="e"/> is <see langword="null"/>.</exception>
+	protected override void OnViewPropertyChanged(VisualElement sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(sender);
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == VisualElement.IsFocusedProperty.PropertyName)
@@ -221,20 +252,8 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 				false => ValidationFlags.ValidateOnUnfocused
 			};
 
-			await UpdateStateAsync(View, Flags, false).ConfigureAwait(false);
+			UpdateStateOnFocusChanged();
 		}
-	}
-
-	/// <summary>
-	/// Used when a property in <see cref="ValidationBehavior"/> changes to update the validation state
-	/// </summary>
-	/// <param name="bindable"></param>
-	/// <param name="oldValue"></param>
-	/// <param name="newValue"></param>
-	protected static async void OnValidationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-	{
-		var validationBehavior = (ValidationBehavior)bindable;
-		await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false).ConfigureAwait(false);
 	}
 
 	static void OnIsValidPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -242,8 +261,18 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	static async void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		await ((ValidationBehavior)bindable).OnValuePropertyChanged(CancellationToken.None);
-		OnValidationPropertyChanged(bindable, oldValue, newValue);
+		var validationBehavior = (ValidationBehavior)bindable;
+		await validationBehavior.OnValuePropertyChanged(CancellationToken.None);
+
+		try
+		{
+			// Unlike a rule change (OnValidationPropertyChanged), a new value is validated only when Flags includes ValidateOnValueChanged
+			await validationBehavior.UpdateStateAsync(validationBehavior.View, validationBehavior.Flags, false);
+		}
+		catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceInformation("{0}", ex);
+		}
 	}
 
 	static void OnValuePropertyNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -256,6 +285,25 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		=> ((ValidationBehavior)bindable).DefaultValuePropertyName;
 
 	void OnIsValidPropertyChanged() => IsNotValid = !IsValid;
+
+	async void ValidateOnAttaching()
+	{
+		await isAttachingSemaphoreSlim.WaitAsync();
+
+		try
+		{
+			currentStatus = ValidationFlags.ValidateOnAttaching;
+
+			OnValuePropertyNamePropertyChanged();
+			await UpdateStateAsync(View, Flags, false);
+		}
+		finally
+		{
+			isAttachingSemaphoreSlim.Release();
+		}
+	}
+
+	async void UpdateStateOnFocusChanged() => await UpdateStateAsync(View, Flags, false);
 
 	async Task OnValuePropertyChanged(CancellationToken token)
 	{
@@ -293,9 +341,10 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			IsValid = true;
 			IsRunning = false;
 		}
-		else if (isForced || (currentStatus != ValidationFlags.None && Flags.HasFlag(currentStatus)))
+		else if (isForced || (currentStatus != ValidationFlags.None && flags.HasFlag(currentStatus)))
 		{
 			IsRunning = true;
+			hasValidated = true;
 
 			using var tokenSource = new CancellationTokenSource();
 			var token = parentToken ?? tokenSource.Token;
@@ -307,6 +356,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 				if (token.IsCancellationRequested)
 				{
+					StopRunningUnlessSuperseded(tokenSource);
 					return;
 				}
 
@@ -316,6 +366,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 			}
 			catch (TaskCanceledException)
 			{
+				StopRunningUnlessSuperseded(tokenSource);
 				return;
 			}
 			catch (Exception ex) when (Options.ShouldSuppressExceptionsInBehaviors)
@@ -326,19 +377,34 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 				Trace.TraceInformation("{0}", ex);
 			}
+			catch (OperationCanceledException)
+			{
+				// Not swallowed like TaskCanceledException above, so that the caller still sees it
+				StopRunningUnlessSuperseded(tokenSource);
+				throw;
+			}
 		}
 
 		if (view is not null)
 		{
-			UpdateStyle(view, IsValid);
+			TryUpdateStyle(view, IsValid);
 		}
 	}
 
-	void UpdateStyle(in VisualElement view, bool isValid)
+	bool TryUpdateStyle(in VisualElement view, bool isValid)
 	{
-		VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
+		try
+		{
+			VisualStateManager.GoToState(view, isValid ? ValidVisualState : InvalidVisualState);
 
-		view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
+			view.Style = (isValid ? ValidStyle : InvalidStyle) ?? view.Style;
+
+			return true;
+		}
+		catch (ArgumentException)
+		{
+			return false;
+		}
 	}
 
 	void ResetValidationTokenSource(CancellationTokenSource? newTokenSource)
@@ -355,6 +421,19 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		{
 			validationTokenSource = newTokenSource;
 		}
+	}
+
+	// A newer validation that replaced this one in validationTokenSource owns IsRunning; otherwise, as after a cancellation through the caller's token, nothing else resets it
+	// Checking tokenSource.IsCancellationRequested is not enough: a newer validation cancels nothing when an older validation that finished has already cleared validationTokenSource
+	void StopRunningUnlessSuperseded(CancellationTokenSource tokenSource)
+	{
+		if (validationTokenSource != tokenSource)
+		{
+			return;
+		}
+
+		validationTokenSource = null;
+		IsRunning = false;
 	}
 }
 
@@ -375,10 +454,15 @@ public abstract class ValidationBehavior<T> : ValidationBehavior
 	/// <summary>
 	/// Decorate value
 	/// </summary>
+	/// <remarks>
+	/// Called before each validation: <see cref="ValidateAsync(T, CancellationToken)"/> receives the value that this method returns, for example the text after <see cref="TextValidationBehavior.DecorationFlags"/> are applied.
+	/// The base implementation returns <paramref name="value"/> unchanged.
+	/// </remarks>
 	protected virtual T? Decorate(T? value) => value;
 
 	/// <inheritdoc />
-	protected override object? Decorate(object? value) => (T?)value;
+	/// <remarks>Casts <paramref name="value"/> to <typeparamref name="T"/> and returns the result of <see cref="Decorate(T)"/>.</remarks>
+	protected override object? Decorate(object? value) => Decorate((T?)value);
 
 	/// <summary>
 	/// Validate value

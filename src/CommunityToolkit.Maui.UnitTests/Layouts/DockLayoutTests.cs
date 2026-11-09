@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Layouts;
 using CommunityToolkit.Maui.Layouts;
 using Xunit;
 
@@ -45,9 +46,12 @@ public class DockLayoutTests : BaseTest
 	public void EnsureDefaults()
 	{
 		var layout = new DockLayout();
+		var view = new MockView();
+
 		Assert.Equal(DockLayoutDefaults.ShouldExpandLastChild, layout.ShouldExpandLastChild);
 		Assert.Equal(DockLayoutDefaults.HorizontalSpacing, layout.HorizontalSpacing);
 		Assert.Equal(DockLayoutDefaults.VerticalSpacing, layout.VerticalSpacing);
+		Assert.Equal(DockLayoutDefaults.DockPosition, DockLayout.GetDockPosition(view));
 	}
 
 	#region Measure
@@ -251,6 +255,16 @@ public class DockLayoutTests : BaseTest
 	}
 
 	#endregion
+
+	[Fact]
+	public void DockLayoutManager_NullDockLayout_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new DockLayoutManager(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("dockLayout", exception.ParamName);
+	}
 
 	class TestView : View
 	{

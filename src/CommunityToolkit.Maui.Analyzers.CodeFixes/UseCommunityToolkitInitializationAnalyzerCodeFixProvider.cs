@@ -24,7 +24,7 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 		var diagnosticSpan = diagnostic.Location.SourceSpan;
 
 		// Find the type declaration identified by the diagnostic.
-		var declaration = root?.FindToken(diagnosticSpan.Start).Parent?.AncestorsAndSelf().OfType<InvocationExpressionSyntax>().Last() ?? throw new InvalidOperationException();
+		var declaration = root?.FindNode(diagnosticSpan, getInnermostNodeForTie: true) as InvocationExpressionSyntax ?? throw new InvalidOperationException();
 
 		// Register a code action that will invoke the fix.
 		context.RegisterCodeFix(

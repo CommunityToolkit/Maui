@@ -10,13 +10,30 @@ namespace CommunityToolkit.Maui.Behaviors;
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 [RequiresUnreferencedCode($"{nameof(MultiValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 [ContentProperty(nameof(Children))]
+[AttachedBindableProperty<object>("Error", IsNullable = true, GetterMethodXmlDocumentation = getErrorMethodXmlDocumentation, SetterMethodXmlDocumentation = setErrorMethodXmlDocumentation)]
 public partial class MultiValidationBehavior : ValidationBehavior
 {
-	/// <summary>
-	/// BindableProperty for getting the error.
-	/// </summary>
-	public static readonly BindableProperty ErrorProperty =
-		BindableProperty.CreateAttached(nameof(GetError), typeof(object), typeof(MultiValidationBehavior), null);
+	const string getErrorMethodXmlDocumentation =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		/// <summary>
+		/// Method to extract the error from the attached property for a child behavior in <see cref="Children"/>.
+		/// </summary>
+		/// <param name="bindable">The <see cref="ValidationBehavior"/> that we extract the attached Error property</param>
+		/// <returns>Object containing error information</returns>
+		""";
+
+	const string setErrorMethodXmlDocumentation =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		/// <summary>
+		/// Method to set the error on the attached property for a child behavior in <see cref="Children"/>.
+		/// </summary>
+		/// <param name="bindable">The <see cref="ValidationBehavior"/> on which we set the attached Error property value</param>
+		/// <param name="value">The value to set</param>
+		""";
 
 	readonly ObservableCollection<ValidationBehavior> children = [];
 
@@ -31,28 +48,15 @@ public partial class MultiValidationBehavior : ValidationBehavior
 	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource)]
 	public partial List<object?>? Errors { get; set; } = MultiValidationBehaviorDefaults.Errors;
 
-	/// <summary>
-	/// Method to extract the error from the attached property for a child behavior in <see cref="Children"/>.
-	/// </summary>
-	/// <param name="bindable">The <see cref="ValidationBehavior"/> that we extract the attached Error property</param>
-	/// <returns>Object containing error information</returns>
-	public static object? GetError(BindableObject bindable) => bindable.GetValue(ErrorProperty);
-
-	/// <summary>
-	/// Method to set the error on the attached property for a child behavior in <see cref="Children"/>.
-	/// </summary>
-	/// <param name="bindable">The <see cref="ValidationBehavior"/> on which we set the attached Error property value</param>
-	/// <param name="value">The value to set</param>
-	public static void SetError(BindableObject bindable, object value) => bindable.SetValue(ErrorProperty, value);
-
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(object? value, CancellationToken token)
 	{
+		// Deliberately no ConfigureAwait(false): the code below reads and sets bindable properties, so it must resume on the context the validation started on
 		await Task.WhenAll(children.Select(async validationBehavior =>
 		{
 			validationBehavior.Value = value;
 			await validationBehavior.ValidateNestedAsync(token);
-		})).ConfigureAwait(false);
+		}));
 
 		var errors = children.Where(static c => c.IsNotValid).Select(GetError).ToList();
 

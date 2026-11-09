@@ -35,6 +35,7 @@ public interface ISpeechToText : IAsyncDisposable
 	/// </remarks>
 	/// <param name="options">The <see cref="SpeechToTextOptions"/> used to customize how the speech will be detected and converted to text.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> that provides the ability to cancel the starting process. Note that listening has started then you can only stop listening by calling <see cref="StopListenAsync"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown by the call itself, before a <see cref="Task"/> exists, when <paramref name="options"/> is null. This check comes before the check of <paramref name="cancellationToken"/>.</exception>
 	Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default);
 
 	/// <summary>

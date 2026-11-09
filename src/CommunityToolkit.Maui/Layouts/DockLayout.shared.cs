@@ -7,16 +7,17 @@ namespace CommunityToolkit.Maui.Layouts;
 /// <summary>
 /// DockLayout positions its child elements along the edges of the layout container.
 /// </summary>
+[AttachedBindableProperty<DockPosition>(nameof(DockPosition), DefaultValue = DockLayoutDefaults.DockPosition, PropertyChangedMethodName = nameof(OnDockPositionPropertyChanged), BindablePropertyXmlDocumentation = dockPositionBindablePropertyXmlDocumentation)]
 public partial class DockLayout : Layout, IDockLayout
 {
-	/// <summary>
-	/// Docking position for a view.
-	/// </summary>
-	public static readonly BindableProperty DockPositionProperty = BindableProperty.CreateAttached(nameof(DockPosition),
-																									typeof(DockPosition),
-																									typeof(DockLayout),
-																									DockPosition.None,
-																							propertyChanged: OnDockPositionPropertyChanged);
+	const string dockPositionBindablePropertyXmlDocumentation =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		/// <summary>
+		/// Docking position for a view.
+		/// </summary>
+		""";
 
 	/// <summary>
 	/// If true, the last child is expanded to fill the remaining space (default: true).
@@ -37,32 +38,22 @@ public partial class DockLayout : Layout, IDockLayout
 	public partial double VerticalSpacing { get; set; } = DockLayoutDefaults.VerticalSpacing;
 
 
-	/// <summary>
-	/// Gets the docking position for a view.
-	/// </summary>
-	public static DockPosition GetDockPosition(BindableObject view)
-	{
-		return (DockPosition)view.GetValue(DockPositionProperty);
-	}
-
-	/// <summary>
-	/// Sets the docking position for a view.
-	/// </summary>
-	public static void SetDockPosition(BindableObject view, DockPosition value)
-	{
-		view.SetValue(DockPositionProperty, value);
-	}
-
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 	public DockPosition GetDockPosition(IView view)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		var mauiView = (View)view;
 		return (DockPosition)mauiView.GetValue(DockPositionProperty);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 	public void Add(IView view, DockPosition position = DockPosition.None)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		Children.Add(view);
 		SetDockPosition((View)view, position);
 	}

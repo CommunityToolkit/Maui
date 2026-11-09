@@ -14,8 +14,12 @@ public static class OfflineSpeechToText
 	public static ISpeechToText Default => defaultImplementation.Value;
 
 	/// <inheritdoc cref="ISpeechToText.StartListenAsync"/>
-	public static Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default) =>
-		Default.StartListenAsync(options, cancellationToken);
+	public static Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(options);
+
+		return Default.StartListenAsync(options, cancellationToken);
+	}
 
 	/// <inheritdoc cref="ISpeechToText.StopListenAsync"/>
 	public static Task StopListenAsync(CancellationToken cancellationToken = default) =>
