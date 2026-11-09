@@ -29,6 +29,7 @@ public partial class MediaManager
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/>, <paramref name="mediaElement"/> or <paramref name="dispatcher"/> is <see langword="null"/>.</exception>
 	public MediaManager(Microsoft.Maui.IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
 		ArgumentNullException.ThrowIfNull(context);
@@ -77,7 +78,7 @@ public partial class MediaManager
 	/// <param name="number2"></param>
 	/// <param name="tolerance"></param>
 	/// <returns></returns>
-	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
+	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) <= tolerance;
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.
@@ -124,7 +125,13 @@ public partial class MediaManager
 	/// <summary>
 	/// Update the media source.
 	/// </summary>
-	public ValueTask UpdateSource() => PlatformUpdateSource();
+	/// <remarks>
+	/// An exception thrown by a handler of an event that the update raises, PropertyChanging and PropertyChanged included, neither ends the update
+	/// nor is thrown by it: it is logged, and reported through MediaFailed once the update has ended (see <see cref="IMediaElement.Source"/>). Other
+	/// exceptions of the update are thrown.
+	/// </remarks>
+	/// <returns>A task that completes when the update has ended.</returns>
+	public ValueTask UpdateSource() => MediaElement.RunSourceUpdate(PlatformUpdateSource, Logger);
 
 	/// <summary>
 	/// Update the media playback speed.

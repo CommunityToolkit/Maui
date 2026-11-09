@@ -26,18 +26,6 @@ public sealed partial class UriMediaSource : MediaSource
 	}
 
 	/// <summary>
-	/// An implicit operator to convert a string value into a <see cref="UriMediaSource"/>.
-	/// </summary>
-	/// <param name="uri">The URI string to convert into a <see cref="UriMediaSource"/>.</param>
-	public static implicit operator UriMediaSource(string uri) => (UriMediaSource)FromUri(uri);
-
-	/// <summary>
-	/// An implicit operator to convert a <see cref="UriMediaSource"/> into a string value.
-	/// </summary>
-	/// <param name="uriMediaSource">A <see cref="UriMediaSource"/> instance to convert to a string value.</param>
-	public static implicit operator string?(UriMediaSource? uriMediaSource) => uriMediaSource?.Uri?.ToString();
-
-	/// <summary>
 	/// Gets the HTTP headers to include in the request when loading the media from <see cref="Uri"/>.
 	/// </summary>
 	/// <remarks>
@@ -58,6 +46,18 @@ public sealed partial class UriMediaSource : MediaSource
 		get => (Uri?)GetValue(UriProperty);
 		set => SetValue(UriProperty, value);
 	}
+
+	/// <summary>
+	/// An implicit operator to convert a string value into a <see cref="UriMediaSource"/>.
+	/// </summary>
+	/// <param name="uri">The URI string to convert into a <see cref="UriMediaSource"/>.</param>
+	public static implicit operator UriMediaSource(string uri) => (UriMediaSource)FromUri(uri);
+
+	/// <summary>
+	/// An implicit operator to convert a <see cref="UriMediaSource"/> into a string value.
+	/// </summary>
+	/// <param name="uriMediaSource">A <see cref="UriMediaSource"/> instance to convert to a string value.</param>
+	public static implicit operator string?(UriMediaSource? uriMediaSource) => uriMediaSource?.Uri?.ToString();
 
 	/// <inheritdoc/>
 	public override string ToString() => $"Uri: {Uri}";
@@ -82,6 +82,9 @@ public sealed partial class UriMediaSource : MediaSource
 		public int Count => innerDictionary.Count;
 		public bool IsReadOnly => false;
 
+		public ICollection<K> Keys => innerDictionary.Keys;
+		public ICollection<V> Values => innerDictionary.Values;
+
 		public V this[K key]
 		{
 			get => innerDictionary[key];
@@ -96,9 +99,6 @@ public sealed partial class UriMediaSource : MediaSource
 				ContentsChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
-
-		public ICollection<K> Keys => innerDictionary.Keys;
-		public ICollection<V> Values => innerDictionary.Values;
 
 		public IEnumerator<KeyValuePair<K, V>> GetEnumerator() => innerDictionary.GetEnumerator();
 

@@ -27,17 +27,26 @@
     <WindowsPackageType>None</WindowsPackageType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     
-    <NoWarn>IL2026</NoWarn>
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
 
     <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
-      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">
-    <!-- Windows error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'">
+    <!-- Windows + MacCatalyt error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
     <PublishAot>false</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'
+      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <!-- The Release build for iOS is AOT compiled and cannot JIT. With dynamic code supported, reflection emits dynamic methods: MauiUIApplicationDelegate
+         then crashes at launch in HasSceneManifest ("Attempting to JIT compile method ... NSMutableDictionary..ctor ... while running in aot-only mode")
+         as soon as Info.plist has the UIApplicationSceneManifest that the iOS 27 SDK requires. -->
+    <DynamicCodeSupport>false</DynamicCodeSupport>
   </PropertyGroup>
 
   <ItemGroup>    
@@ -59,15 +68,25 @@
     <MauiFont Include="Resources\Fonts\*" />
 
     <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
-    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.1" />
+    <PackageReference Include="CommunityToolkit.Maui.Markup" Version="8.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- StateContainerPage opts out of the XAML source generator (MauiXamlInflator=SourceGen in Directory.Build.props): XamlC compiles it
+         in Release, and Debug inflates it at runtime (MAUI's default for XamlC in Debug). When a property element has a single child that is
+         itself a collection, here <mct:StateContainer.StateViews> holding one VerticalStackLayout, the source generator emits
+         SetValue(StateContainer.StateViewsProperty, (IList<View>)child) instead of adding the child to StateViews, so the page threw
+         InvalidCastException in InitializeComponent on every platform. It is a regression from dotnet/maui#32780: MAUI 10.0.0 and 10.0.11 add
+         the child; 10.0.20 through 10.0.110 and 11.0.0-rc.1 cast it. Remove this once the source generator adds the child. -->
+    <MauiXaml Update="Pages\Layouts\StateContainerPage.xaml" Inflator="XamlC" />
   </ItemGroup>
 
   <PropertyGroup>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">17.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>

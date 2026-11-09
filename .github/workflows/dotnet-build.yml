@@ -22,8 +22,6 @@ env:
     NugetPackageVersionCamera: '99.0.0-preview${{ github.run_number }}'
     NugetPackageVersionMediaElement: '99.0.0-preview${{ github.run_number }}'
     NugetPackageVersionMaps: '99.0.0-preview${{ github.run_number }}'
-    TOOLKIT_NET_VERSION: '10.0.100'
-    LATEST_NET_VERSION: '10.0.x'
     PathToLibrarySolution: 'src/CommunityToolkit.Maui.slnx'
     PathToSamplesSolution: 'samples/CommunityToolkit.Maui.Sample.slnx'
     PathToCommunityToolkitCsproj: 'src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj'
@@ -46,8 +44,6 @@ env:
     PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory: 'src/CommunityToolkit.Maui.MediaElement.SourceGenerators.UnitTests'
     PathToCommunityToolkitSourceGeneratorsUnitTestCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.UnitTests/CommunityToolkit.Maui.SourceGenerators.UnitTests.csproj'
     PathToCommunityToolkitAnalyzersBenchmarkCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
-    CommunityToolkitLibrary_Xcode_Version: '26.1'
-    CommunityToolkitSample_Xcode_Version: '26.2'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -60,24 +56,27 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ windows-latest, macos-26 ]
+                os: [ windows-latest, xcode-27 ]
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v6
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
 
             -   name: Set Latest Xcode Version
                 if: runner.os == 'macOS'
-                uses: maxim-lobanov/setup-xcode@v1
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            -   uses: actions/setup-java@v5
+            -   uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
                 with:
                     distribution: 'microsoft'
                     java-version: '21'
@@ -106,9 +105,21 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ windows-latest, macos-26 ]
+        outputs:
+            toolkit-net-version: ${{ steps.sdk.outputs.toolkit-net-version }}
         steps:
             -   name: Checkout code
-                uses: actions/checkout@v6
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            # sign, release-main and release-nuget check out nothing, so they cannot load shared.env: they read the .NET SDK version from this
+            # job's output.
+            -   name: Output the .NET SDK version for the release jobs
+                id: sdk
+                shell: bash
+                run: echo "toolkit-net-version=$TOOLKIT_NET_VERSION" >> "$GITHUB_OUTPUT"
 
             -   name: Set NuGet Version to Tag Number
                 if: startsWith(github.ref, 'refs/tags/') && (!endsWith(github.ref, '-mediaelement') && !endsWith(github.ref, '-camera') && !endsWith(github.ref, '-maps'))
@@ -141,17 +152,17 @@ jobs:
 
             -   name: Set Xcode Version
                 if: runner.os == 'macOS'
-                uses: maxim-lobanov/setup-xcode@v1
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
                 with:
                     xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
 
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
                     dotnet-quality: 'ga'
 
-            -   uses: actions/setup-java@v5
+            -   uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
                 with:
                     distribution: 'microsoft'
                     java-version: '17'
@@ -212,32 +223,44 @@ jobs:
             -   name: Run CommunityToolkit Analyzers UnitTests
                 run: |
                     cd ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut-analyzers.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-analyzers.cobertura.xml" --coverage-output-format cobertura
                     
             -   name: Run CommunityToolkit Source Generators UnitTests
                 if: runner.os == 'Windows'
                 run: |
                     cd ${{ env.PathToCommunityToolkitSourceGeneratorsUnitTestDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut-sourcegenerators.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-sourcegenerators.cobertura.xml" --coverage-output-format cobertura
 
             -   name: Run CommunityToolkit MediaElement Source Generators UnitTests
                 if: runner.os == 'Windows'
                 run: |
                     cd ${{ env.PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-mediaelement-sourcegenerators.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut-mediaelement-sourcegenerators.trx" --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut-mediaelement-sourcegenerators.cobertura.xml" --coverage-output-format cobertura
 
             -   name: Run CommunityToolkit UnitTests
                 run: |
                     cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
-                    dotnet run -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura --report-xunit
+                    dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut.trx" --results-directory "${{ runner.temp }}"
 
-            -   name: Create code coverage report
+            # Release, as the device tests' coverage that the code_coverage job merges this with: a Debug build has more coverable lines
+            # (sequence points on braces), so the braces of code that only the device tests run would show as uncovered. It also runs
+            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the run above
+            # is the unit test gate and reports the results, so a failure here (a test host crash, for example) neither fails the job nor
+            # skips the packages; the coverage report may then lack the unit tests.
+            -   name: Run CommunityToolkit UnitTests with code coverage (Release)
                 if: ${{ runner.os == 'Windows' && (success() || failure()) }}
+                continue-on-error: true
                 run: |
-                    dotnet tool install -g dotnet-reportgenerator-globaltool
-                    reportgenerator -reports:'${{ runner.temp }}\*cobertura.xml' -targetdir:CodeCoverage -reporttypes:'MarkdownSummaryGithub'
-                    cat CodeCoverage/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
-                shell: bash
+                    cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
+                    dotnet test -c Release --results-directory "${{ runner.temp }}" --coverage --coverage-output "${{ runner.temp }}/ut.cobertura.xml" --coverage-output-format cobertura
+
+            -   name: Upload unit test coverage
+                if: ${{ runner.os == 'Windows' && (success() || failure()) }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: coverage-unit-tests
+                    path: ${{ runner.temp }}/*.cobertura.xml
+                    if-no-files-found: warn
 
             -   name: Pack CommunityToolkit.Maui.Core NuGet
                 run: dotnet pack -c Release ${{ env.PathToCommunityToolkitCoreCsproj }} -p:PackageVersion=${{ env.NugetPackageVersion }} -p:Version=${{ env.NugetPackageVersion }}
@@ -255,14 +278,14 @@ jobs:
                 run: dotnet pack -c Release ${{ env.PathToCommunityToolkitMapsCsproj }} -p:PackageVersion=${{ env.NugetPackageVersionMaps }} -p:Version=${{ env.NugetPackageVersionMaps }}
 
             -   name: Copy NuGet Packages to Staging Directory
-                if: ${{ runner.os == 'Windows' }} && !startsWith(github.ref, 'refs/tags/')
+                if: ${{ runner.os == 'Windows' }}
                 run: |
                     mkdir -p ${{ github.workspace }}/nuget
                     Get-ChildItem -Path "./src" -Recurse | Where-Object { $_.Extension -match "nupkg" } | Copy-Item -Destination "${{ github.workspace }}/nuget"
                 shell: pwsh
 
             -   name: Upload Package List
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 if: ${{ runner.os == 'Windows' }}
                 with:
                     name: nuget-list
@@ -272,11 +295,62 @@ jobs:
 
             -   name: Publish Packages
                 if: ${{ runner.os == 'Windows' }}
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
     
+    # Tag builds only build, sign and publish the packages, so they skip the device tests.
+    device_tests:
+        name: Device Tests
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: ./.github/workflows/device-tests.yml
+
+    # Runs whatever the tests' results, and on tag builds, which skip the device tests. What a called workflow uploads belongs to the run
+    # of the workflow that called it, so this job waits for the whole device_tests job, the Windows jobs too, which collect no coverage.
+    code_coverage:
+        name: Code Coverage
+        if: ${{ !cancelled() }}
+        needs: [ build_library, device_tests ]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        timeout-minutes: 15
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Download coverage
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    pattern: coverage-*
+                    path: artifacts/coverage
+                    merge-multiple: true
+
+            -   name: Merge coverage
+                shell: pwsh
+                run: |
+                    ./eng/coverage-report.ps1 -Report artifacts/coverage -Output artifacts/coverage-report -Note @(
+                        'Reports: `ut` is the toolkit''s unit tests (Release), `ut-*` the analyzer and source generator unit tests; the others are the device tests of Android API 36, the iOS simulator and Mac Catalyst.',
+                        'Not included: the Windows device tests (no way of collecting their coverage has been verified, so `windows.ps1` has no `-Coverage`), the Android API 28 job (one Android level is collected) and the iOS 26.5 job (one iOS version is collected).')
+
+            -   name: Upload coverage report
+                if: ${{ !cancelled() }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: code-coverage-report
+                    path: artifacts/coverage-report/
+                    if-no-files-found: warn
+
     sign:
         needs: [ build_library ]
         if: ${{ startsWith(github.ref, 'refs/tags/') || (github.event_name != 'pull_request') }}
@@ -285,20 +359,20 @@ jobs:
             id-token: write # Required for requesting the JWT
         
         steps:
-            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
-                uses: actions/setup-dotnet@v5
+            -   name: Install .NET SDK v${{ needs.build_library.outputs.toolkit-net-version }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
-                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-version: ${{ needs.build_library.outputs.toolkit-net-version }}
                     dotnet-quality: 'ga'
 
             -   name: Download NuGet List
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
                 with:
                     name: nuget-list
                     path: ./
 
             -   name: Download Package List
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
                 with:
                     name: packages
                     path: ./packages
@@ -344,7 +418,7 @@ jobs:
                     --verbosity Information
 
             -   name: Publish Packages
-                uses: actions/upload-artifact@v7
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
                     name: signed-packages
                     if-no-files-found: error
@@ -353,18 +427,18 @@ jobs:
     
     release-main:
         if: ${{ github.event_name != 'pull_request' && !startsWith(github.ref, 'refs/tags/') }}
-        needs: [ sign ]
+        needs: [ sign, build_library ]
         runs-on: ubuntu-latest
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
-                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-version: ${{ needs.build_library.outputs.toolkit-net-version }}
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
                 with:
                     name: signed-packages
                     path: ./packages
@@ -380,27 +454,37 @@ jobs:
     
     release-nuget:
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        needs: [ sign ]
+        needs: [ sign, build_library ]
         environment: nuget-release-gate # This gates this job until manually approved
+        permissions:
+            id-token: write
+            contents: read
+            actions: read
         runs-on: ubuntu-latest
         
         steps:
             -   name: Install .NET SDK
-                uses: actions/setup-dotnet@v5
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
-                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-version: ${{ needs.build_library.outputs.toolkit-net-version }}
                     dotnet-quality: 'ga'
 
             -   name: Download signed packages
-                uses: actions/download-artifact@v8
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
                 with:
                     name: signed-packages
                     path: ./packages
+
+            -   name: NuGet login (OIDC)
+                id: login
+                uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
+                with:
+                    user: jfversluis_MSFT
 
             -   name: Push to NuGet.org
                 run: >
                     dotnet nuget push
                     **/*.nupkg
                     --source https://api.nuget.org/v3/index.json
-                    --api-key ${{ secrets.NUGET_PACKAGE_PUSH_TOKEN }}
+                    --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
                     --skip-duplicate

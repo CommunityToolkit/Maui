@@ -18,13 +18,7 @@
         </HorizontalStackLayout>
         <HorizontalStackLayout Grid.Row="1">
             <Label Text="MapType" VerticalOptions="Center"/>
-            <Picker x:Name="MapTypePicker" Margin="5" SelectedIndex="0" SelectedIndexChanged="MapTypePicker_OnSelectedIndexChanged">
-                <Picker.Items>
-                    <x:String>Hybrid</x:String>
-                    <x:String>Satellite</x:String>
-                    <x:String>Street</x:String>
-                </Picker.Items>
-            </Picker>
+            <Picker Margin="5" ItemsSource="{Binding MapTypes, Mode=OneTime}" SelectedItem="{Binding SelectedMapType}"/>
         </HorizontalStackLayout>
         <HorizontalStackLayout Grid.Row="2">
             <Switch x:Name="ZoomEnabledSwitch" Margin="5" IsToggled="True"/>
@@ -33,7 +27,8 @@
             <Label Text="Scroll enabled" VerticalOptions="Center"/>
         </HorizontalStackLayout>
         <Button Text="Move to region" Clicked="Button_OnClicked" Grid.Row="3"/>
-        <maps:Map x:Name="BasicMap" Grid.Row="4" 
+        <maps:Map x:Name="BasicMap" Grid.Row="4"
+             MapType="{Binding SelectedMapType}"
              IsShowingUser="{Binding IsToggled, Source={x:Reference ShowUserLocationSwitch}, x:DataType=Switch}"
              IsTrafficEnabled="{Binding IsToggled, Source={x:Reference ShowTrafficSwitch}, x:DataType=Switch}"
              IsZoomEnabled="{Binding IsToggled, Source={x:Reference ZoomEnabledSwitch}, x:DataType=Switch}"

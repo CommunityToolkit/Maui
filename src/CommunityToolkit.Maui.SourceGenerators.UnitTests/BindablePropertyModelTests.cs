@@ -30,7 +30,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
 			false,
-			"null"
+			"null",
+			null
 		);
 
 		// Act
@@ -74,7 +75,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
 			hasInitializer,
-			propertyAccessibility
+			propertyAccessibility,
+			null
 		);
 
 		// Assert
@@ -135,7 +137,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibilityText
 			false,
-			"public"
+			"public",
+			null
 		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
@@ -147,21 +150,6 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(classInfo, semanticValues.ClassInformation);
 		Assert.Equal(bindableProperties, semanticValues.BindableProperties);
 		Assert.Single(semanticValues.BindableProperties);
-	}
-
-	static Compilation CreateCompilation(string source)
-	{
-		var syntaxTree = CSharpSyntaxTree.ParseText(source);
-		var references = new[]
-		{
-			MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-		};
-
-		return CSharpCompilation.Create(
-			"TestAssembly",
-			[syntaxTree],
-			references,
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 	}
 
 	[Fact]
@@ -194,7 +182,8 @@ public class BindablePropertyModelTests : BaseTest
 			true,
 			string.Empty,
 			hasInitializer,
-			"public"
+			"public",
+			null
 		);
 
 		// Act
@@ -234,7 +223,8 @@ public class BindablePropertyModelTests : BaseTest
 			true,
 			string.Empty,
 			hasInitializer,
-			"public"
+			"public",
+			null
 		);
 
 		// Act
@@ -242,5 +232,20 @@ public class BindablePropertyModelTests : BaseTest
 
 		// Assert
 		Assert.Equal("CreateTextDefaultValue", effectiveDefaultValueCreatorMethodName);
+	}
+
+	static Compilation CreateCompilation(string source)
+	{
+		var syntaxTree = CSharpSyntaxTree.ParseText(source);
+		var references = new[]
+		{
+			MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+		};
+
+		return CSharpCompilation.Create(
+			"TestAssembly",
+			[syntaxTree],
+			references,
+			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 	}
 }

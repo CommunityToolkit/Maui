@@ -74,8 +74,7 @@ public class DrawingLineTests : BaseViewTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken Expired
-		await Task.Delay(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}
@@ -83,7 +82,7 @@ public class DrawingLineTests : BaseViewTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStream_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();
@@ -119,5 +118,15 @@ public class DrawingLineTests : BaseViewTest
 		};
 
 		drawingLine.Should().BeEquivalentTo(expectedDefaultValue);
+	}
+
+	[Fact]
+	public void GetImageStream_NullOptions_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => DrawingLine.GetImageStream(null, TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("options", exception.ParamName);
 	}
 }

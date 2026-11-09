@@ -26,4 +26,29 @@ public class AppThemeResourceExtensionTests : BaseViewTest
 		// Assert
 		Assert.True(foundResource, "Failed to load key from AppThemeResourceDictionary. Bug 2761.");
 	}
+
+	[Fact]
+	public void AppThemeResourceInStyleUpdatesWhenThemeChanges()
+	{
+		var application = (MockApplication)ServiceProvider.GetRequiredService<IApplication>();
+		application.UserAppTheme = AppTheme.Light;
+
+		var resources = new AppThemeResourceDictionary();
+		var style = Assert.Single(resources.Values.OfType<Style>());
+		var firstEntry = new Entry { Style = style };
+		var secondEntry = new Entry { Style = style };
+
+		Assert.Equal(Colors.Black, firstEntry.TextColor);
+		Assert.Equal(Colors.Black, secondEntry.TextColor);
+
+		application.UserAppTheme = AppTheme.Dark;
+
+		Assert.Equal(Colors.White, firstEntry.TextColor);
+		Assert.Equal(Colors.White, secondEntry.TextColor);
+
+		application.UserAppTheme = AppTheme.Light;
+
+		Assert.Equal(Colors.Black, firstEntry.TextColor);
+		Assert.Equal(Colors.Black, secondEntry.TextColor);
+	}
 }

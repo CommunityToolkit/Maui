@@ -144,6 +144,18 @@ public class AppBuilderExtensionsTests : BaseTest
 		}
 	}
 
+	[Theory]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", true)]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. MICROSOFT.WINDOWSAPPRUNTIME.INSIGHTS.RESOURCE.DLL", true)]
+	[InlineData(unchecked((int)0x8007007E), "Unable to load resource dll. Other.Resource.dll", false)]
+	[InlineData(unchecked((int)0x80004005), "Unable to load resource dll. Microsoft.WindowsAppRuntime.Insights.Resource.dll", false)]
+	public void IsWindowsAppRuntimeModuleUnavailableReturnsExpectedResult(int hresult, string message, bool expected)
+	{
+		var exception = new System.Runtime.InteropServices.COMException(message, hresult);
+
+		Assert.Equal(expected, Options.IsWindowsAppRuntimeModuleUnavailable(exception));
+	}
+
 	[Fact]
 	public void UseMauiCommunityToolkitMediaElement_ShouldUseSurfaceViewByDefault()
 	{
@@ -254,5 +266,14 @@ public class AppBuilderExtensionsTests : BaseTest
 
 		MediaElementOptions.IsAndroidForegroundServiceEnabled.Should().Be(true);
 	}
+
+	[Fact]
+	public void UseMauiCommunityToolkitCore_NullBuilder_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => Core.AppBuilderExtensions.UseMauiCommunityToolkitCore(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("builder", exception.ParamName);
+	}
 }
-#pragma warning restore CA1416
