@@ -34,7 +34,8 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		ArgumentNullException.ThrowIfNull(platformView);
 
-		if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
+		if (OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			platformView.DetachFromParentViewController();
 		}

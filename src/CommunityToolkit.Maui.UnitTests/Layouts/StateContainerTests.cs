@@ -813,20 +813,12 @@ public class StateContainerTests : BaseTest
 
 	static Task FadeToAsync(VisualElement element, CancellationToken token)
 	{
-#if NET11_0_OR_GREATER
 		return element.FadeToAsync(1, 250, null, token);
-#else
-		return element.FadeToAsync(1).WaitAsync(token);
-#endif
 	}
 
 	static Task RotateToAsync(VisualElement element, double rotation, uint length, CancellationToken token)
 	{
-#if NET11_0_OR_GREATER
 		return element.RotateToAsync(rotation, length, null, token);
-#else
-		return element.RotateToAsync(rotation, length).WaitAsync(token);
-#endif
 	}
 
 	static class StateKey

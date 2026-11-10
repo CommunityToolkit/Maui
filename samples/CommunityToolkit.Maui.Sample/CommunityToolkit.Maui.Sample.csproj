@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(NetVersion)-ios;$(NetVersion)-android;$(NetVersion)-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
     
     <OutputType>Exe</OutputType>
     <UseMaui>true</UseMaui>
@@ -33,9 +32,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'
-      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'
-      AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'">
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'
+                 AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'ios'">
     <!-- Windows + MacCatalyt error NETSDK1102: Optimizing assemblies for size is not supported for the selected publish configuration. -->
+    <!-- iOS: the .NET 11 iOS SDK rejects any explicit PublishTrimmed value; its default (MtouchLink=SdkOnly) already trims like TrimMode=partial -->
     <PublishAot>false</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
@@ -70,8 +71,8 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="*" />
     <PackageReference Include="CommunityToolkit.Maui.Markup" Version="8.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.9.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,13 +85,14 @@
     <MauiXaml Update="Pages\Layouts\StateContainerPage.xaml" Inflator="XamlC" />
   </ItemGroup>
 
+  <!-- .NET MAUI 11's minimum OS versions, except Android 26: the Sample calls UseMauiCommunityToolkitMediaElement at startup, and
+       CommunityToolkit.Maui.MediaElement supports only Android 26 and later. -->
   <PropertyGroup>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">17.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -103,7 +105,6 @@
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
-    <ProjectReference Include="..\..\src\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='windows' and $(Configuration) == 'Release'">

@@ -14,18 +14,16 @@ public static class FolderPicker
 
 	/// <inheritdoc cref="IFolderPicker.PickAsync(string, CancellationToken)"/> 
 	[SupportedOSPlatform("Android26.0")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default) =>
 		Default.PickAsync(initialPath, cancellationToken);
 
 	/// <inheritdoc cref="IFolderPicker.PickAsync(CancellationToken)"/>
 	[SupportedOSPlatform("Android")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	public static Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken) =>
 		Default.PickAsync(cancellationToken);
