@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
-using CommunityToolkit.Maui.Core.Handlers;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 

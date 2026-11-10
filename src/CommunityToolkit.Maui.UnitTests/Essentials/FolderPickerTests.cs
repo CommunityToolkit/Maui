@@ -1,8 +1,8 @@
-﻿using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Core.Primitives;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
-using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 

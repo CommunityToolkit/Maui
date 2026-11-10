@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
-using FluentAssertions;
-using Xunit;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
-using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using CommunityToolkit.Maui.Views;
+using FluentAssertions;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 

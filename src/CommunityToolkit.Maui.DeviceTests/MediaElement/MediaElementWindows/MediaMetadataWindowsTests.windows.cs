@@ -1,8 +1,8 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.DeviceTests.Runners;
-using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
 using Windows.Media.Playback;

@@ -7,12 +7,12 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Imaging;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 using LoadedImageSurface = Microsoft.UI.Xaml.Media.LoadedImageSurface;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WTextBlock = Microsoft.UI.Xaml.Controls.TextBlock;
-using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 

@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Layouts;
 using CommunityToolkit.Maui.Layouts;
 using Xunit;
-using CommunityToolkit.Maui.Core.Layouts;
 
 namespace CommunityToolkit.Maui.UnitTests.Layouts;
 

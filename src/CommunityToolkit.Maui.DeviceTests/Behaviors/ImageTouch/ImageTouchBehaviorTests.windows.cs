@@ -1,9 +1,9 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
-using WStretch = Microsoft.UI.Xaml.Media.Stretch;
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 using WButton = Microsoft.UI.Xaml.Controls.Button;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
-using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
