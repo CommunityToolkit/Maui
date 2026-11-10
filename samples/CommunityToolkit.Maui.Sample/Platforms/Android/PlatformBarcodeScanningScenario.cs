@@ -1,3 +1,7 @@
+// Qualifying as 'Android.Runtime.…' inside this namespace would resolve against the
+// 'CommunityToolkit.Maui.Android' namespace the MediaElement source generator emits,
+// so import the type (as BarcodeAnalyzer.cs does) instead of fully qualifying it.
+using Android.Runtime;
 using AndroidX.Camera.Core;
 
 namespace CommunityToolkit.Maui.Sample;
@@ -21,7 +25,7 @@ public partial class PlatformBarcodeScanningScenario
 					.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest)
 					.Build();
 
-			imageAnalysis.SetAnalyzer(Android.Runtime.AndroidEnvironment.MainThreadExecutor, new BarcodeAnalyzer(() => Command));
+			imageAnalysis.SetAnalyzer(AndroidEnvironment.MainThreadExecutor, new BarcodeAnalyzer(() => Command));
 		
 			return imageAnalysis;
 		});
