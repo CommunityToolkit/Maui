@@ -12,7 +12,7 @@ public sealed partial class EventToCommandBehavior<TType> : EventToCommandBehavi
 	protected override void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
 		var parameter = CommandParameter
-			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture)
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, EventArgsConverterCulture ?? CultureInfo.InvariantCulture)
 			?? eventArgs;
 
 		if (parameter is not TType)

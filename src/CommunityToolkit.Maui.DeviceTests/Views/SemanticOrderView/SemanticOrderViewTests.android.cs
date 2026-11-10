@@ -251,21 +251,6 @@ public partial class SemanticOrderViewTests
 		Assert.Equal(MauiContext.Context!.Handle, platformView.Context!.Handle);
 	}
 
-	[Fact]
-	public async Task BelowAndroid22ViewIdsAreGeneratedButNothingIsLinked()
-	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(22), "Needs an Android 21 device or emulator (the pooled ones are API 28 and 36): below API 22 the toolkit only traces that the order is not supported.");
-
-		SetupBuilder();
-		var view = CreateSemanticOrderView(out var buttons);
-		view.ViewOrder = [buttons[0], buttons[1]];
-
-		await CreateHandlerAsync<SemanticOrderViewHandler>(view);
-
-		// AccessibilityTraversalAfter/Before do not exist below API 22, so only the generated ids can be read.
-		await InvokeOnMainThreadAsync(() => Assert.All(buttons.Take(2), button => Assert.True(PlatformViewOf(button).Id > 0)));
-	}
-
 	static AView PlatformViewOf(IView view) =>
 		view.Handler?.PlatformView as AView ?? throw new InvalidOperationException($"{NameOf(view)} has no native view.");
 

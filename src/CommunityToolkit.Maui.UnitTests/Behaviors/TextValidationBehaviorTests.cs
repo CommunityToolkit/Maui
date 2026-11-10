@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 
@@ -229,5 +230,29 @@ public class TextValidationBehaviorTests() : BaseBehaviorTest<TextValidationBeha
 		Assert.Equal(TextValidationBehaviorDefaults.MinimumLength, textValidationBehavior.MinimumLength);
 		Assert.Equal(TextValidationBehaviorDefaults.RegexOptions, textValidationBehavior.RegexOptions);
 		Assert.Equal(TextValidationBehaviorDefaults.RegexPattern, textValidationBehavior.RegexPattern);
+	}
+
+	[Theory]
+	[InlineData("^[a-z]+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, "TITLE")]
+	[InlineData("^TITLE$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, "title")]
+	public async Task IsValid_CultureInvariantIgnoreCaseMatchesInTurkish(string pattern, RegexOptions options, string value)
+	{
+		// Regex captures the culture when it is created, so the culture is set before the behavior builds its Regex.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+		var behavior = new TextValidationBehavior
+		{
+			RegexPattern = pattern,
+			RegexOptions = options
+		};
+
+		var entry = new Entry
+		{
+			Text = value
+		};
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
+
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
+
+		Assert.True(behavior.IsValid);
 	}
 }

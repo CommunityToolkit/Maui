@@ -131,7 +131,7 @@ public partial class IconTintColorBehaviorTests
 			return "none";
 		}
 
-		if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+		if (OperatingSystem.IsIOSVersionAtLeast(17))
 		{
 			color = color.GetResolvedColor(UITraitCollection.CurrentTraitCollection.GetTraitCollectionByModifyingTraits(traits => traits.ActiveAppearance = UIUserInterfaceActiveAppearance.Active));
 		}
