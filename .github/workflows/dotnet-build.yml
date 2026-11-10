@@ -136,6 +136,12 @@ jobs:
                     echo "NugetPackageVersionMediaElement=${{ env.CurrentSemanticVersionBase }}-build-${{ github.event.pull_request.number }}.${{ github.run_number }}+${{ github.sha }}"
                 shell: bash
 
+            -   name: Set Xcode Version
+                if: runner.os == 'macOS'
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitLibrary_Xcode_Version }}
+
             -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
                 uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
