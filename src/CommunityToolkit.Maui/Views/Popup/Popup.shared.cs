@@ -80,8 +80,7 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultCanBeDismissedByTappingOutsideOfPopup))]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
 
-	
-	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByBackButtonPressed"/> />
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByBackButtonPressed"/>
 	/// <remarks>
 	/// On Android - when false the hardware back button is disabled.
 	/// The default value is <see cref="DefaultPopupSettings.CanBeDismissedByBackButtonPressed"/>.

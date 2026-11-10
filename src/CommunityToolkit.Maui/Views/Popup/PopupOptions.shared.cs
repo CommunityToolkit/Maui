@@ -33,7 +33,7 @@ public partial class PopupOptions : BindableObject, IPopupOptions
 	/// <inheritdoc/>
 	[BindableProperty]
 	public partial Action? OnBackButtonPressed { get; set; } = Options.DefaultPopupOptionsSettings.OnBackButtonPressed;
-	
+
 	/// <inheritdoc/>
 	[BindableProperty]
 	public partial Action? OnDismiss { get; set; } = Options.DefaultPopupOptionsSettings.OnDismiss;

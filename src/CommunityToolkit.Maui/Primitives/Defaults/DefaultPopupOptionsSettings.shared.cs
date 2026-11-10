@@ -58,12 +58,12 @@ public record DefaultPopupOptionsSettings : IPopupOptions
 		public static Action? OnTappingOutsideOfPopup { get; } = null;
 
 		/// <summary>
-		/// Default value for <see cref="PopupOptions.OnBackButtonPressed"/> 
+		/// Default value for <see cref="PopupOptions.OnBackButtonPressed"/>
 		/// </summary>
 		public static Action? OnBackButtonPressed { get; } = null;
 
 		/// <summary>
-		/// Default value for <see cref="PopupOptions.OnDismiss"/> 
+		/// Default value for <see cref="PopupOptions.OnDismiss"/>
 		/// </summary>
 		public static Action? OnDismiss { get; } = null;
 

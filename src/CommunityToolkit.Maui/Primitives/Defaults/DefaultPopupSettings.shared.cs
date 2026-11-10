@@ -34,7 +34,7 @@ public record DefaultPopupSettings
 
 	/// <inheritdoc cref="Views.Popup.CanBeDismissedByTappingOutsideOfPopup" path="/summary"/>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = PopupDefaults.CanBeDismissedByTappingOutsideOfPopup;
-	
+
 	/// <inheritdoc cref="Views.Popup.CanBeDismissedByBackButtonPressed"/>
 	public bool CanBeDismissedByBackButtonPressed { get; init; } = PopupDefaults.CanBeDismissedByBackButtonPressed;
 
