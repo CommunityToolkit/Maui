@@ -19,6 +19,11 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using Xamarin.Forms-specific code unless there is a direct .NET MAUI equivalent.
 * Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
+### .NET and .NET MAUI Versions
+* The libraries pin the first .NET and .NET MAUI release of each major version (for example the .NET 11.0.100 SDK and `MauiPackageVersion` 11.0.0 in `Directory.Build.props`), so apps can use any later release.
+* Raise a pinned version only when a bug fix or a feature requires it.
+* The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
+
 ### C# File Naming
 * Platform-suffix naming is required for files in projects that produce NuGet packages.
 * Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
