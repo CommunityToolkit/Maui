@@ -212,6 +212,32 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
+	public async Task PauseShowsTheMediaAsPausedInNowPlaying()
+	{
+		// https://github.com/CommunityToolkit/Maui/issues/3383
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var player = handler.Manager!.NativePlayer!;
+			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+			mediaElement.Play();
+			await WaitUntilAsync(() => mediaElement.CurrentState is MediaElementState.Playing, "The player did not start playing.");
+			mediaElement.Speed = 1.5;
+			await WaitUntilAsync(() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate is 1.5, "Now Playing did not show the speed.", timeout: 2000);
+
+			mediaElement.Pause();
+			await WaitUntilAsync(() => mediaElement.CurrentState is MediaElementState.Paused && player.Rate is 0, "The player did not pause.");
+
+			var nowPlaying = MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!;
+			Assert.Equal(0f, nowPlaying.PlaybackRate);
+			Assert.Equal(player.CurrentTime.Seconds, nowPlaying.ElapsedPlaybackTime!.Value, tolerance: 0.1);
+			Assert.Equal(1.5, mediaElement.Speed);
+		});
+	}
+
+	[Fact]
 	public async Task NativeRateChangeOffTheMainThreadIsReflectedInTheMediaElementSpeedOnTheMainThread()
 	{
 		SetupApple();
