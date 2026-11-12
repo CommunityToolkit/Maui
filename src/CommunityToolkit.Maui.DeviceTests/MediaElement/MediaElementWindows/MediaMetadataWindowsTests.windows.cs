@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
+using Windows.Media.Control;
 using Windows.Media.Playback;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -372,6 +373,62 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		// RequireMediaSessionAsync saw the session of a plain MediaPlayer on this machine: a missing session is the toolkit's.
 		Assert.True(session is not null, "This machine shows the system media session of a plain MediaPlayer, but none for the playing MediaElement whose metadata the toolkit published.");
 		Assert.Equal(token, (await WinMediaMediaSessions.Bounded(session.TryGetMediaPropertiesAsync())).Title);
+	}
+
+	// While the media plays, its system media session plays at the Speed of the MediaElement, the rate at which the system media overlay advances
+	// the position it shows.
+	[Fact]
+	public async Task TheSystemMediaSessionPublishesTheSpeedWhileTheMediaPlays()
+	{
+		var (view, session) = await PlayInASystemMediaSessionAsync(speed: 1.5);
+		await WaitUntilAsync(() => IsPlayingAt(session.GetPlaybackInfo(), 1.5), "The system media session never showed the media as playing at a speed of 1.5.");
+
+		await InvokeOnMainThreadAsync(() => view.Speed = 2);
+
+		await WaitUntilAsync(() => IsPlayingAt(session.GetPlaybackInfo(), 2), "The system media session never showed the new speed.");
+	}
+
+	// While the media is paused, its system media session is paused: the system media overlay and the lock screen show the media as paused, at a
+	// position that does not advance.
+	[Fact]
+	public async Task PauseShowsTheMediaAsPausedInTheSystemMediaSession()
+	{
+		var (view, session) = await PlayInASystemMediaSessionAsync(speed: 1.5);
+		await WaitUntilAsync(() => session.GetPlaybackInfo().PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing, "The system media session never showed the media as playing.");
+
+		await InvokeOnMainThreadAsync(view.Pause);
+
+		await WaitUntilAsync(() => session.GetPlaybackInfo().PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused, "The system media session never showed the media as paused.");
+	}
+
+	static bool IsPlayingAt(GlobalSystemMediaTransportControlsSessionPlaybackInfo info, double speed) =>
+		info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing && info.PlaybackRate is double rate && Math.Abs(rate - speed) < 0.001;
+
+	// A MediaElement with metadata that plays in the configuration the toolkit leaves its player in, as in OpenedMediaWithMetadataAppearsAsASystemMediaSession.
+	async Task<(MediaElement View, GlobalSystemMediaTransportControlsSession Session)> PlayInASystemMediaSessionAsync(double speed)
+	{
+		SetupWindowsBuilder();
+		await RequireDecoderAsync();
+		await RequireMediaSessionAsync();
+		var token = $"test-{Guid.NewGuid():N}";
+		var view = NewMediaElement(view =>
+		{
+			view.ShouldLoopPlayback = true;
+			view.MetadataTitle = token;
+			view.MetadataArtist = token;
+		});
+		await ConnectAsync(view);
+		await OpenAsync(view, MediaSource.FromFile(WinMediaAssets.VideoPath));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			view.Speed = speed;
+			view.Play();
+		});
+
+		var session = await WinMediaMediaSessions.FindAsync(token, timeoutMilliseconds: 10000);
+		Assert.True(session is not null, "This machine shows the system media session of a plain MediaPlayer, but none for the playing MediaElement whose metadata the toolkit published.");
+		return (view, session);
 	}
 
 	[Theory]
