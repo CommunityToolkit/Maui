@@ -80,7 +80,7 @@ public partial class PopupPositionViewModel : BaseViewModel
 
 		Page.ShowPopup(new Popup
 		{
-			Content = new Label().Text("This Text Should Be Centered").Center().TextCenter(),
+			Content = new Label().Text("This Text Should Be Centered").TextColor(Colors.White).Center().TextCenter(),
 			BackgroundColor = Colors.Green,
 			HeightRequest = 100,
 			WidthRequest = 100,

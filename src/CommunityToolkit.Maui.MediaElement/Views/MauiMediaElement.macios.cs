@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using AVKit;
 using CommunityToolkit.Maui.Views;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -19,9 +20,11 @@ public class MauiMediaElement : UIView
 	/// </summary>
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
 	/// <param name="virtualView">The <see cref="MediaElement"/> used as the VirtualView for this <see cref="MauiMediaElement"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="playerViewController"/> or <paramref name="virtualView"/> is <see langword="null"/>.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
 	public MauiMediaElement(AVPlayerViewController playerViewController, MediaElement virtualView)
 	{
+		ArgumentNullException.ThrowIfNull(playerViewController);
 		ArgumentNullException.ThrowIfNull(virtualView);
 
 		this.playerViewController = playerViewController;
@@ -82,7 +85,6 @@ public class MauiMediaElement : UIView
 	/// here to avoid leaving a stale/disposed child controller in the parent view controller.
 	/// </remarks>
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	public void DetachFromParentViewController()
 	{
 		if (playerViewController.ParentViewController is not null)
@@ -100,7 +102,15 @@ public class MauiMediaElement : UIView
 
 	void TryAttachToParentViewController(bool forceReattach = false)
 	{
-		if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
+		if (!OperatingSystem.IsIOSVersionAtLeast(16))
+		{
+			return;
+		}
+
+		// MediaElementHandler disposes the AVPlayerViewController while this view can still be in the view hierarchy, where UIKit keeps
+		// calling LayoutSubviews, MovedToSuperview and MovedToWindow: a disposed controller cannot be added to a view controller anymore
+		if (playerViewController.Handle == NativeHandle.Zero)
 		{
 			return;
 		}
@@ -139,7 +149,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	bool IsAdditionalSafeAreaInsetsStale(UIView parentView)
 	{
 		UIEdgeInsets expected = CreateSafeAreaInsets(parentView);
@@ -152,22 +161,22 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	void ApplySafeAreaInsets(UIView parentView)
 	{
 		playerViewController.AdditionalSafeAreaInsets = CreateSafeAreaInsets(parentView);
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
 	{
+		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap, so its additional safe area insets
+		// must not add the parent's insets a second time: the negated insets add none. UIKit does not apply negative additional insets, so
+		// this does not zero out the safe area of the AVPlayerViewController.
 		UIEdgeInsets insets = parentView.SafeAreaInsets;
-		return new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
+		return new UIEdgeInsets(insets.Top * -1, insets.Left * -1, insets.Bottom * -1, insets.Right * -1);
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
 	{
 		viewController = GetViewControllerFromResponderChain();
@@ -175,7 +184,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	UIViewController? GetViewControllerFromResponderChain()
 	{
 		for (UIResponder? responder = NextResponder; responder is not null; responder = responder.NextResponder)

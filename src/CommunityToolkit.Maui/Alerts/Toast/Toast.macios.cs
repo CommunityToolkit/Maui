@@ -31,12 +31,13 @@ public partial class Toast
 
 	static void DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformToast is null)
 		{
 			return;
 		}
 
-		token.ThrowIfCancellationRequested();
 		PlatformToast.Dismiss();
 	}
 

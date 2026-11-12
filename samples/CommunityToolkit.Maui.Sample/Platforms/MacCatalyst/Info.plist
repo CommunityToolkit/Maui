@@ -26,14 +26,32 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
+	<!-- The macOS 27 SDK (Xcode 27) terminates apps that do not adopt the UIScene life cycle; SceneDelegate creates the window. Multiple scenes stay on for the MediaElementMultipleWindowsPage sample, which opens a second window. -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>__MAUI_DEFAULT_SCENE_CONFIGURATION__</string>
+					<key>UISceneDelegateClassName</key>
+					<string>SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>ISpeechToText Uses Speech Recognition</string>
+	<string>This sample uses speech recognition to convert speech to text.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>ISpeechToText Uses Microphone</string>
+	<string>This sample uses the microphone to convert speech to text and to record the sound of videos.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>ICameraView Uses Camera</string>
+	<string>This sample uses the camera to take photos and to record videos.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

@@ -30,12 +30,6 @@
     <Compile Remove="**\windows\**\*.cs" />
     <None Include="**\windows\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-tizen')) != true ">
-    <Compile Remove="**\*.tizen.cs" />
-    <None Include="**\*.tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Remove="**\tizen\**\*.cs" />
-    <None Include="**\tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-  </ItemGroup> 
   <ItemGroup Condition="!($(TargetFramework.StartsWith('net')) == true AND $(TargetFramework.EndsWith('.0')) == true AND $(TargetFramework.Contains('-')) != true)"> <!-- e.g net6.0 or net7.0 -->
     <Compile Remove="**\*.net.cs" />
     <None Include="**\*.net.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
@@ -47,7 +41,20 @@
   <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('osx')) AND !$([MSBuild]::IsOSPlatform('windows')) AND ($(TargetFrameworks.Contains('-ios')) OR $(TargetFrameworks.Contains('-maccatalyst')))">
      <TargetFrameworks>$(NetVersion);$(NetVersion)-android</TargetFrameworks>
      <TargetFrameworks Condition="'$(OutputType)' == 'Exe'">$(NetVersion)-android</TargetFrameworks>
-     <TargetFrameworks Condition="'$(IncludeTizenTargetFrameworks)' == 'true'">$(TargetFrameworks);$(NetVersion)-tizen</TargetFrameworks>
+  </PropertyGroup>
+
+  <!--
+    .NET 11 "runtime async" (C# 15 / .NET 11) sets bit 0x2000 on the MethodImplAttributes of every async
+    method (a.k.a. MethodImplOptions.Async). It is a CoreCLR-only preview feature: Mono
+    (Android/iOS with UseMonoRuntime=true, and Blazor WebAssembly) cannot execute runtime-async IL.
+    #3331 enables it ONLY on the net11.0-windows TFM (CoreCLR). The bare net11.0 asset - consumed by a
+    Blazor WebAssembly app or a UseMonoRuntime=true MAUI app - must contain no runtime-async methods; the
+    UnitTests guard (Tests_RuntimeAsync_ShippedAssemblies) enforces that.
+  -->
+  <PropertyGroup Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows'
+                      AND '$([MSBuild]::GetTargetFrameworkVersion($(TargetFramework)))' >= '11.0'
+                      AND !$(Features.Contains('runtime-async'))">
+    <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
 
 </Project>

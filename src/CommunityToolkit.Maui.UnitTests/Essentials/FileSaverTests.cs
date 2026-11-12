@@ -93,4 +93,53 @@ public class FileSaverTests : BaseTest
 		result.IsSuccessful.Should().BeFalse();
 		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
 	}
+
+	// A null file name, which an app passes on when it asks for the name with a prompt that the user cancels, is an ArgumentNullException
+	// in every overload, never the exception of the platform code that would have used it
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(3)]
+	public async Task SaveAsyncWithNullFileNameReturnsArgumentNullException(int overload)
+	{
+		FileSaver.SetDefault(new FileSaverImplementation());
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var result = await SaveAsync(overload, null, Stream.Null, TestContext.Current.CancellationToken);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<ArgumentNullException>()
+			.Which.ParamName.Should().Be("fileName");
+		result.FilePath.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(3)]
+	public async Task SaveAsyncWithNullStreamReturnsArgumentNullException(int overload)
+	{
+		FileSaver.SetDefault(new FileSaverImplementation());
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var result = await SaveAsync(overload, "fileName", null, TestContext.Current.CancellationToken);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+		result.Should().NotBeNull();
+		result.Exception.Should().BeOfType<ArgumentNullException>()
+			.Which.ParamName.Should().Be("stream");
+		result.FilePath.Should().BeNull();
+		result.IsSuccessful.Should().BeFalse();
+		Assert.Throws<ArgumentNullException>(result.EnsureSuccess);
+	}
+
+	static Task<FileSaverResult> SaveAsync(int overload, string fileName, Stream stream, CancellationToken token) => overload switch
+	{
+		0 => FileSaver.SaveAsync("initial path", fileName, stream, token),
+		1 => FileSaver.SaveAsync(fileName, stream, token),
+		2 => FileSaver.SaveAsync("initial path", fileName, stream, new Progress<double>(), token),
+		3 => FileSaver.SaveAsync(fileName, stream, new Progress<double>(), token),
+		_ => throw new ArgumentOutOfRangeException(nameof(overload), overload, "There are four overloads.")
+	};
 }

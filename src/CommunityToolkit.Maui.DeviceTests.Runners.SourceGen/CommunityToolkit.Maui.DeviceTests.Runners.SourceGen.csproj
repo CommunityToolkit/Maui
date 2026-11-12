@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- dotnet/maui's runner source generator, vendored: see ../CommunityToolkit.Maui.DeviceTests.Runners/README.md. -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <RootNamespace>CommunityToolkit.Maui.DeviceTests.Runners.SourceGen</RootNamespace>
+    <AssemblyName>CommunityToolkit.Maui.DeviceTests.Runners.SourceGen</AssemblyName>
+    <!-- RS2002: TST1001 is the generator's Debug-only logging diagnostic, so no analyzer lists it as supported (as upstream). -->
+    <!-- RS1036: the extended analyzer rules it asks for ban upstream's non-incremental ISourceGenerator (RS1035), which stays as vendored. -->
+    <NoWarn>$(NoWarn);RS2002;RS1036</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Toolkit change: the toolkit's CodeAnalysisVersion instead of upstream's 4.5.0, so Dependabot moves it with the toolkit's analyzers. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+</Project>

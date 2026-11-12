@@ -4,8 +4,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif NET6_0_OR_GREATER || (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -66,16 +64,22 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(TView bindable, TPlatformView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		((ICommunityToolkitBehavior<TView>)this).InitializeBehavior(bindable);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(TView bindable, TPlatformView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);

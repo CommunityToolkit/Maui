@@ -39,6 +39,19 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[InlineData("de-DE", " ", 0.0, 16.0, 0, 16, null, false)]
 	[InlineData("de-DE", "15.2", 1.0, 16.0, 0, 16, null, false)]
 	[InlineData("de-DE", "1,115.2", 1.0, 2000.0, 0, 16, null, false)]
+	[InlineData("en-US", "15.2 ", 1.0, 16.0, 0, 1, null, true)]
+	[InlineData("en-US", " 15.2 ", 1.0, 16.0, 0, 1, null, true)]
+	[InlineData("en-US", "15.2 ", 1.0, 16.0, 2, 16, null, false)]
+	[InlineData("de-DE", "15,2 ", 1.0, 16.0, 0, 1, null, true)]
+	[InlineData("tr-TR", "15,2", 1.0, 16.0, 0, 16, null, true)]
+	[InlineData("tr-TR", "15,88", 1.0, 16.0, 2, 2, null, true)]
+	[InlineData("tr-TR", "1.115,2", 1.0, 2000.0, 0, 16, null, true)]
+	[InlineData("tr-TR", "15.2", 1.0, 16.0, 0, 16, null, false)]
+	[InlineData("tr-TR", "1,115.2", 1.0, 2000.0, 0, 16, null, false)]
+	[InlineData("tr-TR", "1.000,5", 0.0, 2000.0, 0, 16, 0.5, true)]
+	[InlineData("az-Latn-AZ", "15,2", 1.0, 16.0, 0, 16, null, true)]
+	[InlineData("az-Latn-AZ", "1.115,2", 1.0, 2000.0, 0, 16, null, true)]
+	[InlineData("az-Latn-AZ", "15.2", 1.0, 16.0, 0, 16, null, false)]
 	[InlineData("en-US", "15", 0.0, 100.0, 0, 16, 5.0, true)]
 	[InlineData("en-US", "0", 0.0, 100.0, 0, 16, 5.0, true)]
 	[InlineData("en-US", "100", 0.0, 100.0, 0, 16, 25.0, true)]
@@ -141,7 +154,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		try
 		{
@@ -162,6 +175,8 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[InlineData("en-US", double.NegativeInfinity, 5.0)]
 	[InlineData("en-US", double.PositiveInfinity, 0.0)]
 	[InlineData("de-DE", double.PositiveInfinity, 0.5)]
+	[InlineData("tr-TR", double.PositiveInfinity, 0.5)]
+	[InlineData("tr-TR", double.NegativeInfinity, 5.0)]
 	public async Task IsValid_InfiniteValueWithInterval_ShouldBeInvalid(string culture, double infiniteValue, double interval)
 	{
 		// Arrange
@@ -179,7 +194,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			// Use the culture's own symbol, e.g. "∞", so the text parses back to infiniteValue
 			Text = infiniteValue.ToString(CultureInfo.CurrentCulture)
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		try
 		{
@@ -202,6 +217,8 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[Theory(Timeout = (int)TestDuration.Medium)]
 	[InlineData("en-US", 0.01, "0", "0.01")]
 	[InlineData("de-DE", 0.01, "0", "0.01")]
+	[InlineData("tr-TR", 0.01, "0", "0.01")]
+	[InlineData("az-Latn-AZ", 0.1, "0", "0.1")]
 	[InlineData("en-US", 0.01, "-100", "0.01")]
 	[InlineData("en-US", 0.1, "0", "0.1")]
 	[InlineData("en-US", 0.01, "100000000", "0.01")]
@@ -268,7 +285,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = "15"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		await behavior.ForceValidate(TestContext.Current.CancellationToken);
@@ -417,7 +434,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 		behavior.Interval = double.NaN;
@@ -483,12 +500,10 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -505,7 +520,7 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -518,6 +533,28 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenMaximumValueChangesAfterTheViewLostFocus()
+	{
+		var behavior = new NumericValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "15";
+		((IView)entry).IsFocused = false;
+
+		Assert.True(behavior.IsValid);
+
+		behavior.MaximumValue = 10;
+
+		Assert.False(behavior.IsValid);
 	}
 
 	[Fact]

@@ -52,8 +52,11 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	public partial bool AnimateOnTap { get; set; }
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
 		if (AnimateOnTap)
@@ -63,8 +66,11 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		if (tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;

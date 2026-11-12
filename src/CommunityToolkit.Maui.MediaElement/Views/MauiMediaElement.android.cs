@@ -21,7 +21,9 @@ public class MauiMediaElement : CoordinatorLayout
 	readonly PlayerView playerView;
 	readonly WeakEventManager fullScreenEventManager = new();
 	int defaultSystemUiVisibility;
-	bool isSystemBarVisible;
+	int defaultSystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
+	bool isStatusBarVisible;
+	bool isNavigationBarVisible;
 	bool isFullScreen;
 
 	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
@@ -63,9 +65,12 @@ public class MauiMediaElement : CoordinatorLayout
 	/// </summary>
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="playerView"/> is <see langword="null"/>.</exception>
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
-	public MauiMediaElement(Context context, PlayerView playerView) : base(context)
+	public MauiMediaElement(Context context, PlayerView playerView) : base(context ?? throw new ArgumentNullException(nameof(context)))
 	{
+		ArgumentNullException.ThrowIfNull(playerView);
+
 		this.playerView = playerView;
 		this.playerView.SetBackgroundColor(global::Android.Graphics.Color.Black);
 		playerView.FullscreenButtonClick += OnFullscreenButtonClick;
@@ -88,6 +93,10 @@ public class MauiMediaElement : CoordinatorLayout
 		if (isFullScreen)
 		{
 			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+
+			// Full screen was left without the full-screen button: the button must leave its full-screen state too, or its next tap asks to
+			// leave a full screen that the view is no longer in. Media3 reports the new state to the click listener, which ignores it.
+			playerView.SetFullscreenButtonState(false);
 		}
 		base.OnDetachedFromWindow();
 	}
@@ -102,7 +111,8 @@ public class MauiMediaElement : CoordinatorLayout
 		base.OnVisibilityChanged(changedView, visibility);
 		if (isFullScreen && visibility is ViewStates.Visible)
 		{
-			SetSystemBarsVisibility();
+			// Full screen is applied again: leaving it must still restore the system bars of before it was entered
+			SetSystemBarsVisibility(saveSystemBarsVisibility: false);
 		}
 	}
 
@@ -112,7 +122,8 @@ public class MauiMediaElement : CoordinatorLayout
 	/// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
 	protected override void Dispose(bool disposing)
 	{
-		if (disposing)
+		// Only the constructor that takes a PlayerView sets playerView: a view that Android created or wrapped has no player to release
+		if (disposing && playerView is not null)
 		{
 			try
 			{
@@ -141,6 +152,13 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			throw new InvalidOperationException("UpdatedPlayerView cannot be null when the FullScreen button is tapped");
 		}
+
+		// The view is in this state already: PlayerView.SetFullscreenButtonState reports the state that OnDetachedFromWindow gives the button
+		if (e.P0 == isFullScreen)
+		{
+			return;
+		}
+
 		var layout = CurrentPlatformContext.CurrentWindow.DecorView as ViewGroup;
 		// `p0` is the boolean value of isFullScreen being passed into the method. 
 		// This is a binding issue that will not be fixed as it is now part of shipped API.
@@ -157,14 +175,14 @@ public class MauiMediaElement : CoordinatorLayout
 			AddView(relativeLayout);
 		}
 		// Hide/Show the SystemBars and Status bar
-		SetSystemBarsVisibility();
+		SetSystemBarsVisibility(saveSystemBarsVisibility: e.P0);
 
 		var newState = e.P0 ? MediaElementScreenState.FullScreen : MediaElementScreenState.Default;
 		var oldState = e.P0 ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
 		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
 	}
 
-	void SetSystemBarsVisibility()
+	void SetSystemBarsVisibility(bool saveSystemBarsVisibility)
 	{
 		var currentWindow = CurrentPlatformContext.CurrentWindow;
 		var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, currentWindow.DecorView);
@@ -181,9 +199,16 @@ public class MauiMediaElement : CoordinatorLayout
 				var windowInsets = currentWindow.DecorView.RootWindowInsets;
 				if (windowInsets is not null)
 				{
-					isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+					// Each bar is saved on its own: an app can hide one of them alone
+					var isStatusBarVisibleNow = windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+					var isNavigationBarVisibleNow = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars());
+					if (saveSystemBarsVisibility)
+					{
+						isStatusBarVisible = isStatusBarVisibleNow;
+						isNavigationBarVisible = isNavigationBarVisibleNow;
+					}
 
-					if (isSystemBarVisible)
+					if (isStatusBarVisibleNow || isNavigationBarVisibleNow)
 					{
 						currentWindow.InsetsController?.Hide(WindowInsets.Type.SystemBars());
 					}
@@ -191,7 +216,10 @@ public class MauiMediaElement : CoordinatorLayout
 			}
 			else
 			{
-				defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiFlags;
+				if (saveSystemBarsVisibility)
+				{
+					defaultSystemUiVisibility = (int)currentWindow.DecorView.SystemUiFlags;
+				}
 
 				currentWindow.DecorView.SystemUiFlags = currentWindow.DecorView.SystemUiFlags
 					| SystemUiFlags.LayoutStable
@@ -204,6 +232,11 @@ public class MauiMediaElement : CoordinatorLayout
 
 			if (windowInsetsControllerCompat is not null)
 			{
+				if (saveSystemBarsVisibility)
+				{
+					defaultSystemBarsBehavior = windowInsetsControllerCompat.SystemBarsBehavior;
+				}
+
 				windowInsetsControllerCompat.Hide(barTypes);
 				windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 			}
@@ -211,22 +244,23 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		else
 		{
+			// The behavior is restored first: before Android 11 it is applied through the system UI flags, which are then restored exactly.
+			if (windowInsetsControllerCompat is not null)
+			{
+				windowInsetsControllerCompat.SystemBarsBehavior = defaultSystemBarsBehavior;
+			}
+
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				if (isSystemBarVisible)
+				if (isStatusBarVisible || isNavigationBarVisible)
 				{
-					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
+					var hiddenBars = (isStatusBarVisible ? 0 : WindowInsets.Type.StatusBars()) | (isNavigationBarVisible ? 0 : WindowInsets.Type.NavigationBars());
+					currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars() & ~hiddenBars);
 				}
 			}
 			else
 			{
 				currentWindow.DecorView.SystemUiFlags = (SystemUiFlags)defaultSystemUiVisibility;
-			}
-
-			if (windowInsetsControllerCompat is not null)
-			{
-				windowInsetsControllerCompat.Show(barTypes);
-				windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
 			}
 
 			WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);

@@ -511,6 +511,58 @@ public class RatingViewTests : BaseViewTest
 		ratingView.FillOption.Should().Be(ratingFill);
 	}
 
+	[Fact]
+	public void Properties_Change_FillOption_AfterRating_Background()
+	{
+		var fillColor = Colors.Red;
+		var emptyShapeColor = Colors.Grey;
+		var backgroundColor = Colors.CornflowerBlue;
+		RatingView ratingView = new()
+		{
+			MaximumRating = 3,
+			Rating = 1.5,
+			FillColor = fillColor,
+			EmptyShapeColor = emptyShapeColor,
+			BackgroundColor = backgroundColor
+		};
+
+		ratingView.FillOption = RatingViewFillOption.Background;
+
+		var filledRatingItem = (Border)ratingView.RatingLayout.Children[0];
+		var partialFilledRatingItem = (Border)ratingView.RatingLayout.Children[1];
+		var emptyFilledRatingItem = (Border)ratingView.RatingLayout.Children[2];
+
+		GetBrushColor(GetItemShape(ratingView, 0).Fill).Should().Be(emptyShapeColor);
+		GetBrushColor(GetItemShape(ratingView, 1).Fill).Should().Be(emptyShapeColor);
+		GetBrushColor(GetItemShape(ratingView, 2).Fill).Should().Be(emptyShapeColor);
+		filledRatingItem.Background.Should().BeOfType<SolidColorBrush>();
+		GetBrushColor(filledRatingItem.Background).Should().Be(fillColor);
+		partialFilledRatingItem.Background.Should().BeOfType<LinearGradientBrush>();
+		GetBrushColor(emptyFilledRatingItem.Background).Should().Be(backgroundColor);
+	}
+
+	[Fact]
+	public void Properties_Change_FillOption_AfterRating_Shape()
+	{
+		var fillColor = Colors.Red;
+		var emptyShapeColor = Colors.Grey;
+		RatingView ratingView = new()
+		{
+			MaximumRating = 3,
+			FillOption = RatingViewFillOption.Background,
+			Rating = 1.5,
+			FillColor = fillColor,
+			EmptyShapeColor = emptyShapeColor
+		};
+
+		ratingView.FillOption = RatingViewFillOption.Shape;
+
+		GetBrushColor(GetItemShape(ratingView, 0).Fill).Should().Be(fillColor);
+		GetItemShape(ratingView, 1).Fill.Should().BeOfType<LinearGradientBrush>();
+		GetBrushColor(GetItemShape(ratingView, 2).Fill).Should().Be(emptyShapeColor);
+		ratingView.RatingLayout.Children.Cast<Border>().Should().AllSatisfy(static border => Brush.IsNullOrEmpty(border.Background).Should().BeTrue());
+	}
+
 	[Theory]
 	[InlineData(RatingViewShape.Heart)]
 	[InlineData(RatingViewShape.Circle)]

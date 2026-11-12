@@ -28,7 +28,8 @@ public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsVie
 				break;
 
 			case MotionEventActions.Move:
-				if (touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
+				// Like OnMoving, only a started gesture extends the in-progress path
+				if (isDrawing && touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
 				{
 					AddPointToPath(point);
 				}

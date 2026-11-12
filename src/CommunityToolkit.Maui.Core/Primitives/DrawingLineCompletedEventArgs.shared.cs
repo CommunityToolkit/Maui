@@ -3,14 +3,21 @@
 /// <summary>
 /// Contains last drawing line
 /// </summary>
-/// <remarks>
-/// Initialize a new instance of <see cref="DrawingLineCompletedEventArgs"/>
-/// </remarks>
-/// <param name="lastDrawingLine">Last drawing line</param>
-public class DrawingLineCompletedEventArgs(IDrawingLine lastDrawingLine) : EventArgs
+public class DrawingLineCompletedEventArgs : EventArgs
 {
+	/// <summary>
+	/// Initialize a new instance of <see cref="DrawingLineCompletedEventArgs"/>
+	/// </summary>
+	/// <param name="lastDrawingLine">Last drawing line</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="lastDrawingLine"/> is null.</exception>
+	public DrawingLineCompletedEventArgs(IDrawingLine lastDrawingLine)
+	{
+		ArgumentNullException.ThrowIfNull(lastDrawingLine);
+		LastDrawingLine = lastDrawingLine;
+	}
+
 	/// <summary>
 	/// Last drawing line
 	/// </summary>
-	public IDrawingLine LastDrawingLine { get; } = lastDrawingLine;
+	public IDrawingLine LastDrawingLine { get; }
 }
