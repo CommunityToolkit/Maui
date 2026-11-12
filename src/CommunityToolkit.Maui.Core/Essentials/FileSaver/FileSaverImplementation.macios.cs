@@ -4,8 +4,8 @@ using Microsoft.Maui.ApplicationModel;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc cref="IFileSaver" />
-[SupportedOSPlatform("iOS14.0")]
-[SupportedOSPlatform("MacCatalyst14.0")]
+[SupportedOSPlatform("iOS")]
+[SupportedOSPlatform("MacCatalyst")]
 public sealed partial class FileSaverImplementation : IFileSaver
 {
 	// The dismissal takes under a second: the timeout only bounds a dismissal that UIKit never reports done

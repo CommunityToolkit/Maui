@@ -45,7 +45,7 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarColor = Colors.Red);
-		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android 23 and later");
+		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android");
 	}
 
 	[Fact]
@@ -53,7 +53,7 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
-		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android 23 and later");
+		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android");
 	}
 	[Fact]
 	public void VerifyDefaultStatusBarColorIsTransparent()
@@ -73,7 +73,7 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 		statusBarBehavior.PropertyChanged += (_, e) => changedProperty = e.PropertyName;
 
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarColor = Colors.Red);
-		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android 23 and later");
+		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android");
 		changedProperty.Should().Be(nameof(StatusBarBehavior.StatusBarColor));
 	}
 
@@ -85,7 +85,7 @@ public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page
 		statusBarBehavior.PropertyChanged += (_, e) => changedProperty = e.PropertyName;
 
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
-		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android 23 and later");
+		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android");
 		changedProperty.Should().Be(nameof(StatusBarBehavior.StatusBarStyle));
 	}
 

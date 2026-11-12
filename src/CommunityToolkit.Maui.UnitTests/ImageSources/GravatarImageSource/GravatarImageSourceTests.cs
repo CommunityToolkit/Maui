@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Maui.ImageSources;
 using FluentAssertions;
 using Xunit;
@@ -656,5 +657,59 @@ public class GravatarImageSourceTests : BaseViewTest
 	{
 		var gravatarImageSource = new GravatarImageSource();
 		Assert.Equal("Uri: https://www.gravatar.com/avatar/\nEmail: \nSize: \nImage: mp\nCacheValidity: 1.00:00:00\nCachingEnabled: True", gravatarImageSource.ToString());
+	}
+
+	[Theory]
+	[InlineData("tr-TR", DefaultImage.Identicon, "identicon")]
+	[InlineData("tr-TR", DefaultImage.MonsterId, "monsterid")]
+	[InlineData("tr-TR", DefaultImage.Wavatar, "wavatar")]
+	[InlineData("tr-TR", DefaultImage.Retro, "retro")]
+	[InlineData("tr-TR", DefaultImage.Robohash, "robohash")]
+	[InlineData("tr-TR", DefaultImage.Blank, "blank")]
+	[InlineData("tr-TR", DefaultImage.FileNotFound, "404")]
+	[InlineData("tr-TR", DefaultImage.MysteryPerson, "mp")]
+	[InlineData("az-Latn-AZ", DefaultImage.Identicon, "identicon")]
+	[InlineData("az-Latn-AZ", DefaultImage.MonsterId, "monsterid")]
+	public void DefaultImageUsesGravatarKeywordInEveryCulture(string cultureName, DefaultImage defaultImage, string expectedKeyword)
+	{
+		// Gravatar only knows the ASCII keywords, so a culture-sensitive lower-casing ("monsterıd") makes it serve its own logo instead.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo(cultureName);
+		Image testControl = new()
+		{
+			Source = new GravatarImageSource
+			{
+				Email = email,
+				Image = defaultImage
+			}
+		};
+
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		Assert.Equal(new Uri($"https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d={expectedKeyword}"), ((GravatarImageSource)testControl.Source).Uri);
+	}
+
+	[Theory]
+	[InlineData("dsiegel@avantipoint.com")]
+	[InlineData("DSIEGEL@AVANTIPOINT.COM")]
+	[InlineData("DSiegel@AvantiPoint.com")]
+	[InlineData(" dsiegel@avantipoint.com ")]
+	[InlineData("\tDSiegel@AvantiPoint.com\r\n")]
+	public void UriUsesHashOfTrimmedLowerCaseEmailInTurkish(string emailAddress)
+	{
+		// The I in the address maps to a dotless i with a culture-sensitive lower-casing, which would change the hash.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+		var gravatarImageSource = new GravatarImageSource
+		{
+			Email = emailAddress
+		};
+		Image testControl = new()
+		{
+			Source = gravatarImageSource
+		};
+
+		testControl.Arrange(new Rect(0, 0, 37, 73));
+
+		Assert.Equal(new Uri("https://www.gravatar.com/avatar/b65a519785f69fbe7236dd0fd6396094?s=37&d=mp"), gravatarImageSource.Uri);
 	}
 }
