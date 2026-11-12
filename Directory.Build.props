@@ -24,7 +24,7 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
 
     <!-- MAUI Specific -->
     <MauiXamlInflator>SourceGen</MauiXamlInflator>
-    <MauiPackageVersion>11.0.10</MauiPackageVersion>
+    <MauiPackageVersion>11.0.0</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
