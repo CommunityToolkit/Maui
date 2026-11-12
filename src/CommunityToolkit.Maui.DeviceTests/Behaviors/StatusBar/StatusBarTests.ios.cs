@@ -11,9 +11,7 @@ public partial class StatusBarTests
 {
 	const string appearanceUpdateFailedMessage = "Unable to update Status Bar Appearance because Current UIViewController is null";
 
-#if NET11_0_OR_GREATER
 	const string windowsUnknownMessage = "Unable to set the Status Bar Style because the windows of the app are unknown: call UseMauiCommunityToolkit() in MauiProgram.cs";
-#endif
 
 	const string sceneWithoutStatusBarManagerMissing = "Needs a UIWindowScene without a StatusBarManager (the scene of an external display or CarPlay screen); the runner's only scene is the main screen's, which has one. SetColorSkipsListedWindowsWithoutASceneAndColorsTheOthers runs the same arm with a window that reports no scene.";
 
@@ -533,8 +531,8 @@ public partial class StatusBarTests
 		}
 	}
 
-	// UIKit takes the style from the view controllers: on .NET 11 SetStyle sets Window.StatusBarTheme of the app's windows, whose view controllers
-	// return the style of their theme, and on .NET 10 every view controller that does not choose a style returns the one that SetStyle requested.
+	// UIKit takes the style from the view controllers: SetStyle sets Window.StatusBarTheme of the app's windows, whose view controllers return the
+	// style of their theme.
 	// Each step sets a style that differs from the one before, so every assertion proves a change.
 	[Theory]
 	[InlineData(StatusBarWindowPage.ContentPage)]
@@ -567,7 +565,6 @@ public partial class StatusBarTests
 		});
 	}
 
-#if NET11_0_OR_GREATER
 	// The style belongs to the whole app, as UIApplication's style did: every window gets the theme (a window without a UIWindow too, the
 	// theme is its property).
 	[Fact]
@@ -677,7 +674,7 @@ public partial class StatusBarTests
 		Assert.Equal(UnsupportedStyleMessage, exception.Message);
 	}
 
-	// The style of the whole app needs no window: CommunityToolkit.Maui.Core sets it without UseMauiCommunityToolkit, as on .NET 10.
+	// The style of the whole app needs no window: CommunityToolkit.Maui.Core sets it without UseMauiCommunityToolkit.
 	[Fact]
 	public async Task SetStyleWithoutUseMauiCommunityToolkitSetsTheStyleOfTheWholeAppWhenInfoPlistTurnsViewControllerBasedStatusBarAppearanceOff()
 	{
@@ -704,37 +701,6 @@ public partial class StatusBarTests
 			StatusBar.SetStatusBarThemeOfEveryWindow = setStatusBarThemeOfEveryWindow;
 		}
 	}
-#else
-	// What the status bar shows on .NET 10: StatusBarTests.PreferredStatusBarStyle.ios.cs.
-	[Theory]
-	[InlineData(StatusBarStyle.Default, UIStatusBarStyle.Default)]
-	[InlineData(StatusBarStyle.LightContent, UIStatusBarStyle.LightContent)]
-	[InlineData(StatusBarStyle.DarkContent, UIStatusBarStyle.DarkContent)]
-	public void SetStyleMapsEveryStyleToTheMatchingUIStatusBarStyle(StatusBarStyle style, UIStatusBarStyle expected)
-	{
-		Assert.Equal(expected, StatusBar.ToUIStatusBarStyle(style));
-	}
-
-	[Fact]
-	public void UndefinedStyleHasNoUIStatusBarStyle()
-	{
-		var exception = Assert.Throws<NotSupportedException>(static () => StatusBar.ToUIStatusBarStyle((StatusBarStyle)42));
-
-		Assert.Equal(UnsupportedStyleMessage, exception.Message);
-	}
-
-	[Theory]
-	[InlineData(StatusBarStyle.Default)]
-	[InlineData(StatusBarStyle.LightContent)]
-	[InlineData(StatusBarStyle.DarkContent)]
-	public async Task SetStyleAcceptsEveryStyleAndUpdatesTheStatusBarAppearance(StatusBarStyle style)
-	{
-		SetupBuilder();
-		await ResetNativeStateAsync();
-
-		await AssertUpdatesTheStatusBarAppearanceAsync(() => StatusBar.SetStyle(style));
-	}
-#endif
 
 	// UIKit asks the view controllers for the style only when the app's Info.plist does not set UIViewControllerBasedStatusBarAppearance to false
 	// (with false it shows the style of the whole app, which the runner ignores).
@@ -751,16 +717,14 @@ public partial class StatusBarTests
 		{
 			var listener = CaptureTraceWithViewControllerBasedStatusBarAppearance(viewControllerBasedStatusBarAppearance, static () => StatusBar.SetStyle(StatusBarStyle.LightContent));
 
-#if NET11_0_OR_GREATER
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
-#endif
 			Assert.Equal(isTraced, listener.Messages.Contains(styleIgnoredByUIKitMessage));
 			return Task.CompletedTask;
 		});
 	}
 
-	// With UIViewControllerBasedStatusBarAppearance set to false (the .NET 10 setup of StatusBarBehavior) UIKit ignores the view controllers and
-	// shows the style of the whole app, which an app built with an iOS SDK before 27.0 takes from UIApplication.SetStatusBarStyle.
+	// With UIViewControllerBasedStatusBarAppearance set to false, UIKit ignores the view controllers and shows the style of the whole app, which an
+	// app built with an iOS SDK before 27.0 takes from UIApplication.SetStatusBarStyle.
 	[Theory]
 	[InlineData(false, true)]
 	[InlineData(true, false)]
@@ -776,9 +740,7 @@ public partial class StatusBarTests
 
 			UIStatusBarStyle[] expectedStylesOfTheWholeApp = setsTheStyleOfTheWholeApp ? [UIStatusBarStyle.LightContent] : [];
 			Assert.Equal(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
-#if NET11_0_OR_GREATER
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
-#endif
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 			return Task.CompletedTask;
 		});
@@ -856,8 +818,7 @@ public partial class StatusBarTests
 		await AssertUpdatesTheStatusBarAppearanceAsync(static () => StatusBar.SetBarSize(false));
 	}
 
-	// On .NET 11 SetStyle leaves the update to the WindowHandler of each .NET MAUI window, whose StatusBarTheme it sets, so it is not in the list
-	// below.
+	// SetStyle leaves the update to the WindowHandler of each .NET MAUI window, whose StatusBarTheme it sets, so it is not in the list below.
 	[Fact]
 	public async Task StatusBarCallsAskTheRootViewControllerOfEveryWindowOfAnAppWithoutMauiWindows()
 	{
@@ -875,9 +836,6 @@ public partial class StatusBarTests
 				{
 					("SetColor", static () => StatusBar.SetColor(Colors.Red)),
 					("SetBarSize", static () => StatusBar.SetBarSize(false)),
-#if !NET11_0_OR_GREATER
-					("SetStyle", static () => StatusBar.SetStyle(StatusBarStyle.LightContent)),
-#endif
 				})
 				{
 					var before = rootViewController.AppearanceUpdateRequests;
@@ -963,39 +921,6 @@ public partial class StatusBarTests
 			IosStatusBarViews.AssertColor(Colors.Red, Assert.Single(IosStatusBarViews.TaggedSubviews(window)).BackgroundColor);
 		});
 	}
-
-#if !NET11_0_OR_GREATER
-	[Fact]
-	public async Task StatusBarAppearanceUpdateReportsWhetherEveryWindowWasUpdated()
-	{
-		SetupBuilder();
-		await ResetNativeStateAsync();
-		// StatusBar.SetStyle ignores the result; the all-windows update reports it (the private TryUpdateStatusBarAppearance()).
-		var tryUpdateAllWindows = typeof(StatusBar).GetMethod("TryUpdateStatusBarAppearance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic, Type.EmptyTypes)
-			?? throw new InvalidOperationException("StatusBar no longer has a private static TryUpdateStatusBarAppearance().");
-
-		var results = await InvokeOnMainThreadAsync(() =>
-		{
-			var withViewControllers = (bool)tryUpdateAllWindows.Invoke(null, null)!;
-
-			var window = TestWindow.PlatformWindow;
-			var rootViewController = window.RootViewController;
-			window.RootViewController = null;
-			try
-			{
-				var withoutViewControllers = CapturingTraceListener.Capture(() => Assert.False((bool)tryUpdateAllWindows.Invoke(null, null)!));
-				return (withViewControllers, withoutViewControllers.Messages);
-			}
-			finally
-			{
-				window.RootViewController = rootViewController;
-			}
-		});
-
-		Assert.True(results.withViewControllers);
-		Assert.Contains(appearanceUpdateFailedMessage, results.Messages);
-	}
-#endif
 
 	[Fact]
 	public async Task StatusBarAppearanceUpdateWithoutAWindowUsesTheCurrentViewController()

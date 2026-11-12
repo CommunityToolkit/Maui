@@ -43,6 +43,15 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[InlineData("en-US", " 15.2 ", 1.0, 16.0, 0, 1, null, true)]
 	[InlineData("en-US", "15.2 ", 1.0, 16.0, 2, 16, null, false)]
 	[InlineData("de-DE", "15,2 ", 1.0, 16.0, 0, 1, null, true)]
+	[InlineData("tr-TR", "15,2", 1.0, 16.0, 0, 16, null, true)]
+	[InlineData("tr-TR", "15,88", 1.0, 16.0, 2, 2, null, true)]
+	[InlineData("tr-TR", "1.115,2", 1.0, 2000.0, 0, 16, null, true)]
+	[InlineData("tr-TR", "15.2", 1.0, 16.0, 0, 16, null, false)]
+	[InlineData("tr-TR", "1,115.2", 1.0, 2000.0, 0, 16, null, false)]
+	[InlineData("tr-TR", "1.000,5", 0.0, 2000.0, 0, 16, 0.5, true)]
+	[InlineData("az-Latn-AZ", "15,2", 1.0, 16.0, 0, 16, null, true)]
+	[InlineData("az-Latn-AZ", "1.115,2", 1.0, 2000.0, 0, 16, null, true)]
+	[InlineData("az-Latn-AZ", "15.2", 1.0, 16.0, 0, 16, null, false)]
 	[InlineData("en-US", "15", 0.0, 100.0, 0, 16, 5.0, true)]
 	[InlineData("en-US", "0", 0.0, 100.0, 0, 16, 5.0, true)]
 	[InlineData("en-US", "100", 0.0, 100.0, 0, 16, 25.0, true)]
@@ -166,6 +175,8 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[InlineData("en-US", double.NegativeInfinity, 5.0)]
 	[InlineData("en-US", double.PositiveInfinity, 0.0)]
 	[InlineData("de-DE", double.PositiveInfinity, 0.5)]
+	[InlineData("tr-TR", double.PositiveInfinity, 0.5)]
+	[InlineData("tr-TR", double.NegativeInfinity, 5.0)]
 	public async Task IsValid_InfiniteValueWithInterval_ShouldBeInvalid(string culture, double infiniteValue, double interval)
 	{
 		// Arrange
@@ -206,6 +217,8 @@ public class NumericValidationBehaviorTests() : BaseBehaviorTest<NumericValidati
 	[Theory(Timeout = (int)TestDuration.Medium)]
 	[InlineData("en-US", 0.01, "0", "0.01")]
 	[InlineData("de-DE", 0.01, "0", "0.01")]
+	[InlineData("tr-TR", 0.01, "0", "0.01")]
+	[InlineData("az-Latn-AZ", 0.1, "0", "0.1")]
 	[InlineData("en-US", 0.01, "-100", "0.01")]
 	[InlineData("en-US", 0.1, "0", "0.1")]
 	[InlineData("en-US", 0.01, "100000000", "0.01")]

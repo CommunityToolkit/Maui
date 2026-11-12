@@ -25,9 +25,6 @@ public sealed partial class StreamMediaSource : MediaSource
 	/// played again after <see cref="MediaElement.Stop"/>, and a seek that needs another part of the stream raises
 	/// <see cref="MediaElement.MediaFailed"/>.
 	/// </para>
-	/// <para>
-	/// Not supported on Tizen: setting the source throws <see cref="NotSupportedException"/>.
-	/// </para>
 	/// </remarks>
 	public Stream? Stream
 	{

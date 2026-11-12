@@ -277,11 +277,6 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 	}
 
 	[Theory]
-	[InlineData(10, 3, 3)]
-	[InlineData(11, 0, 3)]
-	[InlineData(11, 1, 4)]
-	[InlineData(12, 4, 4)]
-	[InlineData(13, 0, 7)]
 	[InlineData(15, 3, 7)]
 	[InlineData(15, 4, 8)]
 	[InlineData(27, 0, 8)]
