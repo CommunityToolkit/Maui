@@ -380,12 +380,12 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	[Fact]
 	public async Task TheSystemMediaSessionPublishesTheSpeedWhileTheMediaPlays()
 	{
-		var (view, session) = await PlayInASystemMediaSessionAsync(speed: 1.5);
-		await WaitUntilAsync(() => IsPlayingAt(session.GetPlaybackInfo(), 1.5), "The system media session never showed the media as playing at a speed of 1.5.");
+		var playback = await PlayInASystemMediaSessionAsync(speed: 1.5);
+		await WaitForSystemMediaSessionAsync(playback, info => IsPlayingAt(info, 1.5), "The system media session never showed the media as playing at a speed of 1.5.");
 
-		await InvokeOnMainThreadAsync(() => view.Speed = 2);
+		await InvokeOnMainThreadAsync(() => playback.View.Speed = 2);
 
-		await WaitUntilAsync(() => IsPlayingAt(session.GetPlaybackInfo(), 2), "The system media session never showed the new speed.");
+		await WaitForSystemMediaSessionAsync(playback, info => IsPlayingAt(info, 2), "The system media session never showed the new speed.");
 	}
 
 	// While the media is paused, its system media session is paused: the system media overlay and the lock screen show the media as paused, at a
@@ -393,19 +393,44 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	[Fact]
 	public async Task PauseShowsTheMediaAsPausedInTheSystemMediaSession()
 	{
-		var (view, session) = await PlayInASystemMediaSessionAsync(speed: 1.5);
-		await WaitUntilAsync(() => session.GetPlaybackInfo().PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing, "The system media session never showed the media as playing.");
+		var playback = await PlayInASystemMediaSessionAsync(speed: 1.5);
+		await WaitForSystemMediaSessionAsync(playback, info => info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing, "The system media session never showed the media as playing.");
 
-		await InvokeOnMainThreadAsync(view.Pause);
+		await InvokeOnMainThreadAsync(playback.View.Pause);
 
-		await WaitUntilAsync(() => session.GetPlaybackInfo().PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused, "The system media session never showed the media as paused.");
+		await WaitForSystemMediaSessionAsync(playback, info => info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused, "The system media session never showed the media as paused.");
 	}
 
 	static bool IsPlayingAt(GlobalSystemMediaTransportControlsSessionPlaybackInfo info, double speed) =>
 		info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing && info.PlaybackRate is double rate && Math.Abs(rate - speed) < 0.001;
 
+	// A failure reports what the session showed, also through the session found again, and what the player told its system media transport controls.
+	static async Task WaitForSystemMediaSessionAsync(SystemMediaSessionPlayback playback, Func<GlobalSystemMediaTransportControlsSessionPlaybackInfo, bool> condition, string message)
+	{
+		var deadline = DateTime.UtcNow.AddSeconds(15);
+		GlobalSystemMediaTransportControlsSessionPlaybackInfo info;
+		while (!condition(info = playback.Session.GetPlaybackInfo()))
+		{
+			if (DateTime.UtcNow > deadline)
+			{
+				var foundAgain = (await WinMediaMediaSessions.FindAsync(playback.Token))?.GetPlaybackInfo();
+				var player = await InvokeOnMainThreadAsync(() =>
+				{
+					var controls = playback.Player.SystemMediaTransportControls;
+					return $"{playback.View.CurrentState}, its player {playback.Player.PlaybackSession.PlaybackState} at a rate of {playback.Player.PlaybackSession.PlaybackRate}, "
+						+ $"its system media transport controls {controls.PlaybackStatus} at a rate of {controls.PlaybackRate} (enabled: {controls.IsEnabled}, command manager enabled: {playback.Player.CommandManager.IsEnabled})";
+				});
+				Assert.Fail($"{message} The session showed {Describe(info)}, and {(foundAgain is null ? "was not found again" : $"{Describe(foundAgain)} when found again")}. The MediaElement was {player}.");
+			}
+
+			await Task.Delay(100);
+		}
+
+		static string Describe(GlobalSystemMediaTransportControlsSessionPlaybackInfo info) => $"{info.PlaybackStatus} at a rate of {info.PlaybackRate?.ToString() ?? "none"}";
+	}
+
 	// A MediaElement with metadata that plays in the configuration the toolkit leaves its player in, as in OpenedMediaWithMetadataAppearsAsASystemMediaSession.
-	async Task<(MediaElement View, GlobalSystemMediaTransportControlsSession Session)> PlayInASystemMediaSessionAsync(double speed)
+	async Task<SystemMediaSessionPlayback> PlayInASystemMediaSessionAsync(double speed)
 	{
 		SetupWindowsBuilder();
 		await RequireDecoderAsync();
@@ -417,7 +442,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 			view.MetadataTitle = token;
 			view.MetadataArtist = token;
 		});
-		await ConnectAsync(view);
+		var handler = await ConnectAsync(view);
 		await OpenAsync(view, MediaSource.FromFile(WinMediaAssets.VideoPath));
 
 		await InvokeOnMainThreadAsync(() =>
@@ -428,8 +453,10 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 		var session = await WinMediaMediaSessions.FindAsync(token, timeoutMilliseconds: 10000);
 		Assert.True(session is not null, "This machine shows the system media session of a plain MediaPlayer, but none for the playing MediaElement whose metadata the toolkit published.");
-		return (view, session);
+		return new(view, await GetPlayerAsync(handler), session, token);
 	}
+
+	sealed record SystemMediaSessionPlayback(MediaElement View, MediaPlayer Player, GlobalSystemMediaTransportControlsSession Session, string Token);
 
 	[Theory]
 	[InlineData(true)]
