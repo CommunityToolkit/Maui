@@ -376,10 +376,12 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	}
 
 	// While the media plays, its system media session plays at the Speed of the MediaElement, the rate at which the system media overlay advances
-	// the position it shows.
+	// the position it shows. Playing takes a machine that renders the video.
 	[Fact]
 	public async Task TheSystemMediaSessionPublishesTheSpeedWhileTheMediaPlays()
 	{
+		SetupWindowsBuilder();
+		await RequireVideoRenderingAsync();
 		var playback = await PlayInASystemMediaSessionAsync(speed: 1.5);
 		await WaitForSystemMediaSessionAsync(playback, info => IsPlayingAt(info, 1.5), "The system media session never showed the media as playing at a speed of 1.5.");
 
@@ -389,16 +391,19 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	}
 
 	// While the media is paused, its system media session is paused: the system media overlay and the lock screen show the media as paused, at a
-	// position that does not advance.
+	// position that does not advance. The session keeps the playback rate of the player, which a pause doesn't change on Windows. Where the video
+	// doesn't render (the Windows CI jobs), Play() leaves the player paused, and the session shows the paused media the same way.
 	[Fact]
 	public async Task PauseShowsTheMediaAsPausedInTheSystemMediaSession()
 	{
+		SetupWindowsBuilder();
 		var playback = await PlayInASystemMediaSessionAsync(speed: 1.5);
-		await WaitForSystemMediaSessionAsync(playback, info => info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing, "The system media session never showed the media as playing.");
 
 		await InvokeOnMainThreadAsync(playback.View.Pause);
 
-		await WaitForSystemMediaSessionAsync(playback, info => info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused, "The system media session never showed the media as paused.");
+		await WaitForSystemMediaSessionAsync(playback,
+			info => info.PlaybackStatus is GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused && info.PlaybackRate is double rate && Math.Abs(rate - 1.5) < 0.001,
+			"The system media session never showed the media as paused at the playback rate of the player.");
 	}
 
 	static bool IsPlayingAt(GlobalSystemMediaTransportControlsSessionPlaybackInfo info, double speed) =>
@@ -432,7 +437,6 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	// A MediaElement with metadata that plays in the configuration the toolkit leaves its player in, as in OpenedMediaWithMetadataAppearsAsASystemMediaSession.
 	async Task<SystemMediaSessionPlayback> PlayInASystemMediaSessionAsync(double speed)
 	{
-		SetupWindowsBuilder();
 		await RequireDecoderAsync();
 		await RequireMediaSessionAsync();
 		var token = $"test-{Guid.NewGuid():N}";
