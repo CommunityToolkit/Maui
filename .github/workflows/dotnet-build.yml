@@ -87,8 +87,10 @@ jobs:
             -   name: Display dotnet info
                 run: dotnet --info
 
+            # MauiPackageVersion=* builds the sample and the libraries it references with the latest .NET MAUI release. They must share one
+            # version: two Microsoft.Maui.Core versions in one Windows app fail PRI generation (PRI277).
             -   name: Build Community Toolkit Sample
-                run: dotnet build -c Release ${{ env.PathToCommunityToolkitSampleCsproj }}
+                run: dotnet build -c Release ${{ env.PathToCommunityToolkitSampleCsproj }} -p:MauiPackageVersion="*"
     
     build_library:
         name: Build Library
