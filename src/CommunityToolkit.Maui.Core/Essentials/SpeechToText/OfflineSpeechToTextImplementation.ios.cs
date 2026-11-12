@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Versioning;
 using Microsoft.Maui.Dispatching;
 using Speech;
 
@@ -9,15 +8,8 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class OfflineSpeechToTextImplementation
 {
 	[MemberNotNull(nameof(liveSpeechRequest))]
-	[SupportedOSPlatform("ios13.0")]
-	[SupportedOSPlatform("maccatalyst")]
 	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
-		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
-		{
-			throw new NotSupportedException("Offline listening is supported on iOS 13 and later");
-		}
-
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 		speechRecognizer.SupportsOnDeviceRecognition = true;
 

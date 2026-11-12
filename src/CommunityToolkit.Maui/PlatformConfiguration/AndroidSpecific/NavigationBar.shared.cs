@@ -1,5 +1,4 @@
-﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using MAndroid = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 using MauiElement = Microsoft.Maui.Controls.Page;
 
@@ -12,7 +11,6 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 /// When a page clears its <see cref="ColorProperty"/> or <see cref="StyleProperty"/> value (<see cref="BindableObject.ClearValue(BindableProperty)"/>),
 /// every window that still shows that value gets back the navigation bar color or appearance it had before <see cref="NavigationBar"/> first changed it.
 /// </remarks>
-[SupportedOSPlatform("Android23.0")]
 [AttachedBindableProperty<NavigationBarStyle>("Style", DefaultValue = NavigationBarStyle.Default, CoerceValueMethodName = nameof(CoerceStyle))]
 public static partial class NavigationBar
 {
