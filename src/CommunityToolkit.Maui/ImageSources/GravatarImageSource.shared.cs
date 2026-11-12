@@ -230,7 +230,7 @@ public partial class GravatarImageSource : StreamImageSource, IStreamImageSource
 	{
 		DefaultImage.FileNotFound => "404",
 		DefaultImage.MysteryPerson => "mp",
-		_ => defaultGravatar.ToString().ToLower(),
+		_ => defaultGravatar.ToString().ToLowerInvariant(),
 	};
 
 	// Gravatar hashes the address with leading and trailing white space removed and in lower case (https://docs.gravatar.com/rest/hash/),

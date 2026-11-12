@@ -16,9 +16,8 @@ public interface IFileSaver
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android26.0")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, CancellationToken cancellationToken = default);
 
@@ -30,9 +29,8 @@ public interface IFileSaver
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, CancellationToken cancellationToken = default);
 
@@ -46,9 +44,8 @@ public interface IFileSaver
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android26.0")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string initialPath, string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default);
 
@@ -61,9 +58,8 @@ public interface IFileSaver
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="FileSaverResult"/>. A null argument that must not be null is reported in <see cref="FileSaverResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no file is saved</returns>
 	[SupportedOSPlatform("Android")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FileSaverResult> SaveAsync(string fileName, Stream stream, IProgress<double> progress, CancellationToken cancellationToken = default);
 }

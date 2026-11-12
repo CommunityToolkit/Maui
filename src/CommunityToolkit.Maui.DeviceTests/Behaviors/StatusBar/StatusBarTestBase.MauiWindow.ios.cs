@@ -6,9 +6,8 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// An app whose Info.plist keeps view controller-based status bar appearance, such as the runner, takes the status bar style from the view
-// controllers of its windows: on .NET 11 those of a .NET MAUI window return the style of its Window.StatusBarTheme, and on .NET 10 every view
-// controller that does not choose a style returns the one that StatusBar.SetStyle requested. The headless runner's window has no .NET MAUI window
+// An app whose Info.plist keeps view controller-based status bar appearance, such as the runner, takes the status bar style from the view controllers
+// of its windows, and those of a .NET MAUI window return the style of its Window.StatusBarTheme. The headless runner's window has no .NET MAUI window
 // (Application.Current.Windows is empty), so the style tests show their page in one.
 public abstract partial class StatusBarTestBase
 {

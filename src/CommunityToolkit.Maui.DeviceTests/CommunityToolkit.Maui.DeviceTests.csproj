@@ -20,6 +20,14 @@
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <!-- .NET MAUI 11 makes CollectionViewHandler2 (a WinUI ItemsView) the Windows default. It throws COMException 0x800F1000, which ends the
+       app, when an item root that needs a WrapperView after it loaded is wrapped (a Label or Image whose Background TouchBehavior sets),
+       and the Windows CollectionView and Expander tests target the ListView handler. Remove once the toolkit mitigates
+       https://github.com/CommunityToolkit/Maui/issues/3375 -->
+  <PropertyGroup>
+    <UseWindowsCollectionView2Handler>false</UseWindowsCollectionView2Handler>
+  </PropertyGroup>
+
   <!-- UIKit's thread checks, which the SDK keeps in Debug builds only: six tests verify that the toolkit lets UIKitThreadAccessException
        through when it is called off the main thread, and CI runs the device tests in Release. -->
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
@@ -36,8 +44,7 @@
   </PropertyGroup>
 
   <!-- The library minimums, so version-gated branches can run on older devices, except Android: 26, MediaElement's minimum,
-       because this one app holds the tests of every package (the other packages' Android branches below 26 have no device test).
-       Mac Catalyst is 17.0: the Microsoft.MacCatalyst.Sdk 27.0 packs (Xcode 27) reject lower values for apps. -->
+       because this one app holds the tests of every package (the other packages' Android branches below 26 have no device test). -->
   <PropertyGroup>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
@@ -52,6 +59,8 @@
     <MauiImage Include="Resources\Images\**" />
     <!-- Raw files keep their path without the Resources\Raw prefix. -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Only the Android tests use this 0-byte PNG. The .NET 11 Apple SDK optimizes every PNG of a Release build and fails with a missing file when it is empty. -->
+    <MauiAsset Remove="Resources\Raw\exoplayer\empty.png" Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -75,11 +84,6 @@
     <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators\CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <!-- The toolkit's Maps package only has Windows code (other platforms use MAUI's own map handlers). -->
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <ProjectReference Include="..\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
   </ItemGroup>
 
   <Import Project="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.targets" />

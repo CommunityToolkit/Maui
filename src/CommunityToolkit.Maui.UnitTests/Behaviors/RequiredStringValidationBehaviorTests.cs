@@ -77,6 +77,8 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 	[Theory]
 	[InlineData("en-US", false)] // US Culture where a != a-
 	[InlineData("th-TH", true)] // Thai Culture where a == a-
+	[InlineData("tr-TR", false)] // Turkish Culture where a != a-
+	[InlineData("az-Latn-AZ", false)] // Azerbaijani Culture where a != a-
 	public void IsValidShouldReturnResultBasedOnCultureSpecificComparison(string cultureName, bool expectedIsValid)
 	{
 		var currentCulture = Thread.CurrentThread.CurrentCulture;

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core.Extensions;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Core.Extensions;
 using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
@@ -287,6 +288,18 @@ public class ColorConversionExtensionsTests : BaseTest
 		new ColorTestDefinition((float)0.9607843, (float)0.9607843, (float)0.9607843, (float)0.69411767, 245, 245, 245, 177, (float)0.039215683937072754, 0, 0, 0, (float)0.039215686, (float)0.039215686, (float)0.039215686, (float)0.960784314, false, false, Colors.White, Colors.Black),
 		new ColorTestDefinition(1, 1, 1, (float)0.84705883, 255, 255, 255, 216, 0, 0, 0, 0, 0, 0, 0, 1, false, false, Colors.White, Colors.Black)
 	];
+
+	[Fact]
+	public void ToCmykString_WithCulture_FormatsPercentWithThatCulture()
+	{
+		Assert.Equal("CMYK(%0,%100,%100,%0)", Colors.Red.ToCmykString(new CultureInfo("tr-TR")));
+	}
+
+	[Fact]
+	public void ToHslString_WithCulture_FormatsPercentWithThatCulture()
+	{
+		Assert.Equal("HSL(360,%100,%50)", Colors.Red.ToHslString(new CultureInfo("tr-TR")));
+	}
 
 	[Theory]
 	[MemberData(nameof(ColorTestData))]
@@ -921,6 +934,21 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.Equal(realColor, newColor.GetByteRed());
 		Assert.Equal(realColor, newColor.GetByteBlue());
 		Assert.Equal(realColor, newColor.GetByteGreen());
+	}
+
+	[Fact]
+	public void ToCmykString_WithAzerbaijaniCulture_PutsPercentAfterNumber()
+	{
+		// Azerbaijani formats percent as "50%" while Turkish formats it as "%50", so the output must come from the culture's NumberFormatInfo.
+		Assert.Equal("CMYK(0%,100%,100%,0%)", Colors.Red.ToCmykString(new CultureInfo("az-Latn-AZ")));
+	}
+
+	[Fact]
+	public void ToRgbaString_NullCulture_UsesTurkishCurrentCulture()
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+
+		Assert.Equal("RGBA(255,0,0,0,5)", new Color(1f, 0f, 0f, 0.5f).ToRgbaString(null));
 	}
 
 	public class ColorTestDefinition

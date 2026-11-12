@@ -8,17 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="FluentAssertions" Version="8.11.0" />
     <PackageReference Include="FluentAssertions.Analyzers" Version="0.34.1" />
     <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
-    <PackageReference Include="xunit.v3" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="2.4.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
+    <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="2.5.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
-    <ProjectReference Include="..\CommunityToolkit.Maui.Maps\CommunityToolkit.Maui.Maps.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Maui.Analyzers\CommunityToolkit.Maui.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
