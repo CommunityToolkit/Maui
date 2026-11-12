@@ -32,13 +32,13 @@ public sealed class MediaSourceConverter : TypeConverter
 
 		var valueAsStringLowercase = valueAsString.ToLowerInvariant();
 
-		if (valueAsStringLowercase.StartsWith(embeddedResourcePrefix))
+		if (valueAsStringLowercase.StartsWith(embeddedResourcePrefix, StringComparison.Ordinal))
 		{
 			return MediaSource.FromResource(
 				valueAsString[embeddedResourcePrefix.Length..]);
 		}
 
-		if (valueAsStringLowercase.StartsWith(fileSystemPrefix))
+		if (valueAsStringLowercase.StartsWith(fileSystemPrefix, StringComparison.Ordinal))
 		{
 			return MediaSource.FromFile(valueAsString[fileSystemPrefix.Length..]);
 		}
@@ -54,6 +54,7 @@ public sealed class MediaSourceConverter : TypeConverter
 		UriMediaSource uriMediaSource => uriMediaSource.ToString(),
 		FileMediaSource fileMediaSource => fileMediaSource.ToString(),
 		ResourceMediaSource resourceMediaSource => resourceMediaSource.ToString(),
+		StreamMediaSource streamMediaSource => streamMediaSource.ToString(),
 		MediaSource => string.Empty,
 		_ => throw new ArgumentException($"Invalid Media Source", nameof(value))
 	};

@@ -48,7 +48,7 @@
                 <mct:Expander.Content>
                     <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
-                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
+                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold" TextColor="Black"/>
                         </mct:Expander.Header>
 
                         <mct:Expander.Behaviors>
@@ -56,7 +56,7 @@
                         </mct:Expander.Behaviors>
 
                         <mct:Expander.Content>
-                            <Label Text="Item 1" />
+                            <Label Text="Item 1" TextColor="Black" />
                         </mct:Expander.Content>
                     </mct:Expander>
                 </mct:Expander.Content>
@@ -110,8 +110,9 @@
                             <mct:Expander.Content>
                                 <VerticalStackLayout>
                                     <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
+                                    <!-- No WidthRequest: the avatar shrinks to the width of its column (AspectFit, at most 100x100), so it does not spill into the next column on a phone -->
                                     <Image Source="{Binding Image}"
-                                           WidthRequest="100"
+                                           Aspect="AspectFit"
                                            HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>

@@ -39,15 +39,21 @@ public partial class DockLayout : Layout, IDockLayout
 
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 	public DockPosition GetDockPosition(IView view)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		var mauiView = (View)view;
 		return (DockPosition)mauiView.GetValue(DockPositionProperty);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 	public void Add(IView view, DockPosition position = DockPosition.None)
 	{
+		ArgumentNullException.ThrowIfNull(view);
+
 		Children.Add(view);
 		SetDockPosition((View)view, position);
 	}

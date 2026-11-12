@@ -15,9 +15,12 @@ public static class AndroidWindowExtensions
 	/// </summary>
 	/// <param name="activity">The activity.</param>
 	/// <returns>The current window.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="activity"/> is null.</exception>
 	/// <exception cref="InvalidOperationException">Thrown when the activity window is null.</exception>
 	public static Window GetCurrentWindow(this Activity activity)
 	{
+		ArgumentNullException.ThrowIfNull(activity);
+
 		Window? currentWindow = null;
 
 		var fragmentManager = activity.GetFragmentManager();
@@ -38,7 +41,7 @@ public static class AndroidWindowExtensions
 
 		currentWindow.ClearFlags(WindowManagerFlags.TranslucentStatus);
 		currentWindow.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-		
+
 		return currentWindow;
 	}
 }

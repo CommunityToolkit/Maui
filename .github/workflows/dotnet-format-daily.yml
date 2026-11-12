@@ -6,23 +6,47 @@ jobs:
   dotnet-format:
     runs-on: windows-latest
     steps:
-      - name: Install dotnet-format
-        run: dotnet tool install -g dotnet-format
-
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Run dotnet format
-        id: format
-        uses: jfversluis/dotnet-format@v1.0.9
+      - name: Load shared environment variables
+        uses: ./.github/actions/load-shared-env
+
+      - name: Install .NET SDK v${{ env.LATEST_NET_VERSION }}
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          action: "fix"
-          #only-changed-files: true # only works for PRs
-          workspace: "samples/CommunityToolkit.Maui.Sample.sln"
-    
+          dotnet-version: ${{ env.LATEST_NET_VERSION }}
+          dotnet-quality: 'ga'
+
+      - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+
+      - name: Install .NET MAUI Workload
+        run: |
+          dotnet workload install maui
+          dotnet workload update
+
+      - name: Build solution
+        run: dotnet build samples/CommunityToolkit.Maui.Sample.slnx
+
+      - name: Run dotnet format
+        shell: pwsh
+        run: ./eng/format.ps1
+
+      - name: Check for changes
+        id: format
+        shell: pwsh
+        run: |
+          if (git status --porcelain --untracked-files=no) {
+            "has-changes=true" >> $env:GITHUB_OUTPUT
+          } else {
+            "has-changes=false" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
         run: |
@@ -31,7 +55,7 @@ jobs:
           git commit -a -m 'Automated dotnet-format update'
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8
         with:
           title: '[housekeeping] Automated PR to fix formatting errors'
           body: |
@@ -39,8 +63,8 @@ jobs:
           committer: GitHub <noreply@github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           labels: approved
-          assignees: jfversluis
-          reviewers: jfversluis, brminnick
+          assignees: TheCodeTraveler
+          reviewers: TheCodeTraveler
           branch: housekeeping/fix-codeformatting
 
       # Pushing won't work to forked repos

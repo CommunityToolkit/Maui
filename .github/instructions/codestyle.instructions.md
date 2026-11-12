@@ -1,5 +1,34 @@
+---
+description: 'C# coding style guide covering naming conventions, code structure, element positioning (StyleCop SA1201, SA1202, SA1204, SA1214, SA1215), control flow, nullability, and asynchronous programming'
+applyTo: '**/*.cs'
+---
+
 # Coding Style Guide
 This guide provides a set of best practices and coding standards for writing C# code with GitHub Copilot. It covers various aspects of C# programming, including naming conventions, code structure, control flow, nullability, safe operations, asynchronous programming, and symbol references.
+
+## C# File Naming
+
+- Platform-suffix naming is required for files in projects that produce NuGet packages.
+- Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
+- For package-producing projects, C# files must use one of these patterns: `*.shared.cs`, `*.net.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`, `*.android.cs`, `*.windows.cs`.
+- Projects that do not produce NuGet packages (for example samples, tests, analyzers, and benchmarks) should keep standard `*.cs` naming, ignoring generated patterns like `*.xaml.cs` and `*.Designer.cs`.
+
+## Comments:
+- Never explain what the code does: descriptive names of types, members and variables carry that. If code seems to need a "what" comment, rename it or extract a well-named method.
+- Comment only to explain why: a non-intuitive decision, a platform quirk or workaround (link the issue), an ordering or timing constraint, or code that looks unexpected or out of scope but is needed.
+- Keep XML documentation comments on public APIs: they document the contract for callers.
+	```csharp
+	// Good: the name says what the code does
+	var canRetry = attempts < maximumAttempts && !isCancelled;
+
+	// Good: the comment explains why
+	// AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
+	await readyToPlay.Task.WaitAsync(token);
+
+	// Avoid: the comment repeats the code
+	// Check whether the user can retry
+	if (attempts < 3 && !isCancelled)
+	```
 
 ## Type Definitions:
 - Prefer records for data types:
@@ -19,10 +48,10 @@ This guide provides a set of best practices and coding standards for writing C# 
 
 - Prefer range indexers over LINQ:
 	```csharp
-	// Good: Using range indexers with clear comments
-	var lastItem = items[^1];  // ^1 means "1 from the end"
-	var firstThree = items[..3];  // ..3 means "take first 3 items"
-	var slice = items[2..5];  // take items from index 2 to 4 (5 exclusive)
+	// Good: Using range indexers
+	var lastItem = items[^1];
+	var firstThree = items[..3];
+	var slice = items[2..5];
 	
 	// Avoid: Using LINQ when range indexers are clearer
 	var lastItem = items.LastOrDefault();
@@ -232,6 +261,41 @@ This guide provides a set of best practices and coding standards for writing C# 
 		
 		// Parameter cannot be null
 		Task SaveAsync([NotNull] Order order, CancellationToken ct = default);
+	}
+	```
+
+- Never use the empty property pattern `is { }` to check for null and bind a value; use a type pattern with the exact type, or `is not null` when nothing is bound:
+	```csharp
+	// Good: a type pattern confirms the type and binds the value
+	if (someColor is Color color && color != Colors.Transparent)
+	{
+	}
+
+	// Avoid: the empty property pattern is hard to read
+	if (someColor is { } color && color != Colors.Transparent)
+	{
+	}
+	```
+
+## Argument Validation:
+
+- Prefer `ArgumentNullException.ThrowIfNull` over manual null checks:
+	```csharp
+	// Good: Concise null validation
+	public void Write(byte[] buffer)
+	{
+		ArgumentNullException.ThrowIfNull(buffer);
+		// Use buffer safely here
+	}
+
+	// Avoid: Verbose manual null check
+	public void Write(byte[] buffer)
+	{
+		if (buffer is null)
+		{
+			throw new ArgumentNullException(nameof(buffer));
+		}
+		// Use buffer safely here
 	}
 	```
 
@@ -566,3 +630,15 @@ Within a class, struct, or interface, elements should be positioned in the follo
 11. Records
 12. Structs
 13. Classes
+
+### Try Pattern
+
+When a method name begins with `Try` and returns a variable, ensure it adheres to the Try Pattern.
+
+Here Key Components of the Try Pattern:
+1. Method Name: Begins with Try (e.g., TryParse, TryGetValue).
+2. Return Type: bool (indicating success or failure).
+3. Out Parameter: An out parameter to return the result if successful.
+4. Null Analysis Attribute: [NotNullWhen(true)] (or [MaybeNullWhen(false)]) informs the compiler that if the method returns true, the out parameter is guaranteed to be non-null. 
+
+This pattern allows for high-performance retrieval or parsing without throwing exceptions for expected failures. It also allows cleaner call sites by eliminating the need for null-checking the output variable within the if block, as seen in Dictionary<TKey, TValue>.TryGetValue. 

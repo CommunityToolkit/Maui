@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Layouts;
 using CommunityToolkit.Maui.Layouts;
 using FluentAssertions;
 using Xunit;
@@ -116,6 +117,16 @@ public class UniformItemsLayoutTests : BaseTest
 		var layout = new UniformItemsLayout();
 		Assert.Equal(UniformItemLayoutDefaults.MaxRows, layout.MaxRows);
 		Assert.Equal(UniformItemLayoutDefaults.MaxColumns, layout.MaxColumns);
+	}
+
+	[Fact]
+	public void UniformItemsLayoutManager_NullUniformItemsLayout_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new UniformItemsLayoutManager(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("uniformItemsLayout", exception.ParamName);
 	}
 
 	class TestView : View

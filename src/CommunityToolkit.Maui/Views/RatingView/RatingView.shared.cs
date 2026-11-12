@@ -137,11 +137,21 @@ public partial class RatingView : TemplatedView, IRatingView
 
 	/// <summary>Gets or sets the element to fill when a <see cref="Rating"/> is set.</summary>
 	/// <remarks>Use this property to control how the rating view visually responds to user interaction.
-	/// The selected fill option determines the appearance of the rating elements when tapped.</remarks>
-	[BindableProperty(PropertyChangingMethodName = nameof(OnRatingColorChanged))]
+	/// The selected fill option determines the appearance of the rating elements when tapped.
+	/// Changing this property redraws the rating elements immediately, also after <see cref="Rating"/> has been set.</remarks>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnRatingColorChanged))]
 	public partial RatingViewFillOption FillOption { get; set; } = RatingViewDefaults.FillOption;
 
 	internal HorizontalStackLayout RatingLayout { get; } = [];
+
+	internal void HandleShapeTapped(Border tappedShape)
+	{
+		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
+
+		Rating = MaximumRating > 1
+			? tappedShapeIndex + 1
+			: GetRatingWhenMaximumRatingEqualsOne(Rating);
+	}
 
 	static int GetRatingWhenMaximumRatingEqualsOne(double rating) => rating.Equals(0.0) ? 1 : 0;
 
@@ -447,11 +457,7 @@ public partial class RatingView : TemplatedView, IRatingView
 			return;
 		}
 
-		var tappedShapeIndex = RatingLayout.Children.IndexOf(tappedShape);
-
-		Rating = MaximumRating > 1
-			? tappedShapeIndex + 1
-			: GetRatingWhenMaximumRatingEqualsOne(Rating);
+		HandleShapeTapped(tappedShape);
 	}
 
 	void UpdateShapeFills(RatingViewFillOption ratingViewFillOption)
@@ -460,6 +466,12 @@ public partial class RatingView : TemplatedView, IRatingView
 		var visualElements = GetVisualTreeDescendantsWithBorderAndShape((VisualElement)RatingLayout.GetVisualTreeDescendants()[0], isShapeFill);
 		if (isShapeFill)
 		{
+			// Remove the backgrounds that RatingViewFillOption.Background gave the rating items, so they do not stay behind the shapes
+			foreach (var ratingItem in RatingLayout.Children.Cast<Border>())
+			{
+				ratingItem.ClearValue(BackgroundProperty);
+			}
+
 			UpdateAllShapeFills(visualElements, Rating, FillColor, EmptyShapeColor);
 		}
 		else

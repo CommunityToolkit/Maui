@@ -107,8 +107,7 @@ public class GestureManagerTests : BaseTest
 
 		// Act
 		var gestureManager = new GestureManager();
-		var token = new CancellationTokenSource().Token;
-		await gestureManager.HandleLongPress(touchBehavior, token);
+		await gestureManager.HandleLongPress(touchBehavior, TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(longPressCompletedRaised);

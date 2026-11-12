@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
@@ -375,7 +376,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	{
 		var @namespace = classSymbol.ContainingNamespace.ToDisplayString();
 		var className = classSymbol.Name;
-		var classAccessibility = classSymbol.DeclaredAccessibility.ToString().ToLower();
+		var classAccessibility = SyntaxFacts.GetText(classSymbol.DeclaredAccessibility);
 
 		// Build containing types hierarchy
 		var containingTypes = GetContainingTypes(classSymbol);
@@ -740,14 +741,14 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		{
 			true => "true",
 			false => "false",
-			int intVal => intVal.ToString(),
-			byte byteVal => byteVal.ToString(),
-			sbyte sbyteVal => sbyteVal.ToString(),
-			short shortVal => shortVal.ToString(),
-			ushort ushortVal => ushortVal.ToString(),
-			long longVal => $"{longVal}L",
-			uint uintVal => $"{uintVal}U",
-			ulong ulongVal => $"{ulongVal}UL",
+			int intVal => intVal.ToString(CultureInfo.InvariantCulture),
+			byte byteVal => byteVal.ToString(CultureInfo.InvariantCulture),
+			sbyte sbyteVal => sbyteVal.ToString(CultureInfo.InvariantCulture),
+			short shortVal => shortVal.ToString(CultureInfo.InvariantCulture),
+			ushort ushortVal => ushortVal.ToString(CultureInfo.InvariantCulture),
+			long longVal => FormattableString.Invariant($"{longVal}L"),
+			uint uintVal => FormattableString.Invariant($"{uintVal}U"),
+			ulong ulongVal => FormattableString.Invariant($"{ulongVal}UL"),
 			double doubleVal => doubleVal switch
 			{
 				double.NaN => "double.NaN",
@@ -756,7 +757,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 				double.Epsilon => "double.Epsilon",
 				double.MaxValue => "double.MaxValue",
 				double.MinValue => "double.MinValue",
-				_ => doubleVal.ToString("G17")
+				_ => doubleVal.ToString("G17", CultureInfo.InvariantCulture)
 			},
 			float floatVal => floatVal switch
 			{
@@ -766,7 +767,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 				float.Epsilon => "float.Epsilon",
 				float.MaxValue => "float.MaxValue",
 				float.MinValue => "float.MinValue",
-				_ => $"{floatVal:G9}f"
+				_ => FormattableString.Invariant($"{floatVal:G9}f")
 			},
 			char charVal => $"'{charVal}'",
 			string stringVal => $"\"{GetEscapedString(stringVal)}\"",
