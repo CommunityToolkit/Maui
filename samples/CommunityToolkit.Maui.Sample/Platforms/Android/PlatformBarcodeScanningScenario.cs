@@ -1,8 +1,10 @@
-// Qualifying as 'Android.Runtime.…' inside this namespace would resolve against the
-// 'CommunityToolkit.Maui.Android' namespace the MediaElement source generator emits,
-// so import the type (as BarcodeAnalyzer.cs does) instead of fully qualifying it.
-using Android.Runtime;
+// Qualifying 'Android.App.Application' inside this namespace would resolve against the
+// 'CommunityToolkit.Maui.Android' namespace the MediaElement source generator emits, so it
+// needs 'global::'. The bare 'Application' name would also be ambiguous with
+// Microsoft.Maui.Controls.Application. The analyzer callback updates the UI, so it runs on
+// the app's main executor (as CameraManager.android.cs does for its camera callbacks).
 using AndroidX.Camera.Core;
+using AndroidX.Core.Content;
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -25,7 +27,7 @@ public partial class PlatformBarcodeScanningScenario
 					.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest)
 					.Build();
 
-			imageAnalysis.SetAnalyzer(AndroidEnvironment.MainThreadExecutor, new BarcodeAnalyzer(() => Command));
+			imageAnalysis.SetAnalyzer(ContextCompat.GetMainExecutor(global::Android.App.Application.Context)!, new BarcodeAnalyzer(() => Command));
 		
 			return imageAnalysis;
 		});
