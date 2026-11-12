@@ -321,7 +321,7 @@ public partial class MediaManager : IDisposable
 		// The playback controls of the AVPlayerViewController call AVPlayer.Play(), which starts at the default rate, so the default rate follows
 		// the Speed (setting it does not start playback). Before iOS 16 and Mac Catalyst 16 there is no default rate: the playback controls start
 		// playback at a rate of 1, which RateChanged reports as the Speed.
-		if (speed > 0 && (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16)))
+		if (speed > 0 && OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			player.DefaultRate = speed;
 		}

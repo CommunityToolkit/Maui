@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Android.Content;
 using Android.Content.Res;
+using Android.OS;
 using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.View;
@@ -46,36 +47,49 @@ static class SoftKeyboardHelpers
 		ViewCompat.GetRootWindowInsets(view)?.IsVisible(WindowInsetsCompat.Type.Ime()) is true;
 
 	// Also asks when nothing shows yet: a keyboard that was asked for can still be on its way up, and only a request to hide cancels it.
-	public static Task<bool> HideAsync() => WaitUntilHiddenAsync(requestEvenWhenNothingShows: true);
+	public static async Task<bool> HideAsync() => (await WaitUntilHiddenAsync(requestEvenWhenNothingShows: true)).IsHidden;
 
-	public static Task<bool> HideWhenShowingAsync() => WaitUntilHiddenAsync(requestEvenWhenNothingShows: false);
+	public static async Task<bool> HideWhenShowingAsync() => (await WaitUntilHiddenAsync(requestEvenWhenNothingShows: false)).IsHidden;
 
 	// The tests call this from their own thread and the description reads the window's views, so it is made on the UI thread, and only when
 	// the keyboard did not hide.
 	public static async Task EnsureHiddenAsync()
 	{
-		if (!await HideAsync())
+		var (isHidden, wasAcknowledged) = await WaitUntilHiddenAsync(requestEvenWhenNothingShows: true);
+
+		if (!isHidden)
 		{
-			Assert.Fail($"The soft keyboard could not be hidden within {Timeout} ms: {await TestDispatcher.Current.DispatchAsync(Describe)}.");
+			var reason = wasAcknowledged ? string.Empty : ", and the input method did not acknowledge the hide";
+			Assert.Fail($"The soft keyboard could not be hidden within {Timeout} ms{reason}: {await TestDispatcher.Current.DispatchAsync(Describe)}.");
 		}
 	}
 
 	public static string Describe() => $"{VisibleFrame.Describe(DecorView)}, the window insets {(InsetsShowKeyboard(DecorView) ? "show" : "do not show")} the keyboard";
 
-	static Task<bool> WaitUntilHiddenAsync(bool requestEvenWhenNothingShows) => TestDispatcher.Current.DispatchAsync(() =>
+	// Before Android 11 the keyboard that an earlier request asked for can still be on its way up when the window looks hidden, and it only
+	// shows once the input method processed that request. The input method acknowledges a hide after it processed everything before it, and
+	// the window manager tells the window what that did shortly after, so quiet polls count from the first frame after the acknowledgement.
+	static Task<(bool IsHidden, bool WasAcknowledged)> WaitUntilHiddenAsync(bool requestEvenWhenNothingShows) => TestDispatcher.Current.DispatchAsync(async () =>
 	{
 		var stopwatch = Stopwatch.StartNew();
 		var quietPolls = 0;
 		var nextHideRequestAt = TimeSpan.Zero;
+		var acknowledgementRequestedAt = TimeSpan.Zero;
+		var acknowledgement = Task.CompletedTask;
 
 		if (requestEvenWhenNothingShows)
 		{
-			RequestHide();
+			acknowledgement = RequestHide();
 			nextHideRequestAt = TimeSpan.FromMilliseconds(hideRequestInterval);
 		}
 
-		return Wait(() =>
+		var isHidden = await Wait(() =>
 		{
+			if (!acknowledgement.IsCompleted)
+			{
+				return false;
+			}
+
 			if (!IsShowing())
 			{
 				quietPolls++;
@@ -85,17 +99,21 @@ static class SoftKeyboardHelpers
 			quietPolls = 0;
 			if (stopwatch.Elapsed >= nextHideRequestAt)
 			{
-				RequestHide();
+				acknowledgement = RequestHide();
+				acknowledgementRequestedAt = stopwatch.Elapsed;
 				nextHideRequestAt = stopwatch.Elapsed + TimeSpan.FromMilliseconds(hideRequestInterval);
 			}
 
 			return false;
 		}, Timeout, pollInterval);
+
+		// A request from the last polls can still be in flight when the keyboard simply stayed up, and that is not the input method's fault.
+		return (isHidden, acknowledgement.IsCompleted || stopwatch.Elapsed - acknowledgementRequestedAt < TimeSpan.FromMilliseconds(hideRequestInterval));
 	});
 
 	// On Android 9 only the view that the input method manager serves can hide the keyboard, and that can be an Entry that left the window
 	// before Android handled its focus (a test that ends right after Focus). A focused view that is in the window becomes the served view.
-	static void RequestHide()
+	static Task RequestHide()
 	{
 		var activity = RunnerActivity;
 		var content = activity.FindViewById<FrameLayout>(Android.Resource.Id.Content) ?? throw new InvalidOperationException("The activity has no content view.");
@@ -110,7 +128,20 @@ static class SoftKeyboardHelpers
 		try
 		{
 			servingView.RequestFocus();
+
+			// From Android 11 the app's insets controller animates the keyboard after the input method answered, and on Android 16 the client answers
+			// the receiver itself, so the acknowledgement is no fence there.
+			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
+			{
+				var acknowledged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var wasRequested = inputMethodManager.HideSoftInputFromWindow(servingView.WindowToken, HideSoftInputFlags.None, new HideAcknowledgement(acknowledged));
+
+				// Nothing was shown or on its way (or the window rejected the request), so the input method sends no acknowledgement.
+				return wasRequested ? WaitForFrameAfterAsync(acknowledged.Task) : Task.CompletedTask;
+			}
+
 			inputMethodManager.HideSoftInputFromWindow(servingView.WindowToken, HideSoftInputFlags.None);
+			return Task.CompletedTask;
 		}
 		finally
 		{
@@ -118,5 +149,20 @@ static class SoftKeyboardHelpers
 			servingView.ClearFocus();
 			content.RemoveView(servingView);
 		}
+	}
+
+	// The insets of the window are only updated by a frame, and the acknowledgement does not wait for one.
+	static async Task WaitForFrameAfterAsync(Task acknowledgement)
+	{
+		await acknowledgement;
+
+		var frameDrawn = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		DecorView.PostOnAnimation(new Java.Lang.Runnable(() => frameDrawn.TrySetResult()));
+		await frameDrawn.Task;
+	}
+
+	sealed class HideAcknowledgement(TaskCompletionSource acknowledged) : ResultReceiver(new Handler(Looper.MainLooper ?? throw new InvalidOperationException("The main looper is not available.")))
+	{
+		protected override void OnReceiveResult(int resultCode, Bundle? resultData) => acknowledged.TrySetResult();
 	}
 }
