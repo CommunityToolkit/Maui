@@ -33,15 +33,12 @@ using Microsoft.Maui.LifecycleEvents;
 using Polly;
 
 #if WINDOWS10_0_17763_0_OR_GREATER
-using CommunityToolkit.Maui.Maps;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Maui.Platform;
 #endif
-
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -68,7 +65,7 @@ public static class MauiProgram
 #endif
 								.UseMauiCommunityToolkitMarkup()
 								.UseMauiCommunityToolkitCamera()
-								.UseMauiCommunityToolkitMediaElement(static options =>
+								.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true, static options =>
 								{
 									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
 								})
@@ -77,14 +74,12 @@ public static class MauiProgram
 #if IOS || MACCATALYST
 									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 									handlers.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+#elif ANDROID
+									// Material Components limit a button to 320dp (mtrl_btn_max_width). MAUI measures a Button within that limit, so a long
+									// caption wraps at 320dp even when the Button is laid out wider, and a full-width Button keeps the height of the wrapped caption
+									Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("RemoveMaterialMaximumWidth", static (handler, _) => handler.PlatformView.SetMaxWidth(int.MaxValue));
 #endif
 								})
-
-#if WINDOWS
-								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from https://bingmapsportal.com
-#else
-								.UseMauiMaps()
-#endif
 
 								.UseMauiApp<App>()
 								.ConfigureFonts(static fonts =>
@@ -120,10 +115,8 @@ public static class MauiProgram
 #endif
 		});
 
-		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions());
-
-		builder.Services.AddSingleton<AppShell>();
+		// Typed-client registrations don't work here: AddTransientWithShellRoute later re-registers each page and view model, replacing the typed client, so they would get a plain HttpClient without this handler
+		builder.Services.ConfigureHttpClientDefaults(static http => http.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions()));
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
@@ -153,6 +146,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<ToastPage, ToastViewModel>();
 
 		// Add AvatarView pages + ViewModels
+		services.AddTransientWithShellRoute<AvatarViewsPage, AvatarViewsViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewBindablePropertiesPage, AvatarViewBindablePropertiesViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewBordersPage, AvatarViewBordersViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewColorsPage, AvatarViewColorsViewModel>();
@@ -245,13 +239,13 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
-		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
-		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
+		services.AddTransientWithShellRoute<MediaElementsPage, MediaElementsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
+		services.AddTransientWithShellRoute<MediaElementFromStreamPage, MediaElementFromStreamViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel>();
 		services.AddTransientWithShellRoute<MediaElementMultipleWindowsPage, MediaElementMultipleWindowsViewModel>();
@@ -259,6 +253,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
 		services.AddTransientWithShellRoute<RangeSliderPage, RangeSliderViewModel>();
+		services.AddTransientWithShellRoute<RatingViewsPage, RatingViewsViewModel>();
 		services.AddTransientWithShellRoute<RatingViewCsharpPage, RatingViewCsharpViewModel>();
 		services.AddTransientWithShellRoute<RatingViewShowcasePage, RatingViewShowcaseViewModel>();
 		services.AddTransientWithShellRoute<RatingViewXamlPage, RatingViewXamlViewModel>();
@@ -290,6 +285,8 @@ public static class MauiProgram
 		services.AddTransientPopup<TransparentPopup>();
 		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddTransientPopup<SoftInputKeyboardPopup>();
+		services.AddTransientPopup<AppThemePopup>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)

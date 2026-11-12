@@ -40,13 +40,13 @@ public sealed class MockDispatcher : IDispatcher
 			this.dispatcher = dispatcher;
 		}
 
+		public event EventHandler? Tick;
+
 		public TimeSpan Interval { get; set; }
 
 		public bool IsRepeating { get; set; }
 
 		public bool IsRunning => timer != null;
-
-		public event EventHandler? Tick;
 
 		public void Start()
 		{

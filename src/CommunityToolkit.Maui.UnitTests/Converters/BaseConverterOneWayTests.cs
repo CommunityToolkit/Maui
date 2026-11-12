@@ -8,6 +8,11 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public abstract class BaseConverterOneWayTests
 {
+	protected BaseConverterOneWayTests(bool suppressExceptions)
+	{
+		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
+	}
+
 	[Theory]
 	[InlineData(4.123, typeof(double))]
 	[InlineData(4, typeof(int))]
@@ -43,11 +48,6 @@ public abstract class BaseConverterOneWayTests
 	{
 		DefaultConvertReturnValue = "Three"
 	};
-
-	protected BaseConverterOneWayTests(bool suppressExceptions)
-	{
-		new Options().SetShouldSuppressExceptionsInConverters(suppressExceptions);
-	}
 }
 
 /// <summary>

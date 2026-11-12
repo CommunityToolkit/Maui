@@ -42,8 +42,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 
 		var convertFromResult = (StreamImageSource)imageResourceConverter.ConvertFrom(resourceToLoad, CultureInfo.CurrentCulture);
 
-		// Ensure CancellationToken has expired
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<TaskCanceledException>(() => GetStreamFromImageSource(convertFromResult, cts.Token));
 	}
@@ -52,7 +51,7 @@ public class ImageResourceConverterTests : BaseOneWayConverterTest<ImageResource
 	public async Task ImageResourceConverter_CancellationTokenCancelled()
 	{
 		const string resourceToLoad = "CommunityToolkit.Maui.UnitTests.Resources.dotnet-bot.png";
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var imageResourceConverter = new ImageResourceConverter();
 

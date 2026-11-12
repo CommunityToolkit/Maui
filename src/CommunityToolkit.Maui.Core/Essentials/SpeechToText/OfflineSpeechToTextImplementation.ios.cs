@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.Versioning;
-using AVFoundation;
+using Microsoft.Maui.Dispatching;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
@@ -9,25 +7,17 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class OfflineSpeechToTextImplementation
 {
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest))]
-	[SupportedOSPlatform("ios13.0")]
-	[SupportedOSPlatform("maccatalyst")]
-	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
+	[MemberNotNull(nameof(liveSpeechRequest))]
+	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
-		if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
-		{
-			throw new NotSupportedException("Offline listening is supported on iOS 13 and later");
-		}
-
 		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 		speechRecognizer.SupportsOnDeviceRecognition = true;
 
 		if (!speechRecognizer.Available)
 		{
-			throw new ArgumentException("Speech recognizer is not available");
+			throw new InvalidOperationException("Speech recognizer is not available");
 		}
 
-		audioEngine = new AVAudioEngine();
 		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest()
 		{
 			ShouldReportPartialResults = options.ShouldReportPartialResults,
@@ -37,50 +27,44 @@ public sealed partial class OfflineSpeechToTextImplementation
 		InitializeAvAudioSession(out _);
 
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
 
 		if (error is not null)
 		{
-			throw new ArgumentException("Error starting audio engine - " + error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
-		var currentIndex = 0;
-		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
+		token.ThrowIfCancellationRequested();
+
+		var recognizer = speechRecognizer;
+		var request = liveSpeechRequest;
+		IDispatcherTimer timer;
+		try
 		{
-			if (err is not null)
-			{
-				InternalStopListening();
-				OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception(err.LocalizedDescription)));
-			}
-			else
-			{
-				if (result.Final)
-				{
-					currentIndex = 0;
-					InternalStopListening();
-					OnRecognitionResultCompleted(SpeechToTextResult.Success(result.BestTranscription.FormattedString));
-				}
-				else
-				{
-					if (currentIndex <= 0)
-					{
-						OnSpeechToTextStateChanged(CurrentState);
-					}
+			timer = await CreateSilenceTimer(options, token);
+		}
+		catch (OperationCanceledException) when (!ReferenceEquals(recognizer, speechRecognizer))
+		{
+			// A stop released this start while it waited, so cancelling its token afterwards is not a failure of the start: the failure handling
+			// of StartListenAsync would stop the recognition of a newer start
+			return;
+		}
 
-					for (var i = currentIndex; i < result.BestTranscription.Segments.Length; i++)
-					{
-						var s = result.BestTranscription.Segments[i].Substring;
-						currentIndex++;
-						OnRecognitionResultUpdated(s);
-					}
-				}
-			}
-		});
+		// Off the main thread the start waits here for the main thread, and a stop meanwhile releases what the start created. The released start
+		// ends without a recognition and without an exception, so that the failure handling of StartListenAsync stops nothing, and its timer
+		// must not stop a newer recognition when it elapses
+		if (!ReferenceEquals(recognizer, speechRecognizer))
+		{
+			timer.Tick -= OnSilenceTimerTick;
+			timer.Stop();
+			return;
+		}
 
-		return Task.CompletedTask;
+		silenceTimer = timer;
+		recognitionTask = CreateSpeechRecognizerTask(recognizer, request);
 	}
 }

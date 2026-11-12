@@ -9,6 +9,18 @@ public static partial class StatusBar
 	/// Method to change the color of the status bar.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> that will be set to the status bar.</param>
+	/// <remarks>
+	/// <para>
+	/// iOS: the color is a view at the top of every window of the app, in front of the window's other views; touches go through it to the views below
+	/// it. The view covers the status bar of the window's scene, or the window's top safe area after <c>SetBarSize(true)</c>, and keeps covering it when
+	/// the window rotates or its width changes: in landscape, where an iPhone hides its status bar, the view has no height.
+	/// </para>
+	/// <para>
+	/// iOS 26 and later: because the view is in front of the navigation bar too, it cuts off the Liquid Glass of a pressed navigation bar button where
+	/// the glass grows above the navigation bar, flat at the bottom edge of the status bar area. With a <see langword="null"/> or transparent color the
+	/// navigation bar's own background fills the status bar area. On a page with a navigation bar, leave the color transparent on iOS.
+	/// </para>
+	/// </remarks>
 	public static void SetColor(Color? color) =>
 		PlatformSetColor(color ?? Colors.Transparent);
 
@@ -16,6 +28,18 @@ public static partial class StatusBar
 	/// Method to change the style of the status bar.
 	/// </summary>
 	/// <param name="statusBarStyle"> The <see cref="StatusBarStyle"/> that will used by status bar.</param>
+	/// <remarks>
+	/// <para>
+	/// iOS: sets <c>Window.StatusBarTheme</c> of every window that the app has at the time of the call, and the view controllers of .NET MAUI return
+	/// the matching style: <see cref="StatusBarStyle.LightContent"/> sets <c>StatusBarTheme.Dark</c>, <see cref="StatusBarStyle.DarkContent"/> sets
+	/// <c>StatusBarTheme.Light</c> and <see cref="StatusBarStyle.Default"/> sets <c>StatusBarTheme.Default</c>. A window that opens later keeps its
+	/// own <c>StatusBarTheme</c>. Setting the theme needs <c>UseMauiCommunityToolkit()</c> in MauiProgram.cs. UIKit applies the theme only when the
+	/// app's Info.plist does not set <c>UIViewControllerBasedStatusBarAppearance</c> to false; then, without <c>UseMauiCommunityToolkit()</c>, the
+	/// call only writes a trace message. With false the call also sets the style of the whole app with UIApplication.SetStatusBarStyle: UIKit applies
+	/// it in an app built with an iOS SDK before 27.0. In an app built with a later SDK the status bar keeps its style and the call writes a trace
+	/// message: remove the key. Call it on the main thread.
+	/// </para>
+	/// </remarks>
 	public static void SetStyle(StatusBarStyle statusBarStyle) =>
 		PlatformSetStyle(statusBarStyle);
 }

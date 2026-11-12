@@ -6,20 +6,9 @@ using View = Microsoft.Maui.Controls.View;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new View())
+public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, VisualElement>(new ImageTouchBehavior(), new MockView())
 {
 	readonly ImageTouchBehavior imageTouchBehavior = new();
-
-	protected override void Dispose(bool isDisposing)
-	{
-		base.Dispose(isDisposing);
-
-		imageTouchBehavior.Dispose();
-
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
-		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
-	}
 
 	[Fact]
 	public void VerifyDefaults()
@@ -36,11 +25,11 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 	}
 
 	[Fact]
-	public void VerifyCanOnlyBeAttachedToIImageText()
+	public void VerifyCanOnlyBeAttachedToSupportedImages()
 	{
 		InvalidOperationException? exception = null;
 
-		var view = new View();
+		var view = new MockView();
 
 		try
 		{
@@ -60,6 +49,13 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		AttachTouchBehaviorToVisualElement(image);
 
 		Assert.Single(image.Behaviors.OfType<ImageTouchBehavior>());
+
+		var imageButton = new ImageButton();
+		using var imageButtonBehavior = new ImageTouchBehavior();
+		imageButton.Behaviors.Add(imageButtonBehavior);
+		imageButtonBehavior.Element = imageButton;
+
+		Assert.Single(imageButton.Behaviors.OfType<ImageTouchBehavior>());
 		Assert.NotNull(exception);
 	}
 
@@ -311,6 +307,45 @@ public class ImageTouchBehaviorTests() : BaseBehaviorTest<ImageTouchBehavior, Vi
 		// Verify Default Aspect appears when neither active
 		imageTouchBehavior.HandleHover(HoverStatus.Exited);
 		Assert.Equal(imageTouchBehavior.DefaultImageAspect, image.Aspect);
+	}
+
+	// A binding that resolves later sets the image sources after the behavior is attached.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VerifyImageSourcesSetAfterTheAttachShowTheSameAspectBeforeAndAfterATouch(bool isImageButton)
+	{
+		VisualElement view = isImageButton ? new ImageButton { Aspect = Aspect.Fill } : new Image { Aspect = Aspect.Fill };
+		AttachTouchBehaviorToVisualElement(view);
+
+		imageTouchBehavior.DefaultImageSource = new FileImageSource { File = "default.png" };
+		imageTouchBehavior.PressedImageSource = new FileImageSource { File = "pressed.png" };
+
+		Assert.Same(imageTouchBehavior.DefaultImageSource, GetSource(view));
+		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, GetAspect(view));
+
+		imageTouchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Same(imageTouchBehavior.PressedImageSource, GetSource(view));
+		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, GetAspect(view));
+
+		imageTouchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Same(imageTouchBehavior.DefaultImageSource, GetSource(view));
+		Assert.Equal(ImageTouchBehaviorDefaults.DefaultBackgroundImageAspect, GetAspect(view));
+
+		static ImageSource? GetSource(VisualElement view) => view is ImageButton imageButton ? imageButton.Source : ((Image)view).Source;
+
+		static Aspect GetAspect(VisualElement view) => view is ImageButton imageButton ? imageButton.Aspect : ((Image)view).Aspect;
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+
+		imageTouchBehavior.Dispose();
+
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleTouch(TouchStatus.Canceled));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => imageTouchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
 	}
 
 	void AttachTouchBehaviorToVisualElement(in VisualElement element)

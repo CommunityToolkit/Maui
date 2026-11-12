@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 {
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedToEventArgsExtensions_WasPreviousPageACommunityToolkitPopupPage_ShouldReturnTrue()
 	{
 		// Arrange
@@ -29,7 +29,7 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(shell, null, shellParameters, TestContext.Current.CancellationToken);
-		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task;
+		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(wasPreviousPageACommunityToolkitPopupPage);
@@ -38,12 +38,13 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 		{
 			if (e.PreviousPage != mainPage)
 			{
+				shellContentPage.NavigatedToEventArgsReceived -= HandleNavigatedToEventArgsReceived;
 				wasPreviousPageACommunityToolkitPopupPageTCS.SetResult(e.WasPreviousPageACommunityToolkitPopupPage());
 			}
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedToEventArgsExtensions_WasPreviousPageACommunityToolkitPopupPage_ShouldReturnFalse()
 	{
 		// Arrange
@@ -57,7 +58,7 @@ public class NavigatedToEventArgsExtensionsTests : BaseViewTest
 
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
-		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task;
+		var wasPreviousPageACommunityToolkitPopupPage = await wasPreviousPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.False(wasPreviousPageACommunityToolkitPopupPage);

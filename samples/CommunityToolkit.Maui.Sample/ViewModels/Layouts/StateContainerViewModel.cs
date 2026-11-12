@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Layouts;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
@@ -16,6 +17,9 @@ public partial class StateContainerViewModel : BaseViewModel
 
 	[ObservableProperty]
 	public partial string? NotFoundState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NotFoundStateExceptionMessage { get; set; }
 
 	[ObservableProperty]
 	public partial string? FullPageState { get; set; }
@@ -56,11 +60,23 @@ public partial class StateContainerViewModel : BaseViewModel
 	};
 
 	[RelayCommand]
-	void ToggleNotFoundState() => NotFoundState = NotFoundState switch
+	void ToggleNotFoundState()
 	{
-		StateKey.NotFound => null,
-		_ => StateKey.NotFound
-	};
+		try
+		{
+			NotFoundState = NotFoundState switch
+			{
+				StateKey.NotFound => null,
+				_ => StateKey.NotFound
+			};
+		}
+		catch (StateContainerException e)
+		{
+			// No StateView has the StateKey NotFound: the binding to StateContainer.CurrentState throws, and the layout keeps its default content
+			NotFoundState = null;
+			NotFoundStateExceptionMessage = $"{nameof(StateContainerException)}: {e.Message}";
+		}
+	}
 
 	[RelayCommand(CanExecute = nameof(CanFullPageStateChange))]
 	void ToggleFullPageState() => FullPageState = FullPageState switch

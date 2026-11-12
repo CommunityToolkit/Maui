@@ -17,9 +17,12 @@ public class PopupService : IPopupService
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
 	[ActivatorUtilitiesConstructor]
 	public PopupService(IServiceProvider serviceProvider)
 	{
+		ArgumentNullException.ThrowIfNull(serviceProvider);
+
 		this.serviceProvider = serviceProvider;
 	}
 
@@ -46,7 +49,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(navigation);
 
-		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		var popupContent = GetPopupContent<T>();
 
 		navigation.ShowPopup(popupContent, options);
 	}
@@ -57,7 +60,7 @@ public class PopupService : IPopupService
 	{
 		ArgumentNullException.ThrowIfNull(shell);
 
-		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		var popupContent = GetPopupContent<T>();
 		shell.ShowPopup(popupContent, options, shellParameters);
 	}
 
@@ -77,7 +80,7 @@ public class PopupService : IPopupService
 
 		token.ThrowIfCancellationRequested();
 
-		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		var popupContent = GetPopupContent<T>();
 
 		return navigation.ShowPopupAsync(popupContent, options, token);
 	}
@@ -89,7 +92,7 @@ public class PopupService : IPopupService
 
 		token.ThrowIfCancellationRequested();
 
-		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		var popupContent = GetPopupContent<T>();
 
 		return shell.ShowPopupAsync(popupContent, options, shellParameters, token);
 	}
@@ -111,7 +114,7 @@ public class PopupService : IPopupService
 		ArgumentNullException.ThrowIfNull(navigation);
 
 		token.ThrowIfCancellationRequested();
-		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		var popupContent = GetPopupContent<T>();
 
 		return navigation.ShowPopupAsync<TResult>(popupContent, options, token);
 	}
@@ -122,7 +125,7 @@ public class PopupService : IPopupService
 		ArgumentNullException.ThrowIfNull(shell);
 
 		token.ThrowIfCancellationRequested();
-		var popupContent = GetPopupContent(serviceProvider.GetRequiredService<T>());
+		var popupContent = GetPopupContent<T>();
 
 		return shell.ShowPopupAsync<TResult>(popupContent, options, shellParameters, token);
 	}
@@ -178,16 +181,19 @@ public class PopupService : IPopupService
 		services.TryAdd(new ServiceDescriptor(typeof(TPopupViewModel), typeof(TPopupViewModel), lifetime));
 	}
 
-	View GetPopupContent<T>(T bindingContext)
+	View GetPopupContent<T>()
 	{
+		if (viewModelToViewMappings.TryGetValue(typeof(T), out var viewType)
+			&& serviceProvider.GetRequiredService(viewType) is View content)
+		{
+			return content;
+		}
+
+		var bindingContext = serviceProvider.GetRequiredService(typeof(T));
+
 		if (bindingContext is View view)
 		{
 			return view;
-		}
-
-		if (serviceProvider.GetRequiredService(viewModelToViewMappings[typeof(T)]) is View content)
-		{
-			return content;
 		}
 
 		throw new InvalidOperationException($"Could not locate {typeof(T).FullName}");

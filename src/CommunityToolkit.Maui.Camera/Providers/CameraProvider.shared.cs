@@ -16,11 +16,6 @@ sealed partial class CameraProvider : ICameraProvider
 		remove => availableCamerasChangedEventManager.RemoveEventHandler(value);
 	}
 
-	public void Dispose()
-	{
-		refreshAvailableCamerasSemaphore.Dispose();
-	}
-
 	/// <inheritdoc/>
 	public IReadOnlyList<CameraInfo>? AvailableCameras
 	{
@@ -35,24 +30,35 @@ sealed partial class CameraProvider : ICameraProvider
 		}
 	}
 
+	public void Dispose()
+	{
+		refreshAvailableCamerasSemaphore.Dispose();
+	}
+
 	/// <inheritdoc/>
 	public async Task RefreshAvailableCameras(CancellationToken token)
 	{
+		Task refreshTask;
+
 		await refreshAvailableCamerasSemaphore.WaitAsync(token);
 
 		try
 		{
 			if (refreshAvailableCamerasTask is null || refreshAvailableCamerasTask.IsCompleted)
 			{
-				refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(token).AsTask();
+				// Every caller that arrives while this refresh runs shares it, so the token of the first caller must not cancel it:
+				// each caller's token only cancels that caller's wait below
+				refreshAvailableCamerasTask = PlatformRefreshAvailableCameras(CancellationToken.None).AsTask();
 			}
+
+			refreshTask = refreshAvailableCamerasTask;
 		}
 		finally
 		{
 			refreshAvailableCamerasSemaphore.Release();
 		}
 
-		await refreshAvailableCamerasTask.WaitAsync(token);
+		await refreshTask.WaitAsync(token);
 	}
 
 	internal static bool AreCameraInfoListsEqual(in IReadOnlyList<CameraInfo>? cameraInfoList1, in IReadOnlyList<CameraInfo>? cameraInfoList2)

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Extensions;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 
@@ -6,9 +7,22 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentViewModel>
 {
+	const double defaultPopupSize = 100;
+
 	public PopupLayoutAlignmentPage(PopupLayoutAlignmentViewModel popupLayoutViewModel) : base(popupLayoutViewModel)
 	{
 		InitializeComponent();
+	}
+
+	static double GetPopupSize(Entry sizeEntry)
+	{
+		if (double.TryParse(sizeEntry.Text, out var size) && double.IsFinite(size) && size > 0)
+		{
+			return size;
+		}
+
+		sizeEntry.Text = defaultPopupSize.ToString(CultureInfo.CurrentCulture);
+		return defaultPopupSize;
 	}
 
 	void ShowPopupButtonClicked(object? sender, EventArgs? e)
@@ -54,8 +68,8 @@ public partial class PopupLayoutAlignmentPage : BasePage<PopupLayoutAlignmentVie
 			VerticalOptions = verticalOptions,
 			HorizontalOptions = horizontalOptions,
 			Padding = 0,
-			WidthRequest = double.Parse(widthEntry.Text),
-			HeightRequest = double.Parse(heightEntry.Text)
+			WidthRequest = GetPopupSize(widthEntry),
+			HeightRequest = GetPopupSize(heightEntry)
 		}, new PopupOptions
 		{
 			Shape = null

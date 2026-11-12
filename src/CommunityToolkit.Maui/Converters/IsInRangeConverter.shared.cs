@@ -31,7 +31,7 @@ public abstract partial class IsInRangeConverter<[DynamicallyAccessedMembers(Dyn
 
 	/// <summary>Converts an object that implemented IComparable to a <see cref="bool"/> based on the object being within a <see cref="MinValue"/> and <see cref="MaxValue"/> range.</summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="culture">(Not Used)</param>
+	/// <param name="culture">The culture used to compare <see cref="string"/> values. When <see langword="null"/>, <see cref="CultureInfo.CurrentCulture"/> is used. Values of other types are compared without regard to culture.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if value is between <see cref="MinValue"/> and <see cref="MaxValue"/> returns true, otherwise the value assigned to <see cref="FalseObject"/>.</returns>
 	public override object ConvertFrom(TValue value, CultureInfo? culture)
 	{
@@ -50,12 +50,12 @@ public abstract partial class IsInRangeConverter<[DynamicallyAccessedMembers(Dyn
 		bool shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 		if (MaxValue is null)
 		{
-			return EvaluateCondition(value.CompareTo(MinValue) >= 0, shouldReturnObjectResult);
+			return EvaluateCondition(CultureAwareComparison.Compare(value, MinValue, culture) >= 0, shouldReturnObjectResult);
 		}
 
 		return MinValue is null
-			? EvaluateCondition(value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult)
-			: EvaluateCondition(value.CompareTo(MinValue) >= 0 && value.CompareTo(MaxValue) <= 0, shouldReturnObjectResult);
+			? EvaluateCondition(CultureAwareComparison.Compare(value, MaxValue, culture) <= 0, shouldReturnObjectResult)
+			: EvaluateCondition(CultureAwareComparison.Compare(value, MinValue, culture) >= 0 && CultureAwareComparison.Compare(value, MaxValue, culture) <= 0, shouldReturnObjectResult);
 	}
 
 	/// <summary>Evaluates a condition based on the given comparison result and returns an object.</summary>

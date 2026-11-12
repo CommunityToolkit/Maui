@@ -13,7 +13,39 @@ public abstract class BaseViewTest : BaseTest
 		ServiceProvider = serviceProvider;
 	}
 
+	public enum RootPageType
+	{
+		Shell,
+		ContentPage,
+		NavigationPage
+	}
+
 	protected IServiceProvider ServiceProvider { get; }
+
+	protected static INavigation SetRootPage(RootPageType rootPageType)
+	{
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+
+		switch (rootPageType)
+		{
+			case RootPageType.Shell:
+				var shell = new Shell();
+				shell.Items.Add(new ContentPage());
+				window.Page = shell;
+				return shell.Navigation;
+
+			case RootPageType.ContentPage:
+				window.Page = new ContentPage();
+				return window.Page.Navigation;
+
+			case RootPageType.NavigationPage:
+				window.Page = new NavigationPage(new ContentPage());
+				return window.Page.Navigation;
+
+			default:
+				throw new NotSupportedException($"{rootPageType} is not supported");
+		}
+	}
 
 	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()
@@ -61,6 +93,8 @@ public abstract class BaseViewTest : BaseTest
 		appBuilder.Services.AddTransientPopup<LongLivedSelfClosingPopup, LongLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<ShortLivedSelfClosingPopup, ShortLivedMockPageViewModel>();
 		appBuilder.Services.AddTransientPopup<GarbageCollectionHeavySelfClosingPopup, MockPageViewModel>();
+		appBuilder.Services.AddTransientPopup<SingleConstructionPopup, SingleConstructionViewModel>();
+		appBuilder.Services.AddTransientPopup<CustomButton>();
 
 		appBuilder.Services.AddTransientPopup<MockPopup>();
 		#endregion
@@ -72,7 +106,7 @@ public abstract class BaseViewTest : BaseTest
 		shell.Items.Add(new ContentPage());
 
 		var application = (MockApplication)mauiApp.Services.GetRequiredService<IApplication>();
-		application.AddWindow(new Window { Page = shell });
+		application.OpenWindow(new Window { Page = shell });
 
 		IPlatformApplication.Current = application;
 
@@ -81,4 +115,6 @@ public abstract class BaseViewTest : BaseTest
 
 		CreateViewHandler<MockPageHandler>(shell);
 	}
+
+	protected sealed class CustomButton : Button;
 }
