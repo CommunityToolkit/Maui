@@ -17,16 +17,22 @@ public partial class ImpliedOrderGridBehavior : BaseBehavior<Grid>
 	public bool ThrowOnLayoutWarning { get; set; }
 
 	/// <inheritdoc />
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(Grid bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
 		bindable.ChildAdded += OnInternalGridChildAdded;
 	}
 
 	/// <inheritdoc />
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(Grid bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachingFrom(bindable);
 
 		bindable.ChildAdded -= OnInternalGridChildAdded;

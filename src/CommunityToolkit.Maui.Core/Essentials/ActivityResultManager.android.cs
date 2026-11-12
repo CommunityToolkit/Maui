@@ -51,7 +51,11 @@ static class ActivityResultManager
 
 		// Keys must be unique per in-flight launch, otherwise a second launch would clobber the first.
 		var key = $"{nameof(CommunityToolkit)}.{nameof(Maui)}.{requestCode}.{Guid.NewGuid():N}";
-		var pendingRequest = new PendingRequest(key, onResult, token);
+		var pendingRequest = new PendingRequest(key, onResult, token)
+		{
+			RequesterType = activity.GetType(),
+			RequesterTaskId = activity.TaskId
+		};
 
 		lock (pendingRequestsLock)
 		{
@@ -73,6 +77,33 @@ static class ActivityResultManager
 		return pendingRequest.Task;
 	}
 
+	// Internal for the device tests, which raise lifecycle events in an order that they choose or for activities that the framework never
+	// runs: .NET MAUI creates ActivityStateChangedEventArgs in internal code only.
+	internal static void HandleActivityStateChanged(Android.App.Activity changedActivity, ActivityState state)
+	{
+		if (changedActivity is not ComponentActivity activity)
+		{
+			return;
+		}
+
+		var requests = GetPendingRequests();
+
+		switch (state)
+		{
+			case ActivityState.Created:
+				RegisterPendingRequests(activity, requests);
+				break;
+			case ActivityState.Destroyed:
+				// Android delivers the result to the activity that started the request, so a request whose activity is destroyed without
+				// finishing waits for that activity's new instance (Created) instead of moving to another activity
+				foreach (var request in requests)
+				{
+					request.Detach(activity, activity.IsFinishing);
+				}
+				break;
+		}
+	}
+
 	static PendingRequest[] GetPendingRequests()
 	{
 		lock (pendingRequestsLock)
@@ -81,35 +112,7 @@ static class ActivityResultManager
 		}
 	}
 
-	static void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
-	{
-		if (e.Activity is not ComponentActivity activity)
-		{
-			return;
-		}
-
-		var requests = GetPendingRequests();
-
-		switch (e.State)
-		{
-			case ActivityState.Created:
-				RegisterPendingRequests(activity, requests);
-				break;
-			case ActivityState.Destroyed:
-				foreach (var request in requests)
-				{
-					request.Detach(activity, activity.IsFinishing);
-				}
-
-				if (!activity.IsFinishing
-					&& MauiPlatform.CurrentActivity is ComponentActivity currentActivity
-					&& !ReferenceEquals(activity, currentActivity))
-				{
-					RegisterPendingRequests(currentActivity, requests);
-				}
-				break;
-		}
-	}
+	static void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e) => HandleActivityStateChanged(e.Activity, e.State);
 
 	static void RegisterPendingRequests(ComponentActivity activity, IEnumerable<PendingRequest> requests)
 	{
@@ -117,7 +120,11 @@ static class ActivityResultManager
 		{
 			try
 			{
-				request.Register(activity);
+				// Another activity that is created before the new instance of the requester must not take its request
+				if (request.IsRequester(activity))
+				{
+					request.Register(activity);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -173,6 +180,15 @@ static class ActivityResultManager
 		public string Key { get; }
 
 		public Task<Intent> Task => taskCompletionSource.Task;
+
+		// Android delivers the result to the activity that started the request, or to its new instance when the system recreates it
+		public Type? RequesterType { get; init; }
+
+		public int RequesterTaskId { get; init; }
+
+		// A new instance of the requester has the same type and task
+		public bool IsRequester(ComponentActivity activity) =>
+			RequesterType is null || (activity.GetType() == RequesterType && activity.TaskId == RequesterTaskId);
 
 		public void Detach(ComponentActivity activity, bool isFinishing)
 		{

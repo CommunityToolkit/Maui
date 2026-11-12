@@ -13,7 +13,6 @@ on:
             - '*'
 
 env:
-    LATEST_NET_VERSION: '10.0.x'
     PathToCommunityToolkitAnalyzersBenchmarksCsproj: 'src/CommunityToolkit.Maui.Analyzers.Benchmarks/CommunityToolkit.Maui.Analyzers.Benchmarks.csproj'
     PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj: 'src/CommunityToolkit.Maui.SourceGenerators.Benchmarks/CommunityToolkit.Maui.SourceGenerators.Benchmarks.csproj'
 
@@ -29,8 +28,11 @@ jobs:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
             -   name: Install Latest Version of .NET, v${{ env.LATEST_NET_VERSION }}
-                uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
                     dotnet-version: ${{ env.LATEST_NET_VERSION }}
                     dotnet-quality: 'ga'
@@ -39,12 +41,6 @@ jobs:
                 run: |
                     dotnet workload install maui
                     dotnet workload update
-
-            -   name: Install Tizen Workload
-                run: |
-                    Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-                    .\workload-install.ps1
-                shell: pwsh
 
             -   name: Display dotnet info
                 run: dotnet --info
@@ -59,7 +55,7 @@ jobs:
                     dotnet run --no-build --project ${{ env.PathToCommunityToolkitSourceGeneratorsBenchmarksCsproj }} -c Release -- -a "${{ runner.temp }}"
 
             -   name: Publish Benchmarks
-                uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
                     name: Benchmarks
                     path: |

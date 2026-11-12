@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
-using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core.Extensions;
@@ -10,27 +9,12 @@ using PlatformColor = Android.Graphics.Color;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-[SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android 23.0+
 static partial class StatusBar
 {
 	const int statusBarHeightPadding = 3;
 	const string statusBarOverlayTag = "StatusBarOverlay";
 
-	static readonly Lazy<bool> isSupportedHolder = new(() =>
-	{
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
-		{
-			return true;
-		}
-
-		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
-
-		return false;
-	});
-
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
-
-	static bool IsSupported => isSupportedHolder.Value;
 
 	/// <summary>
 	/// Update the status bar size
@@ -43,7 +27,7 @@ static partial class StatusBar
 			return;
 		}
 
-		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+		var statusBarOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 		statusBarOverlay?.LayoutParameters?.Height = GetStatusBarHeight(window) + statusBarHeightPadding;
 	}
 
@@ -72,36 +56,36 @@ static partial class StatusBar
 	[SupportedOSPlatform("android36.0")]
 	static void PlatformSetColor_AndroidApi36AndHigher(Window window, PlatformColor platformColor, ViewGroup decorGroup)
 	{
-		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+		var statusBarOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 
 		if (statusBarOverlay is null)
 		{
 			window.DecorView.Post(() =>
 			{
-				var existingOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+				var existingOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 
 				if (existingOverlay is not null)
 				{
 					existingOverlay.SetBackgroundColor(platformColor);
-					ApplyWindowFlags(window, platformColor);
+					ApplyWindowFlags(window);
 					return;
 				}
 
 				ApplyStatusBarOverlay(window, platformColor, decorGroup);
-				ApplyWindowFlags(window, platformColor);
+				ApplyWindowFlags(window);
 			});
 		}
 		else
 		{
 			statusBarOverlay.SetBackgroundColor(platformColor);
-			ApplyWindowFlags(window, platformColor);
+			ApplyWindowFlags(window);
 		}
 	}
 
 	[SupportedOSPlatform("android35.0"), UnsupportedOSPlatform("android36.0")]
 	static void PlatformSetColor_AndroidApi35(in Window window, in PlatformColor platformColor, in ViewGroup decorGroup)
 	{
-		var statusBarOverlay = decorGroup.FindViewWithTag(statusBarOverlayTag);
+		var statusBarOverlay = decorGroup.FindChildWithTag(statusBarOverlayTag);
 		if (statusBarOverlay is null)
 		{
 			ApplyStatusBarOverlay(window, platformColor, decorGroup);
@@ -111,14 +95,14 @@ static partial class StatusBar
 			statusBarOverlay.SetBackgroundColor(platformColor);
 		}
 
-		ApplyWindowFlags(window, platformColor);
+		ApplyWindowFlags(window);
 	}
 
 	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android35.0")]
 	static void PlatformSetColor_AndroidApiLessThan35(in Window window, in PlatformColor platformColor)
 	{
 		window.SetStatusBarColor(platformColor);
-		ApplyWindowFlags(window, platformColor);
+		ApplyWindowFlags(window);
 	}
 
 	[SupportedOSPlatform("android35.0")]
@@ -140,33 +124,36 @@ static partial class StatusBar
 		statusBarOverlay.SetBackgroundColor(platformColor);
 	}
 
-	static void ApplyWindowFlags(Window window, PlatformColor platformColor)
+	static void ApplyWindowFlags(Window window)
 	{
-		bool isTransparent = platformColor == PlatformColor.Transparent;
-
-		if (isTransparent)
+		if (OperatingSystem.IsAndroidVersionAtLeast(30))
 		{
-			window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-			window.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
+			ApplyAndroidApi30(window);
 		}
 		else
 		{
-			window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-			window.SetFlags(
-				WindowManagerFlags.DrawsSystemBarBackgrounds,
-				WindowManagerFlags.DrawsSystemBarBackgrounds);
+			ApplyAndroidApiLessThan30(window);
 		}
+	}
 
-		WindowCompat.SetDecorFitsSystemWindows(window, !isTransparent);
+	[SupportedOSPlatform("android"), UnsupportedOSPlatform("android30.0")]
+	static void ApplyAndroidApiLessThan30(Window window)
+	{
+		window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+		window.SetFlags(
+			WindowManagerFlags.DrawsSystemBarBackgrounds,
+			WindowManagerFlags.DrawsSystemBarBackgrounds);
+		WindowCompat.SetDecorFitsSystemWindows(window, false);
+	}
+
+	[SupportedOSPlatform("android30.0")]
+	static void ApplyAndroidApi30(Window window)
+	{
+		WindowCompat.SetDecorFitsSystemWindows(window, false);
 	}
 
 	static void PlatformSetStyle(StatusBarStyle style)
 	{
-		if (!IsSupported)
-		{
-			return;
-		}
-
 		switch (style)
 		{
 			case StatusBarStyle.DarkContent:
@@ -194,7 +181,7 @@ static partial class StatusBar
 
 	static bool TryGetWindowAndDecorGroup([NotNullWhen(true)] out Window? window, [NotNullWhen(true)] out ViewGroup? decorGroup)
 	{
-		if (!IsSupported || Activity.GetCurrentWindow() is not Window { DecorView.RootView: not null } currentWindow)
+		if (Activity.GetCurrentWindow() is not Window { DecorView.RootView: not null } currentWindow)
 		{
 			window = null;
 			decorGroup = null;

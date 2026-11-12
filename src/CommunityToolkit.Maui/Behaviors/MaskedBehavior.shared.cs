@@ -6,6 +6,10 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <summary>
 /// The MaskedBehavior is a behavior that allows the user to define an input mask for data entry. Adding this behavior to an <see cref="InputView"/> (i.e. <see cref="Entry"/>) control will force the user to only input values matching a given mask. Examples of its usage include input of a credit card number or a phone number.
 /// </summary>
+/// <remarks>
+/// On iOS and Mac Catalyst the mask is applied while the change of <see cref="InputView.Text"/> is handled, so the text is already masked when the change returns.
+/// On the other platforms the mask is applied right after the change, from the dispatcher of the view.
+/// </remarks>
 public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 {
 	readonly SemaphoreSlim applyMaskSemaphoreSlim = new(1, 1);
@@ -59,13 +63,16 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	}
 
 	/// <inheritdoc />
-	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="e"/> is <see langword="null"/>.</exception>
+	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			await OnTextPropertyChanged(CancellationToken.None);
+			HandleTextPropertyChanged();
 		}
 	}
 
@@ -85,12 +92,23 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask, CancellationToken.None).ConfigureAwait(false);
 	}
 
+	// An async void method reports a null argument through the synchronization context instead of to its caller, so the overrides validate their arguments before they call it
+	async void HandleTextPropertyChanged() => await OnTextPropertyChanged(CancellationToken.None);
+
 	Task OnTextPropertyChanged(CancellationToken token)
 	{
+#if IOS || MACCATALYST
+		// UIKit delivers the keystrokes that are still pending inside the setter of UITextField.Text and then stores the value it was given,
+		// so a mask written later, from the dispatcher, dropped the characters typed in between: the mask must reach the UITextField before
+		// UIKit handles the next keystroke. The masked text that ApplyMask writes raises this handler again only after the current change
+		// completes (.NET MAUI defers setting a property while that property is being set), when ApplyMask has already released its semaphore.
+		return ApplyMask(View?.Text, token);
+#else
 		// Android does not play well when we update the Text inside the TextChanged event. 
 		// Therefore, if we dispatch the mechanism of updating the Text property it solves the issue of the caret position being updated incorrectly.
 		// https://github.com/CommunityToolkit/Maui/issues/460
 		return View?.Dispatcher.DispatchAsync(() => ApplyMask(View?.Text, token)) ?? Task.CompletedTask;
+#endif
 	}
 
 	void SetMaskPositions(in string? mask)

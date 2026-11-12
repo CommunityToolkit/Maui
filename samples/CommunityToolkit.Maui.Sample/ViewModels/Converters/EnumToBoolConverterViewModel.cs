@@ -7,7 +7,6 @@ public enum MyDevicePlatform
 	Android,
 	iOS,
 	MacCatalyst,
-	Tizen,
 	WinUI,
 }
 public partial class EnumToBoolConverterViewModel : BaseViewModel
