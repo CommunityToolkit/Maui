@@ -511,38 +511,6 @@ public partial class NavigationBarTests
 	}
 
 	[Fact]
-	public async Task ColorBeforeAndroid6DoesNothing()
-	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(23), "Needs an Android 5 (API 21-22) device: NavigationBar.IsSupported is false only there, and the pools have API 28 and 36.");
-		SetupBuilder();
-		await ResetNativeStateAsync();
-		var page = CreatePage();
-		NavigationBar.SetColor(page, Colors.Red);
-
-		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
-
-		await AssertNavigationBarUntouchedAsync();
-	}
-
-	// NavigationBar.IsSupported is false only on Android 5 (API 21-22), which no pool device runs (see the skipped tests), so these tests switch
-	// the support flag off (UnsupportedAndroidVersion) to run the guard arm of the mapping.
-	[Fact]
-	public async Task ColorIsNotAppliedWhileTheNavigationBarIsMarkedUnsupported()
-	{
-		SetupBuilder();
-		await ResetNativeStateAsync();
-		var page = CreatePage();
-		NavigationBar.SetColor(page, Colors.Red);
-
-		using (UnsupportedAndroidVersion.ForNavigationBar())
-		{
-			await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
-		}
-
-		await AssertNavigationBarUntouchedAsync();
-	}
-
-	[Fact]
 	public async Task ColorIsShownInTheVisibleDialogOnly()
 	{
 		SetupBuilder();
@@ -705,36 +673,6 @@ public partial class NavigationBarTests
 		await InvokeOnMainThreadAsync(() => NavigationBar.MapNavigationStyleProperty(CreatePageHandlerWithActivityWrapperContext(), page));
 
 		await AssertNavigationBarStyleAsync(NavigationBarStyle.DarkContent);
-	}
-
-	[Fact]
-	public async Task StyleBeforeAndroid6DoesNothing()
-	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(23), "Needs an Android 5 (API 21-22) device: NavigationBar.IsSupported is false only there, and the pools have API 28 and 36.");
-		SetupBuilder();
-		await ResetNativeStateAsync();
-		var page = CreatePage();
-		NavigationBar.SetStyle(page, NavigationBarStyle.DarkContent);
-
-		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
-
-		await AssertNavigationBarStyleAsync(NavigationBarStyle.Default);
-	}
-
-	[Fact]
-	public async Task StyleIsNotAppliedWhileTheNavigationBarIsMarkedUnsupported()
-	{
-		SetupBuilder();
-		await ResetNativeStateAsync();
-		var page = CreatePage();
-		NavigationBar.SetStyle(page, NavigationBarStyle.DarkContent);
-
-		using (UnsupportedAndroidVersion.ForNavigationBar())
-		{
-			await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
-		}
-
-		await AssertNavigationBarStyleAsync(NavigationBarStyle.Default);
 	}
 
 	// The window had no light icons before NavigationBar's first change, which is also what the Default style applies:

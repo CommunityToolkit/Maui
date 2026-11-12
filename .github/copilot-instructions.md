@@ -19,10 +19,15 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using Xamarin.Forms-specific code unless there is a direct .NET MAUI equivalent.
 * Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
+### .NET and .NET MAUI Versions
+* The libraries pin the first .NET and .NET MAUI release of each major version (for example the .NET 11.0.100 SDK and `MauiPackageVersion` 11.0.0 in `Directory.Build.props`), so apps can use any later release.
+* Raise a pinned version only when a bug fix or a feature requires it.
+* The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
+
 ### C# File Naming
 * Platform-suffix naming is required for files in projects that produce NuGet packages.
 * Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
-* For package-producing projects, C# files must use one of these patterns: `*.shared.cs`, `*.net.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`, `*.android.cs`, `*.windows.cs`, `*.tizen.cs`.
+* For package-producing projects, C# files must use one of these patterns: `*.shared.cs`, `*.net.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs`, `*.android.cs`, `*.windows.cs`.
 * Projects that do not produce NuGet packages (for example samples, tests, analyzers, and benchmarks) should keep standard `*.cs` naming, ignoring generated patterns like `*.xaml.cs` and `*.Designer.cs`.
 
 ## Best Practices
@@ -33,6 +38,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Write comments only to explain **why** (a non-intuitive decision, a platform quirk or workaround, code that looks out of scope); never to explain **what** the code does. Use descriptive names instead.
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
+* Code that reads or formats with **CurrentCulture** or takes a **CultureInfo** must be tested in Turkish (tr-TR, az-Latn-AZ) and the other notorious cultures; see `.github/instructions/culture.instructions.md`.
 
 ### Element Positioning (enforced as build warnings)
 StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **build warnings** via `.editorconfig`. Always write new and modified C# code in the correct order so no warnings are introduced:
@@ -195,8 +201,8 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime
 Read and follow our [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md)
 
 ## Device Tests
-* Platform code that the `net10.0` unit tests cannot reach is covered by device tests that run inside real apps on Android, iOS, Mac Catalyst and Windows, built like dotnet/maui's device tests (xUnit, dotnet/maui's test runner, XHarness).
-* There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and `.Maps`).
+* Platform code that the `net11.0` unit tests cannot reach is covered by device tests that run inside real apps on Android, iOS, Mac Catalyst and Windows, built like dotnet/maui's device tests (xUnit, dotnet/maui's test runner, XHarness).
+* There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`).
 * Give every test class a `[Category(TestCategory.X)]` and name platform-specific test files with the same suffixes as the libraries (`.android.cs`, `.ios.cs`, `.macos.cs`, `.macios.cs`, `.windows.cs`). How to write them is in [src/CommunityToolkit.Maui.DeviceTests/README.md](https://github.com/CommunityToolkit/Maui/blob/main/src/CommunityToolkit.Maui.DeviceTests/README.md).
 * `dotnet test` does not run them. Use `eng/devices/run.ps1`, which runs every platform the machine can run and is the command of the `Device Tests` workflow on every pull request (one `-Platform` per job), or one platform's script (`android.ps1`, `ios.ps1`, `catalyst.ps1` or `windows.ps1`), as described in [eng/devices/LOCAL.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/LOCAL.md) and [eng/devices/README.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/README.md).
 

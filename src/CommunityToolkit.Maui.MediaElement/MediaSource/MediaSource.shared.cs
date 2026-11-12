@@ -79,9 +79,6 @@ public abstract class MediaSource : Element
 	/// played again after <see cref="MediaElement.Stop"/>, and a seek that needs another part of the stream raises
 	/// <see cref="MediaElement.MediaFailed"/>.
 	/// </para>
-	/// <para>
-	/// Not supported on Tizen: setting the source throws <see cref="NotSupportedException"/>.
-	/// </para>
 	/// </remarks>
 	public static StreamMediaSource FromStream(Stream stream) => new StreamMediaSource { Stream = stream };
 

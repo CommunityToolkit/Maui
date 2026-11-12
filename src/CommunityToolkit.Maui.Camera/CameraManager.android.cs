@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
@@ -65,7 +64,6 @@ public class CameraConsumer : Object, IConsumer
 		}
 	}
 }
-[SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
 	const string cameraPermissionNotGrantedMessage = "Camera permission is not granted. Please enable it in the app settings.";

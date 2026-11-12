@@ -59,7 +59,7 @@ public partial class DrawingViewHandler
 	}
 }
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, MauiDrawingView>, IDrawingViewHandler
 {
 

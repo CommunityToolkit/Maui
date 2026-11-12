@@ -32,13 +32,13 @@ public sealed class MediaSourceConverter : TypeConverter
 
 		var valueAsStringLowercase = valueAsString.ToLowerInvariant();
 
-		if (valueAsStringLowercase.StartsWith(embeddedResourcePrefix))
+		if (valueAsStringLowercase.StartsWith(embeddedResourcePrefix, StringComparison.Ordinal))
 		{
 			return MediaSource.FromResource(
 				valueAsString[embeddedResourcePrefix.Length..]);
 		}
 
-		if (valueAsStringLowercase.StartsWith(fileSystemPrefix))
+		if (valueAsStringLowercase.StartsWith(fileSystemPrefix, StringComparison.Ordinal))
 		{
 			return MediaSource.FromFile(valueAsString[fileSystemPrefix.Length..]);
 		}

@@ -114,7 +114,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			Assert.Equal(0f, player.Rate);
 
 			// Play() and the playback controls still start at the last positive Speed: a default rate of 0 would not start playback at all.
-			if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				Assert.Equal(1f, player.DefaultRate);
 			}
@@ -152,7 +152,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 	[Fact]
 	public async Task SpeedUpdatesBeforeAutoPlayLeaveTheStartToTheAutoPlay()
 	{
-		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16), "AVPlayer.DefaultRate needs iOS 16 or Mac Catalyst 16.");
+		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(16), "AVPlayer.DefaultRate needs iOS 16.");
 		SetupApple();
 		var mediaElement = CreateMediaElement();
 		mediaElement.Speed = 2;
@@ -388,7 +388,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			Assert.Equal(MediaElementState.Paused, mediaElement.CurrentState);
 
 			// The default rate that the playback controls start at is not set to 0: it stays AVPlayer's own default of 1.
-			if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				Assert.Equal(1f, player.DefaultRate);
 			}
