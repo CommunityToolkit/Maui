@@ -22,7 +22,7 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
     <PackageReference Include="xunit.v3" Version="4.0.3" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
-    <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="2.5.2" />
+    <PackageReference Include="Microsoft.Testing.Extensions.GitHubActionsReport" Version="2.5.3" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="2.5.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(CodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.4" />
