@@ -1,4 +1,4 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
+﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
 global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
@@ -6,8 +6,6 @@ global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
 global using PlatformMediaElement = AVFoundation.AVPlayer;
 #elif WINDOWS
 global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElement;
-#elif TIZEN
-global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
 
 using Microsoft.Extensions.Logging;
@@ -64,7 +62,7 @@ public partial class MediaManager
 	protected ILogger Logger { get; }
 
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 	/// <summary>
 	/// The platform-specific media player.
 	/// </summary>
@@ -266,7 +264,7 @@ public partial class MediaManager
 	}
 }
 
-#if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
+#if !(WINDOWS || ANDROID || IOS || MACCATALYST)
 partial class MediaManager
 {
 	protected virtual partial Task PlatformSeek(TimeSpan position, CancellationToken token)

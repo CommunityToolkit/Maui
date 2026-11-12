@@ -252,9 +252,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		var requestsCancellation = animationSource?.IsCancellationRequested is false;
 		var cancellation = animationSource?.CancelAsync();
 
-		// Before anything can yield: a later state change that overtakes this one must not have its new animations aborted here.
-		// The token only cancels the waits for the animations (MAUI 10's animations take no token), the element has to stop them. Only the
-		// behavior's own animations are stopped: an animation the app runs on the element is left alone.
+		// Before anything can yield: a later state change that overtakes this one must not have its new animations aborted here. The token only cancels
+		// the waits for the animations, the element has to stop them. Only the behavior's own animations are stopped: an animation the app runs on the
+		// element is left alone.
 		animations?.Abort();
 
 		await (cancellation?.WaitAsync(token) ?? Task.CompletedTask);
@@ -615,11 +615,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#if NET11_0_OR_GREATER
 		var animation = TrackAnimation(nameof(ViewExtensions.FadeToAsync), element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
-#else
-		var animation = TrackAnimation(nameof(ViewExtensions.FadeToAsync), element.FadeToAsync(updatedOpacity.Value, (uint)Abs(duration.TotalMilliseconds), easing));
-#endif
 		return await animation.WaitAsync(token);
 	}
 
@@ -777,11 +773,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#if NET11_0_OR_GREATER
 		var animation = TrackAnimation(nameof(ViewExtensions.TranslateToAsync), element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
-#else
-		var animation = TrackAnimation(nameof(ViewExtensions.TranslateToAsync), element.TranslateToAsync(updatedTranslationX.Value, updatedTranslationY.Value, (uint)Abs(duration.TotalMilliseconds), easing));
-#endif
 		return await animation.WaitAsync(token);
 	}
 
@@ -842,11 +834,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#if NET11_0_OR_GREATER
 		var animation = TrackAnimation(nameof(ViewExtensions.RotateToAsync), element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
-#else
-		var animation = TrackAnimation(nameof(ViewExtensions.RotateToAsync), element.RotateToAsync(updatedRotation.Value, (uint)Abs(duration.TotalMilliseconds), easing));
-#endif
 		return await animation.WaitAsync(token);
 	}
 
@@ -907,11 +895,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#if NET11_0_OR_GREATER
 		var animation = TrackAnimation(nameof(ViewExtensions.RotateXToAsync), element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
-#else
-		var animation = TrackAnimation(nameof(ViewExtensions.RotateXToAsync), element.RotateXToAsync(updatedRotationX.Value, (uint)Abs(duration.TotalMilliseconds), easing));
-#endif
 		return await animation.WaitAsync(token);
 	}
 
@@ -972,11 +956,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return true;
 		}
 
-#if NET11_0_OR_GREATER
 		var animation = TrackAnimation(nameof(ViewExtensions.RotateYToAsync), element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing, CancellationToken.None));
-#else
-		var animation = TrackAnimation(nameof(ViewExtensions.RotateYToAsync), element.RotateYToAsync(updatedRotationY.Value, (uint)Abs(duration.TotalMilliseconds), easing));
-#endif
 		return await animation.WaitAsync(token);
 	}
 

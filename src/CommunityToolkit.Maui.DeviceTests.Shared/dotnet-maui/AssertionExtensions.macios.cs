@@ -1,6 +1,7 @@
 // Ported from dotnet/maui @ 2067dd42c6032fbc40d2e46245806679a85df5e6
 // Original path: src/TestUtils/src/DeviceTests/AssertionExtensions.iOS.cs
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
+// Toolkit change: GetKeyWindow drops the pre-iOS 15 UIApplication.Windows fallback, which cannot run at the iOS 15 minimum.
 // Toolkit change: namespace changed from Microsoft.Maui.DeviceTests to CommunityToolkit.Maui.DeviceTests; file renamed to the toolkit's .macios.cs suffix.
 // Toolkit change: subset that uses public MAUI API only: focus helpers, AttachAndRun, bitmap and color assertions. The keyboard,
 //                 accessibility, navigation-bar and tab-bar helpers (internal MAUI API) were dropped and the internal
@@ -522,41 +523,27 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		static UIWindow? GetKeyWindow(UIApplication application)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(15))
+			foreach (var scene in application.ConnectedScenes)
 			{
-				foreach (var scene in application.ConnectedScenes)
+				if (scene is UIWindowScene windowScene
+					&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
 				{
-					if (scene is UIWindowScene windowScene
-						&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
+					foreach (var window in windowScene.Windows)
 					{
-						foreach (var window in windowScene.Windows)
-						{
 #if MACCATALYST
-							// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
-							// Added an env variable to accommodate for this and just return the first window found.
-							if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
-							{
-								return window;
-							}
+						// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
+						// Added an env variable to accommodate for this and just return the first window found.
+						if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
+						{
+							return window;
+						}
 #endif
-							if (window.IsKeyWindow)
-							{
-								return window;
-							}
+						if (window.IsKeyWindow)
+						{
+							return window;
 						}
 					}
 				}
-
-				return null;
-			}
-
-			var windows = application.Windows;
-
-			for (int i = 0; i < windows.Length; i++)
-			{
-				var window = windows[i];
-				if (window.IsKeyWindow)
-					return window;
 			}
 
 			return null;

@@ -15,22 +15,12 @@ partial class CameraProvider
 		[
 			AVCaptureDeviceType.BuiltInWideAngleCamera,
 			AVCaptureDeviceType.BuiltInTelephotoCamera,
-			AVCaptureDeviceType.BuiltInDualCamera
+			AVCaptureDeviceType.BuiltInDualCamera,
+			AVCaptureDeviceType.BuiltInTrueDepthCamera,
+			AVCaptureDeviceType.BuiltInUltraWideCamera,
+			AVCaptureDeviceType.BuiltInTripleCamera,
+			AVCaptureDeviceType.BuiltInDualWideCamera
 		];
-
-		if (UIDevice.CurrentDevice.CheckSystemVersion(11, 1))
-		{
-			deviceTypes = [.. deviceTypes,
-				AVCaptureDeviceType.BuiltInTrueDepthCamera];
-		}
-
-		if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
-		{
-			deviceTypes = [.. deviceTypes,
-				AVCaptureDeviceType.BuiltInUltraWideCamera,
-				AVCaptureDeviceType.BuiltInTripleCamera,
-				AVCaptureDeviceType.BuiltInDualWideCamera];
-		}
 
 		if (UIDevice.CurrentDevice.CheckSystemVersion(15, 4))
 		{
