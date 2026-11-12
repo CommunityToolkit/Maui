@@ -24,7 +24,8 @@
     </ContentPage.Resources>
     <pages:BasePage.Content>
         <Grid RowDefinitions="Auto, Auto, Auto, Auto, *"
-              ColumnDefinitions="Auto, Auto">
+              ColumnDefinitions="Auto, *"
+              ColumnSpacing="12">
 
             <Label Text="The IndexToArrayItemConverter is a converter that allows users to convert a int value binding to an item in an array. The int value being data bound represents the indexer used to access the array. The array is passed in through the ConverterParameter."
                    VerticalOptions="Fill"
@@ -39,7 +40,7 @@
 
             <Stepper x:Name="Stepper" 
                      Minimum="0" 
-                     Maximum="8"
+                     Maximum="7"
                      Value="{Binding SelectedIndex, TargetNullValue=0}"
                      Increment="1"
                      Grid.Column="0"

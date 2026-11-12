@@ -17,7 +17,7 @@
 			Spacing="20"
 			VerticalOptions="Fill">
 
-            <Label Text="The SelectAllTextBehavior is an effect that will select all text in an Entry / Editor when it becomes focused. Useful applications for this effect would be custom url address bars, a copy paste button etc." />
+            <Label Text="The SelectAllTextBehavior is a behavior that selects all text in an Entry / Editor when it becomes focused. Useful applications for this behavior would be custom url address bars, a copy paste button etc." />
 
             <Label FontAttributes="Bold" Text="Entry without the Behavior"/>
             <Label FontAttributes="Italic" Text="When focused no text will be selected" />

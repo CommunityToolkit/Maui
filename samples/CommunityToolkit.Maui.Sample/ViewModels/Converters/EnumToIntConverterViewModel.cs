@@ -2,14 +2,6 @@
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public partial class EnumToIntConverterViewModel : BaseViewModel
-{
-	[ObservableProperty]
-	public partial IssueState SelectedState { get; set; } = IssueState.None;
-
-	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames<IssueState>();
-}
-
 public enum IssueState
 {
 	None = 0,
@@ -20,4 +12,11 @@ public enum IssueState
 	WantFix = 5,
 	Rejected = 6,
 	Resolved = 7
+}
+public partial class EnumToIntConverterViewModel : BaseViewModel
+{
+	[ObservableProperty]
+	public partial IssueState SelectedState { get; set; } = IssueState.None;
+
+	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames<IssueState>();
 }

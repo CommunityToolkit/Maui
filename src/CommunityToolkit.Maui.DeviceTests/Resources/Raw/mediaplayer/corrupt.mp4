@@ -1,0 +1,1 @@
+This file is deliberately not a media container: the MediaElement Windows device tests use it to provoke MediaFailed.

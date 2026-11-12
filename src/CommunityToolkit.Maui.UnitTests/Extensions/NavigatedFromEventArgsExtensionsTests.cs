@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions;
 
 public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 {
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedFromEventArgsExtensions_IsDestinationPageACommunityToolkitPopupPage_ShouldReturnTrue()
 	{
 		// Arrange
@@ -29,18 +29,19 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 		// Act
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		await popupService.ShowPopupAsync<ShortLivedMockPageViewModel>(shell, null, shellParameters, TestContext.Current.CancellationToken);
-		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task;
+		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(isDestinationPageACommunityToolkitPopupPage);
 
 		void HandleNavigatedFromEventArgsReceived(object? sender, NavigatedFromEventArgs e)
 		{
+			shellContentPage.NavigatedFromEventArgsReceived -= HandleNavigatedFromEventArgsReceived;
 			isDestinationPageACommunityToolkitPopupPageTCS.SetResult(e.IsDestinationPageACommunityToolkitPopupPage());
 		}
 	}
 
-	[Fact]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task NavigatedFromEventArgsExtensions_IsDestinationPageACommunityToolkitPopupPage_ShouldReturnFalse()
 	{
 		// Arrange
@@ -58,7 +59,7 @@ public class NavigatedFromEventArgsExtensionsTests : BaseViewTest
 		await mainPage.Navigation.PushAsync(shellContentPage);
 		//push a new content page on top to make sure the navigation handler doesn't think we're navigating to a popup page
 		await mainPage.Navigation.PushAsync(newShellContentPage);
-		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task;
+		var isDestinationPageACommunityToolkitPopupPage = await isDestinationPageACommunityToolkitPopupPageTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.False(isDestinationPageACommunityToolkitPopupPage);

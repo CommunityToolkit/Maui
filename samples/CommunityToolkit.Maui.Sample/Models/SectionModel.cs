@@ -15,6 +15,14 @@ public sealed class SectionModel
 		Color = color;
 	}
 
+	public Type ViewModelType { get; }
+
+	public string Title { get; }
+
+	public string Description { get; }
+
+	public Color Color { get; }
+
 	// Factory pattern using constrained generic to ensure TViewModel inherits from BaseViewModel
 	public static SectionModel Create<TViewModel>(in string title, in string description) where TViewModel : BaseViewModel
  		=> Create<TViewModel>(title, new Color(), description);
@@ -24,12 +32,4 @@ public sealed class SectionModel
 	{
 		return new SectionModel(typeof(TViewModel), title, color, description);
 	}
-
-	public Type ViewModelType { get; }
-
-	public string Title { get; }
-
-	public string Description { get; }
-
-	public Color Color { get; }
 }

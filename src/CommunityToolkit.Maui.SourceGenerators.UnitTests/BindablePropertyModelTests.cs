@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Maui.SourceGenerators.Models;
 using CommunityToolkit.Maui.SourceGenerators.UnitTests;
 using Microsoft.CodeAnalysis;
@@ -30,7 +31,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
 			false,
-			"null"
+			"null",
+			null
 		);
 
 		// Act
@@ -74,7 +76,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibility
 			hasInitializer,
-			propertyAccessibility
+			propertyAccessibility,
+			null
 		);
 
 		// Assert
@@ -135,7 +138,8 @@ public class BindablePropertyModelTests : BaseTest
 			true, // IsReadOnlyBindableProperty
 			string.Empty, // SetterAccessibilityText
 			false,
-			"public"
+			"public",
+			null
 		);
 
 		var bindableProperties = new[] { bindableProperty }.ToImmutableArray();
@@ -147,21 +151,6 @@ public class BindablePropertyModelTests : BaseTest
 		Assert.Equal(classInfo, semanticValues.ClassInformation);
 		Assert.Equal(bindableProperties, semanticValues.BindableProperties);
 		Assert.Single(semanticValues.BindableProperties);
-	}
-
-	static Compilation CreateCompilation(string source)
-	{
-		var syntaxTree = CSharpSyntaxTree.ParseText(source);
-		var references = new[]
-		{
-			MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-		};
-
-		return CSharpCompilation.Create(
-			"TestAssembly",
-			[syntaxTree],
-			references,
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 	}
 
 	[Fact]
@@ -194,7 +183,8 @@ public class BindablePropertyModelTests : BaseTest
 			true,
 			string.Empty,
 			hasInitializer,
-			"public"
+			"public",
+			null
 		);
 
 		// Act
@@ -234,7 +224,8 @@ public class BindablePropertyModelTests : BaseTest
 			true,
 			string.Empty,
 			hasInitializer,
-			"public"
+			"public",
+			null
 		);
 
 		// Act
@@ -242,5 +233,47 @@ public class BindablePropertyModelTests : BaseTest
 
 		// Assert
 		Assert.Equal("CreateTextDefaultValue", effectiveDefaultValueCreatorMethodName);
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void BindablePropertyKeyName_IsCultureInvariant(string cultureName)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			// The generators run inside the app developer's compiler, so a Turkish machine must not turn "IsBusy" into "ısBusyPropertyKey".
+			CultureInfo.CurrentCulture = new CultureInfo(cultureName);
+
+			var compilation = CreateCompilation("public class TestClass { public bool IsBusy { get; set; } }");
+			var typeSymbol = compilation.GetTypeByMetadataName("TestClass") ?? throw new InvalidOperationException("TestClass was not found");
+			var propertySymbol = typeSymbol.GetMembers("IsBusy").OfType<IPropertySymbol>().First();
+
+			var model = new BindablePropertyModel("IsBusy", propertySymbol.Type, typeSymbol, "Microsoft.Maui.Controls.BindingMode.OneWay", "null", "null", "null", "null", "null", string.Empty, true, string.Empty, false, "public", null);
+			var attachedModel = new AttachedBindablePropertyModel("IsBusy", propertySymbol.Type, typeSymbol, "null", "Microsoft.Maui.Controls.BindingMode.OneWay", "null", "null", "null", "null", "null", null, null, "public", false, null, null, null, true);
+
+			Assert.Equal("isBusyPropertyKey", model.BindablePropertyKeyName);
+			Assert.Equal("isBusyPropertyKey", attachedModel.BindablePropertyKeyName);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
+	}
+
+	static Compilation CreateCompilation(string source)
+	{
+		var syntaxTree = CSharpSyntaxTree.ParseText(source);
+		var references = new[]
+		{
+			MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+		};
+
+		return CSharpCompilation.Create(
+			"TestAssembly",
+			[syntaxTree],
+			references,
+			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 	}
 }

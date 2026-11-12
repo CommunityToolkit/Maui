@@ -1,34 +1,33 @@
 using System.ComponentModel;
 using CommunityToolkit.Maui.Core;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using ILineHeightElement = Microsoft.Maui.Controls.ILineHeightElement;
 
 namespace CommunityToolkit.Maui.Views;
 
 /// <summary>AvatarView control.</summary>
-public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElement, ITextElement, IImageElement, ITextAlignmentElement, ILineHeightElement, ICornerElement
+/// <remarks>
+/// AvatarView changes the defaults of these <see cref="Border"/> and <see cref="View"/> properties: <see cref="VisualElement.WidthRequest"/> and
+/// <see cref="VisualElement.HeightRequest"/> are 48, <see cref="Border.Padding"/> is 1, <see cref="Border.Stroke"/> is white,
+/// <see cref="Border.StrokeThickness"/> is 1, <see cref="Border.StrokeShape"/> is a <see cref="RoundRectangle"/> with a corner radius of 24, and
+/// <see cref="View.HorizontalOptions"/> and <see cref="View.VerticalOptions"/> are <see cref="LayoutOptions.Center"/>. Any value given to one of these
+/// properties replaces its default, whether it comes from a local assignment, a binding, a <see cref="Style"/> (explicit or implicit), a trigger or a
+/// visual state, and the default comes back when that value is removed.
+/// </remarks>
+public partial class AvatarView : Border, IAvatarView
 {
-	/// <summary>The backing store for the <see cref="IFontElement.FontAttributes" /> bindable property.</summary>
-	public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+	static readonly BindableProperty[] propertiesWithAvatarViewDefaults =
+	[
+		HorizontalOptionsProperty,
+		VerticalOptionsProperty,
+		HeightRequestProperty,
+		WidthRequestProperty,
+		PaddingProperty,
+		StrokeProperty,
+		StrokeThicknessProperty,
+		StrokeShapeProperty,
+	];
 
-	/// <summary>The backing store for the <see cref="IFontElement.FontAutoScalingEnabled" /> bindable property.</summary>
-	public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
-
-	/// <summary>The backing store for the <see cref="IFontElement.FontFamily" /> bindable property.</summary>
-	public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
-
-	/// <summary>The backing store for the <see cref="IFontElement.FontSize" /> bindable property.</summary>
-	public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
-
-	/// <summary>The backing store for the <see cref="ITextStyle.TextColor" /> bindable property.</summary>
-	public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
-
-	/// <summary>The backing store for the <see cref="TextTransform" /> bindable property.</summary>
-	public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
-
-
-	readonly Image avatarImage = new()
+	readonly AvatarImage avatarImage = new()
 	{
 		Aspect = Aspect.AspectFill,
 	};
@@ -40,7 +39,10 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		Text = AvatarViewDefaults.Text,
 	};
 
+	RoundRectangle? defaultStrokeShape;
 	bool wasImageLoading;
+	bool currentLoadSucceeded;
+	ImageSource? sourceAwaitingImageLayout;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AvatarView"/> class.
@@ -49,78 +51,55 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	{
 		PropertyChanged += HandlePropertyChanged;
 
-		IsEnabled = true;
-		HorizontalOptions = VerticalOptions = LayoutOptions.Center;
-		HeightRequest = AvatarViewDefaults.HeightRequest;
-		WidthRequest = AvatarViewDefaults.WidthRequest;
-		Padding = AvatarViewDefaults.Padding;
-		Stroke = AvatarViewDefaults.BorderColor;
-		StrokeThickness = AvatarViewDefaults.BorderWidth;
-		StrokeShape = new RoundRectangle
+		foreach (var property in propertiesWithAvatarViewDefaults)
 		{
-			CornerRadius = new CornerRadius(AvatarViewDefaults.CornerRadius.TopLeft, AvatarViewDefaults.CornerRadius.TopRight, AvatarViewDefaults.CornerRadius.BottomLeft, AvatarViewDefaults.CornerRadius.BottomRight),
-		};
+			SetAvatarViewDefault(property);
+		}
+
 		Content = avatarLabel;
 		avatarImage.SetBinding(WidthRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.WidthRequest, source: this));
 		avatarImage.SetBinding(HeightRequestProperty, BindingBase.Create<VisualElement, double>(static p => p.HeightRequest, source: this));
+		avatarImage.SourceLoadStarted += HandleImageSourceLoadStarted;
+		avatarImage.SourceLoaded += HandleImageSourceLoaded;
+		avatarImage.SourceFailedToLoad += HandleImageSourceFailedToLoad;
+		avatarImage.SizeChanged += HandleImageSizeChanged;
 	}
 
 	/// <summary>
 	/// Gets or sets the control font.
 	/// </summary>
-	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontElement.FontSizeProperty.DefaultValue);
+	public Microsoft.Maui.Font Font { get; set; } = Microsoft.Maui.Font.SystemFontOfSize((double)FontSizeProperty.DefaultValue);
 
 	/// <summary>
 	/// Gets or sets a value of the control text character spacing property.
 	/// </summary>
-	public double CharacterSpacing
-	{
-		get => (double)GetValue(TextElement.CharacterSpacingProperty);
-		set => SetValue(TextElement.CharacterSpacingProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnCharacterSpacingPropertyChanged))]
+	public partial double CharacterSpacing { get; set; }
 
 	/// <summary>Gets or sets a value of the control font attributes property.</summary>
-	public FontAttributes FontAttributes
-	{
-		get => (FontAttributes)GetValue(FontElement.FontAttributesProperty);
-		set => SetValue(FontElement.FontAttributesProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontAttributesBindablePropertyChanged))]
+	public partial FontAttributes FontAttributes { get; set; } = FontAttributes.None;
 
-	/// <summary>Gets or sets a value indicating whether control font auto scaling enabled property.</summary>
-	public bool FontAutoScalingEnabled
-	{
-		get => (bool)GetValue(FontElement.FontAutoScalingEnabledProperty);
-		set => SetValue(FontElement.FontAutoScalingEnabledProperty, value);
-	}
+	/// <summary>Gets or sets a value indicating whether control font auto-scaling enabled property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontAutoScalingEnabledPropertyChanged))]
+	public partial bool FontAutoScalingEnabled { get; set; } = true;
 
 	/// <summary>Gets or sets a value of the control font family property.</summary>
-	public string FontFamily
-	{
-		get => (string)GetValue(FontElement.FontFamilyProperty);
-		set => SetValue(FontElement.FontFamilyProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontFamilyPropertyChanged))]
+	public partial string? FontFamily { get; set; }
 
 	/// <summary>Gets or sets a value of the control font size property.</summary>
 	[TypeConverter(typeof(FontSizeConverter))]
-	public double FontSize
-	{
-		get => (double)GetValue(FontElement.FontSizeProperty);
-		set => SetValue(FontElement.FontSizeProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnFontSizePropertyChanged))]
+	public partial double FontSize { get; set; } = -1d;
 
 	/// <summary>Gets or sets a value of the control text colour property.</summary>
-	public Color TextColor
-	{
-		get => (Color)GetValue(TextElement.TextColorProperty);
-		set => SetValue(TextElement.TextColorProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextColorPropertyChanged))]
+	public partial Color TextColor { get; set; }
 
-	/// <inheritdoc/>
-	public TextTransform TextTransform
-	{
-		get => (TextTransform)GetValue(TextElement.TextTransformProperty);
-		set => SetValue(TextElement.TextTransformProperty, value);
-	}
+	/// <summary>Gets or sets a value of the control text transform property.</summary>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnTextTransformPropertyChanged))]
+	public partial TextTransform TextTransform { get; set; } = TextTransform.Default;
 
 	/// <summary>Gets or sets a value of the control border colour.</summary>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnBorderColorPropertyChanged))]
@@ -135,12 +114,21 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	/// <summary>
 	/// Gets or sets a value of the control corner radius property.
 	/// </summary>
+	/// <remarks>
+	/// A negative radius is drawn by the <see cref="RoundRectangle"/> geometry of .NET MAUI, which gives notched shapes. Use radii of 0 or more.
+	/// </remarks>
 	[BindableProperty(PropertyChangedMethodName = nameof(OnCornerRadiusPropertyChanged))]
 	public partial CornerRadius CornerRadius { get; set; } = AvatarViewDefaults.CornerRadius;
 
 	/// <summary>
 	/// Gets or sets a value of the control image source property.
 	/// </summary>
+	/// <remarks>
+	/// While an image source is set, the control shows the image instead of its <see cref="Text"/>. When the image source is empty (its
+	/// <see cref="Microsoft.Maui.Controls.ImageSource.IsEmpty"/> is <see langword="true"/>, for example a <see cref="UriImageSource"/> without a
+	/// <see cref="UriImageSource.Uri"/>) or fails to load (for example a URL that cannot be reached), the control shows its <see cref="Text"/>
+	/// again, until the image source is not empty and loads, or another image source is set.
+	/// </remarks>
 	[TypeConverter(typeof(ImageSourceConverter))]
 	[BindableProperty(PropertyChangedMethodName = nameof(OnImageSourcePropertyChanged))]
 	public partial ImageSource? ImageSource { get; set; }
@@ -151,112 +139,24 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 	[BindableProperty(PropertyChangedMethodName = nameof(OnTextPropertyChanged))]
 	public partial string Text { get; set; } = AvatarViewDefaults.Text;
 
-	Aspect Microsoft.Maui.IImage.Aspect => ((IImageElement)this).Aspect;
+	Aspect Microsoft.Maui.IImage.Aspect => avatarImage.Aspect;
 
-	Aspect IImageElement.Aspect => avatarImage.Aspect;
+	TextAlignment ITextAlignment.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
 
-	Color IBorderElement.BorderColorDefaultValue => AvatarViewDefaults.BorderColor;
+	bool IImageSource.IsEmpty => avatarImage.Source is null || avatarImage.Source.IsEmpty;
 
-	double IBorderElement.BorderWidthDefaultValue => AvatarViewDefaults.BorderWidth;
+	bool IImageSourcePart.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
 
-	int IBorderElement.CornerRadius => (int)GetAverageCorderRadius(CornerRadius);
+	bool Microsoft.Maui.IImage.IsOpaque => avatarImage.IsOpaque;
 
-	int IBorderElement.CornerRadiusDefaultValue => (int)GetAverageCorderRadius(AvatarViewDefaults.CornerRadius);
-
-	TextAlignment ITextAlignment.HorizontalTextAlignment => ((ITextAlignmentElement)this).HorizontalTextAlignment;
-
-	TextAlignment ITextAlignmentElement.HorizontalTextAlignment => avatarLabel.HorizontalTextAlignment;
-
-	bool IImageElement.IsAnimationPlaying => avatarImage.IsAnimationPlaying;
-
-	bool IImageSourcePart.IsAnimationPlaying => ((IImageElement)this).IsAnimationPlaying;
-
-	bool IImageSource.IsEmpty => avatarImage.Source is null;
-
-	bool IImageElement.IsLoading => avatarImage.IsLoading;
-
-	bool Microsoft.Maui.IImage.IsOpaque => ((IImageElement)this).IsOpaque;
-
-	bool IImageElement.IsOpaque => avatarImage.IsOpaque;
-
-	double ILabel.LineHeight => ((ILineHeightElement)this).LineHeight;
-
-	double ILineHeightElement.LineHeight => avatarLabel.LineHeight;
+	double ILabel.LineHeight => avatarLabel.LineHeight;
 
 	IImageSource? IImageSourcePart.Source => ImageSource;
 
-	ImageSource IImageElement.Source => avatarImage.Source;
-
-	TextAlignment ITextAlignment.VerticalTextAlignment => ((ITextAlignmentElement)this).VerticalTextAlignment;
-
-	TextAlignment ITextAlignmentElement.VerticalTextAlignment => avatarLabel.VerticalTextAlignment;
+	TextAlignment ITextAlignment.VerticalTextAlignment => avatarLabel.VerticalTextAlignment;
 
 	TextDecorations ILabel.TextDecorations => avatarLabel.TextDecorations;
 
-	double IFontElement.FontSizeDefaultValueCreator() => this.GetDefaultFontSize();
-
-	bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
-
-	bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
-
-	bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
-
-	bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
-
-	bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
-
-	void IBorderElement.OnBorderColorPropertyChanged(Color oldValue, Color newValue) => Stroke = newValue;
-
-	void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
-	{
-		InvalidateMeasure();
-		avatarLabel.CharacterSpacing = newValue;
-	}
-
-	void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontAttributes = newValue;
-	}
-
-	void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontAutoScalingEnabled = newValue;
-	}
-
-	void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontFamily = newValue;
-	}
-
-	void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
-	{
-		HandleFontChanged();
-		avatarLabel.FontSize = newValue;
-	}
-
-	void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue) =>
-		((ITextAlignmentElement)avatarLabel).OnHorizontalTextAlignmentPropertyChanged(oldValue, newValue);
-
-	void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
-		((IImageElement)avatarImage).OnImageSourceSourceChanged(sender, e);
-
-	void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
-		((ILineHeightElement)avatarLabel).OnLineHeightChanged(oldValue, newValue);
-
-	void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue) => avatarLabel.TextColor = newValue;
-
-	void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
-	{
-		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		avatarLabel.TextTransform = newValue;
-	}
-
-	void IImageElement.RaiseImageSourcePropertyChanged() => ((IImageElement)avatarImage).RaiseImageSourcePropertyChanged();
-
-	string ITextElement.UpdateFormsText(string original, TextTransform transform) => TextTransformUtilities.GetTransformedText(original, transform);
 
 	void IImageSourcePart.UpdateIsLoading(bool isLoading)
 	{
@@ -268,25 +168,75 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		wasImageLoading = isLoading;
 	}
 
-	static double GetAverageCorderRadius(in CornerRadius cornerRadius) =>
-		new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomLeft, cornerRadius.BottomRight }.Average();
+	/// <inheritdoc/>
+	protected override void OnBindingContextChanged()
+	{
+		base.OnBindingContextChanged();
+
+		// The image is the Content only while it shows: after a failed load the text replaces it, and an Element out of the tree loses the
+		// BindingContext it inherits, and with it the bindings of its ImageSource (the Email of a GravatarImageSource, for example).
+		avatarImage.BindingContext = BindingContext;
+	}
+
+	static void OnCharacterSpacingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnCharacterSpacingChanged((double)oldValue, (double)newValue);
+	}
+
+	static void OnFontAttributesBindablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue);
+	}
+
+	static void OnFontAutoScalingEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontAutoScalingEnabledChanged((bool)oldValue, (bool)newValue);
+	}
+
+	static void OnFontFamilyPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontFamilyChanged(oldValue as string, newValue as string);
+	}
+
+	static void OnFontSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.OnFontSizeChanged((double)oldValue, (double)newValue);
+	}
+
+	static void OnTextColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.avatarLabel.TextColor = (Color?)newValue;
+	}
+
+	static void OnTextTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var avatarView = (AvatarView)bindable;
+		avatarView.InvalidateMeasure();
+		avatarView.avatarLabel.TextTransform = (TextTransform)newValue;
+	}
 
 	static void OnBorderColorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.Stroke = (Color)newValue;
 	}
 
 	static void OnBorderWidthPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.StrokeThickness = (double)newValue;
 	}
 
 	static void OnCornerRadiusPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
-		CornerRadius corderRadius = (CornerRadius)newValue;
+		var avatarView = (AvatarView)bindable;
+		var corderRadius = (CornerRadius)newValue;
 
 		avatarView.StrokeShape = new RoundRectangle
 		{
@@ -296,27 +246,67 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 
 	static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.HandleImageChanged((ImageSource?)newValue);
 	}
 
 	static void OnTextPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		AvatarView avatarView = (AvatarView)bindable;
+		var avatarView = (AvatarView)bindable;
 		avatarView.avatarLabel.Text = (string)newValue;
+	}
+
+	void OnCharacterSpacingChanged(double oldValue, double newValue)
+	{
+		InvalidateMeasure();
+		avatarLabel.CharacterSpacing = newValue;
+	}
+
+	void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontAttributes = newValue;
+	}
+
+	void OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontAutoScalingEnabled = newValue;
+	}
+
+	void OnFontFamilyChanged(string? oldValue, string? newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontFamily = newValue;
+	}
+
+	void OnFontSizeChanged(double oldValue, double newValue)
+	{
+		HandleFontChanged();
+		avatarLabel.FontSize = newValue;
 	}
 
 	void HandleFontChanged()
 	{
+		Font = Microsoft.Maui.Font.OfSize(
+			FontFamily,
+			FontSize,
+			FontAttributes.HasFlag(FontAttributes.Bold) ? FontWeight.Bold : FontWeight.Regular,
+			FontAttributes.HasFlag(FontAttributes.Italic) ? FontSlant.Italic : FontSlant.Default,
+			FontAutoScalingEnabled);
 		Handler?.UpdateValue(nameof(ITextStyle.Font));
-		InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		InvalidateMeasure();
 	}
 
 	void HandleImageChanged(ImageSource? newValue)
 	{
+		sourceAwaitingImageLayout = null;
 		avatarImage.Source = newValue;
 		if (newValue is not null)
 		{
+			// An empty source gets the image too: an image that was never the Content has no handler to load the source when it stops being empty
+			// (the Email of a GravatarImageSource, for example), and the text replaces the image once the load is reported and the image is laid out.
+			RefreshAvatarImage();
 			Content = avatarImage;
 		}
 		else
@@ -325,40 +315,199 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 		}
 	}
 
+	void HandleImageSourceLoadStarted(object? sender, EventArgs e)
+	{
+		currentLoadSucceeded = false;
+		sourceAwaitingImageLayout = null;
+	}
+
+	// A failed load can be followed by a successful one without ImageSource being set again: the source itself can change, a UriImageSource's Uri for example.
+	void HandleImageSourceLoaded(object? sender, EventArgs e)
+	{
+		currentLoadSucceeded = true;
+		var loadedSource = avatarImage.Source;
+		PostContentChange(() =>
+		{
+			if (!ReferenceEquals(avatarImage.Source, loadedSource))
+			{
+				return;
+			}
+
+			// iOS, Mac Catalyst and Windows report the load of an empty source as a success, and Android as a failure: the text shows on all of them.
+			if (loadedSource is null || loadedSource.IsEmpty)
+			{
+				ShowTextOnceImageIsLaidOut(loadedSource);
+			}
+			else if (ReferenceEquals(Content, avatarLabel))
+			{
+				RefreshAvatarImage();
+				Content = avatarImage;
+			}
+		});
+	}
+
+	void HandleImageSourceFailedToLoad(object? sender, EventArgs e)
+	{
+		var failedSource = avatarImage.Source;
+
+		// .NET MAUI reports a failure without its source. Once the current load has succeeded, only a load that another one replaced can still
+		// fail, and .NET MAUI clears the image whichever load failed: the image loads again, instead of the text replacing it.
+		var replacedLoadFailed = currentLoadSucceeded;
+		currentLoadSucceeded = false;
+		PostContentChange(() =>
+		{
+			if (!ReferenceEquals(avatarImage.Source, failedSource) || !ReferenceEquals(Content, avatarImage))
+			{
+				return;
+			}
+
+			if (replacedLoadFailed)
+			{
+				avatarImage.Handler?.UpdateValue(nameof(Image.Source));
+			}
+			else
+			{
+				ShowTextOnceImageIsLaidOut(failedSource);
+			}
+		});
+	}
+
+	// A source can depend on the size of its image: a GravatarImageSource requests its picture only once its Image has a size. An image that
+	// leaves the tree before its first layout never gets one, so a source that fails or is empty at once (offline, or without an Email) would
+	// never load again, whatever changes later. The image stays the Content until it is laid out, and the text replaces it then.
+	void ShowTextOnceImageIsLaidOut(ImageSource? source)
+	{
+		if (avatarImage.Width < 0 || avatarImage.Height < 0)
+		{
+			sourceAwaitingImageLayout = source;
+			return;
+		}
+
+		Content = avatarLabel;
+	}
+
+	void HandleImageSizeChanged(object? sender, EventArgs e)
+	{
+		var awaitingSource = sourceAwaitingImageLayout;
+		if (awaitingSource is null || avatarImage.Width < 0 || avatarImage.Height < 0)
+		{
+			return;
+		}
+
+		// Checked again when the change runs: a load that starts or a source that is set in between clears sourceAwaitingImageLayout, and the text
+		// must not hide the picture of that newer load.
+		PostContentChange(() =>
+		{
+			if (!ReferenceEquals(sourceAwaitingImageLayout, awaitingSource) || !ReferenceEquals(avatarImage.Source, awaitingSource) || !ReferenceEquals(Content, avatarImage))
+			{
+				return;
+			}
+
+			sourceAwaitingImageLayout = null;
+			Content = avatarLabel;
+		});
+	}
+
+	// Posted, never run at once: a load that ends synchronously, such as that of a StreamImageSource whose stream is already there, reports while the
+	// handler of the AvatarView is still mapping the image as its Content (Windows), and that mapping then shows the image whatever Content became.
+	// A change posted for a source that the image no longer has does nothing: setting ImageSource already chose the Content for the new source. A
+	// dispatcher refuses work only while the app shuts down.
+	void PostContentChange(Action changeContent) => _ = Dispatcher.Dispatch(changeContent);
+
+	// Element.SetValueFromRenderer instead of a local value: a local value takes precedence over every Style setter, so no Style could size an AvatarView
+	// or change its stroke, while a value from the handler only stays until another value replaces it.
+	void SetAvatarViewDefault(BindableProperty property)
+	{
+		object defaultValue = property.PropertyName switch
+		{
+			nameof(HorizontalOptions) or nameof(VerticalOptions) => LayoutOptions.Center,
+			nameof(HeightRequest) => AvatarViewDefaults.HeightRequest,
+			nameof(WidthRequest) => AvatarViewDefaults.WidthRequest,
+			nameof(Padding) => AvatarViewDefaults.Padding,
+			// AvatarViewDefaults.BorderColor, as an immutable brush: Border registers a mutable brush with the AvatarView, and does not unregister a brush
+			// from the handler when another value replaces it.
+			nameof(Stroke) => Brush.White,
+			nameof(StrokeThickness) => AvatarViewDefaults.BorderWidth,
+			nameof(StrokeShape) => defaultStrokeShape = new RoundRectangle { CornerRadius = AvatarViewDefaults.CornerRadius },
+			_ => throw new ArgumentOutOfRangeException(nameof(property), property.PropertyName, "AvatarView does not change the default of this property.")
+		};
+
+		SetValueFromRenderer(property, defaultValue);
+	}
+
+	void HandleAvatarViewDefault(string? propertyName)
+	{
+		foreach (var property in propertiesWithAvatarViewDefaults)
+		{
+			if (property.PropertyName == propertyName)
+			{
+				HandleAvatarViewDefault(property);
+				return;
+			}
+		}
+	}
+
+	void HandleAvatarViewDefault(BindableProperty property)
+	{
+		if (property == StrokeShapeProperty && defaultStrokeShape is not null && !ReferenceEquals(StrokeShape, defaultStrokeShape))
+		{
+			// Border removes the previous StrokeShape from its logical children, but it reads that shape once a value from the handler is already
+			// discarded: the default shape would stay a logical child.
+			RemoveLogicalChild(defaultStrokeShape);
+			defaultStrokeShape = null;
+		}
+
+		if (!IsSet(property))
+		{
+			SetAvatarViewDefault(property);
+
+			if (property == StrokeShapeProperty && defaultStrokeShape is not null)
+			{
+				// Border adds the StrokeShape to its logical children when the notification of the removed value ends, after this handler: the default
+				// shape, which SetValueFromRenderer has just added, would be there twice.
+				RemoveLogicalChild(defaultStrokeShape);
+			}
+		}
+	}
+
 	void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius and Padding properties change
-		if ((e.PropertyName == HeightProperty.PropertyName
-			 || e.PropertyName == WidthProperty.PropertyName
-			 || e.PropertyName == PaddingProperty.PropertyName
-			 || e.PropertyName == ImageSourceProperty.PropertyName
-			 || e.PropertyName == BorderWidthProperty.PropertyName
-			 || e.PropertyName == CornerRadiusProperty.PropertyName
-			 || e.PropertyName == StrokeThicknessProperty.PropertyName)
-			&& Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
-			&& Width >= 0 // The default value of Y (before the view is drawn onto the page) is -1
-			&& avatarImage.Source is not null)
+		HandleAvatarViewDefault(e.PropertyName);
 
+		// Ensure avatarImage is clipped to the bounds of the AvatarView whenever its Height, Width, CornerRadius, Border, StrokeThickness, StrokeShape and Padding properties change
+		if (e.PropertyName == HeightProperty.PropertyName
+			|| e.PropertyName == WidthProperty.PropertyName
+			|| e.PropertyName == PaddingProperty.PropertyName
+			|| e.PropertyName == BorderWidthProperty.PropertyName
+			|| e.PropertyName == CornerRadiusProperty.PropertyName
+			|| e.PropertyName == StrokeThicknessProperty.PropertyName
+			|| e.PropertyName == StrokeShapeProperty.PropertyName
+		   )
+		{
+			RefreshAvatarImage();
+		}
+	}
+
+	void RefreshAvatarImage()
+	{
+		if (Height >= 0 // The default value of Height (before the view is drawn onto the page) is -1
+			&& Width >= 0 // The default value of Width (before the view is drawn onto the page) is -1
+			&& avatarImage.Source is not null)
 		{
 			Geometry? avatarImageClipGeometry = null;
-#if WINDOWS
-			double offsetX = 0;
-			double offsetY = 0;
-#else
-			double offsetX = StrokeThickness + Padding.Left;
-			double offsetY = StrokeThickness + Padding.Top;
-#endif
-			double imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
-			double imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
+			var imageWidth = Width - (StrokeThickness * 2) - Padding.Left - Padding.Right;
+			var imageHeight = Height - (StrokeThickness * 2) - Padding.Top - Padding.Bottom;
 			avatarImage.WidthRequest = imageWidth;
 			avatarImage.HeightRequest = imageHeight;
 
 			if (!OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacOS())
 			{
+				// The clip is in the image's own coordinates, and the image is already laid out inside the stroke and the padding:
+				// the clip starts at the image's origin
 				avatarImageClipGeometry = new RoundRectangleGeometry
 				{
 					CornerRadius = CornerRadius,
-					Rect = new(offsetX, offsetY, imageWidth, imageHeight)
+					Rect = new(0, 0, imageWidth, imageHeight)
 				};
 			}
 
@@ -373,5 +522,29 @@ public partial class AvatarView : Border, IAvatarView, IBorderElement, IFontElem
 				_ => avatarImageClipGeometry
 			};
 		}
+	}
+
+	// MAUI's Image has no event for a source that fails to load, and then shows nothing: the image handler reports whether the image source loaded
+	// through IImageSourcePartEvents. Partial for CsWinRT on Windows (CsWinRT1028: Image implements WinRT interfaces).
+	sealed partial class AvatarImage : Image, IImageSourcePartEvents
+	{
+		public event EventHandler? SourceLoadStarted;
+
+		public event EventHandler? SourceLoaded;
+
+		public event EventHandler? SourceFailedToLoad;
+
+		void IImageSourcePartEvents.LoadingStarted() => SourceLoadStarted?.Invoke(this, EventArgs.Empty);
+
+		// Not successful: the load was canceled or replaced by the load of another source, which reports for itself.
+		void IImageSourcePartEvents.LoadingCompleted(bool successful)
+		{
+			if (successful)
+			{
+				SourceLoaded?.Invoke(this, EventArgs.Empty);
+			}
+		}
+
+		void IImageSourcePartEvents.LoadingFailed(Exception exception) => SourceFailedToLoad?.Invoke(this, EventArgs.Empty);
 	}
 }

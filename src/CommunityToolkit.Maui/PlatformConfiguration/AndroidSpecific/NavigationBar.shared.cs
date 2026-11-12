@@ -1,5 +1,4 @@
-﻿using System.Runtime.Versioning;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using MAndroid = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 using MauiElement = Microsoft.Maui.Controls.Page;
 
@@ -8,19 +7,55 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 /// <summary>
 /// Provides platform-specific configuration properties for the Android navigation bar.
 /// </summary>
-[SupportedOSPlatform("Android23.0")]
-[AttachedBindableProperty<Color>("Color", DefaultValueCreatorMethodName = nameof(CreateColorDefaultValue))]
-[AttachedBindableProperty<NavigationBarStyle>("Style", DefaultValue = NavigationBarStyle.Default)]
+/// <remarks>
+/// When a page clears its <see cref="ColorProperty"/> or <see cref="StyleProperty"/> value (<see cref="BindableObject.ClearValue(BindableProperty)"/>),
+/// every window that still shows that value gets back the navigation bar color or appearance it had before <see cref="NavigationBar"/> first changed it.
+/// </remarks>
+[AttachedBindableProperty<NavigationBarStyle>("Style", DefaultValue = NavigationBarStyle.Default, CoerceValueMethodName = nameof(CoerceStyle))]
 public static partial class NavigationBar
 {
+	// Color is declared here instead of with [AttachedBindableProperty<Color>]: the attribute only takes a constant DefaultValue, and a
+	// DefaultValueCreator makes .NET MAUI's BindableObject.IsSet report the color as set as soon as it was read, so the Android page
+	// handler would apply a navigation bar color that the app never set.
+
+	/// <summary>
+	/// Attached BindableProperty for the Color property.
+	/// </summary>
+	public static readonly BindableProperty ColorProperty = BindableProperty.CreateAttached("Color", typeof(Color), typeof(NavigationBar), Color.FromUint(0u), coerceValue: CoerceColor);
+
+	/// <summary>
+	/// Gets Color for the <paramref name = "bindable"/> child element.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Color GetColor(BindableObject bindable)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return (Color)bindable.GetValue(ColorProperty);
+	}
+
+	/// <summary>
+	/// Sets Color for the <paramref name = "bindable"/> child element.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static void SetColor(BindableObject bindable, Color value)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		bindable.SetValue(ColorProperty, value);
+	}
+
 	/// <summary>
 	/// Sets the color of the navigation bar.
 	/// </summary>
 	/// <param name="config">The platform element configuration.</param>
 	/// <param name="value">The color to set.</param>
 	/// <returns>The platform element configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static IPlatformElementConfiguration<MAndroid, MauiElement> SetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config, Color value)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		SetColor(config.Element, value);
 		return config;
 	}
@@ -30,8 +65,11 @@ public static partial class NavigationBar
 	/// </summary>
 	/// <param name="config">The platform element configuration.</param>
 	/// <returns>The color of the navigation bar.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static Color GetColor(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		return GetColor(config.Element);
 	}
 
@@ -41,8 +79,11 @@ public static partial class NavigationBar
 	/// <param name="config">The platform element configuration.</param>
 	/// <param name="value">The style to set.</param>
 	/// <returns>The platform element configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static IPlatformElementConfiguration<MAndroid, MauiElement> SetStyle(this IPlatformElementConfiguration<MAndroid, MauiElement> config, NavigationBarStyle value)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		SetStyle(config.Element, value);
 		return config;
 	}
@@ -52,8 +93,11 @@ public static partial class NavigationBar
 	/// </summary>
 	/// <param name="config">The platform element configuration.</param>
 	/// <returns>The style of the navigation bar.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is <see langword="null"/>.</exception>
 	public static NavigationBarStyle GetStyle(this IPlatformElementConfiguration<MAndroid, MauiElement> config)
 	{
+		ArgumentNullException.ThrowIfNull(config);
+
 		return GetStyle(config.Element);
 	}
 
@@ -66,5 +110,21 @@ public static partial class NavigationBar
 	}
 #endif
 
-	static Color CreateColorDefaultValue(BindableObject bindable) => Color.FromUint(0u);
+	// A page clearing its value is detected in the coerce callbacks: .NET MAUI coerces the value on every SetValue and ClearValue, also when clearing it
+	// changes no value (a value equal to the default) and so raises no PropertyChanged for the page handler's mappings.
+	static object CoerceColor(BindableObject bindable, object value)
+	{
+		RestoreNavigationBarColorIfCleared(bindable);
+		return value;
+	}
+
+	static object CoerceStyle(BindableObject bindable, object value)
+	{
+		RestoreNavigationBarAppearanceIfCleared(bindable);
+		return value;
+	}
+
+	static partial void RestoreNavigationBarColorIfCleared(BindableObject bindable);
+
+	static partial void RestoreNavigationBarAppearanceIfCleared(BindableObject bindable);
 }

@@ -37,9 +37,23 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
 		try
 		{
-			var fileName = Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt");
+			var fileName = await (Application.Current?.Windows[0].Page?.DisplayPromptAsync("FileSaver", "Choose filename") ?? Task.FromResult("test.txt"));
+
+			// DisplayPromptAsync returns null when the prompt is canceled.
+			if (fileName is null)
+			{
+				return;
+			}
+
+			// An empty name names no file: on iOS and Mac Catalyst the save would fail with a misleading "Access to the path ... is denied"
+			if (string.IsNullOrWhiteSpace(fileName))
+			{
+				await Toast.Make("File is not saved, the file name is empty").Show(cancellationToken);
+				return;
+			}
+
 			var initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			var fileLocationResult = await fileSaver.SaveAsync(initialFolder, await fileName, stream, cancellationToken);
+			var fileLocationResult = await fileSaver.SaveAsync(initialFolder, fileName, stream, cancellationToken);
 			fileLocationResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileLocationResult.FilePath}").Show(cancellationToken);
@@ -81,11 +95,18 @@ public partial class FileSaverViewModel(IFileSaver fileSaver) : BaseViewModel
 		using var client = new HttpClient();
 
 		const string communityToolkitNuGetUrl = "https://www.nuget.org/api/v2/package/CommunityToolkit.Maui/5.0.0";
-		await using var stream = await client.GetStreamAsync(communityToolkitNuGetUrl, cancellationToken);
+
+		Progress = 0;
+
 		try
 		{
+			// The whole package is downloaded before the save UI opens: a failed download (no network, for example) is reported like a failed save, and
+			// no network stream is open while the person chooses where to save (a connection left idle that long can end before the file is complete, and
+			// on Android, disposing a stream that was not read to its end reads from the network, which the main thread is not allowed to do)
+			using var stream = new MemoryStream(await client.GetByteArrayAsync(communityToolkitNuGetUrl, cancellationToken));
+
 			var fileSaverInstance = new FileSaverImplementation();
-			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, new Progress<double>(p => Progress = p), cancellationToken);
+			var fileSaverResult = await fileSaverInstance.SaveAsync("communitytoolkit.maui.5.0.0.nupkg", stream, new Progress<double>(percent => Progress = percent / 100), cancellationToken);
 			fileSaverResult.EnsureSuccess();
 
 			await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);

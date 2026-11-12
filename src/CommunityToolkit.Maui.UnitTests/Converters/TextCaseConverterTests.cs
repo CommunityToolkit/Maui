@@ -10,6 +10,8 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	const string test = nameof(test);
 	const string t = nameof(t);
 
+	enum MockEnum { Foo, Bar, Baz }
+
 	public static TheoryData<object?, TextCaseType?, object?> Data { get; } = new()
 	{
 		{
@@ -56,8 +58,6 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		},
 	};
 
-	enum MockEnum { Foo, Bar, Baz }
-
 	[Theory]
 	[InlineData((TextCaseType)int.MinValue)]
 	[InlineData((TextCaseType)(-1))]
@@ -77,6 +77,31 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		Assert.Throws<InvalidEnumArgumentException>(() => ((ICommunityToolkitValueConverter)textCaseConverter).Convert("Hello World", typeof(string), textCaseType, null));
 	}
 
+	[Theory]
+	[InlineData("istanbul", TextCaseType.FirstUpperRestLower, "tr-TR", "İstanbul")]
+	[InlineData("ISTANBUL", TextCaseType.Lower, "tr-TR", "ıstanbul")]
+	[InlineData("istanbul", TextCaseType.Upper, "tr-TR", "İSTANBUL")]
+	[InlineData("ISTANBUL", TextCaseType.Lower, "az-Latn-AZ", "ıstanbul")]
+	[InlineData("istanbul", TextCaseType.Upper, "en-US", "ISTANBUL")]
+	[InlineData("edit", TextCaseType.Upper, "tr-TR", "EDİT")]
+	[InlineData("ılık", TextCaseType.Upper, "tr-TR", "ILIK")]
+	[InlineData("İZMİR", TextCaseType.Lower, "tr-TR", "izmir")]
+	[InlineData("TITLE", TextCaseType.Lower, "az-Latn-AZ", "tıtle")]
+	[InlineData("edit", TextCaseType.Upper, null, "EDIT")]
+	[InlineData("istanbul", TextCaseType.FirstUpperRestLower, null, "Istanbul")]
+	[InlineData("ISTANBUL", TextCaseType.Lower, null, "istanbul")]
+	public void TextCaseConverter_UsesCultureCasingRules(string value, TextCaseType textCaseType, string? cultureName, string expectedResult)
+	{
+		var textCaseConverter = new TextCaseConverter();
+		var culture = cultureName is null ? null : new CultureInfo(cultureName);
+
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value, typeof(string), textCaseType, culture);
+		var convertFromResult = textCaseConverter.ConvertFrom(value, textCaseType, culture);
+
+		Assert.Equal(expectedResult, convertResult);
+		Assert.Equal(expectedResult, convertFromResult);
+	}
+
 	[Fact]
 	public void TextCaseConverterDefaultValues()
 	{
@@ -92,7 +117,7 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 	{
 		var textCaseConverter = new TextCaseConverter();
 
-		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), comparedValue, CultureInfo.InvariantCulture);
 		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString(), comparedValue);
 
 		Assert.Equal(expectedResult, convertResult);
@@ -110,7 +135,7 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 			Type = textCaseType.Value
 		};
 
-		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.CurrentCulture);
+		var convertResult = ((ICommunityToolkitValueConverter)textCaseConverter).Convert(value?.ToString(), typeof(string), null, CultureInfo.InvariantCulture);
 		var convertFromResult = textCaseConverter.ConvertFrom(value?.ToString());
 
 		Assert.Equal(expectedResult, convertResult);
@@ -124,6 +149,16 @@ public class TextCaseConverterTests : BaseOneWayConverterTest<TextCaseConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TextCaseConverter()).Convert(string.Empty, null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new TextCaseConverter()).ConvertBack(string.Empty, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact]
+	public void TextCaseConverter_NullCulture_IgnoresTurkishCurrentCulture()
+	{
+		// A null culture keeps the invariant casing that earlier releases always used, so a Turkish device does not turn "edit" into "EDİT" for direct callers.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo("tr-TR");
+
+		Assert.Equal("EDIT", new TextCaseConverter().ConvertFrom("edit", TextCaseType.Upper, null));
 	}
 
 	record MockItem(string Title, bool Completed)

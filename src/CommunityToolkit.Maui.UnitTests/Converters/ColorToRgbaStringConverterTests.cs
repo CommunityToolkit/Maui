@@ -163,18 +163,77 @@ public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStri
 		AssertColorComparison(expectedResult, resultConvertBackTo);
 	}
 
-	[Fact]
-	public void ColorToRgbStringConverterCultureTest()
+	[Theory]
+	[InlineData("uk-UA", "RGBA(0,0,0,0,5)")]
+	[InlineData("tr-TR", "RGBA(0,0,0,0,5)")]
+	public void ColorToRgbStringConverterCultureTest(string cultureName, string expectedResult)
 	{
-		var expectedResult = "RGBA(0,0,0,0,5)";
+		var culture = new System.Globalization.CultureInfo(cultureName);
 		var converter = new ColorToRgbaStringConverter();
 		var color = new Color(0, 0, 0, 0.5f);
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("uk-UA"));
-		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("uk-UA"));
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("fr-FR")]
+	[InlineData("en-US")]
+	[InlineData("uk-UA")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void ColorToRgbaStringConverter_RoundTripsWithCulture(string cultureName)
+	{
+		var culture = new System.Globalization.CultureInfo(cultureName);
+		var converter = new ColorToRgbaStringConverter();
+		var color = new Color(1f, 0f, 0f, 0.5f);
+
+		var colorString = converter.ConvertFrom(color, culture);
+		var result = converter.ConvertBackTo(colorString, culture);
+
+		AssertColorComparison(color, result);
+		Assert.Equal(color.Alpha, result.Alpha, 2);
+	}
+
+	[Theory]
+	[InlineData("de-DE", "RGBA(255,0,0,0,5)", 1f, 0f, 0f, 0.5f)]
+	[InlineData("tr-TR", "RGBA(255,0,0,0,5)", 1f, 0f, 0f, 0.5f)]
+	[InlineData("de-DE", "RGBA(255, 0, 0, 0,5)", 1f, 0f, 0f, 0.5f)]
+	[InlineData("tr-TR", "RGBA(255, 0, 0, 0,5)", 1f, 0f, 0f, 0.5f)]
+	[InlineData("de-DE", "RGBA(255,0,0,1,5)", 1f, 0f, 0f, 1f)]
+	[InlineData("tr-TR", "RGBA(255,0,0,1,5)", 1f, 0f, 0f, 1f)]
+	[InlineData("de-DE", "RGBA(255,0,0,-0,5)", 1f, 0f, 0f, 0f)]
+	[InlineData("tr-TR", "RGBA(255,0,0,-0,5)", 1f, 0f, 0f, 0f)]
+	public void ColorToRgbaStringConverter_ConvertBack_CommaDecimalInput_ParsesAndClampsAlpha(string cultureName, string colorString, float red, float green, float blue, float alpha)
+	{
+		var result = new ColorToRgbaStringConverter().ConvertBackTo(colorString, new System.Globalization.CultureInfo(cultureName));
+
+		Assert.Equal(red, result.Red, 2);
+		Assert.Equal(green, result.Green, 2);
+		Assert.Equal(blue, result.Blue, 2);
+		Assert.Equal(alpha, result.Alpha, 2);
+	}
+
+	[Theory]
+	[InlineData("de-DE", "RGBA(256,0,0,0,5)")]
+	[InlineData("tr-TR", "RGBA(256,0,0,0,5)")]
+	[InlineData("de-DE", "RGBA(255,0,0,abc)")]
+	[InlineData("tr-TR", "RGBA(255,0,0,abc)")]
+	[InlineData("de-DE", "RGBA(255,0,0)")]
+	[InlineData("tr-TR", "RGBA(255,0,0)")]
+	[InlineData("de-DE", "not a color")]
+	[InlineData("tr-TR", "not a color")]
+	public void ColorToRgbaStringConverter_ConvertBack_InvalidCultureAwareInput_ReturnsDefault(string cultureName, string colorString)
+	{
+		var converter = new ColorToRgbaStringConverter();
+
+		var result = converter.ConvertBackTo(colorString, new System.Globalization.CultureInfo(cultureName));
+
+		Assert.Equal(converter.DefaultConvertBackReturnValue, result);
 	}
 
 	[Fact]
@@ -185,6 +244,23 @@ public class ColorToRgbaStringConverterTests : BaseConverterTest<ColorToRgbaStri
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToRgbaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	[InlineData("en-US")]
+	public void ColorToRgbaStringConverter_NullCulture_RoundTripsWithCurrentCulture(string cultureName)
+	{
+		Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(cultureName);
+		var converter = new ColorToRgbaStringConverter();
+		var color = new Color(1f, 0f, 0f, 0.5f);
+
+		var colorString = converter.ConvertFrom(color, null);
+		var result = converter.ConvertBackTo(colorString, null);
+
+		AssertColorComparison(color, result);
+		Assert.Equal(color.Alpha, result.Alpha, 2);
 	}
 
 	static void AssertColorComparison(Color expectedResult, Color? result)

@@ -33,4 +33,14 @@ public class DrawingLineAdapterTests : BaseTest
 
 		result.Should().BeEquivalentTo(expectedDrawingLine);
 	}
+
+	[Fact]
+	public void ConvertMauiDrawingLine_NullMauiDrawingLine_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new DrawingLineAdapter().ConvertMauiDrawingLine(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("mauiDrawingLine", exception.ParamName);
+	}
 }
