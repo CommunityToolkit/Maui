@@ -5,8 +5,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #endif
 
 namespace CommunityToolkit.Maui.Core.Extensions;
@@ -20,7 +18,7 @@ static class PlatformViewFactoryExtensions
 	public static void SetVirtualViewWithItsOwnPlatformView<TVirtualView, TPlatformView>(this ViewHandler<TVirtualView, TPlatformView> handler, IView view,
 		Action<IView> setVirtualViewOfTheBaseHandler, Func<TPlatformView> createPlatformViewOfTheHandler)
 		where TVirtualView : class, IView
-#if IOS || MACCATALYST || ANDROID || WINDOWS || TIZEN
+#if IOS || MACCATALYST || ANDROID || WINDOWS
 		where TPlatformView : PlatformView
 #else
 		where TPlatformView : class

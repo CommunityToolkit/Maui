@@ -13,9 +13,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.BottomAnchor
-			: view.BottomAnchor;
+		return view.SafeAreaLayoutGuide.BottomAnchor;
 	}
 
 	/// <summary>
@@ -26,9 +24,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.CenterXAnchor
-			: view.CenterXAnchor;
+		return view.SafeAreaLayoutGuide.CenterXAnchor;
 	}
 
 	/// <summary>
@@ -39,9 +35,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.CenterYAnchor
-			: view.CenterYAnchor;
+		return view.SafeAreaLayoutGuide.CenterYAnchor;
 	}
 
 	/// <summary>
@@ -52,9 +46,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.HeightAnchor
-			: view.HeightAnchor;
+		return view.SafeAreaLayoutGuide.HeightAnchor;
 	}
 
 	/// <summary>
@@ -65,9 +57,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.LeadingAnchor
-			: view.LeadingAnchor;
+		return view.SafeAreaLayoutGuide.LeadingAnchor;
 	}
 
 	/// <summary>
@@ -78,9 +68,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.LeftAnchor
-			: view.LeftAnchor;
+		return view.SafeAreaLayoutGuide.LeftAnchor;
 	}
 
 	/// <summary>
@@ -91,9 +79,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.RightAnchor
-			: view.RightAnchor;
+		return view.SafeAreaLayoutGuide.RightAnchor;
 	}
 
 	/// <summary>
@@ -104,9 +90,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.TopAnchor
-			: view.TopAnchor;
+		return view.SafeAreaLayoutGuide.TopAnchor;
 	}
 
 	/// <summary>
@@ -117,9 +101,7 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.TrailingAnchor
-			: view.TrailingAnchor;
+		return view.SafeAreaLayoutGuide.TrailingAnchor;
 	}
 
 	/// <summary>
@@ -130,8 +112,6 @@ public static class UIViewExtensions
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-			? view.SafeAreaLayoutGuide.WidthAnchor
-			: view.WidthAnchor;
+		return view.SafeAreaLayoutGuide.WidthAnchor;
 	}
 }
