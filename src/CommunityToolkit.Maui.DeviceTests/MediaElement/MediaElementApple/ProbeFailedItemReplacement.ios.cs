@@ -3,6 +3,9 @@ using System.Text;
 using AVFoundation;
 using Foundation;
 using AVKit;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.DeviceTests.Runners;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
