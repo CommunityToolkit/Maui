@@ -44,7 +44,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	// service notification and updates it at once, so back-to-back service tests push the estimate up until a later test loses the media
 	// notification it waits for. After such a test the teardown pauses until the estimate is back at that of an app that posted nothing for a
 	// while: the estimator has no observable state, so there is no event to wait for, only time.
-	const int notificationRatePause = 1500;
+	protected const int notificationRatePause = 1500;
 
 	readonly List<MediaElement> hostedElements = [];
 	readonly List<string> temporaryFiles = [];

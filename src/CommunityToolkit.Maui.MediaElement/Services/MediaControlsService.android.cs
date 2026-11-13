@@ -17,8 +17,8 @@ sealed partial class MediaControlsService : Service
 {
 	readonly WeakEventManager taskRemovedEventManager = new();
 
-	const int MediaNotificationId = 1;
-	const int StragglerCancelDelayMilliseconds = 500;
+	const int mediaNotificationId = 1;
+	const int stragglerCancelDelayMilliseconds = 500;
 
 	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
 
@@ -163,8 +163,8 @@ sealed partial class MediaControlsService : Service
 		playerNotificationManager?.SetPlayer(null);
 		legacyNotificationPlayer = null;
 		StopForeground(StopForegroundFlags.Detach);
-		NotificationManager?.Cancel(MediaNotificationId);
-		cancelStragglerHandler.PostDelayed(() => NotificationManager?.Cancel(MediaNotificationId), StragglerCancelDelayMilliseconds);
+		NotificationManager?.Cancel(mediaNotificationId);
+		cancelStragglerHandler.PostDelayed(() => NotificationManager?.Cancel(mediaNotificationId), stragglerCancelDelayMilliseconds);
 	}
 
 	protected override void Dispose(bool disposing)
