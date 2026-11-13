@@ -22,12 +22,20 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
+	readonly WeakEventManager fullScreenEventManager = new();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
 	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
+
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
@@ -199,6 +207,7 @@ public partial class MauiMediaElement : Grid, IDisposable
 		// The window can also enter or leave full screen without this button (F11, the app, the user), so the element and the navigation bar
 		// are only changed when they are not already as the new presenter needs them.
 		var isElementInFullScreenPopup = fullScreenGrid.Children.Contains(mediaPlayerElement);
+		var mediaElementState = MediaElementScreenState.Default;
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
@@ -253,6 +262,10 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+			mediaElementState = MediaElementScreenState.FullScreen;
 		}
+		var newState = mediaElementState;
+		var oldState = newState == MediaElementScreenState.FullScreen ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
 	}
 }

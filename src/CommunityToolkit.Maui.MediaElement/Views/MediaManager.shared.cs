@@ -9,10 +9,6 @@ global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElemen
 #endif
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -39,6 +35,15 @@ public partial class MediaManager
 		MediaElement = mediaElement;
 
 		Logger = MauiContext.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(MediaManager));
+	}
+
+	/// <summary>
+	/// Update the full screen state on the associated MediaElement.
+	/// </summary>
+	/// <param name="newState">The new full screen state.</param>
+	internal void UpdateFullScreenState(MediaElementScreenState newState)
+	{
+		MediaElement.FullScreenChanged(newState);
 	}
 
 	/// <summary>

@@ -31,11 +31,24 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		return new(Context, playerView);
 	}
 
+	protected override void ConnectHandler(MauiMediaElement platformView)
+	{
+		platformView.FullScreenStateChanged += OnScreenStateChanged;
+		base.ConnectHandler(platformView);
+	}
+
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
+	{
+		MediaManager?.UpdateFullScreenState(e.NewState);
+	}
+
 	/// <inheritdoc/>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
 		ArgumentNullException.ThrowIfNull(platformView);
+
+		platformView.FullScreenStateChanged -= OnScreenStateChanged;
 
 		platformView.Dispose();
 		Dispose();

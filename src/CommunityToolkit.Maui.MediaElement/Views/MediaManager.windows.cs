@@ -6,9 +6,6 @@ using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Media;
@@ -117,7 +114,6 @@ partial class MediaManager : IDisposable
 		// media session, which the system media overlay shows and the media keys control, whatever it plays
 		Player.MediaPlayer.SystemMediaTransportControls.IsEnabled = false;
 		systemMediaControls = Player.MediaPlayer.SystemMediaTransportControls;
-
 		return Player;
 	}
 
