@@ -47,7 +47,7 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 /// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
 public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength)
 {
-	// Returns false when another animation interrupted the leg, which ends the run: the legs after it would interrupt the animation that took over.
+	// Returns false when the leg was interrupted (another animation took over, or CancelAnimations stopped it), which ends the run: the legs after it would interrupt whatever took over.
 	private protected static async Task<bool> AnimateLegAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> animateTo, CancellationToken token)
 	{
 		var wasAborted = await animateTo();
@@ -77,7 +77,7 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		}
 
 		// CancelAnimations, a new run and an attention seeker abort the tween, which resumes this method inside the abort, before whatever takes over starts in
-		// the same turn. The tracker sees the toolkit's own runs, the handle the app's own FadeToAsync, ScaleToAsync or RotateToAsync, the value the app's own write.
+		// the same turn. The tracker sees the toolkit's own runs, the handle the app's own FadeToAsync, ScaleToAsync, RotateToAsync, RotateYToAsync or RotateXToAsync, the value the app's own write.
 		var valueWhenInterrupted = (double)view.GetValue(property);
 		// Ending the run before the yield lets a value the app sets in this turn become the next run's original
 		animations.End(animationId, valueWhenInterrupted);
