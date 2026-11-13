@@ -34,6 +34,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
 
+	// Ensures MediaOpened is raised once per source; ExoPlayer re-enters the ready state after every seek and rebuffer
+	bool hasMediaOpened;
+
+	// True from the moment a new source is assigned until it is handed to ExoPlayer.
+	// Until then the player still reports the previous source, which must not overwrite the Opening state or raise events
+	bool isSourceChanging;
+
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
 
@@ -91,6 +98,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
+		{
+			return;
+		}
+
+		if (isSourceChanging)
 		{
 			return;
 		}
@@ -203,7 +215,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// </remarks>
 	public void OnPlaybackStateChanged(int playbackState)
 	{
-		if (MediaElement.Source is null)
+		if (isSourceChanging || Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
@@ -219,6 +231,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				MediaElement.MediaEnded();
 				break;
 			case readyState:
+				// The deprecated OnPlayerStateChanged has no defined order relative to this callback: derive what MediaOpened
+				// handlers observe here too, so they see the new state, duration and position
+				newState = Player.PlayWhenReady
+					? MediaElementState.Playing
+					: MediaElementState.Paused;
+				MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
+				MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
+				MediaElement.CurrentStateChanged(newState);
+
+				// Prepare() only queues the media: the source is open when the player first reaches the ready state for it
+				if (!hasMediaOpened)
+				{
+					hasMediaOpened = true;
+					MediaElement.MediaOpened();
+				}
+
 				seekToTaskCompletionSource?.TrySetResult();
 				break;
 		}
@@ -518,6 +546,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		if (MediaElement.Source is null)
 		{
+			isSourceChanging = false;
+
 			Player.ClearMediaItems();
 			MediaElement.Duration = TimeSpan.Zero;
 			MediaElement.CurrentStateChanged(MediaElementState.None);
@@ -544,6 +574,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
+		isSourceChanging = true;
+
 		Player.PlayWhenReady = MediaElement.ShouldAutoPlay;
 
 		// Only a failure to apply the source (to create its media item or media source, or to hand it to the player) is a failure of the source.
@@ -566,6 +598,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			item = result?.Build();
 			if (item?.MediaMetadata is not null)
 			{
+				hasMediaOpened = false;
+
 				IMediaSource? mediaSource = null;
 
 				// If we have a custom stream data source, we need to set the media source differently
@@ -586,6 +620,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				// The player raises its events synchronously while it takes the source (StateChanged for Buffering, for example): from here on, only
 				// an exception of the player itself, a Java exception, is a failure of the source
 				isPlayerTakingTheSource = true;
+				isSourceChanging = false;
+
 				if (mediaSource is not null)
 				{
 					Player.SetMediaSource(mediaSource);
@@ -615,6 +651,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			currentStreamDataSourceFactory?.Dispose();
 			currentStreamDataSourceFactory = null;
 
+			isSourceChanging = false;
+
 			MediaElement.MediaFailed(new MediaFailedEventArgs(exception.Message));
 			Logger.LogError(exception, "{LogMessage}", exception.Message);
 
@@ -640,12 +678,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			currentStreamDataSourceFactory?.Dispose();
 			currentStreamDataSourceFactory = null;
 
-			return;
-		}
+			isSourceChanging = false;
 
-		if (Player.PlayerError is null)
-		{
-			MediaElement.MediaOpened();
+			return;
 		}
 
 		if (isAndroidForegroundServiceEnabled)
