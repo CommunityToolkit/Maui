@@ -14,10 +14,13 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 		.GetFields(BindingFlags.Static | BindingFlags.Public)
 		.ToDictionary(c => c.Name, c => (Easing)(c.GetValue(null) ?? throw new InvalidOperationException()));
 
+	readonly HeadlineView headlineView = new("My text color is animated by the generated TextColorTo extension method");
+
 	public ColorAnimationExtensionsPage(ColorAnimationExtensionsViewModel colorAnimationExtensionsViewModel)
 		: base(colorAnimationExtensionsViewModel)
 	{
 		InitializeComponent();
+		HeadlineLayout.Add(headlineView);
 	}
 
 	protected override void OnAppearing()
@@ -51,8 +54,31 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 		var easing = easings.ElementAtOrDefault(EasingPicker.SelectedIndex).Value;
 
 		await Task.WhenAll(ColorBorder.BackgroundColorTo(color, rate, duration, easing),
-							TextColorToDescriptionLabel.TextColorTo(color, rate, duration, easing));
+							TextColorToDescriptionLabel.TextColorTo(color, rate, duration, easing),
+							headlineView.TextColorTo(color, rate, duration, easing));
 
 		SetPickersRandomValue();
+	}
+
+	// Deriving from a MAUI text control would make the generator reuse that control's TextColorTo, so this view only implements ITextStyle
+	internal sealed class HeadlineView : ContentView, ITextStyle
+	{
+		readonly Label label;
+
+		public HeadlineView(string text)
+		{
+			label = new Label { Text = text };
+			Content = label;
+		}
+
+		public Color TextColor
+		{
+			get => label.TextColor;
+			set => label.TextColor = value;
+		}
+
+		public Microsoft.Maui.Font Font => ((ITextStyle)label).Font;
+
+		public double CharacterSpacing => ((ITextStyle)label).CharacterSpacing;
 	}
 }

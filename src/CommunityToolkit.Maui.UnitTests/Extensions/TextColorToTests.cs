@@ -150,6 +150,48 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		}
 
 		[Fact]
+		public async Task NestedTextStyleViewTextColorTo_VerifyColorChanged()
+		{
+			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+			var textStyleView = new TextStyleViewContainer.NestedTextStyleView { TextColor = originalTextColor };
+			textStyleView.EnableAnimations();
+
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
+
+			Assert.True(isSuccessful);
+			Assert.Equal(updatedTextColor, textStyleView.TextColor);
+		}
+
+		[Fact]
+		public async Task InternalNestedTextStyleViewTextColorTo_VerifyColorChanged()
+		{
+			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+			var textStyleView = new TextStyleViewContainer.InternalNestedTextStyleView { TextColor = originalTextColor };
+			textStyleView.EnableAnimations();
+
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
+
+			Assert.True(isSuccessful);
+			Assert.Equal(updatedTextColor, textStyleView.TextColor);
+		}
+
+		[Fact]
+		public async Task TextStyleViewNestedInGenericClassTextColorTo_VerifyColorChanged()
+		{
+			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
+
+			var textStyleView = new GenericTextStyleViewContainer<int>.GenericNestedTextStyleView { TextColor = originalTextColor };
+			textStyleView.EnableAnimations();
+
+			var isSuccessful = await textStyleView.TextColorTo(updatedTextColor, token: TestContext.Current.CancellationToken);
+
+			Assert.True(isSuccessful);
+			Assert.Equal(updatedTextColor, textStyleView.TextColor);
+		}
+
+		[Fact]
 		public async Task Extensions_For_Generic_Class()
 		{
 			Color originalTextColor = Colors.Blue, updatedTextColor = Colors.Red;
@@ -237,7 +279,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 			{
 				if (control.Assembly == executingAssembly)
 				{
-					Assert.Equal(control.IsPublic, generatedType.IsPublic);
+					Assert.Equal(control.IsVisible, generatedType.IsPublic);
 				}
 			}
 		}
@@ -288,6 +330,39 @@ namespace Unique.Namespace.TextStyle
 	public class ClassConstraint
 	{
 
+	}
+
+	public class TextStyleViewContainer
+	{
+		public class NestedTextStyleView : View, ITextStyle
+		{
+			public Color TextColor { get; set; } = new();
+
+			public Font Font { get; set; }
+
+			public double CharacterSpacing { get; set; }
+		}
+
+		internal class InternalNestedTextStyleView : View, ITextStyle
+		{
+			public Color TextColor { get; set; } = new();
+
+			public Font Font { get; set; }
+
+			public double CharacterSpacing { get; set; }
+		}
+	}
+
+	public class GenericTextStyleViewContainer<T>
+	{
+		public class GenericNestedTextStyleView : View, ITextStyle
+		{
+			public Color TextColor { get; set; } = new();
+
+			public Font Font { get; set; }
+
+			public double CharacterSpacing { get; set; }
+		}
 	}
 
 	class InternalTextStyleView : View, ICustomTextStyle

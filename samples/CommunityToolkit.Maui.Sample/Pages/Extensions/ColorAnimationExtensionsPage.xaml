@@ -20,6 +20,8 @@
             <VerticalStackLayout Spacing="12">
                 <Label Text="The BackgroundColorTo extension method provides an easy way to have an animation to change the BackgroundColor of a VisualElement" />
                 <Label x:Name="TextColorToDescriptionLabel" Text="The TextColorTo extension method provides an easy way to have an animation to change the TextColor of an element that implements ITextStyle" />
+                <Label Text="TextColorTo is generated for your own text views, including ones nested in another class." />
+                <VerticalStackLayout x:Name="HeadlineLayout" />
 
                 <Label Text="Color: " FontSize="12" VerticalOptions="End" VerticalTextAlignment="End"/>
                 <Picker x:Name="ColorPicker" />
