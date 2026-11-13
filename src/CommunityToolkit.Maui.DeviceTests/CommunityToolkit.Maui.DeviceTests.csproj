@@ -44,7 +44,7 @@
   </PropertyGroup>
 
   <!-- The library minimums, so version-gated branches can run on older devices. Android is 24, the lowest of the libraries; MediaElement
-       needs 26, so its tests skip below that (MediaElementSupport). CI covers API 25 and up; API 24 is local only. -->
+       needs 26, so its tests skip below that (MediaElementSupport). CI runs the newest release of every Android major from API 25; API 24 is local only. -->
   <PropertyGroup>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>

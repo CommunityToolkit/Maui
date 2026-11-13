@@ -74,7 +74,7 @@
     Android: boot this AVD instead of the one the script picks (the newest API level that this machine's CPU can run). Not with -ApiLevel.
 
 .PARAMETER ApiLevel
-    Android: boot the existing AVD whose system image has this API level (37 or 36.1) and this machine's CPU, instead of the newest one. 36 does not match 36.1. A level below the Android minimum of the device-test app, or without an AVD, is reported as not available. Not with -Avd or -DeviceId.
+    Android: boot the existing AVD whose system image has this API level (for example 30, 37 or 36.1) and this machine's CPU, instead of the newest one. 36 does not match 36.1. A level below the Android minimum of the device-test app, or without an AVD, is reported as not available. Not with -Avd or -DeviceId.
 
 .PARAMETER EmulatorPort
     Android: the port of the emulator that is booted for -Avd or for the picked AVD. Defaults to the first free one.
@@ -540,7 +540,7 @@ function ConvertTo-RunApiVersion {
 }
 
 function Get-RunSystemImagePackage {
-    # Google names images from 36.1 on as Major.Minor, so 37 is android-37.0 but 36 is android-36. API 27 has no google_apis image for x86_64.
+    # Google names images from 36.1 on as Major.Minor, so 37 is android-37.0 but 36 is android-36. API 27 has no google_apis image for x86_64, and 37.1 and later only have 16 KB page-size (ps16k) images.
     param([version]$Level, [string]$Abi)
 
     $name = Format-RunApiVersion $Level
@@ -551,6 +551,9 @@ function Get-RunSystemImagePackage {
     $tag = 'google_apis'
     if ($Level.Major -eq 27 -and $Abi -eq 'x86_64') {
         $tag = 'default'
+    }
+    elseif ($Level.Major -ge 37 -and $Level.Minor -gt 0) {
+        $tag = 'google_apis_ps16k'
     }
 
     return "system-images;android-$name;$tag;$Abi"
@@ -576,7 +579,7 @@ function Get-RunAndroidMinimumApi {
         $document.Load($project.Path)
         foreach ($element in $document.GetElementsByTagName('SupportedOSPlatformVersion')) {
             $condition = $element.GetAttribute('Condition')
-            if ($condition.IndexOf("== 'android'", [System.StringComparison]::Ordinal) -lt 0 -or $element.InnerText -notmatch '^\d+(\.\d+)*$') {
+            if ($condition.IndexOf("== 'android'", [System.StringComparison]::Ordinal) -lt 0 -or $element.InnerText -notmatch '^[0-9]+(\.[0-9]+)*$') {
                 continue
             }
 
@@ -1217,7 +1220,7 @@ try {
     }
 
     if ($ApiLevel) {
-        if ($ApiLevel -notmatch '^\d{1,3}(\.\d{1,2})?$') {
+        if ($ApiLevel -notmatch '^[0-9]{1,3}(\.[0-9]{1,2})?$') {
             throw (New-Object System.ArgumentException "-ApiLevel '$ApiLevel' is not an Android API level. Use a number such as 30, 37 or 36.1.")
         }
 

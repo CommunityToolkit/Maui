@@ -299,8 +299,8 @@ jobs:
                     name: device-tests-android-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_android_app on the newest release of every other Android major version that .NET MAUI can run (device_tests_android has
-    # API 36). Only API 24 has no leg; it runs on a local AVD. Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
+    # The app of device_tests_android_app on the newest release of every Android major version from 7.1 (API 25); device_tests_android adds API 36.
+    # Other levels, such as API 24 (the app's minimum), run only on a local AVD. Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
     device_tests_android_runtime:
         name: Device Tests (Android API ${{ matrix.api-level }})
@@ -339,6 +339,7 @@ jobs:
                     -   api-level: '35'
                     # Android 16 QPR2, the newest Android 16 release.
                     -   api-level: '36.1'
+                    # Android 17. 37.1 and 37.2 ship only 16 KB page-size (ps16k) images, which no leg is proven on.
                     -   api-level: '37.0'
         env:
             DEVICE_TEST_COVERAGE: false
@@ -650,7 +651,7 @@ jobs:
                     name: ios-simulator-app
                     path: ${{ runner.temp }}/ios-simulator-app.tgz
                     compression-level: 0
-                    # 3 days, so that re-running only a failed iOS 26.5 job a day later still finds the app.
+                    # 3 days, so that re-running only a failed iOS version a day later still finds the app.
                     retention-days: 3
                     if-no-files-found: error
 
@@ -686,6 +687,7 @@ jobs:
                     -   ios-version: '18.6'
                         runner: macos-15
                         xcode: '16.4'
+                        install-runtime: true
                     -   ios-version: '17.5'
                         runner: macos-15
                         xcode: '16.4'
@@ -748,7 +750,7 @@ jobs:
                 run: dotnet tool restore
 
             # No runner image has iOS 15, 16 or 17 (the macos-14 images were retired on 2026-11-02), and three runtimes of several GB do not fit
-            # the repository's 10 GB cache, so each job downloads it. The download fails now and then, hence the retries.
+            # the repository's 10 GB cache, so each job downloads it. A failed download of several GB would fail the whole leg, hence the retries.
             -   name: Install the iOS ${{ matrix.ios-version }} simulator runtime
                 if: ${{ matrix.install-runtime }}
                 shell: bash

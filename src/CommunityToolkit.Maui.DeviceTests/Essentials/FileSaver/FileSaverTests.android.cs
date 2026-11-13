@@ -135,7 +135,7 @@ public partial class FileSaverTests
 	[Fact]
 	public async Task SaveAsyncTracesThatAnInitialPathNeedsAndroid26BeforeThatVersion()
 	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(26), "The branch only runs below Android 26 (the emulators of the pool are API 28 and 36).");
+		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(26), "The branch only runs below Android 26 (CI: API 25).");
 		var session = await StartSessionAsync();
 		using var trace = new FilesTraceCapture();
 
