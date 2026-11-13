@@ -11,8 +11,8 @@ namespace CommunityToolkit.Maui.Core.Platform;
 
 public static partial class KeyboardExtensions
 {
-	const int imeHideAnimationDurationMilliseconds = 285;
-	const int imeHideAnimationMarginMilliseconds = 115;
+	const int reshowIntervalMilliseconds = 400;
+	const int maximumReshowAttempts = 5;
 
 	static int hideRequestCount;
 
@@ -80,16 +80,33 @@ public static partial class KeyboardExtensions
 			}
 
 			inputView.WindowInsetsController?.Show(WindowInsets.Type.Ime());
-			inputView.PostDelayed(() => ReshowWhenHiddenAgain(inputView), imeHideAnimationDurationMilliseconds + imeHideAnimationMarginMilliseconds);
+			inputView.PostDelayed(() => ReshowWhenHiddenAgain(inputView, 1, false), reshowIntervalMilliseconds);
 		}
 
-		// A hide requested after the show means that the keyboard is not hidden by the animation, but by the caller
-		void ReshowWhenHiddenAgain(TextView inputView)
+		// The keyboard of a slow input method can still be hidden by the animation after it showed, so it must show at two checks in a row.
+		// A hide requested after the show means that the caller hid the keyboard, not the animation.
+		void ReshowWhenHiddenAgain(TextView inputView, int attempt, bool wasShowingAtPreviousAttempt)
 		{
-			if (Volatile.Read(ref hideRequestCount) == hideRequestCountAtShow && CanStillShowTheKeyboard(inputView) && !inputView.IsSoftKeyboardShowing())
+			if (Volatile.Read(ref hideRequestCount) != hideRequestCountAtShow || !CanStillShowTheKeyboard(inputView))
+			{
+				return;
+			}
+
+			var isShowing = inputView.IsSoftKeyboardShowing();
+			if (isShowing && wasShowingAtPreviousAttempt)
+			{
+				return;
+			}
+
+			if (!isShowing)
 			{
 				var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
 				inputMethodManager?.ShowSoftInput(inputView, 0);
+			}
+
+			if (attempt < maximumReshowAttempts)
+			{
+				inputView.PostDelayed(() => ReshowWhenHiddenAgain(inputView, attempt + 1, isShowing), reshowIntervalMilliseconds);
 			}
 		}
 
