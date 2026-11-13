@@ -13,12 +13,16 @@ public static partial class KeyboardExtensions
 {
 	const int reshowIntervalMilliseconds = 400;
 	const int maximumReshowAttempts = 5;
+	const long imeHideAnimationWindowMilliseconds = 2000;
+	const long reshowDeadlineAfterHideMilliseconds = 4500;
 
 	static int hideRequestCount;
+	static long lastHideUptimeMilliseconds = long.MinValue;
 
 	static bool HideKeyboard(this AView inputView)
 	{
 		Interlocked.Increment(ref hideRequestCount);
+		Interlocked.Exchange(ref lastHideUptimeMilliseconds, SystemClock.UptimeMillis());
 
 		// A view with the focus can be in a dialog window of its own (a modal page or a Popup) while the activity's window keeps a focused view,
 		// and the input method manager only hides the keyboard for the token of the window that the keyboard serves.
@@ -39,6 +43,7 @@ public static partial class KeyboardExtensions
 
 	static bool ShowKeyboard(this TextView inputView)
 	{
+		var hideRequestCountBeforeShow = Volatile.Read(ref hideRequestCount);
 		// Not disposed: GetSystemService returns the same .NET wrapper of the input method manager to every caller
 		var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
 
@@ -49,45 +54,46 @@ public static partial class KeyboardExtensions
 
 		if (shown && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(33))
 		{
-			KeepTheKeyboardShownDespiteTheRunningImeHideAnimation(inputView);
+			var lastHideUptime = Interlocked.Read(ref lastHideUptimeMilliseconds);
+			if (SystemClock.UptimeMillis() - lastHideUptime <= imeHideAnimationWindowMilliseconds)
+			{
+				KeepTheKeyboardShownDespiteTheRunningImeHideAnimation(inputView, hideRequestCountBeforeShow, lastHideUptime + reshowDeadlineAfterHideMilliseconds);
+			}
 		}
 
 		return shown;
 	}
 
-	// Android 11 and 12 hide the keyboard again when an IME hide animation that was still running at ShowSoftInput ends (fixed in Android 13).
-	// Showing the IME insets cancels that animation, unless its end is already queued, so a second ShowSoftInput follows when the keyboard is still hidden.
-	// The insets controller needs the UI thread, and the caller must not wait for it.
+	// Android 11 and 12 hide the keyboard again when an IME hide animation still running at ShowSoftInput ends (fixed in Android 13), so only a show right after a hide is guarded.
+	// Showing the IME insets cancels that animation unless its end is queued, so a later ShowSoftInput follows if the keyboard is still hidden; the UI thread is needed and the caller must not wait.
 	[SupportedOSPlatform("android30.0")]
-	static void KeepTheKeyboardShownDespiteTheRunningImeHideAnimation(TextView inputView)
+	static void KeepTheKeyboardShownDespiteTheRunningImeHideAnimation(TextView inputView, int hideRequestCountAtShow, long deadlineUptimeMilliseconds)
 	{
-		var hideRequestCountAtShow = Volatile.Read(ref hideRequestCount);
-
 		if (Looper.MainLooper?.IsCurrentThread is true)
 		{
-			ShowImeInsetsThenReshowWhenHiddenAgain(inputView);
+			ShowImeInsetsThenReshowWhenHiddenAgain();
 		}
 		else
 		{
-			inputView.Post(() => ShowImeInsetsThenReshowWhenHiddenAgain(inputView));
+			inputView.Post(ShowImeInsetsThenReshowWhenHiddenAgain);
 		}
 
-		void ShowImeInsetsThenReshowWhenHiddenAgain(TextView inputView)
+		void ShowImeInsetsThenReshowWhenHiddenAgain()
 		{
-			if (!CanStillShowTheKeyboard(inputView))
+			if (!CanStillShowTheKeyboard())
 			{
 				return;
 			}
 
 			inputView.WindowInsetsController?.Show(WindowInsets.Type.Ime());
-			inputView.PostDelayed(() => ReshowWhenHiddenAgain(inputView, 1, false), reshowIntervalMilliseconds);
+			inputView.PostDelayed(() => ReshowWhenHiddenAgain(1, false), reshowIntervalMilliseconds);
 		}
 
 		// The keyboard of a slow input method can still be hidden by the animation after it showed, so it must show at two checks in a row.
 		// A hide requested after the show means that the caller hid the keyboard, not the animation.
-		void ReshowWhenHiddenAgain(TextView inputView, int attempt, bool wasShowingAtPreviousAttempt)
+		void ReshowWhenHiddenAgain(int attempt, bool wasShowingAtPreviousAttempt)
 		{
-			if (Volatile.Read(ref hideRequestCount) != hideRequestCountAtShow || !CanStillShowTheKeyboard(inputView))
+			if (Volatile.Read(ref hideRequestCount) != hideRequestCountAtShow || !CanStillShowTheKeyboard())
 			{
 				return;
 			}
@@ -106,11 +112,11 @@ public static partial class KeyboardExtensions
 
 			if (attempt < maximumReshowAttempts)
 			{
-				inputView.PostDelayed(() => ReshowWhenHiddenAgain(inputView, attempt + 1, isShowing), reshowIntervalMilliseconds);
+				inputView.PostDelayed(() => ReshowWhenHiddenAgain(attempt + 1, isShowing), reshowIntervalMilliseconds);
 			}
 		}
 
-		static bool CanStillShowTheKeyboard(TextView inputView) => inputView.Handle != IntPtr.Zero && inputView.IsFocused;
+		bool CanStillShowTheKeyboard() => inputView.Handle != IntPtr.Zero && inputView.IsAttachedToWindow && inputView.IsFocused && SystemClock.UptimeMillis() <= deadlineUptimeMilliseconds;
 	}
 
 	static bool ShowKeyboard(this AView view) => view switch

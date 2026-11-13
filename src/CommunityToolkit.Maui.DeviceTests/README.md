@@ -272,7 +272,7 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - Main app, Android only, `SoftKeyboardHelpers` and `VisibleFrame` (app root), for a test that shows the soft keyboard or focuses an input:
   `await VisibleFrame.RecordWithoutKeyboardAsync(platformView)` hides any soft keyboard first and records the frame that
   `ShowsKeyboard` measures against; `frame.WaitUntilTheKeyboardShowsSteadilyAsync(timeout)` waits, before a test types, until the
-  input method has laid the keyboard out; `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
+  input method has laid the keyboard out (a keyboard that flashes and hides again fails the wait); `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
   opened it can no longer hide, because it has left the window.
 - `[Repeat(n)]` with a `[Theory]` and an `int` parameter repeats a test n times while you hunt flakiness. Do not commit it.
 - `[SkipOnIOSVersion(major, minor, build, reason)]`: Skipped on iOS and Mac Catalyst from that version on.
