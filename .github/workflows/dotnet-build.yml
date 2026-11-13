@@ -232,7 +232,6 @@ jobs:
                     done
                     exit "$failed"
 
-
             # Release, as the device tests' coverage that the code_coverage job merges this with: a Debug build has more coverable lines
             # (sequence points on braces), so the braces of code that only the device tests run would show as uncovered. It also runs
             # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the run above
