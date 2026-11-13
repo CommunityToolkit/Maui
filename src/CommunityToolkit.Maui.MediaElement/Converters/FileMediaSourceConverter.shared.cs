@@ -7,7 +7,6 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// A <see cref="TypeConverter"/> specific to converting a string value to a <see cref="FileMediaSource"/>.
 /// </summary>
-[TypeConverter(typeof(FileMediaSource))]
 public sealed class FileMediaSourceConverter : TypeConverter
 {
 	/// <inheritdoc/>

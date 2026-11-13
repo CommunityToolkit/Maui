@@ -1,6 +1,7 @@
 ﻿namespace CommunityToolkit.Maui.ApplicationModel;
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
@@ -28,7 +29,7 @@ public class BadgeImplementation : IBadge
 			var badgeXml = BadgeUpdateManager.GetTemplateContent(BadgeTemplateType.BadgeNumber);
 
 			var badgeElement = badgeXml.SelectSingleNode("/badge") as XmlElement;
-			badgeElement?.SetAttribute("value", count.ToString());
+			badgeElement?.SetAttribute("value", count.ToString(CultureInfo.InvariantCulture));
 
 			var badge = new BadgeNotification(badgeXml);
 			badgeUpdater.Update(badge);

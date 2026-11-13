@@ -132,8 +132,16 @@ public partial class MauiSemanticOrderView : ContentPanel
 	}
 
 	/// <inheritdoc/>
-	protected override IEnumerable<DependencyObject> GetChildrenInTabFocusOrder() =>
-		GetTabFocusChildrenInViewOrder() ?? base.GetChildrenInTabFocusOrder();
+	protected override IEnumerable<DependencyObject> GetChildrenInTabFocusOrder()
+	{
+		// The CsWinRT AOT generator only sees List<DependencyObject> in a return statement; NativeAOT needs its generated vtable to hand the list to WinUI
+		if (GetTabFocusChildrenInViewOrder() is List<DependencyObject> tabFocusChildren)
+		{
+			return tabFocusChildren;
+		}
+
+		return base.GetChildrenInTabFocusOrder();
+	}
 
 	static bool IsVisible(DependencyObject element) =>
 		element is not UIElement uiElement || uiElement.Visibility is Microsoft.UI.Xaml.Visibility.Visible;

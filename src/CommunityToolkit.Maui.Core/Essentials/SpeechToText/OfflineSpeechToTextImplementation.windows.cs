@@ -40,6 +40,15 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return ValueTask.CompletedTask;
 	}
 
+	// Trimmed apps default BuiltInComInteropSupport to false, and System.Speech needs built-in COM; the runtime's error names neither the property nor this feature
+	static void ThrowIfBuiltInComInteropIsDisabled()
+	{
+		if (AppContext.TryGetSwitch("System.Runtime.InteropServices.BuiltInComInterop.IsSupported", out var isSupported) && !isSupported)
+		{
+			throw new NotSupportedException("Offline speech-to-text on Windows uses System.Speech, which needs built-in COM interop. Set <BuiltInComInteropSupport>true</BuiltInComInteropSupport> in the app's project file when publishing trimmed. NativeAOT does not support it.");
+		}
+	}
+
 	Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
 	{
 		// The engine of a recognition that ended by itself (after AutoStopSilenceTimeout or an error) is still there
@@ -140,6 +149,8 @@ public sealed partial class OfflineSpeechToTextImplementation
 	[MemberNotNull(nameof(recognitionText), nameof(offlineSpeechRecognizer), nameof(speechToTextOptions))]
 	void Initialize(SpeechToTextOptions options)
 	{
+		ThrowIfBuiltInComInteropIsDisabled();
+
 		speechToTextOptions = options;
 		recognitionText = string.Empty;
 		isSilenceTimeoutReached = false;
