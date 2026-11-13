@@ -486,6 +486,84 @@ public class GeneratedCodeWarningTests : BaseTest
 		}
 		""";
 
+	const string selfReferencingConstraintsSource =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		#pragma warning disable SELF1
+		using System;
+		using System.Diagnostics.CodeAnalysis;
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui.Controls;
+
+		namespace SelfReferencing;
+
+		/// <summary>Experimental self-referencing interface.</summary>
+		/// <typeparam name="T">Self.</typeparam>
+		[Experimental("SELF1")]
+		public interface IExpCmp<T>
+		{
+		}
+
+		/// <summary>Comparable view.</summary>
+		/// <typeparam name="T">Value type.</typeparam>
+		public partial class CmpView<T> : View where T : IComparable<T>
+		{
+			/// <summary>Value.</summary>
+			[BindableProperty]
+			public partial T? Value { get; set; }
+
+			/// <summary>Values.</summary>
+			[BindableProperty]
+			public partial System.Collections.Generic.List<T>? Values { get; set; }
+		}
+
+		/// <summary>Curiously recurring view.</summary>
+		/// <typeparam name="TSelf">Self.</typeparam>
+		public partial class NodeView<TSelf> : View where TSelf : NodeView<TSelf>
+		{
+			/// <summary>Parent.</summary>
+			[BindableProperty]
+			public partial TSelf? ParentNode { get; set; }
+		}
+
+		/// <summary>Experimental constraint view.</summary>
+		/// <typeparam name="T">Value type.</typeparam>
+		public partial class ExpCmpView<T> : View where T : IExpCmp<T>
+		{
+			/// <summary>Value.</summary>
+			[BindableProperty]
+			public partial T? Value { get; set; }
+		}
+		""";
+
+	const string selfReferencingTextSource =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		using System;
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui;
+		using Microsoft.Maui.Controls;
+		using Microsoft.Maui.Graphics;
+
+		namespace SelfReferencingText;
+
+		/// <summary>Generic text type constrained by itself.</summary>
+		/// <typeparam name="T">Payload.</typeparam>
+		public class ComparableText<T> : VisualElement, ITextStyle where T : IComparable<T>
+		{
+			/// <inheritdoc/>
+			public Color TextColor { get; set; } = Colors.Black;
+
+			/// <inheritdoc/>
+			public Microsoft.Maui.Font Font => Microsoft.Maui.Font.Default;
+
+			/// <inheritdoc/>
+			public double CharacterSpacing => 0;
+		}
+		""";
+
 	[Theory]
 	[InlineData("en-US")]
 	[InlineData("tr-TR")]
@@ -522,6 +600,57 @@ public class GeneratedCodeWarningTests : BaseTest
 		{
 			var pragmaLines = source.Split('\n').Where(static line => line.StartsWith("#pragma", StringComparison.Ordinal));
 			Assert.DoesNotContain(pragmaLines, static line => line.Contains("IL2", StringComparison.Ordinal) || line.Contains("IL3", StringComparison.Ordinal));
+		}
+	}
+
+	[Theory]
+	[InlineData("en-US")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedCode_CompilesWithoutDiagnostics_WhenTypeConstraintsReferToThemselves(string cultureName)
+	{
+		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(selfReferencingConstraintsSource, cultureName, null, TestContext.Current.CancellationToken);
+
+		Assert.Contains(generatedFilePaths, static path => path.EndsWith("CmpView.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => path.EndsWith("NodeView.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => path.EndsWith("ExpCmpView.g.cs", StringComparison.Ordinal));
+		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
+	}
+
+	[Fact]
+	public void GeneratedCode_NamesTheExperimentalIdOfASelfReferencingConstraint()
+	{
+		var pragmaLine = GetPragmaLine(selfReferencingConstraintsSource, "ExpCmpView.g.cs", []);
+
+		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258, SELF1", pragmaLine);
+	}
+
+	[Theory]
+	[InlineData("en-US")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void TextColorTo_Completes_WhenTheTextTypeConstraintRefersToItself(string cultureName)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		var originalUiCulture = CultureInfo.CurrentUICulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo(cultureName);
+			CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+
+			var (compilation, parseOptions) = CreateCompilation(selfReferencingTextSource, [], TestContext.Current.CancellationToken);
+			var driver = CreateDriver(parseOptions);
+			driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generatorDiagnostics, TestContext.Current.CancellationToken);
+
+			Assert.DoesNotContain(generatorDiagnostics, static diagnostic => diagnostic.Id == "CS8785");
+			var generatedTree = outputCompilation.SyntaxTrees.Single(static tree => IsGeneratedFile(tree.FilePath) && tree.FilePath.Contains("ComparableTextTextColorTo", StringComparison.Ordinal));
+			var pragmaLine = generatedTree.GetText(TestContext.Current.CancellationToken).ToString().Split('\n').Single(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).TrimEnd('\r');
+			Assert.Equal("#pragma warning disable CS0612, CS0618", pragmaLine);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+			CultureInfo.CurrentUICulture = originalUiCulture;
 		}
 	}
 

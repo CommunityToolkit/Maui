@@ -15,6 +15,7 @@ sealed class UserDiagnosticIdCollector
 
 	readonly HashSet<string> diagnosticIds = new(StringComparer.Ordinal);
 	readonly HashSet<ISymbol> visitedSymbols = new(SymbolEqualityComparer.Default);
+	readonly HashSet<ITypeSymbol> visitedTypes = new(SymbolEqualityComparer.Default);
 
 	public EquatableArray<string> ToEquatableArray()
 	{
@@ -41,10 +42,14 @@ sealed class UserDiagnosticIdCollector
 
 	public void AddType(ITypeSymbol? type)
 	{
+		// Constraints such as `where T : IComparable<T>` refer back to themselves and would recurse forever.
+		if (type is null || !visitedTypes.Add(type))
+		{
+			return;
+		}
+
 		switch (type)
 		{
-			case null:
-				return;
 			case IArrayTypeSymbol arrayType:
 				AddType(arrayType.ElementType);
 				return;
