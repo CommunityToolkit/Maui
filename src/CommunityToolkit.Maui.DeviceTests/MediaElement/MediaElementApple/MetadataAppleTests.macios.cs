@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // The command handlers (private methods of Metadata) are called directly for the arguments the system never sends (no event, another
 // kind of event), and the commands are also delivered the way the system delivers them (AppleRemoteCommands.Dispatch: a real command
 // event through MediaPlayer) to check which handler each command reaches.
-[Category(TestCategory.J4Probe)]
+[Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MetadataAppleTests : AppleMediaElementTestBase
 {
