@@ -111,6 +111,9 @@ sealed class UserDiagnosticIdCollector
 	{
 		switch (constant.Kind)
 		{
+			// DefaultValue = null on an array property: Values is a default ImmutableArray, and the generator writes plain null.
+			case TypedConstantKind.Array when constant.IsNull:
+				break;
 			case TypedConstantKind.Array:
 				AddType(constant.Type);
 				foreach (var value in constant.Values)
