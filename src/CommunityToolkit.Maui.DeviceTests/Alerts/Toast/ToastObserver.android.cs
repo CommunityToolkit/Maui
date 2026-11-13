@@ -48,13 +48,13 @@ public sealed class ObservedToast
 // stays true in the test process until that connection is undone. Left alone, every test that runs after the first Toast test, of any
 // area of the app, would run with accessibility enabled (views send accessibility events, and code that branches on
 // AccessibilityManager.IsEnabled takes its accessibility arm; e.g. TouchBehaviorInputTests.RawTouchesAreHandledWhileNoAccessibilityServiceRuns
-// cannot run then before API 33). So each test that observes toasts switches it off again (ReleaseAccessibilityServiceAsync).
+// cannot run then before API 35). So each test that observes toasts switches it off again (ReleaseAccessibilityServiceAsync).
 public sealed class ToastObserver : IDisposable
 {
 	// UiAutomation delivers every accessibility event of the device, on the main thread, to ONE listener. The Java peer of that listener
 	// must outlive every test: an event that is still queued when a test ends would call into a disposed peer and abort the whole
 	// process ("Unable to activate instance of type ... from native handle"). So the listener is created once and never disposed, and
-	// each observer only subscribes to it. It is installed on whatever UiAutomation object the instrumentation hands out: before API 33
+	// each observer only subscribes to it. It is installed on whatever UiAutomation object the instrumentation hands out: before API 35
 	// releasing the accessibility service destroys that object, and the next request creates a new one without a listener.
 	static readonly object installLock = new();
 	static AccessibilityListener? sharedListener;
@@ -95,7 +95,7 @@ public sealed class ToastObserver : IDisposable
 		}
 	}
 
-	// Returns true even when the platform refuses the hidden destroy() (before API 33): the service then stays on, as it did before this
+	// Returns true even when the platform refuses the hidden destroy() (before API 35): the service then stays on, as it did before this
 	// method existed.
 	public static async Task<bool> ReleaseAccessibilityServiceAsync(AccessibilityManager accessibilityManager)
 	{
@@ -104,10 +104,10 @@ public sealed class ToastObserver : IDisposable
 			return !accessibilityManager.IsEnabled;
 		}
 
-		// Both calls disconnect the UiAutomation, and from API 33 reconnect it, which waits for callbacks on the main looper: never on the UI thread.
+		// Both calls disconnect the UiAutomation, and from API 35 reconnect it, which waits for callbacks on the main looper: never on the UI thread.
 		var released = await Task.Run(() =>
 		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+			if (OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
 				instrumentation.GetUiAutomation(UiAutomationFlags.DontUseAccessibility);
 				return true;
@@ -119,7 +119,7 @@ public sealed class ToastObserver : IDisposable
 		return !released || await Wait(() => !accessibilityManager.IsEnabled, timeout: 5000, interval: 50);
 	}
 
-	// Before API 33 there is no public way to disconnect the instrumentation's UiAutomation; TouchBehaviorTestBase.TryDestroyUiAutomation does the same.
+	// Before API 35 there is no public way to disconnect the instrumentation's UiAutomation; TouchBehaviorTestBase.TryDestroyUiAutomation does the same.
 	static bool TryDestroyUiAutomation(MauiTestInstrumentation instrumentation)
 	{
 		try

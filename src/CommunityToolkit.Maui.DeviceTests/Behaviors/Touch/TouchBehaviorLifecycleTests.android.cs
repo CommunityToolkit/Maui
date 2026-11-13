@@ -1,5 +1,7 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Android.Content;
+using Android.Runtime;
 using Android.Views.Accessibility;
 using CommunityToolkit.Maui.Behaviors;
 using FrameLayout = Android.Widget.FrameLayout;
@@ -38,8 +40,7 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// A disposed listener that stays registered makes the next touch exploration change call into a peer that no longer exists, and the
-	// process dies with NotSupportedException (Unable to activate instance of type AccessibilityListener).
+	// The listener is unregistered from the AccessibilityManager on dispose.
 	[Fact]
 	public async Task DisposeUnregistersTheAccessibilityListener()
 	{
@@ -300,8 +301,46 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
+	// From API 26 the AccessibilityManager posts each callback to the main looper with the listener captured, so one the system queued
+	// before the detach still reaches the listener afterwards. It must not crash the process whether or not the managed listener is still
+	// alive (the posted callback keeps the Java side of it referenced).
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task AccessibilityCallbacksTheSystemQueuedBeforeTheDetachReachALiveListener(bool accessibilityStateCallback)
+	{
+		SetupBuilder();
+
+		var element = new Grid();
+		var (parent, child) = CreateDetachedPlatformViews();
+		IntPtr queuedCallbackListener = IntPtr.Zero;
+
+		try
+		{
+			await InvokeOnMainThreadAsync(() => queuedCallbackListener = AttachAndDetachKeepingTheJavaListener(element, child));
+			await ReleaseNativeReferencesAsync();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var exception = Record.Exception(() => CallQueuedAccessibilityCallback(queuedCallbackListener, accessibilityStateCallback));
+
+				Assert.Null(exception);
+				Assert.False(child.HasOnClickListeners);
+			});
+		}
+		finally
+		{
+			if (queuedCallbackListener != IntPtr.Zero)
+			{
+				JNIEnv.DeleteGlobalRef(queuedCallbackListener);
+			}
+
+			RemoveTheListenersOfTheJavaView(parent);
+		}
+	}
+
 	[Fact]
-	public async Task AccessibilityListenerForgetsTheBehaviorOnlyWhenItIsDisposed()
+	public async Task AccessibilityListenerForgetsTheBehaviorWhenItIsDetached()
 	{
 		SetupBuilder();
 
@@ -418,6 +457,34 @@ public partial class TouchBehaviorLifecycleTests
 	static void InvokeUpdateClickHandler(TouchBehavior behavior) =>
 		(typeof(TouchBehavior).GetMethod("UpdateClickHandler", BindingFlags.Instance | BindingFlags.NonPublic)
 			?? throw new MissingMethodException(nameof(TouchBehavior), "UpdateClickHandler")).Invoke(behavior, null);
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static IntPtr AttachAndDetachKeepingTheJavaListener(Grid element, Android.Views.View child)
+	{
+		var behavior = new DirectTouchBehavior();
+		behavior.AttachDirect(element, child);
+		var listener = (Java.Lang.Object)(GetAccessibilityListener(behavior) ?? throw new InvalidOperationException("The behavior has no accessibility listener."));
+		var queuedCallbackListener = JNIEnv.NewGlobalRef(listener.Handle);
+
+		behavior.DetachDirect(element, child);
+		return queuedCallbackListener;
+	}
+
+	static void CallQueuedAccessibilityCallback(IntPtr listener, bool accessibilityStateCallback)
+	{
+		var listenerClass = JNIEnv.GetObjectClass(listener);
+
+		try
+		{
+			var callbackName = accessibilityStateCallback ? "onAccessibilityStateChanged" : "onTouchExplorationStateChanged";
+			var callback = JNIEnv.GetMethodID(listenerClass, callbackName, "(Z)V");
+			JNIEnv.CallVoidMethod(listener, callback, new JValue(true));
+		}
+		finally
+		{
+			JNIEnv.DeleteLocalRef(listenerClass);
+		}
+	}
 
 	static void NotifyAccessibilityChange(object listener, bool accessibilityState)
 	{
