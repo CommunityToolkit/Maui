@@ -498,12 +498,7 @@ function Get-RunAvds {
         $apiText = 'unknown'
         if ($config['image.sysdir.1'] -match 'android-(\d+(?:\.\d+)?)') {
             $apiText = $Matches[1]
-            $level = $apiText
-            if ($level -notmatch '\.') {
-                $level = "$level.0"
-            }
-
-            $api = [version]$level
+            $api = ConvertTo-RunApiVersion $apiText
         }
 
         New-Object PSObject -Property @{ Name = $file.BaseName; Api = $api; ApiText = $apiText; Abi = $config['abi.type']; Tag = $config['tag.id'] }
@@ -542,6 +537,23 @@ function ConvertTo-RunApiVersion {
     }
 
     return [version]$Level
+}
+
+function Get-RunSystemImagePackage {
+    # Google names the images from 36.1 on, and every image of 37, as Major.Minor (android-37.0). API 27 has a google_apis image for no x86_64 host.
+    param([version]$Level, [string]$Abi)
+
+    $name = $Level.Major.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+    if ($Level.Minor -ne 0 -or $Level.Major -ge 37) {
+        $name = "$($Level.Major).$($Level.Minor)"
+    }
+
+    $tag = 'google_apis'
+    if ($Level.Major -eq 27 -and $Abi -eq 'x86_64') {
+        $tag = 'default'
+    }
+
+    return "system-images;android-$name;$tag;$Abi"
 }
 
 function Format-RunApiVersion {
@@ -689,7 +701,7 @@ function Get-RunAndroidEntry {
     $choosesAvd = $Avd -or $ApiLevel
     if (-not $choosesAvd -and $emulators.Count -gt 1) {
         $serials = ($emulators | ForEach-Object { $_.Serial }) -join ', '
-        return New-RunPlanEntry -Id 'android' -Available $false -Detail "$($emulators.Count) emulators are running ($serials). Choose one with -DeviceId <serial>, or boot an AVD of your own with -Avd <name>."
+        return New-RunPlanEntry -Id 'android' -Available $false -Detail "$($emulators.Count) emulators are running ($serials). Choose one with -DeviceId <serial>, or boot an AVD of your own with -Avd <name> or -ApiLevel <level>."
     }
 
     if (-not $choosesAvd -and $emulators.Count -eq 1) {
@@ -722,8 +734,9 @@ function Get-RunAndroidEntry {
                 $existing = "AVDs: $(Format-RunAvdLevels $avds)"
             }
 
-            $image = "system-images;android-$ApiLevel;google_apis;$(@(Get-RunHostAbis)[0])"
-            return New-RunPlanEntry -Id 'android' -Available $false -Detail "no AVD has an API $ApiLevel phone or tablet image for this CPU ($abis); $existing. Create one: sdkmanager `"$image`"; avdmanager create avd -n CTM_DeviceTests_API_$ApiLevel -k `"$image`" -d pixel_7 (eng/devices/README.md, Quick start)."
+            $image = Get-RunSystemImagePackage -Level $level -Abi @(Get-RunHostAbis)[0]
+            $avdName = "CTM_ApiLevel_$(Format-RunApiVersion $level)"
+            return New-RunPlanEntry -Id 'android' -Available $false -Detail "no AVD has an API $ApiLevel phone or tablet image for this CPU ($abis); $existing. Create one: sdkmanager `"$image`"; echo no | avdmanager create avd -n $avdName -k `"$image`" -d pixel_7 (eng/devices/README.md, Quick start)."
         }
     }
     else {
@@ -1204,7 +1217,7 @@ try {
     }
 
     if ($ApiLevel) {
-        if ($ApiLevel -notmatch '^\d+(\.\d+)?$') {
+        if ($ApiLevel -notmatch '^\d{1,3}(\.\d{1,2})?$') {
             throw (New-Object System.ArgumentException "-ApiLevel '$ApiLevel' is not an Android API level. Use a number such as 30, 37 or 36.1.")
         }
 
