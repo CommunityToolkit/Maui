@@ -94,6 +94,37 @@ public class BoundServiceConnectionAndroidTests
 	}
 
 	[Fact]
+	public void AStopRequestedBeforeTheServiceConnectedRunsOnceWhenItConnects()
+	{
+		var service = new MediaControlsService();
+		var connection = new BoundServiceConnection(null!);
+		var stopped = new List<BoundServiceConnection>();
+		connection.StopWhenConnected(stopped.Add);
+		Assert.Empty(stopped);
+
+		AsServiceConnection(connection).OnServiceConnected(null, new BoundServiceBinder(service));
+		AsServiceConnection(connection).OnServiceConnected(null, new BoundServiceBinder(service));
+
+		Assert.Same(connection, Assert.Single(stopped));
+	}
+
+	[Fact]
+	public void AConnectionThatIsStoppedWhenItConnectsDoesNotListenToTaskRemoved()
+	{
+		var service = new MediaControlsService();
+		var connection = new BoundServiceConnection(null!);
+		var subscriber = new TaskRemovedSubscriber();
+		connection.MediaControlsServiceTaskRemoved += subscriber.Handle;
+		connection.StopWhenConnected(_ => { });
+
+		AsServiceConnection(connection).OnServiceConnected(null, new BoundServiceBinder(service));
+		service.OnTaskRemoved(null);
+
+		Assert.Equal(0, subscriber.Count);
+		GC.KeepAlive(subscriber);
+	}
+
+	[Fact]
 	public void TaskRemovedOfTheConnectedServiceReachesTheSubscribers()
 	{
 		var service = new MediaControlsService();
