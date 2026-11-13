@@ -14,7 +14,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	const double originalTranslationY = 5;
 	const double swingAngle = 15;
 	const double wobbleDistance = 25;
-	const double rotateTarget = 180;
+	const double rotateBy = 180;
 	const double translateTargetX = 60;
 	const double bounceDistance = 30;
 
@@ -61,7 +61,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		SetupBuilder();
 
 		var view = CreateAnimatedView(rotationAndAnchor);
-		var rotate = new RotateAnimation { Rotation = rotateTarget, Length = 2 * runLength };
+		var rotate = new RotateAnimation { Rotation = rotateBy, Length = 2 * runLength };
 		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = runLength };
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>

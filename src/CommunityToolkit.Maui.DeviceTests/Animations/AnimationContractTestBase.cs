@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase where TAnimation : BaseAnimation
 {
 	// Every run reaches its peak exactly: the segment that leads there ends on it
-	const double peakTolerance = 0.001;
+	protected const double peakTolerance = 0.001;
 
 	// Not the defaults: a view that ends at a default value instead of its own value fails
 	protected abstract IReadOnlyList<(BindableProperty Property, double Value)> OriginalValues { get; }
@@ -163,6 +163,53 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 			await CreateAnimation().Animate(view).WaitAsync(waitTimeout);
 
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after a run with the system's animations off");
+		});
+	}
+
+	[Fact]
+	public async Task SystemAnimationsSwitchedOffMidRunEndTheRunAtTheOriginalValues()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var run = CreateAnimation().Animate(view);
+			await midRun;
+
+			// MAUI force-finishes every running tween when its ticker reports the system's animations off, as when Reduce Motion is switched on
+			await DisableSystemAnimationsAsync(handler);
+
+			await run.WaitAsync(waitTimeout);
+			Assert.True(run.IsCompletedSuccessfully, $"The run ended {run.Status}, expected it to complete.");
+			await AssertStaysAtOriginalValuesAsync(handler, view, OriginalValues, nativeStateAtRest, "after the system's animations were switched off mid-run");
+		});
+	}
+
+	[Fact]
+	public async Task AnimationBehaviorCommandTokenCancelledMidRunReturnsTheViewToItsOriginalValues()
+	{
+		SetupBuilder();
+
+		var animation = new ObservedAnimation(CreateAnimation());
+		var behavior = new AnimationBehavior { AnimationType = animation };
+		var view = CreateAnimatedView(OriginalValues);
+		view.Behaviors.Add(behavior);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			using var cancellation = new CancellationTokenSource();
+			var midRun = WaitForMidRunAsync(view);
+			behavior.AnimateCommand.Execute(cancellation.Token);
+			await midRun;
+
+			// The command is async void: an OperationCanceledException escaping it would crash this test app
+			cancellation.Cancel();
+			await animation.WaitForEndedAnimationsAsync(1);
+
+			await AssertStaysAtOriginalValuesAsync(handler, view, OriginalValues, nativeStateAtRest, "after the command's token was cancelled mid-run");
 		});
 	}
 
