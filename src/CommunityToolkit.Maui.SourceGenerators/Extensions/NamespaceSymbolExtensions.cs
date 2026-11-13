@@ -5,6 +5,9 @@ namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
 
 static class NamespaceSymbolExtensions
 {
+	// Type arguments (IComparable<T>) and type parameters as constraints (where T : U) must survive; the global:: prefix keeps the names valid inside any namespace.
+	static readonly SymbolDisplayFormat constraintTypeFormat = SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
 	public static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(this INamespaceSymbol namespaceSymbol)
 	{
 		var stack = new Stack<INamespaceSymbol>();
@@ -111,16 +114,14 @@ static class NamespaceSymbolExtensions
 				constraints.Append("struct");
 			}
 
-			foreach (INamedTypeSymbol contstraintType in typeParameterSymbol.ConstraintTypes.Cast<INamedTypeSymbol>())
+			foreach (var constraintType in typeParameterSymbol.ConstraintTypes)
 			{
 				if (constraints.Length > 0)
 				{
 					constraints.Append(", ");
 				}
 
-				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-																	miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
-				constraints.Append(contstraintType.ToDisplayString(symbolDisplayFormat));
+				constraints.Append(constraintType.ToDisplayString(constraintTypeFormat));
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
