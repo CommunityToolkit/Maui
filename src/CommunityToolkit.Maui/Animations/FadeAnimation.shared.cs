@@ -21,7 +21,10 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 	/// <summary>
 	/// Gets or sets the opacity to fade to before returning to the element's original <see cref="VisualElement.Opacity"/>.
 	/// </summary>
-	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	/// <remarks>
+	/// Must be a finite number; assigning NaN or an infinity is ignored.
+	/// </remarks>
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWay, ValidateValueMethodName = nameof(IsFinite))]
 	public partial double Opacity { get; set; } = FadeAnimationDefaults.Opacity;
 
 	/// <inheritdoc />

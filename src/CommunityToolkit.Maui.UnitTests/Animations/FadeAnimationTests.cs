@@ -211,6 +211,18 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 		Assert.Equal(BaseAnimationDefaults.Easing, animation.Easing);
 		Assert.Equal(FadeAnimationDefaults.Length, animation.Length);
 		Assert.Equal(FadeAnimationDefaults.Opacity, animation.Opacity);
+		Assert.Equal(BindingMode.OneWay, FadeAnimation.OpacityProperty.DefaultBindingMode);
+	}
+
+	[Theory]
+	[InlineData(double.NaN)]
+	[InlineData(double.PositiveInfinity)]
+	[InlineData(double.NegativeInfinity)]
+	public void Opacity_NonFiniteValueIsIgnored(double nonFiniteValue)
+	{
+		var animation = new FadeAnimation { Opacity = nonFiniteValue };
+
+		Assert.Equal(FadeAnimationDefaults.Opacity, animation.Opacity);
 	}
 
 	static Label CreateAnimatedLabel(double opacity = originalOpacity)
