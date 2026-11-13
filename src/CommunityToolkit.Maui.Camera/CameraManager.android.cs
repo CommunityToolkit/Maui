@@ -388,7 +388,9 @@ partial class CameraManager
 			processCameraProvider?.Unbind(cameraPreview);
 			cameraPreview.Dispose();
 		}
-		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
+		var previewBuilder = new Preview.Builder();
+		previewBuilder.SetResolutionSelector(resolutionSelector);
+		cameraPreview = previewBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the Preview.");
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
 	}
 
@@ -405,11 +407,11 @@ partial class CameraManager
 		};
 
 		// A new ImageCapture starts with CameraX's default flash mode, not the one of the view
-		return new ImageCapture.Builder()
-			.SetCaptureMode(imageCaptureMode)
-			.SetFlashMode(cameraView.CameraFlashMode.ToPlatform())
-			.SetResolutionSelector(resolutionSelector)
-			.Build();
+		var imageCaptureBuilder = new ImageCapture.Builder();
+		imageCaptureBuilder.SetCaptureMode(imageCaptureMode);
+		imageCaptureBuilder.SetFlashMode(cameraView.CameraFlashMode.ToPlatform());
+		imageCaptureBuilder.SetResolutionSelector(resolutionSelector);
+		return imageCaptureBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageCapture.");
 	}
 
 	// The current ImageCapture is released once its replacement exists, so that a failure while creating the replacement (an undefined
@@ -440,7 +442,7 @@ partial class CameraManager
 
 		if (Quality.Highest is not null)
 		{
-			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
+			videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
 		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
@@ -694,7 +696,7 @@ partial class CameraManager
 				}
 			}
 
-			var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+			var point = previewView.MeteringPointFactory?.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 			var action = new FocusMeteringAction.Builder(point).Build();
 			camera?.CameraControl?.StartFocusAndMetering(action);
 
@@ -1219,7 +1221,7 @@ partial class CameraManager
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
-		public override void OnCaptureSuccess(IImageProxy image)
+		public override void OnCaptureSuccess(IImageProxy? image)
 		{
 			base.OnCaptureSuccess(image);
 			var img = image?.Image;
@@ -1268,7 +1270,7 @@ partial class CameraManager
 			}
 		}
 
-		public override void OnError(ImageCaptureException exception)
+		public override void OnError(ImageCaptureException? exception)
 		{
 			base.OnError(exception);
 			cameraView.OnMediaCapturedFailed(exception?.Message ?? "An unknown error occurred.");
