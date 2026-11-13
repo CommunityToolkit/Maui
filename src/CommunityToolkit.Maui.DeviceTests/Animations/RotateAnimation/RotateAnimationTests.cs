@@ -18,6 +18,8 @@ public class RotateAnimationTests : ToAnimationTestBase<RotateAnimation>
 
 	protected override RotateAnimation CreateAnimation() => new() { Rotation = rotation, Length = runLength };
 
+	protected override Task<bool> AppToAnimation(VisualElement view, double target) => view.RotateToAsync(target, runLength, Easing.Linear);
+
 	[Fact]
 	public async Task DefaultRotationTurnsATiltedViewAFullTurnAndEndsAtItsTilt()
 	{

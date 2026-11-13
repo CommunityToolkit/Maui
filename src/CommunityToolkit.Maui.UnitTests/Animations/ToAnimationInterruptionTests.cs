@@ -144,6 +144,44 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		view.Opacity.Should().BeApproximately(appTarget, precision);
 	}, TestContext.Current.CancellationToken);
 
+	public static TheoryData<string, bool> ToAnimationsAndWhetherCancelAnimationsComesFirst { get; } = new()
+	{
+		{ nameof(FadeAnimation), false }, { nameof(FadeAnimation), true },
+		{ nameof(ScaleAnimation), false }, { nameof(ScaleAnimation), true },
+		{ nameof(RotateAnimation), false }, { nameof(RotateAnimation), true },
+		{ nameof(FlipHorizontalAnimation), false }, { nameof(FlipHorizontalAnimation), true },
+		{ nameof(FlipVerticalAnimation), false }, { nameof(FlipVerticalAnimation), true },
+	};
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationsAndWhetherCancelAnimationsComesFirst))]
+	public Task AppsOwnToAnimationHoldingTheCurrentValueTakesOver_TheInterruptedRunDoesNotReturnTheView(string animationName, bool cancelAnimationsFirst) => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var (property, _) = PropertyOf(animationName);
+		var originalValue = startingValues[IndexOf(property)];
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var run = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		Task<bool> appRun;
+		using (var restores = new OriginalValueWrites(view, property, originalValue))
+		{
+			if (cancelAnimationsFirst)
+			{
+				view.CancelAnimations();
+			}
+
+			// Targeting the current value keeps the app's frames from changing it, so only the AnimationIsRunning guard can tell the run that it was taken over
+			appRun = AppToAnimation(animationName, view, (double)view.GetValue(property), token);
+			await run.WaitAsync(waitTimeout, token);
+			await appRun.WaitAsync(waitTimeout, token);
+			restores.Count.Should().Be(0, "the app's own To animation took over");
+		}
+	}, TestContext.Current.CancellationToken);
+
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(ToAnimationNames))]
 	public Task CancelAnimationsThenTheAppSetsTheProperty_KeepsTheAppsValue(string animationName) => RunOnSingleThreadAsync(async token =>
@@ -315,6 +353,16 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		nameof(RotateAnimation) => (VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync)),
 		nameof(FlipHorizontalAnimation) => (VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync)),
 		nameof(FlipVerticalAnimation) => (VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync)),
+		_ => throw new NotSupportedException(animationName)
+	};
+
+	static Task<bool> AppToAnimation(string animationName, VisualElement view, double target, CancellationToken token) => animationName switch
+	{
+		nameof(FadeAnimation) => view.FadeToAsync(target, functionalTestLength, Easing.Linear, token),
+		nameof(ScaleAnimation) => view.ScaleToAsync(target, functionalTestLength, Easing.Linear, token),
+		nameof(RotateAnimation) => view.RotateToAsync(target, functionalTestLength, Easing.Linear, token),
+		nameof(FlipHorizontalAnimation) => view.RotateYToAsync(target, functionalTestLength, Easing.Linear, token),
+		nameof(FlipVerticalAnimation) => view.RotateXToAsync(target, functionalTestLength, Easing.Linear, token),
 		_ => throw new NotSupportedException(animationName)
 	};
 

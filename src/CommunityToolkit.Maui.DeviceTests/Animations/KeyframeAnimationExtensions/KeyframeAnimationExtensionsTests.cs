@@ -115,8 +115,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 			await AssertStaysAtOriginalValuesAsync(handler, view, rotationAndAnchor, nativeStateAtRest, "after Swing replaced the Rotate animation");
 
-			// A restore the Rotate animation made after Swing took over would be posted, landing after Animate returned. Android's synchronous first frame inside Animate
-			// also writes the original rotation, and Swing's own frames only do at its end.
+			// A restore the Rotate animation made after Swing took over would be posted, landing after Animate returned; Swing's own frames reach the original rotation only at its end.
 			void CountRestoreWritesUntilSwingPeaks(object? sender, PropertyChangedEventArgs e)
 			{
 				if (!swingAnimateReturned || swingPeakReached || e.PropertyName != VisualElement.RotationProperty.PropertyName)

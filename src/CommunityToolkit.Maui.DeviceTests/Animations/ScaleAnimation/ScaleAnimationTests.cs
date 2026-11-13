@@ -16,4 +16,6 @@ public class ScaleAnimationTests : ToAnimationTestBase<ScaleAnimation>
 	protected override double PeakValue => targetScale;
 
 	protected override ScaleAnimation CreateAnimation() => new() { Scale = targetScale, Length = runLength };
+
+	protected override Task<bool> AppToAnimation(VisualElement view, double target) => view.ScaleToAsync(target, runLength, Easing.Linear);
 }

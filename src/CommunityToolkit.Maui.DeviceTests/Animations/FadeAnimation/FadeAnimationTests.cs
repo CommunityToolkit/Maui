@@ -25,6 +25,8 @@ public class FadeAnimationTests : ToAnimationTestBase<FadeAnimation>
 
 	protected override FadeAnimation CreateAnimation() => new() { Opacity = fadedOpacity, Length = fadeLength };
 
+	protected override Task<bool> AppToAnimation(VisualElement view, double target) => view.FadeToAsync(target, runLength, Easing.Linear);
+
 	// An animation started mid-fade must not take the partially faded opacity as the one to return to: the view would stay dim, also after
 	// every later animation.
 	[Fact]

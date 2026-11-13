@@ -7,6 +7,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // A "To" animation runs under .NET MAUI's own animation handles, so a run started while another one runs interrupts it without AnimationBehavior's help
 public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBase<TAnimation> where TAnimation : BaseAnimation
 {
+	protected abstract Task<bool> AppToAnimation(VisualElement view, double target);
+
 	[Fact]
 	public async Task AnimationStartedMidRunStopsTheRunningOneAndReturnsTheViewToItsOriginalValues()
 	{
@@ -128,6 +130,54 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 				}
 
 				peakReached = Math.Abs(value - PeakValue) <= peakTolerance;
+			}
+		});
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task AppsOwnToAnimationHoldingTheCurrentValueTakesOverWithoutTheInterruptedRunReturningTheView(bool cancelAnimationsFirst)
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var run = CreateAnimation().Animate(view);
+			await midRun;
+
+			var restoreWrites = 0;
+			var appTarget = (double)view.GetValue(PeakProperty);
+			view.PropertyChanged += CountOriginalValueWrites;
+			try
+			{
+				if (cancelAnimationsFirst)
+				{
+					view.CancelAnimations();
+				}
+
+				var appRun = AppToAnimation(view, appTarget);
+				await Task.WhenAll(run, appRun).WaitAsync(waitTimeout);
+			}
+			finally
+			{
+				view.PropertyChanged -= CountOriginalValueWrites;
+			}
+
+			Assert.True(restoreWrites is 0, $"The interrupted run wrote the original value {restoreWrites} time(s) under the app's own To animation; it must leave the view to it.");
+			var valueAtTheEnd = (double)view.GetValue(PeakProperty);
+			Assert.True(Math.Abs(valueAtTheEnd - appTarget) <= peakTolerance, $"The view ended at {valueAtTheEnd}, expected the app's target {appTarget}.");
+
+			void CountOriginalValueWrites(object? sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == PeakProperty.PropertyName && (double)view.GetValue(PeakProperty) == originalValue)
+				{
+					restoreWrites++;
+				}
 			}
 		});
 	}

@@ -17,4 +17,6 @@ public class FlipHorizontalAnimationTests : ToAnimationTestBase<FlipHorizontalAn
 	protected override double PeakValue => targetRotationY;
 
 	protected override FlipHorizontalAnimation CreateAnimation() => new() { Rotation = targetRotationY, Length = runLength };
+
+	protected override Task<bool> AppToAnimation(VisualElement view, double target) => view.RotateYToAsync(target, runLength, Easing.Linear);
 }
