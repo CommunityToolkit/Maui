@@ -7,14 +7,16 @@ namespace CommunityToolkit.Maui.Animations;
 /// </summary>
 /// <remarks>
 /// The view rotates around its y-axis to <see cref="RotateAnimation.Rotation"/> and then back to the y-axis rotation it had before it started flipping.
+/// Cancelling the token while the animation runs returns the view to that rotation and ends the returned <see cref="Task"/> as canceled.
 /// </remarks>
-public class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalAnimationDefaults.Length)
+public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalAnimationDefaults.Length)
 {
 	/// <inheritdoc />
-	protected override double DefaultRotation { get; set; } = FlipHorizontalAnimationDefaults.Rotation;
+	protected override double DefaultRotation => FlipHorizontalAnimationDefaults.Rotation;
 
 	/// <inheritdoc />
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">The returned <see cref="Task"/> ends canceled when <paramref name="token"/> is cancelled; when that happens while the animation runs, the view returns to its original y-axis rotation first.</exception>
 	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
@@ -38,7 +40,18 @@ public class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalAnimation
 
 			if (!wasInterrupted && rotations.IsLatest(flipId))
 			{
-				await view.RotateYToAsync(originalRotationY, halfLength, Easing, token);
+				wasInterrupted = await view.RotateYToAsync(originalRotationY, halfLength, Easing, token);
+			}
+
+			if (wasInterrupted && token.IsCancellationRequested)
+			{
+				// A cancelled animation has no successor to return the view to its original rotation
+				if (rotations.IsLatest(flipId))
+				{
+					view.RotationY = originalRotationY;
+				}
+
+				token.ThrowIfCancellationRequested();
 			}
 		}
 		finally

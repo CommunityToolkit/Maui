@@ -4,7 +4,6 @@ using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Nito.AsyncEx;
-using System.Diagnostics;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
@@ -13,9 +12,18 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 {
 	protected const double precision = 0.001;
 
-	protected static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
+	// Only a guard against a hang: a test that waits this long has failed anyway
+	protected static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(15);
 
-	static readonly (string Name, BindableProperty Property)[] animatableProperties =
+	// Facts that check behaviour, not duration, run short so they fit the test timeouts on slow CI machines
+	protected const uint functionalTestLength = 200;
+
+	// Each Commit ends on the first 16 ms mock tick at or after its length; FadeAnimation, ScaleAnimation and the flips commit twice
+	const uint maximumTickRoundingMilliseconds = 2 * 16;
+
+	const uint customTimingTestLength = 500;
+
+	protected static readonly (string Name, BindableProperty Property)[] animatableProperties =
 	[
 		(nameof(VisualElement.Opacity), VisualElement.OpacityProperty),
 		(nameof(VisualElement.Scale), VisualElement.ScaleProperty),
@@ -32,16 +40,38 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 
 	protected virtual TAnimation CreateAnimation() => new();
 
+	protected TAnimation CreateFunctionalAnimation()
+	{
+		var animation = CreateAnimation();
+		animation.Length = Math.Min(animation.Length, functionalTestLength);
+
+		return animation;
+	}
+
+	// Where an interrupted animation leaves the view differs between the animation families
+	protected virtual bool InterruptionLeavesViewMidAnimation => true;
+
+	protected virtual void Interrupt(VisualElement view) => view.CancelAnimations();
+
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task LengthShouldDictateFullAnimationLength() => RunOnSingleThreadAsync(async token =>
 	{
 		var animation = CreateAnimation();
 
-		var fastestDuration = await MeasureFastestDurationAsync(animation, token);
+		var elapsedMilliseconds = await MeasureElapsedAnimationMillisecondsAsync(animation, token);
 
-		double allowance = (animation.Length * 0.1) + 50;
+		elapsedMilliseconds.Should().BeInRange(animation.Length, animation.Length + maximumTickRoundingMilliseconds);
+	}, TestContext.Current.CancellationToken);
 
-		fastestDuration.TotalMilliseconds.Should().BeApproximately(animation.Length, allowance);
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task LengthShouldDictateFullAnimationLength_WithCustomLength() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = CreateAnimation();
+		animation.Length = customTimingTestLength;
+
+		var elapsedMilliseconds = await MeasureElapsedAnimationMillisecondsAsync(animation, token);
+
+		elapsedMilliseconds.Should().BeInRange(customTimingTestLength, customTimingTestLength + maximumTickRoundingMilliseconds);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -57,7 +87,7 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Animate_AlreadyCancelledToken_ThrowsOperationCanceledException()
 	{
-		var animation = CreateAnimation();
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
@@ -70,7 +100,7 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_ReturnsEveryPropertyToItsNonDefaultStartingValue() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = CreateAnimation();
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 
@@ -82,7 +112,7 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_StartedWhileTheSameAnimationRuns_ReturnsEveryPropertyToItsValueBeforeTheFirstAnimation() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = CreateAnimation();
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 
@@ -97,10 +127,9 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_TokenCancelledMidAnimation_CompletesWithoutThrowingAndStopsAnimating() => RunOnSingleThreadAsync(async token =>
+	public Task Animate_TokenCancelledMidAnimation_ThrowsAndReturnsEveryPropertyToItsStartingValue() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = CreateAnimation();
-		animation.Length = 1000;
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -109,27 +138,24 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 		var runningAnimation = animation.Animate(view, cancellationTokenSource.Token);
 		await firstChange;
 
-		// CancelAsync would run MAUI's abort callback on a thread-pool thread, racing the mock ticker for MAUI's static animation bookkeeping.
+		// Cancel, not CancelAsync: the abort must run on this thread, which also ticks the animations, because MAUI's animation bookkeeping is not thread-safe
 		cancellationTokenSource.Cancel();
-		await runningAnimation.WaitAsync(waitTimeout, token);
-		var valuesAtCompletion = CaptureValues(view);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runningAnimation.WaitAsync(waitTimeout, token));
 
-		HasAnyValueChanged(valuesAtCompletion, startingValues).Should().BeTrue("a cancelled animation is not restored");
+		AssertValuesEqual(view, startingValues);
 
-		var changedAfterCompletion = false;
-		view.PropertyChanged += (_, _) => changedAfterCompletion = true;
-		// Proving that nothing happens needs a fixed quiet window.
+		var changedAfterCancellation = false;
+		view.PropertyChanged += (_, _) => changedAfterCancellation = true;
+		// Proving that nothing happens needs a fixed quiet window
 		await Task.Delay(TimeSpan.FromMilliseconds(150), token);
 
-		changedAfterCompletion.Should().BeFalse("a cancelled animation stops where it is");
-		AssertValuesEqual(view, valuesAtCompletion);
+		changedAfterCancellation.Should().BeFalse("a cancelled animation stops animating");
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_StartedAfterCancelAnimationsInterruptedIt_ReturnsEveryPropertyToItsValueBeforeTheFirstAnimation() => RunOnSingleThreadAsync(async token =>
+	public Task Animate_StartedAfterAnInterruption_ReturnsEveryPropertyToItsValueBeforeTheFirstAnimation() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = CreateAnimation();
-		animation.Length = 1000;
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 
@@ -137,11 +163,10 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 		var firstAnimation = animation.Animate(view, token);
 		await firstChange;
 
-		// AnimationBehavior cancels the running animation before it starts the next one
-		view.CancelAnimations();
+		Interrupt(view);
 		await firstAnimation.WaitAsync(waitTimeout, token);
 
-		HasAnyValueChanged(CaptureValues(view), startingValues).Should().BeTrue("an interrupted animation stops where it is");
+		HasAnyValueChanged(CaptureValues(view), startingValues).Should().Be(InterruptionLeavesViewMidAnimation);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -151,7 +176,7 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_OnTwoViewsAtOnce_ReturnsEachViewToItsOwnStartingValues() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = CreateAnimation();
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var otherView = CreateOtherAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
@@ -211,24 +236,15 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 		return label;
 	}
 
-	protected static async Task<TimeSpan> MeasureFastestDurationAsync(BaseAnimation animation, CancellationToken token, int runs = 3)
+	protected static async Task<long> MeasureElapsedAnimationMillisecondsAsync(BaseAnimation animation, CancellationToken token)
 	{
-		// Machine load only ever slows a run down, while a wrong length shows in every run.
-		var fastestDuration = TimeSpan.MaxValue;
+		Label label = new();
+		label.EnableAnimations();
 
-		for (var run = 0; run < runs; run++)
-		{
-			Label label = new();
-			label.EnableAnimations();
+		var startMilliseconds = label.GetElapsedAnimationMilliseconds();
+		await animation.Animate(label, token).WaitAsync(waitTimeout, token);
 
-			var stopwatch = Stopwatch.StartNew();
-			await animation.Animate(label, token);
-			stopwatch.Stop();
-
-			fastestDuration = stopwatch.Elapsed < fastestDuration ? stopwatch.Elapsed : fastestDuration;
-		}
-
-		return fastestDuration;
+		return label.GetElapsedAnimationMilliseconds() - startMilliseconds;
 	}
 
 	protected static Task WaitForPropertyAsync(VisualElement view, BindableProperty property, CancellationToken token, params Func<double, bool>[] conditions)
@@ -250,7 +266,7 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 		}
 	}
 
-	static Task WaitForAnyChangeAsync(VisualElement view, double[] baseline, CancellationToken token)
+	protected static Task WaitForAnyChangeAsync(VisualElement view, double[] baseline, CancellationToken token)
 	{
 		var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 

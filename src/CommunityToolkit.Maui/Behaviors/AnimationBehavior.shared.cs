@@ -158,6 +158,9 @@ public partial class AnimationBehavior : EventToCommandBehavior
 
 		View.CancelAnimations();
 
+		// CancelAnimations stops only .NET MAUI's own animations; a running keyframe animation would keep moving the view this animation starts from
+		View.AbortAnimation(KeyframeAnimationExtensions.AnimationHandle);
+
 		try
 		{
 			token.ThrowIfCancellationRequested();

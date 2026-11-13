@@ -8,7 +8,8 @@ namespace CommunityToolkit.Maui.Animations;
 /// <remarks>
 /// The original rotation is the rotation the view had before it started rotating. An animation that starts while another animation
 /// still rotates the same view returns the view to the rotation it had before the first of these animations; the animation it interrupts
-/// stops where it is.
+/// stops where it is. Cancelling the token while the animation runs returns the view to its original rotation and ends the returned
+/// <see cref="Task"/> as canceled.
 /// </remarks>
 public partial class RotateAnimation : BaseAnimation
 {
@@ -30,16 +31,20 @@ public partial class RotateAnimation : BaseAnimation
 	/// <summary>
 	/// Gets or sets the rotation, in degrees, used by the animation.
 	/// </summary>
-	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay, DefaultValueCreatorMethodName = nameof(CreateRotationDefaultValue))]
+	/// <remarks>
+	/// Must be a finite number; assigning NaN or an infinity is ignored.
+	/// </remarks>
+	[BindableProperty(DefaultBindingMode = BindingMode.OneWay, ValidateValueMethodName = nameof(IsFinite), DefaultValueCreatorMethodName = nameof(CreateRotationDefaultValue))]
 	public partial double Rotation { get; set; }
 
 	/// <summary>
-	/// Gets or sets the default rotation used by the animation.
+	/// Gets the default rotation used by the animation.
 	/// </summary>
-	protected virtual double DefaultRotation { get; set; } = RotateAnimationDefaults.Rotation;
+	protected virtual double DefaultRotation => RotateAnimationDefaults.Rotation;
 
 	/// <inheritdoc />
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">The returned <see cref="Task"/> ends canceled when <paramref name="token"/> is cancelled; when that happens while the animation runs, the view returns to its original rotation first.</exception>
 	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
@@ -62,6 +67,17 @@ public partial class RotateAnimation : BaseAnimation
 			if (!wasInterrupted && rotations.IsLatest(rotationId))
 			{
 				view.Rotation = originalRotation;
+			}
+
+			if (wasInterrupted && token.IsCancellationRequested)
+			{
+				// A cancelled animation has no successor to return the view to its original rotation
+				if (rotations.IsLatest(rotationId))
+				{
+					view.Rotation = originalRotation;
+				}
+
+				token.ThrowIfCancellationRequested();
 			}
 		}
 		finally

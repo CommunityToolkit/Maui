@@ -32,6 +32,9 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
 	public abstract Task Animate(TAnimatable view, CancellationToken token = default);
 
+	// A NaN or infinite value would be written into the platform view's transform on every frame
+	private protected static bool IsFinite(BindableObject bindable, object value) => value is double number && double.IsFinite(number);
+
 	static object CreateLengthDefaultValue(BindableObject bindable) => ((BaseAnimation<TAnimatable>)bindable).defaultLength;
 }
 

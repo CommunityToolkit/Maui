@@ -177,6 +177,54 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 	}
 
 	[Fact]
+	public void AnimateCommandTokenCanceledMidAnimation()
+	{
+		OperationCanceledException? exception = null;
+		using var animationCommandCts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+		var behavior = new AnimationBehavior
+		{
+			AnimationType = new ShakeAnimation { Length = 2000 }
+		};
+
+		var label = new Label
+		{
+			Behaviors = { behavior }
+		};
+		label.EnableAnimations();
+
+		var shaking = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		label.PropertyChanged += HandlePropertyChanged;
+
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget AnimateCommand (ICommand)
+			AsyncContext.Run(async () =>
+			{
+				behavior.AnimateCommand.Execute(animationCommandCts.Token);
+				await shaking.Task.WaitAsync(TimeSpan.FromSeconds(15), TestContext.Current.CancellationToken);
+				animationCommandCts.Cancel();
+			});
+		}
+		catch (OperationCanceledException e)
+		{
+			exception = e;
+		}
+
+		Assert.NotNull(exception);
+		label.TranslationX.Should().Be(0);
+
+		void HandlePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(VisualElement.TranslationX))
+			{
+				label.PropertyChanged -= HandlePropertyChanged;
+				shaking.TrySetResult();
+			}
+		}
+	}
+
+	[Fact]
 	public void AnimateCommandTokenExpired()
 	{
 		OperationCanceledException? exception = null;

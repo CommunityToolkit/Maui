@@ -10,19 +10,28 @@ static class AnimationExtensions
 {
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
+	public static long GetElapsedAnimationMilliseconds(this IView view) =>
+		view.Handler is MockAnimationHandler handler ? handler.ElapsedAnimationMilliseconds : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
+
 	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
 	sealed class MockAnimationHandler : ViewHandler<IView, object>
 	{
 		const int millisecondTickIncrement = 16;
 
-		MockAnimationHandler(IAnimationManager animationManager, IDispatcherProvider dispatcherProvider) : base(new PropertyMapper<IView>())
+		readonly TestAnimationManager animationManager;
+
+		MockAnimationHandler(TestAnimationManager animationManager, IDispatcherProvider dispatcherProvider) : base(new PropertyMapper<IView>())
 		{
+			this.animationManager = animationManager;
 			SetMauiContext(new AnimationEnabledMauiContext(animationManager, dispatcherProvider));
 		}
 
 		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()), new MockDispatcherProvider())
 		{
 		}
+
+		// The ticker advances animations a fixed 16 ms per tick however long a tick really takes, so this clock does not depend on the speed of the machine
+		public long ElapsedAnimationMilliseconds => animationManager.ElapsedMilliseconds;
 
 		public static T Prepare<T>(T view) where T : IView
 		{
@@ -144,6 +153,8 @@ static class AnimationExtensions
 				Ticker.Fire = OnFire;
 			}
 
+			public long ElapsedMilliseconds { get; private set; }
+
 			public double SpeedModifier { get; set; } = 1;
 
 			public bool AutoStartTicker { get; set; } = false;
@@ -170,6 +181,7 @@ static class AnimationExtensions
 
 			void OnFire()
 			{
+				var hasTicked = false;
 				var animationsList = this.animations.ToList();
 				animationsList.ForEach(AnimationTick);
 
@@ -185,6 +197,13 @@ static class AnimationExtensions
 						this.animations.Remove(animation);
 						animation.RemoveFromParent();
 						return;
+					}
+
+					// Counted before the tick: an animation that ends on it can resume its awaiter synchronously, which reads this clock
+					if (!hasTicked)
+					{
+						hasTicked = true;
+						ElapsedMilliseconds += millisecondTickIncrement;
 					}
 
 					animation.Tick(millisecondTickIncrement);

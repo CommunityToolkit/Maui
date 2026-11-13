@@ -23,6 +23,17 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 		Assert.Equal(200u, animation.Length);
 	}
 
+	[Theory]
+	[InlineData(double.NaN)]
+	[InlineData(double.PositiveInfinity)]
+	[InlineData(double.NegativeInfinity)]
+	public void Rotation_NonFiniteValueIsIgnored(double nonFiniteValue)
+	{
+		var animation = new RotateAnimation { Rotation = nonFiniteValue };
+
+		Assert.Equal(RotateAnimationDefaults.Rotation, animation.Rotation);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_ReachesRotation() => RunOnSingleThreadAsync(async token =>
 	{

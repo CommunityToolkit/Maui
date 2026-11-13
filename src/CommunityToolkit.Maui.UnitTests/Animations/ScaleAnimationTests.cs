@@ -22,6 +22,17 @@ public class ScaleAnimationTests : BaseAnimationTests<ScaleAnimation>
 		Assert.Equal(1.2, animation.Scale);
 	}
 
+	[Theory]
+	[InlineData(double.NaN)]
+	[InlineData(double.PositiveInfinity)]
+	[InlineData(double.NegativeInfinity)]
+	public void Scale_NonFiniteValueIsIgnored(double nonFiniteValue)
+	{
+		var animation = new ScaleAnimation { Scale = nonFiniteValue };
+
+		Assert.Equal(ScaleAnimationDefaults.Scale, animation.Scale);
+	}
+
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_PeaksAtScale() => RunOnSingleThreadAsync(async token =>
 	{

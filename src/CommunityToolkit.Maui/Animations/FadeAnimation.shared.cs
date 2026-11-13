@@ -12,6 +12,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// again before its animation ended, returns the view to the opacity it had before the first of these animations, not to the partially
 /// faded opacity it starts from; the animation it interrupts ends without fading the view back. The same applies to an animation that
 /// starts after an interrupted animation left the view partially faded, unless the view's opacity was changed in the meantime.
+/// Cancelling the token while the animation runs returns the view to its original opacity and ends the returned <see cref="Task"/> as canceled.
 /// </remarks>
 public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Length)
 {
@@ -23,6 +24,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 	/// <inheritdoc />
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="OperationCanceledException">The returned <see cref="Task"/> ends canceled when <paramref name="token"/> is cancelled; when that happens while the animation runs, the view returns to its original opacity first.</exception>
 	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
@@ -46,12 +48,21 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 			var wasInterrupted = await view.FadeToAsync(Opacity, halfLength, Easing, token);
 
 			// An interrupted fade stops where it is: the animation that interrupted it, if any, returns the view to its original opacity
-			if (wasInterrupted || !fades.IsLatest(fadeId))
+			if (!wasInterrupted && fades.IsLatest(fadeId))
 			{
-				return;
+				wasInterrupted = await view.FadeToAsync(originalOpacity, halfLength, Easing, token);
 			}
 
-			await view.FadeToAsync(originalOpacity, halfLength, Easing, token);
+			if (wasInterrupted && token.IsCancellationRequested)
+			{
+				// A cancelled animation has no successor to return the view to its original opacity
+				if (fades.IsLatest(fadeId))
+				{
+					view.Opacity = originalOpacity;
+				}
+
+				token.ThrowIfCancellationRequested();
+			}
 		}
 		finally
 		{

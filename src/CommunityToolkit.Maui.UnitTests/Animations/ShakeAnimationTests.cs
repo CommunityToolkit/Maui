@@ -7,10 +7,12 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-public class ShakeAnimationTests : BaseAnimationTests<ShakeAnimation>
+public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 {
 	const double originalTranslationX = 12;
 	const double originalTranslationY = 7;
+
+	protected override IReadOnlySet<string> AnimatedProperties { get; } = new HashSet<string> { nameof(VisualElement.TranslationX) };
 
 	[Fact]
 	public void EnsureDefaults()
@@ -43,7 +45,7 @@ public class ShakeAnimationTests : BaseAnimationTests<ShakeAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_ReachesBothSidesOfTheStartFactor() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new ShakeAnimation();
+		var animation = new ShakeAnimation { Length = functionalTestLength };
 		var view = CreateAnimatedView();
 
 		var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
@@ -59,7 +61,7 @@ public class ShakeAnimationTests : BaseAnimationTests<ShakeAnimation>
 	{
 		const double startFactor = 30;
 
-		var animation = new ShakeAnimation { StartFactor = startFactor };
+		var animation = new ShakeAnimation { StartFactor = startFactor, Length = functionalTestLength };
 		var view = CreateAnimatedView();
 
 		var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
@@ -73,7 +75,7 @@ public class ShakeAnimationTests : BaseAnimationTests<ShakeAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_LeavesTranslationYUntouched() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new ShakeAnimation();
+		var animation = new ShakeAnimation { Length = functionalTestLength };
 		var view = CreateAnimatedView();
 		var translationYChanges = 0;
 		view.PropertyChanged += HandlePropertyChanged;
@@ -98,10 +100,116 @@ public class ShakeAnimationTests : BaseAnimationTests<ShakeAnimation>
 	{
 		var animation = new ShakeAnimation { StartFactor = 11, ReducingAmount = 10 };
 
-		var fastestDuration = await MeasureFastestDurationAsync(animation, token);
+		var elapsedMilliseconds = await MeasureElapsedAnimationMillisecondsAsync(animation, token);
 
-		fastestDuration.TotalMilliseconds.Should().BeApproximately(animation.Length, 100);
+		elapsedMilliseconds.Should().BeInRange(animation.Length, animation.Length + 16);
 	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_StartFactorFarLargerThanReducingAmount_StillTakesTheFullLength() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { StartFactor = 15, ReducingAmount = 0.01, Length = functionalTestLength };
+
+		var elapsedMilliseconds = await MeasureElapsedAnimationMillisecondsAsync(animation, token);
+
+		elapsedMilliseconds.Should().BeInRange(animation.Length, animation.Length + 16);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(1e-12)]
+	[InlineData(double.Epsilon)]
+	public Task Animate_ReducingAmountFarSmallerThanStartFactor_CompletesAndReturnsToRest(double reducingAmount) => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { StartFactor = 15, ReducingAmount = reducingAmount, Length = functionalTestLength };
+		var view = CreateAnimatedView();
+
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		view.TranslationX.Should().BeApproximately(originalTranslationX, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_StartFactorFarLargerThanReducingAmount_KeepsShakingUntilTheEnd() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { StartFactor = 15, ReducingAmount = 0.01, Length = functionalTestLength };
+		var view = CreateAnimatedView();
+		using var recorder = new PropertyRecorder(view);
+
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList();
+		var lastQuarter = translations.Skip(translations.Count * 3 / 4).Take(translations.Count / 4 - 1);
+		lastQuarter.Max(translationX => Math.Abs(translationX - originalTranslationX)).Should().BeGreaterThan(10);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_WithDefaults_MakesAFinalMovementBackToRestInsteadOfSnapping() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { Length = functionalTestLength };
+		var view = CreateAnimatedView();
+		using var recorder = new PropertyRecorder(view);
+
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList();
+		translations[^1].Should().BeApproximately(originalTranslationX, precision);
+		translations[^2].Should().BeLessThan(originalTranslationX + animation.ReducingAmount - precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_StartFactorOfZero_CompletesWithoutChangingTranslationX() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { StartFactor = 0, Length = functionalTestLength };
+		var view = CreateAnimatedView();
+		using var recorder = new PropertyRecorder(view);
+
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		recorder.ValuesOf(nameof(VisualElement.TranslationX)).Should().OnlyContain(translationX => Math.Abs(translationX - originalTranslationX) <= precision);
+		view.TranslationX.Should().BeApproximately(originalTranslationX, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_MoreSwingsThanTheCap_EndsWithThe100thSwing() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { StartFactor = 15, ReducingAmount = 0.1, Length = functionalTestLength };
+		var view = CreateAnimatedView();
+		using var recorder = new PropertyRecorder(view);
+
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList();
+		translations[^2].Should().BeApproximately(originalTranslationX + animation.StartFactor - (99 * animation.ReducingAmount), precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_WithEasing_ShapesEachMovementNotTheWholeRun() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ShakeAnimation { Easing = Easing.CubicIn, Length = functionalTestLength };
+		var view = CreateAnimatedView();
+		using var recorder = new PropertyRecorder(view);
+
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		// CubicIn over the whole run barely moves the view on the first tick; over the first movement alone it moves it more than 1
+		recorder.ValuesOf(nameof(VisualElement.TranslationX)).First().Should().BeLessThan(originalTranslationX - 1);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory]
+	[InlineData(double.NaN)]
+	[InlineData(double.PositiveInfinity)]
+	[InlineData(double.NegativeInfinity)]
+	public void NonFiniteValues_AreIgnored(double nonFiniteValue)
+	{
+		var animation = new ShakeAnimation
+		{
+			StartFactor = nonFiniteValue,
+			ReducingAmount = nonFiniteValue
+		};
+
+		Assert.Equal(ShakeAnimationDefaults.StartFactor, animation.StartFactor);
+		Assert.Equal(ShakeAnimationDefaults.ReducingAmount, animation.ReducingAmount);
+	}
 
 	static Label CreateAnimatedView()
 	{
