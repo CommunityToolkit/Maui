@@ -39,6 +39,7 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		var behavior = new CountingSelectAllTextBehavior();
 		var input = CreateInput(kind);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(input, async handler =>
 		{
 			await input.OnLoadedAsync();
@@ -73,6 +74,7 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		var input = CreateInput(kind);
 		input.Behaviors.Add(behavior);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(input, async handler =>
 		{
 			await input.OnLoadedAsync();
@@ -104,6 +106,7 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		var input = CreateInput(kind);
 		input.Behaviors.Add(behavior);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(input, async handler =>
 		{
 			await input.OnLoadedAsync();
@@ -187,6 +190,7 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		input.Behaviors.Add(behavior);
 		WeakReference? platformViewReference = null;
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(input, async handler =>
 		{
 			await input.OnLoadedAsync();
@@ -265,6 +269,7 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		{
 			var control = CreateInput(kind);
 
+			await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 			await AttachAndRun(control, async handler =>
 			{
 				await control.OnLoadedAsync();

@@ -42,6 +42,7 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 		SetupBuilder();
 		var (entry, commandExecuted) = CreateEntryWithBehavior(shouldDismissKeyboardAutomatically);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(entry, async handler =>
 		{
 			await entry.OnLoadedAsync();
