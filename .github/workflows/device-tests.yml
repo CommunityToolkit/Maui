@@ -300,7 +300,8 @@ jobs:
                     path: artifacts/logs/
 
     # The app of device_tests_android_app on the newest release of every Android major version from 7.1 (API 25); device_tests_android adds API 36.
-    # Other levels, such as API 24 (the app's minimum), run only on a local AVD. Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
+    # Other levels, such as API 24 (the app's minimum), run only on a local AVD. Quoted api-level values: the emulator action passes them to
+    # sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
     device_tests_android_runtime:
         name: Device Tests (Android API ${{ matrix.api-level }})
@@ -688,6 +689,7 @@ jobs:
                     -   ios-version: '26.5'
                         runner: macos-26
                         xcode: '26.6'
+                    # The macos-15 image has iOS 18.6, so the install step finds it and does nothing; it keeps the leg running if a new image drops it.
                     -   ios-version: '18.6'
                         runner: macos-15
                         xcode: '16.4'
@@ -719,7 +721,8 @@ jobs:
                     xcode-version: ${{ matrix.xcode }}
 
             # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework. An older Xcode
-            # (16.4 or 26.x) is fine for that: the .NET 11 workload checks for its exact Xcode (E0191, see shared.env) only in a build, and this job builds nothing.
+            # (16.4 or 26.x) is fine for that: the .NET 11 workload checks for its exact Xcode (E0191, see shared.env) only in a build, and this job
+            # builds nothing.
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:

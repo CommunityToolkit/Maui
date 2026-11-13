@@ -333,7 +333,8 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
   - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Android 24; Windows 10.0.17763.0). MediaElement needs
-    Android 26, so its tests skip below API 26 (`MediaElementSupport`). CI runs the newest release of every Android major from API 25 up; other levels, such as 24, run only on a local AVD.
+    Android 26, so its tests skip below API 26 (`MediaElementSupport`). CI runs the newest release of every Android major from
+    API 25 up; other levels, such as 24, run only on a local AVD.
   - Never `return` early: a test that returns early is reported as Passed.
 - **Run-time skips.** When a test cannot run on this device (no camera, an API that needs a newer OS than the test asserts),
   skip it visibly. A bare `return` is a silent pass and is not allowed.

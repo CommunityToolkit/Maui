@@ -540,7 +540,8 @@ function ConvertTo-RunApiVersion {
 }
 
 function Get-RunSystemImagePackage {
-    # Google names images from 36.1 on as Major.Minor, so 37 is android-37.0 but 36 is android-36. API 27 has no google_apis image for x86_64, and 37.1 and later only have 16 KB page-size (ps16k) images.
+    # Google names images from 36.1 on as Major.Minor, so 37 is android-37.0 but 36 is android-36. API 27 has no google_apis image for x86_64,
+    # and from 37 on the minor releases (37.1, 37.2) only have 16 KB page-size (ps16k) images.
     param([version]$Level, [string]$Abi)
 
     $name = Format-RunApiVersion $Level
