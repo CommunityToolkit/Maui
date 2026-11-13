@@ -314,6 +314,7 @@ class TextColorToGenerator : IIncrementalGenerator
 
 		public string QualifiedName => Namespace.Length is 0 ? QualifiedNameWithoutNamespace : $"{Namespace}.{QualifiedNameWithoutNamespace}";
 
-		public string ExtensionClassSuffix => QualifiedNameWithoutNamespace.Replace('.', '_');
+		// A nested Outer.Inner would otherwise share its name with a top-level Outer_Inner; the hash of the unique hint name tells them apart. Top-level names are public API and stay as they are.
+		public string ExtensionClassSuffix => ContainingTypes.Length is 0 ? ClassName : $"{QualifiedNameWithoutNamespace.Replace('.', '_')}_{GeneratedTypeNames.GetStableHash(HintName)}";
 	}
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Helpers;
@@ -31,6 +32,21 @@ static class GeneratedTypeNames
 		var hintName = namespacePrefix + string.Join("+", segments);
 
 		return new(hintName.Select(static character => char.IsLetterOrDigit(character) || character is '_' or '.' or '+' or '-' ? character : '_').ToArray());
+	}
+
+	// FNV-1a, because string.GetHashCode is randomized per process and generated names must not change between builds.
+	public static string GetStableHash(string value)
+	{
+		const uint offsetBasis = 2166136261;
+		const uint prime = 16777619;
+
+		var hash = offsetBasis;
+		foreach (var character in value)
+		{
+			hash = (hash ^ character) * prime;
+		}
+
+		return hash.ToString("x8", CultureInfo.InvariantCulture);
 	}
 
 	static string GetKeyword(INamedTypeSymbol type) => type.TypeKind switch
