@@ -92,6 +92,7 @@ public partial class MediaManager : IDisposable
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
+	/// <remarks>After a failed source, the next source gets a new <see cref="AVPlayer"/>; <see cref="PlayerViewController"/>.Player always holds the current one.</remarks>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
@@ -121,7 +122,8 @@ public partial class MediaManager : IDisposable
 		avSession.SetCategory(AVAudioSessionCategory.Playback);
 		avSession.SetActive(true);
 
-		AddStatusObservers();
+		AddPlayerObservers(ValueObserverOptions);
+		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 		AddPlayedToEndObserver();
 		AddErrorObservers();
 
@@ -216,6 +218,12 @@ public partial class MediaManager : IDisposable
 		if (Player is null)
 		{
 			return ValueTask.CompletedTask;
+		}
+
+		// Before iOS 17 an AVPlayer whose item failed never readies another item, and a failed AVPlayer cannot play again (AVPlayer.status)
+		if (Player.Status is AVPlayerStatus.Failed || Player.CurrentItem?.Status is AVPlayerItemStatus.Failed)
+		{
+			ReplacePlayer(Player);
 		}
 
 		// Clean up previous stream resource loader if switching sources
@@ -684,18 +692,54 @@ public partial class MediaManager : IDisposable
 		return tracks.Count <= 0 ? null : tracks[0];
 	}
 
-	void AddStatusObservers()
+	void AddPlayerObservers(NSKeyValueObservingOptions options)
 	{
 		if (Player is null)
 		{
 			return;
 		}
 
-		MutedObserver = Player.AddObserver("muted", ValueObserverOptions, MutedChanged);
-		VolumeObserver = Player.AddObserver("volume", ValueObserverOptions, VolumeChanged);
-		StatusObserver = Player.AddObserver("status", ValueObserverOptions, StatusChanged);
-		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", ValueObserverOptions, TimeControlStatusChanged);
-		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
+		MutedObserver = Player.AddObserver("muted", options, MutedChanged);
+		VolumeObserver = Player.AddObserver("volume", options, VolumeChanged);
+		StatusObserver = Player.AddObserver("status", options, StatusChanged);
+		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", options, TimeControlStatusChanged);
+	}
+
+	void ReplacePlayer(AVPlayer unusablePlayer)
+	{
+		MutedObserver?.Dispose();
+		MutedObserver = null;
+		VolumeObserver?.Dispose();
+		VolumeObserver = null;
+		StatusObserver?.Dispose();
+		StatusObserver = null;
+		TimeControlStatusObserver?.Dispose();
+		TimeControlStatusObserver = null;
+
+		metaData?.Dispose();
+		metaData = null;
+
+		var player = new AVPlayer
+		{
+			Muted = unusablePlayer.Muted,
+			Volume = unusablePlayer.Volume
+		};
+		if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+		{
+			player.DefaultRate = unusablePlayer.DefaultRate;
+		}
+
+		Player = player;
+		if (PlayerViewController is not null)
+		{
+			PlayerViewController.Player = player;
+		}
+
+		// The Initial notification of the new player's Unknown status would report Stopped while the source is Opening
+		AddPlayerObservers(NSKeyValueObservingOptions.New);
+
+		unusablePlayer.ReplaceCurrentItemWithPlayerItem(null);
+		unusablePlayer.Dispose();
 	}
 
 	void SetPoster(in AVPlayerItem playerItem)
