@@ -3,7 +3,16 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
-public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "");
+public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "", string ContainingTypeKeywords = "")
+{
+	// ContainingTypes carries each containing type's type parameters, e.g. "Outer<T>.Middle<U>".
+	// One keyword per containing type, outermost first and separated by '|', e.g. "class|record struct".
+	public IEnumerable<string> GetContainingTypeKeywords(int containingTypeCount) => ContainingTypeKeywords.Length is 0
+		? Enumerable.Repeat("class", containingTypeCount)
+		: ContainingTypeKeywords.Split('|');
+
+	public bool IsInGenericType => GenericTypeParameters.Length > 0 || ContainingTypes.Contains('<');
+}
 public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility, string? ResolvedInitializerExpression, EquatableArray<string> UserDiagnosticIds = default)
 {
 	// When both a DefaultValueCreatorMethodName and an initializer are provided, we implement the DefaultValueCreator method and the ignore the partial Property initializer

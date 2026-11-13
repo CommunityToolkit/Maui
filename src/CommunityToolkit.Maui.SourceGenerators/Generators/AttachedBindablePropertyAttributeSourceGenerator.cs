@@ -83,13 +83,13 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 				var classAccessibility = attachedBindablePropertySemanticValues.ClassInformation.DeclaredAccessibility;
 
-				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, attachedBindablePropertySemanticValues.ClassInformation.ContainingTypeKeywords);
 				var combinedValues = new AttachedBindablePropertySemanticValues(combinedClassInfo, attachedBindablePropertiesArray);
 
 				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
 				SourceStringService.FormatText(ref source);
-				context.AddSource($"{fileNameSuffix}.g.cs", SourceText.From(source, Encoding.UTF8));
+				context.AddSource($"{GeneratedTypeNames.ToHintNameSegment(fileNameSuffix)}.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		}
 		finally
@@ -115,9 +115,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		if (!string.IsNullOrEmpty(value.ClassInformation.ContainingTypes))
 		{
 			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
-			foreach (var typeName in containingTypeNames)
+			var containingTypeKeywords = value.ClassInformation.GetContainingTypeKeywords(containingTypeNames.Length).ToArray();
+			for (var i = 0; i < containingTypeNames.Length; i++)
 			{
-				sb.Append(value.ClassInformation.DeclaredAccessibility).Append(" partial class ").Append(typeName).Append("\n{\n\n");
+				// Partial parts may omit the accessibility; stating the inner class's accessibility conflicts with a containing type that is declared differently.
+				sb.Append("partial ").Append(containingTypeKeywords[i]).Append(' ').Append(containingTypeNames[i]).Append("\n{\n\n");
 			}
 		}
 
@@ -384,7 +386,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Extract generic type parameters
 		var genericTypeParameters = GetGenericTypeParameters(classSymbol);
 
-		var classInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters);
+		var classInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(classSymbol));
 
 		// Use array for attached bindable properties
 		var attachedBindablePropertyModels = new AttachedBindablePropertyModel[attributes.Length];
@@ -635,7 +637,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 		while (current is not null)
 		{
-			stack.Push(current.Name);
+			stack.Push(GeneratedTypeNames.GetNameWithTypeParameters(current));
 			current = current.ContainingType;
 		}
 

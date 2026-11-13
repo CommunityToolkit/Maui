@@ -161,7 +161,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Int
 			#pragma warning disable CS0108, CS0109, CS0612, CS0618
 			#nullable enable
 			namespace {{{defaultTestNamespace}}};
-			public partial class {{{outerClassName}}}
+			partial class {{{outerClassName}}}
 			{
 			    public partial class {{{defaultTestClassName}}}
 			    {

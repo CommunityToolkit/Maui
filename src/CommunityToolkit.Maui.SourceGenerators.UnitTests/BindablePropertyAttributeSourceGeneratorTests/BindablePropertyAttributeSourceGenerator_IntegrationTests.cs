@@ -203,7 +203,7 @@ public class BindablePropertyAttributeSourceGenerator_IntegrationTests : BaseBin
 			#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258
 			#nullable enable
 			namespace {{defaultTestNamespace}};
-			public partial class {{outerClassName}}
+			partial class {{outerClassName}}
 			{
 			    public partial class {{defaultTestClassName}}
 			    {

@@ -93,13 +93,13 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
-				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters);
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, values[0].ClassInformation.ContainingTypeKeywords);
 				var combinedValues = new BindablePropertySemanticValues(combinedClassInfo, bindableProperties);
 
 				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
 				SourceStringService.FormatText(ref source);
-				context.AddSource($"{fileNameSuffix}.g.cs", SourceText.From(source, Encoding.UTF8));
+				context.AddSource($"{GeneratedTypeNames.ToHintNameSegment(fileNameSuffix)}.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		}
 		finally
@@ -127,9 +127,11 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		if (!string.IsNullOrEmpty(value.ClassInformation.ContainingTypes))
 		{
 			var containingTypeNames = value.ClassInformation.ContainingTypes.Split('.');
-			foreach (var typeName in containingTypeNames)
+			var containingTypeKeywords = value.ClassInformation.GetContainingTypeKeywords(containingTypeNames.Length).ToArray();
+			for (var i = 0; i < containingTypeNames.Length; i++)
 			{
-				sb.Append(value.ClassInformation.DeclaredAccessibility).Append(" partial class ").Append(typeName).Append("\n{\n\n");
+				// Partial parts may omit the accessibility; stating the inner class's accessibility conflicts with a containing type that is declared differently.
+				sb.Append("partial ").Append(containingTypeKeywords[i]).Append(' ').Append(containingTypeNames[i]).Append("\n{\n\n");
 			}
 		}
 
@@ -181,10 +183,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			GenerateProperty(sb, in info, bindablePropertyInitHelpersClassName);
 		}
 
-		// If we generated any helper members and the declaring class is generic,
+		// If we generated any helper members and the declaring class or one of its containing types is generic,
 		// emit the helper class nested inside the generated partial class so
 		// generic type parameters are in scope for casts used by the helper.
-		if (fileStaticClassStringBuilder.Length > 0 && !string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
+		if (fileStaticClassStringBuilder.Length > 0 && value.ClassInformation.IsInGenericType)
 		{
 			sb.Append("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 			sb.Append("\n");
@@ -206,10 +208,10 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			}
 		}
 
-		// If we generated any helper members and the declaring class is not generic,
+		// If we generated any helper members and neither the declaring class nor its containing types are generic,
 		// emit a file static class with them. Generic types have their helpers emitted
 		// nested inside the class above to ensure type parameter scope.
-		if (fileStaticClassStringBuilder.Length > 0 && string.IsNullOrEmpty(value.ClassInformation.GenericTypeParameters))
+		if (fileStaticClassStringBuilder.Length > 0 && !value.ClassInformation.IsInGenericType)
 		{
 			sb.Append("\n\nfile static class ").Append(bindablePropertyInitHelpersClassName).Append("\n{\n");
 			sb.Append(fileStaticClassStringBuilder.ToString());
@@ -402,7 +404,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// Extract generic type parameters
 		var genericTypeParameters = GetGenericTypeParameters(propertySymbol.ContainingType);
 
-		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters);
+		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(propertySymbol.ContainingType));
 
 		// Use array instead of List to avoid resizing
 		var bindablePropertyModels = new BindablePropertyModel[context.Attributes.Length];
@@ -484,7 +486,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		while (current is not null)
 		{
-			stack.Push(current.Name);
+			stack.Push(GeneratedTypeNames.GetNameWithTypeParameters(current));
 			current = current.ContainingType;
 		}
 
