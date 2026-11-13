@@ -593,12 +593,21 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// Before Android 15 Destroy() keeps the messages that the recognizer already queued on the main looper: they attach the listener again and answer
-	// it with ERROR_CLIENT, which the toolkit would report for a session that is still listening. Detaching the listener first keeps them from reaching it.
+	// Before Android 15 Destroy() keeps the messages that the recognizer already queued on the main looper: the start among them is answered with
+	// ERROR_CLIENT ("not connected to the recognition service") after the turn. Detaching the listener first keeps that answer from reaching it
+	// in most turns, but not when the recognizer was already connected: its detach then queues behind the start.
 	static void DetachAndDestroy(SpeechRecognizer? recognizer)
 	{
 		recognizer?.SetRecognitionListener(null);
 		recognizer?.Destroy();
+	}
+
+	// A session that the test has ended cannot report the late ERROR_CLIENT, as a replaced session cannot.
+	static void DetachAndDestroyAndEnd(SpeechRecognizer recognizer, Java.Lang.Object listener)
+	{
+		DetachAndDestroy(recognizer);
+		var phase = listener.GetType().GetProperty("Phase") ?? throw new InvalidOperationException("The listener has no Phase.");
+		phase.SetValue(listener, Enum.Parse(phase.PropertyType, "Ended"));
 	}
 
 	async Task<(ISpeechToText Speech, SpeechEventRecorder Events, IRecognitionListener Listener)> StartAndDestroyTheRealRecognizer()
@@ -823,7 +832,7 @@ public abstract partial class SpeechImplementationTestsBase
 		{
 			Assert.Null(startException);
 			var recognizer = GetRecognizer(speech)!;
-			DetachAndDestroy(recognizer);
+			DetachAndDestroyAndEnd(recognizer, GetListener(speech)!);
 			return Task.FromResult(recognizer);
 		});
 
