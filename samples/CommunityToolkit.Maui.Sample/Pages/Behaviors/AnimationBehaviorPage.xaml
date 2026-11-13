@@ -103,11 +103,11 @@
                 <Border.Behaviors>
                     <mct:AnimationBehavior AnimateOnTap="True">
                         <mct:AnimationBehavior.AnimationType>
-                            <mct:RotateAnimation Rotation="360" />
+                            <mct:RotateAnimation />
                         </mct:AnimationBehavior.AnimationType>
                     </mct:AnimationBehavior>
                 </Border.Behaviors>
-                <Label HorizontalOptions="Center" Text="Click to Rotate this Border 360 degrees" TextColor="Black" />
+                <Label HorizontalOptions="Center" Text="Click to spin this Border a full turn" TextColor="Black" />
             </Border>
 
             <Border BackgroundColor="LightGreen" Margin="16,0">
@@ -235,6 +235,33 @@
             </Border>
 
             <Button Command="{Binding TriggerAnimationCommand}" Text="Animate the Border above" />
+
+            <!--  The tilted Border spins a full turn from its tilt. Cancelling the command's token, or CancelAnimations(), returns it to its tilt at once  -->
+            <Border
+                x:Name="SpinningBorder"
+                Margin="16,0"
+                BackgroundColor="LightGreen"
+                Rotation="-4">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior
+                        AnimateCommand="{Binding SpinFromViewModelCommand}"
+                        BindingContext="{Binding Path=BindingContext, Source={x:Reference SpinningBorder}, x:DataType=Border}">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:RotateAnimation Length="4000" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label
+                    HorizontalOptions="Center"
+                    Text="This tilted Border spins slowly"
+                    TextColor="Black" />
+            </Border>
+
+            <VerticalStackLayout Margin="16,0" Spacing="10">
+                <Button Command="{Binding StartSpinCommand}" Text="Spin the tilted Border" />
+                <Button Command="{Binding CancelSpinCommand}" Text="Cancel the spin's token" />
+                <Button Clicked="OnStopSpinClicked" Text="Call CancelAnimations()" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>
