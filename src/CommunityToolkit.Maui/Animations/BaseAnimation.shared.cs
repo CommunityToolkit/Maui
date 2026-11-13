@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 namespace CommunityToolkit.Maui.Animations;
 /// <summary>
@@ -43,4 +44,14 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 /// Initialize BaseAnimation
 /// </summary>
 /// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
-public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength);
+public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength)
+{
+	// Started off the dispatcher's thread, every await would continue on the thread pool and write the view's properties there.
+	// An async method, not DispatchAsync(Func<Task>): that overload turns a cancellation into a fault and never completes when the dispatcher refuses the work
+	private protected static async Task AnimateOnDispatcher(VisualElement view, Func<Task> animate)
+	{
+		Task? animation = null;
+		await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(view.Dispatcher, () => animation = animate());
+		await animation!;
+	}
+}

@@ -29,7 +29,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return FadeAsync(view, token);
+		return AnimateOnDispatcher(view, () => FadeAsync(view, token));
 	}
 
 	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it

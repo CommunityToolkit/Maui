@@ -21,7 +21,7 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return FlipAsync(view, token);
+		return AnimateOnDispatcher(view, () => FlipAsync(view, token));
 	}
 
 	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it

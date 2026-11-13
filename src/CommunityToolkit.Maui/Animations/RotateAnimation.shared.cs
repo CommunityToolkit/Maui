@@ -49,7 +49,7 @@ public partial class RotateAnimation : BaseAnimation
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		return RotateAsync(view, token);
+		return AnimateOnDispatcher(view, () => RotateAsync(view, token));
 	}
 
 	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
