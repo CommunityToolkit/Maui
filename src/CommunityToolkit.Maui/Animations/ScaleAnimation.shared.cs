@@ -1,48 +1,54 @@
-﻿namespace CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Core;
+
+namespace CommunityToolkit.Maui.Animations;
 
 /// <summary>
 /// Animation that will scale the supplied view to the specified <see cref="Scale"/> and then back down to its original scale.
 /// </summary>
-public class ScaleAnimation : BaseAnimation
+/// <remarks>
+/// The original scale is the scale the view had before it started scaling. An animation that starts while another animation
+/// still scales the same view returns the view to the scale it had before the first of these animations; the animation it interrupts
+/// stops where it is.
+/// </remarks>
+public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Length)
 {
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="Scale"/> property.
+	/// Gets or sets the scale to animate to before returning to the element's original scale.
 	/// </summary>
-	public static readonly BindableProperty ScaleProperty =
-		BindableProperty.Create(
-			nameof(Scale),
-			typeof(double),
-			typeof(ScaleAnimation),
-			1.2,
-			BindingMode.TwoWay);
-
-	/// <summary>
-	/// Gets or sets the scale to animate to before returning to the element's current scale.
-	/// </summary>
-	public double Scale
-	{
-		get => (double)GetValue(ScaleProperty);
-		set => SetValue(ScaleProperty, value);
-	}
-
-	/// <summary>
-	/// Initializes a new instance of <see cref="ScaleAnimation"/>.
-	/// </summary>
-	public ScaleAnimation() : base(340)
-	{
-
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial double Scale { get; set; } = ScaleAnimationDefaults.Scale;
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		var originalScale = view.Scale;
+		return ScaleAsync(view, token);
+	}
 
-		var duration = Length / 2;
+	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	async Task ScaleAsync(VisualElement view, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
 
-		await view.ScaleToAsync(Scale, duration, Easing, token);
-		await view.ScaleToAsync(originalScale, duration, Easing, token);
+		var scales = AnimatedPropertyTracker.For(view, VisualElement.ScaleProperty);
+		var (scaleId, originalScale) = scales.Start(view.Scale);
+
+		var halfLength = Length / 2;
+
+		try
+		{
+			var wasInterrupted = await view.ScaleToAsync(Scale, halfLength, Easing, token);
+
+			if (!wasInterrupted && scales.IsLatest(scaleId))
+			{
+				await view.ScaleToAsync(originalScale, halfLength, Easing, token);
+			}
+		}
+		finally
+		{
+			scales.End(view.Scale);
+		}
 	}
 }

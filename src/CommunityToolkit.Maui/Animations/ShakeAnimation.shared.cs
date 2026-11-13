@@ -1,73 +1,72 @@
-﻿namespace CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Core;
+
+namespace CommunityToolkit.Maui.Animations;
 
 /// <summary>
 /// Animation that will shake the supplied view on the x-axis, starting with the <see cref="StartFactor"/>
 /// and then reducing each time by the <see cref="ReducingAmount"/>.
 /// </summary>
-public class ShakeAnimation : BaseAnimation
+/// <remarks>
+/// The view shakes around, and returns to, the horizontal translation it had before it started shaking. An animation that starts while
+/// another animation still translates the same view horizontally returns the view to the translation it had before the first of these
+/// animations; the animation it interrupts stops where it is.
+/// </remarks>
+public partial class ShakeAnimation() : BaseAnimation(ShakeAnimationDefaults.Length)
 {
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="StartFactor"/> property.
-	/// </summary>
-	public static readonly BindableProperty StartFactorProperty =
-		BindableProperty.Create(
-			nameof(StartFactor),
-			typeof(double),
-			typeof(ShakeAnimation),
-			15.0,
-			BindingMode.TwoWay);
-
 	/// <summary>
 	/// Gets or sets the start factor, this is the biggest movement during the shake.
 	/// </summary>
-	public double StartFactor
-	{
-		get => (double)GetValue(StartFactorProperty);
-		set => SetValue(StartFactorProperty, value);
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial double StartFactor { get; set; } = ShakeAnimationDefaults.StartFactor;
 
 	/// <summary>
-	/// Backing BindableProperty for the <see cref="ReducingAmount"/> property.
+	/// Gets or sets the amount to reduce the <see cref="StartFactor"/> by on each return to the original translation on the x-axis.
 	/// </summary>
-	public static readonly BindableProperty ReducingAmountProperty =
-		BindableProperty.Create(
-			nameof(ReducingAmount),
-			typeof(double),
-			typeof(ShakeAnimation),
-			5.0,
-			BindingMode.TwoWay);
-
-	/// <summary>
-	/// Gets or sets the amount to reduce the <see cref="StartFactor"/> by on each return to 0 on the x-axis.
-	/// </summary>
-	public double ReducingAmount
-	{
-		get => (double)GetValue(ReducingAmountProperty);
-		set => SetValue(ReducingAmountProperty, value);
-	}
-
-	/// <summary>
-	/// Initializes a new instance of <see cref="ShakeAnimation"/>.
-	/// </summary>
-	public ShakeAnimation() : base(300)
-	{
-
-	}
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial double ReducingAmount { get; set; } = ShakeAnimationDefaults.ReducingAmount;
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <see cref="ReducingAmount"/> is less than or equal to 0.</exception>
+	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		var duration = (uint)(Length / Math.Ceiling(StartFactor / ReducingAmount)) / 2;
+		// A ReducingAmount of 0 or less never reduces the shake to 0, and its segments compute to 0 ms: the app would hang in a loop of instantly completing animations
+		ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(ReducingAmount, 0.0);
 
-		for (var i = StartFactor; i > 0; i -= ReducingAmount)
+		return ShakeAsync(view, token);
+	}
+
+	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	async Task ShakeAsync(VisualElement view, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		var translations = AnimatedPropertyTracker.For(view, VisualElement.TranslationXProperty);
+		var (shakeId, originalTranslationX) = translations.Start(view.TranslationX);
+		var translationY = view.TranslationY;
+
+		var segmentLength = (uint)(Length / Math.Ceiling(StartFactor / ReducingAmount)) / 2;
+
+		try
 		{
-			await view.TranslateToAsync(-i, 0, duration, Easing, token);
-			await view.TranslateToAsync(i, 0, duration, Easing, token);
-		}
+			for (var offset = StartFactor; offset > 0; offset -= ReducingAmount)
+			{
+				var wasInterrupted = await view.TranslateToAsync(originalTranslationX - offset, translationY, segmentLength, Easing, token)
+										|| await view.TranslateToAsync(originalTranslationX + offset, translationY, segmentLength, Easing, token);
 
-		view.TranslationX = 0;
+				if (wasInterrupted || !translations.IsLatest(shakeId))
+				{
+					return;
+				}
+			}
+
+			view.TranslationX = originalTranslationX;
+		}
+		finally
+		{
+			translations.End(view.TranslationX);
+		}
 	}
 }
-

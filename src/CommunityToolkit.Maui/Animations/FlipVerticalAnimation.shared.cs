@@ -1,29 +1,49 @@
-﻿namespace CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Core;
+
+namespace CommunityToolkit.Maui.Animations;
 
 /// <summary>
 /// Animation that will flip the supplied view vertically.
 /// </summary>
-public class FlipVerticalAnimation : RotateAnimation
+/// <remarks>
+/// The view rotates around its x-axis to <see cref="RotateAnimation.Rotation"/> and then back to the x-axis rotation it had before it started flipping.
+/// </remarks>
+public class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnimationDefaults.Length)
 {
-	/// <summary>
-	/// Initializes a new instance of <see cref="FlipVerticalAnimation"/>.
-	/// </summary>
-	public FlipVerticalAnimation() : base(600)
-	{
-
-	}
+	/// <inheritdoc />
+	protected override double DefaultRotation { get; set; } = FlipVerticalAnimationDefaults.Rotation;
 
 	/// <inheritdoc />
-	protected override double DefaultRotation { get; set; } = 90;
-
-	/// <inheritdoc />
-	public override async Task Animate(VisualElement view, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+	public override Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		var duration = Length / 2;
+		return FlipAsync(view, token);
+	}
 
-		await view.RotateXToAsync(Rotation, duration, Easing, token);
-		await view.RotateXToAsync(0, duration, Easing, token);
+	// Animate validates its arguments before it calls this method: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	async Task FlipAsync(VisualElement view, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationXProperty);
+		var (flipId, originalRotationX) = rotations.Start(view.RotationX);
+
+		var halfLength = Length / 2;
+
+		try
+		{
+			var wasInterrupted = await view.RotateXToAsync(Rotation, halfLength, Easing, token);
+
+			if (!wasInterrupted && rotations.IsLatest(flipId))
+			{
+				await view.RotateXToAsync(originalRotationX, halfLength, Easing, token);
+			}
+		}
+		finally
+		{
+			rotations.End(view.RotationX);
+		}
 	}
 }

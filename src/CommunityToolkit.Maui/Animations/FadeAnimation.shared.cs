@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Animations;
 
@@ -9,16 +8,13 @@ namespace CommunityToolkit.Maui.Animations;
 /// </summary>
 /// <remarks>
 /// The original opacity is the opacity the view had before it started fading. An animation that starts while another
-/// <see cref="FadeAnimation"/> is still fading the same view, for example when an <see cref="Behaviors.AnimationBehavior"/> is triggered
+/// animation is still fading the same view, for example when an <see cref="Behaviors.AnimationBehavior"/> is triggered
 /// again before its animation ended, returns the view to the opacity it had before the first of these animations, not to the partially
 /// faded opacity it starts from; the animation it interrupts ends without fading the view back. The same applies to an animation that
 /// starts after an interrupted animation left the view partially faded, unless the view's opacity was changed in the meantime.
 /// </remarks>
 public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Length)
 {
-	// A new FadeToAsync replaces the one running on the view, so the fades of a view are tracked per view, whichever FadeAnimation started them
-	static readonly ConditionalWeakTable<VisualElement, ViewFades> viewFades = new();
-
 	/// <summary>
 	/// Gets or sets the opacity to fade to before returning to the element's original <see cref="VisualElement.Opacity"/>.
 	/// </summary>
@@ -39,15 +35,15 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 	{
 		token.ThrowIfCancellationRequested();
 
-		var fades = viewFades.GetValue(view, static _ => new ViewFades());
+		var fades = AnimatedPropertyTracker.For(view, VisualElement.OpacityProperty);
 		var (fadeId, originalOpacity) = fades.Start(view.Opacity);
 
 		try
 		{
-			await view.FadeToAsync(Opacity, Length, Easing, token);
+			var wasInterrupted = await view.FadeToAsync(Opacity, Length, Easing, token);
 
-			// A newer animation started fading the view meanwhile and returns it to its original opacity: fading it back here would interrupt it.
-			if (!fades.IsLatest(fadeId))
+			// An interrupted fade stops where it is: the animation that interrupted it, if any, returns the view to its original opacity
+			if (wasInterrupted || !fades.IsLatest(fadeId))
 			{
 				return;
 			}
@@ -57,52 +53,6 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		finally
 		{
 			fades.End(view.Opacity);
-		}
-	}
-
-	// Animate can start, and continue after an await, on any thread.
-	sealed class ViewFades
-	{
-		readonly Lock fadesLock = new();
-
-		int runningFades, latestFadeId;
-		double originalOpacity;
-		double? opacityLeftByLastFade;
-
-		public (int FadeId, double OriginalOpacity) Start(double currentOpacity)
-		{
-			lock (fadesLock)
-			{
-				// The current opacity is the original opacity only while the view is at rest: no fade is running, and the opacity is not the
-				// partially faded one an interrupted fade left (the opacity the last fade left is the original one when that fade completed)
-				if (runningFades is 0 && currentOpacity != opacityLeftByLastFade)
-				{
-					originalOpacity = currentOpacity;
-				}
-
-				runningFades++;
-
-				return (++latestFadeId, originalOpacity);
-			}
-		}
-
-		public bool IsLatest(int fadeId)
-		{
-			lock (fadesLock)
-			{
-				return fadeId == latestFadeId;
-			}
-		}
-
-		public void End(double currentOpacity)
-		{
-			lock (fadesLock)
-			{
-				if (--runningFades is 0)
-				{
-					opacityLeftByLastFade = currentOpacity;
-				}
-			}
 		}
 	}
 }
