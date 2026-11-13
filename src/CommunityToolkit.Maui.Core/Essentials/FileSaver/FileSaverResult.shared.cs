@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
+using CommunityToolkit.Maui.Core;
 
 namespace CommunityToolkit.Maui.Storage;
 
@@ -11,23 +12,14 @@ namespace CommunityToolkit.Maui.Storage;
 /// provider, is reported by its content URI (<c>content://...</c>).
 /// </param>
 /// <param name="Exception">Exception if operation failed</param>
-public record FileSaverResult(string? FilePath, Exception? Exception)
+public record FileSaverResult(string? FilePath, Exception? Exception) : IResult
 {
-	/// <summary>
-	/// Check if the operation was successful.
-	/// </summary>
+	/// <inheritdoc/>
 	[MemberNotNullWhen(true, nameof(FilePath))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
 
-	/// <summary>
-	/// Check if the operation was cancelled.
-	/// </summary>
-	public bool IsCancelled => Exception is OperationCanceledException;
-
-	/// <summary>
-	/// Check if the operation was successful.
-	/// </summary>
+	/// <inheritdoc/>
 	[MemberNotNull(nameof(FilePath))]
 	public void EnsureSuccess()
 	{
