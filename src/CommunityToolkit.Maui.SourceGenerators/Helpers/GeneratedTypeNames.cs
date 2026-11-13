@@ -18,9 +18,20 @@ static class GeneratedTypeNames
 		return string.Join("|", keywords);
 	}
 
-	// Hint names cannot contain the angle brackets of a containing type's type parameters.
-	public static string ToHintNameSegment(string typeName) =>
-		new(typeName.Select(static character => char.IsLetterOrDigit(character) || character is '_' or '.' ? character : '_').ToArray());
+	// Hint names must be unique per generator: the namespace tells same-named types apart, '+' nests like metadata names and '-' (never part of an identifier) marks the number of type parameters.
+	public static string GetHintName(INamedTypeSymbol type)
+	{
+		var segments = new List<string>();
+		for (var current = type; current is not null; current = current.ContainingType)
+		{
+			segments.Insert(0, current.Arity is 0 ? current.Name : $"{current.Name}-{current.Arity}");
+		}
+
+		var namespacePrefix = type.ContainingNamespace is null || type.ContainingNamespace.IsGlobalNamespace ? string.Empty : $"{type.ContainingNamespace.ToDisplayString()}.";
+		var hintName = namespacePrefix + string.Join("+", segments);
+
+		return new(hintName.Select(static character => char.IsLetterOrDigit(character) || character is '_' or '.' or '+' or '-' ? character : '_').ToArray());
+	}
 
 	static string GetKeyword(INamedTypeSymbol type) => type.TypeKind switch
 	{

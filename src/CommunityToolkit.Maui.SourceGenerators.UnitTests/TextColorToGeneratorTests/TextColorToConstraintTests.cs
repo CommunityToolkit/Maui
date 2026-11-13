@@ -95,17 +95,17 @@ public class TextColorToConstraintTests : BaseTest
 		GeneratedCodeCompilation.AssertCompilesCleanly(
 			constrainedTextTypesSource,
 			cultureName,
-			"ComparableTextTextColorTo",
-			"EquatableTextTextColorTo",
-			"ClassTextTextColorTo",
-			"NullableClassTextTextColorTo",
-			"StructTextTextColorTo",
-			"UnmanagedTextTextColorTo",
-			"NotNullTextTextColorTo",
-			"NewTextTextColorTo",
-			"ClassAndNewTextTextColorTo",
-			"DependentTextTextColorTo",
-			"SeveralTextTextColorTo");
+			"ComparableText-1TextColorTo",
+			"EquatableText-1TextColorTo",
+			"ClassText-1TextColorTo",
+			"NullableClassText-1TextColorTo",
+			"StructText-1TextColorTo",
+			"UnmanagedText-1TextColorTo",
+			"NotNullText-1TextColorTo",
+			"NewText-1TextColorTo",
+			"ClassAndNewText-1TextColorTo",
+			"DependentText-2TextColorTo",
+			"SeveralText-3TextColorTo");
 	}
 
 	[Fact]
@@ -113,13 +113,13 @@ public class TextColorToConstraintTests : BaseTest
 	{
 		var result = GeneratedCodeCompilation.Run(constrainedTextTypesSource, "", TestContext.Current.CancellationToken);
 
-		var comparable = result.GetSource("ComparableTextTextColorTo.g.shared.cs");
+		var comparable = result.GetSource("ComparableText-1TextColorTo.g.shared.cs");
 		Assert.Contains("where T : global::System.IComparable<T>", comparable, StringComparison.Ordinal);
 
-		var equatable = result.GetSource("EquatableTextTextColorTo.g.shared.cs");
+		var equatable = result.GetSource("EquatableText-1TextColorTo.g.shared.cs");
 		Assert.Contains("where T : global::System.IEquatable<global::System.Collections.Generic.List<string>>", equatable, StringComparison.Ordinal);
 
-		var several = result.GetSource("SeveralTextTextColorTo.g.shared.cs");
+		var several = result.GetSource("SeveralText-3TextColorTo.g.shared.cs");
 		Assert.Contains("where TClass : class, global::System.Collections.Generic.IList<TBase>", several, StringComparison.Ordinal);
 		Assert.Contains("where TStruct : struct, global::System.IComparable<TStruct>", several, StringComparison.Ordinal);
 		Assert.Contains("where TBase : global::System.Collections.Generic.List<TClass>, global::ConstrainedText.IMarker<TClass>, new()", several, StringComparison.Ordinal);

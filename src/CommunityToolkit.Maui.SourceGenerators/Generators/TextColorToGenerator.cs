@@ -218,7 +218,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  """;
 
 		SourceStringService.FormatText(ref source);
-		context.AddSource($"{textStyleClassMetadata.QualifiedNameWithoutNamespace}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+		context.AddSource($"{textStyleClassMetadata.HintName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
 	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol, bool shouldGenerateTextColorTo)
@@ -231,7 +231,7 @@ class TextColorToGenerator : IIncrementalGenerator
 		collector.AddSymbolAndContainers(namedTypeSymbol);
 		collector.AddTypeParameterConstraints(namedTypeSymbol);
 
-		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, GetNamespaceName(namedTypeSymbol), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null);
+		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, GetNamespaceName(namedTypeSymbol), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null, GeneratedTypeNames.GetHintName(namedTypeSymbol));
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -306,7 +306,7 @@ class TextColorToGenerator : IIncrementalGenerator
 		return string.Join(".", names);
 	}
 
-	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds, string ContainingTypes, bool CanBeExtended)
+	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds, string ContainingTypes, bool CanBeExtended, string HintName)
 	{
 		public string QualifiedNameWithoutNamespace => ContainingTypes.Length is 0 ? ClassName : $"{ContainingTypes}.{ClassName}";
 

@@ -1495,6 +1495,6 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedGenerated);
+		await VerifySourceGeneratorAsync(source, ($"{defaultTestNamespace}.{defaultTestClassName}-1.g.cs", expectedGenerated));
 	}
 }

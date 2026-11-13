@@ -95,13 +95,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
-				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, values[0].ClassInformation.ContainingTypeKeywords);
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, values[0].ClassInformation.ContainingTypeKeywords, values[0].ClassInformation.HintName);
 				var combinedValues = new BindablePropertySemanticValues(combinedClassInfo, bindableProperties);
 
-				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
 				SourceStringService.FormatText(ref source);
-				context.AddSource($"{GeneratedTypeNames.ToHintNameSegment(fileNameSuffix)}.g.cs", SourceText.From(source, Encoding.UTF8));
+				context.AddSource($"{combinedClassInfo.HintName}.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		}
 		finally
@@ -406,7 +405,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// Extract generic type parameters
 		var genericTypeParameters = GetGenericTypeParameters(propertySymbol.ContainingType);
 
-		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(propertySymbol.ContainingType));
+		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(propertySymbol.ContainingType), GeneratedTypeNames.GetHintName(propertySymbol.ContainingType));
 
 		// Use array instead of List to avoid resizing
 		var bindablePropertyModels = new BindablePropertyModel[context.Attributes.Length];

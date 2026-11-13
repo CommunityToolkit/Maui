@@ -662,6 +662,6 @@ public class BindablePropertyAttributeSourceGenerator_CommonUsageTests : BaseBin
 			}
 			""";
 
-		await VerifySourceGeneratorAsync(source, expectedGenerated);
+		await VerifySourceGeneratorAsync(source, ($"{defaultTestNamespace}.{defaultTestClassName}-1.g.cs", expectedGenerated));
 	}
 }

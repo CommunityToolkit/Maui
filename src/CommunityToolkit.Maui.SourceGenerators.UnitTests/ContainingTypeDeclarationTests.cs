@@ -95,7 +95,7 @@ public class ContainingTypeDeclarationTests : BaseTest
 	{
 		var result = GeneratedCodeCompilation.Run(nestedInGenericTypesSource, "", TestContext.Current.CancellationToken);
 
-		var deeplyGeneric = result.GetSource("Innermost.g.cs");
+		var deeplyGeneric = result.GetSource("Innermost-1.g.cs");
 		Assert.Contains("partial class DeeplyGeneric<T1>", deeplyGeneric, StringComparison.Ordinal);
 		Assert.Contains("partial class Middle<T2>", deeplyGeneric, StringComparison.Ordinal);
 		Assert.Contains("partial class Innermost<T3>", deeplyGeneric, StringComparison.Ordinal);

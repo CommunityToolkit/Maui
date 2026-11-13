@@ -40,8 +40,34 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			.Where(static x => x.ClassInformation != default || !x.BindableProperties.IsEmpty)
 			.Collect();
 
-		context.RegisterSourceOutput(classProvider, ExecuteAllValues);
-		context.RegisterSourceOutput(constructorProvider, ExecuteAllValues);
+		context.RegisterSourceOutput(classProvider.Combine(constructorProvider), static (sourceProductionContext, providers) => ExecuteAllValues(sourceProductionContext, MergeByDeclaringType(providers.Left.AddRange(providers.Right))));
+	}
+
+	// A type can declare attached properties on the class and on several constructors; all of them belong into one generated file.
+	static ImmutableArray<AttachedBindablePropertySemanticValues> MergeByDeclaringType(ImmutableArray<AttachedBindablePropertySemanticValues> semanticValues)
+	{
+		var mergedValues = new List<AttachedBindablePropertySemanticValues>(semanticValues.Length);
+		var indexByHintName = new Dictionary<string, int>(StringComparer.Ordinal);
+
+		foreach (var semanticValue in semanticValues)
+		{
+			var hintName = semanticValue.ClassInformation.HintName;
+			if (hintName.Length > 0 && indexByHintName.TryGetValue(hintName, out var index))
+			{
+				var properties = mergedValues[index].BindableProperties.AsImmutableArray().AddRange(semanticValue.BindableProperties.AsImmutableArray());
+				mergedValues[index] = new AttachedBindablePropertySemanticValues(mergedValues[index].ClassInformation, properties.AsEquatableArray());
+				continue;
+			}
+
+			if (hintName.Length > 0)
+			{
+				indexByHintName[hintName] = mergedValues.Count;
+			}
+
+			mergedValues.Add(semanticValue);
+		}
+
+		return [.. mergedValues];
 	}
 
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<AttachedBindablePropertySemanticValues> semanticValues)
@@ -83,13 +109,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 				var classAccessibility = attachedBindablePropertySemanticValues.ClassInformation.DeclaredAccessibility;
 
-				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, attachedBindablePropertySemanticValues.ClassInformation.ContainingTypeKeywords);
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, attachedBindablePropertySemanticValues.ClassInformation.ContainingTypeKeywords, attachedBindablePropertySemanticValues.ClassInformation.HintName);
 				var combinedValues = new AttachedBindablePropertySemanticValues(combinedClassInfo, attachedBindablePropertiesArray);
 
-				var fileNameSuffix = string.IsNullOrEmpty(containingTypes) ? className : string.Concat(containingTypes, ".", className);
 				var source = GenerateSource(combinedValues);
 				SourceStringService.FormatText(ref source);
-				context.AddSource($"{GeneratedTypeNames.ToHintNameSegment(fileNameSuffix)}.g.cs", SourceText.From(source, Encoding.UTF8));
+				context.AddSource($"{combinedClassInfo.HintName}.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		}
 		finally
@@ -386,7 +411,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Extract generic type parameters
 		var genericTypeParameters = GetGenericTypeParameters(classSymbol);
 
-		var classInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(classSymbol));
+		var classInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(classSymbol), GeneratedTypeNames.GetHintName(classSymbol));
 
 		// Use array for attached bindable properties
 		var attachedBindablePropertyModels = new AttachedBindablePropertyModel[attributes.Length];

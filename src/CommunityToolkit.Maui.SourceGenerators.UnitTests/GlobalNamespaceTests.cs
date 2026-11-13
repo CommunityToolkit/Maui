@@ -90,7 +90,7 @@ public class GlobalNamespaceTests : BaseTest
 			"GlobalHost",
 			"GlobalConstructorHost",
 			"GlobalTextTextColorTo",
-			"GlobalGenericTextTextColorTo",
+			"GlobalGenericText-1TextColorTo",
 			"NestedTextTextColorTo");
 	}
 

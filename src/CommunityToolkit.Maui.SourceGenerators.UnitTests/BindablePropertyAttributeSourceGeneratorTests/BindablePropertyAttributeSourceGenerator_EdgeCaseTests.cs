@@ -357,7 +357,7 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
             }
             """;
 
-		await VerifySourceGeneratorAsync(source, expectedGenerated);
+		await VerifySourceGeneratorAsync(source, ($"Very.Long.Namespace.With.Many.Segments.TestNamespace.{defaultTestClassName}.g.cs", expectedGenerated));
 	}
 
 	[Fact]
@@ -395,7 +395,7 @@ public class BindablePropertyAttributeSourceGenerator_EdgeCaseTests : BaseBindab
             }
             """;
 
-		await VerifySourceGeneratorAsync(source, expectedGenerated);
+		await VerifySourceGeneratorAsync(source, ($"{defaultTestClassName}.g.cs", expectedGenerated));
 	}
 
 	[Fact]

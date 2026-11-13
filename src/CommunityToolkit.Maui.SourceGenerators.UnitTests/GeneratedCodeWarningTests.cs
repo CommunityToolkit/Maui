@@ -609,7 +609,7 @@ public class GeneratedCodeWarningTests : BaseTest
 		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(deprecationAndHidingSource, cultureName, null, TestContext.Current.CancellationToken);
 
 		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseEFancyTextTextColorTo", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseEGenericTextTextColorTo", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseEGenericText-1TextColorTo", StringComparison.Ordinal));
 		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseFObsoleteTextTextColorTo", StringComparison.Ordinal));
 		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
 	}
@@ -635,16 +635,16 @@ public class GeneratedCodeWarningTests : BaseTest
 	{
 		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(selfReferencingConstraintsSource, cultureName, null, TestContext.Current.CancellationToken);
 
-		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "CmpView.g.cs", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "NodeView.g.cs", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "ExpCmpView.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "SelfReferencing.CmpView-1.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "SelfReferencing.NodeView-1.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "SelfReferencing.ExpCmpView-1.g.cs", StringComparison.Ordinal));
 		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
 	}
 
 	[Fact]
 	public void GeneratedCode_NamesTheExperimentalIdOfASelfReferencingConstraint()
 	{
-		var pragmaLine = GetPragmaLine(selfReferencingConstraintsSource, "ExpCmpView.g.cs", []);
+		var pragmaLine = GetPragmaLine(selfReferencingConstraintsSource, "ExpCmpView-1.g.cs", []);
 
 		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258, SELF1", pragmaLine);
 	}
@@ -667,7 +667,7 @@ public class GeneratedCodeWarningTests : BaseTest
 			driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generatorDiagnostics, TestContext.Current.CancellationToken);
 
 			Assert.DoesNotContain(generatorDiagnostics, static diagnostic => diagnostic.Id == "CS8785");
-			var generatedTree = outputCompilation.SyntaxTrees.Single(static tree => IsGeneratedFile(tree.FilePath) && tree.FilePath.Contains("ComparableTextTextColorTo", StringComparison.Ordinal));
+			var generatedTree = outputCompilation.SyntaxTrees.Single(static tree => IsGeneratedFile(tree.FilePath) && tree.FilePath.Contains("ComparableText-1TextColorTo", StringComparison.Ordinal));
 			var pragmaLine = generatedTree.GetText(TestContext.Current.CancellationToken).ToString().Split('\n').Single(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).TrimEnd('\r');
 			Assert.Equal("#pragma warning disable CS0612, CS0618", pragmaLine);
 		}
@@ -701,7 +701,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("P13ObsoleteIdTextTextColorTo.g.shared.cs", "USROBS2")]
 	[InlineData("P14View.g.cs", "USR014")]
 	[InlineData("P15View.g.cs", "USR015")]
-	[InlineData("P16Outer.P16Inner.g.cs", "USR016")]
+	[InlineData("P16Outer+P16Inner.g.cs", "USR016")]
 	[InlineData("P17View.g.cs", "EXPASM1")]
 	[InlineData("P15Host.g.cs", "USR015")]
 	[InlineData("P18View.g.cs", "USR014")]
