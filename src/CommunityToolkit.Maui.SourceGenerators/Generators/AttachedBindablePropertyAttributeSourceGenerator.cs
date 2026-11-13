@@ -552,10 +552,10 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		return value.Value switch
 		{
 			// Handle char
-			char charVal => $"({typeSymbol})'{charVal}'",
+			char charVal => $"({typeSymbol}){SymbolDisplay.FormatLiteral(charVal, quote: true)}",
 
 			// Handle string
-			string stringVal => $"({typeSymbol})\"{GetEscapedString(stringVal)}\"",
+			string stringVal => $"({typeSymbol}){SymbolDisplay.FormatLiteral(stringVal, quote: true)}",
 
 			// Handle enums and all remaining compile-time constants
 			_ => $"({typeSymbol}){GetFormattedValueWithOwnType(value, typeArg)}"
@@ -755,17 +755,6 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol) => typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static string GetEscapedString(string value)
-	{
-		return value
-			.Replace("\\", "\\\\")
-			.Replace("\"", "\\\"")
-			.Replace("\n", "\\n")
-			.Replace("\r", "\\r")
-			.Replace("\t", "\\t");
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetFormattedArrayValue(TypedConstant arrayConstant, string typeSymbol, ITypeSymbol arrayType)
 	{
 		if (arrayConstant.Values.Length is 0)
@@ -854,8 +843,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 				float.MinValue => "float.MinValue",
 				_ => FormattableString.Invariant($"{floatVal:G9}f")
 			},
-			char charVal => $"'{charVal}'",
-			string stringVal => $"\"{GetEscapedString(stringVal)}\"",
+			char charVal => SymbolDisplay.FormatLiteral(charVal, quote: true),
+			string stringVal => SymbolDisplay.FormatLiteral(stringVal, quote: true),
 			ITypeSymbol typeSymbol => $"typeof({typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})",
 			_ => "null"
 		};
