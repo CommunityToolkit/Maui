@@ -75,6 +75,24 @@ sealed class ConfigurableContext : ContextWrapper, ILifecycleOwner
 		permission is not null && DeniedPermissions.Contains(permission) ? Permission.Denied : base.CheckSelfPermission(permission);
 }
 
+// An activity that Android destroys to recreate it (new overlays did on a just-booted CI emulator). Recreating the runner's activity
+// instead would move every later test of the pass to its replacement. Create it on the main thread.
+sealed class DestroyableLifecycleContext : ContextWrapper, ILifecycleOwner
+{
+	readonly LifecycleRegistry lifecycle;
+
+	public DestroyableLifecycleContext(Context baseContext) : base(baseContext)
+	{
+		lifecycle = new LifecycleRegistry(this);
+		lifecycle.SetCurrentState(Lifecycle.State.Resumed!);
+	}
+
+	public Lifecycle Lifecycle => lifecycle;
+
+	// ON_PAUSE, ON_STOP and ON_DESTROY in that order, like the destroyed activity. Main thread only.
+	public void Destroy() => lifecycle.SetCurrentState(Lifecycle.State.Destroyed!);
+}
+
 sealed class TestMauiContext(IMauiContext inner, Context? context) : IMauiContext
 {
 	public IServiceProvider Services => inner.Services;

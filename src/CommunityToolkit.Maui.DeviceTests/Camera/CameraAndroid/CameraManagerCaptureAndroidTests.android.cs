@@ -31,8 +31,16 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		public IReadOnlyList<string> Failures => [.. failures];
 
-		public Task WaitForCaptureAsync(int count = 1) =>
-			AssertionExtensions.AssertEventually(() => captured.Count >= count, 40000, 50, $"The camera did not raise MediaCaptured {count} time(s). Failures: {string.Join("; ", failures)}");
+		// A capture that failed never raises MediaCaptured, so a failure ends the wait. The message is built after the wait: an interpolated
+		// message argument would be built before it, and would never name a failure.
+		public async Task WaitForCaptureAsync(int count = 1)
+		{
+			await WaitUntilEndedAsync(count);
+			Assert.True(captured.Count >= count, $"The camera did not raise MediaCaptured {count} time(s). Failures: {string.Join("; ", failures)}");
+		}
+
+		public Task WaitUntilEndedAsync(int count = 1) =>
+			AssertionExtensions.AssertEventually(() => captured.Count >= count || !failures.IsEmpty, 40000, 50, $"The camera raised neither MediaCaptured {count} time(s) nor MediaCaptureFailed.");
 
 		public Task WaitForFailureAsync() =>
 			AssertionExtensions.AssertEventually(() => !failures.IsEmpty, 40000, 50, "The camera did not raise MediaCaptureFailed.");
@@ -204,6 +212,32 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			await recorder.WaitForFailureAsync();
 			Assert.Empty(recorder.Captured);
 		});
+	}
+
+	// CameraX aborts the capture of an activity that Android destroys to recreate it, and CameraView.CaptureImage waits for MediaCaptured
+	// or MediaCaptureFailed: an abort that got lost would make it wait for ever.
+	[Fact]
+	public async Task TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed()
+	{
+		SetupBuilder();
+		RequireStillCapture();
+		var activity = await InvokeOnMainThreadAsync(() => new DestroyableLifecycleContext(AppContext));
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var recorder = new CaptureRecorder(session.View);
+
+			// On the main thread CameraX submits the capture request before TakePicture returns, so the activity is destroyed mid-capture
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await session.Manager.TakePicture(CancellationToken.None);
+				activity.Destroy();
+			});
+
+			await recorder.WaitUntilEndedAsync();
+			Assert.Equal("Camera is closed.", Assert.Single(recorder.Failures));
+			Assert.Empty(recorder.Captured);
+		}, mauiContext: new TestMauiContext(MauiContext, activity));
 	}
 
 	[Fact]

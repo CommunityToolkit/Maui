@@ -615,7 +615,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		RegisterCleanup(() => IPlatformApplication.Current = previous);
 	}
 
-	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false)
+	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false, IMauiContext? mauiContext = null)
 	{
 		EnsureCameraPermissions(includeRecordAudio);
 
@@ -624,7 +624,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session);
 			await body(session);
-		}, provider, null, view);
+		}, provider, mauiContext, view);
 	}
 
 	protected static async Task<IReadOnlyList<CameraInfo>> GetRealCamerasAsync()
