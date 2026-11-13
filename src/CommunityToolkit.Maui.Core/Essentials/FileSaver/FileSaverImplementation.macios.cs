@@ -64,7 +64,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		await using var registration = cancellationToken.Register(() =>
 			tcs.TrySetCanceled(cancellationToken));
 
-		using var picker = new UIDocumentPickerViewController([fileUrl], true);
+		var picker = new UIDocumentPickerViewController([fileUrl], true);
 		// NSUrl.FromString would give a URL without a scheme, which the picker ignores, so a path is made a file URL; a file URL string
 		// ("file:///..."), the form that worked before paths did, is still taken as the URL it is.
 		picker.DirectoryUrl = string.IsNullOrEmpty(initialPath)
@@ -110,6 +110,8 @@ public sealed partial class FileSaverImplementation : IFileSaver
 
 			picker.DidPickDocumentAtUrls -= OnPicked;
 			picker.WasCancelled -= OnCancelled;
+
+			DocumentPickerRelease.DisposeOnceTheViewServiceIsDone(picker);
 		}
 
 		void OnPicked(object? sender, UIDocumentPickedAtUrlsEventArgs e)
@@ -139,11 +141,10 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		{
 			isPresented = true;
 
-			// The save is over and its picker disposed: the picker is reached through the view controller that presented it, and only
-			// dismissed when nothing covers it
-			if (dismissWhenPresented && currentViewController.PresentedViewController is UIDocumentPickerViewController { PresentedViewController: null } presentedPicker)
+			// Only a picker that nothing covers is dismissed, as in the token cancellation above
+			if (dismissWhenPresented && picker.PresentedViewController is null && picker.PresentingViewController is not null)
 			{
-				presentedPicker.DismissViewController(true, null);
+				picker.DismissViewController(true, null);
 			}
 		}
 	}
