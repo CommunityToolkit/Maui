@@ -78,6 +78,7 @@ public class AnimationDispatchTests : BaseTest
 		var supersededRun = new TadaAnimation { Length = 2000 }.Animate(view, supersededRunTokenSource.Token);
 		await firstChange;
 
+		// Blocks the dispatcher thread on purpose: the abort that the cancellation queues from the pool thread must run after the new run has taken the handle
 		Task.Run(supersededRunTokenSource.Cancel, token).Wait(token);
 		var newRun = new TadaAnimation { Length = animationLength }.Animate(view, token);
 		await Task.Yield();
@@ -85,7 +86,7 @@ public class AnimationDispatchTests : BaseTest
 
 		Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "the superseded run's token aborted the new run");
 		await newRun.WaitAsync(waitTimeout, token);
-		await Record.ExceptionAsync(() => supersededRun.WaitAsync(waitTimeout, token));
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => supersededRun.WaitAsync(waitTimeout, token));
 	}, TestContext.Current.CancellationToken);
 
 	static BaseAnimation CreateAnimation(string animationName) => animationName switch
