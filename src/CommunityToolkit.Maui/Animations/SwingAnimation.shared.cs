@@ -11,8 +11,8 @@ namespace CommunityToolkit.Maui.Animations;
 /// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first.
 /// Starting it also stops a running .NET MAUI RotateToAsync, including a running <see cref="RotateAnimation"/> (but not <see cref="FlipHorizontalAnimation"/> or <see cref="FlipVerticalAnimation"/>, which rotate about the y- and x-axis).
 /// <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one within 0..1 that only increases (for example <see cref="Easing.Linear"/> or <see cref="Easing.SinInOut"/>).
-/// An easing that overshoots, such as <see cref="Easing.SpringOut"/> or <see cref="Easing.BounceOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run.
-/// The animation moves the view's anchor to its top edge while it runs. A view whose original scale, rotation, rotation about the x-axis or rotation about the y-axis is not the identity shifts while the anchor is at the top, and returns when the anchor is restored.
+/// An easing that overshoots, such as <see cref="Easing.SpringOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run; <see cref="Easing.BounceOut"/> runs through the keyframes in about the first third of the run and then moves the view back and forth within the last keyframe.
+/// The animation moves the view's anchor to its top edge while it runs. A view whose original scale, vertical scale, rotation, rotation about the x-axis or rotation about the y-axis is not the identity shifts while the anchor is at the top, and returns when the anchor is restored.
 /// </remarks>
 public partial class SwingAnimation() : BaseAnimation(SwingAnimationDefaults.Length)
 {
