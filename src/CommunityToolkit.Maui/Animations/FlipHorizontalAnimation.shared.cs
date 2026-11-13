@@ -8,8 +8,11 @@ namespace CommunityToolkit.Maui.Animations;
 /// <remarks>
 /// The view rotates around its y-axis to <see cref="RotateAnimation.Rotation"/> and then back to the y-axis rotation it had before it started flipping.
 /// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="RotateAnimation.Rotation"/>, and half to return to the original rotation.
+/// An animation that starts while another one still flips the same view takes over and returns the view to the y-axis rotation it had before the first of these animations.
+/// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
+/// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original y-axis rotation at once and the returned <see cref="Task"/> completes.
 /// Cancelling the token while the animation runs returns the view to that rotation and ends the returned <see cref="Task"/> as canceled.
-/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original y-axis rotation.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), also when they are switched off while the animation runs, the view ends at its original y-axis rotation.
 /// </remarks>
 public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalAnimationDefaults.Length)
 {
@@ -38,27 +41,17 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 
 		try
 		{
-			var wasInterrupted = await WasInterruptedAsync(() => view.RotateYToAsync(Rotation, halfLength, Easing, token), token);
-
-			if (!wasInterrupted && rotations.IsLatest(flipId))
+			if (await FlipLegAsync(Rotation) && rotations.IsLatest(flipId))
 			{
-				wasInterrupted = await WasInterruptedAsync(() => view.RotateYToAsync(originalRotationY, halfLength, Easing, token), token);
-			}
-
-			if (wasInterrupted && token.IsCancellationRequested)
-			{
-				// A cancelled animation has no successor to return the view to its original rotation
-				if (rotations.IsLatest(flipId))
-				{
-					view.RotationY = originalRotationY;
-				}
-
-				token.ThrowIfCancellationRequested();
+				await FlipLegAsync(originalRotationY);
 			}
 		}
 		finally
 		{
 			rotations.End(view.RotationY);
 		}
+
+		Task<bool> FlipLegAsync(double rotationY) =>
+			AnimateLegAsync(view, VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync), flipId, originalRotationY, () => view.RotateYToAsync(rotationY, halfLength, Easing, token), token);
 	}
 }

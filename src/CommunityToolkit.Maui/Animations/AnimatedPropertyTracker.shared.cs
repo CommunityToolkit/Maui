@@ -9,8 +9,8 @@ namespace CommunityToolkit.Maui.Animations;
 /// <remarks>
 /// An animation that starts while another animation of the same property still runs, for example when an <see cref="Behaviors.AnimationBehavior"/>
 /// is triggered again, starts from a partially animated value. Returning the view to that value would leave it partially animated, so the
-/// original value is the value the property had before the first of these animations started. An interrupted animation stops where it is and
-/// leaves returning the view to the animation that interrupted it.
+/// original value is the value the property had before the first of these animations started. An interrupted animation leaves returning the view
+/// to the animation that took over, and returns the view itself when nothing took over.
 /// </remarks>
 // Callers already run on the view's dispatcher; the lock is defensive only.
 sealed class AnimatedPropertyTracker

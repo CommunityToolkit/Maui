@@ -157,8 +157,8 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		await WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => Math.Abs(rotation - originalRotation) > 5);
 		view.CancelAnimations();
 		await Task.WhenAll(scaleRun, rotateRun).WaitAsync(waitTimeout, token);
-		Math.Abs(view.Scale - originalScale).Should().BeGreaterThan(0.01);
-		Math.Abs(view.Rotation - originalRotation).Should().BeGreaterThan(1);
+		view.Scale.Should().BeApproximately(originalScale, precision);
+		view.Rotation.Should().BeApproximately(originalRotation, precision);
 
 		var animation = CreateFunctionalAnimation();
 		using var recorder = new PropertyRecorder(view);

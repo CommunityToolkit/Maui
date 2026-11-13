@@ -144,7 +144,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		await rotated;
 		view.CancelAnimations();
 		await rotateRun.WaitAsync(waitTimeout, token);
-		view.Rotation.Should().BeGreaterThan(originalRotation + 20);
+		view.Rotation.Should().BeApproximately(originalRotation, precision);
 
 		var animation = CreateFunctionalAnimation();
 		using var recorder = new PropertyRecorder(view);

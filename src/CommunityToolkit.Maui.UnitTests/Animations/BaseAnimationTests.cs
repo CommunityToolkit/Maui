@@ -36,9 +36,6 @@ public abstract class BaseAnimationTests<TAnimation> : BaseAnimationTest where T
 		return animation;
 	}
 
-	// Where an interrupted animation leaves the view differs between the animation families
-	protected virtual bool InterruptionLeavesViewMidAnimation => true;
-
 	protected virtual void Interrupt(VisualElement view) => view.CancelAnimations();
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -152,7 +149,8 @@ public abstract class BaseAnimationTests<TAnimation> : BaseAnimationTest where T
 		Interrupt(view);
 		await firstAnimation.WaitAsync(waitTimeout, token);
 
-		HasAnyValueChanged(CaptureValues(view), startingValues).Should().Be(InterruptionLeavesViewMidAnimation);
+		firstAnimation.IsCompletedSuccessfully.Should().BeTrue();
+		AssertValuesEqual(view, startingValues);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 

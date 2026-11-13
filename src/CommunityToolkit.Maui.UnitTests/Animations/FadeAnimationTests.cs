@@ -127,7 +127,7 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 
 		await animation.Animate(label, token).WaitAsync(waitTimeout, token);
 
-		interruptedOpacity.Should().BeLessThan(originalOpacity - precision, "the interrupted animation leaves the label partially faded");
+		interruptedOpacity.Should().BeApproximately(originalOpacity, precision, "nothing took over, so the interrupted fade returns the label at once");
 		label.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 

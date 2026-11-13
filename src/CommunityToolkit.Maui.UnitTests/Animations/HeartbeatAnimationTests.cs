@@ -115,7 +115,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		await WaitForPropertyAsync(view, VisualElement.ScaleProperty, token, scale => Math.Abs(scale - originalScale) > 0.05);
 		view.CancelAnimations();
 		await scaleRun.WaitAsync(waitTimeout, token);
-		Math.Abs(view.Scale - originalScale).Should().BeGreaterThan(0.01);
+		view.Scale.Should().BeApproximately(originalScale, precision);
 
 		var animation = CreateFunctionalAnimation();
 		using var recorder = new PropertyRecorder(view);

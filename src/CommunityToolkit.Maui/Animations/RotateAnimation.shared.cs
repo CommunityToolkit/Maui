@@ -11,9 +11,10 @@ namespace CommunityToolkit.Maui.Animations;
 /// The original rotation is the rotation the view had before it started rotating. An animation that starts while another animation
 /// still rotates the same view, for example when an <see cref="Behaviors.AnimationBehavior"/> is triggered again, takes over and turns the view on to the same end,
 /// <see cref="Rotation"/> degrees from the rotation it had before the first of these animations, so repeated triggers never leave it turned.
-/// The animation it interrupts stops where it is. Cancelling the token while the animation runs returns the view to its original rotation and ends the returned
-/// <see cref="Task"/> as canceled.
-/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original rotation.
+/// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
+/// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original rotation at once and the returned <see cref="Task"/> completes.
+/// Cancelling the token while the animation runs returns the view to its original rotation and ends the returned <see cref="Task"/> as canceled.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), also when they are switched off while the animation runs, the view ends at its original rotation.
 /// </remarks>
 public partial class RotateAnimation : BaseAnimation
 {
@@ -67,22 +68,13 @@ public partial class RotateAnimation : BaseAnimation
 
 		try
 		{
-			var wasInterrupted = await WasInterruptedAsync(() => view.RotateToAsync(originalRotation + Rotation, Length, Easing, token), token);
+			// Turning by Rotation from the tracked original, not from the current rotation, ends a run that interrupted another one where the first run would have ended
+			var hasTurned = await AnimateLegAsync(view, VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync), rotationId, originalRotation,
+				() => view.RotateToAsync(originalRotation + Rotation, Length, Easing, token), token);
 
-			if (!wasInterrupted && rotations.IsLatest(rotationId))
+			if (hasTurned && rotations.IsLatest(rotationId))
 			{
 				view.Rotation = originalRotation;
-			}
-
-			if (wasInterrupted && token.IsCancellationRequested)
-			{
-				// A cancelled animation has no successor to return the view to its original rotation
-				if (rotations.IsLatest(rotationId))
-				{
-					view.Rotation = originalRotation;
-				}
-
-				token.ThrowIfCancellationRequested();
 			}
 		}
 		finally

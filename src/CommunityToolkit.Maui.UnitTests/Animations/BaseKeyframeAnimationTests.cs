@@ -15,9 +15,6 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 
 	protected abstract IReadOnlySet<string> AnimatedProperties { get; }
 
-	// A keyframe animation is stopped by aborting its own handle, which restores the view; CancelAnimations does not reach it
-	protected override bool InterruptionLeavesViewMidAnimation => false;
-
 	protected override void Interrupt(VisualElement view) => view.AbortAnimation(KeyframeAnimationExtensions.AnimationHandle);
 
 	[Fact(Timeout = (int)TestDuration.Long)]

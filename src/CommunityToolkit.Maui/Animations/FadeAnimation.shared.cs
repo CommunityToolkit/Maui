@@ -10,11 +10,11 @@ namespace CommunityToolkit.Maui.Animations;
 /// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="Opacity"/>, and half to return to the original opacity.
 /// The original opacity is the opacity the view had before it started fading. An animation that starts while another
 /// animation is still fading the same view, for example when an <see cref="Behaviors.AnimationBehavior"/> is triggered
-/// again before its animation ended, returns the view to the opacity it had before the first of these animations, not to the partially
-/// faded opacity it starts from; the animation it interrupts ends without fading the view back. The same applies to an animation that
-/// starts after an interrupted animation left the view partially faded, unless the view's opacity was changed in the meantime.
+/// again before its animation ended, takes over from the partially faded opacity and returns the view to the opacity it had before the first of these animations.
+/// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
+/// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original opacity at once and the returned <see cref="Task"/> completes.
 /// Cancelling the token while the animation runs returns the view to its original opacity and ends the returned <see cref="Task"/> as canceled.
-/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original opacity.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), also when they are switched off while the animation runs, the view ends at its original opacity.
 /// </remarks>
 public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Length)
 {
@@ -50,28 +50,17 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 		try
 		{
-			var wasInterrupted = await WasInterruptedAsync(() => view.FadeToAsync(Opacity, halfLength, Easing, token), token);
-
-			// An interrupted fade stops where it is: the animation that interrupted it, if any, returns the view to its original opacity
-			if (!wasInterrupted && fades.IsLatest(fadeId))
+			if (await FadeLegAsync(Opacity) && fades.IsLatest(fadeId))
 			{
-				wasInterrupted = await WasInterruptedAsync(() => view.FadeToAsync(originalOpacity, halfLength, Easing, token), token);
-			}
-
-			if (wasInterrupted && token.IsCancellationRequested)
-			{
-				// A cancelled animation has no successor to return the view to its original opacity
-				if (fades.IsLatest(fadeId))
-				{
-					view.Opacity = originalOpacity;
-				}
-
-				token.ThrowIfCancellationRequested();
+				await FadeLegAsync(originalOpacity);
 			}
 		}
 		finally
 		{
 			fades.End(view.Opacity);
 		}
+
+		Task<bool> FadeLegAsync(double opacity) =>
+			AnimateLegAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, token), token);
 	}
 }
