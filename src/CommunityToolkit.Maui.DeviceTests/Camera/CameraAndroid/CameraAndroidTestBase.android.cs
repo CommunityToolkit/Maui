@@ -166,19 +166,19 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	// CameraState.GetType() is CameraX's getType(), not Object.GetType(): PENDING_OPEN, OPENING, OPEN, CLOSING or CLOSED.
 	protected static string GetNativeCameraState(ICameraInfo nativeInfo) =>
-		(nativeInfo.CameraState.Value as CameraState)?.GetType()?.ToString() ?? "UNKNOWN";
+		(nativeInfo.CameraState!.Value as CameraState)?.GetType()?.ToString() ?? "UNKNOWN";
 
 	protected static async Task<string> GetNativeCameraStateAsync(string cameraId) =>
 		GetNativeCameraState(await GetNativeCameraInfoAsync(cameraId));
 
 	// JavaCast, as CameraProvider reads it: in a trimmed (Release) app the value is a plain Java.Lang.Object, which a cast to IZoomState rejects.
 	protected static IZoomState GetNativeZoomState(ICameraInfo nativeInfo) =>
-		nativeInfo.ZoomState.Value?.JavaCast<IZoomState>() ?? throw new InvalidOperationException("The native camera has no zoom state.");
+		nativeInfo.ZoomState!.Value?.JavaCast<IZoomState>() ?? throw new InvalidOperationException("The native camera has no zoom state.");
 
 	protected static float GetNativeZoomRatio(ICameraInfo nativeInfo) => GetNativeZoomState(nativeInfo).ZoomRatio;
 
 	protected static bool IsNativeTorchOn(ICameraInfo nativeInfo) =>
-		(nativeInfo.TorchState.Value as Java.Lang.Integer)?.IntValue() == 1;
+		(nativeInfo.TorchState!.Value as Java.Lang.Integer)?.IntValue() == 1;
 
 	protected static async Task WaitForNativeCameraStateAsync(string cameraId, string expectedState, int timeoutMilliseconds = 30000)
 	{
@@ -198,7 +198,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	protected static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000, CameraErrorRecorder? errors = null)
+	internal static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000, CameraErrorRecorder? errors = null)
 	{
 		try
 		{
@@ -210,12 +210,12 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			var reported = errors is null || errors.Errors.Count == 0
 				? string.Empty
 				: $" Errors the view reported: {string.Join("; ", errors.Errors.Select(error => $"{error.GetType().FullName}: {error.Message}"))}.";
-			throw new Xunit.Sdk.XunitException($"The preview never started streaming (stream state {previewView.PreviewStreamState.Value}; every camera: {all}).{reported}");
+			throw new Xunit.Sdk.XunitException($"The preview never started streaming (stream state {previewView.PreviewStreamState!.Value}; every camera: {all}).{reported}");
 		}
 	}
 
 	protected static bool IsStreaming(PreviewView previewView) =>
-		previewView.PreviewStreamState.Value?.ToString() == "STREAMING";
+		previewView.PreviewStreamState!.Value?.ToString() == "STREAMING";
 
 	protected static async Task WaitForAllCamerasClosedAsync(int timeoutMilliseconds = 30000)
 	{
@@ -238,7 +238,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
 	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
 	// The handler selects a camera only once its camera provider has found the cameras, which takes longest for the first camera of the process
-	protected static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView, CameraErrorRecorder? errors = null)
+	internal static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView, CameraErrorRecorder? errors = null)
 	{
 		await AssertionExtensions.AssertEventually(() => view.SelectedCamera is not null, 30000, 50, "The handler never selected a camera.");
 		await WaitForStreamingAsync(previewView, errors: errors);
@@ -262,7 +262,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	protected static (int Width, int Height) SmallSize => (320, 240);
 
-	protected static string GetBoundCameraId(ICamera camera) => GetNativeCameraId(camera.CameraInfo);
+	protected static string GetBoundCameraId(ICamera camera) => GetNativeCameraId(camera.CameraInfo!);
 
 	protected static (int Width, int Height)? GetNativeResolution(ResolutionInfo? info) =>
 		info?.Resolution is Android.Util.Size size ? (size.Width, size.Height) : null;
@@ -285,7 +285,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// old session. Must be called on the UI thread: LiveData observers are added there.
 	protected static async Task RunAndWaitForANewPreviewStreamAsync(PreviewView previewView, Func<Task> action)
 	{
-		var states = new LiveDataRecorder(previewView.PreviewStreamState);
+		var states = new LiveDataRecorder(previewView.PreviewStreamState!);
 		try
 		{
 			await action();
@@ -305,7 +305,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// The selector matches no camera of the device, like an external USB camera that is not plugged in or a CameraInfo that outlived its camera.
 	protected static CameraInfo CreateCameraThatCanNotBeBound() =>
 		new("External Camera", "unplugged-camera", CameraPosition.Unknown, false, 1, 1, [],
-			new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingExternal)!.Build());
+			new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingExternal)!.Build()!);
 
 	internal static async Task<Stream> TakePictureAsync(ManagerSession session)
 	{

@@ -48,7 +48,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 	// A camera bound through an extension-enabled CameraSelector carries the vendor extension's SessionProcessor, a plain one has none.
 	static AndroidX.Camera.Core.Impl.ISessionProcessor? GetSessionProcessorOfTheBoundCamera(ManagerSession session) =>
-		(session.Native<ICamera>("camera") ?? throw new InvalidOperationException("The manager has no bound camera.")).ExtendedConfig.GetSessionProcessor(null);
+		(session.Native<ICamera>("camera") ?? throw new InvalidOperationException("The manager has no bound camera.")).ExtendedConfig!.GetSessionProcessor(null);
 
 	[Fact]
 	public async Task UpdateFlashModeBeforeConnectingDoesNotChangeTheFlashModeOfTheCameraThatConnectsLater()

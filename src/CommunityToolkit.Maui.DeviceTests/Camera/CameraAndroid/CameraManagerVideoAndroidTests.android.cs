@@ -61,7 +61,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		try
 		{
 			var constructor = JNIEnv.GetMethodID(finalizeClass, "<init>", "(Landroidx/camera/video/OutputOptions;Landroidx/camera/video/RecordingStats;Landroidx/camera/video/OutputResults;ILjava/lang/Throwable;)V");
-			var finalizeEvent = JNIEnv.NewObject(finalizeClass, constructor, new JValue(outputOptions), new JValue(recordingStats), new JValue(outputResults), new JValue(error),
+			var finalizeEvent = JNIEnv.NewObject(finalizeClass, constructor, new JValue(outputOptions!), new JValue(recordingStats), new JValue(outputResults), new JValue(error),
 				cause is null ? new JValue(IntPtr.Zero) : new JValue(cause));
 			return Java.Lang.Object.GetObject<VideoRecordEvent.Finalize>(finalizeEvent, JniHandleOwnership.TransferLocalRef)
 				?? throw new InvalidOperationException("JNI did not create the Finalize event.");

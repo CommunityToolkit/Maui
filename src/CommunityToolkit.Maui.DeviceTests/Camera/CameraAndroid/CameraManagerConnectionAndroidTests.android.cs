@@ -113,7 +113,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.Native<ImageCapture>("imageCapture")!));
 			Assert.False(await IsNativelyBoundAsync(session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!));
 			// The emulators offer only one quality, so a recording can not show that the recorder asks CameraX for the highest one.
-			Assert.Contains("name=HIGHEST", session.Native<AndroidX.Camera.Video.Recorder>("videoRecorder")!.QualitySelector.ToString());
+			Assert.Contains("name=HIGHEST", session.Native<AndroidX.Camera.Video.Recorder>("videoRecorder")!.QualitySelector!.ToString());
 			foreach (var other in session.Provider.AvailableCameras!.Where(camera => camera.DeviceId != selected.DeviceId))
 			{
 				Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
@@ -587,14 +587,14 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		{
 			var camera = session.Native<ICamera>("camera")!;
 			var previewView = session.PreviewView!;
-			var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2f, previewView.Height / 2f, 0.1f);
-			var probe = new FocusMeteringAction.Builder(point).DisableAutoCancel().Build();
-			Skip.IfNot(camera.CameraInfo.IsFocusMeteringSupported(probe),
+			var point = previewView.MeteringPointFactory!.CreatePoint(previewView.Width / 2f, previewView.Height / 2f, 0.1f);
+			var probe = new FocusMeteringAction.Builder(point).DisableAutoCancel()!.Build()!;
+			Skip.IfNot(camera.CameraInfo!.IsFocusMeteringSupported(probe),
 				"The camera supports no AF, AE or AWB metering region, so CameraX rejects every focus and metering action.");
 
 			// One UI-thread message: CameraX handles both requests on its camera thread in this order, long before a capture result
 			// could complete the first one. The bound session is not bound again, so nothing else can end the test's action.
-			var probeOutcome = ObserveFailureAsync(camera.CameraControl.StartFocusAndMetering(probe));
+			var probeOutcome = ObserveFailureAsync(camera.CameraControl!.StartFocusAndMetering(probe)!);
 			var start = session.Manager.StartCameraPreview(CancellationToken.None);
 
 			Assert.True(start.IsCompletedSuccessfully, "StartCameraPreview bound the camera again although its use cases were bound.");
@@ -1025,7 +1025,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
 			var cameraId = session.View.SelectedCamera!.DeviceId;
-			var streamState = session.PreviewView!.PreviewStreamState;
+			var streamState = session.PreviewView!.PreviewStreamState!;
 			var nativeObjects = new[]
 			{
 				"camera", "cameraControl", "cameraPreview", "cameraExecutor", "imageCapture", "videoCapture", "videoRecorder",

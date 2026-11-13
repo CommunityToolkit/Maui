@@ -414,7 +414,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(1280, 720);
 		var supported = Sizes((1920, 1080), (320, 240), (1280, 720), (640, 480));
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Equal(new[] { (1280, 720), (640, 480), (320, 240) }, Dimensions(filtered));
 	}
@@ -425,7 +425,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(800, 600);
 		var supported = Sizes((1000, 100), (640, 1000), (640, 480));
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Equal(new[] { (640, 480) }, Dimensions(filtered));
 	}
@@ -435,7 +435,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(640, 480);
 
-		var filtered = filter.Filter(Sizes((640, 480), (641, 480), (640, 481)), 0);
+		var filtered = filter.Filter(Sizes((640, 480), (641, 480), (640, 481)), 0)!;
 
 		Assert.Equal(new[] { (640, 480) }, Dimensions(filtered));
 	}
@@ -445,7 +445,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(1000, 1000);
 
-		var filtered = filter.Filter(Sizes((400, 300), (300, 400), (100, 100)), 0);
+		var filtered = filter.Filter(Sizes((400, 300), (300, 400), (100, 100)), 0)!;
 
 		Assert.Equal(new[] { (400, 300), (300, 400), (100, 100) }, Dimensions(filtered));
 	}
@@ -456,7 +456,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(320, 240);
 		var supported = Sizes((1920, 1080), (1280, 720));
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Same(supported, filtered);
 	}
@@ -467,7 +467,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(320, 240);
 		var supported = Sizes();
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Same(supported, filtered);
 		Assert.Empty(filtered);
@@ -478,7 +478,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(320, 240);
 
-		var filtered = filter.Filter(null!, 0);
+		var filtered = filter.Filter(null!, 0)!;
 
 		Assert.NotNull(filtered);
 		Assert.Empty(filtered);
@@ -489,6 +489,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(640, 480);
 
-		Assert.Equal(new[] { (640, 480) }, Dimensions(filter.Filter(Sizes((1280, 960), (640, 480)), 90)));
+		Assert.Equal(new[] { (640, 480) }, Dimensions(filter.Filter(Sizes((1280, 960), (640, 480)), 90)!));
 	}
 }

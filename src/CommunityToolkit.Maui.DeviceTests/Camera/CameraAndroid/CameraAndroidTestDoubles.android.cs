@@ -95,7 +95,7 @@ sealed class FakeImageProxy(AImage? image) : Java.Lang.Object, IImageProxy
 {
 	public int CloseCount { get; private set; }
 
-	public Android.Graphics.Rect CropRect { get; set; } = new();
+	public Android.Graphics.Rect? CropRect { get; set; } = new();
 
 	public int Format => (int)ImageFormatType.Jpeg;
 

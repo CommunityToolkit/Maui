@@ -586,7 +586,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			var cameraId = host.SelectedCameraId;
-			var streamState = host.PreviewView.PreviewStreamState;
+			var streamState = host.PreviewView.PreviewStreamState!;
 
 			((IElementHandler)host.Handler).DisconnectHandler();
 
@@ -937,7 +937,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			var cameraId = host.SelectedCameraId;
-			var streamState = previewViewOfTheApp.PreviewStreamState;
+			var streamState = previewViewOfTheApp.PreviewStreamState!;
 
 			((IElementHandler)host.Handler).DisconnectHandler();
 
