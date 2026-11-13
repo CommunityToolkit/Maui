@@ -143,7 +143,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	/// </summary>
 	protected static void SkipWhereTheVideoDecoderIsUnreliable() =>
 		Skip.If(!OperatingSystem.IsAndroidVersionAtLeast(29) && IsEmulator(),
-			"The emulators below API 29 (API 27 and 28 in CI) have a media codec service that crashes intermittently while decoding H.264 (ERROR_CODE_DECODING_FAILED); the video tests cover no version-specific code and run on API 29+ and on devices.");
+			"The API 28 emulator's media codec service crashes intermittently while decoding H.264 (ERROR_CODE_DECODING_FAILED), and the older emulators (API 27 in CI) are skipped with it; the video tests cover no version-specific code and run on API 29+ and on devices.");
 
 	static bool IsEmulator() => Android.OS.Build.Hardware is "ranchu" or "goldfish";
 
