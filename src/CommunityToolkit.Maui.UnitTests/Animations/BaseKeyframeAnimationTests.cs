@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -8,6 +9,10 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 
 public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTests<TAnimation> where TAnimation : BaseAnimation, new()
 {
+	protected const int frameMilliseconds = 16;
+
+	const double floatingPointNoise = 1e-9;
+
 	protected abstract IReadOnlySet<string> AnimatedProperties { get; }
 
 	// A keyframe animation is stopped by aborting its own handle, which restores the view; CancelAnimations does not reach it
@@ -116,6 +121,120 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 			if (AnimatedProperties.Contains(animatableProperties[i].Name))
 			{
 				actualValues[i].Should().BeApproximately(expectedValues[i], precision, animatableProperties[i].Name);
+			}
+		}
+	}
+
+	protected static KeyframeSegment[] SinInOutSegments(double[] fractions, double[] values) =>
+		[.. fractions.Zip(values).Zip(fractions.Skip(1).Zip(values.Skip(1)), (start, end) => new KeyframeSegment(start.First, end.First, start.Second, end.Second, Easing.SinInOut))];
+
+	// A segment that has not begun yet leaves the property at the value the previous one ended on, as the animation does.
+	// Expects the animation to start on the tick the recorder started (a fresh view's mock clock starts at 0); where one segment ends and the next begins on the same tick, the later write wins.
+	protected static double ValueAt(IReadOnlyList<KeyframeSegment> segments, double progress)
+	{
+		var value = segments[0].From;
+		foreach (var (begin, end, from, to, easing) in segments)
+		{
+			if (progress >= end)
+			{
+				value = to;
+			}
+			else if (progress > begin)
+			{
+				return from + ((to - from) * easing.Ease((progress - begin) / (end - begin)));
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return value;
+	}
+
+	protected static void AssertEveryFrameFollowsTheKeyframes(FrameRecorder recorder, BindableProperty property, IReadOnlyList<KeyframeSegment> segments, uint length, Easing? timelineEasing = null)
+	{
+		var lastExpectedFrame = (long)Math.Ceiling(length / (double)frameMilliseconds) * frameMilliseconds;
+		recorder.Frames.Select(frame => frame.Milliseconds).Should().Contain(Enumerable.Range(1, (int)(lastExpectedFrame / frameMilliseconds)).Select(frameNumber => (long)frameNumber * frameMilliseconds));
+
+		foreach (var frame in recorder.Frames)
+		{
+			var progress = (timelineEasing ?? Easing.Linear).Ease(Math.Min(1.0, frame.Milliseconds / (double)length));
+			frame.ValueOf(property).Should().BeApproximately(ValueAt(segments, progress), precision, $"{property.PropertyName} at {frame.Milliseconds} ms");
+		}
+	}
+
+	protected static List<double> GetTurningPoints(IEnumerable<double> values)
+	{
+		var distinctValues = new List<double>();
+		foreach (var value in values)
+		{
+			if (distinctValues.Count is 0 || Math.Abs(value - distinctValues[^1]) > floatingPointNoise)
+			{
+				distinctValues.Add(value);
+			}
+		}
+
+		var turningPoints = new List<double>();
+		for (var i = 1; i < distinctValues.Count - 1; i++)
+		{
+			if ((distinctValues[i] - distinctValues[i - 1]) * (distinctValues[i + 1] - distinctValues[i]) < 0)
+			{
+				turningPoints.Add(distinctValues[i]);
+			}
+		}
+
+		return turningPoints;
+	}
+
+	protected readonly record struct KeyframeSegment(double Begin, double End, double From, double To, Easing Easing);
+
+	protected readonly record struct Frame(long Milliseconds, IReadOnlyDictionary<BindableProperty, double> Values)
+	{
+		public double ValueOf(BindableProperty property) => Values[property];
+	}
+
+	protected readonly record struct Write(long Milliseconds, BindableProperty Property, double Value);
+
+	// Frames record on every ticker frame, not only when PropertyChanged fires, so a value that should change but holds still is seen.
+	// Writes record every change in between, because a segment that ends and the next one that begins write within the same frame.
+	protected sealed class FrameRecorder : IDisposable
+	{
+		readonly VisualElement view;
+		readonly BindableProperty[] properties;
+		readonly long startMilliseconds;
+		readonly List<Frame> frames = [];
+		readonly List<Write> writes = [];
+		readonly IDisposable frameObservation;
+
+		public FrameRecorder(VisualElement view, params BindableProperty[] properties)
+		{
+			this.view = view;
+			this.properties = properties;
+			startMilliseconds = view.GetElapsedAnimationMilliseconds();
+			frameObservation = view.ObserveAnimationFrames(RecordFrame);
+			view.PropertyChanged += HandlePropertyChanged;
+		}
+
+		public IReadOnlyList<Frame> Frames => frames;
+
+		public IReadOnlyList<Write> Writes => writes;
+
+		public void Dispose()
+		{
+			frameObservation.Dispose();
+			view.PropertyChanged -= HandlePropertyChanged;
+		}
+
+		void RecordFrame(long elapsedMilliseconds) =>
+			frames.Add(new Frame(elapsedMilliseconds - startMilliseconds, properties.ToDictionary(property => property, property => (double)view.GetValue(property))));
+
+		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			var property = properties.FirstOrDefault(property => property.PropertyName == e.PropertyName);
+			if (property is not null)
+			{
+				writes.Add(new Write(view.GetElapsedAnimationMilliseconds() - startMilliseconds, property, (double)view.GetValue(property)));
 			}
 		}
 	}

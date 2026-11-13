@@ -13,6 +13,10 @@ static class AnimationExtensions
 	public static long GetElapsedAnimationMilliseconds(this IView view) =>
 		view.Handler is MockAnimationHandler handler ? handler.ElapsedAnimationMilliseconds : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
+	// Reports the mock clock once per ticker frame, after every animation has been ticked, so a test sees values that held still as well as values that changed
+	public static IDisposable ObserveAnimationFrames(this IView view, Action<long> onFrame) =>
+		view.Handler is MockAnimationHandler handler ? handler.ObserveFrames(onFrame) : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
+
 	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
 	sealed class MockAnimationHandler : ViewHandler<IView, object>
 	{
@@ -32,6 +36,8 @@ static class AnimationExtensions
 
 		// The ticker advances animations a fixed 16 ms per tick however long a tick really takes, so this clock does not depend on the speed of the machine
 		public long ElapsedAnimationMilliseconds => animationManager.ElapsedMilliseconds;
+
+		public IDisposable ObserveFrames(Action<long> onFrame) => animationManager.ObserveFrames(onFrame);
 
 		public static T Prepare<T>(T view) where T : IView
 		{
@@ -153,7 +159,16 @@ static class AnimationExtensions
 				Ticker.Fire = OnFire;
 			}
 
+			readonly List<Action<long>> frameObservers = [];
+
 			public long ElapsedMilliseconds { get; private set; }
+
+			public IDisposable ObserveFrames(Action<long> onFrame)
+			{
+				frameObservers.Add(onFrame);
+
+				return new FrameObservation(() => frameObservers.Remove(onFrame));
+			}
 
 			public double SpeedModifier { get; set; } = 1;
 
@@ -185,6 +200,11 @@ static class AnimationExtensions
 				var animationsList = this.animations.ToList();
 				animationsList.ForEach(AnimationTick);
 
+				if (hasTicked)
+				{
+					frameObservers.ToList().ForEach(observer => observer(ElapsedMilliseconds));
+				}
+
 				if (this.animations.Count <= 0)
 				{
 					Ticker.Stop();
@@ -215,5 +235,10 @@ static class AnimationExtensions
 				}
 			}
 		}
+	}
+
+	sealed class FrameObservation(Action stopObserving) : IDisposable
+	{
+		public void Dispose() => stopObserving();
 	}
 }

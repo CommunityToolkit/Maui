@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -88,7 +87,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var angle = animation.RotationAngle;
-		var turningOffsets = TurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).Select(rotation => rotation - originalRotation).ToList();
+		var turningOffsets = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).Select(rotation => rotation - originalRotation).ToList();
 		turningOffsets.Should().HaveCount(4);
 		turningOffsets.Zip([angle, -2 * angle / 3, angle / 3, -angle / 3]).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
 	}, TestContext.Current.CancellationToken);
@@ -120,7 +119,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var firstTurningOffset = TurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).First() - originalRotation;
+		var firstTurningOffset = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).First() - originalRotation;
 		firstTurningOffset.Should().BeApproximately(rotationAngle, precision);
 		recorder.ValuesOf(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation + Math.Min(rotationAngle, -2 * rotationAngle / 3), precision);
 	}, TestContext.Current.CancellationToken);
@@ -176,91 +175,21 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_FollowsTheKeyframeCurveOnEveryTick() => RunOnSingleThreadAsync(async token =>
-	{
-		var animation = new SwingAnimation { Length = functionalTestLength };
-		var view = CreateAnimatedViewWithNonDefaultValues();
-		var angle = animation.RotationAngle;
-		var samples = TickSampler.Start(view, VisualElement.RotationProperty);
-
-		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
-
-		samples.AssertFollows(animation.Length, [0, 0.2, 0.4, 0.6, 0.8, 1.0], [0, angle, -2 * angle / 3, angle / 3, -angle / 3, 0], originalRotation);
-	}, TestContext.Current.CancellationToken);
+	public Task Animate_FollowsTheKeyframeCurveOnEveryTick() => AssertFollowsTheKeyframeCurveOnEveryTick(null, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_CustomEasing_WarpsTheProgressOfTheWholeRun() => RunOnSingleThreadAsync(async token =>
+	public Task Animate_CustomEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframeCurveOnEveryTick(Easing.CubicIn, TestContext.Current.CancellationToken);
+
+	Task AssertFollowsTheKeyframeCurveOnEveryTick(Easing? easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength, Easing = Easing.CubicIn };
+		var animation = new SwingAnimation { Length = functionalTestLength, Easing = easing ?? BaseAnimationDefaults.Easing };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var angle = animation.RotationAngle;
-		var samples = TickSampler.Start(view, VisualElement.RotationProperty);
+		using var recorder = new FrameRecorder(view, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		samples.AssertFollows(animation.Length, [0, 0.2, 0.4, 0.6, 0.8, 1.0], [0, angle, -2 * angle / 3, angle / 3, -angle / 3, 0], originalRotation, Easing.CubicIn);
-	}, TestContext.Current.CancellationToken);
-
-	static List<double> TurningPoints(IEnumerable<double> values)
-	{
-		var distinctValues = new List<double>();
-		foreach (var value in values)
-		{
-			if (distinctValues.Count == 0 || Math.Abs(distinctValues[^1] - value) > 1e-9)
-			{
-				distinctValues.Add(value);
-			}
-		}
-
-		var turningPoints = new List<double>();
-		for (var i = 1; i < distinctValues.Count - 1; i++)
-		{
-			if ((distinctValues[i] - distinctValues[i - 1]) * (distinctValues[i + 1] - distinctValues[i]) < 0)
-			{
-				turningPoints.Add(distinctValues[i]);
-			}
-		}
-
-		return turningPoints;
-	}
-
-	sealed class TickSampler
-	{
-		readonly BindableProperty property;
-		readonly long startMilliseconds;
-		readonly SortedDictionary<long, double> lastValuePerTick = [];
-
-		TickSampler(VisualElement view, BindableProperty property)
-		{
-			this.property = property;
-			startMilliseconds = view.GetElapsedAnimationMilliseconds();
-			view.PropertyChanged += (_, e) =>
-			{
-				if (e.PropertyName == property.PropertyName)
-				{
-					lastValuePerTick[view.GetElapsedAnimationMilliseconds() - startMilliseconds] = (double)view.GetValue(property);
-				}
-			};
-		}
-
-		public static TickSampler Start(VisualElement view, BindableProperty property) => new(view, property);
-
-		public void AssertFollows(uint length, double[] fractions, double[] offsets, double originalValue, Easing? timelineEasing = null)
-		{
-			lastValuePerTick.Should().NotBeEmpty();
-			foreach (var (elapsed, value) in lastValuePerTick)
-			{
-				var progress = (timelineEasing ?? Easing.Linear).Ease(Math.Min(1.0, elapsed / (double)length));
-				var segment = 0;
-				while (segment < fractions.Length - 2 && progress > fractions[segment + 1])
-				{
-					segment++;
-				}
-
-				var local = (progress - fractions[segment]) / (fractions[segment + 1] - fractions[segment]);
-				var expected = originalValue + offsets[segment] + ((offsets[segment + 1] - offsets[segment]) * Easing.SinInOut.Ease(local));
-				value.Should().BeApproximately(expected, precision, $"{property.PropertyName} at {elapsed} ms");
-			}
-		}
-	}
+		var rotations = SinInOutSegments([0, 0.2, 0.4, 0.6, 0.8, 1.0], [.. new[] { 0, angle, -2 * angle / 3, angle / 3, -angle / 3, 0 }.Select(offset => originalRotation + offset)]);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, rotations, animation.Length, animation.Easing);
+	}, testToken);
 }

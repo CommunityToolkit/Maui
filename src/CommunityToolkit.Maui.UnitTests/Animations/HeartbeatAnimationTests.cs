@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -132,21 +131,12 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var samples = new List<(long Milliseconds, double Scale)>();
-		var startMilliseconds = view.GetElapsedAnimationMilliseconds();
-		view.PropertyChanged += (_, e) =>
-		{
-			if (e.PropertyName is nameof(VisualElement.Scale))
-			{
-				samples.Add((view.GetElapsedAnimationMilliseconds() - startMilliseconds, view.Scale));
-			}
-		};
+		using var recorder = new FrameRecorder(view, VisualElement.ScaleProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		const int frameMilliseconds = 16;
 		var peakScale = originalScale * animation.MaximumScale;
-		var peakFrames = samples.Where(sample => Math.Abs(sample.Scale - peakScale) <= precision).Select(sample => sample.Milliseconds).Distinct().ToList();
+		var peakFrames = recorder.Writes.Where(write => Math.Abs(write.Value - peakScale) <= precision).Select(write => write.Milliseconds).Distinct().ToList();
 		peakFrames.Should().Equal(
 			(long)Math.Ceiling(0.2 * animation.Length / frameMilliseconds) * frameMilliseconds,
 			(long)Math.Ceiling(0.6 * animation.Length / frameMilliseconds) * frameMilliseconds);
@@ -163,36 +153,12 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		var animation = CreateFunctionalAnimation();
 		animation.Easing = easing;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var samples = new List<(long Milliseconds, double Scale)>();
-		var startMilliseconds = view.GetElapsedAnimationMilliseconds();
-		view.PropertyChanged += (_, e) =>
-		{
-			if (e.PropertyName is nameof(VisualElement.Scale))
-			{
-				samples.Add((view.GetElapsedAnimationMilliseconds() - startMilliseconds, view.Scale));
-			}
-		};
+		using var recorder = new FrameRecorder(view, VisualElement.ScaleProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var peakScale = originalScale * animation.MaximumScale;
-		(double Fraction, double Value)[] scaleKeyframes = [(0, originalScale), (0.2, peakScale), (0.4, originalScale), (0.6, peakScale), (1, originalScale)];
-
-		const int frameMilliseconds = 16;
-		for (var frame = frameMilliseconds; frame < animation.Length + frameMilliseconds; frame += frameMilliseconds)
-		{
-			var progress = easing.Ease(Math.Min(1, frame / (double)animation.Length));
-			var endOfFrame = samples.Last(sample => sample.Milliseconds <= frame);
-			endOfFrame.Scale.Should().BeApproximately(ValueAt(scaleKeyframes, progress), precision, $"Scale at {frame} ms");
-		}
+		var scaleSegments = SinInOutSegments([0, 0.2, 0.4, 0.6, 1], [originalScale, peakScale, originalScale, peakScale, originalScale]);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleProperty, scaleSegments, animation.Length, easing);
 	}, testToken);
-
-	static double ValueAt((double Fraction, double Value)[] keyframes, double progress)
-	{
-		var end = Array.FindIndex(keyframes, keyframe => keyframe.Fraction >= progress);
-		var (startFraction, startValue) = keyframes[end - 1];
-		var (endFraction, endValue) = keyframes[end];
-
-		return startValue + ((endValue - startValue) * Easing.SinInOut.Ease((progress - startFraction) / (endFraction - startFraction)));
-	}
 }

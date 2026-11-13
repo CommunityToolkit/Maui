@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -178,24 +177,15 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var samples = new List<(long Milliseconds, double Scale, double Rotation)>();
-		var startMilliseconds = view.GetElapsedAnimationMilliseconds();
-		view.PropertyChanged += (_, e) =>
-		{
-			if (e.PropertyName is nameof(VisualElement.Scale) or nameof(VisualElement.Rotation))
-			{
-				samples.Add((view.GetElapsedAnimationMilliseconds() - startMilliseconds, view.Scale, view.Rotation));
-			}
-		};
+		using var recorder = new FrameRecorder(view, VisualElement.ScaleProperty, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		const int frameMilliseconds = 16;
 		var lastFrameBeforeTwentyPercent = ((int)Math.Ceiling(0.2 * animation.Length / frameMilliseconds) - 1) * frameMilliseconds;
 		((double)lastFrameBeforeTwentyPercent).Should().BeGreaterThanOrEqualTo(0.1 * animation.Length);
-		var endOfThatFrame = samples.Last(sample => sample.Milliseconds <= lastFrameBeforeTwentyPercent);
-		endOfThatFrame.Scale.Should().BeApproximately(originalScale * animation.MinimumScale, precision);
-		endOfThatFrame.Rotation.Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
+		var endOfThatFrame = recorder.Frames.Last(frame => frame.Milliseconds <= lastFrameBeforeTwentyPercent);
+		endOfThatFrame.ValueOf(VisualElement.ScaleProperty).Should().BeApproximately(originalScale * animation.MinimumScale, precision);
+		endOfThatFrame.ValueOf(VisualElement.RotationProperty).Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -209,15 +199,7 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		var animation = CreateFunctionalAnimation();
 		animation.Easing = easing;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var samples = new List<(long Milliseconds, double Scale, double Rotation)>();
-		var startMilliseconds = view.GetElapsedAnimationMilliseconds();
-		view.PropertyChanged += (_, e) =>
-		{
-			if (e.PropertyName is nameof(VisualElement.Scale) or nameof(VisualElement.Rotation))
-			{
-				samples.Add((view.GetElapsedAnimationMilliseconds() - startMilliseconds, view.Scale, view.Rotation));
-			}
-		};
+		using var recorder = new FrameRecorder(view, VisualElement.ScaleProperty, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -225,25 +207,9 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		var grownScale = originalScale * animation.MaximumScale;
 		var left = originalRotation - animation.RotationAngle;
 		var right = originalRotation + animation.RotationAngle;
-		(double Fraction, double Value)[] scaleKeyframes = [(0, originalScale), (0.1, shrunkScale), (0.2, shrunkScale), (0.3, grownScale), (0.9, grownScale), (1, originalScale)];
-		(double Fraction, double Value)[] rotationKeyframes = [(0, originalRotation), (0.1, left), (0.2, left), (0.3, right), (0.4, left), (0.5, right), (0.6, left), (0.7, right), (0.8, left), (0.9, right), (1, originalRotation)];
-
-		const int frameMilliseconds = 16;
-		for (var frame = frameMilliseconds; frame < animation.Length + frameMilliseconds; frame += frameMilliseconds)
-		{
-			var progress = easing.Ease(Math.Min(1, frame / (double)animation.Length));
-			var endOfFrame = samples.Last(sample => sample.Milliseconds <= frame);
-			endOfFrame.Scale.Should().BeApproximately(ValueAt(scaleKeyframes, progress), precision, $"Scale at {frame} ms");
-			endOfFrame.Rotation.Should().BeApproximately(ValueAt(rotationKeyframes, progress), precision, $"Rotation at {frame} ms");
-		}
+		var scaleSegments = SinInOutSegments([0, 0.1, 0.2, 0.3, 0.9, 1], [originalScale, shrunkScale, shrunkScale, grownScale, grownScale, originalScale]);
+		var rotationSegments = SinInOutSegments([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], [originalRotation, left, left, right, left, right, left, right, left, right, originalRotation]);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleProperty, scaleSegments, animation.Length, easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, rotationSegments, animation.Length, easing);
 	}, testToken);
-
-	static double ValueAt((double Fraction, double Value)[] keyframes, double progress)
-	{
-		var end = Array.FindIndex(keyframes, keyframe => keyframe.Fraction >= progress);
-		var (startFraction, startValue) = keyframes[end - 1];
-		var (endFraction, endValue) = keyframes[end];
-
-		return startValue + ((endValue - startValue) * Easing.SinInOut.Ease((progress - startFraction) / (endFraction - startFraction)));
-	}
 }
