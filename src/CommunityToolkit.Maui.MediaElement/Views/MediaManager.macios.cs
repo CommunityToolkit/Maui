@@ -15,14 +15,13 @@ public partial class MediaManager : IDisposable
 {
 	const string playableKey = "playable";
 	const string tracksKey = "tracks";
+	const string noTracksToPlayMessage = "The media has no tracks to play.";
 
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
 	CancellationTokenSource? playerItemCancellationTokenSource;
 
 	float? previousSpeed;
-
-	const string noTracksToPlayMessage = "The media has no tracks to play.";
 
 	bool hasMediaOpened;
 	bool hasMediaFailed;
@@ -884,7 +883,7 @@ public partial class MediaManager : IDisposable
 
 				token.ThrowIfCancellationRequested();
 
-				// iOS 16 can make the item of media without any track ReadyToPlay, though there is nothing to play
+				// iOS 16.4 can make the item of media without any track ReadyToPlay, though there is nothing to play
 				var hasNoTracksToPlay = didLoadTracks && videoTrack is null && await HasNoTracksToPlay(playerItem.Asset, token);
 
 				// The item can fail while its tracks are loading
@@ -944,7 +943,7 @@ public partial class MediaManager : IDisposable
 				break;
 
 			case AVPlayerItemStatus.Unknown:
-				// Most iOS versions leave the item of media without any track Unknown (iOS 16 can make it ReadyToPlay), so such media
+				// Most iOS versions, including 15.5, 17 and 18, leave the item of media without any track Unknown (iOS 16.4 can make it ReadyToPlay), so such media
 				// would be neither opened nor failed. The tracks of media that cannot be read fail to load instead, and its item fails.
 				var hasNoTracks = await HasNoTracksToPlay(playerItem.Asset, token);
 
@@ -1004,7 +1003,7 @@ public partial class MediaManager : IDisposable
 			AVPlayerStatus.Unknown => MediaElementState.Stopped,
 
 			// The player can become ready after its item was removed (a cleared source) or while its item cannot be played (it failed,
-			// or it has no tracks, which iOS 16 reports as ready): only media that is ready to play is paused
+			// or it has no tracks, which iOS 16.4 reports as ready): only media that is ready to play is paused
 			AVPlayerStatus.ReadyToPlay when PlayerItem?.Status is AVPlayerItemStatus.ReadyToPlay && !hasMediaFailed => MediaElementState.Paused,
 			AVPlayerStatus.Failed => MediaElementState.Failed,
 			_ => MediaElement.CurrentState

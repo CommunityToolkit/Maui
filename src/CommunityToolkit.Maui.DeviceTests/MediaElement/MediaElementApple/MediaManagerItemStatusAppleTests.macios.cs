@@ -408,7 +408,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			var manager = handler.Manager!;
 			await manager.TakeSourceUpdates();
 
-			// iOS 16 can make such an item ReadyToPlay, though there is nothing to play.
+			// iOS 16.4 can make such an item ReadyToPlay, though there is nothing to play.
 			var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("trackless", "mp4")))) { StatusOverride = AVPlayerItemStatus.ReadyToPlay };
 
 			await manager.RunItemStatusHandler(item, CancellationToken.None);
@@ -445,6 +445,34 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			Assert.Equal(0, events.Opened);
 			Assert.Equal(noTracksToPlayMessage, Assert.Single(events.Failures));
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+		});
+	}
+
+	[Fact]
+	public async Task ReadyItemWithoutTracksNeverStartsAutoPlay()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		mediaElement.ShouldAutoPlay = true;
+		var events = new MediaElementEvents(mediaElement);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager!;
+			await manager.TakeSourceUpdates();
+			var fake = new AppleFakeAVPlayer();
+			await WithFakePlayerAsync(manager, fake, async () =>
+			{
+				var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("trackless", "mp4")))) { StatusOverride = AVPlayerItemStatus.ReadyToPlay };
+
+				await manager.RunItemStatusHandler(item, CancellationToken.None);
+
+				Assert.Equal(0, fake.PlayCount);
+				Assert.Empty(fake.RatesSet);
+				Assert.Equal(0f, fake.Rate);
+				Assert.Equal(0, events.Opened);
+				Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+			});
 		});
 	}
 
