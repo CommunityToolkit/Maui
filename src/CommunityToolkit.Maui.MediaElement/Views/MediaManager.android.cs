@@ -823,6 +823,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
+	static void StopAndUnbind(BoundServiceConnection boundServiceConnection)
+	{
+		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
+		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		{
+			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+		}
+
+		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
+		global::Android.App.Application.Context.StopService(serviceIntent);
+		Platform.AppContext.UnbindService(boundServiceConnection);
+		boundServiceConnection.Dispose();
+	}
+
 	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
 	{
 		if (string.IsNullOrWhiteSpace(url))
@@ -907,20 +921,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		global::Android.App.Application.Context.StartForegroundService(intent);
 		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
-	}
-
-	static void StopAndUnbind(BoundServiceConnection boundServiceConnection)
-	{
-		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
-		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
-		{
-			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
-		}
-
-		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		global::Android.App.Application.Context.StopService(serviceIntent);
-		Platform.AppContext.UnbindService(boundServiceConnection);
-		boundServiceConnection.Dispose();
 	}
 
 	void StopService(BoundServiceConnection boundServiceConnection)
