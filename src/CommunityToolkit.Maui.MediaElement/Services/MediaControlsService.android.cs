@@ -18,9 +18,6 @@ sealed partial class MediaControlsService : Service
 	const int mediaNotificationId = 1;
 	const int stragglerCancelDelayMilliseconds = 500;
 
-	static MediaControlsService? runningService;
-	static bool shouldLeaveForegroundWhenCreated;
-
 	readonly WeakEventManager taskRemovedEventManager = new();
 	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
 
@@ -41,22 +38,6 @@ sealed partial class MediaControlsService : Service
 	public BoundServiceBinder? Binder { get; private set; }
 	public NotificationManager? NotificationManager { get; private set; }
 
-	// Android 11 defers a cancel while a post of the same notification is queued, leaving the notification behind; leaving the foreground
-	// first lets the cancels win. Static because the connection may be gone before the service is even created.
-	public static void RequestLeaveForegroundBeforeStopping()
-	{
-		if (runningService is not null)
-		{
-			runningService.LeaveForegroundBeforeStopping();
-		}
-		else
-		{
-			shouldLeaveForegroundWhenCreated = true;
-		}
-	}
-
-	public static void ForgetRequestToLeaveForeground() => shouldLeaveForegroundWhenCreated = false;
-
 	public override IBinder? OnBind(Intent? intent)
 	{
 		Binder = new BoundServiceBinder(this);
@@ -67,13 +48,6 @@ sealed partial class MediaControlsService : Service
 	{
 		base.OnCreate();
 		StartForegroundServices();
-
-		runningService = this;
-		if (shouldLeaveForegroundWhenCreated)
-		{
-			shouldLeaveForegroundWhenCreated = false;
-			LeaveForegroundBeforeStopping();
-		}
 	}
 
 	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
@@ -92,11 +66,6 @@ sealed partial class MediaControlsService : Service
 	public override void OnDestroy()
 	{
 		base.OnDestroy();
-
-		if (ReferenceEquals(runningService, this))
-		{
-			runningService = null;
-		}
 
 		playerNotificationManager?.SetPlayer(null);
 		legacyNotificationPlayer = null;
@@ -185,6 +154,8 @@ sealed partial class MediaControlsService : Service
 		}
 	}
 
+	// Android 11 defers a cancel while a post of the same notification is queued, leaving the notification behind; leaving the foreground
+	// first lets the cancels win.
 	public void LeaveForegroundBeforeStopping()
 	{
 		playerNotificationManager?.SetPlayer(null);

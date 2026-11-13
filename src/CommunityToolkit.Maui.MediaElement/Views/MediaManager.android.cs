@@ -813,7 +813,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			if (connection is not null)
 			{
 				StopService(connection);
-				connection.Dispose();
 				connection = null;
 			}
 
@@ -904,16 +903,27 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
 
-		if (Interlocked.Increment(ref managersBoundToTheService) == 1)
-		{
-			MediaControlsService.ForgetRequestToLeaveForeground();
-		}
+		Interlocked.Increment(ref managersBoundToTheService);
 
 		global::Android.App.Application.Context.StartForegroundService(intent);
 		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 	}
 
-	void StopService(in BoundServiceConnection boundServiceConnection)
+	static void StopAndUnbind(BoundServiceConnection boundServiceConnection)
+	{
+		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
+		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		{
+			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+		}
+
+		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
+		global::Android.App.Application.Context.StopService(serviceIntent);
+		Platform.AppContext.UnbindService(boundServiceConnection);
+		boundServiceConnection.Dispose();
+	}
+
+	void StopService(BoundServiceConnection boundServiceConnection)
 	{
 		if (!isAndroidForegroundServiceEnabled)
 		{
@@ -922,15 +932,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
-		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
-		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		// Until its connection lands the service may not have called startForeground yet: bringing it down then makes Android kill the app.
+		if (boundServiceConnection.IsConnected)
 		{
-			MediaControlsService.RequestLeaveForegroundBeforeStopping();
+			StopAndUnbind(boundServiceConnection);
 		}
-
-		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		global::Android.App.Application.Context.StopService(serviceIntent);
-		Platform.AppContext.UnbindService(boundServiceConnection);
+		else
+		{
+			boundServiceConnection.StopWhenConnected(StopAndUnbind);
+		}
 	}
 
 	void HandleMediaControlsServiceTaskRemoved(object? sender, EventArgs e) => Player?.Stop();
