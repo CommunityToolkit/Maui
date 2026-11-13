@@ -132,13 +132,11 @@ public sealed partial class SpeechToTextTests
 		Assert.NotNull(listener);
 		Assert.Same(recognizer, GetRecognizer(speech));
 		Assert.NotEqual(IntPtr.Zero, recognizer.Handle);
-		Assert.NotEqual(IntPtr.Zero, listener.Handle);
 		Assert.Empty(entries);
 
 		await speech.DisposeAsync();
 
 		Assert.Equal(IntPtr.Zero, recognizer.Handle);
-		Assert.Equal(IntPtr.Zero, listener.Handle);
 		Assert.Null(GetRecognizer(speech));
 		Assert.Null(GetListener(speech));
 	}

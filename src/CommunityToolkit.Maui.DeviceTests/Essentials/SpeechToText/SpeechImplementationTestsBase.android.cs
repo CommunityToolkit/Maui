@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using Android.Content;
 using Android.Content.PM;
+using Android.Runtime;
 using Android.Speech;
 using CommunityToolkit.Maui.Media;
 using Microsoft.Maui.ApplicationModel;
@@ -399,25 +400,52 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A disposed Java.Lang.Object has no JNI handle any more.
+	// Before Android 15 the recognizer can still call the listener after Destroy() (ERROR_CLIENT from messages it had queued). A disposed listener
+	// peer turned that callback into a stack overflow on .NET 11, so DisposeAsync disposes the recognizer only and leaves the ended listener to the GC.
 	[Fact]
-	public async Task DisposeAsyncDisposesTheRecognizerAndTheListener()
+	public async Task DisposeAsyncKeepsTheListenerAliveForCallbacksThatStillArrive()
 	{
 		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
 		var recognizer = await InvokeOnMainThreadAsync(() => SpeechRecognizer.CreateSpeechRecognizer(AppContext));
 		var scope = new ListenerScope(speech);
 		var listenerPeer = (Java.Lang.Object)scope.Listener;
 		SpeechInternals.SetField(speech, "speechRecognizer", recognizer);
 		SpeechInternals.SetField(speech, "listener", scope.Listener);
 		Assert.NotEqual(IntPtr.Zero, recognizer!.Handle);
-		Assert.NotEqual(IntPtr.Zero, listenerPeer.Handle);
+		var listenerGlobalReference = JNIEnv.NewGlobalRef(listenerPeer.Handle);
 
-		await speech.DisposeAsync();
+		try
+		{
+			await speech.DisposeAsync();
 
-		Assert.Equal(IntPtr.Zero, recognizer.Handle);
-		Assert.Equal(IntPtr.Zero, listenerPeer.Handle);
-		Assert.Null(SpeechInternals.GetField<SpeechRecognizer>(speech, "speechRecognizer"));
-		Assert.Null(SpeechInternals.GetField<Java.Lang.Object>(speech, "listener"));
+			Assert.Equal(IntPtr.Zero, recognizer.Handle);
+			Assert.Null(SpeechInternals.GetField<SpeechRecognizer>(speech, "speechRecognizer"));
+			Assert.Null(SpeechInternals.GetField<Java.Lang.Object>(speech, "listener"));
+
+			await InvokeOnMainThreadAsync(() => CallJavaOnError(listenerGlobalReference, SpeechRecognizerError.Client));
+
+			Assert.Empty(events.Entries);
+		}
+		finally
+		{
+			JNIEnv.DeleteGlobalRef(listenerGlobalReference);
+		}
+	}
+
+	// Calls the Java method as the framework does, through the Java side of the listener: a callback to a disposed peer does not return.
+	static void CallJavaOnError(IntPtr javaListener, SpeechRecognizerError error)
+	{
+		var javaClass = JNIEnv.GetObjectClass(javaListener);
+		try
+		{
+			var onError = JNIEnv.GetMethodID(javaClass, "onError", "(I)V");
+			JNIEnv.CallVoidMethod(javaListener, onError, new JValue((int)error));
+		}
+		finally
+		{
+			JNIEnv.DeleteLocalRef(javaClass);
+		}
 	}
 
 	[Fact]
@@ -565,6 +593,14 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
+	// Before Android 15 Destroy() keeps the messages that the recognizer already queued on the main looper: they attach the listener again and answer
+	// it with ERROR_CLIENT, which the toolkit would report for a session that is still listening. Detaching the listener first keeps them from reaching it.
+	static void DetachAndDestroy(SpeechRecognizer? recognizer)
+	{
+		recognizer?.SetRecognitionListener(null);
+		recognizer?.Destroy();
+	}
+
 	async Task<(ISpeechToText Speech, SpeechEventRecorder Events, IRecognitionListener Listener)> StartAndDestroyTheRealRecognizer()
 	{
 		var options = await GetStartableOptionsAsync();
@@ -576,7 +612,7 @@ public abstract partial class SpeechImplementationTestsBase
 			Assert.Null(startException);
 			// Destroyed in the same main-thread turn as the start, so the service cannot call the listener first (StopListenAsync would not do:
 			// the stopped session still reports its outcome), and the session stays the toolkit's running session.
-			GetRecognizer(speech)!.Destroy();
+			DetachAndDestroy(GetRecognizer(speech)!);
 			return Task.FromResult((IRecognitionListener)GetListener(speech)!);
 		});
 
@@ -585,10 +621,9 @@ public abstract partial class SpeechImplementationTestsBase
 		return (speech, events, listener);
 	}
 
-	// DisposeAsync destroys a started recognizer before it disposes the managed peers of the recognizer and of its listener. Without
-	// Destroy() the service's next callback (here ERROR_INSUFFICIENT_PERMISSIONS, 28 to 44 ms later) reached the Java listener whose
-	// peer was gone, and the app died with "NotSupportedException: Unable to activate instance of type ...SpeechRecognitionListener"
-	// (FATAL EXCEPTION: main). A destroyed recognizer never answers.
+	// DisposeAsync destroys a started recognizer in the turn of its start. Before Android 15 the messages that the recognizer queued on the main
+	// looper still reach the listener afterwards (ERROR_CLIENT, "not connected to the recognition service"); a disposed listener peer ended the
+	// app with a stack overflow (.NET 11) or "Unable to activate instance of type ...SpeechRecognitionListener".
 	[Fact]
 	public async Task DisposeAsyncWhileListeningDestroysTheRecognizer()
 	{
@@ -606,11 +641,9 @@ public abstract partial class SpeechImplementationTestsBase
 		await AssertNoLateRecognitionServiceAnswerAsync(events);
 	}
 
-	// From Android 15 a recognizer handles Destroy() on the main looper, after the messages that are already queued there: a callback of the
-	// recognition service queued before DisposeAsync still reaches the listener then. DisposeAsync therefore disposes the managed peers of the
-	// recognizer and of its listener in a message posted after those (RunAfterQueuedMainLooperMessagesAsync); disposed peers would end the app
-	// ("Unable to activate instance of type ...SpeechRecognitionListener"). The recognizer is destroyed first, as in StartAndDestroyTheRealRecognizer,
-	// so that the service never answers this session: only the message that the test queues runs.
+	// From Android 15 a recognizer handles Destroy() on the main looper, after the messages that are already queued there. DisposeAsync therefore
+	// disposes the managed peer of the recognizer in a message posted after those (RunAfterQueuedMainLooperMessagesAsync). The recognizer is
+	// destroyed first, as in StartAndDestroyTheRealRecognizer, so that the service never answers this session: only the message that the test queues runs.
 	[Fact]
 	public async Task DisposeAsyncOnAndroid15AndLaterDisposesThePeersAfterTheMessagesThatAreAlreadyQueued()
 	{
@@ -634,7 +667,7 @@ public abstract partial class SpeechImplementationTestsBase
 			return true;
 		});
 
-		Assert.True(await peersAliveWhenTheQueuedMessageRan.Task.WaitAsync(TimeSpan.FromSeconds(5)), "The Java peers of the recognizer and of its listener were disposed before a message that was already queued on the main looper ran.");
+		Assert.True(await peersAliveWhenTheQueuedMessageRan.Task.WaitAsync(TimeSpan.FromSeconds(5)), "The Java peer of the recognizer was disposed before a message that was already queued on the main looper ran.");
 	}
 
 	// DisposeAsync on the main thread completes without waiting for the main looper, so a caller that blocks the main thread on it (for
@@ -790,7 +823,7 @@ public abstract partial class SpeechImplementationTestsBase
 		{
 			Assert.Null(startException);
 			var recognizer = GetRecognizer(speech)!;
-			recognizer.Destroy();
+			DetachAndDestroy(recognizer);
 			return Task.FromResult(recognizer);
 		});
 
@@ -1013,7 +1046,7 @@ public abstract partial class SpeechImplementationTestsBase
 		{
 			Assert.Null(startException);
 			var recognizer = GetRecognizer(speech);
-			recognizer?.Destroy();
+			DetachAndDestroy(recognizer);
 			return Task.FromResult(recognizer);
 		});
 

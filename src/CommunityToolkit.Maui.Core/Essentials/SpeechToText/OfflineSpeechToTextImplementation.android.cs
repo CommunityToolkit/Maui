@@ -280,8 +280,9 @@ public sealed partial class OfflineSpeechToTextImplementation
 		// A released session reports nothing
 		recognitionListener?.End();
 
-		// Destroy() stops the recognition service from calling the listener: a callback that reaches its disposed Java peer crashes the app.
-		// From Android 15 Destroy() is handled on the main looper after the callbacks that are already queued there, so the peers are disposed after them.
+		// The listener's Java peer is never disposed: before Android 15 Destroy() keeps the messages that the recognizer already queued on the main looper,
+		// which attach the listener again and answer it with ERROR_CLIENT, and a callback to a disposed peer ends the app. The GC frees the ended listener.
+		// From Android 15 Destroy() is handled on the main looper after the callbacks that are already queued there, so the recognizer is disposed after them.
 		recognizer?.Destroy();
 
 		if (recognizer is not null && OperatingSystem.IsAndroidVersionAtLeast(35))
@@ -294,7 +295,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 		void DisposePeers()
 		{
-			recognitionListener?.Dispose();
 			recognizer?.Dispose();
 		}
 	}
