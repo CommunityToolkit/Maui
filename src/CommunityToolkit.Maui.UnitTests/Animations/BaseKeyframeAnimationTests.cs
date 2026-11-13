@@ -265,23 +265,4 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 			}
 		}
 	}
-
-	protected sealed class ObservedAnimation(BaseAnimation inner) : BaseAnimation
-	{
-		readonly EndedAnimations endedAnimations = new();
-
-		public Task WaitForEndedAnimationsAsync(int count, CancellationToken token) => endedAnimations.WaitAsync(count, token);
-
-		public override async Task Animate(VisualElement view, CancellationToken token = default)
-		{
-			try
-			{
-				await inner.Animate(view, token);
-			}
-			finally
-			{
-				endedAnimations.NotifyEnded();
-			}
-		}
-	}
 }

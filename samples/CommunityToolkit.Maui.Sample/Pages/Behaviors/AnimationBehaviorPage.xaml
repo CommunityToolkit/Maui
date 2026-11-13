@@ -103,11 +103,11 @@
                 <Border.Behaviors>
                     <mct:AnimationBehavior AnimateOnTap="True">
                         <mct:AnimationBehavior.AnimationType>
-                            <mct:RotateAnimation />
+                            <mct:RotateAnimation Rotation="360" />
                         </mct:AnimationBehavior.AnimationType>
                     </mct:AnimationBehavior>
                 </Border.Behaviors>
-                <Label HorizontalOptions="Center" Text="Click to Rotate this Border" />
+                <Label HorizontalOptions="Center" Text="Click to Rotate this Border 360 degrees" />
             </Border>
 
             <Border BackgroundColor="LightGreen" Margin="16,0">
@@ -130,6 +130,71 @@
                     </mct:AnimationBehavior>
                 </Border.Behaviors>
                 <Label HorizontalOptions="Center" Text="Click to Shake this Border" />
+            </Border>
+
+            <Border BackgroundColor="LightGreen" WidthRequest="260" HorizontalOptions="Center" Margin="0,30,0,0">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:BounceAnimation />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label HorizontalOptions="Center" Text="Click to Bounce this Border" />
+            </Border>
+
+            <Label Text="&#x2665;" FontSize="48" TextColor="Red" HorizontalOptions="Center">
+                <Label.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:HeartbeatAnimation />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Label.Behaviors>
+            </Label>
+
+            <Border BackgroundColor="LightGreen" WidthRequest="260" HorizontalOptions="Center">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:RubberBandAnimation />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label HorizontalOptions="Center" Text="Click to Rubber Band this Border" />
+            </Border>
+
+            <Border BackgroundColor="LightGreen" WidthRequest="260" HorizontalOptions="Center">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:SwingAnimation />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label HorizontalOptions="Center" Text="Click to Swing this Border" />
+            </Border>
+
+            <Border BackgroundColor="LightGreen" WidthRequest="260" HorizontalOptions="Center">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:TadaAnimation MaximumScale="1.2" RotationAngle="5" />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label HorizontalOptions="Center" Text="Click to Tada this Border (MaximumScale 1.2, RotationAngle 5)" />
+            </Border>
+
+            <Border BackgroundColor="LightGreen" WidthRequest="260" HorizontalOptions="Center">
+                <Border.Behaviors>
+                    <mct:AnimationBehavior AnimateOnTap="True">
+                        <mct:AnimationBehavior.AnimationType>
+                            <mct:WobbleAnimation />
+                        </mct:AnimationBehavior.AnimationType>
+                    </mct:AnimationBehavior>
+                </Border.Behaviors>
+                <Label HorizontalOptions="Center" Text="Click to Wobble this Border" />
             </Border>
 
             <!--  Shows how the AnimationBehavior will play nicely with already attached TapGestureRecognizers  -->
