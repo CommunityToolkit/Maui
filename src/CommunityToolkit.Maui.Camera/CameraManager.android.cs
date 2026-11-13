@@ -469,7 +469,7 @@ partial class CameraManager
 		// A rebuilt use case starts without the sensor rotation, and OrientationEventListener reports only changes
 		if (targetRotation is int rotation)
 		{
-			videoCapture.TargetRotation = rotation;
+			videoCapture?.TargetRotation = rotation;
 		}
 	}
 
