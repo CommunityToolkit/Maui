@@ -2,6 +2,6 @@ namespace CommunityToolkit.Maui.Core;
 
 static class RotateAnimationDefaults
 {
-	public const uint Length = 200u;
-	public const double Rotation = 180.0;
+	public const uint Length = 400u;
+	public const double Rotation = 360.0;
 }

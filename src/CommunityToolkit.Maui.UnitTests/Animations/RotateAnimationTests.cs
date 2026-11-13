@@ -19,9 +19,9 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 		Assert.Equal(BaseAnimationDefaults.Easing, animation.Easing);
 		Assert.Equal(RotateAnimationDefaults.Length, animation.Length);
 		Assert.Equal(RotateAnimationDefaults.Rotation, animation.Rotation);
-		Assert.Equal(180.0, animation.Rotation);
+		Assert.Equal(360.0, animation.Rotation);
 		Assert.Equal(BindingMode.OneWay, RotateAnimation.RotationProperty.DefaultBindingMode);
-		Assert.Equal(200u, animation.Length);
+		Assert.Equal(400u, animation.Length);
 	}
 
 	[Theory]
@@ -36,7 +36,7 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_ReachesRotation() => RunOnSingleThreadAsync(async token =>
+	public Task Animate_TurnsByRotationFromTheOriginalRotation() => RunOnSingleThreadAsync(async token =>
 	{
 		var animation = new RotateAnimation();
 		var view = CreateAnimatedView();
@@ -44,20 +44,50 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		rotations.Max.Should().BeApproximately(animation.Rotation, precision);
+		rotations.Max.Should().BeApproximately(originalRotation + animation.Rotation, precision);
 		view.Rotation.Should().BeApproximately(originalRotation, precision);
 	}, TestContext.Current.CancellationToken);
 
-	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_HonorsCustomRotation() => RunOnSingleThreadAsync(async token =>
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(90)]
+	[InlineData(-90)]
+	[InlineData(360)]
+	[InlineData(720)]
+	public Task Animate_TurnsByRotationFromTheOriginalRotationAndEndsAtIt(double rotation) => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new RotateAnimation { Rotation = 360 };
 		var view = CreateAnimatedView();
+		var writes = new List<double>();
+		view.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == nameof(VisualElement.Rotation))
+			{
+				writes.Add(view.Rotation);
+			}
+		};
+
+		await new RotateAnimation { Rotation = rotation, Length = functionalTestLength }.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		(rotation > 0 ? writes.Max() : writes.Min()).Should().BeApproximately(originalRotation + rotation, precision);
+		writes[^2].Should().BeApproximately(originalRotation + rotation, precision);
+		writes[^1].Should().BeApproximately(originalRotation, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_TriggeredAgainMidTurn_EndsTheTurnWhereTheFirstWouldHaveEnded() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new ObservedRotateAnimation { Length = 1000 };
+		var behavior = new AnimationBehavior { AnimationType = animation };
+		var view = CreateAnimatedView();
+		view.Behaviors.Add(behavior);
 		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 
-		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+		var partwayThroughTheTurn = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, value => value > originalRotation + 120);
+		behavior.AnimateCommand.Execute(token);
+		await partwayThroughTheTurn;
+		behavior.AnimateCommand.Execute(token);
+		await animation.WaitForEndedAnimationsAsync(2, token);
 
-		rotations.Max.Should().BeApproximately(360, precision);
+		rotations.Max.Should().BeApproximately(originalRotation + 360, precision);
 		view.Rotation.Should().BeApproximately(originalRotation, precision);
 	}, TestContext.Current.CancellationToken);
 
