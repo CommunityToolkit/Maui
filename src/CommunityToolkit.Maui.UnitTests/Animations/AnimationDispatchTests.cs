@@ -15,7 +15,7 @@ public class AnimationDispatchTests : BaseTest
 	const uint animationLength = 200;
 	const double precision = 0.001;
 	static readonly BindableProperty[] animatedProperties = [VisualElement.OpacityProperty, VisualElement.ScaleProperty, VisualElement.RotationProperty, VisualElement.RotationXProperty, VisualElement.RotationYProperty];
-	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(15);
+	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
 
 	public static TheoryData<string> AnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
 

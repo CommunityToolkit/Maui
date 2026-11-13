@@ -138,7 +138,8 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 			await animation.WaitForEndedAnimationsAsync(2);
 
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
-			await peakAgain;
+			var peakError = await Record.ExceptionAsync(() => peakAgain);
+			Assert.True(peakError is null, "The animation triggered again did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the animation triggered again");
 
 			behavior.AnimateCommand.Execute(CancellationToken.None);

@@ -23,7 +23,8 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			await Task.WhenAll(firstRun, secondRun).WaitAsync(waitTimeout);
 
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
-			await peakAgain;
+			var peakError = await Record.ExceptionAsync(() => peakAgain);
+			Assert.True(peakError is null, "The second animation did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after both animations ended");
 		});
 	}
