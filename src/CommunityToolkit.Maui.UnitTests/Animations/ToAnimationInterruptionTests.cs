@@ -320,6 +320,55 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision);
 	}, TestContext.Current.CancellationToken);
 
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task FadeInterruptedAtTheLegBoundaryThenTheAppSetsTheTargetValue_NextRunReturnsToTheAppsValue() => RunOnSingleThreadAsync(async token =>
+	{
+		const double target = 0.0;
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var originalOpacity = view.Opacity;
+
+		// A keyframe animation keeps the ticker running, so the return leg's first frame comes a tick after the first leg ends, as on a device
+		var keepTicking = new ShakeAnimation { Length = 3000 }.Animate(view, token);
+		var atTarget = WaitForPropertyAsync(view, VisualElement.OpacityProperty, token, value => value == target);
+		var run = new FadeAnimation { Opacity = target, Length = 400 }.Animate(view, token);
+		await atTarget;
+		view.Opacity.Should().Be(target, "still at the boundary between the legs");
+
+		view.CancelAnimations();
+		await run.WaitAsync(waitTimeout, token);
+		view.Opacity.Should().Be(originalOpacity, "nothing took over, so the interrupted fade returned the view");
+
+		view.Opacity = target;
+		await new FadeAnimation { Opacity = 1, Length = functionalTestLength }.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		view.Opacity.Should().BeApproximately(target, precision, "the app's own value was the view's value at rest when the second run started");
+		await keepTicking.WaitAsync(waitTimeout, token);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task AppWritesTheInterruptedValueAfterTheRestore_NextRunReturnsToIt(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var (property, _) = PropertyOf(animationName);
+		var original = (double)view.GetValue(property);
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var run = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		var valueWhenInterrupted = (double)view.GetValue(property);
+		view.CancelAnimations();
+		await run.WaitAsync(waitTimeout, token);
+		((double)view.GetValue(property)).Should().Be(original);
+
+		view.SetValue(property, valueWhenInterrupted);
+		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+
+		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision, "the app's value was the view's value at rest when the run started");
+	}, TestContext.Current.CancellationToken);
+
 	static BaseAnimation Create(string animationName, uint length) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },

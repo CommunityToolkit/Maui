@@ -54,6 +54,18 @@ sealed class AnimatedPropertyTracker
 		}
 	}
 
+	// An interrupted run ends before it returns the view, so the value it left is the original value, not the one it was interrupted at
+	public void ReturnedToOriginalValue(int animationId, double originalValue)
+	{
+		lock (trackerLock)
+		{
+			if (animationId == latestAnimationId && runningAnimationIds.Count is 0)
+			{
+				valueLeftByLastAnimation = originalValue;
+			}
+		}
+	}
+
 	public void End(int animationId, double currentValue)
 	{
 		lock (trackerLock)

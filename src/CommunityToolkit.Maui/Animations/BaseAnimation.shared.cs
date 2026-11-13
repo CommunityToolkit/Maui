@@ -86,6 +86,7 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		if (animations.IsLatest(animationId) && !view.AnimationIsRunning(animationHandle) && (double)view.GetValue(property) == valueWhenInterrupted)
 		{
 			view.SetValue(property, originalValue);
+			animations.ReturnedToOriginalValue(animationId, originalValue);
 		}
 
 		return false;
