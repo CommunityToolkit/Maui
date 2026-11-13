@@ -1,5 +1,6 @@
 using System.Reflection;
 using Foundation;
+using ObjCRuntime;
 using Microsoft.Maui.ApplicationModel;
 using UIKit;
 
@@ -10,6 +11,17 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public static class FilesApplePicker
 {
 	public static Task<bool> IsPickerPresentedAsync() => MainThread.InvokeOnMainThreadAsync(() => Platform.GetCurrentUIViewController() is UIDocumentPickerViewController);
+
+	// Reads the presented view controller as a bare handle: a managed wrapper would keep the native picker alive until GC and hide the
+	// release that the library does on its own.
+	public static Task<bool> IsAnyViewControllerPresentedWithoutWrapperAsync() => MainThread.InvokeOnMainThreadAsync(() =>
+	{
+		var root = WindowStateManager.Default.GetCurrentUIWindow()?.RootViewController;
+		return root is not null && Messaging.IntPtr_objc_msgSend(root.Handle, Selector.GetHandle("presentedViewController")) != IntPtr.Zero;
+	});
+
+	public static Task WaitUntilAnyViewControllerIsPresentedAsync() =>
+		AssertionExtensions.AssertEventuallyAsync(IsAnyViewControllerPresentedWithoutWrapperAsync, timeout: 15000, message: "No view controller was presented.");
 
 	public static async Task<UIDocumentPickerViewController> WaitForPickerAsync()
 	{

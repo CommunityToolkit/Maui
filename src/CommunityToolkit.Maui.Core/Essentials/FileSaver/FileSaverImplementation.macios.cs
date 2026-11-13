@@ -141,6 +141,12 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		{
 			isPresented = true;
 
+			// The release helper may already have disposed a picker whose presentation started very late
+			if (picker.Handle == NativeHandle.Zero)
+			{
+				return;
+			}
+
 			// Only a picker that nothing covers is dismissed, as in the token cancellation above
 			if (dismissWhenPresented && picker.PresentedViewController is null && picker.PresentingViewController is not null)
 			{

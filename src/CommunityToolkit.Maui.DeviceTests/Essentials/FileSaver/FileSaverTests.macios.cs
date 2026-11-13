@@ -609,20 +609,25 @@ public partial class FileSaverTests
 			using var cancellation = new CancellationTokenSource();
 			var operation = await StartOnMainThreadAsync(() => FileSaver.Default.SaveAsync(TemporaryRoot, fileName, new MemoryStream([1]), cancellation.Token));
 
+			// The presentation has started once a view controller is presented; every second iteration also lets UIKit finish it
+			await FilesApplePicker.WaitUntilAnyViewControllerIsPresentedAsync();
 			if (i % 2 is 0)
 			{
-				await FilesApplePicker.WaitUntilShownAsync(await FilesApplePicker.WaitForPickerAsync());
+				await Task.Delay(viewServiceSettleTime);
 			}
 
 			await cancellation.CancelAsync();
 			await operation.WaitAsync(operationTimeout);
-			await AssertionExtensions.AssertEventuallyAsync(async () => !await FilesApplePicker.IsPickerPresentedAsync(), timeout: 5000, message: "The document picker is still on screen after the save was canceled.");
+			await AssertionExtensions.AssertEventuallyAsync(async () => !await FilesApplePicker.IsAnyViewControllerPresentedWithoutWrapperAsync(), timeout: 5000, message: "The document picker is still on screen after the save was canceled.");
 		}
 
+		// Lets the last pickers be released inside this test, where a crash is blamed on it: the library's settle time plus one check interval
 		GC.Collect();
 		GC.WaitForPendingFinalizers();
-		await Task.Delay(TimeSpan.FromSeconds(4));
+		await Task.Delay(viewServiceSettleTime + TimeSpan.FromSeconds(1));
 	}
+
+	static readonly TimeSpan viewServiceSettleTime = TimeSpan.FromSeconds(3);
 
 	Task PrepareHostAsync() => Task.CompletedTask;
 
