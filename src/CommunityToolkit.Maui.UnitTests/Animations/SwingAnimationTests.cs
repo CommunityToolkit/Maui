@@ -22,6 +22,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		Assert.Equal(SwingAnimationDefaults.RotationAngle, animation.RotationAngle);
 		Assert.Equal(1000u, animation.Length);
 		Assert.Equal(15.0, animation.RotationAngle);
+		Assert.Equal(BindingMode.OneWay, SwingAnimation.RotationAngleProperty.DefaultBindingMode);
 	}
 
 	[Theory]

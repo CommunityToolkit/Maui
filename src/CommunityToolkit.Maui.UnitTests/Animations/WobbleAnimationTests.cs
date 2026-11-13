@@ -24,6 +24,8 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		Assert.Equal(1000u, animation.Length);
 		Assert.Equal(25.0, animation.Distance);
 		Assert.Equal(5.0, animation.RotationAngle);
+		Assert.Equal(BindingMode.OneWay, WobbleAnimation.DistanceProperty.DefaultBindingMode);
+		Assert.Equal(BindingMode.OneWay, WobbleAnimation.RotationAngleProperty.DefaultBindingMode);
 	}
 
 	[Theory]

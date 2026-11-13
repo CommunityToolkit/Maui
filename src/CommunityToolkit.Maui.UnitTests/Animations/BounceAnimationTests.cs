@@ -21,6 +21,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 		Assert.Equal(BounceAnimationDefaults.Distance, animation.Distance);
 		Assert.Equal(800u, animation.Length);
 		Assert.Equal(30.0, animation.Distance);
+		Assert.Equal(BindingMode.OneWay, BounceAnimation.DistanceProperty.DefaultBindingMode);
 	}
 
 	[Theory]

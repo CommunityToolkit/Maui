@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// An attention seeker: the view shakes around, and returns to, the horizontal translation it had before it started shaking, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
 /// A view runs one attention seeker at a time, so an animation that starts while another one still shakes the view ends the running one first,
 /// returning the view to its original translation. <see cref="BaseAnimation{TAnimatable}.Easing"/> shapes each movement. At most 100 swings are made.
+/// A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle.
 /// Cancelling the token while the animation runs returns the view to its original translation and ends the returned <see cref="Task"/> as canceled.
 /// </remarks>
 public partial class ShakeAnimation() : BaseAnimation(ShakeAnimationDefaults.Length)

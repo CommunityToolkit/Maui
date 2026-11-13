@@ -131,6 +131,52 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task RubberBandAnimation_StartedWhileScaleXAndScaleYToAsyncRun_InterruptsThemAndReturnsBothScalesToTheValuesTheyHadWhenItStarted() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var scaleXBeforeScaleToAsync = view.ScaleX;
+
+		var scaled = WaitForPropertyAsync(view, VisualElement.ScaleXProperty, token, scaleX => Math.Abs(scaleX - scaleXBeforeScaleToAsync) > 0.05);
+		var scaleXRun = view.ScaleXToAsync(2, 4 * functionalTestLength, null, token);
+		var scaleYRun = view.ScaleYToAsync(2, 4 * functionalTestLength, null, token);
+		await scaled;
+		// A raw ScaleXToAsync is not tracked, so the attention seeker takes the mid-animation values as its originals
+		var scaleXWhenRubberBandStarts = view.ScaleX;
+		var scaleYWhenRubberBandStarts = view.ScaleY;
+		var rubberBandRun = new RubberBandAnimation { Length = functionalTestLength }.Animate(view, token);
+
+		var wasScaleXInterrupted = await scaleXRun.WaitAsync(waitTimeout, token);
+		var wasScaleYInterrupted = await scaleYRun.WaitAsync(waitTimeout, token);
+		await rubberBandRun.WaitAsync(waitTimeout, token);
+
+		wasScaleXInterrupted.Should().BeTrue();
+		wasScaleYInterrupted.Should().BeTrue();
+		view.ScaleX.Should().BeApproximately(scaleXWhenRubberBandStarts, precision);
+		view.ScaleY.Should().BeApproximately(scaleYWhenRubberBandStarts, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task BounceAnimation_StartedWhileTranslateToAsyncRuns_LeavesTheTranslationAtItsExplicitTarget() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingTranslationX = view.TranslationX;
+		var startingTranslationY = view.TranslationY;
+		var targetTranslationX = startingTranslationX + 100;
+
+		var moved = WaitForPropertyAsync(view, VisualElement.TranslationXProperty, token, translationX => translationX - startingTranslationX > 5);
+		var translateRun = view.TranslateToAsync(targetTranslationX, startingTranslationY, 4 * functionalTestLength, null, token);
+		await moved;
+		var bounceRun = new BounceAnimation { Length = functionalTestLength }.Animate(view, token);
+
+		await bounceRun.WaitAsync(waitTimeout, token);
+		var wasTranslateInterrupted = await translateRun.WaitAsync(waitTimeout, token);
+
+		wasTranslateInterrupted.Should().BeFalse();
+		view.TranslationX.Should().BeApproximately(targetTranslationX, precision);
+		view.TranslationY.Should().BeApproximately(startingTranslationY, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task SwingAnimation_StartedWhileRotateAnimationRuns_ReturnsRotationToItsStartingValue() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();

@@ -111,11 +111,7 @@ static class KeyframeAnimationExtensions
 			return nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync);
 		}
 
-		if (property == VisualElement.TranslationXProperty || property == VisualElement.TranslationYProperty)
-		{
-			return nameof(Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync);
-		}
-
+		// TranslateToAsync drives both axes in one handle, so aborting it for one axis would strand the other axis mid-way
 		return null;
 	}
 
