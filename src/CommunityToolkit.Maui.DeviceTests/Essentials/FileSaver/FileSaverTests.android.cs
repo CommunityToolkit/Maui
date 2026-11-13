@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.Provider;
+using System.Globalization;
 using CommunityToolkit.Maui.Storage;
 using AndroidEnvironment = Android.OS.Environment;
 using AndroidUri = Android.Net.Uri;
@@ -30,6 +31,35 @@ public partial class FileSaverTests
 		Assert.True(launch.Intent.HasCategory(Intent.CategoryOpenable));
 		Assert.Equal(expectedMimeType, launch.Intent.Type);
 		Assert.Equal(fileName, launch.Intent.GetStringExtra(Intent.ExtraTitle));
+		await CancelPickerAsync(session, launch, operation);
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public async Task SaveAsyncFindsTheMimeTypeOfAnUppercaseExtensionWhateverTheCurrentCulture(string cultureName)
+	{
+		var culture = CultureInfo.GetCultureInfo(cultureName);
+		Assert.True("ZIP".ToLower(culture) is "z\u0131p", $"{cultureName} must lowercase ZIP to a dotless i for this test to prove anything.");
+		var session = await StartSessionAsync();
+
+		// The culture is set inside the lambda because the main-thread post does not carry the ExecutionContext.
+		var operation = await StartOnMainThreadAsync(() =>
+		{
+			var original = CultureInfo.CurrentCulture;
+			CultureInfo.CurrentCulture = culture;
+			try
+			{
+				return FileSaver.Default.SaveAsync("ARCHIVE.ZIP", new MemoryStream([1]));
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = original;
+			}
+		});
+		var launch = await session.WaitForLaunchAsync();
+
+		Assert.Equal("application/zip", launch.Intent.Type);
 		await CancelPickerAsync(session, launch, operation);
 	}
 
@@ -841,6 +871,8 @@ public partial class FileSaverTests
 
 	static async Task<(Task<FileSaverResult> Operation, FilesFakePickerLaunch Launch)> StartSaveAsync(FilesPickerSession session, string? initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken token)
 	{
+		// The session keeps the launches of the test's earlier saves, so this save's launch is the next one.
+		var launchIndex = session.Launches.Count;
 		var operation = await StartOnMainThreadAsync(() => (initialPath, progress) switch
 		{
 			(null, null) => FileSaver.Default.SaveAsync(fileName, stream, token),
@@ -849,7 +881,7 @@ public partial class FileSaverTests
 			(not null, not null) => FileSaver.Default.SaveAsync(initialPath, fileName, stream, progress, token),
 		});
 
-		return (operation, await session.WaitForLaunchAsync());
+		return (operation, await session.WaitForLaunchAsync(launchIndex));
 	}
 
 	static async Task CancelPickerAsync(FilesPickerSession session, FilesFakePickerLaunch launch, Task<FileSaverResult> operation)

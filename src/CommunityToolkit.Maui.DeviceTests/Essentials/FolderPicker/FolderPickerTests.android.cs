@@ -335,11 +335,13 @@ public partial class FolderPickerTests
 
 	static async Task<(Task<FolderPickerResult> Operation, FilesFakePickerLaunch Launch)> StartPickAsync(FilesPickerSession session, string? initialPath = null, CancellationToken token = default)
 	{
+		// The session keeps the launches of the test's earlier picks, so this pick's launch is the next one.
+		var launchIndex = session.Launches.Count;
 		var operation = await StartOnMainThreadAsync(() => initialPath is null
 			? FolderPicker.Default.PickAsync(token)
 			: FolderPicker.Default.PickAsync(initialPath, token));
 
-		return (operation, await session.WaitForLaunchAsync());
+		return (operation, await session.WaitForLaunchAsync(launchIndex));
 	}
 
 	static async Task CancelPickerAsync(FilesPickerSession session, FilesFakePickerLaunch launch, Task<FolderPickerResult> operation)
