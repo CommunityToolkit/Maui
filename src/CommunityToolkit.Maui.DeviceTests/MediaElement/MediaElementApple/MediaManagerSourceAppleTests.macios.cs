@@ -906,12 +906,9 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
-	public async Task VideoTrackIsFoundWithTheSynchronousApiBeforeIos18()
+	public async Task VideoTrackOfAResourceGivesTheMediaSize()
 	{
 		SetupApple();
-		Skip.If(
-			OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18),
-			"GetTrack takes its pre-iOS 18 / Mac Catalyst 18 branch (AVAsset.TracksWithMediaType) only on older OS versions; the oldest runtime available here is iOS 18.6, so this device runs the LoadTracksWithMediaType branch instead.");
 		var mediaElement = CreateMediaElement();
 
 		await HostAsync(mediaElement, async handler =>

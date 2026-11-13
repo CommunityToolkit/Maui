@@ -679,13 +679,6 @@ public partial class MediaManager : IDisposable
 
 	static async Task<AVAssetTrack?> GetTrack(AVAsset asset, CancellationToken token)
 	{
-		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(18)
-			  || OperatingSystem.IsIOSVersionAtLeast(18)))
-		{
-			// AVAsset.TracksWithMediaType is Obsolete on iOS 18+ and MacCatalyst 18+
-			return asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
-		}
-
 		var tracks = await asset.LoadTracksWithMediaTypeAsync(AVMediaTypes.Video.GetConstant() ?? "0").WaitAsync(token);
 
 		return tracks.Count <= 0 ? null : tracks[0];
