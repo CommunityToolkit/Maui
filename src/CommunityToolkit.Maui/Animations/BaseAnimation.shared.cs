@@ -48,7 +48,7 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 {
 	// Started off the dispatcher's thread, every await would continue on the thread pool and write the view's properties there.
 	// An async method, not DispatchAsync(Func<Task>): that overload turns a cancellation into a fault and never completes when the dispatcher refuses the work
-	private protected static async Task AnimateOnDispatcher(VisualElement view, Func<Task> animate)
+	private protected static async Task AnimateOnDispatcherAsync(VisualElement view, Func<Task> animate)
 	{
 		Task? animation = null;
 		await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(view.Dispatcher, () => animation = animate());
