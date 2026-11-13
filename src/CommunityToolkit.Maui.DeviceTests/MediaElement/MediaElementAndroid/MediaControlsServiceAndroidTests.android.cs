@@ -103,7 +103,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 
 				// The connection is delivered on a later UI turn, so disconnecting in this turn is always before it.
 				Assert.False(connection.IsConnected);
-				handler.DisconnectHandler();
+				((IElementHandler)handler).DisconnectHandler();
 			});
 
 			await WaitForMediaControlsServiceToStopAsync();
