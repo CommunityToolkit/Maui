@@ -2,8 +2,9 @@
 using Android.Graphics;
 using Android.Widget;
 using Microsoft.Maui.Platform;
-using AButton = Android.Widget.Button;
-using AView = Android.Views.View;
+using AndroidMaterialButton = Google.Android.Material.Button.MaterialButton;
+using AndroidView = Android.Views.View;
+using AndroidWidgetButton = Android.Widget.Button;
 using Color = Microsoft.Maui.Graphics.Color;
 using ImageButton = Microsoft.Maui.Controls.ImageButton;
 
@@ -11,44 +12,70 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 public partial class IconTintColorBehavior
 {
+	AndroidView? nativeView;
+
 	/// <inheritdoc/>
-	protected override void OnAttachedTo(View bindable, AView platformView)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected override void OnAttachedTo(View bindable, AndroidView platformView)
 	{
-		ApplyTintColor(bindable, platformView);
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		base.OnAttachedTo(bindable, platformView);
+		nativeView = platformView;
+
+		ApplyTintColor(nativeView, TintColor);
 
 		bindable.PropertyChanged += OnElementPropertyChanged;
-		this.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == TintColorProperty.PropertyName)
-			{
-				ApplyTintColor(bindable, platformView);
-			}
-		};
+		PropertyChanged += OnTintedImagePropertyChanged;
 	}
 
 	/// <inheritdoc/>
-	protected override void OnDetachedFrom(View bindable, AView platformView)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected override void OnDetachedFrom(View bindable, AndroidView platformView)
 	{
-		ClearTintColor(bindable, platformView);
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		base.OnDetachedFrom(bindable, platformView);
+
+		ClearTintColor(platformView);
+
 		bindable.PropertyChanged -= OnElementPropertyChanged;
+		PropertyChanged -= OnTintedImagePropertyChanged;
+
+		// A detached behavior that is still referenced must not keep the platform view (and its Activity) alive.
+		nativeView = null;
 	}
 
-	void ApplyTintColor(View element, AView control)
+	static void ApplyTintColor(AndroidView? nativeView, Color? tintColor)
 	{
-		var color = TintColor;
-
-		switch (control)
+		if (nativeView is null)
 		{
-			case ImageView image:
-				SetImageViewTintColor(image, color);
-				break;
-			case AButton button:
-				SetButtonTintColor(button, color);
-				break;
-			default:
-				throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports Android.Widget.Button and {nameof(ImageView)}.");
+			return;
 		}
 
+		try
+		{
+			switch (nativeView)
+			{
+				case ImageView image:
+					SetImageViewTintColor(image, tintColor);
+					break;
+
+				case AndroidMaterialButton materialButton:
+					SetMaterialButtonTintColor(materialButton, tintColor);
+					break;
+
+				case AndroidWidgetButton widgetButton:
+					SetWidgetButtonTintColor(widgetButton, tintColor);
+					break;
+
+				default:
+					throw new NotSupportedException($"{nameof(IconTintColorBehavior)} only currently supports Android.Widget.Button and {nameof(ImageView)}.");
+			}
+		}
+		catch (ObjectDisposedException)
+		{
+		}
 
 		static void SetImageViewTintColor(ImageView image, Color? color)
 		{
@@ -61,23 +88,77 @@ public partial class IconTintColorBehavior
 			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new InvalidOperationException("PorterDuff.Mode.SrcIn should not be null at runtime.")));
 		}
 
-		static void SetButtonTintColor(AButton button, Color? color)
+		static void SetMaterialButtonTintColor(AndroidMaterialButton button, Color? color)
 		{
-			var drawables = button.GetCompoundDrawables().Where(d => d is not null);
-
+			// A MaterialButton is also an Android.Widget.Button. Its icon is one of its compound drawables, but MaterialButton tints it with
+			// IconTint, which it applies again whenever it updates the icon.
 			if (color is null)
 			{
-				foreach (var img in drawables)
-				{
-					img.ClearColorFilter();
-				}
-				color = Colors.Transparent;
+				button.IconTint = null;
+				return;
 			}
 
-			foreach (var img in drawables)
+			button.IconTintMode = PorterDuff.Mode.SrcIn;
+			button.IconTint = new Android.Content.Res.ColorStateList([[]], [color.ToPlatform()]);
+		}
+
+		static void SetWidgetButtonTintColor(AndroidWidgetButton button, Color? color)
+		{
+			if (color is null)
 			{
-				img.SetTint(color.ToPlatform());
+				ClearWidgetButtonTintColor(button);
+				return;
 			}
+
+			// getCompoundDrawables() returns null for each side that has no drawable.
+			foreach (var img in button.GetCompoundDrawables())
+			{
+				img?.SetTint(color.ToPlatform());
+			}
+		}
+	}
+
+	static void ClearWidgetButtonTintColor(AndroidWidgetButton button)
+	{
+		// getCompoundDrawables() returns null for each side that has no drawable.
+		foreach (var drawable in button.GetCompoundDrawables())
+		{
+			if (drawable is null)
+			{
+				continue;
+			}
+
+			drawable.ClearColorFilter();
+			drawable.SetTintList(null);
+		}
+	}
+
+	static void ClearTintColor(AndroidView? nativeView)
+	{
+		if (nativeView is null)
+		{
+			return;
+		}
+
+		try
+		{
+			switch (nativeView)
+			{
+				case ImageView image:
+					image.ClearColorFilter();
+					break;
+
+				case AndroidMaterialButton mButton:
+					mButton.IconTint = null;
+					break;
+
+				case AndroidWidgetButton button:
+					ClearWidgetButtonTintColor(button);
+					break;
+			}
+		}
+		catch (ObjectDisposedException)
+		{
 		}
 	}
 
@@ -85,7 +166,7 @@ public partial class IconTintColorBehavior
 	{
 		if (args.PropertyName is not string propertyName
 			|| sender is not View bindable
-			|| bindable.Handler?.PlatformView is not AView platformView)
+			|| bindable.Handler?.PlatformView is not AndroidView)
 		{
 			return;
 		}
@@ -96,22 +177,14 @@ public partial class IconTintColorBehavior
 			return;
 		}
 
-		ApplyTintColor(bindable, platformView);
+		ApplyTintColor(nativeView, TintColor);
 	}
 
-	void ClearTintColor(View element, AView control)
+	void OnTintedImagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		switch (control)
+		if (e.PropertyName == TintColorProperty.PropertyName)
 		{
-			case ImageView image:
-				image.ClearColorFilter();
-				break;
-			case AButton button:
-				foreach (var drawable in button.GetCompoundDrawables())
-				{
-					drawable?.ClearColorFilter();
-				}
-				break;
+			ApplyTintColor(nativeView, TintColor);
 		}
 	}
 }

@@ -14,10 +14,10 @@ public partial class LazyViewPage : BasePage<LazyViewViewModel>
 		base.OnAppearing();
 
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-		await LazyActiviation.LoadViewAsync(cts.Token);
+		await LazyActivation.LoadViewAsync(cts.Token);
 	}
 
-	async void LoadLazyView_Clicked(object sender, EventArgs e)
+	async void LoadLazyView_Clicked(object? sender, EventArgs? e)
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await LazyUserAction.LoadViewAsync(cts.Token);

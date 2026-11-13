@@ -6,25 +6,25 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayToImageSourceConverter>
 {
-	public static IReadOnlyList<object[]> NonImageStreamData { get; } = new[]
-	{
-		new object[] { 3 }, // primitive type
-		new object[] { DateTime.UtcNow }, // Struct
-		new object[] { new object() } // objects
-	};
+	public static TheoryData<object> NonImageStreamData { get; } =
+	[
+		(object)3, // primitive type
+		(object)DateTime.UtcNow, // Struct
+		new object()
+	];
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ByteArrayToImageSourceConverter()
 	{
-		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
+		var byteArray = "       "u8.ToArray();
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 
 		var convertFromResult = (StreamImageSource)byteArrayToImageSourceConverter.ConvertFrom(byteArray);
 		var convertResult = (StreamImageSource)(((ICommunityToolkitValueConverter)byteArrayToImageSourceConverter).Convert(byteArray, typeof(StreamImageSource), null, CultureInfo.CurrentCulture) ?? throw new InvalidOperationException());
 
-		var convertFromResultStream = await GetStreamFromImageSource(convertFromResult, CancellationToken.None);
-		var convertResultStream = await GetStreamFromImageSource(convertResult, CancellationToken.None);
+		var convertFromResultStream = await GetStreamFromImageSource(convertFromResult, TestContext.Current.CancellationToken);
+		var convertResultStream = await GetStreamFromImageSource(convertResult, TestContext.Current.CancellationToken);
 
 		Assert.True(StreamEquals(convertFromResultStream, new MemoryStream(byteArray)));
 		Assert.True(StreamEquals(convertResultStream, new MemoryStream(byteArray)));
@@ -46,7 +46,7 @@ public class ByteArrayToImageSourceConverterTests : BaseConverterTest<ByteArrayT
 	[Fact]
 	public void ConvertImageSourceBackToByteArray()
 	{
-		var byteArray = new byte[] { 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20 };
+		var byteArray = "       "u8.ToArray();
 
 		var byteArrayToImageSourceConverter = new ByteArrayToImageSourceConverter();
 

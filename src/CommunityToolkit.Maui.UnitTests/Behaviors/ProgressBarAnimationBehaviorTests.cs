@@ -1,18 +1,21 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Maui.Behaviors;
+﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ProgressBarAnimationBehaviorTests : BaseTest
+public class ProgressBarAnimationBehaviorTests() : BaseBehaviorTest<ProgressBarAnimationBehavior, ProgressBar>(new ProgressBarAnimationBehavior(), new ProgressBar())
 {
-	public static readonly FrozenSet<object[]> ValidData = new[]
+	public static readonly TheoryData<double, uint, Easing> ValidData = new()
 	{
-		new object[] { 1, 500, Easing.Default },
-		new object[] { 0, 750, Easing.CubicOut }
-	}.ToFrozenSet();
+		{
+			1, 500, Easing.Default
+		},
+		{
+			0, 750, Easing.CubicOut
+		}
+	};
 
 	[Theory(Timeout = 5000)]
 	[MemberData(nameof(ValidData))]
@@ -28,17 +31,16 @@ public class ProgressBarAnimationBehaviorTests : BaseTest
 		progressBar.Behaviors.Add(progressBarAnimationBehavior);
 
 		Assert.Equal(0.0d, progressBar.Progress);
-		Assert.Equal(0.0d, ProgressBarAnimationBehavior.ProgressProperty.DefaultValue);
-		Assert.Equal((uint)500, ProgressBarAnimationBehavior.LengthProperty.DefaultValue);
-		Assert.Equal(Easing.Linear, ProgressBarAnimationBehavior.EasingProperty.DefaultValue);
+		Assert.Equal((uint)500, progressBarAnimationBehavior.Length);
+		Assert.Equal(Easing.Linear, progressBarAnimationBehavior.Easing);
 
 		progressBarAnimationBehavior.Length = length;
 		progressBarAnimationBehavior.Easing = easing;
 		progressBarAnimationBehavior.Progress = progress;
 
-		if (progressBar.Progress != progress)
+		if (Math.Abs(progressBar.Progress - progress) > 0.01)
 		{
-			await progressBarAnimationCompletedTcs.Task;
+			await progressBarAnimationCompletedTcs.Task.WaitAsync(TestContext.Current.CancellationToken);
 		}
 
 		Assert.Equal(progress, progressBar.Progress);
@@ -56,33 +58,34 @@ public class ProgressBarAnimationBehaviorTests : BaseTest
 	}
 
 	[Theory]
-	[InlineData(double.MinValue, 0)]
-	[InlineData(-1, 0)]
-	[InlineData(-0.0000000000001, 0)]
-	[InlineData(1.0000000000001, 1)]
-	[InlineData(double.MaxValue, 1)]
-	public void InvalidProgressValuesTest(double inputProgressValue, double expectedProgressValue)
+	[InlineData(double.MinValue)]
+	[InlineData(-1)]
+	[InlineData(-0.0000000000001)]
+	[InlineData(1.0000000000001)]
+	[InlineData(double.MaxValue)]
+	public void InvalidProgressValuesTest(double inputProgressValue)
 	{
-		var progressBarAnimationBehavior = new ProgressBarAnimationBehavior
+		Assert.Throws<ArgumentOutOfRangeException>(() =>
 		{
-			Progress = inputProgressValue
-		};
-
-		Assert.Equal(expectedProgressValue, progressBarAnimationBehavior.Progress);
+			new ProgressBarAnimationBehavior
+			{
+				Progress = inputProgressValue
+			};
+		});
 	}
 
 	[Fact]
 	public void AttachedToInvalidElementTest()
 	{
-		FrozenSet<VisualElement> invalidVisualElements = new[]
-		{
+		IReadOnlyList<VisualElement> invalidVisualElements =
+		[
 			new Button(),
-			new Frame(),
+			new Border(),
 			new Label(),
-			new VisualElement(),
-			new View(),
+			new MockVisualElement(),
+			new MockView(),
 			new Entry(),
-		}.ToFrozenSet();
+		];
 
 		foreach (var invalidVisualElement in invalidVisualElements)
 		{

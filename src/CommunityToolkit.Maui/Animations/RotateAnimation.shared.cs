@@ -50,11 +50,11 @@ public class RotateAnimation : BaseAnimation
 	protected virtual double DefaultRotation { get; set; } = 180.0;
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
-		await view.RotateTo(Rotation, Length, Easing);
+		await view.RotateToAsync(Rotation, Length, Easing, token);
 		view.Rotation = 0;
 	}
 }

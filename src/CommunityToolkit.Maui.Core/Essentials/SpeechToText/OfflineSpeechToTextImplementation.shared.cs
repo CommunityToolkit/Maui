@@ -1,0 +1,101 @@
+using System.Globalization;
+using Microsoft.Maui.ApplicationModel;
+
+namespace CommunityToolkit.Maui.Media;
+
+/// <inheritdoc cref="ISpeechToText"/>
+public sealed partial class OfflineSpeechToTextImplementation : ISpeechToText
+{
+	readonly WeakEventManager recognitionResultUpdatedWeakEventManager = new();
+	readonly WeakEventManager recognitionResultCompletedWeakEventManager = new();
+	readonly WeakEventManager speechToTextStateChangedWeakEventManager = new();
+
+	/// <inheritdoc />
+	public event EventHandler<SpeechToTextRecognitionResultUpdatedEventArgs> RecognitionResultUpdated
+	{
+		add => recognitionResultUpdatedWeakEventManager.AddEventHandler(value);
+		remove => recognitionResultUpdatedWeakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc />
+	public event EventHandler<SpeechToTextRecognitionResultCompletedEventArgs> RecognitionResultCompleted
+	{
+		add => recognitionResultCompletedWeakEventManager.AddEventHandler(value);
+		remove => recognitionResultCompletedWeakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc />
+	public event EventHandler<SpeechToTextStateChangedEventArgs> StateChanged
+	{
+		add => speechToTextStateChangedWeakEventManager.AddEventHandler(value);
+		remove => speechToTextStateChangedWeakEventManager.RemoveEventHandler(value);
+	}
+
+#if !ANDROID && !IOS && !MACCATALYST
+	// The other platforms guard StartListenAsync with CurrentState alone
+	bool IsListeningSessionActive => false;
+#endif
+
+	/// <inheritdoc/>
+	public Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
+	{
+		// Thrown by the call, not faulted into the returned Task: a usage error is not an outcome of the listening session
+		ArgumentNullException.ThrowIfNull(options);
+
+		return StartListenAsyncCore();
+
+		async Task StartListenAsyncCore()
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			// CurrentState is still Stopped while a session starts (Android: until speech begins; iOS and Mac Catalyst: while the recognition task is starting)
+			if (CurrentState is not SpeechToTextState.Stopped || IsListeningSessionActive)
+			{
+				return;
+			}
+
+			try
+			{
+				await InternalStartListening(options, cancellationToken);
+			}
+			catch (Exception)
+			{
+				// Use CancellationToken.None to ensure StopListenAsync completes successfully even when `cancellationToken` has been cancelled
+				await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+				throw;
+			}
+		}
+	}
+
+	/// <inheritdoc/>
+	public Task StopListenAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		InternalStopListening();
+		return Task.CompletedTask;
+	}
+
+#if !MACCATALYST && !IOS
+	/// <inheritdoc/>
+	public async Task<bool> RequestPermissions(CancellationToken cancellationToken = default)
+	{
+		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
+		return status is PermissionStatus.Granted;
+	}
+#endif
+
+	void OnRecognitionResultUpdated(string recognitionResult)
+	{
+		recognitionResultUpdatedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultUpdatedEventArgs(recognitionResult), nameof(RecognitionResultUpdated));
+	}
+
+	void OnRecognitionResultCompleted(SpeechToTextResult recognitionResult)
+	{
+		recognitionResultCompletedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultCompletedEventArgs(recognitionResult), nameof(RecognitionResultCompleted));
+	}
+
+	void OnSpeechToTextStateChanged(SpeechToTextState speechToTextState)
+	{
+		speechToTextStateChangedWeakEventManager.HandleEvent(this, new SpeechToTextStateChangedEventArgs(speechToTextState), nameof(StateChanged));
+	}
+}

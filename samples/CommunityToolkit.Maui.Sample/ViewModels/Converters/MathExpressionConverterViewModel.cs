@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class MathExpressionConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	double sliderValue = 50;
+	public partial double SliderValue { get; set; } = 50;
 }

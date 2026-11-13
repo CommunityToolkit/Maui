@@ -3,6 +3,7 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Views.ExpanderPage"
+                xmlns:sample="clr-namespace:CommunityToolkit.Maui.Sample"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 xmlns:viewModels="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Views"
                 x:TypeArguments="viewModels:ExpanderViewModel"
@@ -38,47 +39,21 @@
                 <mct:Expander.Content>
                     <mct:Expander Direction="Down" BackgroundColor="LightGray">
                         <mct:Expander.Header>
-                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold"/>
+                            <Label Text="Nested Expander (Tap Me)" FontSize="14" FontAttributes="Bold" TextColor="Black"/>
                         </mct:Expander.Header>
                         <mct:Expander.Content>
-                            <Label Text="Item 1" />
+                            <Label Text="Item 1" TextColor="Black" />
                         </mct:Expander.Content>
                     </mct:Expander>
                 </mct:Expander.Content>
             </mct:Expander>
 
-            <Label Text="Expander in ListView" FontSize="24" FontAttributes="Bold"/>
-
-            <ListView ItemsSource="{Binding ContentCreators}"
-                      HasUnevenRows="True">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <mct:Expander x:DataType="viewModels:ContentCreator"
-                                          ExpandedChanged="Expander_ExpandedChanged">
-                                <mct:Expander.Header>
-                                    <Label Text="{Binding Name}"/>
-                                </mct:Expander.Header>
-                                <mct:Expander.Content>
-                                    <VerticalStackLayout>
-                                        <Label Text="{Binding Resource}"/>
-                                        <Image Source="{Binding Image}"
-                                               WidthRequest="100"
-                                               HeightRequest="100"/>
-                                    </VerticalStackLayout>
-                                </mct:Expander.Content>
-                            </mct:Expander>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-            <Label Text="Expander in CollectionView" FontSize="24" FontAttributes="Bold"/>
+            <Label Text="Expander in CollectionView with LinearItemsLayout" FontSize="24" FontAttributes="Bold"/>
 
             <CollectionView ItemsSource="{Binding ContentCreators}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <mct:Expander x:DataType="viewModels:ContentCreator"
+                        <mct:Expander x:DataType="sample:ContentCreator"
                                       ExpandedChanged="Expander_ExpandedChanged">
                             <mct:Expander.Header>
                                 <Label Text="{Binding Name}"/>
@@ -89,6 +64,36 @@
                                     <Image Source="{Binding Image}"
                                                WidthRequest="100"
                                                HeightRequest="100"/>
+                                </VerticalStackLayout>
+                            </mct:Expander.Content>
+                        </mct:Expander>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            
+            <Label Text="Expander in CollectionView with GridItemsLayout" FontSize="24" FontAttributes="Bold"/>
+
+            <CollectionView ItemsSource="{Binding ContentCreators}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="4"
+                                     HorizontalItemSpacing="5"
+                                     VerticalItemSpacing="5" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <mct:Expander x:DataType="sample:ContentCreator"
+                                      ExpandedChanged="Expander_ExpandedChanged">
+                            <mct:Expander.Header>
+                                <Label Text="{Binding Name}"/>
+                            </mct:Expander.Header>
+                            <mct:Expander.Content>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Resource}" HorizontalOptions="Center"/>
+                                    <!-- No WidthRequest: the avatar shrinks to the width of its column (AspectFit, at most 100x100), so it does not spill into the next column on a phone -->
+                                    <Image Source="{Binding Image}"
+                                           Aspect="AspectFit"
+                                           HeightRequest="100"/>
                                 </VerticalStackLayout>
                             </mct:Expander.Content>
                         </mct:Expander>

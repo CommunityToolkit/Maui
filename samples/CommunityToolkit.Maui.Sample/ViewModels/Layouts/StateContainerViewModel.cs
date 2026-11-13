@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Layouts;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
@@ -6,19 +7,34 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 public partial class StateContainerViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? currentState, gridState, noAnimateState, notFoundState, fullPageState;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleGridStateCommand))]
-	bool canGridStateChange = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(CycleStatesCommand))]
-	bool canCycleStateChange = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleFullPageStateCommand))]
-	bool canFullPageStateChange = true;
+	public partial string? CurrentState { get; set; }
 
 	[ObservableProperty]
-	bool canAnimationStateChange = true;
+	public partial string? GridState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NoAnimateState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NotFoundState { get; set; }
+
+	[ObservableProperty]
+	public partial string? NotFoundStateExceptionMessage { get; set; }
+
+	[ObservableProperty]
+	public partial string? FullPageState { get; set; }
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleGridStateCommand))]
+	public partial bool CanGridStateChange { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(CycleStatesCommand))]
+	public partial bool CanCycleStateChange { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ToggleFullPageStateCommand))]
+	public partial bool CanFullPageStateChange { get; set; } = true;
+
+	[ObservableProperty]
+	public partial bool CanAnimationStateChange { get; set; } = true;
 
 	[RelayCommand(CanExecute = nameof(CanCycleStateChange))]
 	async Task CycleStates(CancellationToken token)
@@ -44,11 +60,23 @@ public partial class StateContainerViewModel : BaseViewModel
 	};
 
 	[RelayCommand]
-	void ToggleNotFoundState() => NotFoundState = NotFoundState switch
+	void ToggleNotFoundState()
 	{
-		StateKey.NotFound => null,
-		_ => StateKey.NotFound
-	};
+		try
+		{
+			NotFoundState = NotFoundState switch
+			{
+				StateKey.NotFound => null,
+				_ => StateKey.NotFound
+			};
+		}
+		catch (StateContainerException e)
+		{
+			// No StateView has the StateKey NotFound: the binding to StateContainer.CurrentState throws, and the layout keeps its default content
+			NotFoundState = null;
+			NotFoundStateExceptionMessage = $"{nameof(StateContainerException)}: {e.Message}";
+		}
+	}
 
 	[RelayCommand(CanExecute = nameof(CanFullPageStateChange))]
 	void ToggleFullPageState() => FullPageState = FullPageState switch

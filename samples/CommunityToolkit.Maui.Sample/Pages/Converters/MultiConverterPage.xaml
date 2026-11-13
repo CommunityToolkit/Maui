@@ -7,7 +7,9 @@
     x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.MultiConverterPage"
     xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
     x:TypeArguments="vm:MultiConverterViewModel"
-    x:DataType="vm:MultiConverterViewModel">
+    x:DataType="vm:MultiConverterViewModel"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Converters"
+    x:Name="ThisPage">
 
     <pages:BasePage.Resources>
         <ResourceDictionary>
@@ -33,17 +35,34 @@
                     ConverterType="{x:Type mct:TextCaseConverter}"
                     Value="{x:Static mct:TextCaseType.Upper}" />
             </x:Array>
+
+            <mct:VariableMultiValueConverter ConditionType="All" x:Key="VariableMultiValueConverterAll" />
+            <mct:InvertedBoolConverter x:Key="InvertedBoolConverter" />
         </ResourceDictionary>
     </pages:BasePage.Resources>
+
     <pages:BasePage.Content>
         <VerticalStackLayout Padding="20"
                              Spacing="20">
             <Label Text="This sample demonstrates how to use the MultiConverter with the IsNotEqualConverter and the TextCaseConverter. It converts the entered text to Upper Case and checks that it is Not Equal to the string 'MAUI'."/>
             <Entry Text="{Binding EnteredName}"/>
             <Label Text="{Binding EnteredName, Converter={StaticResource MyUpperCaseConverter}, ConverterParameter={StaticResource UpperCaseParams}, Mode=OneWay}"
-                   HorizontalOptions="CenterAndExpand"/>
+                   HorizontalOptions="Center"/>
             <Label Text="{Binding EnteredName, Converter={StaticResource MyMultiConverter}, ConverterParameter={StaticResource MultiParams}, Mode=OneWay}"
-                   HorizontalOptions="CenterAndExpand"/>
+                   HorizontalOptions="Center"/>
+
+            <VerticalStackLayout
+                Padding="30,0"
+                Spacing="25">
+                <VerticalStackLayout.IsEnabled>
+                    <MultiBinding Converter="{StaticResource VariableMultiValueConverterAll}">
+                        <Binding x:DataType="converters:MultiConverterPage" Path="IsEnabled" Source="{x:Reference ThisPage}" Converter="{StaticResource InvertedBoolConverter}" />
+                        <Binding x:DataType="converters:MultiConverterPage" Path="IsVisible" Source="{x:Reference ThisPage}" Converter="{StaticResource InvertedBoolConverter}" />
+                    </MultiBinding>
+                </VerticalStackLayout.IsEnabled>
+
+                <Button Text="This button does nothing. A MultiBinding keeps it disabled: VariableMultiValueConverter (All) gets two InvertedBoolConverter results, and both are false." />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </pages:BasePage.Content>
 </pages:BasePage>

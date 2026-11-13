@@ -9,7 +9,7 @@ public partial class AppThemePage : BasePage<AppThemeViewModel>
 		InitializeComponent();
 	}
 
-	void Switch_Toggled(object sender, ToggledEventArgs e)
+	void Switch_Toggled(object? sender, ToggledEventArgs? e)
 	{
 		if (Application.Current is not null)
 		{

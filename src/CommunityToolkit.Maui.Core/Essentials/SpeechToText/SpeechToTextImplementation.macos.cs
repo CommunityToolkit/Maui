@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using AVFoundation;
+using Microsoft.Maui.Dispatching;
 using Speech;
 
 namespace CommunityToolkit.Maui.Media;
@@ -8,20 +8,20 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
-	[MemberNotNull(nameof(audioEngine), nameof(recognitionTask), nameof(liveSpeechRequest), nameof(getRecognitionTaskCompletionSource))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	[MemberNotNull(nameof(liveSpeechRequest))]
+	async Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
-		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(culture.Name));
-
-		ResetGetRecognitionTaskCompletionSource(cancellationToken);
+		speechRecognizer = new SFSpeechRecognizer(NSLocale.FromLocaleIdentifier(options.Culture.Name));
 
 		if (!speechRecognizer.Available)
 		{
 			throw new ArgumentException("Speech recognizer is not available");
 		}
 
-		audioEngine = new AVAudioEngine();
-		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest();
+		liveSpeechRequest = new SFSpeechAudioBufferRecognitionRequest
+		{
+			ShouldReportPartialResults = options.ShouldReportPartialResults
+		};
 
 		InitializeAvAudioSession(out var audioSession);
 
@@ -32,64 +32,54 @@ public sealed partial class SpeechToTextImplementation
 		audioSession.SetMode(mode, out var audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		audioSession.SetActive(true, AVAudioSessionSetActiveOptions.NotifyOthersOnDeactivation, out audioSessionError);
 		if (audioSessionError is not null)
 		{
-			throw new Exception(audioSessionError.LocalizedDescription);
+			throw new NSErrorException(audioSessionError);
 		}
 
 		var node = audioEngine.InputNode;
-		var recordingFormat = node.GetBusOutputFormat(0);
-		node.InstallTapOnBus(0, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
+		var recordingFormat = node.GetBusOutputFormat(audioEngineBusTap);
+		node.InstallTapOnBus(audioEngineBusTap, 1024, recordingFormat, (buffer, _) => liveSpeechRequest.Append(buffer));
 
 		audioEngine.Prepare();
 		audioEngine.StartAndReturnError(out var error);
 
 		if (error is not null)
 		{
-			throw new Exception(error.LocalizedDescription);
+			throw new NSErrorException(error);
 		}
 
 		cancellationToken.ThrowIfCancellationRequested();
 
-		var currentIndex = 0;
-		recognitionTask = speechRecognizer.GetRecognitionTask(liveSpeechRequest, (result, err) =>
+		var recognizer = speechRecognizer;
+		var request = liveSpeechRequest;
+		IDispatcherTimer timer;
+		try
 		{
-			if (err is not null)
-			{
-				StopRecording();
-				getRecognitionTaskCompletionSource.TrySetException(new Exception(err.LocalizedDescription));
-			}
-			else
-			{
-				if (result.Final)
-				{
-					currentIndex = 0;
-					StopRecording();
-					OnRecognitionResultCompleted(result.BestTranscription.FormattedString);
-					getRecognitionTaskCompletionSource.TrySetResult(result.BestTranscription.FormattedString);
-				}
-				else
-				{
-					if (currentIndex <= 0)
-					{
-						OnSpeechToTextStateChanged(CurrentState);
-					}
+			timer = await CreateSilenceTimer(options, cancellationToken);
+		}
+		catch (OperationCanceledException) when (!ReferenceEquals(recognizer, speechRecognizer))
+		{
+			// A stop released this start while it waited, so cancelling its token afterwards is not a failure of the start: the failure handling
+			// of StartListenAsync would stop the recognition of a newer start
+			return;
+		}
 
-					for (var i = currentIndex; i < result.BestTranscription.Segments.Length; i++)
-					{
-						var s = result.BestTranscription.Segments[i].Substring;
-						currentIndex++;
-						recognitionProgress?.Report(s);
-						OnRecognitionResultUpdated(s);
-					}
-				}
-			}
-		});
+		// Off the main thread the start waits here for the main thread, and a stop meanwhile releases what the start created. The released start
+		// ends without a recognition and without an exception, so that the failure handling of StartListenAsync stops nothing, and its timer
+		// must not stop a newer recognition when it elapses
+		if (!ReferenceEquals(recognizer, speechRecognizer))
+		{
+			timer.Tick -= OnSilenceTimerTick;
+			timer.Stop();
+			return;
+		}
 
-		return Task.CompletedTask;
+		silenceTimer = timer;
+		recognitionTask = CreateSpeechRecognizerTask(recognizer, request);
 	}
 }

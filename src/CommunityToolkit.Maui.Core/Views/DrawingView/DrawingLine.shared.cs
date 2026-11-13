@@ -7,8 +7,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class DrawingLine : IDrawingLine
 {
-	int granularity = DrawingViewDefaults.MinimumGranularity;
-
 	/// <summary>
 	/// The <see cref="Color"/> that is used to draw this line on the <see cref="IDrawingView"/>.
 	/// </summary>
@@ -22,16 +20,16 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// The collection of <see cref="PointF"/> that makes up this line on the <see cref="IDrawingView"/>.
 	/// </summary>
-	public ObservableCollection<PointF> Points { get; set; } = new();
+	public ObservableCollection<PointF> Points { get; set; } = [];
 
 	/// <summary>
 	/// The granularity of this line. Min value is 5. The higher the value, the smoother the line, the slower the program. Value clamped between <see cref="DrawingViewDefaults.MinimumGranularity"/> and <see cref="int.MaxValue"/>
 	/// </summary>
 	public int Granularity
 	{
-		get => granularity;
-		set => granularity = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
-	}
+		get;
+		set => field = Math.Clamp(value, DrawingViewDefaults.MinimumGranularity, int.MaxValue);
+	} = DrawingViewDefaults.MinimumGranularity;
 
 	/// <summary>
 	/// Enables or disables if this line is smoothed (anti-aliased) when drawn.
@@ -41,33 +39,20 @@ public class DrawingLine : IDrawingLine
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="Point"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="points">A collection of <see cref="Point"/> that a image is generated from.</param>
-	/// <param name="imageSize">The desired dimensions of the generated image.</param>
-	/// <param name="lineWidth">The desired line width to be used in the generated image.</param>
-	/// <param name="strokeColor">The desired color of the line to be used in the generated image.</param>
-	/// <param name="background">Background of the generated image.</param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/> </param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="points"/> parameter.</returns>
-	public static ValueTask<Stream> GetImageStream(IEnumerable<PointF> points,
-										Size imageSize,
-										float lineWidth,
-										Color strokeColor,
-										Paint background,
-										CancellationToken token = default)
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetImageStream(
+		ImagePointOptions options,
+		CancellationToken token = default)
 	{
-		return DrawingViewService.GetImageStream(points.ToList(), imageSize, lineWidth, strokeColor, background, token);
+		ArgumentNullException.ThrowIfNull(options);
+
+		return DrawingViewService.GetImageStream(options, token);
 	}
 
-	/// <summary>
-	/// Retrieves a <see cref="Stream"/> containing an image of this line, based on the <see cref="Points"/> data.
-	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned.</param>
-	/// <param name="background">Background of the generated image.</param>
-	/// <param name="token"><see cref="CancellationToken"/> </param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, Paint background, CancellationToken token = default)
-	{
-		return DrawingViewService.GetImageStream(Points.ToList(), new Size(imageSizeWidth, imageSizeHeight), LineWidth, LineColor, background, token);
-	}
+	/// <inheritdoc cref="IDrawingLine.GetImageStream(double, double, Paint, Size?, CancellationToken)"/>
+	public ValueTask<Stream> GetImageStream(double desiredSizeWidth, double desiredSizeHeight, Paint background, Size? canvasSize = null, CancellationToken token = default) =>
+		DrawingViewService.GetImageStream(new ImagePointOptions([.. Points], new Size(desiredSizeWidth, desiredSizeHeight), LineWidth, LineColor, background, canvasSize), token);
 }

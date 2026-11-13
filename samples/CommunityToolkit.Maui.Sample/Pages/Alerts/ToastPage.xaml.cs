@@ -31,9 +31,9 @@ public partial class ToastPage : BasePage<ToastViewModel>
 
 	async void DisplayToastInModalButtonClicked(object? sender, EventArgs e)
 	{
-		if (Application.Current?.MainPage is not null)
+		if (Application.Current?.Windows[0].Page is Page mainPage)
 		{
-			await Application.Current.MainPage.Navigation.PushModalAsync(new ContentPage
+			var modalPage = new ContentPage
 			{
 				Content = new VerticalStackLayout
 				{
@@ -49,12 +49,21 @@ public partial class ToastPage : BasePage<ToastViewModel>
 							.Center().TextCenter()
 							.Text("This is a Modal Page"),
 
-						new Button { Command = new AsyncRelayCommand(Application.Current.MainPage.Navigation.PopModalAsync) }
+						new Button { Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync) }
 							.Bottom().CenterHorizontal()
 							.Text("Back to Toast Page")
 					}
 				}.Center()
-			}.Padding(12));
+			}.Padding(12);
+
+			// The implicit Page style makes every Page Transparent on Windows, so that the Mica backdrop of the window shows through it. On Windows, .NET MAUI keeps
+			// the Page below a modal Page that has a BackgroundColor on screen, where it shows through the Transparent modal Page: without one, the modal Page replaces it
+			if (OperatingSystem.IsWindows())
+			{
+				modalPage.SetValue(BackgroundColorProperty, null);
+			}
+
+			await mainPage.Navigation.PushModalAsync(modalPage);
 		}
 	}
 }

@@ -1,20 +1,18 @@
 ﻿using System.Globalization;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests;
 
-public abstract class BaseTest : IDisposable
+[Collection("CommunityToolkit.UnitTests")]
+public abstract class BaseTest : IDisposable, IAsyncDisposable
 {
+	protected const AppTheme initialAppTheme = AppTheme.Light;
+
 	readonly CultureInfo defaultCulture, defaultUiCulture;
 
 	bool isDisposed;
-
-	protected enum TestDuration
-	{
-		Short = 2000,
-		Medium = 5000,
-		Long = 10000
-	}
 
 	protected BaseTest()
 	{
@@ -22,36 +20,35 @@ public abstract class BaseTest : IDisposable
 		defaultUiCulture = Thread.CurrentThread.CurrentUICulture;
 
 		DispatcherProvider.SetCurrent(new MockDispatcherProvider());
-		DeviceDisplay.SetCurrent(null);
 	}
 
 	~BaseTest() => Dispose(false);
+
+	protected enum TestDuration
+	{
+#if DEBUG
+		Short = 20_000,
+		Medium = 50_000,
+		Long = 100_000
+#else
+		Short = 2_000,
+		Medium = 5_000,
+		Long = 10_000
+#endif
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await DisposeAsyncCore().ConfigureAwait(false);
+
+		Dispose(false);
+		GC.SuppressFinalize(this);
+	}
 
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
-	}
-
-	protected virtual void Dispose(bool isDisposing)
-	{
-		if (isDisposed)
-		{
-			return;
-		}
-
-		Thread.CurrentThread.CurrentCulture = defaultCulture;
-		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
-
-		DeviceDisplay.SetCurrent(null);
-		DispatcherProvider.SetCurrent(null);
-
-		var options = new Options();
-		options.SetShouldSuppressExceptionsInAnimations(false);
-		options.SetShouldSuppressExceptionsInBehaviors(false);
-		options.SetShouldSuppressExceptionsInConverters(false);
-
-		isDisposed = true;
 	}
 
 	protected static Task<Stream> GetStreamFromImageSource(StreamImageSource imageSource, CancellationToken token)
@@ -78,5 +75,49 @@ public abstract class BaseTest : IDisposable
 		}
 
 		return true;
+	}
+
+	// A fixed delay can finish before the timer of a CancellationTokenSource has run its callback on a busy runner,
+	// which leaves the code under test with a token that is not cancelled yet.
+	protected static async Task WaitForCancellationAsync(CancellationToken expiringToken, CancellationToken cancellationToken)
+	{
+		var cancellationRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		await using var registration = expiringToken.Register(() => cancellationRequested.TrySetResult());
+
+		await cancellationRequested.Task.WaitAsync(cancellationToken);
+	}
+
+	protected virtual ValueTask DisposeAsyncCore()
+	{
+		return ValueTask.CompletedTask;
+	}
+
+	protected virtual void Dispose(bool isDisposing)
+	{
+		if (isDisposed)
+		{
+			return;
+		}
+
+		Thread.CurrentThread.CurrentCulture = defaultCulture;
+		Thread.CurrentThread.CurrentUICulture = defaultUiCulture;
+
+		DispatcherProvider.SetCurrent(null);
+
+		// Restore default options
+		var options = new Options();
+		options.SetShouldUseStatusBarBehaviorOnAndroidModalPage(true);
+		options.SetShouldEnableSnackbarOnWindows(false);
+		options.SetShouldSuppressExceptionsInAnimations(false);
+		options.SetShouldSuppressExceptionsInBehaviors(false);
+		options.SetShouldSuppressExceptionsInConverters(false);
+		options.SetPopupDefaults(new DefaultPopupSettings());
+		options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
+
+		// Restore default MediaElementOptions
+		var mediaElementOptions = new MediaElementOptions();
+		mediaElementOptions.SetDefaultAndroidViewType(AndroidViewType.SurfaceView);
+		mediaElementOptions.SetIsAndroidForegroundServiceEnabled(false);
+		isDisposed = true;
 	}
 }

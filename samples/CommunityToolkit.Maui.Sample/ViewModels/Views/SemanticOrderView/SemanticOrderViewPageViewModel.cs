@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class SemanticOrderViewPageViewModel : BaseViewModel
+public partial class SemanticOrderViewPageViewModel : BaseViewModel
 {
 }

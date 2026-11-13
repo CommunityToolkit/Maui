@@ -1,14 +1,13 @@
-﻿using System.Collections.Frozen;
-
+﻿
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class ListToStringConverterViewModel : BaseViewModel
+public partial class ListToStringConverterViewModel : BaseViewModel
 {
-	public IReadOnlyList<string> ItemSource { get; } = new[]
-	{
+	public IReadOnlyList<string> ItemSource { get; } =
+	[
 		"This",
 		"Is",
 		"The",
 		"ListToStringConverter"
-	};
+	];
 }

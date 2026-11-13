@@ -5,31 +5,51 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToInverseColorConverterTests : BaseOneWayConverterTest<ColorToInverseColorConverter>
 {
-	public static IReadOnlyList<object[]> ColorToInverseColorConverterData { get; } = new[]
+	public static TheoryData<int, int> ColorToInverseColorConverterData { get; } = new()
 	{
-		new[] { Colors.White, Colors.Black},
-		new[] { new Color(0f,0f,0f), new Color(1f,1f,1f) },
-		new[] { new Color(0f,0f,1f), new Color(1f,1f,0f) },
-		new[] { new Color(0f,1f,0f), new Color(1f,0f,1f) },
-		new[] { new Color(0f,1f,1f), new Color(1f,0f,0f) },
-		new[] { new Color(1f,0f,0f), new Color(0f,1f,1f) },
-		new[] { new Color(1f,0f,1f), new Color(0f,1f,0f) },
-		new[] { new Color(1f,1f,0f), new Color(0f,0f,1f) },
-		new[] { new Color(1f,1f,1f), new Color(0f,0f,0f) },
-		new[] { Colors.Black, Colors.White },
+		{
+			Colors.White.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			new Color(0f, 0f, 0f).ToInt(), new Color(1f, 1f, 1f).ToInt()
+		},
+		{
+			new Color(0f, 0f, 1f).ToInt(), new Color(1f, 1f, 0f).ToInt()
+		},
+		{
+			new Color(0f, 1f, 0f).ToInt(), new Color(1f, 0f, 1f).ToInt()
+		},
+		{
+			new Color(0f, 1f, 1f).ToInt(), new Color(1f, 0f, 0f).ToInt()
+		},
+		{
+			new Color(1f, 0f, 0f).ToInt(), new Color(0f, 1f, 1f).ToInt()
+		},
+		{
+			new Color(1f, 0f, 1f).ToInt(), new Color(0f, 1f, 0f).ToInt()
+		},
+		{
+			new Color(1f, 1f, 0f).ToInt(), new Color(0f, 0f, 1f).ToInt()
+		},
+		{
+			new Color(1f, 1f, 1f).ToInt(), new Color(0f, 0f, 0f).ToInt()
+		},
+		{
+			Colors.Black.ToInt(), Colors.White.ToInt()
+		},
 	};
 
 	[Theory]
 	[MemberData(nameof(ColorToInverseColorConverterData))]
-	public void ColorToInverseColorConverterConverterValidArgumentsTest(Color initialColor, Color expectedColor)
+	public void ColorToInverseColorConverterConverterValidArgumentsTest(int initialColor, int expectedColor)
 	{
 		var converter = new ColorToInverseColorConverter();
 
-		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(Color.FromInt(initialColor), typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(Color.FromInt(initialColor));
 
-		Assert.Equal(expectedColor, convertedColor);
-		Assert.Equal(expectedColor, convertedColorFrom);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColor);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColorFrom);
 	}
 
 	[Theory]

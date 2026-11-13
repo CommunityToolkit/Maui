@@ -1,78 +1,81 @@
-﻿namespace CommunityToolkit.Maui.Layouts;
+﻿using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
+
+namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
 /// States are defined in the <see cref="StateViewsProperty"/> with <see cref="StateView"/> attached properties.
 /// </summary>
-public static class StateContainer
+[AttachedBindableProperty<IList<View>>(stateViewsPropertyName, DefaultValueCreatorMethodName = nameof(CreateDefaultStateViewsProperty))]
+[AttachedBindableProperty<string>(currentStatePropertyName, IsNullable = true, DefaultValue = StateContainerDefaults.CurrentState, PropertyChangingMethodName = nameof(OnCurrentStateChanging), BindablePropertyXmlDocumentation = currentStateBindablePropertyXmlDocumentation)]
+[AttachedBindableProperty<bool>(canStateChangePropertyName, DefaultValue = StateContainerDefaults.CanStateChange, DefaultBindingMode = BindingMode.OneWayToSource, SetterAccessibility = AccessModifier.Private)]
+[AttachedBindableProperty<StateContainerController>(layoutControllerPropertyName, DefaultValueCreatorMethodName = nameof(ContainerControllerCreator), BindablePropertyAccessibility = AccessModifier.Internal, GetterAccessibility = AccessModifier.Internal, SetterAccessibility = AccessModifier.None)]
+public static partial class StateContainer
 {
 	const string stateViewsPropertyName = "StateViews";
 	const string currentStatePropertyName = "CurrentState";
 	const string canStateChangePropertyName = "CanStateChange";
 	const string layoutControllerPropertyName = "LayoutController";
 
-	internal static readonly BindableProperty LayoutControllerProperty
-		= BindableProperty.CreateAttached(layoutControllerPropertyName, typeof(StateContainerController), typeof(StateContainer), default(StateContainerController), defaultValueCreator: ContainerControllerCreator);
-
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetStateViews"/> and <see cref="SetStateViews"/> methods.
-	/// </summary>
-	public static readonly BindableProperty StateViewsProperty
-		= BindableProperty.CreateAttached(stateViewsPropertyName, typeof(IList<View>), typeof(StateContainer), default(IList<View>), defaultValueCreator: _ => new List<View>());
-
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
-	/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
-	/// </summary>
-	public static readonly BindableProperty CurrentStateProperty
-		= BindableProperty.CreateAttached(currentStatePropertyName, typeof(string), typeof(StateContainer), default(string), propertyChanging: OnCurrentStateChanging);
-
-	/// <summary>
-	/// Backing <see cref="BindableProperty"/> for the <see cref="GetCanStateChange"/> method.
-	/// </summary>
-	public static readonly BindableProperty CanStateChangeProperty
-		= BindableProperty.CreateAttached(canStateChangePropertyName, typeof(bool), typeof(StateContainer), true, BindingMode.OneWayToSource);
-
-	/// <summary>
-	/// Set the StateViews property
-	/// </summary>
-	public static void SetStateViews(BindableObject b, IList<View> value)
-		=> b.SetValue(StateViewsProperty, value);
-
-	/// <summary>
-	/// Get the CanStateChange property
-	/// </summary>
-	public static bool GetCanStateChange(BindableObject b)
-		=> (bool)b.GetValue(CanStateChangeProperty);
-
-	/// <summary>
-	/// Get the StateViews property
-	/// </summary>
-	public static IList<View> GetStateViews(BindableObject b)
-		=> (IList<View>)b.GetValue(StateViewsProperty);
-
-	/// <summary>
-	/// Set the CurrentState property
-	/// </summary>
-	public static void SetCurrentState(BindableObject b, string? value)
-		=> b.SetValue(CurrentStateProperty, value);
-
-	/// <summary>
-	/// Get the CurrentState property
-	/// </summary>
-	public static string GetCurrentState(BindableObject b)
-		=> (string)b.GetValue(CurrentStateProperty);
+	const string currentStateBindablePropertyXmlDocumentation =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		/// <summary>
+		/// Backing <see cref="BindableProperty"/> for the <see cref="GetCurrentState"/> and <see cref="SetCurrentState"/> methods.
+		/// To ensure <see cref="StateContainer"/> does not throw a <see cref="StateContainerException"/> due to active animations, first verify <see cref="CanStateChangeProperty"/> is <see langword="true"/> before changing <see cref="CurrentStateProperty"/>
+		/// </summary>
+		""";
 
 	/// <summary>
 	/// Change state with custom animation.
 	/// </summary>
-	public static async Task ChangeStateWithAnimation(
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(
 		BindableObject bindable,
 		string? state,
 		Animation? beforeStateChange,
 		Animation? afterStateChange,
 		CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, beforeStateChange, afterStateChange, token);
+	}
+
+	/// <summary>
+	/// Change state with custom animation.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(
+		BindableObject bindable,
+		string? state,
+		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
+		Func<VisualElement, CancellationToken, Task>? afterStateChange,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, beforeStateChange, afterStateChange, cancellationToken);
+	}
+
+	/// <summary>
+	/// Change state using the default fade animation: the current views fade out, then the views for <paramref name="state"/> replace them and fade in.
+	/// The views that faded out get their <see cref="VisualElement.Opacity"/> back when the state change ends, also when it fails or is canceled, so they are visible the next time they are shown.
+	/// Canceling <paramref name="token"/> ends the fade at once instead of letting it run on: a view that was fading in gets an <see cref="VisualElement.Opacity"/> of 1.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, token);
+	}
+
+	// ChangeStateWithAnimation validates its arguments before it calls these methods: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, Animation? beforeStateChange, Animation? afterStateChange, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
 		{
 			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
@@ -81,26 +84,20 @@ public static class StateContainer
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
-		var layout = GetContainerController(bindable).GetLayout();
+		var layout = GetLayoutController(bindable).GetLayout();
 
 		try
 		{
 			if (layout.Children.Count > 0 && beforeStateChange is not null)
 			{
-				var beforeAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(beforeStateChange), beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result)));
-
-				await beforeAnimationTCS.Task.WaitAsync(token);
+				await AnimateChildren(layout, nameof(beforeStateChange), beforeStateChange, token);
 			}
 
 			ChangeState(bindable, state);
 
 			if (layout.Children.Count > 0 && afterStateChange is not null)
 			{
-				var animationAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(afterStateChange), afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result)));
-
-				await animationAnimationTCS.Task.WaitAsync(token);
+				await AnimateChildren(layout, nameof(afterStateChange), afterStateChange, token);
 			}
 		}
 		finally
@@ -110,16 +107,9 @@ public static class StateContainer
 		}
 	}
 
-	/// <summary>
-	/// Change state with custom animation.
-	/// </summary>
-	public static async Task ChangeStateWithAnimation(
-		BindableObject bindable,
-		string? state,
-		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
-		Func<VisualElement, CancellationToken, Task>? afterStateChange,
-		CancellationToken cancellationToken = default)
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, Func<VisualElement, CancellationToken, Task>? beforeStateChange, Func<VisualElement, CancellationToken, Task>? afterStateChange, CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
 		{
 			throw new ArgumentException($"Animation required. Parameters {nameof(beforeStateChange)} and {nameof(afterStateChange)} cannot both be null");
@@ -128,7 +118,7 @@ public static class StateContainer
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
-		var layout = GetContainerController(bindable).GetLayout();
+		var layout = GetLayoutController(bindable).GetLayout();
 
 		try
 		{
@@ -143,7 +133,6 @@ public static class StateContainer
 			{
 				await afterStateChange.Invoke(layout, cancellationToken).WaitAsync(cancellationToken);
 			}
-
 		}
 		finally
 		{
@@ -152,42 +141,75 @@ public static class StateContainer
 		}
 	}
 
-	/// <summary>
-	/// Change state using the default fade animation.
-	/// </summary>
-	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
-		var layout = GetContainerController(bindable).GetLayout();
+		var layout = GetLayoutController(bindable).GetLayout();
+		var replacedViews = layout.Children.OfType<View>().Select(static view => (View: view, view.Opacity)).ToList();
+		List<View> shownViews = [];
 
 		try
 		{
 			if (layout.Children.Count > 0)
 			{
-				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(0))).WaitAsync(token);
+				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeToAsync(0))).WaitAsync(token);
 			}
 
 			ChangeState(bindable, state);
 
 			if (layout.Children.Count > 0)
 			{
-				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeTo(1))).WaitAsync(token);
+				shownViews.AddRange(layout.Children.OfType<View>());
+
+				// Fade in from transparent, also the first time a view is shown
+				foreach (var view in shownViews)
+				{
+					view.Opacity = 0;
+				}
+
+				await Task.WhenAll(shownViews.Select(view => view.FadeToAsync(1))).WaitAsync(token);
 			}
 		}
 		finally
 		{
+			// WaitAsync stops waiting when the token is canceled, not the fade: end it here, or it goes on changing Opacity after the state change ended,
+			// and the next state change would give a view the Opacity it had in the middle of the fade
+			foreach (var view in shownViews)
+			{
+				if (view.AbortAnimation(nameof(ViewExtensions.FadeToAsync)))
+				{
+					view.Opacity = 1;
+				}
+			}
+
+			// Otherwise a view that the new state replaced stays transparent when a later state change without the fade animation shows it again,
+			// and the current views stay transparent when the state change fails, for example for a state without a StateView
+			foreach (var (view, opacity) in replacedViews)
+			{
+				view.AbortAnimation(nameof(ViewExtensions.FadeToAsync));
+				view.Opacity = opacity;
+			}
+
 			SetCanStateChange(bindable, true);
 			SetCurrentState(bindable, state);
 		}
 	}
 
-	internal static StateContainerController GetContainerController(BindableObject b) =>
-		(StateContainerController)b.GetValue(LayoutControllerProperty);
+	static async Task AnimateChildren(Layout layout, string name, Animation animation, CancellationToken token)
+	{
+		List<Task<bool>> animationTasks = [];
+		foreach (var view in layout.Children.OfType<View>())
+		{
+			var animationTCS = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			view.Animate(name, animation, finished: (_, result) => animationTCS.TrySetResult(result));
+			animationTasks.Add(animationTCS.Task);
+		}
 
-	static void SetCanStateChange(BindableObject b, bool value)
-		=> b.SetValue(CanStateChangeProperty, value);
+		await Task.WhenAll(animationTasks).WaitAsync(token);
+	}
 
 	static void OnCurrentStateChanging(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -205,11 +227,11 @@ public static class StateContainer
 	{
 		if (string.IsNullOrEmpty(state))
 		{
-			GetContainerController(bindable).SwitchToContent();
+			GetLayoutController(bindable).SwitchToContent();
 		}
 		else
 		{
-			GetContainerController(bindable).SwitchToState(state);
+			GetLayoutController(bindable).SwitchToState(state);
 		}
 	}
 
@@ -233,19 +255,16 @@ public static class StateContainer
 			throw new StateContainerException($"{canStateChangePropertyName} is false. {currentStatePropertyName} cannot be changed while a state change is in progress. To avoid this exception, first verify {canStateChangePropertyName} is {true} before changing {currentStatePropertyName}.");
 		}
 	}
+
+	static IList<View> CreateDefaultStateViewsProperty(BindableObject bindable) => [];
 }
 
 /// <summary>
 /// An <see cref="InvalidOperationException"/> thrown when <see cref="StateContainer"/> enters an invalid state
 /// </summary>
-public sealed class StateContainerException : InvalidOperationException
-{
-	/// <summary>
-	/// Constructor for <see cref="StateContainerException"/>
-	/// </summary>
-	/// <param name="message"><see cref="Exception.Message"/></param>
-	public StateContainerException(string message) : base(message)
-	{
-
-	}
-}
+/// <remarks>
+/// Constructor for <see cref="StateContainerException"/>
+/// </remarks>
+/// <param name="message">The error message that explains the reason for the exception.</param>
+/// <param name="innerException">The exception that is the cause of the current exception. If the <paramref name="innerException" /> parameter is not a null reference (<see langword="Nothing" /> in Visual Basic), the current exception is raised in a <see langword="catch" /> block that handles the inner exception.</param>
+public sealed class StateContainerException(string message, Exception? innerException = null) : InvalidOperationException(message, innerException);

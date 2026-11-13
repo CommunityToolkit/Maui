@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.Core.Views;
 
 // We still have to keep this class, due to some random exceptions that occurs when the 
 // .NET MAUI implementation is used.
-class WrapperControl : Panel
+partial class WrapperControl : Panel
 {
 	readonly View view;
 
@@ -29,13 +29,12 @@ class WrapperControl : Panel
 			// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 			// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 			// have Bounds set
-			Handler?.PlatformView?.InvalidateMeasure(View);
+			FrameworkElement.InvalidateMeasure(View);
 			InvalidateMeasure();
 		};
 	}
 
 	IView View => view;
-	IPlatformViewHandler? Handler => View.Handler as IPlatformViewHandler;
 
 	FrameworkElement FrameworkElement { get; }
 

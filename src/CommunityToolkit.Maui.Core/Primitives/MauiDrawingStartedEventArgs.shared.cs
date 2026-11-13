@@ -3,16 +3,14 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Contains last drawing point
 /// </summary>
-public class MauiDrawingStartedEventArgs : EventArgs
+/// <remarks>
+/// Initializes last drawing point
+/// </remarks>
+/// <param name="point">Last drawing point</param>
+public class MauiDrawingStartedEventArgs(PointF point) : EventArgs
 {
-	/// <summary>
-	/// Initializes last drawing point
-	/// </summary>
-	/// <param name="point">Last drawing point</param>
-	public MauiDrawingStartedEventArgs(PointF point) => Point = point;
-
 	/// <summary>
 	/// Last drawing point
 	/// </summary>
-	public PointF Point { get; }
+	public PointF Point { get; } = point;
 }

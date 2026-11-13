@@ -1,0 +1,1353 @@
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
+using FluentAssertions;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Shapes;
+using Nito.AsyncEx;
+using Xunit;
+using Application = Microsoft.Maui.Controls.Application;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
+using Page = Microsoft.Maui.Controls.Page;
+
+namespace CommunityToolkit.Maui.UnitTests.Views;
+
+public class PopupPageTests : BaseViewTest
+{
+	[Fact]
+	public void Constructor_ShouldThrowArgumentNullException_WhenPopupIsNull()
+	{
+		// Arrange
+		var popupOptions = new MockPopupOptions();
+		var taskCompletionSource = new TaskCompletionSource<PopupResult>();
+
+		// Act
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Action act = () => new PopupPage(null, popupOptions);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		// Assert
+		act.Should().Throw<ArgumentNullException>();
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Close_ShouldThrowInvalidOperationException_NoPopupPageFound()
+	{
+		// Arrange
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage<string>(view, popupOptions);
+
+		// Act / Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Close_ShouldSetResultAndPopModalAsync()
+	{
+		// Arrange
+		var tcs = new TaskCompletionSource<IPopupResult>();
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage(view, popupOptions);
+		var expectedResult = new PopupResult(false);
+
+		popupPage.PopupClosed += HandlePopupClosed;
+
+		// Act
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupPage);
+
+		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
+		var actualResult = await tcs.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		// Assert
+		actualResult.Should().Be(expectedResult);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			tcs.SetResult(e);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled_NavigationModalStackShouldStillContainPopupPage()
+	{
+		// Arrange
+		PopupPage popupPage;
+		var view = new ContentView();
+		var result = new PopupResult(false);
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		if (Application.Current?.Windows[0].Page is not Page mainPage)
+		{
+			throw new InvalidOperationException("Failed to locate main page");
+		}
+
+		// Act
+		mainPage.Navigation.ShowPopup(view);
+		popupPage = mainPage.Navigation.ModalStack.OfType<PopupPage>().Single();
+
+		await cts.CancelAsync();
+
+		// Assert
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => popupPage.CloseAsync(result, cts.Token));
+		Assert.Single(mainPage.Navigation.ModalStack.OfType<PopupPage>());
+	}
+
+	[Fact]
+	public void PopupPageT_Constructor_ShouldThrowArgumentNullException_WhenPopupIsNull()
+	{
+		// Arrange
+		var popupOptions = new MockPopupOptions();
+
+		// Act
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Action act = () => new PopupPage<string>(null, popupOptions);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		// Assert
+		act.Should().Throw<ArgumentNullException>();
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_Close_ShouldSetResultAndPopModalAsync()
+	{
+		// Arrange
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var taskCompletionSource = new TaskCompletionSource<PopupResult<string>>();
+		var popupPage = new PopupPage<string>(view, popupOptions);
+		var expectedResult = new PopupResult<string>("Test", false);
+
+		popupPage.PopupClosed += HandlePopupClosed;
+
+		// Act
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupPage);
+
+		await popupPage.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
+		var actualResult = await taskCompletionSource.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		// Assert
+		actualResult.Should().Be(expectedResult);
+
+		void HandlePopupClosed(object? sender, IPopupResult e)
+		{
+			taskCompletionSource.SetResult((PopupResult<string>)e);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseAfterAdditionalModalPage_ShouldThrowInvalidOperationException()
+	{
+		// Arrange
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage<string>(view, popupOptions);
+
+		// Act
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupPage);
+		await navigation.PushModalAsync(new ContentPage());
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseWhenUsingCustomNavigationPage_ShouldClose()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		bool wasPopupPageClosed = false;
+
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage<string>(view, popupOptions);
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		var onAppearingPage = new ContentPage();
+		var customNavigationPage = new NavigationPage(onAppearingPage);
+		onAppearingPage.NavigatedTo += HandlePageNavigatedTo;
+
+		// Act
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.True(wasPopupPageClosed);
+
+		async void HandlePageNavigatedTo(object? sender, NavigatedToEventArgs e)
+		{
+			if (!e.WasPreviousPageACommunityToolkitPopupPage())
+			{
+				await customNavigationPage.Navigation.PushModalAsync(popupPage);
+			}
+		}
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseWhenUsingCustomNavigationPageInsideShell_ModalPoppedShouldReportContainerPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0] is not Window window)
+		{
+			throw new InvalidOperationException("Unable to locate Window");
+		}
+
+		var popupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		var customNavigationPage = new NavigationPage(new ContentPage());
+		Page? poppedModal = null;
+
+		window.ModalPopped += HandleModalPopped;
+
+		// Act
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true).WaitAsync(TestContext.Current.CancellationToken);
+		await customNavigationPage.Navigation.PushModalAsync(popupPage).WaitAsync(TestContext.Current.CancellationToken);
+		await window.Navigation.PopModalAsync(false).WaitAsync(TestContext.Current.CancellationToken);
+
+		window.ModalPopped -= HandleModalPopped;
+
+		// Assert
+		Assert.Same(customNavigationPage, poppedModal);
+
+		void HandleModalPopped(object? sender, ModalPoppedEventArgs e)
+		{
+			poppedModal = e.Modal;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupBlockedException()
+	{
+		// Arrange
+		bool wasPopupPageClosed = false;
+
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var firstPopupPage = new PopupPage<string>(view, popupOptions);
+		firstPopupPage.PopupClosed += HandlePopupPageClosed;
+
+		var onAppearingPage = new ContentPage();
+		var customNavigationPage = new NavigationPage(onAppearingPage);
+		onAppearingPage.NavigatedTo += HandlePageNavigatedTo;
+
+		var secondPopupPage = new PopupPage<string>(new Button(), popupOptions);
+
+		// Act
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		await customNavigationPage.Navigation.PushModalAsync(secondPopupPage);
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		Assert.False(wasPopupPageClosed);
+
+		async void HandlePageNavigatedTo(object? sender, NavigatedToEventArgs e)
+		{
+			if (!e.WasPreviousPageACommunityToolkitPopupPage())
+			{
+				await customNavigationPage.Navigation.PushModalAsync(firstPopupPage);
+			}
+		}
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupPageT_CloseAfterAdditionalModalPageToCustomNavigationPage_ShouldThrowPopupNotFound()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		bool wasPopupPageClosed = false;
+
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage<string>(view, popupOptions);
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		var onAppearingPage = new ContentPage();
+		var customNavigationPage = new NavigationPage(onAppearingPage);
+		onAppearingPage.NavigatedTo += HandlePageNavigatedTo;
+
+		// Act
+		await Shell.Current.Navigation.PushModalAsync(customNavigationPage, true);
+		await customNavigationPage.Navigation.PushModalAsync(new ContentPage());
+
+		// Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		Assert.False(wasPopupPageClosed);
+
+		async void HandlePageNavigatedTo(object? sender, NavigatedToEventArgs e)
+		{
+			if (!e.WasPreviousPageACommunityToolkitPopupPage())
+			{
+				await customNavigationPage.Navigation.PushModalAsync(popupPage);
+			}
+		}
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_FromModalNavigationPage_ShouldCloseSuccessfully()
+	{
+		// Remove shell navigation
+		var rootPage = new ContentPage { Title = "Root" };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootPage;
+		var modalNavigationPage = new NavigationPage(new ContentPage { Title = "Modal Navigation Page" });
+		var popup = new Popup<string>();
+
+		// Act - Push modal navigation page
+		await rootPage.Navigation.PushModalAsync(modalNavigationPage, false);
+
+		// Assert - Verify modal stack has the modal navigation page
+		var modalPage = Assert.Single(rootPage.Navigation.ModalStack);
+		Assert.Same(modalNavigationPage, modalPage);
+
+		// Act
+		var showPopupAsyncTask = modalNavigationPage.ShowPopupAsync<string>(popup, token: TestContext.Current.CancellationToken);
+		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
+		var result = await showPopupAsyncTask;
+
+		// Assert
+		result.Result.Should().Be("Hello");
+
+		// Cleanup
+		await rootPage.Navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_True_WhenPresentingPageIsContentPage()
+	{
+		// Arrange
+		// The presenting page (a ContentPage) has HideSoftInputOnTapped = true; the PopupPage is pre-set to the opposite
+		// value so a `true` result proves the value was inherited from the presenting page, not just left at the ContentPage default (true).
+		const bool presentingPageHideSoftInputOnTapped = true;
+		var rootNavigationPage = new NavigationPage(new ContentPage { Title = "Root" });
+		var presentingPage = new ContentPage { Title = "Presenting", HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+
+		// Push the presenting page so it is on top of the navigation stack (a root page is not part of its own navigation stack).
+		await rootNavigationPage.Navigation.PushAsync(presentingPage);
+
+		var navigation = presentingPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = false };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_False_WhenPresentingPageIsContentPage()
+	{
+		// Arrange
+		// The presenting page (a ContentPage) has HideSoftInputOnTapped = false; the PopupPage is pre-set to the opposite
+		// value so a `false` result proves the value was inherited from the presenting page, not just left at the ContentPage default (true).
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var rootNavigationPage = new NavigationPage(new ContentPage { Title = "Root" });
+		var presentingPage = new ContentPage { Title = "Presenting", HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+
+		// Push the presenting page so it is on top of the navigation stack (a root page is not part of its own navigation stack).
+		await rootNavigationPage.Navigation.PushAsync(presentingPage);
+
+		var navigation = presentingPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = !presentingPageHideSoftInputOnTapped };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldNotInheritHideSoftInputOnTapped_WhenPresentingPageIsNotAContentPage()
+	{
+		// Arrange
+		// The presenting page is a plain Page (not a ContentPage). Since HideSoftInputOnTapped only exists on ContentPage,
+		// inheritance must be skipped and the PopupPage value left unchanged.
+		var rootNavigationPage = new NavigationPage(new ContentPage { Title = "Root" });
+		var presentingPage = new NonContentModalPage();
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+
+		// Push the presenting page so it is the top of the navigation stack (a root page is not part of its own navigation stack).
+		await rootNavigationPage.Navigation.PushAsync(presentingPage);
+
+		var navigation = presentingPage.Navigation;
+
+		// Pre-set to `false` (differing from the ContentPage default of `true`); since the presenter is not a ContentPage,
+		// the value must remain `false` (i.e. not overwritten to the default `true`).
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = false };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().BeFalse();
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_WhenPresentingPageIsRootContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var presentingPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = presentingPage;
+		var navigation = presentingPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromVisibleModalContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var rootNavigationPage = new NavigationPage(new ContentPage { HideSoftInputOnTapped = true });
+		var presentingPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+		await rootNavigationPage.Navigation.PushModalAsync(presentingPage, false);
+
+		var navigation = rootNavigationPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromContentPageInModalNavigationPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var rootNavigationPage = new NavigationPage(new ContentPage { HideSoftInputOnTapped = true });
+		var presentingPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var modalNavigationPage = new NavigationPage(presentingPage);
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = rootNavigationPage;
+		await rootNavigationPage.Navigation.PushModalAsync(modalNavigationPage, false);
+
+		var navigation = rootNavigationPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact]
+	public void ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_False_WhenCurrentPageIsContentPage()
+	{
+		// Arrange
+		// The Shell's CurrentPage (a ContentPage) has HideSoftInputOnTapped = false, which differs from the ContentPage default (true),
+		// so a `false` result proves the value was inherited from shell.CurrentPage.
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var currentPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var shell = new Shell();
+		shell.Items.Add(currentPage);
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = shell;
+		var shellNavigation = Shell.Current.Navigation;
+
+		// Act
+		shell.ShowPopup(new Label(), new MockPopupOptions());
+
+		// Assert
+		var popupPage = Assert.Single(shellNavigation.ModalStack).As<PopupPage>();
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+	}
+
+	[Fact]
+	public void ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_True_WhenCurrentPageIsContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = true;
+		var currentPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var shell = new Shell();
+		shell.Items.Add(currentPage);
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+		var shellNavigation = Shell.Current.Navigation;
+
+		// Act
+		shell.ShowPopup(new Label(), new MockPopupOptions());
+
+		// Assert
+		var popupPage = Assert.Single(shellNavigation.ModalStack).As<PopupPage>();
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopup_Shell_ShouldInheritHideSoftInputOnTapped_FromVisibleModalPage()
+	{
+		// Arrange
+		const bool shellHideSoftInputOnTapped = true;
+		const bool modalHideSoftInputOnTapped = false;
+		var shell = new Shell();
+		shell.Items.Add(new ContentPage { HideSoftInputOnTapped = shellHideSoftInputOnTapped });
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var modalPage = new ContentPage { HideSoftInputOnTapped = modalHideSoftInputOnTapped };
+		await shell.Navigation.PushModalAsync(modalPage, false);
+
+		// Act
+		shell.ShowPopup(new Label(), new MockPopupOptions());
+
+		// Assert
+		var popupPage = shell.Navigation.ModalStack[^1].As<PopupPage>();
+		popupPage.HideSoftInputOnTapped.Should().Be(modalHideSoftInputOnTapped);
+
+		// Cleanup
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+		await shell.Navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromFlyoutPageDetailContentPage()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var detailPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+
+		var flyoutPage = new Microsoft.Maui.Controls.FlyoutPage
+		{
+			Flyout = new ContentPage { Title = "Flyout" },
+			Detail = detailPage
+		};
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		Application.Current.Windows[0].Page = flyoutPage;
+
+		var navigation = flyoutPage.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowAsync_ShouldInheritHideSoftInputOnTapped_FromRootShell_WhenShownViaWindowNavigation()
+	{
+		// Arrange
+		const bool presentingPageHideSoftInputOnTapped = false;
+		var currentPage = new ContentPage { HideSoftInputOnTapped = presentingPageHideSoftInputOnTapped };
+		var shell = new Shell();
+		shell.Items.Add(currentPage);
+
+		if (Application.Current is null)
+		{
+			throw new InvalidOperationException("Application.Current is null. Unable to set the root page.");
+		}
+
+		if (Application.Current.Windows.Count == 0)
+		{
+			throw new InvalidOperationException("No application windows found. Unable to set the root page.");
+		}
+
+		var window = Application.Current.Windows[0];
+		window.Page = shell;
+
+		var navigation = window.Navigation;
+		var popupPage = new PopupPage(new Label(), new MockPopupOptions()) { HideSoftInputOnTapped = true };
+
+		// Act
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		// Assert
+		popupPage.HideSoftInputOnTapped.Should().Be(presentingPageHideSoftInputOnTapped);
+
+		// Cleanup
+		await navigation.PopModalAsync(false);
+	}
+
+	[Fact]
+	public void PopupPageT_Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled()
+	{
+		// Arrange
+		var view = new ContentView();
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage<string>(view, popupOptions);
+		var result = new PopupResult<string>("Test", false);
+		var cts = new CancellationTokenSource();
+		cts.Cancel();
+
+		// Act
+		Func<Task> act = async () => await popupPage.CloseAsync(result, cts.Token);
+
+		// Assert
+		act.Should().ThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public void TapGestureRecognizer_VerifyCanBeDismissedByTappingOutsideOfPopup_ShouldNotExecuteWhenEitherFalse()
+	{
+		// Arrange
+		var view = new Popup();
+		var popupOptions = new PopupOptions();
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Assert
+
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
+		{
+		}
+
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = false;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
+
+		// Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
+		{
+		}
+
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = true;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = false;
+
+		// Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
+		{
+		}
+
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = false;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
+
+		// Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
+		{
+		}
+
+		// Act
+		view.CanBeDismissedByTappingOutsideOfPopup = true;
+		popupOptions.CanBeDismissedByTappingOutsideOfPopup = true;
+
+		// Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected because we did not call ShowPopup()
+		{
+		}
+	}
+
+	[Fact]
+	public void Constructor_WithViewAndPopupOptions_SetsCorrectProperties()
+	{
+		// Arrange
+		var view = new Label
+		{
+			Text = "Test Popup Content",
+			Margin = new Thickness(10),
+			Padding = new Thickness(5),
+			VerticalOptions = LayoutOptions.Center,
+			HorizontalOptions = LayoutOptions.Center,
+		};
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			PageOverlayColor = Colors.Red,
+			Shape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Assert
+		Assert.NotNull(popupPage.Content);
+		Assert.IsType<PopupPage.PopupPageLayout>(popupPage.Content);
+
+		// Verify iOS platform specific settings
+		Assert.Equal(PresentationMode.ModalNotAnimated, Shell.GetPresentationMode(popupPage));
+		Assert.Equal(UIModalPresentationStyle.OverFullScreen, popupPage.On<iOS>().ModalPresentationStyle());
+
+		// Verify content has tap gesture recognizer overlay
+		var gestureRecognizers = popupPage.Content.TapGestureGestureOverlay.GestureRecognizers;
+		var gestureRecognizer = Assert.Single(gestureRecognizers);
+		Assert.IsType<TapGestureRecognizer>(gestureRecognizer);
+
+		// Verify PopupPageLayout structure
+		var pageContent = popupPage.Content;
+		Assert.Equal(2, pageContent.Children.Count);
+		Assert.IsType<Border>(pageContent.Children.OfType<Border>().Single(), exactMatch: false);
+		Assert.IsType<BoxView>(pageContent.Children.OfType<PopupPage.PopupGestureOverlay>().Single(), exactMatch: false);
+
+		// Verify content binding context is set correctly
+		Assert.Equal(view.BindingContext, pageContent.BindingContext);
+	}
+
+	[Fact]
+	public void Constructor_WithNullView_ThrowsArgumentNullException()
+	{
+		// Arrange
+		var popupOptions = new MockPopupOptions();
+
+		// Act & Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new PopupPage((View?)null, popupOptions));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact]
+	public void Constructor_WithNullPopup_ThrowsArgumentNullException()
+	{
+		// Arrange
+		var popupOptions = new MockPopupOptions();
+
+		// Act & Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => new PopupPage((Popup?)null, popupOptions));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task OnTappingOutsideOfPopup_ShouldClosePopupWhenCanBeDismissedIsTrue()
+	{
+		// Arrange
+		bool actionInvoked = false;
+		var actionInvokedTCS = new TaskCompletionSource<bool>();
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			OnTappingOutsideOfPopup = () =>
+			{
+				actionInvoked = true;
+				actionInvokedTCS.SetResult(actionInvoked);
+			}
+		};
+
+		// Act & Assert
+		popupOptions.OnTappingOutsideOfPopup?.Invoke();
+
+		var result = await actionInvokedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(result);
+		Assert.True(actionInvoked);
+	}
+
+	[Fact]
+	public void TapGestureRecognizer_ShouldNotExecuteWhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Act & Assert
+		Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand());
+	}
+
+	[Fact]
+	public void OnBackButtonPressed_ReturnsTrueWhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+
+		var popupPage = new TestablePopupPage(view, popupOptions);
+
+		// Act
+		var result = popupPage.TestOnBackButtonPressed();
+
+		// Assert
+		Assert.True(result);
+	}
+
+	[Fact]
+	public void PopupPage_ShouldInitializeCorrectly_WithValidParameters()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = true,
+			PageOverlayColor = Colors.Blue
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Assert
+		Assert.NotNull(popupPage.Content);
+		Assert.Equal(popupOptions.PageOverlayColor, popupPage.BackgroundColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupClosedEvent_ShouldTriggerOnce_WhenPopupIsClosed()
+	{
+		// Arrange
+		Assert.NotNull(Application.Current);
+		var navigation = Application.Current.Windows[0].Page?.Navigation ?? throw new InvalidOperationException("Unable to locate INavigation");
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions();
+		var eventTriggered = false;
+
+
+		// Act
+		navigation.ShowPopup(view, popupOptions);
+
+		var popupPage = (PopupPage)navigation.ModalStack[0];
+		popupPage.PopupClosed += (sender, args) => eventTriggered = true;
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.True(eventTriggered);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task OpenedEvent_ShouldNotBeRaisedAgain_WhenPopupAboveItIsClosed(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+
+		var lowerPopup = new Popup();
+		var lowerPopupOpenedCount = 0;
+		lowerPopup.Opened += HandleLowerPopupOpened;
+
+		var lowerPopupPage = new PopupPage(lowerPopup, PopupOptions.Empty);
+		var upperPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+
+		await lowerPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await upperPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, lowerPopupOpenedCount);
+		Assert.Equal(2, navigation.ModalStack.Count);
+
+		await upperPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Same(lowerPopupPage, Assert.Single(navigation.ModalStack));
+		Assert.Equal(1, lowerPopupOpenedCount);
+
+		await lowerPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(1, lowerPopupOpenedCount);
+
+		void HandleLowerPopupOpened(object? sender, EventArgs e) => lowerPopupOpenedCount++;
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task OpenedEvent_ShouldBeRaisedOncePerShow_WhenTheSamePopupIsShownAgain(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+
+		var popup = new Popup();
+		var openedCount = 0;
+		popup.Opened += HandlePopupOpened;
+
+		var firstPopupPage = new PopupPage(popup, PopupOptions.Empty);
+		await firstPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Equal(1, openedCount);
+
+		var secondPopupPage = new PopupPage(popup, PopupOptions.Empty);
+		await secondPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await secondPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Equal(2, openedCount);
+
+		void HandlePopupOpened(object? sender, EventArgs e) => openedCount++;
+	}
+
+	// PopupPage sets the platform of its Popup up again when it is navigated to again, which only restores what the Popup had before when the
+	// page above it has already torn its own setup down (e.g. Android's soft input mode, which each Popup saves and restores)
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task NavigationEvents_ShouldTearDownThePageAboveBeforeTheLowerPageIsNavigatedToAgain(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+		List<string> navigationEvents = [];
+
+		var lowerPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var upperPopupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		lowerPopupPage.NavigatedTo += (_, _) => navigationEvents.Add("lower NavigatedTo");
+		lowerPopupPage.NavigatedFrom += (_, _) => navigationEvents.Add("lower NavigatedFrom");
+		upperPopupPage.NavigatedTo += (_, _) => navigationEvents.Add("upper NavigatedTo");
+		upperPopupPage.NavigatedFrom += (_, _) => navigationEvents.Add("upper NavigatedFrom");
+
+		await lowerPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await upperPopupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		await upperPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		Assert.Equal(
+			[
+				"lower NavigatedTo",
+				"lower NavigatedFrom",
+				"upper NavigatedTo",
+				"upper NavigatedFrom",
+				"lower NavigatedTo"
+			],
+			navigationEvents);
+	}
+
+	[Fact]
+	public void TappingOutside_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Act // Assert
+		try
+		{
+			// Run using AsyncContext to catch Exception thrown by fire-and-forget ICommand.Execute
+			AsyncContext.Run(() => Assert.False(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+		}
+		catch (PopupNotFoundException) // PopupNotFoundException is expected here because `ShowPopup` was never called
+		{
+		}
+	}
+
+	[Fact]
+	public void BackButton_ShouldNotClosePopup_WhenCanBeDismissedIsFalse()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions
+		{
+			CanBeDismissedByTappingOutsideOfPopup = false
+		};
+		var popupPage = new TestablePopupPage(view, popupOptions);
+
+		// Act
+		var result = popupPage.TestOnBackButtonPressed();
+
+		// Assert
+		Assert.True(result);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Close_ShouldThrowException_WhenCalledOnNonModalPopup()
+	{
+		// Arrange
+		var view = new Label { Text = "Test Popup Content" };
+		var popupOptions = new MockPopupOptions();
+		var popupPage = new PopupPage(view, popupOptions);
+
+		// Act & Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsBehindModalNavigationPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		bool wasPopupPageClosed = false;
+
+		var popupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		popupPage.PopupClosed += HandlePopupPageClosed;
+
+		var modalNavigationPage = new NavigationPage(new ContentPage());
+
+		// Act
+
+		// Push popup, then push a modal NavigationPage on top
+		// Modal stack: [PopupPage, NavigationPage(ContentPage)]
+		await navigation.PushModalAsync(popupPage);
+		await navigation.PushModalAsync(modalNavigationPage);
+
+		// Assert
+
+		// When the top of the modal stack is an IPageContainer whose CurrentPage is NOT a PopupPage,
+		// CloseAsync should throw PopupBlockedException because PopModalAsync would pop the
+		// visible NavigationPage instead of the PopupPage, leaving the PopupPage stranded on the
+		// modal stack while still incorrectly firing PopupClosed/NotifyPopupIsClosed.
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+
+		// Verify popup was NOT closed — it should still be on the modal stack
+		Assert.False(wasPopupPageClosed);
+		Assert.Contains(popupPage, navigation.ModalStack);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+			popupPage.PopupClosed -= HandlePopupPageClosed;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenPopupIsHiddenBehindAnotherPopupAndNavigationPage()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		bool wasPopupPageClosed = false;
+
+		var firstPopupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		firstPopupPage.PopupClosed += HandlePopupPageClosed;
+
+		var secondPopupPage = new PopupPage<string>(new Button(), new MockPopupOptions());
+		var navigationPageOnTop = new NavigationPage(new ContentPage());
+
+		// Act
+
+		// Push first popup, second popup, then NavigationPage on top
+		await navigation.PushModalAsync(firstPopupPage);
+		await navigation.PushModalAsync(secondPopupPage);
+		await navigation.PushModalAsync(navigationPageOnTop);
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await firstPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		Assert.False(wasPopupPageClosed);
+
+		void HandlePopupPageClosed(object? sender, IPopupResult e)
+		{
+			wasPopupPageClosed = true;
+			firstPopupPage.PopupClosed -= HandlePopupPageClosed;
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CloseAsync_ShouldThrowPopupBlockedException_WhenResolvedPopupPageToCloseHasDifferentContent()
+	{
+		// Arrange
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		var requestedPopupPage = new PopupPage<string>(new ContentView(), new MockPopupOptions());
+		var resolvedPopupPageToClose = new PopupPage<string>(new Button(), new MockPopupOptions());
+		var pageOnTop = new NonContentModalPage();
+
+		// Act
+		await navigation.PushModalAsync(requestedPopupPage);
+		await navigation.PushModalAsync(resolvedPopupPageToClose);
+		await navigation.PushModalAsync(pageOnTop);
+
+		// Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidPopupOperationException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await requestedPopupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken));
+	}
+
+	[Fact]
+	public void PopupPage_ShouldRespectLayoutOptions()
+	{
+		// Arrange
+		var view = new Label
+		{
+			Text = "Test Popup Content",
+			VerticalOptions = LayoutOptions.Start,
+			HorizontalOptions = LayoutOptions.End
+		};
+
+		// Act
+		var popupPage = new PopupPage(view, PopupOptions.Empty);
+		var border = popupPage.Content.PopupBorder;
+
+		// Assert
+		Assert.Equal(LayoutOptions.Start, border.VerticalOptions);
+		Assert.Equal(LayoutOptions.End, border.HorizontalOptions);
+	}
+
+	[Fact]
+	public void ApplyQueryAttributes_ShouldForwardToPopupAndPopupContent_WhenBothImplementIQueryAttributable()
+	{
+		// Arrange
+		const string popupValue = "popup";
+		const string contentValue = "content";
+		var query = new Dictionary<string, object>
+		{
+			[nameof(QueryAttributablePopup.PopupValue)] = popupValue,
+			[nameof(QueryAttributableContentView.ContentValue)] = contentValue
+		};
+		var popupContent = new QueryAttributableContentView();
+		var popup = new QueryAttributablePopup
+		{
+			Content = popupContent
+		};
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		// Act
+		((IQueryAttributable)popupPage).ApplyQueryAttributes(query);
+
+		// Assert
+		Assert.Equal(popupValue, popup.PopupValue);
+		Assert.Equal(contentValue, popupContent.ContentValue);
+	}
+
+	[Fact]
+	public void ApplyQueryAttributes_ShouldNotThrow_WhenPopupAndContentDoNotImplementIQueryAttributable()
+	{
+		// Arrange
+		var popupPage = new PopupPage(new Popup(), PopupOptions.Empty);
+		var query = new Dictionary<string, object>();
+
+		// Act
+		var exception = Record.Exception(() => ((IQueryAttributable)popupPage).ApplyQueryAttributes(query));
+
+		// Assert
+		Assert.Null(exception);
+	}
+
+	// Helper class for testing protected methods
+	sealed class TestablePopupPage(View view, IPopupOptions popupOptions) : PopupPage(view, popupOptions)
+	{
+		public bool TestOnBackButtonPressed()
+		{
+			return OnBackButtonPressed();
+		}
+	}
+
+	sealed class NonContentModalPage : Page
+	{
+	}
+
+	sealed class QueryAttributablePopup : Popup, IQueryAttributable
+	{
+		public string? PopupValue { get; private set; }
+
+		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			PopupValue = (string)query[nameof(PopupValue)];
+		}
+	}
+
+	sealed class QueryAttributableContentView : ContentView, IQueryAttributable
+	{
+		public string? ContentValue { get; private set; }
+
+		void IQueryAttributable.ApplyQueryAttributes(IDictionary<string, object> query)
+		{
+			ContentValue = (string)query[nameof(ContentValue)];
+		}
+	}
+
+	sealed class MockPopupOptions : IPopupOptions
+	{
+		public bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+		public Color PageOverlayColor { get; set; } = Colors.Transparent;
+		public Action? OnTappingOutsideOfPopup { get; set; }
+		public Shape? Shape { get; set; }
+		public Shadow? Shadow { get; set; } = null;
+	}
+}

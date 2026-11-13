@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class TextValidationBehaviorViewModel : BaseViewModel
+public partial class TextValidationBehaviorViewModel : BaseViewModel
 {
 }

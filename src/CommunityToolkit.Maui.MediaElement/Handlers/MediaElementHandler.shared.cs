@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Maui.Core.Primitives;
-using CommunityToolkit.Maui.Core.Views;
+﻿using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
@@ -9,13 +9,6 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class MediaElementHandler
 {
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
-	/// <summary>
-	/// The <see cref="MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.
-	/// </summary>
-	protected MediaManager? mediaManager;
-#endif
-
 	/// <summary>
 	/// The default property mapper for this handler.
 	/// </summary>
@@ -28,7 +21,7 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Volume)] = MapVolume,
 		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapShouldKeepScreenOn,
 		[nameof(IMediaElement.ShouldMute)] = MapShouldMute,
-#if ANDROID || WINDOWS || TIZEN
+#if ANDROID || WINDOWS
 		[nameof(IMediaElement.ShouldLoopPlayback)] = ShouldLoopPlayback
 #endif
 	};
@@ -64,16 +57,25 @@ public partial class MediaElementHandler
 
 	}
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+	/// <summary>
+	/// The <see cref="Views.MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.
+	/// </summary>
+	
+	protected MediaManager? MediaManager { get; set; }
+	
 	/// <summary>
 	/// Maps the <see cref="IMediaElement.Aspect"/> property between the abstract
 	/// <see cref="MediaElement"/> and platform counterpart.
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapAspect(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateAspect();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateAspect();
 	}
 
 	/// <summary>
@@ -82,9 +84,14 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="mediaElement"/> is <see langword="null"/>.</exception>
 	public static void MapShouldShowPlaybackControls(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateShouldShowPlaybackControls();
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(mediaElement);
+
+		handler.MediaManager?.UpdateShouldShowPlaybackControls();
+		handler.PlatformRefreshPlaybackControlsVisibility(mediaElement.ShouldShowPlaybackControls);
 	}
 
 	/// <summary>
@@ -93,10 +100,24 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <remarks>
+	/// The platform's <see cref="Views.MediaManager"/> reports a source that it cannot apply through <see cref="MediaElement.MediaFailed"/>, and so
+	/// does its <see cref="Views.MediaManager.UpdateSource"/> for an exception of an event handler that the update raises (see
+	/// <see cref="MediaElement.Source"/>). Any other exception of the update propagates: to the caller while the update runs synchronously, and on
+	/// the dispatcher once the update continues asynchronously.
+	/// </remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateSource();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		if (handler.MediaManager is not null)
+		{
+			UpdateSource(handler.MediaManager.UpdateSource());
+		}
 	}
+
+	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls);
 
 	/// <summary>
 	/// Maps the <see cref="Core.IMediaElement.Speed"/> property between the abstract
@@ -104,9 +125,12 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapSpeed(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateSpeed();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateSpeed();
 	}
 
 	/// <summary>
@@ -116,9 +140,12 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapStatusUpdated(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		handler.mediaManager?.UpdateStatus();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateStatus();
 	}
 
 	/// <summary>
@@ -127,9 +154,12 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapVolume(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateVolume();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateVolume();
 	}
 
 	/// <summary>
@@ -138,9 +168,12 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapShouldKeepScreenOn(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateShouldKeepScreenOn();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateShouldKeepScreenOn();
 	}
 
 	/// <summary>
@@ -149,9 +182,12 @@ public partial class MediaElementHandler
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapShouldMute(MediaElementHandler handler, MediaElement mediaElement)
 	{
-		handler.mediaManager?.UpdateShouldMute();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.UpdateShouldMute();
 	}
 
 	/// <summary>
@@ -161,9 +197,12 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapPlayRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		handler.mediaManager?.Play();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.Play();
 	}
 
 	/// <summary>
@@ -173,9 +212,12 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapPauseRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		handler.mediaManager?.Pause();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.Pause();
 	}
 
 	/// <summary>
@@ -185,14 +227,33 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> should be of type <see cref="MediaSeekRequestedEventArgs"/>, otherwise nothing happens.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mediaElement"/> or <paramref name="args"/> is <see langword="null"/>. The method is <see langword="async"/> <see langword="void"/>, so the exception is raised on the <see cref="System.Threading.SynchronizationContext"/> of the caller, not thrown to it.</exception>
 	public static async void MapSeekRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
 		ArgumentNullException.ThrowIfNull(args);
 
-		var positionArgs = (MediaSeekRequestedEventArgs)args;
-		await (handler.mediaManager?.Seek(positionArgs.RequestedPosition, CancellationToken.None) ?? Task.CompletedTask);
+		if (args is not MediaSeekRequestedEventArgs positionArgs)
+		{
+			return;
+		}
 
-		((IMediaElement)mediaElement).SeekCompletedTCS.TrySetResult();
+		ArgumentNullException.ThrowIfNull(mediaElement);
+
+		// Captured before the await: a SeekTo whose token ends its wait cancels this task (so the later result or failure of this seek changes
+		// nothing) and replaces it for the next request
+		var seekCompletedTaskCompletionSource = ((IMediaElement)mediaElement).SeekCompletedTCS;
+
+		try
+		{
+			await (handler.MediaManager?.Seek(positionArgs.RequestedPosition, CancellationToken.None) ?? Task.CompletedTask);
+			seekCompletedTaskCompletionSource.TrySetResult();
+		}
+		catch (Exception ex)
+		{
+			// A seek that fails (for example before the player is ready) fails SeekTo: thrown from this async void method it would crash the app,
+			// and SeekTo would wait for this seek forever
+			seekCompletedTaskCompletionSource.TrySetException(ex);
+		}
 	}
 
 	/// <summary>
@@ -202,9 +263,38 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <param name="args">The associated event arguments for this request.</param>
 	/// <remarks><paramref name="args"/> is not used.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapStopRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
 	{
-		handler.mediaManager?.Stop();
+		ArgumentNullException.ThrowIfNull(handler);
+
+		handler.MediaManager?.Stop();
+	}
+
+	// A property mapper cannot await MediaManager.UpdateSource. The update reports a source that it cannot apply, and the exceptions of the event
+	// handlers that it raises, through MediaFailed, so any other exception propagates: to the code that set the Source while the update runs
+	// synchronously (the whole update on iOS and Mac Catalyst), and on the dispatcher once the update has awaited.
+	// An update that a newer one replaced (OperationCanceledException) has nothing left to report.
+	static void UpdateSource(ValueTask update)
+	{
+		if (update.IsCompleted)
+		{
+			update.GetAwaiter().GetResult();
+			return;
+		}
+
+		AwaitSourceUpdate(update);
+
+		static async void AwaitSourceUpdate(ValueTask update)
+		{
+			try
+			{
+				await update;
+			}
+			catch (OperationCanceledException)
+			{
+			}
+		}
 	}
 
 	/// <summary>
@@ -224,9 +314,21 @@ public partial class MediaElementHandler
 	{
 		if (disposing)
 		{
-			mediaManager?.Dispose();
-			mediaManager = null;
+			MediaManager?.Dispose();
+			MediaManager = null;
+			PlatformDispose();
+
+			// The dispatcher timer of the MediaElement is rooted by the platform (the main dispatch queue on iOS and Mac Catalyst, the Looper on Android, the DispatcherQueue on Windows)
+			// and its tick handler references the MediaElement, so a MediaElement that is not disposed (a page only disconnects its handler) would stay alive after it is left,
+			// and with it a page that handles one of its events. A handler that is connected later opens the media again, which starts the timer again.
+			// The typed VirtualView throws once DisconnectHandler has cleared it, and Dispose can run again after that
+			if (((IElementHandler)this).VirtualView is MediaElement mediaElement)
+			{
+				mediaElement.StopPositionTimer();
+			}
 		}
 	}
+
+	partial void PlatformDispose();
 #endif
 }

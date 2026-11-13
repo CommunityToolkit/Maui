@@ -25,10 +25,8 @@
             <Label Text="The InvertedBoolConverter is a converter that allows users to convert a bool value binding to its inverted value." TextColor="{StaticResource NormalLabelTextColor}" />
 
             <HorizontalStackLayout
-                HorizontalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
                 Spacing="10">
-
-                <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
 
                 <Switch IsToggled="{Binding IsToggled, Mode=OneWayToSource}"/>
 
@@ -37,10 +35,8 @@
             <Label Text="The following switch represents the opposite bool of the above switch" TextColor="{StaticResource NormalLabelTextColor}" />
 
             <HorizontalStackLayout
-                HorizontalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
                 Spacing="10">
-
-                <Label Text="False" TextColor="{StaticResource NormalLabelTextColor}" />
 
                 <Switch IsToggled="{Binding IsToggled, Mode=OneWay, Converter={StaticResource InvertedBoolConverter}}" IsEnabled="false"/>
 

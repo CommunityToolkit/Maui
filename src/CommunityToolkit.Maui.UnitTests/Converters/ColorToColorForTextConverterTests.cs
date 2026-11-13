@@ -5,36 +5,66 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToColorForTextConverterTests : BaseOneWayConverterTest<ColorToColorForTextConverter>
 {
-	public static IReadOnlyList<object[]> ColorToColorForTextData { get; } = new[]
+	public static TheoryData<int, int> ColorToColorForTextData { get; } = new()
 	{
-		new[] { Colors.White, Colors.Black},
-		new[] { Colors.Yellow, Colors.Black },
-		new[] { Colors.Pink, Colors.Black },
-		new[] { Colors.LightBlue, Colors.Black },
-		new[] { Colors.Wheat, Colors.Black },
-		new[] { Colors.Black, Colors.White },
-		new[] { Colors.DarkBlue, Colors.White },
-		new[] { Colors.DarkCyan, Colors.White },
-		new[] { Colors.Brown, Colors.White },
-		new[] { Colors.DarkGreen, Colors.White },
-		new[] { Colors.DarkSlateGray, Colors.White },
-		new[] { Colors.Transparent, Colors.White},
-		new[] { Colors.DarkSalmon, Colors.White },
-		new[] { Colors.DarkOrchid, Colors.White },
-		new[] { Colors.DarkGrey, Colors.White }
+		{
+			Colors.White.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.Yellow.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.Pink.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.LightBlue.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.Wheat.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.Black.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkBlue.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkCyan.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.Brown.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkGreen.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkSlateGray.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.Transparent.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkSalmon.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkOrchid.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.DarkGrey.ToInt(), Colors.White.ToInt()
+		}
 	};
 
 	[Theory]
 	[MemberData(nameof(ColorToColorForTextData))]
-	public void ColorToColorForTextConverterValidArgumentsTest(Color initialColor, Color expectedColor)
+	public void ColorToColorForTextConverterValidArgumentsTest(int initialColor, int expectedColor)
 	{
 		var converter = new ColorToColorForTextConverter();
 
-		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(Color.FromInt(initialColor), typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(Color.FromInt(initialColor));
 
-		Assert.Equal(expectedColor, convertedColor);
-		Assert.Equal(expectedColor, convertedColorFrom);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColor);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColorFrom);
 	}
 
 	[Theory]

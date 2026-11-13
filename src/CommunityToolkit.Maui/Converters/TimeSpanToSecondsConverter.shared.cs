@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts a <see cref="TimeSpan"/> to a <see cref="double"/> value expressed in seconds.
 /// </summary>
-public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
+[AcceptEmptyServiceProvider]
+public partial class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 {
 	/// <inheritdoc/>
 	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
@@ -21,7 +22,6 @@ public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 	/// <returns>A <see cref="double"/> value expressed in seconds.</returns>
 	public override double ConvertFrom(TimeSpan value, CultureInfo? culture = null)
 	{
-		ArgumentNullException.ThrowIfNull(value);
 		return value.TotalSeconds;
 	}
 
@@ -33,7 +33,6 @@ public class TimeSpanToSecondsConverter : BaseConverter<TimeSpan, double>
 	/// <returns>The <see cref="TimeSpan"/> value representing the converted <see cref="double"/> value.</returns>
 	public override TimeSpan ConvertBackTo(double value, CultureInfo? culture = null)
 	{
-		ArgumentNullException.ThrowIfNull(value);
 		return TimeSpan.FromSeconds(value);
 	}
 }

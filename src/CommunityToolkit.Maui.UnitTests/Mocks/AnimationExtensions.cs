@@ -1,5 +1,8 @@
-﻿using Microsoft.Maui.Animations;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Handlers;
+using Animation = Microsoft.Maui.Animations.Animation;
 
 namespace CommunityToolkit.Maui.UnitTests.Mocks;
 
@@ -8,18 +11,18 @@ static class AnimationExtensions
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
 	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
-	class MockAnimationHandler : ViewHandler<IView, object>
+	sealed class MockAnimationHandler : ViewHandler<IView, object>
 	{
-		MockAnimationHandler(IAnimationManager animationManager) : base(new PropertyMapper<IView>())
+		const int millisecondTickIncrement = 16;
+
+		MockAnimationHandler(IAnimationManager animationManager, IDispatcherProvider dispatcherProvider) : base(new PropertyMapper<IView>())
 		{
-			SetMauiContext(new AnimationEnabledMauiContext(animationManager));
+			SetMauiContext(new AnimationEnabledMauiContext(animationManager, dispatcherProvider));
 		}
 
-		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()))
+		MockAnimationHandler() : this(new TestAnimationManager(new AsyncTicker()), new MockDispatcherProvider())
 		{
 		}
-
-		public IAnimationManager? AnimationManager => ((AnimationEnabledMauiContext?)MauiContext)?.AnimationManager;
 
 		public static T Prepare<T>(T view) where T : IView
 		{
@@ -30,17 +33,17 @@ static class AnimationExtensions
 
 		protected override object CreatePlatformView() => new();
 
-		class AnimationEnabledMauiContext : IMauiContext, IServiceProvider
+		class AnimationEnabledMauiContext(IAnimationManager manager, IDispatcherProvider dispatcherProvider) : IMauiContext, IServiceProvider
 		{
-			public AnimationEnabledMauiContext(IAnimationManager manager) => AnimationManager = manager;
-
 			public IServiceProvider Services => this;
 
-			public IAnimationManager AnimationManager { get; }
+			public IAnimationManager AnimationManager { get; } = manager;
+
+			public IDispatcherProvider DispatcherProvider { get; } = dispatcherProvider;
 
 			IMauiHandlersFactory IMauiContext.Handlers => throw new NotSupportedException();
 
-			public object GetService(Type serviceType)
+			public object? GetService(Type serviceType)
 			{
 				if (serviceType == typeof(IAnimationManager))
 				{
@@ -48,10 +51,10 @@ static class AnimationExtensions
 				}
 				else if (serviceType == typeof(IDispatcher))
 				{
-					return new MockDispatcherProvider().GetForCurrentThread();
+					return DispatcherProvider.GetForCurrentThread() ?? throw new NullReferenceException();
 				}
 
-				throw new NotSupportedException();
+				return null;
 			}
 		}
 
@@ -65,11 +68,18 @@ static class AnimationExtensions
 
 				while (!cancellationTokenSource.IsCancellationRequested)
 				{
-					Fire?.Invoke();
+					try
+					{
+						Fire?.Invoke();
+					}
+					catch (Exception e)
+					{
+						Trace.WriteLine(e);
+					}
 
 					if (!cancellationTokenSource.IsCancellationRequested)
 					{
-						await Task.Delay(TimeSpan.FromMilliseconds(16));
+						await Task.Delay(TimeSpan.FromMilliseconds(millisecondTickIncrement));
 					}
 				}
 			}
@@ -79,12 +89,13 @@ static class AnimationExtensions
 			public void Dispose()
 			{
 				cancellationTokenSource?.Dispose();
+				cancellationTokenSource = null;
 			}
 		}
 
 		class TestAnimationManager : IAnimationManager
 		{
-			readonly List<Microsoft.Maui.Animations.Animation> animations = new();
+			readonly List<Microsoft.Maui.Animations.Animation> animations = [];
 
 			public TestAnimationManager(ITicker ticker)
 			{
@@ -118,10 +129,10 @@ static class AnimationExtensions
 
 			void OnFire()
 			{
-				var animations = this.animations.ToList();
-				animations.ForEach(AnimationTick);
+				var animationsList = this.animations.ToList();
+				animationsList.ForEach(AnimationTick);
 
-				if (!this.animations.Any())
+				if (this.animations.Count <= 0)
 				{
 					Ticker.Stop();
 				}
@@ -135,7 +146,7 @@ static class AnimationExtensions
 						return;
 					}
 
-					animation.Tick(16);
+					animation.Tick(millisecondTickIncrement);
 					if (animation.HasFinished)
 					{
 						this.animations.Remove(animation);

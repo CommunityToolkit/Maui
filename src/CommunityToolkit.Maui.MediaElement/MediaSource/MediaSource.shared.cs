@@ -22,8 +22,8 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a string value into a <see cref="MediaSource"/>.
 	/// </summary>
 	/// <param name="source">Full path to a local file (starting with <c>file://</c>) or an absolute URI.</param>
-	public static implicit operator MediaSource?(string? source) =>
-		Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme != "file"
+	public static implicit operator MediaSource(string source) =>
+		Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme != Uri.UriSchemeFile
 			? FromUri(uri)
 			: FromFile(source);
 
@@ -31,49 +31,98 @@ public abstract class MediaSource : Element
 	/// An implicit operator to convert a <see cref="Uri"/> object into a <see cref="UriMediaSource"/>.
 	/// </summary>
 	/// <param name="uri">Absolute URI to load.</param>
-	public static implicit operator MediaSource?(Uri? uri) => FromUri(uri);
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="uri"/> is <see langword="null"/>.</exception>
+	public static implicit operator MediaSource(Uri uri) => FromUri(uri);
 
 	/// <summary>
 	/// Creates a <see cref="ResourceMediaSource"/> from an absolute URI.
 	/// </summary>
 	/// <param name="path">Full path to the resource file, relative to the application's resources folder.</param>
 	/// <returns>A <see cref="ResourceMediaSource"/> instance.</returns>
-	public static MediaSource FromResource(string? path) => new ResourceMediaSource { Path = isAndroid ? $"Assets/{path}" : path };
+	public static MediaSource FromResource(string path) => new ResourceMediaSource { Path = isAndroid ? $"Assets/{path}" : path };
 
 	/// <summary>
-	/// Creates a <see cref="UriMediaSource"/> from an string that contains an absolute URI.
+	/// Creates a <see cref="UriMediaSource"/> from a string that contains an absolute URI.
 	/// </summary>
 	/// <param name="uri">String representation or an absolute URI to load.</param>
 	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="uri"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(string uri) => FromUri(new Uri(uri));
+	public static MediaSource FromUri(string uri)
+	{
+		// new Uri(string) names its own parameter "uriString" in the exception, which is not a parameter of this method
+		ArgumentNullException.ThrowIfNull(uri);
+
+		return FromUri(new Uri(uri));
+	}
 
 	/// <summary>
 	/// Creates a <see cref="FileMediaSource"/> from a local path.
 	/// </summary>
 	/// <param name="path">Full path to the file to load.</param>
 	/// <returns>A <see cref="FileMediaSource"/> instance.</returns>
-	public static MediaSource FromFile(string? path) => new FileMediaSource { Path = path };
+	public static MediaSource FromFile(string path) => new FileMediaSource { Path = path };
+
+	/// <summary>
+	/// Creates a <see cref="StreamMediaSource"/> from a <see cref="Stream"/>.
+	/// </summary>
+	/// <param name="stream">The stream to use as a media source.</param>
+	/// <returns>A <see cref="StreamMediaSource"/> instance.</returns>
+	/// <remarks>
+	/// <para>
+	/// On iOS, Mac Catalyst and Windows the stream must support seeking (<see cref="Stream.CanSeek"/>): AVFoundation reads the media at the offsets it
+	/// needs, and Windows plays a random-access stream, so a stream that cannot seek is not supported there, and the media fails to open
+	/// (<see cref="MediaElement.MediaFailed"/>).
+	/// </para>
+	/// <para>
+	/// On Android a stream that cannot seek is read once, from its start: the media cannot be sought outside of what the player holds, looped or
+	/// played again after <see cref="MediaElement.Stop"/>, and a seek that needs another part of the stream raises
+	/// <see cref="MediaElement.MediaFailed"/>.
+	/// </para>
+	/// </remarks>
+	public static StreamMediaSource FromStream(Stream stream) => new StreamMediaSource { Stream = stream };
 
 	/// <summary>
 	/// Creates a <see cref="UriMediaSource"/> from an absolute URI.
 	/// </summary>
 	/// <param name="uri">Absolute URI to load.</param>
 	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="uri"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
-	public static MediaSource? FromUri(Uri? uri)
+	public static MediaSource FromUri(Uri uri)
 	{
-		if (uri is null)
-		{
-			return null;
-		}
+		ArgumentNullException.ThrowIfNull(uri);
+
+		return uri.IsAbsoluteUri
+			? new UriMediaSource { Uri = uri }
+			: throw new ArgumentException("Uri must be absolute", nameof(uri));
+	}
+
+	/// <summary>
+	/// Creates a <see cref="UriMediaSource"/> from an absolute URI with custom HTTP headers.
+	/// </summary>
+	/// <param name="uri">Absolute URI to load.</param>
+	/// <param name="httpHeaders">HTTP headers to include in the request (e.g. Authorization).</param>
+	/// <returns>A <see cref="UriMediaSource"/> instance.</returns>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="uri"/> or <paramref name="httpHeaders"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="uri"/> is not an absolute URI.</exception>
+	public static MediaSource FromUri(Uri uri, IDictionary<string, string> httpHeaders)
+	{
+		ArgumentNullException.ThrowIfNull(uri);
+		ArgumentNullException.ThrowIfNull(httpHeaders);
 
 		if (!uri.IsAbsoluteUri)
 		{
 			throw new ArgumentException("Uri must be absolute", nameof(uri));
 		}
 
-		return new UriMediaSource { Uri = uri };
+		var uriMediaSource = new UriMediaSource { Uri = uri };
+		foreach (var httpHeader in httpHeaders)
+		{
+			uriMediaSource.HttpHeaders.Add(httpHeader.Key, httpHeader.Value);
+		}
+
+		return uriMediaSource;
 	}
 
 	/// <summary>

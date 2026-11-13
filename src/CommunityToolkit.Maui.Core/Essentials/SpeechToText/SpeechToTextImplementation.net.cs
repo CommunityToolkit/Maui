@@ -6,18 +6,15 @@ namespace CommunityToolkit.Maui.Media;
 public sealed partial class SpeechToTextImplementation
 {
 	/// <inheritdoc />
+	public SpeechToTextState CurrentState { get; } = SpeechToTextState.Stopped;
+
+	/// <inheritdoc />
 	public ValueTask DisposeAsync()
 	{
 		return ValueTask.CompletedTask;
 	}
 
-	Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult,
-		CancellationToken cancellationToken)
-	{
-		throw new NotSupportedException();
-	}
-
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
 		throw new NotSupportedException();
 	}
@@ -26,7 +23,4 @@ public sealed partial class SpeechToTextImplementation
 	{
 		throw new NotSupportedException();
 	}
-
-	/// <inheritdoc />
-	public SpeechToTextState CurrentState { get; } = SpeechToTextState.Stopped;
 }

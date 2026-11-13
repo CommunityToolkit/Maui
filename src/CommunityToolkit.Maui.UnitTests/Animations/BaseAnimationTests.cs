@@ -21,7 +21,7 @@ public abstract class BaseAnimationTests<TAnimation> : BaseTest where TAnimation
 
 		var stopwatch = new Stopwatch();
 		stopwatch.Start();
-		await animation.Animate(label);
+		await animation.Animate(label, TestContext.Current.CancellationToken);
 		stopwatch.Stop();
 
 		double allowance = (animation.Length * 0.1) + 50;

@@ -14,7 +14,7 @@ public enum MathOperatorPrecedence
 	/// <summary>High</summary>
 	High,
 	/// <summary>Constant</summary>
-	Constant,
+	Constant
 }
 
 /// <summary>
@@ -27,18 +27,19 @@ public sealed class MathOperator
 	/// </summary>
 	/// <param name="name">Name</param>
 	/// <param name="numericCount">Number of Numerals</param>
-	/// <param name="precedence">Math Operator Preference</param>
 	/// <param name="calculateFunc">Calculation Function</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> or <paramref name="calculateFunc"/> is null.</exception>
 	public MathOperator(
 		string name,
 		int numericCount,
-		MathOperatorPrecedence precedence,
-		Func<double[], double> calculateFunc)
+		Func<object?[], object?> calculateFunc)
 	{
+		ArgumentNullException.ThrowIfNull(name);
+		ArgumentNullException.ThrowIfNull(calculateFunc);
+
 		Name = name;
-		CalculateFunc = calculateFunc;
-		Precedence = precedence;
 		NumericCount = numericCount;
+		CalculateFunc = calculateFunc;
 	}
 
 	/// <summary>
@@ -52,12 +53,7 @@ public sealed class MathOperator
 	public int NumericCount { get; }
 
 	/// <summary>
-	/// Math Operator Precedence
-	/// </summary>
-	public MathOperatorPrecedence Precedence { get; }
-
-	/// <summary>
 	/// Calculation Function
 	/// </summary>
-	public Func<double[], double> CalculateFunc { get; }
+	public Func<object?[], object?> CalculateFunc { get; }
 }

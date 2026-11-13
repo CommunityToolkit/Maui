@@ -8,36 +8,32 @@ public partial class Toast : IToast
 {
 	bool isDisposed;
 
-	readonly string text = string.Empty;
-	readonly ToastDuration duration = ToastDuration.Short;
-	readonly double textSize = AlertDefaults.FontSize;
-
 	/// <inheritdoc/>
 	public string Text
 	{
-		get => text;
-		init => text = value ?? throw new ArgumentNullException(nameof(value));
-	}
+		get;
+		init => field = value ?? throw new ArgumentNullException(nameof(value));
+	} = string.Empty;
 
 	/// <inheritdoc/>
 	public ToastDuration Duration
 	{
-		get => duration;
+		get;
 		init
 		{
-			if (!Enum.IsDefined(typeof(ToastDuration), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(ToastDuration));
 			}
 
-			duration = value;
+			field = value;
 		}
-	}
+	} = ToastDuration.Short;
 
 	/// <inheritdoc/>
 	public double TextSize
 	{
-		get => textSize;
+		get;
 		init
 		{
 			if (value <= 0)
@@ -45,9 +41,9 @@ public partial class Toast : IToast
 				throw new ArgumentOutOfRangeException(nameof(value), "Toast font size must be positive");
 			}
 
-			textSize = value;
+			field = value;
 		}
-	}
+	} = AlertDefaults.FontSize;
 
 	/// <summary>
 	/// Create new Toast
@@ -56,11 +52,14 @@ public partial class Toast : IToast
 	/// <param name="duration">Toast duration</param>
 	/// <param name="textSize">Toast font size</param>
 	/// <returns>New instance of Toast</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
 	public static IToast Make(
 		string message,
 		ToastDuration duration = ToastDuration.Short,
 		double textSize = AlertDefaults.FontSize)
 	{
+		ArgumentNullException.ThrowIfNull(message);
+
 		return new Toast
 		{
 			Text = message,
@@ -72,6 +71,16 @@ public partial class Toast : IToast
 	/// <summary>
 	/// Show Toast
 	/// </summary>
+	/// <remarks>
+	/// On Windows, enable notification registration by calling <see cref="AppBuilderExtensions.UseMauiCommunityToolkit"/>
+	/// with <see cref="Options.SetShouldEnableSnackbarOnWindows"/> set to <see langword="true"/>.
+	/// Packaged Windows apps also require the manifest setup described in the
+	/// <see href="https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast">Toast documentation</see>.
+	/// On Windows, the toast is an app notification, and Windows decides when its banner appears: for example, no banner appears while
+	/// Do Not Disturb is on, and a notification can wait until the banner of an earlier one is gone. The toolkit removes the notification
+	/// at the end of <see cref="Duration"/>, which takes its banner off screen, so the banner can be shown for less time than
+	/// <see cref="Duration"/>, or not at all.
+	/// </remarks>
 	public virtual Task Show(CancellationToken token = default)
 	{
 #if WINDOWS
@@ -102,6 +111,17 @@ public partial class Toast : IToast
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
+	}
+
+	internal static void EnsureWindowsToastEnabled()
+	{
+		if (!Options.ShouldEnableSnackbarOnWindows)
+		{
+			throw new InvalidOperationException($"To enable {nameof(Toast)} on Windows, call {nameof(AppBuilderExtensions.UseMauiCommunityToolkit)}(options => options.{nameof(Options.SetShouldEnableSnackbarOnWindows)}(true)). Packaged Windows apps also require additional setup in Package.appxmanifest. See https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast")
+			{
+				HelpLink = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast"
+			};
+		}
 	}
 
 	static TimeSpan GetDuration(ToastDuration duration) => duration switch

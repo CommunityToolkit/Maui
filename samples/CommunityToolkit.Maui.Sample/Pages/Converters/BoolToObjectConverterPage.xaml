@@ -26,7 +26,7 @@
                    Grid.Row="0"
                    Grid.ColumnSpan="3"
                    VerticalOptions="Start" 
-                   HorizontalOptions="FillAndExpand" />
+                   HorizontalOptions="Fill" />
 
             <Ellipse x:Name="Ellipse"
                      Grid.Row="1"
@@ -35,7 +35,7 @@
                      HorizontalOptions="Center"
                      HeightRequest="100"
                      WidthRequest="100"
-                     Fill="{Binding Source={x:Reference CheckBox}, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToColorBrushConverter}}"/>
+                     Fill="{Binding Source={x:Reference CheckBox}, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToColorBrushConverter}, x:DataType=CheckBox}"/>
 
 
             <CheckBox HorizontalOptions="Start"
@@ -61,7 +61,7 @@
             <Button CornerRadius="23"
                     Grid.Row="4"
                     Grid.ColumnSpan="2"
-                    HorizontalOptions="FillAndExpand"
+                    HorizontalOptions="Fill"
                     Text="False color"
                     Clicked="OnButtonClicked"
                     BackgroundColor="Red"/>
@@ -69,7 +69,7 @@
             <Button Grid.Row="4"
                     Grid.Column="2"
                     CornerRadius="23"
-                    HorizontalOptions="FillAndExpand"
+                    HorizontalOptions="Fill"
                     Clicked="OnButtonClicked"
                     Text="True color"
                     BackgroundColor="Green"/>

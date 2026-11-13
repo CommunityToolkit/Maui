@@ -12,7 +12,7 @@ public class SnackbarTests : BaseTest
 
 	public SnackbarTests()
 	{
-		Assert.IsAssignableFrom<IAlert>(snackbar);
+		Assert.IsType<IAlert>(snackbar, exactMatch: false);
 	}
 
 	[Fact]
@@ -37,8 +37,7 @@ public class SnackbarTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Show(cts.Token));
 	}
@@ -46,7 +45,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() =>
 		{
@@ -60,8 +59,7 @@ public class SnackbarTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => snackbar.Dismiss(cts.Token));
 	}
@@ -69,7 +67,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() =>
 		{
@@ -81,14 +79,14 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_IsShownTrue()
 	{
-		await snackbar.Show(CancellationToken.None);
+		await snackbar.Show(TestContext.Current.CancellationToken);
 		Assert.True(Snackbar.IsShown);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismissed_IsShownFalse()
 	{
-		await snackbar.Dismiss(CancellationToken.None);
+		await snackbar.Dismiss(TestContext.Current.CancellationToken);
 		Assert.False(Snackbar.IsShown);
 	}
 
@@ -100,7 +98,7 @@ public class SnackbarTests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await snackbar.Show(CancellationToken.None);
+		await snackbar.Show(TestContext.Current.CancellationToken);
 		Assert.Single(receivedEvents);
 	}
 
@@ -112,7 +110,7 @@ public class SnackbarTests : BaseTest
 		{
 			receivedEvents.Add(e);
 		};
-		await snackbar.Dismiss(CancellationToken.None);
+		await snackbar.Dismiss(TestContext.Current.CancellationToken);
 		Assert.Single(receivedEvents);
 	}
 
@@ -125,7 +123,7 @@ public class SnackbarTests : BaseTest
 			receivedEvents.Add(e);
 		};
 		var button = new Button();
-		await button.DisplaySnackbar("message");
+		await button.DisplaySnackbar("message", token: TestContext.Current.CancellationToken);
 		Assert.Single(receivedEvents);
 	}
 
@@ -176,7 +174,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenCancelled_ReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		cancellationTokenSource.Cancel();
 
@@ -186,7 +184,7 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenCancelled_ReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		cancellationTokenSource.Cancel();
 
@@ -196,27 +194,52 @@ public class SnackbarTests : BaseTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await snackbar.Invoking(x => x.Show(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenNotCancelled_NotReceiveException()
 	{
-		using var cancellationTokenSource = new CancellationTokenSource();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await snackbar.Invoking(x => x.Dismiss(cancellationTokenSource.Token)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarShow_CancellationTokenNone_NotReceiveException()
 	{
-		await snackbar.Invoking(x => x.Show(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Show(TestContext.Current.CancellationToken)).Should().NotThrowAsync<OperationCanceledException>();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task SnackbarDismiss_CancellationTokenNone_NotReceiveException()
 	{
-		await snackbar.Invoking(x => x.Dismiss(CancellationToken.None)).Should().NotThrowAsync<OperationCanceledException>();
+		await snackbar.Invoking(x => x.Dismiss(TestContext.Current.CancellationToken)).Should().NotThrowAsync<OperationCanceledException>();
+	}
+
+	[Fact]
+	public void SnackbarAnchor_IsHeldWeakly()
+	{
+		var weakAnchorSnackbar = MakeSnackbarWhoseAnchorIsReferencedNowhereElse(out var anchorReference);
+
+		for (var attempt = 0; attempt < 10 && anchorReference.IsAlive; attempt++)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+		}
+
+		Assert.False(anchorReference.IsAlive);
+		Assert.Null(weakAnchorSnackbar.Anchor);
+	}
+
+	[Fact]
+	public void SnackbarAnchor_NullAnchorReadsBackAsNull()
+	{
+		var anchor = new Button();
+		var anchoredSnackbar = new Snackbar { Anchor = anchor };
+
+		Assert.Same(anchor, anchoredSnackbar.Anchor);
+		Assert.Null(new Snackbar { Anchor = null }.Anchor);
 	}
 
 	[Fact]
@@ -233,8 +256,21 @@ public class SnackbarTests : BaseTest
 		});
 		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(null));
 		Assert.Throws<ArgumentNullException>(() => Snackbar.Make(string.Empty, actionButtonText: null));
-		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null));
-		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(null, token: TestContext.Current.CancellationToken));
+		await Assert.ThrowsAsync<ArgumentNullException>(() => new Button().DisplaySnackbar(string.Empty, actionButtonText: null, token: TestContext.Current.CancellationToken));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	// Not inlined, so that no local of the test keeps the anchor alive.
+	[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+	static ISnackbar MakeSnackbarWhoseAnchorIsReferencedNowhereElse(out WeakReference anchorReference)
+	{
+		var anchor = new Button();
+		anchorReference = new WeakReference(anchor);
+
+		var weakAnchorSnackbar = Snackbar.Make("Weak anchor", anchor: anchor);
+		Assert.Same(anchor, weakAnchorSnackbar.Anchor);
+
+		return weakAnchorSnackbar;
 	}
 }

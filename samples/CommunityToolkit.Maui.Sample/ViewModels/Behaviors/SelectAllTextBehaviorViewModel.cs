@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public sealed class SelectAllTextBehaviorViewModel : BaseViewModel
+public sealed partial class SelectAllTextBehaviorViewModel : BaseViewModel
 {
 }

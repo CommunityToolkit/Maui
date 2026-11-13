@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Converters;
+using Microsoft.Maui.Controls;
 
 namespace CommunityToolkit.Maui.Views;
 
@@ -7,13 +8,23 @@ namespace CommunityToolkit.Maui.Views;
 /// Represents a source, loaded from local filesystem, that can be played by <see cref="MediaElement"/>.
 /// </summary>
 [TypeConverter(typeof(FileMediaSourceConverter))]
-public sealed class FileMediaSource : MediaSource
+public sealed partial class FileMediaSource : MediaSource
 {
 	/// <summary>
-	/// Backing store for the <see cref="Path"/> property.
+	/// Bindable Property for the <see cref="Path"/> property.
 	/// </summary>
 	public static readonly BindableProperty PathProperty
 		= BindableProperty.Create(nameof(Path), typeof(string), typeof(FileMediaSource), propertyChanged: OnFileMediaSourceChanged);
+
+	/// <summary>
+	/// Gets or sets the full path to the local file to use as a media source.
+	/// This is a bindable property.
+	/// </summary>
+	public string? Path
+	{
+		get => (string?)GetValue(PathProperty);
+		set => SetValue(PathProperty, value);
+	}
 
 	/// <summary>
 	/// An implicit operator to convert a string value into a <see cref="FileMediaSource"/>.
@@ -27,15 +38,6 @@ public sealed class FileMediaSource : MediaSource
 	/// <param name="fileMediaSource">A <see cref="FileMediaSource"/> instance to convert to a string value.</param>
 	public static implicit operator string?(FileMediaSource? fileMediaSource) => fileMediaSource?.Path;
 
-	/// <summary>
-	/// Gets or sets the full path to the local file to use as a media source.
-	/// This is a bindable property.
-	/// </summary>
-	public string? Path
-	{
-		get => (string?)GetValue(PathProperty);
-		set => SetValue(PathProperty, value);
-	}
 
 	/// <inheritdoc/>
 	public override string ToString() => $"File: {Path}";

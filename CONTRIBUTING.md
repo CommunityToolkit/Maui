@@ -8,6 +8,8 @@ Having that said, if you are a first-timer and you could use some help please re
 
 Furthermore, for anyone, we would like you to take into consideration the following guidelines.
 
+## Kindness
+
 ### Make an effort to be nice
 
 If you disagree, that's fine. We don't think about everything the same way, be respectful and at some point decide to agree to disagree. If a decision needs to be made, try to involve at least one other person without continuing an endless discussion.
@@ -18,15 +20,15 @@ During a code review try to make a habit out of it to say at least one nice thin
 
 ### Make an effort to see it from their perspective
 
-Remember English is not everyones native language. Written communication always lacks non-verbal communication. With written communication in a language that is not your native tongue it is even harder to express certain emotions.
+Remember English is not everyone's native language. Written communication always lacks non-verbal communication. With written communication in a language that is not your native tongue it is even harder to express certain emotions.
 
-Always assume that people mean to do right. Try to read a sentence a couple of times over and take things more literal. Try to place yourself in their shoes and see the message beyond the actual words. 
+Always assume that people mean to do right. Try to read a sentence a couple of times over and take things more literal. Try to place yourself in their shoes and see the message beyond the actual words.
 
 Things might come across different than they were intended, please keep that in mind and always check to see how someone meant it. If you're not sure, pull someone offline in a private channel on Twitter or email and chat about it for a bit. Maybe even jump on a call to collaborate. We're living in the 21st century, all the tools are there, why not use them to get to know each other and be friends?!
 
 Besides language, we understand that contributing to open-source mostly happens in your spare time. Remember that priorities might change and we can only spend our time once. This works as a two-way street: don't expect things to be solved instantly, but also please let us know if you do not have the capacity to finish work you have in progress. There is no shame in that. That way it's clear to other people that they can step in and take over.
 
-### THANK YOU!
+### THANK YOU
 
 Lastly, a big thank you for spending your precious time on our project. We appreciate any effort you make to help us with this project.
 
@@ -45,7 +47,7 @@ We will take appropriate actions and measures if necessary.
 1. Install latest stable [.NET SDK](https://dotnet.microsoft.com/en-us/download)
 1. Install .NET MAUI workloads (we recommend using Visual Studio installer)
 
-> You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla.dotnetfoundation.org/. This will also be triggered whenever you open a PR and the link should guide you through it.
+> You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at <https://cla.dotnetfoundation.org/>. This will also be triggered whenever you open a PR and the link should guide you through it.
 
 ## Reporting a bug
 
@@ -53,16 +55,16 @@ If you found something that looks like a bug don't hesitate in opening an issue 
 
 ### Bug reproduction
 
-We always request a reproduction sample, and that's not to make your life hard or anything like that... The reason of having a reproduction is to save us time to indentify and fix the bug. Create a new project; download the MCT NuGet; write UI; ViewModel; create a service; run it. As you can see it's a lot of timing consuming for us that we could spend fixing the actual issue. So **PLEASE** create a small reproduction project, upload it on GitHub or GitLab and paste the link in the issue.
+We always request a reproduction sample, and that's not to make your life hard or anything like that... The reason of having a reproduction is to save us time to identify and fix the bug. Create a new project; download the MCT NuGet; write UI; ViewModel; create a service; run it. As you can see it's a lot of timing consuming for us that we could spend fixing the actual issue. So **PLEASE** create a small reproduction project, upload it on GitHub or GitLab and paste the link in the issue.
 
 > We don't accept `.zip` files as reproduction samples, for security reasons. So if you send us a `.zip` file we will kindly ask you to upload it to GitHub or GitLab and share the link
 
 And most important: **Please, help us to help you ❤️**
 
-
 ## Opening a PR process
 
 ### TL;DR
+
 * Find an issue/feature, make sure that the issue/feature has been `Approved` and is welcomed (also see [New Features](https://github.com/CommunityToolkit/Maui#submitting-a-new-feature))
 * Fork repository
 * Create branch
@@ -73,13 +75,16 @@ And most important: **Please, help us to help you ❤️**
 
 ### Please consider
 
-#### Tabs vs. Spaces?!
+#### Tabs vs. Spaces?
+
 [Tabs](https://www.reddit.com/r/javascript/comments/c8drjo/nobody_talks_about_the_real_reason_to_use_tabs/).
 
 #### Make your changes small, don't keep adding
+
 We love your enthusiasm, but small changes and small PRs are easier to digest. We're all doing this in our spare time, it is easier to review a couple of small things and merge that and iterate from there than to have a PR with 100+ files changed that will sit there forever.
 
 #### Added features should have tests, a sample and documentation
+
 We like quality as much as the next person, so please provide tests.
 
 In addition, we would want a new feature or change to be as clear as possible for other developers. Please add a sample to the sample app as part of your PR and also provide a PR to our [documentation repository](https://github.com/MicrosoftDocs/CommunityToolkit).
@@ -88,67 +93,136 @@ In addition, we would want a new feature or change to be as clear as possible fo
 
 If you are unsure on where to locate the changes you need to make then please use the following section and flowchart.
 
-![](https://user-images.githubusercontent.com/13558917/145694198-7addbd35-0e5f-4816-b351-759a01ec2672.png)
+![New Code Workflow](https://user-images.githubusercontent.com/13558917/145694198-7addbd35-0e5f-4816-b351-759a01ec2672.png)
 
 ### CommunityToolkit.Maui.Core
 
 In general, this project will have all the basement to develop our Toolkit, including some primitive types, interfaces and base classes, base views, and common code. This will be referenced by other Frameworks/Toolkit based on .NET MAUI that wants to have the same features that us.
 
-Here we will have some:
+We ask that all classes in `CommunityToolkit.Maui.Core` are `public`. This allows developers to extend `CommunityToolkit.Maui.Core`. The `[EditorBrowsable(EditorBrowsableState.Never)]` attribute can be added to classes that we don't recommend developers discovering.
 
-- BaseViews, could be Views that will be used by other Views, like PaddingButton (that's used by Snackbar) or the MauiPopup (used by Popup) that will be a native control implemented in a way that can work with our handler. This same approach is used here
+Here is an example of classes that will 
 
-- Primitives, which will be base types that can be used by everyone, like our MathOperator. So other frameworks may not have the concept of Behavior or Converter but they can mimic them as helper classes/methods and use our primitives.
+* BaseViews, could be Views that will be used by other Views, like PaddingButton (that's used by Snackbar) or the MauiPopup (used by Popup) that will be a native control implemented in a way that can work with our handler. This same approach is used here
 
-- Common Code, this will be all generic code (platform-specific or not) that can be used by other Frameworks/Toolkits
+* Primitives, which will be base types that can be used by everyone, like our MathOperator. So other frameworks may not have the concept of Behavior or Converter but they can mimic them as helper classes/methods and use our primitives.
 
-- Layout Managers, were introduced on .NET MAUI and they live on Microsoft.Maui.Core so makes sense to have our managers on Core as well.
+* Common Code, this will be all generic code (platform-specific or not) that can be used by other Frameworks/Toolkits
 
-- Handlers, on Core will be the most general Handler with the majority of features.
+* Layout Managers, were introduced on .NET MAUI and they live on Microsoft.Maui.Core so makes sense to have our managers on Core as well.
 
-### CommunityToolkit.Maui:
+* Handlers, on Core will be the most general Handler with the majority of features.
+
+### CommunityToolkit.Maui
 
 This project has a reference to the Core project. Here will live the implementation of our Controls, Views, Behaviors, Animations, etc. In other words, this project will work with the .NET MAUI and will be MVVM friendly. Also, other Toolkits/Frameworks can reference this package if needed.
 
 Here we will have some:
 
-- View Implementation, with BindableProperties, support to attach effects, behaviors, triggers, and all that jazz.
+* View Implementation, with BindableProperties, support to attach effects, behaviors, triggers, and all that jazz.
 
-- Platform Configuration, that is Platform-specific features, that can relate to some control - like the ArrowDirection that is part of Popup and works just on iOS - or the application itself - like the StatusBarColorEffect from XCT.
+* Platform Configuration, that is Platform-specific features, that can relate to some control - like the ArrowDirection that is part of Popup and works just on iOS - or the application itself - like the StatusBarColorEffect from XCT.
 
-- Handlers Implementation, We will add to our PropertyMapper and/or CommandMapper any Platform Configuration that some Handler/View may have. We also can implement here some features that we think will not be great to have on Core. Here is a reference for this
+* Handlers Implementation, We will add to our PropertyMapper and/or CommandMapper any Platform Configuration that some Handler/View may have. We also can implement here some features that we think will not be great to have on Core. Here is a reference for this
 
-- Layout, will be the implementation of ours custom layouts and will use the Layout Managers on Core
+* Layout, will be the implementation of ours custom layouts and will use the Layout Managers on Core
+
+## Device tests
+
+Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test app `src/CommunityToolkit.Maui.DeviceTests`. The `Device Tests` check of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them.
+
+Run them on your machine before you push, with one command from the repository root:
+
+```bash
+pwsh eng/devices/run.ps1
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
+```
+
+It runs every platform that your machine can run (on a Mac the iOS simulator and Mac Catalyst, on Windows the packaged and the unpackaged app, and on both Android, on the emulator that is running or on an AVD that it boots) and ends with a summary of the tests that passed, failed and were skipped. `-DryRun` shows what it would run. If you changed one feature, narrow the run with `-Platform` and `-TestFilter`, for example `pwsh eng/devices/run.ps1 -Platform ios -TestFilter 'Category=IconTintColorBehavior'`.
+
+* [Running the device tests on your machine](eng/devices/LOCAL.md): the one command, running a test app from Visual Studio, Rider or Visual Studio Code, running the tests that need a person, and what a local run does differently from CI.
+* [Device test scripts and CI](eng/devices/README.md): every script and parameter, the exit codes, the capability declarations, code coverage and the CI jobs.
+* [Writing device tests](src/CommunityToolkit.Maui.DeviceTests/README.md): where a test belongs, the base classes, the categories and the patterns. A test that `CommunityToolkit.Maui.UnitTests` can cover belongs there instead.
 
 ## Contributing Code - Best Practices
 
+### Code Formatting
+
+To format your code, run `eng/format.ps1`. It runs [`dotnet format`](https://learn.microsoft.com/dotnet/core/tools/dotnet-format) on the samples solution, which includes every project in this repository:
+
+```bash
+pwsh eng/format.ps1           # format every project
+pwsh eng/format.ps1 -Verify   # change nothing; fail if a file needs formatting
+```
+
+Please use the script instead of a plain `dotnet format`. The script passes `--exclude-diagnostics CS0612 CS0618 CS0672 CS1062 CS1064`, which is required because, without it, `dotnet format` applies Roslyn's "Add `[Obsolete]`" code fix for these compiler warnings (see [dotnet/format#1230](https://github.com/dotnet/format/issues/1230)), adding the `[Obsolete]` attribute to every member that uses (CS0612, CS0618, CS1062, CS1064) or overrides (CS0672) an obsolete API. Excluding these diagnostics only affects `dotnet format`; the compiler still reports the warnings when building.
+
+### Comments
+
+* Write code that reads like a book: the names of types, members and variables should tell the reader what the code does.
+* Don't write a comment that explains *what* the code does. If the code is hard to follow without one, rename things or extract a well-named method instead.
+* Write a comment only to explain *why*: a decision that is not intuitive, a platform quirk or workaround (link the issue), an ordering or timing constraint, or code that looks unexpected or out of scope but is needed.
+* XML documentation comments on public APIs are different: they document the API for its callers, so every public API keeps them.
+
+e.g.
+
+```csharp
+// Avoid - the comment repeats what the code says
+// Check whether the user can retry
+if (attempts < 3 && !isCancelled)
+{
+	await RetryAsync(token);
+}
+
+// Prefer - the names say what the code does
+var canRetry = attempts < maximumAttempts && !isCancelled;
+if (canRetry)
+{
+	await RetryAsync(token);
+}
+
+// Prefer - a comment that explains why
+// AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
+await readyToPlay.Task.WaitAsync(token);
+var duration = playerItem.Duration;
+```
+
 ### Debug Logging
+
 * Always use `Trace.WriteLine()` instead of `Debug.WriteLine` for debug logging because `Debug.WriteLine` is removed by the compiler in Release builds
 
 ### Methods Returning Task and ValueTask
+
 * Always include a `CancellationToken` as a parameter to every method returning `Task` or `ValueTask`
-* If the method is public, provide a the default value for the `CancellationToken` (eg `CancellationToken token = default`)
-  * If the method is not publc, do not provide a default value for the `CancellationToken`
+* If the method is public, provide the default value for the `CancellationToken` (e.g. `CancellationToken token = default`)
+  * If the method is not public, do not provide a default value for the `CancellationToken`
 * Use `CancellationToken.ThrowIfCancellationRequested()` to verify the `CancellationToken`
 
 ### Enums
+
 * Always use `Unknown` at index 0 for return types that may have a value that is not known
 * Always use `Default` at index 0 for option types that can use the system default option
 * Follow naming guidelines for tense... `SensorSpeed` not `SensorSpeeds`
 * Assign values (0,1,2,3) for all enums
 
 ### Property Names
+
 * Include units only if one of the platforms includes it in their implementation. For instance HeadingMagneticNorth implies degrees on all platforms, but PressureInHectopascals is needed since platforms don't provide a consistent API for this.
 
 ### Units
+
 * Use the standard units and most well accepted units when possible. For instance Hectopascals are used on UWP/Android and iOS uses Kilopascals so we have chosen Hectopascals.
 
 ### Pattern matching
 
 #### Null checking
+
 * Prefer using `is` when checking for null instead of `==`.
 
-e.g. 
+e.g.
 
 ```csharp
 // null
@@ -179,10 +253,31 @@ if (something is Bucket bucket)
 }
 ```
 
+#### Property patterns (non-null checks)
+
+* Avoid the empty property pattern `is { }` (e.g. `x is { } value`) to check for a non-null value and bind it. It reads unclearly and is hard to interpret for a human reviewing the code.
+* Prefer a **type pattern** (`x is Type value`) instead: it both confirms the type and binds the value, and reads clearly.
+* For a pure non-null check with no binding, use `is not null` (see [Null checking](#null-checking)).
+
+e.g.
+
+```csharp
+// Avoid - the empty property pattern is not clear at a glance
+if (someColor is { } color && color != Colors.Transparent)
+{
+}
+
+// Prefer - a type pattern reads clearly and binds the value
+if (someColor is Color color && color != Colors.Transparent)
+{
+}
+```
+
 ### File Scoped Namespaces
+
 * Use [file scoped namespaces](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-10.0/file-scoped-namespaces) to help reduce code verbosity.
 
-e.g. 
+e.g.
 
 ```csharp
 namespace CommunityToolkit.Maui.Converters;
@@ -215,13 +310,13 @@ In other words, `NotImplementedException` implies that a feature is still in dev
 
 ### Bug Fixes
 
-If you're looking for something to fix, please browse [open issues](https://github.com/CommunityToolkit/Maui/issues). 
+If you're looking for something to fix, please browse [open issues](https://github.com/CommunityToolkit/Maui/issues).
 
 Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md), with two primary exceptions:
 
-- We do not use the `private` keyword as it is the default accessibility level in C#.
-- We will **not** use `_` or `s_` as a prefix for internal or private field names
-- We will use `camelCaseFieldName` for naming internal or private fields in both instance and static implementations
+* We do not use the `private` keyword as it is the default accessibility level in C#.
+* We will **not** use `_` or `s_` as a prefix for internal or private field names
+* We will use `camelCaseFieldName` for naming internal or private fields in both instance and static implementations
 
 Read and follow our [Pull Request template](https://github.com/CommunityToolkit/Maui/blob/main/.github/PULL_REQUEST_TEMPLATE.md)
 
@@ -230,9 +325,10 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 To propose a change or new feature, review the guidance on [Submitting a New Feature](https://github.com/CommunityToolkit/Maui#submitting-a-new-feature).
 
 #### Non-Starter Topics
+
 The following topics should generally not be proposed for discussion as they are non-starters:
 
 * Large renames of APIs
 * Large non-backward-compatible breaking changes
 * Platform-Specifics which can be accomplished without changing the .NET MAUI Community Toolkit
-* Avoid clutter posts like "+1" which do not serve to further the conversation, please use the emoji resonses for that
+* Avoid clutter posts like "+1" which do not serve to further the conversation, please use the emoji responses for that

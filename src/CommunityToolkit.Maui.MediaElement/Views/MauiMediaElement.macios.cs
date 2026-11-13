@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using AVKit;
 using CommunityToolkit.Maui.Views;
-using Microsoft.Maui.Controls.Platform.Compatibility;
-using Microsoft.Maui.Platform;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -12,76 +12,219 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public class MauiMediaElement : UIView
 {
+	readonly AVPlayerViewController playerViewController;
+	readonly UIView playerView;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
-	/// <param name="parentViewController">The <see cref="UIViewController"/> that acts as the parent for <paramref name="playerViewController"/>.</param>
-	/// <exception cref="NullReferenceException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	[Obsolete("Deprecated CTOR. UIViewController? parentViewController is obsolete")]
-	public MauiMediaElement(AVPlayerViewController playerViewController, UIViewController? parentViewController)
+	/// <param name="virtualView">The <see cref="MediaElement"/> used as the VirtualView for this <see cref="MauiMediaElement"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="playerViewController"/> or <paramref name="virtualView"/> is <see langword="null"/>.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
+	public MauiMediaElement(AVPlayerViewController playerViewController, MediaElement virtualView)
 	{
-		ArgumentNullException.ThrowIfNull(playerViewController.View);
-		playerViewController.View.Frame = Bounds;
+		ArgumentNullException.ThrowIfNull(playerViewController);
+		ArgumentNullException.ThrowIfNull(virtualView);
 
-#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
-		// On iOS 16+ and macOS 13+ the AVPlayerViewController has to be added to a parent ViewController, otherwise the transport controls won't be displayed.
-		var viewController = parentViewController ?? WindowStateManager.Default.GetCurrentUIViewController();
+		this.playerViewController = playerViewController;
+		playerView = playerViewController.View ?? throw new InvalidOperationException($"{nameof(playerViewController)}.{nameof(playerViewController.View)} cannot be null.");
+		playerView.Frame = Bounds;
+		AddSubview(playerView);
+		TryAttachToParentViewController();
+	}
 
-		// If we don't find the viewController, assume it's not Shell and still continue, the transport controls will still be displayed
-		if (viewController?.View is not null)
-		{
-			// Zero out the safe area insets of the AVPlayerViewController
-			UIEdgeInsets insets = viewController.View.SafeAreaInsets;
-			playerViewController.AdditionalSafeAreaInsets =
-				new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
+	/// <inheritdoc/>
+	public override void LayoutSubviews()
+	{
+		base.LayoutSubviews();
+		playerView.Frame = Bounds;
+		TryAttachToParentViewController();
+	}
 
-			// Add the View from the AVPlayerViewController to the parent ViewController
-			if (viewController is not ShellFlyoutRenderer && viewController is not PageViewController && viewController is not UICollectionViewController)
-			{
-				viewController.AddChildViewController(playerViewController);
-			}
-			viewController.View.AddSubview(playerViewController.View);
-		}
+	/// <inheritdoc/>
+	public override void MovedToSuperview()
+	{
+		base.MovedToSuperview();
+		TryAttachToParentViewController();
+	}
 
-#endif
+	/// <inheritdoc/>
+	public override void WillMoveToWindow(UIWindow? window)
+	{
+		base.WillMoveToWindow(window);
 
-		AddSubview(playerViewController.View);
+		// While views move into a window, iOS 26.1 and later check that a view controller's view is inside the views of its parent view controller,
+		// and throw UIViewControllerHierarchyInconsistency otherwise. That check runs after this method and before MovedToWindow, so a parent that
+		// is not the view controller of these views anymore (Shell shows a page in a new view controller when the user comes back to it) goes here.
+		DetachFromStaleParentViewController();
+	}
+
+	/// <inheritdoc/>
+	public override void MovedToWindow()
+	{
+		base.MovedToWindow();
+		TryAttachToParentViewController();
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
+	/// Forces AVKit to rebuild the player view hierarchy after playback controls are enabled.
 	/// </summary>
-	/// <param name="playerViewController">The <see cref="AVPlayerViewController"/> that acts as the platform media player.</param>
-	/// <exception cref="NullReferenceException">Thrown when <paramref name="playerViewController"/><c>.View</c> is <see langword="null"/>.</exception>
-	public MauiMediaElement(AVPlayerViewController playerViewController)
+	/// <param name="shouldShowPlaybackControls"><see langword="true"/> when playback controls should be visible.</param>
+	public void RefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
 	{
-		ArgumentNullException.ThrowIfNull(playerViewController.View);
-		playerViewController.View.Frame = Bounds;
-
-#if IOS16_0_OR_GREATER || MACCATALYST16_1_OR_GREATER
-		// On iOS 16+ and macOS 13+ the AVPlayerViewController has to be added to a parent ViewController, otherwise the transport controls won't be displayed.
-		var viewController = WindowStateManager.Default.GetCurrentUIViewController();
-
-		// If we don't find the viewController, assume it's not Shell and still continue, the transport controls will still be displayed
-		if (viewController?.View is not null)
+		if (!shouldShowPlaybackControls)
 		{
-			// Zero out the safe area insets of the AVPlayerViewController
-			UIEdgeInsets insets = viewController.View.SafeAreaInsets;
-			playerViewController.AdditionalSafeAreaInsets =
-				new UIEdgeInsets(insets.Top * -1, insets.Left, insets.Bottom * -1, insets.Right);
-
-			// Add the View from the AVPlayerViewController to the parent ViewController
-			if (viewController is not ShellFlyoutRenderer && viewController is not PageViewController && viewController is not UICollectionViewController)
-			{
-				viewController.AddChildViewController(playerViewController);
-			}
-			viewController.View.AddSubview(playerViewController.View);
+			return;
 		}
 
-#endif
+		TryAttachToParentViewController(forceReattach: true);
 
-		AddSubview(playerViewController.View);
+		SetNeedsLayout();
+		LayoutIfNeeded();
+		playerView.SetNeedsLayout();
+		playerView.LayoutIfNeeded();
+		playerView.SetNeedsDisplay();
+	}
+
+	/// <summary>
+	/// Removes the player view controller from its current parent.
+	/// </summary>
+	/// <remarks>
+	/// The player view controller is added as a child controller in <see cref="TryAttachToParentViewController"/>.
+	/// When the handler is disconnected the parent still retains the child controller, so it must be removed
+	/// here to avoid leaving a stale/disposed child controller in the parent view controller.
+	/// </remarks>
+	[SupportedOSPlatform("ios16.0")]
+	public void DetachFromParentViewController()
+	{
+		if (playerViewController.ParentViewController is not null)
+		{
+			playerViewController.WillMoveToParentViewController(null);
+
+			if (playerViewController.View is UIView attachedView)
+			{
+				attachedView.RemoveFromSuperview();
+			}
+
+			playerViewController.RemoveFromParentViewController();
+		}
+	}
+
+	void TryAttachToParentViewController(bool forceReattach = false)
+	{
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
+		if (!OperatingSystem.IsIOSVersionAtLeast(16))
+		{
+			return;
+		}
+
+		// MediaElementHandler disposes the AVPlayerViewController while this view can still be in the view hierarchy, where UIKit keeps
+		// calling LayoutSubviews, MovedToSuperview and MovedToWindow: a disposed controller cannot be added to a view controller anymore
+		if (playerViewController.Handle == NativeHandle.Zero)
+		{
+			return;
+		}
+
+		if (!TryGetParentViewController(out var viewController) || viewController.View is not UIView parentView)
+		{
+			return;
+		}
+
+		if (IsAdditionalSafeAreaInsetsStale(parentView))
+		{
+			ApplySafeAreaInsets(parentView);
+		}
+
+		if (!forceReattach && ReferenceEquals(playerViewController.ParentViewController, viewController))
+		{
+			return;
+		}
+
+		if (playerViewController.ParentViewController is not null)
+		{
+			// The player view enters the window again below, inside the views of the new parent: leave the previous parent first (see WillMoveToWindow)
+			playerViewController.WillMoveToParentViewController(null);
+			playerViewController.RemoveFromParentViewController();
+
+			if (playerViewController.View is UIView attachedView)
+			{
+				attachedView.RemoveFromSuperview();
+			}
+
+			AddSubview(playerView);
+			playerView.Frame = Bounds;
+		}
+
+		ApplySafeAreaInsets(parentView);
+		viewController.AddChildViewController(playerViewController);
+		playerViewController.DidMoveToParentViewController(viewController);
+	}
+
+	// Leaves only the view controllers: UIKit calls this while it moves these views into a window, so they must stay where they are
+	void DetachFromStaleParentViewController()
+	{
+		if (!OperatingSystem.IsIOSVersionAtLeast(16) || playerViewController.Handle == NativeHandle.Zero)
+		{
+			return;
+		}
+
+		if (playerViewController.ParentViewController is not UIViewController parent
+			|| (TryGetParentViewController(out var viewController) && ReferenceEquals(parent, viewController)))
+		{
+			return;
+		}
+
+		playerViewController.WillMoveToParentViewController(null);
+		playerViewController.RemoveFromParentViewController();
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	bool IsAdditionalSafeAreaInsetsStale(UIView parentView)
+	{
+		UIEdgeInsets expected = CreateSafeAreaInsets(parentView);
+		UIEdgeInsets actual = playerViewController.AdditionalSafeAreaInsets;
+
+		return actual.Top != expected.Top
+			   || actual.Left != expected.Left
+			   || actual.Bottom != expected.Bottom
+			   || actual.Right != expected.Right;
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	void ApplySafeAreaInsets(UIView parentView)
+	{
+		playerViewController.AdditionalSafeAreaInsets = CreateSafeAreaInsets(parentView);
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
+	{
+		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap, so its additional safe area insets
+		// must not add the parent's insets a second time: the negated insets add none. UIKit does not apply negative additional insets, so
+		// this does not zero out the safe area of the AVPlayerViewController.
+		UIEdgeInsets insets = parentView.SafeAreaInsets;
+		return new UIEdgeInsets(insets.Top * -1, insets.Left * -1, insets.Bottom * -1, insets.Right * -1);
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
+	{
+		viewController = GetViewControllerFromResponderChain();
+		return viewController is not null;
+	}
+
+	[SupportedOSPlatform("ios16.0")]
+	UIViewController? GetViewControllerFromResponderChain()
+	{
+		for (UIResponder? responder = NextResponder; responder is not null; responder = responder.NextResponder)
+		{
+			if (responder is UIViewController viewController)
+			{
+				return viewController;
+			}
+		}
+
+		return null;
 	}
 }

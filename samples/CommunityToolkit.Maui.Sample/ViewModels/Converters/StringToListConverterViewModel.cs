@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class StringToListConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string labelText = "Item 1,Item 2,Item 3";
+	public partial string LabelText { get; set; } = "Item 1,Item 2,Item 3";
 }

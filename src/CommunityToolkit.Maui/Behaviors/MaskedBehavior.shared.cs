@@ -1,26 +1,17 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
 /// <summary>
 /// The MaskedBehavior is a behavior that allows the user to define an input mask for data entry. Adding this behavior to an <see cref="InputView"/> (i.e. <see cref="Entry"/>) control will force the user to only input values matching a given mask. Examples of its usage include input of a credit card number or a phone number.
 /// </summary>
-public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
+/// <remarks>
+/// On iOS and Mac Catalyst the mask is applied while the change of <see cref="InputView.Text"/> is handled, so the text is already masked when the change returns.
+/// On the other platforms the mask is applied right after the change, from the dispatcher of the view.
+/// </remarks>
+public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 {
-	/// <summary>
-	/// BindableProperty for the <see cref="Mask"/> property.
-	/// </summary>
-	public static readonly BindableProperty MaskProperty =
-		BindableProperty.Create(nameof(Mask), typeof(string), typeof(MaskedBehavior), propertyChanged: OnMaskPropertyChanged);
-
-	/// <summary>
-	/// BindableProperty for the <see cref="UnmaskedCharacter"/> property.
-	/// </summary>
-	public static readonly BindableProperty UnmaskedCharacterProperty =
-		BindableProperty.Create(nameof(UnmaskedCharacter), typeof(char), typeof(MaskedBehavior), 'X', propertyChanged: OnUnmaskedCharacterPropertyChanged);
-
 	readonly SemaphoreSlim applyMaskSemaphoreSlim = new(1, 1);
 
 	bool isDisposed;
@@ -35,24 +26,18 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	/// <summary>
 	/// The mask that the input value needs to match. This is a bindable property.
 	/// </summary>
-	public string? Mask
-	{
-		get => (string?)GetValue(MaskProperty);
-		set => SetValue(MaskProperty, value);
-	}
+	[BindableProperty(PropertyChangedMethodName = nameof(OnMaskPropertyChanged))]
+	public partial string? Mask { get; set; }
 
 	/// <summary>
 	/// Gets or sets which character in the <see cref="Mask"/> property that will be visible and entered by a user. Defaults to 'X'. This is a bindable property.
 	/// <br/>
-	/// By default the 'X' character will be unmasked therefore a <see cref="Mask"/> of "XX XX XX" would display "12 34 56".
+	/// By default, the 'X' character will be unmasked therefore a <see cref="Mask"/> of "XX XX XX" would display "12 34 56".
 	/// If you wish to include 'X' in your <see cref="Mask"/> then you could set this <see cref="UnmaskedCharacter"/> to something else
 	/// e.g. '0' and then use a <see cref="Mask"/> of "00X00X00" which would then display "12X34X56".
 	/// </summary>
-	public char UnmaskedCharacter
-	{
-		get => (char)GetValue(UnmaskedCharacterProperty);
-		set => SetValue(UnmaskedCharacterProperty, value);
-	}
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(UnmaskedCharacterValueCreator), PropertyChangedMethodName = nameof(OnUnmaskedCharacterPropertyChanged))]
+	public partial char UnmaskedCharacter { get; set; }
 
 	/// <inheritdoc/>
 	public void Dispose()
@@ -78,15 +63,20 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 	}
 
 	/// <inheritdoc />
-	protected override async void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="e"/> is <see langword="null"/>.</exception>
+	protected override void OnViewPropertyChanged(InputView sender, PropertyChangedEventArgs e)
 	{
+		ArgumentNullException.ThrowIfNull(e);
+
 		base.OnViewPropertyChanged(sender, e);
 
 		if (e.PropertyName == InputView.TextProperty.PropertyName)
 		{
-			await OnTextPropertyChanged(CancellationToken.None);
+			HandleTextPropertyChanged();
 		}
 	}
+
+	static object UnmaskedCharacterValueCreator(BindableObject bindable) => 'X';
 
 	static void OnMaskPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
@@ -102,7 +92,24 @@ public class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		await maskedBehavior.OnMaskChanged(maskedBehavior.Mask, CancellationToken.None).ConfigureAwait(false);
 	}
 
-	Task OnTextPropertyChanged(CancellationToken token) => ApplyMask(View?.Text, token);
+	// An async void method reports a null argument through the synchronization context instead of to its caller, so the overrides validate their arguments before they call it
+	async void HandleTextPropertyChanged() => await OnTextPropertyChanged(CancellationToken.None);
+
+	Task OnTextPropertyChanged(CancellationToken token)
+	{
+#if IOS || MACCATALYST
+		// UIKit delivers the keystrokes that are still pending inside the setter of UITextField.Text and then stores the value it was given,
+		// so a mask written later, from the dispatcher, dropped the characters typed in between: the mask must reach the UITextField before
+		// UIKit handles the next keystroke. The masked text that ApplyMask writes raises this handler again only after the current change
+		// completes (.NET MAUI defers setting a property while that property is being set), when ApplyMask has already released its semaphore.
+		return ApplyMask(View?.Text, token);
+#else
+		// Android does not play well when we update the Text inside the TextChanged event. 
+		// Therefore, if we dispatch the mechanism of updating the Text property it solves the issue of the caret position being updated incorrectly.
+		// https://github.com/CommunityToolkit/Maui/issues/460
+		return View?.Dispatcher.DispatchAsync(() => ApplyMask(View?.Text, token)) ?? Task.CompletedTask;
+#endif
+	}
 
 	void SetMaskPositions(in string? mask)
 	{

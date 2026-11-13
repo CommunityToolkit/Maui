@@ -10,60 +10,129 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 	public const string TrueTestObject = nameof(TrueTestObject);
 	public const string FalseTestObject = nameof(FalseTestObject);
 
-	public static IReadOnlyList<object?[]> TestData { get; } = new[]
+	public static TheoryData<double, CompareConverter.OperatorType, IComparable, object?, object?, object> TestData { get; } = new()
 	{
-		new object?[] { 10d, CompareConverter.OperatorType.Greater, 20d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 10d, CompareConverter.OperatorType.GreaterOrEqual, 20d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 10d, CompareConverter.OperatorType.Equal, 20d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 10d, CompareConverter.OperatorType.NotEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 10d, CompareConverter.OperatorType.Smaller, 20d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 10d, CompareConverter.OperatorType.SmallerOrEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject },
-
-		new object?[] { 20d, CompareConverter.OperatorType.Greater, 20d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.GreaterOrEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.Equal, 20d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.NotEqual, 20d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.Smaller, 20d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.SmallerOrEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject },
-
-		new object?[] { 20d, CompareConverter.OperatorType.Greater, 10d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.GreaterOrEqual, 10d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.Equal, 10d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.NotEqual, 10d, TrueTestObject, FalseTestObject, TrueTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.Smaller, 10d, TrueTestObject, FalseTestObject, FalseTestObject },
-		new object?[] { 20d, CompareConverter.OperatorType.SmallerOrEqual, 10d, TrueTestObject, FalseTestObject, FalseTestObject },
-
-
-		new object?[] { 20d, CompareConverter.OperatorType.Greater, 20d, null, null, false },
-		new object?[] { 20d, CompareConverter.OperatorType.GreaterOrEqual, 20d, null, null, true },
-		new object?[] { 20d, CompareConverter.OperatorType.Equal, 20d, null, null, true },
-		new object?[] { 20d, CompareConverter.OperatorType.NotEqual, 20d, null, null, false },
-		new object?[] { 20d, CompareConverter.OperatorType.Smaller, 20d, null, null, false },
-		new object?[] { 20d, CompareConverter.OperatorType.SmallerOrEqual, 20d, null, null, true },
-
-		new object?[] { 20d, CompareConverter.OperatorType.Greater, 10d, null, null, true },
-		new object?[] { 20d, CompareConverter.OperatorType.GreaterOrEqual, 10d, null, null, true },
-		new object?[] { 20d, CompareConverter.OperatorType.Equal, 10d, null, null, false },
-		new object?[] { 20d, CompareConverter.OperatorType.NotEqual, 10d, null, null, true },
-		new object?[] { 20d, CompareConverter.OperatorType.Smaller, 10d, null, null, false },
-		new object?[] { 20d, CompareConverter.OperatorType.SmallerOrEqual, 10d, null, null, false },
-
-		new object?[] { 10d, CompareConverter.OperatorType.Greater, 20d, null, null, false },
-		new object?[] { 10d, CompareConverter.OperatorType.GreaterOrEqual, 20d, null, null, false },
-		new object?[] { 10d, CompareConverter.OperatorType.Equal, 20d, null, null, false },
-		new object?[] { 10d, CompareConverter.OperatorType.NotEqual, 20d, null, null, true },
-		new object?[] { 10d, CompareConverter.OperatorType.Smaller, 20d, null, null, true },
-		new object?[] { 10d, CompareConverter.OperatorType.SmallerOrEqual, 20d, null, null, true }
+		{
+			10d, CompareConverter.OperatorType.Greater, 20d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			10d, CompareConverter.OperatorType.GreaterOrEqual, 20d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			10d, CompareConverter.OperatorType.Equal, 20d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			10d, CompareConverter.OperatorType.NotEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			10d, CompareConverter.OperatorType.Smaller, 20d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			10d, CompareConverter.OperatorType.SmallerOrEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Greater, 20d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.GreaterOrEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Equal, 20d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.NotEqual, 20d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Smaller, 20d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.SmallerOrEqual, 20d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Greater, 10d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.GreaterOrEqual, 10d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Equal, 10d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.NotEqual, 10d, TrueTestObject, FalseTestObject, TrueTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Smaller, 10d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.SmallerOrEqual, 10d, TrueTestObject, FalseTestObject, FalseTestObject
+		},
+		{
+			20d, CompareConverter.OperatorType.Greater, 20d, null, null, false
+		},
+		{
+			20d, CompareConverter.OperatorType.GreaterOrEqual, 20d, null, null, true
+		},
+		{
+			20d, CompareConverter.OperatorType.Equal, 20d, null, null, true
+		},
+		{
+			20d, CompareConverter.OperatorType.NotEqual, 20d, null, null, false
+		},
+		{
+			20d, CompareConverter.OperatorType.Smaller, 20d, null, null, false
+		},
+		{
+			20d, CompareConverter.OperatorType.SmallerOrEqual, 20d, null, null, true
+		},
+		{
+			20d, CompareConverter.OperatorType.Greater, 10d, null, null, true
+		},
+		{
+			20d, CompareConverter.OperatorType.GreaterOrEqual, 10d, null, null, true
+		},
+		{
+			20d, CompareConverter.OperatorType.Equal, 10d, null, null, false
+		},
+		{
+			20d, CompareConverter.OperatorType.NotEqual, 10d, null, null, true
+		},
+		{
+			20d, CompareConverter.OperatorType.Smaller, 10d, null, null, false
+		},
+		{
+			20d, CompareConverter.OperatorType.SmallerOrEqual, 10d, null, null, false
+		},
+		{
+			10d, CompareConverter.OperatorType.Greater, 20d, null, null, false
+		},
+		{
+			10d, CompareConverter.OperatorType.GreaterOrEqual, 20d, null, null, false
+		},
+		{
+			10d, CompareConverter.OperatorType.Equal, 20d, null, null, false
+		},
+		{
+			10d, CompareConverter.OperatorType.NotEqual, 20d, null, null, true
+		},
+		{
+			10d, CompareConverter.OperatorType.Smaller, 20d, null, null, true
+		},
+		{
+			10d, CompareConverter.OperatorType.SmallerOrEqual, 20d, null, null, true
+		}
 	};
 
-	public static IReadOnlyList<object?[]> ThrowArgumentExceptionTestData { get; } = new[]
-	{
-		new object?[] { new { Name = "Not IComparable" } }
-	};
+	public static TheoryData<object> ThrowArgumentExceptionTestData { get; } =
+	[
+		(object)new
+		{
+			Name = "Not IComparable"
+		}
+	];
 
 	[Theory]
 	[MemberData(nameof(TestData))]
-	public void CompareConverterConvert(IComparable value, CompareConverter.OperatorType comparisonOperator, IComparable comparingValue, object trueObject, object falseObject, object expectedResult)
+	public void CompareConverterConvert(IComparable value, CompareConverter.OperatorType comparisonOperator, IComparable comparingValue, object? trueObject, object? falseObject, object expectedResult)
 	{
 		var compareConverter = new CompareConverter
 		{
@@ -155,5 +224,69 @@ public class CompareConverterTests : BaseOneWayConverterTest<CompareConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(new object(), null, null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).ConvertBack(new object(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact]
+	public void CompareConverter_UsesPassedCultureToCollateStrings()
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "z",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// "\u00e4" sorts after "z" in Swedish but before it in English
+		Assert.Equal(true, converter.ConvertFrom("\u00e4", new CultureInfo("sv-SE")));
+		Assert.Equal(false, converter.ConvertFrom("\u00e4", new CultureInfo("en-US")));
+	}
+
+	[Fact]
+	public void CompareConverter_WithoutCulture_CollatesStringsWithCurrentCulture()
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "z",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("sv-SE");
+		Assert.Equal(true, converter.ConvertFrom("\u00e4", null));
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		Assert.Equal(false, converter.ConvertFrom("\u00e4", null));
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void CompareConverter_UsesTurkishCollation(string cultureName)
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "cz",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		// Turkish and Azerbaijani sort "\u00e7" (c-cedilla) as its own letter after "c", so "\u00e7a" is greater than "cz"; English sorts it next to "c".
+		Assert.Equal(true, converter.ConvertFrom("\u00e7a", new CultureInfo(cultureName)));
+		Assert.Equal(false, converter.ConvertFrom("\u00e7a", new CultureInfo("en-US")));
+	}
+
+	[Fact]
+	public void CompareConverter_WithoutCulture_UsesTurkishCurrentCulture()
+	{
+		var converter = new CompareConverter
+		{
+			ComparingValue = "cz",
+			ComparisonOperator = CompareConverter.OperatorType.Greater
+		};
+
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+
+		Assert.Equal(true, converter.ConvertFrom("\u00e7a", null));
 	}
 }

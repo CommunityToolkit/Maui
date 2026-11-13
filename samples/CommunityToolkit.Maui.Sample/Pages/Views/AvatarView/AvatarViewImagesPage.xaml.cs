@@ -1,8 +1,13 @@
-using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+using CommunityToolkit.Maui.Sample.ViewModels.Views;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views;
 
 public partial class AvatarViewImagesPage : BasePage<AvatarViewImagesViewModel>
 {
 	public AvatarViewImagesPage(AvatarViewImagesViewModel avatarViewImagesViewModel) : base(avatarViewImagesViewModel) => InitializeComponent();
+
+	void SetImageSourceButtonClicked(object? sender, EventArgs e)
+	{
+		DelayedImageSourceImage.ImageSource = ImageSource.FromFile("avatar_icon.png");
+	}
 }

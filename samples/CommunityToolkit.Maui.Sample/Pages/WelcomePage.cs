@@ -2,7 +2,7 @@
 
 namespace CommunityToolkit.Maui.Sample.Pages;
 
-public class WelcomePage : ContentPage
+public partial class WelcomePage : ContentPage
 {
 	public WelcomePage()
 	{

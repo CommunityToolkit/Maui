@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using System.Diagnostics.CodeAnalysis;
+using Foundation;
 
 namespace CommunityToolkit.Maui.Sample;
 

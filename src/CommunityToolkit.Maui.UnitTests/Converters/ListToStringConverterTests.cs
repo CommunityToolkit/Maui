@@ -1,23 +1,45 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringConverter>
 {
-	public static IReadOnlyList<object?[]> TestData { get; } = new[]
+	public static TheoryData<string?[], string?, string> TestData { get; } = new()
 	{
-		new object[] { new[] { "A", "B", "C" }, "+_+", "A+_+B+_+C" },
-		new object[] { new[] { "A", string.Empty, "C" }, ",", "A,C" },
-		new object?[] { new[] { "A", null, "C" }, ",", "A,C" },
-		new object[] { new[] { "A" }, ":-:", "A" },
-		new object[] { Array.Empty<string>(), ",", string.Empty },
-		new object?[] { new[] { "A", "B", "C" }, null, "ABC" },
+		{
+			["A", "B", "C"], "+_+", "A+_+B+_+C"
+		},
+		{
+			["A", string.Empty, "C"], ",", "A,C"
+		},
+		{
+			["A", null, "C"], ",", "A,C"
+		},
+		{
+			["A"], ":-:", "A"
+		},
+		{
+			[], ",", string.Empty
+		},
+		{
+			["A", "B", "C"], null, "ABC"
+		},
+		{
+			["A", "   ", "C"], ",", "A,C"
+		},
+		{
+			["A", "\t", "C"], ",", "A,C"
+		},
+		{
+			["A", "\n", "C"], ",", "A,C"
+		},
 	};
 
 	[Theory]
 	[MemberData(nameof(TestData))]
-	public void ListToStringConverter(string[] value, string? parameter, string expectedResult)
+	public void ListToStringConverter(string?[] value, string? parameter, string expectedResult)
 	{
 		var listToStringConverter = new ListToStringConverter();
 
@@ -30,7 +52,7 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 
 	[Theory]
 	[MemberData(nameof(TestData))]
-	public void ListToStringConverterExplicitParameter(string[] value, string? parameter, string expectedResult)
+	public void ListToStringConverterExplicitParameter(string?[] value, string? parameter, string expectedResult)
 	{
 		var listToStringConverter = new ListToStringConverter()
 		{
@@ -51,7 +73,10 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		Assert.Throws<ArgumentNullException>(() => listToStringConverter.Separator = null);
-		Assert.Throws<ArgumentNullException>(() => new ListToStringConverter { Separator = null });
+		Assert.Throws<ArgumentNullException>(() => new ListToStringConverter
+		{
+			Separator = null
+		});
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -87,6 +112,46 @@ public class ListToStringConverterTests : BaseOneWayConverterTest<ListToStringCo
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ListToStringConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ListToStringConverter()).ConvertBack(string.Empty, null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("de-DE", "en-US", "1,5;2,5")]
+	[InlineData("tr-TR", "en-US", "1,5;2,5")]
+	[InlineData("en-US", "en-US", "1.5;2.5")]
+	[InlineData(null, "en-US", "1.5;2.5")]
+	[InlineData(null, "tr-TR", "1,5;2,5")]
+	[InlineData(null, "az-Latn-AZ", "1,5;2,5")]
+	public void ListToStringConverter_FormatsFormattableItemsWithPassedCulture(string? cultureName, string currentCultureName, string expectedResult)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo(currentCultureName);
+			var culture = cultureName is null ? null : new CultureInfo(cultureName);
+
+			var result = new ListToStringConverter().ConvertFrom(new List<double> { 1.5, 2.5 }, ";", culture);
+
+			Assert.Equal(expectedResult, result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void ListToStringConverter_FormatsDatesWithPassedCulture(string cultureName)
+	{
+		var culture = new CultureInfo(cultureName);
+		var item = new DateTime(2026, 11, 7, 13, 37, 0);
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		var result = new ListToStringConverter().ConvertFrom(new List<DateTime> { item }, ";", culture);
+
+		Assert.Equal(item.ToString(culture), result);
+		Assert.NotEqual(item.ToString(new CultureInfo("en-US")), result);
 	}
 
 	protected override object? GetInvalidConvertFromValue() => null;

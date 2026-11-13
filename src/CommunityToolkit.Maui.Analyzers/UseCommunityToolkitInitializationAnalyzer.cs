@@ -10,79 +10,62 @@ namespace CommunityToolkit.Maui.Analyzers;
 public class UseCommunityToolkitInitializationAnalyzer : DiagnosticAnalyzer
 {
 	public const string DiagnosticId = "MCT001";
-
 	const string category = "Initialization";
+	const string useMauiAppMethodName = "UseMauiApp";
+	const string useMauiCommunityToolkitMethodName = "UseMauiCommunityToolkit";
 
 	static readonly LocalizableString title = new LocalizableResourceString(nameof(Resources.InitializationErrorTitle), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString messageFormat = new LocalizableResourceString(nameof(Resources.InitalizationMessageFormat), Resources.ResourceManager, typeof(Resources));
 	static readonly LocalizableString description = new LocalizableResourceString(nameof(Resources.InitializationErrorMessage), Resources.ResourceManager, typeof(Resources));
-
 	static readonly DiagnosticDescriptor rule = new(DiagnosticId, title, messageFormat, category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: description);
 
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(rule);
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [rule];
 
 	public override void Initialize(AnalysisContext context)
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ExpressionStatement);
+		context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.InvocationExpression);
 	}
 
 	static void AnalyzeNode(SyntaxNodeAnalysisContext context)
 	{
-		var expressionStatement = (ExpressionStatementSyntax)context.Node;
-		var root = expressionStatement.SyntaxTree.GetRoot();
-
-		if (HasUseMauiCommunityToolkit(root))
+		if (context.Node is InvocationExpressionSyntax invocationExpression
+			&& invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression
+			&& memberAccessExpression.Name.Identifier.ValueText == useMauiAppMethodName)
 		{
-			return;
-		}
+			var methodDeclaration = invocationExpression
+				.Ancestors()
+				.OfType<MethodDeclarationSyntax>()
+				.FirstOrDefault();
 
-		if (CheckIfItIsUseMauiMethod(expressionStatement))
-		{
-			var expression = GetInvocationExpressionSyntax(expressionStatement);
-			var diagnostic = Diagnostic.Create(rule, expression.GetLocation());
-			context.ReportDiagnostic(diagnostic);
+			if (methodDeclaration is not null && !HasUseMauiCommunityToolkitCall(methodDeclaration))
+			{
+				var diagnostic = Diagnostic.Create(rule, invocationExpression.GetLocation());
+				context.ReportDiagnostic(diagnostic);
+			}
 		}
 	}
 
-	static bool CheckIfItIsUseMauiMethod(ExpressionStatementSyntax expressionStatement) =>
-		expressionStatement.DescendantNodes()
-							.OfType<GenericNameSyntax>()
-							.Any(x => x.Identifier.ValueText.Equals("UseMauiApp", StringComparison.Ordinal)
-										&& x.TypeArgumentList.Arguments.Count is 1);
-
-	static bool HasUseMauiCommunityToolkit(SyntaxNode root)
+	static bool HasUseMauiCommunityToolkitCall(MethodDeclarationSyntax methodDeclaration)
 	{
-		foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+		// Check syntax nodes first (handles active code)
+		var hasInSyntaxTree = methodDeclaration
+			.DescendantNodes()
+			.OfType<InvocationExpressionSyntax>()
+			.Any(static invocation => invocation.Expression is MemberAccessExpressionSyntax memberAccess
+				&& memberAccess.Name.Identifier.ValueText == useMauiCommunityToolkitMethodName);
+
+		if (hasInSyntaxTree)
 		{
-			if (method.DescendantNodes().OfType<ExpressionStatementSyntax>().Any(x => x.DescendantNodes().Any(x => x.ToString().Contains(".UseMauiCommunityToolkit("))))
-			{
-				return true;
-			}
+			return true;
 		}
 
-		return false;
-	}
-
-	static InvocationExpressionSyntax GetInvocationExpressionSyntax(SyntaxNode parent)
-	{
-		foreach (var child in parent.ChildNodes())
-		{
-			if (child is InvocationExpressionSyntax expressionSyntax)
-			{
-				return expressionSyntax;
-			}
-			else
-			{
-				var expression = GetInvocationExpressionSyntax(child);
-
-				if (expression is not null)
-				{
-					return expression;
-				}
-			}
-		}
-		throw new InvalidOperationException("Wow, this shouldn't happen, please open a bug here: https://github.com/CommunityToolkit/Maui/issues/new/choose");
+		// Check trivia (comments, preprocessor directives, disabled code)
+		return methodDeclaration
+			.DescendantTrivia()
+			.Any(static trivia =>
+				trivia.IsKind(SyntaxKind.DisabledTextTrivia) &&
+				trivia.ToString().Contains(useMauiCommunityToolkitMethodName, StringComparison.Ordinal));
 	}
 }

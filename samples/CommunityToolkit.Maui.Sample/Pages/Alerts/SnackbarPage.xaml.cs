@@ -12,12 +12,13 @@ namespace CommunityToolkit.Maui.Sample.Pages.Alerts;
 
 public partial class SnackbarPage : BasePage<SnackbarViewModel>
 {
-	const string displayCustomSnackbarText = "Display a Custom Snackbar, Anchored to this Button";
+	public const string DisplayCustomSnackbarText = "Display Custom Snackbar";
 	const string dismissCustomSnackbarText = "Dismiss Custom Snackbar";
-	readonly IReadOnlyList<Color> colors = typeof(Colors)
+
+	readonly IReadOnlyList<Color> colors = [.. typeof(Colors)
 											.GetFields(BindingFlags.Static | BindingFlags.Public)
 											.ToDictionary(c => c.Name, c => (Color)(c.GetValue(null) ?? throw new InvalidOperationException()))
-											.Values.ToList();
+											.Values];
 
 	ISnackbar? customSnackbar;
 
@@ -25,7 +26,7 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	{
 		InitializeComponent();
 
-		DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+		DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 
 		Snackbar.Shown += Snackbar_Shown;
 		Snackbar.Dismissed += Snackbar_Dismissed;
@@ -34,9 +35,9 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	async void DisplayDefaultSnackbarButtonClicked(object? sender, EventArgs args) =>
 		await this.DisplaySnackbar("This is a Snackbar.\nIt will disappear in 3 seconds.\nOr click OK to dismiss immediately");
 
-	async void DisplayCustomSnackbarButtonClicked(object? sender, EventArgs args)
+	async void DisplayCustomSnackbarAnchoredToButtonClicked(object? sender, EventArgs args)
 	{
-		if (DisplayCustomSnackbarButton.Text is displayCustomSnackbarText)
+		if (DisplayCustomSnackbarButtonAnchoredToButton.Text is DisplayCustomSnackbarText)
 		{
 			var options = new SnackbarOptions
 			{
@@ -52,20 +53,21 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				"This is a customized Snackbar",
 				async () =>
 				{
-					await DisplayCustomSnackbarButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
-					DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+					await DisplayCustomSnackbarButtonAnchoredToButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
+					DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 				},
-				FontAwesomeIcons.Microsoft,
+				// Windows shows the Snackbar as an app notification, which draws its button in the system font: the Font Awesome glyph would be an empty box
+				OperatingSystem.IsWindows() ? "Change Color" : FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
-				DisplayCustomSnackbarButton);
+				DisplayCustomSnackbarButtonAnchoredToButton);
 
 			var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 			await customSnackbar.Show(cts.Token);
 
-			DisplayCustomSnackbarButton.Text = dismissCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = dismissCustomSnackbarText;
 		}
-		else if (DisplayCustomSnackbarButton.Text is dismissCustomSnackbarText)
+		else if (DisplayCustomSnackbarButtonAnchoredToButton.Text is dismissCustomSnackbarText)
 		{
 			if (customSnackbar is not null)
 			{
@@ -75,17 +77,22 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				customSnackbar.Dispose();
 			}
 
-			DisplayCustomSnackbarButton.Text = displayCustomSnackbarText;
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 		}
 		else
 		{
-			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButton)}.{nameof(ITextButton.Text)} Not Recognized");
+			throw new NotSupportedException($"{nameof(DisplayCustomSnackbarButtonAnchoredToButton)}.{nameof(ITextButton.Text)} Not Recognized");
 		}
 	}
 
 	void Snackbar_Dismissed(object? sender, EventArgs e)
 	{
 		SnackbarShownStatus.Text = $"Snackbar dismissed. Snackbar.IsShown={Snackbar.IsShown}";
+
+		if (ReferenceEquals(sender, customSnackbar))
+		{
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
+		}
 	}
 
 	void Snackbar_Shown(object? sender, EventArgs e)
@@ -95,30 +102,47 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 	async void DisplaySnackbarInModalButtonClicked(object? sender, EventArgs e)
 	{
-		if (Application.Current?.MainPage is not null)
+		if (Application.Current?.Windows[0].Page is Page mainPage)
 		{
-			await Application.Current.MainPage.Navigation.PushModalAsync(new ContentPage
+			var button = new Button()
+				.CenterHorizontal()
+				.Text("Display Snackbar");
+			button.Command = new AsyncRelayCommand(token => button.DisplaySnackbar(
+				"On Android, iOS and Mac Catalyst, this Snackbar is anchored to the Display Snackbar button at the bottom of the Page to avoid clipping it at the top of the Page.",
+				() => { },
+				"Close",
+				TimeSpan.FromSeconds(5), token: token));
+
+			var backButton = new Button()
+				.CenterHorizontal()
+				.Text("Back to Snackbar Page");
+			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
+
+			var modalPage = new ContentPage
 			{
+				// A Snackbar anchored to a View appears above that View (on iOS and MacCatalyst, below it when there is no room above it),
+				// so the buttons are at the bottom of the Page, and the Back button is below the anchor, where the Snackbar does not cover it
 				Content = new VerticalStackLayout
 				{
 					Spacing = 12,
 
 					Children =
 					{
-						new Button { Command = new AsyncRelayCommand(token => Snackbar.Make("Snackbar in a Modal Page").Show(token)) }
-							.Top().CenterHorizontal()
-							.Text("Display Snackbar"),
+						button,
 
-						new Label()
-							.Center().TextCenter()
-							.Text("This is a Modal Page"),
-
-						new Button { Command = new AsyncRelayCommand(Application.Current.MainPage.Navigation.PopModalAsync) }
-							.Bottom().CenterHorizontal()
-							.Text("Back to Snackbar Page")
+						backButton
 					}
-				}.Center()
-			}.Padding(12));
+				}.Bottom()
+			}.Padding(12);
+
+			// The implicit Page style makes every Page Transparent on Windows, so that the Mica backdrop of the window shows through it. On Windows, .NET MAUI keeps
+			// the Page below a modal Page that has a BackgroundColor on screen, where it shows through the Transparent modal Page: without one, the modal Page replaces it
+			if (OperatingSystem.IsWindows())
+			{
+				modalPage.SetValue(BackgroundColorProperty, null);
+			}
+
+			await mainPage.Navigation.PushModalAsync(modalPage);
 		}
 	}
 }

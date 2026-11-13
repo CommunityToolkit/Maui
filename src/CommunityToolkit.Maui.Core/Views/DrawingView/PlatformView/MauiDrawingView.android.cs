@@ -3,34 +3,14 @@ using Android.Content;
 using Android.Views;
 using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Maui.Platform;
-using AColor = Android.Graphics.Color;
-using APaint = Android.Graphics.Paint;
-using APath = Android.Graphics.Path;
-using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
-public partial class MauiDrawingView : PlatformTouchGraphicsView
+/// <summary>
+/// Initialize a new instance of <see cref="MauiDrawingView" />.
+/// </summary>
+public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsView(context)
 {
-	/// <summary>
-	/// Initialize a new instance of <see cref="MauiDrawingView" />.
-	/// </summary>
-	public MauiDrawingView(Context context) : base(context)
-	{
-		previousPoint = new();
-	}
-
-	/// <inheritdoc />
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			currentPath.Dispose();
-		}
-
-		base.Dispose(disposing);
-	}
-
 	/// <inheritdoc />
 	public override bool OnTouchEvent(MotionEvent? e)
 	{
@@ -48,7 +28,8 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 				break;
 
 			case MotionEventActions.Move:
-				if (touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
+				// Like OnMoving, only a started gesture extends the in-progress path
+				if (isDrawing && touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
 				{
 					AddPointToPath(point);
 				}
@@ -83,9 +64,15 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
-	void Redraw()
+	/// <inheritdoc />
+	protected override void Dispose(bool disposing)
 	{
-		Invalidate();
+		if (disposing)
+		{
+			currentPath.Dispose();
+		}
+
+		base.Dispose(disposing);
 	}
 
 	static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight, in float canvasScale)
@@ -99,5 +86,10 @@ public partial class MauiDrawingView : PlatformTouchGraphicsView
 		}
 
 		return newPoints.ToObservableCollection();
+	}
+
+	void Redraw()
+	{
+		Invalidate();
 	}
 }

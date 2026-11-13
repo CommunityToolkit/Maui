@@ -1,104 +1,240 @@
 ﻿using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Behaviors;
-using Microsoft.Maui.Platform;
 using Xunit;
-
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehaviorTests : BaseTest
+public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new MockView())
 {
-	public static IReadOnlyList<object[]> NonDefaultKeyboardData { get; } = new[]
-	{
-		new[] { Keyboard.Plain },
-		new[] { Keyboard.Numeric },
-		new[] { Keyboard.Chat },
-		new[] { Keyboard.Telephone },
-		new[] { Keyboard.Text },
-		new[] { Keyboard.Url },
-	};
+	public static TheoryData<Keyboard> NonDefaultKeyboardData { get; } =
+	[
+		Keyboard.Plain,
+		Keyboard.Numeric,
+
+		Keyboard.Chat,
+		Keyboard.Telephone,
+
+		Keyboard.Text,
+		Keyboard.Url
+
+	];
 
 	// Data from https://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
-	public static IReadOnlyList<object?[]> ForceValidateData { get; } = new[]
+	public static TheoryData<string, bool> ForceValidateData { get; } = new()
 	{
-		new object[] { @"email@example.com", true },
-		new object[] { @"firstname.lastname@example.com", true },
-		new object[] { @"email@subdomain.example.com", true },
-		new object[] { @"firstname+lastname@example.com", true },
-		new object[] { @"email@123.123.123.123", true },
-		new object[] { @"email@[123.123.123.123]", true },
-		new object[] { @"email@[IPv6:2001:db8:3333:4444:5555:6666:7777:8888]", true },
-		new object[] { @"""email""@example.com", true },
-		new object[] { @"1234567890@example.com", true },
-		new object[] { @"email@example-one.com", true },
-		new object[] { @"_______@example.com", true },
-		new object[] { @"email@example.name", true },
-		new object[] { @"email@example.museum", true },
-		new object[] { @"email@example.co.jp", true },
-		new object[] { @"firstname-lastname@example.com", true },
-		new object[] { @"email@😃.example-one.com", true },
-		new object[] { @"email@IPv6:2001:db8:3333:4444:5555:6666:7777:8888", false },
-		new object[] { @"email@2001:db8:3333:4444:5555:6666:7777:8888", false },
-		new object[] { @"plainaddress", false },
-		new object[] { @"#@%^%#$@#$@#.com", false },
-		new object[] { @"@example.com", false },
-		new object[] { @"Joe Smith<email@example.com>", false },
-		new object[] { @"email.example.com", false },
-		new object[] { @"email@example@example.com", false },
-		new object[] { @".email@example.com", false },
-		new object[] { @"email.@example.com", false },
-		new object[] { @"email..email@example.com", false },
-		new object[] { @"email@example.com (Joe Smith)", false },
-		new object[] { @"email@example", false },
-		new object[] { @"email@-example.com", false },
-		new object[] { @"email@111.222.333.44444", false },
-		new object[] { @"email@example..com", false },
-		new object[] { @"Abc..123@example.com", false },
-		new object[] { @"""(),:;<>[\]", false },
-		new object[] { @"this\ is""really""not\allowed@example.co", false },
-		new object[] { "", false },
+		{
+			@"email@example.com", true
+		},
+		{
+			@"firstname.lastname@example.com", true
+		},
+		{
+			@"email@subdomain.example.com", true
+		},
+		{
+			@"firstname+lastname@example.com", true
+		},
+		{
+			@"email@123.123.123.123", true
+		},
+		{
+			@"email@[123.123.123.123]", true
+		},
+		{
+			@"email@[IPv6:2001:db8:3333:4444:5555:6666:7777:8888]", true
+		},
+		{
+			"""
+			"email"@example.com
+			""",
+			true
+		},
+		{
+			@"1234567890@example.com", true
+		},
+		{
+			@"email@example-one.com", true
+		},
+		{
+			@"_______@example.com", true
+		},
+		{
+			@"email@example.name", true
+		},
+		{
+			@"email@example.museum", true
+		},
+		{
+			@"email@example.co.jp", true
+		},
+		{
+			@"firstname-lastname@example.com", true
+		},
+		{
+			@"email@😃.example-one.com", true
+		},
+		{
+			@"email@IPv6:2001:db8:3333:4444:5555:6666:7777:8888", false
+		},
+		{
+			@"email@2001:db8:3333:4444:5555:6666:7777:8888", false
+		},
+		{
+			@"plainaddress", false
+		},
+		{
+			@"#@%^%#$@#$@#.com", false
+		},
+		{
+			@"@example.com", false
+		},
+		{
+			@"Joe Smith<email@example.com>", false
+		},
+		{
+			@"email.example.com", false
+		},
+		{
+			@"email@example@example.com", false
+		},
+		{
+			@".email@example.com", false
+		},
+		{
+			@"email.@example.com", false
+		},
+		{
+			@"email..email@example.com", false
+		},
+		{
+			@"email@example.com (Joe Smith)", false
+		},
+		{
+			@"email@example", false
+		},
+		{
+			@"email@-example.com", false
+		},
+		{
+			@"email@111.222.333.44444", false
+		},
+		{
+			@"email@example..com", false
+		},
+		{
+			@"Abc..123@example.com", false
+		},
+		{
+			@"""(),:;<>[\]", false
+		},
+		{
+			"""this\ is"really"not\allowed@example.co""", false
+		},
+		{
+			"", false
+		},
 	};
 
-	public static IReadOnlyList<object?[]> EmailRegexTestData { get; } = new[]
+	public static TheoryData<string, bool> EmailRegexTestData { get; } = new()
 	{
-		new object[] { @"email@example.com", true },
-		new object[] { @"firstname.lastname@example.com", true },
-		new object[] { @"email@subdomain.example.com", true },
-		new object[] { @"firstname+lastname@example.com", true },
-		new object[] { @"email@123.123.123.123", true },
-		new object[] { @"email@[123.123.123.123]", true },
-		new object[] { @"""email""@example.com", true },
-		new object[] { @"1234567890@example.com", true },
-		new object[] { @"email@example-one.com", true },
-		new object[] { @"_______@example.com", true },
-		new object[] { @"email@example.name", true },
-		new object[] { @"email@example.museum", true },
-		new object[] { @"email@example.co.jp", true },
-		new object[] { @"firstname-lastname@example.com", true },
-		new object[] { @"email@😃.example-one.com", true },
-		new object[] { @"plainaddress", false },
-		new object[] { @"#@%^%#$@#$@#.com", false },
-		new object[] { @"@example.com", false },
-		new object[] { @"Joe Smith<email@example.com>", false },
-		new object[] { @"email.example.com", false },
-		new object[] { @"email@example@example.com", false },
-		new object[] { @"email@example.com (Joe Smith)", false },
-		new object[] { @"email@example", false },
-		new object[] { @"""(),:;<>[\]", false },
-		new object[] { @"this\ is""really""not\allowed@example.co", false },
-		new object[] { "", false },
+		{
+			@"email@example.com", true
+		},
+		{
+			@"firstname.lastname@example.com", true
+		},
+		{
+			@"email@subdomain.example.com", true
+		},
+		{
+			@"firstname+lastname@example.com", true
+		},
+		{
+			@"email@123.123.123.123", true
+		},
+		{
+			@"email@[123.123.123.123]", true
+		},
+		{
+			@"""email""@example.com", true
+		},
+		{
+			@"1234567890@example.com", true
+		},
+		{
+			@"email@example-one.com", true
+		},
+		{
+			@"_______@example.com", true
+		},
+		{
+			@"email@example.name", true
+		},
+		{
+			@"email@example.museum", true
+		},
+		{
+			@"email@example.co.jp", true
+		},
+		{
+			@"firstname-lastname@example.com", true
+		},
+		{
+			@"email@😃.example-one.com", true
+		},
+		{
+			@"plainaddress", false
+		},
+		{
+			@"#@%^%#$@#$@#.com", false
+		},
+		{
+			@"@example.com", false
+		},
+		{
+			@"Joe Smith<email@example.com>", false
+		},
+		{
+			@"email.example.com", false
+		},
+		{
+			@"email@example@example.com", false
+		},
+		{
+			@"email@example.com (Joe Smith)", false
+		},
+		{
+			@"email@example", false
+		},
+		{
+			@"""(),:;<>[\]", false
+		},
+		{
+			"""this\ is"really"not\allowed@example.co""", false
+		},
+		{
+			"", false
+		},
 	};
 
-	public static IReadOnlyList<object?[]> NonAsciiEmailAddress { get; } = new[]
+	public static TheoryData<string, string> NonAsciiEmailAddress { get; } = new()
 	{
-		new object?[] { "example@😃.co.jp", "example@xn--h28h.co.jp" },
-		new object?[] { "example@≡.com", "example@xn--2ch.com" },
-		new object?[] { "example@111.222.111.222", "example@111.222.111.222" },
-		new object?[] { "firstname@example.com", "firstname@example.com" },
+		{
+			"example@😃.co.jp", "example@xn--h28h.co.jp"
+		},
+		{
+			"example@≡.com", "example@xn--2ch.com"
+		},
+		{
+			"example@111.222.111.222", "example@111.222.111.222"
+		},
+		{
+			"firstname@example.com", "firstname@example.com"
+		},
 	};
 
 	[Theory]
 	[MemberData(nameof(ForceValidateData))]
-	public async Task IsValid(string? value, bool expectedValue)
+	public async Task IsValid(string value, bool expectedValue)
 	{
 		// Arrange
 		var behavior = new EmailValidationBehavior();
@@ -107,12 +243,38 @@ public class EmailValidationBehaviorTests : BaseTest
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
+		Assert.Equal(expectedValue, behavior.IsValid);
+	}
+
+	[Theory]
+	[InlineData(TextDecorationFlags.None, " email@example.com ", false)]
+	[InlineData(TextDecorationFlags.Trim, " email@example.com ", true)]
+	[InlineData(TextDecorationFlags.TrimStart, " email@example.com", true)]
+	[InlineData(TextDecorationFlags.TrimStart, "email@example.com ", false)]
+	[InlineData(TextDecorationFlags.TrimEnd, "email@example.com ", true)]
+	[InlineData(TextDecorationFlags.TrimEnd, " email@example.com", false)]
+	[InlineData(TextDecorationFlags.Trim, " email @example.com ", false)]
+	public async Task IsValid_DecorationFlagsAreAppliedBeforeValidation(TextDecorationFlags flags, string value, bool expectedValue)
+	{
+		var behavior = new EmailValidationBehavior
+		{
+			DecorationFlags = flags
+		};
+
+		var entry = new Entry
+		{
+			Text = value
+		};
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
+
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
+
 		Assert.Equal(expectedValue, behavior.IsValid);
 	}
 
@@ -127,12 +289,10 @@ public class EmailValidationBehaviorTests : BaseTest
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires 
-		await Task.Delay(100, CancellationToken.None);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -143,13 +303,13 @@ public class EmailValidationBehaviorTests : BaseTest
 	{
 		// Arrange
 		var behavior = new EmailValidationBehavior();
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		var entry = new Entry
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
@@ -172,7 +332,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		};
 
 		// Act 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(Keyboard.Email, entry.Keyboard);
@@ -196,7 +356,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		};
 
 		// Act 
-		editor.Behaviors.Add(behavior);
+		RunOnUIThread(() => editor.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(Keyboard.Email, editor.Keyboard);
@@ -222,7 +382,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		};
 
 		// Act 
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(keyboard, entry.Keyboard);
@@ -248,7 +408,7 @@ public class EmailValidationBehaviorTests : BaseTest
 		};
 
 		// Act 
-		editor.Behaviors.Add(behavior);
+		RunOnUIThread(() => editor.Behaviors.Add(behavior));
 
 		// Assert
 		Assert.Equal(keyboard, editor.Keyboard);

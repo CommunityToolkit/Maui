@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.ApplicationModel;
 /// </summary>
 public static class BadgeFactory
 {
-	static readonly Dictionary<string, IBadgeProvider> providers = new();
+	static readonly Dictionary<string, IBadgeProvider> providers = [];
 	static readonly DefaultBadgeProvider defaultBadgeProvider = new();
 
 	/// <summary>
@@ -16,8 +16,11 @@ public static class BadgeFactory
 	/// </summary>
 	/// <param name="launcherType">Launcher type</param>
 	/// <param name="provider">Provider implementation</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="launcherType"/> is null.</exception>
 	public static void SetBadgeProvider(string launcherType, IBadgeProvider provider)
 	{
+		ArgumentNullException.ThrowIfNull(launcherType);
+
 		providers[launcherType] = provider;
 	}
 
@@ -45,11 +48,6 @@ public static class BadgeFactory
 			Application.Context.PackageManager?.ResolveActivity(intent, PackageManager.ResolveInfoFlags.Of(0)) :
 			Application.Context.PackageManager?.ResolveActivity(intent, PackageInfoFlags.MatchDefaultOnly);
 
-		if (resolveInfo is { ActivityInfo.PackageName: not null })
-		{
-			return resolveInfo.ActivityInfo.PackageName;
-		}
-
-		return Application.Context.PackageName;
+		return resolveInfo is { ActivityInfo.PackageName: not null } ? resolveInfo.ActivityInfo.PackageName : Application.Context.PackageName;
 	}
 }

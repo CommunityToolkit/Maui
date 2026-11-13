@@ -11,7 +11,12 @@ public class MauiDrawingLineCompletedEventArgs : EventArgs
 	/// Initializes last drawing line
 	/// </summary>
 	/// <param name="line">Last drawing line</param>
-	public MauiDrawingLineCompletedEventArgs(MauiDrawingLine line) => Line = line;
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="line"/> is null.</exception>
+	public MauiDrawingLineCompletedEventArgs(MauiDrawingLine line)
+	{
+		ArgumentNullException.ThrowIfNull(line);
+		Line = line;
+	}
 
 	/// <summary>
 	/// Last drawing line

@@ -1,66 +1,80 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.UnitTests.Mocks;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
-public class AppThemeTests : BaseTest
+public class AppThemeTests : BaseViewTest
 {
-	readonly MockAppInfo mockAppInfo;
-	readonly Application app;
+	readonly Label label = new();
+	readonly Window window;
 
 	public AppThemeTests()
 	{
-		AppInfo.SetCurrent(mockAppInfo = new() { RequestedTheme = AppTheme.Light });
-		Application.Current = app = new Application();
+		ArgumentNullException.ThrowIfNull(Application.Current);
+		var page = new ContentPage() { Content = label };
+		window = new Window
+		{
+			Page = page
+		};
+		CreateViewHandler<MockPageHandler>(page);
+		Application.Current.OpenWindow(window);
+
+		SetAppTheme(initialAppTheme, Application.Current);
+
+		Assert.Equal(initialAppTheme, Application.Current.RequestedTheme);
 	}
 
-	[Fact]
-	public void AppThemeColorUsesCorrectColorForTheme()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void AppThemeColorUsesCorrectColorForTheme(bool usePublicBinding)
 	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
 		AppThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Dark = Colors.Red
 		};
 
-		Label label = new()
+		if (usePublicBinding)
 		{
-			Text = "Green on Light, Red on Dark"
-		};
-
-		label.SetAppThemeColor(Label.TextColorProperty, color);
-
-		Application.Current = null;
+			label.SetBinding(Label.TextColorProperty, color.GetBinding());
+		}
+		else
+		{
+			label.SetAppThemeColor(Label.TextColorProperty, color);
+		}
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Red, label.TextColor);
+
+		SetAppTheme(AppTheme.Light, Application.Current);
+
+		Assert.Equal(Colors.Green, label.TextColor);
 	}
 
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenDarkColorNotSet()
 	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
 		AppThemeColor color = new()
 		{
 			Light = Colors.Green,
 			Default = Colors.Blue
 		};
 
-		Label label = new()
-		{
-			Text = "Green on Light, Red on Dark"
-		};
-
 		label.SetAppThemeColor(Label.TextColorProperty, color);
-
-		Application.Current = null;
 
 		Assert.Equal(Colors.Green, label.TextColor);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Blue, label.TextColor);
 	}
@@ -68,32 +82,29 @@ public class AppThemeTests : BaseTest
 	[Fact]
 	public void AppThemeColorUsesDefaultColorWhenLightColorNotSet()
 	{
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
 		AppThemeColor color = new()
 		{
 			Default = Colors.Blue,
 			Dark = Colors.Red
 		};
 
-		Label label = new()
-		{
-			Text = "Green on Light, Red on Dark"
-		};
-
 		label.SetAppThemeColor(Label.TextColorProperty, color);
-
-		Application.Current = null;
 
 		Assert.Equal(Colors.Blue, label.TextColor);
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
 		Assert.Equal(Colors.Red, label.TextColor);
 	}
 
-	[Fact]
-	public void AppThemeResourceUpdatesLabelText()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void AppThemeResourceUpdatesLabelText(bool usePublicBinding)
 	{
-		Label label = new();
+		ArgumentNullException.ThrowIfNull(Application.Current);
 
 		AppThemeObject resource = new()
 		{
@@ -101,19 +112,63 @@ public class AppThemeTests : BaseTest
 			Dark = "Dark Theme"
 		};
 
-		label.SetAppTheme(Label.TextProperty, resource);
+		if (usePublicBinding)
+		{
+			label.SetBinding(Label.TextProperty, resource.GetBinding());
+		}
+		else
+		{
+			label.SetAppTheme(Label.TextProperty, resource);
+		}
 
-		Application.Current = null;
-		Assert.Equal("Light Theme", label.Text);
+		label.Text.Should().Be("Light Theme");
 
-		SetAppTheme(AppTheme.Dark);
+		SetAppTheme(AppTheme.Dark, Application.Current);
 
-		Assert.Equal("Dark Theme", label.Text);
+		label.Text.Should().Be("Dark Theme");
+
+		SetAppTheme(AppTheme.Light, Application.Current);
+
+		label.Text.Should().Be("Light Theme");
 	}
 
-	void SetAppTheme(AppTheme theme)
+	[Fact]
+	public void AppThemeResourceRemovesExistingDynamicResourceForStaticThemeValue()
 	{
-		mockAppInfo.RequestedTheme = theme;
-		((IApplication)app).ThemeChanged();
+		ArgumentNullException.ThrowIfNull(Application.Current);
+
+		Application.Current.Resources["TextColor"] = Colors.Green;
+		label.SetDynamicResource(Label.TextColorProperty, "TextColor");
+
+		label.TextColor.Should().Be(Colors.Green);
+
+		AppThemeObject resource = new()
+		{
+			Light = Colors.Blue,
+			Dark = Colors.Purple
+		};
+
+		label.SetAppTheme(Label.TextColorProperty, resource);
+
+		label.TextColor.Should().Be(Colors.Blue);
+
+		SetAppTheme(AppTheme.Dark, Application.Current);
+
+		label.TextColor.Should().Be(Colors.Purple);
+
+		Application.Current.Resources["TextColor"] = Colors.Red;
+
+		label.TextColor.Should().Be(Colors.Purple);
 	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+	}
+
+	static void SetAppTheme(in AppTheme theme, Application app)
+	{
+		app.UserAppTheme = theme;
+	}
+
 }

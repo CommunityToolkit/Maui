@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class SetFocusOnEntryCompletedBehaviorViewModel : BaseViewModel
+public partial class SetFocusOnEntryCompletedBehaviorViewModel : BaseViewModel
 {
 }

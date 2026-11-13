@@ -1,399 +1,229 @@
-﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.UnitTests.Mocks;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Services;
 using CommunityToolkit.Maui.Views;
+using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class PopupTests : BaseHandlerTest
+public class PopupTests : BaseViewTest
 {
-	const string resultWhenUserTapsOutsideOfPopup = "User Tapped Outside of Popup";
-	readonly IPopup popup = new MockPopup();
-
-	public PopupTests()
+	[Fact]
+	public void PopupBackgroundColor_DefaultValue_ShouldBeNull_AndDisplayedWhite()
 	{
-		Assert.IsAssignableFrom<IPopup>(new MockPopup());
+		var popup = new Popup();
+		var popupPage = new PopupPage(popup, PopupOptions.Empty);
+
+		Assert.Null(popup.BackgroundColor);
+		Assert.Equal(Colors.White, popupPage.Content.PopupBorder.BackgroundColor);
 	}
 
 	[Fact]
-	public void GetRequiredServiceThrowsOnNoContext()
+	public void CanBeDismissedByTappingOutsideOfPopup_DefaultValue_ShouldBeTrue()
 	{
-		var handlerStub = new MockPopupHandler();
-
-		Assert.Null((handlerStub as IElementHandler).MauiContext);
-
-		var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
-
-		Assert.Contains("the context", ex.Message);
-		Assert.Contains("MauiContext", ex.Message);
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_CancellationTokenExpired()
-	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		// Ensure CancellationToken Has Expired
-		await Task.Delay(100, CancellationToken.None);
-
-		await Assert.ThrowsAsync<TaskCanceledException>(() => page.ShowPopupAsync((MockPopup)popup, cts.Token));
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopupAsync_CancellationTokenCancelled()
-	{
-		var cts = new CancellationTokenSource();
-
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		// Ensure CancellationToken Has Expired
-		await cts.CancelAsync();
-
-		await Assert.ThrowsAsync<TaskCanceledException>(() => page.ShowPopupAsync((MockPopup)popup, cts.Token));
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task CloseAsync_CancellationTokenExpired()
-	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		// Ensure CancellationToken Has Expired
-		await Task.Delay(100, CancellationToken.None);
-
-		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task CloseAsync_CancellationTokenCancelled()
-	{
-		var cts = new CancellationTokenSource();
-
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		// Ensure CancellationToken Has Expired
-		await cts.CancelAsync();
-
-		await Assert.ThrowsAsync<TaskCanceledException>(() => ((MockPopup)popup).CloseAsync(token: cts.Token));
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task OnOpenedMapperIsCalled()
-	{
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		var popupHandler = CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		page.ShowPopup((MockPopup)popup);
-		Assert.Equal(1, popupHandler.OnOpenedCount);
-		popup.OnDismissedByTappingOutsideOfPopup();
-
-		var popupTask = page.ShowPopupAsync((MockPopup)popup, CancellationToken.None);
-		popup.OnDismissedByTappingOutsideOfPopup();
-
-		await popupTask;
-
-		Assert.Equal(2, popupHandler.OnOpenedCount);
-	}
-
-	[Fact(Timeout = (int)TestDuration.Medium)]
-	public async Task PopupDismissedByTappingOutsideOfPopup()
-	{
-		var popupClosedTCS = new TaskCompletionSource<(string? Result, bool WasDismissedByTappingOutsideOfPopup)>();
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		((MockPopup)popup).Closed += (s, e) =>
-		{
-			Assert.Equal(popup, s);
-			popupClosedTCS.SetResult(((string?)e.Result, e.WasDismissedByTappingOutsideOfPopup));
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		popup.OnDismissedByTappingOutsideOfPopup();
-
-		var (result, wasDismissedByTappingOutsideOfPopup) = await popupClosedTCS.Task;
-
-		Assert.True(wasDismissedByTappingOutsideOfPopup);
-		Assert.Equal(resultWhenUserTapsOutsideOfPopup, result);
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task OnDismissedWithResult()
-	{
-		object? result = null;
-		var isPopupDismissed = false;
-		var closedTCS = new TaskCompletionSource();
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		// Make sure that our popup will have a Handler
-		CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		((MockPopup)popup).Closed += (_, e) =>
-		{
-			result = e.Result;
-			isPopupDismissed = true;
-			closedTCS.TrySetResult();
-		};
-
-		((MockPopup)popup).Close(new object());
-		await closedTCS.Task;
-
-		Assert.True(isPopupDismissed);
-		Assert.NotNull(result);
-	}
-
-
-	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task OnDismissedWithoutResult()
-	{
-		object? result = null;
-		var isPopupDismissed = false;
-		var app = Application.Current ?? throw new NullReferenceException();
-
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		// Make sure that our popup will have a Handler
-		CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		((MockPopup)popup).Closed += (_, e) =>
-		{
-			result = e.Result;
-			isPopupDismissed = true;
-		};
-
-		await ((MockPopup)popup).CloseAsync(token: CancellationToken.None);
-
-		Assert.True(isPopupDismissed);
-		Assert.Null(result);
+		var popup = new Popup();
+		Assert.True(popup.CanBeDismissedByTappingOutsideOfPopup);
 	}
 
 	[Fact]
-	public void NullColorThrowsArgumentNullException()
+	public void Margin_DefaultValue_ShouldBeDefaultThickness()
 	{
-		var popupViewModel = new PopupViewModel();
-		var popupWithBinding = new Popup
-		{
-			BindingContext = popupViewModel
-		};
-		popupWithBinding.SetBinding(Popup.ColorProperty, nameof(PopupViewModel.Color));
+		var popup = new Popup();
+		Assert.Equal(new Thickness(30), popup.Margin);
+	}
 
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		Assert.Throws<ArgumentNullException>(() => new Popup { Color = null });
-		Assert.Throws<ArgumentNullException>(() => new Popup().Color = null);
-		Assert.Throws<ArgumentNullException>(() => popupViewModel.Color = null);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	[Fact]
+	public void Margin_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var thickness = new Thickness(10);
+		popup.Margin = thickness;
+		Assert.Equal(thickness, popup.Margin);
+	}
+
+	[Fact]
+	public void Padding_DefaultValue_ShouldBeDefaultThickness()
+	{
+		var popup = new Popup();
+		Assert.Equal(new Thickness(15), popup.Padding);
+	}
+
+	[Fact]
+	public void Padding_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var thickness = new Thickness(10);
+		popup.Padding = thickness;
+		Assert.Equal(thickness, popup.Padding);
+	}
+
+	[Fact]
+	public void VerticalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
+	{
+		var popup = new Popup();
+		Assert.Equal(LayoutOptions.Center, popup.VerticalOptions);
+	}
+
+	[Fact]
+	public void VerticalOptions_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var layoutOptions = LayoutOptions.Center;
+		popup.VerticalOptions = layoutOptions;
+		Assert.Equal(layoutOptions, popup.VerticalOptions);
+	}
+
+	[Fact]
+	public void HorizontalOptions_DefaultValue_ShouldBeDefaultLayoutOptions()
+	{
+		var popup = new Popup();
+		Assert.Equal(LayoutOptions.Center, popup.HorizontalOptions);
+	}
+
+	[Fact]
+	public void HorizontalOptions_SetValue_ShouldBeUpdated()
+	{
+		var popup = new Popup();
+		var layoutOptions = LayoutOptions.Center;
+		popup.HorizontalOptions = layoutOptions;
+		Assert.Equal(layoutOptions, popup.HorizontalOptions);
+	}
+
+	[Fact]
+	public void NotifyPopupIsOpened_ShouldInvokeOpenedEvent()
+	{
+		// Arrange
+		var popup = new Popup();
+		var eventInvoked = false;
+		popup.Opened += (_, _) => eventInvoked = true;
+
+		// Act
+		popup.NotifyPopupIsOpened();
+
+		// Assert
+		eventInvoked.Should().BeTrue();
+	}
+
+	[Fact]
+	public void NotifyPopupIsClosed_ShouldInvokeClosedEvent()
+	{
+		// Arrange
+		var popup = new Popup();
+		var eventInvoked = false;
+		popup.Closed += (_, _) => eventInvoked = true;
+
+		// Act
+		popup.NotifyPopupIsClosed();
+
+		// Assert
+		eventInvoked.Should().BeTrue();
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ShowPopup_IsLogicalChild()
+	public async Task Popup_Close_ShouldThrowExceptionWhenCalledBeforeShown()
 	{
-		var app = Application.Current ?? throw new NullReferenceException();
+		// Arrange
+		var popup = new Popup();
 
-		var page = new ContentPage
-		{
-			Content = new Label
-			{
-				Text = "Hello there"
-			}
-		};
-
-		// Make sure that our page will have a Handler
-		CreateViewHandler<MockPageHandler>(page);
-
-		app.MainPage = page;
-
-		// Make sure that our popup will have a Handler
-		CreateElementHandler<MockPopupHandler>(popup);
-
-		Assert.NotNull(popup.Handler);
-		Assert.NotNull(page.Handler);
-
-		Assert.Single(page.LogicalChildrenInternal);
-		page.ShowPopup((MockPopup)popup);
-		Assert.Equal(2, page.LogicalChildrenInternal.Count);
-
-		await ((MockPopup)popup).CloseAsync(token: CancellationToken.None);
-		Assert.Single(page.LogicalChildrenInternal);
+		// Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.CloseAsync(TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.CloseAsync(TestContext.Current.CancellationToken));
 	}
 
-	class MockPopup : Popup
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupT_Close_ShouldThrowExceptionWhenCalledBeforeShown()
 	{
-		public MockPopup()
-		{
-			ResultWhenUserTapsOutsideOfPopup = resultWhenUserTapsOutsideOfPopup;
-		}
+		// Arrange
+		var popup = new Popup<string>();
 
-		protected override async Task OnClosed(object? result, bool wasDismissedByTappingOutsideOfPopup, CancellationToken token)
-		{
-			await Task.Delay(100, token);
-
-			((IPopup)this).HandlerCompleteTCS.TrySetResult();
-
-			await base.OnClosed(result, wasDismissedByTappingOutsideOfPopup, token);
-		}
+		// Assert
+		await Assert.ThrowsAsync<PopupNotFoundException>(() => popup.CloseAsync("Hello", TestContext.Current.CancellationToken));
+		await Assert.ThrowsAnyAsync<InvalidOperationException>(() => popup.CloseAsync("Hello", TestContext.Current.CancellationToken));
 	}
 
-	class PopupViewModel : INotifyPropertyChanged
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Popup_Close_ShouldNotThrowExceptionWhenCloseIsOverridden()
 	{
-		Color? color = new();
+		// Arrange
+		var popup = new PopupOverridingClose();
 
-		public event PropertyChangedEventHandler? PropertyChanged;
-
-		public Color? Color
-		{
-			get => color;
-			set
-			{
-				if (!Equals(value, color))
-				{
-					color = value;
-					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Color)));
-				}
-			}
-		}
+		// Assert
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
 	}
 
-	interface IFooService
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task PopupT_Close_ShouldNotThrowExceptionWhenCloseIsOverridden()
 	{
-		public int MyProperty { get; set; }
+		// Arrange
+		var popup = new PopupTOverridingClose();
+
+		// Assert
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
+		await popup.CloseAsync("Hello", TestContext.Current.CancellationToken);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_TaskShouldCompleteWhenPopupCloseAsyncIsCalled()
+	{
+		// Arrange
+		Task<IPopupResult> showPopupAsyncTask;
+		var popup = new Popup();
+
+		if (Application.Current?.Windows[0].Page is not Page page)
+		{
+			throw new InvalidOperationException("Page cannot be null");
+		}
+
+		// Act
+		showPopupAsyncTask = page.ShowPopupAsync(popup, token: TestContext.Current.CancellationToken);
+
+		// Assert
+		var modalPage = Assert.Single(page.Navigation.ModalStack);
+		Assert.IsType<PopupPage>(modalPage);
+
+		// Act
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
+		await showPopupAsyncTask;
+
+		// Assert
+		Assert.Empty(page.Navigation.ModalStack);
+	}
+
+	[Fact]
+	public void PopupNotFoundException_Message_ShouldContainGuidance()
+	{
+		// Arrange
+		var exception = new PopupNotFoundException();
+
+		// Assert
+		Assert.Contains(nameof(PopupExtensions.ShowPopup), exception.Message);
+		Assert.Contains(nameof(Popup.CloseAsync), exception.Message);
+	}
+
+	[Fact]
+	public void PopupBlockedException_Message_ShouldContainBlockedPageType()
+	{
+		// Arrange
+		var page = new ContentPage();
+		var exception = new PopupBlockedException(page);
+
+		// Assert
+		var fullName = page.GetType().FullName;
+
+		Assert.NotNull(fullName);
+		Assert.Contains(fullName, exception.Message);
+		Assert.Contains(nameof(Page.Navigation), exception.Message);
+	}
+
+	sealed class PopupOverridingClose : Popup
+	{
+		public override Task CloseAsync(CancellationToken token = default) => Task.CompletedTask;
+	}
+
+	sealed class PopupTOverridingClose : Popup<string>
+	{
+		public override Task CloseAsync(CancellationToken token = default) => Task.CompletedTask;
+		public override Task CloseAsync(string result, CancellationToken token = default) => Task.CompletedTask;
 	}
 }

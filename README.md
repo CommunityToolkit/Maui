@@ -1,6 +1,6 @@
 <img src="https://user-images.githubusercontent.com/13558917/137551073-ac8958bf-83e3-4ae3-8623-4db6dce49d02.png" alt="..NET Bot" width=125>  [<img src="https://raw.githubusercontent.com/dotnet-foundation/swag/master/logo/dotnetfoundation_v4.svg" alt=".NET Foundation" width=100>](https://dotnetfoundation.org) 
 
-[![Build Status](https://dev.azure.com/dotnet/CommunityToolkit/_apis/build/status/CommunityToolkit.Maui?branchName=main)](https://dev.azure.com/dotnet/CommunityToolkit/_build/latest?definitionId=169&branchName=main) [![NuGet](https://buildstats.info/nuget/CommunityToolkit.Maui?includePreReleases=true)](https://www.nuget.org/packages/CommunityToolkit.Maui/)
+[![Build](https://github.com/CommunityToolkit/Maui/actions/workflows/dotnet-build.yml/badge.svg)](https://github.com/CommunityToolkit/Maui/actions/workflows/dotnet-build.yml) [![NuGet Downloads](https://img.shields.io/nuget/dt/CommunityToolkit.Maui)](https://www.nuget.org/packages/CommunityToolkit.Maui)
 
 # .NET MAUI Community Toolkit
 
@@ -17,6 +17,32 @@ And – the best part – the features you add to the .NET MAUI Toolkit may one 
 All of the [documentation](https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started?tabs=CommunityToolkitMaui) for `CommunityToolkit.Maui` can be found here on [Microsoft Learn](https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started?tabs=CommunityToolkitMaui):
 
 https://learn.microsoft.com/dotnet/communitytoolkit/maui/get-started
+
+## Installation
+
+The release versions of .NET MAUI Community Toolkit are available at Nuget.org as NuGet packages. You can install them using the following commands in your terminal or Package Manager Console:
+
+```bash
+dotnet add package CommunityToolkit.Maui
+dotnet add package CommunityToolkit.Maui.MediaElement
+dotnet add package CommunityToolkit.Maui.Camera
+```
+
+### Install Prerelease
+
+You can also try the latest pre-release version of the main branch. We use GitHub Packages to host the pre-release versions of the .NET MAUI Community Toolkit. To install the pre-release version, you need to add the GitHub Packages source to your NuGet configuration. GitHub Packages only supports authentication using a personal access token (classic) (https://github.com/settings/tokens). For more information, see [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). You can use a personal access token (classic) to authenticate to GitHub Packages. When you create a personal access token (classic), you can assign the token different scopes depending on your needs, but `read:packages` is enough.
+
+```bash
+dotnet nuget add source https://nuget.pkg.github.com/CommunityToolkit/index.json -n CommunityToolkitGitHubNuget -u YOUR_GITHUB_USERNAME -p YOUR_GITHUB_PERSONAL_ACCESS_TOKEN
+```
+
+and then install the packages as follows:
+
+```bash
+dotnet add package CommunityToolkit.Maui --version 99.0.0-preview980
+dotnet add package CommunityToolkit.Maui.MediaElement --version 99.0.0-preview980
+dotnet add package CommunityToolkit.Maui.Camera --version 99.0.0-preview980
+```
 
 ## Getting Started
 
@@ -80,7 +106,7 @@ Discussions that are short and stay on topic are much more likely to be read. If
 - Is your comment useful for others to read, or can it be adequately expressed with an emoji reaction to an existing comment?
 
 ### 2. Proposal Submitted
-Once you have a fully fleshed out proposal describing a new feature in syntactic and semantic detail, please [open an issue for it](https://github.com/communitytoolkit/maui/issues/new/choose), and it will be labeled as a [Proposal](https://github.com/communitytoolkit/maui/issues?q=is%3Aopen+is%3Aissue+label%3Aproposal). The comment thread on the issue can be used to hash out or briefly discuss details of the proposal, as well as pros and cons of adopting it into the .NET MAUI Toolkit. If an issue does not meet the bar of being a full proposal, we may move it to a discussion, so that it can be further matured. Specific open issues or more expansive discussion with a proposal will often warrant opening a side discussion rather than cluttering the comment section on the issue.
+Once you have a fully fleshed out proposal describing a new feature in syntactic and semantic detail, please [open an issue for it](https://github.com/communitytoolkit/maui/issues/new/choose), and it will be labelled as a [Proposal](https://github.com/communitytoolkit/maui/issues?q=is%3Aopen+is%3Aissue+label%3Aproposal). The comment thread on the issue can be used to hash out or briefly discuss details of the proposal, as well as pros and cons of adopting it into the .NET MAUI Toolkit. If an issue does not meet the bar of being a full proposal, we may move it to a discussion, so that it can be further matured. Specific open issues or more expansive discussion with a proposal will often warrant opening a side discussion rather than cluttering the comment section on the issue.
 
 ### 3. Proposal Championed
 When a member of the .NET MAUI Toolkit core team finds that a proposal merits promotion into the Toolkit, they can [Champion](https://github.com/communitytoolkit/maui/issues?q=is%3Aopen+is%3Aissue+label%3A%22proposal+champion%22) it, which means that they will bring it to the monthly [.NET MAUI Toolkit Community Standup](https://www.youtube.com/watch?v=0ZBh2Hl54ZY). 
@@ -93,7 +119,7 @@ Once a Proposal has been championed and has received a majority approval from th
 ### 5. Pull Request Approved
 After a Pull Request has been submitted, it will be reviewed and approved by the Proposal Champion. 
 
-Every new feature also requires an associated sample to be added to the .NET MAUI Toolkit Sample app.
+Every new feature also requires an associated sample to be added to the .NET MAUI Toolkit Sample app. Code that is specific to a platform also needs device tests, which run on every pull request and on your machine with one command, `pwsh eng/devices/run.ps1`: see [Device tests](CONTRIBUTING.md#device-tests), the [guide for running them locally](eng/devices/LOCAL.md) and the [reference for the scripts and CI](eng/devices/README.md).
 
 ### 6. Documentation Complete 
 Before a Pull Request can be merged into the .NET MAUI Toolkit, the Pull Request Author must also submit the documentation to [documentation repository](https://github.com/MicrosoftDocs/CommunityToolkit).

@@ -11,7 +11,7 @@ public partial class StringToListConverterPage : BasePage<StringToListConverterV
 		Resources.Add(nameof(StringToListConverter), new StringToListConverter
 		{
 			SplitOptions = StringSplitOptions.RemoveEmptyEntries,
-			Separators = new[] { ",", ".", ";" }
+			Separators = [",", ".", ";"]
 		});
 
 		InitializeComponent();

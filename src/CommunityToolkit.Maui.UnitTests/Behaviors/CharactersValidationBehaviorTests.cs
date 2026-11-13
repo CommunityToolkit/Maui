@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
+using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class CharactersValidationBehaviorTests : BaseTest
+public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new MockView())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", true)]
@@ -46,10 +48,10 @@ public class CharactersValidationBehaviorTests : BaseTest
 		{
 			Text = value
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-		await behavior.ForceValidate(CancellationToken.None);
+		await behavior.ForceValidate(TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.Equal(expectedValue, behavior.IsValid);
@@ -66,12 +68,10 @@ public class CharactersValidationBehaviorTests : BaseTest
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
-
-		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await behavior.ForceValidate(cts.Token));
@@ -88,12 +88,12 @@ public class CharactersValidationBehaviorTests : BaseTest
 		{
 			Text = "Hello"
 		};
-		entry.Behaviors.Add(behavior);
+		RunOnUIThread(() => entry.Behaviors.Add(behavior));
 
 		// Act
 
 		// Ensure CancellationToken expires
-		await Task.Delay(100, CancellationToken.None);
+		await Task.Delay(100, TestContext.Current.CancellationToken);
 
 		// Assert
 		await Assert.ThrowsAsync<OperationCanceledException>(async () =>
@@ -101,5 +101,125 @@ public class CharactersValidationBehaviorTests : BaseTest
 			await cts.CancelAsync();
 			await behavior.ForceValidate(cts.Token);
 		});
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenMinimumCharacterTypeCountChangesAfterTheViewLostFocus()
+	{
+		var (entry, behavior) = CreateEntryWithTypedText("12");
+		((IView)entry).IsFocused = false;
+
+		Assert.True(behavior.IsValid);
+
+		behavior.MinimumCharacterTypeCount = 5;
+
+		Assert.False(behavior.IsValid);
+
+		behavior.MinimumCharacterTypeCount = 2;
+
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenCharacterTypeChangesAfterTheViewLostFocus()
+	{
+		var (entry, behavior) = CreateEntryWithTypedText("ab");
+		((IView)entry).IsFocused = false;
+
+		Assert.False(behavior.IsValid);
+
+		behavior.CharacterType = CharacterType.Letter;
+
+		Assert.True(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenARuleChangesAfterTheViewIsFocusedAgain()
+	{
+		var (entry, behavior) = CreateEntryWithTypedText("12");
+		((IView)entry).IsFocused = false;
+		((IView)entry).IsFocused = true;
+
+		behavior.MinimumCharacterTypeCount = 5;
+
+		Assert.False(behavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldNotValidate_WhenARuleChangesBeforeTheFirstValidation()
+	{
+		var behavior = new CharactersValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnUnfocused,
+			CharacterType = CharacterType.Digit,
+			MinimumCharacterTypeCount = 1
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "1";
+
+		behavior.MinimumCharacterTypeCount = 5;
+
+		Assert.True(behavior.IsValid);
+
+		((IView)entry).IsFocused = false;
+
+		Assert.False(behavior.IsValid);
+	}
+
+	[Fact]
+	public void EnsureObjectDisposedExceptionThrownWhenDisposedBehaviorAttachedToVisualElement()
+	{
+		var behavior = new CharactersValidationBehavior();
+
+		Assert.Throws<ObjectDisposedException>(() =>
+		{
+			// Use AsyncContext to catch async void exception
+			AsyncContext.Run(() =>
+			{
+				behavior.Dispose();
+				var element = new MockVisualElement()
+				{
+					Behaviors =
+					{
+						behavior
+					}
+				};
+			});
+		});
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		var charactersValidationBehavior = new CharactersValidationBehavior();
+
+		Assert.Equal(CharactersValidationBehaviorDefaults.CharacterType, charactersValidationBehavior.CharacterType);
+		Assert.Equal(CharactersValidationBehaviorDefaults.MaximumCharacterTypeCount, charactersValidationBehavior.MaximumCharacterTypeCount);
+		Assert.Equal(CharactersValidationBehaviorDefaults.MinimumCharacterTypeCount, charactersValidationBehavior.MinimumCharacterTypeCount);
+	}
+
+	// Mirrors the Sample's CharactersValidationBehaviorPage, whose rules are bound to other controls, so changing a rule there takes the focus from the Entry.
+	static (Entry Entry, CharactersValidationBehavior Behavior) CreateEntryWithTypedText(string text)
+	{
+		var behavior = new CharactersValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			CharacterType = CharacterType.Digit,
+			MinimumCharacterTypeCount = 2,
+			MaximumCharacterTypeCount = 20
+		};
+
+		// Set Text after attaching the behavior, so that the validation of the new value completes before the asserts (see NumericValidationBehaviorTests)
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = text;
+
+		return (entry, behavior);
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Maui.Platform;
 using Windows.Storage.Streams;
 using Windows.UI.Input.Inking;
@@ -13,41 +14,51 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 ///     Drawing view service
 /// </summary>
-public static class DrawingViewService
+public static partial class DrawingViewService
 {
+	static readonly CanvasStrokeStyle roundStartEndCapCanvasStrokeStyle = new()
+	{
+		StartCap = CanvasCapStyle.Round,
+		EndCap = CanvasCapStyle.Round,
+	};
+
 	/// <summary>
-	///     Get image stream from lines
+	/// Get image stream from lines
 	/// </summary>
-	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
-	/// <param name="background">Image background</param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
 	{
-		var canvas = GetImageInternal(lines, imageSize, background);
+		ArgumentNullException.ThrowIfNull(options);
 
-		return GetCanvasRenderTargetStream(canvas, token);
+		token.ThrowIfCancellationRequested();
+
+		var canvas = GetImageInternal(options.Lines, options.Background, options.CanvasSize);
+
+		return GetCanvasRenderTargetStream(canvas, options.DesiredSize, token);
 	}
 
 	/// <summary>
-	///     Get image stream from points
+	/// Get image stream from points
 	/// </summary>
-	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
-	/// <param name="lineWidth">Line Width</param>
-	/// <param name="strokeColor">Line color</param>
-	/// <param name="background">Image background</param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
 	{
-		var canvas = GetImageInternal(points, imageSize, lineWidth, strokeColor, background);
+		ArgumentNullException.ThrowIfNull(options);
 
-		return GetCanvasRenderTargetStream(canvas, token);
+		token.ThrowIfCancellationRequested();
+
+		var canvas = GetImageInternal(options.Points, options.LineWidth, options.StrokeColor, options.Background, options.CanvasSize);
+
+		return GetCanvasRenderTargetStream(canvas, options.DesiredSize, token);
 	}
 
-	static async ValueTask<Stream> GetCanvasRenderTargetStream(CanvasRenderTarget? canvas, CancellationToken token)
+	static async ValueTask<Stream> GetCanvasRenderTargetStream(CanvasRenderTarget? canvas, Size desiredSize, CancellationToken token)
 	{
 		if (canvas is null)
 		{
@@ -55,9 +66,10 @@ public static class DrawingViewService
 		}
 
 		using (canvas)
+		using (var image = GetMaximumCanvasRenderTarget(canvas, desiredSize))
 		{
 			var fileStream = new InMemoryRandomAccessStream();
-			await canvas.SaveAsync(fileStream, CanvasBitmapFileFormat.Png).AsTask(token);
+			await image.SaveAsync(fileStream, CanvasBitmapFileFormat.Png).AsTask(token);
 
 			var stream = fileStream.AsStream();
 			stream.Position = 0;
@@ -66,14 +78,28 @@ public static class DrawingViewService
 		}
 	}
 
+	static CanvasRenderTarget GetMaximumCanvasRenderTarget(CanvasRenderTarget sourceImage, Size maxSize)
+	{
+		var sourceSize = sourceImage.Size;
+		var maxResizeFactor = Math.Min(maxSize.Width / sourceSize.Width, maxSize.Height / sourceSize.Height);
+
+		var width = Math.Max(maxResizeFactor * sourceSize.Width, 1);
+		var height = Math.Max(maxResizeFactor * sourceSize.Height, 1);
+
+		var resizedImage = new CanvasRenderTarget(sourceImage.Device, (float)width, (float)height, 96);
+		using var session = resizedImage.CreateDrawingSession();
+		session.DrawImage(sourceImage, new Rect(0, 0, width, height));
+
+		return resizedImage;
+	}
+
 	static CanvasRenderTarget? GetImageInternal(ICollection<PointF> points,
-		Size size,
 		float lineWidth,
 		Color lineColor,
 		Paint? background,
-		bool scale = false)
+		Size? canvasSize)
 	{
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, lineWidth);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, lineWidth, canvasSize);
 		if (offscreen is null)
 		{
 			return null;
@@ -94,6 +120,20 @@ public static class DrawingViewService
 		float lineWidth,
 		Size offset)
 	{
+		var strokePoints = points.Select(p => new Point(p.X - offset.Width, p.Y - offset.Height)).ToList();
+		if (strokePoints.Count is 0)
+		{
+			// InkStrokeBuilder.CreateStroke needs points
+			return;
+		}
+
+		if (strokePoints.Count is 1)
+		{
+			// DrawInk only draws segments between two points, so a single point (a tap) is filled as a dot of the line width, as MauiDrawingView draws it
+			session.FillCircle(new Vector2((float)strokePoints[0].X, (float)strokePoints[0].Y), lineWidth / 2, lineColor.ToWindowsColor());
+			return;
+		}
+
 		var strokeBuilder = new InkStrokeBuilder();
 		var inkDrawingAttributes = new InkDrawingAttributes
 		{
@@ -103,12 +143,12 @@ public static class DrawingViewService
 		strokeBuilder.SetDefaultDrawingAttributes(inkDrawingAttributes);
 		var strokes = new[]
 		{
-			strokeBuilder.CreateStroke(points.Select(p => new Point(p.X - offset.Width, p.Y - offset.Height)))
+			strokeBuilder.CreateStroke(strokePoints)
 		};
 		session.DrawInk(strokes);
 	}
 
-	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, SizeF size, bool scale, float maxLineWidth)
+	static (CanvasRenderTarget? offscreen, Size offset) GetCanvasRenderTarget(ICollection<PointF> points, float maxLineWidth, Size? canvasSize)
 	{
 		const int minSize = 1;
 
@@ -119,22 +159,28 @@ public static class DrawingViewService
 
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = (float?)canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = (float?)canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
 			return (null, new Size(minPointX, minPointY));
 		}
 
 		var device = CanvasDevice.GetSharedDevice();
-		return (new CanvasRenderTarget(device, scale ? size.Width : drawingWidth, scale ? size.Height : drawingHeight, 96), new Size(minPointX, minPointY));
+		var offset = canvasSize is null ? new Size(minPointX, minPointY) : Size.Zero;
+		return (new CanvasRenderTarget(device, drawingWidth, drawingHeight, 96), offset);
 	}
 
-	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Size size, Paint? background, bool scale = false)
+	static CanvasRenderTarget? GetImageInternal(IList<IDrawingLine> lines, Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		if (points.Count is 0)
+		{
+			return null;
+		}
+
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (offscreen, offset) = GetCanvasRenderTarget(points, size, scale, maxLineWidth);
+		var (offscreen, offset) = GetCanvasRenderTarget(points, maxLineWidth, canvasSize);
 		if (offscreen is null)
 		{
 			return null;
@@ -166,7 +212,8 @@ public static class DrawingViewService
 				session.DrawLine(
 					new Vector2((float)currentPoint.X, (float)currentPoint.Y),
 					new Vector2((float)nextPoint.X, (float)nextPoint.Y),
-					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width);
+					stroke.DrawingAttributes.Color, (float)stroke.DrawingAttributes.Size.Width,
+					roundStartEndCapCanvasStrokeStyle);
 			}
 		}
 	}
@@ -177,6 +224,10 @@ public static class DrawingViewService
 		{
 			case SolidPaint solidColorBrush:
 				return new CanvasSolidColorBrush(canvasResourceCreator, (solidColorBrush.Color ?? DrawingViewDefaults.BackgroundColor).ToWindowsColor());
+			// A gradient without stops only comes from GradientPaint.SetGradientStops (the GradientStops setter replaces an empty array with two white
+			// stops): it is filled with the default background, as on Android, iOS and Mac Catalyst.
+			case GradientPaint { GradientStops.Length: 0 }:
+				return new CanvasSolidColorBrush(canvasResourceCreator, DrawingViewDefaults.BackgroundColor.ToWindowsColor());
 			case LinearGradientPaint linearGradientBrush:
 				{
 					var gradientStops = new CanvasGradientStop[linearGradientBrush.GradientStops.Length];
@@ -201,11 +252,19 @@ public static class DrawingViewService
 						gradientStops[index] = new CanvasGradientStop(gradientStop.Offset, gradientStop.Color.ToWindowsColor());
 					}
 
+					// As in MAUI's canvas, a circle whose radius is relative to the larger side of the image; a radius of 0 spans the diagonal of the image,
+					// as on Android, iOS and Mac Catalyst
+					var radius = radialGradientBrush.Radius * Math.Max(size.Width, size.Height);
+					if (radius is not > 0)
+					{
+						radius = Math.Sqrt((size.Width * size.Width) + (size.Height * size.Height));
+					}
+
 					return new CanvasRadialGradientBrush(canvasResourceCreator, gradientStops)
 					{
 						Center = new Vector2((float)(radialGradientBrush.Center.X * size.Width), (float)(radialGradientBrush.Center.Y * size.Height)),
-						RadiusX = (float)radialGradientBrush.Radius * size._width,
-						RadiusY = (float)radialGradientBrush.Radius * size._height
+						RadiusX = (float)radius,
+						RadiusY = (float)radius
 					};
 				}
 			default:

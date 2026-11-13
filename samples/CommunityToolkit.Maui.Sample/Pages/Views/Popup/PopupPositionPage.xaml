@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage x:Class="CommunityToolkit.Maui.Sample.Pages.Views.PopupPositionPage"
                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -16,6 +16,7 @@
                 <Setter Property="VerticalOptions" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="Margin" Value="15, 10" />
+                <Setter Property="TextColor" Value="Black" />
             </Style>
             <Style TargetType="ScrollView">
                 <Setter Property="VerticalOptions" Value="Fill" />
@@ -24,7 +25,9 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <Grid ColumnDefinitions="*,*,*"
+        <!-- The implicit Grid style paints the app background, dark in the dark theme, over this White page everywhere but Windows -->
+        <Grid BackgroundColor="Transparent"
+                ColumnDefinitions="*,*,*"
                 HorizontalOptions="Center"
                 RowDefinitions="*,*,*,*"
                 VerticalOptions="Center">
@@ -32,7 +35,7 @@
         <Label  Grid.Row="0"
                 Grid.ColumnSpan="3"
                 Style="{StaticResource Header}"
-                Text="Popup's can be positioned anywhere on the screen using VerticalOptions and HorizontalOptions. Tap the arrows below to see how this works." 
+                Text="Popups can be positioned anywhere on the screen using VerticalOptions and HorizontalOptions. Tap the arrows below to see how this works." 
                 HorizontalTextAlignment="Center"/>
 
         <Button Grid.Row="1"

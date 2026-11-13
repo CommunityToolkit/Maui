@@ -1,5 +1,5 @@
-﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class AvatarViewGesturesViewModel : BaseViewModel
+public partial class AvatarViewGesturesViewModel : BaseViewModel
 {
 }

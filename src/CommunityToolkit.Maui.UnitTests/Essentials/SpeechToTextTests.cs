@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace CommunityToolkit.Maui.UnitTests.Essentials;
 
@@ -19,19 +18,10 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ListenAsyncFailsOnNet()
-	{
-		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		var result = await SpeechToText.ListenAsync(CultureInfo.CurrentCulture, null, CancellationToken.None);
-		result.Text.Should().BeNull();
-		result.Exception.Should().BeOfType<NotImplementedInReferenceAssemblyException>();
-	}
-
-	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StartListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None));
+		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -40,15 +30,15 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(string.Empty, string.Empty));
 		SpeechToText.Default.StateChanged += OnStateChanged;
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
-		await SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
+		await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, TestContext.Current.CancellationToken);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Listening);
-		await SpeechToText.StopListenAsync(CancellationToken.None);
+		await SpeechToText.StopListenAsync(TestContext.Current.CancellationToken);
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
 		SpeechToText.Default.StateChanged -= OnStateChanged;
 		void OnStateChanged(object? sender, SpeechToTextStateChangedEventArgs args)
 		{
 			testOutputHelper.WriteLine(args.State.ToString());
-		};
+		}
 	}
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -61,9 +51,9 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		SpeechToText.SetDefault(new SpeechToTextImplementationMock(expectedPartialText, expectedFinalText));
 		SpeechToText.Default.RecognitionResultUpdated += OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted += OnRecognitionTextCompleted;
-		await SpeechToText.StartListenAsync(CultureInfo.CurrentCulture, CancellationToken.None);
-		await Task.Delay(500);
-		await SpeechToText.StopListenAsync(CancellationToken.None);
+		await SpeechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, TestContext.Current.CancellationToken);
+		await Task.Delay(500, TestContext.Current.CancellationToken);
+		await SpeechToText.StopListenAsync(TestContext.Current.CancellationToken);
 		SpeechToText.Default.RecognitionResultUpdated -= OnRecognitionTextUpdated;
 		SpeechToText.Default.RecognitionResultCompleted -= OnRecognitionTextCompleted;
 		currentPartialText.Should().Be(expectedPartialText);
@@ -72,25 +62,26 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 		void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
 		{
 			currentPartialText = args.RecognitionResult;
-		};
+		}
+
 		void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
 		{
-			currentFinalText = args.RecognitionResult;
-		};
+			currentFinalText = args.RecognitionResult.Text;
+		}
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task StopListenAsyncFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StopListenAsync(CancellationToken.None));
+		await Assert.ThrowsAsync<NotSupportedException>(() => SpeechToText.StopListenAsync(TestContext.Current.CancellationToken));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task RequestPermissionsFailsOnNet()
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
-		await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => SpeechToText.RequestPermissions(CancellationToken.None));
+		await Assert.ThrowsAnyAsync<NotImplementedException>(() => SpeechToText.RequestPermissions(TestContext.Current.CancellationToken));
 	}
 
 	[Fact]
@@ -98,5 +89,85 @@ public class SpeechToTextTests(ITestOutputHelper testOutputHelper) : BaseTest
 	{
 		SpeechToText.SetDefault(new SpeechToTextImplementation());
 		SpeechToText.Default.CurrentState.Should().Be(SpeechToTextState.Stopped);
+	}
+
+	[Fact]
+	public void SpeechToTextRecognitionResultCompletedEventArgs_NullRecognitionResult_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new SpeechToTextRecognitionResultCompletedEventArgs(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("recognitionResult", exception.ParamName);
+	}
+
+	[Fact]
+	public void SpeechToTextRecognitionResultUpdatedEventArgs_NullRecognitionResult_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new SpeechToTextRecognitionResultUpdatedEventArgs(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("recognitionResult", exception.ParamName);
+	}
+
+	[Fact]
+	public void StartListenAsync_NullOptions_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => { _ = SpeechToText.StartListenAsync(null, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("options", exception.ParamName);
+	}
+
+	[Fact]
+	public void OfflineStartListenAsync_NullOptions_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => { _ = OfflineSpeechToText.StartListenAsync(null, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("options", exception.ParamName);
+	}
+
+	[Fact]
+	public void ImplementationStartListenAsync_NullOptions_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => { _ = new SpeechToTextImplementation().StartListenAsync(null, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("options", exception.ParamName);
+	}
+
+	[Fact]
+	public void OfflineImplementationStartListenAsync_NullOptions_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => { _ = new OfflineSpeechToTextImplementation().StartListenAsync(null, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("options", exception.ParamName);
+	}
+
+	[Fact]
+	public async Task ImplementationStartListenAsync_NullOptionsAndCanceledToken_ThrowsArgumentNullExceptionFromTheCall()
+	{
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		await cancellationTokenSource.CancelAsync();
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = new SpeechToTextImplementation().StartListenAsync(null, cancellationTokenSource.Token); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ImplementationStartListenAsync_CanceledToken_FaultsTheTaskWithOperationCanceledException()
+	{
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		await cancellationTokenSource.CancelAsync();
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new SpeechToTextImplementation().StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture }, cancellationTokenSource.Token));
 	}
 }

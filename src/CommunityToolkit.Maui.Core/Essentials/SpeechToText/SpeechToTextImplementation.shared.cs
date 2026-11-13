@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -31,58 +30,45 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		remove => speechToTextStateChangedWeakEventManager.RemoveEventHandler(value);
 	}
 
+#if !ANDROID && !IOS && !MACCATALYST
+	// The other platforms guard StartListenAsync with CurrentState alone
+	bool IsListeningSessionActive => false;
+#endif
 
 	/// <inheritdoc/>
-	public async Task<SpeechToTextResult> ListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken = default)
+	public Task StartListenAsync(SpeechToTextOptions options, CancellationToken cancellationToken = default)
 	{
-		try
+		// Thrown by the call, not faulted into the returned Task: a usage error is not an outcome of the listening session
+		ArgumentNullException.ThrowIfNull(options);
+
+		return StartListenAsyncCore();
+
+		async Task StartListenAsyncCore()
 		{
-			var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
-			if (!isPermissionGranted)
+			cancellationToken.ThrowIfCancellationRequested();
+
+			// CurrentState is still Stopped while a session starts (Android: until speech begins; iOS and Mac Catalyst: while the recognition task is starting)
+			if (CurrentState is not SpeechToTextState.Stopped || IsListeningSessionActive)
 			{
-				return new SpeechToTextResult(null, new Exception("Speech Recognizer Permission not granted"));
+				return;
 			}
 
-			var finalResult = await InternalListenAsync(culture, recognitionResult, cancellationToken).ConfigureAwait(false);
-			return new SpeechToTextResult(finalResult, null);
+			try
+			{
+				await InternalStartListeningAsync(options, cancellationToken).ConfigureAwait(false);
+			}
+			catch (Exception)
+			{
+				// Use `CancellationToken.None` to ensure `InternalStopListeningAsync` completes
+				// This prevents `InternalStopListeningAsync` from throwing a OperationCancelledException if `cancellationToken` has been canceled
+				await StopListenAsync(CancellationToken.None).ConfigureAwait(false);
+				throw;
+			}
 		}
-		catch (Exception e)
-		{
-			return new SpeechToTextResult(null, e);
-		}
-	}
-
-	/// <inheritdoc/>
-	public async Task StartListenAsync(CultureInfo culture, CancellationToken cancellationToken = default)
-	{
-		cancellationToken.ThrowIfCancellationRequested();
-
-		var isPermissionGranted = await IsSpeechPermissionAuthorized(cancellationToken).ConfigureAwait(false);
-		if (!isPermissionGranted)
-		{
-			throw new PermissionException($"{nameof(Permissions)}.{nameof(Permissions.Microphone)} Not Granted");
-		}
-
-		await InternalStartListeningAsync(culture, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
 	public Task StopListenAsync(CancellationToken cancellationToken = default) => InternalStopListeningAsync(cancellationToken);
-
-	void OnRecognitionResultUpdated(string recognitionResult)
-	{
-		recognitionResultUpdatedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultUpdatedEventArgs(recognitionResult), nameof(RecognitionResultUpdated));
-	}
-
-	void OnRecognitionResultCompleted(string recognitionResult)
-	{
-		recognitionResultCompletedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultCompletedEventArgs(recognitionResult), nameof(RecognitionResultCompleted));
-	}
-
-	void OnSpeechToTextStateChanged(SpeechToTextState speechToTextState)
-	{
-		speechToTextStateChangedWeakEventManager.HandleEvent(this, new SpeechToTextStateChangedEventArgs(speechToTextState), nameof(StateChanged));
-	}
 
 #if !MACCATALYST && !IOS
 	/// <inheritdoc/>
@@ -91,11 +77,20 @@ public sealed partial class SpeechToTextImplementation : ISpeechToText
 		var status = await Permissions.RequestAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
 		return status is PermissionStatus.Granted;
 	}
-
-	static async Task<bool> IsSpeechPermissionAuthorized(CancellationToken cancellationToken)
-	{
-		var status = await Permissions.CheckStatusAsync<Permissions.Microphone>().WaitAsync(cancellationToken).ConfigureAwait(false);
-		return status is PermissionStatus.Granted;
-	}
 #endif
+
+	void OnRecognitionResultUpdated(string recognitionResult)
+	{
+		recognitionResultUpdatedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultUpdatedEventArgs(recognitionResult), nameof(RecognitionResultUpdated));
+	}
+
+	void OnRecognitionResultCompleted(SpeechToTextResult recognitionResult)
+	{
+		recognitionResultCompletedWeakEventManager.HandleEvent(this, new SpeechToTextRecognitionResultCompletedEventArgs(recognitionResult), nameof(RecognitionResultCompleted));
+	}
+
+	void OnSpeechToTextStateChanged(SpeechToTextState speechToTextState)
+	{
+		speechToTextStateChangedWeakEventManager.HandleEvent(this, new SpeechToTextStateChangedEventArgs(speechToTextState), nameof(StateChanged));
+	}
 }

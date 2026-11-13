@@ -6,7 +6,10 @@ public partial class IsInRangeConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(InputChar))]
-	string inputString = "H";
+	public partial string InputString { get; set; } = "H";
+
+	[ObservableProperty]
+	public partial TimeSpan InputTime { get; set; } = new(12, 0, 0);
 
 	public char InputChar => char.TryParse(InputString, out var returnChar) ? returnChar : default;
 }

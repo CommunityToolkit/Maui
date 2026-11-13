@@ -25,10 +25,9 @@ public enum LayoutState
 /// <summary>
 /// This converter can be used to determine if a certain state is visible. This can be useful, for instance, in scenarios where you want to show/hide certain elements based on the current state.
 /// </summary>
-public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, LayoutState?>
+[AcceptEmptyServiceProvider]
+public partial class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, LayoutState?>
 {
-	LayoutState stateToCompare = LayoutState.None;
-
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;
 
@@ -37,18 +36,18 @@ public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, La
 	/// </summary>
 	public LayoutState StateToCompare
 	{
-		get => stateToCompare;
+		get;
 		set
 		{
-			if (!Enum.IsDefined(typeof(LayoutState), value))
+			if (!Enum.IsDefined(value))
 			{
 				throw new InvalidEnumArgumentException(nameof(value), (int)value, typeof(LayoutState));
 			}
 
-			stateToCompare = value;
+			field = value;
 		}
 
-	}
+	} = LayoutState.None;
 
 	/// <summary>
 	/// Takes the incoming <see cref="LayoutState"/> in <paramref name="value"/> and compares it to <see cref="StateToCompare"/>. If they are equal it returns True, if they are not equal it returns False. Additionally a state to compare against can be provided in <paramref name="parameter"/>.
@@ -59,8 +58,6 @@ public class StateToBooleanConverter : BaseConverterOneWay<LayoutState, bool, La
 	/// <returns>True if the provided <see cref="LayoutState"/>s match, otherwise False if they don't match.</returns>
 	public override bool ConvertFrom(LayoutState value, LayoutState? parameter = null, CultureInfo? culture = null)
 	{
-		ArgumentNullException.ThrowIfNull(value);
-
 		if (parameter is not null)
 		{
 			if (!Enum.IsDefined(typeof(LayoutState), parameter))

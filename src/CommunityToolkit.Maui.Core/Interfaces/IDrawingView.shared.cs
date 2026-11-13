@@ -36,18 +36,35 @@ public interface IDrawingView : IView
 	bool ShouldClearOnFinish { get; }
 
 	/// <summary>
-	/// Allows to draw on the <see cref="IDrawingView"/>.
+	/// Allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
+	/// <remarks>
+	/// The action draws above the background and below the lines, in a canvas state of its own: the fill paint of the background is not set on
+	/// the canvas that the action receives, and the canvas state is restored after the action, so the fill paint, stroke settings, transforms and
+	/// other canvas state that the action sets do not apply to the lines.
+	/// </remarks>
 	Action<ICanvas, RectF>? DrawAction { get; }
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
 	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
 	/// <param name="token"> <see cref="CancellationToken"/>.</param>
-	/// <returns><see cref="Task{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>.</returns>
-	ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default);
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="desiredWidth"/> or <paramref name="desiredHeight"/> is NaN, or when both are positive infinity.</exception>
+	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) => GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
+
+	/// <summary>
+	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
+	/// </summary>
+	/// <param name="desiredWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="desiredHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
+	/// <param name="imageOutputOption">The <see cref="DrawingViewOutputOption"/> to determine the bounds and the contents of the resulting image.</param>
+	/// <param name="token"> <see cref="CancellationToken"/>.</param>
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="IDrawingView"/>, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="desiredWidth"/> or <paramref name="desiredHeight"/> is NaN, or when both are positive infinity.</exception>
+	ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, DrawingViewOutputOption imageOutputOption, CancellationToken token = default);
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> that are currently drawn on the <see cref="IDrawingView"/>.
@@ -61,7 +78,7 @@ public interface IDrawingView : IView
 	void OnDrawingLineStarted(PointF point);
 
 	/// <summary>
-	/// Event occurred when drawing line cancelled
+	/// Event occurred when drawing line canceled
 	/// </summary>
 	void OnDrawingLineCancelled();
 

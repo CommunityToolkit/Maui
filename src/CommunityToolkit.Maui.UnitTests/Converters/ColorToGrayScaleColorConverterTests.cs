@@ -5,36 +5,67 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToGrayScaleColorConverterTests : BaseOneWayConverterTest<ColorToGrayScaleColorConverter>
 {
-	public static IReadOnlyList<object[]> ColorToGrayScaleColorData { get; } = new[]
+	public static TheoryData<int, int> ColorToGrayScaleColorData { get; } = new()
 	{
-		new[] { Colors.White, Colors.White},
-		new[] { Colors.Yellow, new Color(2f/3f, 2f/3f, 2f/3f, 1) },
-		new[] { Colors.Pink, new Color(0.8496732f, 0.8496732f, 0.8496732f, 1) },
-		new[] { Colors.LightBlue, new Color(0.8091503f, 0.8091503f, 0.8091503f, 1) },
-		new[] { Colors.Wheat, new Color(0.84444445f, 0.84444445f, 0.84444445f, 1) },
-		new[] { Colors.Black, Colors.Black },
-		new[] { Colors.DarkBlue, new Color(0.18169935f, 0.18169935f, 0.18169935f, 1) },
-		new[] { Colors.DarkCyan, new Color(0.3633987f, 0.3633987f, 0.3633987f, 1) },
-		new[] { Colors.Brown, new Color(0.3254902f, 0.3254902f, 0.3254902f, 1) },
-		new[] { Colors.DarkGreen, new Color(0.13071896f, 0.13071896f, 0.13071896f, 1) },
-		new[] { Colors.DarkSlateGray, new Color(0.26797387f, 0.26797387f, 0.26797387f, 1) },
-		new[] { Colors.Transparent, Colors.Black},
-		new[] { Colors.DarkSalmon, new Color(0.66013074f, 0.66013074f, 0.66013074f, 1) },
-		new[] { Colors.DarkOrchid, new Color(0.5320262f, 0.5320262f, 0.5320262f, 1) },
-		new[] { Colors.DarkGrey, new Color(0.6627451f, 0.6627451f, 0.6627451f, 1) }
+		{
+			Colors.White.ToInt(), Colors.White.ToInt()
+		},
+		{
+			Colors.Yellow.ToInt(), new Color(2f / 3f, 2f / 3f, 2f / 3f, 1).ToInt()
+		},
+		{
+			Colors.Pink.ToInt(), new Color(0.8496732f, 0.8496732f, 0.8496732f, 1).ToInt()
+		},
+		{
+			Colors.LightBlue.ToInt(), new Color(0.8091503f, 0.8091503f, 0.8091503f, 1).ToInt()
+		},
+		{
+			Colors.Wheat.ToInt(), new Color(0.84444445f, 0.84444445f, 0.84444445f, 1).ToInt()
+		},
+		{
+			Colors.Black.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.DarkBlue.ToInt(), new Color(0.18169935f, 0.18169935f, 0.18169935f, 1).ToInt()
+		},
+		{
+			Colors.DarkCyan.ToInt(), new Color(0.3633987f, 0.3633987f, 0.3633987f, 1).ToInt()
+		},
+		{
+			Colors.Brown.ToInt(), new Color(0.3254902f, 0.3254902f, 0.3254902f, 1).ToInt()
+		},
+		{
+			Colors.DarkGreen.ToInt(), new Color(0.13071896f, 0.13071896f, 0.13071896f, 1).ToInt()
+		},
+		{
+			Colors.DarkSlateGray.ToInt(), new Color(0.26797387f, 0.26797387f, 0.26797387f, 1).ToInt()
+		},
+		{
+			Colors.Transparent.ToInt(), Colors.Black.ToInt()
+		},
+		{
+			Colors.DarkSalmon.ToInt(), new Color(0.66013074f, 0.66013074f, 0.66013074f, 1).ToInt()
+		},
+		{
+			Colors.DarkOrchid.ToInt(), new Color(0.5320262f, 0.5320262f, 0.5320262f, 1).ToInt()
+		},
+		{
+			Colors.DarkGrey.ToInt(), new Color(0.6627451f, 0.6627451f, 0.6627451f, 1).ToInt()
+		}
 	};
 
 	[Theory]
 	[MemberData(nameof(ColorToGrayScaleColorData))]
-	public void ColorToGrayScaleColorConverterValidArgumentsTest(Color initialColor, Color expectedColor)
+	public void ColorToGrayScaleColorConverterValidArgumentsTest(int initialColor, int expectedColor)
 	{
 		var converter = new ColorToGrayScaleColorConverter();
 
-		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(Color.FromInt(initialColor), typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(Color.FromInt(initialColor));
 
-		Assert.Equal(expectedColor, convertedColor);
-		Assert.Equal(expectedColor, convertedColorFrom);
+		// The expected colors are packed into 8-bit channels to stay serializable theory data; comparing packed values is exact, while Color.Equals would accept a result one 8-bit step off
+		Assert.Equal(expectedColor, Assert.IsType<Color>(convertedColor).ToInt());
+		Assert.Equal(expectedColor, convertedColorFrom.ToInt());
 	}
 
 	[Theory]

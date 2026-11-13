@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
 using Android.Speech;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Media;
@@ -12,92 +13,124 @@ public sealed partial class SpeechToTextImplementation
 {
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
-	TaskCompletionSource<string>? speechRecognitionListenerTaskCompletionSource;
-	CancellationTokenRegistration? userProvidedCancellationTokenRegistration;
-	IProgress<string>? recognitionProgress;
-	CultureInfo? cultureInfo;
-	SpeechToTextState currentState = SpeechToTextState.Stopped;
+
+	// The recognizers of replaced sessions are destroyed once a newer session is in progress or ended (see SetPreviousSessionAside)
+	readonly List<(SpeechRecognizer Recognizer, SpeechRecognitionListener? Listener)> replacedSessions = [];
+
+	// The outcome (onResults or onError) of a session also arrives after StopListening, and only the first one is reported
+	enum RecognitionPhase
+	{
+		Starting,
+		Listening,
+		Stopping,
+		Ended
+	}
 
 	/// <inheritdoc />
 	public SpeechToTextState CurrentState
 	{
-		get => currentState;
+		get;
 		private set
 		{
-			if (currentState != value)
+			if (field != value)
 			{
-				currentState = value;
-				OnSpeechToTextStateChanged(currentState);
+				field = value;
+				OnSpeechToTextStateChanged(field);
 			}
 		}
-	}
+	} = SpeechToTextState.Stopped;
+
+	// CurrentState stays Stopped until speech begins, so it cannot tell whether a session is active
+	bool IsListeningSessionActive => listener?.Phase is RecognitionPhase.Starting or RecognitionPhase.Listening;
 
 	/// <inheritdoc />
-	public async ValueTask DisposeAsync()
+	public ValueTask DisposeAsync()
 	{
-		speechRecognitionListenerTaskCompletionSource?.TrySetCanceled();
+		// SpeechRecognizer may only be used from the main thread, where the session's outcome also destroys the recognizer, so the session is released there.
+		// On the main thread DisposeAsync does not wait for the main looper: a caller that blocks the main thread on it cannot deadlock.
+		if (MainThread.IsMainThread)
+		{
+			ReleaseRecognizer();
+			return ValueTask.CompletedTask;
+		}
 
-		listener?.Dispose();
-		speechRecognizer?.Dispose();
-		await (userProvidedCancellationTokenRegistration?.DisposeAsync() ?? ValueTask.CompletedTask);
-
-		listener = null;
-		speechRecognizer = null;
-		userProvidedCancellationTokenRegistration = null;
-		speechRecognitionListenerTaskCompletionSource = null;
+		return new ValueTask(MainThread.InvokeOnMainThreadAsync(ReleaseRecognizer));
 	}
 
-	static Intent CreateSpeechIntent(CultureInfo culture)
+	static Intent CreateSpeechIntent(SpeechToTextOptions options)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
-		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, Java.Util.Locale.Default.ToString());
+
 		intent.PutExtra(RecognizerIntent.ExtraLanguageModel, RecognizerIntent.LanguageModelFreeForm);
 		intent.PutExtra(RecognizerIntent.ExtraCallingPackage, Application.Context.PackageName);
-		intent.PutExtra(RecognizerIntent.ExtraPartialResults, true);
+		intent.PutExtra(RecognizerIntent.ExtraPartialResults, options.ShouldReportPartialResults);
 
-		var javaLocale = Java.Util.Locale.ForLanguageTag(culture.Name).ToString();
+		var javaLocale = Java.Util.Locale.ForLanguageTag(options.Culture.Name).ToLanguageTag();
 		intent.PutExtra(RecognizerIntent.ExtraLanguage, javaLocale);
+		intent.PutExtra(RecognizerIntent.ExtraLanguagePreference, javaLocale);
+		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
+		if (options.AutoStopSilenceTimeout < SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
+		{
+			long autoStopSilenceTimeoutInMilliseconds = options.AutoStopSilenceTimeout.TotalMilliseconds >= long.MaxValue
+				? long.MaxValue
+				: checked((long)options.AutoStopSilenceTimeout.TotalMilliseconds);
+
+			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
+			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
+		}
 
 		return intent;
 	}
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
-	[MemberNotNull(nameof(speechRecognizer), nameof(listener), nameof(speechRecognitionListenerTaskCompletionSource))]
-	Task InternalStartListeningAsync(CultureInfo culture, CancellationToken cancellationToken)
+	static Task RunAfterQueuedMainLooperMessagesAsync(Action action)
 	{
-		speechRecognitionListenerTaskCompletionSource?.TrySetCanceled(cancellationToken);
-		speechRecognitionListenerTaskCompletionSource = new();
-		userProvidedCancellationTokenRegistration = cancellationToken.Register(() =>
+		var actionCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var mainLooperHandler = new Handler(Looper.MainLooper ?? throw new InvalidOperationException("Android has not prepared the main looper of the app."));
+		mainLooperHandler.Post(() =>
 		{
-			StopRecording();
-			speechRecognitionListenerTaskCompletionSource.TrySetCanceled(cancellationToken);
+			action();
+			actionCompleted.SetResult();
 		});
 
-		cultureInfo = culture;
+		return actionCompleted.Task;
+	}
+
+	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
+	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
 		var isSpeechRecognitionAvailable = IsSpeechRecognitionAvailable();
 		if (!isSpeechRecognitionAvailable)
 		{
 			throw new FeatureNotSupportedException("Speech Recognition is not available on this device");
 		}
 
-		speechRecognizer = SpeechRecognizer.CreateSpeechRecognizer(Application.Context);
+		var recognizerIntent = CreateSpeechIntent(options);
+
+		// CreateSpeechRecognizer throws on any thread but the main thread, before the session of a previous start is set aside
+		var recognizer = SpeechRecognizer.CreateSpeechRecognizer(Application.Context);
+		SetPreviousSessionAside();
+		speechRecognizer = recognizer;
+
 		if (speechRecognizer is null)
 		{
+			// No session needs the recognizers of the sessions that this start set aside
+			_ = ReleaseReplacedSessions();
 			throw new FeatureNotSupportedException("Speech recognizer is not available on this device");
 		}
 
-		listener = new SpeechRecognitionListener
+		listener = new SpeechRecognitionListener(this)
 		{
 			Error = HandleListenerError,
 			PartialResults = HandleListenerPartialResults,
 			Results = HandleListenerResults
 		};
 		speechRecognizer.SetRecognitionListener(listener);
-		speechRecognizer.StartListening(CreateSpeechIntent(cultureInfo));
-		CurrentState = SpeechToTextState.Listening;
+		speechRecognizer.StartListening(recognizerIntent);
 
 		cancellationToken.ThrowIfCancellationRequested();
+		listener.Phase = RecognitionPhase.Listening;
 
 		return Task.CompletedTask;
 	}
@@ -109,88 +142,231 @@ public sealed partial class SpeechToTextImplementation
 		return Task.CompletedTask;
 	}
 
-	async Task<string> InternalListenAsync(CultureInfo culture, IProgress<string>? recognitionResult, CancellationToken cancellationToken)
-	{
-		recognitionProgress = recognitionResult;
-
-		await InternalStartListeningAsync(culture, cancellationToken);
-
-		return await speechRecognitionListenerTaskCompletionSource.Task.WaitAsync(cancellationToken);
-	}
-
 	void HandleListenerError(SpeechRecognizerError error)
 	{
-		speechRecognitionListenerTaskCompletionSource?.TrySetException(new Exception($"Failure in speech engine - {error}"));
+		OnRecognitionResultCompleted(SpeechToTextResult.Failed(new Exception($"Failure in speech engine - {error}")));
 	}
 
 	void HandleListenerPartialResults(string sentence)
 	{
 		OnRecognitionResultUpdated(sentence);
-		recognitionProgress?.Report(sentence);
 	}
 
 	void HandleListenerResults(string result)
 	{
-		OnRecognitionResultCompleted(result);
-		speechRecognitionListenerTaskCompletionSource?.TrySetResult(result);
+		OnRecognitionResultCompleted(SpeechToTextResult.Success(result));
 	}
 
 	void StopRecording()
 	{
-		speechRecognizer?.StopListening();
-		speechRecognizer?.Destroy();
+		switch (listener?.Phase)
+		{
+			// The stopped session still reports its outcome (onResults or onError); the recognizer is destroyed once it did
+			case RecognitionPhase.Listening:
+				speechRecognizer?.StopListening();
+				listener.Phase = RecognitionPhase.Stopping;
+				break;
+
+			// A start that failed or was canceled has nothing to report, and no session needs the recognizers of the sessions that it replaced any longer
+			case RecognitionPhase.Starting:
+				speechRecognizer?.StopListening();
+				speechRecognizer?.Destroy();
+				listener.Phase = RecognitionPhase.Ended;
+				_ = ReleaseReplacedSessions();
+				break;
+		}
+
 		CurrentState = SpeechToTextState.Stopped;
 	}
 
-	class SpeechRecognitionListener : Java.Lang.Object, IRecognitionListener
+	void OnRecognitionSessionEnded(SpeechRecognitionListener endedListener)
+	{
+		// When the session that reported its outcome is still the current session (the app did not start a new one from the outcome), no session needs
+		// the connection to the recognition service any longer: its recognizer and those of the sessions that it replaced are released (the peers of
+		// its recognizer are released with the next session or by DisposeAsync). A session started from the outcome has set this one aside instead.
+		if (ReferenceEquals(endedListener, listener))
+		{
+			speechRecognizer?.Destroy();
+			_ = ReleaseReplacedSessions();
+		}
+	}
+
+	// The recognizer of the previous session is destroyed only once the new session is in progress, or ended while it was the current session
+	// (OnRecognitionSessionInProgress, OnRecognitionSessionEnded). An app's recognizers share one connection to the recognition service, which Android
+	// unbinds when a recognizer is destroyed while no session is in progress on it, also under a recognizer that has just connected to it: a session started
+	// right after the previous recognizer was destroyed then ended with ERROR_SERVER_DISCONNECTED.
+	void SetPreviousSessionAside()
+	{
+		var recognizer = speechRecognizer;
+		var recognitionListener = listener;
+		speechRecognizer = null;
+		listener = null;
+
+		// A replaced session reports nothing
+		recognitionListener?.Phase = RecognitionPhase.Ended;
+
+		if (recognizer is not null)
+		{
+			recognizer.Cancel();
+			replacedSessions.Add((recognizer, recognitionListener));
+		}
+	}
+
+	// A session that is in progress at the recognition service holds the connection that the sessions share: when it is the current session, the
+	// recognizers of the sessions that it replaced are released without unbinding that connection under it
+	void OnRecognitionSessionInProgress(SpeechRecognitionListener listenerInProgress)
+	{
+		if (ReferenceEquals(listenerInProgress, listener))
+		{
+			_ = ReleaseReplacedSessions();
+		}
+	}
+
+	Task ReleaseReplacedSessions()
+	{
+		if (replacedSessions.Count is 0)
+		{
+			return Task.CompletedTask;
+		}
+
+		var releases = new Task[replacedSessions.Count];
+		for (var i = 0; i < releases.Length; i++)
+		{
+			releases[i] = ReleaseSession(replacedSessions[i].Recognizer, replacedSessions[i].Listener);
+		}
+
+		replacedSessions.Clear();
+		return Task.WhenAll(releases);
+	}
+
+	Task ReleaseRecognizer()
+	{
+		var recognizer = speechRecognizer;
+		var recognitionListener = listener;
+		speechRecognizer = null;
+		listener = null;
+
+		return Task.WhenAll(ReleaseSession(recognizer, recognitionListener), ReleaseReplacedSessions());
+	}
+
+	static Task ReleaseSession(SpeechRecognizer? recognizer, SpeechRecognitionListener? recognitionListener)
+	{
+		// A released session reports nothing
+		recognitionListener?.Phase = RecognitionPhase.Ended;
+
+		// Destroy() stops the recognition service from calling the listener: a callback that reaches its disposed Java peer crashes the app.
+		// From Android 15 Destroy() is handled on the main looper after the callbacks that are already queued there, so the peers are disposed after them.
+		recognizer?.Destroy();
+
+		if (recognizer is not null && OperatingSystem.IsAndroidVersionAtLeast(35))
+		{
+			return RunAfterQueuedMainLooperMessagesAsync(DisposePeers);
+		}
+
+		DisposePeers();
+		return Task.CompletedTask;
+
+		void DisposePeers()
+		{
+			recognitionListener?.Dispose();
+			recognizer?.Dispose();
+		}
+	}
+
+	class SpeechRecognitionListener(SpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
 	{
 		public required Action<SpeechRecognizerError> Error { get; init; }
 		public required Action<string> PartialResults { get; init; }
 		public required Action<string> Results { get; init; }
 
+		public RecognitionPhase Phase { get; set; }
+
+		// After StopListenAsync the session can still report speech boundaries, but CurrentState stays Stopped
+		bool ReportsSpeechBoundaries => Phase is RecognitionPhase.Starting or RecognitionPhase.Listening;
+
+		// The progress callbacks come while the session is in progress at the recognition service: the first one of the current session releases the
+		// recognizers of the sessions that it replaced. The outcome (OnError, OnResults) releases them through OnRecognitionSessionEnded.
 		public void OnBeginningOfSpeech()
 		{
+			speechToText.OnRecognitionSessionInProgress(this);
+
+			if (ReportsSpeechBoundaries)
+			{
+				speechToText.CurrentState = SpeechToTextState.Listening;
+			}
 		}
 
 		public void OnBufferReceived(byte[]? buffer)
 		{
+			speechToText.OnRecognitionSessionInProgress(this);
 		}
 
 		public void OnEndOfSpeech()
 		{
+			speechToText.OnRecognitionSessionInProgress(this);
+
+			if (ReportsSpeechBoundaries)
+			{
+				speechToText.CurrentState = SpeechToTextState.Silence;
+			}
 		}
 
 		public void OnError([GeneratedEnum] SpeechRecognizerError error)
 		{
+			// Only the first outcome of a session is reported: a stopListening that reaches the service after the session ended is answered with ERROR_CLIENT
+			if (Phase is RecognitionPhase.Ended)
+			{
+				return;
+			}
+
+			Phase = RecognitionPhase.Ended;
 			Error.Invoke(error);
+			speechToText.CurrentState = SpeechToTextState.Stopped;
+			speechToText.OnRecognitionSessionEnded(this);
 		}
 
 		public void OnEvent(int eventType, Bundle? @params)
 		{
+			speechToText.OnRecognitionSessionInProgress(this);
 		}
 
 		public void OnPartialResults(Bundle? partialResults)
 		{
-			SendResults(partialResults, PartialResults);
+			speechToText.OnRecognitionSessionInProgress(this);
+
+			if (Phase is not RecognitionPhase.Ended)
+			{
+				SendResults(partialResults, PartialResults);
+			}
 		}
 
 		public void OnReadyForSpeech(Bundle? @params)
 		{
+			speechToText.OnRecognitionSessionInProgress(this);
 		}
 
 		public void OnResults(Bundle? results)
 		{
+			if (Phase is RecognitionPhase.Ended)
+			{
+				return;
+			}
+
+			Phase = RecognitionPhase.Ended;
 			SendResults(results, Results);
+			speechToText.CurrentState = SpeechToTextState.Stopped;
+			speechToText.OnRecognitionSessionEnded(this);
 		}
 
 		public void OnRmsChanged(float rmsdB)
 		{
+			speechToText.OnRecognitionSessionInProgress(this);
 		}
 
 		static void SendResults(Bundle? bundle, Action<string> action)
 		{
 			var matches = bundle?.GetStringArrayList(SpeechRecognizer.ResultsRecognition);
-			if (matches?.Any() is not true)
+			if (matches is null || matches.Count == 0)
 			{
 				return;
 			}

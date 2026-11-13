@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class MauiDrawingLineTests : BaseHandlerTest
+public class MauiDrawingLineTests : BaseViewTest
 {
 	readonly MauiDrawingLine drawingLine = new();
 

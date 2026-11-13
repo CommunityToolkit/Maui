@@ -1,5 +1,3 @@
-using System.Collections.Frozen;
-using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -7,24 +5,27 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// <see cref="UIView"/> for <see cref="Alert"/>
 /// </summary>
-public class AlertView : UIView
+/// <param name="shouldFillAndExpandHorizontally">Should stretch container horizontally to fit the screen</param>
+public class AlertView(bool shouldFillAndExpandHorizontally) : UIView
 {
-	readonly List<UIView> children = Enumerable.Empty<UIView>().ToList();
+	const int defaultSpacing = 10;
+
+	readonly List<UIView> children = [];
+	readonly bool shouldFillAndExpandHorizontally = shouldFillAndExpandHorizontally;
+
+	NSLayoutConstraint[] verticalConstraints = [];
+	UIView? placedAnchorView;
+	bool isPlacedBelowAnchorView;
 
 	/// <summary>
 	/// Parent UIView
 	/// </summary>
-	public static UIView ParentView => Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication) ?? throw new InvalidOperationException("KeyWindow is not found");
+	public UIView ParentView { get; } = Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(UIApplication.SharedApplication) ?? throw new InvalidOperationException("KeyWindow is not found");
 
 	/// <summary>
 	/// PopupView Children
 	/// </summary>
-	public FrozenSet<UIView> Children => children.ToFrozenSet();
-
-	/// <summary>
-	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
-	/// </summary>
-	public UIView? AnchorView { get; set; }
+	public IReadOnlyList<UIView> Children => children;
 
 	/// <summary>
 	/// <see cref="AlertViewVisualOptions"/>
@@ -32,9 +33,20 @@ public class AlertView : UIView
 	public AlertViewVisualOptions VisualOptions { get; } = new();
 
 	/// <summary>
+	/// <see cref="UIView"/> on which Alert will appear. When null, <see cref="AlertView"/> will appear at bottom of screen.
+	/// </summary>
+	public UIView? AnchorView { get; set; }
+
+	/// <summary>
 	/// Container of <see cref="AlertView"/>
 	/// </summary>
-	protected UIStackView? Container { get; set; }
+	protected UIStackView Container { get; } = new()
+	{
+		Alignment = UIStackViewAlignment.Fill,
+		Distribution = UIStackViewDistribution.EqualSpacing,
+		Axis = UILayoutConstraintAxis.Horizontal,
+		TranslatesAutoresizingMaskIntoConstraints = false
+	};
 
 	/// <summary>
 	/// Dismisses the Popup from the screen
@@ -45,7 +57,14 @@ public class AlertView : UIView
 	/// Adds a <see cref="UIView"/> to <see cref="Children"/>
 	/// </summary>
 	/// <param name="child"></param>
-	public void AddChild(UIView child) => children.Add(child);
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="child"/> is null.</exception>
+	public void AddChild(UIView child)
+	{
+		ArgumentNullException.ThrowIfNull(child);
+
+		children.Add(child);
+		Container.AddArrangedSubview(child);
+	}
 
 	/// <summary>
 	/// Initializes <see cref="AlertView"/>
@@ -53,26 +72,79 @@ public class AlertView : UIView
 	public void Setup()
 	{
 		Initialize();
-		ConstraintInParent();
+		SetParentConstraints();
 	}
 
-	void ConstraintInParent()
+	/// <inheritdoc />
+	public override void LayoutSubviews()
 	{
-		_ = Container ?? throw new InvalidOperationException($"{nameof(AlertView)}.{nameof(Initialize)} not called");
+		base.LayoutSubviews();
+		UpdateVerticalConstraints();
+	}
 
-		const int defaultSpacing = 10;
-		if (AnchorView is null)
+	// Runs on every layout pass, so the constraints are only replaced when the placement changes (or UIKit removed them together with a view
+	// they referred to): constraints added on every pass pile up and contradict each other.
+	void UpdateVerticalConstraints()
+	{
+		// UIKit throws (NSGenericException) when it activates a constraint between views that have no common ancestor, which is also why an
+		// anchor that is not in the parent view is ignored
+		if (!IsDescendantOfView(ParentView))
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing).Active = true;
-			this.SafeTopAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeTopAnchor(), defaultSpacing).Active = true;
+			return;
+		}
+
+		var anchorView = AnchorView?.IsDescendantOfView(ParentView) is true ? AnchorView : null;
+		var isBelowAnchorView = anchorView is not null && !FitsAbove(anchorView);
+
+		if (verticalConstraints.Length > 0
+			&& anchorView == placedAnchorView
+			&& isBelowAnchorView == isPlacedBelowAnchorView
+			&& Array.TrueForAll(verticalConstraints, static constraint => constraint.Active))
+		{
+			return;
+		}
+
+		NSLayoutConstraint.DeactivateConstraints(verticalConstraints);
+
+		verticalConstraints = anchorView switch
+		{
+			null =>
+			[
+				this.SafeBottomAnchor().ConstraintEqualTo(ParentView.SafeBottomAnchor(), -defaultSpacing),
+				this.SafeTopAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeTopAnchor(), defaultSpacing)
+			],
+			UIView anchor when isBelowAnchorView => [this.SafeTopAnchor().ConstraintEqualTo(anchor.SafeBottomAnchor(), defaultSpacing)],
+			UIView anchor => [this.SafeBottomAnchor().ConstraintEqualTo(anchor.SafeTopAnchor())]
+		};
+
+		NSLayoutConstraint.ActivateConstraints(verticalConstraints);
+		placedAnchorView = anchorView;
+		isPlacedBelowAnchorView = isBelowAnchorView;
+	}
+
+	// The height comes from Container, which base.LayoutSubviews has laid out: unlike the view's own frame, it does not depend on where the
+	// view is placed (the view grows by the safe area insets it overlaps) and it is already known on the first layout pass.
+	bool FitsAbove(UIView anchorView)
+	{
+		var height = Container.Frame.Height + (2 * defaultSpacing);
+		var anchorTop = anchorView.ConvertRectToView(anchorView.Bounds, ParentView).Top;
+
+		return anchorTop - height >= ParentView.SafeAreaLayoutGuide.LayoutFrame.Top;
+	}
+
+	void SetParentConstraints()
+	{
+		if (shouldFillAndExpandHorizontally)
+		{
+			this.SafeLeadingAnchor().ConstraintEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
+			this.SafeTrailingAnchor().ConstraintEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
 		}
 		else
 		{
-			this.SafeBottomAnchor().ConstraintEqualTo(AnchorView.SafeBottomAnchor(), -defaultSpacing).Active = true;
+			this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
+			this.SafeTrailingAnchor().ConstraintLessThanOrEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
 		}
 
-		this.SafeLeadingAnchor().ConstraintGreaterThanOrEqualTo(ParentView.SafeLeadingAnchor(), defaultSpacing).Active = true;
-		this.SafeTrailingAnchor().ConstraintLessThanOrEqualTo(ParentView.SafeTrailingAnchor(), -defaultSpacing).Active = true;
 		this.SafeCenterXAnchor().ConstraintEqualTo(ParentView.SafeCenterXAnchor()).Active = true;
 
 		Container.SafeLeadingAnchor().ConstraintEqualTo(this.SafeLeadingAnchor(), defaultSpacing).Active = true;
@@ -81,22 +153,8 @@ public class AlertView : UIView
 		Container.SafeTopAnchor().ConstraintEqualTo(this.SafeTopAnchor(), defaultSpacing).Active = true;
 	}
 
-	[MemberNotNull(nameof(Container))]
 	void Initialize()
 	{
-		Container = new UIStackView()
-		{
-			Alignment = UIStackViewAlignment.Fill,
-			Distribution = UIStackViewDistribution.EqualSpacing,
-			Axis = UILayoutConstraintAxis.Horizontal,
-			TranslatesAutoresizingMaskIntoConstraints = false
-		};
-
-		foreach (var view in Children)
-		{
-			Container.AddArrangedSubview(view);
-		}
-
 		TranslatesAutoresizingMaskIntoConstraints = false;
 		AddSubview(Container);
 

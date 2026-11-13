@@ -5,15 +5,16 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class StatusBarBehaviorTests : BaseTest
+public class StatusBarBehaviorTests() : BaseBehaviorTest<StatusBarBehavior, Page>(new StatusBarBehavior(), new ContentPage())
 {
 	[Fact]
 	public void VerifyDefaults()
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 
-		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
-		Assert.Equal(StatusBarStyle.Default, statusBarBehavior.StatusBarStyle);
+		Assert.Equal(StatusBarBehaviorDefaults.StatusBarColor, statusBarBehavior.StatusBarColor);
+		Assert.Equal(StatusBarBehaviorDefaults.StatusBarStyle, statusBarBehavior.StatusBarStyle);
+		Assert.Equal(StatusBarBehaviorDefaults.ApplyOn, statusBarBehavior.ApplyOn);
 	}
 
 	[Fact]
@@ -34,7 +35,7 @@ public class StatusBarBehaviorTests : BaseTest
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 
-		var view = new View();
+		var view = new MockView();
 
 		Assert.Throws<InvalidOperationException>(() => view.Behaviors.Add(statusBarBehavior));
 	}
@@ -44,7 +45,7 @@ public class StatusBarBehaviorTests : BaseTest
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarColor = Colors.Red);
-		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android 23 and later");
+		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android");
 	}
 
 	[Fact]
@@ -52,6 +53,51 @@ public class StatusBarBehaviorTests : BaseTest
 	{
 		var statusBarBehavior = new StatusBarBehavior();
 		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
-		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android 23 and later");
+		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android");
+	}
+	[Fact]
+	public void VerifyDefaultStatusBarColorIsTransparent()
+	{
+		// The default transparent color is exactly the condition that triggered #2351.
+		var statusBarBehavior = new StatusBarBehavior();
+
+		Assert.Equal(Colors.Transparent, statusBarBehavior.StatusBarColor);
+	}
+
+
+	[Fact]
+	public void VerifyStatusBarColorRaisesPropertyChanged()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		string? changedProperty = null;
+		statusBarBehavior.PropertyChanged += (_, e) => changedProperty = e.PropertyName;
+
+		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarColor = Colors.Red);
+		exception.Message.Should().Be("PlatformSetColor is only supported on iOS and Android");
+		changedProperty.Should().Be(nameof(StatusBarBehavior.StatusBarColor));
+	}
+
+	[Fact]
+	public void VerifyStatusBarStyleRaisesPropertyChanged()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		string? changedProperty = null;
+		statusBarBehavior.PropertyChanged += (_, e) => changedProperty = e.PropertyName;
+
+		var exception = Assert.Throws<NotSupportedException>(() => statusBarBehavior.StatusBarStyle = StatusBarStyle.DarkContent);
+		exception.Message.Should().Be("PlatformSetStyle is only supported on iOS and Android");
+		changedProperty.Should().Be(nameof(StatusBarBehavior.StatusBarStyle));
+	}
+
+	[Fact]
+	public void VerifyApplyOnRaisesPropertyChanged()
+	{
+		var statusBarBehavior = new StatusBarBehavior();
+		string? changedProperty = null;
+		statusBarBehavior.PropertyChanged += (_, e) => changedProperty = e.PropertyName;
+
+		statusBarBehavior.ApplyOn = StatusBarApplyOn.OnPageNavigatedTo;
+
+		changedProperty.Should().Be(nameof(StatusBarBehavior.ApplyOn));
 	}
 }

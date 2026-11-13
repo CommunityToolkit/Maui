@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class MauiDrawingLineCompletedEventArgsTests : BaseHandlerTest
+public class MauiDrawingLineCompletedEventArgsTests : BaseViewTest
 {
 	[Fact]
 	public void MauiDrawingLineShouldBeEqualInMauiDrawingLineCompletedEventArgs()
@@ -21,5 +21,15 @@ public class MauiDrawingLineCompletedEventArgsTests : BaseHandlerTest
 		};
 		var drawingLineCompletedEventArgs = new MauiDrawingLineCompletedEventArgs(drawingLine);
 		drawingLineCompletedEventArgs.Line.Should().BeEquivalentTo(drawingLine);
+	}
+
+	[Fact]
+	public void MauiDrawingLineCompletedEventArgs_NullLine_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new MauiDrawingLineCompletedEventArgs(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("line", exception.ParamName);
 	}
 }

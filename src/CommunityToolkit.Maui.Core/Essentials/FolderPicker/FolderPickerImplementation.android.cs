@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Web;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Provider;
 using CommunityToolkit.Maui.Core.Essentials;
@@ -11,9 +11,10 @@ using AndroidUri = Android.Net.Uri;
 namespace CommunityToolkit.Maui.Storage;
 
 /// <inheritdoc />
+[SupportedOSPlatform("Android26.0")]
 public sealed partial class FolderPickerImplementation : IFolderPicker
 {
-	async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
+	static async Task<Folder> InternalPickAsync(string initialPath, CancellationToken cancellationToken)
 	{
 		if (!OperatingSystem.IsAndroidVersionAtLeast(26) && !string.IsNullOrEmpty(initialPath))
 		{
@@ -22,26 +23,15 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 
 		Folder? folder = null;
 
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			var statusRead = await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken).ConfigureAwait(false);
-			if (statusRead is not PermissionStatus.Granted)
-			{
-				throw new PermissionException("Storage permission is not granted.");
-			}
-		}
-
-		if (Android.OS.Environment.ExternalStorageDirectory is not null)
-		{
-			initialPath = initialPath.Replace(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath, string.Empty, StringComparison.InvariantCulture);
-		}
-
-		var initialFolderUri = AndroidUri.Parse(AndroidStorageConstants.ExternalStorageBaseUrl + HttpUtility.UrlEncode(initialPath));
-
 		var intent = new Intent(Intent.ActionOpenDocumentTree);
-		intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
 
-		await IntermediateActivity.StartAsync(intent, (int)AndroidRequestCode.RequestCodeFolderPicker, onResult: OnResult).WaitAsync(cancellationToken);
+		// No storage volume holds a folder of the app's private storage: the picker then starts where it chooses.
+		if (AndroidPathExtensions.ToExternalStorageDocumentUri(initialPath) is AndroidUri initialFolderUri)
+		{
+			intent.PutExtra(DocumentsContract.ExtraInitialUri, initialFolderUri);
+		}
+
+		await ActivityResultManager.StartAsync(intent, AndroidRequestCode.RequestCodeFolderPicker, OnResult, cancellationToken);
 
 		return folder ?? throw new FolderPickerException("Unable to get folder.");
 
@@ -52,7 +42,7 @@ public sealed partial class FolderPickerImplementation : IFolderPicker
 		}
 	}
 
-	Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
+	static Task<Folder> InternalPickAsync(CancellationToken cancellationToken)
 	{
 		return InternalPickAsync(AndroidPathExtensions.GetExternalDirectory(), cancellationToken);
 	}

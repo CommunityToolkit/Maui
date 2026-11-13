@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
@@ -7,25 +6,25 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class SelectedItemEventArgsConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string? itemSelected;
+	public partial string? ItemSelected { get; set; }
 
 	[ObservableProperty]
-	string labelText = "This label will display the selected item";
-
-	public IReadOnlyList<string> StringItemSource { get; } = new[]
-	{
+	public partial string LabelText { get; set; } = "This label will display the selected item";
+	public IReadOnlyList<string> StringItemSource { get; } =
+	[
 		"Item 0",
 		"Item 1",
 		"Item 2",
 		"Item 3",
 		"Item 4",
-		"Item 5",
-	};
+		"Item 5"
+	];
 
+	// The SelectedItemEventArgsConverter passes SelectedItemChangedEventArgs.SelectedItem: null when the selection is cleared below
 	[RelayCommand]
-	void HandleItemSelected(string text)
+	void HandleItemSelected(string? text)
 	{
-		if (ItemSelected is not null)
+		if (text is not null)
 		{
 			LabelText = $"{text} has been selected";
 			ItemSelected = null;

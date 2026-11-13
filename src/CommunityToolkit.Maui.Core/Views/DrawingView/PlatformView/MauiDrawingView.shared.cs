@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Core.Extensions;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -14,7 +14,6 @@ public partial class MauiDrawingView
 	PointF previousPoint;
 	PathF currentPath = new();
 	MauiDrawingLine? currentLine;
-	Paint paint = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Event raised when drawing line completed 
@@ -52,10 +51,18 @@ public partial class MauiDrawingView
 		remove => weakEventManager.RemoveEventHandler(value);
 	}
 
+	// Lets DrawingViewHandler listen again after the DrawingView was unloaded (raised on iOS and Mac Catalyst). Weak, like the other events:
+	// while the DrawingView is unloaded, the view must not keep its handler alive.
+	internal event EventHandler AttachedToWindow
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
 	/// <summary>
 	/// Drawing Lines
 	/// </summary>
-	public ObservableCollection<MauiDrawingLine> Lines { get; } = new();
+	public ObservableCollection<MauiDrawingLine> Lines { get; } = [];
 
 	/// <summary>
 	/// Enable or disable multiline mode
@@ -80,20 +87,33 @@ public partial class MauiDrawingView
 	/// <summary>
 	/// Used to draw any shape on the canvas
 	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction { get; set; }
+	/// <remarks>
+	/// The action draws above the background and below the lines, in a canvas state of its own: the fill paint of the background is not set on
+	/// the canvas that the action receives, and the canvas state is restored after the action, so the fill paint, stroke settings, transforms and
+	/// other canvas state that the action sets do not apply to the lines.
+	/// </remarks>
+	public Action<ICanvas, RectF>? DrawAction
+	{
+		get;
+		set
+		{
+			field = value;
+			Redraw();
+		}
+	}
 
 	/// <summary>
 	/// Drawable background
 	/// </summary>
 	public Paint Paint
 	{
-		get => paint;
+		get;
 		set
 		{
-			paint = value;
+			field = value;
 			Redraw();
 		}
-	}
+	} = new SolidPaint(DrawingViewDefaults.BackgroundColor);
 
 	/// <summary>
 	/// Clean up resources
@@ -103,6 +123,9 @@ public partial class MauiDrawingView
 		currentPath.Dispose();
 		Lines.CollectionChanged -= OnLinesCollectionChanged;
 	}
+
+	internal void RaiseAttachedToWindow() =>
+		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(AttachedToWindow));
 
 	void OnStart(PointF point)
 	{
@@ -120,10 +143,10 @@ public partial class MauiDrawingView
 		currentPath.MoveTo(previousPoint.X, previousPoint.Y);
 		currentLine = new MauiDrawingLine
 		{
-			Points = new ObservableCollection<PointF>
-			{
+			Points =
+			[
 				new(previousPoint.X, previousPoint.Y)
-			},
+			],
 			LineColor = LineColor,
 			LineWidth = LineWidth
 		};
@@ -186,8 +209,9 @@ public partial class MauiDrawingView
 	void OnDrawingStarted(PointF point) =>
 		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(point), nameof(DrawingStarted));
 
+	// DrawingCancelled is declared with MauiDrawingStartedEventArgs, so it is raised with them: the point where the cancelled drawing started
 	void OnDrawingCancelled() =>
-		weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(DrawingCancelled));
+		weakEventManager.HandleEvent(this, new MauiDrawingStartedEventArgs(previousPoint), nameof(DrawingCancelled));
 
 	void OnLinesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => LoadLines();
 
@@ -204,21 +228,26 @@ public partial class MauiDrawingView
 		currentPath = new PathF();
 	}
 
-	class DrawingViewDrawable : IDrawable
+	sealed class DrawingViewDrawable(MauiDrawingView drawingView) : IDrawable
 	{
-		readonly MauiDrawingView drawingView;
-
-		public DrawingViewDrawable(MauiDrawingView drawingView)
-		{
-			this.drawingView = drawingView;
-		}
+		readonly MauiDrawingView drawingView = drawingView;
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
+			// The background and the DrawAction each draw in a canvas state of their own, so that the fill paint they set does not reach the strokes
+			// that follow: while a gradient, pattern or image fill paint is set, MAUI's Android canvas (Microsoft.Maui.Graphics 10.0.70 and later)
+			// strokes paths with that paint instead of the stroke color, so a gradient background painted the lines with the gradient and hid them.
+			canvas.SaveState();
 			canvas.SetFillPaint(drawingView.Paint, dirtyRect);
 			canvas.FillRectangle(dirtyRect);
+			canvas.RestoreState();
 
-			drawingView.DrawAction?.Invoke(canvas, dirtyRect);
+			if (drawingView.DrawAction is Action<ICanvas, RectF> drawAction)
+			{
+				canvas.SaveState();
+				drawAction(canvas, dirtyRect);
+				canvas.RestoreState();
+			}
 
 			DrawCurrentLines(canvas, drawingView);
 
@@ -233,7 +262,7 @@ public partial class MauiDrawingView
 			canvas.StrokeDashOffset = 0;
 			canvas.StrokeLineCap = LineCap.Round;
 			canvas.StrokeLineJoin = LineJoin.Round;
-			canvas.StrokeDashPattern = Array.Empty<float>();
+			canvas.StrokeDashPattern = [];
 		}
 
 		static void DrawCurrentLines(in ICanvas canvas, in MauiDrawingView drawingView)

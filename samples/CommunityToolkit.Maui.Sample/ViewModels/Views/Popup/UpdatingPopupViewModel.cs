@@ -3,24 +3,16 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public partial class UpdatingPopupViewModel : BaseViewModel
+public partial class UpdatingPopupViewModel(IPopupService popupService) : BaseViewModel
 {
 	const double finalUpdateProgressValue = 1;
 
-	readonly WeakEventManager finishedEventManager = new();
-
 	[ObservableProperty]
-	string message = "";
+	public partial string Message { get; set; } = "";
 
 	[ObservableProperty]
 	[NotifyCanExecuteChangedFor(nameof(FinishCommand))]
-	double updateProgress;
-
-	public event EventHandler<EventArgs> Finished
-	{
-		add => finishedEventManager.AddEventHandler(value);
-		remove => finishedEventManager.RemoveEventHandler(value);
-	}
+	public partial double UpdateProgress { get; set; }
 
 	internal async void PerformUpdates(int numberOfUpdates)
 	{
@@ -36,13 +28,29 @@ public partial class UpdatingPopupViewModel : BaseViewModel
 		}
 
 		UpdateProgress = finalUpdateProgressValue;
-		Message = "Updates complete";
+		Message = $"Completed {numberOfUpdates} updates";
 	}
 
 	[RelayCommand(CanExecute = nameof(CanFinish))]
-	void OnFinish()
+	async Task OnFinish()
 	{
-		finishedEventManager.HandleEvent(this, EventArgs.Empty, nameof(Finished));
+		if (Application.Current?.Windows[0].Page is not Page currentPage)
+		{
+			throw new InvalidOperationException("Unable to retrieve current page");
+		}
+
+		await popupService.ClosePopupAsync(currentPage.Navigation);
+	}
+
+	[RelayCommand]
+	async Task OnMore()
+	{
+		if (Application.Current?.Windows[0].Page is not Page currentPage)
+		{
+			throw new InvalidOperationException("Unable to retrieve current page");
+		}
+
+		await popupService.ShowPopupAsync<UpdatingPopupViewModel>(currentPage.Navigation);
 	}
 
 	bool CanFinish() => UpdateProgress is finalUpdateProgressValue;

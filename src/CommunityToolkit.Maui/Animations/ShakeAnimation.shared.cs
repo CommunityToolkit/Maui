@@ -55,16 +55,16 @@ public class ShakeAnimation : BaseAnimation
 	}
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
 		var duration = (uint)(Length / Math.Ceiling(StartFactor / ReducingAmount)) / 2;
-	
+
 		for (var i = StartFactor; i > 0; i -= ReducingAmount)
 		{
-			await view.TranslateTo(-i, 0, duration, Easing);
-			await view.TranslateTo(i, 0, duration, Easing);
+			await view.TranslateToAsync(-i, 0, duration, Easing, token);
+			await view.TranslateToAsync(i, 0, duration, Easing, token);
 		}
 
 		view.TranslationX = 0;

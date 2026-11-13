@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
 /// </summary>
-public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
+[AcceptEmptyServiceProvider]
+public partial class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;
@@ -14,7 +15,7 @@ public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 	/// <summary>
 	///     Enum values, that converts to <c>true</c> (optional)
 	/// </summary>
-	public IList<Enum> TrueValues { get; } = new List<Enum>();
+	public IList<Enum> TrueValues { get; } = [];
 
 	/// <summary>
 	///     Convert an <see cref="Enum" /> to corresponding <see cref="bool" />
@@ -51,7 +52,7 @@ public class EnumToBoolConverter : BaseConverterOneWay<Enum, bool, Enum?>
 				return false;
 			}
 
-			if (valueToCheckType.GetTypeInfo().GetCustomAttribute<FlagsAttribute>() != null)
+			if (valueToCheckType.GetTypeInfo().GetCustomAttribute<FlagsAttribute>() is not null)
 			{
 				return referenceEnumValue.HasFlag(valueToCheck);
 			}

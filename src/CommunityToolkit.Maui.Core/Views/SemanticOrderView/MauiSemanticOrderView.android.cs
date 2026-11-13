@@ -1,29 +1,27 @@
 ﻿using Android.Content;
 using Microsoft.Maui.Platform;
+using AView = Android.Views.View;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
 /// The native implementation of the <see href="SemanticOrderView"/> control.
 /// </summary>
-public class MauiSemanticOrderView : ContentViewGroup
+/// <remarks>
+/// Initialize <see cref="MauiSemanticOrderView"/>
+/// </remarks>
+/// <param name="context">Android Context</param>
+public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 {
-	ISemanticOrderView? virtualView;
-
-	/// <summary>
-	/// Initialize <see cref="MauiSemanticOrderView"/>
-	/// </summary>
-	/// <param name="context">Android Context</param>
-	public MauiSemanticOrderView(Context context) : base(context)
-	{
-	}
+	// The next update removes the links between these views that the new order does not have
+	readonly List<AView> orderedViews = [];
 
 	internal ISemanticOrderView? VirtualView
 	{
-		get => virtualView;
+		get;
 		set
 		{
-			virtualView = value;
+			field = value;
 			UpdateViewOrder();
 		}
 	}
@@ -35,17 +33,15 @@ public class MauiSemanticOrderView : ContentViewGroup
 			return;
 		}
 
-		var viewOrder = VirtualView.ViewOrder.ToList();
+		// Entries without an Android platform view (not realized yet, or with a platform view of another type) cannot be ordered, so they are left out
+		var viewOrder = VirtualView.ViewOrder.Select(static view => view.Handler?.PlatformView).OfType<AView>().ToList();
+
+		RemoveLinksOfThePreviousOrder(viewOrder);
 
 		for (var i = 1; i < viewOrder.Count; i++)
 		{
-			var view1 = (viewOrder[i - 1]?.Handler as IPlatformViewHandler)?.PlatformView;
-			var view2 = (viewOrder[i]?.Handler as IPlatformViewHandler)?.PlatformView;
-
-			if (view1 is null || view2 is null)
-			{
-				return;
-			}
+			var view1 = viewOrder[i - 1];
+			var view2 = viewOrder[i];
 
 			if (view1.Id <= 0)
 			{
@@ -57,12 +53,12 @@ public class MauiSemanticOrderView : ContentViewGroup
 				view2.Id = GenerateViewId();
 			}
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(22))
-			{
-				view2.AccessibilityTraversalAfter = view1.Id;
-				view1.AccessibilityTraversalBefore = view2.Id;
-			}
+			view2.AccessibilityTraversalAfter = view1.Id;
+			view1.AccessibilityTraversalBefore = view2.Id;
 		}
+
+		orderedViews.Clear();
+		orderedViews.AddRange(viewOrder);
 	}
 
 	/// <inheritdoc />
@@ -70,5 +66,46 @@ public class MauiSemanticOrderView : ContentViewGroup
 	{
 		UpdateViewOrder();
 		base.OnLayout(changed, left, top, right, bottom);
+	}
+
+	static bool AreNextToEachOther(List<AView> viewOrder, AView view1, AView view2)
+	{
+		for (var i = 1; i < viewOrder.Count; i++)
+		{
+			if (viewOrder[i - 1] == view1 && viewOrder[i] == view2)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// The native order describes the current order only, so a link that the previous order made between two views that are no longer next to
+	// each other is removed, unless it was changed since. Links that the new order keeps, and links that the app made, are left as they are,
+	// so applying an unchanged order again (OnLayout) changes nothing.
+	void RemoveLinksOfThePreviousOrder(List<AView> viewOrder)
+	{
+		for (var i = 1; i < orderedViews.Count; i++)
+		{
+			var view1 = orderedViews[i - 1];
+			var view2 = orderedViews[i];
+
+			// A view of the previous order may have been disposed since
+			if (view1.Handle == IntPtr.Zero || view2.Handle == IntPtr.Zero || AreNextToEachOther(viewOrder, view1, view2))
+			{
+				continue;
+			}
+
+			if (view2.AccessibilityTraversalAfter == view1.Id)
+			{
+				view2.AccessibilityTraversalAfter = NoId;
+			}
+
+			if (view1.AccessibilityTraversalBefore == view2.Id)
+			{
+				view1.AccessibilityTraversalBefore = NoId;
+			}
+		}
 	}
 }

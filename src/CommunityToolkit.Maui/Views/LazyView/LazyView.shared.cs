@@ -4,7 +4,7 @@
 /// This a basic implementation implementing <see cref="LazyView"/>
 /// </summary>
 /// <typeparam name="TView">Any <see cref="View"/></typeparam>
-public class LazyView<TView> : LazyView where TView : View, new()
+public partial class LazyView<TView> : LazyView where TView : View, new()
 {
 	/// <summary>
 	/// This method initializes <see cref="LazyView{TView}"/>.
@@ -25,19 +25,13 @@ public class LazyView<TView> : LazyView where TView : View, new()
 /// <summary>
 /// Abstract base class for <see cref="LazyView{TView}"/>
 /// </summary>
-public abstract class LazyView : ContentView
+public abstract partial class LazyView : ContentView
 {
-	internal static readonly BindablePropertyKey HasLazyViewLoadedPropertyKey = BindableProperty.CreateReadOnly(nameof(HasLazyViewLoaded), typeof(bool), typeof(LazyView), false);
-
 	/// <summary>
-	/// This is a read-only <see cref="BindableProperty"/> that indicates when the view is loaded.
+	/// Gets a value indicating whether the view has been loaded.
 	/// </summary>
-	public static readonly BindableProperty HasLazyViewLoadedProperty = HasLazyViewLoadedPropertyKey.BindableProperty;
-
-	/// <summary>
-	/// This is a read-only property that indicates when the view is loaded.
-	/// </summary>
-	public bool HasLazyViewLoaded => (bool)GetValue(HasLazyViewLoadedProperty);
+	[BindableProperty]
+	public partial bool HasLazyViewLoaded { get; }
 
 	/// <summary>
 	/// Use this method to do the initialization of the <see cref="View"/> and change the status HasViewLoaded value here.
@@ -55,8 +49,8 @@ public abstract class LazyView : ContentView
 	}
 
 	/// <summary>
-	/// This method change the value of the <see cref="HasLazyViewLoaded"/> property.
+	/// This method changes the value of the <see cref="HasLazyViewLoaded"/> property.
 	/// </summary>
 	/// <param name="hasLoaded"></param>
-	protected void SetHasLazyViewLoaded(bool hasLoaded) => SetValue(HasLazyViewLoadedPropertyKey, hasLoaded);
+	protected void SetHasLazyViewLoaded(bool hasLoaded) => SetValue(hasLazyViewLoadedPropertyKey, hasLoaded);
 }

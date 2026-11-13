@@ -1,19 +1,19 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Sample.Models;
 
-namespace CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
+namespace CommunityToolkit.Maui.Sample.ViewModels.Views;
 
-public class AvatarViewBindablePropertiesViewModel : BaseViewModel
+public partial class AvatarViewBindablePropertiesViewModel : BaseViewModel
 {
-	public ObservableCollection<AvatarModel> AvatarList { get; } = new()
-	{
+	public ObservableCollection<AvatarModel> AvatarList { get; } =
+	[
 		new AvatarModel
 		{
 			Description = "Sam Worthington",
 			Text = "SW",
 			TextColor = Colors.Blue,
 			BackgroundColor = Colors.Yellow,
-			ImageSource = "https://clipground.com/images/avatar-movie-clipart.png", // Using URL image
+			ImageSource = "https://aka.ms/campus.jpg", // Using URL image
 			BorderWidth = 4,
 			Padding = 5,
 			WidthRequest = 64,
@@ -63,7 +63,7 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 			Text = "SL",
 			TextColor = Colors.White,
 			BackgroundColor = Colors.Black,
-			BorderWidth = Thickness.Zero,
+			BorderWidth = 0,
 			Padding = Thickness.Zero,
 			WidthRequest = 64,
 			HeightRequest = 48,
@@ -88,5 +88,5 @@ public class AvatarViewBindablePropertiesViewModel : BaseViewModel
 			WidthRequest = 128,
 			HeightRequest = 72,
 		},
-	};
+	];
 }

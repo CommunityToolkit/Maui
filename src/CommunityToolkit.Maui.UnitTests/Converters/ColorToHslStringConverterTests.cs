@@ -1,53 +1,137 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
+using FluentAssertions.Equivalency;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHslStringConverter>
 {
-	public static readonly IReadOnlyList<object[]> ValidInputData = new[]
+	public static readonly TheoryData<float, float, float, float, string> ValidInputData = new()
 	{
-		new object[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, "HSL(0,0%,0%)" },
-		new object[] { 0, 0, 0, int.MinValue, "HSL(0,0%,0%)" },
-		new object[] { 0, 0, 0, -0.5, "HSL(0,0%,0%)" },
-		new object[] { 0, 0, 0, 0, "HSL(0,0%,0%)" },
-		new object[] { 0, 0, 0, 0.5, "HSL(0,0%,0%)" },
-		new object[] { 0, 0, 0, int.MaxValue, "HSL(0,0%,0%)" },
-		new object[] { int.MaxValue, int.MaxValue, int.MaxValue, int.MinValue, "HSL(0,0%,100%)" },
-		new object[] { int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue, "HSL(0,0%,100%)" },
-		new object[] { 0, 0, 0, 1, "HSL(0,0%,0%)" },
-		new object[] { 0, 0, 1, 0, "HSL(240,100%,50%)" },
-		new object[] { 0, 0, 1, 1, "HSL(240,100%,50%)" },
-		new object[] { 0, 1, 0, 0, "HSL(120,100%,50%)" },
-		new object[] { 0, 1, 0, 1, "HSL(120,100%,50%)" },
-		new object[] { 0, 1, 1, 0, "HSL(180,100%,50%)" },
-		new object[] { 0, 1, 1, 1, "HSL(180,100%,50%)" },
-		new object[] { 1, 0, 0, 0, "HSL(360,100%,50%)" },
-		new object[] { 1, 0, 0, 1, "HSL(360,100%,50%)" },
-		new object[] { 1, 0, 1, 0, "HSL(300,100%,50%)" },
-		new object[] { 1, 0, 1, 1, "HSL(300,100%,50%)" },
-		new object[] { 1, 1, 0, 0, "HSL(60,100%,50%)" },
-		new object[] { 1, 1, 0, 1, "HSL(60,100%,50%)" },
-		new object[] { 1, 1, 1, 0, "HSL(0,0%,100%)" },
-		new object[] { 1, 1, 1, 1, "HSL(0,0%,100%)" },
-		new object[] { 0.5, 0, 0, 1, "HSL(360,100%,25%)" },
-		new object[] { 0.5, 0, 0, 0, "HSL(360,100%,25%)" },
-		new object[] { 0, 0.5, 0, 1, "HSL(120,100%,25%)" },
-		new object[] { 0, 0.5, 0, 0, "HSL(120,100%,25%)" },
-		new object[] { 0, 0, 0.5, 1, "HSL(240,100%,25%)" },
-		new object[] { 0, 0, 0.5, 0, "HSL(240,100%,25%)" },
-		new object[] { 0.5, 0.5, 0.5, 1, "HSL(0,0%,50%)" },
-		new object[] { 0.5, 0.5, 0.5, 0, "HSL(0,0%,50%)" },
-		new object[] { 0.25, 0.25, 0.25, 1, "HSL(0,0%,25%)" },
-		new object[] { 0.25, 0.25, 0.25, 0, "HSL(0,0%,25%)" },
-		new object[] { 0.25, 0.25, 1, 1, "HSL(240,100%,62%)" },
-		new object[] { 0.25, 0.25, 1, 0, "HSL(240,100%,62%)" },
-		new object[] { 0.25, 1, 0.25, 1, "HSL(120,100%,62%)" },
-		new object[] { 0.25, 1, 0.25, 0, "HSL(120,100%,62%)" },
-		new object[] { 0.75, 1, 0.25, 1, "HSL(80,100%,62%)" },
-		new object[] { 0.75, 1, 0.25, 0, "HSL(80,100%,62%)" },
-		new object[] { 0.75, 0, 1, 1, "HSL(285,100%,50%)" },
-		new object[] { 0.75, 0, 1, 0, "HSL(285,100%,50%)" },
+		{
+			int.MinValue, int.MinValue, int.MinValue, int.MinValue, "HSL(0,0%,0%)"
+		},
+		{
+			0, 0, 0, int.MinValue, "HSL(0,0%,0%)"
+		},
+		{
+			0, 0, 0, -0.5f, "HSL(0,0%,0%)"
+		},
+		{
+			0, 0, 0, 0, "HSL(0,0%,0%)"
+		},
+		{
+			0, 0, 0, 0.5f, "HSL(0,0%,0%)"
+		},
+		{
+			0, 0, 0, int.MaxValue, "HSL(0,0%,0%)"
+		},
+		{
+			int.MaxValue, int.MaxValue, int.MaxValue, int.MinValue, "HSL(0,0%,100%)"
+		},
+		{
+			int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue, "HSL(0,0%,100%)"
+		},
+		{
+			0, 0, 0, 1, "HSL(0,0%,0%)"
+		},
+		{
+			0, 0, 1, 0, "HSL(240,100%,50%)"
+		},
+		{
+			0, 0, 1, 1, "HSL(240,100%,50%)"
+		},
+		{
+			0, 1, 0, 0, "HSL(120,100%,50%)"
+		},
+		{
+			0, 1, 0, 1, "HSL(120,100%,50%)"
+		},
+		{
+			0, 1, 1, 0, "HSL(180,100%,50%)"
+		},
+		{
+			0, 1, 1, 1, "HSL(180,100%,50%)"
+		},
+		{
+			1, 0, 0, 0, "HSL(360,100%,50%)"
+		},
+		{
+			1, 0, 0, 1, "HSL(360,100%,50%)"
+		},
+		{
+			1, 0, 1, 0, "HSL(300,100%,50%)"
+		},
+		{
+			1, 0, 1, 1, "HSL(300,100%,50%)"
+		},
+		{
+			1, 1, 0, 0, "HSL(60,100%,50%)"
+		},
+		{
+			1, 1, 0, 1, "HSL(60,100%,50%)"
+		},
+		{
+			1, 1, 1, 0, "HSL(0,0%,100%)"
+		},
+		{
+			1, 1, 1, 1, "HSL(0,0%,100%)"
+		},
+		{
+			0.5f, 0, 0, 1, "HSL(360,100%,25%)"
+		},
+		{
+			0.5f, 0, 0, 0, "HSL(360,100%,25%)"
+		},
+		{
+			0, 0.5f, 0, 1, "HSL(120,100%,25%)"
+		},
+		{
+			0, 0.5f, 0, 0, "HSL(120,100%,25%)"
+		},
+		{
+			0, 0, 0.5f, 1, "HSL(240,100%,25%)"
+		},
+		{
+			0, 0, 0.5f, 0, "HSL(240,100%,25%)"
+		},
+		{
+			0.5f, 0.5f, 0.5f, 1, "HSL(0,0%,50%)"
+		},
+		{
+			0.5f, 0.5f, 0.5f, 0, "HSL(0,0%,50%)"
+		},
+		{
+			0.25f, 0.25f, 0.25f, 1, "HSL(0,0%,25%)"
+		},
+		{
+			0.25f, 0.25f, 0.25f, 0, "HSL(0,0%,25%)"
+		},
+		{
+			0.25f, 0.25f, 1, 1, "HSL(240,100%,62%)"
+		},
+		{
+			0.25f, 0.25f, 1, 0, "HSL(240,100%,62%)"
+		},
+		{
+			0.25f, 1, 0.25f, 1, "HSL(120,100%,62%)"
+		},
+		{
+			0.25f, 1, 0.25f, 0, "HSL(120,100%,62%)"
+		},
+		{
+			0.75f, 1, 0.25f, 1, "HSL(80,100%,62%)"
+		},
+		{
+			0.75f, 1, 0.25f, 0, "HSL(80,100%,62%)"
+		},
+		{
+			0.75f, 0, 1, 1, "HSL(285,100%,50%)"
+		},
+		{
+			0.75f, 0, 1, 0, "HSL(285,100%,50%)"
+		},
 	};
 
 	[Theory]
@@ -56,9 +140,10 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 	{
 		var converter = new ColorToHslStringConverter();
 		var color = new Color(red, green, blue, alpha);
+		var culture = new CultureInfo("en-US");
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
-		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -72,5 +157,25 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("de-DE", "HSL(360,100 %,50 %)")]
+	[InlineData("tr-TR", "HSL(360,%100,%50)")]
+	public void ColorToHslStringConverter_UsesPassedCulture_NotCurrentCulture(string cultureName, string expectedResult)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("en-US");
+
+			var result = new ColorToHslStringConverter().ConvertFrom(Colors.Red, new CultureInfo(cultureName));
+
+			Assert.Equal(expectedResult, result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 }

@@ -17,13 +17,13 @@ public class FlipVerticalAnimation : RotateAnimation
 	protected override double DefaultRotation { get; set; } = 90;
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
 		var duration = Length / 2;
 
-		await view.RotateXTo(Rotation, duration, Easing);
-		await view.RotateXTo(0, duration, Easing);
+		await view.RotateXToAsync(Rotation, duration, Easing, token);
+		await view.RotateXToAsync(0, duration, Easing, token);
 	}
 }

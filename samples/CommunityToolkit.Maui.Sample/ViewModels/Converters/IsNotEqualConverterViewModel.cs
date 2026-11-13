@@ -5,5 +5,5 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 public partial class IsNotEqualConverterViewModel : BaseViewModel
 {
 	[ObservableProperty]
-	string inputValue = string.Empty;
+	public partial string InputValue { get; set; } = string.Empty;
 }

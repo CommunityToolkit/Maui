@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace CommunityToolkit.Maui.Core.Views;
 
 /// <summary>
@@ -17,7 +15,7 @@ public class PlatformSnackbar : PlatformToast
 	/// <param name="cornerRadius">Snackbar Corner Radius</param>
 	/// <param name="textColor">Snackbar Text Color</param>
 	/// <param name="textFont">Snackbar Text Font</param>
-	/// <param name="characterSpacing">Snackbar Character Spacing</param>
+	/// <param name="characterSpacing">Snackbar Character Spacing, in the unit of <see cref="PlatformToast.CharacterSpacing"/></param>
 	/// <param name="actionButtonText">Snackbar Action Button Text</param>
 	/// <param name="actionTextColor">Snackbar Action Button Text Color</param>
 	/// <param name="actionButtonFont">Snackbar Action Button Font</param>
@@ -32,8 +30,8 @@ public class PlatformSnackbar : PlatformToast
 		string actionButtonText,
 		UIColor actionTextColor,
 		UIFont actionButtonFont,
-		NFloat padding)
-		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding)
+		nfloat padding)
+		: base(message, backgroundColor, cornerRadius, textColor, textFont, characterSpacing, padding, true)
 	{
 		padding += DefaultPadding;
 
@@ -58,7 +56,7 @@ public class PlatformSnackbar : PlatformToast
 	/// </summary>
 	public string ActionButtonText
 	{
-		get => actionButton.Title(UIControlState.Normal);
+		get => actionButton.Title(UIControlState.Normal) ?? string.Empty;
 		private init => actionButton.SetTitle(value, UIControlState.Normal);
 	}
 
@@ -97,6 +95,12 @@ public class PlatformSnackbar : PlatformToast
 	void ActionButton_TouchUpInside(object? sender, EventArgs e)
 	{
 		Action?.Invoke();
-		AlertView.Dismiss();
+
+		// Alert.Dismiss also stops the timer and invokes OnDismissed. The Action may have dismissed the alert already (for example
+		// Snackbar.Dismiss, or the Show of the next snackbar): dismissing it again would invoke OnDismissed a second time
+		if (AlertView.Superview is not null)
+		{
+			Dismiss();
+		}
 	}
 }

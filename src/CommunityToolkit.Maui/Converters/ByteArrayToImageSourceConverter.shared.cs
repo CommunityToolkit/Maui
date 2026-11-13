@@ -6,7 +6,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts the incoming value from <see cref="byte"/>[] and returns the object of a type <see cref="ImageSource"/> or vice versa.
 /// </summary>
-public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSource?>
+[AcceptEmptyServiceProvider]
+public partial class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSource?>
 {
 	/// <inheritdoc/>
 	public override ImageSource? DefaultConvertReturnValue { get; set; } = null;
@@ -23,12 +24,7 @@ public class ByteArrayToImageSourceConverter : BaseConverter<byte[]?, ImageSourc
 	[return: NotNullIfNotNull(nameof(value))]
 	public override ImageSource? ConvertFrom(byte[]? value, CultureInfo? culture = null)
 	{
-		if (value is null)
-		{
-			return null;
-		}
-
-		return ImageSource.FromStream(() => new MemoryStream(value));
+		return value is null ? null : ImageSource.FromStream(() => new MemoryStream(value));
 	}
 
 	/// <summary>

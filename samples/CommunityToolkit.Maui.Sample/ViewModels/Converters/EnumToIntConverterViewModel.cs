@@ -1,15 +1,6 @@
-﻿using System.Collections.Frozen;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
-
-public partial class EnumToIntConverterViewModel : BaseViewModel
-{
-	[ObservableProperty]
-	IssueState selectedState = IssueState.None;
-
-	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames(typeof(IssueState));
-}
 
 public enum IssueState
 {
@@ -21,4 +12,11 @@ public enum IssueState
 	WantFix = 5,
 	Rejected = 6,
 	Resolved = 7
+}
+public partial class EnumToIntConverterViewModel : BaseViewModel
+{
+	[ObservableProperty]
+	public partial IssueState SelectedState { get; set; } = IssueState.None;
+
+	public IReadOnlyList<string> AllStates { get; } = Enum.GetNames<IssueState>();
 }

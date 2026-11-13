@@ -7,16 +7,18 @@ namespace CommunityToolkit.Maui.Core.Layouts;
 /// </summary>
 public class UniformItemsLayoutManager : LayoutManager
 {
-	double childWidth, childHeight;
-
 	readonly IUniformItemsLayout uniformItemsLayout;
+
+	double childWidth, childHeight;
 
 	/// <summary>
 	/// Initialize a new instance of <see cref="UniformItemsLayoutManager"/>.
 	/// </summary>
-	public UniformItemsLayoutManager(IUniformItemsLayout uniformItemsLayout)
-		: base(uniformItemsLayout)
+	/// <param name="uniformItemsLayout">The <see cref="IUniformItemsLayout"/> to manage.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="uniformItemsLayout"/> is null.</exception>
+	public UniformItemsLayoutManager(IUniformItemsLayout uniformItemsLayout) : base(uniformItemsLayout)
 	{
+		ArgumentNullException.ThrowIfNull(uniformItemsLayout);
 		this.uniformItemsLayout = uniformItemsLayout;
 	}
 
@@ -28,9 +30,9 @@ public class UniformItemsLayoutManager : LayoutManager
 	public override Size ArrangeChildren(Rect rectangle)
 	{
 		var width = rectangle.Width - uniformItemsLayout.Padding.HorizontalThickness;
-		var visibleChildren = uniformItemsLayout.Where(x => x.Visibility == Visibility.Visible).ToArray();
+		var visibleChildren = uniformItemsLayout.Where(static x => x.Visibility is Visibility.Visible).ToArray();
 
-		if (visibleChildren.Length == 0 || width == 0)
+		if (visibleChildren.Length is 0 || width is 0)
 		{
 			return rectangle.Size;
 		}
@@ -67,7 +69,7 @@ public class UniformItemsLayoutManager : LayoutManager
 	/// <returns>Grid size</returns>
 	public override Size Measure(double widthConstraint, double heightConstraint)
 	{
-		var visibleChildren = uniformItemsLayout.Where(x => x.Visibility == Visibility.Visible).ToArray();
+		var visibleChildren = uniformItemsLayout.Where(static x => x.Visibility is Visibility.Visible).ToArray();
 
 		if (childWidth == 0)
 		{
@@ -88,10 +90,10 @@ public class UniformItemsLayoutManager : LayoutManager
 		var columnsCount = visibleChildrenCount;
 		if (childWidth != 0 && !double.IsPositiveInfinity(widthConstraint))
 		{
-			columnsCount = Math.Clamp((int)(widthConstraint / childWidth), 1, visibleChildrenCount);
+			columnsCount = Math.Min((int)(widthConstraint / childWidth), visibleChildrenCount);
 		}
 
-		return Math.Min(columnsCount, uniformItemsLayout.MaxColumns);
+		return Math.Clamp(columnsCount, 1, uniformItemsLayout.MaxColumns);
 	}
 
 	int GetRowsCount(int visibleChildrenCount, int columnsCount)

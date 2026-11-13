@@ -1,18 +1,17 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using FluentAssertions;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Views;
 
-public class DrawingLineTests : BaseHandlerTest
+public class DrawingLineTests : BaseViewTest
 {
 	readonly IDrawingLine drawingLine = new DrawingLine();
 
 	public DrawingLineTests()
 	{
-		Assert.IsAssignableFrom<IDrawingLine>(drawingLine);
+		Assert.IsType<IDrawingLine>(drawingLine, exactMatch: false);
 	}
 
 	[Fact]
@@ -70,13 +69,12 @@ public class DrawingLineTests : BaseHandlerTest
 		drawingLine.Granularity.Should().Be(expectedValue);
 	}
 
-	[Fact(Timeout = (int)TestDuration.Short)]
+	[Fact(Timeout = (int)TestDuration.Medium)]
 	public async Task GetImageStream_CancellationTokenExpired()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken Expired
-		await Task.Delay(100, CancellationToken.None);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(async () => await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), cts.Token));
 	}
@@ -84,7 +82,7 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStream_CancellationTokenCanceled()
 	{
-		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 
 		// Ensure CancellationToken Expired
 		await cts.CancelAsync();
@@ -95,14 +93,15 @@ public class DrawingLineTests : BaseHandlerTest
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamReturnsNullStream()
 	{
-		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), CancellationToken.None);
+		var stream = await drawingLine.GetImageStream(10, 10, Colors.Blue.AsPaint(), TestContext.Current.CancellationToken);
 		Assert.Equal(Stream.Null, stream);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task GetImageStreamStaticReturnsNullStream()
 	{
-		var stream = await DrawingLine.GetImageStream(Array.Empty<PointF>(), new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), CancellationToken.None);
+		ImagePointOptions pointOptions = new([], new Size(10, 10), 5, Colors.Yellow, Colors.Blue.AsPaint(), null);
+		var stream = await DrawingLine.GetImageStream(pointOptions, TestContext.Current.CancellationToken);
 		Assert.Equal(Stream.Null, stream);
 	}
 
@@ -115,9 +114,19 @@ public class DrawingLineTests : BaseHandlerTest
 			LineWidth = DrawingViewDefaults.LineWidth,
 			ShouldSmoothPathWhenDrawn = DrawingViewDefaults.ShouldSmoothPathWhenDrawn,
 			Granularity = DrawingViewDefaults.MinimumGranularity,
-			Points = new ObservableCollection<PointF>()
+			Points = []
 		};
 
 		drawingLine.Should().BeEquivalentTo(expectedDefaultValue);
+	}
+
+	[Fact]
+	public void GetImageStream_NullOptions_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => DrawingLine.GetImageStream(null, TestContext.Current.CancellationToken));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("options", exception.ParamName);
 	}
 }

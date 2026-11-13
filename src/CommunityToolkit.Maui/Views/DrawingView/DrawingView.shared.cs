@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.Core.Views;
 
 namespace CommunityToolkit.Maui.Views;
@@ -8,7 +9,14 @@ namespace CommunityToolkit.Maui.Views;
 /// <summary>
 /// The DrawingView allows you to draw one or multiple lines on a canvas.
 /// </summary>
-public class DrawingView : View, IDrawingView
+/// <remarks>
+/// While the <see cref="DrawingView"/> is unloaded (for example while its page is not shown), it keeps its handler, so that it can be removed from
+/// its layout or added to another one meanwhile, but the handler stops listening to the platform view and to <see cref="Lines"/>, so that
+/// a <see cref="Lines"/> collection that the app keeps does not keep the view alive. Changes to the other properties still reach the platform view.
+/// When the <see cref="DrawingView"/> is loaded again, its handler listens again and the platform view shows the current <see cref="Lines"/>,
+/// including the lines added or removed while the <see cref="DrawingView"/> was unloaded.
+/// </remarks>
+public partial class DrawingView : View, IDrawingView
 {
 	readonly WeakEventManager drawingViewEventManager = new();
 
@@ -17,64 +25,10 @@ public class DrawingView : View, IDrawingView
 	/// </summary>
 	public DrawingView()
 	{
+		BackgroundColor = DrawingViewDefaults.BackgroundColor;
+		Loaded += OnDrawingViewLoaded;
 		Unloaded += OnDrawingViewUnloaded;
 	}
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawAction"/> property.
-	/// </summary>
-	public static readonly BindableProperty DrawActionProperty =
-		BindableProperty.Create(nameof(DrawAction), typeof(Action<ICanvas, RectF>), typeof(DrawingView));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="ShouldClearOnFinish"/> property.
-	/// </summary>
-	public static readonly BindableProperty ShouldClearOnFinishProperty =
-		BindableProperty.Create(nameof(ShouldClearOnFinish), typeof(bool), typeof(DrawingView), DrawingViewDefaults.ShouldClearOnFinish);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="IsMultiLineModeEnabled"/> property.
-	/// </summary>
-	public static readonly BindableProperty IsMultiLineModeEnabledProperty =
-		BindableProperty.Create(nameof(IsMultiLineModeEnabled), typeof(bool), typeof(DrawingView), DrawingViewDefaults.IsMultiLineModeEnabled);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="Lines"/> property.
-	/// </summary>
-	public static readonly BindableProperty LinesProperty = BindableProperty.Create(
-		nameof(Lines), typeof(ObservableCollection<IDrawingLine>), typeof(DrawingView), defaultValueCreator: (_) => new ObservableCollection<IDrawingLine>(), defaultBindingMode: BindingMode.TwoWay);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawingLineCompletedCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty DrawingLineCompletedCommandProperty = BindableProperty.Create(nameof(DrawingLineCompletedCommand), typeof(ICommand), typeof(DrawingView));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawingLineStartedCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty DrawingLineStartedCommandProperty = BindableProperty.Create(nameof(DrawingLineStartedCommand), typeof(ICommand), typeof(DrawingView));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="DrawingLineCancelledCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty DrawingLineCancelledCommandProperty = BindableProperty.Create(nameof(DrawingLineCancelledCommand), typeof(ICommand), typeof(DrawingView));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="PointDrawnCommand"/> property.
-	/// </summary>
-	public static readonly BindableProperty PointDrawnCommandProperty = BindableProperty.Create(nameof(PointDrawnCommand), typeof(ICommand), typeof(DrawingView));
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="LineColor"/> property.
-	/// </summary>
-	public static readonly BindableProperty LineColorProperty =
-		BindableProperty.Create(nameof(LineColor), typeof(Color), typeof(DrawingView), DrawingViewDefaults.LineColor);
-
-	/// <summary>
-	/// Backing BindableProperty for the <see cref="LineWidth"/> property.
-	/// </summary>
-	public static readonly BindableProperty LineWidthProperty =
-		BindableProperty.Create(nameof(LineWidth), typeof(float), typeof(DrawingView), DrawingViewDefaults.LineWidth);
 
 	/// <summary>
 	/// Event occurred when drawing line completed.
@@ -95,7 +49,7 @@ public class DrawingView : View, IDrawingView
 	}
 
 	/// <summary>
-	/// Event occurred when drawing line cancelled.
+	/// Event occurred when drawing line canceled.
 	/// </summary>
 	public event EventHandler<EventArgs> DrawingLineCancelled
 	{
@@ -113,127 +67,101 @@ public class DrawingView : View, IDrawingView
 	}
 
 	/// <summary>
-	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
+	/// Gets or sets the action that allows drawing on the <see cref="IDrawingView"/>.
 	/// </summary>
-	public Color LineColor
-	{
-		get => (Color)GetValue(LineColorProperty);
-		set => SetValue(LineColorProperty, value);
-	}
+	/// <remarks>
+	/// The action draws above the background and below the lines, in a canvas state of its own: the fill paint of the background is not set on
+	/// the canvas that the action receives, and the canvas state is restored after the action, so the fill paint, stroke settings, transforms and
+	/// other canvas state that the action sets do not apply to the lines.
+	/// </remarks>
+	[BindableProperty]
+	public partial Action<ICanvas, RectF>? DrawAction { get; set; }
 
 	/// <summary>
-	/// The width that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
+	/// Gets or sets a value indicating whether the drawing surface should be cleared when the drawing operation finishes.
 	/// </summary>
-	public float LineWidth
-	{
-		get => (float)GetValue(LineWidthProperty);
-		set => SetValue(LineWidthProperty, value);
-	}
+	[BindableProperty]
+	public partial bool ShouldClearOnFinish { get; set; } = DrawingViewDefaults.ShouldClearOnFinish;
+
+	/// <summary>
+	/// Gets or sets a value indicating whether multi-line mode is enabled.
+	/// </summary>
+	[BindableProperty]
+	public partial bool IsMultiLineModeEnabled { get; set; } = DrawingViewDefaults.IsMultiLineModeEnabled;
+
+	/// <summary>
+	/// Gets or sets the collection of lines that are currently on the <see cref="DrawingView"/>.
+	/// </summary>
+	[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+	public partial ObservableCollection<IDrawingLine> Lines { get; set; } = [];
 
 	/// <summary>
 	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has completed.
-	/// Note that this is fired after the tap or click is lifted. When <see cref="IsMultiLineModeEnabled"/> is enabled
-	/// this command is fired multiple times.
 	/// This is a bindable property.
 	/// </summary>
-	public ICommand? DrawingLineCompletedCommand
-	{
-		get => (ICommand?)GetValue(DrawingLineCompletedCommandProperty);
-		set => SetValue(DrawingLineCompletedCommandProperty, value);
-	}
+	[BindableProperty]
+	public partial ICommand? DrawingLineCompletedCommand { get; set; }
 
 	/// <summary>
 	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has started.
 	/// </summary>
-	public ICommand? DrawingLineStartedCommand
-	{
-		get => (ICommand?)GetValue(DrawingLineStartedCommandProperty);
-		set => SetValue(DrawingLineStartedCommandProperty, value);
-	}
+	[BindableProperty]
+	public partial ICommand? DrawingLineStartedCommand { get; set; }
 
 	/// <summary>
-	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has cancelled.
+	/// This command is invoked whenever the drawing of a line on <see cref="DrawingView"/> has canceled.
 	/// </summary>
-	public ICommand? DrawingLineCancelledCommand
-	{
-		get => (ICommand?)GetValue(DrawingLineCancelledCommandProperty);
-		set => SetValue(DrawingLineCancelledCommandProperty, value);
-	}
+	[BindableProperty]
+	public partial ICommand? DrawingLineCancelledCommand { get; set; }
 
 	/// <summary>
 	/// This command is invoked whenever the drawing on <see cref="DrawingView"/>.
 	/// </summary>
-	public ICommand? PointDrawnCommand
-	{
-		get => (ICommand?)GetValue(PointDrawnCommandProperty);
-		set => SetValue(PointDrawnCommandProperty, value);
-	}
+	[BindableProperty]
+	public partial ICommand? PointDrawnCommand { get; set; }
 
 	/// <summary>
-	/// The collection of lines that are currently on the <see cref="DrawingView"/>. This is a bindable property.
+	/// The <see cref="Color"/> that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
-	public ObservableCollection<IDrawingLine> Lines
-	{
-		get => (ObservableCollection<IDrawingLine>)GetValue(LinesProperty);
-		set => SetValue(LinesProperty, value);
-	}
+	[BindableProperty]
+	public partial Color LineColor { get; set; } = DrawingViewDefaults.LineColor;
 
 	/// <summary>
-	/// Toggles multi-line mode. When true, multiple lines can be drawn on the <see cref="DrawingView"/> while the tap/click is released in-between lines.
-	/// Note: when <see cref="ShouldClearOnFinish"/> is also enabled, the lines are cleared after the tap/click is released.
-	/// Additionally, <see cref="DrawingLineCompletedCommand"/> will be fired after each line that is drawn.
-	/// This is a bindable property.
+	/// The width that is used by default to draw a line on the <see cref="DrawingView"/>. This is a bindable property.
 	/// </summary>
-	public bool IsMultiLineModeEnabled
-	{
-		get => (bool)GetValue(IsMultiLineModeEnabledProperty);
-		set => SetValue(IsMultiLineModeEnabledProperty, value);
-	}
-
-	/// <summary>
-	/// Indicates whether the <see cref="DrawingView"/> is cleared after releasing the tap/click and a line is drawn.
-	/// Note: when <see cref="IsMultiLineModeEnabled"/> is also enabled, this might cause unexpected behavior.
-	/// This is a bindable property.
-	/// </summary>
-	public bool ShouldClearOnFinish
-	{
-		get => (bool)GetValue(ShouldClearOnFinishProperty);
-		set => SetValue(ShouldClearOnFinishProperty, value);
-	}
-
-	/// <summary>
-	/// Allows to draw on the <see cref="IDrawingView"/>.
-	/// This is a bindable property.
-	/// </summary>
-	public Action<ICanvas, RectF>? DrawAction
-	{
-		get => (Action<ICanvas, RectF>?)GetValue(DrawActionProperty);
-		set => SetValue(DrawActionProperty, value);
-	}
+	[BindableProperty]
+	public partial float LineWidth { get; set; } = DrawingViewDefaults.LineWidth;
 
 	/// <summary>
 	/// Retrieves a <see cref="Stream"/> containing an image of the collection of <see cref="IDrawingLine"/> that is provided as a parameter.
 	/// </summary>
-	/// <param name="lines">A collection of <see cref="IDrawingLine"/> that a image is generated from.</param>
-	/// <param name="imageSize">The desired dimensions of the generated image. The image will be resized proportionally.</param>
-	/// <param name="background">Background of the generated image. If color is null, default background color is used.</param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="lines"/> parameter.</returns>
-	public static ValueTask<Stream> GetImageStream(IEnumerable<IDrawingLine> lines,
-													Size imageSize,
-													Brush? background,
-													CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(lines.ToList(), imageSize, background, token);
+	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's provided through the <paramref name="options"/> parameter, or <see cref="Stream.Null"/> when there is nothing to draw (no lines, or no line with points).</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
+	public static ValueTask<Stream> GetImageStream(
+		ImageLineOptions options,
+		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(options);
 
-	/// <summary>
-	/// Retrieves a <see cref="Stream"/> containing an image of the <see cref="Lines"/> that are currently drawn on the <see cref="DrawingView"/>.
-	/// </summary>
-	/// <param name="imageSizeWidth">Desired width of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="imageSizeHeight">Desired height of the image that is returned. The image will be resized proportionally.</param>
-	/// <param name="token"><see cref="CancellationToken"/></param>
-	/// <returns><see cref="ValueTask{Stream}"/> containing the data of the requested image with data that's currently on the <see cref="DrawingView"/>.</returns>
-	public ValueTask<Stream> GetImageStream(double imageSizeWidth, double imageSizeHeight, CancellationToken token = default) =>
-		DrawingViewService.GetImageStream(Lines.ToList(), new Size(imageSizeWidth, imageSizeHeight), Background, token);
+		return DrawingViewService.GetImageStream(options, token);
+	}
+
+	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
+	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, CancellationToken token = default) =>
+		GetImageStream(desiredWidth, desiredHeight, DrawingViewOutputOption.Lines, token);
+
+	/// <inheritdoc cref="IDrawingView.GetImageStream(double, double, DrawingViewOutputOption, CancellationToken)"/>
+	public ValueTask<Stream> GetImageStream(double desiredWidth, double desiredHeight, DrawingViewOutputOption imageOutputOption, CancellationToken token = default)
+	{
+		var options = imageOutputOption == DrawingViewOutputOption.Lines
+			? ImageLineOptions.JustLines(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background)
+			: ImageLineOptions.FullCanvas(Lines.ToList(), new Size(desiredWidth, desiredHeight), Background,
+				new Size(this.Width, this.Height));
+
+		return DrawingViewService.GetImageStream(options, token);
+	}
 
 	/// <summary>
 	/// Clears the <see cref="Lines"/> collection.
@@ -296,9 +224,29 @@ public class DrawingView : View, IDrawingView
 		}
 	}
 
+	// While the DrawingView is out of the window, its handler does not listen to the platform view and to Lines (#420), so that the platform view and
+	// the Lines, which the app may keep, do not keep each other alive. The DrawingView keeps its handler: MAUI needs it to remove the DrawingView from its
+	// layout (LayoutHandler.Remove) while its page is away. The DrawingView keeps listening, as it can leave the window again.
+	// A handler of another type has no StopListeningUntilLoaded: it is disconnected, as before.
 	void OnDrawingViewUnloaded(object? sender, EventArgs e)
 	{
-		Unloaded -= OnDrawingViewUnloaded;
-		Handler?.DisconnectHandler();
+		if (Handler is DrawingViewHandler drawingViewHandler)
+		{
+			drawingViewHandler.StopListeningUntilLoaded();
+		}
+		else
+		{
+			Handler?.DisconnectHandler();
+		}
+	}
+
+	// DrawingViewHandler also listens again when its platform view is in a window again; Loaded also covers an Unloaded that arrives after that
+	// (MAUI then raises Loaded right after it).
+	void OnDrawingViewLoaded(object? sender, EventArgs e)
+	{
+		if (Handler is DrawingViewHandler drawingViewHandler)
+		{
+			drawingViewHandler.ListenAgain();
+		}
 	}
 }

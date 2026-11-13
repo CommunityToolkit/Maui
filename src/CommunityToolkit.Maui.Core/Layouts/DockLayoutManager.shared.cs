@@ -12,9 +12,11 @@ public class DockLayoutManager : LayoutManager
 	/// <summary>
 	/// Initialize a new instance of <see cref="DockLayoutManager"/>.
 	/// </summary>
-	public DockLayoutManager(IDockLayout dockLayout)
-		: base(dockLayout)
+	/// <param name="dockLayout">The <see cref="IDockLayout"/> to manage.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="dockLayout"/> is null.</exception>
+	public DockLayoutManager(IDockLayout dockLayout) : base(dockLayout)
 	{
+		ArgumentNullException.ThrowIfNull(dockLayout);
 		this.dockLayout = dockLayout;
 	}
 

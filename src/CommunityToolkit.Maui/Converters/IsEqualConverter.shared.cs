@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Checks whether the incoming value equals the provided parameter.
 /// </summary>
-public class IsEqualConverter : BaseConverterOneWay<object?, bool, object?>
+[AcceptEmptyServiceProvider]
+public partial class IsEqualConverter : BaseConverterOneWay<object?, bool, object?>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;

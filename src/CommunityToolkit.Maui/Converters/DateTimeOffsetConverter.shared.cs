@@ -5,7 +5,8 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converts <see cref="DateTimeOffset"/> to <see cref="DateTime"/> and back.
 /// </summary>
-public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
+[AcceptEmptyServiceProvider]
+public partial class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 {
 	/// <inheritdoc/>
 	public override DateTime DefaultConvertReturnValue { get; set; } = DateTime.MinValue; //`DateTime.MinValue` is the same as `new DateTime()`, but it is more-efficient
@@ -17,11 +18,10 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 	/// Converts <see cref="DateTimeOffset"/> to <see cref="DateTime"/>
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
+	/// <param name="culture">The culture to use in the converter. This is not used.</param>
 	/// <returns>The <see cref="DateTime"/> value.</returns>
 	public override DateTime ConvertFrom(DateTimeOffset value, CultureInfo? culture = null)
 	{
-		ArgumentNullException.ThrowIfNull(value);
 		return value.DateTime;
 	}
 
@@ -29,22 +29,11 @@ public class DateTimeOffsetConverter : BaseConverter<DateTimeOffset, DateTime>
 	/// Converts <see cref="DateTime"/> back to <see cref="DateTimeOffset"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="culture">The culture to use in the converter.</param>
+	/// <param name="culture">The culture to use in the converter. This is not used.</param>
 	/// <returns>The <see cref="DateTimeOffset"/> value.</returns>
 	public override DateTimeOffset ConvertBackTo(DateTime value, CultureInfo? culture = null)
 	{
-		ArgumentNullException.ThrowIfNull(value);
-
-		var offset = value.Kind switch
-		{
-			DateTimeKind.Local => DateTimeOffset.Now.Offset,
-			DateTimeKind.Utc => DateTimeOffset.UtcNow.Offset,
-			_ => TimeSpan.Zero,
-		};
-
-		return culture is null ?
-			value.Kind == DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, offset) :
-			new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, value.Second, value.Millisecond, culture.Calendar, offset);
-
+		// A DateTime's components are always Gregorian, so culture.Calendar must not reinterpret them.
+		return value.Kind is DateTimeKind.Local ? new DateTimeOffset(value) : new DateTimeOffset(value, TimeSpan.Zero);
 	}
 }

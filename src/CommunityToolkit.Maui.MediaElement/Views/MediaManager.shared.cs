@@ -1,16 +1,18 @@
-﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST || TIZEN)
+﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
-global using PlatformMediaElement = Com.Google.Android.Exoplayer2.IExoPlayer;
+global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
 #elif IOS || MACCATALYST
 global using PlatformMediaElement = AVFoundation.AVPlayer;
 #elif WINDOWS
 global using PlatformMediaElement = Microsoft.UI.Xaml.Controls.MediaPlayerElement;
-#elif TIZEN
-global using PlatformMediaElement = CommunityToolkit.Maui.Core.Views.TizenPlayer;
 #endif
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
@@ -25,7 +27,8 @@ public partial class MediaManager
 	/// <param name="context">This application's <see cref="IMauiContext"/>.</param>
 	/// <param name="mediaElement">The <see cref="IMediaElement"/> instance that is managed through this class.</param>
 	/// <param name="dispatcher">The <see cref="IDispatcher"/> instance that allows propagation to the main thread.</param>
-	public MediaManager(IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/>, <paramref name="mediaElement"/> or <paramref name="dispatcher"/> is <see langword="null"/>.</exception>
+	public MediaManager(Microsoft.Maui.IMauiContext context, IMediaElement mediaElement, IDispatcher dispatcher)
 	{
 		ArgumentNullException.ThrowIfNull(context);
 		ArgumentNullException.ThrowIfNull(mediaElement);
@@ -46,12 +49,12 @@ public partial class MediaManager
 	/// <summary>
 	/// The <see cref="IMauiContext"/> used by this class.
 	/// </summary>
-	protected IMauiContext MauiContext { get; }
+	protected Microsoft.Maui.IMauiContext MauiContext { get; }
 
 	/// <summary>
 	/// The <see cref="IDispatcher"/> that allows propagation to the main thread
 	/// </summary>
-	protected IDispatcher Dispatcher { get; }
+	protected Microsoft.Maui.Dispatching.IDispatcher Dispatcher { get; }
 
 	/// <summary>
 	/// Gets the <see cref="ILogger"/> instance for logging purposes.
@@ -59,12 +62,21 @@ public partial class MediaManager
 	protected ILogger Logger { get; }
 
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 	/// <summary>
 	/// The platform-specific media player.
 	/// </summary>
 	protected PlatformMediaElement? Player { get; set; }
 #endif
+
+	/// <summary>
+	/// A helper method to determine if two floating-point numbers are equal.
+	/// </summary>
+	/// <param name="number1"></param>
+	/// <param name="number2"></param>
+	/// <param name="tolerance"></param>
+	/// <returns></returns>
+	public static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) <= tolerance;
 
 	/// <summary>
 	/// Invokes the play operation on the platform element.
@@ -111,10 +123,13 @@ public partial class MediaManager
 	/// <summary>
 	/// Update the media source.
 	/// </summary>
-	public void UpdateSource()
-	{
-		PlatformUpdateSource();
-	}
+	/// <remarks>
+	/// An exception thrown by a handler of an event that the update raises, PropertyChanging and PropertyChanged included, neither ends the update
+	/// nor is thrown by it: it is logged, and reported through MediaFailed once the update has ended (see <see cref="IMediaElement.Source"/>). Other
+	/// exceptions of the update are thrown.
+	/// </remarks>
+	/// <returns>A task that completes when the update has ended.</returns>
+	public ValueTask UpdateSource() => MediaElement.RunSourceUpdate(PlatformUpdateSource, Logger);
 
 	/// <summary>
 	/// Update the media playback speed.
@@ -125,7 +140,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether of not the screen should stay on while media is being played.
+	/// Update whether the screen should stay on while media is being played.
 	/// </summary>
 	public void UpdateShouldKeepScreenOn()
 	{
@@ -133,7 +148,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not the audio should be muted.
+	/// Update whether the audio should be muted.
 	/// </summary>
 	public void UpdateShouldMute()
 	{
@@ -141,7 +156,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not the media should start playing from the beginning
+	/// Update whether the media should start playing from the beginning
 	/// when it reached the end.
 	/// </summary>
 	public void UpdateShouldLoopPlayback()
@@ -150,7 +165,7 @@ public partial class MediaManager
 	}
 
 	/// <summary>
-	/// Update whether or not to show the platform playback controls.
+	/// Update whether to show the platform playback controls.
 	/// </summary>
 	public void UpdateShouldShowPlaybackControls()
 	{
@@ -203,7 +218,7 @@ public partial class MediaManager
 	/// <summary>
 	/// Invokes the platform functionality to update the media source.
 	/// </summary>
-	protected virtual partial void PlatformUpdateSource();
+	protected virtual partial ValueTask PlatformUpdateSource();
 
 	/// <summary>
 	/// Invokes the platform functionality to update the media playback speed.
@@ -240,11 +255,9 @@ public partial class MediaManager
 	/// Invokes the platform functionality to update the media playback volume.
 	/// </summary>
 	protected virtual partial void PlatformUpdateVolume();
-
-	static bool AreFloatingPointNumbersEqual(in double number1, in double number2, double tolerance = 0.01) => Math.Abs(number1 - number2) > tolerance;
 }
 
-#if !(WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN)
+#if !(WINDOWS || ANDROID || IOS || MACCATALYST)
 partial class MediaManager
 {
 	protected virtual partial Task PlatformSeek(TimeSpan position, CancellationToken token)
@@ -256,7 +269,7 @@ partial class MediaManager
 	protected virtual partial void PlatformPause() { }
 	protected virtual partial void PlatformStop() { }
 	protected virtual partial void PlatformUpdateAspect() { }
-	protected virtual partial void PlatformUpdateSource() { }
+	protected virtual partial ValueTask PlatformUpdateSource() => ValueTask.CompletedTask;
 	protected virtual partial void PlatformUpdateSpeed() { }
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls() { }
 	protected virtual partial void PlatformUpdatePosition() { }

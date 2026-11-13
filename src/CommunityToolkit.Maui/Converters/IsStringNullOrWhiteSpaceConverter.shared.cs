@@ -3,15 +3,16 @@
 namespace CommunityToolkit.Maui.Converters;
 
 /// <summary>
-/// Converts the incoming value to a <see cref="bool"/> indicating whether or not the value is null or white space.
+/// Converts the incoming value to a <see cref="bool"/> indicating whether the value is null or white space.
 /// </summary>
-public class IsStringNullOrWhiteSpaceConverter : BaseConverterOneWay<string?, bool>
+[AcceptEmptyServiceProvider]
+public partial class IsStringNullOrWhiteSpaceConverter : BaseConverterOneWay<string?, bool>
 {
 	/// <inheritdoc/>
 	public override bool DefaultConvertReturnValue { get; set; } = false;
 
 	/// <summary>
-	/// Converts the incoming string to a <see cref="bool"/> indicating whether or not the string is null or white space using string.IsNullOrWhiteSpace.
+	/// Converts the incoming string to a <see cref="bool"/> indicating whether the string is null or white space using string.IsNullOrWhiteSpace.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <param name="culture">(Not Used)</param>

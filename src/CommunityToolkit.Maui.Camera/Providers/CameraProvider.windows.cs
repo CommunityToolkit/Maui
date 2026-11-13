@@ -1,0 +1,86 @@
+﻿
+using CommunityToolkit.Maui.Extensions;
+using Windows.Devices.Enumeration;
+using Windows.Media.Capture;
+using Windows.Media.Capture.Frames;
+using Windows.Media.MediaProperties;
+
+namespace CommunityToolkit.Maui.Core;
+
+partial class CameraProvider
+{
+	private async partial ValueTask PlatformRefreshAvailableCameras(CancellationToken token)
+	{
+		// AsTask only asks the WinRT operations to cancel, and an enumeration that completes first still returns its devices
+		token.ThrowIfCancellationRequested();
+
+		var deviceInfoCollection = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture).AsTask(token);
+		var mediaFrameSourceGroup = await MediaFrameSourceGroup.FindAllAsync().AsTask(token);
+		var videoCaptureSourceGroup = mediaFrameSourceGroup.Where(sourceGroup => deviceInfoCollection.Any(deviceInfo => deviceInfo.Id == sourceGroup.Id)).ToList();
+
+		var availableCameras = new List<CameraInfo>();
+
+		foreach (var sourceGroup in videoCaptureSourceGroup)
+		{
+			using var mediaCapture = new MediaCapture();
+
+			try
+			{
+				if (!await mediaCapture.InitializeCameraForCameraView(sourceGroup.Id, token))
+				{
+					// The VideoDeviceController, read below, throws for a MediaCapture that is not initialized
+					continue;
+				}
+			}
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				// can't use that camera
+				continue;
+			}
+
+			CameraPosition position = CameraPosition.Unknown;
+			var device = deviceInfoCollection.FirstOrDefault(deviceInfo => deviceInfo.Id == sourceGroup.Id);
+			if (device?.EnclosureLocation is not null)
+			{
+				position = device.EnclosureLocation.Panel switch
+				{
+					Panel.Front => CameraPosition.Front,
+					Panel.Back => CameraPosition.Rear,
+					_ => CameraPosition.Unknown
+				};
+			}
+
+			var mediaEncodingPropertiesList = mediaCapture.VideoDeviceController.GetAvailableMediaStreamProperties(MediaStreamType.Photo)
+				.OfType<ImageEncodingProperties>().OrderByDescending(p => p.Width * p.Height);
+
+			var supportedResolutionsList = new List<Size>();
+			var imageEncodingPropertiesList = new List<ImageEncodingProperties>();
+
+			foreach (var mediaEncodingProperties in mediaEncodingPropertiesList)
+			{
+				var imageEncodingProperties = mediaEncodingProperties;
+				if (supportedResolutionsList.Contains(new(imageEncodingProperties.Width, imageEncodingProperties.Height)))
+				{
+					continue;
+				}
+				imageEncodingPropertiesList.Add(imageEncodingProperties);
+				supportedResolutionsList.Add(new(imageEncodingProperties.Width, imageEncodingProperties.Height));
+			}
+
+			var cameraInfo = new CameraInfo(
+				sourceGroup.DisplayName,
+				sourceGroup.Id,
+				position,
+				mediaCapture.VideoDeviceController.FlashControl.Supported,
+				mediaCapture.VideoDeviceController.ZoomControl.Supported ? mediaCapture.VideoDeviceController.ZoomControl.Min : 1f,
+				mediaCapture.VideoDeviceController.ZoomControl.Supported ? mediaCapture.VideoDeviceController.ZoomControl.Max : 1f,
+				supportedResolutionsList,
+				sourceGroup,
+				imageEncodingPropertiesList);
+
+			availableCameras.Add(cameraInfo);
+		}
+
+		AvailableCameras = availableCameras;
+	}
+}

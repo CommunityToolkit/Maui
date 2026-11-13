@@ -1,0 +1,129 @@
+﻿using System.Text;
+
+#if IOS || MACCATALYST
+using AVFoundation;
+
+#elif ANDROID
+using AndroidX.Camera.Core;
+#elif WINDOWS
+using Windows.Media.Capture.Frames;
+using Windows.Media.MediaProperties;
+#endif
+
+namespace CommunityToolkit.Maui.Core;
+
+/// <summary>
+/// Represents information about a camera device.
+/// </summary>
+/// <exception cref="ArgumentNullException">Thrown when <c>name</c>, <c>deviceId</c> or <c>supportedResolutions</c> is <see langword="null"/>; on iOS and Mac Catalyst also when <c>supportedFormats</c> is <see langword="null"/>; on Windows also when <c>imageEncodingProperties</c> is <see langword="null"/>.</exception>
+public class CameraInfo(
+	string name,
+	string deviceId,
+	CameraPosition cameraPosition,
+	bool isFlashSupported,
+	float minimumZoomFactor,
+	float maximumZoomFactor,
+	IEnumerable<Size> supportedResolutions
+#if ANDROID
+	,
+	CameraSelector cameraSelector
+#elif IOS || MACCATALYST
+	,
+	AVCaptureDevice captureDevice,
+	IEnumerable<AVCaptureDeviceFormat> supportedFormats
+#elif WINDOWS
+	,
+    MediaFrameSourceGroup frameSourceGroup,
+	IEnumerable<ImageEncodingProperties> imageEncodingProperties
+#endif
+) : IEquatable<CameraInfo>
+{
+	/// <summary>
+	/// Gets the name of the camera device.
+	/// </summary>
+	public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+
+	/// <summary>
+	/// Gets the unique identifier of the camera device.
+	/// </summary>
+	public string DeviceId { get; } = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
+
+	/// <summary>
+	/// Gets the <see cref="CameraPosition"/> of the camera device.
+	/// </summary>
+	public CameraPosition Position { get; } = cameraPosition;
+
+	/// <summary>
+	/// Gets a value indicating whether the camera device supports flash.
+	/// </summary>
+	public bool IsFlashSupported { get; } = isFlashSupported;
+
+	/// <summary>
+	/// Gets the minimum zoom factor supported by the camera device.
+	/// </summary>
+	public float MinimumZoomFactor { get; } = minimumZoomFactor;
+
+	/// <summary>
+	/// Gets the maximum zoom factor supported by the camera device.
+	/// </summary>
+	public float MaximumZoomFactor { get; } = maximumZoomFactor;
+
+	/// <summary>
+	/// Gets the supported resolutions of the camera device.
+	/// </summary>
+	public IReadOnlyList<Size> SupportedResolutions { get; } = [.. supportedResolutions ?? throw new ArgumentNullException(nameof(supportedResolutions))];
+
+#if ANDROID
+	internal CameraSelector? CameraSelector { get; } = cameraSelector;
+#endif
+
+#if IOS || MACCATALYST
+	internal AVCaptureDevice? CaptureDevice { get; } = captureDevice;
+	internal IReadOnlyList<AVCaptureDeviceFormat> SupportedFormats { get; } = [.. supportedFormats ?? throw new ArgumentNullException(nameof(supportedFormats))];
+#endif
+
+#if WINDOWS
+    internal MediaFrameSourceGroup FrameSourceGroup { get; } = frameSourceGroup;
+	internal IReadOnlyList<ImageEncodingProperties> ImageEncodingProperties { get; } = [.. imageEncodingProperties ?? throw new ArgumentNullException(nameof(imageEncodingProperties))];
+#endif
+
+	/// <inheritdoc cref="Equals(object)"/>
+	/// <remarks>Equality is determined using <see cref="DeviceId"/></remarks>
+	public override bool Equals(object? obj) => Equals(obj as CameraInfo);
+
+	/// <inheritdoc cref="GetHashCode"/>
+	/// <remarks>Uses the <see cref="DeviceId"/></remarks>
+	public override int GetHashCode() => DeviceId.GetHashCode();
+
+	/// <inheritdoc cref="IEquatable{T}.Equals(T)"/>
+	/// <remarks>Equality is determined using <see cref="DeviceId"/></remarks>
+	public bool Equals(CameraInfo? other)
+	{
+		if (other is null)
+		{
+			return false;
+		}
+
+		return DeviceId == other.DeviceId;
+	}
+
+	/// <inheritdoc cref="object.ToString" />
+	public override string ToString()
+	{
+		var resolutionStringBuilder = new StringBuilder();
+
+		for (var i = 0; i < SupportedResolutions.Count; i++)
+		{
+			var resolutionSize = SupportedResolutions[i];
+
+			// Compare the position, not the value: a resolution can be listed more than once
+			var endString = i == SupportedResolutions.Count - 1
+				? "."
+				: ", ";
+
+			resolutionStringBuilder.Append($"{resolutionSize.Width}x{resolutionSize.Height}{endString}");
+		}
+
+		return $"Camera Info => Name:{Name}, id:{DeviceId}, position:{Position}, hasFlash:{IsFlashSupported}, minZoom:{MinimumZoomFactor}, maxZoom:{MaximumZoomFactor}\nresolutions {resolutionStringBuilder} ";
+	}
+}

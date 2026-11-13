@@ -1,6 +1,6 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class MaskedBehaviorViewModel : BaseViewModel
+public partial class MaskedBehaviorViewModel : BaseViewModel
 {
 
 }

@@ -1,18 +1,18 @@
-﻿using CommunityToolkit.Maui.Extensions;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Primitives;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
-using WinRT.Interop;
+using Microsoft.UI.Xaml.Markup;
 using Application = Microsoft.Maui.Controls.Application;
-using Button = Microsoft.UI.Xaml.Controls.Button;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
-using Image = Microsoft.UI.Xaml.Controls.Image;
-using ImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Page = Microsoft.Maui.Controls.Page;
 
 namespace CommunityToolkit.Maui.Core.Views;
@@ -20,67 +20,39 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// The user-interface element that represents the <see cref="MediaElement"/> on Windows.
 /// </summary>
-public class MauiMediaElement : Grid, IDisposable
+public partial class MauiMediaElement : Grid, IDisposable
 {
-	static readonly AppWindow appWindow = GetAppWindowForCurrentWindow();
-	static readonly ImageSource source = new BitmapImage(new Uri("ms-appx:///fullscreen.png"));
-
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
-	readonly Grid buttonContainer;
-	readonly Button fullScreenButton;
 	readonly MediaPlayerElement mediaPlayerElement;
-
+	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
 	/// <param name="mediaPlayerElement"></param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mediaPlayerElement"/> is <see langword="null"/>.</exception>
 	public MauiMediaElement(MediaPlayerElement mediaPlayerElement)
 	{
+		ArgumentNullException.ThrowIfNull(mediaPlayerElement);
+
+		LoadResourceDictionary();
 		this.mediaPlayerElement = mediaPlayerElement;
-
-		fullScreenButton = new Button
-		{
-			Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-			Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-			Width = 40,
-			Height = 40
-		};
-		fullScreenButton.Click += OnFullScreenButtonClick;
-
-		Image image = new()
-		{
-			Width = 40,
-			Height = 40,
-			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-			Source = source,
-		};
-
-		buttonContainer = new()
-		{
-			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Right,
-			VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top,
-			Visibility = mediaPlayerElement.TransportControls.Visibility,
-			Width = 40,
-			Height = 40
-		};
-		buttonContainer.Children.Add(image);
-		buttonContainer.Children.Add(fullScreenButton);
-
+		customTransportControls = SetTransportControls();
 		Children.Add(this.mediaPlayerElement);
-		Children.Add(buttonContainer);
-
-		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
 	}
 
 	/// <summary>
 	/// Finalizer
 	/// </summary>
 	~MauiMediaElement() => Dispose(false);
+
+	/// <summary>
+	/// Gets the presented page.
+	/// </summary>
+	protected static Page CurrentPage =>
+		PageExtensions.GetCurrentPage(Application.Current?.Windows.FirstOrDefault()?.Page ?? throw new InvalidOperationException($"{nameof(Page)} cannot be null."));
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -91,11 +63,17 @@ public class MauiMediaElement : Grid, IDisposable
 		GC.SuppressFinalize(this);
 	}
 
+	[LibraryImport("user32.dll")]
+	internal static partial IntPtr GetForegroundWindow();
+
 	/// <summary>
-	/// Gets the presented page.
+	/// Safely gets the foreground window handle, returning null if no foreground window exists.
 	/// </summary>
-	protected static Page CurrentPage =>
-		PageExtensions.GetCurrentPage(Application.Current?.MainPage ?? throw new InvalidOperationException($"{nameof(Application.Current.MainPage)} cannot be null."));
+	internal static IntPtr? TryGetForegroundWindow()
+	{
+		var hwnd = GetForegroundWindow();
+		return hwnd == IntPtr.Zero ? null : hwnd;
+	}
 
 	/// <summary>
 	/// Releases the managed and unmanaged resources used by the <see cref="MauiMediaElement"/>.
@@ -109,7 +87,23 @@ public class MauiMediaElement : Grid, IDisposable
 
 		if (disposing)
 		{
+			// The button is a XAML object: only Dispose(true) may touch it, Dispose(false) runs on the finalizer thread
+			if (customTransportControls?.FullScreenButton is not null)
+			{
+				customTransportControls.FullScreenButton.Click -= OnFullScreenButtonClick;
+			}
+
+			mediaPlayerElement.MediaPlayer.Pause();
+
+			if (mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
+			{
+				// Dispose the MediaSource to release the resources
+				// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
+				mediaSource.Dispose();
+			}
+			mediaPlayerElement.MediaPlayer.Source = null;
 			mediaPlayerElement.MediaPlayer.Dispose();
+			mediaPlayerElement.SetMediaPlayer(null);
 		}
 
 		isDisposed = true;
@@ -117,58 +111,110 @@ public class MauiMediaElement : Grid, IDisposable
 
 	static AppWindow GetAppWindowForCurrentWindow()
 	{
-		// let's cache the CurrentPage here, since the user can navigate or background the app
-		// while this method is running
-		var currentPage = CurrentPage;
-
-		if (currentPage?.GetParentWindow().Handler.PlatformView is not MauiWinUIWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(window)} cannot be null.");
-		}
-
-		var handle = WindowNative.GetWindowHandle(window);
-		var id = Win32Interop.GetWindowIdFromWindow(handle);
-
+		var windowHandle = TryGetForegroundWindow() ?? throw new InvalidOperationException("No foreground window found.");
+		var id = Win32Interop.GetWindowIdFromWindow(windowHandle);
 		return AppWindow.GetFromWindowId(id);
 	}
 
-	async void OnMediaPlayerElementPointerMoved(object sender, PointerRoutedEventArgs e)
-	{
-		e.Handled = true;
-		buttonContainer.Visibility = mediaPlayerElement.TransportControls.Visibility;
+	// The foreground window can be another one than this element's: another window of the app (or of another app) is in front when the
+	// button is pressed from the keyboard or by assistive technology.
+	AppWindow? GetAppWindowOfThisElement() =>
+		XamlRoot?.ContentIslandEnvironment is Microsoft.UI.Content.ContentIslandEnvironment environment && environment.AppWindowId.Value is not 0
+			? AppWindow.GetFromWindowId(environment.AppWindowId)
+			: null;
 
-		if (mediaPlayerElement.TransportControls.Visibility == Microsoft.UI.Xaml.Visibility.Collapsed)
+	static Page GetCurrentPageOfWindow(AppWindow appWindow) =>
+		Application.Current?.Windows.FirstOrDefault(window => window.Handler?.PlatformView is Microsoft.UI.Xaml.Window platformWindow && platformWindow.AppWindow.Id == appWindow.Id)?.Page is Page page
+			? PageExtensions.GetCurrentPage(page)
+			: CurrentPage;
+
+	void LoadResourceDictionary()
+	{
+		var assembly = Assembly.GetExecutingAssembly();
+		using Stream? stream = assembly.GetManifestResourceStream("ResourceDictionary.windows.xaml");
+		if (stream is null)
 		{
 			return;
 		}
+		using StreamReader reader = new(stream);
+		var xaml = reader.ReadToEnd();
+		var resourceDictionary = (Microsoft.UI.Xaml.ResourceDictionary)XamlReader.Load(xaml);
+		if (resourceDictionary is null)
+		{
+			return;
+		}
+		this.Resources.MergedDictionaries.Add(resourceDictionary);
+	}
+	void ApplyCustomStyle()
+	{
+		if (this.Resources.TryGetValue("customTransportcontrols", out object styleObj) &&
+			styleObj is Microsoft.UI.Xaml.Style customStyle && mediaPlayerElement is not null && mediaPlayerElement.TransportControls is not null)
+		{
+			mediaPlayerElement.TransportControls.Style = customStyle;
+		}
+	}
 
-		mediaPlayerElement.PointerMoved -= OnMediaPlayerElementPointerMoved;
-		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-
-		await Task.Delay(TimeSpan.FromSeconds(5));
-
-		buttonContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-		mediaPlayerElement.PointerMoved += OnMediaPlayerElementPointerMoved;
+	CustomTransportControls SetTransportControls()
+	{
+		mediaPlayerElement.TransportControls.IsEnabled = false;
+		var temp = new CustomTransportControls()
+		{
+			IsZoomButtonVisible = true,
+			IsZoomEnabled = true,
+			IsVolumeButtonVisible = true,
+			IsVolumeEnabled = true,
+			IsSeekBarVisible = true,
+			IsSeekEnabled = true,
+			IsEnabled = true,
+			IsRepeatButtonVisible = true,
+			IsRepeatEnabled = true,
+			IsNextTrackButtonVisible = true,
+			IsPreviousTrackButtonVisible = true,
+			IsFastForwardButtonVisible = true,
+			IsFastForwardEnabled = true,
+			IsFastRewindButtonVisible = true,
+			IsFastRewindEnabled = true,
+			IsPlaybackRateButtonVisible = true,
+			IsPlaybackRateEnabled = true,
+			IsCompact = false,
+		};
+		temp.OnTemplateLoaded += (s, e) =>
+		{
+			if (temp.FullScreenButton is null)
+			{
+				return;
+			}
+			temp.FullScreenButton.Click += OnFullScreenButtonClick;
+		};
+		mediaPlayerElement.TransportControls = temp;
+		ApplyCustomStyle();
+		return temp;
 	}
 
 	void OnFullScreenButtonClick(object sender, RoutedEventArgs e)
 	{
-		var currentPage = CurrentPage;
+		var appWindow = GetAppWindowOfThisElement() ?? GetAppWindowForCurrentWindow();
+		var currentPage = GetCurrentPageOfWindow(appWindow);
+
+		// The window can also enter or leave full screen without this button (F11, the app, the user), so the element and the navigation bar
+		// are only changed when they are not already as the new presenter needs them.
+		var isElementInFullScreenPopup = fullScreenGrid.Children.Contains(mediaPlayerElement);
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.Default);
-			Shell.SetNavBarIsVisible(CurrentPage, doesNavigationBarExistBeforeFullScreen);
 
-			if (popup.IsOpen)
+			if (!isElementInFullScreenPopup)
 			{
-				popup.IsOpen = false;
-				popup.Child = null;
-				fullScreenGrid.Children.Clear();
+				return;
 			}
 
+			Shell.SetNavBarIsVisible(currentPage, doesNavigationBarExistBeforeFullScreen);
+
+			popup.IsOpen = false;
+			popup.Child = null;
+			fullScreenGrid.Children.Clear();
 			Children.Add(mediaPlayerElement);
-			Children.Add(buttonContainer);
 
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
@@ -177,8 +223,16 @@ public class MauiMediaElement : Grid, IDisposable
 		else
 		{
 			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+
+			// The window left full screen without this button while the element was shown full screen: the element is still in the popup,
+			// and the navigation bar is still hidden, so its saved state must stay
+			if (isElementInFullScreenPopup)
+			{
+				return;
+			}
+
 			doesNavigationBarExistBeforeFullScreen = Shell.GetNavBarIsVisible(currentPage);
-			Shell.SetNavBarIsVisible(CurrentPage, false);
+			Shell.SetNavBarIsVisible(currentPage, false);
 
 			var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
 			mediaPlayerElement.Width = displayInfo.Width / displayInfo.Density;
@@ -186,7 +240,6 @@ public class MauiMediaElement : Grid, IDisposable
 
 			Children.Clear();
 			fullScreenGrid.Children.Add(mediaPlayerElement);
-			fullScreenGrid.Children.Add(buttonContainer);
 
 			popup.XamlRoot = mediaPlayerElement.XamlRoot;
 			popup.HorizontalOffset = 0;

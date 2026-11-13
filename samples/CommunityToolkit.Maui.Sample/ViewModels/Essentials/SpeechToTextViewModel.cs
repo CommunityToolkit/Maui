@@ -11,52 +11,102 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Essentials;
 public partial class SpeechToTextViewModel : BaseViewModel
 {
 	const string defaultLanguage = "en-US";
-	const string defaultLanguage_android = "en";
-	const string defaultLanguage_tizen = "en_US";
+	const string beginSpeakingPrompt = "Begin speaking...";
 
 	readonly ITextToSpeech textToSpeech;
 	readonly ISpeechToText speechToText;
 
-	[ObservableProperty]
-	Locale? currentLocale;
+	// A page can be left while a permission prompt is open: on Mac Catalyst the prompt is another process's window, so Back and the flyout stay usable
+	bool isPageShown;
 
-	[ObservableProperty]
-	string? recognitionText = "Welcome to .NET MAUI Community Toolkit!";
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(ListenCommand))]
-	bool canListenExecute = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
-	bool canStartListenExecute = true;
-
-	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand))]
-	bool canStopListenExecute = false;
-
-	public SpeechToTextViewModel(ITextToSpeech textToSpeech, ISpeechToText speechToText)
+	public SpeechToTextViewModel(ITextToSpeech textToSpeech, [FromKeyedServices("Online")] ISpeechToText speechToText)
 	{
 		this.textToSpeech = textToSpeech;
 		this.speechToText = speechToText;
 
 		Locales.CollectionChanged += HandleLocalesCollectionChanged;
-		this.speechToText.StateChanged += HandleSpeechToTextStateChanged;
-		this.speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
 	}
 
-	public ObservableCollection<Locale> Locales { get; } = new();
+	public ObservableCollection<Locale> Locales { get; } = [];
+
+	// After StartListenAsync, CurrentState stays Stopped until speech begins on Android, and until the first result on iOS and Mac Catalyst:
+	// until then the State label shows that the session waits for speech
+	public string State => IsWaitingForSpeech ? "Waiting for speech" : speechToText.CurrentState.ToString();
+
+	[ObservableProperty, NotifyPropertyChangedFor(nameof(State))]
+	public partial bool IsWaitingForSpeech { get; set; }
+
+	[ObservableProperty]
+	public partial Locale? CurrentLocale { get; set; }
+
+	[ObservableProperty]
+	public partial string? RecognitionText { get; set; } = "Welcome to .NET MAUI Community Toolkit!";
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StartListenCommand))]
+	public partial bool CanStartListenExecute { get; set; } = true;
+
+	[ObservableProperty, NotifyCanExecuteChangedFor(nameof(StopListenCommand)), NotifyCanExecuteChangedFor(nameof(StopListenWithCanceledTokenCommand))]
+	public partial bool CanStopListenExecute { get; set; } = false;
+
+	public void SubscribeToSpeechToText()
+	{
+		isPageShown = true;
+
+		speechToText.StateChanged += HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted += HandleRecognitionResultCompleted;
+
+		OnPropertyChanged(nameof(State));
+	}
+
+	// The recognizer is a singleton that outlives the page: a session that is left running keeps the microphone open, and the next page would show its state.
+	// The events are released first: Shell can show this page again, which subscribes it anew, before the stop completes
+	public async Task StopListeningAndUnsubscribeFromSpeechToText()
+	{
+		isPageShown = false;
+
+		speechToText.StateChanged -= HandleSpeechToTextStateChanged;
+		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
+		speechToText.RecognitionResultCompleted -= HandleRecognitionResultCompleted;
+
+		if (CanStopListenExecute)
+		{
+			await StopListen(CancellationToken.None);
+		}
+	}
+
+	// On iOS and Mac Catalyst, ISpeechToText.RequestPermissions requests the speech recognition permission; on Android and Windows it requests the microphone
+	// permission again. It is requested only once the microphone permission is granted, so Android does not show its microphone dialog a second time after a denial
+	static async Task<bool> ArePermissionsGranted(ISpeechToText speechToText)
+	{
+		var microphonePermissionStatus = await Permissions.RequestAsync<Permissions.Microphone>();
+
+		return microphonePermissionStatus is PermissionStatus.Granted
+			   && await speechToText.RequestPermissions(CancellationToken.None);
+	}
+
+	// The culture of a text-to-speech locale: Android names its language and region in Language and Country ("en", "US"), iOS, Mac Catalyst and Windows in Language ("en-US")
+	static string GetCultureName(Locale locale) => string.IsNullOrEmpty(locale.Country) ? locale.Language : $"{locale.Language}-{locale.Country}";
 
 	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
 	{
 		Locales.Clear();
 
-		var locales = await textToSpeech.GetLocalesAsync().WaitAsync(token);
+		// Android returns a locale for each voice, and the voices of a language and region have the same Language, Country and Name: the Picker lists them once
+		IReadOnlyList<Locale> locales = [.. (await textToSpeech.GetLocalesAsync().WaitAsync(token)).DistinctBy(static x => (x.Language, x.Country, x.Name))];
 
-		foreach (var locale in locales.OrderBy(x => x.Language).ThenBy(x => x.Name))
+		foreach (var locale in locales.OrderBy(static x => x.Language).ThenBy(static x => x.Name))
 		{
 			Locales.Add(locale);
 		}
 
-		CurrentLocale = Locales.FirstOrDefault(x => x.Language is defaultLanguage or defaultLanguage_android or defaultLanguage_tizen) ?? Locales.FirstOrDefault();
+		// The locale of the device's language and region, else one of its language. It is looked up in the order of GetLocalesAsync, not in the Picker's
+		// alphabetical order, which starts with novelty voices on iOS ('en-US Albert' instead of 'en-US Samantha'): Play speaks with the picked voice
+		var currentCulture = CultureInfo.CurrentUICulture;
+		CurrentLocale = locales.FirstOrDefault(l => GetCultureName(l).Equals(currentCulture.Name, StringComparison.OrdinalIgnoreCase))
+						?? locales.FirstOrDefault(l => GetCultureName(l).Split('-')[0].Equals(currentCulture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+						?? locales.FirstOrDefault();
 	}
 
 	[RelayCommand]
@@ -75,117 +125,164 @@ public partial class SpeechToTextViewModel : BaseViewModel
 		}
 		catch (TaskCanceledException)
 		{
-			await Toast.Make("Playback automatically stopped after 5 seconds").Show(cancellationToken);
+			await Toast.Make("Playback did not finish within 5 seconds").Show(cancellationToken);
 #if IOS
 			await Toast.Make("If you did not hear playback, test again on a physical iOS device").Show(cancellationToken);
 #endif
 		}
 	}
 
-	[RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanListenExecute))]
-	async Task Listen(CancellationToken cancellationToken)
-	{
-		CanStartListenExecute = false;
-
-		try
-		{
-			var isGranted = await speechToText.RequestPermissions(cancellationToken);
-			if (!isGranted)
-			{
-				await Toast.Make("Permission not granted").Show(cancellationToken);
-				return;
-			}
-
-			const string beginSpeakingPrompt = "Begin speaking...";
-
-			RecognitionText = beginSpeakingPrompt;
-
-			var recognitionResult = await speechToText.ListenAsync(
-				CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
-				new Progress<string>(partialText =>
-				{
-					if (RecognitionText is beginSpeakingPrompt)
-					{
-						RecognitionText = string.Empty;
-					}
-
-					RecognitionText += partialText + " ";
-				}), cancellationToken);
-
-			if (recognitionResult.IsSuccessful)
-			{
-				RecognitionText = recognitionResult.Text;
-			}
-			else
-			{
-				await Toast.Make(recognitionResult.Exception?.Message ?? "Unable to recognize speech").Show(CancellationToken.None);
-			}
-
-			if (RecognitionText is beginSpeakingPrompt)
-			{
-				RecognitionText = string.Empty;
-			}
-		}
-		finally
-		{
-			CanStartListenExecute = true;
-		}
-	}
-
 	[RelayCommand(CanExecute = nameof(CanStartListenExecute))]
 	async Task StartListen(CancellationToken cancellationToken)
 	{
-		CanListenExecute = false;
 		CanStartListenExecute = false;
-		CanStopListenExecute = true;
 
-		var isGranted = await speechToText.RequestPermissions(cancellationToken);
-		if (!isGranted)
+		var isGranted = await ArePermissionsGranted(speechToText);
+
+		// The teardown of a page that was left during the prompts found no session to stop and released the page's handlers, so the singleton
+		// recognizer must not start: it would listen with no page to show its results or to stop it
+		if (!isPageShown)
 		{
-			await Toast.Make("Permission not granted").Show(cancellationToken);
+			CanStartListenExecute = true;
 			return;
 		}
 
-		const string beginSpeakingPrompt = "Begin speaking...";
+		if (!isGranted)
+		{
+			await Toast.Make("Permission not granted").Show(cancellationToken);
+			CanStartListenExecute = true;
+			return;
+		}
 
+		if (Connectivity.NetworkAccess is not NetworkAccess.Internet)
+		{
+			await Toast.Make("Internet connection is required").Show(cancellationToken);
+			CanStartListenExecute = true;
+			return;
+		}
+
+		// StartListenAsync returns once the session has started: the prompt stays until the first result replaces it, and the session ends with the
+		// RecognitionResultCompleted event (also when it stops by itself, after AutoStopSilenceTimeout or an error) or with StopListenAsync
+		CanStopListenExecute = true;
 		RecognitionText = beginSpeakingPrompt;
+		IsWaitingForSpeech = true;
 
-		await speechToText.StartListenAsync(CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage), cancellationToken);
+		try
+		{
+			await speechToText.StartListenAsync(new SpeechToTextOptions
+			{
+				Culture = CultureInfo.GetCultureInfo(CurrentLocale is null ? defaultLanguage : GetCultureName(CurrentLocale)),
+				AutoStopSilenceTimeout = TimeSpan.FromSeconds(5),
+				ShouldReportPartialResults = true
+			}, cancellationToken);
+		}
+		catch (Exception e)
+		{
+			// An exception that escapes the command ends the app, and the permission requests above do not cover every failure: for example a
+			// PermissionException on Windows when "Online speech recognition" is switched off in the privacy settings, a FeatureNotSupportedException on
+			// Android when the device has no speech recognition service, or an exception of the audio engine on the iOS simulator when it gets no audio input.
+			IsWaitingForSpeech = false;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
 
-		speechToText.RecognitionResultUpdated += HandleRecognitionResultUpdated;
+			// The message of the audio engine's ObjCException continues with the native stack trace: the page shows its first line
+			var message = e.Message.Split('\n', 2)[0].TrimEnd();
+			RecognitionText = message;
+			await Toast.Make($"{e.GetType().Name}: {message}").Show(cancellationToken);
+		}
+	}
 
+	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
+	async Task StopListen(CancellationToken cancellationToken)
+	{
+		IsWaitingForSpeech = false;
+		CanStopListenExecute = false;
+
+		await speechToText.StopListenAsync(cancellationToken);
+
+		// StartListenAsync is enabled again once the stop has completed, so an outcome that the stop reports cannot end the next session
+		CanStartListenExecute = true;
+		ClearPromptAfterStop();
+
+		// Windows unsubscribes from StateChanged before it releases the recognizer, so no event refreshes the State label
+		OnPropertyChanged(nameof(State));
+	}
+
+	// Windows ignores the canceled token, so the recognizer is still released. Android, iOS and Mac Catalyst throw an OperationCanceledException
+	// before they stop anything, so the recognizer keeps listening until StopListenAsync is called again.
+	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
+	async Task StopListenWithCanceledToken(CancellationToken cancellationToken)
+	{
+		using var canceledTokenSource = new CancellationTokenSource();
+		await canceledTokenSource.CancelAsync();
+
+		string outcome;
+		try
+		{
+			await speechToText.StopListenAsync(canceledTokenSource.Token);
+
+			IsWaitingForSpeech = false;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+
+			ClearPromptAfterStop();
+
+			outcome = "returned without an exception";
+		}
+		catch (OperationCanceledException)
+		{
+			outcome = $"threw {nameof(OperationCanceledException)}";
+		}
+
+		// Windows unsubscribes from StateChanged before it releases the recognizer, so no event refreshes the State label.
+		OnPropertyChanged(nameof(State));
+
+		await Toast.Make($"StopListenAsync with a canceled token {outcome}. State: {State}").Show(cancellationToken);
+	}
+
+	// A session that was stopped before its first result does not keep showing the prompt, also when no RecognitionResultCompleted event follows the stop
+	void ClearPromptAfterStop()
+	{
 		if (RecognitionText is beginSpeakingPrompt)
 		{
 			RecognitionText = string.Empty;
 		}
 	}
 
-	[RelayCommand(CanExecute = nameof(CanStopListenExecute))]
-	Task StopListen(CancellationToken cancellationToken)
+	// The speech-to-text events can come on a background thread (Windows): the view model handles them on the main thread, where the buttons are updated.
+	// On Android, iOS and Mac Catalyst each update carries all the text recognized so far; on Windows it carries only the phrase just recognized
+	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
 	{
-		CanListenExecute = true;
-		CanStartListenExecute = true;
-		CanStopListenExecute = false;
+		IsWaitingForSpeech = false;
+		RecognitionText = OperatingSystem.IsWindows() && RecognitionText is not beginSpeakingPrompt
+			? $"{RecognitionText} {e.RecognitionResult}"
+			: e.RecognitionResult;
+	});
 
-		speechToText.RecognitionResultUpdated -= HandleRecognitionResultUpdated;
-
-		return speechToText.StopListenAsync(cancellationToken);
-	}
-
-	void HandleRecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
+	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
 	{
-		RecognitionText += e.RecognitionResult;
-	}
+		// The session ended by itself (after AutoStopSilenceTimeout or an error, for example 'NoMatch' on Android when nothing was said): a new session can start.
+		// The outcome of a session that StopListenAsync stopped can also come later, after the buttons were reset or while a new start requests the permissions
+		if (CanStopListenExecute)
+		{
+			IsWaitingForSpeech = false;
+			CanStartListenExecute = true;
+			CanStopListenExecute = false;
+		}
 
-	void HandleRecognitionResultCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs e)
-	{
-		RecognitionText = e.RecognitionResult;
-	}
+		RecognitionText = e.RecognitionResult.IsSuccessful ? e.RecognitionResult.Text : e.RecognitionResult.Exception.Message;
+	});
 
-	async void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e)
+	void HandleSpeechToTextStateChanged(object? sender, SpeechToTextStateChangedEventArgs e) => MainThread.BeginInvokeOnMainThread(() =>
 	{
-		await Toast.Make($"State Changed: {e.State}").Show(CancellationToken.None);
-	}
+		// Listening or Silence: the recognizer reports that it listens, so the State label shows CurrentState again
+		if (e.State is not SpeechToTextState.Stopped)
+		{
+			IsWaitingForSpeech = false;
+		}
+
+		OnPropertyChanged(nameof(State));
+	});
 
 	void HandleLocalesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{

@@ -1,11 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
+using CommunityToolkit.Maui.Extensions;
+using Google.Android.Material.Shape;
 using Google.Android.Material.Snackbar;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
 
@@ -35,51 +39,61 @@ public partial class Snackbar
 		isDisposed = true;
 	}
 
-	static bool IsModalPageActive() => Application.Current?.MainPage is not null &&
-										Application.Current.MainPage.Navigation.ModalStack.Count > 0;
+	static bool TryGetPageActiveModalPage([NotNullWhen(true)] out View? modalPage)
+	{
+		if (Application.Current?.Windows is [{ Page: Page mainPage }, ..]
+			&& mainPage.Navigation.ModalStack.Count > 0
+			&& mainPage.Navigation.ModalStack.Last().Handler?.PlatformView is View platformModalPage)
+		{
+			modalPage = platformModalPage;
+			return true;
+		}
+
+		modalPage = null;
+		return false;
+	}
 
 	static View GetParentView()
 	{
-		var parentView = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content);
-
-		if (IsModalPageActive())
+		if (TryGetPageActiveModalPage(out var modalPage))
 		{
-			parentView = parentView?.RootView;
+			return modalPage;
 		}
 
-		return parentView ?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
+		return Platform.CurrentActivity?.Window?.DecorView.FindViewById(Android.Resource.Id.Content) ?? throw new NotSupportedException("Unable to retrieve Snackbar parent");
 	}
 
 	static void SetLayoutParametersForView(in View snackbarView)
 	{
-		if (IsModalPageActive() && snackbarView.Context?.Resources is not null)
+		if (!TryGetPageActiveModalPage(out _) || snackbarView.Context?.Resources is null)
 		{
-			var resourceId = snackbarView.Context.Resources.GetIdentifier(
-				"navigation_bar_height",
-				"dimen",
-				"android"
-			);
-			var navBarHeight = snackbarView.Context.Resources.GetDimensionPixelSize(resourceId);
-			var layoutParameters = (FrameLayout.LayoutParams?)snackbarView.LayoutParameters;
-			if (layoutParameters is not null)
-			{
-				layoutParameters.SetMargins(layoutParameters.LeftMargin, layoutParameters.TopMargin, layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
-				snackbarView.LayoutParameters = layoutParameters;
-			}
+			return;
+		}
+
+		var resourceId = snackbarView.Context.Resources.GetIdentifier(
+			"navigation_bar_height",
+			"dimen",
+			"android"
+		);
+		var navBarHeight = snackbarView.Context.Resources.GetDimensionPixelSize(resourceId);
+		if (snackbarView.LayoutParameters is FrameLayout.LayoutParams layoutParameters)
+		{
+			layoutParameters.SetMargins(layoutParameters.LeftMargin, layoutParameters.TopMargin, layoutParameters.RightMargin, layoutParameters.BottomMargin + navBarHeight);
+			snackbarView.LayoutParameters = layoutParameters;
 		}
 	}
 
 	async Task DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformSnackbar is null)
 		{
 			dismissedTCS = null;
 			return;
 		}
 
-		token.ThrowIfCancellationRequested();
-
-		if (!PlatformSnackbar.IsDisposed())
+		if (!PlatformSnackbar.IsPeerDisposed())
 		{
 			PlatformSnackbar.Dismiss();
 		}
@@ -98,15 +112,20 @@ public partial class Snackbar
 		await DismissPlatform(token);
 		token.ThrowIfCancellationRequested();
 
-		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(GetParentView(), Text, (int)Duration.TotalMilliseconds);
+		PlatformSnackbar = Google.Android.Material.Snackbar.Snackbar.Make(GetParentView(), Text, GetMaterialDuration(Duration));
 		var snackbarView = PlatformSnackbar.View;
 
 		if (Anchor is not Page)
 		{
 			PlatformSnackbar.SetAnchorView(Anchor?.Handler?.PlatformView as View);
+
+			// Material places an anchored snackbar above its anchor when it shows it, and places it again after a layout pass only when its
+			// anchor layout listener is enabled. Without the listener the snackbar keeps the bottom margin computed when it was shown: after a
+			// rotation to landscape that margin can be taller than the parent, and the snackbar is laid out above the screen with no height
+			PlatformSnackbar.AnchorViewLayoutListenerEnabled = true;
 		}
 
-		var fontManager = Application.Current?.RequireFontManager() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
+		var fontManager = Application.Current?.Handler?.MauiContext?.Services.GetRequiredService<IFontManager>() ?? throw new InvalidOperationException($"{nameof(IFontManager)} Required");
 		SetLayoutParametersForView(snackbarView);
 		SetContainerForView(snackbarView);
 		SetMessageForView(snackbarView, fontManager);
@@ -115,28 +134,42 @@ public partial class Snackbar
 		PlatformSnackbar.Show();
 	}
 
+	// Material reads 0, -1 and -2 as its LENGTH_LONG, LENGTH_SHORT and LENGTH_INDEFINITE constants and only a positive duration as a
+	// number of milliseconds: a Duration below 1 ms is shown for 1 ms, so that the snackbar goes away at once, as on the other platforms
+	static int GetMaterialDuration(TimeSpan duration) => (int)Math.Max(duration.TotalMilliseconds, 1);
+
 	void SetContainerForView(in View snackbarView)
 	{
-		if (snackbarView.Background is GradientDrawable shape)
+		var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
+		var topLeft = (float)(VisualOptions.CornerRadius.TopLeft * density);
+		var topRight = (float)(VisualOptions.CornerRadius.TopRight * density);
+		var bottomRight = (float)(VisualOptions.CornerRadius.BottomRight * density);
+		var bottomLeft = (float)(VisualOptions.CornerRadius.BottomLeft * density);
+
+		switch (snackbarView.Background)
 		{
-			shape.SetColor(VisualOptions.BackgroundColor.ToAndroid().ToArgb());
+			// The background that Material builds for a snackbar under a Material Components theme
+			case GradientDrawable gradientDrawable:
+				gradientDrawable.SetColor(VisualOptions.BackgroundColor.ToPlatform().ToArgb());
 
-			var density = snackbarView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
-			var cornerRadius = new Thickness(
-				VisualOptions.CornerRadius.BottomLeft * density,
-				VisualOptions.CornerRadius.TopLeft * density,
-				VisualOptions.CornerRadius.TopRight * density,
-				VisualOptions.CornerRadius.BottomRight * density);
+				// GradientDrawable takes an x and a y radius per corner, in the order top left, top right, bottom right, bottom left
+				gradientDrawable.SetCornerRadii([topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft]);
 
-			shape.SetCornerRadii(new[]
-			{
-				(float)cornerRadius.Left, (float)cornerRadius.Left,
-				(float)cornerRadius.Top, (float)cornerRadius.Top,
-				(float)cornerRadius.Right, (float)cornerRadius.Right,
-				(float)cornerRadius.Bottom, (float)cornerRadius.Bottom
-			});
+				snackbarView.SetBackground(gradientDrawable);
+				break;
 
-			snackbarView.SetBackground(shape);
+			// The background that Material builds under a Material 3 theme. Its snackbar style colors it with a backgroundTint, which
+			// replaces the fill color, so the color is applied as the tint (as Material's Snackbar.setBackgroundTint does)
+			case MaterialShapeDrawable materialShapeDrawable:
+				materialShapeDrawable.ShapeAppearanceModel = materialShapeDrawable.ShapeAppearanceModel.ToBuilder()
+					.SetTopLeftCornerSize(topLeft)
+					.SetTopRightCornerSize(topRight)
+					.SetBottomRightCornerSize(bottomRight)
+					.SetBottomLeftCornerSize(bottomLeft)
+					.Build();
+
+				snackbarView.BackgroundTintList = ColorStateList.ValueOf(VisualOptions.BackgroundColor.ToPlatform());
+				break;
 		}
 	}
 
@@ -145,7 +178,7 @@ public partial class Snackbar
 		var snackTextView = snackbarView.FindViewById<TextView>(Resource.Id.snackbar_text) ?? throw new InvalidOperationException("Unable to find Snackbar text view");
 		snackTextView.SetMaxLines(10);
 
-		snackTextView.SetTextColor(VisualOptions.TextColor.ToAndroid());
+		snackTextView.SetTextColor(VisualOptions.TextColor.ToPlatform());
 		if (VisualOptions.Font.Size > 0)
 		{
 			snackTextView.SetTextSize(ComplexUnitType.Dip, (float)VisualOptions.Font.Size);
@@ -161,7 +194,7 @@ public partial class Snackbar
 	{
 		var snackActionButtonView = platformSnackbar.View.FindViewById<TextView>(Resource.Id.snackbar_action) ?? throw new InvalidOperationException("Unable to find Snackbar action button");
 
-		platformSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToAndroid());
+		platformSnackbar.SetActionTextColor(VisualOptions.ActionButtonTextColor.ToPlatform());
 		if (VisualOptions.ActionButtonFont.Size > 0)
 		{
 			snackActionButtonView.SetTextSize(ComplexUnitType.Dip, (float)VisualOptions.ActionButtonFont.Size);
@@ -174,16 +207,10 @@ public partial class Snackbar
 		platformSnackbar.AddCallback(new SnackbarCallback(this, dismissedTCS = new()));
 	}
 
-	class SnackbarCallback : BaseTransientBottomBar.BaseCallback
+	sealed class SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTcs) : BaseTransientBottomBar.BaseCallback
 	{
-		readonly Snackbar snackbar;
-		readonly TaskCompletionSource<bool> dismissedTCS;
-
-		public SnackbarCallback(in Snackbar snackbar, in TaskCompletionSource<bool> dismissedTCS)
-		{
-			this.snackbar = snackbar;
-			this.dismissedTCS = dismissedTCS;
-		}
+		readonly Snackbar snackbar = snackbar;
+		readonly TaskCompletionSource<bool> dismissedTCS = dismissedTcs;
 
 		public override void OnShown(Object? transientBottomBar)
 		{
@@ -195,8 +222,12 @@ public partial class Snackbar
 		{
 			base.OnDismissed(transientBottomBar, e);
 
-			dismissedTCS.TrySetResult(true);
-			snackbar.OnDismissed();
+			// Material reports a snackbar that is dismissed again while it animates out (for example by the next snackbar, as
+			// DISMISS_EVENT_CONSECUTIVE after DISMISS_EVENT_MANUAL) once per dismissal: raise Dismissed only for the first one
+			if (dismissedTCS.TrySetResult(true))
+			{
+				snackbar.OnDismissed();
+			}
 		}
 	}
 }

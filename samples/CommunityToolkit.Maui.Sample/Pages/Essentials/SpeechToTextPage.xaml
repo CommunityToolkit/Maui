@@ -1,10 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
                 x:Class="CommunityToolkit.Maui.Sample.Pages.Essentials.SpeechToTextPage"
                 xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Essentials"
                 xmlns:essentials="clr-namespace:CommunityToolkit.Maui.Sample.Pages.Essentials"
+                xmlns:media="clr-namespace:Microsoft.Maui.Media;assembly=Microsoft.Maui.Essentials"
                 x:TypeArguments="vm:SpeechToTextViewModel"
                 x:DataType="vm:SpeechToTextViewModel"
                 Title="SpeechToText">
@@ -29,7 +30,18 @@
             <Picker
                 ItemsSource="{Binding Locales}"
                 SelectedItem="{Binding CurrentLocale}"
-                ItemDisplayBinding="{Binding ., Converter={StaticResource PickerLocaleDisplayConverter}}"/>
+                ItemDisplayBinding="{Binding ., x:DataType={x:Type media:Locale}, Converter={StaticResource PickerLocaleDisplayConverter}}"/>
+
+            <Label
+                Text="State"
+                FontAttributes="Bold"/>
+
+            <Label
+                Text="{Binding State}"
+                FontSize="18"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                MinimumHeightRequest="100" />
 
             <Label
                 Text="Language Output"
@@ -46,44 +58,6 @@
                 Text="Play"
                 Command="{Binding PlayCommand}"
                 HorizontalOptions="Center" />
-
-            <Border
-                StrokeThickness="2"
-                Stroke="#808080"
-                StrokeShape="RoundRectangle 8,8,8,8"
-                Padding="12">
-                <Border.Content>
-
-                    <Grid RowDefinitions="*,60"
-                          ColumnDefinitions="*,*"
-                          RowSpacing="12"
-                          ColumnSpacing="12">
-
-                        <Button
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Text="ListenAsync"
-                            Command="{Binding ListenCommand}"
-                            HorizontalOptions="End" />
-
-                        <Button
-                            Grid.Row="0"
-                            Grid.Column="1"
-                            Text="Cancel Token"
-                            Command="{Binding ListenCancelCommand}"
-                            HorizontalOptions="Start" />
-
-                        <Label
-                            Grid.Row="1"
-                            Grid.ColumnSpan="2"
-                            Text="The `ListenAsync` API allows you to await the final speech recognition results using async/await. `ListenAsync` is cancelled via CancellationToken."
-                            HorizontalOptions="Center"
-                            HorizontalTextAlignment="Center"
-                            FontSize="12"/>
-
-                    </Grid>
-                </Border.Content>
-            </Border>
 
             <Border
                 StrokeThickness="2"
@@ -119,6 +93,29 @@
                             FontSize="12"/>
 
                     </Grid>
+                </Border.Content>
+            </Border>
+
+            <Border
+                StrokeThickness="2"
+                Stroke="#808080"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                Padding="12">
+                <Border.Content>
+                    <VerticalStackLayout Spacing="12">
+
+                        <Button
+                            Text="StopListenAsync with a canceled token"
+                            Command="{Binding StopListenWithCanceledTokenCommand}"
+                            HorizontalOptions="Center" />
+
+                        <Label
+                            Text="While the recognizer listens, `StopListenAsync` is called with a token that is already canceled. Windows ignores the token and releases the recognizer. Android, iOS and Mac Catalyst throw an `OperationCanceledException` before they stop anything, so the recognizer keeps listening."
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            FontSize="12"/>
+
+                    </VerticalStackLayout>
                 </Border.Content>
             </Border>
 

@@ -11,42 +11,41 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// <summary>
 /// Drawing view service
 /// </summary>
-public static class DrawingViewService
+public static partial class DrawingViewService
 {
 	/// <summary>
 	/// Get image stream from lines
 	/// </summary>
-	/// <param name="lines">Drawing lines</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
-	/// <param name="background">Image background</param>
-	/// <param name="token"><see cref="CancellationToken"/></param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<IDrawingLine> lines, Size imageSize, Paint? background, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(options);
+
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForLines(lines, background);
+		var image = GetBitmapForLines(options.Lines, options.Background, options.CanvasSize);
 
-		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
+		return ValueTask.FromResult(GetBitmapStream(image, options.DesiredSize));
 	}
 
 	/// <summary>
 	/// Get image stream from points
 	/// </summary>
-	/// <param name="points">Drawing points</param>
-	/// <param name="imageSize">Maximum image size. The image will be resized proportionally.</param>
-	/// <param name="lineWidth">Line Width</param>
-	/// <param name="strokeColor">Line color</param>
-	/// <param name="background">Image background</param>
+	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
-	public static ValueTask<Stream> GetImageStream(IList<PointF> points, Size imageSize, float lineWidth, Color strokeColor, Paint? background, CancellationToken token = default)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+	public static ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(options);
+
 		token.ThrowIfCancellationRequested();
 
-		var image = GetBitmapForPoints(points, lineWidth, strokeColor, background);
+		var image = GetBitmapForPoints(options.Points, options.LineWidth, options.StrokeColor, options.Background, options.CanvasSize);
 
-		return ValueTask.FromResult(GetBitmapStream(image, imageSize));
+		return ValueTask.FromResult(GetBitmapStream(image, options.DesiredSize));
 	}
 
 	static Stream GetBitmapStream(Bitmap? image, Size imageSize)
@@ -75,9 +74,10 @@ public static class DrawingViewService
 	static Bitmap? GetBitmapForPoints(ICollection<PointF> points,
 		float lineWidth,
 		Color strokeColor,
-		Paint? background)
+		Paint? background,
+		Size? canvasSize)
 	{
-		var (image, offset) = GetBitmap(points, lineWidth);
+		var (image, offset) = GetBitmap(points, lineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
@@ -89,11 +89,17 @@ public static class DrawingViewService
 		return image;
 	}
 
-	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background)
+	static Bitmap? GetBitmapForLines(IList<IDrawingLine> lines, Paint? background, Size? canvasSize)
 	{
 		var points = lines.SelectMany(x => x.Points).ToList();
+		if (points.Count is 0)
+		{
+			// Max() below needs a line, and every platform returns Stream.Null when there is nothing to draw
+			return null;
+		}
+
 		var maxLineWidth = lines.Select(x => x.LineWidth).Max();
-		var (image, offset) = GetBitmap(points, maxLineWidth);
+		var (image, offset) = GetBitmap(points, maxLineWidth, canvasSize);
 		if (image is null)
 		{
 			return null;
@@ -109,7 +115,7 @@ public static class DrawingViewService
 		return image;
 	}
 
-	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth)
+	static (Bitmap?, SizeF offset) GetBitmap(ICollection<PointF> points, float maxLineWidth, Size? canvasSize)
 	{
 		if (points.Count is 0)
 		{
@@ -118,8 +124,8 @@ public static class DrawingViewService
 
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
-		var drawingWidth = points.Max(p => p.X) - minPointX + maxLineWidth;
-		var drawingHeight = points.Max(p => p.Y) - minPointY + maxLineWidth;
+		var drawingWidth = canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
+		var drawingHeight = canvasSize?.Height ?? points.Max(p => p.Y) - minPointY + maxLineWidth;
 		const int minSize = 1;
 		if (drawingWidth < minSize || drawingHeight < minSize)
 		{
@@ -137,7 +143,9 @@ public static class DrawingViewService
 			return (null, SizeF.Zero);
 		}
 
-		return (image, new SizeF(minPointX, minPointY));
+		var offset = canvasSize is null ? new SizeF(minPointX, minPointY) : SizeF.Zero;
+
+		return (image, offset);
 	}
 
 	static void DrawStrokes(Canvas canvas, ICollection<PointF> points, float lineWidth, Color strokeColor, SizeF offset)
@@ -150,14 +158,17 @@ public static class DrawingViewService
 			AntiAlias = true
 		};
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(29))
-		{
-			paint.Color = strokeColor.ToPlatform();
-		}
-
+		paint.Color = strokeColor.ToPlatform();
 		paint.SetStyle(APaint.Style.Stroke);
 
 		var pointsCount = points.Count;
+		if (pointsCount is 1)
+		{
+			// A single point (a tap) has no segment to draw: with the round cap, DrawPoint draws a circle of the stroke width, as MauiDrawingView draws a tap
+			var point = points.First();
+			canvas.DrawPoint(point.X - offset.Width, point.Y - offset.Height, paint);
+		}
+
 		for (var i = 0; i < pointsCount - 1; i++)
 		{
 			var p1 = points.ElementAt(i);
@@ -172,9 +183,11 @@ public static class DrawingViewService
 		var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
 		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
-		var width = Math.Max(maxResizeFactor * sourceSize.Width, 1);
-		var height = Math.Max(maxResizeFactor * sourceSize.Height, 1);
-		return Bitmap.CreateScaledBitmap(sourceImage, (int)width, (int)height, false)
+		// In floating point the factor times a side can be a hair below a whole number (1920 / 411 * 411 = 1919.9999999999998), and truncating it would make
+		// the image a pixel smaller than the desired size: the size is rounded, half away from zero as Win2D rounds it on Windows.
+		var width = (int)Math.Round(Math.Max(maxResizeFactor * sourceSize.Width, 1), MidpointRounding.AwayFromZero);
+		var height = (int)Math.Round(Math.Max(maxResizeFactor * sourceSize.Height, 1), MidpointRounding.AwayFromZero);
+		return Bitmap.CreateScaledBitmap(sourceImage, width, height, false)
 				?? throw new InvalidOperationException("Failed to create Bitmap");
 	}
 
@@ -184,6 +197,12 @@ public static class DrawingViewService
 		{
 			case SolidPaint solidColorBrush:
 				canvas.DrawColor(solidColorBrush.Color.ToPlatform(DrawingViewDefaults.BackgroundColor));
+				break;
+			// Android's gradient shaders need two colors or more: a gradient with a single stop is filled with that color, as iOS, Mac Catalyst and Windows draw it.
+			// A gradient without stops only comes from GradientPaint.SetGradientStops (the GradientStops setter replaces an empty array with two white stops):
+			// it is filled with the default background.
+			case GradientPaint { GradientStops.Length: < 2 } gradientBrush:
+				canvas.DrawColor((gradientBrush.GradientStops.FirstOrDefault()?.Color ?? DrawingViewDefaults.BackgroundColor).ToPlatform());
 				break;
 			case LinearGradientPaint linearGradientBrush:
 				{
@@ -222,10 +241,18 @@ public static class DrawingViewService
 						positions[index] = gradientStop.Offset;
 					}
 
+					// As in MAUI's canvas, the radius is relative to the larger side of the image, and a radius of 0 spans the diagonal of the image
+					// (Android's RadialGradient needs a positive radius)
+					var radius = (float)radialGradientBrush.Radius * Math.Max(canvas.Width, canvas.Height);
+					if (radius is not > 0)
+					{
+						radius = (float)Math.Sqrt(((double)canvas.Width * canvas.Width) + ((double)canvas.Height * canvas.Height));
+					}
+
 					var shader = new RadialGradient(
 						(float)radialGradientBrush.Center.X * canvas.Width,
 						(float)radialGradientBrush.Center.Y * canvas.Height,
-						(float)radialGradientBrush.Radius * canvas.Width,
+						radius,
 						colors,
 						positions,
 						Shader.TileMode.Clamp ?? throw new NullReferenceException("TileMode is null"));

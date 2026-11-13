@@ -6,15 +6,16 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 ///     Converts an <see cref="Enum" /> to its underlying <see cref="int" /> value.
 /// </summary>
-public class EnumToIntConverter : BaseConverter<Enum, int, Type>
+[AcceptEmptyServiceProvider]
+public partial class EnumToIntConverter : BaseConverter<Enum, int, Type>
 {
+	enum DefaultEnum { Value }
+
 	/// <inheritdoc/>
 	public override int DefaultConvertReturnValue { get; set; } = 0;
 
 	/// <inheritdoc/>
 	public override Enum DefaultConvertBackReturnValue { get; set; } = DefaultEnum.Value;
-
-	enum DefaultEnum { Value }
 
 	/// <summary>
 	/// Convert a default <see cref="Enum"/> (i.e., extending <see cref="int"/>) to corresponding underlying <see cref="int"/>
@@ -41,7 +42,6 @@ public class EnumToIntConverter : BaseConverter<Enum, int, Type>
 	/// <exception cref="ArgumentException">If value is not a valid value in the targetType enum</exception>
 	public override Enum ConvertBackTo(int value, Type parameter, CultureInfo? culture = null)
 	{
-		ArgumentNullException.ThrowIfNull(value);
 		ArgumentNullException.ThrowIfNull(parameter);
 
 		if (!Enum.IsDefined(parameter, value))

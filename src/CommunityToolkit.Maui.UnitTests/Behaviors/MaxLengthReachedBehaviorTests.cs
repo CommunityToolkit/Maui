@@ -1,10 +1,11 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MaxLengthReachedBehaviorTests : BaseTest
+public class MaxLengthReachedBehaviorTests() : BaseBehaviorTest<MaxLengthReachedBehavior, InputView>(new MaxLengthReachedBehavior(), new Entry())
 {
 	[Fact]
 	public void ShouldExecuteCommandWhenMaxLengthHasBeenReached()
@@ -140,6 +141,18 @@ public class MaxLengthReachedBehaviorTests : BaseTest
 		Assert.True(entry.IsFocused);
 	}
 
+	[Fact]
+	public void VerifyDefaults()
+	{
+		// Arrange
+		var behavior = new MaxLengthReachedBehavior();
+
+		// Act Assert
+		Assert.Equal(MaxLengthReachedBehaviorDefaults.Command, behavior.Command);
+		Assert.Equal(MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically, behavior.ShouldDismissKeyboardAutomatically);
+	}
+
+	[Obsolete]
 	static Entry CreateEntry(int? maxLength = 2,
 							  bool shouldDismissKeyboardAutomatically = false,
 							  ICommand? command = null,
@@ -151,7 +164,7 @@ public class MaxLengthReachedBehaviorTests : BaseTest
 			Command = command
 		};
 
-		if (eventHandler != null)
+		if (eventHandler is not null)
 		{
 			behavior.MaxLengthReached += eventHandler;
 		}
@@ -168,6 +181,8 @@ public class MaxLengthReachedBehaviorTests : BaseTest
 		// We simulate Focus/Unfocus behavior ourselves
 		// because unit tests doesn't have "platform-specific" part
 		// where IsFocused is controlled in the real app
+		entry.Focused += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, true);
+		entry.Unfocused += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, false);
 		entry.FocusChangeRequested += (s, e) => entry.SetValue(VisualElement.IsFocusedPropertyKey, e.Focus);
 
 		return entry;

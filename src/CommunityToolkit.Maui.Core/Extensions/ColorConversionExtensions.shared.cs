@@ -26,7 +26,7 @@ public static class ColorConversionExtensions
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>RGBA(red,green,blue,alpha)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255,
 	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
@@ -44,29 +44,41 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
-	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/>).
+	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/> in en-US). The numbers are formatted with <see cref="CultureInfo.CurrentCulture"/>, the same as passing <see langword="null"/> to <see cref="ToCmykString(Color, CultureInfo?)"/>.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToCmykString(this Color color)
+	public static string ToCmykString(this Color color) => color.ToCmykString(null);
+
+	/// <summary>
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow and key components.
+	/// </summary>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
+	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/> in en-US).
+	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
+	public static string ToCmykString(this Color color, CultureInfo? cultureInfo)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYK({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0})";
+		return $"CMYK({color.GetPercentCyan().ToString("P0", cultureInfo)},{color.GetPercentMagenta().ToString("P0", cultureInfo)},{color.GetPercentYellow().ToString("P0", cultureInfo)},{color.GetPercentBlackKey().ToString("P0", cultureInfo)})";
 	}
 
 	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow, key and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
-	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(100%,100%,0%,100%,1)</c> for <see cref="Colors.Red"/>).
+	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(0%,100%,100%,0%,1)</c> for <see cref="Colors.Red"/> in en-US).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha.ToString(cultureInfo)})";
+		return $"CMYKA({color.GetPercentCyan().ToString("P0", cultureInfo)},{color.GetPercentMagenta().ToString("P0", cultureInfo)},{color.GetPercentYellow().ToString("P0", cultureInfo)},{color.GetPercentBlackKey().ToString("P0", cultureInfo)},{color.Alpha.ToString(cultureInfo)})";
 	}
 
 	/// <summary>
@@ -75,29 +87,42 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%. (e.g. <c>HSL(0,100%,50%)</c> for <see cref="Colors.Red"/>).
+	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/> in en-US).
+	/// The numbers are formatted with <see cref="CultureInfo.CurrentCulture"/>, the same as passing <see langword="null"/> to <see cref="ToHslString(Color, CultureInfo?)"/>.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
-	public static string ToHslString(this Color color)
+	public static string ToHslString(this Color color) => color.ToHslString(null);
+
+	/// <summary>
+	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation and lightness components.
+	/// </summary>
+	/// <param name="color">The <see cref="Color"/> to convert.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <returns>
+	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
+	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/> in en-US).
+	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
+	public static string ToHslString(this Color color, CultureInfo? cultureInfo)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSL({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0})";
+		return $"HSL({color.GetDegreeHue().ToString("0", cultureInfo)},{color.GetSaturation().ToString("P0", cultureInfo)},{color.GetLuminosity().ToString("P0", cultureInfo)})";
 	}
 
 	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation, lightness and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(0,100%,50%,1)</c> for <see cref="Colors.Red"/>).
+	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(360,100%,50%,1)</c> for <see cref="Colors.Red"/> in en-US).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSLA({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0},{color.Alpha.ToString(cultureInfo)})";
+		return $"HSLA({color.GetDegreeHue().ToString("0", cultureInfo)},{color.GetSaturation().ToString("P0", cultureInfo)},{color.GetLuminosity().ToString("P0", cultureInfo)},{color.Alpha.ToString(cultureInfo)})";
 	}
 
 	/// <summary>

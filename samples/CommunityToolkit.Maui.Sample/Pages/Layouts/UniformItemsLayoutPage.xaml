@@ -116,10 +116,11 @@
             </mct:UniformItemsLayout>
 
             <Button Text="Add Random item" Command="{Binding AddItemCommand}" HorizontalOptions="Center" VerticalOptions="Center" Padding="8"/>
+            <Button Text="Clear items" Command="{Binding ClearItemCommand}" HorizontalOptions="Center" VerticalOptions="Center" Padding="8"/>
             <mct:UniformItemsLayout BindableLayout.ItemsSource="{Binding Items}">
                 <BindableLayout.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding}" />
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding .}" />
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </mct:UniformItemsLayout>

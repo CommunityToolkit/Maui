@@ -5,23 +5,23 @@ namespace CommunityToolkit.Maui.Converters;
 /// <summary>
 /// Converters for Math expressions
 /// </summary>
-public class MathExpressionConverter : BaseConverterOneWay<double, double, string>
+[AcceptEmptyServiceProvider]
+public partial class MathExpressionConverter : BaseConverterOneWay<object?, object?, string>
 {
 	/// <inheritdoc/>
-	public override double DefaultConvertReturnValue { get; set; } = 0.0d;
+	public override object? DefaultConvertReturnValue { get; set; } = 0.0d;
 
 	/// <summary>
 	/// Calculate the incoming expression string with one variable.
 	/// </summary>
-	/// <param name="value">The variable X for an expression</param>
+	/// <param name="inputValue">The variable X for an expression</param>
 	/// <param name="parameter">The expression to calculate.</param>
-	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
+	/// <param name="culture">The culture used to convert string inputs to numbers and to format values for <c>str()</c> and <c>len()</c>. When <see langword="null"/>, <see cref="CultureInfo.CurrentCulture"/> is used. The syntax of the expression itself, such as numeric literals, is always culture-invariant, but quoted string literals in the expression are treated as values and are converted with this culture.</param>
 	/// <returns>A <see cref="double"/> The result of calculating an expression.</returns>
-	public override double ConvertFrom(double value, string parameter, CultureInfo? culture = null)
+	public override object? ConvertFrom(object? inputValue, string parameter, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(parameter);
 
-		var mathExpression = new MathExpression(parameter, new[] { value });
-		return mathExpression.Calculate();
+		return new MathExpression(parameter, [inputValue], culture).CalculateResult();
 	}
 }

@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class ColorsConverterViewModel : BaseViewModel
+public partial class ColorsConverterViewModel : BaseViewModel
 {
 }

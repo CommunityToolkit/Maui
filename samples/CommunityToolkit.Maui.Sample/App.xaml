@@ -10,42 +10,34 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style TargetType="{x:Type popups:ImplicitStylePopup}">
-                <Setter Property="Size" Value="100,100" />
-                <Setter Property="Color" Value="Red" />
-                <Setter Property="HorizontalOptions" Value="Start" />
-                <Setter Property="VerticalOptions" Value="Start" />
-                <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
+                <Setter Property="WidthRequest" Value="100" />
+                <Setter Property="HeightRequest" Value="100" />
+                <Setter Property="BackgroundColor" Value="Red" />
             </Style>
 
             <Style x:Key="ExplicitPopupStyle" TargetType="{x:Type popups:ExplicitStylePopup}">
-                <Setter Property="Size" Value="200,100" />
-                <Setter Property="Color" Value="Yellow" />
-                <Setter Property="HorizontalOptions" Value="End" />
-                <Setter Property="VerticalOptions" Value="Start" />
-                <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
+                <Setter Property="WidthRequest" Value="200" />
+                <Setter Property="HeightRequest" Value="100" />
+                <Setter Property="BackgroundColor" Value="Yellow" />
             </Style>
 
             <Style x:Key="BasePopupStyle" TargetType="{x:Type popups:StyleInheritancePopup}">
-                <Setter Property="Size" Value="200,200" />
+                <Setter Property="WidthRequest" Value="200" />
+                <Setter Property="HeightRequest" Value="200" />
             </Style>
             <Style x:Key="InheritancePopupStyle" TargetType="{x:Type popups:StyleInheritancePopup}" BasedOn="{StaticResource BasePopupStyle}">
-                <Setter Property="Color" Value="SkyBlue" />
-                <Setter Property="HorizontalOptions" Value="End" />
-                <Setter Property="VerticalOptions" Value="End" />
-                <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
+                <Setter Property="BackgroundColor" Value="SkyBlue" />
             </Style>
 
             <Style x:Key="DynamicBasePopupStyle" TargetType="{x:Type popups:DynamicStyleInheritancePopup}">
-                <Setter Property="Size" Value="150,150" />
+                <Setter Property="WidthRequest" Value="150" />
+                <Setter Property="HeightRequest" Value="150" />
             </Style>
             <Style x:Key="DynamicInheritancePopupStyle1" TargetType="{x:Type popups:DynamicStyleInheritancePopup}" BasedOn="{StaticResource DynamicBasePopupStyle}">
-                <Setter Property="Color" Value="Purple" />
-                <Setter Property="VerticalOptions" Value="End" />
+                <Setter Property="BackgroundColor" Value="Purple" />
             </Style>
             <Style x:Key="DynamicInheritancePopupStyle2" TargetType="{x:Type popups:DynamicStyleInheritancePopup}" BaseResourceKey="DynamicInheritancePopupStyle1">
-                <Setter Property="Color" Value="Orange" />
-                <Setter Property="HorizontalOptions" Value="End" />
-                <Setter Property="CanBeDismissedByTappingOutsideOfPopup" Value="True" />
+                <Setter Property="BackgroundColor" Value="Orange" />
             </Style>
             
         </ResourceDictionary>

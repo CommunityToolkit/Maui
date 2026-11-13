@@ -1,0 +1,1693 @@
+﻿using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
+using Xunit;
+
+namespace CommunityToolkit.Maui.UnitTests.Behaviors;
+
+public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElement>(new TouchBehavior(), new MockView())
+{
+	readonly TouchBehavior touchBehavior = new();
+
+	[Fact]
+	public void VerifyAttachToViewSucceeds()
+	{
+		var view = new MockView();
+		view.Behaviors.Add(touchBehavior);
+
+		Assert.Single(view.Behaviors.OfType<TouchBehavior>());
+
+		view.Behaviors.Remove(touchBehavior);
+
+		Assert.Empty(view.Behaviors.OfType<TouchBehavior>());
+	}
+
+	[Fact]
+	public void VerifyDefaults()
+	{
+		Assert.Null(touchBehavior.HoveredOpacity);
+		Assert.Null(touchBehavior.PressedOpacity);
+		Assert.Null(touchBehavior.DefaultOpacity);
+
+		Assert.Null(touchBehavior.HoveredScale);
+		Assert.Null(touchBehavior.PressedScale);
+		Assert.Null(touchBehavior.DefaultScale);
+
+		Assert.Null(touchBehavior.HoveredTranslationX);
+		Assert.Null(touchBehavior.PressedTranslationX);
+		Assert.Null(touchBehavior.DefaultTranslationX);
+
+		Assert.Null(touchBehavior.HoveredTranslationY);
+		Assert.Null(touchBehavior.PressedTranslationY);
+		Assert.Null(touchBehavior.DefaultTranslationY);
+
+		Assert.Null(touchBehavior.HoveredRotation);
+		Assert.Null(touchBehavior.PressedRotation);
+		Assert.Null(touchBehavior.DefaultRotation);
+
+		Assert.Null(touchBehavior.HoveredRotationX);
+		Assert.Null(touchBehavior.PressedRotationX);
+		Assert.Null(touchBehavior.DefaultRotationX);
+
+		Assert.Null(touchBehavior.HoveredRotationY);
+		Assert.Null(touchBehavior.PressedRotationY);
+		Assert.Null(touchBehavior.DefaultRotationY);
+
+		Assert.Null(touchBehavior.DefaultAnimationDuration);
+		Assert.Null(touchBehavior.HoveredAnimationDuration);
+		Assert.Null(touchBehavior.PressedAnimationDuration);
+
+		Assert.Null(touchBehavior.DefaultAnimationEasing);
+		Assert.Null(touchBehavior.HoveredAnimationEasing);
+		Assert.Null(touchBehavior.PressedAnimationEasing);
+
+		Assert.False(touchBehavior.CanExecute);
+
+		Assert.Null(touchBehavior.Command);
+		Assert.Null(touchBehavior.CommandParameter);
+
+		Assert.Null(touchBehavior.LongPressCommand);
+		Assert.Null(touchBehavior.LongPressCommandParameter);
+
+		Assert.Equal(TouchBehaviorDefaults.LongPressDuration, touchBehavior.LongPressDuration);
+
+		Assert.Equal(TouchBehaviorDefaults.IsEnabled, touchBehavior.IsEnabled);
+
+		Assert.Equal(TouchBehaviorDefaults.DisallowTouchThreshold, touchBehavior.DisallowTouchThreshold);
+		Assert.Equal(TouchBehaviorDefaults.ShouldMakeChildrenInputTransparent, touchBehavior.ShouldMakeChildrenInputTransparent);
+
+		Assert.Equal(TouchBehaviorDefaults.CurrentTouchState, touchBehavior.CurrentTouchState);
+		Assert.Equal(TouchBehaviorDefaults.CurrentTouchStatus, touchBehavior.CurrentTouchStatus);
+
+		Assert.Equal(TouchBehaviorDefaults.CurrentHoverState, touchBehavior.CurrentHoverState);
+		Assert.Equal(TouchBehaviorDefaults.CurrentHoverStatus, touchBehavior.CurrentHoverStatus);
+
+		Assert.Equal(TouchBehaviorDefaults.CurrentInteractionStatus, touchBehavior.CurrentInteractionStatus);
+
+		Assert.Null(touchBehavior.DefaultBackgroundColor);
+		Assert.Null(touchBehavior.HoveredBackgroundColor);
+		Assert.Null(touchBehavior.PressedBackgroundColor);
+	}
+
+	[Fact]
+	public async Task VerifyHoverOpacityChange()
+	{
+		const double updatedDefaultOpacity = 0.9;
+		const double updatedHoveredOpacity = 0.7;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Null(touchBehavior.DefaultOpacity);
+		Assert.Null(touchBehavior.HoveredOpacity);
+
+		touchBehavior.DefaultOpacity = updatedDefaultOpacity;
+		touchBehavior.HoveredOpacity = updatedHoveredOpacity;
+
+		Assert.Equal(updatedDefaultOpacity, touchBehavior.DefaultOpacity);
+		Assert.Equal(updatedHoveredOpacity, touchBehavior.HoveredOpacity);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(updatedHoveredOpacity, view.Opacity);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
+	}
+
+	[Fact]
+	public void HoverEdgeCaseTests()
+	{
+		AttachTouchBehaviorToVisualElement(new MockView());
+		Assert.NotNull(touchBehavior.Element);
+		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(-1)));
+		Assert.Throws<NotSupportedException>(() => touchBehavior.HandleHover((HoverStatus)(Enum.GetValues<HoverStatus>().Length + 1)));
+
+		//HoverStatus should not change when not enabled
+		touchBehavior.IsEnabled = false;
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(HoverStatus.Exited, touchBehavior.CurrentHoverStatus);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task VerifyPressedOpacityChange()
+	{
+		const double updatedDefaultOpacity = 0.9;
+		const double updatedHoveredOpacity = 0.7;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Null(touchBehavior.DefaultOpacity);
+		Assert.Null(touchBehavior.HoveredOpacity);
+
+		touchBehavior.DefaultOpacity = updatedDefaultOpacity;
+		touchBehavior.PressedOpacity = updatedHoveredOpacity;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultOpacity, view.Opacity);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(updatedHoveredOpacity, view.Opacity);
+
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(updatedDefaultOpacity, view.Opacity);
+	}
+
+	[Fact]
+	public async Task VerifyHoverTranslationChange()
+	{
+		const int updatedDefaultTranslation = 10;
+		const int updatedHoveredTranslation = 20;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.DefaultTranslationX = updatedDefaultTranslation;
+		touchBehavior.DefaultTranslationY = updatedDefaultTranslation;
+		touchBehavior.HoveredTranslationX = updatedHoveredTranslation;
+		touchBehavior.HoveredTranslationY = updatedHoveredTranslation;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultTranslationX, view.TranslationX);
+		Assert.Equal(TouchBehaviorDefaults.DefaultTranslationY, view.TranslationY);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(updatedHoveredTranslation, view.TranslationX);
+		Assert.Equal(updatedHoveredTranslation, view.TranslationY);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
+	}
+
+	[Fact]
+	public async Task VerifyPressedTranslationChange()
+	{
+		const int updatedDefaultTranslation = 10;
+		const int updatedPressedTranslation = 20;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.DefaultTranslationX = updatedDefaultTranslation;
+		touchBehavior.DefaultTranslationY = updatedDefaultTranslation;
+		touchBehavior.PressedTranslationX = updatedPressedTranslation;
+		touchBehavior.PressedTranslationY = updatedPressedTranslation;
+
+		Assert.Equal(TouchBehaviorDefaults.PressedTranslationX, view.TranslationX);
+		Assert.Equal(TouchBehaviorDefaults.PressedTranslationY, view.TranslationY);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(updatedPressedTranslation, view.TranslationX);
+		Assert.Equal(updatedPressedTranslation, view.TranslationY);
+
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationX);
+		Assert.Equal(updatedDefaultTranslation, view.TranslationY);
+	}
+
+	[Fact]
+	public async Task VerifyHoverScaleChange()
+	{
+		const int updatedDefaultScale = 10;
+		const int updatedHoveredScale = 20;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.DefaultScale = updatedDefaultScale;
+		touchBehavior.HoveredScale = updatedHoveredScale;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultScale, view.Scale);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultScale, view.Scale);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(updatedHoveredScale, view.Scale);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(updatedDefaultScale, view.Scale);
+	}
+
+	[Fact]
+	public async Task VerifyPressedScaleChange()
+	{
+		const int updatedDefaultScale = 10;
+		const int updatedPressedScale = 20;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.DefaultScale = updatedDefaultScale;
+		touchBehavior.PressedScale = updatedPressedScale;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultScale, view.Scale);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultScale, view.Scale);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(updatedPressedScale, view.Scale);
+
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(updatedDefaultScale, view.Scale);
+	}
+
+	[Fact]
+	public async Task VerifyHoverRotationChange()
+	{
+		const int updatedDefaultRotation = 10;
+		const int updatedHoveredRotation = 20;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.DefaultRotation = updatedDefaultRotation;
+		touchBehavior.DefaultRotationX = updatedDefaultRotation;
+		touchBehavior.DefaultRotationY = updatedDefaultRotation;
+		touchBehavior.HoveredRotation = 20;
+		touchBehavior.HoveredRotationX = 20;
+		touchBehavior.HoveredRotationY = 20;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultRotation, view.Rotation);
+		Assert.Equal(TouchBehaviorDefaults.DefaultRotationX, view.RotationX);
+		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, view.RotationY);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(updatedHoveredRotation, view.Rotation);
+		Assert.Equal(updatedHoveredRotation, view.RotationX);
+		Assert.Equal(updatedHoveredRotation, view.RotationY);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
+	}
+
+	[Fact]
+	public async Task VerifyPressedRotationChange()
+	{
+		const int updatedDefaultRotation = 10;
+		const int updatedPressedRotation = 20;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.DefaultRotation = updatedDefaultRotation;
+		touchBehavior.DefaultRotationX = updatedDefaultRotation;
+		touchBehavior.DefaultRotationY = updatedDefaultRotation;
+
+		touchBehavior.PressedRotation = updatedPressedRotation;
+		touchBehavior.PressedRotationX = updatedPressedRotation;
+		touchBehavior.PressedRotationY = updatedPressedRotation;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultRotation, view.Rotation);
+		Assert.Equal(TouchBehaviorDefaults.DefaultRotationX, view.RotationX);
+		Assert.Equal(TouchBehaviorDefaults.DefaultRotationY, view.RotationY);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(updatedPressedRotation, view.Rotation);
+		Assert.Equal(updatedPressedRotation, view.RotationX);
+		Assert.Equal(updatedPressedRotation, view.RotationY);
+
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(updatedDefaultRotation, view.Rotation);
+		Assert.Equal(updatedDefaultRotation, view.RotationX);
+		Assert.Equal(updatedDefaultRotation, view.RotationY);
+	}
+
+	[Fact]
+	public async Task VerifyHoverBackgroundColorChange()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		var defaultColor = Colors.Red;
+		var hoverColor = Colors.Blue;
+
+		touchBehavior.DefaultBackgroundColor = defaultColor;
+		touchBehavior.HoveredBackgroundColor = hoverColor;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(defaultColor, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(hoverColor, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(defaultColor, view.BackgroundColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task VerifyPressedBackgroundColorChange()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var defaultColor = Colors.Red;
+		var pressedColor = Colors.Green;
+
+		touchBehavior.DefaultBackgroundColor = defaultColor;
+		touchBehavior.PressedBackgroundColor = pressedColor;
+
+		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+		Assert.Equal(defaultColor, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(pressedColor, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(defaultColor, view.BackgroundColor);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseLongPressCompleted()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		var hasLongPressCompleted = false;
+		var longPressCompletedTCS = new TaskCompletionSource<bool>();
+		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
+
+		touchBehavior.RaiseLongPressCompleted();
+		hasLongPressCompleted = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(hasLongPressCompleted);
+
+		void HandleLongPressCompleted(object? sender, LongPressCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+
+			touchBehavior.LongPressCompleted -= HandleLongPressCompleted;
+			longPressCompletedTCS.SetResult(true);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseEvent()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+		var hasTouchCompleted = false;
+		var touchCompletedTCS = new TaskCompletionSource<bool>();
+		touchBehavior.TouchGestureCompleted += HandleCompleted;
+
+		Assert.False(hasTouchCompleted);
+
+		touchBehavior.RaiseTouchGestureCompleted();
+		hasTouchCompleted = await touchCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.True(hasTouchCompleted);
+
+		void HandleCompleted(object? sender, TouchGestureCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchBehavior.TouchGestureCompleted -= HandleCompleted;
+
+			touchCompletedTCS.SetResult(true);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseInteractionStatusChangedEvent()
+	{
+		TouchInteractionStatus? firstInteractionResult = null, finalInteractionResult = null;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var interactionStatusChangedCompletedTCS = new TaskCompletionSource<TouchInteractionStatus>();
+		touchBehavior.InteractionStatusChanged += HandleInteractionStatusChanged;
+
+		Assert.Null(firstInteractionResult);
+		Assert.Null(finalInteractionResult);
+		Assert.Equal(firstInteractionResult, finalInteractionResult);
+
+		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started);
+		firstInteractionResult = await interactionStatusChangedCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchInteractionStatus.Started, firstInteractionResult);
+		Assert.Equal(firstInteractionResult, touchBehavior.CurrentInteractionStatus);
+
+		interactionStatusChangedCompletedTCS = new TaskCompletionSource<TouchInteractionStatus>();
+		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Completed);
+		finalInteractionResult = await interactionStatusChangedCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchInteractionStatus.Completed, finalInteractionResult);
+		Assert.Equal(finalInteractionResult, touchBehavior.CurrentInteractionStatus);
+
+		touchBehavior.InteractionStatusChanged -= HandleInteractionStatusChanged;
+
+		void HandleInteractionStatusChanged(object? sender, TouchInteractionStatusChangedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			interactionStatusChangedCompletedTCS.SetResult(e.TouchInteractionStatus);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseHoverStatusChangedEvent()
+	{
+		HoverStatus? firstHoverStatusResult = null, finalHoverStatusResult = null;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var hoverStatusChangedTCS = new TaskCompletionSource<HoverStatus>();
+		touchBehavior.HoverStatusChanged += HandleHoverStatusChanged;
+
+		Assert.Null(firstHoverStatusResult);
+		Assert.Null(finalHoverStatusResult);
+		Assert.Equal(firstHoverStatusResult, finalHoverStatusResult);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		firstHoverStatusResult = await hoverStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(HoverStatus.Entered, firstHoverStatusResult);
+		Assert.Equal(firstHoverStatusResult, touchBehavior.CurrentHoverStatus);
+
+		hoverStatusChangedTCS = new TaskCompletionSource<HoverStatus>();
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		finalHoverStatusResult = await hoverStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(HoverStatus.Exited, finalHoverStatusResult);
+		Assert.Equal(finalHoverStatusResult, touchBehavior.CurrentHoverStatus);
+
+		touchBehavior.HoverStatusChanged -= HandleHoverStatusChanged;
+
+		void HandleHoverStatusChanged(object? sender, HoverStatusChangedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			hoverStatusChangedTCS.SetResult(e.Status);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseHoverStateChangedEvent()
+	{
+		HoverState? firstHoverStateResult = null, finalHoverStateResult = null;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var hoverStateChangedTCS = new TaskCompletionSource<HoverState>();
+		touchBehavior.HoverStateChanged += HandleHoverStateChanged;
+
+		Assert.Null(firstHoverStateResult);
+		Assert.Null(finalHoverStateResult);
+		Assert.Equal(firstHoverStateResult, finalHoverStateResult);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		firstHoverStateResult = await hoverStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(HoverState.Hovered, firstHoverStateResult);
+		Assert.Equal(firstHoverStateResult, touchBehavior.CurrentHoverState);
+
+		hoverStateChangedTCS = new TaskCompletionSource<HoverState>();
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		finalHoverStateResult = await hoverStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(HoverState.Default, finalHoverStateResult);
+		Assert.Equal(finalHoverStateResult, touchBehavior.CurrentHoverState);
+
+		touchBehavior.HoverStateChanged -= HandleHoverStateChanged;
+
+		void HandleHoverStateChanged(object? sender, HoverStateChangedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			hoverStateChangedTCS.SetResult(e.State);
+		}
+	}
+
+	// This target framework has no platform view, so the behavior itself raises the Clicked of a Button for a tap.
+	[Fact]
+	public void VerifyCompletedTouchClicksAButtonWithoutAPlatformViewOnce()
+	{
+		var clicks = 0;
+		var button = new Button();
+		button.Clicked += (_, _) => clicks++;
+		AttachTouchBehaviorToVisualElement(button);
+
+		Assert.False(touchBehavior.IsClickedRaisedByPlatformView);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(1, clicks);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+		Assert.Equal(1, clicks);
+	}
+
+	// The hover status is updated before the hover state, so a HoverStatusChanged handler still reads the previous state.
+	[Fact]
+	public void VerifyHoverStateChangedHandlersSeeTheHoverStatusOfTheSameChange()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var statesSeen = new List<(HoverState State, HoverStatus Status)>();
+		var statusesSeen = new List<(HoverStatus Status, HoverState State)>();
+		touchBehavior.HoverStateChanged += (_, e) => statesSeen.Add((e.State, touchBehavior.CurrentHoverStatus));
+		touchBehavior.HoverStatusChanged += (_, e) => statusesSeen.Add((e.Status, touchBehavior.CurrentHoverState));
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		touchBehavior.HandleHover(HoverStatus.Exited);
+
+		Assert.Equal([(HoverState.Hovered, HoverStatus.Entered), (HoverState.Default, HoverStatus.Exited)], statesSeen);
+		Assert.Equal([(HoverStatus.Entered, HoverState.Default), (HoverStatus.Exited, HoverState.Hovered)], statusesSeen);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TestRaiseTouchGestureCompletedEvent()
+	{
+		object? completedTouchGestureCompletedCommandParameter = null;
+		TouchState? startedTouchStateChanged = null, completedTouchStateChanged = null, canceledTouchStateChanged = null;
+
+		const bool commandParameter = true;
+		touchBehavior.CommandParameter = commandParameter;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var touchGestureCompletedTCS = new TaskCompletionSource<object?>();
+		var touchStateChangedTCS = new TaskCompletionSource<TouchState>();
+		touchBehavior.TouchGestureCompleted += HandleTouchGestureCompleted;
+		touchBehavior.CurrentTouchStateChanged += HandleCurrentTouchStateChanged;
+
+		Assert.Null(completedTouchGestureCompletedCommandParameter);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		startedTouchStateChanged = await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		Assert.Equal(TouchState.Pressed, startedTouchStateChanged);
+
+		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		completedTouchGestureCompletedCommandParameter = await touchGestureCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		completedTouchStateChanged = await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(commandParameter, completedTouchGestureCompletedCommandParameter);
+		Assert.Equal(completedTouchGestureCompletedCommandParameter, touchBehavior.CommandParameter);
+		Assert.Equal(TouchState.Default, completedTouchStateChanged);
+
+		touchGestureCompletedTCS = new TaskCompletionSource<object?>();
+		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		touchStateChangedTCS = new TaskCompletionSource<TouchState>();
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+
+		canceledTouchStateChanged = await touchStateChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchStatus.Canceled, touchBehavior.CurrentTouchStatus);
+		Assert.Equal(TouchState.Default, canceledTouchStateChanged);
+
+		touchBehavior.TouchGestureCompleted -= HandleTouchGestureCompleted;
+		touchBehavior.CurrentTouchStateChanged -= HandleCurrentTouchStateChanged;
+
+		void HandleTouchGestureCompleted(object? sender, TouchGestureCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchGestureCompletedTCS.SetResult(e.TouchCommandParameter);
+		}
+
+		void HandleCurrentTouchStateChanged(object? sender, TouchStateChangedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchStateChangedTCS.SetResult(e.State);
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Medium)]
+	public async Task TestRaiseLongPressCompletedEvent()
+	{
+		object? raiseLongPressCompletedCommandParameter = null,
+			longPressCompletedCommandParameter = null,
+			longPressCanceledTouchGestureCompletedCommandParameter = null;
+
+		const bool longPressCompletedParameter = true;
+		touchBehavior.LongPressCommandParameter = longPressCompletedParameter;
+		touchBehavior.CurrentInteractionStatus = TouchInteractionStatus.Started;
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var longPressCompletedTCS = new TaskCompletionSource<object?>();
+		var longPressCommandTCS = new TaskCompletionSource();
+		touchBehavior.LongPressCommand = new Command(HandleLongPressCommand);
+		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
+
+		Assert.Null(longPressCompletedCommandParameter);
+
+		touchBehavior.RaiseLongPressCompleted();
+		await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		raiseLongPressCompletedCommandParameter = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(longPressCompletedParameter, raiseLongPressCompletedCommandParameter);
+
+		longPressCompletedTCS = new TaskCompletionSource<object?>();
+		longPressCommandTCS = new TaskCompletionSource();
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		longPressCompletedCommandParameter = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+
+		Assert.Equal(longPressCompletedParameter, longPressCompletedCommandParameter);
+		Assert.Equal(longPressCompletedCommandParameter, touchBehavior.LongPressCommandParameter);
+
+		longPressCompletedTCS = new TaskCompletionSource<object?>();
+		longPressCommandTCS = new TaskCompletionSource();
+		touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		longPressCanceledTouchGestureCompletedCommandParameter = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		touchBehavior.HandleTouch(TouchStatus.Canceled);
+
+		Assert.Equal(longPressCompletedParameter, longPressCanceledTouchGestureCompletedCommandParameter);
+		Assert.Equal(longPressCanceledTouchGestureCompletedCommandParameter, touchBehavior.LongPressCommandParameter);
+
+		touchBehavior.LongPressCompleted -= HandleLongPressCompleted;
+
+		void HandleLongPressCompleted(object? sender, LongPressCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			longPressCompletedTCS.TrySetResult(e.LongPressCommandParameter);
+		}
+
+		void HandleLongPressCommand()
+		{
+			longPressCommandTCS.TrySetResult();
+		}
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task VerifyIsToggledChangesState()
+	{
+		TouchStatus? touchStatus;
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		var touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
+		touchBehavior.CurrentTouchStatusChanged += HandleTouchStatusChanged;
+
+		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
+
+		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchStatus.Started, touchStatus);
+
+		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchStatus.Completed, touchStatus);
+
+		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchStatus.Started, touchStatus);
+
+		touchStatusChangedTCS = new TaskCompletionSource<TouchStatus>();
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		touchStatus = await touchStatusChangedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(TouchStatus.Completed, touchStatus);
+
+		touchBehavior.CurrentTouchStatusChanged -= HandleTouchStatusChanged;
+
+		void HandleTouchStatusChanged(object? sender, TouchStatusChangedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchStatusChangedTCS.SetResult(e.Status);
+		}
+	}
+
+	[Fact]
+	public void CanExecuteTest()
+	{
+		var canExecute = false;
+		var view = new MockView();
+
+		var touchBehaviorCommandTCS = new TaskCompletionSource();
+
+		// TouchBehavior.Element is null
+		Assert.False(touchBehavior.CanExecute);
+
+		AttachTouchBehaviorToVisualElement(view);
+
+		// TouchBehavior.Element is not null
+		Assert.True(touchBehavior.CanExecute);
+
+		view.IsEnabled = false;
+
+		// TouchBehavior.Element.IsEnabled is false
+		Assert.False(touchBehavior.CanExecute);
+
+		view.IsEnabled = true;
+
+		// TouchBehavior.Element.IsEnabled is true
+		Assert.True(touchBehavior.CanExecute);
+
+		touchBehavior.Command = new Command(ExecuteTouchBehaviorCommand, CommandCanExecute);
+
+		// TouchBehavior.Command.CanExecute is false
+		Assert.False(touchBehavior.CanExecute);
+
+		canExecute = true;
+
+		// TouchBehavior.Command.CanExecute is true
+		Assert.True(touchBehavior.CanExecute);
+
+		touchBehavior.IsEnabled = false;
+
+		// TouchBehavior.IsEnabled is false
+		Assert.False(touchBehavior.CanExecute);
+
+		void ExecuteTouchBehaviorCommand()
+		{
+		}
+
+		bool CommandCanExecute() => canExecute;
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task RaiseTouchGestureCompletedWhenElementIsNull()
+	{
+		const int touchGestureCompletedParameter = 7;
+
+		var touchCommandTCS = new TaskCompletionSource<bool>();
+		var touchCompletedTCS = new TaskCompletionSource<object?>();
+
+		touchBehavior.Command = new Command(ExecuteCommand, CanCommandExecute);
+		touchBehavior.CommandParameter = touchGestureCompletedParameter;
+		touchBehavior.TouchGestureCompleted += HandleTouchGestureCompleted;
+
+		touchBehavior.RaiseTouchGestureCompleted();
+
+		// element is null
+		Assert.False(touchCompletedTCS.Task.IsCompleted);
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.RaiseTouchGestureCompleted();
+		var touchCompletedResult = await touchCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		var commandResult = await touchCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Equal(touchGestureCompletedParameter, touchCompletedResult);
+		Assert.True(commandResult);
+
+		void HandleTouchGestureCompleted(object? sender, TouchGestureCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			touchCompletedTCS.SetResult(e.TouchCommandParameter);
+		}
+
+		void ExecuteCommand()
+		{
+			touchCommandTCS.SetResult(true);
+		}
+
+		bool CanCommandExecute() => true;
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task RaiseLongPressCompletedWhenElementIsNull()
+	{
+		const int longPressCompletedParameter = 7;
+
+		var longPressCommandTCS = new TaskCompletionSource<bool>();
+		var longPressCompletedTCS = new TaskCompletionSource<object?>();
+
+		touchBehavior.LongPressCommand = new Command(ExecuteLongPressCommand, CanLongPressCommandExecute);
+		touchBehavior.LongPressCommandParameter = longPressCompletedParameter;
+
+		touchBehavior.LongPressCompleted += HandleLongPressCompleted;
+
+		touchBehavior.RaiseLongPressCompleted();
+
+		// element is null
+		Assert.False(longPressCompletedTCS.Task.IsCompleted);
+
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.RaiseLongPressCompleted();
+		var longPressCompletedResult = await longPressCompletedTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+		var longPressCommandResult = await longPressCommandTCS.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		// Event fires and LongPressCommand executes when Element is not null
+		Assert.Equal(longPressCompletedParameter, longPressCompletedResult);
+		Assert.True(longPressCommandResult);
+
+		void HandleLongPressCompleted(object? sender, LongPressCompletedEventArgs e)
+		{
+			ArgumentNullException.ThrowIfNull(sender);
+			longPressCompletedTCS.SetResult(e.LongPressCommandParameter);
+		}
+
+		void ExecuteLongPressCommand()
+		{
+			longPressCommandTCS.SetResult(true);
+		}
+
+		bool CanLongPressCommandExecute() => true;
+	}
+
+	[Fact]
+	public void SetHoveredOpacityTest()
+	{
+		const double hoveredOpacity = 0.2;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredOpacityProperty, nameof(TouchBehaviorViewModel.HoveredOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Equal(default, viewModel.HoveredOpacity);
+
+		touchBehavior.HoveredOpacity = hoveredOpacity;
+
+		Assert.Equal(hoveredOpacity, viewModel.HoveredOpacity);
+	}
+
+	[Fact]
+	public void SetHoveredOpacityAbove1Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredOpacityProperty, nameof(TouchBehaviorViewModel.HoveredOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.HoveredOpacity = 1.01);
+		Assert.Equal(default, viewModel.HoveredOpacity);
+	}
+
+	[Fact]
+	public void SetHoveredOpacityBelow0Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredOpacityProperty, nameof(TouchBehaviorViewModel.HoveredOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.HoveredOpacity = -0.01);
+		Assert.Equal(default, viewModel.HoveredOpacity);
+	}
+
+	[Fact]
+	public void SetPressedOpacityTest()
+	{
+		const double pressedOpacity = 0.2;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.PressedOpacityProperty, nameof(TouchBehaviorViewModel.PressedOpacity), mode: BindingMode.TwoWay);
+		Assert.Equal(default, viewModel.PressedOpacity);
+
+		touchBehavior.PressedOpacity = pressedOpacity;
+
+		Assert.Equal(pressedOpacity, viewModel.PressedOpacity);
+	}
+
+	[Fact]
+	public void SetPressedOpacityAbove1Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.PressedOpacityProperty, nameof(TouchBehaviorViewModel.PressedOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.PressedOpacity = 1.01);
+		Assert.Equal(default, viewModel.PressedOpacity);
+	}
+
+	[Fact]
+	public void SetPressedOpacityBelow0Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.PressedOpacityProperty, nameof(TouchBehaviorViewModel.PressedOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.PressedOpacity = -0.01);
+		Assert.Equal(default, viewModel.PressedOpacity);
+	}
+
+	[Fact]
+	public void SetDefaultOpacityTest()
+	{
+		const double defaultOpacity = 0.2;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
+
+		touchBehavior.DefaultOpacity = defaultOpacity;
+
+		Assert.Equal(defaultOpacity, viewModel.DefaultOpacity);
+	}
+
+	[Fact]
+	public void SetDefaultOpacityAbove1Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = 1.01);
+		Assert.Equal(default, viewModel.DefaultOpacity);
+	}
+
+	[Fact]
+	public void SetDefaultOpacityBelow0Test()
+	{
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultOpacityProperty, nameof(TouchBehaviorViewModel.DefaultOpacity), mode: BindingMode.TwoWay);
+
+		Assert.Throws<ArgumentOutOfRangeException>(() => touchBehavior.DefaultOpacity = -0.01);
+		Assert.Equal(default, viewModel.DefaultOpacity);
+	}
+
+	[Fact]
+	public void SetLongPressDurationTest()
+	{
+		const int longPressDuration = 1250;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.LongPressDurationProperty, nameof(TouchBehaviorViewModel.LongPressDuration), mode: BindingMode.TwoWay);
+
+		touchBehavior.LongPressDuration = longPressDuration;
+
+		Assert.Equal(longPressDuration, viewModel.LongPressDuration);
+	}
+
+	[Fact]
+	public void SetDefaultAnimationDurationTest()
+	{
+		const int defaultAnimationDuration = 2;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultAnimationDurationProperty, nameof(TouchBehaviorViewModel.DefaultAnimationDuration), mode: BindingMode.TwoWay);
+
+		touchBehavior.DefaultAnimationDuration = defaultAnimationDuration;
+
+		Assert.Equal(defaultAnimationDuration, viewModel.DefaultAnimationDuration);
+	}
+
+	[Fact]
+	public void SetDefaultAnimationEasingTest()
+	{
+		Easing defaultAnimationEasing = Easing.Linear;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.DefaultAnimationEasingProperty, nameof(TouchBehaviorViewModel.DefaultAnimationEasing), mode: BindingMode.TwoWay);
+
+		touchBehavior.DefaultAnimationEasing = defaultAnimationEasing;
+
+		Assert.Equal(defaultAnimationEasing, viewModel.DefaultAnimationEasing);
+	}
+
+	[Fact]
+	public void ChangeVisualElementTest()
+	{
+		var view = new MockView();
+		AttachTouchBehaviorToVisualElement(view);
+
+		Assert.IsType<View>(touchBehavior.Element, exactMatch: false);
+
+		var button = new Button();
+		AttachTouchBehaviorToVisualElement(button);
+
+		Assert.IsType<Button>(touchBehavior.Element);
+	}
+
+	[Fact]
+	public void SetHoveredAnimationDurationTest()
+	{
+		const int hoveredAnimationDuration = 17;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredAnimationDurationProperty, nameof(TouchBehaviorViewModel.HoveredAnimationDuration), mode: BindingMode.TwoWay);
+
+		touchBehavior.HoveredAnimationDuration = hoveredAnimationDuration;
+
+		Assert.Equal(hoveredAnimationDuration, viewModel.HoveredAnimationDuration);
+	}
+
+	[Fact]
+	public void SetHoveredAnimationEasingTest()
+	{
+		Easing hoveredAnimationEasing = Easing.CubicIn;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.HoveredAnimationEasingProperty, nameof(TouchBehaviorViewModel.HoveredAnimationEasing), mode: BindingMode.TwoWay);
+
+		touchBehavior.HoveredAnimationEasing = hoveredAnimationEasing;
+
+		Assert.Equal(hoveredAnimationEasing, viewModel.HoveredAnimationEasing);
+	}
+
+	[Fact]
+	public void SetPressedAnimationDurationTest()
+	{
+		const int pressedAnimationDuration = 17;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.PressedAnimationDurationProperty, nameof(TouchBehaviorViewModel.PressedAnimationDuration), mode: BindingMode.TwoWay);
+
+		touchBehavior.PressedAnimationDuration = pressedAnimationDuration;
+
+		Assert.Equal(pressedAnimationDuration, viewModel.PressedAnimationDuration);
+	}
+
+	[Fact]
+	public void SetPressedAnimationEasingTest()
+	{
+		Easing pressedAnimationEasing = Easing.CubicIn;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.PressedAnimationEasingProperty, nameof(TouchBehaviorViewModel.PressedAnimationEasing), mode: BindingMode.TwoWay);
+
+		touchBehavior.PressedAnimationEasing = pressedAnimationEasing;
+
+		Assert.Equal(pressedAnimationEasing, viewModel.PressedAnimationEasing);
+	}
+
+	[Fact]
+	public void SetShouldMakeChildrenInputTransparentTest()
+	{
+		const bool shouldMakeChildrenInputTransparent = false;
+		var viewModel = new TouchBehaviorViewModel();
+		touchBehavior.BindingContext = viewModel;
+
+		touchBehavior.SetBinding(TouchBehavior.ShouldMakeChildrenInputTransparentProperty, nameof(TouchBehaviorViewModel.ShouldMakeChildrenInputTransparent), mode: BindingMode.TwoWay);
+
+		touchBehavior.ShouldMakeChildrenInputTransparent = shouldMakeChildrenInputTransparent;
+
+		Assert.Equal(shouldMakeChildrenInputTransparent, viewModel.ShouldMakeChildrenInputTransparent);
+	}
+
+	[Fact]
+	public void VerifyBackgroundColorStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultBackgroundColor = Colors.Black;
+		touchBehavior.PressedBackgroundColor = Colors.Green;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
+
+		touchBehavior.HoveredBackgroundColor = Colors.RosyBrown;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedBackgroundColor, image.BackgroundColor);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredBackgroundColor, image.BackgroundColor);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
+	}
+
+	// A colour that the behavior set on the element would take the place of the binding or DynamicResource, and the element would stop
+	// following its source.
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(false, true)]
+	[InlineData(true, false)]
+	[InlineData(true, true)]
+	public void VerifyBackgroundColorFromABindingOrDynamicResourceKeepsFollowingItsSource(bool isDynamicResource, bool touchFirst)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		if (isDynamicResource)
+		{
+			view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+		}
+		else
+		{
+			view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+		}
+
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		if (touchFirst)
+		{
+			touchBehavior.HandleTouch(TouchStatus.Started);
+			touchBehavior.HandleTouch(TouchStatus.Completed);
+			Assert.Equal(Colors.Red, view.BackgroundColor);
+		}
+
+		if (isDynamicResource)
+		{
+			view.Resources[colorKey] = Colors.Green;
+		}
+		else
+		{
+			viewModel.Color = Colors.Green;
+		}
+
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+	}
+
+	[Theory]
+	[InlineData("Binding")]
+	[InlineData("DynamicResource")]
+	[InlineData("LocalValue")]
+	[InlineData("Style")]
+	public void VerifyStateWithoutAColorOfItsOwnGivesTheAppsBackgroundColorBack(string source)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		switch (source)
+		{
+			case "Binding":
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "DynamicResource":
+				view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+				break;
+			case "LocalValue":
+				view.BackgroundColor = Colors.Red;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Red);
+				break;
+		}
+
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		switch (source)
+		{
+			case "Binding":
+				viewModel.Color = Colors.Green;
+				break;
+			case "DynamicResource":
+				view.Resources[colorKey] = Colors.Green;
+				break;
+			case "LocalValue":
+				view.BackgroundColor = Colors.Green;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Green);
+				break;
+		}
+
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
+		{
+			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
+		};
+	}
+
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void VerifyAppColorChangedWhileTheHoveredColorIsShownAppearsWhenTheHoverEnds(bool isDynamicResource)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		if (isDynamicResource)
+		{
+			view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+		}
+		else
+		{
+			view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+		}
+
+		touchBehavior.HoveredBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		if (isDynamicResource)
+		{
+			view.Resources[colorKey] = Colors.Green;
+		}
+		else
+		{
+			viewModel.Color = Colors.Green;
+		}
+
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+	}
+
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	public void VerifyUnpaintedElementKeepsTheColorOfTheAttach(bool hasPressedColor, bool hasHoveredColor)
+	{
+		var view = new MockView();
+		touchBehavior.PressedScale = 0.9;
+		touchBehavior.PressedBackgroundColor = hasPressedColor ? Colors.Yellow : null;
+		touchBehavior.HoveredBackgroundColor = hasHoveredColor ? Colors.Yellow : null;
+		var attachColor = TouchBehaviorDefaults.DefaultBackgroundColor;
+
+		AttachTouchBehaviorToVisualElement(view);
+		Assert.Equal(attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(hasPressedColor ? Colors.Yellow : attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(hasHoveredColor ? Colors.Yellow : attachColor, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(attachColor, view.BackgroundColor);
+
+		touchBehavior.Element = null;
+		Assert.Equal(attachColor, view.BackgroundColor);
+	}
+
+	[Theory]
+	[InlineData("Binding")]
+	[InlineData("DynamicResource")]
+	[InlineData("LocalValue")]
+	[InlineData("Style")]
+	public void VerifyDetachWhileAStateColorIsShownGivesTheAppsBackgroundColorBack(string source)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = Colors.Red };
+		var view = new MockView { BindingContext = viewModel, Resources = new ResourceDictionary { [colorKey] = Colors.Red } };
+
+		switch (source)
+		{
+			case "Binding":
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "DynamicResource":
+				view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+				break;
+			case "LocalValue":
+				view.BackgroundColor = Colors.Red;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Red);
+				break;
+		}
+
+		touchBehavior.HoveredBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.Element = null;
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		ChangeAppColor(Colors.Green);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		// Attached again while the hover goes on, so the hovered colour shows until the hover ends
+		touchBehavior.Element = view;
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+
+		ChangeAppColor(Colors.Red);
+		Assert.Equal(Colors.Red, view.BackgroundColor);
+
+		void ChangeAppColor(Color color)
+		{
+			switch (source)
+			{
+				case "Binding":
+					viewModel.Color = color;
+					break;
+				case "DynamicResource":
+					view.Resources[colorKey] = color;
+					break;
+				case "LocalValue":
+					view.BackgroundColor = color;
+					break;
+				case "Style":
+					view.Style = CreateBackgroundStyle(color);
+					break;
+			}
+		}
+
+		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
+		{
+			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
+		};
+	}
+
+	[Fact]
+	public void VerifyColorTheAppSetWhileAStateColorIsShownStaysAfterTheDetach()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.HoveredBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		view.BackgroundColor = Colors.Green;
+		touchBehavior.Element = null;
+
+		Assert.Equal(Colors.Green, view.BackgroundColor);
+	}
+
+	[Fact]
+	public void VerifyAppsOwnColorComesBackInOneChange()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		var changes = new List<Color?>();
+		view.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
+			{
+				changes.Add(view.BackgroundColor);
+			}
+		};
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		changes.Clear();
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal([Colors.Red], changes);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+
+		changes.Clear();
+		touchBehavior.Element = null;
+		Assert.Equal([Colors.Red], changes);
+	}
+
+	[Fact]
+	public void VerifyOpacityStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultOpacity = 0.4;
+		touchBehavior.PressedOpacity = 0.5;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultOpacity, image.Opacity);
+
+		touchBehavior.HoveredOpacity = 0.1;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedOpacity, image.Opacity);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredOpacity, image.Opacity);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultOpacity, image.Opacity);
+	}
+
+	[Fact]
+	public void VerifyScaleStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultScale = 0.4;
+		touchBehavior.PressedScale = 0.5;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultScale, image.Scale);
+
+		touchBehavior.HoveredScale = 0.1;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedScale, image.Scale);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredScale, image.Scale);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultScale, image.Scale);
+	}
+
+	[Fact]
+	public void VerifyTranslationStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultTranslationX = 0.1;
+		touchBehavior.DefaultTranslationY = 0.2;
+		touchBehavior.PressedTranslationX = 0.3;
+		touchBehavior.PressedTranslationY = 0.4;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.DefaultTranslationY, image.TranslationY);
+
+		touchBehavior.HoveredTranslationX = 0.5;
+		touchBehavior.HoveredTranslationY = 0.6;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.PressedTranslationY, image.TranslationY);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.HoveredTranslationY, image.TranslationY);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultTranslationX, image.TranslationX);
+		Assert.Equal(touchBehavior.DefaultTranslationY, image.TranslationY);
+	}
+
+	[Fact]
+	public void VerifyRotationStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultRotation = 0.4;
+		touchBehavior.PressedRotation = 0.5;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultRotation, image.Rotation);
+
+		touchBehavior.HoveredRotation = 0.1;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedRotation, image.Rotation);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredRotation, image.Rotation);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultRotation, image.Rotation);
+	}
+
+	[Fact]
+	public void VerifyRotationXStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultRotationX = 0.4;
+		touchBehavior.PressedRotationX = 0.5;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultRotationX, image.RotationX);
+
+		touchBehavior.HoveredRotationX = 0.1;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedRotationX, image.RotationX);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredRotationX, image.RotationX);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultRotationX, image.RotationX);
+	}
+
+	[Fact]
+	public void VerifyRotationYStateMachine()
+	{
+		var image = new Image();
+		AttachTouchBehaviorToVisualElement(image);
+
+		touchBehavior.DefaultRotationY = 0.4;
+		touchBehavior.PressedRotationY = 0.5;
+
+		// Verify Default is set when Hover Active but not set
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.DefaultRotationY, image.RotationY);
+
+		touchBehavior.HoveredRotationY = 0.1;
+
+		// Verify Pressed is set when Hover + Press simultaneously active
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(touchBehavior.PressedRotationY, image.RotationY);
+
+		// Verify Hovered is set when Hover active
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(touchBehavior.HoveredRotationY, image.RotationY);
+
+		// Verify Default is set when neither active
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		Assert.Equal(touchBehavior.DefaultRotationY, image.RotationY);
+	}
+
+	protected override void Dispose(bool isDisposing)
+	{
+		base.Dispose(isDisposing);
+		touchBehavior.Dispose();
+
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleTouch(TouchStatus.Canceled));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleHover(HoverStatus.Entered));
+		Assert.Throws<ObjectDisposedException>(() => touchBehavior.HandleUserInteraction(TouchInteractionStatus.Started));
+	}
+
+	void AttachTouchBehaviorToVisualElement(in VisualElement element)
+	{
+		element.Behaviors.Add(touchBehavior);
+		touchBehavior.Element = element;
+	}
+
+	sealed class BackgroundColorViewModel : System.ComponentModel.INotifyPropertyChanged
+	{
+		Color color = Colors.Transparent;
+
+		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+		public Color Color
+		{
+			get => color;
+			set
+			{
+				color = value;
+				PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Color)));
+			}
+		}
+	}
+
+	sealed class TouchBehaviorViewModel
+	{
+		public int AnimationDuration { get; set; }
+		public int DefaultAnimationDuration { get; set; }
+		public int HoveredAnimationDuration { get; set; }
+		public int PressedAnimationDuration { get; set; }
+		public int LongPressDuration { get; set; }
+		public Easing? AnimationEasing { get; set; }
+		public Easing? DefaultAnimationEasing { get; set; }
+		public Easing? HoveredAnimationEasing { get; set; }
+		public Easing? PressedAnimationEasing { get; set; }
+		public double HoveredOpacity { get; set; }
+		public double DefaultOpacity { get; set; }
+		public double PressedOpacity { get; set; }
+		public bool IsNativeAnimationBorderLess { get; set; }
+		public Color? NativeAnimationColor { get; set; }
+		public int? NativeAnimationRadius { get; set; }
+		public int? NativeAnimationShadowRadius { get; set; }
+		public int PulseCount { get; set; }
+		public bool ShouldMakeChildrenInputTransparent { get; set; }
+		public bool ShouldUseNativeAnimation { get; set; }
+	}
+}

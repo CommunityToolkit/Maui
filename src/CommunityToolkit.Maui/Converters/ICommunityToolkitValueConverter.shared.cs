@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace CommunityToolkit.Maui.Converters;
 
@@ -20,11 +21,13 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 	/// <summary>
 	/// Gets the <see cref="Type" /> this converter expects to <see cref="Convert" /> from or <see cref="ConvertBack" /> to.
 	/// </summary>
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	Type FromType { get; }
 
 	/// <summary>
 	/// Gets the <see cref="Type" /> this converter expects to <see cref="Convert" /> to or <see cref="ConvertBack" /> from.
 	/// </summary>
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	Type ToType { get; }
 
 	/// <summary>
@@ -35,7 +38,7 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>The converted object</returns>
-	new object? Convert(object? value, Type targetType, object? parameter, CultureInfo? culture);
+	new object? Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo? culture);
 
 	/// <summary>
 	/// Converts the object back to the outgoing values
@@ -45,13 +48,16 @@ public interface ICommunityToolkitValueConverter : IValueConverter
 	/// <param name="parameter">Optional Parameters</param>
 	/// <param name="culture">Culture Info</param>
 	/// <returns>The object converted back</returns>
-	new object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture);
+	new object? ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo? culture);
+
 
 	/// <inheritdoc />
-	object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+	[UnconditionalSuppressMessage("TrimAnalysis", "IL2092", Justification = "The ToType and FromType properties are attributed with the appropriate DynamicallyAccessedMembers attributes.")]
+	object? IValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		Convert(value, targetType, parameter, culture);
 
 	/// <inheritdoc />
-	object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+	[UnconditionalSuppressMessage("TrimAnalysis", "IL2092", Justification = "The ToType and FromType properties are attributed with the appropriate DynamicallyAccessedMembers attributes.")]
+	object? IValueConverter.ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		ConvertBack(value, targetType, parameter, culture);
 }

@@ -34,7 +34,7 @@ public class ScaleAnimation : BaseAnimation
 	}
 
 	/// <inheritdoc />
-	public override async Task Animate(VisualElement view)
+	public override async Task Animate(VisualElement view, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(view);
 
@@ -42,7 +42,7 @@ public class ScaleAnimation : BaseAnimation
 
 		var duration = Length / 2;
 
-		await view.ScaleTo(Scale, duration, Easing);
-		await view.ScaleTo(originalScale, duration, Easing);
+		await view.ScaleToAsync(Scale, duration, Easing, token);
+		await view.ScaleToAsync(originalScale, duration, Easing, token);
 	}
 }

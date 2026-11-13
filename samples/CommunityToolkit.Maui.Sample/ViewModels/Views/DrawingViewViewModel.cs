@@ -14,9 +14,6 @@ public partial class DrawingViewViewModel : BaseViewModel
 {
 	readonly IFileSaver fileSaver;
 
-	[ObservableProperty]
-	string logs = string.Empty;
-
 	public DrawingViewViewModel(IFileSaver fileSaver)
 	{
 		this.fileSaver = fileSaver;
@@ -44,7 +41,19 @@ public partial class DrawingViewViewModel : BaseViewModel
 		});
 	}
 
-	public ObservableCollection<IDrawingLine> Lines { get; } = new();
+	public List<DrawingViewOutputOption> AvailableOutputOptions { get; } = [DrawingViewOutputOption.Lines, DrawingViewOutputOption.FullCanvas];
+
+	[ObservableProperty]
+	public partial string Logs { get; private set; } = string.Empty;
+
+	[ObservableProperty]
+	public partial DrawingViewOutputOption SelectedOutputOption { get; set; } = DrawingViewOutputOption.Lines;
+
+	public double CanvasHeight { get; set; }
+
+	public double CanvasWidth { get; set; }
+
+	public ObservableCollection<IDrawingLine> Lines { get; } = [];
 
 	public ICommand PointDrawnCommand { get; }
 	public ICommand DrawingLineStartedCommand { get; }
@@ -72,20 +81,41 @@ public partial class DrawingViewViewModel : BaseViewModel
 	{
 		try
 		{
-			await using var stream = await DrawingView.GetImageStream(Lines, new Size(1920, 1080), Brush.Blue, cancellationToken);
+			var options = SelectedOutputOption == DrawingViewOutputOption.Lines
+				? ImageLineOptions.JustLines(Lines.ToList(), new Size(1920, 1080), Brush.Blue)
+				: ImageLineOptions.FullCanvas(Lines.ToList(), new Size(1920, 1080), Brush.Blue, new Size(CanvasWidth, CanvasHeight));
+
+			await using var stream = await DrawingView.GetImageStream(options, cancellationToken);
+
+			// GetImageStream returns Stream.Null when there is nothing to draw (no lines, or no line with points).
+			if (stream == Stream.Null)
+			{
+				await Toast.Make("Save Failed: No Lines Drawn").Show(cancellationToken);
+				return;
+			}
 
 			await Permissions.RequestAsync<Permissions.StorageRead>().WaitAsync(cancellationToken);
 			await Permissions.RequestAsync<Permissions.StorageWrite>().WaitAsync(cancellationToken);
 
-			await fileSaver.SaveAsync("drawing.png", stream, cancellationToken);
+			// FileSaver reports a failure in its result instead of throwing it, so the catch blocks below never see it. A save that the user
+			// cancelled needs no message
+			var fileSaverResult = await fileSaver.SaveAsync("drawing.png", stream, cancellationToken);
+			if (fileSaverResult.IsSuccessful)
+			{
+				await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(cancellationToken);
+			}
+			else if (!fileSaverResult.IsCancelled)
+			{
+				await Toast.Make($"Save Failed: {fileSaverResult.Exception.Message}").Show(cancellationToken);
+			}
 		}
 		catch (PermissionException e)
 		{
 			await Toast.Make($"Save Failed: {e.Message}").Show(cancellationToken);
 		}
-		catch (InvalidOperationException)
+		catch (InvalidOperationException e)
 		{
-			await Toast.Make("Save Failed: No Lines Drawn").Show(cancellationToken);
+			await Toast.Make($"Save Failed: {e.Message}").Show(cancellationToken);
 		}
 	}
 }

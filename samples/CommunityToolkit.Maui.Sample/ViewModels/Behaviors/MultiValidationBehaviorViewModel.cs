@@ -1,5 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public class MultiValidationBehaviorViewModel : BaseViewModel
+public partial class MultiValidationBehaviorViewModel : BaseViewModel
 {
 }

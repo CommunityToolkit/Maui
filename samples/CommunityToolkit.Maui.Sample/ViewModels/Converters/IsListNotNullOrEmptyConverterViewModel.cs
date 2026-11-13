@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Converters;
 
-public class IsListNotNullOrEmptyConverterViewModel : BaseViewModel
+public partial class IsListNotNullOrEmptyConverterViewModel : BaseViewModel
 {
 	public IsListNotNullOrEmptyConverterViewModel()
 	{
@@ -14,15 +14,15 @@ public class IsListNotNullOrEmptyConverterViewModel : BaseViewModel
 
 	public ICommand ClearCollectionCommand { get; }
 
-	public ObservableCollection<string> StringItemSource { get; } = new()
-	{
+	public ObservableCollection<string> StringItemSource { get; } =
+	[
 		"Item 0",
 		"Item 1",
 		"Item 2",
 		"Item 3",
 		"Item 4",
 		"Item 5",
-	};
+	];
 
 	void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnPropertyChanged(nameof(StringItemSource));
 }

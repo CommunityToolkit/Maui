@@ -1,8 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Maui.ApplicationModel;
-using CommunityToolkit.Maui.Maps;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Markup;
 using CommunityToolkit.Maui.Media;
-using CommunityToolkit.Maui.Sample.Models;
 using CommunityToolkit.Maui.Sample.Pages;
 using CommunityToolkit.Maui.Sample.Pages.Alerts;
 using CommunityToolkit.Maui.Sample.Pages.Behaviors;
@@ -24,14 +24,21 @@ using CommunityToolkit.Maui.Sample.ViewModels.ImageSources;
 using CommunityToolkit.Maui.Sample.ViewModels.Layouts;
 using CommunityToolkit.Maui.Sample.ViewModels.PlatformSpecific;
 using CommunityToolkit.Maui.Sample.ViewModels.Views;
-using CommunityToolkit.Maui.Sample.ViewModels.Views.AvatarView;
 using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.LifecycleEvents;
 using Polly;
 
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+#if WINDOWS10_0_17763_0_OR_GREATER
+using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.Maui.Platform;
+#endif
 
 namespace CommunityToolkit.Maui.Sample;
 
@@ -41,28 +48,75 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
-								.UseMauiCommunityToolkit()
-#else
-								.UseMauiCommunityToolkit(options =>
+								.UseMauiCommunityToolkit(static options =>
 								{
+									options.SetShouldEnableSnackbarOnWindows(true);
+									options.SetPopupDefaults(new DefaultPopupSettings());
+									options.SetPopupOptionsDefaults(new DefaultPopupOptionsSettings());
+								})
+#else
+								.UseMauiCommunityToolkit(static options =>
+								{
+									options.SetShouldEnableSnackbarOnWindows(true);
 									options.SetShouldSuppressExceptionsInConverters(true);
 									options.SetShouldSuppressExceptionsInBehaviors(true);
 									options.SetShouldSuppressExceptionsInAnimations(true);
 								})
 #endif
 								.UseMauiCommunityToolkitMarkup()
-								.UseMauiCommunityToolkitMediaElement()
-								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from bingmapsportal.com
+								.UseMauiCommunityToolkitCamera()
+								.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: true, static options =>
+								{
+									options.SetDefaultAndroidViewType(AndroidViewType.TextureView);
+								})
+								.ConfigureMauiHandlers(static handlers =>
+								{
+#if IOS || MACCATALYST
+									handlers.AddHandler<CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+									handlers.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+#elif ANDROID
+									// Material Components limit a button to 320dp (mtrl_btn_max_width). MAUI measures a Button within that limit, so a long
+									// caption wraps at 320dp even when the Button is laid out wider, and a full-width Button keeps the height of the wrapped caption
+									Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("RemoveMaterialMaximumWidth", static (handler, _) => handler.PlatformView.SetMaxWidth(int.MaxValue));
+#endif
+								})
+
 								.UseMauiApp<App>()
-								.ConfigureFonts(fonts =>
+								.ConfigureFonts(static fonts =>
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
 
-		builder.Services.AddHttpClient<ByteArrayToImageSourceConverterViewModel>()
-						.AddStandardResilienceHandler(options => options.Retry = new MobileHttpRetryStrategyOptions());
+		builder.ConfigureLifecycleEvents(events =>
+		{
+#if WINDOWS10_0_17763_0_OR_GREATER
+				events.AddWindows(static windowLifeCycleBuilder =>
+				{
+					windowLifeCycleBuilder.OnWindowCreated(window =>
+					{
+						window.SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
 
-		builder.Services.AddSingleton<PopupSizeConstants>();
+						var titleBar = window.GetAppWindow()?.TitleBar ?? throw new InvalidOperationException("App Window Cannot be Null");
+
+						titleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+
+						window.ExtendsContentIntoTitleBar = false;
+
+						IntPtr nativeWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+						WindowId win32WindowsId = Win32Interop.GetWindowIdFromWindow(nativeWindowHandle);
+						AppWindow winuiAppWindow = AppWindow.GetFromWindowId(win32WindowsId);
+
+						if (winuiAppWindow.Presenter is OverlappedPresenter p)
+						{
+							p.SetBorderAndTitleBar(true, true);
+						}
+					});
+				});
+#endif
+		});
+
+		// Typed-client registrations don't work here: AddTransientWithShellRoute later re-registers each page and view model, replacing the typed client, so they would get a plain HttpClient without this handler
+		builder.Services.ConfigureHttpClientDefaults(static http => http.AddStandardResilienceHandler(static options => options.Retry = new MobileHttpRetryStrategyOptions()));
 
 		RegisterViewsAndViewModels(builder.Services);
 		RegisterEssentials(builder.Services);
@@ -87,12 +141,12 @@ public static class MauiProgram
 		services.AddTransient<ViewsGalleryPage, ViewsGalleryViewModel>();
 		services.AddTransient<PlatformSpecificGalleryPage, PlatformSpecificGalleryViewModel>();
 
-
 		// Add Alerts Pages + ViewModels
 		services.AddTransientWithShellRoute<SnackbarPage, SnackbarViewModel>();
 		services.AddTransientWithShellRoute<ToastPage, ToastViewModel>();
 
 		// Add AvatarView pages + ViewModels
+		services.AddTransientWithShellRoute<AvatarViewsPage, AvatarViewsViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewBindablePropertiesPage, AvatarViewBindablePropertiesViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewBordersPage, AvatarViewBordersViewModel>();
 		services.AddTransientWithShellRoute<AvatarViewColorsPage, AvatarViewColorsViewModel>();
@@ -119,10 +173,12 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<RequiredStringValidationBehaviorPage, RequiredStringValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<SelectAllTextBehaviorPage, SelectAllTextBehaviorViewModel>();
 		services.AddTransientWithShellRoute<SetFocusOnEntryCompletedBehaviorPage, SetFocusOnEntryCompletedBehaviorViewModel>();
+		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 		services.AddTransientWithShellRoute<TextValidationBehaviorPage, TextValidationBehaviorViewModel>();
+		services.AddTransientWithShellRoute<TouchBehaviorPage, TouchBehaviorViewModel>();
+		services.AddTransientWithShellRoute<TouchBehaviorCollectionViewMultipleSelectionPage, TouchBehaviorCollectionViewMultipleSelectionViewModel>();
 		services.AddTransientWithShellRoute<UriValidationBehaviorPage, UriValidationBehaviorViewModel>();
 		services.AddTransientWithShellRoute<UserStoppedTypingBehaviorPage, UserStoppedTypingBehaviorViewModel>();
-		services.AddTransientWithShellRoute<StatusBarBehaviorPage, StatusBarBehaviorViewModel>();
 
 		// Add Converters Pages + ViewModels
 		services.AddTransientWithShellRoute<BoolToObjectConverterPage, BoolToObjectConverterViewModel>();
@@ -165,6 +221,7 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<FileSaverPage, FileSaverViewModel>();
 		services.AddTransientWithShellRoute<FolderPickerPage, FolderPickerViewModel>();
 		services.AddTransientWithShellRoute<SpeechToTextPage, SpeechToTextViewModel>();
+		services.AddTransientWithShellRoute<OfflineSpeechToTextPage, OfflineSpeechToTextViewModel>();
 
 		// Add Extensions Pages + ViewModels
 		services.AddTransientWithShellRoute<ColorAnimationExtensionsPage, ColorAnimationExtensionsViewModel>();
@@ -182,28 +239,53 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
+		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
-
-		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
-		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
-
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
+		services.AddTransientWithShellRoute<MediaElementsPage, MediaElementsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
-
-		services.AddTransientWithShellRoute<CustomSizeAndPositionPopupPage, CustomSizeAndPositionPopupViewModel>();
-		services.AddTransientWithShellRoute<MultiplePopupPage, MultiplePopupViewModel>();
-		services.AddTransientWithShellRoute<PopupAnchorPage, PopupAnchorViewModel>();
+		services.AddTransientWithShellRoute<MediaElementFromStreamPage, MediaElementFromStreamViewModel>();
+		services.AddTransientWithShellRoute<MediaElementCarouselViewPage, MediaElementCarouselViewViewModel>();
+		services.AddTransientWithShellRoute<MediaElementCollectionViewPage, MediaElementCollectionViewViewModel>();
+		services.AddTransientWithShellRoute<MediaElementMultipleWindowsPage, MediaElementMultipleWindowsViewModel>();
+		services.AddTransientWithShellRoute<PopupsPage, PopupsViewModel>();
 		services.AddTransientWithShellRoute<PopupLayoutAlignmentPage, PopupLayoutAlignmentViewModel>();
 		services.AddTransientWithShellRoute<PopupPositionPage, PopupPositionViewModel>();
+		services.AddTransientWithShellRoute<RatingViewsPage, RatingViewsViewModel>();
+		services.AddTransientWithShellRoute<RatingViewCsharpPage, RatingViewCsharpViewModel>();
+		services.AddTransientWithShellRoute<RatingViewShowcasePage, RatingViewShowcaseViewModel>();
+		services.AddTransientWithShellRoute<RatingViewXamlPage, RatingViewXamlViewModel>();
 		services.AddTransientWithShellRoute<SemanticOrderViewPage, SemanticOrderViewPageViewModel>();
 		services.AddTransientWithShellRoute<ShowPopupInOnAppearingPage, ShowPopupInOnAppearingPageViewModel>();
 		services.AddTransientWithShellRoute<StylePopupPage, StylePopupViewModel>();
+		services.AddTransientWithShellRoute<PopupSizingIssuesPage, PopupSizingIssuesViewModel>();
 
 		// Add Popups
+		services.AddTransientPopup<ApplyToDerivedTypesPopup>();
+		services.AddTransientPopup<ButtonPopup>();
+		services.AddTransientPopup<CollectionViewPopup, CollectionViewPopupViewModel>();
+		services.AddTransientPopup<ComplexPopup, ComplexPopupViewModel>();
 		services.AddTransientPopup<CsharpBindingPopup, CsharpBindingPopupViewModel>();
+		services.AddTransientPopup<DynamicStyleInheritancePopup>();
+		services.AddTransientPopup<DynamicStylePopup>();
+		services.AddTransientPopup<ExplicitStylePopup>();
+		services.AddTransientPopup<ImplicitStylePopup>();
+		services.AddTransientPopup<MultipleButtonPopup>();
+		services.AddTransientPopup<NoOutsideTapDismissPopup>();
+		services.AddTransientPopup<OpenedEventSimplePopup>();
+		services.AddTransientPopup<PopupContentView, PopupContentViewModel>();
+		services.AddTransientPopup<RedBlueBoxPopup>();
+		services.AddTransientPopup<ReturnResultPopup>();
+		services.AddTransientPopup<SimplePopup>();
+		services.AddTransientPopup<StyleClassPopup>();
+		services.AddTransientPopup<StyleInheritancePopup>();
+		services.AddTransientPopup<ToggleSizePopup>();
+		services.AddTransientPopup<TransparentPopup>();
 		services.AddTransientPopup<UpdatingPopup, UpdatingPopupViewModel>();
 		services.AddTransientPopup<XamlBindingPopup, XamlBindingPopupViewModel>();
+		services.AddTransientPopup<SoftInputKeyboardPopup>();
+		services.AddTransientPopup<AppThemePopup>();
 	}
 
 	static void RegisterEssentials(in IServiceCollection services)
@@ -211,13 +293,15 @@ public static class MauiProgram
 		services.AddSingleton<IDeviceDisplay>(DeviceDisplay.Current);
 		services.AddSingleton<IDeviceInfo>(DeviceInfo.Current);
 		services.AddSingleton<IFileSaver>(FileSaver.Default);
+		services.AddSingleton<IFileSystem>(FileSystem.Current);
 		services.AddSingleton<IFolderPicker>(FolderPicker.Default);
 		services.AddSingleton<IBadge>(Badge.Default);
-		services.AddSingleton<ISpeechToText>(SpeechToText.Default);
+		services.AddKeyedSingleton<ISpeechToText, SpeechToTextImplementation>("Online");
+		services.AddKeyedSingleton<ISpeechToText, OfflineSpeechToTextImplementation>("Offline");
 		services.AddSingleton<ITextToSpeech>(TextToSpeech.Default);
 	}
 
-	static IServiceCollection AddTransientWithShellRoute<TPage, TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
+	static IServiceCollection AddTransientWithShellRoute<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TPage, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TViewModel>(this IServiceCollection services) where TPage : BasePage<TViewModel>
 																												where TViewModel : BaseViewModel
 	{
 		return services.AddTransientWithShellRoute<TPage, TViewModel>(AppShell.GetPageRoute<TViewModel>());

@@ -1,12 +1,14 @@
-﻿using CommunityToolkit.Maui.Core.Views;
+﻿using AVKit;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 
 namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaElement>, IDisposable
 {
+	AVPlayerViewController? playerViewController;
+
 	/// <inheritdoc/>
 	/// <exception cref="NullReferenceException">Thrown if <see cref="MauiContext"/> is <see langword="null"/>.</exception>
 	protected override MauiMediaElement CreatePlatformView()
@@ -16,25 +18,46 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 		}
 
-		mediaManager ??= new(MauiContext,
-								VirtualView,
-								Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
+		MediaManager ??= new(MauiContext,
+			VirtualView,
+			Dispatcher.GetForCurrentThread() ?? throw new InvalidOperationException($"{nameof(IDispatcher)} cannot be null"));
 
-		var (_, playerViewController) = mediaManager.CreatePlatformView();
-		return new(playerViewController);
+
+		(_, playerViewController) = MediaManager.CreatePlatformView();
+
+		return new(playerViewController, VirtualView);
 	}
 
 	/// <inheritdoc/>
-	protected override void ConnectHandler(MauiMediaElement platformView)
-	{
-		base.ConnectHandler(platformView);
-	}
-
-	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
+		if (OperatingSystem.IsIOSVersionAtLeast(16))
+		{
+			platformView.DetachFromParentViewController();
+		}
+
 		platformView.Dispose();
 		Dispose();
+
 		base.DisconnectHandler(platformView);
+	}
+
+	partial void PlatformDispose()
+	{
+		playerViewController?.Dispose();
+		playerViewController = null;
+	}
+
+	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
+	{
+		// The mapper also runs while the handler has no platform view (after DisconnectHandler), and the PlatformView property throws then
+		if (((IElementHandler)this).PlatformView is MauiMediaElement platformView)
+		{
+			platformView.RefreshPlaybackControlsVisibility(shouldShowPlaybackControls);
+		}
 	}
 }

@@ -2,6 +2,7 @@ name: Open a New Feature Proposal
 description: For proposals that have been discussed in the Discussions tab and have been approved by a member of the core .NET MAUI Toolkit team
 title: "[Proposal] "
 labels: [new, proposal]
+projects: ["CommunityToolkit/projects/12"]
 body:
 
 - type: input
@@ -26,7 +27,6 @@ body:
     - label: iOS Implementation
     - label: MacCatalyst Implementation
     - label: Windows Implementation
-    - label: Tizen Implementation
     - label: Unit Tests
     - label: Samples
     - label: Documentation

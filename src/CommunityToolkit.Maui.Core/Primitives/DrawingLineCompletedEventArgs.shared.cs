@@ -9,8 +9,10 @@ public class DrawingLineCompletedEventArgs : EventArgs
 	/// Initialize a new instance of <see cref="DrawingLineCompletedEventArgs"/>
 	/// </summary>
 	/// <param name="lastDrawingLine">Last drawing line</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="lastDrawingLine"/> is null.</exception>
 	public DrawingLineCompletedEventArgs(IDrawingLine lastDrawingLine)
 	{
+		ArgumentNullException.ThrowIfNull(lastDrawingLine);
 		LastDrawingLine = lastDrawingLine;
 	}
 
