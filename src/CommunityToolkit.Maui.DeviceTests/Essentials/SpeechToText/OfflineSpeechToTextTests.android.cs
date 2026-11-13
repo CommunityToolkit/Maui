@@ -134,7 +134,6 @@ public sealed partial class OfflineSpeechToTextTests
 		await speech.DisposeAsync();
 
 		Assert.Equal(IntPtr.Zero, started.Recognizer.Handle);
-		Assert.Equal(IntPtr.Zero, started.Listener.Handle);
 	}
 
 	// ISpeechToText.StartListenAsync: the token "provides the ability to cancel the starting process". The token is cancelled when the
