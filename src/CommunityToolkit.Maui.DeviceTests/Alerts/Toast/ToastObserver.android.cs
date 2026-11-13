@@ -1,4 +1,5 @@
 using Android.App;
+using Android.Provider;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views.Accessibility;
@@ -107,6 +108,8 @@ public sealed class ToastObserver : IDisposable
 		// Both calls disconnect the UiAutomation, and from API 35 reconnect it, which waits for callbacks on the main looper: never on the UI thread.
 		var released = await Task.Run(() =>
 		{
+			// Android 13 and 14 keep reporting accessibility as enabled to every app while a DontUseAccessibility UiAutomation is connected
+			// (fixed in Android 15, AOSP d84eb28), so there only destroying the UiAutomation switches accessibility off.
 			if (OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
 				instrumentation.GetUiAutomation(UiAutomationFlags.DontUseAccessibility);
@@ -116,8 +119,12 @@ public sealed class ToastObserver : IDisposable
 			return TryDestroyUiAutomation(instrumentation);
 		});
 
-		return !released || await Wait(() => !accessibilityManager.IsEnabled, timeout: 5000, interval: 50);
+		return !released || await Wait(() => !accessibilityManager.IsEnabled && !IsAccessibilitySettingEnabled(), timeout: 5000, interval: 50);
 	}
+
+	// The system writes the setting synchronously while it handles the release, whereas AccessibilityManager.IsEnabled can show a brief false
+	// that flips back to true.
+	static bool IsAccessibilitySettingEnabled() => Settings.Secure.GetInt(Android.App.Application.Context.ContentResolver, Settings.Secure.AccessibilityEnabled, 0) != 0;
 
 	// Before API 35 there is no public way to disconnect the instrumentation's UiAutomation; TouchBehaviorTestBase.TryDestroyUiAutomation does the same.
 	static bool TryDestroyUiAutomation(MauiTestInstrumentation instrumentation)
