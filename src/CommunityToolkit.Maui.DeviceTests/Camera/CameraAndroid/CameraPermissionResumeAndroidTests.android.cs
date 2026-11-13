@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
@@ -352,7 +353,18 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		finally
 		{
 			await InvokeOnMainThreadAsync(() => lifecycle.RemoveObserver(observer));
+			RestoreHostContext(activity);
 		}
+	}
+
+	// MAUI raises the Android OnCreate lifecycle event for every activity, so the translucent activity replaced the DefaultContext that every
+	// later test hosts its views with. The setter is private (vendored dotnet/maui code), hence the reflection.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties, typeof(MauiProgramDefaults))]
+	static void RestoreHostContext(Activity runnerActivity)
+	{
+		var property = typeof(MauiProgramDefaults).GetProperty(nameof(MauiProgramDefaults.DefaultContext))
+			?? throw new InvalidOperationException("MauiProgramDefaults.DefaultContext was not found.");
+		property.SetValue(null, runnerActivity);
 	}
 
 	// Observing a lifecycle replays its events up to its current state, so a resume only counts once the activity paused.
