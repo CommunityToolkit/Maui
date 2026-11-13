@@ -1118,7 +1118,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			element.AbortAnimation(stateBackgroundAnimationHandle);
 		}
 
-		ForgetStateBackgroundBrushTheAppReplaced(element);
 		GiveBackAppBackgroundColor(element);
 	}
 
@@ -1126,11 +1125,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	// AppThemeBinding or Style, and with any colour the app set on the element since the state colour was shown.
 	void GiveBackAppBackgroundColor(VisualElement element)
 	{
-		if (stateBackgroundBrush is null)
-		{
-			return;
-		}
-
 		ForgetStateBackgroundBrushTheAppReplaced(element);
 
 		if (stateBackgroundBrush is not null)

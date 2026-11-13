@@ -1489,6 +1489,22 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 	}
 
 	[Fact]
+	public void VerifyBackgroundTheAppSetWhileAStateColorIsShownStaysAfterTheDetach()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		view.Background = appBrush;
+		touchBehavior.Element = null;
+
+		Assert.Same(appBrush, view.Background);
+		Assert.Equal(Colors.Blue, appBrush.Color);
+	}
+
+	[Fact]
 	public void VerifyElementWithABackgroundOfItsOwnKeepsIt()
 	{
 		var appBrush = new SolidColorBrush(Colors.Blue);
