@@ -297,13 +297,17 @@ sealed class AppleDeviceInputStub : IDisposable
 // Like AppleDeviceInputStub, the stub never lets native code see the (fake) device: the allocated coordinator is returned uninitialized.
 sealed class AppleRotationCoordinatorStub : IDisposable
 {
-	readonly ObjCMethodReplacement replacement;
+	readonly ObjCMethodReplacement? replacement;
 	readonly List<(AVCaptureDevice? Device, IntPtr PreviewLayer, IntPtr Coordinator)> created = [];
 
 	public AppleRotationCoordinatorStub()
 	{
-		replacement = ObjCMethodReplacement.OfInstanceMethod(typeof(AVCaptureDeviceRotationCoordinator), "initWithDevice:previewLayer:",
-			new ObjCImplementationObjectObjectObject(Initialize));
+		// Below iOS 17 the toolkit never creates a coordinator, so there is nothing to stub.
+		if (AppleNativeClasses.HasRotationCoordinator)
+		{
+			replacement = ObjCMethodReplacement.OfInstanceMethod(typeof(AVCaptureDeviceRotationCoordinator), "initWithDevice:previewLayer:",
+				new ObjCImplementationObjectObjectObject(Initialize));
+		}
 	}
 
 	public IReadOnlyList<(AVCaptureDevice? Device, IntPtr PreviewLayer, IntPtr Coordinator)> Created
@@ -317,7 +321,7 @@ sealed class AppleRotationCoordinatorStub : IDisposable
 		}
 	}
 
-	public void Dispose() => replacement.Dispose();
+	public void Dispose() => replacement?.Dispose();
 
 	IntPtr Initialize(IntPtr self, IntPtr selector, IntPtr device, IntPtr previewLayer)
 	{
@@ -634,7 +638,7 @@ sealed class AppleMovieRecordingStub : IDisposable
 sealed class AppleInterfaceOrientationStub : IDisposable
 {
 	readonly ObjCMethodReplacement sceneOrientation;
-	readonly ObjCMethodReplacement geometryOrientation;
+	readonly ObjCMethodReplacement? geometryOrientation;
 	readonly ObjCMethodReplacement statusBarOrientation;
 	readonly ObjCMethodReplacement connectedScenes;
 	readonly ObjCImplementationObject originalConnectedScenes;
@@ -646,7 +650,11 @@ sealed class AppleInterfaceOrientationStub : IDisposable
 		GeometryOrientation = geometryOrientation;
 		StatusBarOrientation = statusBarOrientation;
 		this.sceneOrientation = ObjCMethodReplacement.OfInstanceMethod(typeof(UIWindowScene), "interfaceOrientation", new ObjCImplementationInteger((_, _) => (nint)(long)SceneOrientation));
-		this.geometryOrientation = ObjCMethodReplacement.OfInstanceMethod(typeof(UIWindowSceneGeometry), "interfaceOrientation", new ObjCImplementationInteger((_, _) => (nint)(long)GeometryOrientation));
+		// UIWindowSceneGeometry is new in iOS 16, and the toolkit reads it only on OS 26 and later.
+		if (ObjCRuntime.Class.GetHandle("UIWindowSceneGeometry") != ObjCRuntime.NativeHandle.Zero)
+		{
+			this.geometryOrientation = ObjCMethodReplacement.OfInstanceMethod(typeof(UIWindowSceneGeometry), "interfaceOrientation", new ObjCImplementationInteger((_, _) => (nint)(long)GeometryOrientation));
+		}
 		this.statusBarOrientation = ObjCMethodReplacement.OfInstanceMethod(typeof(UIApplication), "statusBarOrientation", new ObjCImplementationInteger((_, _) => (nint)(long)StatusBarOrientation));
 		connectedScenes = ObjCMethodReplacement.OfInstanceMethod(typeof(UIApplication), "connectedScenes", new ObjCImplementationObject(ConnectedScenes));
 		originalConnectedScenes = connectedScenes.GetOriginal<ObjCImplementationObject>();
@@ -663,7 +671,7 @@ sealed class AppleInterfaceOrientationStub : IDisposable
 	public void Dispose()
 	{
 		sceneOrientation.Dispose();
-		geometryOrientation.Dispose();
+		geometryOrientation?.Dispose();
 		statusBarOrientation.Dispose();
 		connectedScenes.Dispose();
 	}

@@ -102,6 +102,12 @@ static class AppleCameraEnvironment
 	}
 }
 
+static class AppleNativeClasses
+{
+	// New in iOS 17: below it a managed subclass of the class gets no native superclass. Asks the ObjC runtime, so AppleSystemVersionOverride cannot fool it.
+	public static bool HasRotationCoordinator { get; } = ObjCRuntime.Class.GetHandle("AVCaptureDeviceRotationCoordinator") != ObjCRuntime.NativeHandle.Zero;
+}
+
 // Reads and writes the private state of CameraManager (macios) so that branches that a real capture session would reach
 // (initialized preview, recording in progress) can be exercised without a camera or the camera permission.
 sealed class CameraManagerAccessor(CameraManager manager)
