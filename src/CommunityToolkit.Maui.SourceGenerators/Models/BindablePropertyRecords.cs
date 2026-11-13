@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
-public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "", string ContainingTypeKeywords = "", string HintName = "")
+public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "", string ContainingTypeKeywords = "", string TypeIdentity = "")
 {
 	// ContainingTypes carries each containing type's type parameters, e.g. "Outer<T>.Middle<U>".
 	// One keyword per containing type, outermost first and separated by '|', e.g. "class|record struct".

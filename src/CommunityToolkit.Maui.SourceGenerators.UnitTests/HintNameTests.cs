@@ -182,4 +182,105 @@ public class HintNameTests : BaseTest
 		Assert.Contains("FirstProperty", hostSource, StringComparison.Ordinal);
 		Assert.Contains("SecondProperty", hostSource, StringComparison.Ordinal);
 	}
+
+	const string caseOnlyDifferencesSource =
+		/* language=C#-test */
+		//lang=csharp
+		$$"""
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui;
+		using Microsoft.Maui.Controls;
+		using Microsoft.Maui.Graphics;
+
+		namespace CaseOnly;
+
+		public partial class CaseView : View { [BindableProperty] public partial string Upper { get; set; } = "a"; }
+		public partial class caseView : View { [BindableProperty] public partial string Lower { get; set; } = "b"; }
+
+		[AttachedBindableProperty<int>("Upper")] public partial class CaseHost : View { }
+		[AttachedBindableProperty<int>("Lower")] public partial class caseHost : View { }
+
+		public class CaseText : VisualElement, ITextStyle
+		{
+			{{textStyleMembers}}
+		}
+
+		public class caseText : VisualElement, ITextStyle
+		{
+			{{textStyleMembers}}
+		}
+		""";
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedCode_CompilesWithoutDiagnostics_ForTypesThatDifferOnlyByCase(string cultureName)
+	{
+		var result = GeneratedCodeCompilation.Run(caseOnlyDifferencesSource, cultureName, TestContext.Current.CancellationToken);
+
+		Assert.Empty(result.Diagnostics);
+		var caseOnlyFileNames = result.Sources.Keys.Select(static key => key.Substring(key.LastIndexOf('/') + 1)).Where(static fileName => fileName.StartsWith("CaseOnly.", StringComparison.Ordinal)).ToList();
+		Assert.Equal(6, caseOnlyFileNames.Count);
+		Assert.Equal(6, caseOnlyFileNames.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+		Assert.Contains("UpperProperty", result.Sources.Single(pair => pair.Value.Contains("partial class CaseView", StringComparison.Ordinal)).Value, StringComparison.Ordinal);
+		Assert.Contains("LowerProperty", result.Sources.Single(pair => pair.Value.Contains("partial class caseView", StringComparison.Ordinal)).Value, StringComparison.Ordinal);
+	}
+
+	// A combining accent is a valid identifier character, so "A\u0301View" and "A_View" are two types that must not share a file.
+	static readonly string accentedNamesSource =
+		"""
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui;
+		using Microsoft.Maui.Controls;
+		using Microsoft.Maui.Graphics;
+
+		namespace Accented;
+
+		public partial class A
+		""" + "\u0301" + """
+		View : View { [BindableProperty] public partial string Accent { get; set; } = "a"; }
+		public partial class A_View : View { [BindableProperty] public partial string Underscore { get; set; } = "b"; }
+
+		[AttachedBindableProperty<int>("Accent")] public partial class A
+		""" + "\u0301" + """
+		Host : View { }
+		[AttachedBindableProperty<int>("Underscore")] public partial class A_Host : View { }
+
+		public class A
+		""" + "\u0301" + $$"""
+		Text : VisualElement, ITextStyle
+		{
+			{{textStyleMembers}}
+		}
+
+		public class A_Text : VisualElement, ITextStyle
+		{
+			{{textStyleMembers}}
+		}
+		""";
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedCode_KeepsTypesApart_WhenTheirNamesDifferOnlyByACombiningCharacter(string cultureName)
+	{
+		var result = GeneratedCodeCompilation.Run(accentedNamesSource, cultureName, TestContext.Current.CancellationToken);
+
+		Assert.Empty(result.Diagnostics);
+		var accentedView = result.Sources.Single(pair => pair.Value.Contains("partial class A\u0301View", StringComparison.Ordinal)).Value;
+		var plainView = result.Sources.Single(pair => pair.Value.Contains("partial class A_View", StringComparison.Ordinal)).Value;
+		Assert.Contains("AccentProperty", accentedView, StringComparison.Ordinal);
+		Assert.DoesNotContain("UnderscoreProperty", accentedView, StringComparison.Ordinal);
+		Assert.Contains("UnderscoreProperty", plainView, StringComparison.Ordinal);
+
+		var accentedHost = result.Sources.Single(pair => pair.Value.Contains("partial class A\u0301Host", StringComparison.Ordinal)).Value;
+		var plainHost = result.Sources.Single(pair => pair.Value.Contains("partial class A_Host", StringComparison.Ordinal)).Value;
+		Assert.Contains("AccentProperty", accentedHost, StringComparison.Ordinal);
+		Assert.DoesNotContain("UnderscoreProperty", accentedHost, StringComparison.Ordinal);
+		Assert.Contains("UnderscoreProperty", plainHost, StringComparison.Ordinal);
+
+		Assert.Equal(2, result.Sources.Keys.Count(key => key.EndsWith("TextTextColorTo.g.shared.cs", StringComparison.Ordinal)));
+	}
 }

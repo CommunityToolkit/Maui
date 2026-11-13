@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Helpers;
 
@@ -19,8 +20,8 @@ static class GeneratedTypeNames
 		return string.Join("|", keywords);
 	}
 
-	// Hint names must be unique per generator: the namespace tells same-named types apart, '+' nests like metadata names and '-' (never part of an identifier) marks the number of type parameters.
-	public static string GetHintName(INamedTypeSymbol type)
+	// The exact name of a type: the namespace tells same-named types apart, '+' nests like metadata names and '-' (never part of an identifier) marks the number of type parameters.
+	public static string GetTypeIdentity(INamedTypeSymbol type)
 	{
 		var segments = new List<string>();
 		for (var current = type; current is not null; current = current.ContainingType)
@@ -29,10 +30,28 @@ static class GeneratedTypeNames
 		}
 
 		var namespacePrefix = type.ContainingNamespace is null || type.ContainingNamespace.IsGlobalNamespace ? string.Empty : $"{type.ContainingNamespace.ToDisplayString()}.";
-		var hintName = namespacePrefix + string.Join("+", segments);
-
-		return new(hintName.Select(static character => char.IsLetterOrDigit(character) || character is '_' or '.' or '+' or '-' ? character : '_').ToArray());
+		return namespacePrefix + string.Join("+", segments);
 	}
+
+	// Roslyn compares hint names without regard to case, so Foo and foo (or two identities that sanitize alike) need a suffix; only these get one, which keeps ordinary names readable.
+	public static IReadOnlyDictionary<string, string> GetUniqueHintNames(IEnumerable<string> typeIdentities)
+	{
+		var sanitizedByIdentity = typeIdentities.Distinct(StringComparer.Ordinal).ToDictionary(static identity => identity, GetSanitizedHintName, StringComparer.Ordinal);
+		var collidingNames = new HashSet<string>(
+			sanitizedByIdentity.Values
+				.GroupBy(static name => name, StringComparer.OrdinalIgnoreCase)
+				.Where(static group => group.Count() > 1)
+				.Select(static group => group.Key),
+			StringComparer.OrdinalIgnoreCase);
+
+		return sanitizedByIdentity.ToDictionary(
+			static pair => pair.Key,
+			pair => collidingNames.Contains(pair.Value) ? $"{pair.Value}-{GetStableHash(pair.Key)}" : pair.Value,
+			StringComparer.Ordinal);
+	}
+
+	static string GetSanitizedHintName(string typeIdentity) =>
+		new(typeIdentity.Select(static character => SyntaxFacts.IsIdentifierPartCharacter(character) || character is '.' or '+' or '-' ? character : '_').ToArray());
 
 	// FNV-1a, because string.GetHashCode is randomized per process and generated names must not change between builds.
 	public static string GetStableHash(string value)

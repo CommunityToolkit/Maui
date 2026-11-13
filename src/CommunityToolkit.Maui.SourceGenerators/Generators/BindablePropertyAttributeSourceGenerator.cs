@@ -44,12 +44,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<BindablePropertySemanticValues> semanticValues)
 	{
 		// Pre-allocate dictionary with expected capacity
-		var groupedValues = new Dictionary<(string, string, string, string), List<BindablePropertySemanticValues>>(semanticValues.Length);
+		var groupedValues = new Dictionary<(string, string, string, string, string), List<BindablePropertySemanticValues>>(semanticValues.Length);
 
 		// Single-pass grouping without LINQ
 		foreach (var sv in semanticValues)
 		{
-			var key = (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes, sv.ClassInformation.GenericTypeParameters);
+			var key = (sv.ClassInformation.ClassName, sv.ClassInformation.ContainingNamespace, sv.ClassInformation.ContainingTypes, sv.ClassInformation.GenericTypeParameters, sv.ClassInformation.TypeIdentity);
 
 			if (!groupedValues.TryGetValue(key, out var list))
 			{
@@ -59,6 +59,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			list.Add(sv);
 		}
 
+		var hintNames = GeneratedTypeNames.GetUniqueHintNames(groupedValues.Keys.Select(static key => key.Item5));
+
 		// Use ArrayPool for temporary storage
 		var bindablePropertiesBuffer = System.Buffers.ArrayPool<BindablePropertyModel>.Shared.Rent(32);
 
@@ -66,7 +68,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		{
 			foreach (var keyValuePair in groupedValues)
 			{
-				var (className, containingNamespace, containingTypes, genericTypeParameters) = keyValuePair.Key;
+				var (className, containingNamespace, containingTypes, genericTypeParameters, _) = keyValuePair.Key;
 				var values = keyValuePair.Value;
 
 				if (values.Count is 0 || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(containingNamespace))
@@ -95,12 +97,12 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 				var classAccessibility = values[0].ClassInformation.DeclaredAccessibility;
 
-				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, values[0].ClassInformation.ContainingTypeKeywords, values[0].ClassInformation.HintName);
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, values[0].ClassInformation.ContainingTypeKeywords, values[0].ClassInformation.TypeIdentity);
 				var combinedValues = new BindablePropertySemanticValues(combinedClassInfo, bindableProperties);
 
 				var source = GenerateSource(combinedValues);
 				SourceStringService.FormatText(ref source);
-				context.AddSource($"{combinedClassInfo.HintName}.g.cs", SourceText.From(source, Encoding.UTF8));
+				context.AddSource($"{hintNames[combinedClassInfo.TypeIdentity]}.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		}
 		finally
@@ -405,7 +407,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		// Extract generic type parameters
 		var genericTypeParameters = GetGenericTypeParameters(propertySymbol.ContainingType);
 
-		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(propertySymbol.ContainingType), GeneratedTypeNames.GetHintName(propertySymbol.ContainingType));
+		var propertyInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(propertySymbol.ContainingType), GeneratedTypeNames.GetTypeIdentity(propertySymbol.ContainingType));
 
 		// Use array instead of List to avoid resizing
 		var bindablePropertyModels = new BindablePropertyModel[context.Attributes.Length];

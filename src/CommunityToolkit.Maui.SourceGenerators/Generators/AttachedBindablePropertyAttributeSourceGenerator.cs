@@ -47,21 +47,21 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	static ImmutableArray<AttachedBindablePropertySemanticValues> MergeByDeclaringType(ImmutableArray<AttachedBindablePropertySemanticValues> semanticValues)
 	{
 		var mergedValues = new List<AttachedBindablePropertySemanticValues>(semanticValues.Length);
-		var indexByHintName = new Dictionary<string, int>(StringComparer.Ordinal);
+		var indexByTypeIdentity = new Dictionary<string, int>(StringComparer.Ordinal);
 
 		foreach (var semanticValue in semanticValues)
 		{
-			var hintName = semanticValue.ClassInformation.HintName;
-			if (hintName.Length > 0 && indexByHintName.TryGetValue(hintName, out var index))
+			var typeIdentity = semanticValue.ClassInformation.TypeIdentity;
+			if (typeIdentity.Length > 0 && indexByTypeIdentity.TryGetValue(typeIdentity, out var index))
 			{
 				var properties = mergedValues[index].BindableProperties.AsImmutableArray().AddRange(semanticValue.BindableProperties.AsImmutableArray());
 				mergedValues[index] = new AttachedBindablePropertySemanticValues(mergedValues[index].ClassInformation, properties.AsEquatableArray());
 				continue;
 			}
 
-			if (hintName.Length > 0)
+			if (typeIdentity.Length > 0)
 			{
-				indexByHintName[hintName] = mergedValues.Count;
+				indexByTypeIdentity[typeIdentity] = mergedValues.Count;
 			}
 
 			mergedValues.Add(semanticValue);
@@ -72,6 +72,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 	static void ExecuteAllValues(SourceProductionContext context, ImmutableArray<AttachedBindablePropertySemanticValues> semanticValues)
 	{
+		var hintNames = GeneratedTypeNames.GetUniqueHintNames(semanticValues.Select(static values => values.ClassInformation.TypeIdentity));
+
 		// Use ArrayPool for temporary storage
 		var attachedBindablePropertiesBuffer = System.Buffers.ArrayPool<AttachedBindablePropertyModel>.Shared.Rent(32);
 
@@ -109,12 +111,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 
 				var classAccessibility = attachedBindablePropertySemanticValues.ClassInformation.DeclaredAccessibility;
 
-				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, attachedBindablePropertySemanticValues.ClassInformation.ContainingTypeKeywords, attachedBindablePropertySemanticValues.ClassInformation.HintName);
+				var combinedClassInfo = new ClassInformation(className, classAccessibility, containingNamespace, containingTypes, genericTypeParameters, attachedBindablePropertySemanticValues.ClassInformation.ContainingTypeKeywords, attachedBindablePropertySemanticValues.ClassInformation.TypeIdentity);
 				var combinedValues = new AttachedBindablePropertySemanticValues(combinedClassInfo, attachedBindablePropertiesArray);
 
 				var source = GenerateSource(combinedValues);
 				SourceStringService.FormatText(ref source);
-				context.AddSource($"{combinedClassInfo.HintName}.g.cs", SourceText.From(source, Encoding.UTF8));
+				context.AddSource($"{hintNames[combinedClassInfo.TypeIdentity]}.g.cs", SourceText.From(source, Encoding.UTF8));
 			}
 		}
 		finally
@@ -411,7 +413,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Extract generic type parameters
 		var genericTypeParameters = GetGenericTypeParameters(classSymbol);
 
-		var classInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(classSymbol), GeneratedTypeNames.GetHintName(classSymbol));
+		var classInfo = new ClassInformation(className, classAccessibility, @namespace, containingTypes, genericTypeParameters, GeneratedTypeNames.GetContainingTypeKeywords(classSymbol), GeneratedTypeNames.GetTypeIdentity(classSymbol));
 
 		// Use array for attached bindable properties
 		var attachedBindablePropertyModels = new AttachedBindablePropertyModel[attributes.Length];

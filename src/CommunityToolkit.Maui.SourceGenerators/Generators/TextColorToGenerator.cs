@@ -109,15 +109,22 @@ class TextColorToGenerator : IIncrementalGenerator
 			.Select(static (x, _) => GenerateMetadata(x.Left, x.Right));
 
 
-		context.RegisterSourceOutput(inputs, Execution);
+		context.RegisterSourceOutput(inputs.Collect(), ExecutionAll);
 	}
 
-	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
+	static void ExecutionAll(SourceProductionContext context, ImmutableArray<TextStyleClassMetadata> textStyleClassMetadata)
 	{
-		if (textStyleClassMetadata.ShouldDisableTextColorToGenerator || !textStyleClassMetadata.CanBeExtended)
+		var generatedMetadata = textStyleClassMetadata.Where(static metadata => !metadata.ShouldDisableTextColorToGenerator && metadata.CanBeExtended).ToList();
+		var hintNames = GeneratedTypeNames.GetUniqueHintNames(generatedMetadata.Select(static metadata => metadata.TypeIdentity));
+
+		foreach (var metadata in generatedMetadata)
 		{
-			return;
+			Execution(context, metadata, hintNames[metadata.TypeIdentity]);
 		}
+	}
+
+	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata, string hintName)
+	{
 
 		var className = typeof(TextColorToGenerator).FullName;
 		var assemblyVersion = typeof(TextColorToGenerator).Assembly.GetName().Version.ToString();
@@ -218,7 +225,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  """;
 
 		SourceStringService.FormatText(ref source);
-		context.AddSource($"{textStyleClassMetadata.HintName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+		context.AddSource($"{hintName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
 	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol, bool shouldGenerateTextColorTo)
@@ -234,7 +241,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			collector.AddTypeParameterConstraints(current);
 		}
 
-		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, GetNamespaceName(namedTypeSymbol), GetTypeParameterNames(namedTypeSymbol), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null, GeneratedTypeNames.GetHintName(namedTypeSymbol), GetReceiverTypeName(namedTypeSymbol));
+		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, GetNamespaceName(namedTypeSymbol), GetTypeParameterNames(namedTypeSymbol), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null, GeneratedTypeNames.GetTypeIdentity(namedTypeSymbol), GetReceiverTypeName(namedTypeSymbol));
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -329,13 +336,13 @@ class TextColorToGenerator : IIncrementalGenerator
 		return string.Join(".", names);
 	}
 
-	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds, string ContainingTypes, bool CanBeExtended, string HintName, string ReceiverTypeName)
+	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds, string ContainingTypes, bool CanBeExtended, string TypeIdentity, string ReceiverTypeName)
 	{
 		public string QualifiedNameWithoutNamespace => ContainingTypes.Length is 0 ? ClassName : $"{ContainingTypes}.{ClassName}";
 
 		public string NamespaceDeclaration => Namespace.Length is 0 ? string.Empty : $"namespace {Namespace};";
 
-		// A nested Outer.Inner would otherwise share its name with a top-level Outer_Inner; the hash of the unique hint name tells them apart. Top-level names are public API and stay as they are.
-		public string ExtensionClassSuffix => ContainingTypes.Length is 0 ? ClassName : $"{QualifiedNameWithoutNamespace.Replace('.', '_')}_{GeneratedTypeNames.GetStableHash(HintName)}";
+		// A nested Outer.Inner would otherwise share its name with a top-level Outer_Inner; the hash of the exact type identity tells them apart. Top-level names are public API and stay as they are.
+		public string ExtensionClassSuffix => ContainingTypes.Length is 0 ? ClassName : $"{QualifiedNameWithoutNamespace.Replace('.', '_')}_{GeneratedTypeNames.GetStableHash(TypeIdentity)}";
 	}
 }
