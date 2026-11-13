@@ -300,7 +300,7 @@ jobs:
                     path: artifacts/logs/
 
     # The app of device_tests_android_app on the newest release of every other Android major version that .NET MAUI can run (device_tests_android has
-    # API 36). Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
+    # API 36). Only API 24 has no leg; it runs on a local AVD. Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
     device_tests_android_runtime:
         name: Device Tests (Android API ${{ matrix.api-level }})

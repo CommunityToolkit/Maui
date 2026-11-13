@@ -540,12 +540,12 @@ function ConvertTo-RunApiVersion {
 }
 
 function Get-RunSystemImagePackage {
-    # Google names the images from 36.1 on, and every image of 37, as Major.Minor (android-37.0). API 27 has a google_apis image for no x86_64 host.
+    # Google names images from 36.1 on as Major.Minor, so 37 is android-37.0 but 36 is android-36. API 27 has no google_apis image for x86_64.
     param([version]$Level, [string]$Abi)
 
-    $name = $Level.Major.ToString([System.Globalization.CultureInfo]::InvariantCulture)
-    if ($Level.Minor -ne 0 -or $Level.Major -ge 37) {
-        $name = "$($Level.Major).$($Level.Minor)"
+    $name = Format-RunApiVersion $Level
+    if ($Level.Minor -eq 0 -and $Level.Major -ge 37) {
+        $name = "$name.0"
     }
 
     $tag = 'google_apis'
