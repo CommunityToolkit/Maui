@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Animations;
@@ -164,7 +164,7 @@ public class AnimationDispatchTests : BaseTest
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[InlineData(nameof(FadeAnimation))]
 	[InlineData(nameof(ScaleAnimation))]
-	public Task AnimationBehaviorTriggeredOffTheDispatcherThreadMidRun_StartsTheNewRunOnTheDispatcherThreadWhereItStoppedTheOldOne(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	public Task AnimationBehaviorTriggeredOffTheDispatcherThreadMidRun_StartsTheNewRunOnTheDispatcherThread(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
 	{
 		var token = TestContext.Current.CancellationToken;
 		var view = dispatcherThread.CreateAnimatedView();
