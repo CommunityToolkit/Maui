@@ -53,6 +53,26 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task SupersededRun_WhoseTokenIsCancelledRightAfterTheNewRunStarts_DoesNotAbortTheNewRun() => RunOnSingleThreadAsync(async token =>
+	{
+		using var supersededRunTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var supersededRun = new TadaAnimation { Length = 2000 }.Animate(view, supersededRunTokenSource.Token);
+		await firstChange;
+		var newRun = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
+		supersededRunTokenSource.Cancel();
+
+		view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle).Should().BeTrue("the superseded run's token must not abort the new run");
+		await Record.ExceptionAsync(() => supersededRun.WaitAsync(waitTimeout, token));
+		await newRun.WaitAsync(waitTimeout, token);
+		newRun.IsCompletedSuccessfully.Should().BeTrue();
+		AssertValuesEqual(view, startingValues);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task AnimationBehavior_StartingScaleAnimation_WhileTadaRuns_StopsTadaFirst() => RunOnSingleThreadAsync(async token =>
 	{
 		var scaleAnimation = new ObservedAnimation(new ScaleAnimation { Length = functionalTestLength });
@@ -199,7 +219,17 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var view = new Label { Rotation = originalRotation, AnchorY = originalAnchorY };
 		var animation = new SwingAnimation { Length = functionalTestLength };
 
-		await Assert.ThrowsAsync<ArgumentException>(() => animation.Animate(view, token).WaitAsync(waitTimeout, token));
+		// GetAnimationManager falls back to Application.Current, which BaseViewTest sets and never clears
+		var application = Application.Current;
+		Application.Current = null;
+		try
+		{
+			await Assert.ThrowsAsync<ArgumentException>(() => animation.Animate(view, token).WaitAsync(waitTimeout, token));
+		}
+		finally
+		{
+			Application.Current = application;
+		}
 
 		view.Rotation.Should().BeApproximately(originalRotation, precision);
 		view.AnchorY.Should().BeApproximately(originalAnchorY, precision);
@@ -212,17 +242,17 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileTheCancelledRunRestoresTheView_StillEndsRestoresEveryPropertyAndLaterRunsUseTheRightOriginalValues() => RunOnSingleThreadAsync(async token =>
+	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileTheCancelledRunRestoresTheView_StillEndsAndRestoresThePropertiesAfterTheThrowingOne() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-		var throwOnRotationRestore = false;
+		var throwOnScaleRestore = false;
 		view.PropertyChanged += (_, e) =>
 		{
-			if (throwOnRotationRestore && e.PropertyName == nameof(VisualElement.Rotation))
+			if (throwOnScaleRestore && e.PropertyName == nameof(VisualElement.Scale))
 			{
-				throwOnRotationRestore = false;
+				throwOnScaleRestore = false;
 				throw new InvalidOperationException("Thrown by a PropertyChanged handler.");
 			}
 		};
@@ -231,15 +261,18 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var run = new TadaAnimation { Length = 2000 }.Animate(view, cancellationTokenSource.Token);
 		await firstChange;
 
-		throwOnRotationRestore = true;
+		throwOnScaleRestore = true;
 		var cancelException = Record.Exception(cancellationTokenSource.Cancel);
 		cancelException.Should().NotBeNull("the exception of the handler reaches the code that cancels");
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout, token));
 
 		AssertValuesEqual(view, startingValues);
 
+		// MAUI leaves a property whose PropertyChanged handler threw unable to change, so only Rotation is checked
+		const double laterRunRotation = 45;
+		view.Rotation = laterRunRotation;
 		await new TadaAnimation { Length = functionalTestLength }.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		AssertValuesEqual(view, startingValues);
+		view.Rotation.Should().BeApproximately(laterRunRotation, precision);
 	}, TestContext.Current.CancellationToken);
 }

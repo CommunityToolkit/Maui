@@ -115,7 +115,6 @@ static class KeyframeAnimationExtensions
 		return null;
 	}
 
-	// In declaration order, so SwingAnimation returns Rotation while it still pivots on the top edge, then AnchorY
 	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, IReadOnlyDictionary<BindableProperty, double> originalValues)
 	{
 		// A throwing PropertyChanged handler must not leave later properties unrestored, or any tracker with a stale original value
