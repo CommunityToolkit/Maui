@@ -157,7 +157,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.Equal(ImageCapture.CaptureModeMinimizeLatency, session.ImageCapture.CaptureMode);
 			Assert.Equal(0, stream.Length);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState");
 			Assert.NotNull(recordingState);
@@ -367,7 +367,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			await Assert.ThrowsAnyAsync<Java.IO.IOException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
 		}, mauiContext: new TestMauiContext(MauiContext, context));
@@ -397,7 +397,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			if (failure is "cacheDirectory")
 			{
 				await Assert.ThrowsAnyAsync<Java.IO.IOException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
@@ -430,7 +430,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 
@@ -470,7 +470,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			var exception = await Assert.ThrowsAnyAsync<Java.Lang.SecurityException>(() => session.Manager.StartVideoRecording(stream, CancellationToken.None));
 
@@ -615,7 +615,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -633,7 +633,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
 			var firstVideo = await StopAndReadAsync(session, first);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordingFileAsync(before);
@@ -1486,7 +1486,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the selected camera is not bound.");
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the stopped recording is still bound.");
 			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -1554,7 +1554,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Empty(ListRecordingFiles().Except(before));
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -1625,7 +1625,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			Assert.Equal(other.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 

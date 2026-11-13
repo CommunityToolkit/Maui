@@ -360,7 +360,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			// The mapping is async void: the use cases are rebuilt and bound again once CameraX answers.
 			await WaitUntilAsync(() => GetNativeResolution(host.Native<ImageCapture>("imageCapture")?.ResolutionInfo) == SmallSize, "The image capture never got the 320x240 resolution.");
 			await WaitUntilAsync(() => GetNativeResolution(host.Native<Preview>("cameraPreview")?.ResolutionInfo) == SmallSize, "The preview never got the 320x240 resolution.");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 		}, new CameraView { SelectedCamera = camera });
 	}
 
@@ -380,7 +380,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		});
 	}
@@ -419,7 +419,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.True(ReadVideoInfo(stream.ToArray()).HasVideo, "Android does not find a video track in the recording.");
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		}, includeRecordAudio: true);
 	}
@@ -464,7 +464,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.Equal(first.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera")!));
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!), "The ImageCapture of the camera is not bound.");
 			Assert.False(await IsNativelyBoundAsync(host.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!), "The VideoCapture of the stopped recording is still bound.");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 		}, includeRecordAudio: true);
 	}
 
@@ -729,7 +729,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			host.View.SelectedCamera = valid;
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		});
 	}

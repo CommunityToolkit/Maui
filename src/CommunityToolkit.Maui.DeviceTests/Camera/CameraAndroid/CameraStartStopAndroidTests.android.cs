@@ -163,7 +163,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			Assert.Equal(1, session.LoadedCount);
 			Assert.Empty(errors.Errors);
 		}, provider);
@@ -194,7 +194,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 
 			var preview = session.Native<Preview>("cameraPreview");
 			Assert.True(preview is not null && await IsNativelyBoundAsync(preview), "The StartCameraPreview that followed the StopCameraPreview did not start the preview.");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			Assert.Equal(1, session.LoadedCount);
 			Assert.Empty(errors.Errors);
 		}, provider);

@@ -57,7 +57,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 			Assert.True(await IsNativelyBoundAsync(preview));
 			Assert.True(await IsNativelyBoundAsync(imageCapture));
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 		});
 	}
 
@@ -384,7 +384,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 			// The failure released the semaphore and unsubscribed the handlers.
 			await host.View.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(IsJpeg(await CaptureJpegAsync(host.View)));
 		});
 	}
@@ -523,7 +523,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			host.View.StartCameraPreviewCommand.Execute(CancellationToken.None);
 
 			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 		});
 	}
 
@@ -811,7 +811,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			await WaitForRecordingDataAsync(before);
 
 			await host.View.StopVideoRecording().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 
 			// Either the zoom is kept or the view is reset: the two must agree.
 			await WaitForNativeZoomAsync(camera.DeviceId, host.View.ZoomFactor,
@@ -842,7 +842,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			}
 
 			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
-			await WaitForStreamingAsync(host.PreviewView);
+			await WaitForStreamingAsync(host);
 
 			Assert.Equal(ratio, host.View.ZoomFactor);
 			await WaitForNativeZoomAsync(camera.DeviceId, ratio,
@@ -879,7 +879,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			}
 
 			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
-			await WaitForStreamingAsync(host.PreviewView);
+			await WaitForStreamingAsync(host);
 
 			Assert.Equal(ratio, host.View.ZoomFactor);
 			await WaitForNativeZoomAsync(camera.DeviceId, ratio,
@@ -910,7 +910,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			}
 
 			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
-			await WaitForStreamingAsync(host.PreviewView);
+			await WaitForStreamingAsync(host);
 
 			Assert.True(host.View.IsTorchOn);
 			await WaitForNativeTorchAsync(camera.DeviceId, true,
@@ -936,7 +936,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			await WaitForRecordingDataAsync(before);
 
 			await host.View.StopVideoRecording().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 
 			// Either the torch is kept or the view is reset: the two must agree.
 			await WaitForNativeTorchAsync(camera.DeviceId, host.View.IsTorchOn,

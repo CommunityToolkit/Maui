@@ -696,7 +696,7 @@ partial class CameraManager
 				}
 			}
 
-			var point = previewView.MeteringPointFactory?.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+			var point = (previewView.MeteringPointFactory ?? throw new InvalidOperationException("The PreviewView has no MeteringPointFactory.")).CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 			var action = new FocusMeteringAction.Builder(point).Build();
 			camera?.CameraControl?.StartFocusAndMetering(action);
 

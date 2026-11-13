@@ -198,6 +198,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
+	// The manager reports a failed bind only through ErrorOccurred, so without the recorder "never started streaming" is the only clue.
 	internal static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000, CameraErrorRecorder? errors = null)
 	{
 		try
@@ -237,8 +238,20 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// "Transitioning camera internal state: REOPENING --> OPENED" without a following "Publishing new public camera state ... OPEN").
 	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
 	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
+	internal static Task WaitUntilCameraIsStreamingAsync(ManagerSession session) =>
+		WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."), session.Errors);
+
+	internal static Task WaitUntilCameraIsStreamingAsync(HostedView host) =>
+		WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView, host.Errors);
+
+	internal static Task WaitForStreamingAsync(ManagerSession session) =>
+		WaitForStreamingAsync(session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."), errors: session.Errors);
+
+	internal static Task WaitForStreamingAsync(HostedView host) =>
+		WaitForStreamingAsync(host.PreviewView, errors: host.Errors);
+
 	// The handler selects a camera only once its camera provider has found the cameras, which takes longest for the first camera of the process
-	internal static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView, CameraErrorRecorder? errors = null)
+	static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView, CameraErrorRecorder errors)
 	{
 		await AssertionExtensions.AssertEventually(() => view.SelectedCamera is not null, 30000, 50, "The handler never selected a camera.");
 		await WaitForStreamingAsync(previewView, errors: errors);
@@ -443,6 +456,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	{
 		public required CameraView View { get; init; }
 
+		public required CameraErrorRecorder Errors { get; init; }
+
 		public required CameraManager Manager { get; init; }
 
 		public required ICameraProvider Provider { get; init; }
@@ -482,7 +497,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		await InvokeOnMainThreadAsync(() =>
 		{
 			var manager = new CameraManager(mauiContext ?? MauiContext, view, provider, () => session!.LoadedCount++);
-			session = new ManagerSession { View = view, Manager = manager, Provider = provider };
+			session = new ManagerSession { View = view, Errors = new CameraErrorRecorder(view), Manager = manager, Provider = provider };
 			if (track)
 			{
 				cleanups.Add(() =>
@@ -514,6 +529,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	{
 		public required CameraView View { get; init; }
 
+		public required CameraErrorRecorder Errors { get; init; }
+
 		public required CameraViewHandler Handler { get; init; }
 
 		public required PreviewView PreviewView { get; init; }
@@ -529,7 +546,6 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	{
 		EnsureCameraPermissions(includeRecordAudio);
 		view ??= new CameraView();
-		// The manager reports a failed bind only through ErrorOccurred, which would otherwise leave "never started streaming" as the only clue.
 		using var errors = new CameraErrorRecorder(view);
 
 		await AttachAndRun(view, async handler =>
@@ -546,12 +562,13 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 			var previewView = (PreviewView)handler.PlatformView!;
 
+			var host = new HostedView { View = view, Errors = errors, Handler = cameraViewHandler, PreviewView = previewView };
 			if (waitForStreaming)
 			{
-				await WaitUntilCameraIsStreamingAsync(view, previewView, errors);
+				await WaitUntilCameraIsStreamingAsync(host);
 			}
 
-			await body(new HostedView { View = view, Handler = cameraViewHandler, PreviewView = previewView });
+			await body(host);
 		});
 	}
 
@@ -577,10 +594,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 		await RunWithSessionAsync(async session =>
 		{
-			// The manager reports a failed bind only through ErrorOccurred, which would otherwise leave "never started streaming" as the only clue.
-			using var errors = new CameraErrorRecorder(session.View);
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!, errors);
+			await WaitUntilCameraIsStreamingAsync(session);
 			await body(session);
 		}, provider, null, view);
 	}

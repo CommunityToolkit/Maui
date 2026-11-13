@@ -440,8 +440,7 @@ public sealed class FilesPickerSession : IAsyncDisposable
 	// MAUI raises the Android OnCreate lifecycle event for every activity, so creating a fake activity also replaced
 	// MauiProgramDefaults.DefaultContext, the context that every later test builds and hosts its views with. The activities of this
 	// session are destroyed when it ends, so without this the next test would host its views in a destroyed activity and they would
-	// never load. The property's setter is private (vendored dotnet/maui code), hence the reflection.
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties, typeof(MauiProgramDefaults))]
+	// never load.
 	void RestoreHostContext()
 	{
 		if (hostContext is null)
@@ -449,8 +448,6 @@ public sealed class FilesPickerSession : IAsyncDisposable
 			return;
 		}
 
-		var property = typeof(MauiProgramDefaults).GetProperty(nameof(MauiProgramDefaults.DefaultContext))
-			?? throw new InvalidOperationException("MauiProgramDefaults.DefaultContext was not found.");
-		property.SetValue(null, hostContext);
+		AndroidHostContext.Restore(hostContext);
 	}
 }

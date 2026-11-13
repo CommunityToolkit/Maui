@@ -82,7 +82,7 @@ public partial class CameraManagerVideoAndroidTests
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			if (failure is "cacheDirectory")
 			{
 				await Assert.ThrowsAsync<Java.IO.IOException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));

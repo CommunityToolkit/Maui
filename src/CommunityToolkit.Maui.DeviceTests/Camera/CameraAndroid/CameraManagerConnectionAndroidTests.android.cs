@@ -106,7 +106,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			var selected = session.View.SelectedCamera;
 			Assert.NotNull(selected);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			await WaitForNativeCameraStateAsync(selected.DeviceId, "OPEN");
 			Assert.Equal(1, session.LoadedCount);
 			Assert.True(await IsNativelyBoundAsync(session.Native<Preview>("cameraPreview")!));
@@ -136,7 +136,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.NotNull(session.Provider.AvailableCameras);
 			Assert.Equal(session.Provider.AvailableCameras[0].DeviceId, session.View.SelectedCamera?.DeviceId);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -182,7 +182,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.Equal(providerKnowsTheCameras ? 0 : 1, provider.RefreshCount);
 			Assert.Equal(cameras[0].DeviceId, session.View.SelectedCamera?.DeviceId);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, provider);
 	}
 
@@ -243,7 +243,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(preview));
 			Assert.True(await IsNativelyBoundAsync(imageCapture));
 			Assert.Equal(2, session.LoadedCount);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -434,7 +434,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			var preview = session.Native<Preview>("cameraPreview")!;
 			var imageCapture = session.Native<ImageCapture>("imageCapture")!;
 
@@ -484,7 +484,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			session.Manager.StopCameraPreview();
 			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
 
@@ -493,7 +493,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.Equal(2, session.LoadedCount);
 			Assert.True(await IsNativelyBoundAsync(session.Native<Preview>("cameraPreview")!));
 			Assert.True(await IsNativelyBoundAsync(session.Native<ImageCapture>("imageCapture")!));
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "OPEN");
 		});
 	}
@@ -527,7 +527,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -549,7 +549,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -562,7 +562,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			var provider = await GetNativeCameraProviderAsync();
 			var preview = session.Native<Preview>("cameraPreview")!;
 
@@ -683,7 +683,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			session.View.SelectedCamera = null;
 
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
@@ -704,7 +704,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			provider.AvailableCameras = providerHasNoList ? null : [];
 			session.View.SelectedCamera = null;
 
@@ -771,7 +771,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -812,7 +812,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.Single(errors.Errors);
 			Assert.Equal(1, session.LoadedCount);
 			await WaitForNativeCameraStateAsync(cameras[^1].DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, provider, new TestMauiContext(MauiContext, context));
 	}
 
@@ -825,7 +825,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			var provider = await GetNativeCameraProviderAsync();
 			var preview = session.Native<Preview>("cameraPreview")!;
 
@@ -861,7 +861,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			session.Manager.StopCameraPreview();
 			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
 
@@ -884,7 +884,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			var first = session.View.SelectedCamera!;
 			var other = session.Provider.AvailableCameras!.First(camera => camera.DeviceId != first.DeviceId);
 			session.View.SelectedCamera = other;
@@ -894,7 +894,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.Equal(2, session.LoadedCount);
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -931,6 +931,9 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await Assert.ThrowsAnyAsync<Java.Lang.IllegalArgumentException>(() => session.Manager.UpdateCurrentCamera(unbindable, CancellationToken.None).AsTask().WaitAsync(CameraTimeout));
 			var loadedBefore = session.LoadedCount;
 
+			// The failed bind leaves the valid camera OPENED internally; CameraX publishes OPEN again only for a camera that went through CLOSED.
+			await WaitForNativeCameraStateAsync(valid.DeviceId, "CLOSED");
+
 			session.View.SelectedCamera = valid;
 			await session.Manager.UpdateCurrentCamera(valid, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
 
@@ -938,7 +941,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
 
@@ -1023,7 +1026,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			var cameraId = session.View.SelectedCamera!.DeviceId;
 			var streamState = session.PreviewView!.PreviewStreamState!;
 			var nativeObjects = new[]
@@ -1120,11 +1123,11 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await HostAsync(async () =>
 		{
 			await first.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitForStreamingAsync(first.PreviewView!);
+			await WaitForStreamingAsync(first);
 
 			// A second CameraView on the same camera binds to the same LifecycleOwner, so both managers share the camera objects.
 			await second.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitForStreamingAsync(second.PreviewView!);
+			await WaitForStreamingAsync(second);
 			second.Manager.Dispose();
 
 			// CameraViewHandler maps a new ZoomFactor or IsTorchOn of the first CameraView to its manager at any time.
@@ -1147,17 +1150,17 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await HostAsync(async () =>
 		{
 			await first.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitForStreamingAsync(first.PreviewView!);
+			await WaitForStreamingAsync(first);
 
 			// A second CameraView, for example on the next page, takes the camera over, so the first one has to start its preview again.
 			await second.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitForStreamingAsync(second.PreviewView!);
+			await WaitForStreamingAsync(second);
 			second.Manager.Dispose();
 
 			await first.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.True(await IsNativelyBoundAsync(first.ImageCapture));
 			Assert.True(await IsNativelyBoundAsync(first.CameraPreview));
-			await WaitForStreamingAsync(first.PreviewView!);
+			await WaitForStreamingAsync(first);
 
 			first.Manager.Dispose();
 			Assert.Null(GetPrivateField<object>(first.Manager, "orientationListener"));
@@ -1199,7 +1202,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		await HostAsync(async () =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			view = new WeakReference(session.View);
 			manager = new WeakReference(session.Manager);
 			previewView = new WeakReference(session.PreviewView);

@@ -10,9 +10,8 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Revoking the camera permission would kill the test app, so a ConfigurableContext denies it to the manager while the app keeps it. Since
-// Android 16 QPR2 (API 36.1) Activity.requestPermissions answers a request for permissions that the app already has without showing the
-// permission activity, so the tests pause and resume the runner's activity with a translucent activity of their own, which finishes at once.
+// Revoking the camera permission would kill the test app, so a ConfigurableContext denies it to the manager. From Android 16 QPR2 (API 36.1)
+// requestPermissions skips the permission activity for granted permissions, so a translucent test activity pauses and resumes the runner instead.
 [Category(TestCategory.CameraPermissionResumeAndroid)]
 [Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
@@ -71,7 +70,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			await PauseAndResumeTheActivityAsync();
 
 			await WaitForNativeCameraStateAsync(session.View.SelectedCamera?.DeviceId ?? throw new InvalidOperationException("No camera is selected."), "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			Assert.Equal(1, session.LoadedCount);
 			Assert.Single(errors.Errors);
 		}, provider, new TestMauiContext(MauiContext, context));
@@ -213,7 +212,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			await PauseAndResumeTheActivityAsync(() => startOfTheApp = session.Manager.StartCameraPreview(CancellationToken.None));
 
 			await (startOfTheApp ?? throw new InvalidOperationException("The test's observer did not run.")).WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Equal(1, session.LoadedCount);
@@ -353,18 +352,8 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		finally
 		{
 			await InvokeOnMainThreadAsync(() => lifecycle.RemoveObserver(observer));
-			RestoreHostContext(activity);
+			AndroidHostContext.Restore(activity);
 		}
-	}
-
-	// MAUI raises the Android OnCreate lifecycle event for every activity, so the translucent activity replaced the DefaultContext that every
-	// later test hosts its views with. The setter is private (vendored dotnet/maui code), hence the reflection.
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties, typeof(MauiProgramDefaults))]
-	static void RestoreHostContext(Activity runnerActivity)
-	{
-		var property = typeof(MauiProgramDefaults).GetProperty(nameof(MauiProgramDefaults.DefaultContext))
-			?? throw new InvalidOperationException("MauiProgramDefaults.DefaultContext was not found.");
-		property.SetValue(null, runnerActivity);
 	}
 
 	// Observing a lifecycle replays its events up to its current state, so a resume only counts once the activity paused.
