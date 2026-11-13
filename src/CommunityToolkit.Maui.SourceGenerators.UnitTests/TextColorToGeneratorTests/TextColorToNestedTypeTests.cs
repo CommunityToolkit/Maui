@@ -156,9 +156,9 @@ public class TextColorToNestedTypeTests : BaseTest
 	[InlineData("", "Nested.PublicInPublicOuter+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
 	[InlineData("tr-TR", "Nested.PublicInPublicOuter+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
 	[InlineData("az-Latn-AZ", "Nested.PublicInPublicOuter+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
-	[InlineData("tr-TR", "Nested.InternalInPublicOuter+InnerTextTextColorTo.g.shared.cs", "internal static partial class ColorAnimationExtensions_InternalInPublicOuter_InnerText")]
-	[InlineData("tr-TR", "Nested.PublicInInternalOuter+InnerTextTextColorTo.g.shared.cs", "internal static partial class ColorAnimationExtensions_PublicInInternalOuter_InnerText")]
-	[InlineData("tr-TR", "Nested.ProtectedInternalInPublicOuter+InnerTextTextColorTo.g.shared.cs", "internal static partial class ColorAnimationExtensions_ProtectedInternalInPublicOuter_InnerText")]
+	[InlineData("tr-TR", "Nested.InternalInPublicOuter+InnerTextTextColorTo.g.shared.cs", "static partial class ColorAnimationExtensions_InternalInPublicOuter_InnerText")]
+	[InlineData("tr-TR", "Nested.PublicInInternalOuter+InnerTextTextColorTo.g.shared.cs", "static partial class ColorAnimationExtensions_PublicInInternalOuter_InnerText")]
+	[InlineData("tr-TR", "Nested.ProtectedInternalInPublicOuter+InnerTextTextColorTo.g.shared.cs", "static partial class ColorAnimationExtensions_ProtectedInternalInPublicOuter_InnerText")]
 	[InlineData("tr-TR", "Nested.DeeplyNestedOuter+Middle+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_DeeplyNestedOuter_Middle_InnerText")]
 	[InlineData("tr-TR", "Nested.GenericInnerInPublicOuter+InnerText-1TextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_GenericInnerInPublicOuter_InnerText")]
 	[InlineData("tr-TR", "Nested.GenericOuter-1+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_GenericOuter_InnerText")]
@@ -168,6 +168,11 @@ public class TextColorToNestedTypeTests : BaseTest
 
 		Assert.True(sources.TryGetValue(expectedHintName, out var source), $"{expectedHintName} was not generated. Generated: {string.Join(", ", sources.Keys)}");
 		Assert.Contains(expectedClassDeclaration, source, StringComparison.Ordinal);
+		if (!expectedClassDeclaration.StartsWith("public", StringComparison.Ordinal))
+		{
+			Assert.DoesNotContain("public static partial class", source, StringComparison.Ordinal);
+		}
+
 		Assert.True(diagnostics.Count == 0, string.Join(Environment.NewLine, diagnostics));
 	}
 

@@ -246,7 +246,7 @@ namespace CommunityToolkit.Maui.UnitTests.Extensions
 		{
 			return from type in Assembly.GetExecutingAssembly().GetTypes()
 				   where type.Name.StartsWith("ColorAnimationExtensions_")
-				   let method = type.GetMethods().Single(m => m.Name.StartsWith("TextColorTo"))
+				   let method = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.DeclaredOnly).Single(m => m.Name.StartsWith("TextColorTo"))
 				   let control = method.GetParameters()[0].ParameterType
 				   select (type, control);
 		}

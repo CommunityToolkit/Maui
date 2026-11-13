@@ -104,7 +104,9 @@ public class TextColorToGenericOuterTests : BaseTest
 		Assert.Contains("where T : global::System.IComparable<T>", constrained, StringComparison.Ordinal);
 		Assert.Contains("where U : T, new()", constrained, StringComparison.Ordinal);
 
-		Assert.Contains("internal static partial class", result.GetSource("GenericOuters.InternalGenericOuter-1+InnerTextTextColorTo.g.shared.cs"), StringComparison.Ordinal);
+		var internalSource = result.GetSource("GenericOuters.InternalGenericOuter-1+InnerTextTextColorTo.g.shared.cs");
+		Assert.Contains("static partial class", internalSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("public static partial class", internalSource, StringComparison.Ordinal);
 	}
 
 	[Fact]

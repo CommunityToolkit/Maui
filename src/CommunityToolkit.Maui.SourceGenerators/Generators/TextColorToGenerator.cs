@@ -153,9 +153,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  /// <summary>
 			  /// Color animation extension methods for the text style type
 			  /// </summary>
-			  [global::System.CodeDom.Compiler.GeneratedCode("{{className}}", "{{assemblyVersion}}")]
-			  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			  {{textStyleClassMetadata.ClassAccessModifier}} static partial class ColorAnimationExtensions_{{textStyleClassMetadata.ExtensionClassSuffix}}
+			  {{textStyleClassMetadata.ExtensionClassModifiers}} class ColorAnimationExtensions_{{textStyleClassMetadata.ExtensionClassSuffix}}
 			  {
 			  	/// <summary>
 			  	/// Animates the TextColor of an <see cref="Microsoft.Maui.ITextStyle"/> to the given color
@@ -168,7 +166,9 @@ class TextColorToGenerator : IIncrementalGenerator
 			  	/// <param name="token"><see cref="CancellationToken"/></param>
 			  	/// <returns>Value indicating if the animation completed successfully or not</returns>
 			  	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rate"/> is 0. It is thrown by the call itself, before the animation starts.</exception>
-			  	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this {{textStyleClassMetadata.ReceiverTypeName}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
+			  	[global::System.CodeDom.Compiler.GeneratedCode("{{className}}", "{{assemblyVersion}}")]
+			  	[global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+			  	{{textStyleClassMetadata.ClassAccessModifier}} static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this {{textStyleClassMetadata.ReceiverTypeName}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 			  {{textStyleClassMetadata.GenericConstraints}}
 			  	{
 			  		token.ThrowIfCancellationRequested();
@@ -339,6 +339,9 @@ class TextColorToGenerator : IIncrementalGenerator
 	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds, string ContainingTypes, bool CanBeExtended, string TypeIdentity, string ReceiverTypeName)
 	{
 		public string QualifiedNameWithoutNamespace => ContainingTypes.Length is 0 ? ClassName : $"{ContainingTypes}.{ClassName}";
+
+		// Several text types can share one extension class (Foo and Foo<T>); a part may only omit its accessibility to merge with parts that state a different one, and a class-level attribute would be applied twice.
+		public string ExtensionClassModifiers => ClassAccessModifier is "public" ? "public static partial" : "static partial";
 
 		public string NamespaceDeclaration => Namespace.Length is 0 ? string.Empty : $"namespace {Namespace};";
 
