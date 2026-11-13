@@ -50,6 +50,17 @@ public class MauiMediaElement : UIView
 	}
 
 	/// <inheritdoc/>
+	public override void WillMoveToWindow(UIWindow? window)
+	{
+		base.WillMoveToWindow(window);
+
+		// While views move into a window, iOS 26.1 and later check that a view controller's view is inside the views of its parent view controller,
+		// and throw UIViewControllerHierarchyInconsistency otherwise. That check runs after this method and before MovedToWindow, so a parent that
+		// is not the view controller of these views anymore (Shell shows a page in a new view controller when the user comes back to it) goes here.
+		DetachFromStaleParentViewController();
+	}
+
+	/// <inheritdoc/>
 	public override void MovedToWindow()
 	{
 		base.MovedToWindow();
@@ -130,8 +141,12 @@ public class MauiMediaElement : UIView
 			return;
 		}
 
-		if (playerViewController.ParentViewController is UIViewController previousParent)
+		if (playerViewController.ParentViewController is not null)
 		{
+			// The player view enters the window again below, inside the views of the new parent: leave the previous parent first (see WillMoveToWindow)
+			playerViewController.WillMoveToParentViewController(null);
+			playerViewController.RemoveFromParentViewController();
+
 			if (playerViewController.View is UIView attachedView)
 			{
 				attachedView.RemoveFromSuperview();
@@ -139,13 +154,29 @@ public class MauiMediaElement : UIView
 
 			AddSubview(playerView);
 			playerView.Frame = Bounds;
-			playerViewController.WillMoveToParentViewController(null);
-			playerViewController.RemoveFromParentViewController();
 		}
 
 		ApplySafeAreaInsets(parentView);
 		viewController.AddChildViewController(playerViewController);
 		playerViewController.DidMoveToParentViewController(viewController);
+	}
+
+	// Leaves only the view controllers: UIKit calls this while it moves these views into a window, so they must stay where they are
+	void DetachFromStaleParentViewController()
+	{
+		if (!OperatingSystem.IsIOSVersionAtLeast(16) || playerViewController.Handle == NativeHandle.Zero)
+		{
+			return;
+		}
+
+		if (playerViewController.ParentViewController is not UIViewController parent
+			|| (TryGetParentViewController(out var viewController) && ReferenceEquals(parent, viewController)))
+		{
+			return;
+		}
+
+		playerViewController.WillMoveToParentViewController(null);
+		playerViewController.RemoveFromParentViewController();
 	}
 
 	[SupportedOSPlatform("ios16.0")]
