@@ -548,8 +548,21 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	internal async Task RunWithSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, IMauiContext? mauiContext = null, CameraView? view = null)
 	{
+		var hostActivity = AppContext;
 		var session = await CreateSessionAsync(provider, mauiContext, true, view);
-		await HostAsync(() => body(session), session.PreviewView!);
+
+		try
+		{
+			await HostAsync(() => body(session), session.PreviewView!);
+		}
+		// Android can relaunch the runner's activity during a test (new overlays did on a just-booted CI emulator), which closes the camera of
+		// the session for good (TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed): the test runs once more in the new activity
+		catch (Exception exception) when (exception is not SkipException && mauiContext is null && !ReferenceEquals(hostActivity, AppContext))
+		{
+			Android.Util.Log.Warn("CameraAndroidTests", $"The runner's activity was recreated during the test, which runs once more in the new activity. The failure: {exception}");
+			var sessionInTheNewActivity = await CreateSessionAsync(provider, null, true, view);
+			await HostAsync(() => body(sessionInTheNewActivity), sessionInTheNewActivity.PreviewView!);
+		}
 	}
 
 	internal sealed class HostedView
