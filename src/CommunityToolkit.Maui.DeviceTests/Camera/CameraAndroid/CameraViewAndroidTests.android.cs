@@ -1,4 +1,3 @@
-using System.Text;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Extensions;
 using CommunityToolkit.Maui.Core;
@@ -28,7 +27,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		return Activator.CreateInstance(type, view)!;
 	}
 
-	static Task WaitForRecordingDataAsync(IReadOnlyCollection<string> before) => WaitForRecordedVideoAsync(before);
 
 	[Fact]
 	public async Task SetExtensionModeBindsTheUseCasesOfAHostedViewAgain()
@@ -547,7 +545,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			host.View.StartVideoRecordingCommand.Execute(stream);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			host.View.StopVideoRecordingCommand.Execute(CancellationToken.None);
 
@@ -573,7 +571,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			{
 				await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 				await host.View.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-				await WaitForRecordingDataAsync(before);
+				await WaitForRecordedVideoAsync(before);
 				var recordingState = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 				host.View.StopVideoRecordingCommand.Execute(CancellationToken.None);
@@ -702,7 +700,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			await host.View.StartVideoRecording().WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			var stream = await host.View.StopVideoRecording().WaitAsync(CameraTimeout);
 
@@ -723,7 +721,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			var stopped = await host.View.StopVideoRecording<MemoryStream>().WaitAsync(CameraTimeout);
 
@@ -742,7 +740,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			await host.View.StartVideoRecording(new MemoryStream()).WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await Assert.ThrowsAsync<InvalidCastException>(() => host.View.StopVideoRecording<FileStream>());
 		}, includeRecordAudio: true);
@@ -774,7 +772,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		{
 			host.View.CameraFlashMode = CameraFlashMode.On;
 			await host.View.StartVideoRecording(new MemoryStream()).WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await host.View.StopVideoRecording().WaitAsync(CameraTimeout);
 
@@ -798,7 +796,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			host.View.ZoomFactor = ratio;
 			await WaitForNativeZoomAsync(camera.DeviceId, ratio);
 			await host.View.StartVideoRecording(new MemoryStream()).WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await host.View.StopVideoRecording().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(host);
@@ -923,7 +921,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			host.View.IsTorchOn = true;
 			await WaitForNativeTorchAsync(camera.DeviceId, true);
 			await host.View.StartVideoRecording(new MemoryStream()).WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await host.View.StopVideoRecording().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(host);

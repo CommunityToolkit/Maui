@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 using AndroidX.Camera.Core;
 using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 
@@ -123,7 +122,7 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera ?? throw new InvalidOperationException("The connected session has no selected camera.");
 			var provider = await GetNativeCameraProviderAsync();
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingDataAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			await SelectCameraAsync(session, GetOtherCamera(session, first));
 			var videoCapture = session.VideoCapture;
 			var loadedBefore = session.LoadedCount;
@@ -176,6 +175,4 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 		await stopVideoRecording;
 		await SelectCameraAsync(session, camera);
 	}
-
-	static Task WaitForRecordingDataAsync(IReadOnlyCollection<string> before) => WaitForRecordedVideoAsync(before);
 }

@@ -382,6 +382,8 @@ partial class CameraManager
 		RebuildVideoCapture();
 	}
 
+	int? targetRotation;
+
 	void RebuildCameraPreview()
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
@@ -396,6 +398,11 @@ partial class CameraManager
 		previewBuilder.SetResolutionSelector(resolutionSelector);
 		cameraPreview = previewBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the Preview.");
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
+
+		if (targetRotation is int rotation)
+		{
+			cameraPreview.TargetRotation = rotation;
+		}
 	}
 
 	void RebuildImageCapture() => ReplaceImageCapture(CreateImageCapture(currentSessionMode));
@@ -415,7 +422,14 @@ partial class CameraManager
 		imageCaptureBuilder.SetCaptureMode(imageCaptureMode);
 		imageCaptureBuilder.SetFlashMode(cameraView.CameraFlashMode.ToPlatform());
 		imageCaptureBuilder.SetResolutionSelector(resolutionSelector);
-		return imageCaptureBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageCapture.");
+		var newImageCapture = imageCaptureBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageCapture.");
+
+		if (targetRotation is int rotation)
+		{
+			newImageCapture.TargetRotation = rotation;
+		}
+
+		return newImageCapture;
 	}
 
 	// The current ImageCapture is released once its replacement exists, so that a failure while creating the replacement (an undefined
@@ -451,6 +465,12 @@ partial class CameraManager
 		}
 		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
+
+		// A rebuilt use case starts without the sensor rotation, and OrientationEventListener reports only changes
+		if (targetRotation is int rotation)
+		{
+			videoCapture.TargetRotation = rotation;
+		}
 	}
 
 	Task BindPhotoSessionAsync(CancellationToken token) => BindSessionAsync(CaptureSessionMode.Photo, token);
@@ -892,7 +912,9 @@ partial class CameraManager
 			token.ThrowIfCancellationRequested();
 			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
-			if (hasVideoRecorderRecorded && (IsCapturePhotoSession || camera is null || !IsVideoSessionBound()))
+			var bindsTheVideoSession = IsCapturePhotoSession || camera is null || !IsVideoSessionBound();
+
+			if (hasVideoRecorderRecorded && bindsTheVideoSession)
 			{
 				RebuildVideoCapture();
 			}
@@ -919,7 +941,7 @@ partial class CameraManager
 				// to optimize for latency during video recording sessions
 				await SwitchSessionAsync(CaptureSessionMode.Video, bindSession: true, token);
 			}
-			else if (camera is null || !IsVideoSessionBound())
+			else if (bindsTheVideoSession)
 			{
 				await BindVideoSessionAsync(token);
 			}
@@ -1223,11 +1245,12 @@ partial class CameraManager
 
 	void OnOrientationChanged(int orientationDegrees)
 	{
-		var targetRotation = GetSurfaceRotation(orientationDegrees);
+		var rotation = GetSurfaceRotation(orientationDegrees);
+		targetRotation = rotation;
 
-		imageCapture?.TargetRotation = targetRotation;
-		videoCapture?.TargetRotation = targetRotation;
-		cameraPreview?.TargetRotation = targetRotation;
+		imageCapture?.TargetRotation = rotation;
+		videoCapture?.TargetRotation = rotation;
+		cameraPreview?.TargetRotation = rotation;
 	}
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
