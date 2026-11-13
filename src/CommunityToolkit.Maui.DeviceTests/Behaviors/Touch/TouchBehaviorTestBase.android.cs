@@ -426,7 +426,7 @@ public abstract partial class TouchBehaviorTestBase
 	/// <summary>
 	/// Disposing an attached behavior removes its listener from the AccessibilityManager; this helper takes JNI references of its own to
 	/// the listener and the manager first (the dispose drops the behavior's references) and reports whether the listener was left registered.
-	/// Every test that disposes an attached behavior must use it.
+	/// It unregisters a listener that a regression left registered, so the later tests of the process are not affected.
 	/// </summary>
 	protected static (bool StateListenerLeftRegistered, bool TouchExplorationListenerLeftRegistered) DisposeAttachedBehavior(DirectTouchBehavior behavior)
 	{

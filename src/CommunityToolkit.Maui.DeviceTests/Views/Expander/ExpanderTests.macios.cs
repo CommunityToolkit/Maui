@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public partial class ExpanderTests
 {
 	const string objectiveCLibrary = "/usr/lib/libobjc.dylib";
-	const string accessibilityExpandedStatusNeedsVersion18 = "UIKit has accessibilityExpandedStatus, which VoiceOver reads as expanded or collapsed, since iOS and Mac Catalyst 18; the simulators of the pool run iOS 27.";
+	const string accessibilityExpandedStatusNeedsVersion18 = "UIKit has accessibilityExpandedStatus, which VoiceOver reads as expanded or collapsed, since iOS and Mac Catalyst 18; CI: iOS 15.5 to 27.2.";
 
 	static bool HasAccessibilityExpandedStatus => OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18);
 

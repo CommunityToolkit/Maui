@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // The default provider broadcasts only when a receiver for the action is installed, so a test enables the test app's own receiver
 // (disabled by default) and observes the broadcast with a receiver that it registers.
-// Run on API 28 and API 36: the launcher lookup and the receiver lookup take different branches from API 33.
+// Run on every API level of the matrix: the launcher lookup and the receiver lookup take different branches from API 33.
 public partial class BadgeTests
 {
 	const string badgeAction = "android.intent.action.BADGE_COUNT_UPDATE";
@@ -90,7 +90,7 @@ public partial class BadgeTests
 		var provider = BadgeFactory.GetBadgeProvider();
 
 		// From Android 13 the toolkit resolves the HOME activity with ResolveInfoFlags.Of(0), before that with MatchDefaultOnly. When the
-		// flags give different answers only the right one has a provider here. On the emulators of the pool (API 28 and 36) both flags
+		// flags give different answers only the right one has a provider here. On the emulators that were measured (API 28 and 36) both flags
 		// resolve the same package, so this cannot tell the two flag arguments apart; it does check that the resolved HOME package, not
 		// the app's own package (the fallback), is the launcher type.
 		RecordingBadgeProvider? expected = OperatingSystem.IsAndroidVersionAtLeast(33)

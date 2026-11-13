@@ -621,7 +621,8 @@ public partial class FileSaverTests
 			await AssertionExtensions.AssertEventuallyAsync(async () => !await FilesApplePicker.IsAnyViewControllerPresentedWithoutWrapperAsync(), timeout: 5000, message: "The document picker is still on screen after the save was canceled.");
 		}
 
-		// Lets the last pickers be released inside this test, where a crash is blamed on it: the library's settle time plus one check interval
+		// Lets the last pickers be released inside this test, where a crash is blamed on it: the library's settle time plus a 1 s margin
+		// (two 500 ms check intervals)
 		GC.Collect();
 		GC.WaitForPendingFinalizers();
 		await Task.Delay(viewServiceSettleTime + TimeSpan.FromSeconds(1));

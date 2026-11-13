@@ -471,7 +471,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 	// From Android 11 on, WindowCompat.SetDecorFitsSystemWindows ends in Window.SetDecorFitsSystemWindows of the dialog window, which is what the
 	// spy window records. Below Android 15 it also sets the stable layout flag on the decor view, so Android 11-14 have a test of their own, which
-	// the API 28 and API 36 device-test emulators report as skipped.
+	// the API 25-29 and 35+ legs of the device-test matrix report as skipped.
 	[Theory]
 	[InlineData(0xFF336699u)]
 	[InlineData(0x80336699u)]
@@ -492,7 +492,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	{
 		Skip.IfNot(
 			OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(35),
-			"Only on Android 11-14 (API 30-34) does WindowCompat set the stable layout flag on the decor view next to calling Window.SetDecorFitsSystemWindows. The device-test emulators are API 28 and API 36, so this test needs an API 30-34 device or emulator.");
+			"Only on Android 11-14 (API 30-34) does WindowCompat set the stable layout flag on the decor view next to calling Window.SetDecorFitsSystemWindows. The CI legs for API 30, 32, 33 and 34 run it; the others skip it.");
 		await AssertDecorDoesNotFitSystemWindowsAsync(unchecked((int)argb));
 	}
 

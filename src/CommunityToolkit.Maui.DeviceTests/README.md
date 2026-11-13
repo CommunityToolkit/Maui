@@ -274,6 +274,14 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   `ShowsKeyboard` measures against; `frame.WaitUntilTheKeyboardShowsSteadilyAsync(timeout)` waits, before a test types, until the
   input method has laid the keyboard out (a keyboard that flashes and hides again fails the wait); `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
   opened it can no longer hide, because it has left the window.
+- Main app, Android only, `FocusHelpers.AddClearedFocusTargetAsync` (app root): `await using var _ = await FocusHelpers.AddClearedFocusTargetAsync();`
+  before `AttachAndRun` in a test that clears the focus or checks that it was lost. Android 8.1 and earlier give the focus back to the
+  first focusable view, so without it such a test fails only on the API 25 and 27 legs.
+- `MediaElementSupport.SkipIfUnsupported()` (app root): first line of a MediaElement test outside the `MediaElementAndroid` category, since
+  the app's Android minimum is 24 and MediaElement needs 26.
+- `WindowSceneRotation.Request(windowScene, mask, onRefused)` (iOS and Mac Catalyst): rotates a window scene on iOS 15 as on later versions.
+- `AndroidHostContext.Restore(context)` (Android): puts the runner's activity back as `MauiProgramDefaults.DefaultContext` after a test
+  replaced it. `TranslucentPauseActivity` (Camera tests, Android) pauses the runner's activity without stopping it, as the permission dialog does.
 - `[Repeat(n)]` with a `[Theory]` and an `int` parameter repeats a test n times while you hunt flakiness. Do not commit it.
 - `[SkipOnIOSVersion(major, minor, build, reason)]`: Skipped on iOS and Mac Catalyst from that version on.
 - `Skip.If(condition, reason)`, `Skip.IfNot(condition, reason)` and `throw new SkipException(reason)`: run-time skips,

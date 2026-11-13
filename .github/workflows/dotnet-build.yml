@@ -234,8 +234,8 @@ jobs:
 
             # Release, as the device tests' coverage that the code_coverage job merges this with: a Debug build has more coverable lines
             # (sequence points on braces), so the braces of code that only the device tests run would show as uncovered. It also runs
-            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the run above
-            # is the unit test gate and reports the results, so a failure here (a test host crash, for example) neither fails the job nor
+            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the runs above
+            # are the unit test gates and report the results, so a failure here (a test host crash, for example) neither fails the job nor
             # skips the packages; the coverage report may then lack the unit tests.
             -   name: Run CommunityToolkit UnitTests with code coverage (Release)
                 if: ${{ runner.os == 'Windows' && (success() || failure()) }}

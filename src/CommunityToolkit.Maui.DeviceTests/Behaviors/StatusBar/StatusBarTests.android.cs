@@ -245,7 +245,7 @@ public partial class StatusBarTests
 	[Fact]
 	public async Task SetColorOnAndroid15SizesTheOverlayFromTheStatusBarHeightResource()
 	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35) && !OperatingSystem.IsAndroidVersionAtLeast(36), "Needs an Android 15 (API 35) device or emulator: the pools have API 28 and 36.");
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35) && !OperatingSystem.IsAndroidVersionAtLeast(36), "Needs an Android 15 (API 35) device or emulator (CI: API 35).");
 		SetupBuilder();
 		await ResetNativeStateAsync();
 
@@ -264,7 +264,7 @@ public partial class StatusBarTests
 	[Fact]
 	public async Task SetColorCalledAgainOnAndroid15UpdatesTheExistingOverlay()
 	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35) && !OperatingSystem.IsAndroidVersionAtLeast(36), "Needs an Android 15 (API 35) device or emulator: the pools have API 28 and 36.");
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35) && !OperatingSystem.IsAndroidVersionAtLeast(36), "Needs an Android 15 (API 35) device or emulator (CI: API 35).");
 		SetupBuilder();
 		await ResetNativeStateAsync();
 
@@ -281,8 +281,8 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The Android 15 implementation (PlatformSetColor_AndroidApi35) only runs on an API 35 device, which the pools do not have; its body does
-	// not depend on the version it runs on (it measures the status bar through GetStatusBarHeight), so Android 16 runs it through reflection.
+	// The Android 15 implementation (PlatformSetColor_AndroidApi35) only runs on an API 35 device; its body does
+	// not depend on the version it runs on (it measures the status bar through GetStatusBarHeight), so every other version can run it through reflection.
 	// The version dispatch that picks it and the status_bar_height resource keep their visible API 35 skips above.
 	[Fact]
 	public async Task Api35ImplementationCreatesTheOverlaySynchronouslyAndThenReusesIt()

@@ -1923,7 +1923,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		}
 	}
 
-	// Catches: a state colour written to BackgroundColor: MAUI 10.0.120+ and 11.0.10 drop a DynamicResource set on the element as soon as
+	// Catches: a state colour written to BackgroundColor: MAUI 10.0.120+ and 11.0.10+ drop a DynamicResource set on the element as soon as
 	// anything else sets the property (dotnet/maui#38063), so the element stopped following its resource after the first state colour.
 	[Theory]
 	[InlineData(false)]

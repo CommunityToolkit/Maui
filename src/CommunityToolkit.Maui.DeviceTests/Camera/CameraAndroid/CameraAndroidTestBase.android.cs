@@ -556,8 +556,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			await HostAsync(() => body(session), session.PreviewView!);
 		}
 		// Android can relaunch the runner's activity during a test (new overlays did on a just-booted CI emulator), which closes the camera of
-		// the session for good (TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed): the test runs once more in the new activity
-		catch (Exception exception) when (exception is not SkipException && mauiContext is null && !ReferenceEquals(hostActivity, AppContext))
+		// the session for good (TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed): the test runs once more in the new activity.
+		// Only when this method created the provider and the view: a caller's ones keep the state the first attempt left on them.
+		catch (Exception exception) when (exception is not SkipException && mauiContext is null && provider is null && view is null
+			&& !ReferenceEquals(hostActivity, AppContext))
 		{
 			Android.Util.Log.Warn("CameraAndroidTests", $"The runner's activity was recreated during the test, which runs once more in the new activity. The failure: {exception}");
 			var sessionInTheNewActivity = await CreateSessionAsync(provider, null, true, view);

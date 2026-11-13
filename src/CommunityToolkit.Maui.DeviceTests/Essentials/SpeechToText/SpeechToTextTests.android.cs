@@ -114,7 +114,7 @@ public sealed partial class SpeechToTextTests
 	// The stopped session reports its outcome at any time after this turn (see StopListenAsyncSurfacesTheOutcomeOfTheStoppedSession), so the
 	// events are read in the turn.
 	[Fact]
-	public async Task StartListenAsyncCreatesTheRecognizerAndTheListenerAndDisposeReleasesThem()
+	public async Task StartListenAsyncCreatesTheRecognizerAndTheListenerAndDisposeDestroysTheRecognizerAndForgetsTheListener()
 	{
 		var options = await GetStartableOptionsAsync();
 		var speech = CreateSpeech();

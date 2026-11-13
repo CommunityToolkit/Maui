@@ -6,7 +6,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// This class runs on the API 28 and API 36 emulators so that both sides of the OS-version check are executed by the device that takes
+// This class runs on every emulator of the matrix so that both sides of the OS-version check are executed by the device that takes
 // them. Every wait for the real on-device service is bounded: the test's own question to the service skips visibly when it gets no
 // answer, and once the service has answered, a StartListenAsync that does not complete fails (a toolkit hang must never look like a
 // device limitation).
@@ -47,7 +47,7 @@ public sealed partial class OfflineSpeechToTextTests
 	[Fact]
 	public async Task StartListenAsyncThrowsBeforeAndroid14()
 	{
-		Skip.If(IsAndroid14OrNewer, "This device is Android 14 or newer; the OS-version branch is executed by the API 28 emulator.");
+		Skip.If(IsAndroid14OrNewer, "This device is Android 14 or newer; the OS-version branch is executed by the emulators below Android 14.");
 
 		await AssertStartListenAsyncThrowsFeatureNotSupported();
 	}

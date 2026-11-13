@@ -40,7 +40,6 @@ public partial class TouchBehaviorLifecycleTests
 		});
 	}
 
-	// The listener is unregistered from the AccessibilityManager on dispose.
 	[Fact]
 	public async Task DisposeUnregistersTheAccessibilityListener()
 	{
