@@ -420,6 +420,11 @@ partial class MediaManager : IDisposable
 		}
 
 		await Dispatcher.DispatchAsync(() => Player.PosterSource = new BitmapImage());
+		// A list the player no longer plays must not keep writing its items' metadata over a newer source's
+		if (Player.Source is MediaPlaybackList playbackList)
+		{
+			playbackList.CurrentItemChanged -= MediaPlaybackList_CurrentItemChanged;
+		}
 
 		// A newer source update (or Dispose) started while this one awaited: that one applies its source
 		if (!IsCurrentSourceUpdate(version))
@@ -550,7 +555,99 @@ partial class MediaManager : IDisposable
 			return true;
 		}
 
+		if (source is MetaMediaSource metaMediaSource)
+		{
+			UpdateMeidaElementMetaData(metaMediaSource.Title,
+				metaMediaSource.Artist,
+				metaMediaSource.ArtworkUrl);
+
+			var uri = metaMediaSource.Uri?.AbsoluteUri;
+			if (string.IsNullOrWhiteSpace(uri))
+			{
+				return false;
+			}
+
+			await SetHttpSource(player, uri, metaMediaSource.HttpHeaders, version);
+
+			return true;
+		}
+
+		if (source is HttpListMediaSource httpListMediaSource)
+		{
+			var sources = httpListMediaSource.Sources;
+			if (sources is null)
+			{
+				return false;
+			}
+
+			var mediaPlaybackList = new MediaPlaybackList();
+			foreach (var meta in sources)
+			{
+				if (meta is null || meta.Uri is null)
+				{
+					break;
+				}
+
+				var headers = meta.HttpHeaders ?? httpListMediaSource.DefaultHttpHeaders;
+				if (headers is null)
+				{
+					mediaPlaybackList.Items.Add(new MediaPlaybackItem(WinMediaSource.CreateFromUri(meta.Uri)));
+				}
+				else
+				{
+					var mediaSource = await GetUriSourceWithHeaders(meta.Uri, headers, version);
+
+					// Superseded while an item's manifest was loading: the newer source update applies its own media
+					if (mediaSource is null)
+					{
+						return false;
+					}
+
+					mediaPlaybackList.Items.Add(new MediaPlaybackItem(mediaSource));
+				}
+			}
+
+			mediaPlaybackList.StartingItem = mediaPlaybackList.Items[httpListMediaSource.Index];
+			mediaPlaybackList.CurrentItemChanged += MediaPlaybackList_CurrentItemChanged;
+			player.Source = mediaPlaybackList;
+
+			return true;
+		}
+
 		throw new NotSupportedException($"{source.GetType().FullName} is not yet supported for {nameof(MediaElement.Source)}");
+	}
+
+	async void MediaPlaybackList_CurrentItemChanged(MediaPlaybackList list, CurrentMediaPlaybackItemChangedEventArgs args)
+	{
+		if (MediaElement.Source is HttpListMediaSource httplist)
+		{
+			var index = list.Items.IndexOf(args.NewItem);
+
+			// An item that has left the list has no index: there is no metadata of it to take from the list
+			if (index >= 0)
+			{
+				httplist.Index = index;
+				var meta = httplist.Sources![index];
+				UpdateMeidaElementMetaData(meta.Title, meta.Artist, meta.ArtworkUrl);
+			}
+		}
+
+		await UpdateMetadata();
+	}
+
+	async ValueTask SetHttpSource(MediaPlayerElement player, string? uri, IDictionary<string, string>? headers, int version)
+	{
+		if (!string.IsNullOrWhiteSpace(uri))
+		{
+			if (headers?.Count > 0)
+			{
+				await SetUriSourceWithHeaders(new Uri(uri), headers, version);
+			}
+			else
+			{
+				player.MediaPlayer.SetUriSource(new Uri(uri));
+			}
+		}
 	}
 
 	protected virtual partial void PlatformUpdateShouldLoopPlayback()
@@ -641,6 +738,73 @@ partial class MediaManager : IDisposable
 		}
 
 		return naturalDuration > TimeSpan.Zero && position > naturalDuration ? naturalDuration : position;
+	}
+
+	async Task<WinMediaSource?> GetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers, int version)
+	{
+		// The list builds its items one awaited request at a time, so a newer update can start inside this method
+		if (Player is null || !IsCurrentSourceUpdate(version))
+		{
+			return null;
+		}
+
+		var httpClient = headerHttpClient ??= new HttpClient();
+		httpClient.DefaultRequestHeaders.Clear();
+
+		foreach (var header in headers)
+		{
+			if (!httpClient.DefaultRequestHeaders.TryAppendWithoutValidation(header.Key, header.Value))
+			{
+				throw new InvalidOperationException($"Failed to append HTTP header '{header.Key}'. The header name may be empty or contain invalid characters.");
+			}
+		}
+
+		var adaptiveResult = await AdaptiveMediaSource.CreateFromUriAsync(uri, httpClient).AsTask().ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+
+		if (adaptiveResult.Status is AdaptiveMediaSourceCreationStatus.Success && adaptiveResult.MediaSource is not null)
+		{
+			var newAdaptiveMediaSource = adaptiveResult.MediaSource;
+			bool isSuperseded;
+			lock (sourceUpdateLock)
+			{
+				// Superseded while the manifest loaded: the newer update has already released the previous adaptive source
+				isSuperseded = version != sourceUpdateVersion;
+				if (!isSuperseded)
+				{
+					adaptiveMediaSource = newAdaptiveMediaSource;
+					adaptiveMediaSource.DownloadRequested += OnAdaptiveMediaSourceDownloadRequested;
+				}
+			}
+
+			if (isSuperseded)
+			{
+				// Nothing uses the adaptive source this update created: it is closed, not left to the garbage collector
+				newAdaptiveMediaSource.Dispose();
+				return null;
+			}
+
+			return WinMediaSource.CreateFromAdaptiveMediaSource(newAdaptiveMediaSource);
+		}
+		else
+		{
+			// The response of the manifest request (here a media file, not a manifest) comes with its body unread, and it holds its connection
+			// until its content is closed: left to the garbage collector, six of them use up the connections that this process may open to that
+			// host (HttpBaseProtocolFilter.MaxConnectionsPerServer), and every later request to the host, the HEAD below included, waits for one
+			// until it times out
+			if (adaptiveResult.HttpResponseMessage is Windows.Web.Http.HttpResponseMessage manifestResponse)
+			{
+				manifestResponse.Content?.Dispose();
+				manifestResponse.Dispose();
+			}
+
+			if (!IsCurrentSourceUpdate(version))
+			{
+				return null;
+			}
+
+			var stream = await HttpRandomAccessStream.CreateAsync(httpClient, uri);
+			return WinMediaSource.CreateFromStream(stream, string.Empty);
+		}
 	}
 
 	async Task SetUriSourceWithHeaders(Uri uri, IDictionary<string, string> headers, int version)
