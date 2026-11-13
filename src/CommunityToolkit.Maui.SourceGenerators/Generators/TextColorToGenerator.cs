@@ -114,7 +114,7 @@ class TextColorToGenerator : IIncrementalGenerator
 
 	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata)
 	{
-		if (textStyleClassMetadata.ShouldDisableTextColorToGenerator)
+		if (textStyleClassMetadata.ShouldDisableTextColorToGenerator || !textStyleClassMetadata.CanBeExtended)
 		{
 			return;
 		}
@@ -148,7 +148,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  /// </summary>
 			  [global::System.CodeDom.Compiler.GeneratedCode("{{className}}", "{{assemblyVersion}}")]
 			  [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-			  {{textStyleClassMetadata.ClassAccessModifier}} static partial class ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}
+			  {{textStyleClassMetadata.ClassAccessModifier}} static partial class ColorAnimationExtensions_{{textStyleClassMetadata.ExtensionClassSuffix}}
 			  {
 			  	/// <summary>
 			  	/// Animates the TextColor of an <see cref="Microsoft.Maui.ITextStyle"/> to the given color
@@ -161,7 +161,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  	/// <param name="token"><see cref="CancellationToken"/></param>
 			  	/// <returns>Value indicating if the animation completed successfully or not</returns>
 			  	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rate"/> is 0. It is thrown by the call itself, before the animation starts.</exception>
-			  	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
+			  	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.QualifiedName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 			  {{textStyleClassMetadata.GenericConstraints}}
 			  	{
 			  		token.ThrowIfCancellationRequested();
@@ -195,43 +195,43 @@ class TextColorToGenerator : IIncrementalGenerator
 			  		{
 			  			//When creating an Animation too early in the lifecycle of the Page, i.e. in the OnAppearing method,
 			  			//the Page might not have an 'IAnimationManager' yet, resulting in an ArgumentException.
-			  			System.Diagnostics.Trace.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ClassName}}).FullName}: {aex.Message}");
+			  			System.Diagnostics.Trace.WriteLine($"{aex.GetType().Name} thrown in {typeof(ColorAnimationExtensions_{{textStyleClassMetadata.ExtensionClassSuffix}}).FullName}: {aex.Message}");
 			  			animationCompletionSource.SetResult(false);
 			  		}
 			  
 			  		return animationCompletionSource.Task.WaitAsync(token);
 			  
 			  
-			  		static Animation GetRedTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetRed) =>
+			  		static Animation GetRedTransformAnimation(global::{{textStyleClassMetadata.QualifiedName}}{{textStyleClassMetadata.GenericArguments}} element, float targetRed) =>
 			  			new(v => element.TextColor = element.TextColor.WithRed(v), element.TextColor.Red, targetRed);
 			  
-			  		static Animation GetGreenTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetGreen) =>
+			  		static Animation GetGreenTransformAnimation(global::{{textStyleClassMetadata.QualifiedName}}{{textStyleClassMetadata.GenericArguments}} element, float targetGreen) =>
 			  			new(v => element.TextColor = element.TextColor.WithGreen(v), element.TextColor.Green, targetGreen);
 			  
-			  		static Animation GetBlueTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetBlue) =>
+			  		static Animation GetBlueTransformAnimation(global::{{textStyleClassMetadata.QualifiedName}}{{textStyleClassMetadata.GenericArguments}} element, float targetBlue) =>
 			  			new(v => element.TextColor = element.TextColor.WithBlue(v), element.TextColor.Blue, targetBlue);
 			  
-			  		static Animation GetAlphaTransformAnimation({{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, float targetAlpha) =>
+			  		static Animation GetAlphaTransformAnimation(global::{{textStyleClassMetadata.QualifiedName}}{{textStyleClassMetadata.GenericArguments}} element, float targetAlpha) =>
 			  			new(v => element.TextColor = element.TextColor.WithAlpha((float)v), element.TextColor.Alpha, targetAlpha);
 			  	}
 			  }
 			  """;
 
 		SourceStringService.FormatText(ref source);
-		context.AddSource($"{textStyleClassMetadata.ClassName}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
+		context.AddSource($"{textStyleClassMetadata.QualifiedNameWithoutNamespace}TextColorTo.g.shared.cs", SourceText.From(source, Encoding.UTF8));
 	}
 
 	static TextStyleClassMetadata GenerateMetadata(INamedTypeSymbol namedTypeSymbol, bool shouldGenerateTextColorTo)
 	{
-		var accessModifier = mauiControlsAssembly == namedTypeSymbol.ContainingNamespace.ToDisplayString()
+		var effectiveAccessModifier = mauiControlsAssembly == namedTypeSymbol.ContainingNamespace.ToDisplayString()
 			? "internal"
-			: GetClassAccessModifier(namedTypeSymbol);
+			: GetEffectiveAccessModifier(namedTypeSymbol);
 
 		var collector = new UserDiagnosticIdCollector();
 		collector.AddSymbolAndContainers(namedTypeSymbol);
 		collector.AddTypeParameterConstraints(namedTypeSymbol);
 
-		return new(namedTypeSymbol.Name, accessModifier, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray());
+		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null);
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -265,12 +265,51 @@ class TextColorToGenerator : IIncrementalGenerator
 			&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
 	}
 
-	static string GetClassAccessModifier(INamedTypeSymbol namedTypeSymbol) => namedTypeSymbol.DeclaredAccessibility switch
+	// A top-level static class can only extend a type that every containing type exposes to it, and cannot name a type that is nested in a generic type
+	static string? GetEffectiveAccessModifier(INamedTypeSymbol namedTypeSymbol)
 	{
-		Accessibility.Public => "public",
-		Accessibility.Internal => "internal",
-		_ => string.Empty
-	};
+		var isInternal = false;
 
-	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds);
+		for (var current = namedTypeSymbol; current is not null; current = current.ContainingType)
+		{
+			if (current.ContainingType is not null && current.ContainingType.TypeParameters.Length > 0)
+			{
+				return null;
+			}
+
+			switch (current.DeclaredAccessibility)
+			{
+				case Accessibility.Public:
+					break;
+				case Accessibility.Internal:
+				case Accessibility.ProtectedOrInternal:
+					isInternal = true;
+					break;
+				default:
+					return null;
+			}
+		}
+
+		return isInternal ? "internal" : "public";
+	}
+
+	static string GetContainingTypeNames(INamedTypeSymbol namedTypeSymbol)
+	{
+		var names = new List<string>();
+		for (var current = namedTypeSymbol.ContainingType; current is not null; current = current.ContainingType)
+		{
+			names.Insert(0, current.Name);
+		}
+
+		return string.Join(".", names);
+	}
+
+	record TextStyleClassMetadata(string ClassName, string ClassAccessModifier, string Namespace, string GenericArguments, string GenericConstraints, bool ShouldDisableTextColorToGenerator, EquatableArray<string> UserDiagnosticIds, string ContainingTypes, bool CanBeExtended)
+	{
+		public string QualifiedNameWithoutNamespace => ContainingTypes.Length is 0 ? ClassName : $"{ContainingTypes}.{ClassName}";
+
+		public string QualifiedName => $"{Namespace}.{QualifiedNameWithoutNamespace}";
+
+		public string ExtensionClassSuffix => QualifiedNameWithoutNamespace.Replace('.', '_');
+	}
 }
