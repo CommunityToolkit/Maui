@@ -41,6 +41,22 @@ sealed partial class MediaControlsService : Service
 	public BoundServiceBinder? Binder { get; private set; }
 	public NotificationManager? NotificationManager { get; private set; }
 
+	// Android 11 defers a cancel while a post of the same notification is queued, leaving the notification behind; leaving the foreground
+	// first lets the cancels win. Static because the connection may be gone before the service is even created.
+	public static void RequestLeaveForegroundBeforeStopping()
+	{
+		if (runningService is not null)
+		{
+			runningService.LeaveForegroundBeforeStopping();
+		}
+		else
+		{
+			shouldLeaveForegroundWhenCreated = true;
+		}
+	}
+
+	public static void ForgetRequestToLeaveForeground() => shouldLeaveForegroundWhenCreated = false;
+
 	public override IBinder? OnBind(Intent? intent)
 	{
 		Binder = new BoundServiceBinder(this);
@@ -168,23 +184,6 @@ sealed partial class MediaControlsService : Service
 			legacyNotificationPlayer = null;
 		}
 	}
-
-	// Android 11 defers an app's cancel while a post of the same notification is still queued (the system delays every post by 200 ms),
-	// so a service stopped within that time leaves its foreground notification behind. Leaving the foreground first lets the cancels win.
-	// Static because the connection may be gone before the service is connected or even created.
-	public static void RequestLeaveForegroundBeforeStopping()
-	{
-		if (runningService is not null)
-		{
-			runningService.LeaveForegroundBeforeStopping();
-		}
-		else
-		{
-			shouldLeaveForegroundWhenCreated = true;
-		}
-	}
-
-	public static void ForgetRequestToLeaveForeground() => shouldLeaveForegroundWhenCreated = false;
 
 	public void LeaveForegroundBeforeStopping()
 	{

@@ -1,7 +1,7 @@
 using System.Runtime.Versioning;
-using ObjCRuntime;
 using CommunityToolkit.Maui.Core.Primitives;
 using Microsoft.Maui.ApplicationModel;
+using ObjCRuntime;
 using UniformTypeIdentifiers;
 
 namespace CommunityToolkit.Maui.Storage;

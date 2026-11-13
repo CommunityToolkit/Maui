@@ -98,8 +98,12 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 
 			await WithHandlerAsync(mediaElement, handler =>
 			{
-				Assert.False(GetServiceConnection(handler.Manager!)?.IsConnected);
-				return Task.CompletedTask;
+				var connection = GetServiceConnection(handler.Manager!);
+				Assert.NotNull(connection);
+
+				// The connection is delivered on a later UI turn, so disconnecting in this turn is always before it.
+				Assert.False(connection.IsConnected);
+				handler.DisconnectHandler();
 			});
 
 			await WaitForMediaControlsServiceToStopAsync();
