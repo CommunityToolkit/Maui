@@ -45,7 +45,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			context.DeniedPermissions.Clear();
 			await PauseAndResumeTheActivityAsync();
 
-			await WaitForStreamingAsync(previewView);
+			await WaitForStreamingAsync(previewView, errors: errors);
 			Assert.Single(errors.Errors);
 			Assert.Empty(UnhandledAsyncVoidExceptions);
 		}, previewView);
