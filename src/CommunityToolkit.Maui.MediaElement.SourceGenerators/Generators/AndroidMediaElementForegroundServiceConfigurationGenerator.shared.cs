@@ -226,7 +226,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator : IIncre
 		sb.AppendLine("// This file provides assembly-level Android permissions and service attributes");
 		sb.AppendLine("// when Android Foreground Service is enabled for MediaElement.");
 		sb.AppendLine("");
-		sb.AppendLine("#pragma warning disable");
 		sb.AppendLine("#nullable enable");
 		sb.AppendLine("");
 		sb.AppendLine("#if ANDROID");
@@ -244,8 +243,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator : IIncre
 		sb.AppendLine("/// </summary>");
 		sb.AppendLine("/// <remarks>");
 		sb.AppendLine("/// This file is auto-generated and provides assembly-level permissions");
-		sb.AppendLine("/// for MediaElement when <see cref=\"CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled\"/> is enabled");
-		sb.AppendLine("/// or when <see cref=\"UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})\"/>");
+		sb.AppendLine("/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it");
+		sb.AppendLine("/// or when <c>UseMauiCommunityToolkitMediaElement</c>");
 		sb.AppendLine("/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.");
 		sb.AppendLine("/// </remarks>");
 		sb.AppendLine("internal static class AndroidMediaElementServiceConfiguration");

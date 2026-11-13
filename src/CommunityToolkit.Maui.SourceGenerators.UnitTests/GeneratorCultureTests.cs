@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;
 
 // Source generators run inside the app developer's compiler or IDE, so whatever they emit must not depend on that machine's culture.
 // Comparing the output across cultures needs no expected text, runs on every OS, and catches a culture leak in any generated line.
-public class GeneratorCultureTests
+public class GeneratorCultureTests : BaseTest
 {
 	const string testSource =
 		/* language=C#-test */
@@ -147,6 +147,22 @@ public class GeneratorCultureTests
 	[Theory]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
+	public void GeneratedSourceSuppressesOnlyUserDeclaredMemberWarnings(string cultureName)
+	{
+		var sources = RunGenerators(testSource, new CultureInfo(cultureName), out _);
+
+		Assert.NotEmpty(sources);
+		foreach (var text in sources.Values)
+		{
+			Assert.Matches(@"(?m)^#pragma warning disable (CS0108, CS0109, )?CS0612, CS0618(, CS9258)?\r?$", text);
+			Assert.DoesNotContain("IL2", text, StringComparison.Ordinal);
+			Assert.DoesNotContain("IL3", text, StringComparison.Ordinal);
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
 	public void GeneratedCodeUsesAsciiKeywordsAndIdentifiers(string cultureName)
 	{
 		var sources = RunGenerators(testSource, new CultureInfo(cultureName), out _);
@@ -228,7 +244,7 @@ public class GeneratorCultureTests
 		}
 	}
 
-	static List<MetadataReference> GetReferences()
+	internal static List<MetadataReference> GetReferences()
 	{
 		var trustedPlatformAssemblies = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES is not available");
 

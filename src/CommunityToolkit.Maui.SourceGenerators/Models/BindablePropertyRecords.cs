@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
 public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "");
-public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility, string? ResolvedInitializerExpression)
+public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility, string? ResolvedInitializerExpression, EquatableArray<string> UserDiagnosticIds = default)
 {
 	// When both a DefaultValueCreatorMethodName and an initializer are provided, we implement the DefaultValueCreator method and the ignore the partial Property initializer
 	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null" && ResolvedInitializerExpression is null;
@@ -15,7 +15,7 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 	public string InitializingPropertyName => $"IsInitializing{PropertyName}";
 }
 
-public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string? GetterAccessibility, string? SetterAccessibility, string BindablePropertyAccessibility, bool IsDeclaringTypeNullable, string? BindablePropertyXmlDocumentation, string? GetterMethodXmlDocumentation, string? SetterMethodXmlDocumentation, bool IsReadOnlyBindableProperty)
+public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultValue, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string? GetterAccessibility, string? SetterAccessibility, string BindablePropertyAccessibility, bool IsDeclaringTypeNullable, string? BindablePropertyXmlDocumentation, string? GetterMethodXmlDocumentation, string? SetterMethodXmlDocumentation, bool IsReadOnlyBindableProperty, EquatableArray<string> UserDiagnosticIds = default)
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public bool ShouldPostpendNullable => ShouldPostpendNullableToType(ReturnType, IsDeclaringTypeNullable);
