@@ -141,7 +141,7 @@ class TextColorToGenerator : IIncrementalGenerator
 			  using Microsoft.Maui.Controls;
 			  using Microsoft.Maui.Graphics;
 
-			  namespace {{textStyleClassMetadata.Namespace}};
+			  {{textStyleClassMetadata.NamespaceDeclaration}}
 
 			  /// <summary>
 			  /// Color animation extension methods for the text style type
@@ -231,7 +231,7 @@ class TextColorToGenerator : IIncrementalGenerator
 		collector.AddSymbolAndContainers(namedTypeSymbol);
 		collector.AddTypeParameterConstraints(namedTypeSymbol);
 
-		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, namedTypeSymbol.ContainingNamespace.ToDisplayString(), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null);
+		return new(namedTypeSymbol.Name, effectiveAccessModifier ?? string.Empty, GetNamespaceName(namedTypeSymbol), namedTypeSymbol.TypeArguments.GetGenericTypeArgumentsString(), namedTypeSymbol.GetGenericTypeConstraintsAsString(), shouldGenerateTextColorTo, collector.ToEquatableArray(), GetContainingTypeNames(namedTypeSymbol), effectiveAccessModifier is not null);
 	}
 
 	static IEnumerable<INamedTypeSymbol> Deduplicate(ImmutableArray<INamedTypeSymbol?> left, IEnumerable<INamedTypeSymbol> right)
@@ -293,6 +293,8 @@ class TextColorToGenerator : IIncrementalGenerator
 		return isInternal ? "internal" : "public";
 	}
 
+	static string GetNamespaceName(INamedTypeSymbol namedTypeSymbol) => namedTypeSymbol.ContainingNamespace.IsGlobalNamespace ? string.Empty : namedTypeSymbol.ContainingNamespace.ToDisplayString();
+
 	static string GetContainingTypeNames(INamedTypeSymbol namedTypeSymbol)
 	{
 		var names = new List<string>();
@@ -308,7 +310,9 @@ class TextColorToGenerator : IIncrementalGenerator
 	{
 		public string QualifiedNameWithoutNamespace => ContainingTypes.Length is 0 ? ClassName : $"{ContainingTypes}.{ClassName}";
 
-		public string QualifiedName => $"{Namespace}.{QualifiedNameWithoutNamespace}";
+		public string NamespaceDeclaration => Namespace.Length is 0 ? string.Empty : $"namespace {Namespace};";
+
+		public string QualifiedName => Namespace.Length is 0 ? QualifiedNameWithoutNamespace : $"{Namespace}.{QualifiedNameWithoutNamespace}";
 
 		public string ExtensionClassSuffix => QualifiedNameWithoutNamespace.Replace('.', '_');
 	}
