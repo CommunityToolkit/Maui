@@ -163,7 +163,7 @@ public class HintNameTests : BaseTest
 		];
 		foreach (var hintName in expectedHintNames)
 		{
-			Assert.True(result.Sources.ContainsKey(hintName), $"{hintName} was not generated. Generated: {string.Join(", ", result.Sources.Keys)}");
+			Assert.True(result.HasFile(hintName), $"{hintName} was not generated. Generated: {string.Join(", ", result.Sources.Keys)}");
 		}
 	}
 

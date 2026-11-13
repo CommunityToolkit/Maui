@@ -39,7 +39,7 @@ static class GeneratedCodeCompilation
 			driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generatorDiagnostics, cancellationToken);
 
 			var generatedTrees = outputCompilation.SyntaxTrees.Where(static tree => IsGeneratedFile(tree.FilePath)).ToList();
-			var generatedSources = generatedTrees.ToDictionary(static tree => Path.GetFileName(tree.FilePath), tree => tree.GetText(cancellationToken).ToString(), StringComparer.Ordinal);
+			var generatedSources = generatedTrees.ToDictionary(static tree => GetGeneratorFolderAndFileName(tree.FilePath), tree => tree.GetText(cancellationToken).ToString(), StringComparer.Ordinal);
 			var generatedPaths = generatedTrees.Select(static tree => tree.FilePath).ToHashSet(StringComparer.Ordinal);
 
 			var diagnostics = outputCompilation.GetDiagnostics(cancellationToken)
@@ -70,11 +70,16 @@ static class GeneratedCodeCompilation
 		}
 	}
 
+	static string GetGeneratorFolderAndFileName(string filePath) =>
+		$"{Path.GetFileName(Path.GetDirectoryName(filePath))}/{Path.GetFileName(filePath)}";
+
 	static bool IsGeneratedFile(string filePath) => filePath.Contains("CommunityToolkit.Maui.SourceGenerators", StringComparison.Ordinal);
 }
 
 sealed record GeneratedCodeResult(IReadOnlyDictionary<string, string> Sources, IReadOnlyList<string> Diagnostics)
 {
+	public bool HasFile(string fileName) => Sources.Keys.Any(key => key.EndsWith("/" + fileName, StringComparison.Ordinal));
+
 	public string GetSource(string fileNameEnd) =>
 		Sources.Single(pair => pair.Key.EndsWith(fileNameEnd, StringComparison.Ordinal)).Value;
 }
