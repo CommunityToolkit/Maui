@@ -724,7 +724,7 @@ public partial class MediaManager : IDisposable
 			Muted = unusablePlayer.Muted,
 			Volume = unusablePlayer.Volume
 		};
-		if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+		if (OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			player.DefaultRate = unusablePlayer.DefaultRate;
 		}

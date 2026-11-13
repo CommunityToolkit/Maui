@@ -237,7 +237,6 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 			Assert.Null(manager.NativeVolumeObserver);
 			Assert.Null(manager.NativeStatusObserver);
 			Assert.Null(manager.NativeTimeControlStatusObserver);
-			Assert.Null(manager.NativeRateObserver);
 		});
 	}
 

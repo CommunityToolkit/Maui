@@ -4,8 +4,8 @@ using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
 using Foundation;
-using ObjCRuntime;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
