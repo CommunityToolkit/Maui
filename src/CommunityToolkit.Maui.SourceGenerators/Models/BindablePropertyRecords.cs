@@ -3,13 +3,11 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
-public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "", string ContainingTypeKeywords = "", string TypeIdentity = "")
+public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "", EquatableArray<string> ContainingTypeKeywords = default, string TypeIdentity = "")
 {
-	// ContainingTypes carries each containing type's type parameters, e.g. "Outer<T>.Middle<U>".
-	// One keyword per containing type, outermost first and separated by '|', e.g. "class|record struct".
-	public IEnumerable<string> GetContainingTypeKeywords(int containingTypeCount) => ContainingTypeKeywords.Length is 0
+	public IEnumerable<string> GetContainingTypeKeywords(int containingTypeCount) => ContainingTypeKeywords.AsImmutableArray().IsDefaultOrEmpty
 		? Enumerable.Repeat("class", containingTypeCount)
-		: ContainingTypeKeywords.Split('|');
+		: ContainingTypeKeywords;
 
 	public bool IsInGenericType => GenericTypeParameters.Length > 0 || ContainingTypes.Contains('<');
 }

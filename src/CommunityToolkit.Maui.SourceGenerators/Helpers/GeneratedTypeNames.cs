@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,7 +10,7 @@ static class GeneratedTypeNames
 	public static string GetNameWithTypeParameters(INamedTypeSymbol type) =>
 		type.TypeParameters.IsEmpty ? type.Name : $"{type.Name}<{string.Join(", ", type.TypeParameters.Select(static typeParameter => typeParameter.Name))}>";
 
-	public static string GetContainingTypeKeywords(INamedTypeSymbol type)
+	public static EquatableArray<string> GetContainingTypeKeywords(INamedTypeSymbol type)
 	{
 		var keywords = new List<string>();
 		for (var current = type.ContainingType; current is not null; current = current.ContainingType)
@@ -17,7 +18,7 @@ static class GeneratedTypeNames
 			keywords.Insert(0, GetKeyword(current));
 		}
 
-		return string.Join("|", keywords);
+		return ImmutableArray.CreateRange(keywords);
 	}
 
 	// The exact name of a type: the namespace tells same-named types apart, '+' nests like metadata names and '-' (never part of an identifier) marks the number of type parameters.
