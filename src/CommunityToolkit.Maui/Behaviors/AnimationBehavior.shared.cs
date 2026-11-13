@@ -30,6 +30,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// </summary>
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// Cancelling that token stops the animation, which returns the view to its original values, and the command then ends without an exception.
 	/// </remarks>
 	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangingMethodName = nameof(OnAnimateCommandChanging), DefaultValueCreatorMethodName = nameof(CreateAnimateCommand))]
 	public partial Command<CancellationToken> AnimateCommand
@@ -167,6 +168,10 @@ public partial class AnimationBehavior : EventToCommandBehavior
 			// We must `await` `AnimationType.Animate()` here in order to properly implement `Options.ShouldSuppressExceptionsInAnimations`
 			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
 			await AnimationType.Animate(View, token);
+		}
+		catch (OperationCanceledException) when (token.IsCancellationRequested)
+		{
+			// The animation returned the view before it threw, and an exception escaping the async void command would crash the app
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
