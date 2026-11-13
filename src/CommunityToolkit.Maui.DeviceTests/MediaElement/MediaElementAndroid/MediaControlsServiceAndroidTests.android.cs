@@ -87,6 +87,28 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
+	public async Task StoppingTheServiceBeforeItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// Android 11 only: the notification of a service that is created and stopped before the manager connected to it must not stay either.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+
+			await WithHandlerAsync(mediaElement, handler =>
+			{
+				Assert.False(GetServiceConnection(handler.Manager!)?.IsConnected);
+				return Task.CompletedTask;
+			});
+
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
 	public async Task ForegroundServiceCanBeEnabledWithTheMediaElementOptions()
 	{
 		// A variable, not the literal true: the MediaElement source generator turns a literal into assembly-level manifest permissions and into a

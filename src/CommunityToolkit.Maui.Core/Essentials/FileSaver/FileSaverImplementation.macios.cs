@@ -1,5 +1,5 @@
-using ObjCRuntime;
 using System.Runtime.Versioning;
+using ObjCRuntime;
 using Microsoft.Maui.ApplicationModel;
 
 namespace CommunityToolkit.Maui.Storage;

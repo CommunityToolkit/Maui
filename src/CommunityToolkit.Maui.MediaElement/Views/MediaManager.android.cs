@@ -30,6 +30,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int readyState = 3;
 	const int endedState = 4;
 
+	static int managersBoundToTheService;
+
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -891,8 +893,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
 
-	static int managersBoundToTheService;
-
 	void StartService()
 	{
 		if (!isAndroidForegroundServiceEnabled)
@@ -904,7 +904,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
 
-		Interlocked.Increment(ref managersBoundToTheService);
+		if (Interlocked.Increment(ref managersBoundToTheService) == 1)
+		{
+			MediaControlsService.ForgetRequestToLeaveForeground();
+		}
+
 		global::Android.App.Application.Context.StartForegroundService(intent);
 		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 	}
@@ -921,7 +925,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
 		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
 		{
-			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+			MediaControlsService.RequestLeaveForegroundBeforeStopping();
 		}
 
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));

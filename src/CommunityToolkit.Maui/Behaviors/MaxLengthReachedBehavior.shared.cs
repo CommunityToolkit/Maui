@@ -33,7 +33,8 @@ public partial class MaxLengthReachedBehavior : BaseBehavior<InputView>
 	/// <remarks>
 	/// Dismissing the keyboard also removes the focus from the <see cref="InputView"/>. The keyboard is only dismissed while the <see cref="InputView"/> has the focus,
 	/// so the keyboard of another view that the user types in stays open.
-	/// When the focus is removed on Android 8.1 and earlier, and on later versions outside touch mode, Android gives the focus to the first focusable view of the window, which is the <see cref="InputView"/> itself when no focusable view comes before it.
+	/// When the focus is removed on Android 8.1 and earlier, and on later versions outside touch mode, Android gives the focus to the first
+	/// focusable view of the window, which is the <see cref="InputView"/> itself when no focusable view comes before it.
 	/// </remarks>
 	[BindableProperty]
 	public partial bool ShouldDismissKeyboardAutomatically { get; set; } = MaxLengthReachedBehaviorDefaults.ShouldDismissKeyboardAutomatically;

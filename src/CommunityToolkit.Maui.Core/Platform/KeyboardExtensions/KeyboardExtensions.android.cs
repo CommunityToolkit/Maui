@@ -17,7 +17,8 @@ public static partial class KeyboardExtensions
 	const long reshowDeadlineAfterHideMilliseconds = 4500;
 
 	static int hideRequestCount;
-	static long lastHideUptimeMilliseconds = long.MinValue;
+	// Far enough in the past that UptimeMillis() minus it is always beyond the hide animation window, without overflowing like long.MinValue
+	static long lastHideUptimeMilliseconds = -imeHideAnimationWindowMilliseconds - 1;
 
 	static bool HideKeyboard(this AView inputView)
 	{
@@ -64,8 +65,9 @@ public static partial class KeyboardExtensions
 		return shown;
 	}
 
-	// Android 11 and 12 hide the keyboard again when an IME hide animation still running at ShowSoftInput ends (fixed in Android 13), so only a show right after a hide is guarded.
-	// Showing the IME insets cancels that animation unless its end is queued, so a later ShowSoftInput follows if the keyboard is still hidden; the UI thread is needed and the caller must not wait.
+	// Android 11 and 12 hide the keyboard again when an IME hide animation still running at ShowSoftInput ends (fixed in Android 13),
+	// so only a show right after a hide is guarded. Showing the IME insets cancels that animation unless its end is queued, so a later
+	// ShowSoftInput follows if the keyboard is still hidden; the UI thread is needed and the caller must not wait.
 	[SupportedOSPlatform("android30.0")]
 	static void KeepTheKeyboardShownDespiteTheRunningImeHideAnimation(TextView inputView, int hideRequestCountAtShow, long deadlineUptimeMilliseconds)
 	{

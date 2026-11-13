@@ -12,7 +12,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
 	const string stateBackgroundAnimationHandle = "TouchBehaviorStateBackground";
 
-	// MAUI 10.0.120+ and 11.0.10 drop an app's DynamicResource on BackgroundColor as soon as anything sets the property (dotnet/maui#38063),
+	// MAUI 10.0.120+ and 11.0.10+ drop an app's DynamicResource on BackgroundColor as soon as anything sets the property (dotnet/maui#38063),
 	// so the behavior paints a brush of its own: its reference also tells it from the app's Background.
 	SolidColorBrush? stateBackgroundBrush;
 

@@ -15,11 +15,13 @@ namespace CommunityToolkit.Maui.Media.Services;
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : Service
 {
-	readonly WeakEventManager taskRemovedEventManager = new();
-
 	const int mediaNotificationId = 1;
 	const int stragglerCancelDelayMilliseconds = 500;
 
+	static MediaControlsService? runningService;
+	static bool shouldLeaveForegroundWhenCreated;
+
+	readonly WeakEventManager taskRemovedEventManager = new();
 	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
 
 	bool isDisposed;
@@ -49,6 +51,13 @@ sealed partial class MediaControlsService : Service
 	{
 		base.OnCreate();
 		StartForegroundServices();
+
+		runningService = this;
+		if (shouldLeaveForegroundWhenCreated)
+		{
+			shouldLeaveForegroundWhenCreated = false;
+			LeaveForegroundBeforeStopping();
+		}
 	}
 
 	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
@@ -67,6 +76,11 @@ sealed partial class MediaControlsService : Service
 	public override void OnDestroy()
 	{
 		base.OnDestroy();
+
+		if (ReferenceEquals(runningService, this))
+		{
+			runningService = null;
+		}
 
 		playerNotificationManager?.SetPlayer(null);
 		legacyNotificationPlayer = null;
@@ -103,7 +117,7 @@ sealed partial class MediaControlsService : Service
 
 		notificationBuilder.SetStyle(style);
 		notificationSession = session;
-		NotificationManagerCompat.From(Platform.AppContext)?.Notify(1, notificationBuilder.Build());
+		NotificationManagerCompat.From(Platform.AppContext)?.Notify(mediaNotificationId, notificationBuilder.Build());
 	}
 
 	[MemberNotNull(nameof(playerNotificationManager))]
@@ -111,7 +125,7 @@ sealed partial class MediaControlsService : Service
 	{
 		ArgumentNullException.ThrowIfNull(session);
 		// Its notification replaces the one of the service (same id): like that one, it opens the app when it is tapped
-		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, 1, "1")
+		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, mediaNotificationId, "1")
 			.SetMediaDescriptionAdapter(new DefaultMediaDescriptionAdapter(CreateActivityPendingIntent()))
 			?.Build()
 			?? throw new InvalidOperationException("PlayerNotificationManager cannot be null");
@@ -155,9 +169,23 @@ sealed partial class MediaControlsService : Service
 		}
 	}
 
-	// Android 11 defers an app's cancel while a post of the same notification is still queued, and the system delays every post by 200 ms.
-	// A service that is stopped within that time then leaves its notification behind with the foreground flag, which apps cannot remove.
-	// Leaving the foreground first makes the system strip that flag from the posted and the queued notification, so the cancels can win.
+	// Android 11 defers an app's cancel while a post of the same notification is still queued (the system delays every post by 200 ms),
+	// so a service stopped within that time leaves its foreground notification behind. Leaving the foreground first lets the cancels win.
+	// Static because the connection may be gone before the service is connected or even created.
+	public static void RequestLeaveForegroundBeforeStopping()
+	{
+		if (runningService is not null)
+		{
+			runningService.LeaveForegroundBeforeStopping();
+		}
+		else
+		{
+			shouldLeaveForegroundWhenCreated = true;
+		}
+	}
+
+	public static void ForgetRequestToLeaveForeground() => shouldLeaveForegroundWhenCreated = false;
+
 	public void LeaveForegroundBeforeStopping()
 	{
 		playerNotificationManager?.SetPlayer(null);
@@ -231,12 +259,12 @@ sealed partial class MediaControlsService : Service
 		{
 			if (notificationBuilder.Build() is Notification notification)
 			{
-				StartForeground(1, notification, ForegroundService.TypeMediaPlayback);
+				StartForeground(mediaNotificationId, notification, ForegroundService.TypeMediaPlayback);
 			}
 		}
 		else
 		{
-			StartForeground(1, notificationBuilder.Build());
+			StartForeground(mediaNotificationId, notificationBuilder.Build());
 		}
 	}
 }
