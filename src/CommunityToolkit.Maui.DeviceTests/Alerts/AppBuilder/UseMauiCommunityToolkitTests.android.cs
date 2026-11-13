@@ -17,6 +17,7 @@ public partial class UseMauiCommunityToolkitTests
 	[Fact]
 	public async Task UseMauiCommunityToolkitRemapsTheNavigationBarStyleOntoThePageHandler()
 	{
+		Skip.IfNot(AndroidSystemBars.SupportsLightNavigationBars, "Before Android 8.0 (API 26) Style changes nothing the test could observe; the color remap test proves RemapForControls on every version.");
 		var styleKey = NavigationBar.StyleProperty.PropertyName;
 		var sentinelCalls = 0;
 		PageHandler.Mapper.Add(styleKey, (_, _) => sentinelCalls++);
