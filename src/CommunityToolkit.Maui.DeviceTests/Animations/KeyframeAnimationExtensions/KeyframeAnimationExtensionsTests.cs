@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -14,6 +15,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	const double originalTranslationY = 5;
 	const double swingAngle = 15;
 	const double wobbleDistance = 25;
+	const double wobbleRotationAngle = 5;
 	const double rotateBy = 180;
 	const double translateTargetX = 60;
 	const double bounceDistance = 30;
@@ -32,7 +34,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		var view = CreateAnimatedView(originalValues);
 		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = runLength };
-		var wobble = new WobbleAnimation { Distance = wobbleDistance, RotationAngle = 5, Length = runLength };
+		var wobble = new WobbleAnimation { Distance = wobbleDistance, RotationAngle = wobbleRotationAngle, Length = runLength };
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
@@ -41,17 +43,38 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 			await swinging;
 
 			var wobblePeak = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => Math.Abs(translationX - (originalTranslationX - wobbleDistance)) <= valueTolerance);
-			var wobbleRun = wobble.Animate(view);
+			var wobbleTiltPeak = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => Math.Abs(rotation - (originalRotation - wobbleRotationAngle)) <= valueTolerance);
+			var rotationsWrittenByStartingWobble = new List<double>();
+			view.PropertyChanged += RecordRotation;
+			try
+			{
+				var wobbleRun = wobble.Animate(view);
+				view.PropertyChanged -= RecordRotation;
 
-			// Started on the UI thread, Wobble aborted Swing synchronously, and Swing returned the view before Wobble read the original values
-			AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, "right after Wobble started");
+				// Android's ValueAnimator.start() ticks the new run inside Animate, so Rotation may already be a few milliseconds into Wobble.
+				// The first write is exact: Swing's abort returned the view before Wobble read its original values.
+				Assert.True(rotationsWrittenByStartingWobble.Count > 0 && rotationsWrittenByStartingWobble[0] == originalRotation, $"Swing's abort wrote the rotations {string.Join(", ", rotationsWrittenByStartingWobble)}; the first must be the original {originalRotation}.");
+				Assert.True(view.AnchorY == originalAnchorY, $"AnchorY is {view.AnchorY} right after Wobble started, expected the original {originalAnchorY}, which only Swing's abort restores.");
 
-			await swingRun.WaitAsync(waitTimeout);
-			Assert.True(swingRun.IsCompletedSuccessfully, $"Swing ended {swingRun.Status}; a replaced attention seeker completes normally.");
+				await swingRun.WaitAsync(waitTimeout);
+				Assert.True(swingRun.IsCompletedSuccessfully, $"Swing ended {swingRun.Status}; a replaced attention seeker completes normally.");
 
-			await wobbleRun.WaitAsync(waitTimeout);
-			await wobblePeak;
-			AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, "after Wobble completed");
+				await wobbleRun.WaitAsync(waitTimeout);
+				await Task.WhenAll(wobblePeak, wobbleTiltPeak);
+				AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, "after Wobble completed");
+			}
+			finally
+			{
+				view.PropertyChanged -= RecordRotation;
+			}
+
+			void RecordRotation(object? sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == VisualElement.RotationProperty.PropertyName)
+				{
+					rotationsWrittenByStartingWobble.Add(view.Rotation);
+				}
+			}
 		});
 	}
 
@@ -71,12 +94,44 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 			await rotating;
 
 			var swingPeak = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => Math.Abs(rotation - (originalRotation + swingAngle)) <= valueTolerance);
-			var swingRun = swing.Animate(view);
+			var restoreWrites = 0;
+			var swingPeakReached = false;
+			var swingAnimateReturned = false;
+			view.PropertyChanged += CountRestoreWritesUntilSwingPeaks;
+			try
+			{
+				var swingRun = swing.Animate(view);
+				swingAnimateReturned = true;
 
-			await Task.WhenAll(rotateRun, swingRun).WaitAsync(waitTimeout);
-			await swingPeak;
+				await Task.WhenAll(rotateRun, swingRun).WaitAsync(waitTimeout);
+				await swingPeak;
+			}
+			finally
+			{
+				view.PropertyChanged -= CountRestoreWritesUntilSwingPeaks;
+			}
+
+			Assert.True(restoreWrites is 0, $"The Rotate animation wrote its original rotation {restoreWrites} time(s) after Swing took over; Swing must take over without a restore write.");
 
 			await AssertStaysAtOriginalValuesAsync(handler, view, rotationAndAnchor, nativeStateAtRest, "after Swing replaced the Rotate animation");
+
+			// A restore the Rotate animation made after Swing took over would be posted, landing after Animate returned. Android's synchronous first frame inside Animate
+			// also writes the original rotation, and Swing's own frames only do at its end.
+			void CountRestoreWritesUntilSwingPeaks(object? sender, PropertyChangedEventArgs e)
+			{
+				if (!swingAnimateReturned || swingPeakReached || e.PropertyName != VisualElement.RotationProperty.PropertyName)
+				{
+					return;
+				}
+
+				var rotation = view.Rotation;
+				if (rotation == originalRotation)
+				{
+					restoreWrites++;
+				}
+
+				swingPeakReached = Math.Abs(rotation - (originalRotation + swingAngle)) <= valueTolerance;
+			}
 		});
 	}
 

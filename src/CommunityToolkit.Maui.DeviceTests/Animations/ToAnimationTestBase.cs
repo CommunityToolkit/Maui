@@ -32,6 +32,32 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 	}
 
 	[Fact]
+	public async Task SystemAnimationsSwitchedOffMidRunReturnTheViewToItsOriginalValueBeforeTheSwitchReturns()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var run = CreateAnimation().Animate(view);
+			await midRun;
+
+			var valueRightAfterTheSwitch = double.NaN;
+			await DisableSystemAnimationsAsync(handler, () => valueRightAfterTheSwitch = (double)view.GetValue(PeakProperty));
+
+			// MAUI's ticker force-finishes the tween inside the switch, so no frame may show the view at the animation's target in between
+			Assert.True(Math.Abs(valueRightAfterTheSwitch - originalValue) <= 1e-6, $"The view's {PeakProperty.PropertyName} is {valueRightAfterTheSwitch} right after the system's animations were switched off, expected the original {originalValue}.");
+
+			await run.WaitAsync(waitTimeout);
+			Assert.True(run.IsCompletedSuccessfully, $"The run ended {run.Status}, expected it to complete.");
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the system's animations were switched off mid-run");
+		});
+	}
+
+	[Fact]
 	public async Task CancelAnimationsMidRunReturnsTheViewToItsOriginalValuesAndCompletesTheTask()
 	{
 		SetupBuilder();

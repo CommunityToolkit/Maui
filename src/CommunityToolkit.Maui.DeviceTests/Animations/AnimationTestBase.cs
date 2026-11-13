@@ -158,11 +158,15 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 	}
 
 	// What MAUI's ticker reports when the system's animations are off, so MAUI jumps every animation to its end. In this process only, as in SystemAnimationsTickerOverride
-	protected async Task DisableSystemAnimationsAsync(IPlatformViewHandler handler)
+	protected async Task DisableSystemAnimationsAsync(IPlatformViewHandler handler, Action? onMainThreadRightAfterSwitchedOff = null)
 	{
 		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker ?? throw new InvalidOperationException("The view has no animation ticker.");
 		string? error = null;
-		await InvokeOnMainThreadAsync(() => error = SystemAnimationsTickerOverride.TrySetSystemEnabled(ticker, false));
+		await InvokeOnMainThreadAsync(() =>
+		{
+			error = SystemAnimationsTickerOverride.TrySetSystemEnabled(ticker, false);
+			onMainThreadRightAfterSwitchedOff?.Invoke();
+		});
 		Assert.True(error is null, error);
 
 		Assert.False(ticker.SystemEnabled, "MAUI's ticker must see the disabled animations.");

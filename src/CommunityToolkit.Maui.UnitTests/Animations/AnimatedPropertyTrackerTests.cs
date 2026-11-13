@@ -94,14 +94,13 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	public void End_IgnoresASecondEndOfTheSameAnimation()
 	{
 		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (firstId, _) = tracker.Start(30);
-		tracker.Start(30);
+		var (animationId, _) = tracker.Start(30);
 
-		tracker.End(firstId, 75);
-		tracker.End(firstId, 75);
+		tracker.End(animationId, 75);
+		tracker.End(animationId, 10);
 		var (_, originalValue) = tracker.Start(10);
 
-		originalValue.Should().Be(30);
+		originalValue.Should().Be(10);
 	}
 
 	[Fact]

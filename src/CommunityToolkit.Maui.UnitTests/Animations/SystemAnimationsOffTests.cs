@@ -11,6 +11,8 @@ public class SystemAnimationsOffTests : BaseAnimationTest
 {
 	public static TheoryData<string> AnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation), nameof(ShakeAnimation), nameof(TadaAnimation), nameof(HeartbeatAnimation), nameof(RubberBandAnimation), nameof(BounceAnimation), nameof(SwingAnimation), nameof(WobbleAnimation)];
 
+	public static TheoryData<string> ToAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
+
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(AnimationNames))]
 	public Task Animate_WithSystemAnimationsOff_CompletesAndLeavesTheViewAtItsStartingValues(string animationName) => RunOnSingleThreadAsync(async token =>
@@ -59,6 +61,35 @@ public class SystemAnimationsOffTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task SystemAnimationsTurnedOffMidRun_NoFrameShowsTheTarget(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var (property, target) = TargetOf(animationName, view);
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
+		await firstChange;
+		view.DisableSystemAnimations();
+
+		var framesAtTarget = 0;
+		using (view.ObserveAnimationFrames(_ =>
+		{
+			if (Math.Abs((double)view.GetValue(property) - target) <= precision)
+			{
+				framesAtTarget++;
+			}
+		}))
+		{
+			await run.WaitAsync(waitTimeout, token);
+		}
+
+		framesAtTarget.Should().Be(0, "a To animation that is switched off mid-run must not hold the view at its target until the next UI turn");
+		AssertValuesEqual(view, startingValues);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(AnimationNames))]
 	public Task WithSystemAnimationsOff_EndsBeforeAnimateReturns(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
@@ -72,6 +103,16 @@ public class SystemAnimationsOffTests : BaseAnimationTest
 		AssertValuesEqual(view, startingValues);
 		await run;
 	}, TestContext.Current.CancellationToken);
+
+	static (BindableProperty Property, double Target) TargetOf(string animationName, VisualElement view) => animationName switch
+	{
+		nameof(FadeAnimation) => (VisualElement.OpacityProperty, 0.3),
+		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, 1.2),
+		nameof(RotateAnimation) => (VisualElement.RotationProperty, view.Rotation + 180),
+		nameof(FlipHorizontalAnimation) => (VisualElement.RotationYProperty, 90),
+		nameof(FlipVerticalAnimation) => (VisualElement.RotationXProperty, 90),
+		_ => throw new NotSupportedException(animationName)
+	};
 
 	static BaseAnimation CreateAnimation(string animationName, uint length = functionalTestLength) => animationName switch
 	{
