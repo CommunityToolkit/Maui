@@ -484,6 +484,30 @@ public class GeneratedCodeWarningTests : BaseTest
 			[BindableProperty]
 			public partial System.Collections.Generic.IList<string> Items { get; set; } = new System.Collections.Generic.List<string>();
 		}
+
+		/// <summary>Experimental with an ID that becomes a trim warning ID once the lexer drops its invisible character.</summary>
+		[System.Diagnostics.CodeAnalysis.Experimental("IL\u200B2026")]
+		public class ZwspItem
+		{
+		}
+
+		/// <summary>Obsolete with an ID that becomes a trim warning ID once the lexer drops its soft hyphen.</summary>
+		[Obsolete("x", DiagnosticId = "IL\u00AD3050")]
+		public class SoftHyphenItem
+		{
+		}
+
+		/// <summary>Uses both types.</summary>
+		public partial class ZwspIdView : View
+		{
+			/// <summary>Zwsp.</summary>
+			[BindableProperty]
+			public partial ZwspItem? Zwsp { get; set; }
+
+			/// <summary>Soft hyphen.</summary>
+			[BindableProperty]
+			public partial SoftHyphenItem? SoftHyphen { get; set; }
+		}
 		""";
 
 	const string selfReferencingConstraintsSource =
@@ -604,16 +628,16 @@ public class GeneratedCodeWarningTests : BaseTest
 	}
 
 	[Theory]
-	[InlineData("en-US")]
+	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_CompilesWithoutDiagnostics_WhenTypeConstraintsReferToThemselves(string cultureName)
 	{
 		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(selfReferencingConstraintsSource, cultureName, null, TestContext.Current.CancellationToken);
 
-		Assert.Contains(generatedFilePaths, static path => path.EndsWith("CmpView.g.cs", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => path.EndsWith("NodeView.g.cs", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => path.EndsWith("ExpCmpView.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "CmpView.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "NodeView.g.cs", StringComparison.Ordinal));
+		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "ExpCmpView.g.cs", StringComparison.Ordinal));
 		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
 	}
 
@@ -626,7 +650,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	}
 
 	[Theory]
-	[InlineData("en-US")]
+	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
 	public void TextColorTo_Completes_WhenTheTextTypeConstraintRefersToItself(string cultureName)
@@ -710,6 +734,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	{
 		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(unusablePragmaTokensSource, "SpacedIdView.g.cs", []));
 		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(unusablePragmaTokensSource, "TrimIdView.g.cs", []));
+		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(unusablePragmaTokensSource, "ZwspIdView.g.cs", []));
 	}
 
 	[Theory]
@@ -729,6 +754,8 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("not a token", false)]
 	[InlineData("A-B", false)]
 	[InlineData("1ABC", false)]
+	[InlineData("IL\u200B2026", false)]
+	[InlineData("USR\u00AD1", false)]
 	[InlineData("", false)]
 	public void GeneratedCodePragmas_AcceptsOnlyIdentifierCharacters(string id, bool expected)
 	{

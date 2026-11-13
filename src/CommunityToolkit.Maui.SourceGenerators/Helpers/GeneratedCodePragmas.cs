@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Helpers;
@@ -31,7 +32,8 @@ static class GeneratedCodePragmas
 			return false;
 		}
 
-		return id.All(SyntaxFacts.IsIdentifierPartCharacter);
+		// The C# lexer drops format characters (such as U+200B) from pragma IDs, so "IL\u200B2026" would disable IL2026.
+		return id.All(static character => SyntaxFacts.IsIdentifierPartCharacter(character) && CharUnicodeInfo.GetUnicodeCategory(character) is not UnicodeCategory.Format);
 	}
 
 	public static bool IsTrimOrAotWarning(string id) => id.Length > 2 && id.StartsWith("IL", StringComparison.Ordinal) && id.Skip(2).All(static character => character is >= '0' and <= '9');
