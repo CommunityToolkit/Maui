@@ -144,8 +144,8 @@ public partial class TouchBehavior
 		}
 	}
 
-	// A listener that stays registered after it was disposed makes the next accessibility change call a peer that no longer exists,
-	// which takes the process down: it is removed from the AccessibilityManager before it is disposed.
+	// From API 26 the AccessibilityManager posts each callback with the listener captured, so one can still arrive after the removal.
+	// The listener is therefore never disposed (a call into a disposed peer takes the process down); the GC collects it once Java lets go.
 	void RemoveAccessibilityListener()
 	{
 		if (accessibilityManager is not null && accessibilityListener is not null)
@@ -154,7 +154,7 @@ public partial class TouchBehavior
 			accessibilityManager.RemoveTouchExplorationStateChangeListener(accessibilityListener);
 		}
 
-		accessibilityListener?.Dispose();
+		accessibilityListener?.ForgetBehavior();
 		accessibilityListener = null;
 		accessibilityManager = null;
 	}
@@ -493,6 +493,15 @@ public partial class TouchBehavior
 		{
 			platformTouchBehaviorReference = new(platformTouchBehavior);
 		}
+
+		// Java can still call a listener whose peer somebody disposed; the runtime then needs a no-op peer, or it recurses through the interface invoker.
+		public AccessibilityListener(IntPtr handle, Android.Runtime.JniHandleOwnership transfer)
+			: base(handle, transfer)
+		{
+			platformTouchBehaviorReference = new(null);
+		}
+
+		internal void ForgetBehavior() => platformTouchBehaviorReference.SetTarget(null);
 
 		public void OnAccessibilityStateChanged(bool enabled)
 		{
