@@ -556,8 +556,21 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			string stringVal => $"({typeSymbol})\"{GetEscapedString(stringVal)}\"",
 
 			// Handle enums and all remaining compile-time constants
-			_ => $"({typeSymbol}){GetFormattedConstantValue(value)}"
+			_ => $"({typeSymbol}){GetFormattedValueWithOwnType(value, typeArg)}"
 		};
+	}
+
+	// A bare literal boxes as int, double, ... whatever the constant's type is, so (byte)1 in an object property needs its own cast; a negative number after a cast reads as a subtraction.
+	static string GetFormattedValueWithOwnType(TypedConstant constant, ITypeSymbol targetType)
+	{
+		var formattedConstant = GetFormattedConstantValue(constant);
+		var isBoxedNumber = constant.Kind is TypedConstantKind.Primitive or TypedConstantKind.Enum && constant.Value is not (string or char or bool) && !targetType.IsValueType;
+		if (constant.Type is not null && isBoxedNumber)
+		{
+			return $"({GetFormattedTypeForTypeOf(constant.Type)})({formattedConstant})";
+		}
+
+		return formattedConstant.StartsWith("-", StringComparison.Ordinal) ? $"({formattedConstant})" : formattedConstant;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -778,13 +791,25 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			}
 
 			var element = arrayConstant.Values[i];
-			sb.Append(element.Kind is TypedConstantKind.Enum && element.Type is not null
-				? $"({GetFormattedTypeForTypeOf(element.Type)}){GetFormattedConstantValue(element)}"
-				: GetFormattedConstantValue(element));
+			sb.Append(GetFormattedArrayElement(element, elementType));
 		}
 
 		sb.Append(" }");
 		return sb.ToString();
+	}
+
+	static string GetFormattedArrayElement(TypedConstant element, ITypeSymbol arrayElementType)
+	{
+		if (element.Type is null || element.IsNull)
+		{
+			return GetFormattedConstantValue(element);
+		}
+
+		var isEnum = element.Kind is TypedConstantKind.Enum;
+		var isNumberOfOtherTypeThanTheArray = element.Kind is TypedConstantKind.Primitive && element.Value is not string && !SymbolEqualityComparer.Default.Equals(arrayElementType, element.Type);
+		return isEnum || isNumberOfOtherTypeThanTheArray
+			? $"({GetFormattedTypeForTypeOf(element.Type)})({GetFormattedConstantValue(element)})"
+			: GetFormattedConstantValue(element);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
