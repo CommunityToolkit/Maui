@@ -1120,20 +1120,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 	{
 		await InvokeOnMainThreadAsync(() =>
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(16))
-			{
-				var geometryPreferences = new UIWindowSceneGeometryPreferencesIOS(requestedMask);
-				GetWindowScene().RequestGeometryUpdate(geometryPreferences, static _ =>
-				{
-					// The error handler runs on an arbitrary thread; a failed request shows up as the rotation timeout below.
-				});
-			}
-			else
-			{
-				// iOS 15 has no RequestGeometryUpdate; writing the device orientation is how apps rotated before it.
-				UIDevice.CurrentDevice.SetValueForKey(NSNumber.FromNInt((nint)(long)expectedInterfaceOrientation), new NSString("orientation"));
-				UIViewController.AttemptRotationToDeviceOrientation();
-			}
+			WindowSceneRotation.Request(GetWindowScene(), requestedMask);
 		});
 
 		await AssertHelpers.AssertEventually(

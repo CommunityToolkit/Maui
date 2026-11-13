@@ -116,7 +116,7 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 		}
 		catch (TimeoutException exception)
 		{
-			throw new TimeoutException($"{exception.Message} {DescribeNativePlayer(handler)}");
+			throw new TimeoutException($"{exception.Message} {DescribeNativePlayer(handler)}", exception);
 		}
 
 		await WaitUntilReadyAsync(handler);
