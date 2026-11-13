@@ -125,7 +125,6 @@ class TextColorToGenerator : IIncrementalGenerator
 
 	static void Execution(SourceProductionContext context, TextStyleClassMetadata textStyleClassMetadata, string hintName)
 	{
-
 		var className = typeof(TextColorToGenerator).FullName;
 		var assemblyVersion = typeof(TextColorToGenerator).Assembly.GetName().Version.ToString();
 
@@ -248,9 +247,12 @@ class TextColorToGenerator : IIncrementalGenerator
 	{
 		var namedTypeSymbols = right.ToList();
 
+		// A partial type yields one symbol per declaration; each would add the same hint name.
+		var yieldedUserSymbols = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+
 		foreach (var leftItem in left)
 		{
-			if (leftItem is null)
+			if (leftItem is null || !yieldedUserSymbols.Add(leftItem))
 			{
 				continue;
 			}
