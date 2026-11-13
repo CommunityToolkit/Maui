@@ -332,8 +332,8 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - **OS-version branches.** Platform code can branch on `OperatingSystem.IsAndroidVersionAtLeast(n)`, `IsIOSVersionAtLeast`,
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
-  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Windows 10.0.17763.0) except Android, which is 26,
-    MediaElement's minimum: one app holds every package's tests, so the other packages' Android branches below 26 have no device test.
+  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Windows 10.0.17763.0) except Android, which is 24, the
+    libraries' lowest. The MediaElement tests skip below API 26, its minimum (`MediaElementSupport`).
   - Never `return` early: a test that returns early is reported as Passed.
 - **Run-time skips.** When a test cannot run on this device (no camera, an API that needs a newer OS than the test asserts),
   skip it visibly. A bare `return` is a silent pass and is not allowed.

@@ -56,7 +56,7 @@ public static class MauiProgram
 		// CameraViewHandler resolves ICameraProvider from IPlatformApplication.Current.Services, which belong to this MauiApp.
 		builder.UseMauiCommunityToolkitCamera();
 
-		// Registering it below Android 8.0 would call an API that does not exist there; the MediaElement tests skip on those versions.
+		// MediaElement declares Android 26 as its minimum, so the app registers it only where its tests run.
 		if (MediaElementSupport.IsSupported)
 		{
 			// The foreground service stays off app-wide; tests that need it pass isAndroidForegroundServiceEnabled to SetupBuilder.

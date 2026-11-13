@@ -299,7 +299,7 @@ jobs:
                     name: device-tests-android-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_android_app on the newest release of every other Android version that .NET MAUI can run (device_tests_android has
+    # The app of device_tests_android_app on the newest release of every other Android major version that .NET MAUI can run (device_tests_android has
     # API 36). Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
     device_tests_android_runtime:
@@ -314,8 +314,6 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    # Android 7.1. The app's minimum is 24, so the MediaElement tests (they need API 26) skip.
-                    -   api-level: '25'
                     # Android 8.1. The only x86_64 image of API 27 is the one without Google APIs.
                     -   api-level: '27'
                         target: default
@@ -428,14 +426,13 @@ jobs:
 
             # The runner image's cmdline-tools 12.0 write target=android-0 into the AVD of a dotted API level (actions/runner-images #14484,
             # android-emulator-runner #482 and #494), and the emulator then boots a broken guest. The action keeps the image's tools because
-            # their folder exists; without it, it installs its own, current ones (20.0 has the fix).
+            # their folder exists; without it, it installs its own (20.0 has the fix).
             -   name: Remove the runner image's old cmdline-tools
                 if: ${{ contains(matrix.api-level, '.') }}
                 run: sudo rm -rf "$ANDROID_HOME/cmdline-tools"
 
-            # Runs even when the unpack step failed: run.ps1 then reports Not run (71) with the missing app.
             -   name: Run device tests
-                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' && steps.unpack.outcome == 'success' }}
                 uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
                 with:
                     api-level: ${{ matrix.api-level }}
@@ -453,7 +450,8 @@ jobs:
                     # pre-emulator-launch-script does not stop the action, and a script line that fails skips the lines after it.
                     # -ResultsFolder, not -Results, as device_tests_android.
                     script: |
-                        if grep -qs '^target=android-0$' "$HOME/.android/avd/test.ini" "$HOME/.android/avd/test.avd/config.ini"; then echo '::error::The AVD has target=android-0 (old cmdline-tools).'; exit 1; fi
+                        avd_home="${ANDROID_AVD_HOME:-$HOME/.android/avd}"; if [ ! -f "$avd_home/test.ini" ]; then echo "::error::$avd_home/test.ini is missing."; exit 1; fi
+                        if grep -qs '^target=android-0$' "$avd_home/test.ini" "$avd_home/test.avd/config.ini"; then echo '::error::The AVD has target=android-0 (old cmdline-tools).'; exit 1; fi
                         pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
 
             -   name: Upload device test results
@@ -464,7 +462,6 @@ jobs:
                     path: |
                         artifacts/device-tests/
                         artifacts/logs/
-
 
     device_tests_ios:
         name: Device Tests (iOS Simulator)
@@ -672,7 +669,7 @@ jobs:
         permissions:
             contents: read
         runs-on: ${{ matrix.runner }}
-        # 120 minutes: the runtime download of an old iOS version took up to 12 minutes, and old runtimes run slower.
+        # 120 minutes: the runtime download of an old iOS version took up to 12 minutes.
         timeout-minutes: 120
         strategy:
             fail-fast: false
@@ -711,8 +708,8 @@ jobs:
                 with:
                     xcode-version: ${{ matrix.xcode }}
 
-            # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework. Xcode 26.x
-            # is fine for that: the .NET 11 workload checks for its exact Xcode (E0191, see shared.env) only in a build, and this job builds nothing.
+            # The test step reads the app's properties with dotnet msbuild (ios.ps1), which evaluates the net*-ios target framework. An older Xcode
+            # (16.4 or 26.x) is fine for that: the .NET 11 workload checks for its exact Xcode (E0191, see shared.env) only in a build, and this job builds nothing.
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
@@ -746,7 +743,7 @@ jobs:
                 id: tools
                 run: dotnet tool restore
 
-            # No runner image has iOS 15, 16 or 17 (the macos-14 images were retired on 2026-11-02), and a runtime of several GB does not fit
+            # No runner image has iOS 15, 16 or 17 (the macos-14 images were retired on 2026-11-02), and three runtimes of several GB do not fit
             # the repository's 10 GB cache, so each job downloads it. The download fails now and then, hence the retries.
             -   name: Install the iOS ${{ matrix.ios-version }} simulator runtime
                 if: ${{ matrix.install-runtime }}
@@ -759,7 +756,7 @@ jobs:
                         for attempt in 1 2 3; do
                             sudo xcodes runtimes install "iOS $IOS_VERSION" && break
                             echo "::warning::Installing the iOS $IOS_VERSION runtime failed (attempt $attempt of 3)."
-                            sleep 30
+                            if [ "$attempt" -lt 3 ]; then sleep 30; fi
                         done
                     fi
                     if ! runtime_is_installed; then
