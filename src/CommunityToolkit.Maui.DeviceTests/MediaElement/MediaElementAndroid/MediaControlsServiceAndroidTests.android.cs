@@ -68,6 +68,25 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
+	public async Task StoppingTheServiceRightAfterItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// Android 11 delays a post by 200 ms and defers an app's cancel behind it, so the notification of a service that stops this soon
+		// used to stay: the race only shows in some of the repetitions.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+
+			await HostBoundAsync(mediaElement, (_, _) => Task.CompletedTask);
+
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
 	public async Task ForegroundServiceCanBeEnabledWithTheMediaElementOptions()
 	{
 		// A variable, not the literal true: the MediaElement source generator turns a literal into assembly-level manifest permissions and into a

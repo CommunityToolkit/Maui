@@ -17,6 +17,11 @@ sealed partial class MediaControlsService : Service
 {
 	readonly WeakEventManager taskRemovedEventManager = new();
 
+	const int MediaNotificationId = 1;
+	const int StragglerCancelDelayMilliseconds = 500;
+
+	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
+
 	bool isDisposed;
 
 	PlayerNotificationManager? playerNotificationManager;
@@ -148,6 +153,18 @@ sealed partial class MediaControlsService : Service
 			playerNotificationManager?.SetPlayer(null);
 			legacyNotificationPlayer = null;
 		}
+	}
+
+	// Android 11 defers an app's cancel while a post of the same notification is still queued, and the system delays every post by 200 ms.
+	// A service that is stopped within that time then leaves its notification behind with the foreground flag, which apps cannot remove.
+	// Leaving the foreground first makes the system strip that flag from the posted and the queued notification, so the cancels can win.
+	public void LeaveForegroundBeforeStopping()
+	{
+		playerNotificationManager?.SetPlayer(null);
+		legacyNotificationPlayer = null;
+		StopForeground(StopForegroundFlags.Detach);
+		NotificationManager?.Cancel(MediaNotificationId);
+		cancelStragglerHandler.PostDelayed(() => NotificationManager?.Cancel(MediaNotificationId), StragglerCancelDelayMilliseconds);
 	}
 
 	protected override void Dispose(bool disposing)

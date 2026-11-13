@@ -915,6 +915,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
+		if (OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		{
+			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+		}
+
 		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
 		global::Android.App.Application.Context.StopService(serviceIntent);
 		Platform.AppContext.UnbindService(boundServiceConnection);
