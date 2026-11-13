@@ -17,6 +17,7 @@ public partial class BehaviorsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<UriValidationBehaviorViewModel>(nameof(UriValidationBehavior), "Changes an Entry's text color when an invalid URI is provided"),
 	SectionModel.Create<RequiredStringValidationBehaviorViewModel>(nameof(RequiredStringValidationBehavior), "Changes an Entry's text color when a required string is not provided"),
 	SectionModel.Create<NumericValidationBehaviorViewModel>(nameof(NumericValidationBehavior), "Changes an Entry's text color when an invalid number is provided"),
+	SectionModel.Create<ValuePropertyNameValidationBehaviorViewModel>(nameof(ValidationBehavior.ValuePropertyName), "Validates any BindableProperty of a view, or a plain CLR property through a compiled binding on Value"),
 	SectionModel.Create<EmailValidationBehaviorViewModel>(nameof(EmailValidationBehavior), "Changes an Entry's text color when an invalid e-mail address is provided"),
 	SectionModel.Create<AnimationBehaviorViewModel>(nameof(AnimationBehavior), "Perform animation when a specified UI element event is triggered"),
 	SectionModel.Create<SelectAllTextBehaviorViewModel>(nameof(SelectAllTextBehavior), "Select all text inside the Entry or Editor control."),
