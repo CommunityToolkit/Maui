@@ -377,7 +377,7 @@ public partial class StatusBarBehaviorTests
 		var behavior = await CreateBehaviorAsync(static behavior =>
 		{
 			behavior.ApplyOn = StatusBarApplyOn.OnPageNavigatedTo;
-			behavior.StatusBarStyle = StatusBarStyle.DarkContent;
+			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 		});
 		await ResetNativeStateAsync();
 		page.Behaviors.Add(behavior);
@@ -390,8 +390,8 @@ public partial class StatusBarBehaviorTests
 
 			StatusBarEventRaisers.RaiseNavigatedTo(page);
 
-			Assert.Equal(StatusBarTheme.Light, mauiWindow.Window.StatusBarTheme);
-			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
+			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.LightContent);
 		});
 	}
 
@@ -405,7 +405,7 @@ public partial class StatusBarBehaviorTests
 		var behavior = await CreateBehaviorAsync(static behavior =>
 		{
 			behavior.ApplyOn = StatusBarApplyOn.OnPageNavigatedTo;
-			behavior.StatusBarStyle = StatusBarStyle.DarkContent;
+			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 		});
 		await ResetNativeStateAsync();
 		pushedPage.Behaviors.Add(behavior);
@@ -420,7 +420,7 @@ public partial class StatusBarBehaviorTests
 			await navigatedTo.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
 			Assert.True(behavior.IsAttached);
-			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.LightContent);
 		});
 	}
 
@@ -493,7 +493,7 @@ public partial class StatusBarBehaviorTests
 			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 
 			var runnerScene = IosStatusBarViews.RunnerScene;
-			Assert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, runnerScene.TraitCollection), runnerScene.StatusBarManager?.StatusBarStyle);
+			Assert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, IosStatusBarStyle.StyleProvider(IosStatusBarViews.RunnerWindow).TraitCollection), runnerScene.StatusBarManager?.StatusBarStyle);
 			return Task.CompletedTask;
 		});
 	}

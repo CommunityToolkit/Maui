@@ -61,7 +61,6 @@ public abstract partial class StatusBarTestBase
 		RunInMauiWindowAsync(CreateRootPage(kind, page), kind is StatusBarWindowPage.ModalPage, page, action);
 
 	// Default gives the view controller its own style back (IosStatusBarStyle.UIKitStyle), which on iOS 26 is not Default for a UINavigationController.
-	// The scene reports Default as DarkContent or LightContent before iOS 17 (IosStatusBarStyle.SceneStyle).
 	protected static async Task AssertStatusBarStyleAsync(HostedMauiWindow mauiWindow, UIStatusBarStyle expected)
 	{
 		var provider = IosStatusBarStyle.StyleProvider(mauiWindow.PlatformWindow);

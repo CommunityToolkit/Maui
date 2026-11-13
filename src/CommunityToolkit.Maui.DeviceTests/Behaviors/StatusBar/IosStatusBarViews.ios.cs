@@ -24,7 +24,9 @@ static class IosStatusBarViews
 
 	public static List<UIWindow> WindowsWithStatusBar() => Windows.Where(static window => SceneStatusBarFrame(window) is not null).ToList();
 
-	public static UIWindowScene RunnerScene => Windows.FirstOrDefault(static window => window.WindowScene is not null)?.WindowScene ?? throw new InvalidOperationException("The runner's window has no scene.");
+	public static UIWindow RunnerWindow => Windows.FirstOrDefault(static window => window.WindowScene is not null) ?? throw new InvalidOperationException("The runner has no window with a scene.");
+
+	public static UIWindowScene RunnerScene => RunnerWindow.WindowScene ?? throw new InvalidOperationException("The runner's window has no scene.");
 
 	public static UIWindow AddWindow(UIViewController? rootViewController = null) =>
 		new(RunnerScene) { Frame = new CGRect(0, 0, 100, 100), RootViewController = rootViewController, Hidden = false };

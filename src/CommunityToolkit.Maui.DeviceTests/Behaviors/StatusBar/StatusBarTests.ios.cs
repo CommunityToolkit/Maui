@@ -778,7 +778,7 @@ public partial class StatusBarTests
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.Default);
 
 			Assert.False(StatusBar.TrySetApplicationStatusBarStyle(UIStatusBarStyle.LightContent));
-			Assert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, mauiWindow.PlatformWindow.TraitCollection), mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
+			Assert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, IosStatusBarStyle.StyleProvider(mauiWindow.PlatformWindow).TraitCollection), mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
 		});
 	}
 
