@@ -144,7 +144,7 @@ public partial class KeyboardExtensionsTests
 				var shown = await input.ShowKeyboardAsync();
 
 				Assert.True(shown, "ShowKeyboardAsync returned false for the focused view whose soft keyboard is hidden.");
-				Assert.True(await Wait(() => frame.ShowsKeyboard, imeTimeout), $"The soft keyboard did not show again: {frame}.");
+				Assert.True(await frame.WaitUntilTheKeyboardShowsSteadilyAsync(imeTimeout), $"The soft keyboard did not show again: {frame}.");
 			}
 			finally
 			{
