@@ -5,6 +5,7 @@ using Android.Runtime;
 using Android.Speech;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.ApplicationModel;
+using Vosk;
 
 namespace CommunityToolkit.Maui.Media;
 
@@ -95,6 +96,25 @@ public sealed partial class SpeechToTextImplementation
 		});
 
 		return actionCompleted.Task;
+	}
+
+	async Task<SpeechToTextResult> InternalRecognizeAsync(System.IO.Stream stream, SpeechToTextOptions options, CancellationToken cancellationToken)
+	{
+		var model = new Model("model");
+		var recognizer = new VoskRecognizer(model, 44100.0f);
+		recognizer.SetMaxAlternatives(0);
+		recognizer.SetWords(true);
+		byte[] buffer = new byte[4096];
+		int bytesRead;
+		while((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+		{
+			if (!recognizer.AcceptWaveform(buffer, bytesRead) && options.ShouldReportPartialResults)
+			{
+				OnRecognitionResultUpdated(recognizer.PartialResult());
+			}
+		}
+		
+		return SpeechToTextResult.Success(recognizer.FinalResult());
 	}
 
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
