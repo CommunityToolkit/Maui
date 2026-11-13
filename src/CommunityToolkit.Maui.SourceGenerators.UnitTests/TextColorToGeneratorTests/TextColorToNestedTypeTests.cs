@@ -161,6 +161,7 @@ public class TextColorToNestedTypeTests : BaseTest
 	[InlineData("tr-TR", "Nested.ProtectedInternalInPublicOuter+InnerTextTextColorTo.g.shared.cs", "internal static partial class ColorAnimationExtensions_ProtectedInternalInPublicOuter_InnerText")]
 	[InlineData("tr-TR", "Nested.DeeplyNestedOuter+Middle+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_DeeplyNestedOuter_Middle_InnerText")]
 	[InlineData("tr-TR", "Nested.GenericInnerInPublicOuter+InnerText-1TextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_GenericInnerInPublicOuter_InnerText")]
+	[InlineData("tr-TR", "Nested.GenericOuter-1+InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_GenericOuter_InnerText")]
 	public void Generator_NamesTheContainingTypesAndUsesTheEffectiveAccessibility_ForNestedTextTypes(string cultureName, string expectedHintName, string expectedClassDeclaration)
 	{
 		var (sources, diagnostics) = Generate(cultureName, TestContext.Current.CancellationToken);
@@ -182,7 +183,6 @@ public class TextColorToNestedTypeTests : BaseTest
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("Nested.ProtectedNestedOuter", StringComparison.Ordinal));
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("Nested.PrivateProtectedNestedOuter", StringComparison.Ordinal));
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("Nested.PublicInPrivateOuterHolder", StringComparison.Ordinal));
-		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("Nested.GenericOuter", StringComparison.Ordinal));
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.Contains("FileLocalText", StringComparison.Ordinal));
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.Contains("FileLocalNested", StringComparison.Ordinal));
 		Assert.True(diagnostics.Count == 0, string.Join(Environment.NewLine, diagnostics));
