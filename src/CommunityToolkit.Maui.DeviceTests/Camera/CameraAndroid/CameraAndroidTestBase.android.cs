@@ -386,9 +386,9 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return path!;
 	}
 
-	static void AssertIsAPlayableVideo(byte[] mp4)
+	protected static void AssertIsAPlayableVideo(byte[] mp4)
 	{
-		Assert.True(mp4.Length > 8 && Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
+		Assert.True(mp4.Length > 8 && System.Text.Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
 		var (hasVideo, durationMilliseconds, width, height) = ReadVideoInfo(mp4);
 		Assert.True(hasVideo, "Android does not find a video track in the recording.");
 		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
