@@ -314,6 +314,10 @@ jobs:
             fail-fast: false
             matrix:
                 include:
+                    # Android 7.1. With 4096M the emulator maps part of the guest RAM above 4 GB ("pc_memory_init: above 4g") and the
+                    # Android 7 guest never finishes booting (adb stays offline); with 2048M it boots in about 2 minutes (fork probe, 2026-11-13).
+                    -   api-level: '25'
+                        ram-size: 2048M
                     # Android 8.1. The only x86_64 image of API 27 is the one without Google APIs.
                     -   api-level: '27'
                         target: default
@@ -440,7 +444,7 @@ jobs:
                     arch: x86_64
                     profile: pixel_7_pro
                     cores: 4
-                    ram-size: 4096M
+                    ram-size: ${{ matrix.ram-size || '4096M' }}
                     disk-size: 6000M
                     force-avd-creation: false
                     # See device_tests_android for the emulator options.
@@ -448,10 +452,10 @@ jobs:
                     disable-animations: true
                     # 50 minutes, as device_tests_android. The first script line is the guard against target=android-0: a failing
                     # pre-emulator-launch-script does not stop the action, and a script line that fails skips the lines after it.
+                    # The guard stays on one line because the action runs each line in its own shell.
                     # -ResultsFolder, not -Results, as device_tests_android.
                     script: |
-                        avd_home="${ANDROID_AVD_HOME:-$HOME/.android/avd}"; if [ ! -f "$avd_home/test.ini" ]; then echo "::error::$avd_home/test.ini is missing."; exit 1; fi
-                        if grep -qs '^target=android-0$' "$avd_home/test.ini" "$avd_home/test.avd/config.ini"; then echo '::error::The AVD has target=android-0 (old cmdline-tools).'; exit 1; fi
+                        avd="${ANDROID_AVD_HOME:-$HOME/.android/avd}"; grep -s '^target=' "$avd/test.ini" "$avd/test.avd/config.ini"; if [ ! -f "$avd/test.ini" ] || grep -qs '^target=android-0$' "$avd/test.ini" "$avd/test.avd/config.ini"; then echo "::error::The AVD in $avd is missing or has target=android-0 (old cmdline-tools)."; exit 1; fi
                         pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
 
             -   name: Upload device test results
