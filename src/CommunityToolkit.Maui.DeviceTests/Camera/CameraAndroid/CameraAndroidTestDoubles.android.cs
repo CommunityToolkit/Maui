@@ -89,7 +89,7 @@ sealed class DestroyableLifecycleContext : ContextWrapper, ILifecycleOwner
 
 	public Lifecycle Lifecycle => lifecycle;
 
-	// ON_PAUSE, ON_STOP and ON_DESTROY in that order, like the destroyed activity. Main thread only.
+	// LifecycleRegistry rejects calls off the main thread, so the test must call this on it.
 	public void Destroy() => lifecycle.SetCurrentState(Lifecycle.State.Destroyed!);
 }
 

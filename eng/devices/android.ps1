@@ -255,6 +255,60 @@ function Clear-AndroidErrorDialog {
     return $result
 }
 
+# Tests that start while the boot broadcasts of a fresh emulator are still queued get their activity relaunched when the OS refreshes its overlays
+# (the CI logcat shows idmap2d starting right before the relaunch), which fails whatever camera or window test runs at that moment.
+# 'am wait-for-broadcast-idle' is hidden (not in 'am help'); API 25 lacks it, and an old 'usage:' reply selects the dumpsys fallback.
+function Wait-AndroidBroadcastsIdle {
+    param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds = 120)
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $started = Get-Date
+    $apiLevel = 0
+    [void][int]::TryParse((Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('getprop', 'ro.build.version.sdk')), [ref]$apiLevel)
+
+    while ((Get-Date) -lt $deadline) {
+        $booted = (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('getprop', 'sys.boot_completed')) -eq '1' -and (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('getprop', 'dev.bootcomplete')) -eq '1'
+        if ($booted) { break }
+        Start-Sleep -Seconds 2
+    }
+
+    if ($apiLevel -ge 26) {
+        $remaining = [int][math]::Ceiling(($deadline - (Get-Date)).TotalSeconds)
+        if ($remaining -gt 0) {
+            $idle = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'am', 'wait-for-broadcast-idle') -TimeoutSeconds $remaining
+            if ($idle.ExitCode -eq 0 -and $idle.Output -match 'idle' -and $idle.Output -notmatch '(?m)^usage:') {
+                return $null
+            }
+            if ($idle.ExitCode -eq -1) {
+                return "$Serial still had queued broadcasts $TimeoutSeconds s after boot; the tests start anyway and may see the runner's activity relaunched."
+            }
+        }
+    }
+
+    while ((Get-Date) -lt $deadline) {
+        $broadcasts = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'dumpsys', 'activity', 'broadcasts') -TimeoutSeconds 30
+        if ($broadcasts.ExitCode -eq 0 -and $broadcasts.Output -notmatch '(?m)^\s*Active (Ordered )?Broadcast ') {
+            return $null
+        }
+        Start-Sleep -Seconds 2
+    }
+
+    return "$Serial still had queued broadcasts $TimeoutSeconds s after boot; the tests start anyway and may see the runner's activity relaunched."
+}
+
+# A test that Android relaunched mid-run reruns itself once and then passes, so only the logcat shows that the OS interfered.
+function Find-AndroidSessionRetriesInLog {
+    param([string]$Directory)
+
+    $count = 0
+    foreach ($log in Get-ChildItem -Path $Directory -Filter 'adb-logcat-*.log' -File -ErrorAction SilentlyContinue) {
+        $count += @(Select-String -Path $log.FullName -Pattern 'CameraAndroidTests.*runs once more in the new activity' -CaseSensitive -ErrorAction SilentlyContinue).Count
+    }
+
+    if ($count -eq 0) { return '' }
+    return "$count camera test(s) ran once more because Android relaunched the runner's activity mid-test; see 'runs once more' in the logcat."
+}
+
 function Find-AndroidErrorDialogInLog {
     param([string]$Directory)
 
@@ -314,6 +368,11 @@ function Invoke-AndroidDeviceTests {
             return $goneVerdict
         }
 
+        $settleStart = Get-Date
+        $settleWarning = Wait-AndroidBroadcastsIdle -Adb $Adb -Serial $Serial
+        Write-Host ("Broadcast queues of {0} settled after {1:N0} s" -f $Serial, ((Get-Date) - $settleStart).TotalSeconds)
+        if ($settleWarning) { Write-DeviceTestWarning $settleWarning }
+
         $dialog = Clear-AndroidErrorDialog -Adb $Adb -Serial $Serial
         if ($dialog.Warning) { Write-DeviceTestWarning $dialog.Warning }
         if ($dialog.Failure) {
@@ -330,6 +389,13 @@ function Invoke-AndroidDeviceTests {
         $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
         if ($dialog.Warning) {
             $verdict.Warnings = @($verdict.Warnings) + $dialog.Warning
+        }
+        if ($settleWarning) {
+            $verdict.Warnings = @($verdict.Warnings) + $settleWarning
+        }
+        $sessionRetries = Find-AndroidSessionRetriesInLog -Directory $androidOutput
+        if ($sessionRetries) {
+            $verdict.Warnings = @($verdict.Warnings) + $sessionRetries
         }
         if ($verdict.ExitCode -ne 0) {
             $anrProcess = Find-AndroidErrorDialogInLog -Directory $androidOutput
