@@ -61,30 +61,71 @@ static class AnimationExtensions
 		sealed class AsyncTicker : Ticker, IDisposable
 		{
 			CancellationTokenSource? cancellationTokenSource;
+			bool isRunning;
+
+			// Base Ticker.IsRunning reports on a private Timer this mock's Start never creates, so it stays false;
+			// Tweener.Start then launches a second Fire loop per animation segment and ticks run at double speed.
+			public override bool IsRunning => isRunning;
 
 			public override async void Start()
 			{
-				cancellationTokenSource = new();
-
-				while (!cancellationTokenSource.IsCancellationRequested)
+				if (IsRunning)
 				{
-					try
-					{
-						Fire?.Invoke();
-					}
-					catch (Exception e)
-					{
-						Trace.WriteLine(e);
-					}
+					return;
+				}
 
-					if (!cancellationTokenSource.IsCancellationRequested)
+				isRunning = true;
+
+				// The loop keeps its own token even if Stop+Start replaces the field mid-Fire, so the
+				// dying loop can never be resurrected by the successor loop's token.
+				var cancellationTokenSource = this.cancellationTokenSource = new();
+
+				try
+				{
+					while (!cancellationTokenSource.IsCancellationRequested)
 					{
-						await Task.Delay(TimeSpan.FromMilliseconds(millisecondTickIncrement));
+						try
+						{
+							Fire?.Invoke();
+						}
+						catch (Exception e)
+						{
+							Trace.WriteLine(e);
+						}
+
+						if (cancellationTokenSource.IsCancellationRequested)
+						{
+							break;
+						}
+
+						try
+						{
+							await Task.Delay(TimeSpan.FromMilliseconds(millisecondTickIncrement), cancellationTokenSource.Token);
+						}
+						catch (TaskCanceledException)
+						{
+							break;
+						}
+					}
+				}
+				finally
+				{
+					// A Tweener.Start running inside Fire may already have handed off to a fresh loop;
+					// don't clear the flag that loop owns.
+					if (ReferenceEquals(this.cancellationTokenSource, cancellationTokenSource))
+					{
+						isRunning = false;
 					}
 				}
 			}
 
-			public override void Stop() => cancellationTokenSource?.Cancel();
+			// Clear the flag before cancelling: the next segment's Tweener.Start often runs inline inside
+			// Fire (via the finished callback), and must see the loop as dead so it launches a new one.
+			public override void Stop()
+			{
+				isRunning = false;
+				cancellationTokenSource?.Cancel();
+			}
 
 			public void Dispose()
 			{
