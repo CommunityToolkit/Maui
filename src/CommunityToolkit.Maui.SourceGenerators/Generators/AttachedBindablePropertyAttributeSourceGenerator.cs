@@ -711,17 +711,8 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol)
-	{
-		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
-		{
-			string elementType = GetFormattedTypeForTypeOf(arrayTypeSymbol.ElementType);
-			var rank = arrayTypeSymbol.Rank > 1 ? new string(',', arrayTypeSymbol.Rank - 1) : string.Empty;
-			return string.Concat(elementType, "[", rank, "]");
-		}
-
-		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-	}
+	// Roslyn writes the ranks of nested arrays in the right order (int[][,] is not int[,][]), which concatenating element type and rank gets wrong.
+	static string GetFormattedTypeForTypeOf(ITypeSymbol typeSymbol) => typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	static string GetEscapedString(string value)

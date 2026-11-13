@@ -18,6 +18,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 	const string bindablePropertyFullName = "global::Microsoft.Maui.Controls.BindableProperty";
 
+	static readonly SymbolDisplayFormat returnTypeFormat = SymbolDisplayFormat.CSharpErrorMessageFormat.RemoveMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.UseAsterisksInMultiDimensionalArrays);
+
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 #if DEBUG
@@ -612,26 +614,8 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 		return classInformation.ContainingNamespace is "<global namespace>";
 	}
 
-	static string GetFormattedReturnType(ITypeSymbol typeSymbol)
-	{
-		if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
-		{
-			// Get the element type name (e.g., "int")
-			string elementType = GetFormattedReturnType(arrayTypeSymbol.ElementType);
-
-			// Construct the correct rank syntax with commas (e.g., "[,]")
-			var rank = arrayTypeSymbol.Rank > 1 ? new string(',', arrayTypeSymbol.Rank - 1) : string.Empty;
-
-			var nullableSuffix = arrayTypeSymbol.NullableAnnotation is NullableAnnotation.Annotated ? "?" : string.Empty;
-
-			return string.Concat(elementType, "[", rank, "]", nullableSuffix);
-		}
-		else
-		{
-			// Use ToDisplayString with the correct format for the base type (e.g., "int")
-			return typeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
-		}
-	}
+	// Roslyn writes the ranks of nested arrays in the right order (int[][,] is not int[,][]), which concatenating element type and rank gets wrong; the error message format would write multi-dimensional arrays as int[*,*].
+	static string GetFormattedReturnType(ITypeSymbol typeSymbol) => typeSymbol.ToDisplayString(returnTypeFormat);
 
 	/// <summary>
 	/// Appends the initializing flag into the file-static helper class.
