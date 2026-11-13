@@ -68,6 +68,17 @@ public partial class TextColorToExtensionClassNameTests : BaseTest
 	}
 
 	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedCode_AppendsTheFnv1aHashOfTheTypeIdentity_ToNestedExtensionClassNames(string cultureName)
+	{
+		var result = GeneratedCodeCompilation.Run(collidingNamesSource, cultureName, TestContext.Current.CancellationToken);
+
+		Assert.Contains("static partial class ColorAnimationExtensions_Outer_Inner_9dcde9d0\r\n", result.GetSource("Colliding.Outer+InnerTextColorTo.g.shared.cs"), StringComparison.Ordinal);
+	}
+
+	[Theory]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_NamesNestedExtensionClassesTheSameInEveryCulture(string cultureName)
