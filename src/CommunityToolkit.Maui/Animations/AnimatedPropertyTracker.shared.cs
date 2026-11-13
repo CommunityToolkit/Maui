@@ -12,7 +12,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// original value is the value the property had before the first of these animations started. An interrupted animation stops where it is and
 /// leaves returning the view to the animation that interrupted it.
 /// </remarks>
-// Animate can start, and continue after an await, on any thread.
+// Callers already run on the view's dispatcher; the lock is defensive only.
 sealed class AnimatedPropertyTracker
 {
 	// A new animation of a view's property replaces the one running on it, whichever animation started them, so animations are tracked per view and property

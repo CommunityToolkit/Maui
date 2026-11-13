@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// </summary>
 /// <remarks>
 /// The view rotates around its y-axis to <see cref="RotateAnimation.Rotation"/> and then back to the y-axis rotation it had before it started flipping.
+/// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="RotateAnimation.Rotation"/>, and half to return to the original rotation.
 /// Cancelling the token while the animation runs returns the view to that rotation and ends the returned <see cref="Task"/> as canceled.
 /// </remarks>
 public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalAnimationDefaults.Length)

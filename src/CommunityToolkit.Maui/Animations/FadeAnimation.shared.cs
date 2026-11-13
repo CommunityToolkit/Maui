@@ -7,6 +7,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// and then back to its original <see cref="VisualElement.Opacity"/>.
 /// </summary>
 /// <remarks>
+/// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="Opacity"/>, and half to return to the original opacity.
 /// The original opacity is the opacity the view had before it started fading. An animation that starts while another
 /// animation is still fading the same view, for example when an <see cref="Behaviors.AnimationBehavior"/> is triggered
 /// again before its animation ended, returns the view to the opacity it had before the first of these animations, not to the partially

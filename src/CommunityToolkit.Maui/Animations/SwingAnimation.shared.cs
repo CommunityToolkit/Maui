@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// An attention seeker: the swings are relative to the rotation the view had before the animation started, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
 /// The view returns to its original values when the animation completes and when it is cancelled; in the second case the returned <see cref="Task"/> ends as canceled.
 /// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first.
-/// Starting it also stops any running .NET MAUI RotateToAsync, ScaleToAsync, ScaleXToAsync or ScaleYToAsync animation of the properties it animates, including a running <see cref="RotateAnimation"/> or <see cref="ScaleAnimation"/>; a running TranslateToAsync keeps running, because that animation drives both axes in one handle.
+/// Starting it also stops a running .NET MAUI RotateToAsync, including a running <see cref="RotateAnimation"/>.
 /// <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one within 0..1 that only increases (for example <see cref="Easing.Linear"/> or <see cref="Easing.SinInOut"/>).
 /// An easing that overshoots, such as <see cref="Easing.SpringOut"/> or <see cref="Easing.BounceOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run.
 /// The animation moves the view's anchor to its top edge while it runs. A view whose original scale, rotation, rotation about the x-axis or rotation about the y-axis is not the identity shifts while the anchor is at the top, and returns when the anchor is restored.

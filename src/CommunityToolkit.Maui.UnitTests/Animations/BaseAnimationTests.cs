@@ -10,6 +10,17 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 
 public abstract class BaseAnimationTests<TAnimation> : BaseAnimationTest where TAnimation : BaseAnimation, new()
 {
+	static readonly string[] animationHandles =
+	[
+		KeyframeAnimationExtensions.AnimationHandle,
+		nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync),
+		nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync),
+		nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync),
+		nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync),
+		nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync),
+		nameof(Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync)
+	];
+
 	// Each Commit ends on the first 16 ms mock tick at or after its length; FadeAnimation, ScaleAnimation and the flips commit twice
 	const uint maximumTickRoundingMilliseconds = 2 * 16;
 
@@ -121,12 +132,10 @@ public abstract class BaseAnimationTests<TAnimation> : BaseAnimationTest where T
 
 		AssertValuesEqual(view, startingValues);
 
-		var changedAfterCancellation = false;
-		view.PropertyChanged += (_, _) => changedAfterCancellation = true;
-		// Proving that nothing happens needs a fixed quiet window
-		await Task.Delay(TimeSpan.FromMilliseconds(150), token);
-
-		changedAfterCancellation.Should().BeFalse("a cancelled animation stops animating");
+		foreach (var handle in animationHandles)
+		{
+			view.AnimationIsRunning(handle).Should().BeFalse($"a cancelled animation stops animating, but {handle} still runs");
+		}
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]

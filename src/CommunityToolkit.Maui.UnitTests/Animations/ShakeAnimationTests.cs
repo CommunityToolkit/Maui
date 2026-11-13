@@ -24,6 +24,8 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 		Assert.Equal(ShakeAnimationDefaults.StartFactor, animation.StartFactor);
 		Assert.Equal(ShakeAnimationDefaults.ReducingAmount, animation.ReducingAmount);
 		Assert.Equal(300u, animation.Length);
+		Assert.Equal(BindingMode.OneWay, ShakeAnimation.StartFactorProperty.DefaultBindingMode);
+		Assert.Equal(BindingMode.OneWay, ShakeAnimation.ReducingAmountProperty.DefaultBindingMode);
 		Assert.Equal(15.0, animation.StartFactor);
 		Assert.Equal(5.0, animation.ReducingAmount);
 	}

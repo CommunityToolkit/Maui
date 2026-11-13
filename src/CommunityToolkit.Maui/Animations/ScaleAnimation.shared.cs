@@ -6,6 +6,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// Animation that will scale the supplied view to the specified <see cref="Scale"/> and then back down to its original scale.
 /// </summary>
 /// <remarks>
+/// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="Scale"/>, and half to return to the original scale.
 /// The original scale is the scale the view had before it started scaling. An animation that starts while another animation
 /// still scales the same view returns the view to the scale it had before the first of these animations; the animation it interrupts
 /// stops where it is. Cancelling the token while the animation runs returns the view to its original scale and ends the returned

@@ -20,6 +20,7 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 		Assert.Equal(RotateAnimationDefaults.Length, animation.Length);
 		Assert.Equal(RotateAnimationDefaults.Rotation, animation.Rotation);
 		Assert.Equal(180.0, animation.Rotation);
+		Assert.Equal(BindingMode.OneWay, RotateAnimation.RotationProperty.DefaultBindingMode);
 		Assert.Equal(200u, animation.Length);
 	}
 

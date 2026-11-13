@@ -44,9 +44,6 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-ios|AnyCPU'">
-    <CreatePackage>false</CreatePackage>
-  </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleProperty Include="DisableTextColorToGenerator" />
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

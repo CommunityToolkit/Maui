@@ -20,6 +20,7 @@ public class ScaleAnimationTests : BaseAnimationTests<ScaleAnimation>
 		Assert.Equal(ScaleAnimationDefaults.Scale, animation.Scale);
 		Assert.Equal(340u, animation.Length);
 		Assert.Equal(1.2, animation.Scale);
+		Assert.Equal(BindingMode.OneWay, ScaleAnimation.ScaleProperty.DefaultBindingMode);
 	}
 
 	[Theory]

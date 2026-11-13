@@ -14,10 +14,10 @@ public class AnimationDispatchTests : BaseTest
 {
 	const uint animationLength = 200;
 	const double precision = 0.001;
-	static readonly BindableProperty[] animatedProperties = [VisualElement.OpacityProperty, VisualElement.ScaleProperty, VisualElement.RotationProperty, VisualElement.RotationXProperty, VisualElement.RotationYProperty];
+	static readonly BindableProperty[] animatedProperties = [VisualElement.OpacityProperty, VisualElement.ScaleProperty, VisualElement.RotationProperty, VisualElement.RotationXProperty, VisualElement.RotationYProperty, VisualElement.ScaleXProperty, VisualElement.ScaleYProperty, VisualElement.TranslationXProperty, VisualElement.TranslationYProperty, VisualElement.AnchorYProperty];
 	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
 
-	public static TheoryData<string> AnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
+	public static TheoryData<string> AnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation), nameof(ShakeAnimation), nameof(TadaAnimation), nameof(HeartbeatAnimation), nameof(RubberBandAnimation), nameof(BounceAnimation), nameof(SwingAnimation), nameof(WobbleAnimation)];
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(AnimationNames))]
@@ -75,6 +75,13 @@ public class AnimationDispatchTests : BaseTest
 		nameof(RotateAnimation) => new RotateAnimation { Rotation = 180, Length = animationLength },
 		nameof(FlipHorizontalAnimation) => new FlipHorizontalAnimation { Rotation = 90, Length = animationLength },
 		nameof(FlipVerticalAnimation) => new FlipVerticalAnimation { Rotation = 90, Length = animationLength },
+		nameof(ShakeAnimation) => new ShakeAnimation { Length = animationLength },
+		nameof(TadaAnimation) => new TadaAnimation { Length = animationLength },
+		nameof(HeartbeatAnimation) => new HeartbeatAnimation { Length = animationLength },
+		nameof(RubberBandAnimation) => new RubberBandAnimation { Length = animationLength },
+		nameof(BounceAnimation) => new BounceAnimation { Length = animationLength },
+		nameof(SwingAnimation) => new SwingAnimation { Length = animationLength },
+		nameof(WobbleAnimation) => new WobbleAnimation { Length = animationLength },
 		_ => throw new NotSupportedException(animationName)
 	};
 
@@ -114,7 +121,12 @@ public class AnimationDispatchTests : BaseTest
 				Scale = 0.8,
 				Rotation = 30,
 				RotationX = 20,
-				RotationY = 10
+				RotationY = 10,
+				ScaleX = 1.1,
+				ScaleY = 0.9,
+				TranslationX = 12,
+				TranslationY = 7,
+				AnchorY = 0.7
 			};
 			label.EnableAnimations();
 			label.PropertyChanged += RecordChangeOffTheDispatcherThread;
