@@ -17,7 +17,8 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 	private protected static bool IsValidTargetType<TTarget>(in Type targetType, bool shouldAllowNullableValueTypes)
 	{
-		if (IsConvertingToString(targetType) && CanBeConvertedToString())
+		// Any TTarget value, including one typed as an interface, can become a string through ToString()
+		if (IsConvertingToString(targetType))
 		{
 			return true;
 		}
@@ -30,12 +31,10 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 
 		var instanceOfT = default(TTarget);
 
-		// TTarget is a reference type or a Nullable Value Type.
-		// The caller has already checked that TTarget is not assignable from targetType, so the only remaining
-		// conversion is from a Nullable Value Type to its underlying type, Eg TTarget is bool? and targetType is bool
+		// A reference type or Nullable<T> TTarget only matches a targetType it is assignable from, which ValidateTargetType has already checked
 		if (instanceOfT is null)
 		{
-			return Nullable.GetUnderlyingType(typeof(TTarget)) == targetType;
+			return false;
 		}
 
 		try
@@ -50,9 +49,6 @@ public abstract class ValueConverterExtension : BindableObject, IMarkupExtension
 		}
 
 		static bool IsConvertingToString(in Type targetType) => targetType == typeof(string);
-
-		// Every class and struct inherits ToString() from object, but an interface type only exposes the methods it declares
-		static bool CanBeConvertedToString() => !typeof(TTarget).IsInterface;
 
 		static bool IsValidNullableValueType(Type targetType)
 		{

@@ -180,39 +180,62 @@ public class ConverterTargetTypeValidationTests : BaseViewTest
 		result.Should().Be(5);
 	}
 
-	// The oracle is a verbatim copy of the target type check on main (1e0c110d), Activator call included, so the matrix pins every behaviour change.
 	[Fact]
-	public void TargetTypeValidation_MatchesMainBranchBehaviour_ForEveryOutputAndTargetTypePair()
+	public void Convert_InterfaceOutputWithoutToString_ToStringTarget_PassesValidation()
 	{
 		SetShouldSuppressExceptionsInConverters(false);
 
-		var differences = new List<string>();
+		var trueObject = new MemoryStream();
+		ICommunityToolkitValueConverter converter = new BoolToObjectConverter<IDisposable> { TrueObject = trueObject };
+
+		var result = converter.Convert(true, typeof(string), null, CultureInfo.InvariantCulture);
+
+		result.Should().BeSameAs(trueObject);
+	}
+
+	// The oracle is a verbatim copy of the target type check on main (1e0c110d), Activator call included, so the matrix pins every behaviour change.
+	[Fact]
+	public void TargetTypeValidation_RejectsNothingMainAccepted_AndOnlyRelaxesStringTargets()
+	{
+		SetShouldSuppressExceptionsInConverters(false);
+
+		var newRejections = new List<string>();
+		var newAcceptances = new List<string>();
 
 		foreach (var outputType in outputTypes)
 		{
 			foreach (var targetType in outputTypes)
 			{
-				var expectedConvert = InvokeMainBranchOracle(outputType, targetType, shouldAllowNullableValueTypes: true);
-				var actualConvert = IsTargetTypeAcceptedByConvert(outputType, targetType);
-				if (expectedConvert != actualConvert)
-				{
-					differences.Add($"Convert: TTo={Describe(outputType)} targetType={Describe(targetType)} main={expectedConvert} now={actualConvert}");
-				}
+				Compare("Convert", outputType, targetType,
+					InvokeMainBranchOracle(outputType, targetType, shouldAllowNullableValueTypes: true),
+					IsTargetTypeAcceptedByConvert(outputType, targetType));
 
-				var expectedConvertBack = InvokeMainBranchOracle(outputType, targetType, shouldAllowNullableValueTypes: false);
-				var actualConvertBack = IsTargetTypeAcceptedByConvertBack(outputType, targetType);
-				if (expectedConvertBack != actualConvertBack)
-				{
-					differences.Add($"ConvertBack: TFrom={Describe(outputType)} targetType={Describe(targetType)} main={expectedConvertBack} now={actualConvertBack}");
-				}
+				Compare("ConvertBack", outputType, targetType,
+					InvokeMainBranchOracle(outputType, targetType, shouldAllowNullableValueTypes: false),
+					IsTargetTypeAcceptedByConvertBack(outputType, targetType));
 			}
 		}
 
-		differences.Should().BeEmpty(string.Join(Environment.NewLine, differences));
+		newRejections.Should().BeEmpty(string.Join(Environment.NewLine, newRejections));
+		newAcceptances.Should().OnlyContain(static pair => pair.EndsWith("targetType=String", StringComparison.Ordinal), string.Join(Environment.NewLine, newAcceptances));
+
+		void Compare(string path, Type outputType, Type targetType, bool isAcceptedOnMain, bool isAcceptedNow)
+		{
+			var pair = $"{path}: output={Describe(outputType)} targetType={Describe(targetType)}";
+
+			if (isAcceptedOnMain && !isAcceptedNow)
+			{
+				newRejections.Add(pair);
+			}
+			else if (!isAcceptedOnMain && isAcceptedNow)
+			{
+				newAcceptances.Add(pair);
+			}
+		}
 	}
 
 	// Main only reached Activator.CreateInstance when default(TTarget) is null; this pins that it never accepted a target type there,
-	// so replacing it with the Nullable.GetUnderlyingType check cannot reject anything main accepted.
+	// so returning false on that path cannot reject anything main accepted.
 	[Fact]
 	public void MainBranchActivatorBranch_NeverAcceptsATargetTypeForNullDefaultOutputs()
 	{
