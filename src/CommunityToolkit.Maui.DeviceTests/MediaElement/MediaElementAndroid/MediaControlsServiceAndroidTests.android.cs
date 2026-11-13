@@ -743,6 +743,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		{
 			var service = connection.Binder!.Service;
 			await WaitForForegroundNotificationAsync();
+			// Before Android 13 the PlayerNotificationManager posts again as the player loads, and Android 11 delays each post by 200 ms:
+			// a post that is still on its way would show the notification again after the service left the foreground.
+			await Task.Delay(notificationRatePause);
 			service.StopForeground(StopForegroundFlags.Remove);
 			await WaitUntilAsync(() => FindMediaControlsService()?.Foreground == false && FindServiceNotification() is null, "The service never left the foreground.");
 
