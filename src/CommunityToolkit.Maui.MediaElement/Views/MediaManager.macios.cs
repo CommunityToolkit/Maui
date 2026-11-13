@@ -1076,11 +1076,7 @@ public partial class MediaManager : IDisposable
 			MediaElement.Speed = player.Rate;
 		}
 
-		if (metaData is not null)
-		{
-			metaData.NowPlayingInfo.PlaybackRate = (float)MediaElement.Speed;
-			metaData.PublishNowPlayingInfo();
-		}
+		metaData?.PublishPlaybackRate(MediaElement.Speed);
 	}
 
 	void PlayAtSpeed()
