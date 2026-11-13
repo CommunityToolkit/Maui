@@ -25,7 +25,10 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 {
 	static readonly FieldInfo playerNotificationManagerField = typeof(MediaControlsService).GetField("playerNotificationManager", BindingFlags.Instance | BindingFlags.NonPublic)!;
+	static readonly FieldInfo runningServiceField = typeof(MediaControlsService).GetField("runningService", BindingFlags.Static | BindingFlags.NonPublic)!;
 	static readonly FieldInfo notificationBuilderField = typeof(MediaControlsService).GetField("notificationBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+	static bool IsServiceCreated() => runningServiceField.GetValue(null) is not null;
 
 	async Task HostBoundAsync(MediaElement mediaElement, Func<AndroidMediaElementProbeHandler, BoundServiceConnection, Task> test)
 	{
@@ -91,18 +94,28 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	{
 		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 
-		// Android 11 only: the notification of a service that is created and stopped before the manager connected to it must not stay either.
-		for (var repetition = 0; repetition < 5; repetition++)
+		// Stopping the service before it was created crashes the app on Android 11 (the system still waits for its startForeground), so each
+		// repetition waits for the service to exist and only counts when the connection has not landed yet.
+		const int repetitions = 10;
+		var repetitionsStoppedBeforeConnected = 0;
+		for (var repetition = 0; repetition < repetitions; repetition++)
 		{
 			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
 
-			await WithHandlerAsync(mediaElement, handler =>
+			await WithHandlerAsync(mediaElement, async handler =>
 			{
-				var connection = GetServiceConnection(handler.Manager!);
-				Assert.NotNull(connection);
+				var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				for (var turn = 0; turn < 2000 && !IsServiceCreated() && !connection.IsConnected; turn++)
+				{
+					await Task.Delay(1);
+				}
 
-				// The connection is delivered on a later UI turn, so disconnecting in this turn is always before it.
-				Assert.False(connection.IsConnected);
+				Assert.True(IsServiceCreated(), "MediaControlsService was never created.");
+				if (!connection.IsConnected)
+				{
+					repetitionsStoppedBeforeConnected++;
+				}
+
 				((IElementHandler)handler).DisconnectHandler();
 			});
 
@@ -110,6 +123,8 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			await Task.Delay(notificationRatePause);
 			Assert.Empty(GetActiveNotifications());
 		}
+
+		Assert.True(!OperatingSystem.IsAndroidVersionAtLeast(30) || OperatingSystem.IsAndroidVersionAtLeast(31) || repetitionsStoppedBeforeConnected > 0, "No repetition stopped the service before the manager connected to it, so the scenario was not exercised.");
 	}
 
 	[Fact]
