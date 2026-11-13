@@ -492,7 +492,8 @@ public partial class StatusBarBehaviorTests
 
 			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 
-			Assert.Equal(UIStatusBarStyle.Default, IosStatusBarViews.RunnerScene.StatusBarManager?.StatusBarStyle);
+			var runnerScene = IosStatusBarViews.RunnerScene;
+			Assert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, runnerScene.TraitCollection), runnerScene.StatusBarManager?.StatusBarStyle);
 			return Task.CompletedTask;
 		});
 	}
