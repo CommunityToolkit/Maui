@@ -17,8 +17,11 @@ public static class FilesApplePicker
 	public static Task<bool> IsAnyViewControllerPresentedWithoutWrapperAsync() => MainThread.InvokeOnMainThreadAsync(() =>
 	{
 		var root = WindowStateManager.Default.GetCurrentUIWindow()?.RootViewController;
-		return root is not null && Messaging.IntPtr_objc_msgSend(root.Handle, Selector.GetHandle("presentedViewController")) != IntPtr.Zero;
+		return root is not null && ObjcMessageSend(root.Handle, Selector.GetHandle("presentedViewController")) != IntPtr.Zero;
 	});
+
+	[System.Runtime.InteropServices.DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
+	static extern IntPtr ObjcMessageSend(IntPtr receiver, IntPtr selector);
 
 	public static Task WaitUntilAnyViewControllerIsPresentedAsync() =>
 		AssertionExtensions.AssertEventuallyAsync(IsAnyViewControllerPresentedWithoutWrapperAsync, timeout: 15000, message: "No view controller was presented.");
