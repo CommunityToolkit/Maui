@@ -57,4 +57,28 @@
     <Features>$(Features);runtime-async=on</Features>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsAotCompatible)' == 'true' AND '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows'">
+    <!-- Level 2 also reports CsWinRT AOT issues that the default level hides (the CommunityToolkit.Mvvm setting). -->
+    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
+  </PropertyGroup>
+
+  <!--
+    Microsoft.Maui.Controls turns the trim analyzer off unless TrimMode is full, so a MAUI update could silently stop the trim/AOT gate; fail loudly instead.
+  -->
+  <Target Name="EnsureTrimAndAotAnalyzersAreOn" BeforeTargets="CoreCompile"
+          Condition="'$(IsAotCompatible)' == 'true' AND '$(IsPackable)' != 'false'">
+    <PropertyGroup>
+      <_TrimAotGuardFix>Why this matters: CommunityToolkit.Maui packages must stay trim-safe and NativeAOT-safe (issue #3381), and these analyzers are the build-time gate that catches a regression. What to do: keep IsAotCompatible=true and TrimMode=full in the project file, and do not set EnableTrimAnalyzer, EnableAotAnalyzer or EnableSingleFileAnalyzer on the command line or in a props file. A global TrimMode (for example -p:TrimMode=partial on an app that references this project) overrides the project's TrimMode=full. See .github/instructions/trimming-aot.instructions.md.</_TrimAotGuardFix>
+    </PropertyGroup>
+    <Error Condition="'$(EnableTrimAnalyzer)' != 'true'"
+           Code="CTMTRIM001"
+           Text="$(MSBuildProjectName) ($(TargetFramework)): the trim analyzer is off (EnableTrimAnalyzer='$(EnableTrimAnalyzer)'). $(_TrimAotGuardFix)" />
+    <Error Condition="'$(EnableAotAnalyzer)' != 'true'"
+           Code="CTMTRIM002"
+           Text="$(MSBuildProjectName) ($(TargetFramework)): the AOT analyzer is off (EnableAotAnalyzer='$(EnableAotAnalyzer)'). $(_TrimAotGuardFix)" />
+    <Error Condition="'$(EnableSingleFileAnalyzer)' != 'true'"
+           Code="CTMTRIM003"
+           Text="$(MSBuildProjectName) ($(TargetFramework)): the single-file analyzer is off (EnableSingleFileAnalyzer='$(EnableSingleFileAnalyzer)'). $(_TrimAotGuardFix)" />
+  </Target>
+
 </Project>

@@ -212,7 +212,8 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
      XC0103: Consider attributing the markup extension with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any
      XC0618: Property, Property setter or BindableProperty "BackgroundColor" is deprecated
      IL2***: Trim Warnings     
-     IL3***: AOT Warnings     
+     IL3***: Single-file and AOT Warnings
+     IL4***: Feature Guard Warnings
      RS1038: Compiler extensions should be implemented in assemblies with compiler-provided references
      RS2007: Analyzer release file 'AnalyzerReleases.Shipped.md' has a missing or invalid release header -->
     <WarningsAsErrors>
@@ -237,8 +238,10 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
       IL2090,IL2091,IL2092,IL2093,IL2094,IL2095,IL2096,IL2097,IL2098,IL2099,
       IL2100,IL2101,IL2102,IL2103,IL2104,IL2105,IL2106,IL2107,IL2108,IL2109,
       IL2110,IL2111,IL2112,IL2113,IL2114,IL2115,IL2116,IL2117,IL2118,IL2119,
-      IL2120,IL2121,IL2122,IL2123,
-      IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,
+      IL2120,IL2121,IL2122,IL2123,IL2124,IL2125,IL2126,IL2127,
+      IL3000,IL3001,IL3002,IL3003,IL3004,IL3005,
+      IL3050,IL3051,IL3052,IL3053,IL3054,IL3055,IL3056,IL3057,IL3058,
+      IL4000,IL4001,
       RS1038,RS2007
     </WarningsAsErrors>
 
