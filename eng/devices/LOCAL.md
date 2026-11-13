@@ -29,7 +29,7 @@ powershell -ExecutionPolicy Bypass -File eng\devices\run.ps1
 | Windows | the packaged (MSIX) app and the unpackaged app |
 | Mac and Windows | Android, on the emulator that is already running if exactly one is, or else on an AVD that your CPU can run, which the script boots and stops again |
 
-* A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, several emulators running (it does not guess; `-DeviceId` or `-Avd` chooses) or no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
+* A platform that your machine cannot run is skipped, and the plan and the summary say why: no Xcode, no iOS simulator runtime, no Android SDK, several emulators running (it does not guess; `-DeviceId`, `-Avd` or `-ApiLevel` chooses) or no emulator running and no AVD. The run fails when nothing can run (exit code 71) and when a platform that you name with `-Platform` cannot run.
 * It never uses a physical Android device unless you name it with `-DeviceId`, and it never touches a simulator that it did not create unless you name it with `-Udid`.
 * The tests of every package run. The tests that need a person (`RequiresUserInteraction`) never run here; see [Run the tests that need a person](#run-the-tests-that-need-a-person).
 * The platforms run one after the other, and each takes tens of minutes. A packaged Windows run needs an elevated PowerShell the first time, to trust its signing certificate.
@@ -40,6 +40,7 @@ Choose what runs:
 pwsh eng/devices/run.ps1 -DryRun                                        # print the plan, run nothing (also -WhatIf)
 pwsh eng/devices/run.ps1 -Platform ios,maccatalyst                      # only these platforms
 pwsh eng/devices/run.ps1 -Platform ios -Runtime 26.5                    # a simulator of this iOS runtime; it must be installed (Xcode > Settings > Components)
+pwsh eng/devices/run.ps1 -Platform android -ApiLevel 30                 # the existing AVD of this API level (36.1 for Android 16 QPR2); it must exist
 pwsh eng/devices/run.ps1 -TestFilter 'Category=MediaElementAndroid'     # the tests of one package are categories of the one app
 pwsh eng/devices/run.ps1 -TestFilter 'Category=IconTintColorBehavior'   # one test category, where it has tests
 pwsh eng/devices/run.ps1 -TestFilter 'SkipCategories=Snackbar,Badge'   # everything except these categories
@@ -47,7 +48,7 @@ pwsh eng/devices/run.ps1 -Configuration Release                         # what C
 pwsh eng/devices/run.ps1 -Target buildOnly                              # build without a device, then run with -Target testOnly as often as you like
 ```
 
-The platform names are `ios`, `maccatalyst`, `android`, `windows-packaged` and `windows-unpackaged` (`catalyst`, `packaged`, `unpackaged` and `windows`, for both Windows platforms, are short forms). A category is a constant of `TestCategory` in `src/<app>/**/TestCategory*.cs`; every test class has exactly one. With a `Category=` filter, `run.ps1` leaves out the platforms (unless you name them with `-Platform`) that have no test of the category, such as iOS for a category whose tests are all in `*.android.cs` files, because a run of 0 tests fails. [README.md](README.md#choosing-tests-testfilter-and-categories) explains the filters, and its [run.ps1](README.md#one-command-runps1) section lists every parameter, among them the ones that choose the Android device (`-Avd`, `-DeviceId`), the simulator (`-Udid`) and the Xcode (`-Xcode`).
+The platform names are `ios`, `maccatalyst`, `android`, `windows-packaged` and `windows-unpackaged` (`catalyst`, `packaged`, `unpackaged` and `windows`, for both Windows platforms, are short forms). A category is a constant of `TestCategory` in `src/<app>/**/TestCategory*.cs`; every test class has exactly one. With a `Category=` filter, `run.ps1` leaves out the platforms (unless you name them with `-Platform`) that have no test of the category, such as iOS for a category whose tests are all in `*.android.cs` files, because a run of 0 tests fails. [README.md](README.md#choosing-tests-testfilter-and-categories) explains the filters, and its [run.ps1](README.md#one-command-runps1) section lists every parameter, among them the ones that choose the Android device (`-Avd`, `-ApiLevel`, `-DeviceId`), the simulator (`-Udid`) and the Xcode (`-Xcode`).
 
 The summary looks like this (the numbers are an example):
 
