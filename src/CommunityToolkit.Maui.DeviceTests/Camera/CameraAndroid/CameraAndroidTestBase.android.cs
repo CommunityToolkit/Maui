@@ -198,7 +198,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	protected static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000)
+	protected static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000, CameraErrorRecorder? errors = null)
 	{
 		try
 		{
@@ -207,7 +207,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		catch (Xunit.Sdk.XunitException ex) when (ex.Message.Contains("never started streaming", StringComparison.Ordinal))
 		{
 			var all = string.Join(", ", (await GetNativeCameraProviderAsync()).AvailableCameraInfos.Select(info => $"{GetNativeCameraId(info)}={GetNativeCameraState(info)}"));
-			throw new Xunit.Sdk.XunitException($"The preview never started streaming (stream state {previewView.PreviewStreamState.Value}; every camera: {all}).");
+			var reported = errors is null || errors.Errors.Count == 0
+				? string.Empty
+				: $" Errors the view reported: {string.Join("; ", errors.Errors.Select(error => $"{error.GetType().FullName}: {error.Message}"))}.";
+			throw new Xunit.Sdk.XunitException($"The preview never started streaming (stream state {previewView.PreviewStreamState.Value}; every camera: {all}).{reported}");
 		}
 	}
 
@@ -235,10 +238,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
 	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
 	// The handler selects a camera only once its camera provider has found the cameras, which takes longest for the first camera of the process
-	protected static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView)
+	protected static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView, CameraErrorRecorder? errors = null)
 	{
 		await AssertionExtensions.AssertEventually(() => view.SelectedCamera is not null, 30000, 50, "The handler never selected a camera.");
-		await WaitForStreamingAsync(previewView);
+		await WaitForStreamingAsync(previewView, errors: errors);
 	}
 
 	protected static Task WaitForNativeTorchAsync(string cameraId, bool on, int timeoutMilliseconds = 30000, string? message = null) =>
@@ -526,6 +529,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	{
 		EnsureCameraPermissions(includeRecordAudio);
 		view ??= new CameraView();
+		// The manager reports a failed bind only through ErrorOccurred, which would otherwise leave "never started streaming" as the only clue.
+		using var errors = new CameraErrorRecorder(view);
 
 		await AttachAndRun(view, async handler =>
 		{
@@ -543,7 +548,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 			if (waitForStreaming)
 			{
-				await WaitUntilCameraIsStreamingAsync(view, previewView);
+				await WaitUntilCameraIsStreamingAsync(view, previewView, errors);
 			}
 
 			await body(new HostedView { View = view, Handler = cameraViewHandler, PreviewView = previewView });
@@ -572,8 +577,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 		await RunWithSessionAsync(async session =>
 		{
+			// The manager reports a failed bind only through ErrorOccurred, which would otherwise leave "never started streaming" as the only clue.
+			using var errors = new CameraErrorRecorder(session.View);
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!, errors);
 			await body(session);
 		}, provider, null, view);
 	}
