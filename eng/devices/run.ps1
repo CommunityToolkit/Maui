@@ -71,7 +71,10 @@
     Retries for infrastructure failures only. The platform scripts' default is 0 locally.
 
 .PARAMETER Avd
-    Android: boot this AVD instead of the one the script picks (the newest API level that this machine's CPU can run).
+    Android: boot this AVD instead of the one the script picks (the newest API level that this machine's CPU can run). Not with -ApiLevel.
+
+.PARAMETER ApiLevel
+    Android: boot the existing AVD whose system image has this API level (37 or 36.1) and this machine's CPU, instead of the newest one. 36 does not match 36.1. A level below the Android minimum of the device-test app, or without an AVD, is reported as not available. Not with -Avd or -DeviceId.
 
 .PARAMETER EmulatorPort
     Android: the port of the emulator that is booted for -Avd or for the picked AVD. Defaults to the first free one.
@@ -141,6 +144,8 @@ param(
     [int]$InfraRetries,
 
     [string]$Avd,
+
+    [string]$ApiLevel,
 
     [int]$EmulatorPort,
 
@@ -528,6 +533,57 @@ function Select-RunAvd {
         Select-Object -First 1
 }
 
+function ConvertTo-RunApiVersion {
+    # '37' and '37.0' are the same level, and [version] needs two parts.
+    param([string]$Level)
+
+    if ($Level -notmatch '\.') {
+        $Level = "$Level.0"
+    }
+
+    return [version]$Level
+}
+
+function Format-RunApiVersion {
+    param([version]$Level)
+
+    if ($Level.Minor -eq 0) {
+        return $Level.Major.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+    }
+
+    return $Level.ToString()
+}
+
+function Get-RunAndroidMinimumApi {
+    # The highest Android minimum of the apps, read from their csproj so that this script does not repeat it. $null when none is declared.
+    param($Projects)
+
+    $minimum = $null
+    foreach ($project in $Projects) {
+        $document = New-Object System.Xml.XmlDocument
+        $document.Load($project.Path)
+        foreach ($element in $document.GetElementsByTagName('SupportedOSPlatformVersion')) {
+            $condition = $element.GetAttribute('Condition')
+            if ($condition.IndexOf("== 'android'", [System.StringComparison]::Ordinal) -lt 0 -or $element.InnerText -notmatch '^\d+(\.\d+)*$') {
+                continue
+            }
+
+            $level = ConvertTo-RunApiVersion $element.InnerText
+            if ($null -eq $minimum -or $level -gt $minimum) {
+                $minimum = $level
+            }
+        }
+    }
+
+    return $minimum
+}
+
+function Format-RunAvdLevels {
+    param($Avds)
+
+    return ($Avds | ForEach-Object { "$($_.Name) = API $($_.ApiText), $($_.Abi)" }) -join '; '
+}
+
 function Get-RunFreeEmulatorPort {
     param($Devices)
 
@@ -605,7 +661,7 @@ function Get-RunAppleEntry {
 }
 
 function Get-RunAndroidEntry {
-    param([string]$Avd, [int]$EmulatorPort, [string]$DeviceId, [bool]$KeepDevice, [bool]$BuildOnly)
+    param([string]$Avd, [string]$ApiLevel, [int]$EmulatorPort, [string]$DeviceId, [bool]$KeepDevice, [bool]$BuildOnly, $Projects)
 
     $sdkRoot = Get-AndroidSdkRoot
     if (-not $sdkRoot) {
@@ -630,12 +686,13 @@ function Get-RunAndroidEntry {
     # A device that nobody named is not touched, as eng/devices/README.md promises. An emulator that is running is the exception, but only when
     # it is the one: with several running, one of them may be in use for something else, and android.ps1 does not guess among devices either.
     $emulators = @($devices | Where-Object { $_.State -eq 'device' -and $_.Serial -like 'emulator-*' })
-    if (-not $Avd -and $emulators.Count -gt 1) {
+    $choosesAvd = $Avd -or $ApiLevel
+    if (-not $choosesAvd -and $emulators.Count -gt 1) {
         $serials = ($emulators | ForEach-Object { $_.Serial }) -join ', '
         return New-RunPlanEntry -Id 'android' -Available $false -Detail "$($emulators.Count) emulators are running ($serials). Choose one with -DeviceId <serial>, or boot an AVD of your own with -Avd <name>."
     }
 
-    if (-not $Avd -and $emulators.Count -eq 1) {
+    if (-not $choosesAvd -and $emulators.Count -eq 1) {
         $serial = $emulators[0].Serial
         return New-RunPlanEntry -Id 'android' -Available $true -Detail "runs on the emulator that is already running ($serial) and leaves it running" -Arguments @{ DeviceId = $serial }
     }
@@ -647,6 +704,26 @@ function Get-RunAndroidEntry {
         if ($null -eq $picked) {
             $names = ($avds | ForEach-Object { $_.Name }) -join ', '
             return New-RunPlanEntry -Id 'android' -Available $false -Detail "the AVD '$Avd' does not exist (AVDs: $names)."
+        }
+    }
+    elseif ($ApiLevel) {
+        $level = ConvertTo-RunApiVersion $ApiLevel
+        $minimum = Get-RunAndroidMinimumApi -Projects $Projects
+        if ($null -ne $minimum -and $level -lt $minimum) {
+            return New-RunPlanEntry -Id 'android' -Available $false -Detail "API $ApiLevel is below the Android minimum of the device-test app (API $(Format-RunApiVersion $minimum)), so the app cannot be installed on it."
+        }
+
+        $atLevel = @($avds | Where-Object { $_.ApiText -ne 'unknown' -and $_.Api -eq $level })
+        $picked = Select-RunAvd -Avds $atLevel -HostAbis (Get-RunHostAbis)
+        if ($null -eq $picked) {
+            $abis = (Get-RunHostAbis) -join ' or '
+            $existing = 'no AVD exists'
+            if ($avds.Count -gt 0) {
+                $existing = "AVDs: $(Format-RunAvdLevels $avds)"
+            }
+
+            $image = "system-images;android-$ApiLevel;google_apis;$(@(Get-RunHostAbis)[0])"
+            return New-RunPlanEntry -Id 'android' -Available $false -Detail "no AVD has an API $ApiLevel phone or tablet image for this CPU ($abis); $existing. Create one: sdkmanager `"$image`"; avdmanager create avd -n CTM_DeviceTests_API_$ApiLevel -k `"$image`" -d pixel_7 (eng/devices/README.md, Quick start)."
         }
     }
     else {
@@ -714,6 +791,7 @@ function Get-RunPlan {
         [string]$OperatingSystem,
         [string[]]$Requested,
         [string]$Avd,
+        [string]$ApiLevel,
         [int]$EmulatorPort,
         [string]$DeviceId,
         [string]$Udid,
@@ -722,7 +800,8 @@ function Get-RunPlan {
         [bool]$KeepDevice,
         [string]$Category,
         [string[]]$CategoryPlatforms,
-        [string]$Target
+        [string]$Target,
+        $Projects
     )
 
     $buildOnly = $Target -eq 'buildOnly'
@@ -751,7 +830,7 @@ function Get-RunPlan {
             switch ($id) {
                 'ios' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -Runtime $Runtime -KeepDevice $KeepDevice -BuildOnly $buildOnly }
                 'maccatalyst' { Get-RunAppleEntry -Id $id -Xcode $Xcode -Udid $Udid -KeepDevice $KeepDevice -BuildOnly $buildOnly }
-                'android' { Get-RunAndroidEntry -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId -KeepDevice $KeepDevice -BuildOnly $buildOnly }
+                'android' { Get-RunAndroidEntry -Avd $Avd -ApiLevel $ApiLevel -EmulatorPort $EmulatorPort -DeviceId $DeviceId -KeepDevice $KeepDevice -BuildOnly $buildOnly -Projects $Projects }
                 default { Get-RunWindowsEntry -Id $id -KeepDevice $KeepDevice -BuildOnly $buildOnly }
             }
         }
@@ -1124,6 +1203,16 @@ try {
         throw (New-Object System.ArgumentException '-Runtime chooses the runtime of the simulator that ios.ps1 creates; -Udid names an existing simulator. Use one of them.')
     }
 
+    if ($ApiLevel) {
+        if ($ApiLevel -notmatch '^\d+(\.\d+)?$') {
+            throw (New-Object System.ArgumentException "-ApiLevel '$ApiLevel' is not an Android API level. Use a number such as 30, 37 or 36.1.")
+        }
+
+        if ($Avd -or $DeviceId) {
+            throw (New-Object System.ArgumentException '-ApiLevel picks the AVD by its API level; -Avd names an AVD and -DeviceId an attached device. Use one of them.')
+        }
+    }
+
     $operatingSystem = Get-RunOperatingSystem
     $projects = Resolve-DeviceTestProjects -Project $Project
     $filter = Resolve-DeviceTestFilter -TestFilter $TestFilter -IsBound $PSBoundParameters.ContainsKey('TestFilter')
@@ -1153,8 +1242,8 @@ try {
         $requested = @(Resolve-RunPlatformNames -Value $Platform)
     }
 
-    $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
-        -Udid $Udid -Runtime $Runtime -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target)
+    $plan = @(Get-RunPlan -OperatingSystem $operatingSystem -Requested $requested -Avd $Avd -ApiLevel $ApiLevel -EmulatorPort $EmulatorPort -DeviceId $DeviceId `
+        -Udid $Udid -Runtime $Runtime -Xcode $Xcode -KeepDevice $KeepDevice.IsPresent -Category $category -CategoryPlatforms $categoryPlatforms -Target $Target -Projects $projects)
 
     # The plan counts the skipped platforms too, so that whether a command is valid depends on the operating system, not on what the machine
     # can run.
