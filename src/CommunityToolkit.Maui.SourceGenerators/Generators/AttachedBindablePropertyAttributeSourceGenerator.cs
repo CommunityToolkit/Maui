@@ -513,6 +513,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			return "null";
 		}
 
+		if (value.Value is ITypeSymbol)
+		{
+			return GetFormattedConstantValue(value);
+		}
+
 		var typeSymbol = GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol);
 
 		return value.Value switch
@@ -796,6 +801,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			},
 			char charVal => $"'{charVal}'",
 			string stringVal => $"\"{GetEscapedString(stringVal)}\"",
+			ITypeSymbol typeSymbol => $"typeof({typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})",
 			_ => "null"
 		};
 	}

@@ -7,7 +7,8 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;
 
-// Generated code names the user's own members and types, which the user may deprecate, hide or mark experimental, and the user cannot annotate generated members; only those diagnostics are suppressed, so every other warning (and every IL warning) stays visible to a consumer that builds with warnings as errors.
+// Generated code names the user's members and types, which the user may deprecate, hide or mark experimental, and cannot annotate generated members; IL codes are never listed.
+// CS9258: the generated getter means the `field` keyword even when the user's class has a member named `field`.
 public class GeneratedCodeWarningTests : BaseTest
 {
 	const string strictConsumerSource =
@@ -71,6 +72,18 @@ public class GeneratedCodeWarningTests : BaseTest
 			[BindableProperty]
 			public partial System.Collections.Generic.IList<string> Items { get; set; } = new System.Collections.Generic.List<string>();
 
+			/// <summary>Nullable string array.</summary>
+			[BindableProperty]
+			public partial string[]? NullableStrings { get; set; }
+
+			/// <summary>Nullable int array.</summary>
+			[BindableProperty]
+			public partial int[]? NullableInts { get; set; }
+
+			/// <summary>Nullable jagged int array.</summary>
+			[BindableProperty]
+			public partial int[][]? NullableJagged { get; set; }
+
 			/// <summary>Nullable reference initializer.</summary>
 			[BindableProperty]
 			public partial System.Collections.Generic.IList<string>? MaybeItems { get; set; } = new System.Collections.Generic.List<string>();
@@ -101,6 +114,8 @@ public class GeneratedCodeWarningTests : BaseTest
 		[AttachedBindableProperty<double>("Pi", DefaultValue = 3.14)]
 		[AttachedBindableProperty<Flavor>("Taste", DefaultValue = Flavor.Sour)]
 		[AttachedBindableProperty<bool>("IsOpen", SetterAccessibility = AccessModifier.Private)]
+		[AttachedBindableProperty<System.Type>("Kind", DefaultValue = typeof(StrictView))]
+		[AttachedBindableProperty<System.Type[]>("Kinds", DefaultValue = new[] { typeof(StrictView), typeof(Flavor) })]
 		public partial class StrictHost : View
 		{
 		}
@@ -391,6 +406,29 @@ public class GeneratedCodeWarningTests : BaseTest
 			}
 		}
 
+		/// <summary>P18: nested type of a generic over an experimental type.</summary>
+		public class Box<T>
+		{
+			/// <summary>Inner.</summary>
+			public class Inner
+			{
+			}
+		}
+
+		/// <summary>P18: attached property typed as a nested type of a generic over an experimental type.</summary>
+		[AttachedBindableProperty<Box<P15ExperimentalStruct>.Inner>("Boxed")]
+		public partial class P18Host : View
+		{
+		}
+
+		/// <summary>P18: property typed as a nested type of a generic over an experimental type.</summary>
+		public partial class P18View : View
+		{
+			/// <summary>Inner.</summary>
+			[BindableProperty]
+			public partial Box<P14ExperimentalItem>.Inner? Inner { get; set; }
+		}
+
 		/// <summary>P17: view whose property type comes from an assembly that is experimental as a whole.</summary>
 		public partial class P17View : View
 		{
@@ -488,7 +526,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	}
 
 	[Theory]
-	[InlineData("en-US")]
+	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_CompilesWithoutDiagnostics_WhenUserChoosesOwnDiagnosticIds(string cultureName)
@@ -513,6 +551,8 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("P16Outer.P16Inner.g.cs", "USR016")]
 	[InlineData("P17View.g.cs", "EXPASM1")]
 	[InlineData("P15Host.g.cs", "USR015")]
+	[InlineData("P18View.g.cs", "USR014")]
+	[InlineData("P18Host.g.cs", "USR015")]
 	public void GeneratedCode_SuppressesTheUserChosenDiagnosticId(string generatedFileName, string expectedDiagnosticId)
 	{
 		var pragmaLine = GetPragmaLine(userChosenDiagnosticIdsSource, generatedFileName, [CreateExperimentalAssemblyReference()]);

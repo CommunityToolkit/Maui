@@ -4,7 +4,8 @@ namespace CommunityToolkit.Maui.SourceGenerators.Helpers;
 
 static class GeneratedCodePragmas
 {
-	// Generated code must name the user's own members and types, which the user may deprecate, hide or mark experimental; the user cannot annotate or silence generated members, and IL (trim and AOT) warnings are never listed so they stay visible.
+	// Generated code names the user's members and types, which the user may deprecate, hide or mark experimental, and cannot annotate generated members; IL codes are never listed.
+	// CS9258: the generated getter means the `field` keyword even when the user's class has a member named `field`.
 	public const string BindablePropertyWarnings = "CS0108, CS0109, CS0612, CS0618, CS9258";
 
 	public const string AttachedBindablePropertyWarnings = "CS0108, CS0109, CS0612, CS0618";

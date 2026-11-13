@@ -620,7 +620,9 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 			// Construct the correct rank syntax with commas (e.g., "[,]")
 			var rank = arrayTypeSymbol.Rank > 1 ? new string(',', arrayTypeSymbol.Rank - 1) : string.Empty;
 
-			return string.Concat(elementType, "[", rank, "]");
+			var nullableSuffix = arrayTypeSymbol.NullableAnnotation is NullableAnnotation.Annotated ? "?" : string.Empty;
+
+			return string.Concat(elementType, "[", rank, "]", nullableSuffix);
 		}
 		else
 		{

@@ -265,14 +265,14 @@ class TextColorToGenerator : IIncrementalGenerator
 			&& x.AllInterfaces.Contains(iAnimatableSymbol, SymbolEqualityComparer.Default));
 	}
 
-	// A top-level static class can only extend a type that every containing type exposes to it, and cannot name a type that is nested in a generic type
+	// A top-level static class can only extend a type that every containing type exposes to it; the generator does not emit a containing type's type parameters, so types nested in a generic type are skipped.
 	static string? GetEffectiveAccessModifier(INamedTypeSymbol namedTypeSymbol)
 	{
 		var isInternal = false;
 
 		for (var current = namedTypeSymbol; current is not null; current = current.ContainingType)
 		{
-			if (current.ContainingType is not null && current.ContainingType.TypeParameters.Length > 0)
+			if (current.IsFileLocal || (current.ContainingType is not null && current.ContainingType.TypeParameters.Length > 0))
 			{
 				return null;
 			}

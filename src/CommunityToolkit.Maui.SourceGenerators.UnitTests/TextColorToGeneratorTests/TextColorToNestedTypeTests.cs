@@ -124,6 +124,23 @@ public class TextColorToNestedTypeTests : BaseTest
 			}
 		}
 
+		file class FileLocalText : VisualElement, ITextStyle
+		{
+			public Color TextColor { get; set; } = Colors.Black;
+			public Microsoft.Maui.Font Font => Microsoft.Maui.Font.Default;
+			public double CharacterSpacing => 0;
+		}
+
+		file class FileLocalOuter
+		{
+			public class FileLocalNestedText : VisualElement, ITextStyle
+			{
+				public Color TextColor { get; set; } = Colors.Black;
+				public Microsoft.Maui.Font Font => Microsoft.Maui.Font.Default;
+				public double CharacterSpacing => 0;
+			}
+		}
+
 		public class GenericOuter<T>
 		{
 			public class InnerText : VisualElement, ITextStyle
@@ -136,7 +153,7 @@ public class TextColorToNestedTypeTests : BaseTest
 		""";
 
 	[Theory]
-	[InlineData("en-US", "PublicInPublicOuter.InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
+	[InlineData("", "PublicInPublicOuter.InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
 	[InlineData("tr-TR", "PublicInPublicOuter.InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
 	[InlineData("az-Latn-AZ", "PublicInPublicOuter.InnerTextTextColorTo.g.shared.cs", "public static partial class ColorAnimationExtensions_PublicInPublicOuter_InnerText")]
 	[InlineData("tr-TR", "InternalInPublicOuter.InnerTextTextColorTo.g.shared.cs", "internal static partial class ColorAnimationExtensions_InternalInPublicOuter_InnerText")]
@@ -154,7 +171,7 @@ public class TextColorToNestedTypeTests : BaseTest
 	}
 
 	[Theory]
-	[InlineData("en-US")]
+	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
 	public void Generator_EmitsNothing_ForNestedTextTypesThatAStaticClassCannotNameOrSee(string cultureName)
@@ -166,6 +183,8 @@ public class TextColorToNestedTypeTests : BaseTest
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("PrivateProtectedNestedOuter", StringComparison.Ordinal));
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("PublicInPrivateOuterHolder", StringComparison.Ordinal));
 		Assert.DoesNotContain(sources.Keys, static hintName => hintName.StartsWith("GenericOuter", StringComparison.Ordinal));
+		Assert.DoesNotContain(sources.Keys, static hintName => hintName.Contains("FileLocalText", StringComparison.Ordinal));
+		Assert.DoesNotContain(sources.Keys, static hintName => hintName.Contains("FileLocalNested", StringComparison.Ordinal));
 		Assert.True(diagnostics.Count == 0, string.Join(Environment.NewLine, diagnostics));
 	}
 

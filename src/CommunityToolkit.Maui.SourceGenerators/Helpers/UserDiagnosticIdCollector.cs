@@ -59,6 +59,7 @@ sealed class UserDiagnosticIdCollector
 				return;
 			case INamedTypeSymbol namedType:
 				AddSymbolAndContainers(namedType.OriginalDefinition);
+				AddType(namedType.ContainingType);
 				foreach (var typeArgument in namedType.TypeArguments)
 				{
 					AddType(typeArgument);
