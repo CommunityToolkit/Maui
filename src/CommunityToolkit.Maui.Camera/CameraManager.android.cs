@@ -98,6 +98,8 @@ partial class CameraManager
 	CameraConsumer? videoRecordingConsumer;
 	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
+	// A rebuilt use case starts without the sensor rotation, and OrientationEventListener reports only changes
+	int? targetRotation;
 	int extensionMode = ExtensionMode.Auto;
 	bool isDisposed;
 
@@ -382,8 +384,6 @@ partial class CameraManager
 		RebuildVideoCapture();
 	}
 
-	int? targetRotation;
-
 	void RebuildCameraPreview()
 	{
 		ArgumentNullException.ThrowIfNull(cameraExecutor);
@@ -466,7 +466,6 @@ partial class CameraManager
 		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
 
-		// A rebuilt use case starts without the sensor rotation, and OrientationEventListener reports only changes
 		if (targetRotation is int rotation)
 		{
 			videoCapture?.TargetRotation = rotation;

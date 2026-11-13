@@ -27,7 +27,6 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		return Activator.CreateInstance(type, view)!;
 	}
 
-
 	[Fact]
 	public async Task SetExtensionModeBindsTheUseCasesOfAHostedViewAgain()
 	{

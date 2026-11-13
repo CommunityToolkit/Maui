@@ -209,6 +209,8 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			var listener = GetPrivateField<OrientationEventListener>(session.Manager, "orientationListener")!;
+			// CI emulators deliver real orientation callbacks, which would overwrite the synthetic rotation
+			listener.Disable();
 			listener.OnOrientationChanged(90);
 			var expectedRotation = session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!.TargetRotation;
 
@@ -220,8 +222,32 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await WaitForRecordedVideoAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
 
 			Assert.Equal(expectedRotation, session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!.TargetRotation);
+			Assert.Equal(expectedRotation, session.ImageCapture.TargetRotation);
 			await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
 		}, includeRecordAudio: true);
+	}
+
+	[Fact]
+	public async Task UpdateCaptureResolutionKeepsTheTargetRotationOfTheRebuiltPreviewAndImageCapture()
+	{
+		SetupBuilder();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var listener = GetPrivateField<OrientationEventListener>(session.Manager, "orientationListener")!;
+			listener.Disable();
+			listener.OnOrientationChanged(90);
+			var expectedRotation = session.CameraPreview.TargetRotation;
+			var preview = session.CameraPreview;
+			var imageCapture = session.ImageCapture;
+
+			await session.Manager.UpdateCaptureResolution(SmallResolution, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
+
+			Assert.NotSame(preview, session.CameraPreview);
+			Assert.NotSame(imageCapture, session.ImageCapture);
+			Assert.Equal(expectedRotation, session.CameraPreview.TargetRotation);
+			Assert.Equal(expectedRotation, session.ImageCapture.TargetRotation);
+		});
 	}
 
 	// CameraX finalized the running recording with an error (its VideoCapture was unbound; the test unbinds the use cases itself) and the app
