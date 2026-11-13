@@ -17,7 +17,6 @@ public partial class UseMauiCommunityToolkitTests
 	[Fact]
 	public async Task UseMauiCommunityToolkitRemapsTheNavigationBarStyleOntoThePageHandler()
 	{
-		Skip.IfNot(AndroidSystemBars.SupportsLightNavigationBars, "Before Android 8.0 (API 26) Style changes nothing the test could observe; the color remap test proves RemapForControls on every version.");
 		var styleKey = NavigationBar.StyleProperty.PropertyName;
 		var sentinelCalls = 0;
 		PageHandler.Mapper.Add(styleKey, (_, _) => sentinelCalls++);
@@ -40,7 +39,11 @@ public partial class UseMauiCommunityToolkitTests
 					PageHandler.Mapper.UpdateProperty(handler, page, styleKey);
 
 					Assert.Equal(0, sentinelCalls);
-					Assert.True(insetsController.AppearanceLightNavigationBars, "The toolkit's mapping did not set the dark navigation bar content.");
+					// Android 7 has no light navigation bars; there the sentinel assertion proves the remap.
+					if (AndroidSystemBars.SupportsLightNavigationBars)
+					{
+						Assert.True(insetsController.AppearanceLightNavigationBars, "The toolkit's mapping did not set the dark navigation bar content.");
+					}
 				}
 				finally
 				{

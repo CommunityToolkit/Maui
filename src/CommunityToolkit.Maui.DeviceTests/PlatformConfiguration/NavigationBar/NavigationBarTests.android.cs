@@ -798,7 +798,7 @@ public partial class NavigationBarTests
 	[InlineData(NavigationBarStyle.DarkContent)]
 	public async Task StyleChangesNothingOnTheWindowBeforeAndroid8(NavigationBarStyle style)
 	{
-		Skip.If(AndroidSystemBars.SupportsLightNavigationBars, "The branch only runs below Android 8.0 (API 26) (CI: API 25).");
+		Skip.If(AndroidSystemBars.SupportsLightNavigationBars, "Only Android 7 (API 24-25) has no light navigation bars (CI: API 25); from Android 8.0 on, the Style tests above assert them.");
 		SetupBuilder();
 		await ResetNativeStateAsync();
 		var before = await InvokeOnMainThreadAsync(static () => AndroidSystemBars.WindowState.Read(AndroidSystemBars.ActivityWindow));
