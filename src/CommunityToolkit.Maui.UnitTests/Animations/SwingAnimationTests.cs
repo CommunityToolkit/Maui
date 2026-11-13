@@ -38,7 +38,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_HangsFromTheTopEdgeWheneverItRotates() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new PropertyRecorder(view);
 
@@ -67,10 +67,10 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_ReachesTheFirstSwingAndTheLargestBackSwing() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		rotations.Max.Should().BeApproximately(originalRotation + animation.RotationAngle, precision);
@@ -80,7 +80,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_SwingsByTheDecreasingAnglesInOrder() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new PropertyRecorder(view);
 
@@ -95,7 +95,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_SwingsBackToRestInsteadOfSnapping() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new PropertyRecorder(view);
 
@@ -135,7 +135,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		await rotateRun.WaitAsync(waitTimeout, token);
 		view.Rotation.Should().BeGreaterThan(originalRotation + 20);
 
-		var animation = new SwingAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		using var recorder = new PropertyRecorder(view);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -146,7 +146,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_CancelledMidSwing_ReturnsRotationWhileStillHangingFromTheTopEdge() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		using var recorder = new PropertyRecorder(view);
@@ -175,14 +175,15 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_FollowsTheKeyframeCurveOnEveryTick() => AssertFollowsTheKeyframeCurveOnEveryTick(null, TestContext.Current.CancellationToken);
+	public Task Animate_FollowsTheKeyframesFrameByFrame() => AssertFollowsTheKeyframesFrameByFrame(Easing.Linear, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_CustomEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframeCurveOnEveryTick(Easing.CubicIn, TestContext.Current.CancellationToken);
+	public Task Animate_WithEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframesFrameByFrame(Easing.CubicIn, TestContext.Current.CancellationToken);
 
-	Task AssertFollowsTheKeyframeCurveOnEveryTick(Easing? easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
+	Task AssertFollowsTheKeyframesFrameByFrame(Easing easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new SwingAnimation { Length = functionalTestLength, Easing = easing ?? BaseAnimationDefaults.Easing };
+		var animation = CreateFunctionalAnimation();
+		animation.Easing = easing;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var angle = animation.RotationAngle;
 		using var recorder = new FrameRecorder(view, VisualElement.RotationProperty);

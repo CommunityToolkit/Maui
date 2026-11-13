@@ -39,7 +39,7 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 	{
 		var animation = new RotateAnimation();
 		var view = CreateAnimatedView();
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -52,7 +52,7 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 	{
 		var animation = new RotateAnimation { Rotation = 360 };
 		var view = CreateAnimatedView();
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 

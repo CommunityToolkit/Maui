@@ -39,7 +39,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var translationY = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
+		using var translationY = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -55,7 +55,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 		var animation = CreateFunctionalAnimation();
 		animation.Distance = distance;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var translationY = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
+		using var translationY = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -71,7 +71,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 		var animation = CreateFunctionalAnimation();
 		animation.Distance = distance;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var translationY = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
+		using var translationY = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -113,9 +113,15 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_FollowsTheKeyframesOnEveryFrame() => RunOnSingleThreadAsync(async token =>
+	public Task Animate_FollowsTheKeyframesFrameByFrame() => AssertFollowsTheKeyframesFrameByFrame(Easing.Linear, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_WithEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframesFrameByFrame(Easing.CubicIn, TestContext.Current.CancellationToken);
+
+	Task AssertFollowsTheKeyframesFrameByFrame(Easing easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
 	{
 		var animation = CreateFunctionalAnimation();
+		animation.Easing = easing;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new FrameRecorder(view, VisualElement.TranslationYProperty);
 
@@ -131,8 +137,8 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 			Hop(0.75, 0.875, 0, distance * 2 / 15, Easing.CubicOut),
 			Hop(0.875, 1.0, distance * 2 / 15, 0, Easing.CubicIn)
 		];
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, segments, animation.Length);
-	}, TestContext.Current.CancellationToken);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, segments, animation.Length, easing);
+	}, testToken);
 
 	static KeyframeSegment Hop(double begin, double end, double fromHeight, double toHeight, Easing easing) =>
 		new(begin, end, originalTranslationY - fromHeight, originalTranslationY - toHeight, easing);

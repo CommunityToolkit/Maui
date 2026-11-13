@@ -45,11 +45,11 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_ReachesTheFirstSwayAndTiltAndTheLargestReturns() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new WobbleAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 
-		var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		translations.Min.Should().BeApproximately(originalTranslationX - animation.Distance, precision);
@@ -61,7 +61,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_SwaysByTheDecreasingDistancesInOrder() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new WobbleAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new PropertyRecorder(view);
 
@@ -76,7 +76,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_TiltsByTheDecreasingAnglesInOrder() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new WobbleAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new PropertyRecorder(view);
 
@@ -91,7 +91,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_SwaysBackToRestInsteadOfSnapping() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new WobbleAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new PropertyRecorder(view);
 
@@ -110,8 +110,8 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		var animation = new WobbleAnimation { Distance = distance, RotationAngle = rotationAngle, Length = functionalTestLength };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 
-		var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		translations.Min.Should().BeApproximately(originalTranslationX - distance, precision);
@@ -144,7 +144,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		await rotateRun.WaitAsync(waitTimeout, token);
 		view.Rotation.Should().BeGreaterThan(originalRotation + 20);
 
-		var animation = new WobbleAnimation { Length = functionalTestLength };
+		var animation = CreateFunctionalAnimation();
 		using var recorder = new PropertyRecorder(view);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -153,14 +153,15 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_FollowsTheKeyframeCurvesOnEveryTick() => AssertFollowsTheKeyframeCurvesOnEveryTick(null, TestContext.Current.CancellationToken);
+	public Task Animate_FollowsTheKeyframesFrameByFrame() => AssertFollowsTheKeyframesFrameByFrame(Easing.Linear, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_CustomEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframeCurvesOnEveryTick(Easing.CubicIn, TestContext.Current.CancellationToken);
+	public Task Animate_WithEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframesFrameByFrame(Easing.CubicIn, TestContext.Current.CancellationToken);
 
-	Task AssertFollowsTheKeyframeCurvesOnEveryTick(Easing? easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
+	Task AssertFollowsTheKeyframesFrameByFrame(Easing easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new WobbleAnimation { Length = functionalTestLength, Easing = easing ?? BaseAnimationDefaults.Easing };
+		var animation = CreateFunctionalAnimation();
+		animation.Easing = easing;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var distance = animation.Distance;
 		var angle = animation.RotationAngle;

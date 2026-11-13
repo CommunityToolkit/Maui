@@ -39,7 +39,7 @@ public class ScaleAnimationTests : BaseAnimationTests<ScaleAnimation>
 		var animation = new ScaleAnimation();
 		var view = CreateAnimatedView();
 
-		var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
+		using var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		scales.Max.Should().BeApproximately(animation.Scale, precision);
@@ -52,7 +52,7 @@ public class ScaleAnimationTests : BaseAnimationTests<ScaleAnimation>
 		var animation = new ScaleAnimation { Scale = 0.5 };
 		var view = CreateAnimatedView();
 
-		var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
+		using var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		scales.Min.Should().BeApproximately(0.5, precision);

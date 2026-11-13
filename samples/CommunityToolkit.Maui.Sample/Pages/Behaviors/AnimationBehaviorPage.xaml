@@ -12,7 +12,7 @@
     x:DataType="vm:AnimationBehaviorViewModel"
     x:TypeArguments="vm:AnimationBehaviorViewModel">
 
-    <!--  A ScrollView clips its content to its bounds, so it fills the page (Padding="0" above) and the 1.2x scale animations below are not cut off at its edges  -->
+    <!--  A ScrollView clips its content to its bounds, so it fills the page (Padding="0" above) and the scale animations below are not cut off at its edges  -->
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="15">
             <Label>

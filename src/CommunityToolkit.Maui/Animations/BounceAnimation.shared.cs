@@ -6,10 +6,11 @@ namespace CommunityToolkit.Maui.Animations;
 /// Animation that makes the supplied view hop up by <see cref="Distance"/>, fall back, and then make two smaller hops, slowing down on the way up and speeding up on the way down.
 /// </summary>
 /// <remarks>
-/// An attention seeker: the hops are relative to, and end at, the vertical translation the view had before it started, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
-/// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first,
-/// returning the view to its original values. <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one that stays within 0..1 and only increases.
-/// Cancelling the token while the animation runs returns the view to its original values and ends the returned <see cref="Task"/> as canceled.
+/// An attention seeker: the hops are relative to the vertical translation the view had before the animation started, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
+/// The view returns to its original values when the animation completes and when it is cancelled; in the second case the returned <see cref="Task"/> ends as canceled.
+/// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first.
+/// <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one within 0..1 that only increases (for example <see cref="Easing.Linear"/> or <see cref="Easing.SinInOut"/>).
+/// An easing that overshoots, such as <see cref="Easing.SpringOut"/> or <see cref="Easing.BounceOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run.
 /// </remarks>
 public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.Length)
 {

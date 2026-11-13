@@ -54,8 +54,8 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -73,8 +73,8 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		animation.MaximumScale = 1.5;
 		animation.RotationAngle = 10;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
+		using var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 

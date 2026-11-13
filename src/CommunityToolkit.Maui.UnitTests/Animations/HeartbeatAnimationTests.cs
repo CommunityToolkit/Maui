@@ -40,7 +40,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
+		using var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -54,7 +54,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		var animation = CreateFunctionalAnimation();
 		animation.MaximumScale = 1.5;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
+		using var scales = new ExtremeValueRecorder(view, VisualElement.ScaleProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 

@@ -36,6 +36,12 @@ static class KeyframeAnimationExtensions
 		// Aborting the running keyframe animation returns the view to its original values before this run reads them
 		view.AbortAnimation(AnimationHandle);
 
+		// A "To" animation that outlives this run would otherwise finish at its target after this run restored the view
+		foreach (var property in animatedProperties)
+		{
+			AbortToAnimation(view, property);
+		}
+
 		// The trackers, not the current values, know the original values while an animation of the same property, such as a ScaleAnimation, runs or was interrupted
 		var trackers = new AnimatedPropertyTracker[animatedProperties.Count];
 		var originalValues = new Dictionary<BindableProperty, double>(animatedProperties.Count);
@@ -71,6 +77,46 @@ static class KeyframeAnimationExtensions
 
 			throw;
 		}
+	}
+
+	static void AbortToAnimation(VisualElement view, BindableProperty property)
+	{
+		var handle = GetToAnimationHandle(property);
+
+		if (handle is not null)
+		{
+			view.AbortAnimation(handle);
+		}
+	}
+
+	static string? GetToAnimationHandle(BindableProperty property)
+	{
+		if (property == VisualElement.RotationProperty)
+		{
+			return nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync);
+		}
+
+		if (property == VisualElement.ScaleProperty)
+		{
+			return nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync);
+		}
+
+		if (property == VisualElement.ScaleXProperty)
+		{
+			return nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync);
+		}
+
+		if (property == VisualElement.ScaleYProperty)
+		{
+			return nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync);
+		}
+
+		if (property == VisualElement.TranslationXProperty || property == VisualElement.TranslationYProperty)
+		{
+			return nameof(Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync);
+		}
+
+		return null;
 	}
 
 	// In declaration order, so SwingAnimation returns Rotation while it still pivots on the top edge, then AnchorY

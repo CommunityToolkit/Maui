@@ -31,7 +31,7 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var scaleX = new ExtremeValueRecorder(view, VisualElement.ScaleXProperty);
+		using var scaleX = new ExtremeValueRecorder(view, VisualElement.ScaleXProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -44,7 +44,7 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 	{
 		var animation = CreateFunctionalAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var scaleY = new ExtremeValueRecorder(view, VisualElement.ScaleYProperty);
+		using var scaleY = new ExtremeValueRecorder(view, VisualElement.ScaleYProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
@@ -105,15 +105,21 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task Animate_FollowsTheKeyframesOnEveryFrame() => RunOnSingleThreadAsync(async token =>
+	public Task Animate_FollowsTheKeyframesFrameByFrame() => AssertFollowsTheKeyframesFrameByFrame(Easing.Linear, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_WithEasing_WarpsTheProgressOfTheWholeRun() => AssertFollowsTheKeyframesFrameByFrame(Easing.CubicIn, TestContext.Current.CancellationToken);
+
+	Task AssertFollowsTheKeyframesFrameByFrame(Easing easing, CancellationToken testToken) => RunOnSingleThreadAsync(async token =>
 	{
 		var animation = CreateFunctionalAnimation();
+		animation.Easing = easing;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		using var recorder = new FrameRecorder(view, VisualElement.ScaleXProperty, VisualElement.ScaleYProperty);
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleXProperty, SinInOutSegments(fractions, [.. scaleXFactors.Select(factor => factor * originalScaleX)]), animation.Length);
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleYProperty, SinInOutSegments(fractions, [.. scaleYFactors.Select(factor => factor * originalScaleY)]), animation.Length);
-	}, TestContext.Current.CancellationToken);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleXProperty, SinInOutSegments(fractions, [.. scaleXFactors.Select(factor => factor * originalScaleX)]), animation.Length, easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleYProperty, SinInOutSegments(fractions, [.. scaleYFactors.Select(factor => factor * originalScaleY)]), animation.Length, easing);
+	}, testToken);
 }

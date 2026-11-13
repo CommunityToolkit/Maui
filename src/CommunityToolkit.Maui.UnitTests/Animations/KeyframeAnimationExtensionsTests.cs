@@ -23,7 +23,10 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		await firstChange;
 		var swingRun = new SwingAnimation { Length = functionalTestLength }.Animate(view, token);
 
-		await Task.WhenAll(tadaRun, swingRun).WaitAsync(waitTimeout, token);
+		await tadaRun.WaitAsync(waitTimeout, token);
+		swingRun.IsCompleted.Should().BeFalse("Tada ends when Swing supersedes it, not at its own 2000 ms end");
+		view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle).Should().BeTrue();
+		await swingRun.WaitAsync(waitTimeout, token);
 
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
@@ -42,6 +45,7 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 
 		await supersededRun.WaitAsync(waitTimeout, token);
 		supersededRunTokenSource.Cancel();
+		view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle).Should().BeTrue("the superseded run's token must not abort the new run");
 		await newRun.WaitAsync(waitTimeout, token);
 
 		AssertValuesEqual(view, startingValues);
@@ -92,6 +96,38 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		await scaleRun.WaitAsync(waitTimeout, token);
 		await tadaAnimation.WaitForEndedAnimationsAsync(1, token);
 		view.Scale.Should().BeApproximately(originalScale, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task SwingAnimation_ShorterThanTheRunningRotateAnimation_ReturnsRotationToItsStartingValue() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+
+		var rotated = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => Math.Abs(rotation - originalRotation) > 5);
+		var rotateRun = new RotateAnimation { Length = 2 * functionalTestLength }.Animate(view, token);
+		await rotated;
+		var swingRun = new SwingAnimation { Length = functionalTestLength }.Animate(view, token);
+
+		await Task.WhenAll(rotateRun, swingRun).WaitAsync(waitTimeout, token);
+
+		view.Rotation.Should().BeApproximately(originalRotation, precision);
+		view.AnchorY.Should().BeApproximately(originalAnchorY, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task TadaAnimation_ShorterThanTheRunningScaleAnimation_ReturnsScaleToItsStartingValue() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+
+		var scaled = WaitForPropertyAsync(view, VisualElement.ScaleProperty, token, scale => Math.Abs(scale - originalScale) > 0.05);
+		var scaleRun = new ScaleAnimation { Length = 4 * functionalTestLength }.Animate(view, token);
+		await scaled;
+		var tadaRun = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
+
+		await Task.WhenAll(scaleRun, tadaRun).WaitAsync(waitTimeout, token);
+
+		view.Scale.Should().BeApproximately(originalScale, precision);
+		view.Rotation.Should().BeApproximately(originalRotation, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]

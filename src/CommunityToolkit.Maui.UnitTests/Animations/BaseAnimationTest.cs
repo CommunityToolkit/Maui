@@ -160,7 +160,7 @@ public abstract class BaseAnimationTest : BaseTest
 		}
 	}
 
-	protected sealed class ExtremeValueRecorder
+	protected sealed class ExtremeValueRecorder : IDisposable
 	{
 		readonly VisualElement view;
 		readonly BindableProperty property;
@@ -175,6 +175,8 @@ public abstract class BaseAnimationTest : BaseTest
 
 		public double Min { get; private set; }
 		public double Max { get; private set; }
+
+		public void Dispose() => view.PropertyChanged -= HandlePropertyChanged;
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{

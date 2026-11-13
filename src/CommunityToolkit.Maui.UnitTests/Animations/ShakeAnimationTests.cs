@@ -48,7 +48,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 		var animation = new ShakeAnimation { Length = functionalTestLength };
 		var view = CreateAnimatedView();
 
-		var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
+		using var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		translations.Min.Should().BeApproximately(originalTranslationX - animation.StartFactor, precision);
@@ -64,7 +64,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 		var animation = new ShakeAnimation { StartFactor = startFactor, Length = functionalTestLength };
 		var view = CreateAnimatedView();
 
-		var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
+		using var translations = new ExtremeValueRecorder(view, VisualElement.TranslationXProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		translations.Min.Should().BeApproximately(originalTranslationX - startFactor, precision);

@@ -28,7 +28,7 @@ public class FlipHorizontalAnimationTests : BaseAnimationTests<FlipHorizontalAni
 		var animation = new FlipHorizontalAnimation();
 		var view = CreateAnimatedView();
 
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationYProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationYProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		rotations.Max.Should().BeApproximately(animation.Rotation, precision);
@@ -41,7 +41,7 @@ public class FlipHorizontalAnimationTests : BaseAnimationTests<FlipHorizontalAni
 		var animation = new FlipHorizontalAnimation { Rotation = 180 };
 		var view = CreateAnimatedView();
 
-		var rotations = new ExtremeValueRecorder(view, VisualElement.RotationYProperty);
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationYProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		rotations.Max.Should().BeApproximately(180, precision);
