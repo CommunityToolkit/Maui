@@ -147,6 +147,10 @@ It runs every platform that your machine can run (on a Mac the iOS simulator and
 * [Device test scripts and CI](eng/devices/README.md): every script and parameter, the exit codes, the capability declarations, code coverage and the CI jobs.
 * [Writing device tests](src/CommunityToolkit.Maui.DeviceTests/README.md): where a test belongs, the base classes, the categories and the patterns. A test that `CommunityToolkit.Maui.UnitTests` can cover belongs there instead.
 
+## Trimming and NativeAOT
+
+The four NuGet packages must stay fully trim-safe and NativeAOT-safe. Every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error, so avoid reflection on unannotated types and string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. See [the trimming and NativeAOT instructions](.github/instructions/trimming-aot.instructions.md) for the rules and how to check your change locally.
+
 ## Contributing Code - Best Practices
 
 ### Code Formatting
