@@ -10,7 +10,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-public class FadeAnimationTests : BaseTest
+public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 {
 	const double originalOpacity = 0.9;
 	const double fadedOpacity = 0.2;

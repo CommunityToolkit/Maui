@@ -38,9 +38,12 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		var fades = AnimatedPropertyTracker.For(view, VisualElement.OpacityProperty);
 		var (fadeId, originalOpacity) = fades.Start(view.Opacity);
 
+		// Length is the duration of the whole animation, fading out and back: https://github.com/CommunityToolkit/Maui/discussions/1231
+		var halfLength = Length / 2;
+
 		try
 		{
-			var wasInterrupted = await view.FadeToAsync(Opacity, Length, Easing, token);
+			var wasInterrupted = await view.FadeToAsync(Opacity, halfLength, Easing, token);
 
 			// An interrupted fade stops where it is: the animation that interrupted it, if any, returns the view to its original opacity
 			if (wasInterrupted || !fades.IsLatest(fadeId))
@@ -48,7 +51,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 				return;
 			}
 
-			await view.FadeToAsync(originalOpacity, Length, Easing, token);
+			await view.FadeToAsync(originalOpacity, halfLength, Easing, token);
 		}
 		finally
 		{
