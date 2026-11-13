@@ -14,7 +14,8 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// The behavior animates the opacity, translation and rotation of the element with MAUI's <c>FadeToAsync</c>, <c>TranslateToAsync</c>,
 /// <c>RotateToAsync</c>, <c>RotateXToAsync</c> and <c>RotateYToAsync</c>, and the colour of its own background
 /// brush with an animation of its own. A state change stops an animation that the app runs with the same method on the element when the
-/// state changes that property, as starting the same animation again would; it leaves the app's other animations alone. Removing or disposing the behavior stops only the behavior's own animations.
+/// state changes that property, as starting the same animation again would; it leaves the app's other animations alone.
+/// Removing or disposing the behavior stops only the behavior's own animations.
 /// </para>
 /// <para>
 /// A <see cref="Button"/> or an <see cref="ImageButton"/> keeps its own click handling: its platform button raises <c>Clicked</c> and runs
@@ -231,8 +232,8 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// </summary>
 	/// <remarks>
 	/// The colour of a state is painted as the element's <see cref="VisualElement.Background"/>, a <see cref="SolidColorBrush"/> of the
-	/// behavior, while the state is shown: <see cref="VisualElement.BackgroundColor"/> is never written and keeps the app's colour, so a binding,
-	/// <c>DynamicResource</c>, <c>AppThemeBinding</c> or <see cref="Style"/> that sets it keeps working, and a colour that the app sets on it
+	/// behavior, while the state is shown: <see cref="VisualElement.BackgroundColor"/> is never written for a state colour and keeps the
+	/// app's colour, so a binding, <c>DynamicResource</c>, <c>AppThemeBinding</c> or <see cref="Style"/> that sets it keeps working, and a colour that the app sets on it
 	/// while a state colour is shown appears when the state ends. A state without a background colour of its own gives the element its own
 	/// background colour back by removing the brush. The detach of the behavior while a state colour is shown (the behavior is removed, or
 	/// the element is unloaded) removes it too, and stops the behavior's colour animation.
@@ -240,6 +241,11 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// An element that has a <see cref="VisualElement.Background"/> of its own shows no state colours, as that brush hides its
 	/// <see cref="VisualElement.BackgroundColor"/>. A brush that the app sets while a state colour is shown takes the place of the behavior's
 	/// and stays.
+	/// </para>
+	/// <para>
+	/// A <see cref="VisualStateManager"/> or <see cref="Trigger"/> setter on <see cref="VisualElement.BackgroundColor"/>, such as the "Disabled"
+	/// state of a <see cref="Button"/> style, no longer beats the behavior's colour: the behavior's brush hides it for as long as the behavior
+	/// is attached and a colour is set. A setter on <see cref="VisualElement.Background"/> still wins while it applies.
 	/// </para>
 	/// <para>
 	/// An element without a background colour gets <see cref="Colors.Transparent"/> from the first state update after the attach when that
@@ -254,8 +260,8 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// </summary>
 	/// <remarks>
 	/// The colour of a state is painted as the element's <see cref="VisualElement.Background"/>, a <see cref="SolidColorBrush"/> of the
-	/// behavior, while the state is shown: <see cref="VisualElement.BackgroundColor"/> is never written and keeps the app's colour, so a binding,
-	/// <c>DynamicResource</c>, <c>AppThemeBinding</c> or <see cref="Style"/> that sets it keeps working, and a colour that the app sets on it
+	/// behavior, while the state is shown: <see cref="VisualElement.BackgroundColor"/> is never written for a state colour and keeps the
+	/// app's colour, so a binding, <c>DynamicResource</c>, <c>AppThemeBinding</c> or <see cref="Style"/> that sets it keeps working, and a colour that the app sets on it
 	/// while a state colour is shown appears when the state ends. A state without a background colour of its own gives the element its own
 	/// background colour back by removing the brush. The detach of the behavior while a state colour is shown (the behavior is removed, or
 	/// the element is unloaded) removes it too, and stops the behavior's colour animation.
@@ -263,6 +269,11 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// An element that has a <see cref="VisualElement.Background"/> of its own shows no state colours, as that brush hides its
 	/// <see cref="VisualElement.BackgroundColor"/>. A brush that the app sets while a state colour is shown takes the place of the behavior's
 	/// and stays.
+	/// </para>
+	/// <para>
+	/// A <see cref="VisualStateManager"/> or <see cref="Trigger"/> setter on <see cref="VisualElement.BackgroundColor"/>, such as the "Disabled"
+	/// state of a <see cref="Button"/> style, no longer beats the behavior's colour: the behavior's brush hides it for as long as the behavior
+	/// is attached and a colour is set. A setter on <see cref="VisualElement.Background"/> still wins while it applies.
 	/// </para>
 	/// <para>
 	/// An element without a background colour gets <see cref="Colors.Transparent"/> from the first state update after the attach when that
@@ -277,8 +288,8 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// </summary>
 	/// <remarks>
 	/// The colour of a state is painted as the element's <see cref="VisualElement.Background"/>, a <see cref="SolidColorBrush"/> of the
-	/// behavior, while the state is shown: <see cref="VisualElement.BackgroundColor"/> is never written and keeps the app's colour, so a binding,
-	/// <c>DynamicResource</c>, <c>AppThemeBinding</c> or <see cref="Style"/> that sets it keeps working, and a colour that the app sets on it
+	/// behavior, while the state is shown: <see cref="VisualElement.BackgroundColor"/> is never written for a state colour and keeps the
+	/// app's colour, so a binding, <c>DynamicResource</c>, <c>AppThemeBinding</c> or <see cref="Style"/> that sets it keeps working, and a colour that the app sets on it
 	/// while a state colour is shown appears when the state ends. A state without a background colour of its own gives the element its own
 	/// background colour back by removing the brush. The detach of the behavior while a state colour is shown (the behavior is removed, or
 	/// the element is unloaded) removes it too, and stops the behavior's colour animation.
@@ -286,6 +297,11 @@ public partial class TouchBehavior : BasePlatformBehavior<VisualElement>
 	/// An element that has a <see cref="VisualElement.Background"/> of its own shows no state colours, as that brush hides its
 	/// <see cref="VisualElement.BackgroundColor"/>. A brush that the app sets while a state colour is shown takes the place of the behavior's
 	/// and stays.
+	/// </para>
+	/// <para>
+	/// A <see cref="VisualStateManager"/> or <see cref="Trigger"/> setter on <see cref="VisualElement.BackgroundColor"/>, such as the "Disabled"
+	/// state of a <see cref="Button"/> style, no longer beats the behavior's colour: the behavior's brush hides it for as long as the behavior
+	/// is attached and a colour is set. A setter on <see cref="VisualElement.Background"/> still wins while it applies.
 	/// </para>
 	/// <para>
 	/// An element without a background colour gets <see cref="Colors.Transparent"/> from the first state update after the attach when that

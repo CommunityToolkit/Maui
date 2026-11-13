@@ -10,10 +10,10 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
-	// MAUI 10.0.120+ and 11.0.10 drop an app's DynamicResource on BackgroundColor as soon as anything sets the property, so the behavior paints
-	// a brush of its own: its reference also tells it from the app's Background.
 	const string stateBackgroundAnimationHandle = "TouchBehaviorStateBackground";
 
+	// MAUI 10.0.120+ and 11.0.10 drop an app's DynamicResource on BackgroundColor as soon as anything sets the property (dotnet/maui#38063),
+	// so the behavior paints a brush of its own: its reference also tells it from the app's Background.
 	SolidColorBrush? stateBackgroundBrush;
 
 	bool hasUpdatedBackgroundColor;
@@ -1072,8 +1072,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		return animationCompletionSource.Task;
 	}
 
-	// The brush is the behavior's own while it is the element's Background (reference identity): one that the app set in its place is the app's
-	// and stays, with the animation that was still painting the behavior's.
+	// A brush the app set in place of the behavior's is the app's: the behavior stops painting and lets it go.
 	void ForgetStateBackgroundBrushTheAppReplaced(VisualElement element)
 	{
 		if (stateBackgroundBrush is null || ReferenceEquals(element.Background, stateBackgroundBrush))
@@ -1084,6 +1083,15 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		backgroundColorAnimation = null;
 		element.AbortAnimation(stateBackgroundAnimationHandle);
 		stateBackgroundBrush = null;
+
+		// A visual state or a trigger hides the behavior's brush without replacing it: clearing the element's own value removes the brush then,
+		// and a brush that the app set in its place is set back.
+		var shownBackground = element.Background;
+		element.ClearValue(VisualElement.BackgroundProperty);
+		if (!ReferenceEquals(element.Background, shownBackground))
+		{
+			element.Background = shownBackground;
+		}
 	}
 
 	SolidColorBrush GetOrAttachStateBackgroundBrush(VisualElement element)
@@ -1123,8 +1131,13 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		element.ClearValue(VisualElement.BackgroundProperty);
-		stateBackgroundBrush = null;
+		ForgetStateBackgroundBrushTheAppReplaced(element);
+
+		if (stateBackgroundBrush is not null)
+		{
+			element.ClearValue(VisualElement.BackgroundProperty);
+			stateBackgroundBrush = null;
+		}
 	}
 
 	async Task<bool> RunAnimationTask(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)

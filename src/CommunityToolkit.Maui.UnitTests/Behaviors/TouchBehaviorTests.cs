@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -1501,6 +1502,55 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		touchBehavior.HandleTouch(TouchStatus.Completed);
 		Assert.Same(appBrush, view.Background);
+	}
+
+	[Fact]
+	public async Task VerifyAppBackgroundSetDuringTheGiveBackAnimationStays()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		view.EnableAnimations();
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		touchBehavior.PressedAnimationDuration = 0;
+		touchBehavior.DefaultAnimationDuration = 400;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		await Task.Delay(60, TestContext.Current.CancellationToken);
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		view.Background = appBrush;
+		await Task.Delay(1500, TestContext.Current.CancellationToken);
+
+		Assert.Same(appBrush, view.Background);
+	}
+
+	[Fact]
+	public void VerifyVisualStateBackgroundOverTheBehaviorsBrushDoesNotLeaveItBehind()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		VisualStateManager.SetVisualStateGroups(view,
+		[
+			new VisualStateGroup
+			{
+				Name = "CommonStates",
+				States =
+				{
+					new VisualState { Name = "Normal" },
+					new VisualState { Name = "Disabled", Setters = { new Setter { Property = VisualElement.BackgroundProperty, Value = new SolidColorBrush(Colors.Gray) } } }
+				}
+			}
+		]);
+		touchBehavior.HoveredBackgroundColor = Colors.Blue;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		view.IsEnabled = false;
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		view.IsEnabled = true;
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Blue, ShownBackgroundColor(view));
 	}
 
 	static Color? ShownBackgroundColor(VisualElement element) => ((IView)element).Background is SolidPaint solidPaint ? solidPaint.Color : null;

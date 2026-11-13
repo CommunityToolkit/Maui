@@ -1411,10 +1411,12 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			Assert.Equal(Colors.Red, host.BackgroundColor);
+			Assert.True(Brush.IsNullOrEmpty(host.Background));
 
 			// The stopped animation writes no more colours.
 			await SettleAsync();
 			Assert.Equal(Colors.Red, host.BackgroundColor);
+			Assert.True(Brush.IsNullOrEmpty(host.Background));
 
 			ChangeAppBackgroundColor(host, AppColorSource.Binding, colorSource);
 			Assert.Equal(Colors.Green, host.BackgroundColor);
