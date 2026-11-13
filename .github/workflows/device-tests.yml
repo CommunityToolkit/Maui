@@ -37,8 +37,9 @@ env:
 # No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
-# The iOS app is built once, without coverage, for the older iOS versions (device_tests_ios_app, device_tests_ios_runtime); the iOS 27.2 job builds its own,
-# instrumented one.
+# The iOS and Android apps are built once, without coverage, for the older iOS versions and the other Android API levels
+# (device_tests_ios_app, device_tests_ios_runtime, device_tests_android_app, device_tests_android_runtime); the iOS 27.2 and Android API 36 jobs
+# build their own, instrumented ones.
 # Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
 # (eng/devices/LOCAL.md), so this file shows how to run them. -Platform is explicit because without it run.ps1 runs every platform of the
 # machine and, for a Category= filter, skips a platform that has no test of the category instead of failing with 94.
@@ -48,33 +49,19 @@ jobs:
     # tests, and a run started to answer a question does not need the instrumentation. In a called workflow, github.event_name is the
     # caller's event, so != 'workflow_dispatch' is true in a Build run only.
     device_tests_android:
-        name: Device Tests (Android API ${{ matrix.api-level }})
+        name: Device Tests (Android API 36)
         permissions:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
         runs-on: ubuntu-24.04
-        # 110 minutes: the API 36 leg also builds the app in its test step (coverage), with the emulator running.
+        # 110 minutes: this job also builds the app in its test step (coverage), with the emulator running.
         timeout-minutes: 110
-        strategy:
-            fail-fast: false
-            matrix:
-                api-level: [ 36, 28 ]
-                include:
-                    # The API 28 x86_64 image (google_apis r11, PSR1.180720.122, a 2020 build) turns on GLDMA, YUVCache and YUV420888toNV21
-                    # (its advancedFeatures.ini; the arm64 API 28 images turn on none of them). Its YUV buffers then go through the host's YUV
-                    # converter, which aborted the whole emulator ("FATAL | Unknown format: 0x18", gfxstream's getYUVOffsets, emulator
-                    # 37.2.12) as soon as the first Camera test started the preview. Turned off, the image handles YUV itself, as the
-                    # arm64 API 28 images do. (On an arm64 API 28 image, turning them on makes YUV images that an app writes read back as
-                    # zeros: the YUV round trip of CameraManagerCaptureAndroidTests fails.) The API 36 image turns on GLDMA and YUVCache with
-                    # a newer guest and ran every test.
-                    -   api-level: 28
-                        emulator-features: -feature -GLDMA,-YUVCache,-YUV420888toNV21
         env:
-            # One Android level is enough for the merged coverage report; API 28 runs without the instrumented build.
-            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' && matrix.api-level == 36 }}
+            # One Android level is enough for the merged coverage report; device_tests_android_runtime runs the others without the instrumented build.
+            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
             # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
             # answer, and then every OfflineSpeechToTextTests question waits 30 s (25 rows on API 36), which can exceed the time budget.
-            # Delete it when a run-everything run shows those rows passing, or skipping without the 30 s waits, on both API levels.
+            # Delete it when a run-everything run shows those rows passing, or skipping without the 30 s waits, on every API level.
             DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'OnDeviceSpeech' || '' }}
             # SecondCamera: the emulator has a back and a front camera (-camera-front emulated below), so the two-camera tests fail, instead of
             # skipping, if the emulator options ever lose one.
@@ -166,7 +153,7 @@ jobs:
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
                 uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
                 with:
-                    api-level: ${{ matrix.api-level }}
+                    api-level: 36
                     target: google_apis
                     arch: x86_64
                     profile: pixel_7_pro
@@ -178,12 +165,296 @@ jobs:
                     # emulator, so a saved snapshot never matched the next start's configuration ("The emulator is starting from scratch.
                     # Reason: different AVD configuration") and every run cold-booted anyway. AVDs that avdmanager creates have no front
                     # camera (hw.camera.front=none); -camera-front emulated adds one for the two-camera tests.
-                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated ${{ matrix.emulator-features }}
+                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated
                     disable-animations: true
                     # 50 minutes: the tests of every package took 14.7 minutes on API 36 and 14.6 on API 28 on this runner (232630d9, three apps then) and
                     # 13.4 minutes on an arm64 emulator on an M4 Max (one app); a slow runner is about 2x slower.
                     # -ResultsFolder, not -Results: the coverage upload below reads this exact folder, and the coverage report is named after it.
-                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
+                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api36
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-android-api36
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+            -   name: Upload device test coverage
+                if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: coverage-device-tests-android-api36
+                    path: artifacts/device-tests/android-api36/coverage/*.cobertura.xml
+                    if-no-files-found: warn
+
+    # Builds the Android app once, without coverage, for device_tests_android_runtime. device_tests_android cannot share it: it collects
+    # coverage, so it builds an instrumented app in its test step.
+    device_tests_android_app:
+        name: Device Tests (Android app for the other API levels)
+        permissions:
+            contents: read
+        # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
+        runs-on: ubuntu-24.04
+        timeout-minutes: 60
+        env:
+            DEVICE_TEST_COVERAGE: false
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+                with:
+                    distribution: 'microsoft'
+                    java-version: '21'
+
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # global.json rolls forward to the newest SDK on the runner, which can be newer than the one setup-dotnet installs (TOOLKIT_NET_VERSION),
+            # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-android-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            # Keyed on the files that decide which packages a restore needs. A changed key restores from nuget.org (about 5 s for these projects
+            # on the runners), and the job saves the cache when it succeeds.
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
+            # Directory.Build.targets removes the iOS and Mac Catalyst target frameworks on Linux, so restore only needs Android.
+            -   name: Install .NET MAUI Android Workload
+                run: dotnet workload install maui-android --version ${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Runner diagnostics
+                run: |
+                    nproc
+                    free -h
+                    df -h "$GITHUB_WORKSPACE" "$HOME"
+
+            -   name: Build device test app
+                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+
+            # The packed path keeps bin/<configuration>/<target framework>/ relative to the project, as device_tests_ios_app does, so
+            # run.ps1 finds the app where a build puts it. The glob follows the repo's NetVersion.
+            -   name: Pack the app
+                shell: bash
+                run: |
+                    cd src/CommunityToolkit.Maui.DeviceTests
+                    shopt -s nullglob
+                    apps=(bin/"$DEVICE_TEST_CONFIGURATION"/net*-android/*-Signed.apk)
+                    if [ "${#apps[@]}" -ne 1 ]; then
+                        echo "::error::Expected one signed Android app, found ${#apps[@]}: ${apps[*]}"
+                        exit 1
+                    fi
+                    tar -czf "$RUNNER_TEMP/android-app.tgz" "${apps[0]}"
+                    ls -l "$RUNNER_TEMP/android-app.tgz"
+
+            -   name: Upload the app
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: android-app
+                    path: ${{ runner.temp }}/android-app.tgz
+                    compression-level: 0
+                    # 3 days, so that re-running only a failed API level a day later still finds the app.
+                    retention-days: 3
+                    if-no-files-found: error
+
+            -   name: Upload build logs
+                if: failure()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-android-app-logs
+                    path: artifacts/logs/
+
+    # The app of device_tests_android_app on the newest release of every other Android version that .NET MAUI can run (device_tests_android has
+    # API 36). Quoted api-level values: the emulator action passes them to sdkmanager as they are, and YAML would turn 37.0 into 37.
+    # No coverage: device_tests_android collects the Android coverage.
+    device_tests_android_runtime:
+        name: Device Tests (Android API ${{ matrix.api-level }})
+        needs: [ device_tests_android_app ]
+        permissions:
+            contents: read
+        # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
+        runs-on: ubuntu-24.04
+        timeout-minutes: 90
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    # Android 7.1. The app's minimum is 24, so the MediaElement tests (they need API 26) skip.
+                    -   api-level: '25'
+                    # Android 8.1. The only x86_64 image of API 27 is the one without Google APIs.
+                    -   api-level: '27'
+                        target: default
+                    # The API 28 x86_64 image (google_apis r11, PSR1.180720.122, a 2020 build) turns on GLDMA, YUVCache and YUV420888toNV21
+                    # (its advancedFeatures.ini; the arm64 API 28 images turn on none of them). Its YUV buffers then go through the host's YUV
+                    # converter, which aborted the whole emulator ("FATAL | Unknown format: 0x18", gfxstream's getYUVOffsets, emulator
+                    # 37.2.12) as soon as the first Camera test started the preview. Turned off, the image handles YUV itself, as the
+                    # arm64 API 28 images do. (On an arm64 API 28 image, turning them on makes YUV images that an app writes read back as
+                    # zeros: the YUV round trip of CameraManagerCaptureAndroidTests fails.) The API 36 image turns on GLDMA and YUVCache with
+                    # a newer guest and ran every test.
+                    -   api-level: '28'
+                        emulator-features: -feature -GLDMA,-YUVCache,-YUV420888toNV21
+                    -   api-level: '29'
+                    -   api-level: '30'
+                    # Android 12L, the newest Android 12.
+                    -   api-level: '32'
+                    -   api-level: '33'
+                    -   api-level: '34'
+                    -   api-level: '35'
+                    # Android 16 QPR2, the newest Android 16 release.
+                    -   api-level: '36.1'
+                    -   api-level: '37.0'
+        env:
+            DEVICE_TEST_COVERAGE: false
+            # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
+            # answer, and then every OfflineSpeechToTextTests question waits 30 s, which can exceed the time budget.
+            # Delete it when a run-everything run shows those rows passing, or skipping without the 30 s waits, on every API level.
+            DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'OnDeviceSpeech' || '' }}
+            # SecondCamera: the emulator has a back and a front camera (-camera-front emulated below), so the two-camera tests fail, instead of
+            # skipping, if the emulator options ever lose one.
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'SecondCamera'
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+                with:
+                    distribution: 'microsoft'
+                    java-version: '21'
+
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # global.json rolls forward to the newest SDK on the runner, which can be newer than the one setup-dotnet installs (TOOLKIT_NET_VERSION),
+            # and the runners install workload sets, so the key names the SDK that runs and the newest workload set of its band, and the install
+            # pins that version: a new workload release starts a new cache instead of being hidden by an old one.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-android-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            # No NuGet cache: this job restores no project, and a cache it saved would hold only the tools.
+            # Directory.Build.targets removes the iOS and Mac Catalyst target frameworks on Linux, so restore only needs Android.
+            -   name: Install .NET MAUI Android Workload
+                run: dotnet workload install maui-android --version ${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Enable KVM
+                run: |
+                    echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                    sudo udevadm control --reload-rules
+                    # --settle returns once udevd has applied the rule; without it, trigger only queues the event and the check below can run first.
+                    sudo udevadm trigger --name-match=kvm --settle
+                    # Without a usable /dev/kvm the emulator action only warns and runs the x86_64 emulator with -accel off, far too slowly.
+                    if ! { test -r /dev/kvm && test -w /dev/kvm; }; then
+                        echo '::error::/dev/kvm is not usable, so the Android emulator cannot use hardware acceleration.'
+                        exit 1
+                    fi
+
+            -   name: Runner diagnostics
+                run: |
+                    nproc
+                    free -h
+                    df -h "$GITHUB_WORKSPACE" "$HOME"
+
+            -   name: Download the app
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    name: android-app
+                    path: ${{ runner.temp }}
+
+            -   name: Unpack the app
+                id: unpack
+                run: tar -xzf "$RUNNER_TEMP/android-app.tgz" -C src/CommunityToolkit.Maui.DeviceTests
+
+            # The runner image's cmdline-tools 12.0 write target=android-0 into the AVD of a dotted API level (actions/runner-images #14484,
+            # android-emulator-runner #482 and #494), and the emulator then boots a broken guest. The action keeps the image's tools because
+            # their folder exists; without it, it installs its own, current ones (20.0 has the fix).
+            -   name: Remove the runner image's old cmdline-tools
+                if: ${{ contains(matrix.api-level, '.') }}
+                run: sudo rm -rf "$ANDROID_HOME/cmdline-tools"
+
+            # Runs even when the unpack step failed: run.ps1 then reports Not run (71) with the missing app.
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+                uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+                with:
+                    api-level: ${{ matrix.api-level }}
+                    target: ${{ matrix.target || 'google_apis' }}
+                    arch: x86_64
+                    profile: pixel_7_pro
+                    cores: 4
+                    ram-size: 4096M
+                    disk-size: 6000M
+                    force-avd-creation: false
+                    # See device_tests_android for the emulator options.
+                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated ${{ matrix.emulator-features }}
+                    disable-animations: true
+                    # 50 minutes, as device_tests_android. The first script line is the guard against target=android-0: a failing
+                    # pre-emulator-launch-script does not stop the action, and a script line that fails skips the lines after it.
+                    # -ResultsFolder, not -Results, as device_tests_android.
+                    script: |
+                        if grep -qs '^target=android-0$' "$HOME/.android/avd/test.ini" "$HOME/.android/avd/test.avd/config.ini"; then echo '::error::The AVD has target=android-0 (old cmdline-tools).'; exit 1; fi
+                        pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
 
             -   name: Upload device test results
                 if: always()
@@ -194,13 +465,6 @@ jobs:
                         artifacts/device-tests/
                         artifacts/logs/
 
-            -   name: Upload device test coverage
-                if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
-                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-                with:
-                    name: coverage-device-tests-android-api${{ matrix.api-level }}
-                    path: artifacts/device-tests/android-api${{ matrix.api-level }}/coverage/*.cobertura.xml
-                    if-no-files-found: warn
 
     device_tests_ios:
         name: Device Tests (iOS Simulator)
@@ -396,17 +660,20 @@ jobs:
                     name: device-tests-ios-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_ios_app on the iOS versions that the xcode-27 image has no simulator runtime for (it has iOS 27.x only).
-    # The macos-26 image has the iOS 26.2, 26.4 and 26.5 runtimes (its readme, "Installed Simulators"), so nothing is downloaded, and
-    # XHarness brings its own mlaunch, so the app that Xcode 27 built (minimum iOS 15.0) runs here under Xcode 26.x. No coverage:
-    # device_tests_ios collects the iOS coverage.
+    # The app of device_tests_ios_app on the newest release of every other supported iOS major version (device_tests_ios has 27.2), because
+    # the xcode-27 image has iOS 27.x runtimes only. XHarness brings its own mlaunch, so the app that Xcode 27 built (minimum iOS 15.0)
+    # runs under older Xcode versions. No coverage: device_tests_ios collects the iOS coverage.
+    #   - 26.5: the macos-26 image has it (its readme, "Installed Simulators").
+    #   - 18.6: the macos-15 image has it.
+    #   - 17.5, 16.4, 15.5: no runner image has them, so the install step downloads the runtime. They run on macos-15 like 18.6.
     device_tests_ios_runtime:
         name: Device Tests (iOS ${{ matrix.ios-version }} Simulator)
         needs: [ device_tests_ios_app ]
         permissions:
             contents: read
         runs-on: ${{ matrix.runner }}
-        timeout-minutes: 90
+        # 120 minutes: the runtime download of an old iOS version took up to 12 minutes, and old runtimes run slower.
+        timeout-minutes: 120
         strategy:
             fail-fast: false
             matrix:
@@ -415,6 +682,21 @@ jobs:
                     -   ios-version: '26.5'
                         runner: macos-26
                         xcode: '26.6'
+                    -   ios-version: '18.6'
+                        runner: macos-15
+                        xcode: '16.4'
+                    -   ios-version: '17.5'
+                        runner: macos-15
+                        xcode: '16.4'
+                        install-runtime: true
+                    -   ios-version: '16.4'
+                        runner: macos-15
+                        xcode: '16.4'
+                        install-runtime: true
+                    -   ios-version: '15.5'
+                        runner: macos-15
+                        xcode: '16.4'
+                        install-runtime: true
         env:
             DEVICE_TEST_COVERAGE: false
         steps:
@@ -463,6 +745,27 @@ jobs:
             -   name: Restore .NET tools
                 id: tools
                 run: dotnet tool restore
+
+            # No runner image has iOS 15, 16 or 17 (the macos-14 images were retired on 2026-11-02), and a runtime of several GB does not fit
+            # the repository's 10 GB cache, so each job downloads it. The download fails now and then, hence the retries.
+            -   name: Install the iOS ${{ matrix.ios-version }} simulator runtime
+                if: ${{ matrix.install-runtime }}
+                shell: bash
+                env:
+                    IOS_VERSION: ${{ matrix.ios-version }}
+                run: |
+                    runtime_is_installed() { xcrun simctl list runtimes -j | jq -e --arg v "$IOS_VERSION" '.runtimes[] | select(.platform == "iOS" and .version == $v and .isAvailable)' > /dev/null; }
+                    if ! runtime_is_installed; then
+                        for attempt in 1 2 3; do
+                            sudo xcodes runtimes install "iOS $IOS_VERSION" && break
+                            echo "::warning::Installing the iOS $IOS_VERSION runtime failed (attempt $attempt of 3)."
+                            sleep 30
+                        done
+                    fi
+                    if ! runtime_is_installed; then
+                        echo "::error::The iOS $IOS_VERSION simulator runtime is not available."
+                        exit 1
+                    fi
 
             -   name: Runner diagnostics
                 run: |
@@ -765,8 +1068,8 @@ jobs:
     device_tests:
         name: Device Tests
         if: ${{ always() }}
-        # A failed app build skips device_tests_ios_runtime, and the check below counts a skipped job as not succeeded.
-        needs: [ device_tests_android, device_tests_ios, device_tests_ios_app, device_tests_ios_runtime, device_tests_maccatalyst, device_tests_windows ]
+        # A failed app build skips device_tests_ios_runtime or device_tests_android_runtime, and the check below counts a skipped job as not succeeded.
+        needs: [ device_tests_android, device_tests_android_app, device_tests_android_runtime, device_tests_ios, device_tests_ios_app, device_tests_ios_runtime, device_tests_maccatalyst, device_tests_windows ]
         runs-on: ubuntu-latest
         permissions: {}
         timeout-minutes: 5

@@ -315,7 +315,7 @@ jobs:
                 run: |
                     ./eng/coverage-report.ps1 -Report artifacts/coverage -Output artifacts/coverage-report -Note @(
                         'Reports: `ut` is the toolkit''s unit tests (Release), `ut-*` the analyzer and source generator unit tests; the others are the device tests of Android API 36, the iOS simulator and Mac Catalyst.',
-                        'Not included: the Windows device tests (no way of collecting their coverage has been verified, so `windows.ps1` has no `-Coverage`), the Android API 28 job (one Android level is collected) and the iOS 26.5 job (one iOS version is collected).')
+                        'Not included: the Windows device tests (no way of collecting their coverage has been verified, so `windows.ps1` has no `-Coverage`), the device tests of the other Android API levels and iOS versions (only Android API 36 and iOS 27.2 collect coverage).')
 
             -   name: Upload coverage report
                 if: ${{ !cancelled() }}
