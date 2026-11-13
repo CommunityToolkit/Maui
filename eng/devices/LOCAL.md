@@ -45,6 +45,7 @@ pwsh eng/devices/run.ps1 -TestFilter 'Category=MediaElementAndroid'     # the te
 pwsh eng/devices/run.ps1 -TestFilter 'Category=IconTintColorBehavior'   # one test category, where it has tests
 pwsh eng/devices/run.ps1 -TestFilter 'SkipCategories=Snackbar,Badge'   # everything except these categories
 pwsh eng/devices/run.ps1 -Configuration Release                         # what CI builds
+pwsh eng/devices/run.ps1 -BuildArgs '/p:MauiPackageVersion=*'          # the latest .NET MAUI release, as CI builds the app
 pwsh eng/devices/run.ps1 -Target buildOnly                              # build without a device, then run with -Target testOnly as often as you like
 ```
 

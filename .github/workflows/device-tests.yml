@@ -33,6 +33,9 @@ env:
     # Release, the configuration that apps ship in (eng/devices/README.md, "CI"). Both steps of a job pass it: the test step looks for the
     # app that the build step made for that configuration.
     DEVICE_TEST_CONFIGURATION: ${{ inputs.configuration || 'Release' }}
+    # Like the sample, the device test app builds with the latest .NET MAUI release, so it and the libraries it references share one
+    # version (two in one Windows app fail PRI277); the libraries keep their pinned MauiPackageVersion (.github/copilot-instructions.md).
+    DEVICE_TEST_BUILD_ARGS: '/p:MauiPackageVersion=*'
 
 # No concurrency group: called from dotnet-build.yml, the Build run's group cancels this workflow with the rest of the run (a group of
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
@@ -146,7 +149,7 @@ jobs:
             # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
                 if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             # Runs even when the build step failed: run.ps1 then reports Not run (71) with the build error.
             -   name: Run device tests
@@ -170,7 +173,7 @@ jobs:
                     # 50 minutes: the tests of every package took 14.7 minutes on API 36 and 14.6 on API 28 on this runner (232630d9, three apps then) and
                     # 13.4 minutes on an arm64 emulator on an M4 Max (one app); a slow runner is about 2x slower.
                     # -ResultsFolder, not -Results: the coverage upload below reads this exact folder, and the coverage report is named after it.
-                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api36
+                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api36 -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             -   name: Upload device test results
                 if: always()
@@ -265,7 +268,7 @@ jobs:
                     df -h "$GITHUB_WORKSPACE" "$HOME"
 
             -   name: Build device test app
-                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             # The packed path keeps bin/<configuration>/<target framework>/ relative to the project, as device_tests_ios_app does, so
             # run.ps1 finds the app where a build puts it. The glob follows the repo's NetVersion.
@@ -552,12 +555,12 @@ jobs:
             # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
                 if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             # 60 minutes: the tests of every package took 22 minutes on this runner (232630d9; 3 M1 cores, runs vary by about 30%).
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00 -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             -   name: Upload device test results
                 if: always()
@@ -633,7 +636,7 @@ jobs:
                 run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
 
             -   name: Build device test app
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             # A zipped artifact loses file modes (actions/upload-artifact, "Permission Loss"), and the app's executable must stay executable.
             # The glob follows the repo's NetVersion and the runner's architecture instead of naming net11.0-ios/iossimulator-arm64.
@@ -931,12 +934,12 @@ jobs:
             # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
                 if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             # 30 minutes: the tests of every package took 7.6 minutes on this runner.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00
+                run: pwsh ./eng/devices/run.ps1 -Platform maccatalyst -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 00:30:00 -BuildArgs "$DEVICE_TEST_BUILD_ARGS"
 
             -   name: Upload device test results
                 if: always()
@@ -1058,7 +1061,7 @@ jobs:
             # run.ps1 runs windows.ps1 in the same process, so in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
             -   name: Build device test apps
                 shell: powershell
-                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Configuration $env:DEVICE_TEST_CONFIGURATION
+                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Configuration $env:DEVICE_TEST_CONFIGURATION -BuildArgs $env:DEVICE_TEST_BUILD_ARGS
 
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.workload.outcome == 'success' }}

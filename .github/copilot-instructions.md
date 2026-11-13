@@ -23,6 +23,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * The libraries pin the first .NET and .NET MAUI release of each major version (for example the .NET 11.0.100 SDK and `MauiPackageVersion` 11.0.0 in `Directory.Build.props`), so apps can use any later release.
 * Raise a pinned version only when a bug fix or a feature requires it.
 * The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
+* The device test app builds the same way in CI (`DEVICE_TEST_BUILD_ARGS` in `device-tests.yml`), so the device tests run on the .NET MAUI release that apps get. .NET MAUI 11.0.0 crashes on iOS 17 and earlier when a view with a managed KVO observer is collected (dotnet/maui#38662).
 
 ### C# File Naming
 * Platform-suffix naming is required for files in projects that produce NuGet packages.
