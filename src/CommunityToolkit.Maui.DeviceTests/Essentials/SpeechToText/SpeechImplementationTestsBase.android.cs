@@ -102,7 +102,7 @@ public abstract partial class SpeechImplementationTestsBase
 		}
 		finally
 		{
-			// DisposeAsync destroys the session's recognizer before it releases the listener, so the service cannot call a released listener.
+			// The sessions that the platform disconnected are released when the test ends, not while a later attempt uses the shared connection.
 			foreach (var speech in disconnectedSessions)
 			{
 				await speech.DisposeAsync();
@@ -420,6 +420,7 @@ public abstract partial class SpeechImplementationTestsBase
 			await speech.DisposeAsync();
 
 			Assert.Equal(IntPtr.Zero, recognizer.Handle);
+			Assert.NotEqual(IntPtr.Zero, listenerPeer.Handle);
 			Assert.Null(SpeechInternals.GetField<SpeechRecognizer>(speech, "speechRecognizer"));
 			Assert.Null(SpeechInternals.GetField<Java.Lang.Object>(speech, "listener"));
 
@@ -593,9 +594,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// Before Android 15 Destroy() keeps the messages that the recognizer already queued on the main looper: the start among them is answered with
-	// ERROR_CLIENT ("not connected to the recognition service") after the turn. Detaching the listener first keeps that answer from reaching it
-	// in most turns, but not when the recognizer was already connected: its detach then queues behind the start.
+	// Detaching first keeps the late ERROR_CLIENT of the start that Destroy() leaves queued from the listener in most runs, not all: the binder
+	// thread that connects the recognizer drains its queued messages while the main thread queues the detach.
 	static void DetachAndDestroy(SpeechRecognizer? recognizer)
 	{
 		recognizer?.SetRecognitionListener(null);
@@ -610,24 +610,41 @@ public abstract partial class SpeechImplementationTestsBase
 		phase.SetValue(listener, Enum.Parse(phase.PropertyType, "Ended"));
 	}
 
+	// A late ERROR_CLIENT can still reach the detached listener (see DetachAndDestroy): the helper drains the main looper and starts again with a
+	// new implementation when it did, so the returned session is still Listening and has reported nothing.
+	const int destroyedSessionAttempts = 3;
+
 	async Task<(ISpeechToText Speech, SpeechEventRecorder Events, IRecognitionListener Listener)> StartAndDestroyTheRealRecognizer()
 	{
 		var options = await GetStartableOptionsAsync();
 		var speech = CreateSpeech();
-		var events = new SpeechEventRecorder(speech);
-
-		var listener = await StartOnMainThreadAsync(speech, options, startException =>
+		for (var attempt = 1; ; attempt++)
 		{
-			Assert.Null(startException);
-			// Destroyed in the same main-thread turn as the start, so the service cannot call the listener first (StopListenAsync would not do:
-			// the stopped session still reports its outcome), and the session stays the toolkit's running session.
-			DetachAndDestroy(GetRecognizer(speech)!);
-			return Task.FromResult((IRecognitionListener)GetListener(speech)!);
-		});
+			var events = new SpeechEventRecorder(speech);
 
-		Assert.Empty(events.Entries);
+			var listener = await StartOnMainThreadAsync(speech, options, startException =>
+			{
+				Assert.Null(startException);
+				// Destroyed in the same main-thread turn as the start, so the service cannot call the listener first (StopListenAsync would not do:
+				// the stopped session still reports its outcome), and the session stays the toolkit's running session.
+				DetachAndDestroy(GetRecognizer(speech)!);
+				return Task.FromResult((IRecognitionListener)GetListener(speech)!);
+			});
 
-		return (speech, events, listener);
+			await InvokeOnMainThreadAsync(() => { });
+			await InvokeOnMainThreadAsync(() => { });
+
+			if (events.Count is 0 || attempt == destroyedSessionAttempts)
+			{
+				Assert.Empty(events.Entries);
+
+				return (speech, events, listener);
+			}
+
+			events.Detach();
+			disconnectedSessions.Add(speech);
+			speech = CreateImplementation();
+		}
 	}
 
 	// DisposeAsync destroys a started recognizer in the turn of its start. Before Android 15 the messages that the recognizer queued on the main
@@ -648,35 +665,6 @@ public abstract partial class SpeechImplementationTestsBase
 		});
 
 		await AssertNoLateRecognitionServiceAnswerAsync(events);
-	}
-
-	// From Android 15 a recognizer handles Destroy() on the main looper, after the messages that are already queued there. DisposeAsync therefore
-	// disposes the managed peer of the recognizer in a message posted after those (RunAfterQueuedMainLooperMessagesAsync). The recognizer is
-	// destroyed first, as in StartAndDestroyTheRealRecognizer, so that the service never answers this session: only the message that the test queues runs.
-	[Fact]
-	public async Task DisposeAsyncOnAndroid15AndLaterDisposesThePeersAfterTheMessagesThatAreAlreadyQueued()
-	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(35), "Before Android 15 the recognizer handles Destroy() at once, and the peers are disposed with it.");
-		var options = await GetStartableOptionsAsync();
-		var speech = CreateSpeech();
-		var peersAliveWhenTheQueuedMessageRan = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		await StartOnMainThreadAsync(speech, options, async startException =>
-		{
-			Assert.Null(startException);
-			var listener = GetListener(speech) ?? throw new InvalidOperationException("The started session has no listener.");
-			var recognizer = GetRecognizer(speech) ?? throw new InvalidOperationException("The started session has no recognizer.");
-			recognizer.Destroy();
-
-			// Stands for a callback of the recognition service that is queued before DisposeAsync runs.
-			using var handler = new Android.OS.Handler(Android.OS.Looper.MainLooper!);
-			handler.Post(() => peersAliveWhenTheQueuedMessageRan.TrySetResult(listener.Handle != IntPtr.Zero && recognizer.Handle != IntPtr.Zero));
-
-			await speech.DisposeAsync();
-			return true;
-		});
-
-		Assert.True(await peersAliveWhenTheQueuedMessageRan.Task.WaitAsync(TimeSpan.FromSeconds(5)), "The Java peer of the recognizer was disposed before a message that was already queued on the main looper ran.");
 	}
 
 	// DisposeAsync on the main thread completes without waiting for the main looper, so a caller that blocks the main thread on it (for
@@ -887,8 +875,8 @@ public abstract partial class SpeechImplementationTestsBase
 		Skip.If(IsRecordAudioGranted, "The recognition service answers every session at once with ERROR_INSUFFICIENT_PERMISSIONS only while RECORD_AUDIO is denied.");
 		var options = await GetStartableOptionsAsync();
 		var answer = $"Completed:Failed:Failure in speech engine - {SpeechRecognizerError.InsufficientPermissions}";
-		var speech = CreateSpeech();
-		var events = new SpeechEventRecorder(speech);
+		var (speech, events) = restartFromTheCompletedEvent ? CreateRecordedSpeech() : await StartAnsweredSessionAsync(options);
+		var answersBeforeTheRestarts = events.Count;
 		var restarts = new ConcurrentQueue<Task>();
 
 		try
@@ -922,11 +910,11 @@ public abstract partial class SpeechImplementationTestsBase
 					});
 
 					Assert.True(restartException is null, $"Restart {restart} failed: {restartException}");
-					var answered = await AssertHelpers.Wait(() => events.Count >= restart, timeout: 10000);
+					var answered = await AssertHelpers.Wait(() => events.Count >= answersBeforeTheRestarts + restart, timeout: 10000);
 					Assert.True(answered, $"Restart {restart} was never answered. Answers: {string.Join(", ", events.Entries)}.");
 				}
 
-				events.AssertEntries([.. Enumerable.Repeat(answer, immediateRestarts)]);
+				Assert.Equal(Enumerable.Repeat(answer, immediateRestarts), events.Entries.Skip(answersBeforeTheRestarts));
 			}
 		}
 		finally
@@ -941,6 +929,34 @@ public abstract partial class SpeechImplementationTestsBase
 			{
 				restarts.Enqueue(speech.StartListenAsync(options));
 			}
+		}
+	}
+
+	(ISpeechToText Speech, SpeechEventRecorder Events) CreateRecordedSpeech()
+	{
+		var speech = CreateSpeech();
+		return (speech, new SpeechEventRecorder(speech));
+	}
+
+	// The first session after the previous test's teardown can meet the unbinding connection (see StartRealSessionAsync), which is not what the
+	// restarts test is about: it starts with a session that the service answered and repeats it with a new implementation when it did not.
+	async Task<(ISpeechToText Speech, SpeechEventRecorder Events)> StartAnsweredSessionAsync(SpeechToTextOptions options)
+	{
+		var speech = CreateSpeech();
+		for (var attempt = 1; ; attempt++)
+		{
+			var events = new SpeechEventRecorder(speech);
+			_ = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() => speech.StartListenAsync(options)));
+			var answered = await AssertHelpers.Wait(() => events.Count > 0, timeout: 5000);
+
+			if ((answered && events.Entries[0] != platformDisconnectedEntry) || attempt == realSessionAttempts)
+			{
+				return (speech, events);
+			}
+
+			events.Detach();
+			disconnectedSessions.Add(speech);
+			speech = CreateImplementation();
 		}
 	}
 

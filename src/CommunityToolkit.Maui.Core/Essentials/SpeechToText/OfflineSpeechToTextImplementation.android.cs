@@ -88,19 +88,6 @@ public sealed partial class OfflineSpeechToTextImplementation
 
 	static bool IsSpeechRecognitionAvailable() => OperatingSystem.IsAndroidVersionAtLeast(34) && SpeechRecognizer.IsOnDeviceRecognitionAvailable(Application.Context);
 
-	static Task RunAfterQueuedMainLooperMessagesAsync(Action action)
-	{
-		var actionCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var mainLooperHandler = new Handler(Looper.MainLooper ?? throw new InvalidOperationException("Android has not prepared the main looper of the app."));
-		mainLooperHandler.Post(() =>
-		{
-			action();
-			actionCompleted.SetResult();
-		});
-
-		return actionCompleted.Task;
-	}
-
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	[SupportedOSPlatform("Android34.0")]
 	async Task InternalStartListening(SpeechToTextOptions options, CancellationToken token = default)
@@ -197,7 +184,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 				speechRecognizer?.StopListening();
 				speechRecognizer?.Destroy();
 				listener.End();
-				_ = ReleaseReplacedSessions();
+				ReleaseReplacedSessions();
 				break;
 		}
 
@@ -212,7 +199,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		if (ReferenceEquals(endedListener, listener))
 		{
 			speechRecognizer?.Destroy();
-			_ = ReleaseReplacedSessions();
+			ReleaseReplacedSessions();
 		}
 	}
 
@@ -244,59 +231,40 @@ public sealed partial class OfflineSpeechToTextImplementation
 	{
 		if (ReferenceEquals(listenerInProgress, listener))
 		{
-			_ = ReleaseReplacedSessions();
+			ReleaseReplacedSessions();
 		}
 	}
 
-	Task ReleaseReplacedSessions()
+	void ReleaseReplacedSessions()
 	{
-		if (replacedSessions.Count is 0)
+		foreach (var (recognizer, recognitionListener) in replacedSessions)
 		{
-			return Task.CompletedTask;
-		}
-
-		var releases = new Task[replacedSessions.Count];
-		for (var i = 0; i < releases.Length; i++)
-		{
-			releases[i] = ReleaseSession(replacedSessions[i].Recognizer, replacedSessions[i].Listener);
+			ReleaseSession(recognizer, recognitionListener);
 		}
 
 		replacedSessions.Clear();
-		return Task.WhenAll(releases);
 	}
 
-	Task ReleaseRecognizer()
+	void ReleaseRecognizer()
 	{
 		var recognizer = speechRecognizer;
 		var recognitionListener = listener;
 		speechRecognizer = null;
 		listener = null;
 
-		return Task.WhenAll(ReleaseSession(recognizer, recognitionListener), ReleaseReplacedSessions());
+		ReleaseSession(recognizer, recognitionListener);
+		ReleaseReplacedSessions();
 	}
 
-	static Task ReleaseSession(SpeechRecognizer? recognizer, SpeechRecognitionListener? recognitionListener)
+	static void ReleaseSession(SpeechRecognizer? recognizer, SpeechRecognitionListener? recognitionListener)
 	{
 		// A released session reports nothing
 		recognitionListener?.End();
 
-		// The listener's Java peer is never disposed: before Android 15 Destroy() keeps the messages that the recognizer already queued on the main looper,
-		// which attach the listener again and answer it with ERROR_CLIENT, and a callback to a disposed peer ends the app. The GC frees the ended listener.
-		// From Android 15 Destroy() is handled on the main looper after the callbacks that are already queued there, so the recognizer is disposed after them.
+		// The listener's Java peer is not disposed: before Android 15 Destroy() keeps messages already queued on the main looper, which
+		// attach the listener again and answer it with ERROR_CLIENT, and a callback to a disposed peer ends the app. The GC frees the listener.
 		recognizer?.Destroy();
-
-		if (recognizer is not null && OperatingSystem.IsAndroidVersionAtLeast(35))
-		{
-			return RunAfterQueuedMainLooperMessagesAsync(DisposePeers);
-		}
-
-		DisposePeers();
-		return Task.CompletedTask;
-
-		void DisposePeers()
-		{
-			recognizer?.Dispose();
-		}
+		recognizer?.Dispose();
 	}
 
 	class SpeechRecognitionListener(OfflineSpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
