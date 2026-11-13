@@ -2,6 +2,7 @@ using System.Text;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Storage;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -333,7 +334,53 @@ public partial class FolderPickerTests
 		pickerDelegate = null!;
 		operation = null!;
 
-		await AssertionExtensions.WaitForGC(references);
+		// The library keeps the picker until it has been off screen for a while, see DocumentPickerRelease
+		await VisualBehaviorHelpers.WaitForGCAsync(references);
+	}
+
+	[Fact]
+	public async Task ThePickerIsKeptUntilItHasBeenOffScreenForAWhile()
+	{
+		var (operation, picker, _) = await StartPickAsync();
+		await FilesApplePicker.SimulateUserCancelsAsync(picker);
+		await operation.WaitAsync(operationTimeout);
+
+		Assert.NotEqual(NativeHandle.Zero, picker.Handle);
+		await AssertionExtensions.AssertEventuallyAsync(() => Task.FromResult(picker.Handle == NativeHandle.Zero), timeout: 10000, message: "The picker was never released.");
+	}
+
+	// iOS 18 and earlier crash the app when the view service of a picker messages the picker after it was released
+	[Fact]
+	public async Task PickersClosedRightAfterTheyAppearDoNotCrashTheApp()
+	{
+		const int iterations = 10;
+
+		for (var i = 0; i < iterations; i++)
+		{
+			var (operation, picker, _) = await StartPickAsync(TemporaryRoot);
+			await FilesApplePicker.SimulateUserCancelsAsync(picker);
+			await operation.WaitAsync(operationTimeout);
+			await InvokeOnMainThreadAsync(FilesApplePicker.DismissAnyPickerAsync);
+		}
+
+		for (var i = 0; i < iterations; i++)
+		{
+			using var cancellation = new CancellationTokenSource();
+			var operation = await StartOnMainThreadAsync(() => FolderPicker.Default.PickAsync(TemporaryRoot, cancellation.Token));
+
+			if (i % 2 is 0)
+			{
+				await FilesApplePicker.WaitUntilShownAsync(await FilesApplePicker.WaitForPickerAsync());
+			}
+
+			await cancellation.CancelAsync();
+			await operation.WaitAsync(operationTimeout);
+			await AssertionExtensions.AssertEventuallyAsync(async () => !await FilesApplePicker.IsPickerPresentedAsync(), timeout: 5000, message: "The document picker is still on screen after the pick was canceled.");
+		}
+
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		await Task.Delay(TimeSpan.FromSeconds(4));
 	}
 
 	Task PrepareHostAsync() => Task.CompletedTask;
