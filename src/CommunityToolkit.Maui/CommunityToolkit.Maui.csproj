@@ -14,6 +14,10 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    <!-- Update this to latest released version.
+	     When updating this, make sure to delete PackageValidationSuppression.txt files -->
+    <PackageValidationBaselineVersion>12.2.0</PackageValidationBaselineVersion>
+    <EnablePackageValidation>true</EnablePackageValidation>
 
     <DisableTextColorToGenerator>true</DisableTextColorToGenerator>
   </PropertyGroup>
