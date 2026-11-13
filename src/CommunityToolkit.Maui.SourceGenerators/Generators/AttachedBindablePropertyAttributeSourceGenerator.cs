@@ -506,7 +506,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		// Handle Arrays
 		if (typeArg.TypeKind is TypeKind.Array)
 		{
-			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol));
+			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol), typeArg);
 		}
 
 		// Handle null values
@@ -726,16 +726,24 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	static string GetFormattedArrayValue(TypedConstant arrayConstant, string typeSymbol)
+	static string GetFormattedArrayValue(TypedConstant arrayConstant, string typeSymbol, ITypeSymbol arrayType)
 	{
 		if (arrayConstant.Values.Length is 0)
 		{
 			return $"({typeSymbol})[]";
 		}
 
-		// Single-dimensional array
+		// An implicitly typed new[] has no best type for mixed elements such as { typeof(string), 1, null }, and cannot create an array of enums from their underlying values.
+		var elementType = ((IArrayTypeSymbol)arrayType).ElementType;
+		var hasNullElement = arrayConstant.Values.Any(static element => element.IsNull);
+		var elementTypeName = GetFormattedTypeForTypeOf(elementType);
+		if (hasNullElement && elementType.IsReferenceType)
+		{
+			elementTypeName += "?";
+		}
+
 		var sb = new StringBuilder();
-		sb.Append("(").Append(typeSymbol).Append(")new[] { ");
+		sb.Append("new ").Append(elementTypeName).Append("[] { ");
 
 		for (int i = 0; i < arrayConstant.Values.Length; i++)
 		{
@@ -745,7 +753,9 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			}
 
 			var element = arrayConstant.Values[i];
-			sb.Append(GetFormattedConstantValue(element));
+			sb.Append(element.Kind is TypedConstantKind.Enum && element.Type is not null
+				? $"({GetFormattedTypeForTypeOf(element.Type)}){GetFormattedConstantValue(element)}"
+				: GetFormattedConstantValue(element));
 		}
 
 		sb.Append(" }");

@@ -130,7 +130,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Numbers property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Numbers", typeof(int[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int[])new[] { 1, 2, 3 }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Numbers", typeof(int[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), new int[] { 1, 2, 3 }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Numbers for the <paramref name = "bindable"/> child element.
 			    /// </summary>
@@ -190,7 +190,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ClassAttribute_Com
 			    /// <summary>
 			    /// Attached BindableProperty for the Kinds property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty KindsProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Kinds", typeof(global::System.Type[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (global::System.Type[])new[] { typeof(string), typeof(int) }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty KindsProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Kinds", typeof(global::System.Type[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), new global::System.Type[] { typeof(string), typeof(int) }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Kinds for the <paramref name = "bindable"/> child element.
 			    /// </summary>

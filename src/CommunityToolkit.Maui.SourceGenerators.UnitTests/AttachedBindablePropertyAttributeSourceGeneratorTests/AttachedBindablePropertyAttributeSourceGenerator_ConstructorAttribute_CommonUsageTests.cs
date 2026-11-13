@@ -139,7 +139,7 @@ public class AttachedBindablePropertyAttributeSourceGenerator_ConstructorAttribu
 			    /// <summary>
 			    /// Attached BindableProperty for the Numbers property.
 			    /// </summary>
-			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Numbers", typeof(int[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), (int[])new[] { 1, 2, 3 }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
+			    public static readonly global::Microsoft.Maui.Controls.BindableProperty NumbersProperty = global::Microsoft.Maui.Controls.BindableProperty.CreateAttached("Numbers", typeof(int[]), typeof({{defaultTestNamespace}}.{{defaultTestClassName}}), new int[] { 1, 2, 3 }, (global::Microsoft.Maui.Controls.BindingMode)0, null, null, null, null, null);
 			    /// <summary>
 			    /// Gets Numbers for the <paramref name = "bindable"/> child element.
 			    /// </summary>
