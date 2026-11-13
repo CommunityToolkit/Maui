@@ -150,6 +150,23 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 	}
 
 	[Fact]
+	public async Task AnimateWithTheSystemsAnimationsOffCompletesAndLeavesTheViewAtItsOriginalValues()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			await DisableSystemAnimationsAsync(handler);
+
+			await CreateAnimation().Animate(view).WaitAsync(waitTimeout);
+
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after a run with the system's animations off");
+		});
+	}
+
+	[Fact]
 	public async Task AnimateFromDefaultValuesReturnsTheViewToThem()
 	{
 		SetupBuilder();

@@ -11,6 +11,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// still scales the same view returns the view to the scale it had before the first of these animations; the animation it interrupts
 /// stops where it is. Cancelling the token while the animation runs returns the view to its original scale and ends the returned
 /// <see cref="Task"/> as canceled.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original scale.
 /// </remarks>
 public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Length)
 {
@@ -45,11 +46,11 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 
 		try
 		{
-			var wasInterrupted = await view.ScaleToAsync(Scale, halfLength, Easing, token);
+			var wasInterrupted = await WasInterruptedAsync(() => view.ScaleToAsync(Scale, halfLength, Easing, token), token);
 
 			if (!wasInterrupted && scales.IsLatest(scaleId))
 			{
-				wasInterrupted = await view.ScaleToAsync(originalScale, halfLength, Easing, token);
+				wasInterrupted = await WasInterruptedAsync(() => view.ScaleToAsync(originalScale, halfLength, Easing, token), token);
 			}
 
 			if (wasInterrupted && token.IsCancellationRequested)

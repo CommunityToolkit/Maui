@@ -10,6 +10,8 @@ namespace CommunityToolkit.Maui.Animations;
 /// still rotates the same view returns the view to the rotation it had before the first of these animations; the animation it interrupts
 /// stops where it is. Cancelling the token while the animation runs returns the view to its original rotation and ends the returned
 /// <see cref="Task"/> as canceled.
+/// The view rotates over <see cref="BaseAnimation{TAnimatable}.Length"/> and then returns to its original rotation at once.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original rotation.
 /// </remarks>
 public partial class RotateAnimation : BaseAnimation
 {
@@ -62,7 +64,7 @@ public partial class RotateAnimation : BaseAnimation
 
 		try
 		{
-			var wasInterrupted = await view.RotateToAsync(Rotation, Length, Easing, token);
+			var wasInterrupted = await WasInterruptedAsync(() => view.RotateToAsync(Rotation, Length, Easing, token), token);
 
 			if (!wasInterrupted && rotations.IsLatest(rotationId))
 			{

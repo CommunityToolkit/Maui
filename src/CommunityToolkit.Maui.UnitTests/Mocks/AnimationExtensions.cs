@@ -10,6 +10,10 @@ static class AnimationExtensions
 {
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
+	// What MAUI's ticker reports when the system's animations are off (iOS Reduce Motion, Android's "Remove animations"): every tween jumps to its end
+	public static void DisableSystemAnimations(this IView view) =>
+		(view.Handler as MockAnimationHandler ?? throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first")).DisableSystemAnimations();
+
 	public static long GetElapsedAnimationMilliseconds(this IView view) =>
 		view.Handler is MockAnimationHandler handler ? handler.ElapsedAnimationMilliseconds : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
@@ -38,6 +42,8 @@ static class AnimationExtensions
 		public long ElapsedAnimationMilliseconds => animationManager.ElapsedMilliseconds;
 
 		public IDisposable ObserveFrames(Action<long> onFrame) => animationManager.ObserveFrames(onFrame);
+
+		public void DisableSystemAnimations() => ((AsyncTicker)animationManager.Ticker).DisableSystemAnimations();
 
 		public static T Prepare<T>(T view) where T : IView
 		{
@@ -81,6 +87,8 @@ static class AnimationExtensions
 			// Base Ticker.IsRunning reports on a private Timer this mock's Start never creates, so it stays false;
 			// Tweener.Start then launches a second Fire loop per animation segment and ticks run at double speed.
 			public override bool IsRunning => isRunning;
+
+			public void DisableSystemAnimations() => SystemEnabled = false;
 
 			public override async void Start()
 			{

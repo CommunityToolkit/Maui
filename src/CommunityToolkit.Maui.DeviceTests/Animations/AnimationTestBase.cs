@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Channels;
 using CommunityToolkit.Maui.Animations;
+using Microsoft.Maui.Animations;
 using Xunit.Sdk;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -17,6 +18,8 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 
 	// The restore writes the original value itself, so only floating-point noise is tolerated
 	const double valueTolerance = 1e-6;
+
+	ITicker? tickerWithAnimationsOff;
 
 	const string frameProbeHandle = "CommunityToolkit.Maui.DeviceTests.FrameProbe";
 
@@ -154,10 +157,28 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 		}
 	}
 
+	// What MAUI's ticker reports when the system's animations are off, so MAUI jumps every animation to its end. In this process only, as in SystemAnimationsTickerOverride
+	protected async Task DisableSystemAnimationsAsync(IPlatformViewHandler handler)
+	{
+		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker ?? throw new InvalidOperationException("The view has no animation ticker.");
+		string? error = null;
+		await InvokeOnMainThreadAsync(() => error = SystemAnimationsTickerOverride.TrySetSystemEnabled(ticker, false));
+		Assert.True(error is null, error);
+
+		Assert.False(ticker.SystemEnabled, "MAUI's ticker must see the disabled animations.");
+		tickerWithAnimationsOff = ticker;
+	}
+
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try
 		{
+			if (tickerWithAnimationsOff is not null)
+			{
+				await InvokeOnMainThreadAsync(() => SystemAnimationsTickerOverride.TrySetSystemEnabled(tickerWithAnimationsOff, true));
+				tickerWithAnimationsOff = null;
+			}
+
 			await base.DisposeAsyncCore();
 		}
 		finally

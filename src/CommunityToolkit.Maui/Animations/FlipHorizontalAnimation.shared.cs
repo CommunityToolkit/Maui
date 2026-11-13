@@ -9,6 +9,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// The view rotates around its y-axis to <see cref="RotateAnimation.Rotation"/> and then back to the y-axis rotation it had before it started flipping.
 /// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="RotateAnimation.Rotation"/>, and half to return to the original rotation.
 /// Cancelling the token while the animation runs returns the view to that rotation and ends the returned <see cref="Task"/> as canceled.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original y-axis rotation.
 /// </remarks>
 public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalAnimationDefaults.Length)
 {
@@ -37,11 +38,11 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 
 		try
 		{
-			var wasInterrupted = await view.RotateYToAsync(Rotation, halfLength, Easing, token);
+			var wasInterrupted = await WasInterruptedAsync(() => view.RotateYToAsync(Rotation, halfLength, Easing, token), token);
 
 			if (!wasInterrupted && rotations.IsLatest(flipId))
 			{
-				wasInterrupted = await view.RotateYToAsync(originalRotationY, halfLength, Easing, token);
+				wasInterrupted = await WasInterruptedAsync(() => view.RotateYToAsync(originalRotationY, halfLength, Easing, token), token);
 			}
 
 			if (wasInterrupted && token.IsCancellationRequested)

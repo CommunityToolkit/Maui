@@ -14,6 +14,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// faded opacity it starts from; the animation it interrupts ends without fading the view back. The same applies to an animation that
 /// starts after an interrupted animation left the view partially faded, unless the view's opacity was changed in the meantime.
 /// Cancelling the token while the animation runs returns the view to its original opacity and ends the returned <see cref="Task"/> as canceled.
+/// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), the view stays at its original opacity.
 /// </remarks>
 public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Length)
 {
@@ -46,12 +47,12 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 		try
 		{
-			var wasInterrupted = await view.FadeToAsync(Opacity, halfLength, Easing, token);
+			var wasInterrupted = await WasInterruptedAsync(() => view.FadeToAsync(Opacity, halfLength, Easing, token), token);
 
 			// An interrupted fade stops where it is: the animation that interrupted it, if any, returns the view to its original opacity
 			if (!wasInterrupted && fades.IsLatest(fadeId))
 			{
-				wasInterrupted = await view.FadeToAsync(originalOpacity, halfLength, Easing, token);
+				wasInterrupted = await WasInterruptedAsync(() => view.FadeToAsync(originalOpacity, halfLength, Easing, token), token);
 			}
 
 			if (wasInterrupted && token.IsCancellationRequested)

@@ -68,6 +68,26 @@ public class AnimationDispatchTests : BaseTest
 		await Assert.ThrowsAsync<InvalidOperationException>(() => run.WaitAsync(waitTimeout, TestContext.Current.CancellationToken));
 	}, TestContext.Current.CancellationToken);
 
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_SupersededRunCancelledOffTheDispatcherThread_DoesNotAbortTheNewRun() => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	{
+		var token = TestContext.Current.CancellationToken;
+		var view = dispatcherThread.CreateAnimatedView();
+		using var supersededRunTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		var firstChange = dispatcherThread.WaitForChangeAsync(view);
+		var supersededRun = new TadaAnimation { Length = 2000 }.Animate(view, supersededRunTokenSource.Token);
+		await firstChange;
+
+		Task.Run(supersededRunTokenSource.Cancel, token).Wait(token);
+		var newRun = new TadaAnimation { Length = animationLength }.Animate(view, token);
+		await Task.Yield();
+		await Task.Yield();
+
+		Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "the superseded run's token aborted the new run");
+		await newRun.WaitAsync(waitTimeout, token);
+		await Record.ExceptionAsync(() => supersededRun.WaitAsync(waitTimeout, token));
+	}, TestContext.Current.CancellationToken);
+
 	static BaseAnimation CreateAnimation(string animationName) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = animationLength },
