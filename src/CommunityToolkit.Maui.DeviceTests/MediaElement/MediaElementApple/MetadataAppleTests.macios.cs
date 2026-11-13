@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // The command handlers (private methods of Metadata) are called directly for the arguments the system never sends (no event, another
 // kind of event), and the commands are also delivered the way the system delivers them (AppleRemoteCommands.Dispatch: a real command
 // event through MediaPlayer) to check which handler each command reaches.
-[Category(TestCategory.MediaElementApple)]
+[Category(TestCategory.J4Probe)]
 [Collection(TestCollections.DisableParallelization)]
 public class MetadataAppleTests : AppleMediaElementTestBase
 {
@@ -104,6 +104,28 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 					player.Dispose();
 					item.Dispose();
 				});
+			}
+		});
+
+	// A real AVPlayer can have its rate set again shortly after a pause by something other than the Metadata (seen on iOS 18.6),
+	// so the tests that deliver a command through MediaPlayer use a player whose rate only the handlers change.
+	Task WithScriptedPlayerAsync(Func<AppleScriptedAVPlayer, Task> action) =>
+		WithCleanRemoteCommandsAsync(async () =>
+		{
+			using var player = new AppleScriptedAVPlayer();
+			var metadata = await InvokeOnMainThreadAsync(() => new Metadata(player, () =>
+			{
+				playCallbackCount++;
+				player.Play();
+			}));
+
+			try
+			{
+				await action(player);
+			}
+			finally
+			{
+				await InvokeOnMainThreadAsync(metadata.Dispose);
 			}
 		});
 
@@ -778,17 +800,8 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		SetupApple();
 		Skip.IfNot(AppleRemoteCommands.CanDispatch, "This OS version has no MPRemoteCommand.newCommandEvent / invokeCommandWithEvent:completion: to deliver a remote command.");
 
-		// A real AVPlayer can have its rate set again shortly after a pause by something other than the Metadata (seen on iOS 18.6),
-		// so the scripted player keeps the rate under the control of the toggle handler alone.
-		using var player = new AppleScriptedAVPlayer();
-		await WithCleanRemoteCommandsAsync(async () =>
+		await WithScriptedPlayerAsync(async player =>
 		{
-			using var metadata = await InvokeOnMainThreadAsync(() => new Metadata(player, () =>
-			{
-				playCallbackCount++;
-				player.Play();
-			}));
-
 			Assert.Equal(0f, player.Rate);
 
 			await DispatchAsync("togglePlayPause");
@@ -953,7 +966,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		SetupApple();
 		Skip.IfNot(AppleRemoteCommands.CanDispatch, "This OS version has no MPRemoteCommand.newCommandEvent / invokeCommandWithEvent:completion: to deliver a remote command.");
 
-		await WithPlayerAsync(async (player, _) =>
+		await WithScriptedPlayerAsync(async player =>
 		{
 			Assert.Equal(0f, player.Rate);
 
@@ -970,7 +983,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		SetupApple();
 		Skip.IfNot(AppleRemoteCommands.CanDispatch, "This OS version has no MPRemoteCommand.newCommandEvent / invokeCommandWithEvent:completion: to deliver a remote command.");
 
-		await WithPlayerAsync(async (player, _) =>
+		await WithScriptedPlayerAsync(async player =>
 		{
 			await InvokeOnMainThreadAsync(player.Play);
 			Assert.Equal(1f, player.Rate);
@@ -978,6 +991,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			await DispatchAsync("pause");
 
 			Assert.Equal(0f, player.Rate);
+			Assert.Equal(1, player.PauseCount);
 		});
 	}
 
