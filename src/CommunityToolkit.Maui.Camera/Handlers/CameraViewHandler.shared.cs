@@ -9,6 +9,9 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 /// </summary>
 public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatformCameraPreviewView>, IDisposable
 {
+	CancellationTokenSource? cts;
+	bool isDisposed;
+
 	/// <summary>
 	/// The currently defined mappings between properties on the <see cref="ICameraView"/> and
 	/// properties on the <see cref="NativePlatformCameraPreviewView"/>.
@@ -112,11 +115,20 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 	/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
 	protected virtual void Dispose(bool disposing)
 	{
+		if (isDisposed)
+		{
+			return;
+		}
 		if (disposing)
 		{
+			cts?.Cancel();
+			cts = null;
+
 			cameraManager?.Dispose();
 			cameraManager = null;
 		}
+
+		isDisposed = true;
 	}
 
 #if WINDOWS
@@ -199,11 +211,17 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 
 	async void ConnectCameraAndReportErrors(ICameraView cameraView)
 	{
-		// ConnectCamera reports a camera that cannot be connected itself; what fails before it gets that far (for example the camera
-		// discovery) is reported the same way
+		cts?.Cancel();
+		using var newCts = cts = new();
 		try
 		{
-			await CameraManager.ConnectCamera(CancellationToken.None);
+			// ConnectCamera reports a camera that cannot be connected itself; what fails before it gets that far (for example the camera
+			// discovery) is reported the same way
+			await CameraManager.ConnectCamera(newCts.Token);
+		}
+		catch (OperationCanceledException) when (newCts.IsCancellationRequested)
+		{
+			// Ignore the cancellation of our own token, e.g. the handler was disconnected before the camera connection completed
 		}
 		catch (Exception ex)
 		{
