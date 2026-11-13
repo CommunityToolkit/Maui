@@ -257,7 +257,7 @@ function Clear-AndroidErrorDialog {
 
 # Tests that start while the boot broadcasts of a fresh emulator are still queued get their activity relaunched when the OS refreshes its overlays
 # (the CI logcat shows idmap2d starting right before the relaunch), which fails whatever camera or window test runs at that moment.
-# 'am wait-for-broadcast-idle' is hidden (not in 'am help'); API 25 lacks it, and an old 'usage:' reply selects the dumpsys fallback.
+# 'am wait-for-broadcast-idle' is hidden (not in 'am help') and exists from API 26 (AOSP oreo-release); older versions poll the dumpsys queues.
 function Wait-AndroidBroadcastsIdle {
     param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds = 120)
 
@@ -280,7 +280,7 @@ function Wait-AndroidBroadcastsIdle {
                 return $null
             }
             if ($idle.ExitCode -eq -1) {
-                return "$Serial still had queued broadcasts $TimeoutSeconds s after boot; the tests start anyway and may see the runner's activity relaunched."
+                return "$Serial still had queued broadcasts after a $TimeoutSeconds s wait; the tests start anyway and may see the runner's activity relaunched."
             }
         }
     }
@@ -293,7 +293,7 @@ function Wait-AndroidBroadcastsIdle {
         Start-Sleep -Seconds 2
     }
 
-    return "$Serial still had queued broadcasts $TimeoutSeconds s after boot; the tests start anyway and may see the runner's activity relaunched."
+    return "$Serial still had queued broadcasts after a $TimeoutSeconds s wait; the tests start anyway and may see the runner's activity relaunched."
 }
 
 # A test that Android relaunched mid-run reruns itself once and then passes, so only the logcat shows that the OS interfered.
@@ -370,8 +370,12 @@ function Invoke-AndroidDeviceTests {
 
         $settleStart = Get-Date
         $settleWarning = Wait-AndroidBroadcastsIdle -Adb $Adb -Serial $Serial
-        Write-Host ("Broadcast queues of {0} settled after {1:N0} s" -f $Serial, ((Get-Date) - $settleStart).TotalSeconds)
-        if ($settleWarning) { Write-DeviceTestWarning $settleWarning }
+        if ($settleWarning) {
+            Write-DeviceTestWarning $settleWarning
+        }
+        else {
+            Write-Host ("Broadcast queues of {0} settled after {1:N0} s" -f $Serial, ((Get-Date) - $settleStart).TotalSeconds)
+        }
 
         $dialog = Clear-AndroidErrorDialog -Adb $Adb -Serial $Serial
         if ($dialog.Warning) { Write-DeviceTestWarning $dialog.Warning }
