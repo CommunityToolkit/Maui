@@ -778,16 +778,30 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		SetupApple();
 		Skip.IfNot(AppleRemoteCommands.CanDispatch, "This OS version has no MPRemoteCommand.newCommandEvent / invokeCommandWithEvent:completion: to deliver a remote command.");
 
-		await WithPlayerAsync(async (player, _) =>
+		// A real AVPlayer can have its rate set again shortly after a pause by something other than the Metadata (seen on iOS 18.6),
+		// so the scripted player keeps the rate under the control of the toggle handler alone.
+		using var player = new AppleScriptedAVPlayer();
+		await WithCleanRemoteCommandsAsync(async () =>
 		{
+			using var metadata = await InvokeOnMainThreadAsync(() => new Metadata(player, () =>
+			{
+				playCallbackCount++;
+				player.Play();
+			}));
+
 			Assert.Equal(0f, player.Rate);
 
 			await DispatchAsync("togglePlayPause");
-			var rateAfterFirstToggle = player.Rate;
+
+			Assert.Equal(1f, player.Rate);
+			Assert.Equal(1, playCallbackCount);
+			Assert.Equal(0, player.PauseCount);
+
 			await DispatchAsync("togglePlayPause");
 
-			Assert.Equal(1f, rateAfterFirstToggle);
 			Assert.Equal(0f, player.Rate);
+			Assert.Equal(1, playCallbackCount);
+			Assert.Equal(1, player.PauseCount);
 		});
 	}
 
