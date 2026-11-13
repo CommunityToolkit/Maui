@@ -340,7 +340,11 @@ jobs:
                     # Android 16 QPR2, the newest Android 16 release.
                     -   api-level: '36.1'
                     # Android 17. 37.1 and 37.2 ship only 16 KB page-size (ps16k) images, which no leg is proven on.
+                    # The image's goldfish Codec2 H.264 decoder (a HAL in the mediacodec domain) is denied the app's BufferPool memfd by SELinux, so
+                    # every video fails to decode (ERROR_CODE_DECODING_FAILED); 36.1 runs the same decoder without a denial. The AOSP software
+                    # decoder does not need the memfd, so it decodes with SELinux still enforcing.
                     -   api-level: '37.0'
+                        emulator-features: -feature -HardwareDecoder
         env:
             DEVICE_TEST_COVERAGE: false
             # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never

@@ -116,14 +116,15 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			// The connection refreshes the notification when it connects (UpdateNotifications found no service while the source was loaded).
 			// Before Android 13 the PlayerNotificationManager then posts its own version under the same id, which the system marks as the
 			// foreground notification again some milliseconds later (the flags are missing in between): wait for the settled notification.
-			await WaitUntilAsync(() => FindServiceNotification() is Notification posted && IsMediaStyle(posted) && posted.Flags.HasFlag(NotificationFlags.ForegroundService),
-				"The service never showed a media notification as its foreground notification.");
+			// GetActiveNotifications also returns records that are still queued; Android 13 gives those the foreground flag at once
+			// but adds NoClear only when it posts them, so NoClear is part of the settled state.
+			await WaitUntilAsync(() => FindServiceNotification() is Notification posted && IsMediaStyle(posted) && posted.Flags.HasFlag(NotificationFlags.ForegroundService) && posted.Flags.HasFlag(NotificationFlags.NoClear),
+				"The service never showed a media notification that is its foreground notification and cannot be swiped away.");
 			var notification = FindServiceNotification()!;
 			var session = GetMediaSession(handler.Manager!)!;
 
 			Assert.Equal("1", notification.ChannelId);
 			Assert.Equal(NotificationVisibility.Public, notification.Visibility);
-			Assert.True(notification.Flags.HasFlag(NotificationFlags.NoClear), $"The foreground notification can be swiped away: {notification.Flags}.");
 			Assert.NotNull(notification.SmallIcon);
 			Assert.True(session.PlatformToken!.Equals(notification.Extras!.Get(Notification.ExtraMediaSession)), "The notification is not bound to the MediaSession of the manager.");
 		});
