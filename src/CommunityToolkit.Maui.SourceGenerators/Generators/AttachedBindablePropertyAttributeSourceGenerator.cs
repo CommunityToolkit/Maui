@@ -536,6 +536,12 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 			return GetFormattedArrayValue(value, GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol), typeArg);
 		}
 
+		// An array constant has no Value (reading it throws); an object property gets the array under its own type.
+		if (value.Kind is TypedConstantKind.Array)
+		{
+			return $"({GetFormattedReturnType(typeArg, shouldPostpendNullableSymbol)}){GetFormattedArrayValue(value, GetFormattedTypeForTypeOf(value.Type!), value.Type!)}";
+		}
+
 		// Handle null values
 		if (value.Value is null)
 		{
@@ -794,6 +800,11 @@ public class AttachedBindablePropertyAttributeSourceGenerator : IIncrementalGene
 		if (element.Type is null || element.IsNull)
 		{
 			return GetFormattedConstantValue(element);
+		}
+
+		if (element.Kind is TypedConstantKind.Array)
+		{
+			return GetFormattedArrayValue(element, GetFormattedTypeForTypeOf(element.Type), element.Type);
 		}
 
 		var isEnum = element.Kind is TypedConstantKind.Enum;
