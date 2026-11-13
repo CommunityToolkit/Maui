@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 
@@ -264,6 +264,36 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 
 			var valueAfterSecondRun = (double)view.GetValue(PeakProperty);
 			Assert.True(Math.Abs(valueAfterSecondRun - appValue) <= peakTolerance, $"The second run ended at {valueAfterSecondRun}; it must return to the value {appValue} the app set.");
+		});
+	}
+
+	[Fact]
+	public async Task CancelAnimationsMidRunThenTheAppSetsTheInterruptedValueTheNextRunReturnsToIt()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var interruptedRun = CreateAnimation().Animate(view);
+			await midRun;
+			var interruptedValue = (double)view.GetValue(PeakProperty);
+
+			view.CancelAnimations();
+			await interruptedRun.WaitAsync(waitTimeout);
+			Assert.True(Math.Abs((double)view.GetValue(PeakProperty) - originalValue) <= peakTolerance, "CancelAnimations did not return the view to its original value.");
+
+			view.SetValue(PeakProperty, interruptedValue);
+			await CreateAnimation().Animate(view).WaitAsync(waitTimeout);
+
+			var valueAfterNextRun = (double)view.GetValue(PeakProperty);
+			Assert.True(Math.Abs(valueAfterNextRun - interruptedValue) <= peakTolerance, $"The next run ended at {valueAfterNextRun}; it must return to the value {interruptedValue} the app set.");
+
+			view.SetValue(PeakProperty, originalValue);
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the app set the original value again");
 		});
 	}
 }

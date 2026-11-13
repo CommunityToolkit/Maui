@@ -6,6 +6,9 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 
 public class AnimationBehaviorCancellationTests : BaseAnimationTest
 {
+	// Only a stopped animation returns the view in time
+	const uint runLongerThanAnyWait = 60_000;
+
 	public static TheoryData<string> AllAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation), nameof(ShakeAnimation), nameof(TadaAnimation), nameof(HeartbeatAnimation), nameof(RubberBandAnimation), nameof(BounceAnimation), nameof(SwingAnimation), nameof(WobbleAnimation)];
 
 	[Theory(Timeout = (int)TestDuration.Long)]
@@ -35,7 +38,7 @@ public class AnimationBehaviorCancellationTests : BaseAnimationTest
 	{
 		using var cancelledTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		await cancelledTokenSource.CancelAsync();
-		var animation = new ObservedAnimation(Create(animationName, 1000));
+		var animation = new ObservedAnimation(Create(animationName, runLongerThanAnyWait));
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);

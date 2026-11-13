@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Animations;
@@ -81,7 +81,8 @@ public class AnimationDispatchTests : BaseTest
 		var supersededRun = new TadaAnimation { Length = 2000 }.Animate(view, supersededRunTokenSource.Token);
 		await firstChange;
 
-		// Blocks the dispatcher thread on purpose: the abort that the cancellation queues from the pool thread must run after the new run has taken the handle
+		// The dispatcher must not run the abort that the pool thread's cancellation queues until the new run has taken the handle
+		dispatcherThread.WaitsForDispatchedWork = false;
 		Task.Run(supersededRunTokenSource.Cancel, token).Wait(token);
 		var newRun = new TadaAnimation { Length = animationLength }.Animate(view, token);
 		await Task.Yield();
@@ -109,12 +110,12 @@ public class AnimationDispatchTests : BaseTest
 		behavior.AnimateCommand.Execute(CancellationToken.None);
 		await firstChange;
 
-		// Blocks the dispatcher thread on purpose: the re-trigger from the pool thread is queued while the first run is still on its first leg
-		Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token).Wait(token);
-
 		var valuesFromTheReTrigger = new List<double>();
 		view.PropertyChanged += RecordValue;
-		await WaitForValueAsync(view, property, value => Math.Abs(value - target) <= precision, token);
+		var peak = WaitForValueAsync(view, property, value => Math.Abs(value - target) <= precision, token);
+		// The dispatcher thread stays free: only a stop and start in one turn keeps the view from returning to rest in between
+		await Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token);
+		await peak;
 		view.PropertyChanged -= RecordValue;
 
 		Assert.DoesNotContain(originalValue, valuesFromTheReTrigger);
@@ -151,9 +152,10 @@ public class AnimationDispatchTests : BaseTest
 		behavior.AnimateCommand.Execute(CancellationToken.None);
 		await firstChange;
 
-		Task.Run(() => behavior.AnimateCommand.Execute(cancelledTokenSource.Token), token).Wait(token);
+		var backAtRest = WaitForValueAsync(view, property, value => value == originalValue, token);
+		await Task.Run(() => behavior.AnimateCommand.Execute(cancelledTokenSource.Token), token);
 
-		await WaitForValueAsync(view, property, value => value == originalValue, token);
+		await backAtRest;
 		Assert.False(view.AnimationIsRunning(nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync)) || view.AnimationIsRunning(nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync)));
 		dispatcherThread.AssertNoChangeOffTheDispatcherThread("while the cancelled trigger stopped the animation");
 		AssertValuesEqual(view, originalValues);
@@ -175,7 +177,7 @@ public class AnimationDispatchTests : BaseTest
 		behavior.AnimateCommand.Execute(CancellationToken.None);
 		await firstChange;
 
-		Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token).Wait(token);
+		await Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token);
 		var valueWhenReTriggered = (double)view.GetValue(property);
 		await WaitForValueAsync(view, property, value => Math.Abs(value - valueWhenReTriggered) > precision, token);
 
@@ -258,7 +260,8 @@ public class AnimationDispatchTests : BaseTest
 		}
 	}
 
-	// Stands for the UI thread of an app: its SynchronizationContext is not the default one, and a dispatch from any other thread queues to it
+	// Stands for the UI thread of an app: its SynchronizationContext is not the default one, and a dispatch from any other thread queues to it.
+	// Unless told otherwise, that thread runs the dispatched action, and everything the action queued, before the dispatching thread goes on
 	sealed class DispatcherThread : IDispatcher
 	{
 		readonly int threadId = Environment.CurrentManagedThreadId;
@@ -268,6 +271,8 @@ public class AnimationDispatchTests : BaseTest
 		public DispatcherThread() => DispatcherProvider.SetCurrent(new Provider(this));
 
 		public bool RefuseDispatch { get; set; }
+
+		public bool WaitsForDispatchedWork { get; set; } = true;
 
 		public bool IsDispatchRequired => Environment.CurrentManagedThreadId != threadId;
 
@@ -318,7 +323,30 @@ public class AnimationDispatchTests : BaseTest
 				return false;
 			}
 
-			synchronizationContext.Post(_ => action(), null);
+			if (!IsDispatchRequired || !WaitsForDispatchedWork)
+			{
+				synchronizationContext.Post(_ => action(), null);
+				return true;
+			}
+
+			using var dispatchedWorkRan = new ManualResetEventSlim();
+			synchronizationContext.Post(_ =>
+			{
+				try
+				{
+					action();
+				}
+				finally
+				{
+					synchronizationContext.Post(_ => dispatchedWorkRan.Set(), null);
+				}
+			}, null);
+
+			if (!dispatchedWorkRan.Wait(waitTimeout))
+			{
+				throw new TimeoutException("The dispatcher thread did not run the dispatched action.");
+			}
+
 			return true;
 		}
 
