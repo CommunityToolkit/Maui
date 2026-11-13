@@ -198,6 +198,95 @@ function Find-AndroidPackage {
     return $null
 }
 
+function Get-AndroidFocusedWindowTitle {
+    param([string]$Adb, [string]$Serial)
+
+    $windows = Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('dumpsys', 'window') -TimeoutSeconds 60
+    # Android 7 prints mCurrentFocus twice and only the later line names the dialog, so every match is checked.
+    $focusMatches = [regex]::Matches([string]$windows, 'mCurrentFocus=Window\{[0-9a-f]+ u\d+ (?<title>[^}]*)\}', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $titles = @($focusMatches | ForEach-Object { $_.Groups['title'].Value })
+    $dialogTitle = $titles | Where-Object { Get-AndroidErrorDialogProcess -Title $_ } | Select-Object -First 1
+    if ($dialogTitle) { return $dialogTitle }
+    return [string]($titles | Select-Object -First 1)
+}
+
+function Get-AndroidErrorDialogProcess {
+    param([string]$Title)
+
+    $match = [regex]::Match($Title, '^(Application Not Responding|Application Error): (?<process>\S+)$', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    if ($match.Success) { return $match.Groups['process'].Value }
+    return ''
+}
+
+function Wait-AndroidErrorDialogGone {
+    param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds)
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        if (-not (Get-AndroidErrorDialogProcess -Title (Get-AndroidFocusedWindowTitle -Adb $Adb -Serial $Serial))) { return $true }
+        Start-Sleep -Seconds 1
+    } while ((Get-Date) -lt $deadline)
+
+    return $false
+}
+
+# A system ANR or crash dialog keeps the window focus, so the keyboard, dialogs and system-bar requests of the test app never take effect.
+function Clear-AndroidErrorDialog {
+    param([string]$Adb, [string]$Serial)
+
+    $result = [pscustomobject]@{ Warning = ''; Failure = '' }
+    $dialogProcess = Get-AndroidErrorDialogProcess -Title (Get-AndroidFocusedWindowTitle -Adb $Adb -Serial $Serial)
+    if (-not $dialogProcess) { return $result }
+
+    [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('am', 'broadcast', '-a', 'android.intent.action.CLOSE_SYSTEM_DIALOGS') -TimeoutSeconds 30)
+    if (-not (Wait-AndroidErrorDialogGone -Adb $Adb -Serial $Serial -TimeoutSeconds 5)) {
+        # Killing the process that owns the dialog removes it; system_server cannot be killed.
+        $package = $dialogProcess.Split(':')[0]
+        if ($package -ne 'system' -and $package -ne 'android') {
+            [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('am', 'force-stop', $package) -TimeoutSeconds 30)
+        }
+        if (-not (Wait-AndroidErrorDialogGone -Adb $Adb -Serial $Serial -TimeoutSeconds 30)) {
+            $result.Failure = "The error dialog of $dialogProcess keeps the window focus on $Serial, so keyboard, dialog and system-bar tests cannot pass. Closing it and stopping $package did not remove it."
+            return $result
+        }
+    }
+
+    $result.Warning = "Closed the error dialog of $dialogProcess that had the window focus before the tests started."
+    return $result
+}
+
+function Get-AndroidHideErrorDialogsSetting {
+    param([string]$Adb, [string]$Serial)
+
+    return Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('settings', 'get', 'global', 'hide_error_dialogs')
+}
+
+function Set-AndroidHideErrorDialogsSetting {
+    # With 1 the system kills an app that does not respond instead of showing a dialog that takes the window focus. $null restores "not set".
+    param([string]$Adb, [string]$Serial, [string]$Value)
+
+    if ($Value -and $Value -ne 'null') {
+        [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('settings', 'put', 'global', 'hide_error_dialogs', $Value))
+    }
+    else {
+        [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('settings', 'delete', 'global', 'hide_error_dialogs'))
+    }
+}
+
+function Find-AndroidErrorDialogInLog {
+    param([string]$Directory)
+
+    foreach ($log in Get-ChildItem -Path $Directory -Filter 'adb-logcat-*.log' -File -ErrorAction SilentlyContinue) {
+        $match = Select-String -Path $log.FullName -Pattern 'Application Not Responding: (\S+)|ANR in (\S+)' -List -ErrorAction SilentlyContinue
+        if ($match) {
+            $found = $match.Matches[0]
+            return $(if ($found.Groups[1].Success) { $found.Groups[1].Value } else { $found.Groups[2].Value })
+        }
+    }
+
+    return ''
+}
+
 function Invoke-AndroidDeviceTests {
     param($Context, $Project, [string]$Adb, [string]$Serial, [string]$Abi, $CoverageSession)
 
@@ -234,39 +323,62 @@ function Invoke-AndroidDeviceTests {
     $androidArguments += Get-DeviceTestCoverageArguments -Session $CoverageSession -Project $Project -ApplicationId $applicationId
     $androidArguments += $XHarnessArgs
 
-    return Invoke-DeviceTestWithRetries -Context $Context -Project $Project -Directory $androidOutput -Attempt {
-        param($attemptNumber)
+    $previousHideErrorDialogs = Get-AndroidHideErrorDialogsSetting -Adb $Adb -Serial $Serial
+    Set-AndroidHideErrorDialogsSetting -Adb $Adb -Serial $Serial -Value '1'
+    try {
+        return Invoke-DeviceTestWithRetries -Context $Context -Project $Project -Directory $androidOutput -Attempt {
+            param($attemptNumber)
 
-        # A device that is gone is not handed to XHarness: it would look for it for minutes, then try restarts that only work on its own lab
-        # machines (systemctl restart android-emulator, adb emu restart), and end with 81 without saying what happened.
-        if (-not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
-            $goneVerdict = New-DeviceTestVerdict -ExitCode 81 -Directory $androidOutput -Reason (Get-AndroidDeviceGoneReason -Serial $Serial)
-            $goneVerdict.Attempt = $attemptNumber
-            $goneVerdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true
-            return $goneVerdict
-        }
+            # A device that is gone is not handed to XHarness: it would look for it for minutes, then try restarts that only work on its own lab
+            # machines (systemctl restart android-emulator, adb emu restart), and end with 81 without saying what happened.
+            if (-not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
+                $goneVerdict = New-DeviceTestVerdict -ExitCode 81 -Directory $androidOutput -Reason (Get-AndroidDeviceGoneReason -Serial $Serial)
+                $goneVerdict.Attempt = $attemptNumber
+                $goneVerdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true
+                return $goneVerdict
+            }
 
-        # The default main log buffer holds only a few minutes of a long run, so the logs of a test that failed early were already rotated out
-        # when the run ended. Each attempt sets it again because the size does not survive a restart of the device.
-        [void](Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'logcat', '-G', '64M') -TimeoutSeconds 30)
+            $dialog = Clear-AndroidErrorDialog -Adb $Adb -Serial $Serial
+            if ($dialog.Failure) {
+                $dialogVerdict = New-DeviceTestVerdict -ExitCode 81 -Directory $androidOutput -Reason $dialog.Failure
+                $dialogVerdict.Attempt = $attemptNumber
+                return $dialogVerdict
+            }
 
-        $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
-        $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
-        if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
-            # Another attempt on a device that is gone cannot help
-            $verdict.Reasons = @($verdict.Reasons) + (Get-AndroidDeviceGoneReason -Serial $Serial)
-            $verdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true -Force
-        }
+            # The default main log buffer holds only a few minutes of a long run, so the logs of a test that failed early were already rotated out
+            # when the run ended. Each attempt sets it again because the size does not survive a restart of the device.
+            [void](Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'logcat', '-G', '64M') -TimeoutSeconds 30)
 
-        $verdict
-    } -BeforeRetry {
-        # Waiting only helps a device that is still listed (offline, or booting again)
-        if (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial) {
-            $retryError = Wait-AndroidDevice -Adb $Adb -Serial $Serial -TimeoutSeconds 120
-            if ($retryError) {
-                Write-DeviceTestWarning $retryError
+            $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
+            $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
+            if ($dialog.Warning) {
+                $verdict.Warnings = @($verdict.Warnings) + $dialog.Warning
+            }
+            if ($verdict.ExitCode -ne 0) {
+                $anrProcess = Find-AndroidErrorDialogInLog -Directory $androidOutput
+                if ($anrProcess) {
+                    $verdict.Warnings = @($verdict.Warnings) + "An ANR of $anrProcess appears in the logcat; failures that need window focus (keyboard, dialogs, system bars) may come from its dialog."
+                }
+            }
+            if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
+                # Another attempt on a device that is gone cannot help
+                $verdict.Reasons = @($verdict.Reasons) + (Get-AndroidDeviceGoneReason -Serial $Serial)
+                $verdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true -Force
+            }
+
+            $verdict
+        } -BeforeRetry {
+            # Waiting only helps a device that is still listed (offline, or booting again)
+            if (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial) {
+                $retryError = Wait-AndroidDevice -Adb $Adb -Serial $Serial -TimeoutSeconds 120
+                if ($retryError) {
+                    Write-DeviceTestWarning $retryError
+                }
             }
         }
+    }
+    finally {
+        Set-AndroidHideErrorDialogsSetting -Adb $Adb -Serial $Serial -Value $previousHideErrorDialogs
     }
 }
 
