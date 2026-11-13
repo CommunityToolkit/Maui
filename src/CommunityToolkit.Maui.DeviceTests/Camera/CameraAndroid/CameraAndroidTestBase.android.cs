@@ -546,9 +546,10 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return session!;
 	}
 
-	internal async Task RunWithSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, IMauiContext? mauiContext = null, CameraView? view = null)
+	internal async Task RunWithSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, IMauiContext? mauiContext = null, CameraView? view = null, Func<CameraView>? createView = null)
 	{
 		var hostActivity = AppContext;
+		view ??= createView?.Invoke();
 		var session = await CreateSessionAsync(provider, mauiContext, true, view);
 
 		try
@@ -557,12 +558,12 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 		// Android can relaunch the runner's activity during a test (new overlays did on a just-booted CI emulator), which closes the camera of
 		// the session for good (TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed): the test runs once more in the new activity.
-		// Only when this method created the provider and the view: a caller's ones keep the state the first attempt left on them.
-		catch (Exception exception) when (exception is not SkipException && mauiContext is null && provider is null && view is null
+		// Only when this method created the provider and the view (or the caller's createView makes a fresh one): a caller's own view keeps the state the first attempt left on it.
+		catch (Exception exception) when (exception is not SkipException && mauiContext is null && provider is null && (view is null || createView is not null)
 			&& !ReferenceEquals(hostActivity, AppContext))
 		{
 			Android.Util.Log.Warn("CameraAndroidTests", $"The runner's activity was recreated during the test, which runs once more in the new activity. The failure: {exception}");
-			var sessionInTheNewActivity = await CreateSessionAsync(provider, null, true, view);
+			var sessionInTheNewActivity = await CreateSessionAsync(provider, null, true, createView?.Invoke());
 			await HostAsync(() => body(sessionInTheNewActivity), sessionInTheNewActivity.PreviewView!);
 		}
 	}
@@ -630,7 +631,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		RegisterCleanup(() => IPlatformApplication.Current = previous);
 	}
 
-	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false, IMauiContext? mauiContext = null)
+	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false, IMauiContext? mauiContext = null, Func<CameraView>? createView = null)
 	{
 		EnsureCameraPermissions(includeRecordAudio);
 
@@ -639,7 +640,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session);
 			await body(session);
-		}, provider, mauiContext, view);
+		}, provider, mauiContext, view, createView);
 	}
 
 	protected static async Task<IReadOnlyList<CameraInfo>> GetRealCamerasAsync()

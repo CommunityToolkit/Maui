@@ -281,9 +281,8 @@ public partial class StatusBarTests
 		});
 	}
 
-	// The Android 15 implementation (PlatformSetColor_AndroidApi35) only runs on an API 35 device; its body does
-	// not depend on the version it runs on (it measures the status bar through GetStatusBarHeight), so every other version can run it through reflection.
-	// The version dispatch that picks it and the status_bar_height resource keep their visible API 35 skips above.
+	// The Android 15 implementation (PlatformSetColor_AndroidApi35) is called through reflection, so it also runs on API 36 and later. Below
+	// API 35 it cannot run: it measures the status bar through GetStatusBarHeight, which throws NotSupportedException there.
 	[Fact]
 	public async Task Api35ImplementationCreatesTheOverlaySynchronouslyAndThenReusesIt()
 	{

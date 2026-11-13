@@ -111,7 +111,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 			var jpeg = await ReadAllBytesAsync(Assert.Single(recorder.Captured));
 			Assert.Equal(SmallSize, GetJpegSize(jpeg));
-		}, view: new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
+		}, createView: () => new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
 	}
 
 	[Fact]

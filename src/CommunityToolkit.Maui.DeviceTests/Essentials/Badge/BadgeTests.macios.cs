@@ -229,7 +229,7 @@ public partial class BadgeTests
 	[Fact]
 	public async Task SetCountBelowIOS17SetsTheIconBadgeNumberDirectly()
 	{
-		Skip.If(OperatingSystem.IsIOSVersionAtLeast(17), "The branch runs below iOS 17 only (and Mac Catalyst reports iOS 17 or later): CI: iOS 15.5 and 16.4 run it.");
+		Skip.If(OperatingSystem.IsIOSVersionAtLeast(17), "The branch runs below iOS 17 only (and Mac Catalyst reports iOS 17 or later). On iOS it needs a notification-permission answer, so it runs only in a run that includes RequiresUserInteraction tests.");
 		AddCleanup(ResetBadgeAsync);
 
 		Badge.SetCount(6);

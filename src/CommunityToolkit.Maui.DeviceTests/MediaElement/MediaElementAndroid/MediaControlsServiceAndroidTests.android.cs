@@ -19,7 +19,7 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // The notification and foreground-type branches depend on the Android version: each device checks the branch that its version takes (the CI
-// matrix runs API 25 to 37.0).
+// matrix runs API 26 to 37.0 for these tests: the MediaElementAndroid category skips below API 26).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
