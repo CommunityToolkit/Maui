@@ -149,7 +149,7 @@ public sealed partial class SpeechToTextTests
 	// Must run on the main thread. The listener answers the way the platform does after the toolkit started the recognizer.
 	static IRecognitionListener AttachListeningSession(ISpeechToText speech, bool hadPreviousRecognizer)
 	{
-		var recognizer = SpeechRecognizer.CreateSpeechRecognizer(AppContext);
+		var recognizer = SpeechRecognizer.CreateSpeechRecognizer(AppContext) ?? throw new InvalidOperationException("The recognizer could not be created.");
 		var scope = new ListenerScope(speech);
 		var listenerType = scope.Listener.GetType();
 		var phase = listenerType.GetProperty("Phase") ?? throw new InvalidOperationException("The listener has no Phase.");
