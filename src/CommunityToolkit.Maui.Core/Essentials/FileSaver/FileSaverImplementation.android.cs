@@ -26,8 +26,7 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		var intent = new Intent(Intent.ActionCreateDocument);
 
 		intent.AddCategory(Intent.CategoryOpenable);
-		// Not MimeTypeMap.GetFileExtensionFromUrl: it finds no extension in a file name with a space or a non-ASCII letter.
-		intent.SetType(MimeTypeMap.Singleton?.GetMimeTypeFromExtension(Path.GetExtension(fileName).TrimStart('.')) ?? "*/*");
+		intent.SetType(GetMimeType(fileName));
 		intent.PutExtra(Intent.ExtraTitle, fileName);
 
 		// No storage volume holds a folder of the app's private storage: the picker then starts where it chooses.
@@ -49,6 +48,14 @@ public sealed partial class FileSaverImplementation : IFileSaver
 		{
 			filePath = EnsurePhysicalPath(resultIntent.Data);
 		}
+	}
+
+	static string GetMimeType(string fileName)
+	{
+		// Not MimeTypeMap.GetFileExtensionFromUrl: it finds no extension in a file name with a space or a non-ASCII letter.
+		// MimeTypeMap matches the extension case-sensitively before Android 8.0 (API 26); invariant, so "ZIP" is not "zıp" in Turkish.
+		var extension = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
+		return MimeTypeMap.Singleton?.GetMimeTypeFromExtension(extension) ?? "*/*";
 	}
 
 	static Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
