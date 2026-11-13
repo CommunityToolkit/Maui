@@ -33,8 +33,8 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	public void Start_AfterAnInterruptedAnimationLeftAPartialValue_KeepsTheValueBeforeTheInterruptedAnimation()
 	{
 		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		tracker.Start(30);
-		tracker.End(75);
+		var (id, _) = tracker.Start(30);
+		tracker.End(id, 75);
 
 		var (_, originalValue) = tracker.Start(75);
 
@@ -45,8 +45,8 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	public void Start_AfterTheValueChangedFollowingAnInterruptedAnimation_CapturesTheNewValue()
 	{
 		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		tracker.Start(30);
-		tracker.End(75);
+		var (id, _) = tracker.Start(30);
+		tracker.End(id, 75);
 
 		var (_, originalValue) = tracker.Start(10);
 
@@ -57,8 +57,8 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	public void Start_AfterACompletedAnimation_CapturesTheCurrentValue()
 	{
 		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		tracker.Start(30);
-		tracker.End(30);
+		var (id, _) = tracker.Start(30);
+		tracker.End(id, 30);
 
 		var (_, originalValue) = tracker.Start(50);
 
@@ -69,9 +69,9 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	public void End_OfTheInterruptedAnimationAlone_DoesNotMakeTheViewRestForTheAnimationThatInterruptedIt()
 	{
 		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		tracker.Start(30);
+		var (firstId, _) = tracker.Start(30);
 		tracker.Start(75);
-		tracker.End(75);
+		tracker.End(firstId, 75);
 
 		var (_, originalValue) = tracker.Start(75);
 
@@ -88,6 +88,20 @@ public class AnimatedPropertyTrackerTests : BaseTest
 		var (_, otherOriginalValue) = AnimatedPropertyTracker.For(otherView, VisualElement.RotationProperty).Start(60);
 
 		otherOriginalValue.Should().Be(60);
+	}
+
+	[Fact]
+	public void End_IgnoresASecondEndOfTheSameAnimation()
+	{
+		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
+		var (firstId, _) = tracker.Start(30);
+		tracker.Start(30);
+
+		tracker.End(firstId, 75);
+		tracker.End(firstId, 75);
+		var (_, originalValue) = tracker.Start(10);
+
+		originalValue.Should().Be(30);
 	}
 
 	[Fact]

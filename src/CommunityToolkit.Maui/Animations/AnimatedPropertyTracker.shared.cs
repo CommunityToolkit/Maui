@@ -20,7 +20,9 @@ sealed class AnimatedPropertyTracker
 
 	readonly Lock trackerLock = new();
 
-	int runningAnimations, latestAnimationId;
+	readonly HashSet<int> runningAnimationIds = [];
+
+	int latestAnimationId;
 	double originalValue;
 	double? valueLeftByLastAnimation;
 
@@ -33,14 +35,14 @@ sealed class AnimatedPropertyTracker
 		{
 			// The current value is the original value only while the view is at rest: no animation of the property is running, and the value is not the
 			// partially animated one an interrupted animation left (the value the last animation left is the original one when that animation completed)
-			if (runningAnimations is 0 && currentValue != valueLeftByLastAnimation)
+			if (runningAnimationIds.Count is 0 && currentValue != valueLeftByLastAnimation)
 			{
 				originalValue = currentValue;
 			}
 
-			runningAnimations++;
+			runningAnimationIds.Add(++latestAnimationId);
 
-			return (++latestAnimationId, originalValue);
+			return (latestAnimationId, originalValue);
 		}
 	}
 
@@ -52,11 +54,11 @@ sealed class AnimatedPropertyTracker
 		}
 	}
 
-	public void End(double currentValue)
+	public void End(int animationId, double currentValue)
 	{
 		lock (trackerLock)
 		{
-			if (--runningAnimations is 0)
+			if (runningAnimationIds.Remove(animationId) && runningAnimationIds.Count is 0)
 			{
 				valueLeftByLastAnimation = currentValue;
 			}

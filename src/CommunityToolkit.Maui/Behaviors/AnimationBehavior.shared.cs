@@ -171,7 +171,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		}
 		catch (OperationCanceledException) when (token.IsCancellationRequested)
 		{
-			// The animation returned the view before it threw, and an exception escaping the async void command would crash the app
+			// Cancelling its own token is the caller's request to stop, and an exception escaping the async void command would crash the app
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{

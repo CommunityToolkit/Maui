@@ -194,6 +194,94 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task Animate_AfterTheAppSetTheValueInTheSameTurnAsCancelAnimations_ReturnsToTheAppsValue(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		const double appValue = 0.55;
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var property = PropertyOf(animationName).Property;
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var run = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		view.CancelAnimations();
+		view.SetValue(property, appValue);
+		await run.WaitAsync(waitTimeout, token);
+		((double)view.GetValue(property)).Should().Be(appValue);
+
+		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision, "the app's own value was the view's value at rest when the second run started");
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task Animate_AfterTheAppSetTheValueFollowingTheInterruptedRun_ReturnsToTheAppsValue(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		const double appValue = 0.55;
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var property = PropertyOf(animationName).Property;
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var run = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		view.CancelAnimations();
+		await run.WaitAsync(waitTimeout, token);
+		view.SetValue(property, appValue);
+
+		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task AnimationBehavior_AfterTheAppSetTheValueInTheSameTurnAsCancelAnimations_ReturnsToTheAppsValue(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		const double appValue = 0.55;
+		var animation = new ObservedAnimation(Create(animationName, functionalTestLength));
+		var behavior = new AnimationBehavior { AnimationType = animation };
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		view.Behaviors.Add(behavior);
+		var startingValues = CaptureValues(view);
+		var property = PropertyOf(animationName).Property;
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var run = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		view.CancelAnimations();
+		view.SetValue(property, appValue);
+		await run.WaitAsync(waitTimeout, token);
+
+		behavior.AnimateCommand.Execute(token);
+		await animation.WaitForEndedAnimationsAsync(1, token);
+		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task Animate_StartedInTheSameTurnAsCancelAnimationsAndTheAppsWrite_ReturnsToTheAppsValue(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		const double appValue = 0.55;
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var property = PropertyOf(animationName).Property;
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var run = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		view.CancelAnimations();
+		view.SetValue(property, appValue);
+		var second = Create(animationName, functionalTestLength).Animate(view, token);
+		await Task.WhenAll(run, second).WaitAsync(waitTimeout, token);
+		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision);
+	}, TestContext.Current.CancellationToken);
+
 	static BaseAnimation Create(string animationName, uint length) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },

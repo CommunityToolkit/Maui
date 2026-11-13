@@ -54,7 +54,7 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 		}
 		finally
 		{
-			scales.End(view.Scale);
+			scales.End(scaleId, view.Scale);
 		}
 
 		Task<bool> ScaleLegAsync(double scale) =>

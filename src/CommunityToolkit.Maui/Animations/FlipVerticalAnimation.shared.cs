@@ -48,7 +48,7 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 		}
 		finally
 		{
-			rotations.End(view.RotationX);
+			rotations.End(flipId, view.RotationX);
 		}
 
 		Task<bool> FlipLegAsync(double rotationX) =>

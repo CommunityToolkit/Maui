@@ -57,7 +57,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		}
 		finally
 		{
-			fades.End(view.Opacity);
+			fades.End(fadeId, view.Opacity);
 		}
 
 		Task<bool> FadeLegAsync(double opacity) =>

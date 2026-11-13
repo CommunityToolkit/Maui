@@ -105,4 +105,30 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			}
 		});
 	}
+
+	[Fact]
+	public async Task AnimationStartedAfterTheAppSetTheValueInTheSameTurnAsCancelAnimationsReturnsToTheAppsValue()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
+		var appValue = (originalValue + PeakValue) / 2;
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var interruptedRun = CreateAnimation().Animate(view);
+			await midRun;
+
+			view.CancelAnimations();
+			view.SetValue(PeakProperty, appValue);
+			await interruptedRun.WaitAsync(waitTimeout);
+
+			await CreateAnimation().Animate(view).WaitAsync(waitTimeout);
+
+			var valueAfterSecondRun = (double)view.GetValue(PeakProperty);
+			Assert.True(Math.Abs(valueAfterSecondRun - appValue) <= peakTolerance, $"The second run ended at {valueAfterSecondRun}; it must return to the value {appValue} the app set.");
+		});
+	}
 }

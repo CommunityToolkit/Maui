@@ -44,11 +44,12 @@ static class KeyframeAnimationExtensions
 
 		// The trackers, not the current values, know the original values while an animation of the same property, such as a ScaleAnimation, runs or was interrupted
 		var trackers = new AnimatedPropertyTracker[animatedProperties.Count];
+		var animationIds = new int[animatedProperties.Count];
 		var originalValues = new Dictionary<BindableProperty, double>(animatedProperties.Count);
 		for (var i = 0; i < animatedProperties.Count; i++)
 		{
 			trackers[i] = AnimatedPropertyTracker.For(view, animatedProperties[i]);
-			originalValues[animatedProperties[i]] = trackers[i].Start((double)view.GetValue(animatedProperties[i])).OriginalValue;
+			(animationIds[i], originalValues[animatedProperties[i]]) = trackers[i].Start((double)view.GetValue(animatedProperties[i]));
 		}
 
 		try
@@ -58,7 +59,7 @@ static class KeyframeAnimationExtensions
 				// A throwing PropertyChanged handler must not leave the awaiting Animate task hanging
 				try
 				{
-					ReturnToOriginalValues(view, animatedProperties, trackers, originalValues);
+					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, originalValues);
 				}
 				finally
 				{
@@ -72,7 +73,7 @@ static class KeyframeAnimationExtensions
 			// With animations disabled, Commit runs the finished callback itself, which has already restored the view
 			if (!animationEnded.Task.IsCompleted)
 			{
-				ReturnToOriginalValues(view, animatedProperties, trackers, originalValues);
+				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, originalValues);
 			}
 
 			throw;
@@ -115,7 +116,7 @@ static class KeyframeAnimationExtensions
 		return null;
 	}
 
-	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, IReadOnlyDictionary<BindableProperty, double> originalValues)
 	{
 		// A throwing PropertyChanged handler must not leave later properties unrestored, or any tracker with a stale original value
 		ExceptionDispatchInfo? firstException = null;
@@ -133,7 +134,7 @@ static class KeyframeAnimationExtensions
 			}
 			finally
 			{
-				trackers[i].End(originalValue);
+				trackers[i].End(animationIds[i], originalValue);
 			}
 		}
 

@@ -79,7 +79,7 @@ public partial class RotateAnimation : BaseAnimation
 		}
 		finally
 		{
-			rotations.End(view.Rotation);
+			rotations.End(rotationId, view.Rotation);
 		}
 	}
 
