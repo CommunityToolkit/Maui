@@ -49,8 +49,8 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	{
 		using var file = new Java.IO.File(AppContext.CacheDir, "finalize-event.mp4");
 		using var outputOptions = new FileOutputOptions.Builder(file).Build();
-		using var audioStats = CallPackagePrivateFactory("androidx/camera/video/AudioStats", "(ILjava/lang/Throwable;D)Landroidx/camera/video/AudioStats;",
-			new JValue(AudioStats.AudioStateDisabled), new JValue(IntPtr.Zero), new JValue(AudioStats.AudioAmplitudeNone));
+		using var audioStats = CallPackagePrivateFactory("androidx/camera/video/AudioStats", "(ILjava/lang/Throwable;DJ)Landroidx/camera/video/AudioStats;",
+			new JValue(AudioStats.AudioStateDisabled), new JValue(IntPtr.Zero), new JValue(AudioStats.AudioAmplitudeNone), new JValue(0L));
 		using var recordingStats = CallPackagePrivateFactory("androidx/camera/video/RecordingStats", "(JJLandroidx/camera/video/AudioStats;)Landroidx/camera/video/RecordingStats;",
 			new JValue(0L), new JValue(0L), new JValue(audioStats));
 		using var outputResults = CallPackagePrivateFactory("androidx/camera/video/OutputResults", "(Landroid/net/Uri;)Landroidx/camera/video/OutputResults;",
