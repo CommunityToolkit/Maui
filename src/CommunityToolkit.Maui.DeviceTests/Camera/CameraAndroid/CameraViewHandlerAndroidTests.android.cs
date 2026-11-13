@@ -402,7 +402,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			var other = cameras.First(camera => camera.DeviceId != first.DeviceId);
 			await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
-			await WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 			host.View.SelectedCamera = other;
@@ -445,7 +445,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.Equal(withAnotherInstanceOfTheCamera, !ReferenceEquals(first, sameCamera));
 			await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
-			await WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 			host.View.SelectedCamera = null;
@@ -727,6 +727,8 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			Assert.Empty(UnhandledAsyncVoidExceptions);
 
+			// CameraX publishes OPEN again only for a camera that went through CLOSED (see WaitUntilCameraIsStreamingAsync)
+			await WaitForNativeCameraStateAsync(valid.DeviceId, "CLOSED");
 			host.View.SelectedCamera = valid;
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
 			await WaitUntilCameraIsStreamingAsync(host);

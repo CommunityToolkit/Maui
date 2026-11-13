@@ -177,16 +177,5 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 		await SelectCameraAsync(session, camera);
 	}
 
-	static Task WaitForRecordingDataAsync(IReadOnlyCollection<string> before) =>
-		AssertionExtensions.AssertEventually(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, 40000, 100,
-			"The recording never wrote any data into the cache directory.");
-
-	static void AssertIsAPlayableVideo(byte[] mp4)
-	{
-		Assert.True(mp4.Length > 8 && Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
-		var (hasVideo, durationMilliseconds, width, height) = ReadVideoInfo(mp4);
-		Assert.True(hasVideo, "Android does not find a video track in the recording.");
-		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
-		Assert.True(width > 0 && height > 0, $"The recording has no size ({width}x{height}).");
-	}
+	static Task WaitForRecordingDataAsync(IReadOnlyCollection<string> before) => WaitForRecordedVideoAsync(before);
 }

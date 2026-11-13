@@ -82,6 +82,10 @@ partial class CameraManager
 	ImageCallBack? imageCallback;
 	VideoCapture? videoCapture;
 	Recorder? videoRecorder;
+
+	// CameraX's Recorder runs the source-state changes of a detached VideoCapture only after it finishes the recording it is still ending,
+	// so a recording that it starts in that window is finalized with ERROR_SOURCE_INACTIVE
+	bool hasVideoRecorderRecorded;
 	Recording? videoRecording;
 	ICamera? camera;
 	ICameraControl? cameraControl;
@@ -435,6 +439,7 @@ partial class CameraManager
 			videoCapture.Dispose();
 		}
 		videoRecorder?.Dispose();
+		hasVideoRecorderRecorded = false;
 
 		// The Recorder runs on the I/O executor of CameraX (its default), not on the camera executor: it still finalizes recordings
 		// and releases its encoders after its VideoCapture is unbound, which the camera executor that Dispose shuts down would reject
@@ -887,6 +892,11 @@ partial class CameraManager
 			token.ThrowIfCancellationRequested();
 			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
+			if (hasVideoRecorderRecorded && (IsCapturePhotoSession || camera is null || !IsVideoSessionBound()))
+			{
+				RebuildVideoCapture();
+			}
+
 			// The recording file and the recording (which checks RECORD_AUDIO) are prepared before the session changes, so that a
 			// StartVideoRecording that fails for the permission leaves the photo session as it was
 			videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
@@ -921,6 +931,7 @@ partial class CameraManager
 
 			videoRecordingStream = stream;
 			videoRecordingConsumer = consumer;
+			hasVideoRecorderRecorded = true;
 			videoRecording = pendingRecording.Start(executor, consumer);
 			recordingRequested = true;
 

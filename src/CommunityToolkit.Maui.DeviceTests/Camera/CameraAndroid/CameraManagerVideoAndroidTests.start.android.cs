@@ -99,6 +99,30 @@ public partial class CameraManagerVideoAndroidTests
 		}, mauiContext: new TestMauiContext(MauiContext, context));
 	}
 
+	[Fact]
+	public async Task StartVideoRecordingThatBindsTheVideoSessionAgainAfterARecordingUsesAFreshRecorderAndRecords()
+	{
+		SetupBuilder();
+		RequireVideoRecording();
+		var before = ListRecordingFiles();
+		var first = new MemoryStream();
+		var second = new MemoryStream();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
+			var firstRecorder = session.Native<AndroidX.Camera.Video.Recorder>("videoRecorder");
+			var firstFile = await WaitForRecordingFileAsync(before);
+			AssertIsAPlayableVideo(await StopAndReadAsync(session, first));
+
+			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
+
+			Assert.NotSame(firstRecorder, session.Native<AndroidX.Camera.Video.Recorder>("videoRecorder"));
+			await WaitForRecordingFileAsync([.. before, firstFile], "The StartVideoRecording after the earlier recording recorded nothing (no new recording file received data).");
+			AssertIsAPlayableVideo(await StopAndReadAsync(session, second));
+		}, includeRecordAudio: true);
+	}
+
 	// The session can not be restored after the recording here (its camera has no CameraSelector). The video is exported by then, and the caller
 	// has no other way to get it: the stop returns it, and the failure of the restore goes to ErrorOccurred. The recording state and the recording
 	// file are released all the same, otherwise every later StartVideoRecording would be rejected.

@@ -369,6 +369,32 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static IReadOnlyList<string> ListRecordingFiles() =>
 		AppContext.CacheDir?.ListFiles()?.Where(file => file.Name.EndsWith(".mp4", StringComparison.Ordinal)).Select(file => file.AbsolutePath).Order().ToList() ?? [];
 
+	// MediaMuxer writes the MP4 header before any sample, so a file that holds only the header is not a video yet.
+	protected static async Task<string> WaitForRecordedVideoAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
+	{
+		string? path = null;
+		long headerLength = 0;
+		await AssertionExtensions.AssertEventually(() =>
+		{
+			path = ListRecordingFiles().Except(before).SingleOrDefault();
+			headerLength = path is null ? 0 : new FileInfo(path).Length;
+			return headerLength > 0;
+		}, 40000, 100, message);
+
+		await AssertionExtensions.AssertEventually(() => new FileInfo(path!).Length > headerLength, 40000, 100, "The recording never wrote a sample after the MP4 header.");
+
+		return path!;
+	}
+
+	static void AssertIsAPlayableVideo(byte[] mp4)
+	{
+		Assert.True(mp4.Length > 8 && Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
+		var (hasVideo, durationMilliseconds, width, height) = ReadVideoInfo(mp4);
+		Assert.True(hasVideo, "Android does not find a video track in the recording.");
+		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
+		Assert.True(width > 0 && height > 0, $"The recording has no size ({width}x{height}).");
+	}
+
 	protected static (bool HasVideo, long DurationMilliseconds, int Width, int Height) ReadVideoInfo(byte[] mp4)
 	{
 		var path = System.IO.Path.Combine(AppContext.CacheDir!.AbsolutePath, $"probe-{Guid.NewGuid():N}.probe");

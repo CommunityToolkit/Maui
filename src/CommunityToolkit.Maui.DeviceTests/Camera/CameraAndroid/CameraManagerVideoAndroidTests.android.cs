@@ -15,26 +15,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Collection(TestCollections.PermanentAndroidGrants)]
 public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 {
-	static async Task<string> WaitForRecordingFileAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
-	{
-		string? path = null;
-		await AssertionExtensions.AssertEventually(() =>
-		{
-			path = ListRecordingFiles().Except(before).SingleOrDefault();
-			return path is not null && new FileInfo(path).Length > 0;
-		}, 40000, 100, message);
-
-		return path!;
-	}
-
-	static void AssertIsAPlayableVideo(byte[] mp4)
-	{
-		Assert.True(mp4.Length > 8 && Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
-		var (hasVideo, durationMilliseconds, width, height) = ReadVideoInfo(mp4);
-		Assert.True(hasVideo, "Android does not find a video track in the recording.");
-		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
-		Assert.True(width > 0 && height > 0, $"The recording has no size ({width}x{height}).");
-	}
+	static Task<string> WaitForRecordingFileAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.") =>
+		WaitForRecordedVideoAsync(before, message);
 
 	static async Task<byte[]> StopAndReadAsync(ManagerSession session, Stream expected)
 	{

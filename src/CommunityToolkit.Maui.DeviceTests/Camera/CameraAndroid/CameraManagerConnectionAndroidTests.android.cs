@@ -764,6 +764,8 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			using var errors = new CameraErrorRecorder(session.View);
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.Single(errors.Errors);
+			// CameraX publishes OPEN again only for a camera that went through CLOSED (see WaitUntilCameraIsStreamingAsync)
+			await WaitForNativeCameraStateAsync(valid.DeviceId, "CLOSED");
 			var loadedBefore = session.LoadedCount;
 
 			session.View.SelectedCamera = valid;
