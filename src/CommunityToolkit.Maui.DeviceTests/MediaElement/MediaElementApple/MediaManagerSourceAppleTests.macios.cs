@@ -427,19 +427,18 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Null(await SetSourceAsync(mediaElement, handler, ResourceSource(TracklessResource)));
 
-			// A well-formed file without any track: AVFoundation has nothing to play (AVAsset.Playable is false) and never makes the item
-			// ReadyToPlay, so the media is not opened and must be reported as failed.
+			// A well-formed file without any track: AVFoundation has nothing to play (AVAsset.Playable is false). Most iOS versions leave the
+			// item Unknown and iOS 16.4 can make it ReadyToPlay; either way the media is not opened and is reported as failed once.
 			var item = handler.Manager.NativePlayerItem!;
 			Assert.Empty(item.Asset.Tracks);
 			Assert.False(item.Asset.Playable);
-			Assert.NotEqual(AVPlayerItemStatus.ReadyToPlay, item.Status);
-			Assert.Equal(0, events.Opened);
-			Assert.Single(events.Failures);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 
-			// Bounded wait (it does not fail) for the player's own status, which must not hide the failure.
-			await AssertHelpers.Wait(() => player.Status is not AVPlayerStatus.Unknown, timeout: 2000, interval: 20);
+			// Bounded wait (it does not fail) for the statuses of the player and the item, which must not hide the failure or open the media.
+			await AssertHelpers.Wait(() => player.Status is not AVPlayerStatus.Unknown && item.Status is not AVPlayerItemStatus.Unknown, timeout: 2000, interval: 20);
 			await DrainMainQueueAsync();
+			Assert.Equal(0, events.Opened);
+			Assert.Equal("The media has no tracks to play.", Assert.Single(events.Failures));
+			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 		});
 	}
