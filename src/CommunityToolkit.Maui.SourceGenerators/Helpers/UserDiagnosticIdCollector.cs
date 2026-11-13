@@ -112,6 +112,7 @@ sealed class UserDiagnosticIdCollector
 		switch (constant.Kind)
 		{
 			case TypedConstantKind.Array:
+				AddType(constant.Type);
 				foreach (var value in constant.Values)
 				{
 					AddTypesReferencedBy(value);
