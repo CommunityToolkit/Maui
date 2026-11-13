@@ -15,7 +15,7 @@ static class AttributeExtensions
 	{
 		var data = attribute.NamedArguments.SingleOrDefault(kvp => kvp.Key == name).Value;
 
-		return data.Value is null ? placeholder : $"({data.Type}){data.Value}";
+		return data.Value is null ? placeholder : FormattableString.Invariant($"({data.Type}){data.Value}");
 	}
 
 	public static string GetNamedMethodGroupArgumentsAttributeValueByNameAsString(this AttributeData attribute, string name)

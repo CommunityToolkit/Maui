@@ -76,6 +76,27 @@ public class GeneratorCultureTests
 		}
 		""";
 
+	const string defaultBindingModeSource =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui.Controls;
+
+		namespace TestNamespace;
+
+		internal partial class TestView : View
+		{
+			[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+			public partial string Title { get; set; }
+		}
+
+		[AttachedBindableProperty<string>("Caption", DefaultBindingMode = BindingMode.OneWayToSource)]
+		internal partial class AttachedHost : View
+		{
+		}
+		""";
+
 	[Theory]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
@@ -90,6 +111,30 @@ public class GeneratorCultureTests
 		Assert.NotEmpty(invariantSources);
 		Assert.Empty(invariantErrors);
 		Assert.Empty(cultureErrors);
+		Assert.Equal(invariantSources.Count, cultureSources.Count);
+
+		foreach (var (hintName, text) in invariantSources)
+		{
+			Assert.True(cultureSources.TryGetValue(hintName, out var cultureText), $"{hintName} was not generated in {cultureName}");
+			Assert.Equal(text, cultureText);
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	[InlineData("sv-SE")]
+	[InlineData("ar-SA")]
+	public void DefaultBindingModeIsEmittedIdenticallyInEveryCulture(string cultureName)
+	{
+		var invariantSources = RunGenerators(defaultBindingModeSource, CultureInfo.InvariantCulture, out var invariantErrors);
+		var cultureSources = RunGenerators(defaultBindingModeSource, new CultureInfo(cultureName), out var cultureErrors);
+
+		Assert.Empty(invariantErrors);
+		Assert.Empty(cultureErrors);
+		Assert.Contains("(Microsoft.Maui.Controls.BindingMode)1", string.Concat(invariantSources.Values), StringComparison.Ordinal);
+		Assert.Contains("(Microsoft.Maui.Controls.BindingMode)3", string.Concat(invariantSources.Values), StringComparison.Ordinal);
 		Assert.Equal(invariantSources.Count, cultureSources.Count);
 
 		foreach (var (hintName, text) in invariantSources)
