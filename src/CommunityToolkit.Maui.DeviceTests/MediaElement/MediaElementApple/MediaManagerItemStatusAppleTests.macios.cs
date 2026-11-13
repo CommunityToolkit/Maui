@@ -31,7 +31,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 		return new NSError(new NSString("test-domain"), 7, userInfo);
 	}
 
-	const string NoTracksToPlayMessage = "The media has no tracks to play.";
+	const string noTracksToPlayMessage = "The media has no tracks to play.";
 
 	static UIView Overlay(AppleMediaElementHandler handler) => handler.Manager!.NativePlayerViewController!.ContentOverlayView!;
 
@@ -415,10 +415,10 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 			Assert.Empty(item.Asset.Tracks);
 			Assert.Equal(0, events.Opened);
-			Assert.Equal(NoTracksToPlayMessage, Assert.Single(events.Failures));
+			Assert.Equal(noTracksToPlayMessage, Assert.Single(events.Failures));
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 			Assert.Empty(Overlay(handler).Subviews);
-			Assert.Contains(Logs.Entries, entry => entry.Level is LogLevel.Error && entry.Message == NoTracksToPlayMessage);
+			Assert.Contains(Logs.Entries, entry => entry.Level is LogLevel.Error && entry.Message == noTracksToPlayMessage);
 			Assert.DoesNotContain(Logs.Entries, entry => entry.Level is LogLevel.Warning);
 		});
 	}
@@ -443,7 +443,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			await manager.RunItemStatusHandler(item, CancellationToken.None);
 
 			Assert.Equal(0, events.Opened);
-			Assert.Equal(NoTracksToPlayMessage, Assert.Single(events.Failures));
+			Assert.Equal(noTracksToPlayMessage, Assert.Single(events.Failures));
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 		});
 	}
