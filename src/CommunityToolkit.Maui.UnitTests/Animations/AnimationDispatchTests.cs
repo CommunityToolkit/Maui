@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Animations;
+using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using Nito.AsyncEx;
 using Xunit;
@@ -13,6 +14,8 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 public class AnimationDispatchTests : BaseTest
 {
 	const uint animationLength = 200;
+	// Only a stopped animation returns the view within the wait timeout
+	const uint runLongerThanTheWaitTimeout = 60_000;
 	const double precision = 0.001;
 	static readonly BindableProperty[] animatedProperties = [VisualElement.OpacityProperty, VisualElement.ScaleProperty, VisualElement.RotationProperty, VisualElement.RotationXProperty, VisualElement.RotationYProperty, VisualElement.ScaleXProperty, VisualElement.ScaleYProperty, VisualElement.TranslationXProperty, VisualElement.TranslationYProperty, VisualElement.AnchorYProperty];
 	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
@@ -89,6 +92,127 @@ public class AnimationDispatchTests : BaseTest
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => supersededRun.WaitAsync(waitTimeout, token));
 	}, TestContext.Current.CancellationToken);
 
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(nameof(FadeAnimation))]
+	[InlineData(nameof(ScaleAnimation))]
+	public Task AnimationBehaviorTriggeredOffTheDispatcherThreadMidRun_TakesOverWithoutReturningTheViewToRestAndChangesItOnlyOnTheDispatcherThread(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	{
+		var token = TestContext.Current.CancellationToken;
+		var view = dispatcherThread.CreateAnimatedView();
+		var originalValues = CaptureValues(view);
+		var (property, target) = ToAnimationPropertyAndTarget(animationName);
+		var originalValue = (double)view.GetValue(property);
+		var behavior = new AnimationBehavior { AnimationType = CreateToAnimation(animationName, 1000) };
+		view.Behaviors.Add(behavior);
+
+		var firstChange = dispatcherThread.WaitForChangeAsync(view);
+		behavior.AnimateCommand.Execute(CancellationToken.None);
+		await firstChange;
+
+		// Blocks the dispatcher thread on purpose: the re-trigger from the pool thread is queued while the first run is still on its first leg
+		Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token).Wait(token);
+
+		var valuesFromTheReTrigger = new List<double>();
+		view.PropertyChanged += RecordValue;
+		await WaitForValueAsync(view, property, value => Math.Abs(value - target) <= precision, token);
+		view.PropertyChanged -= RecordValue;
+
+		Assert.DoesNotContain(originalValue, valuesFromTheReTrigger);
+
+		await WaitForValueAsync(view, property, value => value == originalValue, token);
+		dispatcherThread.AssertNoChangeOffTheDispatcherThread("while the re-triggered animation took over");
+		AssertValuesEqual(view, originalValues);
+
+		void RecordValue(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == property.PropertyName)
+			{
+				valuesFromTheReTrigger.Add((double)view.GetValue(property));
+			}
+		}
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(nameof(FadeAnimation))]
+	[InlineData(nameof(ScaleAnimation))]
+	public Task AnimationBehaviorTriggeredOffTheDispatcherThreadWithACancelledTokenMidRun_StopsTheRunningAnimationWithoutAnException(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	{
+		var token = TestContext.Current.CancellationToken;
+		var view = dispatcherThread.CreateAnimatedView();
+		var originalValues = CaptureValues(view);
+		var (property, _) = ToAnimationPropertyAndTarget(animationName);
+		var originalValue = (double)view.GetValue(property);
+		var behavior = new AnimationBehavior { AnimationType = CreateToAnimation(animationName, runLongerThanTheWaitTimeout) };
+		view.Behaviors.Add(behavior);
+		using var cancelledTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		await cancelledTokenSource.CancelAsync();
+
+		var firstChange = dispatcherThread.WaitForChangeAsync(view);
+		behavior.AnimateCommand.Execute(CancellationToken.None);
+		await firstChange;
+
+		Task.Run(() => behavior.AnimateCommand.Execute(cancelledTokenSource.Token), token).Wait(token);
+
+		await WaitForValueAsync(view, property, value => value == originalValue, token);
+		Assert.False(view.AnimationIsRunning(nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync)) || view.AnimationIsRunning(nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync)));
+		dispatcherThread.AssertNoChangeOffTheDispatcherThread("while the cancelled trigger stopped the animation");
+		AssertValuesEqual(view, originalValues);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(nameof(FadeAnimation))]
+	[InlineData(nameof(ScaleAnimation))]
+	public Task AnimationBehaviorTriggeredOffTheDispatcherThreadMidRun_StartsTheNewRunOnTheDispatcherThreadWhereItStoppedTheOldOne(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	{
+		var token = TestContext.Current.CancellationToken;
+		var view = dispatcherThread.CreateAnimatedView();
+		var (property, _) = ToAnimationPropertyAndTarget(animationName);
+		var animation = new StartRecordingAnimation(CreateToAnimation(animationName, 1000));
+		var behavior = new AnimationBehavior { AnimationType = animation };
+		view.Behaviors.Add(behavior);
+
+		var firstChange = dispatcherThread.WaitForChangeAsync(view);
+		behavior.AnimateCommand.Execute(CancellationToken.None);
+		await firstChange;
+
+		Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token).Wait(token);
+		var valueWhenReTriggered = (double)view.GetValue(property);
+		await WaitForValueAsync(view, property, value => Math.Abs(value - valueWhenReTriggered) > precision, token);
+
+		Assert.Equal([false, false], animation.StartedOffTheDispatcherThread);
+	}, TestContext.Current.CancellationToken);
+
+	static Task WaitForValueAsync(VisualElement view, BindableProperty property, Func<double, bool> condition, CancellationToken token)
+	{
+		var conditionMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		view.PropertyChanged += HandlePropertyChanged;
+
+		return conditionMet.Task.WaitAsync(waitTimeout, token);
+
+		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == property.PropertyName && condition((double)view.GetValue(property)))
+			{
+				view.PropertyChanged -= HandlePropertyChanged;
+				conditionMet.TrySetResult();
+			}
+		}
+	}
+
+	static (BindableProperty Property, double Target) ToAnimationPropertyAndTarget(string animationName) => animationName switch
+	{
+		nameof(FadeAnimation) => (VisualElement.OpacityProperty, 0.2),
+		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, 1.6),
+		_ => throw new NotSupportedException(animationName)
+	};
+
+	static BaseAnimation CreateToAnimation(string animationName, uint length) => animationName switch
+	{
+		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },
+		nameof(ScaleAnimation) => new ScaleAnimation { Scale = 1.6, Length = length },
+		_ => throw new NotSupportedException(animationName)
+	};
+
 	static BaseAnimation CreateAnimation(string animationName) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = animationLength },
@@ -120,6 +244,19 @@ public class AnimationDispatchTests : BaseTest
 
 	static Task RunOnDispatcherThreadAsync(Func<DispatcherThread, Task> test, CancellationToken token) =>
 		Task.Run(() => AsyncContext.Run(() => test(new DispatcherThread())), token);
+
+	sealed class StartRecordingAnimation(BaseAnimation inner) : BaseAnimation
+	{
+		readonly ConcurrentQueue<bool> startedOffTheDispatcherThread = new();
+
+		public IReadOnlyCollection<bool> StartedOffTheDispatcherThread => startedOffTheDispatcherThread;
+
+		public override Task Animate(VisualElement view, CancellationToken token = default)
+		{
+			startedOffTheDispatcherThread.Enqueue(view.Dispatcher.IsDispatchRequired);
+			return inner.Animate(view, token);
+		}
+	}
 
 	// Stands for the UI thread of an app: its SynchronizationContext is not the default one, and a dispatch from any other thread queues to it
 	sealed class DispatcherThread : IDispatcher

@@ -134,6 +134,65 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 		});
 	}
 
+	[Fact]
+	public async Task AnimationBehaviorTriggeredOffTheUIThreadMidRunTakesOverWithoutReturningToRest()
+	{
+		SetupBuilder();
+
+		var animation = new ObservedAnimation(CreateAnimation());
+		var behavior = new AnimationBehavior { AnimationType = animation };
+		var view = CreateAnimatedView(OriginalValues);
+		view.Behaviors.Add(behavior);
+		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			behavior.AnimateCommand.Execute(CancellationToken.None);
+			await midRun;
+
+			var restoreWrites = 0;
+			var writesOffTheUIThread = 0;
+			var peakReached = false;
+			view.PropertyChanged += CountWritesUntilThePeak;
+			try
+			{
+				await Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None));
+				await animation.WaitForEndedAnimationsAsync(2);
+			}
+			finally
+			{
+				view.PropertyChanged -= CountWritesUntilThePeak;
+			}
+
+			Assert.True(peakReached, "The animation triggered from a background thread did not reach its peak.");
+			Assert.True(restoreWrites is 0, $"The interrupted run wrote the original value {restoreWrites} time(s) before the new run's peak; it must leave the view to the new run.");
+			Assert.True(writesOffTheUIThread is 0, $"The view changed {writesOffTheUIThread} time(s) off the UI thread.");
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the animation triggered from a background thread");
+
+			void CountWritesUntilThePeak(object? sender, PropertyChangedEventArgs e)
+			{
+				if (view.Dispatcher.IsDispatchRequired)
+				{
+					writesOffTheUIThread++;
+				}
+
+				if (peakReached || e.PropertyName != PeakProperty.PropertyName)
+				{
+					return;
+				}
+
+				var value = (double)view.GetValue(PeakProperty);
+				if (value == originalValue)
+				{
+					restoreWrites++;
+				}
+
+				peakReached = Math.Abs(value - PeakValue) <= peakTolerance;
+			}
+		});
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
