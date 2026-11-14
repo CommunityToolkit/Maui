@@ -334,15 +334,15 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		var original = (double)view.GetValue(property);
 
 		// A second animation keeps the ticker running, so the seeker's first frame comes a tick later, as on iOS
-		var keepTicking = new FadeAnimation { Opacity = 0.2, Length = 3000 }.Animate(view, token);
+		var keepTicking = new FadeAnimation { Opacity = 0.2, Length = 700 }.Animate(view, token);
 		var changed = WaitForPropertyAsync(view, property, token, value => Math.Abs(value - original) > 0.05);
-		var toRun = Create(toAnimationName, 1000).Animate(view, token);
+		var toRun = Create(toAnimationName, 600).Animate(view, token);
 		await changed;
 
 		Task seekerRun;
 		using (var restores = new OriginalValueWrites(view, property, original))
 		{
-			seekerRun = Create(seekerName, 1000).Animate(view, token);
+			seekerRun = Create(seekerName, 600).Animate(view, token);
 			await WaitForFramesAsync(view, 3, token);
 			restores.Count.Should().Be(0, "a restore after the yield would undo the seeker's first frames");
 		}
@@ -359,7 +359,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		var originalOpacity = view.Opacity;
 
 		// A keyframe animation keeps the ticker running, so the return leg's first frame comes a tick after the first leg ends, as on a device
-		var keepTicking = new ShakeAnimation { Length = 3000 }.Animate(view, token);
+		var keepTicking = new ShakeAnimation { Length = 800 }.Animate(view, token);
 		var atTarget = WaitForPropertyAsync(view, VisualElement.OpacityProperty, token, value => value == target);
 		var run = new FadeAnimation { Opacity = target, Length = 400 }.Animate(view, token);
 		await atTarget;
