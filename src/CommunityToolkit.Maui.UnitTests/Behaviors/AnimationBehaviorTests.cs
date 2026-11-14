@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
-using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -148,7 +147,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		}.EnableAnimations();
 
 		// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
-		var exception = Record.Exception(() => AsyncContext.Run(async () =>
+		var exception = Record.Exception(() => UndisposedAsyncContext.Run(async () =>
 		{
 			await animationCommandCts.CancelAsync();
 			behavior.AnimateCommand.Execute(animationCommandCts.Token);
@@ -179,7 +178,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		label.PropertyChanged += HandlePropertyChanged;
 
 		// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
-		var exception = Record.Exception(() => AsyncContext.Run(async () =>
+		var exception = Record.Exception(() => UndisposedAsyncContext.Run(async () =>
 		{
 			behavior.AnimateCommand.Execute(animationCommandCts.Token);
 			await shaking.Task.WaitAsync(TimeSpan.FromSeconds(15), TestContext.Current.CancellationToken);
@@ -217,7 +216,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		Assert.True(SpinWait.SpinUntil(() => animationCommandCts.IsCancellationRequested, TimeSpan.FromMilliseconds((int)TestDuration.Short)));
 
 		// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
-		var exception = Record.Exception(() => AsyncContext.Run(() => behavior.AnimateCommand.Execute(animationCommandCts.Token)));
+		var exception = Record.Exception(() => UndisposedAsyncContext.Run(() => behavior.AnimateCommand.Execute(animationCommandCts.Token)));
 
 		Assert.Null(exception);
 		Assert.False(mockAnimation.AnimationHasStarted);
@@ -238,7 +237,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		}.EnableAnimations();
 
 		// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
-		var exception = Record.Exception(() => AsyncContext.Run(() => behavior.AnimateCommand.Execute(TestContext.Current.CancellationToken)));
+		var exception = Record.Exception(() => UndisposedAsyncContext.Run(() => behavior.AnimateCommand.Execute(TestContext.Current.CancellationToken)));
 
 		Assert.IsType<OperationCanceledException>(exception, exactMatch: false);
 	}

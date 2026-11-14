@@ -4,7 +4,6 @@ using System.Globalization;
 using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.UnitTests.Mocks;
-using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
@@ -245,7 +244,7 @@ public class AnimationDispatchTests : BaseTest
 	}
 
 	static Task RunOnDispatcherThreadAsync(Func<DispatcherThread, Task> test, CancellationToken token) =>
-		Task.Run(() => AsyncContext.Run(() => test(new DispatcherThread())), token);
+		Task.Run(() => UndisposedAsyncContext.Run(() => test(new DispatcherThread())), token);
 
 	sealed class StartRecordingAnimation(BaseAnimation inner) : BaseAnimation
 	{

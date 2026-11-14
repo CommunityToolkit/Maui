@@ -3,7 +3,6 @@ using System.Threading.Channels;
 using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
-using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
@@ -37,7 +36,7 @@ public abstract class BaseAnimationTest : BaseTest
 	// thread too. On the thread pool it races the test, and the tickers of other views, for MAUI's animation bookkeeping (a static Dictionary
 	// that is not thread-safe).
 	protected static Task RunOnSingleThreadAsync(Func<CancellationToken, Task> test, CancellationToken token) =>
-		Task.Run(() => AsyncContext.Run(() => test(token)), token);
+		Task.Run(() => UndisposedAsyncContext.Run(() => test(token)), token);
 
 	protected static Label CreateAnimatedViewWithNonDefaultValues()
 	{
