@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<pages:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+                xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Views"
+                x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.ValuePropertyNameValidationBehaviorPage"
+                xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Behaviors"
+                x:TypeArguments="vm:ValuePropertyNameValidationBehaviorViewModel"
+                x:DataType="vm:ValuePropertyNameValidationBehaviorViewModel">
+
+    <pages:BasePage.Resources>
+        <Style x:Key="ValidPickerStyle" TargetType="Picker">
+            <Setter Property="TextColor" Value="Green" />
+        </Style>
+
+        <Style x:Key="InvalidPickerStyle" TargetType="Picker">
+            <Setter Property="TextColor" Value="Red" />
+        </Style>
+
+        <Style x:Key="ValidViewStyle" TargetType="ContentView">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=LightGreen, Dark=DarkGreen}" />
+        </Style>
+
+        <Style x:Key="InvalidViewStyle" TargetType="ContentView">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=LightPink, Dark=DarkRed}" />
+        </Style>
+    </pages:BasePage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource ContentPadding}"
+                             Spacing="24"
+                             VerticalOptions="Start">
+
+            <Label Text="ValidationBehavior.ValuePropertyName names the property of the attached view that is validated. It must name a BindableProperty of that view, for example Text, SelectedItem or a BindableProperty of your own view. Any other name (a plain CLR property, a dotted path, a typo) throws an ArgumentException when the behavior attaches (a trace warning instead when exceptions in behaviors are suppressed)."
+                   TextColor="{StaticResource NormalLabelTextColor}" />
+
+            <Label Text="1. A built-in control: ValuePropertyName=&quot;SelectedItem&quot; validates the Picker's SelectedItem. The text turns green after choosing Pro." />
+
+            <Picker Title="Plan"
+                    ItemsSource="{Binding Plans}">
+                <Picker.Behaviors>
+                    <mct:RequiredStringValidationBehavior ValuePropertyName="SelectedItem"
+                                                          RequiredString="Pro"
+                                                          InvalidStyle="{StaticResource InvalidPickerStyle}"
+                                                          ValidStyle="{StaticResource ValidPickerStyle}"
+                                                          Flags="ValidateOnValueChanged" />
+                </Picker.Behaviors>
+            </Picker>
+
+            <Label Text="2. A custom view that declares its own public static BindableProperty: ValuePropertyName=&quot;Code&quot; validates CodeEntryView.Code (CodeProperty). The background turns green with 4 or more characters." />
+
+            <views:CodeEntryView Padding="8">
+                <views:CodeEntryView.Behaviors>
+                    <mct:TextValidationBehavior ValuePropertyName="Code"
+                                                MinimumLength="4"
+                                                InvalidStyle="{StaticResource InvalidViewStyle}"
+                                                ValidStyle="{StaticResource ValidViewStyle}"
+                                                Flags="ValidateOnValueChanged" />
+                </views:CodeEntryView.Behaviors>
+            </views:CodeEntryView>
+
+            <Label Text="3. A plain CLR property: PinEntryView.Pin is not a BindableProperty, so ValuePropertyName is set to {x:Null} and Value uses a compiled binding instead. Set {x:Null} before the Value binding so the behavior does not replace it. The background turns green with 4 to 6 characters." />
+
+            <views:PinEntryView x:Name="PinEntry" Padding="8">
+                <views:PinEntryView.Behaviors>
+                    <mct:TextValidationBehavior ValuePropertyName="{x:Null}"
+                                                Value="{Binding Pin, Source={x:Reference PinEntry}, x:DataType=views:PinEntryView}"
+                                                MinimumLength="4"
+                                                MaximumLength="6"
+                                                InvalidStyle="{StaticResource InvalidViewStyle}"
+                                                ValidStyle="{StaticResource ValidViewStyle}"
+                                                Flags="ValidateOnValueChanged" />
+                </views:PinEntryView.Behaviors>
+            </views:PinEntryView>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</pages:BasePage>

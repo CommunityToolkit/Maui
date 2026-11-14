@@ -701,7 +701,7 @@ public partial class DrawingViewServiceTests
 		var read = stream.Read(signature, 0, signature.Length);
 		stream.Position = 0;
 		Assert.Equal(8, read);
-		Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, signature);
+		AotSafeAssert.SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }, signature);
 	}
 
 	static async Task<DrawingPixelImage> DecodeAsync(Stream stream)

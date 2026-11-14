@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Trim audit: audit.sh, audit-win.ps1 and the device-test run pass DirectoryBuildPropsPath and DirectoryBuildTargetsPath, which replace
+     the repo's own files for every project in the build, so those come first and every project still builds as it does in CI. -->
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)../../Directory.Build.props" />
+
+  <PropertyGroup>
+    <_CtmTrimAuditApp Condition="'$(MSBuildProjectName)' == 'CommunityToolkit.Maui.Sample' or '$(MSBuildProjectName)' == 'CommunityToolkit.Maui.DeviceTests'">true</_CtmTrimAuditApp>
+    <CtmTrimAuditPackageVersion Condition="'$(CtmTrimAuditPackageVersion)' == ''">99.0.0-trim1</CtmTrimAuditPackageVersion>
+    <!-- Release tags give Camera and MediaElement their own versions, so each package can have one; the common version is the default. -->
+    <CtmTrimAuditVersionMaui Condition="'$(CtmTrimAuditVersionMaui)' == ''">$(CtmTrimAuditPackageVersion)</CtmTrimAuditVersionMaui>
+    <CtmTrimAuditVersionCore Condition="'$(CtmTrimAuditVersionCore)' == ''">$(CtmTrimAuditPackageVersion)</CtmTrimAuditVersionCore>
+    <CtmTrimAuditVersionCamera Condition="'$(CtmTrimAuditVersionCamera)' == ''">$(CtmTrimAuditPackageVersion)</CtmTrimAuditVersionCamera>
+    <CtmTrimAuditVersionMediaElement Condition="'$(CtmTrimAuditVersionMediaElement)' == ''">$(CtmTrimAuditPackageVersion)</CtmTrimAuditVersionMediaElement>
+  </PropertyGroup>
+
+  <!-- The repo's props turn every IL2xxx/IL3xxx/IL4xxx code into an error, and a project reads WarningsAsErrors while it evaluates, so the codes
+       must go here, before the project body; clearing them in Directory.Build.targets is too late for the trimmer's own warnings. -->
+  <PropertyGroup Condition="'$(CtmTrimAuditMode)' != '' and '$(_CtmTrimAuditApp)' == 'true'">
+    <WarningsAsErrors>$([System.Text.RegularExpressions.Regex]::Replace('$(WarningsAsErrors)', 'IL[234]\d{3}', ''))</WarningsAsErrors>
+    <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- The packages come only from the feed of CI nupkgs and land in a packages folder of their own (audit.sh writes both), so a package
+       of the same version built elsewhere, or cached from an earlier build, can never stand in for them. -->
+  <PropertyGroup Condition="'$(CtmTrimAuditMode)' != ''">
+    <RestoreConfigFile Condition="'$(CtmTrimAuditNuGetConfig)' != ''">$(CtmTrimAuditNuGetConfig)</RestoreConfigFile>
+    <RestorePackagesPath Condition="'$(CtmTrimAuditPackagesPath)' != ''">$(CtmTrimAuditPackagesPath)</RestorePackagesPath>
+    <!-- The repo makes NU1900-NU1905 errors; a failed vulnerability lookup is not what the audit is about. -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <!-- Each Sample variant gets its own bin and obj: the trimmer's incremental check does not look at TrimMode, so a shared obj could hand one
+       variant the linked assemblies of another. The device-test app keeps bin and obj in place because eng/devices looks for the app there. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'CommunityToolkit.Maui.Sample' and '$(CtmTrimAuditOutput)' != ''">
+    <BaseOutputPath>$([MSBuild]::EnsureTrailingSlash('$(CtmTrimAuditOutput)'))bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$([MSBuild]::EnsureTrailingSlash('$(CtmTrimAuditOutput)'))obj/</BaseIntermediateOutputPath>
+    <!-- With bin and obj moved, the default globs would compile the generated sources of an ordinary build left in the project folder. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

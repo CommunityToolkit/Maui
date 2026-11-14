@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Runtime;
 using Android.Util;
@@ -28,25 +27,21 @@ public class MauiMediaElement : CoordinatorLayout
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context) : base(context)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context, IAttributeSet? attrs) : base(context, attrs)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
@@ -60,7 +55,6 @@ public class MauiMediaElement : CoordinatorLayout
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="playerView"/> is <see langword="null"/>.</exception>
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context ?? throw new ArgumentNullException(nameof(context)))
 	{
 		ArgumentNullException.ThrowIfNull(playerView);
@@ -81,7 +75,6 @@ public class MauiMediaElement : CoordinatorLayout
 		AddView(relativeLayout);
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)

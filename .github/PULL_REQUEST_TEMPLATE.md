@@ -29,6 +29,7 @@
  - [ ] Has samples (if omitted, state reason in description)
  - [ ] Rebased on top of `main` at time of PR
  - [ ] Changes adhere to [coding standard](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md#contributing-code---best-practices)
+ - [ ] Trim and NativeAOT safe: no new IL warnings, no new RequiresUnreferencedCode/RequiresDynamicCode/suppressions (see [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md))
  - [ ] Documentation created or updated: https://github.com/MicrosoftDocs/CommunityToolkit/pulls <!-- Replace this link to the direct link to your Pull Request in the MicrosoftDocs/CommunityToolkit repo  -->
 
 

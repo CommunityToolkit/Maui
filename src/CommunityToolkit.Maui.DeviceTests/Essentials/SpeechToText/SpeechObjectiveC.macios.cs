@@ -109,28 +109,33 @@ public sealed class SpeechFrameworkStub : IDisposable
 	{
 	}
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate IntPtr RecognitionTaskImplementation(IntPtr self, IntPtr selector, IntPtr request, IntPtr resultHandler);
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate byte BoolGetterImplementation(IntPtr self, IntPtr selector);
 
-	// The stub also calls an original implementation through this delegate type (GetDelegateForFunctionPointer). Mono's AOT compiler only
-	// precompiles that managed-to-native wrapper for a delegate type marked [UnmanagedFunctionPointer], and an iOS or Mac Catalyst Release
-	// build runs AOT code only, so it cannot create the wrapper at run time.
+	// Every delegate marshalled to or from native code is marked [UnmanagedFunctionPointer]: Mono's AOT compiler and NativeAOT's ILC only
+	// precompile the marshalling wrapper for marked delegate types, and a Release build cannot create one at run time.
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate void BoolSetterImplementation(IntPtr self, IntPtr selector, byte value);
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate void BlockArgumentImplementation(IntPtr self, IntPtr selector, IntPtr block);
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate void PointerArgumentImplementation(IntPtr self, IntPtr selector, IntPtr argument);
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate void NoArgumentImplementation(IntPtr self, IntPtr selector);
 
-	// Also called through GetDelegateForFunctionPointer (see BoolSetterImplementation).
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate IntPtr PointerGetterImplementation(IntPtr self, IntPtr selector);
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate byte SetModeImplementation(IntPtr self, IntPtr selector, IntPtr mode, IntPtr outError);
 
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	delegate byte SetActiveImplementation(IntPtr self, IntPtr selector, byte active, nuint options, IntPtr outError);
 
 	public bool IsAvailable { get; set; } = true;

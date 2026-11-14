@@ -47,7 +47,7 @@ public class MediaManagerStreamSourceAppleTests : AppleMediaElementTestBase
 
 			var item = handler.Manager!.NativePlayerItem!;
 			Assert.Equal("stream://media", ((AVUrlAsset)item.Asset).Url.AbsoluteString);
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(VideoDuration.TotalSeconds, item.Duration.Seconds, precision: 1);
 			Assert.Equal(1, events.Opened);
 			Assert.Empty(events.Failures);

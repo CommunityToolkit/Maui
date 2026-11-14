@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Reflection;
 using Android.Content;
 using Android.Content.PM;
@@ -120,7 +121,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 		static IRecognitionListener CreateListener(ISpeechToText speech)
 		{
-			var listenerType = SpeechInternals.GetNestedType(speech.GetType(), "SpeechRecognitionListener");
+			var listenerType = SpeechInternals.GetNestedType(speech, "SpeechRecognitionListener");
 			var listener = Activator.CreateInstance(listenerType, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [speech], null)
 				?? throw new InvalidOperationException("The listener could not be created.");
 
@@ -140,7 +141,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	protected static Intent CreateSpeechIntent(ISpeechToText speech, SpeechToTextOptions options) =>
-		(Intent)SpeechInternals.InvokeStatic(speech.GetType(), "CreateSpeechIntent", options)!;
+		(Intent)SpeechInternals.InvokeStatic(speech, "CreateSpeechIntent", options)!;
 
 	[Fact]
 	public async Task BeginningOfSpeechSetsListeningAndRaisesStateChanged()
@@ -484,23 +485,23 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	[Theory]
-	[InlineData(1, 1L)]
-	[InlineData(1500, 1500L)]
-	[InlineData(5000, 5000L)]
-	[InlineData(86_400_000, 86_400_000L)]
-	public async Task SpeechIntentSendsTheSilenceTimeoutInMilliseconds(double milliseconds, long expectedMilliseconds)
+	[InlineData(1, 1)]
+	[InlineData(1500, 1500)]
+	[InlineData(5000, 5000)]
+	[InlineData(86_400_000, 86_400_000)]
+	[InlineData(2_500.7, 2_500)]
+	public async Task SpeechIntentSendsTheSilenceTimeoutInMilliseconds(double milliseconds, int expectedMilliseconds)
 	{
 		var speech = CreateSpeech();
 
 		using var intent = CreateSpeechIntent(speech, new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.FromMilliseconds(milliseconds) });
 
-		Assert.Equal(expectedMilliseconds, intent.GetLongExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, -1L));
-		Assert.Equal(expectedMilliseconds, intent.GetLongExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, -1L));
+		AssertSilenceExtrasAreInts(intent, expectedMilliseconds);
 
 		await speech.DisposeAsync();
 	}
 
-	// One tick below TimeSpan.MaxValue is still below the default; the double is truncated to whole milliseconds.
+	// Google's recognizer reads the extras as Integer and ignores a Long, so values beyond int are clamped to int.MaxValue.
 	[Fact]
 	public async Task SpeechIntentSendsTheLargestTimeoutBelowTheDefault()
 	{
@@ -508,10 +509,55 @@ public abstract partial class SpeechImplementationTestsBase
 
 		using var intent = CreateSpeechIntent(speech, new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.MaxValue - TimeSpan.FromTicks(1) });
 
-		Assert.Equal(922_337_203_685_477L, intent.GetLongExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, -1L));
-		Assert.Equal(922_337_203_685_477L, intent.GetLongExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, -1L));
+		AssertSilenceExtrasAreInts(intent, int.MaxValue);
 
 		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	public async Task SpeechIntentClampsATimeoutBeyondAnIntToIntMaxValue()
+	{
+		var speech = CreateSpeech();
+
+		using var intent = CreateSpeechIntent(speech, new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.FromDays(100) });
+
+		AssertSilenceExtrasAreInts(intent, int.MaxValue);
+
+		await speech.DisposeAsync();
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	public async Task SpeechIntentSilenceTimeoutDoesNotDependOnTheCurrentCulture(string cultureName)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		var originalUiCulture = CultureInfo.CurrentUICulture;
+		var speech = CreateSpeech();
+		try
+		{
+			CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+
+			using var intent = CreateSpeechIntent(speech, new SpeechToTextOptions { Culture = EnglishUnitedStates, AutoStopSilenceTimeout = TimeSpan.FromMilliseconds(3_500) });
+
+			AssertSilenceExtrasAreInts(intent, 3_500);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+			CultureInfo.CurrentUICulture = originalUiCulture;
+			await speech.DisposeAsync();
+		}
+	}
+
+	static void AssertSilenceExtrasAreInts(Intent intent, int expectedMilliseconds)
+	{
+		foreach (var key in new[] { RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis })
+		{
+			Assert.Equal("java.lang.Integer", intent.Extras?.Get(key)?.Class?.Name);
+			Assert.Equal(expectedMilliseconds, intent.GetIntExtra(key, -1));
+		}
 	}
 
 	[Fact]

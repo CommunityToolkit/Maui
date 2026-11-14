@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // The engine needs an installed recognizer for the culture and a microphone, which a CI machine may lack, so everything that needs a
 // real recognizer adapts to what the machine has. The event arguments of System.Speech are ordinary managed classes with internal
-// constructors, so the tests build them by reflection (exactly the signature of the shipped System.Speech 10.0.11) and call the
+// constructors, so the tests build them by reflection (exactly the signature of the shipped System.Speech 11.0.0) and call the
 // toolkit's handlers with them. What only a listening engine produces (the Speech and Silence states, the microphone consent) is
 // checked by hand in the Sample (OfflineSpeechToText page, Essentials).
 public sealed partial class OfflineSpeechToTextTests
@@ -188,7 +188,7 @@ public sealed partial class OfflineSpeechToTextTests
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 	}
 
-	// Mirrors the toolkit's start: System.Speech 10.0.11's SpeechRecognitionEngine(CultureInfo) takes a recognizer for exactly en-US or,
+	// Mirrors the toolkit's start: System.Speech 11.0.0's SpeechRecognitionEngine(CultureInfo) takes a recognizer for exactly en-US or,
 	// failing that, one for the same language (en-GB, en-AU, en-IN, ...), and throws ArgumentException only when there is neither.
 	static bool CanCreateEnglishEngine()
 	{
@@ -207,7 +207,7 @@ public sealed partial class OfflineSpeechToTextTests
 		}
 	}
 
-	// Decompiled System.Speech 10.0.11: without a recognizer for English the engine constructor throws ArgumentException; with one but
+	// Decompiled System.Speech 11.0.0: without a recognizer for English the engine constructor throws ArgumentException; with one but
 	// without a default audio input, SetInputToDefaultAudioDevice reports SAPI's SPERR_NOT_FOUND as InvalidOperationException. With an
 	// AutoStopSilenceTimeout the start also creates the toolkit's silence timer before the audio input is chosen; the default options
 	// ("auto-stop disabled") create none.
@@ -306,7 +306,7 @@ public sealed partial class OfflineSpeechToTextTests
 		}
 	}
 
-	// System.Speech 10.0.11 applies InitialSilenceTimeout and BabbleTimeout only in RecognizeMode.Single (RecognizerBase.
+	// System.Speech 11.0.0 applies InitialSilenceTimeout and BabbleTimeout only in RecognizeMode.Single (RecognizerBase.
 	// ProcessStartStreamEvent / ProcessPhraseStartEvent check _recognizeMode == Single), and the toolkit recognizes in
 	// RecognizeMode.Multiple, so the toolkit's own timer ends a recognition after AutoStopSilenceTimeout of silence (copying the timeout
 	// to those two properties ended nothing).

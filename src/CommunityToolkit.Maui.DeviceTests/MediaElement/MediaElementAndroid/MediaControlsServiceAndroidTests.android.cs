@@ -149,7 +149,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			else
 			{
 				await WaitUntilAsync(() => FindServiceNotification()?.Actions?.Count > 0, "The PlayerNotificationManager never added the transport actions.");
-				Assert.NotEmpty(FindServiceNotification()!.Extras!.GetIntArray(Notification.ExtraCompactActions)!);
+				AotSafeAssert.NotEmpty(FindServiceNotification()!.Extras!.GetIntArray(Notification.ExtraCompactActions)!);
 				Assert.NotNull(playerNotificationManagerField.GetValue(connection.Binder!.Service));
 			}
 		});
@@ -189,6 +189,73 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 
 			await WaitUntilAsync(() => GetActiveNotifications().Single(n => n.Id == serviceNotificationId).PostTime > postedBefore, "UpdateNotifications did not post the notification again.");
 			Assert.True(IsMediaStyle(FindServiceNotification()));
+		});
+	}
+
+	static string? GetServiceNotificationTitle() => FindServiceNotification()?.Extras?.GetCharSequence(Notification.ExtraTitle)?.ToString();
+
+	static string? GetServiceNotificationText() => FindServiceNotification()?.Extras?.GetCharSequence(Notification.ExtraText)?.ToString();
+
+	// SystemUI shows "<app> is running..." on its media card when the notification has no title and the session had none yet when it read it.
+	[Fact]
+	public async Task ServiceNotificationShowsTheTitleAndArtistOfTheMedia()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataTitle = "A notification title";
+			element.MetadataArtist = "A notification artist";
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+
+		await HostBoundAsync(mediaElement, async (handler, connection) =>
+		{
+			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && GetServiceNotificationText() == "A notification artist",
+				$"The notification never showed the media's title and artist (title: '{GetServiceNotificationTitle()}', text: '{GetServiceNotificationText()}').");
+
+			Assert.True(IsMediaStyle(FindServiceNotification()));
+		});
+	}
+
+	[Fact]
+	public async Task ServiceNotificationShowsTheArtworkOfTheMediaAsItsLargeIcon()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataTitle = "A notification title";
+			element.MetadataArtworkUrl = "exoplayer/art.png";
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+
+		await HostBoundAsync(mediaElement, async (handler, connection) =>
+		{
+			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && FindServiceNotification()?.GetLargeIcon() is not null,
+				"The notification never showed the media's artwork as its large icon.");
+
+			Assert.True(IsMediaStyle(FindServiceNotification()));
+		});
+	}
+
+	[Fact]
+	public async Task MetadataChangePostsTheNotificationAgain()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataTitle = "A notification title";
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+
+		await HostBoundAsync(mediaElement, async (handler, connection) =>
+		{
+			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title", "The notification never showed the media's title.");
+			var postedBefore = GetActiveNotifications().Single(n => n.Id == serviceNotificationId).PostTime;
+
+			handler.Manager!.OnMediaMetadataChanged(null);
+
+			await WaitUntilAsync(() => GetActiveNotifications().Single(n => n.Id == serviceNotificationId).PostTime > postedBefore, "A metadata change did not post the notification again.");
+			Assert.Equal("A notification title", GetServiceNotificationTitle());
 		});
 	}
 
@@ -670,6 +737,38 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		{
 			var builder = (NotificationCompat.Builder)notificationBuilderField.GetValue(remainingConnection.Binder!.Service)!;
 			Assert.True(IsMediaStyle(builder.Build()), "The notification of the element that is still bound lost its media style.");
+		});
+	}
+
+	// OnRebind builds the next foreground notification from the same builder, so it must not show the media of an element that went away.
+	[Fact]
+	public async Task ElementDisconnectingClearsTheTitleArtistAndArtworkItPosted()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var remainingElement = await CreateMediaElementAsync();
+		DisposeWhenTheTestEnds(remainingElement);
+		var remainingConnection = await ConnectToTheServiceAsync(remainingElement);
+		var disconnectingElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataTitle = "A notification title";
+			element.MetadataArtist = "A notification artist";
+			element.MetadataArtworkUrl = "exoplayer/art.png";
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		DisposeWhenTheTestEnds(disconnectingElement);
+		await ConnectToTheServiceAsync(disconnectingElement);
+		await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && FindServiceNotification()?.GetLargeIcon() is not null,
+			"The notification never showed the media's title and artwork.");
+
+		await DisconnectAsync(disconnectingElement);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var notification = ((NotificationCompat.Builder)notificationBuilderField.GetValue(remainingConnection.Binder!.Service)!).Build();
+			Assert.NotNull(notification);
+			Assert.Null(notification.Extras?.GetCharSequence(Notification.ExtraTitle));
+			Assert.Null(notification.Extras?.GetCharSequence(Notification.ExtraText));
+			Assert.Null(notification.GetLargeIcon());
 		});
 	}
 

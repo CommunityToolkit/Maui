@@ -251,7 +251,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 			Assert.Equal(["begin", "commit", "begin", "add-output", "commit"], recording.Session.Calls);
 			Assert.Null(recording.Scope.Access.AudioInput);
-			Assert.Empty(recording.Inputs.CreatedInputs);
+			AotSafeAssert.Empty(recording.Inputs.CreatedInputs);
 			AssertRecordingStarted(recording, destination);
 		});
 	}
@@ -376,7 +376,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Equal(NativeHandle.Zero, recordingDelegate.Handle);
 			Assert.Same(destination, result);
 			Assert.Equal(0, result.Position);
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 			var movie = Assert.Single(recording.Movies.Recordings);
 			Assert.Equal(1, movie.StopCount);
 			Assert.True(movie.IsFinished);
@@ -415,7 +415,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			var result = await stop.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.Same(destination, result);
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 			Assert.Equal(2, recording.Movies.Recordings[0].StopCount);
 		});
 	}
@@ -505,7 +505,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 
 			Assert.Same(destination, result);
 			Assert.Equal(0, result.Position);
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 			Assert.Contains(trace.Lines, line => line.Contains("Recording Stopped - The capture session was interrupted.", StringComparison.Ordinal));
 			Assert.False(File.Exists(movieFile));
 			AssertRecordingReleased(recording);
@@ -560,7 +560,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			var result = await recording.Scope.Manager.StopVideoRecording(CancellationToken.None);
 
 			Assert.Same(destination, result);
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 			Assert.Equal(2, recording.Movies.Recordings.Count);
 			AssertRecordingReleased(recording);
 		});
@@ -713,12 +713,12 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			recording.Movies.Finish(firstRecording);
 
 			Assert.Same(first, await firstStop.WaitAsync(TimeSpan.FromSeconds(5)));
-			Assert.Equal(recording.Movies.MovieBytes, first.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, first.ToArray());
 			await secondStart.WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.Equal(2, recording.Movies.Recordings.Count);
 			recording.Movies.FinishWhenStopped = true;
 			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)));
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 		});
 	}
 
@@ -996,7 +996,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Single(recording.Movies.Recordings);
 			Assert.Same(first, recording.Scope.Access.VideoRecordingStream);
 			Assert.Same(first, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
-			Assert.Equal(recording.Movies.MovieBytes, first.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, first.ToArray());
 			Assert.Equal(0, second.Length);
 		});
 	}
@@ -1043,7 +1043,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			await start.WaitAsync(startTimeout);
 
 			Assert.Same(destination, await stop.WaitAsync(startTimeout));
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 			Assert.Equal(1, movie.StopCount);
 		});
 	}
@@ -1066,7 +1066,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			Assert.Equal(0, destination.Length);
 
 			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 			Assert.Equal(1, movie.StopCount);
 		});
 	}
@@ -1090,7 +1090,7 @@ public class CameraManagerAppleRecordingTests : CameraHandlerTestBase
 			recording.Movies.Start(movie);
 			await start.WaitAsync(startTimeout);
 			Assert.Same(destination, await recording.Scope.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(startTimeout));
-			Assert.Equal(recording.Movies.MovieBytes, destination.ToArray());
+			AotSafeAssert.SequenceEqual(recording.Movies.MovieBytes, destination.ToArray());
 		});
 	}
 

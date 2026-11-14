@@ -273,6 +273,43 @@ jobs:
                 with:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
+
+            # The gate's parser decides pass or fail for the audit below, so its own tests run first, also under a Turkish locale
+            -   name: Test the trim audit gate
+                if: ${{ runner.os == 'macOS' }}
+                timeout-minutes: 5
+                shell: bash
+                run: |
+                    python3 -I -m unittest discover -s eng/trim-audit -p 'test_*.py'
+                    LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8 python3 -I -m unittest discover -s eng/trim-audit -p 'test_*.py'
+
+            # Last, so that a failed gate still leaves the packages artifact to reproduce it. It builds the Sample against the packed
+            # packages because an app can get trim and NativeAOT warnings that the library build never shows. It fails on toolkit and
+            # toolkit-api warnings that eng/trim-audit/allow.tsv does not accept and on a failed build, never on MAUI or Sample warnings.
+            # GitHub keeps 50 annotations per job, summed over all steps, and the library-build steps above can use all 50 (fork run r1 did),
+            # so no annotation of this step is guaranteed. The guaranteed channels are the job summary (no cap) and the GATE-EXIT and
+            # AUDIT-EXIT lines of the log, because the pwsh wrapper reports any non-zero exit as 1.
+            -   name: Trim and NativeAOT audit of the packed NuGet packages (macOS)
+                if: ${{ runner.os == 'macOS' }}
+                timeout-minutes: 30
+                shell: bash
+                run: |
+                    mkdir -p "$RUNNER_TEMP/audit-feed"
+                    find src -path '*/bin/Release/*' -name 'CommunityToolkit.Maui*.nupkg' -exec cp {} "$RUNNER_TEMP/audit-feed" \;
+                    audit_exit=0
+                    eng/trim-audit/audit.sh run ios,android aotroot --feed "$RUNNER_TEMP/audit-feed" --out-root "$RUNNER_TEMP/trim-audit" --github --summary "$GITHUB_STEP_SUMMARY" || audit_exit=$?
+                    echo "AUDIT-EXIT=$audit_exit"
+                    exit $audit_exit
+
+            -   name: Trim audit of the packed NuGet packages (Windows)
+                if: ${{ runner.os == 'Windows' }}
+                timeout-minutes: 30
+                shell: pwsh
+                run: |
+                    & ./eng/trim-audit/audit-win.ps1 -Variant rootlibs -Feed "${{ github.workspace }}/nuget" -Github -Summary $env:GITHUB_STEP_SUMMARY
+                    $auditExit = $LASTEXITCODE
+                    Write-Host "AUDIT-EXIT=$auditExit"
+                    exit $auditExit
     
     # Tag builds only build, sign and publish the packages, so they skip the device tests.
     device_tests:

@@ -2,6 +2,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public static partial class TestCategory
 {
+	public const string AppTheme = nameof(AppTheme);
+
 	public const string FileSaver = nameof(FileSaver);
 
 	public const string FolderPicker = nameof(FolderPicker);

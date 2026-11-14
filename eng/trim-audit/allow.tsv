@@ -1,0 +1,7 @@
+# Allow-list of the trim/AOT gate (ilwarn.py gate). The target state is zero toolkit warnings, so this file starts empty.
+# One line per accepted warning, tab separated: code<TAB>member pattern (glob)<TAB>reason[<TAB>scope]. The reason is required and names the issue or
+# the upstream blocker. The optional scope is a comma separated list of globs over the leg name <platform>-<variant> (android-*,ios-aot*);
+# without it the entry applies to every leg; with it the entry applies, and is judged stale, only on those legs. A scope that matches no
+# known leg is a bad allow-list (exit 2). Add a line only with the reviewer's agreement; delete it when the warning is fixed (the gate
+# reports stale lines).
+# End a pattern with '*' after the type name: ILLink spells generics <TValue,TReturnObject> and ILC spells them `2, so an exact subject matches one tool only.

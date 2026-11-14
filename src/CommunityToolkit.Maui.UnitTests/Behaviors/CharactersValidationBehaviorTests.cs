@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new MockView())
+public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersValidationBehavior, VisualElement>(new CharactersValidationBehavior(), new Entry())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", true)]
@@ -181,7 +181,7 @@ public class CharactersValidationBehaviorTests() : BaseBehaviorTest<CharactersVa
 			AsyncContext.Run(() =>
 			{
 				behavior.Dispose();
-				var element = new MockVisualElement()
+				var element = new Entry()
 				{
 					Behaviors =
 					{

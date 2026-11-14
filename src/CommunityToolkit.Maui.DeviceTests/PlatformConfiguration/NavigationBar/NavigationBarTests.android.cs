@@ -1,4 +1,5 @@
 #pragma warning disable CA1422 // Window.NavigationBarColor is obsolete from API 35: the tests still read it on the older APIs that use it.
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
@@ -285,7 +286,7 @@ public partial class NavigationBarTests
 		{
 			await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
 
-			await InvokeOnMainThreadAsync(() => Assert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
+			await InvokeOnMainThreadAsync(() => AotSafeAssert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
 			await AssertNavigationBarShowsAsync(Colors.Red);
 		}
 		finally
@@ -339,7 +340,7 @@ public partial class NavigationBarTests
 			return (parameters.Width, parameters.Height, parameters.Gravity);
 		});
 
-		Assert.Equal((expectedWidth, expectedHeight, expectedGravity), layout);
+		AotSafeAssert.Equal((expectedWidth, expectedHeight, expectedGravity), layout);
 	}
 
 	[Fact]
@@ -1047,6 +1048,8 @@ public partial class NavigationBarTests
 		return new WeakReference(page);
 	}
 
+	// The field names are loop variables, which NativeAOT cannot see through.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(NavigationBar))]
 	static void ForgetWindowChanges()
 	{
 		foreach (var fieldName in new[] { "colorChanges", "styleChanges" })

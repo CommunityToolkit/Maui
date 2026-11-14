@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;
 
 // Source generators run inside the app developer's compiler or IDE, so whatever they emit must not depend on that machine's culture.
 // Comparing the output across cultures needs no expected text, runs on every OS, and catches a culture leak in any generated line.
-public class GeneratorCultureTests
+public class GeneratorCultureTests : BaseTest
 {
 	const string testSource =
 		/* language=C#-test */
@@ -76,6 +76,27 @@ public class GeneratorCultureTests
 		}
 		""";
 
+	const string defaultBindingModeSource =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui.Controls;
+
+		namespace TestNamespace;
+
+		internal partial class TestView : View
+		{
+			[BindableProperty(DefaultBindingMode = BindingMode.TwoWay)]
+			public partial string Title { get; set; }
+		}
+
+		[AttachedBindableProperty<string>("Caption", DefaultBindingMode = BindingMode.OneWayToSource)]
+		internal partial class AttachedHost : View
+		{
+		}
+		""";
+
 	[Theory]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
@@ -96,6 +117,46 @@ public class GeneratorCultureTests
 		{
 			Assert.True(cultureSources.TryGetValue(hintName, out var cultureText), $"{hintName} was not generated in {cultureName}");
 			Assert.Equal(text, cultureText);
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	[InlineData("sv-SE")]
+	[InlineData("ar-SA")]
+	public void DefaultBindingModeIsEmittedIdenticallyInEveryCulture(string cultureName)
+	{
+		var invariantSources = RunGenerators(defaultBindingModeSource, CultureInfo.InvariantCulture, out var invariantErrors);
+		var cultureSources = RunGenerators(defaultBindingModeSource, new CultureInfo(cultureName), out var cultureErrors);
+
+		Assert.Empty(invariantErrors);
+		Assert.Empty(cultureErrors);
+		Assert.Contains("(Microsoft.Maui.Controls.BindingMode)1", string.Concat(invariantSources.Values), StringComparison.Ordinal);
+		Assert.Contains("(Microsoft.Maui.Controls.BindingMode)3", string.Concat(invariantSources.Values), StringComparison.Ordinal);
+		Assert.Equal(invariantSources.Count, cultureSources.Count);
+
+		foreach (var (hintName, text) in invariantSources)
+		{
+			Assert.True(cultureSources.TryGetValue(hintName, out var cultureText), $"{hintName} was not generated in {cultureName}");
+			Assert.Equal(text, cultureText);
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedSourceSuppressesOnlyUserDeclaredMemberWarnings(string cultureName)
+	{
+		var sources = RunGenerators(testSource, new CultureInfo(cultureName), out _);
+
+		Assert.NotEmpty(sources);
+		foreach (var text in sources.Values)
+		{
+			Assert.Matches(@"(?m)^#pragma warning disable (CS0108, CS0109, )?CS0612, CS0618(, CS9258)?\r?$", text);
+			Assert.DoesNotContain("IL2", text, StringComparison.Ordinal);
+			Assert.DoesNotContain("IL3", text, StringComparison.Ordinal);
 		}
 	}
 
@@ -183,7 +244,7 @@ public class GeneratorCultureTests
 		}
 	}
 
-	static List<MetadataReference> GetReferences()
+	internal static List<MetadataReference> GetReferences()
 	{
 		var trustedPlatformAssemblies = (string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES is not available");
 

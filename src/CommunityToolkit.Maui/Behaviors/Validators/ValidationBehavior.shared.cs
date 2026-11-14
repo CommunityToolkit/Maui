@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -31,8 +33,6 @@ public enum ValidationFlags
 /// <summary>
 /// The <see cref="ValidationBehavior"/> allows users to create custom validation behaviors. All the validation behaviors in the Xamarin Community Toolkit inherit from this behavior, to expose a number of shared properties. Users can inherit from this class to create a custom validation behavior currently not supported through the Xamarin Community Toolkit. This behavios cannot be used directly as it's abstract.
 /// </summary>
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-[RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, IDisposable
 {
 	/// <summary>
@@ -54,6 +54,9 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	bool isDisposed;
 
 	bool hasValidated;
+
+	// MAUI has no public way to read which binding a BindableProperty has, and a binding that the user set on Value must survive
+	bool isValueBoundByBehavior;
 
 	/// <summary>
 	/// Initialize a new instance of ValidationBehavior
@@ -120,6 +123,11 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// <summary>
 	/// Allows the user to override the property that will be used as the value to validate. This is a bindable property.
 	/// </summary>
+	/// <remarks>
+	/// A name that matches a <see cref="BindableProperty"/> on the view (for example <c>Text</c>, <c>IsChecked</c> or <c>SelectedItem</c>) is safe to use with trimming and NativeAOT.
+	/// To validate any other property, set this property to <see langword="null"/> first, then bind <see cref="Value"/> with a compiled binding, which the behavior leaves untouched.
+	/// Any other non-empty name (a CLR property, a dotted path, a typo) throws an <see cref="ArgumentException"/> when the behavior attaches, or when the name changes while attached (a trace warning instead when exceptions in behaviors are suppressed).
+	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(GetDefaultValuePropertyName), PropertyChangedMethodName = nameof(OnValuePropertyNamePropertyChanged))]
 	public partial string? ValuePropertyName { get; set; }
 
@@ -213,9 +221,16 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	/// <inheritdoc/>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentException">Thrown when <see cref="ValuePropertyName"/> names no BindableProperty on <paramref name="bindable"/>, unless exceptions in behaviors are suppressed.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		ArgumentNullException.ThrowIfNull(bindable);
+
+		// Resolved here, not in the async void ValidateOnAttaching, because a throw there would crash the app
+		if (!IsValuePropertyNameValidFor(bindable))
+		{
+			ReportInvalidValuePropertyName(bindable);
+		}
 
 		base.OnAttachedTo(bindable);
 
@@ -228,7 +243,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	{
 		ArgumentNullException.ThrowIfNull(bindable);
 
-		RemoveBinding(ValueProperty);
+		RemoveValueBindingOfBehavior();
 
 		currentStatus = ValidationFlags.None;
 		hasValidated = false;
@@ -294,7 +309,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		{
 			currentStatus = ValidationFlags.ValidateOnAttaching;
 
-			OnValuePropertyNamePropertyChanged();
+			BindValueToValuePropertyName();
 			await UpdateStateAsync(View, Flags, false);
 		}
 		finally
@@ -321,11 +336,82 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	void OnValuePropertyNamePropertyChanged()
 	{
-		SetBinding(ValueProperty, new Binding
+		if (View is not VisualElement view || string.IsNullOrEmpty(ValuePropertyName))
 		{
-			Path = ValuePropertyName,
-			Source = View
+			RemoveValueBindingOfBehavior();
+			return;
+		}
+
+		if (!TryGetViewBindableProperty(view, ValuePropertyName, out var viewProperty))
+		{
+			RemoveValueBindingOfBehavior();
+			ReportInvalidValuePropertyName(view);
+			return;
+		}
+
+		BindValueTo(view, viewProperty);
+	}
+
+	void BindValueToValuePropertyName()
+	{
+		if (View is VisualElement view
+			&& !string.IsNullOrEmpty(ValuePropertyName)
+			&& TryGetViewBindableProperty(view, ValuePropertyName, out var viewProperty))
+		{
+			BindValueTo(view, viewProperty);
+			return;
+		}
+
+		RemoveValueBindingOfBehavior();
+	}
+
+	void BindValueTo(VisualElement view, BindableProperty viewProperty)
+	{
+		SetBinding(ValueProperty, new TypedBinding<VisualElement, object?>(
+			getter: source => (source.GetValue(viewProperty), true),
+			setter: null,
+			handlers: [Tuple.Create<Func<VisualElement, object?>, string>(static source => source, viewProperty.PropertyName)])
+		{
+			Source = view
 		});
+		isValueBoundByBehavior = true;
+	}
+
+	void RemoveValueBindingOfBehavior()
+	{
+		if (!isValueBoundByBehavior)
+		{
+			return;
+		}
+
+		RemoveBinding(ValueProperty);
+		isValueBoundByBehavior = false;
+	}
+
+	bool IsValuePropertyNameValidFor(VisualElement view)
+		=> string.IsNullOrEmpty(ValuePropertyName) || TryGetViewBindableProperty(view, ValuePropertyName, out _);
+
+	[SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "The invalid argument is the ValuePropertyName property.")]
+	void ReportInvalidValuePropertyName(VisualElement view)
+	{
+		var message = $"{GetType().Name}.{nameof(ValuePropertyName)} '{ValuePropertyName}' names no public static BindableProperty field '{ValuePropertyName}Property' on {view.GetType().Name}. "
+			+ $"Name a BindableProperty, or set {nameof(ValuePropertyName)}=\"{{x:Null}}\" and bind {nameof(Value)} with a compiled binding, for example Value=\"{{Binding {ValuePropertyName}, Source={{x:Reference myView}}, x:DataType={view.GetType().Name}}}\".";
+
+		if (Options.ShouldSuppressExceptionsInBehaviors)
+		{
+			Trace.TraceWarning("{0}", message);
+			return;
+		}
+
+		throw new ArgumentException(message, nameof(ValuePropertyName));
+	}
+
+	// view.GetType() carries MAUI's DynamicallyAccessedMembers(PublicFields) on VisualElement, which keeps the "<Name>Property" fields
+	static bool TryGetViewBindableProperty(VisualElement view, string propertyName, [NotNullWhen(true)] out BindableProperty? viewProperty)
+	{
+		var field = view.GetType().GetField(propertyName + "Property", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+		viewProperty = field?.GetValue(null) as BindableProperty;
+		return viewProperty is not null;
 	}
 
 	async ValueTask UpdateStateAsync(VisualElement? view, ValidationFlags flags, bool isForced, CancellationToken? parentToken = null)
@@ -438,8 +524,6 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 }
 
 /// <inheritdoc />
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-[RequiresUnreferencedCode($"{nameof(ValidationBehavior)} is not trim safe because it uses bindings with string paths.")]
 public abstract class ValidationBehavior<T> : ValidationBehavior
 {
 	/// <summary>

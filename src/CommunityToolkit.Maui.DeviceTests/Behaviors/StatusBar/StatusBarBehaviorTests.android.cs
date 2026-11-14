@@ -121,7 +121,7 @@ public partial class StatusBarBehaviorTests
 
 			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
-			Assert.Equal(ExpectedOverlayHeight(AndroidSystemBars.ActivityWindow), OverlayHeight());
+			AotSafeAssert.Equal(ExpectedOverlayHeight(AndroidSystemBars.ActivityWindow), OverlayHeight());
 		});
 		await WaitForDetachAsync(behavior);
 		await InvokeOnMainThreadAsync(static () =>
@@ -129,7 +129,7 @@ public partial class StatusBarBehaviorTests
 			ShrinkOverlay();
 			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
-			Assert.Equal(1, OverlayHeight());
+			AotSafeAssert.Equal(1, OverlayHeight());
 		});
 	}
 
@@ -153,7 +153,7 @@ public partial class StatusBarBehaviorTests
 
 			StatusBarEventRaisers.RaiseMainDisplayInfoChanged();
 
-			Assert.Equal(1, overlay.LayoutParameters?.Height);
+			AotSafeAssert.Equal(1, overlay.LayoutParameters?.Height);
 			AndroidSystemBars.Decor(AndroidSystemBars.ActivityWindow).RemoveView(overlay);
 			await AssertStatusBarShowsAsync(Colors.Red);
 		});

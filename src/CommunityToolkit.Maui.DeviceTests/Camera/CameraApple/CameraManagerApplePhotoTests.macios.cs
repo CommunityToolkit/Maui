@@ -26,7 +26,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 			var stream = Assert.Single(recorder.Captured);
 			Assert.Equal(0, stream.Position);
-			Assert.Equal(jpegBytes, ReadAllBytes(stream));
+			AotSafeAssert.SequenceEqual(jpegBytes, ReadAllBytes(stream));
 			Assert.Empty(recorder.Failures);
 			Assert.Equal(1, output.CaptureCount);
 		});
@@ -77,7 +77,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 			await scope.Manager.TakePicture(CancellationToken.None);
 
-			Assert.Equal(expected, output.FlashModeAtCapture);
+			AotSafeAssert.Equal(expected, output.FlashModeAtCapture);
 		});
 	}
 
@@ -93,7 +93,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 			await scope.Manager.TakePicture(CancellationToken.None);
 
-			Assert.Equal(AVCaptureFlashMode.Auto, output.FlashModeAtCapture);
+			AotSafeAssert.Equal(AVCaptureFlashMode.Auto, output.FlashModeAtCapture);
 		});
 	}
 
@@ -108,7 +108,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 			await scope.Manager.TakePicture(CancellationToken.None);
 
-			Assert.Equal(AVCaptureFlashMode.On, output.FlashModeAtCapture);
+			AotSafeAssert.Equal(AVCaptureFlashMode.On, output.FlashModeAtCapture);
 		});
 	}
 
@@ -123,7 +123,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 
 			await scope.Manager.TakePicture(CancellationToken.None);
 
-			Assert.Equal(AVCaptureFlashMode.Off, output.FlashModeAtCapture);
+			AotSafeAssert.Equal(AVCaptureFlashMode.Off, output.FlashModeAtCapture);
 			Assert.Single(recorder.Captured);
 		});
 	}
@@ -312,7 +312,7 @@ public class CameraManagerApplePhotoTests : CameraHandlerTestBase
 			using var fakeOutput = new FakePhotoOutput { VideoConnection = null };
 			Assert.Null(realOutput.ConnectionFromMediaType(AVMediaTypes.Video.GetConstant()!));
 			// Even without a connection the real output lists Off, so PlatformTakePicture's SupportedFlashModes.First() always has a mode.
-			Assert.Contains(AVCaptureFlashMode.Off, realOutput.SupportedFlashModes);
+			AotSafeAssert.Contains(AVCaptureFlashMode.Off, realOutput.SupportedFlashModes);
 
 			var realFailure = Record.Exception(() => realOutput.CapturePhoto(AVCapturePhotoSettings.Create(), CameraManagerAccessor.CreatePhotoCaptureDelegateWrapper()));
 			var fakeFailure = Record.Exception(() => fakeOutput.CapturePhoto(AVCapturePhotoSettings.Create(), CameraManagerAccessor.CreatePhotoCaptureDelegateWrapper()));

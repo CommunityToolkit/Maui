@@ -5,7 +5,7 @@ using Xunit.v3;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new MockView())
+public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseBehaviorTest<ValidationBehavior, VisualElement>(new MockValidationBehavior(), new Entry())
 {
 	public enum CancellationHandling
 	{
@@ -424,7 +424,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	public void TestRemoveValidationBindingWithBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
-		var view = new MockView
+		var view = new Entry
 		{
 			BindingContext = new MockPageViewModel()
 		};
@@ -442,7 +442,7 @@ public class ValidationBehaviorTests(ITestOutputHelper testOutputHelper) : BaseB
 	public void TestRemoveValidationBindingWithoutBindingContext()
 	{
 		var behavior = new MockValidationBehavior();
-		var view = new MockView();
+		var view = new Entry();
 
 		view.Behaviors.Add(behavior);
 

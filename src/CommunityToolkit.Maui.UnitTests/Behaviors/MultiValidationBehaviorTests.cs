@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBehavior, VisualElement>(new MultiValidationBehavior(), new MockView())
+public class MultiValidationBehaviorTests() : BaseBehaviorTest<MultiValidationBehavior, VisualElement>(new MultiValidationBehavior(), new Entry())
 {
 	[Theory]
 	[InlineData(CharacterType.Any, 1, 2, "A", "A", true)]

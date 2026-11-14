@@ -783,12 +783,12 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(Button))]
 	[InlineData(typeof(BoxView))]
-	public async Task AttachingToAViewThatIsNotAnImageThrowsInvalidOperationException([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type viewType)
+	public async Task AttachingToAViewThatIsNotAnImageThrowsInvalidOperationException(Type viewType)
 	{
 		SetupBuilder();
 
 		// MAUI would call the behavior from the Loaded event, where an exception ends the app, so the method is called directly.
-		var view = (VisualElement)Activator.CreateInstance(viewType)!;
+		var view = CreateViewThatIsNotAnImage(viewType);
 		var handler = (IPlatformViewHandler)await CreateHandlerAsync(view);
 		var probe = new ImageTouchBehaviorProbe();
 
@@ -800,6 +800,13 @@ public partial class ImageTouchBehaviorTests : CommunityToolkitHandlerTestBase
 			Assert.Null(probe.Element);
 		});
 	}
+
+	// Activator.CreateInstance(Type) would need NativeAOT to keep the constructor of a type that only an InlineData value names.
+	static VisualElement CreateViewThatIsNotAnImage(Type viewType) =>
+		viewType == typeof(Label) ? new Label()
+		: viewType == typeof(Button) ? new Button()
+		: viewType == typeof(BoxView) ? new BoxView()
+		: throw new NotSupportedException($"{viewType} is not one of the views that this test creates.");
 
 	// The image code also defends against an element that is not an Image or ImageButton. MAUI never attaches the behavior to one (see
 	// AttachingToAViewThatIsNotAnImageThrowsInvalidOperationException), so the internal Element is set directly, while IsEnabled is false:

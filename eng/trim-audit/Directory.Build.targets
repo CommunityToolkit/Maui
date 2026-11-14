@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Trim audit (see Directory.Build.props next to this file and audit.sh). Only the two apps change: the Sample and the device-test app
+     reference the toolkit's NuGet packages instead of its projects, and build with the trim settings of the chosen CtmTrimAuditMode:
+       none      no trimming at all: the baseline that tells a trim bug from a bug that every build has (Android, Mac Catalyst and Windows;
+                 not run on iOS, whose SDK requires PublishTrimmed=true and wants MtouchLink=None for an untrimmed build)
+       partial   the Sample's own Release settings (what CI builds and what a new MAUI app gets: the toolkit is trimmed, the app is not).
+                 iOS: MtouchLink=SdkOnly, because a simulator build otherwise ends up with TrimMode=copy and trims nothing, while a device
+                 (App Store) build trims
+       full      TrimMode=full: the app and every library are trimmed
+       aot       NativeAOT (PublishAot=true, built with dotnet publish): ILC compiles app and libraries ahead of time and lists the AOT
+                 (IL3xxx) and trim (IL2xxx) warnings. PublishAot is passed as a global property by audit.sh, because the Apple and Android
+                 SDKs read it in their props, which are evaluated before this file.
+       aotroot   aot, plus every toolkit assembly rooted, so that ILC compiles and analyzes all toolkit code, not only what the Sample reaches
+                 (the way dotnet/maui checks its own libraries); audit.sh verifies that ILC received the roots
+       rootlibs  full, plus every toolkit assembly rooted: the trimmer then analyzes all toolkit code and lists every trim warning in it,
+                 not only those on the paths the Sample uses (for the warning list only; the app is not representative at run time) -->
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)../../Directory.Build.targets" />
+
+  <PropertyGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and '$(CtmTrimAuditMode)' != ''">
+    <_CtmTrimAuditPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_CtmTrimAuditPlatform>
+    <_CtmTrimAuditPackages Condition="'$(CtmTrimAuditPackages)' != 'false'">true</_CtmTrimAuditPackages>
+  </PropertyGroup>
+
+  <!-- Packages instead of projects. Each toolkit library that the app referenced as a project becomes a PackageReference of the same id, so
+       the conditions in the app's project file (a conditional reference) still apply. The analyzer and source generator
+       projects go too: the packages bring their own, as they do for every app that uses them. -->
+  <ItemGroup Condition="'$(_CtmTrimAuditPackages)' == 'true'">
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Core'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Camera'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.MediaElement'))" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="$(CtmTrimAuditVersionMaui)" Condition="'@(_CtmTrimAuditLibrary->WithMetadataValue('Filename', 'CommunityToolkit.Maui'))' != ''" />
+    <PackageReference Include="CommunityToolkit.Maui.Core" Version="$(CtmTrimAuditVersionCore)" Condition="'@(_CtmTrimAuditLibrary->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Core'))' != ''" />
+    <PackageReference Include="CommunityToolkit.Maui.Camera" Version="$(CtmTrimAuditVersionCamera)" Condition="'@(_CtmTrimAuditLibrary->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Camera'))' != ''" />
+    <PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="$(CtmTrimAuditVersionMediaElement)" Condition="'@(_CtmTrimAuditLibrary->WithMetadataValue('Filename', 'CommunityToolkit.Maui.MediaElement'))' != ''" />
+
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Analyzers'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Analyzers.CodeFixes'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.SourceGenerators'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Camera.Analyzers'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.Camera.Analyzers.CodeFixes'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.MediaElement.Analyzers'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.MediaElement.Analyzers.CodeFixes'))" />
+    <_CtmTrimAuditLibrary Include="@(ProjectReference->WithMetadataValue('Filename', 'CommunityToolkit.Maui.MediaElement.SourceGenerators'))" />
+    <ProjectReference Remove="@(_CtmTrimAuditLibrary)" />
+  </ItemGroup>
+
+  <!-- The Sample floats Microsoft.Maui.Controls (Version="*"); a fixed version keeps every variant and every rerun on the same MAUI. -->
+  <ItemGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and '$(CtmTrimAuditMauiVersion)' != ''">
+    <PackageReference Update="Microsoft.Maui.Controls" Version="$(CtmTrimAuditMauiVersion)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and '$(CtmTrimAuditMode)' != ''">
+    <!-- A consumer app does not import this repo's Directory.Build.props, which turns every IL2xxx/IL3xxx/IL4xxx warning into an error, and the
+         Sample's NoWarn hides IL2026, the warning that names each toolkit API marked RequiresUnreferencedCode. -->
+    <WarningsAsErrors>$([System.Text.RegularExpressions.Regex]::Replace('$(WarningsAsErrors)', 'IL[234]\d{3}', ''))</WarningsAsErrors>
+    <NoWarn>$([System.Text.RegularExpressions.Regex]::Replace('$(NoWarn)', '(?&lt;![A-Za-z0-9])IL2026(?![0-9])', ''))</NoWarn>
+    <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+    <!-- MSBuild copies NoWarn into MSBuildWarningsAsMessages before this file is imported, so IL2026 would stay hidden without this. -->
+    <MSBuildWarningsAsMessages>$([System.Text.RegularExpressions.Regex]::Replace('$(MSBuildWarningsAsMessages)', '(?&lt;![A-Za-z0-9])IL2026(?![0-9])', ''))</MSBuildWarningsAsMessages>
+    <!-- Android suppresses trim warnings unless TrimMode is full; the audit wants them in every trimmed variant. -->
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and '$(CtmTrimAuditMode)' == 'none'">
+    <PublishTrimmed>false</PublishTrimmed>
+    <AndroidLinkMode Condition="'$(_CtmTrimAuditPlatform)' == 'android'">None</AndroidLinkMode>
+    <!-- Apple: MtouchLink takes precedence over TrimMode, and only None also makes every assembly 'copy' (Xamarin.Shared.Sdk.Trimming.props). -->
+    <MtouchLink Condition="'$(_CtmTrimAuditPlatform)' == 'ios' or '$(_CtmTrimAuditPlatform)' == 'maccatalyst'">None</MtouchLink>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and '$(CtmTrimAuditMode)' == 'partial' and '$(_CtmTrimAuditPlatform)' == 'ios'">
+    <MtouchLink>SdkOnly</MtouchLink>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and ('$(CtmTrimAuditMode)' == 'aot' or '$(CtmTrimAuditMode)' == 'aotroot')">
+    <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <!-- Apple: the SDK warns when TrimMode is set and defaults to linking everything. Android and Windows: the Sample's partial would
+         otherwise be kept, and NativeAOT trims everything. -->
+    <TrimMode Condition="'$(_CtmTrimAuditPlatform)' == 'ios' or '$(_CtmTrimAuditPlatform)' == 'maccatalyst'" />
+    <TrimMode Condition="'$(_CtmTrimAuditPlatform)' != 'ios' and '$(_CtmTrimAuditPlatform)' != 'maccatalyst'">full</TrimMode>
+    <MtouchLink />
+    <!-- Apple's NativeAOT props set this to true; the audit wants every warning. -->
+    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and ('$(CtmTrimAuditMode)' == 'full' or '$(CtmTrimAuditMode)' == 'rootlibs')">
+    <TrimMode>full</TrimMode>
+    <MtouchLink />
+    <!-- Apple decides linking from TrimMode alone, and PublishTrimmed on a Mac Catalyst build of several RIDs fails with NETSDK1102. -->
+    <PublishTrimmed Condition="'$(_CtmTrimAuditPlatform)' == 'android' or '$(_CtmTrimAuditPlatform)' == 'windows'">true</PublishTrimmed>
+    <SelfContained Condition="'$(_CtmTrimAuditPlatform)' == 'windows'">true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_CtmTrimAuditApp)' == 'true' and ('$(CtmTrimAuditMode)' == 'rootlibs' or '$(CtmTrimAuditMode)' == 'aotroot')">
+    <TrimmerRootAssembly Include="CommunityToolkit.Maui;CommunityToolkit.Maui.Core;CommunityToolkit.Maui.Camera;CommunityToolkit.Maui.MediaElement" />
+  </ItemGroup>
+
+  <!-- Full trimming (and NativeAOT) removes what xunit and the XHarness runner find by reflection (TypeLoadException: Xunit.Sdk.ReflectionAssemblyInfo,
+       then "No test cases discovered"). Rooting the test harness keeps the tests runnable; the toolkit, MAUI and the platform bindings stay
+       fully trimmed. Rooting the test assembly also keeps every toolkit member that a test calls directly. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'CommunityToolkit.Maui.DeviceTests' and ('$(CtmTrimAuditMode)' == 'full' or '$(CtmTrimAuditMode)' == 'rootlibs' or '$(CtmTrimAuditMode)' == 'aot' or '$(CtmTrimAuditMode)' == 'aotroot')">
+    <TrimmerRootAssembly Include="xunit.abstractions;xunit.assert;xunit.core;xunit.execution.dotnet;xunit.runner.utility.netcoreapp10" />
+    <TrimmerRootAssembly Include="Microsoft.DotNet.XHarness.TestRunners.Common;Microsoft.DotNet.XHarness.TestRunners.Xunit" />
+    <TrimmerRootAssembly Include="CommunityToolkit.Maui.DeviceTests;CommunityToolkit.Maui.DeviceTests.Shared;CommunityToolkit.Maui.DeviceTests.Runners" />
+  </ItemGroup>
+
+  <!-- A toolkit project that is still referenced would compile the repo's sources into the app and hide what the packages do. -->
+  <Target Name="_CtmTrimAuditCheckReferences" BeforeTargets="CollectPackageReferences;ResolveProjectReferences" Condition="'$(_CtmTrimAuditPackages)' == 'true'">
+    <ItemGroup>
+      <_CtmTrimAuditLeak Include="@(ProjectReference)" Condition="$([System.String]::Copy('%(Filename)').StartsWith('CommunityToolkit.Maui')) and !$([System.String]::Copy('%(Filename)').StartsWith('CommunityToolkit.Maui.DeviceTests'))" />
+    </ItemGroup>
+    <Error Condition="'@(_CtmTrimAuditLeak)' != ''" Text="Trim audit: toolkit projects are still referenced: @(_CtmTrimAuditLeak->'%(Filename)')" />
+    <Error Condition="'$(CtmTrimAuditPackageVersion)' == ''" Text="Trim audit: set CtmTrimAuditPackageVersion to the version of the packages in the feed." />
+  </Target>
+
+  <!-- audit.sh passes SuppressTrimAnalysisWarnings=false as a global property, which no SDK can override. The Apple SDK still sets its own
+       copy to true while NativeAOT publishes, then hands ILC the original value, so both are printed. -->
+  <Target Name="_CtmTrimAuditReport" BeforeTargets="CoreCompile" Condition="'$(_CtmTrimAuditApp)' == 'true' and '$(CtmTrimAuditMode)' != ''">
+    <Message Importance="high" Text="Trim audit: $(MSBuildProjectName) $(TargetFramework) $(RuntimeIdentifier) mode=$(CtmTrimAuditMode) packages=$(_CtmTrimAuditPackages) TrimMode=$(TrimMode) PublishTrimmed=$(PublishTrimmed) PublishAot=$(PublishAot) MtouchLink=$(MtouchLink) AndroidLinkMode=$(AndroidLinkMode) SuppressTrimAnalysisWarnings=$(SuppressTrimAnalysisWarnings) OriginalSuppressTrimAnalysisWarnings=$(_OriginalSuppressTrimAnalysisWarnings)" />
+    <Error Condition="'$(_CtmTrimAuditPlatform)' == 'ios' and '$(CtmTrimAuditMode)' == 'partial' and '$(TrimMode)' == 'copy'"
+           Text="Trim audit: the iOS partial leg has TrimMode=copy, so it would trim nothing and its warning list would be empty." />
+  </Target>
+</Project>

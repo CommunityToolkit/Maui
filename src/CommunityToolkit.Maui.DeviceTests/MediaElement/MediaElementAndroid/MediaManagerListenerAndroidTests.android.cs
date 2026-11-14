@@ -175,7 +175,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 
 			handler.Manager!.OnPlayerStateChanged(true, playbackState);
 
-			Assert.Equal((TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(4)), (mediaElement.Duration, mediaElement.Position));
+			AotSafeAssert.Equal((TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(4)), (mediaElement.Duration, mediaElement.Position));
 		});
 	}
 
@@ -415,7 +415,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 			Assert.Equal(new[] { expectedMessage }, recorder.FailureMessages);
-			Assert.Equal(new[] { (LogLevel.Error, "MediaManager", expectedMessage) }, logger.Entries);
+			AotSafeAssert.SequenceEqual(new[] { (LogLevel.Error, "MediaManager", expectedMessage) }, logger.Entries);
 		});
 	}
 
@@ -450,7 +450,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 			Assert.Equal(new[] { string.Empty }, recorder.FailureMessages);
-			Assert.Equal(new[] { (LogLevel.Error, "MediaManager", string.Empty) }, logger.Entries);
+			AotSafeAssert.SequenceEqual(new[] { (LogLevel.Error, "MediaManager", string.Empty) }, logger.Entries);
 		});
 	}
 
@@ -464,7 +464,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 		{
 			handler.Manager!.OnVideoSizeChanged(new VideoSize(320, 200));
 
-			Assert.Equal((320, 200), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((320, 200), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -480,7 +480,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 
 			handler.Manager.OnVideoSizeChanged(null);
 
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -621,7 +621,7 @@ public class MediaManagerListenerAndroidTests : MediaElementAndroidTestBase
 			manager.OnTrackSelectionParametersChanged(null);
 			manager.OnTracksChanged(null);
 
-			Assert.Equal(before, Snapshot());
+			AotSafeAssert.Equal(before, Snapshot());
 
 			(MediaElementState, double, double, TimeSpan, TimeSpan, int, int, float, bool, int, int) Snapshot() =>
 				(mediaElement.CurrentState, mediaElement.Volume, mediaElement.Speed, mediaElement.Position, mediaElement.Duration, mediaElement.MediaWidth, mediaElement.MediaHeight,

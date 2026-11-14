@@ -4,6 +4,8 @@ public static partial class TestCategory
 {
 	public const string BasePlatformBehavior = nameof(BasePlatformBehavior);
 
+	public const string EventToCommandBehavior = nameof(EventToCommandBehavior);
+
 	public const string IconTintColorBehavior = nameof(IconTintColorBehavior);
 
 	public const string ImageTouchBehavior = nameof(ImageTouchBehavior);

@@ -28,7 +28,7 @@ public class CameraProviderAppleTests : CameraHandlerTestBase
 			AVCaptureDeviceType.BuiltInLiDarDepthCamera
 		];
 
-		Assert.Equal(expected, GetCaptureDevices());
+		AotSafeAssert.SequenceEqual(expected, GetCaptureDevices());
 	}
 
 	[Fact]
@@ -73,7 +73,7 @@ public class CameraProviderAppleTests : CameraHandlerTestBase
 			Assert.Equal((float)device.MaxAvailableVideoZoomFactor, camera.MaximumZoomFactor);
 			Assert.Same(device, camera.CaptureDevice);
 			Assert.Equal(GetExpectedPosition(device.Position), camera.Position);
-			Assert.NotEmpty(camera.SupportedResolutions);
+			AotSafeAssert.NotEmpty(camera.SupportedResolutions);
 			Assert.Equal(camera.SupportedFormats.Count, camera.SupportedResolutions.Count);
 		}
 
@@ -133,7 +133,7 @@ public class CameraProviderAppleTests : CameraHandlerTestBase
 		}
 
 		Assert.Equal(expectedFormats, camera.SupportedFormats);
-		Assert.Equal(expectedFormats.Select(GetDimensions), camera.SupportedResolutions.Select(size => ((int)size.Width, (int)size.Height)));
+		AotSafeAssert.SequenceEqual(expectedFormats.Select(GetDimensions), camera.SupportedResolutions.Select(size => ((int)size.Width, (int)size.Height)));
 		Assert.Equal(camera.SupportedResolutions.Count, camera.SupportedResolutions.Distinct().Count());
 	}
 

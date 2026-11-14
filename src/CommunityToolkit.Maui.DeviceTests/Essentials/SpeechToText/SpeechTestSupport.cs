@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -149,6 +150,13 @@ static class SpeechInternals
 	const BindingFlags instanceMembers = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 	const BindingFlags staticMembers = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
+	const DynamicallyAccessedMemberTypes implementationMembers = DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields
+		| DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods
+		| DynamicallyAccessedMemberTypes.PublicNestedTypes | DynamicallyAccessedMemberTypes.NonPublicNestedTypes;
+
+	const DynamicallyAccessedMemberTypes listenerMembers = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors
+		| DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties;
+
 	public static void RaiseUpdated(ISpeechToText speech, string text) => Invoke(speech, "OnRecognitionResultUpdated", text);
 
 	public static void RaiseCompleted(ISpeechToText speech, SpeechToTextResult result) => Invoke(speech, "OnRecognitionResultCompleted", result);
@@ -156,22 +164,39 @@ static class SpeechInternals
 	public static void RaiseStateChanged(ISpeechToText speech, SpeechToTextState state) => Invoke(speech, "OnSpeechToTextStateChanged", state);
 
 	public static object? Invoke(object target, string methodName, params object?[] arguments) =>
-		InvokeCore(FindMethod(target.GetType(), methodName, instanceMembers), target, arguments);
+		InvokeCore(FindMethod(GetImplementationType(target), methodName, instanceMembers), target, arguments);
 
-	public static object? InvokeStatic(Type type, string methodName, params object?[] arguments) =>
-		InvokeCore(FindMethod(type, methodName, staticMembers), null, arguments);
+	public static object? InvokeStatic(object target, string methodName, params object?[] arguments) =>
+		InvokeCore(FindMethod(GetImplementationType(target), methodName, staticMembers), null, arguments);
 
 	public static T? GetField<T>(object target, string fieldName) where T : class =>
-		(T?)FindField(target.GetType(), fieldName).GetValue(target);
+		(T?)FindField(GetImplementationType(target), fieldName).GetValue(target);
 
 	public static void SetField(object target, string fieldName, object? value) =>
-		FindField(target.GetType(), fieldName).SetValue(target, value);
+		FindField(GetImplementationType(target), fieldName).SetValue(target, value);
 
-	public static Type GetNestedType(Type type, string name) =>
-		type.GetNestedType(name, BindingFlags.NonPublic | BindingFlags.Public) ?? throw new MissingMemberException(type.FullName, name);
+	[return: DynamicallyAccessedMembers(listenerMembers)]
+	public static Type GetNestedType(object target, string name) =>
+		GetNestedTypeCore(GetImplementationType(target), name);
 
 	public static TDelegate CreateHandler<TDelegate>(object target, string methodName) where TDelegate : Delegate =>
-		(TDelegate)FindMethod(target.GetType(), methodName, instanceMembers).CreateDelegate(typeof(TDelegate), target);
+		(TDelegate)FindMethod(GetImplementationType(target), methodName, instanceMembers).CreateDelegate(typeof(TDelegate), target);
+
+	// ILC (NativeAOT) emits reflection metadata only for types it sees annotated or named with typeof, never for target.GetType().
+	// The two implementations are sealed, so naming them here keeps the fields, methods and nested types the tests reach.
+	[return: DynamicallyAccessedMembers(implementationMembers)]
+	static Type GetImplementationType(object target) => target switch
+	{
+		SpeechToTextImplementation => typeof(SpeechToTextImplementation),
+		OfflineSpeechToTextImplementation => typeof(OfflineSpeechToTextImplementation),
+		_ => throw new InvalidOperationException($"{target.GetType().FullName} is not a toolkit speech implementation.")
+	};
+
+	// The trimmer cannot see through GetNestedType that the listener types are kept: NativeAotReflectionRoots lists them with their members.
+	[UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "NativeAotReflectionRoots keeps the nested listener types with the members the tests use.")]
+	[return: DynamicallyAccessedMembers(listenerMembers)]
+	static Type GetNestedTypeCore([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicNestedTypes | DynamicallyAccessedMemberTypes.NonPublicNestedTypes)] Type type, string name) =>
+		type.GetNestedType(name, BindingFlags.NonPublic | BindingFlags.Public) ?? throw new MissingMemberException(type.FullName, name);
 
 	static object? InvokeCore(MethodInfo method, object? target, object?[] arguments)
 	{
@@ -186,9 +211,9 @@ static class SpeechInternals
 		}
 	}
 
-	static MethodInfo FindMethod(Type type, string name, BindingFlags flags) =>
+	static MethodInfo FindMethod([DynamicallyAccessedMembers(implementationMembers)] Type type, string name, BindingFlags flags) =>
 		type.GetMethod(name, flags) ?? throw new MissingMethodException(type.FullName, name);
 
-	static FieldInfo FindField(Type type, string name) =>
+	static FieldInfo FindField([DynamicallyAccessedMembers(implementationMembers)] Type type, string name) =>
 		type.GetField(name, instanceMembers) ?? throw new MissingFieldException(type.FullName, name);
 }
