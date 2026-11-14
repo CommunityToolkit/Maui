@@ -274,6 +274,15 @@ jobs:
                     name: packages
                     path: ${{ github.workspace }}/nuget/
 
+            # The gate's parser decides pass or fail for the audit below, so its own tests run first, also under a Turkish locale
+            -   name: Test the trim audit gate
+                if: ${{ runner.os == 'macOS' }}
+                timeout-minutes: 5
+                shell: bash
+                run: |
+                    python3 -I -m unittest discover -s eng/trim-audit -p 'test_*.py'
+                    LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8 python3 -I -m unittest discover -s eng/trim-audit -p 'test_*.py'
+
             # Last, so that a failed gate still leaves the packages artifact to reproduce it. It builds the Sample against the packed
             # packages because an app can get trim and NativeAOT warnings that the library build never shows. It fails on toolkit and
             # toolkit-api warnings that eng/trim-audit/allow.tsv does not accept and on a failed build, never on MAUI or Sample warnings.
