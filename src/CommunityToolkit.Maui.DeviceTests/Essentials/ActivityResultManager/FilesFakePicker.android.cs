@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -200,40 +201,72 @@ public static class FilesFakePicker
 		}
 	}
 
-	public static async Task FinishActivityAsync(Activity activity, CancellationToken token = default)
+	public static Task FinishActivityAsync(Activity activity, CancellationToken token = default) =>
+		FinishActivitiesAsync([activity], token);
+
+	/// <summary>
+	/// Android 7 destroys an activity that was finished while its stop was in flight only at the next activity idle (8.0 destroys it at
+	/// once), so all of them are finished in one main-thread turn: the one in front resumes the activity below it, whose idle destroys
+	/// the others. On a timeout the activities that stayed are forgotten, so that no later session waits on them.
+	/// </summary>
+	public static async Task FinishActivitiesAsync(IReadOnlyList<Activity> activities, CancellationToken token = default)
 	{
-		var destroyed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var destroyedSignals = activities.Distinct().ToDictionary(activity => activity, _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
 
 		void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
 		{
-			if (e.State is ActivityState.Destroyed && ReferenceEquals(e.Activity, activity))
+			if (e.State is ActivityState.Destroyed && destroyedSignals.TryGetValue(e.Activity, out var signal))
 			{
-				destroyed.TrySetResult();
+				signal.TrySetResult();
 			}
 		}
 
 		Platform.ActivityStateChanged += OnActivityStateChanged;
 		try
 		{
-			var alreadyDestroyed = await MainThread.InvokeOnMainThreadAsync(() =>
+			await MainThread.InvokeOnMainThreadAsync(() =>
 			{
-				if (activity.IsDestroyed)
+				foreach (var (activity, signal) in destroyedSignals)
 				{
-					return true;
+					if (activity.IsDestroyed)
+					{
+						signal.TrySetResult();
+					}
+					else
+					{
+						activity.Finish();
+					}
 				}
-
-				activity.Finish();
-				return false;
 			});
 
-			if (!alreadyDestroyed)
+			try
 			{
-				await destroyed.Task.WaitAsync(TimeSpan.FromSeconds(20), token);
+				await Task.WhenAll(destroyedSignals.Values.Select(signal => signal.Task)).WaitAsync(TimeSpan.FromSeconds(20), token);
+			}
+			catch (TimeoutException)
+			{
+				var stuck = await MainThread.InvokeOnMainThreadAsync(() => destroyedSignals.Keys.Where(activity => !activity.IsDestroyed).Select(Describe).ToArray());
+				Forget(destroyedSignals.Keys);
+				throw new TimeoutException(string.Create(CultureInfo.InvariantCulture, $"These activities were finished but not destroyed within 20 s on API {(int)Build.VERSION.SdkInt}: {string.Join("; ", stuck)}."));
 			}
 		}
 		finally
 		{
 			Platform.ActivityStateChanged -= OnActivityStateChanged;
+		}
+
+		static string Describe(Activity activity) =>
+			string.Create(CultureInfo.InvariantCulture, $"{activity.GetType().Name}@{activity.GetHashCode():x} (IsFinishing={activity.IsFinishing}, IsDestroyed={activity.IsDestroyed})");
+	}
+
+	static void Forget(IEnumerable<Activity> activities)
+	{
+		lock (gate)
+		{
+			foreach (var activity in activities.OfType<FilesFakePickerActivity>())
+			{
+				liveActivities.Remove(activity);
+			}
 		}
 	}
 
@@ -370,9 +403,14 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		FilesTestContentProvider.Reset();
 
 		// An earlier test that was killed halfway may have left one of the fake activities in front; the host is what is under them.
-		foreach (var leftover in FilesFakePicker.LiveActivities.Reverse())
+		try
 		{
-			await FilesFakePicker.FinishActivityAsync(leftover);
+			await FilesFakePicker.FinishActivitiesAsync([.. FilesFakePicker.LiveActivities.Reverse()]);
+		}
+		catch (TimeoutException exception)
+		{
+			// The new session's activity resuming lets the system destroy what stayed, so the failure stays with the test that caused it.
+			Console.WriteLine($"Leftover fake picker activities stayed alive: {exception.Message}");
 		}
 
 		var hostActivity = await MainThread.InvokeOnMainThreadAsync(() => Platform.CurrentActivity);
@@ -426,10 +464,7 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		{
 			// An activity that the system recreated is not one that the test started, so it is taken from the live list.
 			var toFinish = startedActivities.Concat(FilesFakePicker.LiveActivities).Distinct().Reverse().ToArray();
-			foreach (var activity in toFinish)
-			{
-				await FilesFakePicker.FinishActivityAsync(activity);
-			}
+			await FilesFakePicker.FinishActivitiesAsync(toFinish);
 		}
 		finally
 		{
