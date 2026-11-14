@@ -20,6 +20,26 @@ sealed class SystemAnimationsTickerOverride(Func<bool> areSystemAnimationsOff)
 
 	ITicker? tickerToRestore;
 
+	/// <returns>The reason the ticker's setting could not be changed, or <see langword="null"/> when it was.</returns>
+	public static string? TrySetSystemEnabled(ITicker ticker, bool isEnabled)
+	{
+		if (ticker is not Ticker || systemEnabledSetter is null)
+		{
+			return $"MAUI's ticker ({ticker.GetType().FullName}) has no SystemEnabled setter that can be reached.";
+		}
+
+		try
+		{
+			systemEnabledSetter.Invoke(ticker, [isEnabled]);
+		}
+		catch (TargetInvocationException ex)
+		{
+			return $"{ex.InnerException?.GetType().Name}: {ex.InnerException?.Message}";
+		}
+
+		return null;
+	}
+
 	/// <returns>The reason the ticker could not be switched on, or <see langword="null"/> when it sees animations enabled.</returns>
 	public string? TryEnable(IPlatformViewHandler handler)
 	{
@@ -28,18 +48,10 @@ sealed class SystemAnimationsTickerOverride(Func<bool> areSystemAnimationsOff)
 			return null;
 		}
 
-		if (ticker is not Ticker || systemEnabledSetter is null)
+		var error = TrySetSystemEnabled(ticker, true);
+		if (error is not null)
 		{
-			return $"MAUI's ticker ({ticker.GetType().FullName}) has no SystemEnabled setter that can be reached.";
-		}
-
-		try
-		{
-			systemEnabledSetter.Invoke(ticker, [true]);
-		}
-		catch (TargetInvocationException ex)
-		{
-			return $"{ex.InnerException?.GetType().Name}: {ex.InnerException?.Message}";
+			return error;
 		}
 
 		tickerToRestore = ticker;

@@ -1,24 +1,18 @@
-﻿using System.ComponentModel;
-using System.Threading.Channels;
-using CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
-using Nito.AsyncEx;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-public class FadeAnimationTests : BaseTest
+public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 {
 	const double originalOpacity = 0.9;
 	const double fadedOpacity = 0.2;
-	const double opacityPrecision = 0.001;
 
 	const uint fadeLength = 500;
-
-	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
 
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task AnimateShouldThrowWithNullView()
@@ -87,16 +81,16 @@ public class FadeAnimationTests : BaseTest
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingOut = WaitForOpacityAsync(label, token, opacity => opacity < originalOpacity - 0.2);
+		var fadingOut = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity < originalOpacity - 0.2);
 		var firstFade = animation.Animate(label, token);
 		await fadingOut;
 
-		var fadedAgain = WaitForOpacityAsync(label, token, opacity => opacity <= fadedOpacity + opacityPrecision);
+		var fadedAgain = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision);
 		var secondFade = animation.Animate(label, token);
 		await Task.WhenAll(firstFade, secondFade).WaitAsync(waitTimeout, token);
 
-		fadedAgain.IsCompletedSuccessfully.Should().BeTrue("the second animation fades the label out before it fades it back");
-		label.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
+		await fadedAgain;
+		label.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -105,16 +99,16 @@ public class FadeAnimationTests : BaseTest
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingBack = WaitForOpacityAsync(label, token, opacity => opacity <= fadedOpacity + opacityPrecision, opacity => opacity >= fadedOpacity + 0.3);
+		var fadingBack = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
 		var firstFade = animation.Animate(label, token);
 		await fadingBack;
 
-		var fadedAgain = WaitForOpacityAsync(label, token, opacity => opacity <= fadedOpacity + opacityPrecision);
+		var fadedAgain = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision);
 		var secondFade = animation.Animate(label, token);
 		await Task.WhenAll(firstFade, secondFade).WaitAsync(waitTimeout, token);
 
-		fadedAgain.IsCompletedSuccessfully.Should().BeTrue("the second animation fades the label out before it fades it back");
-		label.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
+		await fadedAgain;
+		label.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -123,7 +117,7 @@ public class FadeAnimationTests : BaseTest
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingBack = WaitForOpacityAsync(label, token, opacity => opacity <= fadedOpacity + opacityPrecision, opacity => opacity >= fadedOpacity + 0.3);
+		var fadingBack = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
 		var interruptedFade = animation.Animate(label, token);
 		await fadingBack;
 
@@ -133,8 +127,8 @@ public class FadeAnimationTests : BaseTest
 
 		await animation.Animate(label, token).WaitAsync(waitTimeout, token);
 
-		interruptedOpacity.Should().BeLessThan(originalOpacity - opacityPrecision, "the interrupted animation leaves the label partially faded");
-		label.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
+		interruptedOpacity.Should().BeApproximately(originalOpacity, precision, "nothing took over, so the interrupted fade returns the label at once");
+		label.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -145,7 +139,7 @@ public class FadeAnimationTests : BaseTest
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingBack = WaitForOpacityAsync(label, token, opacity => opacity <= fadedOpacity + opacityPrecision, opacity => opacity >= fadedOpacity + 0.3);
+		var fadingBack = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
 		var interruptedFade = animation.Animate(label, token);
 		await fadingBack;
 
@@ -155,7 +149,7 @@ public class FadeAnimationTests : BaseTest
 		label.Opacity = newOpacity;
 		await animation.Animate(label, token).WaitAsync(waitTimeout, token);
 
-		label.Opacity.Should().BeApproximately(newOpacity, opacityPrecision);
+		label.Opacity.Should().BeApproximately(newOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -171,8 +165,8 @@ public class FadeAnimationTests : BaseTest
 		var otherLabelFade = animation.Animate(otherLabel, token);
 		await Task.WhenAll(labelFade, otherLabelFade).WaitAsync(waitTimeout, token);
 
-		label.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
-		otherLabel.Opacity.Should().BeApproximately(otherOriginalOpacity, opacityPrecision);
+		label.Opacity.Should().BeApproximately(originalOpacity, precision);
+		otherLabel.Opacity.Should().BeApproximately(otherOriginalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -191,7 +185,7 @@ public class FadeAnimationTests : BaseTest
 		};
 		border.EnableAnimations();
 
-		var fadingOut = WaitForOpacityAsync(border, token, opacity => opacity < originalOpacity - 0.2);
+		var fadingOut = WaitForPropertyAsync(border, VisualElement.OpacityProperty, token, opacity => opacity < originalOpacity - 0.2);
 		behavior.AnimateCommand.Execute(token);
 		await fadingOut;
 
@@ -199,12 +193,12 @@ public class FadeAnimationTests : BaseTest
 		behavior.AnimateCommand.Execute(token);
 		await animation.WaitForEndedAnimationsAsync(2, token);
 
-		border.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
+		border.Opacity.Should().BeApproximately(originalOpacity, precision);
 
 		behavior.AnimateCommand.Execute(token);
 		await animation.WaitForEndedAnimationsAsync(1, token);
 
-		border.Opacity.Should().BeApproximately(originalOpacity, opacityPrecision);
+		border.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact]
@@ -216,6 +210,18 @@ public class FadeAnimationTests : BaseTest
 		// Act // Assert
 		Assert.Equal(BaseAnimationDefaults.Easing, animation.Easing);
 		Assert.Equal(FadeAnimationDefaults.Length, animation.Length);
+		Assert.Equal(FadeAnimationDefaults.Opacity, animation.Opacity);
+		Assert.Equal(BindingMode.OneWay, FadeAnimation.OpacityProperty.DefaultBindingMode);
+	}
+
+	[Theory]
+	[InlineData(double.NaN)]
+	[InlineData(double.PositiveInfinity)]
+	[InlineData(double.NegativeInfinity)]
+	public void Opacity_NonFiniteValueIsIgnored(double nonFiniteValue)
+	{
+		var animation = new FadeAnimation { Opacity = nonFiniteValue };
+
 		Assert.Equal(FadeAnimationDefaults.Opacity, animation.Opacity);
 	}
 
@@ -230,43 +236,11 @@ public class FadeAnimationTests : BaseTest
 		return label;
 	}
 
-	// Running the test on one thread, like an app runs its animations on its UI thread, makes the mock ticker of EnableAnimations fire on that
-	// thread too. On the thread pool it races the test, and the tickers of other views, for MAUI's animation bookkeeping (a static Dictionary
-	// that is not thread-safe).
-	static Task RunOnSingleThreadAsync(Func<CancellationToken, Task> test, CancellationToken token) =>
-		Task.Run(() => AsyncContext.Run(() => test(token)), token);
-
-	static Task WaitForOpacityAsync(VisualElement view, CancellationToken token, params Func<double, bool>[] conditions)
-	{
-		var conditionsMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var nextCondition = 0;
-
-		view.PropertyChanged += HandlePropertyChanged;
-
-		return conditionsMet.Task.WaitAsync(waitTimeout, token);
-
-		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == nameof(VisualElement.Opacity) && conditions[nextCondition](view.Opacity) && ++nextCondition == conditions.Length)
-			{
-				view.PropertyChanged -= HandlePropertyChanged;
-				conditionsMet.SetResult();
-			}
-		}
-	}
-
-	// AnimationBehavior starts its animations without handing out their Task, so a test cannot await them.
 	sealed class ObservedFadeAnimation : FadeAnimation
 	{
-		readonly Channel<bool> endedAnimations = Channel.CreateUnbounded<bool>();
+		readonly EndedAnimations endedAnimations = new();
 
-		public async Task WaitForEndedAnimationsAsync(int count, CancellationToken token)
-		{
-			for (var i = 0; i < count; i++)
-			{
-				await endedAnimations.Reader.ReadAsync(token).AsTask().WaitAsync(waitTimeout, token);
-			}
-		}
+		public Task WaitForEndedAnimationsAsync(int count, CancellationToken token) => endedAnimations.WaitAsync(count, token);
 
 		public override async Task Animate(VisualElement view, CancellationToken token = default)
 		{
@@ -276,7 +250,7 @@ public class FadeAnimationTests : BaseTest
 			}
 			finally
 			{
-				endedAnimations.Writer.TryWrite(true);
+				endedAnimations.NotifyEnded();
 			}
 		}
 	}
