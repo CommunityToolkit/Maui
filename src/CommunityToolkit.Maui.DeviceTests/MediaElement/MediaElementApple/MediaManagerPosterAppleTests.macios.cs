@@ -12,6 +12,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Collection(TestCollections.DisableParallelization)]
 public class MediaManagerPosterAppleTests : AppleMediaElementTestBase
 {
+	static long OrderingKey((NSLayoutAttribute Attribute, NSLayoutRelation Relation) constraint) => ((long)constraint.Attribute * 1000) + (long)constraint.Relation;
+
 	static UIView Overlay(AppleMediaElementHandler handler) => handler.Manager!.NativePlayerViewController!.ContentOverlayView!;
 
 	// Before #3281 SetPoster() reads PlayerItem; since #3281 it is SetPoster(in AVPlayerItem).
@@ -39,25 +41,25 @@ public class MediaManagerPosterAppleTests : AppleMediaElementTestBase
 
 			var overlay = Overlay(handler);
 			var poster = Assert.IsType<UIImageView>(Assert.Single(overlay.Subviews));
-			Assert.Equal((40, 30), (poster.Image!.Size.Width, poster.Image.Size.Height));
+			AotSafeAssert.Equal((40, 30), (poster.Image!.Size.Width, poster.Image.Size.Height));
 			Assert.Equal(UIViewContentMode.ScaleAspectFit, poster.ContentMode);
 			Assert.True(poster.ClipsToBounds);
 			Assert.False(poster.TranslatesAutoresizingMaskIntoConstraints);
 
 			var constraints = overlay.Constraints.Where(constraint => constraint.FirstItem == poster).ToList();
 			Assert.All(constraints, constraint => Assert.True(constraint.Active));
-			Assert.Equivalent(
+			AotSafeAssert.SequenceEqual(
 				new[]
 				{
 					(NSLayoutAttribute.CenterX, NSLayoutRelation.Equal),
 					(NSLayoutAttribute.CenterY, NSLayoutRelation.Equal),
 					(NSLayoutAttribute.Width, NSLayoutRelation.LessThanOrEqual),
 					(NSLayoutAttribute.Height, NSLayoutRelation.LessThanOrEqual)
-				},
-				constraints.Select(constraint => (constraint.FirstAttribute, constraint.Relation)));
+				}.OrderBy(OrderingKey),
+				constraints.Select(constraint => (constraint.FirstAttribute, constraint.Relation)).OrderBy(OrderingKey));
 
 			var aspectRatio = Assert.Single(poster.Constraints, constraint => constraint.SecondItem is not null);
-			Assert.Equal((NSLayoutAttribute.Width, NSLayoutAttribute.Height, NSLayoutRelation.Equal), (aspectRatio.FirstAttribute, aspectRatio.SecondAttribute, aspectRatio.Relation));
+			AotSafeAssert.Equal((NSLayoutAttribute.Width, NSLayoutAttribute.Height, NSLayoutRelation.Equal), (aspectRatio.FirstAttribute, aspectRatio.SecondAttribute, aspectRatio.Relation));
 			Assert.Equal(40.0 / 30.0, (double)aspectRatio.Multiplier, precision: 3);
 		});
 	}

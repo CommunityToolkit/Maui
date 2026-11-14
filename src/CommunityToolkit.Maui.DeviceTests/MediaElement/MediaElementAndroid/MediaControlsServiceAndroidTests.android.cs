@@ -149,7 +149,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			else
 			{
 				await WaitUntilAsync(() => FindServiceNotification()?.Actions?.Count > 0, "The PlayerNotificationManager never added the transport actions.");
-				Assert.NotEmpty(FindServiceNotification()!.Extras!.GetIntArray(Notification.ExtraCompactActions)!);
+				AotSafeAssert.NotEmpty(FindServiceNotification()!.Extras!.GetIntArray(Notification.ExtraCompactActions)!);
 				Assert.NotNull(playerNotificationManagerField.GetValue(connection.Binder!.Service));
 			}
 		});

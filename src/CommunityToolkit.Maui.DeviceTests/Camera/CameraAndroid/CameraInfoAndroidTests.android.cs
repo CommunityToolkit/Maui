@@ -28,7 +28,7 @@ public class CameraInfoAndroidTests
 		Assert.False(info.IsFlashSupported);
 		Assert.Equal(0.5f, info.MinimumZoomFactor);
 		Assert.Equal(8f, info.MaximumZoomFactor);
-		Assert.Equal(new[] { new Size(640, 480) }, info.SupportedResolutions);
+		AotSafeAssert.SequenceEqual(new[] { new Size(640, 480) }, info.SupportedResolutions);
 	}
 
 	[Theory]
@@ -61,7 +61,7 @@ public class CameraInfoAndroidTests
 		resolutions.Add(new Size(3, 3));
 		resolutions.RemoveAt(0);
 
-		Assert.Equal(new[] { new Size(1, 1), new Size(2, 2) }, info.SupportedResolutions);
+		AotSafeAssert.SequenceEqual(new[] { new Size(1, 1), new Size(2, 2) }, info.SupportedResolutions);
 	}
 
 	[Fact]
@@ -69,7 +69,7 @@ public class CameraInfoAndroidTests
 	{
 		var info = Create(resolutions: []);
 
-		Assert.Empty(info.SupportedResolutions);
+		AotSafeAssert.Empty(info.SupportedResolutions);
 	}
 
 	[Fact]

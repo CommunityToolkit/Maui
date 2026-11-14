@@ -5,6 +5,7 @@
 // Toolkit change: renamed to the toolkit's platform suffix (UINSWindow.macios.cs).
 // Toolkit change: #nullable enable added: the upstream project enables nullable reference types, these copies are compiled as generated code.
 // Toolkit change: From skips null items instead of dereferencing them: NSArray.GetItem<T> returns T? in the iOS and Mac Catalyst bindings of .NET 11 and of 26.4 or later on .NET 10 (the 26.0 bindings that net10.0-ios and net10.0-maccatalyst compile against return T), so the upstream code fails CS8602 (nullable warnings are errors).
+// Toolkit change: the NSApplication class handle comes from objc_getClass instead of Class.GetHandle("NSApplication"): a NativeAOT iOS build inlines that literal into a direct reference to the AppKit class, which iOS does not have, and the link fails.
 #nullable enable
 using System;
 using System.Runtime.InteropServices;
@@ -38,9 +39,12 @@ public static class UIWindowExtensions
 		[DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
 		static extern void void_objc_msgSend_CGRect_bool_bool(IntPtr receiver, IntPtr selector, CGRect arg1, bool arg2, bool arg3);
 
+		[DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_getClass")]
+		static extern IntPtr objc_getClass([MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+
 		static NativeHandle? nsApplicationHandle;
 		static NativeHandle NSApplicationHandle =>
-			nsApplicationHandle ??= Class.GetHandle("NSApplication");
+			nsApplicationHandle ??= new NativeHandle(objc_getClass("NSApplication"));
 
 		static Selector? sharedApplicationSelector;
 		static Selector SharedApplicationSelector =>

@@ -110,7 +110,7 @@ public partial class SnackbarTests
 			Assert.Equal(14 * AlertsAndroid.Density, message.TextSize, 0.5);
 			Assert.Equal(14 * AlertsAndroid.Density, action.TextSize, 0.5);
 			Assert.Equal(0, message.LetterSpacing);
-			Assert.All(GetCornerRadii(), radius => Assert.Equal(4 * AlertsAndroid.Density, radius, 0.01));
+			AotSafeAssert.All(GetCornerRadii(), radius => Assert.Equal(4 * AlertsAndroid.Density, radius, 0.01));
 			await AssertEventually(() => layout.Width > 0 && layout.Height > 0, timeout: 10000, message: "The snackbar was never laid out.");
 			using var bitmap = AlertsAndroid.Render(layout);
 			Assert.Equal(Colors.LightGray.ToPlatform().ToArgb(), bitmap.GetPixel(bitmap.Width / 2, 6));
@@ -269,7 +269,7 @@ public partial class SnackbarTests
 
 			var radii = GetCornerRadii();
 			Assert.Equal(8, radii.Length);
-			Assert.All(radii, radius => Assert.Equal(8 * AlertsAndroid.Density, radius, 0.01));
+			AotSafeAssert.All(radii, radius => Assert.Equal(8 * AlertsAndroid.Density, radius, 0.01));
 		});
 	}
 
@@ -286,7 +286,7 @@ public partial class SnackbarTests
 			await Snackbar.Make("Corners", () => { }, "Act", longDuration, options).Show();
 
 			var density = AlertsAndroid.Density;
-			Assert.Equal(
+			AotSafeAssert.SequenceEqual(
 				new[] { 1, 1, 2, 2, 4, 4, 3, 3 }.Select(radius => radius * density).ToArray(),
 				GetCornerRadii());
 		});
@@ -947,7 +947,7 @@ public partial class SnackbarTests
 				// The sizes are absolute: the bounds that GetCornerSize takes do not change them.
 				using var bounds = new Android.Graphics.RectF(0, 0, 1000, 1000);
 				var density = AlertsAndroid.Density;
-				Assert.Equal(
+				AotSafeAssert.SequenceEqual(
 					new[] { 1, 2, 4, 3 }.Select(radius => radius * density).ToArray(),
 					new[] { shapeAppearance.TopLeftCornerSize, shapeAppearance.TopRightCornerSize, shapeAppearance.BottomRightCornerSize, shapeAppearance.BottomLeftCornerSize }.Select(cornerSize => cornerSize.GetCornerSize(bounds)).ToArray());
 			}

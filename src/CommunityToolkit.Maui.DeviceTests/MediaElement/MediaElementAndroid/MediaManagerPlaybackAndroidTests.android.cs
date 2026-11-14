@@ -96,7 +96,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 				return recorder.EndedCount > 1;
 			}, "The clip did not play to its end again after Play().");
 			Assert.True(hasGoneBackToTheStart, "The clip did not play again from its start.");
-			Assert.Contains(MediaElementState.Playing, recorder.States.Skip(statesBeforePlay));
+			AotSafeAssert.Contains(MediaElementState.Playing, recorder.States.Skip(statesBeforePlay));
 		});
 	}
 

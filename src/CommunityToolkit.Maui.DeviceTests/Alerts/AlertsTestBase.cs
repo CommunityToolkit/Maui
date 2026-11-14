@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using CommunityToolkit.Maui.Alerts;
 
@@ -32,14 +33,16 @@ public abstract partial class AlertsTestBase : CommunityToolkitHandlerTestBase
 		SetStaticProperty(typeof(Toast), "PlatformToast", null);
 	}
 
-	static object? GetStaticProperty(Type type, string name)
+	const DynamicallyAccessedMemberTypes staticAlertProperties = DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties;
+
+	static object? GetStaticProperty([DynamicallyAccessedMembers(staticAlertProperties)] Type type, string name)
 	{
 		var property = type.GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
 			?? throw new InvalidOperationException($"{type.FullName}.{name} was not found.");
 		return property.GetValue(null);
 	}
 
-	static void SetStaticProperty(Type type, string name, object? value)
+	static void SetStaticProperty([DynamicallyAccessedMembers(staticAlertProperties)] Type type, string name, object? value)
 	{
 		var property = type.GetProperty(name, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
 			?? throw new InvalidOperationException($"{type.FullName}.{name} was not found.");

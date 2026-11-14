@@ -43,8 +43,8 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			Assert.Equal(["tap"], command.Parameters);
 			Assert.Equal(1, completedLog.Count);
 			Assert.Equal("tap", completedLog.Last.TouchCommandParameter);
-			Assert.Equal([TouchStatus.Started, TouchStatus.Completed], statusLog.Items.Select(static args => args.Status));
-			Assert.Equal([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interactionLog.Items.Select(static args => args.TouchInteractionStatus));
+			AotSafeAssert.SequenceEqual([TouchStatus.Started, TouchStatus.Completed], statusLog.Items.Select(static args => args.Status));
+			AotSafeAssert.SequenceEqual([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interactionLog.Items.Select(static args => args.TouchInteractionStatus));
 		});
 	}
 
@@ -115,7 +115,7 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			NativeCancel(handler);
 
 			AssertTouchNow(behavior, TouchStatus.Canceled, TouchState.Default, TouchInteractionStatus.Completed, "after the system cancelled the touch");
-			Assert.Equal([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interactionLog.Items.Select(static args => args.TouchInteractionStatus));
+			AotSafeAssert.SequenceEqual([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interactionLog.Items.Select(static args => args.TouchInteractionStatus));
 			Assert.Equal(0, command.ExecuteCount);
 		});
 	}
@@ -175,7 +175,7 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			NativeRelease(handler);
 
 			Assert.Equal(1, command.ExecuteCount);
-			Assert.Equal([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interactionLog.Items.Select(static args => args.TouchInteractionStatus));
+			AotSafeAssert.SequenceEqual([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interactionLog.Items.Select(static args => args.TouchInteractionStatus));
 		});
 	}
 
@@ -326,8 +326,8 @@ public partial class TouchBehaviorInputTests : TouchBehaviorTestBase
 			Assert.Equal(HoverState.Default, behavior.CurrentHoverState);
 			await WaitUntilAsync(() => stateLog.Count == 2, "HoverStateChanged did not fire for the end of the hover.");
 
-			Assert.Equal([HoverStatus.Entered, HoverStatus.Exited], statusLog.Items.Select(static args => args.Status));
-			Assert.Equal([HoverState.Hovered, HoverState.Default], stateLog.Items.Select(static args => args.State));
+			AotSafeAssert.SequenceEqual([HoverStatus.Entered, HoverStatus.Exited], statusLog.Items.Select(static args => args.Status));
+			AotSafeAssert.SequenceEqual([HoverState.Hovered, HoverState.Default], stateLog.Items.Select(static args => args.State));
 		});
 	}
 

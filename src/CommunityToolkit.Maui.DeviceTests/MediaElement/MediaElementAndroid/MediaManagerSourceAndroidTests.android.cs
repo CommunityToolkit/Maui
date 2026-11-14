@@ -47,8 +47,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(1, recorder.OpenedCount);
 			Assert.Equal(1, recorder.EndedCount);
 			Assert.Empty(recorder.FailureMessages);
-			Assert.Equal((MediaElementState.None, MediaElementState.Opening), recorder.Transitions[0]);
-			Assert.Contains(MediaElementState.Playing, recorder.States);
+			AotSafeAssert.Equal((MediaElementState.None, MediaElementState.Opening), recorder.Transitions[0]);
+			AotSafeAssert.Contains(MediaElementState.Playing, recorder.States);
 			Assert.Equal(MediaElementState.Stopped, mediaElement.CurrentState);
 			Assert.Equal(shortToneDuration, mediaElement.Duration);
 			Assert.Equal(PlayerConsts.StateEnded, player.PlaybackState);
@@ -117,8 +117,8 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilVideoSizeIsKnownAsync(mediaElement, recorder);
 
 			Assert.Equal(TimeSpan.FromSeconds(2), mediaElement.Duration);
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
-			Assert.Equal((64, 48), (player.VideoSize!.Width, player.VideoSize.Height));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (player.VideoSize!.Width, player.VideoSize.Height));
 			Assert.Equal(path, player.CurrentMediaItem!.MediaId);
 			Assert.Equal(path, player.CurrentMediaItem.PlaybackProperties!.Uri!.ToString());
 		});
@@ -827,7 +827,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Null(setterException);
 			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
-			Assert.Contains((LogLevel.Error, "MediaManager", recorder.FailureMessages[0]), logger.Entries);
+			AotSafeAssert.Contains((LogLevel.Error, "MediaManager", recorder.FailureMessages[0]), logger.Entries);
 			Assert.Equal(1, recorder.OpenedCount);
 			Assert.EndsWith(toneAsset, player.CurrentMediaItem?.MediaId);
 			await WaitForStateAsync(mediaElement, MediaElementState.Paused);
@@ -865,7 +865,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Null(setterException);
 			AssertReportsTheExceptionOfTheHandler(recorder, handlerException);
-			Assert.Contains(MediaElementState.Opening, recorder.States.Skip(statesBeforeTheSource));
+			AotSafeAssert.Contains(MediaElementState.Opening, recorder.States.Skip(statesBeforeTheSource));
 			Assert.Equal(1, recorder.OpenedCount);
 			Assert.EndsWith(toneAsset, player.CurrentMediaItem?.MediaId);
 			await WaitForStateAsync(mediaElement, MediaElementState.Paused);
@@ -1058,7 +1058,7 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 	{
 		var failure = Assert.Single(recorder.FailureMessages);
 		Assert.EndsWith($": {handlerException.GetType().FullName}: {handlerException.Message}", failure);
-		Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+		AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 	}
 
 	static MediaSource CreateEmptySource(EmptySourceKind kind) => kind switch

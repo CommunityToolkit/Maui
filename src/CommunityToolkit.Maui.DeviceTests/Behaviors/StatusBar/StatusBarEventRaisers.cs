@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.Maui.Devices;
@@ -26,6 +27,7 @@ static class StatusBarEventRaisers
 	// The metrics are made up because MAUI only raises MainDisplayInfoChanged when they differ from the last ones. Those last metrics are put
 	// back afterwards: otherwise the platform's next real check would report a change back to the real metrics to whoever still listens,
 	// later in the app run.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods | DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicFields, "Microsoft.Maui.Devices.DeviceDisplayImplementationBase", "Microsoft.Maui.Essentials")]
 	public static void RaiseMainDisplayInfoChanged()
 	{
 		var display = DeviceDisplay.Current;
@@ -77,7 +79,7 @@ static class StatusBarEventRaisers
 		}
 	}
 
-	static T Create<T>(params object?[] arguments) where T : class
+	static T Create<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] T>(params object?[] arguments) where T : class
 	{
 		try
 		{

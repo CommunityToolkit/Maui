@@ -29,11 +29,11 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			var platformView = Assert.IsType<MauiMediaElement>(handler.PlatformView);
 			Assert.Equal(1, platformView.ChildCount);
 			var relativeLayout = Assert.IsType<ARelativeLayout>(platformView.GetChildAt(0));
-			Assert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (relativeLayout.LayoutParameters!.Width, relativeLayout.LayoutParameters.Height));
+			AotSafeAssert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (relativeLayout.LayoutParameters!.Width, relativeLayout.LayoutParameters.Height));
 			Assert.Equal(1, relativeLayout.ChildCount);
 
 			var playerView = Assert.IsType<PlayerView>(relativeLayout.GetChildAt(0));
-			Assert.Equal((ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent), (playerView.LayoutParameters!.Width, playerView.LayoutParameters.Height));
+			AotSafeAssert.Equal((ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent), (playerView.LayoutParameters!.Width, playerView.LayoutParameters.Height));
 			var background = Assert.IsType<ColorDrawable>(playerView.Background);
 			Assert.Equal(AColor.Black, background.Color);
 			Assert.False(playerView.UseController);
@@ -80,7 +80,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(AColor.White, GetShutterColor(playerView));
 			Assert.False(playerView.UseController);
 			Assert.False(playerView.ControllerAutoShow);
-			Assert.Equal((ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent), (playerView.LayoutParameters!.Width, playerView.LayoutParameters.Height));
+			AotSafeAssert.Equal((ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent), (playerView.LayoutParameters!.Width, playerView.LayoutParameters.Height));
 			Assert.IsType<AndroidX.Media3.ExoPlayer.IExoPlayer>(playerView.Player, exactMatch: false);
 		});
 	}

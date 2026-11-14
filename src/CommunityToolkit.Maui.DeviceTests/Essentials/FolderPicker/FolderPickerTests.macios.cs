@@ -19,11 +19,11 @@ public partial class FolderPickerTests
 			Assert.Null(picker.DirectoryUrl);
 			Assert.False(picker.AllowsMultipleSelection);
 		});
-		Assert.Equal((1, 1), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((1, 1), FilesApplePicker.CountSubscribers(pickerDelegate));
 
 		await FilesApplePicker.SimulateUserCancelsAsync(picker);
 		Assert.True((await operation.WaitAsync(operationTimeout)).IsCancelled);
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	// An empty initial path ("" expected) gives the picker no directory, so it opens where the system chooses. A file URL string ({temp-url} is
@@ -99,7 +99,7 @@ public partial class FolderPickerTests
 		Assert.Equal(folder.Normalize(NormalizationForm.FormC), result.Folder.Path.Normalize(NormalizationForm.FormC));
 		Assert.Equal(name.Normalize(NormalizationForm.FormC), result.Folder.Name.Normalize(NormalizationForm.FormC));
 		Assert.True(Directory.Exists(result.Folder.Path), $"The returned path '{result.Folder.Path}' does not name a folder.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Fact]
@@ -140,7 +140,7 @@ public partial class FolderPickerTests
 
 		Assert.True(result.IsCancelled);
 		Assert.Null(result.Folder);
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Fact]

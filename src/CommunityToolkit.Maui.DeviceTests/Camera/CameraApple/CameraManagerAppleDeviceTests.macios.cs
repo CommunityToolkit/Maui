@@ -88,7 +88,7 @@ public class CameraManagerAppleDeviceTests : CameraHandlerTestBase
 
 			await scope.Manager.UpdateCaptureResolution(new Size(requestedDimensions.Width, requestedDimensions.Height), CancellationToken.None);
 
-			Assert.Equal(requestedDimensions, GetDimensions(device.ActiveFormat));
+			AotSafeAssert.Equal(requestedDimensions, GetDimensions(device.ActiveFormat));
 			Assert.Contains(device.ActiveFormat, camera.SupportedFormats);
 		});
 	}
@@ -105,7 +105,7 @@ public class CameraManagerAppleDeviceTests : CameraHandlerTestBase
 
 			await scope.Manager.UpdateCaptureResolution(new Size(100000, 100000), CancellationToken.None);
 
-			Assert.Equal(GetDimensions(formatsByArea[^1]), GetDimensions(device.ActiveFormat));
+			AotSafeAssert.Equal(GetDimensions(formatsByArea[^1]), GetDimensions(device.ActiveFormat));
 		});
 	}
 

@@ -145,7 +145,7 @@ public partial class BadgeTests
 		Badge.Default.SetCount(count);
 		Badge.SetCount(count);
 
-		Assert.Equal([count, count, count], registered.Counts);
+		AotSafeAssert.SequenceEqual([count, count, count], registered.Counts);
 	}
 
 	[Fact]
@@ -159,7 +159,7 @@ public partial class BadgeTests
 		BadgeFactory.SetBadgeProvider(LauncherTypeOfBadgeFactory(), late);
 		implementation.SetCount(2);
 
-		Assert.Equal([2u], late.Counts);
+		AotSafeAssert.SequenceEqual([2u], late.Counts);
 	}
 
 	[Fact]
@@ -225,7 +225,7 @@ public partial class BadgeTests
 		provider.SetCount(5);
 		await capture.SettleAsync();
 
-		Assert.Equal([3L, 0L, 5L], capture.Badges.Select(BadgeCount));
+		AotSafeAssert.SequenceEqual([3L, 0L, 5L], capture.Badges.Select(BadgeCount));
 	}
 
 	[Fact]

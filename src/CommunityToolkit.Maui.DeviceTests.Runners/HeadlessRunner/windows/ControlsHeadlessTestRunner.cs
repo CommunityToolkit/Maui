@@ -9,6 +9,7 @@
 //                 which ended discovery and dropped every category found after the first uncategorized test.
 // Toolkit change: a category launch also logs to TestRunLog (<results>_<Category>.log next to its results file), with the test that starts
 //                 and every unhandled exception.
+// Toolkit change: the assembly path falls back to the base directory when Assembly.Location is empty (NativeAOT).
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -61,7 +62,13 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 		protected override IEnumerable<TestAssemblyInfo> GetTestAssemblies() =>
 			_options.Assemblies
 				.Distinct()
-				.Select(assembly => new TestAssemblyInfo(assembly, assembly.Location));
+				.Select(assembly => new TestAssemblyInfo(assembly, GetAssemblyPath(assembly)));
+
+		// NativeAOT has no assembly files, so Assembly.Location is empty; xunit only needs a non-empty path whose file name is the assembly name.
+		static string GetAssemblyPath(System.Reflection.Assembly assembly) =>
+			string.IsNullOrEmpty(assembly.Location)
+				? Path.Combine(AppContext.BaseDirectory, assembly.GetName().Name + ".dll")
+				: assembly.Location;
 
 		protected override void TerminateWithSuccess()
 		{

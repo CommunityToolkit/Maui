@@ -97,7 +97,7 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 				await preview.Scope.Manager.StartCameraPreview(CancellationToken.None);
 			}
 
-			Assert.Empty(preview.Coordinators.Created);
+			AotSafeAssert.Empty(preview.Coordinators.Created);
 			Assert.Null(preview.Scope.Access.RotationCoordinator);
 			Assert.Equal(["begin", "add-input", "add-output", "commit", "start"], preview.Session.Calls);
 			Assert.True(preview.Scope.Access.IsInitialized);
@@ -423,7 +423,7 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 
 			Assert.Equal("Error creating capture device input: Cannot use the camera", exception.Message);
 			Assert.Equal(["begin", "commit"], preview.Session.Calls);
-			Assert.Empty(preview.Inputs.CreatedInputs);
+			AotSafeAssert.Empty(preview.Inputs.CreatedInputs);
 			Assert.Null(preview.Scope.Access.CaptureInput);
 			Assert.Equal(0, preview.Scope.LoadedCount);
 

@@ -193,7 +193,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 				Assert.Equal(expectedState, mediaElement.CurrentState);
 				Assert.Equal(1, events.Opened);
-				Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+				AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 				Assert.Equal(0, fake.PlayCount);
 			});
 		});
@@ -222,7 +222,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 				// Setting the rate starts playback at the configured speed: one rate change and no Play(), which would start at the default rate
 				// first, so RateChanged (which copies the player's rate into Speed) would see two rates (#3327).
 				Assert.Equal(0, fake.PlayCount);
-				Assert.Equal(new[] { 1.5f }, fake.RatesSet);
+				AotSafeAssert.SequenceEqual(new[] { 1.5f }, fake.RatesSet);
 				Assert.Equal(1.5f, fake.Rate);
 				Assert.Equal(MediaElementState.Playing, mediaElement.CurrentState);
 				Assert.Equal(1, events.Opened);
@@ -254,7 +254,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 				await manager.RunItemStatusHandler(item, CancellationToken.None);
 
 				Assert.Equal(0, fake.PlayCount);
-				Assert.Equal(new[] { 1.5f }, fake.RatesSet);
+				AotSafeAssert.SequenceEqual(new[] { 1.5f }, fake.RatesSet);
 				Assert.Equal(0f, fake.Rate);
 				Assert.Equal(1, events.Opened);
 			});
@@ -384,7 +384,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal(1, events.Opened);
 			Assert.Empty(events.Failures);
-			Assert.Equal((320, 180), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((320, 180), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			var warning = Assert.Single(Logs.Entries, entry => entry.Level is LogLevel.Warning);
 			Assert.Equal("Failed to load the video track; using the presentation size instead.", warning.Message);
 			Assert.Same(error, Assert.IsType<NSErrorException>(warning.Exception).Error);
@@ -467,7 +467,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal(1, asset.TrackLoads);
 			Assert.Equal(0, events.Opened);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -497,7 +497,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal(0, events.Opened);
 			Assert.Empty(events.Failures);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -525,7 +525,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			manager.NativePlayer = player;
 
 			Assert.Equal(0, events.Opened);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -577,7 +577,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			// test checks that the replaced item leaves no trace, HandlerOfAReplacedItemDoesNothing checks the token check itself.
 			Assert.True(audioToken.IsCancellationRequested);
 			Assert.Equal(1, events.Opened);
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.DoesNotContain(Logs.Entries, entry => entry.Level is LogLevel.Error);
 		});
 	}
@@ -623,7 +623,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 
 				await WaitAsync(opened, "The video was not opened.");
 				Assert.Equal(1, events.Opened);
-				Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+				AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			});
 		});
 	}

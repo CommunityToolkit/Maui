@@ -120,7 +120,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 		static IRecognitionListener CreateListener(ISpeechToText speech)
 		{
-			var listenerType = SpeechInternals.GetNestedType(speech.GetType(), "SpeechRecognitionListener");
+			var listenerType = SpeechInternals.GetNestedType(speech, "SpeechRecognitionListener");
 			var listener = Activator.CreateInstance(listenerType, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, [speech], null)
 				?? throw new InvalidOperationException("The listener could not be created.");
 
@@ -140,7 +140,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	protected static Intent CreateSpeechIntent(ISpeechToText speech, SpeechToTextOptions options) =>
-		(Intent)SpeechInternals.InvokeStatic(speech.GetType(), "CreateSpeechIntent", options)!;
+		(Intent)SpeechInternals.InvokeStatic(speech, "CreateSpeechIntent", options)!;
 
 	[Fact]
 	public async Task BeginningOfSpeechSetsListeningAndRaisesStateChanged()

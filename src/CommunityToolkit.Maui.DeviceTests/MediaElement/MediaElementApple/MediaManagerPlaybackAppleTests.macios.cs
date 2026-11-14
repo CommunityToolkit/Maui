@@ -138,7 +138,7 @@ public class MediaManagerPlaybackAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal(0f, player.Rate);
 			await WaitUntilAsync(() => player.CurrentTime.Seconds < 0.1, "The playhead did not return to the start.");
-			Assert.Contains(MediaElementState.Stopped, events.States);
+			AotSafeAssert.Contains(MediaElementState.Stopped, events.States);
 		});
 	}
 

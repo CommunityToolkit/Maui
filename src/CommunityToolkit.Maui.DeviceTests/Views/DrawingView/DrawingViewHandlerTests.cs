@@ -428,10 +428,10 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			Assert.Equal(9f, completed.LineWidth);
 			Assert.Equal(platformLine.Granularity, completed.Granularity);
 			Assert.Equal(platformLine.ShouldSmoothPathWhenDrawn, completed.ShouldSmoothPathWhenDrawn);
-			Assert.Equal(platformLine.Points, completed.Points);
+			AotSafeAssert.SequenceEqual(platformLine.Points, completed.Points);
 			Assert.NotSame(platformLine.Points, completed.Points);
 			var synced = Assert.IsType<DrawingLine>(Assert.Single(drawingView.Lines));
-			Assert.Equal(platformLine.Points, synced.Points);
+			AotSafeAssert.SequenceEqual(platformLine.Points, synced.Points);
 		});
 	}
 
@@ -833,8 +833,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			DrawingViewTestPlatform.TouchDown(platformView, 10, 10);
 			DrawingViewTestPlatform.TouchCancel(platformView, 10, 10);
 
-			Assert.Empty(recorder.Started);
-			Assert.Empty(recorder.Points);
+			AotSafeAssert.Empty(recorder.Started);
+			AotSafeAssert.Empty(recorder.Points);
 			Assert.Empty(recorder.Completed);
 			Assert.Equal(0, recorder.Cancelled);
 			Assert.Empty(drawingView.Lines);
@@ -1286,7 +1286,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 
 			var recorder = new DrawingViewRecorder(drawingView);
 			DrawingViewTestPlatform.Stroke(oldPlatformView, (10, 10), (50, 50));
-			Assert.Empty(recorder.Started);
+			AotSafeAssert.Empty(recorder.Started);
 			Assert.Empty(drawingView.Lines);
 			DrawingViewTestPlatform.Stroke(newHandler.PlatformView, (20, 20), (60, 60));
 			Assert.Single(recorder.Completed);
@@ -1394,7 +1394,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			Assert.Null(((IElementHandler)handler).PlatformView);
 			var recorder = new DrawingViewRecorder(drawingView);
 			DrawingViewTestPlatform.Stroke(platformView, (10, 10), (50, 50));
-			Assert.Empty(recorder.Started);
+			AotSafeAssert.Empty(recorder.Started);
 			Assert.Empty(drawingView.Lines);
 		});
 	}
@@ -1466,7 +1466,7 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 			RaiseUnloaded(drawingView);
 			RaiseLoaded(drawingView);
 
-			Assert.Equal(changesBefore, DrawAndAddALine(60));
+			AotSafeAssert.Equal(changesBefore, DrawAndAddALine(60));
 
 			(int StrokeChanges, int AddChanges) DrawAndAddALine(float y)
 			{
@@ -1827,8 +1827,8 @@ public partial class DrawingViewHandlerTests : CommunityToolkitHandlerTestBase
 		var lines = drawingView.Lines.ToList();
 		DrawingViewTestPlatform.Stroke(platformView, (10, 10), (50, 50));
 
-		Assert.Empty(recorder.Started);
-		Assert.Empty(recorder.Points);
+		AotSafeAssert.Empty(recorder.Started);
+		AotSafeAssert.Empty(recorder.Points);
 		Assert.Empty(recorder.Completed);
 		Assert.Equal(lines, drawingView.Lines);
 

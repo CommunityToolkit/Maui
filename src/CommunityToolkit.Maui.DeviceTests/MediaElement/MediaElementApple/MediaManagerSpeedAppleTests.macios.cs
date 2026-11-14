@@ -206,8 +206,8 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			player.Rate = 1.5f;
 
 			await WaitUntilAsync(() => Math.Abs(mediaElement.Speed - 1.5) < 0.01, "MediaElement.Speed did not follow the native rate.", timeout: 2000);
-			Assert.Equal(1.5f, GetMetadata(handler.Manager).NowPlayingInfo.PlaybackRate);
-			Assert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate);
+			AotSafeAssert.Equal(1.5f, GetMetadata(handler.Manager).NowPlayingInfo.PlaybackRate);
+			AotSafeAssert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate);
 		});
 	}
 
@@ -231,7 +231,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			await WaitUntilAsync(() => mediaElement.CurrentState is MediaElementState.Paused && player.Rate is 0, "The player did not pause.");
 
 			var nowPlaying = MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!;
-			Assert.Equal(0f, nowPlaying.PlaybackRate);
+			AotSafeAssert.Equal(0f, nowPlaying.PlaybackRate);
 			Assert.Equal(player.CurrentTime.Seconds, nowPlaying.ElapsedPlaybackTime!.Value, tolerance: 0.1);
 			Assert.Equal(1.5, mediaElement.Speed);
 		});
@@ -266,11 +266,11 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			await Task.Run(() => player.Rate = 1.5f);
 
 			await WaitUntilAsync(() => Math.Abs(mediaElement.Speed - 1.5) < 0.01, "MediaElement.Speed did not follow the native rate.", timeout: 2000);
-			Assert.Equal(1.5f, GetMetadata(handler.Manager).NowPlayingInfo.PlaybackRate);
-			Assert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate);
+			AotSafeAssert.Equal(1.5f, GetMetadata(handler.Manager).NowPlayingInfo.PlaybackRate);
+			AotSafeAssert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate);
 			lock (speedChangesOnTheMainThread)
 			{
-				Assert.All(speedChangesOnTheMainThread, static isMainThread => Assert.True(isMainThread, "MediaElement.Speed changed off the main thread."));
+				AotSafeAssert.All(speedChangesOnTheMainThread, static isMainThread => Assert.True(isMainThread, "MediaElement.Speed changed off the main thread."));
 			}
 
 			mediaElement.Pause();
@@ -351,7 +351,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 
 			NSNotificationCenter.DefaultCenter.PostNotificationName(AVPlayer.RateDidChangeNotification, player);
 
-			Assert.Equal(0.25f, metadata.NowPlayingInfo.PlaybackRate);
+			AotSafeAssert.Equal(0.25f, metadata.NowPlayingInfo.PlaybackRate);
 			manager.NativePlayer = player;
 		});
 	}

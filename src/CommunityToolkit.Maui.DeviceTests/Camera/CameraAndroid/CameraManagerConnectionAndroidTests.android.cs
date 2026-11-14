@@ -1031,7 +1031,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 				"camera", "cameraControl", "cameraPreview", "cameraExecutor", "imageCapture", "videoCapture", "videoRecorder",
 				"imageCallback", "previewView", "processCameraProvider", "resolutionSelector", "resolutionFilter", "orientationListener"
 			}.ToDictionary(name => name, name => GetPrivateField<Java.Lang.Object>(session.Manager, name));
-			Assert.All(nativeObjects, entry => Assert.NotNull(entry.Value));
+			AotSafeAssert.All(nativeObjects, entry => Assert.NotNull(entry.Value));
 
 			session.Manager.Dispose();
 
@@ -1042,7 +1042,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			// same managed peers, so they are only released (that they stay usable is asserted by
 			// DisposeLeavesTheProcessCameraProviderThatEveryManagerSharesUsable, DisposingOneManagerDoesNotBreakAnotherManager and
 			// DisposingOneManagerDoesNotBreakTheZoomAndTorchOfAnotherManager).
-			Assert.All(nativeObjects.Where(entry => !IsSharedCameraXObject(entry.Key)), entry => Assert.True(entry.Value!.Handle == IntPtr.Zero, $"{entry.Key} was not disposed."));
+			AotSafeAssert.All(nativeObjects.Where(entry => !IsSharedCameraXObject(entry.Key)), entry => Assert.True(entry.Value!.Handle == IntPtr.Zero, $"{entry.Key} was not disposed."));
 			Assert.All(nativeObjects.Keys, name => Assert.Null(GetPrivateField<object>(session.Manager, name)));
 		});
 	}

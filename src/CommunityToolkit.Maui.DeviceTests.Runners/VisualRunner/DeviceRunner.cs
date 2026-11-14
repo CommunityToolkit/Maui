@@ -3,6 +3,7 @@
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
 // Toolkit change: on Windows the internal FileSystemUtils.PlatformGetFullAppPackageFilePath is replaced by AppContext.BaseDirectory (the app's install folder, packaged or unpackaged).
+// Toolkit change: on iOS and Mac Catalyst the assembly path falls back to the base directory when Assembly.Location is empty (NativeAOT).
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -126,7 +127,8 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.VisualRunner
 					if (!File.Exists(assemblyFileName))
 						File.Create(assemblyFileName).Close();
 #else
-					var assemblyFileName = assm.Location;
+					// NativeAOT has no assembly files, so Assembly.Location is empty; xunit only needs a non-empty path whose file name is the assembly name.
+					var assemblyFileName = string.IsNullOrEmpty(assm.Location) ? Path.Combine(AppContext.BaseDirectory, $"{assm.GetName().Name}.dll") : assm.Location;
 #endif
 
 					var configuration = GetConfiguration(assemblyFileName);

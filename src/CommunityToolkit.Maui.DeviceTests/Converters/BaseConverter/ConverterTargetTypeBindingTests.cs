@@ -61,10 +61,10 @@ public sealed class ConverterTargetTypeBindingTests : CommunityToolkitHandlerTes
 		{
 			await view.OnLoadedAsync();
 
-			Assert.Equal(10, view.Number);
+			AotSafeAssert.Equal(10, view.Number);
 
 			checkBox.IsChecked = true;
-			Assert.Equal(20, view.Number);
+			AotSafeAssert.Equal(20, view.Number);
 		});
 	}
 

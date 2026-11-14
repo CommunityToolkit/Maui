@@ -43,7 +43,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		Assert.Equal("public.mpeg-4", contentInformation.ContentType);
 		Assert.Equal(100, contentInformation.ContentLength);
 		Assert.True(contentInformation.ByteRangeAccessSupported);
-		Assert.Equal(Bytes(100)[10..30], Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[10..30], Assert.Single(data.Responses));
 		Assert.Equal(1, request.FinishCount);
 	}
 
@@ -86,7 +86,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		var result = loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), request);
 
 		Assert.True(result);
-		Assert.Equal(Bytes(5), Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(5), Assert.Single(data.Responses));
 		Assert.Equal(1, request.FinishCount);
 	}
 
@@ -116,7 +116,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 
 		Assert.Equal(0, contentInformation.ContentLength);
 		Assert.False(contentInformation.ByteRangeAccessSupported);
-		Assert.Equal(Bytes(10), Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(10), Assert.Single(data.Responses));
 		Assert.DoesNotContain(stream.Calls, static call => call.StartsWith("Seek(", StringComparison.Ordinal) || call.StartsWith("Position=", StringComparison.Ordinal));
 	}
 
@@ -131,8 +131,8 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, first));
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, second));
 
-		Assert.Equal(Bytes(100)[..10], Assert.Single(first.Responses));
-		Assert.Equal(Bytes(100)[10..20], Assert.Single(second.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[..10], Assert.Single(first.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[10..20], Assert.Single(second.Responses));
 	}
 
 	[Fact]
@@ -169,7 +169,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		Assert.Equal(1, otherRequest.FinishWithErrorCount);
 		Assert.Equal(0, otherRequest.FinishCount);
 		Assert.Empty(other.Responses);
-		Assert.Equal(Bytes(100)[10..20], Assert.Single(next.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[10..20], Assert.Single(next.Responses));
 	}
 
 	[Fact]
@@ -182,7 +182,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, data));
 
 		Assert.Contains("Seek(30,Begin)", stream.Calls);
-		Assert.Equal(Bytes(100)[30..40], Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[30..40], Assert.Single(data.Responses));
 	}
 
 	[Fact]
@@ -197,7 +197,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, data));
 
 		Assert.DoesNotContain(stream.Calls, static call => call.StartsWith("Seek(", StringComparison.Ordinal));
-		Assert.Equal(Bytes(100)[30..40], Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[30..40], Assert.Single(data.Responses));
 	}
 
 	[Fact]
@@ -209,7 +209,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, data));
 
-		Assert.Equal(Bytes(100)[50..60], Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[50..60], Assert.Single(data.Responses));
 	}
 
 	[Fact]
@@ -221,7 +221,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), new AppleFakeLoadingRequest(null, data));
 
-		Assert.Equal(Bytes(100)[90..], Assert.Single(data.Responses));
+		AotSafeAssert.SequenceEqual(Bytes(100)[90..], Assert.Single(data.Responses));
 	}
 
 	[Fact]
@@ -234,7 +234,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), request);
 
-		Assert.Equal(Bytes(100)[10..30], data.Responses.SelectMany(static response => response).ToArray());
+		AotSafeAssert.SequenceEqual(Bytes(100)[10..30], data.Responses.SelectMany(static response => response).ToArray());
 		Assert.Equal(1, request.FinishCount);
 	}
 
@@ -315,7 +315,7 @@ public class StreamAssetResourceLoaderAppleTests : AppleMediaElementTestBase
 
 		loader.ShouldWaitForLoadingOfRequestedResource(CreateResourceLoader(), request);
 
-		Assert.Equal(Bytes(100), data.Responses.SelectMany(static response => response).ToArray());
+		AotSafeAssert.SequenceEqual(Bytes(100), data.Responses.SelectMany(static response => response).ToArray());
 		Assert.Equal(1, request.FinishCount);
 	}
 

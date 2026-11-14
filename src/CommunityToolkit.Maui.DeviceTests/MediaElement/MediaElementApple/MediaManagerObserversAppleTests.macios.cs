@@ -345,7 +345,7 @@ public class MediaManagerObserversAppleTests : AppleMediaElementTestBase
 			var nowPlaying = MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!;
 			Assert.Equal("Song", nowPlaying.Title);
 			Assert.Equal("Artist", nowPlaying.Artist);
-			Assert.Equal(1f, nowPlaying.PlaybackRate);
+			AotSafeAssert.Equal(1f, nowPlaying.PlaybackRate);
 			Assert.Equal(VideoDuration.TotalSeconds, nowPlaying.PlaybackDuration!.Value, precision: 1);
 		});
 	}

@@ -991,7 +991,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 
 			lock (millisecondsIntoThePress)
 			{
-				Assert.All(millisecondsIntoThePress, milliseconds => Assert.True(milliseconds >= longPressDuration - 50,
+				AotSafeAssert.All(millisecondsIntoThePress, milliseconds => Assert.True(milliseconds >= longPressDuration - 50,
 					$"A long press came {milliseconds} ms into a tap of 80 ms: the timer of an earlier tap raised it (long presses at {string.Join(", ", millisecondsIntoThePress)} ms)."));
 			}
 
