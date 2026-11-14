@@ -339,9 +339,11 @@ Write-Host "== Trim and AOT audit: $verdict (exit $overallExit) =="
 $rows | Format-Table -AutoSize @{ n = 'leg'; e = 'Leg' }, @{ n = 'verdict'; e = 'Verdict' }, @{ n = 'toolkit'; e = 'Toolkit' }, @{ n = 'toolkit-api'; e = 'ToolkitApi' },
     @{ n = 'sample'; e = 'Sample' }, @{ n = 'maui'; e = 'Maui' }, @{ n = 'other'; e = 'Other' } | Out-String | Write-Host
 Write-Host "Logs and warning lists: $(Join-Path $OutRoot '<leg>')$([IO.Path]::DirectorySeparatorChar) (build.log, warnings.log, warnings-summary.txt, warnings-unique.tsv, gate-output.txt)"
-$notGatedZips = @($rows | Where-Object { $_.Verdict -eq 'NOT GATED' } | ForEach-Object { Join-Path $OutRoot "$($_.Leg).zip" })
-$exitHint = if ($notGatedZips.Count -gt 0) {
-    "not gated: no working Python here, but the build succeeded; gate $($notGatedZips -join ', ') with eng/trim-audit/gate-windows-result.sh on a machine with Python, or install Python 3 and run again."
+$notGatedCommands = @($rows | Where-Object { $_.Verdict -eq 'NOT GATED' } | ForEach-Object {
+    "eng/trim-audit/gate-windows-result.sh $(Join-Path $OutRoot "$($_.Leg).zip")$(if ($_.Leg -like '*-aot') { ' --report-only' })"
+})
+$exitHint = if ($notGatedCommands.Count -gt 0) {
+    "not gated: no working Python here, but the build succeeded; on a machine with Python run $($notGatedCommands -join ' and '), or install Python 3 and run again."
 }
 else { Get-ExitHint $overallExit }
 if ($exitHint) { Write-Host $exitHint }

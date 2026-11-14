@@ -280,7 +280,7 @@ if (-not $python) {
     $assetsLine = @(Get-Content $assetsCheck | Where-Object { $_ -like 'ASSETS-CHECK=*' })[-1]
     $whatHappened = if ($rc -ne 0) { "the build failed (dotnet publish exit $rc); its logs are in the zip; the gate did not run" } else { 'the build finished and its results are in the zip, but the gate did not run' }
     $noPython = "no working Python on PATH: $whatHappened. $assetsLine (checked in PowerShell). Gate it on any machine with Python 3 " +
-        '(macOS, Linux or Windows): eng/trim-audit/gate-windows-result.sh <the zip or its folder>, or run in order: ' +
+        "(macOS, Linux or Windows): eng/trim-audit/gate-windows-result.sh <the zip or its folder>$(if ($reportOnly) { ' --report-only' }), or run in order: " +
         'python3 -I eng/trim-audit/ilwarn.py summarize <folder>/warnings.log <folder> <folder>/toolkit-dlls, then ' +
         'python3 -I eng/trim-audit/ilwarn.py gate <folder>/warnings-unique.tsv --allow eng/trim-audit/allow.tsv --log <folder>/warnings.log --assets-check <folder>/assets-check.txt --result <folder>/result.json ' +
         "(python on Windows). Exit code $gateExit$(if ($rc -eq 0) { ': build ok, gate not run' })."
