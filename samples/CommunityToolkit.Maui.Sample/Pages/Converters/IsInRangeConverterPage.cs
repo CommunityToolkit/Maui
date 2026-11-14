@@ -84,7 +84,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.StringExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, Entry, string, string>(
+						.Bind<Label, Entry, string, Style>(
 								Label.StyleProperty,
 								static (Entry stringInputEntry) => stringInputEntry.Text,
 								mode: BindingMode.OneWay,
@@ -104,7 +104,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.StringExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, Entry, string, string>(
+						.Bind<Label, Entry, string, Style>(
 								Label.StyleProperty,
 								static (Entry stringInputEntry) => stringInputEntry.Text,
 								mode: BindingMode.OneWay,
@@ -123,7 +123,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.StringExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, Entry, string, string>(
+						.Bind<Label, Entry, string, Style>(
 								Label.StyleProperty,
 								static (Entry stringInputConverter) => stringInputConverter.Text,
 								mode: BindingMode.OneWay,
@@ -158,7 +158,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.DoubleExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, Stepper, double, double>(
+						.Bind<Label, Stepper, double, Style>(
 								Label.StyleProperty,
 								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
 								mode: BindingMode.OneWay,
@@ -181,7 +181,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.DoubleExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, Stepper, double, double>(
+						.Bind<Label, Stepper, double, Style>(
 								Label.StyleProperty,
 								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
 								mode: BindingMode.OneWay,
@@ -203,7 +203,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.DoubleExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, Stepper, double, double>(
+						.Bind<Label, Stepper, double, Style>(
 								Label.StyleProperty,
 								static (Stepper doubleInputStepper) => doubleInputStepper.Value,
 								mode: BindingMode.OneWay,
@@ -237,7 +237,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.TimeSpanExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, TimeSpan>(
+						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, Style>(
 								Label.StyleProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputTime,
 								mode: BindingMode.OneWay,
@@ -256,7 +256,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.TimeSpanExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, TimeSpan>(
+						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, Style>(
 								Label.StyleProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputTime,
 								mode: BindingMode.OneWay,
@@ -274,7 +274,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.TimeSpanExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, TimeSpan>(
+						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, Style>(
 								Label.StyleProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputTime,
 								mode: BindingMode.OneWay,
@@ -306,7 +306,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.CharExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, IsInRangeConverterViewModel, char, char>(
+						.Bind<Label, IsInRangeConverterViewModel, char, Style>(
 								Label.StyleProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputChar,
 								mode: BindingMode.OneWay,
@@ -325,7 +325,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.CharExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, IsInRangeConverterViewModel, char, char>(
+						.Bind<Label, IsInRangeConverterViewModel, char, Style>(
 								Label.StyleProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputChar,
 								mode: BindingMode.OneWay,
@@ -343,7 +343,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.CharExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, IsInRangeConverterViewModel, char, char>(
+						.Bind<Label, IsInRangeConverterViewModel, char, Style>(
 								Label.StyleProperty,
 								static (IsInRangeConverterViewModel vm) => vm.InputChar,
 								mode: BindingMode.OneWay,
@@ -376,8 +376,9 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 
 	enum Column { Input, Result }
 
-	static Style<Label> GetTrueLabelStyle() => new((Label.TextProperty, "True"), (Label.BackgroundColorProperty, Colors.Green));
-	static Style<Label> GetFalseLabelStyle() => new((Label.TextProperty, "False"), (Label.BackgroundColorProperty, Colors.Red));
+	// Style<Label> reaches the object-typed TrueObject/FalseObject only via a reflection op_Implicit, which trimmed and NativeAOT apps disable
+	static Style GetTrueLabelStyle() => new Style<Label>((Label.TextProperty, "True"), (Label.BackgroundColorProperty, Colors.Green));
+	static Style GetFalseLabelStyle() => new Style<Label>((Label.TextProperty, "False"), (Label.BackgroundColorProperty, Colors.Red));
 
 	static Line GetSeparator() => new Line { X2 = 300 }.Center()
 									.AppThemeBinding(Line.StrokeProperty, Colors.Black, Colors.White);

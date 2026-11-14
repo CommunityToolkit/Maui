@@ -61,7 +61,8 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 	}
 
 	// Deriving from a MAUI text control would make the generator reuse that control's TextColorTo, so this view only implements ITextStyle
-	internal sealed class HeadlineView : ContentView, ITextStyle
+	// Partial for CsWinRT1028 (an error on Windows): a class that implements WinRT interfaces, even through its base class, must be partial
+	internal sealed partial class HeadlineView : ContentView, ITextStyle
 	{
 		readonly Label label;
 
