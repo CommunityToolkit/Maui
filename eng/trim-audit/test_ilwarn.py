@@ -543,6 +543,7 @@ class GateTests(Workspace):
                 self.assertEqual(raised.exception.code, expected)
 
 
+@unittest.skipUnless(shutil.which('bash'), 'needs bash')
 class WindowsResultHelperTests(Workspace):
     helper = os.path.join(os.path.dirname(os.path.abspath(ilwarn.__file__)), 'gate-windows-result.sh')
 
@@ -570,6 +571,7 @@ class WindowsResultHelperTests(Workspace):
         self.assertIn('GATE-EXIT=1', output)
         self.assertIn('::error title=Trim and AOT gate::', output)
 
+    @unittest.skipUnless(shutil.which('zip'), 'needs Info-ZIP zip')
     def test_a_zip_is_unpacked_next_to_itself_and_gated(self):
         folder = self.windows_result([ISINRANGE_ILC])
         archive = os.path.join(folder, 'windows-rootlibs.zip')

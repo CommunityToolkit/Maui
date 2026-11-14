@@ -149,7 +149,7 @@ It runs every platform that your machine can run (on a Mac the iOS simulator and
 
 ## Trimming and NativeAOT
 
-The four NuGet packages must stay fully trim-safe and NativeAOT-safe. Every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error, so avoid reflection on unannotated types and string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. See [the trimming and NativeAOT instructions](.github/instructions/trimming-aot.instructions.md) for the rules and how to check your change locally.
+The four NuGet packages must stay fully trim-safe and NativeAOT-safe. Every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error, so avoid reflection on unannotated types and string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. See [the trimming and NativeAOT instructions](.github/instructions/trimming-aot.instructions.md) for the rules and how to check your change locally with one command: `pwsh eng/trim-audit/run.ps1`.
 
 ## Contributing Code - Best Practices
 

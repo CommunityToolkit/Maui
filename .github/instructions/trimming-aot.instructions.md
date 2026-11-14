@@ -59,24 +59,21 @@ Run these before opening a PR that touches package code, MSBuild files or genera
 
 1. Build the library you changed in Release (the analyzers run on every build):
    `dotnet build src/CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj -c Release`. One build covers every target framework your OS builds. macOS and Linux skip the Windows TFM; CI's Windows leg builds it. Repeat for each of the four libraries your change reaches.
-2. Pack the libraries and build the Sample against the packages with NativeAOT and with full trimming, then gate on toolkit warnings. The harness is `eng/trim-audit`; the script headers of `eng/trim-audit/audit.sh` and `audit-win.ps1` list every flag:
+2. Pack the libraries and build the Sample against the packages with NativeAOT (macOS, Linux) or full trimming (Windows), then gate on toolkit warnings. One command does it all and prints a PASS or FAIL verdict; see [eng/trim-audit/README.md](../../eng/trim-audit/README.md):
 
    ```bash
-   eng/trim-audit/audit.sh run ios,android aotroot --repo . --out-root <out-root>        # pack, build, gate: NativeAOT, what CI gates on macOS
-   eng/trim-audit/audit.sh run ios,android,maccatalyst rootlibs --repo . --out-root <out-root>   # full trimming, all toolkit code analyzed
-   eng/trim-audit/audit.sh run ios aotroot --feed <folder-of-nupkgs> --out-root <out-root>   # the same on packages that are already packed
-   eng/trim-audit/audit.sh <android|ios|maccatalyst> <none|partial|full|rootlibs|aot|aotroot> <out-root>   # one leg: build only (needs a feed from `audit.sh pack`)
-   eng/trim-audit/audit.sh gate <out-root>/<platform>-<variant>   # exit 0 = no toolkit warning outside allow.tsv
+   pwsh eng/trim-audit/run.ps1                                       # every platform this machine can build (macOS and Linux run the gate's own tests first)
+   pwsh eng/trim-audit/run.ps1 -DryRun                               # the plan only
+   pwsh eng/trim-audit/run.ps1 -Platform android -Mode full          # one platform, full trimming
+   pwsh eng/trim-audit/run.ps1 -Feed <folder-of-nupkgs>              # packages that are already packed
    ```
 
-   `eng/trim-audit/audit.sh run` builds and gates in one command, and packs first when it is given a checkout (`--repo`) instead of a feed (`--feed`). CI runs it on the packages the job just packed. `--github`, `--summary <file>`, `--max-annotations <n>` and `--report-only` shape the output for CI. After a code change, pass a new `--version` (for example `--version 99.0.0-local2`) or delete `<out-root>/nuget/packages`; a reused version fails the assets check (exit 3).
-
-   On Windows use `eng/trim-audit/audit-win.ps1 -Variant <none|full|rootlibs|aot> (-Repo . | -Feed <folder-of-nupkgs>) [-OutRoot <short path>]`. Its `rootlibs` variant is the gated one in CI; `aot` only reports until [dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053) is fixed. Without a working Python it still builds and checks the assets, then exits 4; gate its zip on macOS or Linux with `eng/trim-audit/gate-windows-result.sh <zip or folder>`.
+   Exit 0 means no toolkit warning outside `allow.tsv`. `-Mode aot` is NativeAOT (`aotroot`), `-Mode full` is full trimming with all toolkit code analyzed (`rootlibs`). On Windows, `-Mode aot` only reports until [dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053) is fixed. Without a working Python, Windows still builds and checks the assets, shows the leg as `NOT GATED` and exits 4; gate its zip on macOS or Linux with `eng/trim-audit/gate-windows-result.sh <zip or folder>`. The internal scripts (`audit.sh`, `audit-win.ps1`) and their flags are listed in the README.
 
    In CI, the job summary and the `GATE-EXIT` and `AUDIT-EXIT` log lines always carry the verdict. Annotations may not appear: GitHub keeps 50 per job, and earlier steps can use them all.
 
    `eng/trim-audit/allow.tsv` lines are `code<TAB>member pattern (glob)<TAB>reason[<TAB>scope]`. The optional scope is a comma separated list of globs over the leg name `<platform>-<variant>` (for example `android-*,ios-aot*`); without it the line applies to every leg. A scope glob that matches no leg makes the gate fail with exit 2.
-3. CI runs the same check in the `Build Library` job of `.github/workflows/dotnet-build.yml` (the job that packs the NuGets). It builds the Sample against the just-packed packages, with NativeAOT (`aotroot`, iOS and Android) on the macOS leg and full trimming (`rootlibs`) on the Windows leg, and fails on any toolkit warning that `eng/trim-audit/allow.tsv` does not list.
+3. CI runs the same command (`pwsh eng/trim-audit/run.ps1 -Feed auto -CI`) in the `Build Library` job of `.github/workflows/dotnet-build.yml` (the job that packs the NuGets). It builds the Sample against the just-packed packages, with NativeAOT (`aotroot`, iOS and Android) on the macOS leg and full trimming (`rootlibs`) on the Windows leg, and fails on any toolkit warning that `eng/trim-audit/allow.tsv` does not list.
 
 ## Platform support
 
