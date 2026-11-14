@@ -48,6 +48,12 @@ public sealed class FilesFakePickerActivity : ComponentActivity
 		FilesFakePicker.NotifyCreated(this, restored: savedInstanceState is not null);
 	}
 
+	protected override void OnStop()
+	{
+		base.OnStop();
+		FilesFakePicker.StoppedBehavior?.Invoke(this);
+	}
+
 	protected override void OnDestroy()
 	{
 		FilesFakePicker.NotifyDestroyed(this);
@@ -132,6 +138,9 @@ public static class FilesFakePicker
 	/// </summary>
 	public static Action<FilesFakePickerActivity, bool>? ContextAvailableBehavior { get; set; }
 
+	/// <summary>Runs inside the OnStop of every fake picker activity, on the UI thread.</summary>
+	public static Action<FilesFakePickerActivity>? StoppedBehavior { get; set; }
+
 	public static IReadOnlyList<FilesFakePickerLaunch> Launches
 	{
 		get
@@ -153,6 +162,7 @@ public static class FilesFakePicker
 		LaunchBehavior = null;
 		CreatedBehavior = null;
 		ContextAvailableBehavior = null;
+		StoppedBehavior = null;
 	}
 
 	public static async Task<TActivity> StartActivityAsync<TActivity>(ActivityFlags flags = 0, CancellationToken token = default)

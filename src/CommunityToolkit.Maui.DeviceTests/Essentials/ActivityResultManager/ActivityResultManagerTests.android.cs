@@ -465,6 +465,45 @@ public class ActivityResultManagerTests : FilesTestBase
 	}
 
 	[Fact]
+	public async Task TheSessionCleanupDestroysAnActivityThatWasFinishedWhileItStopped()
+	{
+		var session = await StartSessionAsync();
+		var host = session.Activity;
+		FilesFakePickerActivity? recreated = null;
+		var finishedWhileStopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		// Recreating the host inside the front activity's OnCreate queues the relaunch before the front's first draw, so the system's stop
+		// reaches the new instance, which then finishes itself in OnStop while the system still counts it as stopping.
+		FilesFakePicker.CreatedBehavior = (activity, restored) =>
+		{
+			if (restored)
+			{
+				recreated = activity;
+			}
+			else if (!ReferenceEquals(activity, host))
+			{
+				host.Recreate();
+			}
+		};
+		FilesFakePicker.StoppedBehavior = activity =>
+		{
+			if (ReferenceEquals(activity, recreated))
+			{
+				activity.Finish();
+				finishedWhileStopping.TrySetResult();
+			}
+		};
+
+		await session.StartAnotherAsync();
+		await finishedWhileStopping.Task.WaitAsync(operationTimeout);
+		await session.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(40));
+
+		Assert.True(recreated?.IsDestroyed);
+		await using var next = await FilesPickerSession.StartAsync();
+		Assert.NotNull(next.Activity);
+	}
+
+	[Fact]
 	public async Task RecreatingTheActivityBehindAPlainActivityRegistersTheRequestWithTheNewInstance()
 	{
 		var session = await StartSessionAsync();
