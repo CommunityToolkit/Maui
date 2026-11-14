@@ -82,6 +82,10 @@ partial class CameraManager
 	ImageCallBack? imageCallback;
 	VideoCapture? videoCapture;
 	Recorder? videoRecorder;
+
+	// CameraX's Recorder runs the source-state changes of a detached VideoCapture only after it finishes the recording it is still ending,
+	// so a recording that it starts in that window is finalized with ERROR_SOURCE_INACTIVE
+	bool hasVideoRecorderRecorded;
 	Recording? videoRecording;
 	ICamera? camera;
 	ICameraControl? cameraControl;
@@ -94,6 +98,8 @@ partial class CameraManager
 	CameraConsumer? videoRecordingConsumer;
 	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
+	// A rebuilt use case starts without the sensor rotation, and OrientationEventListener reports only changes
+	int? targetRotation;
 	int extensionMode = ExtensionMode.Auto;
 	bool isDisposed;
 
@@ -388,8 +394,15 @@ partial class CameraManager
 			processCameraProvider?.Unbind(cameraPreview);
 			cameraPreview.Dispose();
 		}
-		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
+		var previewBuilder = new Preview.Builder();
+		previewBuilder.SetResolutionSelector(resolutionSelector);
+		cameraPreview = previewBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the Preview.");
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
+
+		if (targetRotation is int rotation)
+		{
+			cameraPreview.TargetRotation = rotation;
+		}
 	}
 
 	void RebuildImageCapture() => ReplaceImageCapture(CreateImageCapture(currentSessionMode));
@@ -405,11 +418,18 @@ partial class CameraManager
 		};
 
 		// A new ImageCapture starts with CameraX's default flash mode, not the one of the view
-		return new ImageCapture.Builder()
-			.SetCaptureMode(imageCaptureMode)
-			.SetFlashMode(cameraView.CameraFlashMode.ToPlatform())
-			.SetResolutionSelector(resolutionSelector)
-			.Build();
+		var imageCaptureBuilder = new ImageCapture.Builder();
+		imageCaptureBuilder.SetCaptureMode(imageCaptureMode);
+		imageCaptureBuilder.SetFlashMode(cameraView.CameraFlashMode.ToPlatform());
+		imageCaptureBuilder.SetResolutionSelector(resolutionSelector);
+		var newImageCapture = imageCaptureBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageCapture.");
+
+		if (targetRotation is int rotation)
+		{
+			newImageCapture.TargetRotation = rotation;
+		}
+
+		return newImageCapture;
 	}
 
 	// The current ImageCapture is released once its replacement exists, so that a failure while creating the replacement (an undefined
@@ -433,6 +453,7 @@ partial class CameraManager
 			videoCapture.Dispose();
 		}
 		videoRecorder?.Dispose();
+		hasVideoRecorderRecorded = false;
 
 		// The Recorder runs on the I/O executor of CameraX (its default), not on the camera executor: it still finalizes recordings
 		// and releases its encoders after its VideoCapture is unbound, which the camera executor that Dispose shuts down would reject
@@ -440,10 +461,15 @@ partial class CameraManager
 
 		if (Quality.Highest is not null)
 		{
-			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
+			videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
 		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
+
+		if (targetRotation is int rotation)
+		{
+			videoCapture?.TargetRotation = rotation;
+		}
 	}
 
 	Task BindPhotoSessionAsync(CancellationToken token) => BindSessionAsync(CaptureSessionMode.Photo, token);
@@ -694,7 +720,8 @@ partial class CameraManager
 				}
 			}
 
-			var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+			var meteringPointFactory = previewView.MeteringPointFactory ?? throw new InvalidOperationException("The PreviewView has no MeteringPointFactory.");
+			var point = meteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 			var action = new FocusMeteringAction.Builder(point).Build();
 			camera?.CameraControl?.StartFocusAndMetering(action);
 
@@ -885,6 +912,13 @@ partial class CameraManager
 			token.ThrowIfCancellationRequested();
 			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
+			var bindsTheVideoSession = IsCapturePhotoSession || camera is null || !IsVideoSessionBound();
+
+			if (hasVideoRecorderRecorded && bindsTheVideoSession)
+			{
+				RebuildVideoCapture();
+			}
+
 			// The recording file and the recording (which checks RECORD_AUDIO) are prepared before the session changes, so that a
 			// StartVideoRecording that fails for the permission leaves the photo session as it was
 			videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
@@ -907,7 +941,7 @@ partial class CameraManager
 				// to optimize for latency during video recording sessions
 				await SwitchSessionAsync(CaptureSessionMode.Video, bindSession: true, token);
 			}
-			else if (camera is null || !IsVideoSessionBound())
+			else if (bindsTheVideoSession)
 			{
 				await BindVideoSessionAsync(token);
 			}
@@ -919,6 +953,7 @@ partial class CameraManager
 
 			videoRecordingStream = stream;
 			videoRecordingConsumer = consumer;
+			hasVideoRecorderRecorded = true;
 			videoRecording = pendingRecording.Start(executor, consumer);
 			recordingRequested = true;
 
@@ -1210,16 +1245,17 @@ partial class CameraManager
 
 	void OnOrientationChanged(int orientationDegrees)
 	{
-		var targetRotation = GetSurfaceRotation(orientationDegrees);
+		var rotation = GetSurfaceRotation(orientationDegrees);
+		targetRotation = rotation;
 
-		imageCapture?.TargetRotation = targetRotation;
-		videoCapture?.TargetRotation = targetRotation;
-		cameraPreview?.TargetRotation = targetRotation;
+		imageCapture?.TargetRotation = rotation;
+		videoCapture?.TargetRotation = rotation;
+		cameraPreview?.TargetRotation = rotation;
 	}
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
-		public override void OnCaptureSuccess(IImageProxy image)
+		public override void OnCaptureSuccess(IImageProxy? image)
 		{
 			base.OnCaptureSuccess(image);
 			var img = image?.Image;
@@ -1268,7 +1304,7 @@ partial class CameraManager
 			}
 		}
 
-		public override void OnError(ImageCaptureException exception)
+		public override void OnError(ImageCaptureException? exception)
 		{
 			base.OnError(exception);
 			cameraView.OnMediaCapturedFailed(exception?.Message ?? "An unknown error occurred.");

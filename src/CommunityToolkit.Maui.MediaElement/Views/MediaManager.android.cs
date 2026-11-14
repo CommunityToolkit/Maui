@@ -30,6 +30,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int readyState = 3;
 	const int endedState = 4;
 
+	static int managersBoundToTheService;
+
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -811,7 +813,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			if (connection is not null)
 			{
 				StopService(connection);
-				connection.Dispose();
 				connection = null;
 			}
 
@@ -820,6 +821,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			client.Dispose();
 		}
+	}
+
+	static void StopAndUnbind(BoundServiceConnection boundServiceConnection)
+	{
+		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
+		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		{
+			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+		}
+
+		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
+		global::Android.App.Application.Context.StopService(serviceIntent);
+		Platform.AppContext.UnbindService(boundServiceConnection);
+		boundServiceConnection.Dispose();
 	}
 
 	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
@@ -902,11 +917,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		connection = new BoundServiceConnection(this);
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
 
+		Interlocked.Increment(ref managersBoundToTheService);
+
 		global::Android.App.Application.Context.StartForegroundService(intent);
 		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 	}
 
-	void StopService(in BoundServiceConnection boundServiceConnection)
+	void StopService(BoundServiceConnection boundServiceConnection)
 	{
 		if (!isAndroidForegroundServiceEnabled)
 		{
@@ -915,9 +932,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
-		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		global::Android.App.Application.Context.StopService(serviceIntent);
-		Platform.AppContext.UnbindService(boundServiceConnection);
+		// Until its connection lands the service may not have called startForeground yet: bringing it down then makes Android kill the app.
+		if (boundServiceConnection.IsConnected)
+		{
+			StopAndUnbind(boundServiceConnection);
+		}
+		else
+		{
+			boundServiceConnection.StopWhenConnected(StopAndUnbind);
+		}
 	}
 
 	void HandleMediaControlsServiceTaskRemoved(object? sender, EventArgs e) => Player?.Stop();

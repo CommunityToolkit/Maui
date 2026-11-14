@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 using Android.Runtime;
+using Android.Views;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Extensions;
 using AndroidX.Camera.Video;
@@ -15,27 +15,6 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Collection(TestCollections.PermanentAndroidGrants)]
 public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 {
-	static async Task<string> WaitForRecordingFileAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
-	{
-		string? path = null;
-		await AssertionExtensions.AssertEventually(() =>
-		{
-			path = ListRecordingFiles().Except(before).SingleOrDefault();
-			return path is not null && new FileInfo(path).Length > 0;
-		}, 40000, 100, message);
-
-		return path!;
-	}
-
-	static void AssertIsAPlayableVideo(byte[] mp4)
-	{
-		Assert.True(mp4.Length > 8 && Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
-		var (hasVideo, durationMilliseconds, width, height) = ReadVideoInfo(mp4);
-		Assert.True(hasVideo, "Android does not find a video track in the recording.");
-		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
-		Assert.True(width > 0 && height > 0, $"The recording has no size ({width}x{height}).");
-	}
-
 	static async Task<byte[]> StopAndReadAsync(ManagerSession session, Stream expected)
 	{
 		var stopped = await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
@@ -49,8 +28,8 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 	{
 		using var file = new Java.IO.File(AppContext.CacheDir, "finalize-event.mp4");
 		using var outputOptions = new FileOutputOptions.Builder(file).Build();
-		using var audioStats = CallPackagePrivateFactory("androidx/camera/video/AudioStats", "(ILjava/lang/Throwable;D)Landroidx/camera/video/AudioStats;",
-			new JValue(AudioStats.AudioStateDisabled), new JValue(IntPtr.Zero), new JValue(AudioStats.AudioAmplitudeNone));
+		using var audioStats = CallPackagePrivateFactory("androidx/camera/video/AudioStats", "(ILjava/lang/Throwable;DJ)Landroidx/camera/video/AudioStats;",
+			new JValue(AudioStats.AudioStateDisabled), new JValue(IntPtr.Zero), new JValue(AudioStats.AudioAmplitudeNone), new JValue(0L));
 		using var recordingStats = CallPackagePrivateFactory("androidx/camera/video/RecordingStats", "(JJLandroidx/camera/video/AudioStats;)Landroidx/camera/video/RecordingStats;",
 			new JValue(0L), new JValue(0L), new JValue(audioStats));
 		using var outputResults = CallPackagePrivateFactory("androidx/camera/video/OutputResults", "(Landroid/net/Uri;)Landroidx/camera/video/OutputResults;",
@@ -61,7 +40,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		try
 		{
 			var constructor = JNIEnv.GetMethodID(finalizeClass, "<init>", "(Landroidx/camera/video/OutputOptions;Landroidx/camera/video/RecordingStats;Landroidx/camera/video/OutputResults;ILjava/lang/Throwable;)V");
-			var finalizeEvent = JNIEnv.NewObject(finalizeClass, constructor, new JValue(outputOptions), new JValue(recordingStats), new JValue(outputResults), new JValue(error),
+			var finalizeEvent = JNIEnv.NewObject(finalizeClass, constructor, new JValue(outputOptions!), new JValue(recordingStats), new JValue(outputResults), new JValue(error),
 				cause is null ? new JValue(IntPtr.Zero) : new JValue(cause));
 			return Java.Lang.Object.GetObject<VideoRecordEvent.Finalize>(finalizeEvent, JniHandleOwnership.TransferLocalRef)
 				?? throw new InvalidOperationException("JNI did not create the Finalize event.");
@@ -150,14 +129,14 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 
-			var path = await WaitForRecordingFileAsync(before);
+			var path = await WaitForRecordedVideoAsync(before);
 			Assert.EndsWith(".mp4", path);
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.Equal(ImageCapture.CaptureModeMinimizeLatency, session.ImageCapture.CaptureMode);
 			Assert.Equal(0, stream.Length);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState");
 			Assert.NotNull(recordingState);
@@ -179,10 +158,10 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
-			var firstFile = await WaitForRecordingFileAsync(before);
+			var firstFile = await WaitForRecordedVideoAsync(before);
 
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
+			await WaitForRecordedVideoAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
 
 			var stopped = await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
 
@@ -205,7 +184,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
-			var firstFile = await WaitForRecordingFileAsync(before);
+			var firstFile = await WaitForRecordedVideoAsync(before);
 
 			var stop = session.Manager.StopVideoRecording(CancellationToken.None);
 			var start = session.Manager.StartVideoRecording(second, CancellationToken.None);
@@ -213,9 +192,62 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Same(first, await stop.WaitAsync(CameraTimeout));
 			AssertIsAPlayableVideo(first.ToArray());
 			await start.WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync([.. before, firstFile], "The StartVideoRecording right after the StopVideoRecording recorded nothing (no new recording file received data).");
+			await WaitForRecordedVideoAsync([.. before, firstFile], "The StartVideoRecording right after the StopVideoRecording recorded nothing (no new recording file received data).");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, second));
 		}, includeRecordAudio: true);
+	}
+
+	// The app is portrait-locked and the phone rests in landscape: OrientationEventListener reports no further change, so the VideoCapture
+	// of the next recording must still carry the rotation reported earlier.
+	[Fact]
+	public async Task StartVideoRecordingAfterARecordingKeepsTheTargetRotationOfTheRebuiltVideoCapture()
+	{
+		SetupBuilder();
+		RequireVideoRecording();
+		var before = ListRecordingFiles();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var listener = GetPrivateField<OrientationEventListener>(session.Manager, "orientationListener")!;
+			// CI emulators deliver real orientation callbacks, which would overwrite the synthetic rotation
+			listener.Disable();
+			listener.OnOrientationChanged(90);
+			var expectedRotation = session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!.TargetRotation;
+
+			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
+			var firstFile = await WaitForRecordedVideoAsync(before);
+			await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
+
+			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
+			await WaitForRecordedVideoAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
+
+			Assert.Equal(expectedRotation, session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!.TargetRotation);
+			Assert.Equal(expectedRotation, session.ImageCapture.TargetRotation);
+			await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
+		}, includeRecordAudio: true);
+	}
+
+	[Fact]
+	public async Task UpdateCaptureResolutionKeepsTheTargetRotationOfTheRebuiltPreviewAndImageCapture()
+	{
+		SetupBuilder();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var listener = GetPrivateField<OrientationEventListener>(session.Manager, "orientationListener")!;
+			listener.Disable();
+			listener.OnOrientationChanged(90);
+			var expectedRotation = session.CameraPreview.TargetRotation;
+			var preview = session.CameraPreview;
+			var imageCapture = session.ImageCapture;
+
+			await session.Manager.UpdateCaptureResolution(SmallResolution, CancellationToken.None).AsTask().WaitAsync(CameraTimeout);
+
+			Assert.NotSame(preview, session.CameraPreview);
+			Assert.NotSame(imageCapture, session.ImageCapture);
+			Assert.Equal(expectedRotation, session.CameraPreview.TargetRotation);
+			Assert.Equal(expectedRotation, session.ImageCapture.TargetRotation);
+		});
 	}
 
 	// CameraX finalized the running recording with an error (its VideoCapture was unbound; the test unbinds the use cases itself) and the app
@@ -233,14 +265,14 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
-			var firstFile = await WaitForRecordingFileAsync(before);
+			var firstFile = await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await UnbindAllNativeAsync();
 			await AssertionExtensions.AssertEventually(() => recordingState.Finalized.IsCompletedSuccessfully, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
 			Assert.NotNull(GetPrivateField<CameraConsumer>(session.Manager, "videoRecordingConsumer")?.FailureReason);
 
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync([.. before, firstFile], "The StartVideoRecording after the failed recording recorded nothing (no new recording file received data).");
+			await WaitForRecordedVideoAsync([.. before, firstFile], "The StartVideoRecording after the failed recording recorded nothing (no new recording file received data).");
 
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, second));
 			Assert.Equal(0, first.Length);
@@ -317,7 +349,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 
 			Assert.Equal(first.DeviceId, session.View.SelectedCamera?.DeviceId);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 		}, includeRecordAudio: true);
 	}
@@ -367,7 +399,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			await Assert.ThrowsAnyAsync<Java.IO.IOException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
 		}, mauiContext: new TestMauiContext(MauiContext, context));
@@ -397,7 +429,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			if (failure is "cacheDirectory")
 			{
 				await Assert.ThrowsAnyAsync<Java.IO.IOException>(() => session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None));
@@ -411,7 +443,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			context.DeniedPermissions.Clear();
 			var stream = new MemoryStream();
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before, "The StartVideoRecording after the failed one recorded nothing (no recording file received data).");
+			await WaitForRecordedVideoAsync(before, "The StartVideoRecording after the failed one recorded nothing (no recording file received data).");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 		}, mauiContext: new TestMauiContext(MauiContext, context));
 	}
@@ -430,9 +462,9 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			context.CacheDirectoryOverride = new Java.IO.File("/no-such-directory");
 			try
@@ -470,7 +502,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			var exception = await Assert.ThrowsAnyAsync<Java.Lang.SecurityException>(() => session.Manager.StartVideoRecording(stream, CancellationToken.None));
 
@@ -604,7 +636,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			var video = await StopAndReadAsync(session, stream);
 
@@ -615,7 +647,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -631,12 +663,12 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var firstVideo = await StopAndReadAsync(session, first);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var secondVideo = await StopAndReadAsync(session, second);
 
 			AssertIsAPlayableVideo(firstVideo);
@@ -676,7 +708,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await RunWithStreamingSessionAsync(async session =>
 			{
 				await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-				path = await WaitForRecordingFileAsync(before);
+				path = await WaitForRecordedVideoAsync(before);
 				var original = GetPrivateField<object>(session.Manager, missingField);
 				SetPrivateField(session.Manager, missingField, null);
 
@@ -726,7 +758,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			var stopped = await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
 
@@ -748,7 +780,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await Assert.ThrowsAsync<NotSupportedException>(() => session.Manager.StopVideoRecording(CancellationToken.None));
 		}, includeRecordAudio: true);
@@ -764,13 +796,13 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream([], writable: false), CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			await Assert.ThrowsAsync<NotSupportedException>(() => session.Manager.StopVideoRecording(CancellationToken.None));
 
 			var stream = new MemoryStream();
 			var beforeTheNextRecording = ListRecordingFiles();
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(beforeTheNextRecording, "The StartVideoRecording after the failed StopVideoRecording recorded nothing (no new recording file received data).");
+			await WaitForRecordedVideoAsync(beforeTheNextRecording, "The StartVideoRecording after the failed StopVideoRecording recorded nothing (no new recording file received data).");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 		}, includeRecordAudio: true);
 	}
@@ -785,7 +817,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream([], writable: false), CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await Assert.ThrowsAsync<NotSupportedException>(() => session.Manager.StopVideoRecording(CancellationToken.None));
 
@@ -818,7 +850,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await UnbindAllNativeAsync();
 			await AssertionExtensions.AssertEventually(() => recordingState.Finalized.IsCompletedSuccessfully, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
@@ -839,7 +871,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var next = new MemoryStream();
 			var beforeTheNextRecording = ListRecordingFiles();
 			await session.Manager.StartVideoRecording(next, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(beforeTheNextRecording, "The StartVideoRecording after the finalized recording recorded nothing (no new recording file received data).");
+			await WaitForRecordedVideoAsync(beforeTheNextRecording, "The StartVideoRecording after the finalized recording recorded nothing (no new recording file received data).");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, next));
 		}, includeRecordAudio: true);
 	}
@@ -921,7 +953,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			SetPrivateField(session.Manager, "videoRecordingConsumer", CreateFinalizedConsumer(error));
 
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
@@ -950,7 +982,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			SetPrivateField(session.Manager, "videoRecordingConsumer", CreateFinalizedConsumer(error));
 
 			var exception = await Assert.ThrowsAsync<CameraException>(() => session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout));
@@ -985,7 +1017,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			var path = await WaitForRecordingFileAsync(before);
+			var path = await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			SetPrivateField(session.Manager, "videoRecordingConsumer", CreateFinalizedConsumer(error));
 
@@ -1019,7 +1051,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
 
@@ -1042,7 +1074,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
@@ -1084,7 +1116,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			var cameraId = session.View.SelectedCamera!.DeviceId;
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			session.Manager.StopCameraPreview();
 			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
 
@@ -1113,7 +1145,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			session.Manager.StopCameraPreview();
 			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 			await SettleUiThreadAsync();
@@ -1136,7 +1168,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			// The page closes right after the user tapped stop: both happen in this one UI-thread message, so the stop is still
 			// waiting for CameraX to finalize the recording when the manager is disposed.
@@ -1160,7 +1192,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			session.Manager.Dispose();
 
@@ -1183,7 +1215,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-			var path = await WaitForRecordingFileAsync(before);
+			var path = await WaitForRecordedVideoAsync(before);
 			File.Delete(path);
 
 			var exception = Record.Exception(session.Manager.Dispose);
@@ -1204,7 +1236,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			await StopAndReadAsync(session, stream);
 
 			session.Manager.Dispose();
@@ -1225,7 +1257,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var preview = session.CameraPreview;
 			var imageCapture = session.ImageCapture;
 			var videoCapture = session.VideoCapture;
@@ -1253,7 +1285,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			// The use cases are unbound first, so that the assertions can fail. What happens to the running recording is asserted by
 			// SetExtensionModeWhileRecordingKeepsTheRecordingRunning.
@@ -1280,7 +1312,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var preview = session.CameraPreview;
 			var videoCapture = session.VideoCapture;
 			var original = GetPrivateField<object>(session.Manager, missingField);
@@ -1312,7 +1344,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var sinceTheRecordingHadData = Stopwatch.StartNew();
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
@@ -1356,7 +1388,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			await start.WaitAsync(CameraTimeout);
 			await extension.WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is not bound.");
@@ -1385,7 +1417,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			await start.WaitAsync(CameraTimeout);
 			await resolution.WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is not bound.");
@@ -1426,7 +1458,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera!;
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var sinceTheRecordingHadData = Stopwatch.StartNew();
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			var loadedBefore = session.LoadedCount;
@@ -1462,7 +1494,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera!;
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var sinceTheRecordingHadData = Stopwatch.StartNew();
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 
@@ -1486,7 +1518,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the selected camera is not bound.");
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the stopped recording is still bound.");
 			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -1507,7 +1539,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera!;
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			var loadedBefore = session.LoadedCount;
 			await SelectCameraAsync(session, other);
@@ -1539,7 +1571,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera!;
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			await SelectCameraAsync(session, other);
 			var loadedBefore = session.LoadedCount;
 
@@ -1554,7 +1586,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Empty(ListRecordingFiles().Except(before));
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -1574,7 +1606,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera!;
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			var loadedBefore = session.LoadedCount;
 			await SelectCameraAsync(session, other);
 
@@ -1608,7 +1640,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var first = session.View.SelectedCamera!;
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			await SelectCameraAsync(session, other);
 
 			session.Manager.StopCameraPreview();
@@ -1625,7 +1657,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			Assert.Equal(other.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
 
@@ -1645,13 +1677,13 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			var other = GetOtherCamera(session);
 			await session.Manager.StartVideoRecording(first, CancellationToken.None).WaitAsync(CameraTimeout);
-			var firstFile = await WaitForRecordingFileAsync(before);
+			var firstFile = await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await SelectCameraAsync(session, other);
 			await AssertTheRecordingKeepsRunningAsync(recordingState, "the camera switch");
 
 			await session.Manager.StartVideoRecording(second, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
+			await WaitForRecordedVideoAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
 
 			Assert.Equal(other.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the new recording is not bound.");
@@ -1672,7 +1704,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			// A stop that can not bind the photo session (no camera is selected) leaves the Preview and the VideoCapture bound.
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			session.View.SelectedCamera = null;
 			await session.Manager.StopVideoRecording(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
@@ -1680,7 +1712,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var stream = new MemoryStream();
 
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the recording is not bound.");
 			Assert.True(IsJpeg(await ReadAllBytesAsync(await TakePictureAsync(session))));
@@ -1703,7 +1735,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(new MemoryStream(), CancellationToken.None).WaitAsync(CameraTimeout);
-			var firstFile = await WaitForRecordingFileAsync(before);
+			var firstFile = await WaitForRecordedVideoAsync(before);
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState");
 			Assert.NotNull(recordingState);
 			(await GetNativeCameraProviderAsync()).Unbind(session.ImageCapture);
@@ -1714,7 +1746,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await AssertTheRecordingKeepsRunningAsync(recordingState, "the unbind of the ImageCapture");
 
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
+			await WaitForRecordedVideoAsync([.. before, firstFile], "The second StartVideoRecording started no recording of its own (no new recording file received data).");
 
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the recording is not bound.");
 			Assert.True(IsJpeg(await ReadAllBytesAsync(await TakePictureAsync(session))));
@@ -1733,7 +1765,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 			session.View.SelectedCamera = null;
 
 			var video = await StopAndReadAsync(session, stream);
@@ -1759,7 +1791,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			EventHandler<MediaCapturedEventArgs> onCaptured = (_, e) => captured.TrySetResult(e.Media);
 			session.View.MediaCaptured += onCaptured;
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
-			await WaitForRecordingFileAsync(before);
+			await WaitForRecordedVideoAsync(before);
 
 			await session.Manager.TakePicture(CancellationToken.None);
 			var picture = await captured.Task.WaitAsync(CameraTimeout);

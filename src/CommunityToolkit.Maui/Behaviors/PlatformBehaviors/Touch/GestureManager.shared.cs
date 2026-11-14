@@ -10,9 +10,13 @@ namespace CommunityToolkit.Maui.Behaviors;
 
 sealed partial class GestureManager : IDisposable, IAsyncDisposable
 {
-	Color? defaultBackgroundColor, appliedBackgroundColor;
+	const string stateBackgroundAnimationHandle = "TouchBehaviorStateBackground";
 
-	bool isBackgroundColorApplied, isAppBackgroundColorLocal, hasUpdatedBackgroundColor;
+	// MAUI 10.0.120+ and 11.0.10+ drop an app's DynamicResource on BackgroundColor as soon as anything sets the property (dotnet/maui#38063),
+	// so the behavior paints a brush of its own: its reference also tells it from the app's Background.
+	SolidColorBrush? stateBackgroundBrush;
+
+	bool hasUpdatedBackgroundColor;
 
 	Task<bool>? backgroundColorAnimation;
 
@@ -236,8 +240,8 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		// the behavior's colour for the app's.
 		GiveBackAppBackgroundColorAtDetach(element);
 
-		defaultBackgroundColor = appliedBackgroundColor = null;
-		isBackgroundColorApplied = isAppBackgroundColorLocal = hasUpdatedBackgroundColor = false;
+		stateBackgroundBrush = null;
+		hasUpdatedBackgroundColor = false;
 		backgroundColorAnimation = null;
 	}
 
@@ -527,26 +531,6 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 
 		VisualStateManager.GoToState(visualElement, state);
 	}
-
-	// A value of the element itself is replaced by a colour the behavior sets, while one that MAUI applies from a binding, DynamicResource,
-	// AppThemeBinding or Style is only hidden by it. Clearing the element's value tells them apart: it changes nothing in the second case, and
-	// in the first the value is set back at once.
-	static bool IsLocalBackgroundColor(VisualElement element)
-	{
-		var backgroundColor = element.BackgroundColor;
-		element.ClearValue(VisualElement.BackgroundColorProperty);
-
-		if (IsSameColor(element.BackgroundColor, backgroundColor))
-		{
-			return false;
-		}
-
-		element.SetValue(VisualElement.BackgroundColorProperty, backgroundColor);
-
-		return true;
-	}
-
-	static bool IsSameColor(Color? color, Color? other) => color?.Equals(other) ?? other is null;
 
 	// Disposing cancels the token sources, which only ends the waits for the state animations: the element has to stop them too, and a
 	// state change that still waits for its abort must not start new ones. The animations are taken before the cancellation: a state update
@@ -967,14 +951,7 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		// A state without a background colour of its own shows the element's own colour: any colour that SetBackgroundColor did not leave on
-		// the element was set by the app, before the attach or since the last state change, and took the place of the behavior's colour.
-		// A colour animation that a state change cut short leaves a colour of its own on the element, which is not the app's.
-		if (backgroundColorAnimation is null && (appliedBackgroundColor is null || !appliedBackgroundColor.Equals(element.BackgroundColor)))
-		{
-			defaultBackgroundColor = element.BackgroundColor;
-			isBackgroundColorApplied = false;
-		}
+		ForgetStateBackgroundBrushTheAppReplaced(element);
 
 		var isFirstBackgroundColorUpdate = !hasUpdatedBackgroundColor;
 		hasUpdatedBackgroundColor = true;
@@ -992,76 +969,61 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 			return await ShowAppBackgroundColor(element, isFirstBackgroundColorUpdate, duration, easing, token);
 		}
 
-		// A colour the element already shows is not written again: the value set here would take the place of the app's binding or
-		// DynamicResource, and the element would stop following it
-		if (stateBackgroundColor.Equals(element.BackgroundColor))
+		// A brush of the app hides BackgroundColor, and so any colour of the behavior
+		if (stateBackgroundBrush is null && !Brush.IsNullOrEmpty(element.Background))
 		{
-			backgroundColorAnimation = null;
-			appliedBackgroundColor = element.BackgroundColor;
-
 			return true;
 		}
 
-		// The behavior's colour is about to take the place of the app's: whether the app's colour is a value of the element itself decides
-		// how the app gets it back
-		if (!isBackgroundColorApplied)
-		{
-			isAppBackgroundColorLocal = IsLocalBackgroundColor(element);
-			isBackgroundColorApplied = true;
-		}
+		var brush = GetOrAttachStateBackgroundBrush(element);
 
 		if (duration <= TimeSpan.Zero)
 		{
 			backgroundColorAnimation = null;
-			element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));
-			element.BackgroundColor = stateBackgroundColor;
-			appliedBackgroundColor = element.BackgroundColor;
+			element.AbortAnimation(stateBackgroundAnimationHandle);
+			brush.Color = stateBackgroundColor;
 
 			return true;
 		}
 
-		return await AnimateBackgroundColor(element, stateBackgroundColor, duration, easing, false, token);
+		return await AnimateBackgroundColor(element, brush, stateBackgroundColor, duration, easing, false, token);
 	}
 
 	async Task<bool> ShowAppBackgroundColor(VisualElement element, bool isFirstBackgroundColorUpdate, TimeSpan duration, Easing? easing, CancellationToken token)
 	{
-		if (!isBackgroundColorApplied)
+		if (stateBackgroundBrush is not SolidColorBrush brush)
 		{
-			// An element without a colour is painted with TouchBehaviorDefaults.DefaultBackgroundColor by the state update of the attach, which is
-			// the element's own colour from then on: a later state without a colour of its own and the detach leave it on the element. Taking it
-			// away would change how the element looks at a touch that configures no colour (an Android Button would get its Material fill back).
+			// The element's own colour from then on: taking it away would change how the element looks at a touch that configures no colour
+			// (an Android Button would get its Material fill back).
 			if (isFirstBackgroundColorUpdate && element.BackgroundColor is null)
 			{
 				backgroundColorAnimation = null;
 				element.BackgroundColor = TouchBehaviorDefaults.DefaultBackgroundColor;
-				defaultBackgroundColor = element.BackgroundColor;
 			}
-
-			appliedBackgroundColor = element.BackgroundColor;
 
 			return true;
 		}
 
-		var appBackgroundColor = defaultBackgroundColor ?? TouchBehaviorDefaults.DefaultBackgroundColor;
+		var appBackgroundColor = element.BackgroundColor ?? TouchBehaviorDefaults.DefaultBackgroundColor;
 
-		if (duration <= TimeSpan.Zero || appBackgroundColor.Equals(element.BackgroundColor))
+		if (duration <= TimeSpan.Zero || appBackgroundColor.Equals(brush.Color))
 		{
 			backgroundColorAnimation = null;
-			element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));
+			element.AbortAnimation(stateBackgroundAnimationHandle);
 			GiveBackAppBackgroundColor(element);
 
 			return true;
 		}
 
-		return await AnimateBackgroundColor(element, appBackgroundColor, duration, easing, true, token);
+		return await AnimateBackgroundColor(element, brush, appBackgroundColor, duration, easing, true, token);
 	}
 
-	async Task<bool> AnimateBackgroundColor(VisualElement element, Color backgroundColor, TimeSpan duration, Easing? easing, bool givesBackAppBackgroundColor, CancellationToken token)
+	async Task<bool> AnimateBackgroundColor(VisualElement element, SolidColorBrush brush, Color backgroundColor, TimeSpan duration, Easing? easing, bool givesBackAppBackgroundColor, CancellationToken token)
 	{
 		// Started without the token, which would only cancel the wait for the animation: the animation itself is tracked, so that an abort
 		// stops it while it is still the behavior's
 		token.ThrowIfCancellationRequested();
-		var animation = TrackAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo), element.BackgroundColorTo(backgroundColor, length: (uint)duration.TotalMilliseconds, easing: easing, token: CancellationToken.None));
+		var animation = TrackAnimation(stateBackgroundAnimationHandle, AnimateBrushColor(element, brush, backgroundColor, (uint)duration.TotalMilliseconds, easing));
 		backgroundColorAnimation = animation;
 
 		try
@@ -1078,57 +1040,98 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 		}
 		finally
 		{
-			// Unless a later state change took the background colour over: the element shows the colour the animation got to
 			if (backgroundColorAnimation == animation)
 			{
 				backgroundColorAnimation = null;
-				appliedBackgroundColor = element.BackgroundColor;
 			}
 		}
 	}
 
-	// A colour animation of the behavior is stopped first, while it is still the behavior's (MAUI completes an animation that another one with
-	// the same handle took the place of), as it would go on writing the behavior's colours. A colour that the app set since the behavior's
-	// last one took the place of the behavior's and stays.
-	void GiveBackAppBackgroundColorAtDetach(VisualElement element)
+	static Task<bool> AnimateBrushColor(VisualElement element, SolidColorBrush brush, Color target, uint length, Easing? easing)
 	{
-		var animation = backgroundColorAnimation;
+		var start = brush.Color;
+		var animationCompletionSource = new TaskCompletionSource<bool>();
 
-		// Before the abort: the end of the animation must not give the colour back or take the colour the abort left for the behavior's
-		backgroundColorAnimation = null;
-
-		if (animation is { IsCompleted: false })
+		try
 		{
-			element.AbortAnimation(nameof(ColorAnimationExtensions.BackgroundColorTo));
+			new Animation(progress => brush.Color = new Color(
+				(float)(start.Red + ((target.Red - start.Red) * progress)),
+				(float)(start.Green + ((target.Green - start.Green) * progress)),
+				(float)(start.Blue + ((target.Blue - start.Blue) * progress)),
+				(float)(start.Alpha + ((target.Alpha - start.Alpha) * progress))))
+			.Commit(element, stateBackgroundAnimationHandle, 16u, length, easing, (_, _) => animationCompletionSource.SetResult(true));
 		}
-		else if (animation is null && !IsSameColor(appliedBackgroundColor, element.BackgroundColor))
+		catch (ArgumentException aex)
+		{
+			// An element too early in the lifecycle of its page has no animation manager yet: the colour is shown without the animation
+			System.Diagnostics.Trace.WriteLine($"{aex.GetType().Name} thrown in {typeof(GestureManager).FullName}: {aex.Message}");
+			brush.Color = target;
+			animationCompletionSource.SetResult(false);
+		}
+
+		return animationCompletionSource.Task;
+	}
+
+	// A brush the app set in place of the behavior's is the app's: the behavior stops painting and lets it go.
+	void ForgetStateBackgroundBrushTheAppReplaced(VisualElement element)
+	{
+		if (stateBackgroundBrush is null || ReferenceEquals(element.Background, stateBackgroundBrush))
 		{
 			return;
 		}
 
-		if (isBackgroundColorApplied)
+		backgroundColorAnimation = null;
+		element.AbortAnimation(stateBackgroundAnimationHandle);
+		stateBackgroundBrush = null;
+
+		// A visual state or a trigger hides the behavior's brush without replacing it: clearing the element's own value removes the brush then,
+		// and a brush that the app set in its place is set back.
+		var shownBackground = element.Background;
+		element.ClearValue(VisualElement.BackgroundProperty);
+		if (!ReferenceEquals(element.Background, shownBackground))
 		{
-			GiveBackAppBackgroundColor(element);
+			element.Background = shownBackground;
 		}
 	}
 
-	// Clearing the value the behavior set brings back what MAUI applies from the app's binding, DynamicResource, AppThemeBinding or Style, with
-	// its latest value (a theme switch or a change of the source while the behavior's colour was shown included). A colour that the app had set
-	// on the element itself was replaced by the behavior's and is set again in its place, in one change: clearing the behavior's value first
-	// would show the element without that colour for a moment.
-	void GiveBackAppBackgroundColor(VisualElement element)
+	SolidColorBrush GetOrAttachStateBackgroundBrush(VisualElement element)
 	{
-		if (isAppBackgroundColorLocal)
+		if (stateBackgroundBrush is null)
 		{
-			element.SetValue(VisualElement.BackgroundColorProperty, defaultBackgroundColor);
-		}
-		else
-		{
-			element.ClearValue(VisualElement.BackgroundColorProperty);
+			// Starts at the colour the element shows, so that painting the first state does not flash
+			stateBackgroundBrush = new SolidColorBrush(element.BackgroundColor ?? Colors.Transparent);
+			element.Background = stateBackgroundBrush;
 		}
 
-		isBackgroundColorApplied = false;
-		defaultBackgroundColor = appliedBackgroundColor = element.BackgroundColor;
+		return stateBackgroundBrush;
+	}
+
+	void GiveBackAppBackgroundColorAtDetach(VisualElement element)
+	{
+		var animation = backgroundColorAnimation;
+
+		// Before the abort: the end of the animation must not give the colour back itself
+		backgroundColorAnimation = null;
+
+		if (animation is not null && !animation.IsCompleted)
+		{
+			element.AbortAnimation(stateBackgroundAnimationHandle);
+		}
+
+		GiveBackAppBackgroundColor(element);
+	}
+
+	// Clearing the behavior's brush shows what MAUI applies for the app: BackgroundColor, with the latest value of a binding, DynamicResource,
+	// AppThemeBinding or Style, and with any colour the app set on the element since the state colour was shown.
+	void GiveBackAppBackgroundColor(VisualElement element)
+	{
+		ForgetStateBackgroundBrushTheAppReplaced(element);
+
+		if (stateBackgroundBrush is not null)
+		{
+			element.ClearValue(VisualElement.BackgroundProperty);
+			stateBackgroundBrush = null;
+		}
 	}
 
 	async Task<bool> RunAnimationTask(TouchBehavior touchBehavior, TouchState touchState, HoverState hoverState, CancellationToken token, double? durationMultiplier = null)

@@ -360,7 +360,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			// The mapping is async void: the use cases are rebuilt and bound again once CameraX answers.
 			await WaitUntilAsync(() => GetNativeResolution(host.Native<ImageCapture>("imageCapture")?.ResolutionInfo) == SmallSize, "The image capture never got the 320x240 resolution.");
 			await WaitUntilAsync(() => GetNativeResolution(host.Native<Preview>("cameraPreview")?.ResolutionInfo) == SmallSize, "The preview never got the 320x240 resolution.");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 		}, new CameraView { SelectedCamera = camera });
 	}
 
@@ -380,7 +380,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		});
 	}
@@ -402,7 +402,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			var other = cameras.First(camera => camera.DeviceId != first.DeviceId);
 			await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
-			await WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 			host.View.SelectedCamera = other;
@@ -419,7 +419,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.True(ReadVideoInfo(stream.ToArray()).HasVideo, "Android does not find a video track in the recording.");
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
 			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		}, includeRecordAudio: true);
 	}
@@ -445,7 +445,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.Equal(withAnotherInstanceOfTheCamera, !ReferenceEquals(first, sameCamera));
 			await WaitUntilTheHandlerConnectedTheCameraAsync(host.Handler);
 			await host.View.StartVideoRecording(stream).WaitAsync(CameraTimeout);
-			await WaitUntilAsync(() => ListRecordingFiles().Except(before).SingleOrDefault() is string path && new FileInfo(path).Length > 0, "The recording never wrote any data into the cache directory.");
+			await WaitForRecordedVideoAsync(before);
 			var recordingState = host.Native<VideoRecordingState>("videoRecordingState")!;
 
 			host.View.SelectedCamera = null;
@@ -464,7 +464,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.Equal(first.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera")!));
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!), "The ImageCapture of the camera is not bound.");
 			Assert.False(await IsNativelyBoundAsync(host.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!), "The VideoCapture of the stopped recording is still bound.");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 		}, includeRecordAudio: true);
 	}
 
@@ -586,7 +586,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			var cameraId = host.SelectedCameraId;
-			var streamState = host.PreviewView.PreviewStreamState;
+			var streamState = host.PreviewView.PreviewStreamState!;
 
 			((IElementHandler)host.Handler).DisconnectHandler();
 
@@ -727,9 +727,11 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			Assert.Empty(UnhandledAsyncVoidExceptions);
 
+			// CameraX publishes OPEN again only for a camera that went through CLOSED (see WaitUntilCameraIsStreamingAsync)
+			await WaitForNativeCameraStateAsync(valid.DeviceId, "CLOSED");
 			host.View.SelectedCamera = valid;
 			await WaitForNativeCameraStateAsync(valid.DeviceId, "OPEN");
-			await WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView);
+			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		});
 	}
@@ -937,7 +939,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			var cameraId = host.SelectedCameraId;
-			var streamState = previewViewOfTheApp.PreviewStreamState;
+			var streamState = previewViewOfTheApp.PreviewStreamState!;
 
 			((IElementHandler)host.Handler).DisconnectHandler();
 

@@ -40,6 +40,7 @@ static partial class NavigationBar
 	/// stops that: with three-button navigation, Android then draws a scrim behind the navigation bar that matches the style. A page that clears
 	/// its style gives the window back the light navigation bars that Android forced, and its navigation bar color. With gesture navigation,
 	/// Android may tint the gesture handle to contrast with what is behind it, whatever the style.
+	/// Android has light navigation bars from Android 8.0 (API 26) on: before that, the navigation bar always shows light icons, and the style changes nothing.
 	/// </remarks>
 	/// <param name="handler"></param>
 	/// <param name="view"></param>

@@ -154,7 +154,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		{
 			Assert.NotNull(camera.CameraSelector);
 
-			var selected = camera.CameraSelector.Filter(nativeCameras);
+			var selected = camera.CameraSelector.Filter(nativeCameras)!;
 			Assert.Equal(new[] { camera.DeviceId }, selected.Select(GetNativeCameraId).ToList());
 		}
 	}
@@ -481,12 +481,12 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		Assert.Equal(0, raised);
 	}
 
-	Task LimitCameraXToNoCameraAsync() => ReconfigureCameraXAsync(new CameraSelector.Builder().AddCameraFilter(new NoCameraFilter()).Build());
+	Task LimitCameraXToNoCameraAsync() => ReconfigureCameraXAsync(new CameraSelector.Builder().AddCameraFilter(new NoCameraFilter())!.Build()!);
 
 	// CameraX must find the back camera that the device declares, but its camera limiter selects no camera. Without retries it fails at
 	// once, instead of after retrying for 6 seconds.
 	Task MakeCameraXFailToInitializeAsync() => ReconfigureCameraXAsync(
-		new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingBack).AddCameraFilter(new NoCameraFilter()).Build(),
+		new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingBack)!.AddCameraFilter(new NoCameraFilter())!.Build()!,
 		RetryPolicy.Never);
 
 	// Shutting down and then configuring is how CameraX's own tests reconfigure it (ProcessCameraProvider.ShutdownAsync, then
@@ -497,13 +497,13 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		RegisterCleanup(() => native.ShutdownAsync());
 
 		await InvokeOnMainThreadAsync(() => WaitForFutureAsync(native.ShutdownAsync()));
-		var configuration = CameraXConfig.Builder.FromConfig(AndroidX.Camera.Camera2.Camera2Config.DefaultConfig()).SetAvailableCamerasLimiter(availableCamerasLimiter);
+		var configuration = CameraXConfig.Builder.FromConfig(AndroidX.Camera.Camera2.Camera2Config.DefaultConfig())!.SetAvailableCamerasLimiter(availableCamerasLimiter)!;
 		if (initializationRetryPolicy is not null)
 		{
-			configuration = configuration.SetCameraProviderInitRetryPolicy(initializationRetryPolicy);
+			configuration = configuration.SetCameraProviderInitRetryPolicy(initializationRetryPolicy)!;
 		}
 
-		AndroidX.Camera.Lifecycle.ProcessCameraProvider.ConfigureInstance(configuration.Build());
+		AndroidX.Camera.Lifecycle.ProcessCameraProvider.ConfigureInstance(configuration.Build()!);
 	}
 
 	static Task WaitForFutureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
@@ -527,6 +527,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 
 	sealed class NoCameraFilter : Java.Lang.Object, ICameraFilter
 	{
-		public IList<ICameraInfo> Filter(IList<ICameraInfo> cameraInfos) => [];
+		public IList<ICameraInfo> Filter(IList<ICameraInfo>? cameraInfos) => [];
 	}
 }

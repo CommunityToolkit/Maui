@@ -42,6 +42,9 @@ static class AndroidSystemBars
 	// theme's status bar color on API 28, which is not black).
 	public static WindowState OriginalState => originalState ?? throw new InvalidOperationException($"{nameof(CaptureOriginalState)} has not run yet.");
 
+	// SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR is API 26; below it WindowInsetsControllerCompat ignores light navigation bars and reports none.
+	public static bool SupportsLightNavigationBars => OperatingSystem.IsAndroidVersionAtLeast(26);
+
 	public static ViewGroup Decor(AWindow window) => (ViewGroup)window.DecorView;
 
 	public static WindowManagerFlags Flags(AWindow window) => window.Attributes?.Flags ?? 0;

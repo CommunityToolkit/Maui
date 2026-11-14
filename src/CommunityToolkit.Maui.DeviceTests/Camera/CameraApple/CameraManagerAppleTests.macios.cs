@@ -1120,11 +1120,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 	{
 		await InvokeOnMainThreadAsync(() =>
 		{
-			var geometryPreferences = new UIWindowSceneGeometryPreferencesIOS(requestedMask);
-			GetWindowScene().RequestGeometryUpdate(geometryPreferences, static _ =>
-			{
-				// The error handler runs on an arbitrary thread; a failed request shows up as the rotation timeout below.
-			});
+			WindowSceneRotation.Request(GetWindowScene(), requestedMask);
 		});
 
 		await AssertHelpers.AssertEventually(

@@ -48,7 +48,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 	// A camera bound through an extension-enabled CameraSelector carries the vendor extension's SessionProcessor, a plain one has none.
 	static AndroidX.Camera.Core.Impl.ISessionProcessor? GetSessionProcessorOfTheBoundCamera(ManagerSession session) =>
-		(session.Native<ICamera>("camera") ?? throw new InvalidOperationException("The manager has no bound camera.")).ExtendedConfig.GetSessionProcessor(null);
+		(session.Native<ICamera>("camera") ?? throw new InvalidOperationException("The manager has no bound camera.")).ExtendedConfig!.GetSessionProcessor(null);
 
 	[Fact]
 	public async Task UpdateFlashModeBeforeConnectingDoesNotChangeTheFlashModeOfTheCameraThatConnectsLater()
@@ -62,7 +62,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.Null(session.Native<ImageCapture>("imageCapture"));
 
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			Assert.Equal(ImageCapture.FlashModeOff, session.ImageCapture.FlashMode);
 		});
@@ -263,7 +263,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			// The mode is asserted directly because the emulators list no high-resolution sizes, so the sizes cannot show it.
 			Assert.Equal(AndroidX.Camera.Core.ResolutionSelector.ResolutionSelector.PreferHigherResolutionOverCaptureRate,
 				session.Native<AndroidX.Camera.Core.ResolutionSelector.ResolutionSelector>("resolutionSelector")!.AllowedResolutionMode);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, view: new CameraView { SelectedCamera = camera });
 	}
 
@@ -319,7 +319,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 			var (captureWidth, captureHeight) = session.CaptureResolution;
 			Assert.True(captureWidth <= width && captureHeight <= height, $"The capture resolution {captureWidth}x{captureHeight} must fit {width}x{height}.");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, view: new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
 	}
 
@@ -342,7 +342,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.Equal(SmallSize, session.CaptureResolution);
 			Assert.Equal(SmallSize, session.PreviewResolution);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, view: new CameraView { SelectedCamera = camera });
 	}
 
@@ -366,7 +366,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 			// ConnectAsync maps the view's resolution (the same size) again, which changes nothing.
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 
 			Assert.Equal(SmallSize, session.CaptureResolution);
 			Assert.Equal(SmallSize, session.PreviewResolution);
@@ -476,7 +476,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.Equal(SmallSize, session.CaptureResolution);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 		}, view: new CameraView { SelectedCamera = camera });
 	}
 
@@ -750,7 +750,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.False(await IsNativelyBoundAsync(session.Native<AndroidX.Camera.Video.VideoCapture>("videoCapture")!));
 			Assert.Equal(cameraId, GetBoundCameraId(session.Native<ICamera>("camera")!));
-			await WaitForStreamingAsync(session.PreviewView!);
+			await WaitForStreamingAsync(session);
 		});
 	}
 
@@ -772,7 +772,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.Equal(second.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.Null(GetSessionProcessorOfTheBoundCamera(session));
 			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(cameras[0].DeviceId));
-			await WaitForStreamingAsync(session.PreviewView!);
+			await WaitForStreamingAsync(session);
 		}, view: new CameraView { SelectedCamera = second });
 	}
 
@@ -791,7 +791,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.Equal(camera.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.Null(GetSessionProcessorOfTheBoundCamera(session));
-			await WaitForStreamingAsync(session.PreviewView!);
+			await WaitForStreamingAsync(session);
 		});
 	}
 
@@ -816,7 +816,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
 			Assert.Equal(camera.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.NotNull(GetSessionProcessorOfTheBoundCamera(session));
-			await WaitForStreamingAsync(session.PreviewView!);
+			await WaitForStreamingAsync(session);
 
 			await session.Manager.SetExtensionMode(ExtensionMode.None, CancellationToken.None).WaitAsync(CameraTimeout);
 
@@ -840,7 +840,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture));
-			await WaitForStreamingAsync(session.PreviewView!);
+			await WaitForStreamingAsync(session);
 		});
 	}
 }

@@ -114,7 +114,7 @@ public sealed partial class SpeechToTextTests
 	// The stopped session reports its outcome at any time after this turn (see StopListenAsyncSurfacesTheOutcomeOfTheStoppedSession), so the
 	// events are read in the turn.
 	[Fact]
-	public async Task StartListenAsyncCreatesTheRecognizerAndTheListenerAndDisposeReleasesThem()
+	public async Task StartListenAsyncCreatesTheRecognizerAndTheListenerAndDisposeDestroysTheRecognizerAndForgetsTheListener()
 	{
 		var options = await GetStartableOptionsAsync();
 		var speech = CreateSpeech();
@@ -138,8 +138,114 @@ public sealed partial class SpeechToTextTests
 		await speech.DisposeAsync();
 
 		Assert.Equal(IntPtr.Zero, recognizer.Handle);
-		Assert.Equal(IntPtr.Zero, listener.Handle);
+		Assert.NotEqual(IntPtr.Zero, listener.Handle);
 		Assert.Null(GetRecognizer(speech));
 		Assert.Null(GetListener(speech));
+	}
+
+	// Android 12 and 13 answer a start busy while the app's own replaced recognizer still holds the single session at the recognition service.
+	static bool IsRecognizerBusyRetried => OperatingSystem.IsAndroidVersionAtLeast(31) && !OperatingSystem.IsAndroidVersionAtLeast(34);
+
+	// Must run on the main thread. The listener answers the way the platform does after the toolkit started the recognizer.
+	static IRecognitionListener AttachListeningSession(ISpeechToText speech, bool hadPreviousRecognizer)
+	{
+		var recognizer = SpeechRecognizer.CreateSpeechRecognizer(AppContext) ?? throw new InvalidOperationException("The recognizer could not be created.");
+		var scope = new ListenerScope(speech);
+		var listenerType = scope.Listener.GetType();
+		var phase = listenerType.GetProperty("Phase") ?? throw new InvalidOperationException("The listener has no Phase.");
+		listenerType.GetProperty("StartIntent")!.SetValue(scope.Listener, CreateSpeechIntent(speech, DefaultOptions));
+		listenerType.GetProperty("HadPreviousRecognizer")!.SetValue(scope.Listener, hadPreviousRecognizer);
+		phase.SetValue(scope.Listener, Enum.Parse(phase.PropertyType, "Listening"));
+		recognizer.SetRecognitionListener(scope.Listener);
+		SpeechInternals.SetField(speech, "speechRecognizer", recognizer);
+		SpeechInternals.SetField(speech, "listener", scope.Listener);
+
+		return scope.Listener;
+	}
+
+	// The service's answer to the restart's StartListening proves that the restart reached it, and ends the session, so one session cannot
+	// show all three restarts: each row starts after the restarts that earlier busy answers made.
+	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(2)]
+	public async Task RecognizerBusyAnswerToASessionThatReplacedAnotherStartsItAgain(int earlierRestarts)
+	{
+		Skip.IfNot(IsRecognitionAvailable, "Needs a speech recognition service on the device.");
+		Skip.IfNot(IsRecognizerBusyRetried, "Only Android 12 and 13 answer a replacing session busy.");
+		Skip.If(IsRecordAudioGranted, "The restarted session is answered with ERROR_INSUFFICIENT_PERMISSIONS only while RECORD_AUDIO is denied.");
+
+		var (speech, events, entriesRightAfterTheBusyAnswer) = await StartRealSessionAsync((session, recorded) => InvokeOnMainThreadAsync(() =>
+		{
+			var listener = AttachListeningSession(session, hadPreviousRecognizer: true);
+			listener.GetType().GetProperty("RestartsAfterRecognizerBusy")!.SetValue(listener, earlierRestarts);
+			listener.OnError(SpeechRecognizerError.RecognizerBusy);
+			return recorded.Entries;
+		}));
+
+		Assert.Empty(entriesRightAfterTheBusyAnswer);
+		events.AssertEntries($"Completed:Failed:Failure in speech engine - {SpeechRecognizerError.InsufficientPermissions}");
+
+		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	public async Task RecognizerBusyAnswerIsReportedAfterTheThirdRestart()
+	{
+		Skip.IfNot(IsRecognitionAvailable, "Needs a speech recognition service on the device.");
+		Skip.IfNot(IsRecognizerBusyRetried, "Only Android 12 and 13 restart a busy answer.");
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		var entriesAfterTheRestartedAnswers = await InvokeOnMainThreadAsync(() =>
+		{
+			var listener = AttachListeningSession(speech, hadPreviousRecognizer: true);
+			var entriesAfterEachAnswer = new List<int>();
+			for (var busyAnswer = 1; busyAnswer <= 4; busyAnswer++)
+			{
+				listener.OnError(SpeechRecognizerError.RecognizerBusy);
+				entriesAfterEachAnswer.Add(events.Count);
+			}
+
+			return entriesAfterEachAnswer;
+		});
+
+		Assert.Equal([0, 0, 0, 1], entriesAfterTheRestartedAnswers);
+		await Task.Delay(500);
+		events.AssertEntries($"Completed:Failed:Failure in speech engine - {SpeechRecognizerError.RecognizerBusy}");
+
+		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	public async Task RecognizerBusyAnswerIsReportedAtOnceForASessionThatReplacedNothing()
+	{
+		Skip.IfNot(IsRecognitionAvailable, "Needs a speech recognition service on the device.");
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		await InvokeOnMainThreadAsync(() => AttachListeningSession(speech, hadPreviousRecognizer: false).OnError(SpeechRecognizerError.RecognizerBusy));
+
+		events.AssertEntries($"Completed:Failed:Failure in speech engine - {SpeechRecognizerError.RecognizerBusy}");
+
+		await speech.DisposeAsync();
+	}
+
+	[Fact]
+	public async Task DisposeAsyncDuringTheDelayOfARestartAfterRecognizerBusyStartsNothing()
+	{
+		Skip.IfNot(IsRecognitionAvailable, "Needs a speech recognition service on the device.");
+		Skip.IfNot(IsRecognizerBusyRetried, "Only Android 12 and 13 restart a busy answer.");
+		Skip.If(IsRecordAudioGranted, "A restarted session would be answered with ERROR_INSUFFICIENT_PERMISSIONS only while RECORD_AUDIO is denied.");
+		var speech = CreateSpeech();
+		var events = new SpeechEventRecorder(speech);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			AttachListeningSession(speech, hadPreviousRecognizer: true).OnError(SpeechRecognizerError.RecognizerBusy);
+			await speech.DisposeAsync();
+		});
+
+		await AssertNoLateRecognitionServiceAnswerAsync(events);
 	}
 }

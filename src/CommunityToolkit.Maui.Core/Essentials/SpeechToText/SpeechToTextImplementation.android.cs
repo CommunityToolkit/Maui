@@ -11,6 +11,9 @@ namespace CommunityToolkit.Maui.Media;
 /// <inheritdoc />
 public sealed partial class SpeechToTextImplementation
 {
+	const int maxRestartsAfterRecognizerBusy = 3;
+	const int restartDelayStepInMilliseconds = 50;
+
 	SpeechRecognizer? speechRecognizer;
 	SpeechRecognitionListener? listener;
 
@@ -84,19 +87,6 @@ public sealed partial class SpeechToTextImplementation
 
 	static bool IsSpeechRecognitionAvailable() => SpeechRecognizer.IsRecognitionAvailable(Application.Context);
 
-	static Task RunAfterQueuedMainLooperMessagesAsync(Action action)
-	{
-		var actionCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var mainLooperHandler = new Handler(Looper.MainLooper ?? throw new InvalidOperationException("Android has not prepared the main looper of the app."));
-		mainLooperHandler.Post(() =>
-		{
-			action();
-			actionCompleted.SetResult();
-		});
-
-		return actionCompleted.Task;
-	}
-
 	[MemberNotNull(nameof(speechRecognizer), nameof(listener))]
 	Task InternalStartListeningAsync(SpeechToTextOptions options, CancellationToken cancellationToken)
 	{
@@ -110,13 +100,14 @@ public sealed partial class SpeechToTextImplementation
 
 		// CreateSpeechRecognizer throws on any thread but the main thread, before the session of a previous start is set aside
 		var recognizer = SpeechRecognizer.CreateSpeechRecognizer(Application.Context);
+		var hadPreviousRecognizer = speechRecognizer is not null;
 		SetPreviousSessionAside();
 		speechRecognizer = recognizer;
 
 		if (speechRecognizer is null)
 		{
 			// No session needs the recognizers of the sessions that this start set aside
-			_ = ReleaseReplacedSessions();
+			ReleaseReplacedSessions();
 			throw new FeatureNotSupportedException("Speech recognizer is not available on this device");
 		}
 
@@ -124,7 +115,9 @@ public sealed partial class SpeechToTextImplementation
 		{
 			Error = HandleListenerError,
 			PartialResults = HandleListenerPartialResults,
-			Results = HandleListenerResults
+			Results = HandleListenerResults,
+			StartIntent = recognizerIntent,
+			HadPreviousRecognizer = hadPreviousRecognizer
 		};
 		speechRecognizer.SetRecognitionListener(listener);
 		speechRecognizer.StartListening(recognizerIntent);
@@ -172,11 +165,41 @@ public sealed partial class SpeechToTextImplementation
 				speechRecognizer?.StopListening();
 				speechRecognizer?.Destroy();
 				listener.Phase = RecognitionPhase.Ended;
-				_ = ReleaseReplacedSessions();
+				ReleaseReplacedSessions();
 				break;
 		}
 
 		CurrentState = SpeechToTextState.Stopped;
+	}
+
+	// Android 12 and 13 allow one session at the recognition service, and the start of a replaced recognizer can reach it before that recognizer's cancel,
+	// so the new session is answered busy by the app's own replaced session: starting it again once the cancel arrived succeeds.
+	bool TryRestartAfterRecognizerBusy(SpeechRecognitionListener busyListener)
+	{
+		var recognizer = speechRecognizer;
+		if (recognizer is null
+			|| !OperatingSystem.IsAndroidVersionAtLeast(31)
+			|| OperatingSystem.IsAndroidVersionAtLeast(34)
+			|| !busyListener.HadPreviousRecognizer
+			|| !ReferenceEquals(busyListener, listener)
+			|| busyListener.Phase is not RecognitionPhase.Listening
+			|| busyListener.RestartsAfterRecognizerBusy >= maxRestartsAfterRecognizerBusy)
+		{
+			return false;
+		}
+
+		busyListener.RestartsAfterRecognizerBusy++;
+		var restartDelayInMilliseconds = restartDelayStepInMilliseconds * busyListener.RestartsAfterRecognizerBusy;
+		using var mainLooperHandler = new Handler(Looper.MainLooper ?? throw new InvalidOperationException("Android has not prepared the main looper of the app."));
+		mainLooperHandler.PostDelayed(() =>
+		{
+			if (ReferenceEquals(busyListener, listener) && ReferenceEquals(recognizer, speechRecognizer) && busyListener.Phase is RecognitionPhase.Listening)
+			{
+				recognizer.StartListening(busyListener.StartIntent);
+			}
+		}, restartDelayInMilliseconds);
+
+		return true;
 	}
 
 	void OnRecognitionSessionEnded(SpeechRecognitionListener endedListener)
@@ -187,7 +210,7 @@ public sealed partial class SpeechToTextImplementation
 		if (ReferenceEquals(endedListener, listener))
 		{
 			speechRecognizer?.Destroy();
-			_ = ReleaseReplacedSessions();
+			ReleaseReplacedSessions();
 		}
 	}
 
@@ -218,59 +241,40 @@ public sealed partial class SpeechToTextImplementation
 	{
 		if (ReferenceEquals(listenerInProgress, listener))
 		{
-			_ = ReleaseReplacedSessions();
+			ReleaseReplacedSessions();
 		}
 	}
 
-	Task ReleaseReplacedSessions()
+	void ReleaseReplacedSessions()
 	{
-		if (replacedSessions.Count is 0)
+		foreach (var (recognizer, recognitionListener) in replacedSessions)
 		{
-			return Task.CompletedTask;
-		}
-
-		var releases = new Task[replacedSessions.Count];
-		for (var i = 0; i < releases.Length; i++)
-		{
-			releases[i] = ReleaseSession(replacedSessions[i].Recognizer, replacedSessions[i].Listener);
+			ReleaseSession(recognizer, recognitionListener);
 		}
 
 		replacedSessions.Clear();
-		return Task.WhenAll(releases);
 	}
 
-	Task ReleaseRecognizer()
+	void ReleaseRecognizer()
 	{
 		var recognizer = speechRecognizer;
 		var recognitionListener = listener;
 		speechRecognizer = null;
 		listener = null;
 
-		return Task.WhenAll(ReleaseSession(recognizer, recognitionListener), ReleaseReplacedSessions());
+		ReleaseSession(recognizer, recognitionListener);
+		ReleaseReplacedSessions();
 	}
 
-	static Task ReleaseSession(SpeechRecognizer? recognizer, SpeechRecognitionListener? recognitionListener)
+	static void ReleaseSession(SpeechRecognizer? recognizer, SpeechRecognitionListener? recognitionListener)
 	{
 		// A released session reports nothing
 		recognitionListener?.Phase = RecognitionPhase.Ended;
 
-		// Destroy() stops the recognition service from calling the listener: a callback that reaches its disposed Java peer crashes the app.
-		// From Android 15 Destroy() is handled on the main looper after the callbacks that are already queued there, so the peers are disposed after them.
+		// The listener's Java peer is not disposed: before Android 15 Destroy() keeps messages already queued on the main looper, which
+		// attach the listener again and answer it with ERROR_CLIENT, and a callback to a disposed peer ends the app. The GC frees the listener.
 		recognizer?.Destroy();
-
-		if (recognizer is not null && OperatingSystem.IsAndroidVersionAtLeast(35))
-		{
-			return RunAfterQueuedMainLooperMessagesAsync(DisposePeers);
-		}
-
-		DisposePeers();
-		return Task.CompletedTask;
-
-		void DisposePeers()
-		{
-			recognitionListener?.Dispose();
-			recognizer?.Dispose();
-		}
+		recognizer?.Dispose();
 	}
 
 	class SpeechRecognitionListener(SpeechToTextImplementation speechToText) : Java.Lang.Object, IRecognitionListener
@@ -278,8 +282,11 @@ public sealed partial class SpeechToTextImplementation
 		public required Action<SpeechRecognizerError> Error { get; init; }
 		public required Action<string> PartialResults { get; init; }
 		public required Action<string> Results { get; init; }
+		public required Intent StartIntent { get; init; }
+		public required bool HadPreviousRecognizer { get; init; }
 
 		public RecognitionPhase Phase { get; set; }
+		public int RestartsAfterRecognizerBusy { get; set; }
 
 		// After StopListenAsync the session can still report speech boundaries, but CurrentState stays Stopped
 		bool ReportsSpeechBoundaries => Phase is RecognitionPhase.Starting or RecognitionPhase.Listening;
@@ -315,6 +322,11 @@ public sealed partial class SpeechToTextImplementation
 		{
 			// Only the first outcome of a session is reported: a stopListening that reaches the service after the session ended is answered with ERROR_CLIENT
 			if (Phase is RecognitionPhase.Ended)
+			{
+				return;
+			}
+
+			if (error is SpeechRecognizerError.RecognizerBusy && speechToText.TryRestartAfterRecognizerBusy(this))
 			{
 				return;
 			}

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -46,6 +47,12 @@ public sealed class FilesFakePickerActivity : ComponentActivity
 		createdFromSavedState = savedInstanceState is not null;
 		base.OnCreate(savedInstanceState);
 		FilesFakePicker.NotifyCreated(this, restored: savedInstanceState is not null);
+	}
+
+	protected override void OnStop()
+	{
+		base.OnStop();
+		FilesFakePicker.StoppedBehavior?.Invoke(this);
 	}
 
 	protected override void OnDestroy()
@@ -132,6 +139,9 @@ public static class FilesFakePicker
 	/// </summary>
 	public static Action<FilesFakePickerActivity, bool>? ContextAvailableBehavior { get; set; }
 
+	/// <summary>Runs inside the OnStop of every fake picker activity, on the UI thread.</summary>
+	public static Action<FilesFakePickerActivity>? StoppedBehavior { get; set; }
+
 	public static IReadOnlyList<FilesFakePickerLaunch> Launches
 	{
 		get
@@ -153,6 +163,7 @@ public static class FilesFakePicker
 		LaunchBehavior = null;
 		CreatedBehavior = null;
 		ContextAvailableBehavior = null;
+		StoppedBehavior = null;
 	}
 
 	public static async Task<TActivity> StartActivityAsync<TActivity>(ActivityFlags flags = 0, CancellationToken token = default)
@@ -190,40 +201,75 @@ public static class FilesFakePicker
 		}
 	}
 
-	public static async Task FinishActivityAsync(Activity activity, CancellationToken token = default)
+	public static Task FinishActivityAsync(Activity activity, CancellationToken token = default) =>
+		FinishActivitiesAsync([activity], token);
+
+	/// <summary>
+	/// Android 7 destroys an activity finished while its stop is in flight only at the next activity idle (8.0 at once), so all are finished in
+	/// one turn and the first activity under them resumes and goes idle; activities still alive after the timeout are forgotten.
+	/// </summary>
+	public static async Task FinishActivitiesAsync(IReadOnlyList<Activity> activities, CancellationToken token = default)
 	{
-		var destroyed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var destroyedSignals = new Dictionary<Activity, TaskCompletionSource>(ReferenceEqualityComparer.Instance);
+		foreach (var activity in activities)
+		{
+			destroyedSignals.TryAdd(activity, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+		}
 
 		void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
 		{
-			if (e.State is ActivityState.Destroyed && ReferenceEquals(e.Activity, activity))
+			if (e.State is ActivityState.Destroyed && destroyedSignals.TryGetValue(e.Activity, out var signal))
 			{
-				destroyed.TrySetResult();
+				signal.TrySetResult();
 			}
 		}
 
 		Platform.ActivityStateChanged += OnActivityStateChanged;
 		try
 		{
-			var alreadyDestroyed = await MainThread.InvokeOnMainThreadAsync(() =>
+			await MainThread.InvokeOnMainThreadAsync(() =>
 			{
-				if (activity.IsDestroyed)
+				foreach (var (activity, signal) in destroyedSignals)
 				{
-					return true;
+					if (activity.IsDestroyed)
+					{
+						signal.TrySetResult();
+					}
+					else
+					{
+						activity.Finish();
+					}
 				}
-
-				activity.Finish();
-				return false;
 			});
 
-			if (!alreadyDestroyed)
+			try
 			{
-				await destroyed.Task.WaitAsync(TimeSpan.FromSeconds(20), token);
+				await Task.WhenAll(destroyedSignals.Values.Select(signal => signal.Task)).WaitAsync(TimeSpan.FromSeconds(20), token);
+			}
+			catch (TimeoutException)
+			{
+				var stuck = await MainThread.InvokeOnMainThreadAsync(() => destroyedSignals.Keys.Where(activity => !activity.IsDestroyed).Select(Describe).ToArray());
+				Forget(destroyedSignals.Keys);
+				throw new TimeoutException(string.Create(CultureInfo.InvariantCulture, $"These activities were finished but not destroyed within 20 s on API {(int)Build.VERSION.SdkInt}: {string.Join("; ", stuck)}."));
 			}
 		}
 		finally
 		{
 			Platform.ActivityStateChanged -= OnActivityStateChanged;
+		}
+
+		static string Describe(Activity activity) =>
+			string.Create(CultureInfo.InvariantCulture, $"{activity.GetType().Name}@{activity.GetHashCode():x} (IsFinishing={activity.IsFinishing}, IsDestroyed={activity.IsDestroyed})");
+	}
+
+	static void Forget(IEnumerable<Activity> activities)
+	{
+		lock (gate)
+		{
+			foreach (var activity in activities.OfType<FilesFakePickerActivity>())
+			{
+				liveActivities.Remove(activity);
+			}
 		}
 	}
 
@@ -360,9 +406,14 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		FilesTestContentProvider.Reset();
 
 		// An earlier test that was killed halfway may have left one of the fake activities in front; the host is what is under them.
-		foreach (var leftover in FilesFakePicker.LiveActivities.Reverse())
+		try
 		{
-			await FilesFakePicker.FinishActivityAsync(leftover);
+			await FilesFakePicker.FinishActivitiesAsync([.. FilesFakePicker.LiveActivities.Reverse()]);
+		}
+		catch (TimeoutException exception)
+		{
+			// The new session's activity resuming lets the system destroy what stayed, so the failure stays with the test that caused it.
+			Console.WriteLine($"Leftover fake picker activities stayed alive: {exception.Message}");
 		}
 
 		var hostActivity = await MainThread.InvokeOnMainThreadAsync(() => Platform.CurrentActivity);
@@ -416,10 +467,7 @@ public sealed class FilesPickerSession : IAsyncDisposable
 		{
 			// An activity that the system recreated is not one that the test started, so it is taken from the live list.
 			var toFinish = startedActivities.Concat(FilesFakePicker.LiveActivities).Distinct().Reverse().ToArray();
-			foreach (var activity in toFinish)
-			{
-				await FilesFakePicker.FinishActivityAsync(activity);
-			}
+			await FilesFakePicker.FinishActivitiesAsync(toFinish);
 		}
 		finally
 		{
@@ -440,8 +488,7 @@ public sealed class FilesPickerSession : IAsyncDisposable
 	// MAUI raises the Android OnCreate lifecycle event for every activity, so creating a fake activity also replaced
 	// MauiProgramDefaults.DefaultContext, the context that every later test builds and hosts its views with. The activities of this
 	// session are destroyed when it ends, so without this the next test would host its views in a destroyed activity and they would
-	// never load. The property's setter is private (vendored dotnet/maui code), hence the reflection.
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties, typeof(MauiProgramDefaults))]
+	// never load.
 	void RestoreHostContext()
 	{
 		if (hostContext is null)
@@ -449,8 +496,6 @@ public sealed class FilesPickerSession : IAsyncDisposable
 			return;
 		}
 
-		var property = typeof(MauiProgramDefaults).GetProperty(nameof(MauiProgramDefaults.DefaultContext))
-			?? throw new InvalidOperationException("MauiProgramDefaults.DefaultContext was not found.");
-		property.SetValue(null, hostContext);
+		AndroidHostContext.Restore(hostContext);
 	}
 }

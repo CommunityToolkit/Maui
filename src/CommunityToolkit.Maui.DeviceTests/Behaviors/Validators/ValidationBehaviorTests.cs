@@ -64,6 +64,7 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 		var entry = new Entry { WidthRequest = 300 };
 		entry.Behaviors.Add(behavior);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(entry, async handler =>
 		{
 			await entry.OnLoadedAsync();

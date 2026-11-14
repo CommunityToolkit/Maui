@@ -5,6 +5,7 @@ using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -426,19 +427,18 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Null(await SetSourceAsync(mediaElement, handler, ResourceSource(TracklessResource)));
 
-			// A well-formed file without any track: AVFoundation has nothing to play (AVAsset.Playable is false) and never makes the item
-			// ReadyToPlay, so the media is not opened and must be reported as failed.
+			// A well-formed file without any track: AVFoundation has nothing to play (AVAsset.Playable is false). Most iOS versions leave the
+			// item Unknown and iOS 16.4 can make it ReadyToPlay; either way the media is not opened and is reported as failed once.
 			var item = handler.Manager.NativePlayerItem!;
 			Assert.Empty(item.Asset.Tracks);
 			Assert.False(item.Asset.Playable);
-			Assert.NotEqual(AVPlayerItemStatus.ReadyToPlay, item.Status);
-			Assert.Equal(0, events.Opened);
-			Assert.Single(events.Failures);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 
-			// Bounded wait (it does not fail) for the player's own status, which must not hide the failure.
-			await AssertHelpers.Wait(() => player.Status is not AVPlayerStatus.Unknown, timeout: 2000, interval: 20);
+			// Bounded wait (it does not fail) for the statuses of the player and the item, which must not hide the failure or open the media.
+			await AssertHelpers.Wait(() => player.Status is not AVPlayerStatus.Unknown && item.Status is not AVPlayerItemStatus.Unknown, timeout: 2000, interval: 20);
 			await DrainMainQueueAsync();
+			Assert.Equal(0, events.Opened);
+			Assert.Equal("The media has no tracks to play.", Assert.Single(events.Failures));
+			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 		});
 	}
@@ -502,6 +502,124 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		{
 			File.Delete(path);
 		}
+	}
+
+	[Fact]
+	public async Task SourceAfterAFailedSourcePlaysInANewPlayerWithTheSameSettings()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		var events = new MediaElementEvents(mediaElement);
+		var path = CreateCorruptMediaFile();
+
+		try
+		{
+			await HostAsync(mediaElement, async handler =>
+			{
+				mediaElement.ShouldMute = true;
+				mediaElement.Volume = 0.4;
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					mediaElement.Speed = 1.5;
+				}
+
+				mediaElement.Source = MediaSource.FromFile(path);
+				await Record.ExceptionAsync(handler.Manager!.TakeSourceUpdates);
+				await WaitUntilAsync(() => events.Failures.Count > 0, "MediaFailed was not raised.");
+				var failedPlayer = handler.Manager.NativePlayer!;
+				var failedMetadata = GetMetadata(handler.Manager);
+				var failedPlayerHandle = failedPlayer.Handle;
+
+				var statesBeforeValidSource = events.States.Count;
+				var opened = WhenOpenedOrFailedAsync(mediaElement, openedOnly: true);
+				mediaElement.Source = ResourceSource(VideoResource);
+				await handler.Manager.TakeSourceUpdates();
+
+				// Asserted before MediaOpened so a stall of the new player is told apart from a player that was never replaced
+				var player = handler.Manager.NativePlayer!;
+				Assert.NotSame(failedPlayer, player);
+				Assert.Same(player, handler.Manager.NativePlayerViewController!.Player);
+				Assert.Equal(NativeHandle.Zero, failedPlayer.Handle);
+				Assert.NotEqual(NativeHandle.Zero, failedPlayerHandle);
+				Assert.True(player.Muted);
+				Assert.Equal(0.4f, player.Volume, 0.001f);
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					Assert.Equal(1.5f, player.DefaultRate, 0.001f);
+				}
+
+				Assert.NotSame(failedMetadata, GetMetadata(handler.Manager));
+
+				await WaitAsync(opened, "MediaOpened was not raised.");
+				await WaitUntilReadyAsync(handler);
+
+				player.Muted = false;
+				await DrainMainQueueAsync();
+				Assert.False(mediaElement.ShouldMute);
+				Assert.DoesNotContain(MediaElementState.Stopped, events.States.Skip(statesBeforeValidSource));
+			});
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public async Task NullSourceBetweenAFailedSourceAndAValidSourceOpensTheMedia()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		var events = new MediaElementEvents(mediaElement);
+		var path = CreateCorruptMediaFile();
+
+		try
+		{
+			await HostAsync(mediaElement, async handler =>
+			{
+				mediaElement.Source = MediaSource.FromFile(path);
+				await Record.ExceptionAsync(handler.Manager!.TakeSourceUpdates);
+				await WaitUntilAsync(() => events.Failures.Count > 0, "MediaFailed was not raised.");
+
+				mediaElement.Source = null;
+				await Record.ExceptionAsync(handler.Manager.TakeSourceUpdates);
+
+				await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+
+				Assert.Equal(AVPlayerItemStatus.ReadyToPlay, handler.Manager.NativePlayerItem!.Status);
+			});
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public async Task SourceAfterThePlayerFailedOpensInANewPlayer()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var original = handler.Manager!.NativePlayer!;
+			var fake = new AppleFakeAVPlayer { StatusOverride = AVPlayerStatus.Failed };
+			handler.Manager.NativePlayer = fake;
+			handler.Manager.NativePlayerViewController!.Player = fake;
+
+			try
+			{
+				await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+
+				Assert.NotSame(fake, handler.Manager.NativePlayer);
+				Assert.Same(handler.Manager.NativePlayer, handler.Manager.NativePlayerViewController.Player);
+			}
+			finally
+			{
+				original.Dispose();
+			}
+		});
 	}
 
 	static string CreateCorruptMediaFile()
@@ -906,12 +1024,9 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
-	public async Task VideoTrackIsFoundWithTheSynchronousApiBeforeIos18()
+	public async Task VideoTrackOfAResourceGivesTheMediaSize()
 	{
 		SetupApple();
-		Skip.If(
-			OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18),
-			"GetTrack takes its pre-iOS 18 / Mac Catalyst 18 branch (AVAsset.TracksWithMediaType) only on older OS versions; the oldest runtime available here is iOS 18.6, so this device runs the LoadTracksWithMediaType branch instead.");
 		var mediaElement = CreateMediaElement();
 
 		await HostAsync(mediaElement, async handler =>

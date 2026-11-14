@@ -144,13 +144,54 @@ public partial class KeyboardExtensionsTests
 				var shown = await input.ShowKeyboardAsync();
 
 				Assert.True(shown, "ShowKeyboardAsync returned false for the focused view whose soft keyboard is hidden.");
-				Assert.True(await Wait(() => frame.ShowsKeyboard, imeTimeout), $"The soft keyboard did not show again: {frame}.");
+				Assert.True(await frame.WaitUntilTheKeyboardShowsSteadilyAsync(imeTimeout), $"The soft keyboard did not show again: {frame}.");
 			}
 			finally
 			{
 				await SoftKeyboardHelpers.HideAsync();
 			}
 		});
+	}
+
+	// On Android 11 and 12 a show right after a hide is followed by a re-show, which a show from a background thread posts to the UI thread.
+	// Android itself shows the keyboard again after this sequence (seen on API 30-33), so the test watches the toolkit's own IME show instead.
+	[Fact]
+	public async Task HideKeyboardAsyncBeforeThePostedReshowOfABackgroundShowCancelsTheReshow()
+	{
+		SetupBuilder();
+		SkipWhenTheSoftKeyboardCannotShow();
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(33), "Only Android 11 and 12 re-show the keyboard after a show that follows a hide.");
+		await EnsureKeyboardHiddenAsync();
+		var view = await InvokeOnMainThreadAsync(() => new EditTextThatRecordsImeShows(ActivityContext));
+		var input = new TextInputStub { Handler = new ObjectPlatformViewHandler(view, MauiContext) };
+		((IView)input).IsFocused = true;
+
+		await InvokeOnMainThreadAsync(() => AttachToActivityAsync(view, async () =>
+		{
+			try
+			{
+				Assert.True(view.RequestFocus(), "The EditText did not take the focus.");
+				Assert.True(await input.ShowKeyboardAsync(), "The first ShowKeyboardAsync returned false.");
+				Assert.True(await Wait(() => input.IsSoftKeyboardShowing(), imeTimeout), "The soft keyboard did not show.");
+				await input.HideKeyboardAsync();
+
+				// The UI thread blocks until the background show returned, so its posted re-show is still queued when the second hide runs.
+				var backgroundShow = Task.Run(async () => await input.ShowKeyboardAsync());
+#pragma warning disable xUnit1031 // Deliberate: the UI thread must not run the posted re-show before the second hide.
+				Assert.True(backgroundShow.Wait(TimeSpan.FromSeconds(2)), "ShowKeyboardAsync from a background thread did not complete within 2 s.");
+				Assert.True(backgroundShow.Result, "ShowKeyboardAsync from a background thread returned false, so it posted no re-show.");
+#pragma warning restore xUnit1031
+				var imeShowsBeforeTheSecondHide = view.ImeShows;
+				await input.HideKeyboardAsync();
+				await Task.Delay(1000);
+
+				Assert.Equal(imeShowsBeforeTheSecondHide, view.ImeShows);
+			}
+			finally
+			{
+				await SoftKeyboardHelpers.HideAsync();
+			}
+		}));
 	}
 
 	[Theory]
@@ -784,6 +825,50 @@ public partial class KeyboardExtensionsTests
 	{
 		var context = new ContextThatCountsInputMethodManagerLookups(ActivityContext);
 		return (new EditText(context), () => context.Lookups);
+	}
+
+	[System.Runtime.Versioning.SupportedOSPlatform("android30.0")]
+	sealed class EditTextThatRecordsImeShows(Context context) : EditText(context)
+	{
+		int imeShows;
+
+		public int ImeShows => Volatile.Read(ref imeShows);
+
+		public override Android.Views.IWindowInsetsController? WindowInsetsController =>
+			base.WindowInsetsController is Android.Views.IWindowInsetsController controller ? new ImeShowRecorder(controller, () => Interlocked.Increment(ref imeShows)) : null;
+	}
+
+	[System.Runtime.Versioning.SupportedOSPlatform("android30.0")]
+	sealed class ImeShowRecorder(Android.Views.IWindowInsetsController controller, Action onImeShow) : Java.Lang.Object, Android.Views.IWindowInsetsController
+	{
+		public int SystemBarsAppearance => controller.SystemBarsAppearance;
+
+		public int SystemBarsBehavior
+		{
+			get => controller.SystemBarsBehavior;
+			set => controller.SystemBarsBehavior = value;
+		}
+
+		public void Show(int types)
+		{
+			if ((types & Android.Views.WindowInsets.Type.Ime()) != 0)
+			{
+				onImeShow();
+			}
+
+			controller.Show(types);
+		}
+
+		public void Hide(int types) => controller.Hide(types);
+
+		public void SetSystemBarsAppearance(int appearance, int mask) => controller.SetSystemBarsAppearance(appearance, mask);
+
+		public void AddOnControllableInsetsChangedListener(Android.Views.IWindowInsetsController.IOnControllableInsetsChangedListener listener) => controller.AddOnControllableInsetsChangedListener(listener);
+
+		public void RemoveOnControllableInsetsChangedListener(Android.Views.IWindowInsetsController.IOnControllableInsetsChangedListener listener) => controller.RemoveOnControllableInsetsChangedListener(listener);
+
+		public void ControlWindowInsetsAnimation(int types, long durationMillis, Android.Views.Animations.IInterpolator? interpolator, Android.OS.CancellationSignal? cancellationSignal, Android.Views.IWindowInsetsAnimationControlListener listener) =>
+			controller.ControlWindowInsetsAnimation(types, durationMillis, interpolator, cancellationSignal, listener);
 	}
 
 	sealed class ContextWithoutInputMethodManager(Context baseContext) : ContextWrapper(baseContext)

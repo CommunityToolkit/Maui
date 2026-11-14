@@ -219,10 +219,23 @@ jobs:
                     cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
                     dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut.trx" --results-directory "${{ runner.temp }}"
 
+            # Servicing releases change behavior: dotnet/maui#38063 (11.0.10) broke three TouchBehavior unit tests that pass on the pinned 11.0.0,
+            # and only the device tests caught it. Tag builds skip this run, as they skip the device tests: a new .NET MAUI release must not block one.
+            -   name: Run the UnitTests against the latest .NET MAUI release
+                if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+                shell: bash
+                run: |
+                    failed=0
+                    for project in ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }} ${{ env.PathToCommunityToolkitAnalyzersUnitTestProjectDirectory }} \
+                        ${{ env.PathToCommunityToolkitSourceGeneratorsUnitTestDirectory }} ${{ env.PathToCommunityToolkitMediaElementSourceGeneratorsUnitTestDirectory }}; do
+                        dotnet test --project "$project" -c Release -p:MauiPackageVersion="*" --report-gh || failed=1
+                    done
+                    exit "$failed"
+
             # Release, as the device tests' coverage that the code_coverage job merges this with: a Debug build has more coverable lines
             # (sequence points on braces), so the braces of code that only the device tests run would show as uncovered. It also runs
-            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the run above
-            # is the unit test gate and reports the results, so a failure here (a test host crash, for example) neither fails the job nor
+            # when the steps above failed, so that a failing build still has a coverage report. It only collects coverage: the runs above
+            # are the unit test gates and report the results, so a failure here (a test host crash, for example) neither fails the job nor
             # skips the packages; the coverage report may then lack the unit tests.
             -   name: Run CommunityToolkit UnitTests with code coverage (Release)
                 if: ${{ runner.os == 'Windows' && (success() || failure()) }}
@@ -315,7 +328,7 @@ jobs:
                 run: |
                     ./eng/coverage-report.ps1 -Report artifacts/coverage -Output artifacts/coverage-report -Note @(
                         'Reports: `ut` is the toolkit''s unit tests (Release), `ut-*` the analyzer and source generator unit tests; the others are the device tests of Android API 36, the iOS simulator and Mac Catalyst.',
-                        'Not included: the Windows device tests (no way of collecting their coverage has been verified, so `windows.ps1` has no `-Coverage`), the Android API 28 job (one Android level is collected) and the iOS 26.5 job (one iOS version is collected).')
+                        'Not included: the Windows device tests (no way of collecting their coverage has been verified, so `windows.ps1` has no `-Coverage`), the device tests of the other Android API levels and iOS versions (only Android API 36 and iOS 27.2 collect coverage).')
 
             -   name: Upload coverage report
                 if: ${{ !cancelled() }}

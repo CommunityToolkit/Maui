@@ -110,8 +110,23 @@ public abstract class AppleMediaElementTestBase : MediaElementHandlerTestBase
 		var opened = WhenOpenedOrFailedAsync(mediaElement, openedOnly: true);
 		mediaElement.Source = source;
 		await handler.Manager!.TakeSourceUpdates();
-		await WaitAsync(opened, "MediaOpened was not raised.");
+		try
+		{
+			await WaitAsync(opened, "MediaOpened was not raised.");
+		}
+		catch (TimeoutException exception)
+		{
+			throw new TimeoutException($"{exception.Message} {DescribeNativePlayer(handler)}", exception);
+		}
+
 		await WaitUntilReadyAsync(handler);
+	}
+
+	static string DescribeNativePlayer(AppleMediaElementHandler handler)
+	{
+		var player = handler.Manager?.NativePlayer;
+		var item = handler.Manager?.NativePlayerItem;
+		return $"Player status: {player?.Status}, error: {player?.Error?.LocalizedDescription}; item status: {item?.Status}, error: {item?.Error?.LocalizedDescription}; the player's current item is the manager's item: {ReferenceEquals(player?.CurrentItem, item)}.";
 	}
 
 	/// <summary>

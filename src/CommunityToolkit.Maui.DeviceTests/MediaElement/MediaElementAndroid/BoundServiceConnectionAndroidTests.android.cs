@@ -12,6 +12,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Category(TestCategory.MediaElementAndroid)]
 public class BoundServiceConnectionAndroidTests
 {
+	// Skipped below API 26 in the visual runner too (see MediaElementAndroidTestBase).
+	public BoundServiceConnectionAndroidTests() => MediaElementSupport.SkipIfUnsupported();
+
 	static IServiceConnection AsServiceConnection(BoundServiceConnection connection) => connection;
 
 	static BoundServiceConnection CreateConnectedConnection(MediaControlsService service)
@@ -91,6 +94,37 @@ public class BoundServiceConnectionAndroidTests
 
 		Assert.Null(exception);
 		Assert.False(connection.IsConnected);
+	}
+
+	[Fact]
+	public void AStopRequestedBeforeTheServiceConnectedRunsOnceWhenItConnects()
+	{
+		var service = new MediaControlsService();
+		var connection = new BoundServiceConnection(null!);
+		var stopped = new List<BoundServiceConnection>();
+		connection.StopWhenConnected(stopped.Add);
+		Assert.Empty(stopped);
+
+		AsServiceConnection(connection).OnServiceConnected(null, new BoundServiceBinder(service));
+		AsServiceConnection(connection).OnServiceConnected(null, new BoundServiceBinder(service));
+
+		Assert.Same(connection, Assert.Single(stopped));
+	}
+
+	[Fact]
+	public void AConnectionThatIsStoppedWhenItConnectsDoesNotListenToTaskRemoved()
+	{
+		var service = new MediaControlsService();
+		var connection = new BoundServiceConnection(null!);
+		var subscriber = new TaskRemovedSubscriber();
+		connection.MediaControlsServiceTaskRemoved += subscriber.Handle;
+		connection.StopWhenConnected(_ => { });
+
+		AsServiceConnection(connection).OnServiceConnected(null, new BoundServiceBinder(service));
+		service.OnTaskRemoved(null);
+
+		Assert.Equal(0, subscriber.Count);
+		GC.KeepAlive(subscriber);
 	}
 
 	[Fact]

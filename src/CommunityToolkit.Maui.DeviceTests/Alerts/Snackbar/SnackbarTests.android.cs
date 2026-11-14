@@ -112,7 +112,7 @@ public partial class SnackbarTests
 			Assert.Equal(0, message.LetterSpacing);
 			Assert.All(GetCornerRadii(), radius => Assert.Equal(4 * AlertsAndroid.Density, radius, 0.01));
 			await AssertEventually(() => layout.Width > 0 && layout.Height > 0, timeout: 10000, message: "The snackbar was never laid out.");
-			using var bitmap = AlertsAndroid.Render(layout);
+			using var bitmap = AlertsAndroid.RenderBackground(layout);
 			Assert.Equal(Colors.LightGray.ToPlatform().ToArgb(), bitmap.GetPixel(bitmap.Width / 2, 6));
 		});
 	}
@@ -250,7 +250,7 @@ public partial class SnackbarTests
 
 			var layout = Assert.Single(AlertsAndroid.GetSnackbarLayouts());
 			await AssertEventually(() => layout.Width > 0 && layout.Height > 0, timeout: 10000, message: "The snackbar was never laid out.");
-			using var bitmap = AlertsAndroid.Render(layout);
+			using var bitmap = AlertsAndroid.RenderBackground(layout);
 			Assert.Equal(new Android.Graphics.Color(200, 10, 20).ToArgb(), bitmap.GetPixel(bitmap.Width / 2, 6));
 		});
 	}
@@ -903,7 +903,7 @@ public partial class SnackbarTests
 
 				var layout = Assert.Single(AlertsAndroid.GetSnackbarLayouts());
 				await AssertEventually(() => layout.Width > 0 && layout.Height > 0, timeout: 10000, message: "The snackbar was never laid out.");
-				using var bitmap = AlertsAndroid.Render(layout);
+				using var bitmap = AlertsAndroid.RenderBackground(layout);
 				var expected = new Android.Graphics.Color(200, 10, 20).ToArgb();
 				var actual = bitmap.GetPixel(bitmap.Width / 2, 6);
 				Assert.True(expected == actual, $"The snackbar is drawn in #{actual:X8} instead of #{expected:X8}; its background is a {layout.Background?.Class.Name}.");

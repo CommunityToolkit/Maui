@@ -74,6 +74,8 @@ public class CameraManagerApplePreviewTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartCameraPreviewOnIos17ItselfCreatesARotationCoordinator()
 	{
+		Skip.IfNot(UIKit.UIDevice.CurrentDevice.CheckSystemVersion(17, 0), "Needs iOS or Mac Catalyst 17 or later (the real OS version): AVCaptureDeviceRotationCoordinator does not exist below it.");
+
 		await RunAsync(async preview =>
 		{
 			using (new AppleSystemVersionOverride(new Version(17, 0)))

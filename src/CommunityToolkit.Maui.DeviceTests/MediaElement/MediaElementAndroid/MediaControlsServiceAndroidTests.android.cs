@@ -19,7 +19,7 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // The notification and foreground-type branches depend on the Android version: each device checks the branch that its version takes (the CI
-// matrix runs API 36 and API 28).
+// legs from API 27 to 37.0 run these tests: the MediaElementAndroid category skips below API 26).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
@@ -65,6 +65,85 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal("1", channel.Name);
 			Assert.Equal(NotificationImportance.Low, channel.Importance);
 		});
+	}
+
+	[Fact]
+	public async Task StoppingTheServiceRightAfterItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// Android 11 delays a post by 200 ms and defers an app's cancel behind it, so the notification of a service that stops this soon
+		// used to stay: the race only shows in some of the repetitions.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+
+			await HostBoundAsync(mediaElement, (_, _) => Task.CompletedTask);
+
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
+	public async Task StoppingTheServiceBeforeItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// The service cannot be created in the UI turn that started it, so the disconnect is always before it was created: Android kills the
+		// app when a service that was started for the foreground is brought down before it called startForeground.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			BoundServiceConnection? connection = null;
+
+			await WithHandlerAsync(mediaElement, handler =>
+			{
+				connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				Assert.False(connection.IsConnected);
+
+				((IElementHandler)handler).DisconnectHandler();
+			});
+
+			await WaitUntilAsync(() => connection!.Handle == IntPtr.Zero, "The connection was never stopped and disposed.");
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
+	public async Task StoppingTheLastManagerBeforeItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// The first manager posted the notification: the second one is the last to stop, before its own connection landed.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var firstElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			var secondElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			BoundServiceConnection? secondConnection = null;
+
+			await HostBoundAsync(firstElement, async (firstHandler, _) =>
+			{
+				await WaitForForegroundNotificationAsync();
+
+				await WithHandlerAsync(secondElement, secondHandler =>
+				{
+					secondConnection = GetServiceConnection(secondHandler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+					Assert.False(secondConnection.IsConnected);
+
+					((IElementHandler)firstHandler).DisconnectHandler();
+					((IElementHandler)secondHandler).DisconnectHandler();
+				});
+			});
+
+			await WaitUntilAsync(() => secondConnection!.Handle == IntPtr.Zero, "The connection was never stopped and disposed.");
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
 	}
 
 	[Fact]
@@ -116,14 +195,15 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			// The connection refreshes the notification when it connects (UpdateNotifications found no service while the source was loaded).
 			// Before Android 13 the PlayerNotificationManager then posts its own version under the same id, which the system marks as the
 			// foreground notification again some milliseconds later (the flags are missing in between): wait for the settled notification.
-			await WaitUntilAsync(() => FindServiceNotification() is Notification posted && IsMediaStyle(posted) && posted.Flags.HasFlag(NotificationFlags.ForegroundService),
-				"The service never showed a media notification as its foreground notification.");
+			// GetActiveNotifications also returns records that are still queued; Android 13 gives those the foreground flag at once
+			// but adds NoClear only when it posts them, so NoClear is part of the settled state.
+			await WaitUntilAsync(() => FindServiceNotification() is Notification posted && IsMediaStyle(posted) && posted.Flags.HasFlag(NotificationFlags.ForegroundService) && posted.Flags.HasFlag(NotificationFlags.NoClear),
+				"The service never showed a media notification that is its foreground notification and cannot be swiped away.");
 			var notification = FindServiceNotification()!;
 			var session = GetMediaSession(handler.Manager!)!;
 
 			Assert.Equal("1", notification.ChannelId);
 			Assert.Equal(NotificationVisibility.Public, notification.Visibility);
-			Assert.True(notification.Flags.HasFlag(NotificationFlags.NoClear), $"The foreground notification can be swiped away: {notification.Flags}.");
 			Assert.NotNull(notification.SmallIcon);
 			Assert.True(session.PlatformToken!.Equals(notification.Extras!.Get(Notification.ExtraMediaSession)), "The notification is not bound to the MediaSession of the manager.");
 		});
@@ -209,7 +289,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Null(exception);
 			Assert.Null(FindServiceNotification());
-			// Do not tear the service down before it was created.
 			await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
 		});
 	}
@@ -723,6 +802,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		{
 			var service = connection.Binder!.Service;
 			await WaitForForegroundNotificationAsync();
+			// Before Android 13 the PlayerNotificationManager posts again as the player loads, and Android 11 delays each post by 200 ms:
+			// a post that is still on its way would show the notification again after the service left the foreground.
+			await Task.Delay(notificationRatePause);
 			service.StopForeground(StopForegroundFlags.Remove);
 			await WaitUntilAsync(() => FindMediaControlsService()?.Foreground == false && FindServiceNotification() is null, "The service never left the foreground.");
 

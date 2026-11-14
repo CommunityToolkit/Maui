@@ -31,8 +31,16 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		public IReadOnlyList<string> Failures => [.. failures];
 
-		public Task WaitForCaptureAsync(int count = 1) =>
-			AssertionExtensions.AssertEventually(() => captured.Count >= count, 40000, 50, $"The camera did not raise MediaCaptured {count} time(s). Failures: {string.Join("; ", failures)}");
+		// A capture that failed never raises MediaCaptured, so a failure ends the wait. The message is built after the wait: an interpolated
+		// message argument would be built before it, and would never name a failure.
+		public async Task WaitForCaptureAsync(int count = 1)
+		{
+			await WaitUntilEndedAsync(count);
+			Assert.True(captured.Count >= count, $"The camera did not raise MediaCaptured {count} time(s). Failures: {string.Join("; ", failures)}");
+		}
+
+		public Task WaitUntilEndedAsync(int count = 1) =>
+			AssertionExtensions.AssertEventually(() => captured.Count >= count || !failures.IsEmpty, 40000, 50, $"The camera raised neither MediaCaptured {count} time(s) nor MediaCaptureFailed.");
 
 		public Task WaitForFailureAsync() =>
 			AssertionExtensions.AssertEventually(() => !failures.IsEmpty, 40000, 50, "The camera did not raise MediaCaptureFailed.");
@@ -103,7 +111,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 			var jpeg = await ReadAllBytesAsync(Assert.Single(recorder.Captured));
 			Assert.Equal(SmallSize, GetJpegSize(jpeg));
-		}, view: new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
+		}, createView: () => new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
 	}
 
 	[Fact]
@@ -204,6 +212,32 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			await recorder.WaitForFailureAsync();
 			Assert.Empty(recorder.Captured);
 		});
+	}
+
+	// CameraX aborts the capture of an activity that Android destroys to recreate it, and CameraView.CaptureImage waits for MediaCaptured
+	// or MediaCaptureFailed: an abort that got lost would make it wait for ever.
+	[Fact]
+	public async Task TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed()
+	{
+		SetupBuilder();
+		RequireStillCapture();
+		var activity = await InvokeOnMainThreadAsync(() => new DestroyableLifecycleContext(AppContext));
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var recorder = new CaptureRecorder(session.View);
+
+			// On the main thread CameraX submits the capture request before TakePicture returns, so the activity is destroyed mid-capture
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await session.Manager.TakePicture(CancellationToken.None);
+				activity.Destroy();
+			});
+
+			await recorder.WaitUntilEndedAsync();
+			Assert.Equal("Camera is closed.", Assert.Single(recorder.Failures));
+			Assert.Empty(recorder.Captured);
+		}, mauiContext: new TestMauiContext(MauiContext, activity));
 	}
 
 	[Fact]
@@ -414,7 +448,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(1280, 720);
 		var supported = Sizes((1920, 1080), (320, 240), (1280, 720), (640, 480));
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Equal(new[] { (1280, 720), (640, 480), (320, 240) }, Dimensions(filtered));
 	}
@@ -425,7 +459,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(800, 600);
 		var supported = Sizes((1000, 100), (640, 1000), (640, 480));
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Equal(new[] { (640, 480) }, Dimensions(filtered));
 	}
@@ -435,7 +469,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(640, 480);
 
-		var filtered = filter.Filter(Sizes((640, 480), (641, 480), (640, 481)), 0);
+		var filtered = filter.Filter(Sizes((640, 480), (641, 480), (640, 481)), 0)!;
 
 		Assert.Equal(new[] { (640, 480) }, Dimensions(filtered));
 	}
@@ -445,7 +479,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(1000, 1000);
 
-		var filtered = filter.Filter(Sizes((400, 300), (300, 400), (100, 100)), 0);
+		var filtered = filter.Filter(Sizes((400, 300), (300, 400), (100, 100)), 0)!;
 
 		Assert.Equal(new[] { (400, 300), (300, 400), (100, 100) }, Dimensions(filtered));
 	}
@@ -456,7 +490,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(320, 240);
 		var supported = Sizes((1920, 1080), (1280, 720));
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Same(supported, filtered);
 	}
@@ -467,7 +501,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var filter = CreateResolutionFilter(320, 240);
 		var supported = Sizes();
 
-		var filtered = filter.Filter(supported, 0);
+		var filtered = filter.Filter(supported, 0)!;
 
 		Assert.Same(supported, filtered);
 		Assert.Empty(filtered);
@@ -478,7 +512,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(320, 240);
 
-		var filtered = filter.Filter(null!, 0);
+		var filtered = filter.Filter(null!, 0)!;
 
 		Assert.NotNull(filtered);
 		Assert.Empty(filtered);
@@ -489,6 +523,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(640, 480);
 
-		Assert.Equal(new[] { (640, 480) }, Dimensions(filter.Filter(Sizes((1280, 960), (640, 480)), 90)));
+		Assert.Equal(new[] { (640, 480) }, Dimensions(filter.Filter(Sizes((1280, 960), (640, 480)), 90)!));
 	}
 }

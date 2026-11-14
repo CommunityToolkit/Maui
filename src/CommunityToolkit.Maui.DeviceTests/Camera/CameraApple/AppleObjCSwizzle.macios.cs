@@ -229,8 +229,8 @@ static class ObjCNative
 
 // UIDevice.CheckSystemVersion(major, minor) compares with a Version that the platform assembly parses once from UIDevice.SystemVersion and
 // caches in the private static field ObjCRuntime.Runtime.SystemVersion. Overriding the cache runs the toolkit's iOS 16-and-older branches on
-// the iOS 27 simulator and on Mac Catalyst 27, the only versions that the device-test pools offer. Every CheckSystemVersion call in the
-// process sees the override, so keep it synchronous and short, on the UI thread.
+// newer OS versions than they target. Every CheckSystemVersion call in the process sees the override, so keep it synchronous and short,
+// on the UI thread.
 sealed class AppleSystemVersionOverride : IDisposable
 {
 	static readonly FieldInfo systemVersionField = typeof(UIDevice).Assembly.GetType("ObjCRuntime.Runtime")?

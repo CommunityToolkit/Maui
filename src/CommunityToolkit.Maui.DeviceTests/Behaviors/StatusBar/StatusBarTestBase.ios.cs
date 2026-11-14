@@ -48,16 +48,11 @@ public abstract partial class StatusBarTestBase
 	// The runner's Info.plist supports portrait and both landscape orientations on iPhone.
 	protected async Task RotateAsync(UIInterfaceOrientationMask orientation)
 	{
-		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(16), "Rotating the interface needs UIWindowScene.RequestGeometryUpdate (iOS 16); the simulators of the pool run iOS 27.");
-
 		var isLandscape = orientation is UIInterfaceOrientationMask.Landscape or UIInterfaceOrientationMask.LandscapeLeft or UIInterfaceOrientationMask.LandscapeRight;
 		var refusal = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 		await InvokeOnMainThreadAsync(() =>
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(16))
-			{
-				IosStatusBarViews.RunnerScene.RequestGeometryUpdate(new UIWindowSceneGeometryPreferencesIOS(orientation), error => refusal.TrySetResult(error.LocalizedDescription));
-			}
+			WindowSceneRotation.Request(IosStatusBarViews.RunnerScene, orientation, error => refusal.TrySetResult(error));
 		});
 
 		await AssertEventuallyOnMainThread(() => refusal.Task.IsCompleted || IsLandscape(TestWindow.PlatformWindow) == isLandscape, $"The runner's window did not rotate to {orientation}.");

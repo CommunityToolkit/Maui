@@ -1285,11 +1285,8 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 
 				SimulateRelease(behavior);
 				await AssertBackgroundAsync(handler, Colors.Red, "after the release");
-				await WaitUntilAsync(() => Colors.Red.Equals(host.BackgroundColor), $"The element must have the app's colour back, but it has {host.BackgroundColor?.ToArgbHex()}.");
+				await WaitUntilAsync(() => Brush.IsNullOrEmpty(host.Background), "The element must show its own BackgroundColor again, but the behavior's brush is still its Background.");
 
-				// The app changes its colour only once the release is over: a colour that it sets on the element while the behavior animates the
-				// background does not stay (documented), and the last frame of the animation comes before the behavior gives the colour back.
-				await WaitUntilTheBackgroundColorAnimationEndedAsync(behavior);
 				ChangeAppBackgroundColor(host, source, colorSource);
 				await AssertBackgroundAsync(handler, Colors.Green, $"after the app changed its {source}");
 
@@ -1392,6 +1389,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 			{
 				host.Behaviors.Remove(behavior);
 				Assert.Null(behavior.Element);
+				Assert.True(Brush.IsNullOrEmpty(host.Background));
 				Assert.Equal(Colors.Red, host.BackgroundColor);
 
 				// The stopped animation writes no more colours.
@@ -1413,10 +1411,12 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			Assert.Equal(Colors.Red, host.BackgroundColor);
+			Assert.True(Brush.IsNullOrEmpty(host.Background));
 
 			// The stopped animation writes no more colours.
 			await SettleAsync();
 			Assert.Equal(Colors.Red, host.BackgroundColor);
+			Assert.True(Brush.IsNullOrEmpty(host.Background));
 
 			ChangeAppBackgroundColor(host, AppColorSource.Binding, colorSource);
 			Assert.Equal(Colors.Green, host.BackgroundColor);
@@ -1461,7 +1461,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 			SimulatePress(behavior);
 			if (hasPressedColor)
 			{
-				await WaitUntilAsync(() => Colors.Yellow.Equals(element.BackgroundColor), "The pressed colour was not applied.");
+				await WaitUntilAsync(() => Colors.Yellow.Equals(ShownBackgroundColor(element)), "The pressed colour was not applied.");
 			}
 
 			SimulateRelease(behavior);
@@ -1922,6 +1922,62 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 			throw new XunitException($"Background {step}: expected {expected.ToArgbHex()} but the platform view paints {last?.ToArgbHex() ?? "nothing"}. {ex.Message}");
 		}
 	}
+
+	// Catches: a state colour written to BackgroundColor: MAUI 10.0.120+ and 11.0.10+ drop a DynamicResource set on the element as soon as
+	// anything else sets the property (dotnet/maui#38063), so the element stopped following its resource after the first state colour.
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task DynamicResourceOnBackgroundColorSurvivesStateColors(bool animated)
+	{
+		SetupBuilder();
+
+		const string colorKey = "TouchBackground";
+		var host = new Grid
+		{
+			WidthRequest = HostSize,
+			HeightRequest = HostSize,
+			Resources = new ResourceDictionary { [colorKey] = Colors.Red }
+		};
+		host.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+
+		var behavior = new TouchBehavior
+		{
+			PressedBackgroundColor = Colors.Yellow,
+			HoveredBackgroundColor = Colors.Blue,
+			PressedAnimationDuration = animated ? 150 : 0,
+			DefaultAnimationDuration = animated ? 150 : 0,
+			HoveredAnimationDuration = animated ? 150 : 0
+		};
+
+		await RunAttachedAsync(host, behavior, async handler =>
+		{
+			if (animated)
+			{
+				await EnableAnimationsAsync(handler);
+			}
+
+			await AssertBackgroundAsync(handler, Colors.Red, "after the attach");
+
+			SimulatePress(behavior);
+			await AssertBackgroundAsync(handler, Colors.Yellow, "while pressed");
+			host.Resources[colorKey] = Colors.Green;
+			await AssertBackgroundAsync(handler, Colors.Yellow, "while pressed, after the resource changed");
+
+			SimulateRelease(behavior);
+			await AssertBackgroundAsync(handler, Colors.Green, "after the release: the resource's latest colour");
+
+			behavior.HandleHover(HoverStatus.Entered);
+			await AssertBackgroundAsync(handler, Colors.Blue, "while hovered");
+			behavior.HandleHover(HoverStatus.Exited);
+			await AssertBackgroundAsync(handler, Colors.Green, "after the hover");
+
+			host.Resources[colorKey] = Colors.Red;
+			await AssertBackgroundAsync(handler, Colors.Red, "after the resource changed again");
+		});
+	}
+
+	static Color? ShownBackgroundColor(VisualElement element) => ((IView)element).Background is SolidPaint solidPaint ? solidPaint.Color : null;
 
 	static bool IsClose(Color actual, Color expected) =>
 		Math.Abs(actual.Red - expected.Red) < 0.02f

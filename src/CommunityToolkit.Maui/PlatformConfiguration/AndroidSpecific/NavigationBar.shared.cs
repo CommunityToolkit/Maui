@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 /// <remarks>
 /// When a page clears its <see cref="ColorProperty"/> or <see cref="StyleProperty"/> value (<see cref="BindableObject.ClearValue(BindableProperty)"/>),
 /// every window that still shows that value gets back the navigation bar color or appearance it had before <see cref="NavigationBar"/> first changed it.
+/// Android has light navigation bars from Android 8.0 (API 26) on: before that, the navigation bar always shows light icons, and <see cref="StyleProperty"/> changes nothing.
 /// </remarks>
 [AttachedBindableProperty<NavigationBarStyle>("Style", DefaultValue = NavigationBarStyle.Default, CoerceValueMethodName = nameof(CoerceStyle))]
 public static partial class NavigationBar

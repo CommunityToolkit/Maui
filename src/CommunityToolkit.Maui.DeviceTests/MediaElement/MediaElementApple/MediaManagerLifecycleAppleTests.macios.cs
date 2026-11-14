@@ -223,7 +223,7 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
-	public async Task AddStatusObserversWithoutPlayerRegistersNothing()
+	public async Task AddPlayerObserversWithoutPlayerRegistersNothing()
 	{
 		SetupApple();
 
@@ -231,13 +231,12 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 		{
 			using var manager = CreateManager(CreateMediaElement());
 
-			typeof(MediaManager).GetMethod("AddStatusObservers", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(manager, null);
+			typeof(MediaManager).GetMethod("AddPlayerObservers", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(manager, [manager.NativeValueObserverOptions]);
 
 			Assert.Null(manager.NativeMutedObserver);
 			Assert.Null(manager.NativeVolumeObserver);
 			Assert.Null(manager.NativeStatusObserver);
 			Assert.Null(manager.NativeTimeControlStatusObserver);
-			Assert.Null(manager.NativeRateObserver);
 		});
 	}
 

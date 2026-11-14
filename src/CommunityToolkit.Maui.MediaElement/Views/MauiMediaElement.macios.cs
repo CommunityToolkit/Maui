@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Versioning;
 using AVKit;
 using CommunityToolkit.Maui.Views;
 using ObjCRuntime;
@@ -95,7 +94,6 @@ public class MauiMediaElement : UIView
 	/// When the handler is disconnected the parent still retains the child controller, so it must be removed
 	/// here to avoid leaving a stale/disposed child controller in the parent view controller.
 	/// </remarks>
-	[SupportedOSPlatform("ios16.0")]
 	public void DetachFromParentViewController()
 	{
 		if (playerViewController.ParentViewController is not null)
@@ -113,12 +111,6 @@ public class MauiMediaElement : UIView
 
 	void TryAttachToParentViewController(bool forceReattach = false)
 	{
-		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
-		if (!OperatingSystem.IsIOSVersionAtLeast(16))
-		{
-			return;
-		}
-
 		// MediaElementHandler disposes the AVPlayerViewController while this view can still be in the view hierarchy, where UIKit keeps
 		// calling LayoutSubviews, MovedToSuperview and MovedToWindow: a disposed controller cannot be added to a view controller anymore
 		if (playerViewController.Handle == NativeHandle.Zero)
@@ -164,7 +156,7 @@ public class MauiMediaElement : UIView
 	// Leaves only the view controllers: UIKit calls this while it moves these views into a window, so they must stay where they are
 	void DetachFromStaleParentViewController()
 	{
-		if (!OperatingSystem.IsIOSVersionAtLeast(16) || playerViewController.Handle == NativeHandle.Zero)
+		if (playerViewController.Handle == NativeHandle.Zero)
 		{
 			return;
 		}
@@ -179,7 +171,6 @@ public class MauiMediaElement : UIView
 		playerViewController.RemoveFromParentViewController();
 	}
 
-	[SupportedOSPlatform("ios16.0")]
 	bool IsAdditionalSafeAreaInsetsStale(UIView parentView)
 	{
 		UIEdgeInsets expected = CreateSafeAreaInsets(parentView);
@@ -191,13 +182,11 @@ public class MauiMediaElement : UIView
 			   || actual.Right != expected.Right;
 	}
 
-	[SupportedOSPlatform("ios16.0")]
 	void ApplySafeAreaInsets(UIView parentView)
 	{
 		playerViewController.AdditionalSafeAreaInsets = CreateSafeAreaInsets(parentView);
 	}
 
-	[SupportedOSPlatform("ios16.0")]
 	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
 	{
 		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap, so its additional safe area insets
@@ -207,14 +196,12 @@ public class MauiMediaElement : UIView
 		return new UIEdgeInsets(insets.Top * -1, insets.Left * -1, insets.Bottom * -1, insets.Right * -1);
 	}
 
-	[SupportedOSPlatform("ios16.0")]
 	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
 	{
 		viewController = GetViewControllerFromResponderChain();
 		return viewController is not null;
 	}
 
-	[SupportedOSPlatform("ios16.0")]
 	UIViewController? GetViewControllerFromResponderChain()
 	{
 		for (UIResponder? responder = NextResponder; responder is not null; responder = responder.NextResponder)

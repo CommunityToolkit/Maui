@@ -272,8 +272,16 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - Main app, Android only, `SoftKeyboardHelpers` and `VisibleFrame` (app root), for a test that shows the soft keyboard or focuses an input:
   `await VisibleFrame.RecordWithoutKeyboardAsync(platformView)` hides any soft keyboard first and records the frame that
   `ShowsKeyboard` measures against; `frame.WaitUntilTheKeyboardShowsSteadilyAsync(timeout)` waits, before a test types, until the
-  input method has laid the keyboard out; `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
+  input method has laid the keyboard out (a keyboard that flashes and hides again fails the wait); `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
   opened it can no longer hide, because it has left the window.
+- Main app, `FocusHelpers.AddClearedFocusTargetAsync` (app root; a no-op off Android): `await using var _ = await FocusHelpers.AddClearedFocusTargetAsync();`
+  before `AttachAndRun` in a test that clears the focus or checks that it was lost. Android 8.1 and earlier give the focus back to the
+  first focusable view, so without it such a test fails only on the API 25 and 27 legs.
+- `MediaElementSupport.SkipIfUnsupported()` (`MediaElement/`): first line of a MediaElement test outside the `MediaElementAndroid` category, since
+  the app's Android minimum is 24 and MediaElement needs 26.
+- `WindowSceneRotation.Request(windowScene, mask, onRefused)` (iOS and Mac Catalyst): rotates a window scene on iOS 15 as on later versions.
+- `AndroidHostContext.Restore(context)` (Android): puts the runner's activity back as `MauiProgramDefaults.DefaultContext` after a test
+  replaced it. `TranslucentPauseActivity` (Camera tests, Android) pauses the runner's activity without stopping it, as the permission dialog does.
 - `[Repeat(n)]` with a `[Theory]` and an `int` parameter repeats a test n times while you hunt flakiness. Do not commit it.
 - `[SkipOnIOSVersion(major, minor, build, reason)]`: Skipped on iOS and Mac Catalyst from that version on.
 - `Skip.If(condition, reason)`, `Skip.IfNot(condition, reason)` and `throw new SkipException(reason)`: run-time skips,
@@ -332,8 +340,9 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - **OS-version branches.** Platform code can branch on `OperatingSystem.IsAndroidVersionAtLeast(n)`, `IsIOSVersionAtLeast`,
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
-  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Windows 10.0.17763.0) except Android, which is 26,
-    MediaElement's minimum: one app holds every package's tests, so the other packages' Android branches below 26 have no device test.
+  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Android 24; Windows 10.0.17763.0). MediaElement needs
+    Android 26, so its tests skip below API 26 (`MediaElementSupport`). CI runs the newest release of every Android major from
+    API 25 up; other levels, such as 24, run only on a local AVD.
   - Never `return` early: a test that returns early is reported as Passed.
 - **Run-time skips.** When a test cannot run on this device (no camera, an API that needs a newer OS than the test asserts),
   skip it visibly. A bare `return` is a silent pass and is not allowed.

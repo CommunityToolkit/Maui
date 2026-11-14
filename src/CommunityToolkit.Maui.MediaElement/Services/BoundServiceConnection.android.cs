@@ -8,6 +8,8 @@ sealed partial class BoundServiceConnection(MediaManager mediaManager) : Java.La
 {
 	readonly WeakEventManager taskRemovedEventManager = new();
 
+	Action<BoundServiceConnection>? stopWhenConnected;
+
 	public event EventHandler MediaControlsServiceTaskRemoved
 	{
 		add => taskRemovedEventManager.AddEventHandler(value);
@@ -20,9 +22,18 @@ sealed partial class BoundServiceConnection(MediaManager mediaManager) : Java.La
 
 	public BoundServiceBinder? Binder { get; private set; }
 
+	public void StopWhenConnected(Action<BoundServiceConnection> stop) => stopWhenConnected = stop;
+
 	void IServiceConnection.OnServiceConnected(ComponentName? name, IBinder? service)
 	{
 		Binder = service as BoundServiceBinder;
+
+		if (stopWhenConnected is Action<BoundServiceConnection> stop)
+		{
+			stopWhenConnected = null;
+			stop(this);
+			return;
+		}
 
 		if (Binder is not null)
 		{

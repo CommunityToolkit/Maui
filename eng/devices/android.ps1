@@ -198,6 +198,128 @@ function Find-AndroidPackage {
     return $null
 }
 
+function Get-AndroidFocusedWindowTitle {
+    param([string]$Adb, [string]$Serial)
+
+    $windows = Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('dumpsys', 'window') -TimeoutSeconds 60
+    # Android 7 prints mCurrentFocus twice and only the later line names the dialog, so every match is checked.
+    $focusMatches = [regex]::Matches([string]$windows, 'mCurrentFocus=Window\{[0-9a-f]+ u\d+ (?<title>[^}]*)\}', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $titles = @($focusMatches | ForEach-Object { $_.Groups['title'].Value })
+    $dialogTitle = $titles | Where-Object { Get-AndroidErrorDialogProcess -Title $_ } | Select-Object -First 1
+    if ($dialogTitle) { return $dialogTitle }
+    return [string]($titles | Select-Object -First 1)
+}
+
+function Get-AndroidErrorDialogProcess {
+    param([string]$Title)
+
+    $match = [regex]::Match($Title, '^(Application Not Responding|Application Error): (?<process>\S+)$', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    if ($match.Success) { return $match.Groups['process'].Value }
+    return ''
+}
+
+function Wait-AndroidErrorDialogGone {
+    param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds)
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        if (-not (Get-AndroidErrorDialogProcess -Title (Get-AndroidFocusedWindowTitle -Adb $Adb -Serial $Serial))) { return $true }
+        Start-Sleep -Seconds 1
+    } while ((Get-Date) -lt $deadline)
+
+    return $false
+}
+
+# A system ANR or crash dialog keeps the window focus, so the keyboard, dialogs and system-bar requests of the test app never take effect.
+function Clear-AndroidErrorDialog {
+    param([string]$Adb, [string]$Serial)
+
+    $result = [pscustomobject]@{ Warning = ''; Failure = '' }
+    $dialogProcess = Get-AndroidErrorDialogProcess -Title (Get-AndroidFocusedWindowTitle -Adb $Adb -Serial $Serial)
+    if (-not $dialogProcess) { return $result }
+
+    [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('am', 'broadcast', '-a', 'android.intent.action.CLOSE_SYSTEM_DIALOGS') -TimeoutSeconds 30)
+    if (-not (Wait-AndroidErrorDialogGone -Adb $Adb -Serial $Serial -TimeoutSeconds 5)) {
+        # Killing the process that owns the dialog removes it; system_server cannot be killed.
+        $package = $dialogProcess.Split(':')[0]
+        if ($package -ne 'system' -and $package -ne 'android') {
+            [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('am', 'force-stop', $package) -TimeoutSeconds 30)
+        }
+        if (-not (Wait-AndroidErrorDialogGone -Adb $Adb -Serial $Serial -TimeoutSeconds 30)) {
+            $result.Failure = "The error dialog of $dialogProcess keeps the window focus on $Serial, so keyboard, dialog and system-bar tests cannot pass. Closing it and stopping $package did not remove it."
+            return $result
+        }
+    }
+
+    $result.Warning = "Closed the error dialog of $dialogProcess that had the window focus before the tests started."
+    return $result
+}
+
+# Tests that start while the boot broadcasts of a fresh emulator are still queued get their activity relaunched when the OS refreshes its overlays
+# (the CI logcat shows idmap2d starting right before the relaunch), which fails whatever camera or window test runs at that moment.
+# 'am wait-for-broadcast-idle' is hidden (not in 'am help') and exists from API 26 (AOSP oreo-release); older versions poll the dumpsys queues.
+function Wait-AndroidBroadcastsIdle {
+    param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds = 120)
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $started = Get-Date
+    $apiLevel = 0
+    [void][int]::TryParse((Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('getprop', 'ro.build.version.sdk')), [ref]$apiLevel)
+
+    while ((Get-Date) -lt $deadline) {
+        $booted = (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('getprop', 'sys.boot_completed')) -eq '1' -and (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('getprop', 'dev.bootcomplete')) -eq '1'
+        if ($booted) { break }
+        Start-Sleep -Seconds 2
+    }
+
+    if ($apiLevel -ge 26) {
+        $remaining = [int][math]::Ceiling(($deadline - (Get-Date)).TotalSeconds)
+        if ($remaining -gt 0) {
+            $idle = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'am', 'wait-for-broadcast-idle') -TimeoutSeconds $remaining
+            if ($idle.ExitCode -eq 0 -and $idle.Output -match 'idle' -and $idle.Output -notmatch '(?m)^usage:') {
+                return $null
+            }
+            if ($idle.ExitCode -eq -1) {
+                return "$Serial still had queued broadcasts after a $TimeoutSeconds s wait; the tests start anyway and may see the runner's activity relaunched."
+            }
+        }
+    }
+
+    while ((Get-Date) -lt $deadline) {
+        $broadcasts = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'dumpsys', 'activity', 'broadcasts') -TimeoutSeconds 30
+        if ($broadcasts.ExitCode -eq 0 -and $broadcasts.Output -notmatch '(?m)^\s*Active (Ordered )?Broadcast ') {
+            return $null
+        }
+        Start-Sleep -Seconds 2
+    }
+
+    return "$Serial still had queued broadcasts after a $TimeoutSeconds s wait; the tests start anyway and may see the runner's activity relaunched."
+}
+
+# A test that Android relaunched mid-run reruns itself once and then passes, so only the logcat shows that the OS interfered.
+function Find-AndroidSessionRetriesInLog {
+    param([string]$Directory)
+
+    $count = 0
+    foreach ($log in Get-ChildItem -Path $Directory -Filter 'adb-logcat-*.log' -File -ErrorAction SilentlyContinue) {
+        $count += @(Select-String -Path $log.FullName -Pattern 'CameraAndroidTests.*runs once more in the new activity' -CaseSensitive -ErrorAction SilentlyContinue).Count
+    }
+
+    if ($count -eq 0) { return '' }
+    return "$count camera test(s) ran once more because Android relaunched the runner's activity mid-test; see 'runs once more' in the logcat."
+}
+
+function Find-AndroidErrorDialogInLog {
+    param([string]$Directory)
+
+    foreach ($log in Get-ChildItem -Path $Directory -Filter 'adb-logcat-*.log' -File -ErrorAction SilentlyContinue) {
+        $match = Select-String -Path $log.FullName -Pattern 'ANR in (\S+)' -CaseSensitive -List -ErrorAction SilentlyContinue
+        if ($match) { return $match.Matches[0].Groups[1].Value }
+    }
+
+    return ''
+}
+
 function Invoke-AndroidDeviceTests {
     param($Context, $Project, [string]$Adb, [string]$Serial, [string]$Abi, $CoverageSession)
 
@@ -246,12 +368,45 @@ function Invoke-AndroidDeviceTests {
             return $goneVerdict
         }
 
+        $settleStart = Get-Date
+        $settleWarning = Wait-AndroidBroadcastsIdle -Adb $Adb -Serial $Serial
+        if ($settleWarning) {
+            Write-DeviceTestWarning $settleWarning
+        }
+        else {
+            Write-Host ("Broadcast queues of {0} settled after {1:N0} s" -f $Serial, ((Get-Date) - $settleStart).TotalSeconds)
+        }
+
+        $dialog = Clear-AndroidErrorDialog -Adb $Adb -Serial $Serial
+        if ($dialog.Warning) { Write-DeviceTestWarning $dialog.Warning }
+        if ($dialog.Failure) {
+            $dialogVerdict = New-DeviceTestVerdict -ExitCode 81 -Directory $androidOutput -Reason $dialog.Failure
+            $dialogVerdict.Attempt = $attemptNumber
+            return $dialogVerdict
+        }
+
         # The default main log buffer holds only a few minutes of a long run, so the logs of a test that failed early were already rotated out
         # when the run ended. Each attempt sets it again because the size does not survive a restart of the device.
         [void](Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'logcat', '-G', '64M') -TimeoutSeconds 30)
 
         $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
         $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
+        if ($dialog.Warning) {
+            $verdict.Warnings = @($verdict.Warnings) + $dialog.Warning
+        }
+        if ($settleWarning) {
+            $verdict.Warnings = @($verdict.Warnings) + $settleWarning
+        }
+        $sessionRetries = Find-AndroidSessionRetriesInLog -Directory $androidOutput
+        if ($sessionRetries) {
+            $verdict.Warnings = @($verdict.Warnings) + $sessionRetries
+        }
+        if ($verdict.ExitCode -ne 0) {
+            $anrProcess = Find-AndroidErrorDialogInLog -Directory $androidOutput
+            if ($anrProcess) {
+                $verdict.Warnings = @($verdict.Warnings) + "An ANR of $anrProcess appears in the logcat; failures that need window focus (keyboard, dialogs, system bars) may come from its dialog."
+            }
+        }
         if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
             # Another attempt on a device that is gone cannot help
             $verdict.Reasons = @($verdict.Reasons) + (Get-AndroidDeviceGoneReason -Serial $Serial)

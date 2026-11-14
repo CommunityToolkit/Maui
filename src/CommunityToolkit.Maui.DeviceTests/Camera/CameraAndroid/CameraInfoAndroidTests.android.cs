@@ -13,7 +13,7 @@ public class CameraInfoAndroidTests
 		new(name, deviceId, position, flash, minZoom, maxZoom, resolutions ?? [new Size(1, 1), new Size(2, 2)], selector!);
 
 	static CameraSelector SelectorFor(int lensFacing) =>
-		new CameraSelector.Builder().RequireLensFacing(lensFacing)!.Build();
+		new CameraSelector.Builder().RequireLensFacing(lensFacing)!.Build()!;
 
 	[Fact]
 	public void ConstructorKeepsEveryArgument()

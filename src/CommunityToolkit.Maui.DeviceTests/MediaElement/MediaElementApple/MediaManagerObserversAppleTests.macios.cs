@@ -194,6 +194,34 @@ public class MediaManagerObserversAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
+	public async Task PlayerReadyToPlayStatusDoesNotHideTheFailureOfAReadyItemWithoutTracks()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager!;
+			await manager.TakeSourceUpdates();
+			var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("trackless", "mp4")))) { StatusOverride = AVPlayerItemStatus.ReadyToPlay };
+			manager.NativePlayerItem = item;
+			try
+			{
+				await manager.RunItemStatusHandler(item, CancellationToken.None);
+				Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+
+				Poke(manager, manager.NativePlayer!, new AppleFakeAVPlayer { StatusOverride = AVPlayerStatus.ReadyToPlay }, "status");
+
+				Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+			}
+			finally
+			{
+				manager.NativePlayerItem = null;
+			}
+		});
+	}
+
+	[Fact]
 	public async Task PlayerStatusChangeIsIgnoredWhileTheManagerHasNoPlayer()
 	{
 		SetupApple();

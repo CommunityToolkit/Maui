@@ -26,7 +26,7 @@ public class CameraViewExtensionsAndroidTests : CameraAndroidTestBase
 	[InlineData(CameraFlashMode.Auto, 0)]
 	public void ToPlatformValueIsAcceptedByTheNativeImageCapture(CameraFlashMode flashMode, int expected)
 	{
-		using var imageCapture = new ImageCapture.Builder().Build();
+		using var imageCapture = new ImageCapture.Builder().Build()!;
 
 		// CameraX throws IllegalArgumentException for a value that is not one of its three flash modes.
 		imageCapture.FlashMode = flashMode.ToPlatform();

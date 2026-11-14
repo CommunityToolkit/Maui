@@ -31,6 +31,8 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 		return new NSError(new NSString("test-domain"), 7, userInfo);
 	}
 
+	const string noTracksToPlayMessage = "The media has no tracks to play.";
+
 	static UIView Overlay(AppleMediaElementHandler handler) => handler.Manager!.NativePlayerViewController!.ContentOverlayView!;
 
 	static async Task WithFakePlayerAsync(AppleMediaManager manager, AppleFakeAVPlayer fake, Func<Task> action)
@@ -394,7 +396,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
-	public async Task ReadyItemWithoutTracksShowsNoPoster()
+	public async Task ReadyItemWithoutTracksIsReportedAsFailedWithoutAPoster()
 	{
 		SetupApple();
 		var mediaElement = CreateMediaElement();
@@ -406,15 +408,71 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 			var manager = handler.Manager!;
 			await manager.TakeSourceUpdates();
 
-			// AVFoundation never reports such an item as ReadyToPlay; if it did, there would be no video track and no track at all.
+			// iOS 16.4 can make such an item ReadyToPlay, though there is nothing to play.
 			var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("trackless", "mp4")))) { StatusOverride = AVPlayerItemStatus.ReadyToPlay };
 
 			await manager.RunItemStatusHandler(item, CancellationToken.None);
 
-			Assert.Equal(1, events.Opened);
 			Assert.Empty(item.Asset.Tracks);
+			Assert.Equal(0, events.Opened);
+			Assert.Equal(noTracksToPlayMessage, Assert.Single(events.Failures));
+			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
 			Assert.Empty(Overlay(handler).Subviews);
-			Assert.DoesNotContain(Logs.Entries, entry => entry.Level is LogLevel.Warning or LogLevel.Error);
+			Assert.Contains(Logs.Entries, entry => entry.Level is LogLevel.Error && entry.Message == noTracksToPlayMessage);
+			Assert.DoesNotContain(Logs.Entries, entry => entry.Level is LogLevel.Warning);
+		});
+	}
+
+	[Fact]
+	public async Task ItemWithoutTracksThatBecomesReadyAfterItFailedIsNotOpened()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		var events = new MediaElementEvents(mediaElement);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager!;
+			await manager.TakeSourceUpdates();
+			var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("trackless", "mp4")))) { StatusOverride = AVPlayerItemStatus.Unknown };
+
+			await manager.RunItemStatusHandler(item, CancellationToken.None);
+			Assert.Single(events.Failures);
+
+			item.StatusOverride = AVPlayerItemStatus.ReadyToPlay;
+			await manager.RunItemStatusHandler(item, CancellationToken.None);
+
+			Assert.Equal(0, events.Opened);
+			Assert.Equal(noTracksToPlayMessage, Assert.Single(events.Failures));
+			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+		});
+	}
+
+	[Fact]
+	public async Task ReadyItemWithoutTracksNeverStartsAutoPlay()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		mediaElement.ShouldAutoPlay = true;
+		var events = new MediaElementEvents(mediaElement);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var manager = handler.Manager!;
+			await manager.TakeSourceUpdates();
+			var fake = new AppleFakeAVPlayer();
+			await WithFakePlayerAsync(manager, fake, async () =>
+			{
+				var item = new AppleFakeAVPlayerItem(AVAsset.FromUrl(NSUrl.FromFilename(BundlePath("trackless", "mp4")))) { StatusOverride = AVPlayerItemStatus.ReadyToPlay };
+
+				await manager.RunItemStatusHandler(item, CancellationToken.None);
+
+				Assert.Equal(0, fake.PlayCount);
+				Assert.Empty(fake.RatesSet);
+				Assert.Equal(0f, fake.Rate);
+				Assert.Equal(0, events.Opened);
+				Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
+			});
 		});
 	}
 

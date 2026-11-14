@@ -23,6 +23,8 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * The libraries pin the first .NET and .NET MAUI release of each major version (for example the .NET 11.0.100 SDK and `MauiPackageVersion` 11.0.0 in `Directory.Build.props`), so apps can use any later release.
 * Raise a pinned version only when a bug fix or a feature requires it.
 * The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
+* The device test app builds the same way in CI (`DEVICE_TEST_BUILD_ARGS` in `device-tests.yml`), so the device tests run on the .NET MAUI release that apps get. .NET MAUI 11.0.0 crashes on iOS 17 and earlier when a view with a managed KVO observer is collected (dotnet/maui#38662).
+* The Build workflow runs the unit tests on the pinned `MauiPackageVersion` and again on the latest .NET MAUI release (`-p:MauiPackageVersion="*"`), because servicing releases change behavior (dotnet/maui#38063).
 
 ### C# File Naming
 * Platform-suffix naming is required for files in projects that produce NuGet packages.
@@ -204,6 +206,7 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 * Platform code that the `net11.0` unit tests cannot reach is covered by device tests that run inside real apps on Android, iOS, Mac Catalyst and Windows, built like dotnet/maui's device tests (xUnit, dotnet/maui's test runner, XHarness).
 * There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`).
 * Give every test class a `[Category(TestCategory.X)]` and name platform-specific test files with the same suffixes as the libraries (`.android.cs`, `.ios.cs`, `.macos.cs`, `.macios.cs`, `.windows.cs`). How to write them is in [src/CommunityToolkit.Maui.DeviceTests/README.md](https://github.com/CommunityToolkit/Maui/blob/main/src/CommunityToolkit.Maui.DeviceTests/README.md).
+* Device tests run on the newest release of every supported major iOS and Android version (Android 17: the newest without 16 KB pages; `.github/workflows/device-tests.yml`). A PR that raises an OS minimum, adds a supported major version, or changes the device-test CI must keep that true; flag a PR that drops or skips one.
 * `dotnet test` does not run them. Use `eng/devices/run.ps1`, which runs every platform the machine can run and is the command of the `Device Tests` workflow on every pull request (one `-Platform` per job), or one platform's script (`android.ps1`, `ios.ps1`, `catalyst.ps1` or `windows.ps1`), as described in [eng/devices/LOCAL.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/LOCAL.md) and [eng/devices/README.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/README.md).
 
 ## Submitting Contributions

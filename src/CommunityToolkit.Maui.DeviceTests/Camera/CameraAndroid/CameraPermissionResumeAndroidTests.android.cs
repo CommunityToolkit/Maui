@@ -1,7 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Android.App;
+using Android.Content;
 using AndroidX.Camera.View;
-using AndroidX.Core.App;
 using AndroidX.Lifecycle;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
@@ -9,15 +10,13 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Revoking the camera permission would kill the test app, so a ConfigurableContext denies it to the manager while the app keeps it. Asking for
-// the permission that the app has still shows the permission activity in front of the runner's, which finishes at once: the runner's activity
-// pauses and resumes as it does behind the permission dialog.
+// Revoking the camera permission would kill the test app, so a ConfigurableContext denies it to the manager. From Android 16 QPR2 (API 36.1)
+// requestPermissions skips the permission activity for granted permissions, so a translucent test activity pauses and resumes the runner instead.
 [Category(TestCategory.CameraPermissionResumeAndroid)]
 [Collection(TestCollections.PermanentAndroidGrants)]
 public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 {
 	const string cameraPermissionNotGrantedMessage = "Camera permission is not granted. Please enable it in the app settings.";
-	const int cameraPermissionRequestCode = 4321;
 
 	[Fact]
 	public async Task ACameraViewThatConnectedWithoutTheCameraPermissionStartsItsPreviewWhenTheActivityResumesWithIt()
@@ -44,9 +43,9 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			Assert.False(IsStreaming(previewView));
 
 			context.DeniedPermissions.Clear();
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 
-			await WaitForStreamingAsync(previewView);
+			await WaitForStreamingAsync(previewView, errors: errors);
 			Assert.Single(errors.Errors);
 			Assert.Empty(UnhandledAsyncVoidExceptions);
 		}, previewView);
@@ -61,17 +60,17 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		{
 			using var errors = await ConnectWithoutTheCameraPermissionAsync(session);
 
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Single(errors.Errors);
 			await AssertThePreviewIsStoppedAsync(session);
 
 			context.DeniedPermissions.Clear();
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 
 			await WaitForNativeCameraStateAsync(session.View.SelectedCamera?.DeviceId ?? throw new InvalidOperationException("No camera is selected."), "OPEN");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			Assert.Equal(1, session.LoadedCount);
 			Assert.Single(errors.Errors);
 		}, provider, new TestMauiContext(MauiContext, context));
@@ -90,7 +89,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 			Assert.Equal(2, errors.Errors.Count);
 
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Equal(2, errors.Errors.Count);
@@ -115,7 +114,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.Manager.StartCameraPreview(cancellation.Token).WaitAsync(CameraTimeout));
 
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Single(errors.Errors);
@@ -134,7 +133,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			session.Manager.StopCameraPreview();
 			context.DeniedPermissions.Clear();
 
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Single(errors.Errors);
@@ -155,7 +154,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			context.DeniedPermissions.Clear();
 			bool? wasStillWaitingForThePermission = null;
 
-			await AskForTheCameraPermissionAsync(() =>
+			await PauseAndResumeTheActivityAsync(() =>
 			{
 				wasStillWaitingForThePermission = GetPrivateField<bool>(session.Manager, "isWaitingForCameraPermission");
 				session.Manager.StopCameraPreview();
@@ -189,7 +188,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			Assert.Empty(errors.Errors);
 
 			context.DeniedPermissions.Clear();
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Empty(errors.Errors);
@@ -210,10 +209,10 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			context.DeniedPermissions.Clear();
 			Task? startOfTheApp = null;
 
-			await AskForTheCameraPermissionAsync(() => startOfTheApp = session.Manager.StartCameraPreview(CancellationToken.None));
+			await PauseAndResumeTheActivityAsync(() => startOfTheApp = session.Manager.StartCameraPreview(CancellationToken.None));
 
 			await (startOfTheApp ?? throw new InvalidOperationException("The test's observer did not run.")).WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			await WaitForTheListenersOfCameraXAsync();
 
 			Assert.Equal(1, session.LoadedCount);
@@ -233,7 +232,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 			context.DeniedPermissions.Clear();
 			session.View.SelectedCamera = CreateCameraThatCanNotBeBound();
 
-			await AskForTheCameraPermissionAsync();
+			await PauseAndResumeTheActivityAsync();
 			await AssertionExtensions.AssertEventually(() => errors.Errors.Count > 1, 30000, 50, "The failure of the retried start was not reported.");
 
 			Assert.IsType<Java.Lang.IllegalArgumentException>(errors.Errors[1], exactMatch: false);
@@ -336,7 +335,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 	}
 
 	// Observers hear an event in the order in which they started to observe the lifecycle, so onResumed runs after the manager heard the resume.
-	static async Task AskForTheCameraPermissionAsync(Action? onResumed = null)
+	static async Task PauseAndResumeTheActivityAsync(Action? onResumed = null)
 	{
 		var activity = (Activity)AppContext;
 		var lifecycle = ((ILifecycleOwner)activity).Lifecycle;
@@ -345,7 +344,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		await InvokeOnMainThreadAsync(() => lifecycle.AddObserver(observer));
 		try
 		{
-			await InvokeOnMainThreadAsync(() => ActivityCompat.RequestPermissions(activity, [CameraPermission], cameraPermissionRequestCode));
+			await InvokeOnMainThreadAsync(() => activity.StartActivity(new Intent(activity, typeof(TranslucentPauseActivity))));
 
 			await observer.Paused.WaitAsync(CameraTimeout);
 			await observer.Resumed.WaitAsync(CameraTimeout);
@@ -353,6 +352,7 @@ public class CameraPermissionResumeAndroidTests : CameraAndroidTestBase
 		finally
 		{
 			await InvokeOnMainThreadAsync(() => lifecycle.RemoveObserver(observer));
+			AndroidHostContext.Restore(activity);
 		}
 	}
 
