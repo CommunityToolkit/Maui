@@ -11,22 +11,27 @@
     (the four libraries, one version each, other files are ignored). Then it publishes the Sample (unpackaged, self-contained) in Release
     against those nupkgs instead of the toolkit projects, with the variant's trim settings (Directory.Build.targets), into
     <OutRoot>\windows-<Variant>\: publish\ (the app), build.binlog, build.log, warnings.log, assets.json (the restore's project.assets.json),
-    linked-sizes.txt, result.json, assets-check.txt, warnings-unique.tsv, warnings-summary.txt and warnings-counts.json, and
-    <OutRoot>\windows-<Variant>.zip with everything but publish\.
+    linked-sizes.txt, result.json, assets-check.txt, warnings-unique.tsv, warnings-summary.txt, warnings-counts.json, gate-output.txt (the gate's
+    verdict) and toolkit-dlls\ (the four toolkit DLLs, for gating elsewhere), and <OutRoot>\windows-<Variant>.zip with everything but publish\.
 
     Exit code: the gate's (0 clean, 1 new toolkit or toolkit-api warnings, 3 assets check not OK, 4 build failed or a log or result is
     missing or unreadable, 2 usage or a bad allow-list), 5 when packing failed. Usage and feed errors (bad -Variant, -Feed with -Repo or
     -Version, a missing or duplicate nupkg, no Windows target framework) are exit 2 as in audit.sh, never 1. -Github prints ::error
-    annotations (at most -MaxAnnotations, default 10: GitHub shows 10 per step, and this script is the only gate of its step),
+    annotations (at most -MaxAnnotations, default 10: GitHub shows 10 error annotations per step and 50 per job, summed over steps, so the job summary is the reliable channel),
     -Summary appends a Markdown report to a file
-    (give it $env:GITHUB_STEP_SUMMARY).
+    (give it $env:GITHUB_STEP_SUMMARY). Every exit prints GATE-EXIT=<code>, because a pwsh step of GitHub Actions reports any non-zero exit as 1.
+
+    Without a working Python the script still builds and writes the logs, result.json and assets-check.txt (checked in PowerShell), prints how
+    to gate the zip elsewhere and exits 4 (0 for -Variant aot): build ok, gate not run. On macOS or Linux:
+    eng/trim-audit/gate-windows-result.sh <the zip or its folder>
 
     Variant 'aot' (NativeAOT) is report only and is never gated: .NET MAUI apps published with NativeAOT on Windows crash at run
     time (dotnet/maui#39053), so its result can't gate the build. Its warnings and its log are kept, and the exit code is 0 unless
     the call itself is wrong.
     A failing 'full' publish is a result of the audit too, not something to hide.
 
-    Untested on Windows: checked on macOS pwsh (parse, preamble, simulated publish) only. The first fork run is its proof.
+    Proven by fork run r1: PowerShell 7 restore, sha512 check, publish, zip and gate on a GitHub Windows runner. Still unproven: Windows
+    PowerShell 5.1 and the no-Python path on a real Windows machine.
 
 .EXAMPLE
     pwsh -NoProfile -File eng\trim-audit\audit-win.ps1 -Variant rootlibs -Feed D:\a\nuget -Github -Summary $env:GITHUB_STEP_SUMMARY
@@ -64,14 +69,27 @@ $repoRoot = (Resolve-Path (Join-Path $here '..\..')).Path
 $sample = Join-Path $repoRoot 'samples\CommunityToolkit.Maui.Sample\CommunityToolkit.Maui.Sample.csproj'
 $reportOnly = $Variant -eq 'aot'
 
+# The wrapper that GitHub puts around a pwsh step can turn any non-zero exit into 1, so every exit prints GATE-EXIT=<code> and the summary says it too.
+$script:gateOutputPath = ''
+function Write-GateOutput([string]$Text) {
+    if ($script:gateOutputPath) { Add-Content -LiteralPath $script:gateOutputPath -Value $Text -Encoding UTF8 }
+}
+function Write-GateExit([int]$Code) {
+    $line = "GATE-EXIT=$Code (windows-$Variant)"
+    Write-Host $line
+    Write-GateOutput $line
+    if ($Summary) { Add-Content -Path $Summary -Value "`nGate exit code: $Code (windows-$Variant)" }
+}
 # Failures before the build are the caller's to fix: exit 2 (5 for packing) with an annotation and a summary line, never a bare PowerShell exit 1.
 function Exit-WithAuditError([string]$Message, [int]$Code = 2) {
     Write-Host "GATE: $Message"
+    Write-GateOutput "GATE: $Message"
     if ($Github) {
         $escaped = $Message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
         Write-Host "::$(if ($Code -eq 0) { 'warning' } else { 'error' })::$escaped"
     }
     if ($Summary) { Add-Content -Path $Summary -Value "### Trim and AOT gate (windows-$Variant): FAIL (exit $Code)`n`n$Message" }
+    Write-GateExit $Code
     exit $Code
 }
 # Camera and MediaElement have their own version on release tags, so each library's version is read from its own nupkg.
@@ -148,6 +166,7 @@ $env:DOTNET_NOLOGO = '1'; $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'; $env:MSBUILDDI
 $out = Join-Path $OutRoot "windows-$Variant"
 if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force $out | Out-Null
+$script:gateOutputPath = Join-Path $out 'gate-output.txt'
 
 $frameworks = (& dotnet msbuild $sample -nologo -getProperty:TargetFrameworks) -split ';'
 $tfm = $frameworks | Where-Object { $_ -match '^net[\d.]+-windows' } | Select-Object -First 1
@@ -182,6 +201,42 @@ function Find-Python {
     }
     return $null
 }
+# Same checks as verify-assets.py, for a machine without Python: returns 0 (ASSETS-CHECK=OK) or 1.
+function Write-AssetsCheckWithoutPython([string]$AssetsPath, [string]$CheckPath) {
+    $failures = @()
+    $passes = @()
+    $seen = @()
+    if (-not (Test-Path $AssetsPath)) { $failures += 'no project.assets.json: the restore failed' }
+    else {
+        try {
+            $assetsJson = Get-Content $AssetsPath -Raw | ConvertFrom-Json
+            # A file that parses but is not an assets object (empty, null, a number, a string) must fail, never pass.
+            if ($assetsJson -isnot [pscustomobject] -or $assetsJson.libraries -isnot [pscustomobject] -or $assetsJson.packageFolders -isnot [pscustomobject]) { throw 'it has no libraries and packageFolders objects' }
+            foreach ($library in $assetsJson.libraries.PSObject.Properties) {
+                $name, $libraryVersion = $library.Name -split '/', 2
+                if ($name -cnotin $ids) {
+                    if ($library.Value.type -eq 'project' -and $name.StartsWith('CommunityToolkit.Maui', [StringComparison]::Ordinal) -and -not $name.StartsWith('CommunityToolkit.Maui.DeviceTests', [StringComparison]::Ordinal)) { $failures += "project reference to toolkit code: $($library.Name)" }
+                    continue
+                }
+                $seen += $name
+                if ($library.Value.type -ne 'package') { $failures += "$($library.Name) is a $($library.Value.type), not a package"; continue }
+                if ($versionOf[$name] -ne $libraryVersion) { $failures += "$($library.Name): the feed has $($versionOf[$name])"; continue }
+                $restored = Join-Path $packages "$($name.ToLowerInvariant())\$($libraryVersion.ToLowerInvariant())\$($name.ToLowerInvariant()).$($libraryVersion.ToLowerInvariant()).nupkg.sha512"
+                if (-not (Test-Path $restored)) { $failures += "$($library.Name): not restored into $packages"; continue }
+                $feedSha = [Convert]::ToBase64String([System.Security.Cryptography.SHA512]::Create().ComputeHash([IO.File]::ReadAllBytes((Join-Path $feedFolder "$name.$libraryVersion.nupkg"))))
+                if ((Get-Content $restored -Raw).Trim() -ne $feedSha) { $failures += "$($library.Name): the restored nupkg differs from the feed (stale packages folder? delete $packages)"; continue }
+                $passes += "OK $($library.Name) package from the feed (sha512 matches)"
+            }
+            $restoreFolders = foreach ($folder in $assetsJson.packageFolders.PSObject.Properties) { $folder.Name.TrimEnd('\') }
+            if ($packages.TrimEnd('\') -notin @($restoreFolders)) { $failures += "packages folder $packages is not the restore folder" }
+            if ('CommunityToolkit.Maui' -notin $seen) { $failures += 'CommunityToolkit.Maui is not in the assets file' }
+        }
+        catch { $failures += "cannot read ${AssetsPath}: $($_.Exception.Message)" }
+    }
+    $lines = $passes + @($failures | ForEach-Object { "FAIL $_" }) + "ASSETS-CHECK=$(if ($failures) { 'FAIL' } else { 'OK' })"
+    Set-Content -Path $CheckPath -Value $lines
+    return [int]($failures.Count -gt 0)
+}
 $python = Find-Python
 $assetsExit = 0
 $assetsCheck = Join-Path $out 'assets-check.txt'
@@ -199,11 +254,19 @@ if ($python) {
     & $python -I (Join-Path $here 'ilwarn.py') summarize (Join-Path $out 'warnings.log') $out $packages | Out-Null
     $ErrorActionPreference = 'Stop'
 }
+else {
+    $assetsExit = Write-AssetsCheckWithoutPython $assets $assetsCheck
+}
 $sizes = @('# assembly | package bytes | trimmed bytes (none: not trimmed)')
+# ilwarn.py attributes a warning to a toolkit assembly by reading its DLL from a folder with a lib\ segment: the zip carries the four DLLs so that a
+# machine with Python can run `summarize` and the gate on a result that was built without it.
+$dllFolder = Join-Path $out 'toolkit-dlls\lib'
+New-Item -ItemType Directory -Force $dllFolder | Out-Null
 foreach ($id in $ids) {
     $original = Get-ChildItem (Join-Path $packages "$($id.ToLowerInvariant())\$($versionOf[$id])\lib") -Recurse -Filter "$id.dll" -ErrorAction SilentlyContinue | Where-Object FullName -Match 'windows' | Select-Object -First 1
     $linked = Get-ChildItem (Join-Path $out 'obj') -Recurse -Filter "$id.dll" -ErrorAction SilentlyContinue | Where-Object FullName -Match 'link' | Select-Object -First 1
     $sizes += "$id | $($original.Length) | $(if ($linked) { $linked.Length } else { 'none' })"
+    if ($original) { Copy-Item $original.FullName $dllFolder }
 }
 Set-Content -Path (Join-Path $out 'linked-sizes.txt') -Value $sizes
 $exe = Get-ChildItem (Join-Path $out 'publish') -Filter 'CommunityToolkit.Maui.Sample.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -211,19 +274,35 @@ $exe = Get-ChildItem (Join-Path $out 'publish') -Filter 'CommunityToolkit.Maui.S
    minutes = [math]::Round(($end - $start).TotalMinutes, 1); app = $(if ($exe) { $exe.FullName } else { '' }) } |
     ConvertTo-Json | Set-Content (Join-Path $out 'result.json')
 
+if (-not $python) {
+    $gateExit = $(if ($reportOnly) { 0 } else { 4 })
+    $assetsLine = @(Get-Content $assetsCheck | Where-Object { $_ -like 'ASSETS-CHECK=*' })[-1]
+    $whatHappened = if ($rc -ne 0) { "the build failed (dotnet publish exit $rc); its logs are in the zip; the gate did not run" } else { 'the build finished and its results are in the zip, but the gate did not run' }
+    $noPython = "no working Python on PATH: $whatHappened. $assetsLine (checked in PowerShell). Gate it on any machine with Python 3 " +
+        '(macOS, Linux or Windows): eng/trim-audit/gate-windows-result.sh <the zip or its folder>, or run in order: ' +
+        'python3 -I eng/trim-audit/ilwarn.py summarize <folder>/warnings.log <folder> <folder>/toolkit-dlls, then ' +
+        'python3 -I eng/trim-audit/ilwarn.py gate <folder>/warnings-unique.tsv --allow eng/trim-audit/allow.tsv --log <folder>/warnings.log --assets-check <folder>/assets-check.txt --result <folder>/result.json ' +
+        "(python on Windows). Exit code $gateExit$(if ($rc -eq 0) { ': build ok, gate not run' })."
+    Write-Host "GATE: $noPython"
+    Write-GateOutput "GATE: $noPython"
+    if ($Github) { Write-Host "::$(if ($reportOnly) { 'warning' } else { 'error' })::$($noPython.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))" }
+    if ($Summary) { Add-Content -Path $Summary -Value "### Trim and AOT gate (windows-$Variant): not run (exit $gateExit)`n`n$noPython" }
+}
+else {
+    $gateArguments = @('-I', (Join-Path $here 'ilwarn.py'), 'gate', (Join-Path $out 'warnings-unique.tsv'), '--allow', (Join-Path $here 'allow.tsv'),
+        '--log', (Join-Path $out 'warnings.log'), '--assets-check', $assetsCheck, '--result', (Join-Path $out 'result.json'))
+    if ($Github) { $gateArguments += '--github', '--max-annotations', $MaxAnnotations }
+    if ($Summary) { $gateArguments += '--summary', $Summary }
+    if ($reportOnly) { $gateArguments += '--report-only' }
+    $ErrorActionPreference = 'Continue'
+    & $python @gateArguments 2>&1 | ForEach-Object { "$_" } | ForEach-Object { $_; Add-Content -LiteralPath $script:gateOutputPath -Value $_ -Encoding UTF8 }
+    $gateExit = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+}
+Write-GateExit $gateExit
+
 $zip = Join-Path $OutRoot "windows-$Variant.zip"
 if (Test-Path $zip) { Remove-Item $zip }
-Get-ChildItem $out -File | Compress-Archive -DestinationPath $zip
+(@(Get-ChildItem $out -File) + @(Get-Item (Join-Path $out 'toolkit-dlls'))) | Compress-Archive -DestinationPath $zip
 "AUDIT-WIN-EXIT=$rc ZIP=$zip ZIP-BYTES=$((Get-Item $zip).Length) APP=$(if ($exe) { $exe.FullName })"
-
-if (-not $python) {
-    Exit-WithAuditError 'no working Python on PATH; the gate cannot run' $(if ($reportOnly) { 0 } else { 4 })
-}
-$gateArguments = @('-I', (Join-Path $here 'ilwarn.py'), 'gate', (Join-Path $out 'warnings-unique.tsv'), '--allow', (Join-Path $here 'allow.tsv'),
-    '--log', (Join-Path $out 'warnings.log'), '--assets-check', $assetsCheck, '--result', (Join-Path $out 'result.json'))
-if ($Github) { $gateArguments += '--github', '--max-annotations', $MaxAnnotations }
-if ($Summary) { $gateArguments += '--summary', $Summary }
-if ($reportOnly) { $gateArguments += '--report-only' }
-$ErrorActionPreference = 'Continue'
-& $python @gateArguments
-exit $LASTEXITCODE
+exit $gateExit

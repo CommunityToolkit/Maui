@@ -19,8 +19,10 @@
       that the app calls (the fix lives there), else the member or file:line.
       Warnings of the other buckets are listed, never failed.
       --github prints one ::error annotation per new warning, or one ::error for the reason the leg failed (then no per-warning ones).
-      GitHub shows at most 10 error and 10 warning annotations per step (50 per job), so --max-annotations <n> (default 10) caps the
-      per-warning ones of this gate; a ::warning says how many were left out. `audit.sh run` splits one budget of 10
+      With new warnings, the first annotation is the verdict ('GATE: FAIL, n ...') and it counts in the budget below.
+      GitHub shows at most 10 error and 10 warning annotations per step and 50 per job, summed over all steps, and earlier steps can use
+      all 50, so the job summary and the GATE-EXIT line are the reliable channels; the verdict first helps only when budget is left.
+      --max-annotations <n> (default 10) caps the per-warning ones of this gate; a ::warning says how many were left out. `audit.sh run` splits one budget of 10
       among the legs of its step; audit-win.ps1 is the only gate of its step and passes all of it.
       --summary appends a Markdown report (counts per bucket, the new warnings, stale allow-list lines) to the file (the job summary).
       It lists at most 200 rows per list and says how many more there are (GitHub rejects a step summary over 1 MiB); the step log lists every row.
@@ -335,14 +337,22 @@ def where_listed(total):
 
 
 def print_annotations(new, stale, level='error', max_annotations=DEFAULT_MAX_ANNOTATIONS):
-    for bucket, tool, code, assembly, subject, location, message in new[:max_annotations]:
+    # The verdict comes first and is one of the budget: GitHub keeps only the first annotations of a job, so the one that says why the step failed must not be last.
+    per_warning = max_annotations
+    verdict_printed = bool(new) and max_annotations > 0
+    if verdict_printed:
+        print('::%s title=%s::%s' % (level, escape_property('Trim and AOT gate'),
+                                     escape_annotation('GATE: %s, %d toolkit and toolkit-api warnings are not allow-listed (listed below, in the step log and in the job summary)'
+                                                       % ('REPORT ONLY' if level == 'warning' else 'FAIL', len(new)))))
+        per_warning -= 1
+    for bucket, tool, code, assembly, subject, location, message in new[:per_warning]:
         file, line = repo_file_and_line(location)
         where = 'file=%s,line=%s,' % (escape_property(file), line) if file else ''
         print('::%s %stitle=%s::%s' % (level, where, escape_property('%s (%s %s)' % (code, bucket, tool)),
                                           escape_annotation('%s [%s]: %s' % (subject, location or '-', message))))
-    if len(new) > max_annotations:
-        print('::warning::%d more new warnings are not annotated (GitHub shows %d annotations per step, this gate annotates %d); %s'
-              % (len(new) - max_annotations, GITHUB_ANNOTATIONS_PER_STEP, max_annotations, where_listed(len(new))))
+    if len(new) > per_warning:
+        print('::warning::%d more new warnings are not annotated (GitHub shows %d annotations per step, this gate annotates %d%s); %s'
+              % (len(new) - per_warning, GITHUB_ANNOTATIONS_PER_STEP, max_annotations, ', the first is its verdict' if verdict_printed else '', where_listed(len(new))))
     for a_code, pattern, reason, _ in stale:
         print('::warning::%s' % escape_annotation('stale allow-list entry on this leg (matches nothing here; delete it when no leg needs it): %s %s -- %s'
                                                   % (a_code, pattern, reason)))

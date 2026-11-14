@@ -4,15 +4,21 @@
 
 Run it under tr_TR.UTF-8 and C locales: the parser and the gate handle build output, not user text, so neither may depend on the
 locale (Turkish casing turns I into a dotless i and would split a member name from its pattern)."""
+import base64
 import collections
 import contextlib
+import hashlib
 import io
 import json
 import os
+import re
 import runpy
+import shutil
+import subprocess
 import tempfile
 import unittest
 import unittest.mock
+import zipfile
 
 import ilwarn
 
@@ -361,7 +367,7 @@ class GateTests(Workspace):
         rc, output = self.gate_on(lines, github=True)
         self.assertEqual(rc, 1)
         self.assertEqual(sum(1 for line in output.splitlines() if line.startswith('::error title=')), 10)
-        self.assertIn('::warning::50 more new warnings are not annotated (GitHub shows 10 annotations per step, this gate annotates 10); the step log and the job summary list all 60', output)
+        self.assertIn('::warning::51 more new warnings are not annotated (GitHub shows 10 annotations per step, this gate annotates 10, the first is its verdict); the step log and the job summary list all 60', output)
         self.assertEqual(ilwarn.escape_annotation('a%b\nc'), 'a%25b%0Ac')
 
     def test_max_annotations_option_changes_the_cap_and_the_summary_lists_every_warning(self):
@@ -370,9 +376,21 @@ class GateTests(Workspace):
         rc, output = self.gate_on(lines, github=True, max_annotations=3, summary=summary)
         self.assertEqual(rc, 1)
         self.assertEqual(sum(1 for line in output.splitlines() if line.startswith('::error title=')), 3)
-        self.assertIn('::warning::5 more new warnings', output)
+        self.assertIn('::warning::6 more new warnings', output)
         with open(summary, encoding='utf-8') as source:
             self.assertIn('**New toolkit and toolkit-api warnings (8)**', source.read())
+
+    def test_the_verdict_annotation_comes_first_and_counts_in_the_budget(self):
+        lines = [turkish_member_row('Converter%03d' % number) for number in range(5)]
+        _, output = self.gate_on(lines, github=True, max_annotations=3)
+        errors = [line for line in output.splitlines() if line.startswith('::error')]
+        self.assertEqual(len(errors), 3)
+        self.assertTrue(errors[0].startswith('::error title=Trim and AOT gate::GATE: FAIL, 5 toolkit'))
+
+    def test_a_report_only_gate_annotates_its_verdict_as_a_warning(self):
+        _, output = self.gate_on([ISINRANGE_ILC], github=True, report_only=True)
+        self.assertIn('::warning title=Trim and AOT gate::GATE: REPORT ONLY', output)
+        self.assertNotIn('::error', output)
 
     def test_a_failed_leg_prints_one_annotation_and_none_per_warning(self):
         self.summarize([ISINRANGE_ILC])
@@ -523,6 +541,189 @@ class GateTests(Workspace):
                 with self.assertRaises(SystemExit) as raised:
                     runpy.run_path(ilwarn.__file__, run_name='__main__')
                 self.assertEqual(raised.exception.code, expected)
+
+
+class WindowsResultHelperTests(Workspace):
+    helper = os.path.join(os.path.dirname(os.path.abspath(ilwarn.__file__)), 'gate-windows-result.sh')
+
+    def windows_result(self, log_lines, assets='ASSETS-CHECK=OK', build_exit=0):
+        self.write('warnings.log', '\n'.join(log_lines) + '\n')
+        self.write('assets-check.txt', assets)
+        self.write('result.json', json.dumps({'platform': 'windows', 'variant': 'rootlibs', 'build_exit': build_exit}))
+        return self.directory.name
+
+    def run_helper(self, *arguments):
+        done = subprocess.run(['bash', self.helper, *arguments], capture_output=True, text=True, check=False)
+        return done.returncode, done.stdout + done.stderr
+
+    def test_a_clean_result_folder_gates_to_0_and_writes_gate_output(self):
+        folder = self.windows_result([MARKUP_ROW])
+        rc, output = self.run_helper(folder)
+        self.assertEqual(rc, 0)
+        self.assertIn('GATE-EXIT=0', output)
+        with open(os.path.join(folder, 'gate-output.txt'), encoding='utf-8') as source:
+            self.assertIn('GATE: OK', source.read())
+
+    def test_a_new_toolkit_warning_gates_to_1(self):
+        rc, output = self.run_helper(self.windows_result([ISINRANGE_ILC]), '--github')
+        self.assertEqual(rc, 1)
+        self.assertIn('GATE-EXIT=1', output)
+        self.assertIn('::error title=Trim and AOT gate::', output)
+
+    def test_a_zip_is_unpacked_next_to_itself_and_gated(self):
+        folder = self.windows_result([ISINRANGE_ILC])
+        archive = os.path.join(folder, 'windows-rootlibs.zip')
+        subprocess.run(['zip', '-q', '-j', archive, *(os.path.join(folder, name) for name in ('warnings.log', 'assets-check.txt', 'result.json'))], check=True)
+        rc, _ = self.run_helper(archive)
+        self.assertEqual(rc, 1)
+        self.assertTrue(os.path.exists(os.path.join(folder, 'windows-rootlibs', 'gate-output.txt')))
+
+    def test_a_zip_with_backslash_entry_names_is_unpacked_and_attributes_warnings_to_the_toolkit_dll(self):
+        # Windows PowerShell 5.1 writes entry names like this, and unzip only warns about them (exit 1).
+        dll_name = 'CommunityToolkit.Maui.Core'
+        warning = (PREFIX + "obj/Release/Gen/Thing.g.cs(11): Trim analysis warning IL2087: "
+                   "CommunityToolkit.Maui.Core.Views.PopupThing.Run(): message. [/_/Sample.csproj]")
+        entries = {'warnings.log': warning + '\n', 'assets-check.txt': 'ASSETS-CHECK=OK',
+                   'result.json': json.dumps({'platform': 'windows', 'variant': 'rootlibs', 'build_exit': 0})}
+        archive = self.path('windows-rootlibs.zip')
+        with zipfile.ZipFile(archive, 'w') as out:
+            for name, text in entries.items():
+                out.writestr(zipfile.ZipInfo(name), text)
+            dll = zipfile.ZipInfo('toolkit-dlls\\lib\\%s.dll' % dll_name)
+            dll.create_system = 0
+            out.writestr(dll, b'MZ\0PopupThing\0Views\0')
+        rc, output = self.run_helper(archive)
+        self.assertEqual(rc, 1, output)
+        folder = self.path('windows-rootlibs')
+        self.assertTrue(os.path.exists(os.path.join(folder, 'toolkit-dlls', 'lib', dll_name + '.dll')))
+        with open(os.path.join(folder, 'warnings-unique.tsv'), encoding='utf-8') as tsv:
+            self.assertIn(dll_name, tsv.read())
+
+    def test_a_zip_entry_that_leaves_the_target_folder_is_refused(self):
+        archive = self.path('evil.zip')
+        with zipfile.ZipFile(archive, 'w') as out:
+            out.writestr('..\\..\\escaped.txt', 'x')
+        self.assertEqual(self.run_helper(archive)[0], 2)
+        self.assertFalse(os.path.exists(os.path.join(self.directory.name, '..', 'escaped.txt')))
+
+    def test_a_missing_target_is_a_usage_error_2(self):
+        self.assertEqual(self.run_helper(os.path.join(self.directory.name, 'nothing'))[0], 2)
+        self.assertEqual(self.run_helper()[0], 2)
+
+
+@unittest.skipUnless(shutil.which('pwsh'), 'PowerShell 7 (pwsh) is not installed')
+class WithoutPythonAssetsCheckParityTests(Workspace):
+    """audit-win.ps1 repeats verify-assets.py for a machine without Python: the two must print the same lines and return the same code."""
+    audit_folder = os.path.dirname(os.path.abspath(ilwarn.__file__))
+    version = '99.0.0-parity'
+    ids = ('CommunityToolkit.Maui', 'CommunityToolkit.Maui.Core', 'CommunityToolkit.Maui.Camera', 'CommunityToolkit.Maui.MediaElement')
+    harness = r'''param([string]$Script, [string]$Fixture)
+$m = [regex]::Match((Get-Content $Script -Raw), '(?s)# Same checks as verify-assets\.py, for a machine.*?\n}\n')
+. ([scriptblock]::Create($m.Value))
+$ErrorActionPreference = 'Stop'
+$feedFolder = Join-Path $Fixture 'feed'; $packages = Join-Path $Fixture 'pk'
+$ids = 'CommunityToolkit.Maui', 'CommunityToolkit.Maui.Core', 'CommunityToolkit.Maui.Camera', 'CommunityToolkit.Maui.MediaElement'
+function Get-FeedVersion([string]$Id) {
+    $found = @(Get-ChildItem $feedFolder -Filter "$Id.*.nupkg" | Where-Object { $_.Name -match ('^' + [regex]::Escape($Id) + '\.\d') })
+    $found[0].Name.Substring($Id.Length + 1) -replace '\.nupkg$', ''
+}
+$versionOf = @{}; foreach ($id in $ids) { $versionOf[$id] = Get-FeedVersion $id }
+exit (Write-AssetsCheckWithoutPython (Join-Path $Fixture 'assets.json') (Join-Path $Fixture 'ps-check.txt'))
+'''
+
+    def build_fixture(self, name, mutate=None):
+        fixture = self.path('fx-' + name)
+        feed, packages = os.path.join(fixture, 'feed'), os.path.join(fixture, 'pk')
+        os.makedirs(feed)
+        assets = {'libraries': {'%s/%s' % (i, self.version): {'type': 'package'} for i in self.ids}, 'packageFolders': {packages: {}}}
+        assets['libraries']['CommunityToolkit.Maui.DeviceTests/1.0.0'] = {'type': 'project'}
+        assets['libraries']['Microsoft.Maui.Controls/10.0.0'] = {'type': 'package'}
+        for i in self.ids:
+            nupkg = os.path.join(feed, '%s.%s.nupkg' % (i, self.version))
+            with open(nupkg, 'wb') as out:
+                out.write(('payload ' + i).encode())
+            restored = os.path.join(packages, i.lower(), self.version)
+            os.makedirs(restored)
+            with open(os.path.join(restored, '%s.%s.nupkg.sha512' % (i.lower(), self.version)), 'w') as out:
+                out.write(base64.b64encode(hashlib.sha512(('payload ' + i).encode()).digest()).decode())
+        if mutate:
+            mutate(assets, feed, packages)
+        with open(os.path.join(fixture, 'assets.json'), 'w', encoding='utf-8') as out:
+            json.dump(assets, out)
+        return fixture
+
+    def python_result(self, fixture):
+        done = subprocess.run(['python3', '-I', os.path.join(self.audit_folder, 'verify-assets.py'), os.path.join(fixture, 'assets.json'),
+                               os.path.join(fixture, 'feed'), os.path.join(fixture, 'pk')], capture_output=True, text=True, check=False)
+        lines = [re.sub(r' \(.*\)$', '', line) for line in done.stdout.splitlines()]
+        return done.returncode, lines
+
+    def powershell_result(self, fixture):
+        harness = self.write('harness.ps1', self.harness)
+        done = subprocess.run(['pwsh', '-NoProfile', '-File', harness, os.path.join(self.audit_folder, 'audit-win.ps1'), fixture],
+                              capture_output=True, text=True, check=False)
+        with open(os.path.join(fixture, 'ps-check.txt'), encoding='utf-8') as source:
+            lines = [re.sub(r' \(.*\)$', '', line) for line in source.read().splitlines()]
+        return done.returncode, lines
+
+    def assert_parity(self, name, mutate=None, expected_code=1):
+        fixture = self.build_fixture(name, mutate)
+        python_code, python_lines = self.python_result(fixture)
+        powershell_code, powershell_lines = self.powershell_result(fixture)
+        self.assertEqual(python_code, expected_code)
+        self.assertEqual(powershell_code, python_code)
+        self.assertEqual(powershell_lines, python_lines)
+
+    def test_ok(self):
+        self.assert_parity('ok', expected_code=0)
+
+    def test_a_tampered_restored_nupkg(self):
+        def tamper(assets, feed, packages):
+            with open(os.path.join(packages, 'communitytoolkit.maui.camera', self.version, 'communitytoolkit.maui.camera.%s.nupkg.sha512' % self.version), 'w') as out:
+                out.write('bad')
+        self.assert_parity('tampered', tamper)
+
+    def test_a_feed_with_another_version(self):
+        def rename(assets, feed, packages):
+            os.rename(os.path.join(feed, 'CommunityToolkit.Maui.MediaElement.%s.nupkg' % self.version), os.path.join(feed, 'CommunityToolkit.Maui.MediaElement.99.0.1.nupkg'))
+        self.assert_parity('feed_version', rename)
+
+    def test_a_restore_folder_that_is_not_the_audit_packages_folder(self):
+        self.assert_parity('folder', lambda assets, feed, packages: assets.update(packageFolders={'/elsewhere/': {}}))
+
+    def test_a_project_reference_to_toolkit_code(self):
+        def reference(assets, feed, packages):
+            assets['libraries']['CommunityToolkit.Maui.Core/%s' % self.version]['type'] = 'project'
+            assets['libraries']['CommunityToolkit.Maui.Extra/1.0.0'] = {'type': 'project'}
+        self.assert_parity('project', reference)
+
+    def test_a_missing_main_library(self):
+        self.assert_parity('missing_maui', lambda assets, feed, packages: assets['libraries'].pop('CommunityToolkit.Maui/%s' % self.version))
+
+    def test_a_library_that_was_not_restored(self):
+        def remove(assets, feed, packages):
+            os.remove(os.path.join(packages, 'communitytoolkit.maui.core', self.version, 'communitytoolkit.maui.core.%s.nupkg.sha512' % self.version))
+        self.assert_parity('not_restored', remove)
+
+    def test_an_assets_file_that_cannot_be_read_fails_the_check_and_still_writes_it(self):
+        fixture = self.build_fixture('truncated')
+        with open(os.path.join(fixture, 'assets.json'), 'w', encoding='utf-8') as out:
+            out.write('{"libraries": {')
+        code, lines = self.powershell_result(fixture)
+        self.assertEqual(code, 1)
+        self.assertEqual(lines[-1], 'ASSETS-CHECK=FAIL')
+        self.assertTrue(any(line.startswith('FAIL cannot read ') for line in lines))
+
+    def test_an_assets_file_with_the_wrong_shape_fails_like_verify_assets(self):
+        for index, content in enumerate(('', 'null', '[]', '0', '{}', '{"libraries": null}', '"x"')):
+            with self.subTest(content=content):
+                fixture = self.build_fixture('shape-%d' % index)
+                with open(os.path.join(fixture, 'assets.json'), 'w', encoding='utf-8') as out:
+                    out.write(content)
+                code, lines = self.powershell_result(fixture)
+                self.assertEqual(code, 1)
+                self.assertEqual(lines[-1], 'ASSETS-CHECK=FAIL')
+                self.assertNotEqual(self.python_result(fixture)[0], 0)
 
 
 if __name__ == '__main__':

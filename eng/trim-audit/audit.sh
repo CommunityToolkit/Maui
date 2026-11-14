@@ -25,8 +25,8 @@
 #       a CI pack step left in <folder> (the four libraries, one version each, any other files are ignored). Then it builds the leg and
 #       gates it. A platform list (`run android,ios aotroot --feed ...`) packs once, then builds and gates every platform even when an
 #       earlier one fails, and exits with the first non-zero code. Exit: the gate's (0, 1, 3, 4 above), 2 for a usage error, 5 when packing
-#       failed. --github prints ::error annotations. GitHub shows only 10 error annotations per step, so --max-annotations <n> (default
-#       10) is one budget for the whole call: each gate gets an equal share of what is left (a leg that needs fewer leaves more for the
+#       failed. --github prints ::error annotations. GitHub shows 10 error annotations per step and 50 per job, summed over steps, so the job summary is the reliable
+#       channel; --max-annotations <n> (default 10) is one budget for the whole call: each gate gets an equal share of what is left (a leg that needs fewer leaves more for the
 #       next), so the failure of a later leg is never hidden behind the warnings of an earlier one. --summary appends a Markdown report
 #       (give it $GITHUB_STEP_SUMMARY; it lists every leg); a failure before the gate runs is annotated and summarized too.
 #   eng/trim-audit/audit.sh pack <source-repo> [version] [feed]
