@@ -9,6 +9,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Category(TestCategory.MediaElementAndroid)]
 public class StreamDataSourceFactoryAndroidTests
 {
+	// Skipped below API 26 in the visual runner too (see MediaElementAndroidTestBase).
+	public StreamDataSourceFactoryAndroidTests() => MediaElementSupport.SkipIfUnsupported();
+
 	// The byte at index i is i, so a read tells where the stream was positioned.
 	static readonly byte[] data = Enumerable.Range(0, 100).Select(static i => (byte)i).ToArray();
 

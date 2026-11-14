@@ -12,6 +12,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 [Category(TestCategory.MediaElementAndroid)]
 public class BoundServiceConnectionAndroidTests
 {
+	// Skipped below API 26 in the visual runner too (see MediaElementAndroidTestBase).
+	public BoundServiceConnectionAndroidTests() => MediaElementSupport.SkipIfUnsupported();
+
 	static IServiceConnection AsServiceConnection(BoundServiceConnection connection) => connection;
 
 	static BoundServiceConnection CreateConnectedConnection(MediaControlsService service)

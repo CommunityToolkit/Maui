@@ -46,6 +46,9 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	// while: the estimator has no observable state, so there is no event to wait for, only time.
 	protected const int notificationRatePause = 1500;
 
+	// The visual runner ignores TestOptions.SkipCategories, which skips this category below API 26 only in the headless runners.
+	protected MediaElementAndroidTestBase() => MediaElementSupport.SkipIfUnsupported();
+
 	readonly List<MediaElement> hostedElements = [];
 	readonly List<string> temporaryFiles = [];
 	bool usesForegroundService;
