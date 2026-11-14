@@ -163,8 +163,13 @@ public sealed partial class SpeechToTextTests
 		return scope.Listener;
 	}
 
-	[Fact]
-	public async Task RecognizerBusyAnswerToASessionThatReplacedAnotherStartsItAgain()
+	// The service's answer to the restart's StartListening proves that the restart reached it, and ends the session, so one session cannot
+	// show all three restarts: each row starts after the restarts that earlier busy answers made.
+	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(2)]
+	public async Task RecognizerBusyAnswerToASessionThatReplacedAnotherStartsItAgain(int earlierRestarts)
 	{
 		Skip.IfNot(IsRecognitionAvailable, "Needs a speech recognition service on the device.");
 		Skip.IfNot(IsRecognizerBusyRetried, "Only Android 12 and 13 answer a replacing session busy.");
@@ -173,6 +178,7 @@ public sealed partial class SpeechToTextTests
 		var (speech, events, entriesRightAfterTheBusyAnswer) = await StartRealSessionAsync((session, recorded) => InvokeOnMainThreadAsync(() =>
 		{
 			var listener = AttachListeningSession(session, hadPreviousRecognizer: true);
+			listener.GetType().GetProperty("RestartsAfterRecognizerBusy")!.SetValue(listener, earlierRestarts);
 			listener.OnError(SpeechRecognizerError.RecognizerBusy);
 			return recorded.Entries;
 		}));
