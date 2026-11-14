@@ -92,10 +92,9 @@ public static partial class KeyboardExtensions
 		}
 
 		// The keyboard of a slow input method can still be hidden by the animation after it showed, so it must show at two checks in a row.
-		// A hide requested after the show means that the caller hid the keyboard, not the animation.
 		void ReshowWhenHiddenAgain(int attempt, bool wasShowingAtPreviousAttempt)
 		{
-			if (Volatile.Read(ref hideRequestCount) != hideRequestCountAtShow || !CanStillShowTheKeyboard())
+			if (!CanStillShowTheKeyboard())
 			{
 				return;
 			}
@@ -118,7 +117,9 @@ public static partial class KeyboardExtensions
 			}
 		}
 
-		bool CanStillShowTheKeyboard() => inputView.Handle != IntPtr.Zero && inputView.IsAttachedToWindow && inputView.IsFocused && SystemClock.UptimeMillis() <= deadlineUptimeMilliseconds;
+		// A hide requested after the show means that the caller hid the keyboard, not the animation; it can come before the posted first show runs.
+		bool CanStillShowTheKeyboard() => Volatile.Read(ref hideRequestCount) == hideRequestCountAtShow
+			&& inputView.Handle != IntPtr.Zero && inputView.IsAttachedToWindow && inputView.IsFocused && SystemClock.UptimeMillis() <= deadlineUptimeMilliseconds;
 	}
 
 	static bool ShowKeyboard(this AView view) => view switch
