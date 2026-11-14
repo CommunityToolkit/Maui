@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Speech.Recognition;
 using CommunityToolkit.Maui.Core;
 
@@ -154,9 +155,49 @@ public sealed partial class OfflineSpeechToTextImplementation
 		speechToTextOptions = options;
 		recognitionText = string.Empty;
 		isSilenceTimeoutReached = false;
-		offlineSpeechRecognizer = new SpeechRecognitionEngine(options.Culture);
+		offlineSpeechRecognizer = CreateSpeechRecognitionEngine(options.Culture);
 		offlineSpeechRecognizer.LoadGrammarAsync(new DictationGrammar());
 	}
+
+	// Built-in COM calls a [ComImport] interface method through the vtable slot of its position in the interface. The trimmer removes the
+	// methods no managed code calls (IL2050), which shifts the slots of the rest, so every COM interface of System.Speech stays whole.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.ObjectTokens.ObjectToken.ISpObjectWithToken", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.IEnumSpObjectTokens", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpDataKey", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpDisplayAlternates", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpEventSource", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpEventSource2", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpGrammarBuilder", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpGrammarResourceLoader", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpNotifySink", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpNotifySource", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpObjectToken", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpObjectTokenCategory", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpObjectWithToken", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpPhoneticAlphabetSelection", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpPhrase", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpPhraseAlt", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpPhraseBuilder", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpPhraseEx", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpProperties", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecoContext", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecoContext2", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecoGrammar", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecoGrammar2", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecoResult", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecoResult2", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecognizer", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRecognizer2", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpRegDataKey", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpStream", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpStreamFormat", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpXMLRecoResult", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.SapiInterop.ISpeechRecognizer", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Internal.Synthesis.ISpEngineSite", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Recognition.IEnumSpObjectTokens", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Recognition.ISpObjectTokenCategory", "System.Speech")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.All, "System.Speech.Synthesis.TtsEngine.ITtsEngine", "System.Speech")]
+	static SpeechRecognitionEngine CreateSpeechRecognitionEngine(CultureInfo culture) => new(culture);
 
 	void OfflineSpeechRecognizer_StateChanged(object? sender, AudioStateChangedEventArgs e)
 	{

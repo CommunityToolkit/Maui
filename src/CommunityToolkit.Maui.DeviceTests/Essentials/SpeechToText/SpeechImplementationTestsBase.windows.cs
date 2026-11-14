@@ -22,7 +22,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// "fo-FO" (Faroese) has no speech recognizer on Windows, so creating the recognizer throws: System.Speech throws
-	// ArgumentException ("No recognizer of the required ID found", decompiled System.Speech 10.0.11), the WinRT recognizer an
+	// ArgumentException ("No recognizer of the required ID found", decompiled System.Speech 11.0.0), the WinRT recognizer an
 	// exception carrying the platform's HRESULT.
 	[Fact]
 	public async Task StartListenAsyncWithAnUnsupportedCultureThrowsAndStaysStopped()
