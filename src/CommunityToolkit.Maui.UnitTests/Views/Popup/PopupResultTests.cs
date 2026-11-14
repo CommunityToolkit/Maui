@@ -16,7 +16,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult(wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 	}
 
 	[Fact]
@@ -30,7 +30,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult<string>(expectedResult, wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(expectedResult, result.Result);
 	}
 
@@ -45,7 +45,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult<string?>(expectedResult, wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Null(result.Result);
 	}
 
@@ -60,7 +60,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult<int>(expectedResult, wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(expectedResult, result.Result);
 	}
 
@@ -75,7 +75,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult<int?>(expectedResult, wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Null(result.Result);
 	}
 
@@ -90,7 +90,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult<object>(expectedResult, wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(expectedResult, result.Result);
 	}
 
@@ -105,7 +105,7 @@ public class PopupResultTests : BaseTest
 		var result = new PopupResult<int>(expectedResult, wasDismissedByTappingOutside);
 
 		// Assert
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(default, result.Result);
 	}
 
@@ -129,7 +129,7 @@ public class PopupResultTests : BaseTest
 		IPopupResult result = new PopupResult(false);
 
 		// Assert
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 	}
 
 	[Fact]
@@ -140,6 +140,6 @@ public class PopupResultTests : BaseTest
 
 		// Assert
 		Assert.Equal(7, result.Result);
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 	}
 }

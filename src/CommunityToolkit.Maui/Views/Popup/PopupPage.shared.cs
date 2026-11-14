@@ -34,7 +34,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
-	readonly Command tapOutsideOfPopupCommand;
+	readonly Command dismissCommand;
 
 	NavigationPage? navigationPageObservedForDismissal;
 	Window? windowObservedForDismissal;
@@ -57,9 +57,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		this.popup = popup;
 		this.popupOptions = popupOptions ??= Options.DefaultPopupOptionsSettings;
 
-		tapOutsideOfPopupCommand = new Command(async () =>
+		dismissCommand = new Command(async () =>
 		{
-			popupOptions.OnTappingOutsideOfPopup?.Invoke();
+			popupOptions.OnDismiss?.Invoke();
 
 			try
 			{
@@ -74,16 +74,10 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				// The tap passes no token, so the pop was canceled: by the app (in Window.ModalPopping, Application.ModalPopping or Shell.Navigating), or by .NET MAUI (its NavigationPage on iOS and Mac Catalyst cancels a PopAsync that waited for a navigation that failed).
 				// The popup is still open and a later tap can close it; the command runs as async void, so an exception here would crash the app
 			}
-		}, () => GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions));
+		});
 
 		var popupPageLayout = new PopupPageLayout(popup, popupOptions, () => TryExecuteTapOutsideOfPopupCommand());
 		base.Content = popupPageLayout;
-
-		popup.PropertyChanged += HandlePopupPropertyChanged;
-		if (popupOptions is BindableObject bindablePopupOptions)
-		{
-			bindablePopupOptions.PropertyChanged += HandlePopupOptionsPropertyChanged;
-		}
 
 		this.SetBinding(BindingContextProperty, static (Popup x) => x.BindingContext, source: popup, mode: BindingMode.OneWay);
 		this.SetBinding(BackgroundColorProperty, static (IPopupOptions options) => options.PageOverlayColor, source: popupOptions, mode: BindingMode.OneWay);
@@ -291,13 +285,28 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	internal bool TryExecuteTapOutsideOfPopupCommand()
 	{
-		if (!tapOutsideOfPopupCommand.CanExecute(null))
+		popupOptions.OnTappingOutsideOfPopup?.Invoke();
+
+		if (GetCanBeDismissedByTappingOutsideOfPopup(popup, popupOptions))
 		{
-			return false;
+			dismissCommand.Execute(null);
+			return true;
 		}
 
-		tapOutsideOfPopupCommand.Execute(null);
-		return true;
+		return false;
+	}
+
+	internal bool TryExecuteBackButtonPressCommand()
+	{
+		popupOptions.OnBackButtonPressed?.Invoke();
+
+		if (GetCanBeDismissedByBackButtonPressed(popup, popupOptions))
+		{
+			dismissCommand.Execute(null);
+			return true;
+		}
+
+		return false;
 	}
 
 	protected static T CreatePopupFromView<T>(in View view) where T : Popup, new()
@@ -325,7 +334,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 	protected override bool OnBackButtonPressed()
 	{
-		TryExecuteTapOutsideOfPopupCommand();
+		TryExecuteBackButtonPressCommand();
 
 		// Always return true to let the Android Operating System know that we are manually handling the Navigation request from the Android Back Button
 		return true;
@@ -400,15 +409,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return navigationPageOnModalStackContainingPopupPage;
 	}
 
-	// Static PopupOptions (e.g. PopupOptions.Empty) outlive the PopupPage, so every path that closes the popup must unsubscribe from them; the -= calls are idempotent
 	void ReleasePopupResources()
 	{
 		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-		popup.PropertyChanged -= HandlePopupPropertyChanged;
-		if (popupOptions is BindableObject bindablePopupOptions)
-		{
-			bindablePopupOptions.PropertyChanged -= HandlePopupOptionsPropertyChanged;
-		}
 	}
 
 	// Claims the right to report the result; the first caller wins, so PopupClosed and Popup.Closed are raised once whichever path closes the popup
@@ -574,21 +577,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		return true;
 	}
 
-	void HandlePopupOptionsPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == nameof(IPopupOptions.CanBeDismissedByTappingOutsideOfPopup))
-		{
-			tapOutsideOfPopupCommand.ChangeCanExecute();
-		}
-	}
-
-	void HandlePopupPropertyChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName == Popup.CanBeDismissedByTappingOutsideOfPopupProperty.PropertyName)
-		{
-			tapOutsideOfPopupCommand.ChangeCanExecute();
-		}
-	}
+	static bool GetCanBeDismissedByBackButtonPressed(in Popup popup, in IPopupOptions popupOptions) => popup.CanBeDismissedByBackButtonPressed & popupOptions.CanBeDismissedByBackButtonPressed;
 
 	static Page? GetVisiblePage(INavigation navigation)
 	{
@@ -755,7 +744,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 				return;
 			}
 
-			// Execute tapOutsideOfPopupCommand only if tap occurred outside the PopupBorder
+			// Execute tryExecuteTapOutsideOfPopupCommand only if tap occurred outside the PopupBorder
 			if (PopupBorder.Bounds.Contains(position.Value) is false)
 			{
 				tryExecuteTapOutsideOfPopupCommand();

@@ -74,12 +74,19 @@ public partial class Popup : ContentView, IPaddingElement, IView
 
 	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/>
 	/// <remarks>
-	/// While both this property and <see cref="IPopupOptions.CanBeDismissedByTappingOutsideOfPopup"/> are <see langword="true"/>, the <see cref="Popup"/> is dismissed when the user taps outside of it or, on Android, presses the hardware back button.
-	/// While either is <see langword="false"/>, tapping outside of the <see cref="Popup"/> and the hardware back button do nothing.
+	/// When true and the user taps outside the <see cref="Popup"/>, it is dismissed.
 	/// The default value is <see cref="DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup"/>.
 	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultCanBeDismissedByTappingOutsideOfPopup))]
 	public partial bool CanBeDismissedByTappingOutsideOfPopup { get; set; }
+
+	/// <inheritdoc cref="IPopupOptions.CanBeDismissedByBackButtonPressed"/>
+	/// <remarks>
+	/// On Android - when false the hardware back button is disabled.
+	/// The default value is <see cref="DefaultPopupSettings.CanBeDismissedByBackButtonPressed"/>.
+	/// </remarks>
+	[BindableProperty(DefaultValueCreatorMethodName = nameof(CreateDefaultCanBeDismissedByBackButtonPressed))]
+	public partial bool CanBeDismissedByBackButtonPressed { get; set; }
 
 	/// <summary>
 	/// Gets or sets the padding between the <see cref="Popup"/> border and the <see cref="Popup"/> content.
@@ -177,6 +184,8 @@ public partial class Popup : ContentView, IPaddingElement, IView
 	static object CreateDefaultVerticalOptions(BindableObject bindable) => Options.DefaultPopupSettings.VerticalOptions;
 
 	static object CreateDefaultCanBeDismissedByTappingOutsideOfPopup(BindableObject bindable) => Options.DefaultPopupSettings.CanBeDismissedByTappingOutsideOfPopup;
+
+	static object CreateDefaultCanBeDismissedByBackButtonPressed(BindableObject bindable) => Options.DefaultPopupSettings.CanBeDismissedByBackButtonPressed;
 
 	// Same as VisualElement's IView.Width and IView.Height, but limited to maximumSize
 	double GetExplicitSize(BindableProperty sizeRequestProperty, double maximumSize)

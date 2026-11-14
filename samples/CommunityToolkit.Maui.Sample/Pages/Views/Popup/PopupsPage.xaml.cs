@@ -112,6 +112,14 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		});
 	}
 
+	async void HandleNoBackPressDismissPopupClicked(object? sender, EventArgs e)
+	{
+		await popupService.ShowPopupAsync<NoBackPressDismissPopup>(Navigation, new PopupOptions
+		{
+			CanBeDismissedByBackButtonPressed = false,
+		});
+	}
+
 	async void HandleToggleSizePopupButtonClicked(object? sender, EventArgs e)
 	{
 		await OpenOneAtATimeAsync(() => popupService.ShowPopupAsync<ToggleSizePopup>(Navigation));
@@ -189,7 +197,8 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		{
 			this.ShowPopup(new Label().Text("This Popup Will Close Automatically in 2 Seconds"), new PopupOptions
 			{
-				CanBeDismissedByTappingOutsideOfPopup = false
+				CanBeDismissedByTappingOutsideOfPopup = false,
+				CanBeDismissedByBackButtonPressed = false,
 			});
 
 			await Task.Delay(TimeSpan.FromSeconds(2));
@@ -207,7 +216,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 				PopupOptions.Empty,
 				CancellationToken.None);
 
-			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+			if (!popupResult.WasDismissed)
 			{
 				// Display Popup Result as a Toast
 				await Toast.Make($"You selected {popupResult.Result}").Show(CancellationToken.None);
@@ -240,7 +249,7 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 			var popupResult = await popupResultTask;
 			BindingContext.ComplexPopupOpenedCommand.Cancel();
 
-			if (!popupResult.WasDismissedByTappingOutsideOfPopup)
+			if (!popupResult.WasDismissed)
 			{
 				// Display Popup Result as a Toast
 				await Toast.Make($"You entered {popupResult.Result}").Show(CancellationToken.None);
