@@ -510,6 +510,81 @@ public class GeneratedCodeWarningTests : BaseTest
 		}
 		""";
 
+	const string directiveWordPragmaTokensSource =
+		/* language=C#-test */
+		//lang=csharp
+		"""
+		using System;
+		using CommunityToolkit.Maui;
+		using Microsoft.Maui.Controls;
+
+		namespace DirectiveWordTokens;
+
+		/// <summary>Obsolete with an ID that is a pragma directive word.</summary>
+		[Obsolete("old", DiagnosticId = "default")]
+		public class DefaultIdItem
+		{
+		}
+
+		/// <summary>Obsolete with an ID that is a pragma directive word.</summary>
+		[Obsolete("old", DiagnosticId = "disable")]
+		public class DisableIdItem
+		{
+		}
+
+		/// <summary>Obsolete with an ID that is a pragma directive word.</summary>
+		[Obsolete("old", DiagnosticId = "restore")]
+		public class RestoreIdItem
+		{
+		}
+
+		/// <summary>Obsolete with an ID that is a pragma directive word.</summary>
+		[Obsolete("old", DiagnosticId = "enable")]
+		public class EnableIdItem
+		{
+		}
+
+		/// <summary>Obsolete with a keyword that Roslyn accepts as an error code.</summary>
+		[Obsolete("old", DiagnosticId = "class")]
+		public class ClassIdItem
+		{
+		}
+
+		/// <summary>Obsolete with an ordinary user ID.</summary>
+		[Obsolete("old", DiagnosticId = "USR1")]
+		public class UserIdItem
+		{
+		}
+
+		/// <summary>Uses every type.</summary>
+		public partial class DirectiveWordIdView : View
+		{
+			/// <summary>Default.</summary>
+			[BindableProperty]
+			public partial DefaultIdItem? DefaultItem { get; set; }
+
+			/// <summary>Disable.</summary>
+			[BindableProperty]
+			public partial DisableIdItem? DisableItem { get; set; }
+
+			/// <summary>Restore.</summary>
+			[BindableProperty]
+			public partial RestoreIdItem? RestoreItem { get; set; }
+
+			/// <summary>Enable.</summary>
+			[BindableProperty]
+			public partial EnableIdItem? EnableItem { get; set; }
+
+			/// <summary>Class.</summary>
+			[BindableProperty]
+			public partial ClassIdItem? ClassItem { get; set; }
+
+			/// <summary>User.</summary>
+			[BindableProperty]
+			public partial UserIdItem? UserItem { get; set; }
+		}
+		""";
+
 	const string selfReferencingConstraintsSource =
 		/* language=C#-test */
 		//lang=csharp
@@ -738,6 +813,45 @@ public class GeneratedCodeWarningTests : BaseTest
 	}
 
 	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedCode_SkipsDirectiveWordsAndKeepsOtherDiagnosticIds(string cultureName)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		var originalUiCulture = CultureInfo.CurrentUICulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo(cultureName);
+			CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+
+			var pragmaLine = GetPragmaLine(directiveWordPragmaTokensSource, "DirectiveWordIdView.g.cs", []);
+
+			Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258, USR1, class", pragmaLine);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+			CultureInfo.CurrentUICulture = originalUiCulture;
+		}
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void GeneratedCode_ReportsOnlyUnsuppressibleObsoleteWarnings_WhenDiagnosticIdsAreDirectiveWords(string cultureName)
+	{
+		var (_, diagnosticsInGeneratedCode) = CompileWithGenerators(directiveWordPragmaTokensSource, cultureName, [], TestContext.Current.CancellationToken);
+
+		// No pragma can name these four IDs, so the deprecation warnings that the user's own [Obsolete] causes stay; the compiler must report nothing else.
+		string[] unsuppressibleWarningPrefixes = ["warning default: ", "warning disable: ", "warning restore: ", "warning enable: "];
+		var unexpectedDiagnostics = diagnosticsInGeneratedCode.Where(diagnostic => !unsuppressibleWarningPrefixes.Any(prefix => diagnostic.Contains(prefix, StringComparison.Ordinal))).ToList();
+
+		Assert.True(unexpectedDiagnostics.Count == 0, string.Join(Environment.NewLine, unexpectedDiagnostics));
+	}
+
+	[Theory]
 	[InlineData("IL2026", true)]
 	[InlineData("IL3050", true)]
 	[InlineData("IL", false)]
@@ -756,6 +870,19 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("1ABC", false)]
 	[InlineData("IL\u200B2026", false)]
 	[InlineData("USR\u00AD1", false)]
+	[InlineData("default", false)]
+	[InlineData("disable", false)]
+	[InlineData("restore", false)]
+	[InlineData("enable", false)]
+	[InlineData("true", false)]
+	[InlineData("false", false)]
+	[InlineData("hidden", false)]
+	[InlineData("checksum", false)]
+	[InlineData("warnings", false)]
+	[InlineData("annotations", false)]
+	[InlineData("nullable", true)]
+	[InlineData("class", true)]
+	[InlineData("USR1", true)]
 	[InlineData("", false)]
 	public void GeneratedCodePragmas_AcceptsOnlyIdentifierCharacters(string id, bool expected)
 	{

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Helpers;
 
@@ -33,7 +34,21 @@ static class GeneratedCodePragmas
 		}
 
 		// The C# lexer drops format characters (such as U+200B) from pragma IDs, so "IL\u200B2026" would disable IL2026.
-		return id.All(static character => SyntaxFacts.IsIdentifierPartCharacter(character) && CharUnicodeInfo.GetUnicodeCategory(character) is not UnicodeCategory.Format);
+		return id.All(static character => SyntaxFacts.IsIdentifierPartCharacter(character) && CharUnicodeInfo.GetUnicodeCategory(character) is not UnicodeCategory.Format)
+			&& IsParsedByRoslynAsTheOnlyErrorCode(id);
+	}
+
+	// Identifier characters are not enough: "default", "disable" and "restore" are directive words, and the compiler reports CS1072 for them in a list.
+	static bool IsParsedByRoslynAsTheOnlyErrorCode(string id)
+	{
+		var leadingTrivia = SyntaxFactory.ParseLeadingTrivia($"#pragma warning disable {id}\n");
+		var directive = leadingTrivia.Select(static trivia => trivia.GetStructure()).OfType<PragmaWarningDirectiveTriviaSyntax>().SingleOrDefault();
+
+		return directive is not null
+			&& !directive.ContainsDiagnostics
+			&& directive.ErrorCodes.Count is 1
+			&& directive.ErrorCodes[0] is IdentifierNameSyntax errorCode
+			&& string.Equals(errorCode.Identifier.ValueText, id, StringComparison.Ordinal);
 	}
 
 	public static bool IsTrimOrAotWarning(string id) => id.Length > 2 && id.StartsWith("IL", StringComparison.Ordinal) && id.Skip(2).All(static character => character is >= '0' and <= '9');
