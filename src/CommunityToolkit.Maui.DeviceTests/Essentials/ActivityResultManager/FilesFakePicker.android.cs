@@ -205,13 +205,16 @@ public static class FilesFakePicker
 		FinishActivitiesAsync([activity], token);
 
 	/// <summary>
-	/// Android 7 destroys an activity that was finished while its stop was in flight only at the next activity idle (8.0 destroys it at
-	/// once), so all of them are finished in one main-thread turn: the one in front resumes the activity below it, whose idle destroys
-	/// the others. On a timeout the activities that stayed are forgotten, so that no later session waits on them.
+	/// Android 7 destroys an activity finished while its stop is in flight only at the next activity idle (8.0 at once), so all are finished in
+	/// one turn and the first activity under them resumes and goes idle; activities still alive after the timeout are forgotten.
 	/// </summary>
 	public static async Task FinishActivitiesAsync(IReadOnlyList<Activity> activities, CancellationToken token = default)
 	{
-		var destroyedSignals = activities.Distinct().ToDictionary(activity => activity, _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+		var destroyedSignals = new Dictionary<Activity, TaskCompletionSource>(ReferenceEqualityComparer.Instance);
+		foreach (var activity in activities)
+		{
+			destroyedSignals.TryAdd(activity, new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+		}
 
 		void OnActivityStateChanged(object? sender, ActivityStateChangedEventArgs e)
 		{

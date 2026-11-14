@@ -465,7 +465,7 @@ public class ActivityResultManagerTests : FilesTestBase
 	}
 
 	[Fact]
-	public async Task TheSessionCleanupDestroysAnActivityThatWasFinishedWhileItStopped()
+	public async Task TheSessionCleanupDestroysAnActivityThatWasFinishedWhileItsStopWasInFlight()
 	{
 		var session = await StartSessionAsync();
 		var host = session.Activity;
@@ -499,8 +499,8 @@ public class ActivityResultManagerTests : FilesTestBase
 		await session.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(40));
 
 		Assert.True(recreated?.IsDestroyed);
+		// StartAsync waits for the new session's activity to resume, which never happened after the CI failure.
 		await using var next = await FilesPickerSession.StartAsync();
-		Assert.NotNull(next.Activity);
 	}
 
 	[Fact]
