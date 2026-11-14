@@ -349,6 +349,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
 	{
+		// The notification carries the title and artist (MediaControlsService.UpdateNotifications), so it must follow every later change of the metadata
+		UpdateNotifications();
 	}
 
 	public void OnMetadata(Metadata? metadata)
