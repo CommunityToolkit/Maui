@@ -44,6 +44,11 @@ namespace CommunityToolkit.Maui.Sample;
 
 public static class MauiProgram
 {
+	// Full trim removes the properties the legacy Windows CollectionView handler reads by reflection: dotnet/maui#31227
+#if WINDOWS
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Microsoft.Maui.Controls.Platform.ItemTemplateContext))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, "Microsoft.Maui.Controls.Platform.GroupTemplateContext", "Microsoft.Maui.Controls")]
+#endif
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder()

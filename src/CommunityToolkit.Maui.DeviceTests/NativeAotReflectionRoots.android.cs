@@ -15,6 +15,7 @@ static class NativeAotReflectionRoots
 		| DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties;
 
 	[ModuleInitializer]
+	[SuppressMessage("Usage", "CA2255", Justification = "The roots must load before any test reflects over these types")]
 	[DynamicDependency(constructorsMethodsFieldsAndProperties, "CommunityToolkit.Maui.Core.CameraManager.ImageCallBack", "CommunityToolkit.Maui.Camera")]
 	[DynamicDependency(constructorsMethodsFieldsAndProperties, "CommunityToolkit.Maui.Core.CameraManager.ResolutionFilter", "CommunityToolkit.Maui.Camera")]
 	[DynamicDependency(constructorsMethodsFieldsAndProperties, "CommunityToolkit.Maui.Behaviors.TouchBehavior.AccessibilityListener", "CommunityToolkit.Maui")]

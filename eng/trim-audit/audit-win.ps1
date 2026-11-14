@@ -30,8 +30,9 @@
     the call itself is wrong.
     A failing 'full' publish is a result of the audit too, not something to hide.
 
-    Proven by fork run r1: PowerShell 7 restore, sha512 check, publish, zip and gate on a GitHub Windows runner. Still unproven: Windows
-    PowerShell 5.1 and the no-Python path on a real Windows machine.
+    Proven by fork run r1: PowerShell 7 restore, sha512 check, publish, zip and gate on a GitHub Windows runner. Proven on a Windows 11 VM:
+    Windows PowerShell 5.1 and the no-Python path (assets check, GATE-EXIT, UTF-8 gate-output.txt). Still unproven on Windows: the
+    build-ok branch and the gate's 0/1 verdict.
 
 .EXAMPLE
     pwsh -NoProfile -File eng\trim-audit\audit-win.ps1 -Variant rootlibs -Feed D:\a\nuget -Github -Summary $env:GITHUB_STEP_SUMMARY
