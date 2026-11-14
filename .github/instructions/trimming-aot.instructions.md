@@ -43,8 +43,9 @@ Do:
 * Source generators: generated code must never suppress `IL2xxx`, `IL3xxx` or `IL4xxx` warnings. Any suppression in generated code is a narrow list of codes with a WHY comment in the generator source, limited to diagnostics the user's own declarations cause (no blanket `#pragma warning disable`). Generated code must also be culture-invariant (`FormattableString.Invariant`, `ToLowerInvariant`). Generators run in the developer's culture; see `.github/instructions/culture.instructions.md`.
 * Android: use `JavaCast<T>()` for a Java object whose binding type may be trimmed. A plain C# cast fails in a trimmed app.
 * Apple (iOS, Mac Catalyst): members exported to Objective-C with `[Export]` are kept by the SDK; no extra annotation is needed.
-* Windows: a class that crosses the WinRT ABI is `partial`, so the CsWinRT generator can emit its vtable.
+* Windows: a class that crosses the WinRT ABI is `partial`, so the CsWinRT generator can emit its vtable. That includes a class that gets WinRT interfaces from its base class, such as a `ContentView` subclass; without `partial` the Windows build fails with `CsWinRT1028`.
 * Windows: a method that hands a managed collection to WinRT returns the concrete type (for example `List<T>`) from a `return` statement. The CsWinRT generator misses expression bodies and `??` results, and Windows NativeAOT then has no CCW vtable for it (see `MauiSemanticOrderView.windows.cs`).
+* Windows built-in COM: under full trimming the trimmer removes `[ComImport]` interface methods that no managed code calls (`IL2050`), but built-in COM calls them by vtable slot, so the app crashes. `OfflineSpeechToTextImplementation.windows.cs` keeps every `[ComImport]` interface of `System.Speech` whole with `[DynamicDependency(DynamicallyAccessedMemberTypes.All, ...)]` on `CreateSpeechRecognitionEngine`, so create every `SpeechRecognitionEngine` through that method. The unit test `OfflineSpeechToTextWindowsTrimmingTests` fails when a `System.Speech` update adds or removes such an interface, and when Windows code in Core creates the engine anywhere else; add or remove the `DynamicDependency` it names. Keep any new built-in COM interop whole the same way: an embedded ILLink descriptor cannot name another assembly (`IL2101`).
 
 ### Validation behaviors
 
@@ -72,6 +73,8 @@ Run these before opening a PR that touches package code, MSBuild files or genera
 
    On Windows use `eng/trim-audit/audit-win.ps1 -Variant <none|full|rootlibs|aot> (-Repo . | -Feed <folder-of-nupkgs>) [-OutRoot <short path>]`. Its `rootlibs` variant is the gated one in CI; `aot` only reports until [dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053) is fixed.
 
+   In CI, the job summary and the `GATE-EXIT` and `AUDIT-EXIT` log lines always carry the verdict. Annotations may not appear: GitHub keeps 50 per job, and earlier steps can use them all.
+
    `eng/trim-audit/allow.tsv` lines are `code<TAB>member pattern (glob)<TAB>reason[<TAB>scope]`. The optional scope is a comma separated list of globs over the leg name `<platform>-<variant>` (for example `android-*,ios-aot*`); without it the line applies to every leg. A scope glob that matches no leg makes the gate fail with exit 2.
 3. CI runs the same check in the `Build Library` job of `.github/workflows/dotnet-build.yml` (the job that packs the NuGets). It builds the Sample against the just-packed packages, with NativeAOT (`aotroot`, iOS and Android) on the macOS leg and full trimming (`rootlibs`) on the Windows leg, and fails on any toolkit warning that `eng/trim-audit/allow.tsv` does not list.
 
@@ -86,9 +89,19 @@ Run these before opening a PR that touches package code, MSBuild files or genera
 
 Notes: NativeAOT always trims fully. The iOS simulator does not trim by default. Windows apps are not trimmed unless they set `PublishTrimmed=true`.
 
-Windows offline speech-to-text uses `System.Speech`, which needs built-in COM. A trimmed Windows app must set `<BuiltInComInteropSupport>true</BuiltInComInteropSupport>`; the toolkit throws `NotSupportedException` naming it. NativeAOT does not support it.
+Windows offline speech-to-text uses `System.Speech`, which needs built-in COM. A trimmed Windows app must set `<BuiltInComInteropSupport>true</BuiltInComInteropSupport>`; the toolkit throws `NotSupportedException` naming it. That setting is enough under full trimming too, because the toolkit keeps the `System.Speech` COM interfaces (see Rules for code). NativeAOT does not support it.
+
+Windows, a .NET MAUI issue rather than a toolkit one: under full trimming, a `CollectionView` on the legacy Windows handler (`UseWindowsCollectionView2Handler=false`) shows no templated items. WinUI binds the properties of `ItemTemplateContext` and `GroupTemplateContext` by reflection, and the trimmer removes them ([dotnet/maui#31227](https://github.com/dotnet/maui/issues/31227)). The device tests use that handler and keep those properties in `src/CommunityToolkit.Maui.DeviceTests/NativeAotReflectionRoots.windows.cs`. Apps use the `DynamicDependency` attributes from the docs page Trimming and Native AOT.
 
 **Agents: if you notice that dotnet/maui#39053 is closed or fixed, tell the maintainers** (open an issue, or mention it in your PR or review). Windows NativeAOT can then be enabled in the toolkit, and the Windows leg of the CI step switched from full trimming to NativeAOT.
+
+## Device tests stay NativeAOT-safe
+
+The device tests run fully trimmed and with NativeAOT, so a test must reach its product assertions there too:
+
+* Reach private toolkit members with `[UnsafeAccessor]`, or with reflection the trimmer can see (`typeof(T).GetField("name", ...)` with literal names). Add `[DynamicDependency]` for a type that only reflection reaches, such as a private nested type. Never reflect over `GetType()` or a type name from a string without annotations.
+* Use `AotSafeAssert` (in `CommunityToolkit.Maui.DeviceTests.Shared`) instead of xunit's `Assert.Equal`, `Assert.Empty`, `Assert.All` or `Assert.Collection` over value-type items (tuples, `Nullable<T>`, structs). xunit builds their comparers with `MakeGenericMethod`, which fails under NativeAOT.
+* Put Windows-only roots that the tests need in `NativeAotReflectionRoots.windows.cs`.
 
 ## Code review guidance (Copilot and humans)
 
@@ -99,4 +112,5 @@ Flag a change that:
 * disables an analyzer, removes an `IL` code from `WarningsAsErrors`, removes `TrimMode` or `IsAotCompatible`, or weakens the `CTMTRIM` guard;
 * adds a line to `eng/trim-audit/allow.tsv`, puts an `IL` code in `NoWarn`, `WarningsNotAsErrors`, `.editorconfig` or `.globalconfig`, or removes or weakens the `Build Library` trim/AOT step or the gate;
 * adds generator output that suppresses an `IL` warning, uses a blanket `#pragma warning disable`, or adds a suppression without a WHY comment, or formats with the current culture;
-* adds a `Type`-based `Enum` call, or JSON without a source-generated context.
+* adds a `Type`-based `Enum` call, or JSON without a source-generated context;
+* adds private reflection or an xunit value-type assert to the device tests that NativeAOT cannot run.
