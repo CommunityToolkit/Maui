@@ -425,6 +425,29 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision, "the app's animation left the view at this value, so it was the view's value at rest when the run started");
 	}, TestContext.Current.CancellationToken);
 
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task TokenCancelledWhileTheRunStartsItsTween_EndsCanceledWithoutPlayingTheTween(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		using var cancellation = new CancellationTokenSource();
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var (property, handle) = PropertyOf(animationName);
+
+		// The run's tween aborts the app's on the same handle, which resumes the app's task in the turn between the run's check of the token and its registration for it
+		var appRun = AppToAnimation(animationName, view, (double)view.GetValue(property), token);
+		_ = appRun.ContinueWith(_ => cancellation.Cancel(), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+		var elapsedMillisecondsBeforeRun = view.GetElapsedAnimationMilliseconds();
+
+		var run = Create(animationName, functionalTestLength).Animate(view, cancellation.Token);
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout, token));
+
+		run.IsCanceled.Should().BeTrue();
+		AssertValuesEqual(view, startingValues);
+		view.AnimationIsRunning(handle).Should().BeFalse();
+		(view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeRun).Should().BeLessThan(functionalTestLength / 2, "a cancelled run aborts its tween before the first frames");
+	}, TestContext.Current.CancellationToken);
+
 	static BaseAnimation Create(string animationName, uint length) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },
