@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.RubberBandAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class RubberBandAnimationTests : AnimationContractTestBase<RubberBandAnimation>
 {

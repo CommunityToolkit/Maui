@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Animations;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // Every attention seeker runs under one animation handle, so starting one aborts the running one, which returns the view first
-[Category(TestCategory.Animations)]
+[Category(TestCategory.KeyframeAnimationExtensions)]
 [Collection(TestCollections.DisableParallelization)]
 public class KeyframeAnimationExtensionsTests : AnimationTestBase
 {

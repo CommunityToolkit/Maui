@@ -6,7 +6,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // An AnimationBehavior triggered again during its animation (a second tap) cancels the running animation and starts a new one, and the
 // cancelled animation continues on the UI thread from inside that cancellation. So the tests need the platform's own animation ticker and
 // UI thread.
-[Category(TestCategory.Animations)]
+[Category(TestCategory.FadeAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class FadeAnimationTests : ToAnimationTestBase<FadeAnimation>
 {

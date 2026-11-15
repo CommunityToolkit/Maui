@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.WobbleAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class WobbleAnimationTests : AnimationContractTestBase<WobbleAnimation>
 {

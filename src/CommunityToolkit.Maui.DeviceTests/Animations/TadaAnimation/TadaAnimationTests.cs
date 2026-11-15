@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.TadaAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class TadaAnimationTests : AnimationContractTestBase<TadaAnimation>
 {

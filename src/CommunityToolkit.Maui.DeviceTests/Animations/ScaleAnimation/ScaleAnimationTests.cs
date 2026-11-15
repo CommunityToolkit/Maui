@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.ScaleAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class ScaleAnimationTests : ToAnimationTestBase<ScaleAnimation>
 {

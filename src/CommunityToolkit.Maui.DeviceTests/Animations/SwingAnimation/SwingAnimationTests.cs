@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.SwingAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class SwingAnimationTests : AnimationContractTestBase<SwingAnimation>
 {

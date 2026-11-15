@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.RotateAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class RotateAnimationTests : ToAnimationTestBase<RotateAnimation>
 {

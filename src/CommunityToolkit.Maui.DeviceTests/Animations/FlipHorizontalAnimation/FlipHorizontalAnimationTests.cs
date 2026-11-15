@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-[Category(TestCategory.Animations)]
+[Category(TestCategory.FlipHorizontalAnimation)]
 [Collection(TestCollections.DisableParallelization)]
 public class FlipHorizontalAnimationTests : ToAnimationTestBase<FlipHorizontalAnimation>
 {
