@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Animations;
@@ -90,6 +90,48 @@ public class AnimationDispatchTests : BaseTest
 		Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "the superseded run's token aborted the new run");
 		await newRun.WaitAsync(waitTimeout, token);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => supersededRun.WaitAsync(waitTimeout, token));
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_CancelledWhileItsStartWaitsOnABusyDispatcher_DoesNotStopTheRunningAnimationOrAnimateTheView() => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	{
+		var token = TestContext.Current.CancellationToken;
+		var view = dispatcherThread.CreateAnimatedView();
+		var translationYChanges = new ConcurrentQueue<double>();
+		using var runningAnimationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		using var cancelledAnimationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		var firstChange = dispatcherThread.WaitForChangeAsync(view);
+		var runningAnimation = new TadaAnimation { Length = 2000 }.Animate(view, runningAnimationTokenSource.Token);
+		await firstChange;
+		view.PropertyChanged += RecordTranslationY;
+
+		// The pool thread's dispatch only queues the start, and this turn keeps the dispatcher from running it until the token is cancelled
+		dispatcherThread.WaitsForDispatchedWork = false;
+		Task? cancelledAnimation = null;
+		Task.Run(() =>
+		{
+			cancelledAnimation = new BounceAnimation { Length = animationLength }.Animate(view, cancelledAnimationTokenSource.Token);
+		}, token).Wait(token);
+		Task.Run(cancelledAnimationTokenSource.Cancel, token).Wait(token);
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelledAnimation!.WaitAsync(waitTimeout, token));
+		Assert.True(cancelledAnimation!.IsCanceled, $"The cancelled run ended {cancelledAnimation.Status}, expected Canceled.");
+		Assert.False(runningAnimation.IsCompleted, "The cancelled run's start stopped the animation that was running.");
+		await dispatcherThread.WaitForChangeAsync(view);
+		Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "The animation that was running no longer runs.");
+		Assert.Empty(translationYChanges);
+
+		dispatcherThread.WaitsForDispatchedWork = true;
+		await runningAnimationTokenSource.CancelAsync();
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runningAnimation.WaitAsync(waitTimeout, token));
+
+		void RecordTranslationY(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == VisualElement.TranslationYProperty.PropertyName)
+			{
+				translationYChanges.Enqueue(view.TranslationY);
+			}
+		}
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]

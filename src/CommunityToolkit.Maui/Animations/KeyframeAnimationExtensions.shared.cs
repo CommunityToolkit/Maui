@@ -15,8 +15,24 @@ static class KeyframeAnimationExtensions
 
 		var animationEnded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		// Not cancellable: a start that runs always leaves a run for the registration below to abort, so the view is never left mid-animation
-		await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(view.Dispatcher, () => Start(view, animatedProperties, createKeyframes, length, easing, animationEnded), CancellationToken.None);
+		// The dispatch is not cancellable: a start that runs always leaves a run for the registration below to abort, so the view is never left mid-animation.
+		// A token cancelled while the start waited skips it, because Start would stop an unrelated run and animate the view before anything could abort it.
+		var wasCancelledBeforeStart = false;
+		await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(view.Dispatcher, () =>
+		{
+			if (token.IsCancellationRequested)
+			{
+				wasCancelledBeforeStart = true;
+				return;
+			}
+
+			Start(view, animatedProperties, createKeyframes, length, easing, animationEnded);
+		}, CancellationToken.None);
+
+		if (wasCancelledBeforeStart)
+		{
+			token.ThrowIfCancellationRequested();
+		}
 
 		bool wasAborted;
 		await using (token.Register(() => AbortOnDispatcher(view, animationEnded.Task)))

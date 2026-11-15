@@ -32,6 +32,9 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleAndRotation =
 		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation)];
 
+	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleRotationAndTranslationY =
+		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation), (VisualElement.TranslationYProperty, originalTranslationY)];
+
 	[Fact]
 	public async Task AttentionSeekerStartedWhileAnotherRunsReturnsBothPropertySetsToTheirOriginalValues()
 	{
@@ -168,6 +171,61 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 			var mismatch = FindNativeMismatch(handler, view);
 			Assert.True(mismatch is null, mismatch);
+		});
+	}
+
+	[Fact]
+	public async Task AttentionSeekerCancelledWhileItsStartWaitsOnTheBusyUIThreadDoesNotStopTheRunningOneOrAnimateTheView()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(scaleRotationAndTranslationY);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			using var runningTokenSource = new CancellationTokenSource();
+			using var cancelledTokenSource = new CancellationTokenSource();
+			var midRun = WaitForValueAsync(view, VisualElement.ScaleProperty, scale => Math.Abs(scale - originalScale) > 0.02);
+			var runningRun = new TadaAnimation { Length = 3 * runLength }.Animate(view, runningTokenSource.Token);
+			await midRun;
+
+			var translationYChanges = 0;
+			view.PropertyChanged += CountTranslationYChanges;
+			try
+			{
+				// The pool thread's dispatch only queues the start, and this turn keeps the UI thread from running it until the token is cancelled
+				Task? cancelledRun = null;
+				var queuedTheStart = Task.Run(() =>
+				{
+					cancelledRun = new BounceAnimation { Distance = bounceDistance, Length = runLength }.Animate(view, cancelledTokenSource.Token);
+				}).Wait(waitTimeout);
+				Assert.True(queuedTheStart, "The pool thread did not queue the start.");
+				cancelledTokenSource.Cancel();
+
+				var exception = await Record.ExceptionAsync(() => cancelledRun!.WaitAsync(waitTimeout));
+				Assert.True(exception is OperationCanceledException && cancelledRun!.IsCanceled, $"The cancelled run ended {cancelledRun.Status} ({exception?.GetType().Name}), expected Canceled.");
+				Assert.False(runningRun.IsCompleted, "The cancelled run's start stopped the animation that was running.");
+
+				await WaitForTickerFramesAsync(view);
+				Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "The animation that was running no longer runs.");
+				Assert.True(translationYChanges is 0, $"The cancelled run changed TranslationY {translationYChanges} time(s).");
+			}
+			finally
+			{
+				view.PropertyChanged -= CountTranslationYChanges;
+			}
+
+			runningTokenSource.Cancel();
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runningRun.WaitAsync(waitTimeout));
+			await AssertStaysAtOriginalValuesAsync(handler, view, scaleRotationAndTranslationY, nativeStateAtRest, "after the animation that was running was cancelled");
+
+			void CountTranslationYChanges(object? sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == VisualElement.TranslationYProperty.PropertyName)
+				{
+					translationYChanges++;
+				}
+			}
 		});
 	}
 
