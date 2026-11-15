@@ -363,8 +363,8 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		});
 	}
 
-	// The restore writes the original values, which the last frame of MAUI's tween already wrote, so a restore changes the view (and a handler throws) only when something moved the view after that frame.
-	// MAUI leaves a property whose PropertyChanged handler threw unable to change, so the handler throws once.
+	// A frame before the last can write the original rotation too, so every such write moves the view and the last move follows the last frame, which the restore then undoes.
+	// The tween's handle is gone only while the restore runs, which is when the handler throws, once: MAUI leaves a property whose PropertyChanged handler threw unable to change.
 	static Func<bool> MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(VisualElement view)
 	{
 		var hasMovedTheView = false;
@@ -375,13 +375,15 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (!hasMovedTheView && e.PropertyName == VisualElement.RotationProperty.PropertyName && view.Rotation == originalRotation)
+			var isTweenRunning = view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle);
+
+			if (isTweenRunning && e.PropertyName == VisualElement.RotationProperty.PropertyName && view.Rotation == originalRotation)
 			{
 				hasMovedTheView = true;
 				view.Scale = 3;
 				view.Rotation = 99;
 			}
-			else if (hasMovedTheView && !hasThrown && e.PropertyName == VisualElement.ScaleProperty.PropertyName && view.Scale == originalScale)
+			else if (!isTweenRunning && hasMovedTheView && !hasThrown && e.PropertyName == VisualElement.ScaleProperty.PropertyName && view.Scale == originalScale)
 			{
 				hasThrown = true;
 				throw new InvalidOperationException(throwingHandlerMessage);
