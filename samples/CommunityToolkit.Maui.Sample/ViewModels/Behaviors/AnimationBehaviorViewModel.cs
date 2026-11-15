@@ -1,10 +1,12 @@
-﻿using System.Windows.Input;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
-public sealed partial class AnimationBehaviorViewModel : BaseViewModel, IDisposable
+[SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "A transient IDisposable view model is kept alive by the root service provider; the page calls StopSpin in OnDisappearing")]
+public sealed partial class AnimationBehaviorViewModel : BaseViewModel
 {
 	CancellationTokenSource? spinCancellation;
 
@@ -32,5 +34,10 @@ public sealed partial class AnimationBehaviorViewModel : BaseViewModel, IDisposa
 	[RelayCommand]
 	void OnCancelSpin() => spinCancellation?.Cancel();
 
-	public void Dispose() => spinCancellation?.Dispose();
+	public void StopSpin()
+	{
+		spinCancellation?.Cancel();
+		spinCancellation?.Dispose();
+		spinCancellation = null;
+	}
 }
