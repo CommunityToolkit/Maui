@@ -10,8 +10,8 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 	// Long enough for the test to move the focus to the other Entry before the behavior dismisses the keyboard, also on a slow device.
 	const int thresholdThatOutlastsMovingTheFocus = 2000;
 
-	// The CI iOS simulator can keep the main thread busy for over 10 s bringing up the keyboard, and the Command runs on that thread.
-	static readonly TimeSpan commandBudgetThatOutlastsASlowSimulatorKeyboard = TimeSpan.FromSeconds(20);
+	// The CI iOS simulator can keep the main thread busy for up to 17 s bringing up the keyboard, and the Command runs on that thread.
+	static readonly TimeSpan commandBudgetThatOutlastsASlowSimulatorKeyboard = TimeSpan.FromSeconds(30);
 
 	[Fact]
 	public async Task AnotherInputKeepsTheFocusWhenTheUserMovesToItBeforeTheyStopTyping()
