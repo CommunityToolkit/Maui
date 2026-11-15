@@ -10,6 +10,9 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 	// Long enough for the test to move the focus to the other Entry before the behavior dismisses the keyboard, also on a slow device.
 	const int thresholdThatOutlastsMovingTheFocus = 2000;
 
+	// The CI iOS simulator can keep the main thread busy for over 10 s bringing up the keyboard, and the Command runs on that thread.
+	static readonly TimeSpan commandBudgetThatOutlastsASlowSimulatorKeyboard = TimeSpan.FromSeconds(20);
+
 	[Fact]
 	public async Task AnotherInputKeepsTheFocusWhenTheUserMovesToItBeforeTheyStopTyping()
 	{
@@ -28,7 +31,7 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 			await FocusAsync(otherEntry);
 			Assert.False(commandExecuted.IsCompleted, "The behavior ran before the focus moved to the other Entry.");
 
-			Assert.Equal("abc", await commandExecuted.WaitAsync(TimeSpan.FromSeconds(5)));
+			Assert.Equal("abc", await commandExecuted.WaitAsync(commandBudgetThatOutlastsASlowSimulatorKeyboard));
 			Assert.True(otherEntry.IsFocused, "The other Entry lost the focus.");
 			Assert.True(IsPlatformViewFocused(otherPlatformView), "The platform view of the other Entry lost the focus.");
 		});
@@ -52,7 +55,7 @@ public partial class UserStoppedTypingBehaviorTests : KeyboardDismissalTestBase
 
 			SetPlatformText(platformView, "abc");
 
-			Assert.Equal("abc", await commandExecuted.WaitAsync(TimeSpan.FromSeconds(5)));
+			Assert.Equal("abc", await commandExecuted.WaitAsync(commandBudgetThatOutlastsASlowSimulatorKeyboard));
 			if (shouldDismissKeyboardAutomatically)
 			{
 				await AssertEventually(() => !entry.IsFocused && !IsPlatformViewFocused(platformView), timeout: 2000, message: "The Entry kept the focus.");
