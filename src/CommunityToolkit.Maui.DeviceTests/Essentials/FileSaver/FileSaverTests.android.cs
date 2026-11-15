@@ -18,6 +18,7 @@ public partial class FileSaverTests
 	[InlineData("photo.png", "image/png")]
 	[InlineData("archive.zip", "application/zip")]
 	[InlineData("Report.TXT", "text/plain")]
+	[InlineData("Photo.GIF", "image/gif")]
 	[InlineData("noextension", "*/*")]
 	[InlineData("data.unknownext123", "*/*")]
 	public async Task SaveAsyncAsksForANewOpenableDocumentWithTheFileNameAndItsMimeType(string fileName, string expectedMimeType)

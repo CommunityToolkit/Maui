@@ -54,8 +54,9 @@ public sealed partial class FileSaverImplementation : IFileSaver
 	{
 		// Not MimeTypeMap.GetFileExtensionFromUrl: it finds no extension in a file name with a space or a non-ASCII letter.
 		// MimeTypeMap matches the extension case-sensitively before Android 8.0 (API 26); invariant, so "ZIP" is not "zıp" in Turkish.
-		var extension = Path.GetExtension(fileName).TrimStart('.').ToLowerInvariant();
-		return MimeTypeMap.Singleton?.GetMimeTypeFromExtension(extension) ?? "*/*";
+		var extension = Path.GetExtension(fileName.AsSpan()).TrimStart('.');
+		var lowerCaseExtension = string.Create(extension.Length, extension, static (destination, source) => source.ToLowerInvariant(destination));
+		return MimeTypeMap.Singleton?.GetMimeTypeFromExtension(lowerCaseExtension) ?? "*/*";
 	}
 
 	static Task<string> InternalSaveAsync(string fileName, Stream stream, IProgress<double>? progress, CancellationToken cancellationToken)
