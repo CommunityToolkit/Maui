@@ -89,6 +89,27 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		view.TranslationY.Should().BeApproximately(targetY, precision);
 	}, TestContext.Current.CancellationToken);
 
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(TranslatingSeekerNames))]
+	public Task Seeker_CancelledInTheTurnTheAppSetsTheTranslation_KeepsTheAppsTranslation(string seekerName) => RunOnSingleThreadAsync(async token =>
+	{
+		const double appTranslation = 55;
+		using var seekerTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var translationProperty = TranslationPropertyOf(seekerName);
+		var startingTranslation = (double)view.GetValue(translationProperty);
+
+		var hasMoved = WaitForPropertyAsync(view, translationProperty, token, translation => Math.Abs(translation - startingTranslation) > precision);
+		var run = Create(seekerName, longRunLength).Animate(view, seekerTokenSource.Token);
+		await hasMoved;
+
+		view.SetValue(translationProperty, appTranslation);
+		seekerTokenSource.Cancel();
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout, token));
+		((double)view.GetValue(translationProperty)).Should().Be(appTranslation, "the app wrote the translation after the seeker's last frame, so nothing but the app's value is left to keep");
+	}, TestContext.Current.CancellationToken);
+
 	static async Task<(Task Seeker, Task<bool> Translation)> StartSeekerDuringTranslateToAsync(Label view, string seekerName, uint seekerLength, uint translationLength, CancellationToken token, double distance = 30)
 	{
 		var startingTranslationX = view.TranslationX;
@@ -98,6 +119,8 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 
 		return (Create(seekerName, seekerLength, distance).Animate(view, token), translation);
 	}
+
+	static BindableProperty TranslationPropertyOf(string seekerName) => seekerName is nameof(BounceAnimation) ? VisualElement.TranslationYProperty : VisualElement.TranslationXProperty;
 
 	static BaseAnimation Create(string seekerName, uint length, double distance = 30) => seekerName switch
 	{
