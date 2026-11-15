@@ -91,7 +91,6 @@ public abstract class BaseAnimationTest : BaseTest
 		return label.GetElapsedAnimationMilliseconds() - startMilliseconds;
 	}
 
-	// Frames of the mock ticker that drives every animation of the view
 	protected static async Task WaitForFramesAsync(VisualElement view, int count, CancellationToken token)
 	{
 		var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

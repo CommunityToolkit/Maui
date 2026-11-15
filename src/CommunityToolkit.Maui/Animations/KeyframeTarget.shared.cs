@@ -1,8 +1,5 @@
 ﻿namespace CommunityToolkit.Maui.Animations;
 
-/// <summary>
-/// What a keyframe animation animates: the view, the values its properties had before the animation, and the setters that write them.
-/// </summary>
 sealed class KeyframeTarget
 {
 	readonly IReadOnlyDictionary<BindableProperty, double> originalValues;
