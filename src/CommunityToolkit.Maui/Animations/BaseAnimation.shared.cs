@@ -48,9 +48,19 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength)
 {
 	// Returns false when the leg was interrupted (another animation took over, or CancelAnimations stopped it), which ends the run: the legs after it would interrupt whatever took over.
+	// animateTo must not pass the token to MAUI: for a token cancelled off the UI thread, MAUI queues AbortAnimation(handle), which a newer run that took the handle before it ran would suffer.
 	private protected static async Task<bool> AnimateLegAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> animateTo, CancellationToken token)
 	{
-		var wasAborted = await animateTo();
+		var hasLegEnded = false;
+		bool wasAborted;
+
+		// The tween starts first, so that a token that is already cancelled aborts it
+		var leg = animateTo();
+		await using (token.Register(() => AbortLegOnDispatcher(view, animationHandle, () => hasLegEnded)))
+		{
+			wasAborted = await leg;
+			hasLegEnded = true;
+		}
 
 		if (!wasAborted)
 		{
@@ -97,6 +107,30 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		}
 
 		return false;
+	}
+
+	// Dispatch returns false only for a dispatcher that takes no more work (app closing), which leaves no animation to stop
+	static void AbortLegOnDispatcher(VisualElement view, string animationHandle, Func<bool> hasLegEnded)
+	{
+		var dispatcher = view.Dispatcher;
+
+		if (dispatcher.IsDispatchRequired)
+		{
+			dispatcher.Dispatch(() => AbortIfLegIsRunning(view, animationHandle, hasLegEnded));
+		}
+		else
+		{
+			AbortIfLegIsRunning(view, animationHandle, hasLegEnded);
+		}
+	}
+
+	// A leg that ended, whatever ended it, resumed on the UI thread inside the abort before a newer run could take the handle, so the handle may belong to that run now
+	static void AbortIfLegIsRunning(VisualElement view, string animationHandle, Func<bool> hasLegEnded)
+	{
+		if (!hasLegEnded())
+		{
+			view.AbortAnimation(animationHandle);
+		}
 	}
 
 	// Started off the dispatcher's thread, every await would continue on the thread pool and write the view's properties there.

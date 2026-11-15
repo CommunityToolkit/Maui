@@ -320,4 +320,34 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			Assert.True(Math.Abs(valueAfterNextRun - interruptedValue) <= peakTolerance, $"The next run ended at {valueAfterNextRun}; it must return to the value {interruptedValue} the app's own animation left the view at.");
 		});
 	}
+
+	[Fact]
+	public async Task AnimationCancelledOffTheUIThreadWhoseAbortIsStillQueuedDoesNotAbortTheNewRun()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			using var cancellation = new CancellationTokenSource();
+			var midRun = WaitForMidRunAsync(view);
+			var firstRun = CreateAnimation().Animate(view, cancellation.Token);
+			await midRun;
+
+			var peakAgain = WaitForPeakAsync(view);
+
+			// This turn keeps the UI thread busy, so the abort that the pool thread's cancellation queues can only run after the new run took the handle
+			var wasCancelled = Task.Run(cancellation.Cancel).Wait(waitTimeout);
+			Assert.True(wasCancelled, "The pool thread did not cancel the token.");
+			var secondRun = CreateAnimation().Animate(view);
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => firstRun.WaitAsync(waitTimeout));
+			await secondRun.WaitAsync(waitTimeout);
+
+			var peakError = await Record.ExceptionAsync(() => peakAgain);
+			Assert.True(peakError is null, "The new run did not reach its peak; the abort that the cancelled run queued stopped it.");
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the new run ended");
+		});
+	}
 }

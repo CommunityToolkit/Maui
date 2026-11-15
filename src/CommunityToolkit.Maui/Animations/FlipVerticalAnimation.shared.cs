@@ -52,6 +52,6 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 		}
 
 		Task<bool> FlipLegAsync(double rotationX) =>
-			AnimateLegAsync(view, VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync), flipId, originalRotationX, () => view.RotateXToAsync(rotationX, halfLength, Easing, token), token);
+			AnimateLegAsync(view, VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync), flipId, originalRotationX, () => view.RotateXToAsync(rotationX, halfLength, Easing, CancellationToken.None), token);
 	}
 }

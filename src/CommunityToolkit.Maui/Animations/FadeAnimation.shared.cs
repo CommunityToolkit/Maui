@@ -61,6 +61,6 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		}
 
 		Task<bool> FadeLegAsync(double opacity) =>
-			AnimateLegAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, token), token);
+			AnimateLegAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, CancellationToken.None), token);
 	}
 }

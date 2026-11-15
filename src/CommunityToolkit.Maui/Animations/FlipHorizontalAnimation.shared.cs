@@ -52,6 +52,6 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 		}
 
 		Task<bool> FlipLegAsync(double rotationY) =>
-			AnimateLegAsync(view, VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync), flipId, originalRotationY, () => view.RotateYToAsync(rotationY, halfLength, Easing, token), token);
+			AnimateLegAsync(view, VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync), flipId, originalRotationY, () => view.RotateYToAsync(rotationY, halfLength, Easing, CancellationToken.None), token);
 	}
 }

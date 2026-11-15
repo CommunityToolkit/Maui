@@ -58,6 +58,6 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 		}
 
 		Task<bool> ScaleLegAsync(double scale) =>
-			AnimateLegAsync(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync), scaleId, originalScale, () => view.ScaleToAsync(scale, halfLength, Easing, token), token);
+			AnimateLegAsync(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync), scaleId, originalScale, () => view.ScaleToAsync(scale, halfLength, Easing, CancellationToken.None), token);
 	}
 }

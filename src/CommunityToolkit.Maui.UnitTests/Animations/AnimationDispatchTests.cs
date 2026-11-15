@@ -21,6 +21,8 @@ public class AnimationDispatchTests : BaseTest
 
 	public static TheoryData<string> AnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation), nameof(ShakeAnimation), nameof(TadaAnimation), nameof(HeartbeatAnimation), nameof(RubberBandAnimation), nameof(BounceAnimation), nameof(SwingAnimation), nameof(WobbleAnimation)];
 
+	public static TheoryData<string> ToAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
+
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(AnimationNames))]
 	public Task Animate_StartedOffTheDispatcherThreadAndCompleted_ChangesTheViewOnlyOnTheDispatcherThread(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
@@ -90,6 +92,33 @@ public class AnimationDispatchTests : BaseTest
 		Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "the superseded run's token aborted the new run");
 		await newRun.WaitAsync(waitTimeout, token);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => supersededRun.WaitAsync(waitTimeout, token));
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task Animate_SupersededToAnimationCancelledOffTheDispatcherThread_DoesNotAbortTheNewRun(string animationName) => RunOnDispatcherThreadAsync(async dispatcherThread =>
+	{
+		var token = TestContext.Current.CancellationToken;
+		var view = dispatcherThread.CreateAnimatedView();
+		var originalValues = CaptureValues(view);
+		var (property, peak) = ToAnimationPropertyAndPeak(animationName, view);
+		using var supersededRunTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		var firstChange = dispatcherThread.WaitForChangeAsync(view);
+		var supersededRun = CreateToAnimation(animationName, 2000).Animate(view, supersededRunTokenSource.Token);
+		await firstChange;
+
+		// The dispatcher must not run the abort that the pool thread's cancellation queues until the new run has taken the handle
+		dispatcherThread.WaitsForDispatchedWork = false;
+		Task.Run(supersededRunTokenSource.Cancel, token).Wait(token);
+		var elapsedMillisecondsBeforeTheNewRun = view.GetElapsedAnimationMilliseconds();
+		var peakReached = WaitForValueAsync(view, property, value => Math.Abs(value - peak) <= precision, token);
+		var newRun = CreateToAnimation(animationName, animationLength).Animate(view, token);
+
+		await newRun.WaitAsync(waitTimeout, token);
+		await peakReached;
+		Assert.True(view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeTheNewRun >= animationLength, "the superseded run's token aborted the new run before its full length");
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => supersededRun.WaitAsync(waitTimeout, token));
+		AssertValuesEqual(view, originalValues);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -253,6 +282,19 @@ public class AnimationDispatchTests : BaseTest
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },
 		nameof(ScaleAnimation) => new ScaleAnimation { Scale = 1.6, Length = length },
+		nameof(RotateAnimation) => new RotateAnimation { Rotation = 180, Length = length },
+		nameof(FlipHorizontalAnimation) => new FlipHorizontalAnimation { Rotation = 90, Length = length },
+		nameof(FlipVerticalAnimation) => new FlipVerticalAnimation { Rotation = 90, Length = length },
+		_ => throw new NotSupportedException(animationName)
+	};
+
+	static (BindableProperty Property, double Peak) ToAnimationPropertyAndPeak(string animationName, VisualElement view) => animationName switch
+	{
+		nameof(FadeAnimation) => (VisualElement.OpacityProperty, 0.2),
+		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, 1.6),
+		nameof(RotateAnimation) => (VisualElement.RotationProperty, view.Rotation + 180),
+		nameof(FlipHorizontalAnimation) => (VisualElement.RotationYProperty, 90),
+		nameof(FlipVerticalAnimation) => (VisualElement.RotationXProperty, 90),
 		_ => throw new NotSupportedException(animationName)
 	};
 

@@ -70,7 +70,7 @@ public partial class RotateAnimation : BaseAnimation
 		{
 			// Turning by Rotation from the tracked original, not from the current rotation, ends a run that interrupted another one where the first run would have ended
 			var hasTurned = await AnimateLegAsync(view, VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync), rotationId, originalRotation,
-				() => view.RotateToAsync(originalRotation + Rotation, Length, Easing, token), token);
+				() => view.RotateToAsync(originalRotation + Rotation, Length, Easing, CancellationToken.None), token);
 
 			if (hasTurned && rotations.IsLatest(rotationId))
 			{
