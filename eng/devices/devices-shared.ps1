@@ -1401,6 +1401,41 @@ function Find-DeviceTestAppBundle {
     return $bundle.FullName
 }
 
+function Stop-MacCatalystAppInstances {
+    param(
+        [Parameter(Mandatory = $true)][string]$AppBundle,
+        [int]$WaitSeconds = 10
+    )
+
+    # XHarness kills only its `open` launcher when the launch times out; the app is a launchd child and keeps running.
+    # Matching the bundle's executable directory keeps other apps (and other sessions' apps) untouched.
+    $executableDirectory = (Join-Path ([System.IO.Path]::GetFullPath($AppBundle)) 'Contents/MacOS') + '/'
+    $findInstances = {
+        @(& ps -axo 'pid=,command=' | ForEach-Object {
+                if ($_.TrimStart() -match '^(\d+)\s+(.*)$' -and $Matches[2].StartsWith($executableDirectory, [System.StringComparison]::Ordinal) -and [int]$Matches[1] -ne $PID) {
+                    [int]$Matches[1]
+                }
+            })
+    }
+
+    $processIds = & $findInstances
+    if ($processIds.Count -eq 0) {
+        return
+    }
+
+    Write-DeviceTestWarning "Stopping the test app that the previous attempt left running (pid $($processIds -join ', ')): $AppBundle"
+    & kill -KILL @($processIds) 2>$null
+    $deadline = [DateTime]::UtcNow.AddSeconds($WaitSeconds)
+    while ((& $findInstances).Count -gt 0 -and [DateTime]::UtcNow -lt $deadline) {
+        Start-Sleep -Milliseconds 250
+    }
+
+    $survivors = & $findInstances
+    if ($survivors.Count -gt 0) {
+        Write-DeviceTestWarning "The test app is still running after $WaitSeconds s (pid $($survivors -join ', ')); the retry can hang the same way."
+    }
+}
+
 function Invoke-AppleDeviceTests {
     param(
         [Parameter(Mandatory = $true)]$Context,
@@ -1450,7 +1485,18 @@ function Invoke-AppleDeviceTests {
     $appleArguments += @(Get-DeviceTestCapabilityDeclarations -Context $Context | ForEach-Object { "--set-env=$_" })
     $appleArguments += $ExtraArguments
 
-    $verdict = Invoke-DeviceTestWithRetries -Context $Context -Project $Project -Directory $appleOutput -BeforeRetry $BeforeRetry -Attempt {
+    $callerBeforeRetry = $BeforeRetry
+    $appleBeforeRetry = $BeforeRetry
+    if ($Platform -eq 'maccatalyst') {
+        $appleBeforeRetry = {
+            Stop-MacCatalystAppInstances -AppBundle $appBundle
+            if ($null -ne $callerBeforeRetry) {
+                & $callerBeforeRetry
+            }
+        }.GetNewClosure()
+    }
+
+    $verdict = Invoke-DeviceTestWithRetries -Context $Context -Project $Project -Directory $appleOutput -BeforeRetry $appleBeforeRetry -Attempt {
         param($attemptNumber)
         $appleExitCode = Invoke-XHarness -ArgumentList $appleArguments -OutputDirectory $appleOutput
         Get-DeviceTestVerdict -Platform $Platform -Directory $appleOutput -RunnerExitCode $appleExitCode -Attempt $attemptNumber
