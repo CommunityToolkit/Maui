@@ -16,6 +16,7 @@ using AColor = Android.Graphics.Color;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using AView = Android.Views.View;
 using AWindow = Android.Views.Window;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -266,7 +267,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Equal(window.DecorView.Handle, ParentHandle(relativeLayout));
 			Assert.Equal(0, platformView.ChildCount);
-			await WaitUntilSystemBarsAsync(window, visible: false);
+			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 			AssertFullscreenSystemUi(window, flagsBefore);
 			Assert.Equal(WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe, WindowCompat.GetInsetsController(window, window.DecorView)!.SystemBarsBehavior);
 
@@ -355,7 +356,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			var button = GetFullscreenButton(mediaElement);
 			await ShowSystemBarsAsync(window);
 			button.PerformClick();
-			await WaitUntilSystemBarsAsync(window, visible: false);
+			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 
 			platformView.Visibility = ViewStates.Invisible;
 			platformView.Visibility = ViewStates.Visible;
@@ -467,7 +468,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			var flagsBefore = window.DecorView.SystemUiFlags;
 			GetFullscreenButton(mediaElement).PerformClick();
 			Assert.Equal(window.DecorView.Handle, ParentHandle(relativeLayout));
-			await WaitUntilSystemBarsAsync(window, visible: false);
+			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 
 			((ViewGroup)platformView.Parent!).RemoveView(platformView);
 
@@ -553,7 +554,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			await ShowSystemBarsAsync(window);
 			GetFullscreenButton(mediaElement).PerformClick();
 			await WaitUntilAsync(() => relativeLayout.Width > platformView.Width, "The player layout never got a full-screen layout pass.", 3000);
-			await WaitUntilSystemBarsAsync(window, visible: false);
+			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 
 			// A visible controller requests a layout up the chain when it attaches, which would mask the missing request.
 			mediaElement.ShouldShowPlaybackControls = false;
@@ -664,7 +665,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			var window = GetActivityWindow();
 			await ShowSystemBarsAsync(window);
 			GetFullscreenButton(mediaElement).PerformClick();
-			await WaitUntilSystemBarsAsync(window, visible: false);
+			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 
 			// Stands in for the user swiping the bars back in (they are transient in full screen).
 			await ShowSystemBarsAsync(window);
@@ -693,8 +694,9 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			var window = GetActivityWindow();
 			await ShowSystemBarsAsync(window);
 			GetFullscreenButton(mediaElement).PerformClick();
-			await WaitUntilSystemBarsAsync(window, visible: false);
+			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 			await ShowSystemBarsAsync(window);
+			await WaitUntilSystemBarsSettleAsync(window, visible: true);
 
 			platformView.Visibility = visibility;
 
@@ -811,6 +813,27 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 
 	static Task WaitUntilSystemBarsAsync(AWindow window, bool visible, int timeout = 3000) =>
 		WaitUntilAsync(() => AreSystemBarsVisible(window) == visible, $"The system bars never became {(visible ? "visible" : "hidden")}.", timeout);
+
+	// A hide reads as hidden when its animation starts; a show issued before it ends can be undone by the hide's late finish.
+	static async Task WaitUntilSystemBarsSettleAsync(AWindow window, bool visible, int settle = 500, int timeout = 5000)
+	{
+		var waited = Stopwatch.StartNew();
+		var heldInTheWantedState = Stopwatch.StartNew();
+		while (heldInTheWantedState.ElapsedMilliseconds < settle)
+		{
+			if (waited.ElapsedMilliseconds > timeout)
+			{
+				Assert.Fail($"The system bars never stayed {(visible ? "visible" : "hidden")}.");
+			}
+
+			if (AreSystemBarsVisible(window) != visible)
+			{
+				heldInTheWantedState.Restart();
+			}
+
+			await Task.Delay(25);
+		}
+	}
 
 	static bool IsStatusBarVisible(AWindow window) => OperatingSystem.IsAndroidVersionAtLeast(30)
 		? window.DecorView.RootWindowInsets?.IsVisible(WindowInsets.Type.StatusBars()) == true
