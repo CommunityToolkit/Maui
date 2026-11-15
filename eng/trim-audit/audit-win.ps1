@@ -283,7 +283,7 @@ if (-not $python) {
         "(macOS, Linux or Windows): eng/trim-audit/gate-windows-result.sh <the zip or its folder>$(if ($reportOnly) { ' --report-only' }), or run in order: " +
         'python3 -I eng/trim-audit/ilwarn.py summarize <folder>/warnings.log <folder> <folder>/toolkit-dlls, then ' +
         'python3 -I eng/trim-audit/ilwarn.py gate <folder>/warnings-unique.tsv --allow eng/trim-audit/allow.tsv --log <folder>/warnings.log --assets-check <folder>/assets-check.txt --result <folder>/result.json ' +
-        "(python on Windows). Exit code $gateExit$(if ($rc -eq 0) { ': build ok, gate not run' })."
+        "$(if ($reportOnly) { '--report-only ' })(python on Windows). Exit code $gateExit$(if ($rc -eq 0) { ': build ok, gate not run' })."
     Write-Host "GATE: $noPython"
     Write-GateOutput "GATE: $noPython"
     if ($Github) { Write-Host "::$(if ($reportOnly) { 'warning' } else { 'error' })::$($noPython.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))" }
