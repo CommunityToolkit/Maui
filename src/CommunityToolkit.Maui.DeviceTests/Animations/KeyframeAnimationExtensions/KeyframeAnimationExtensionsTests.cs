@@ -33,6 +33,9 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleAndRotation =
 		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation)];
 
+	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleOnly =
+		[(VisualElement.ScaleProperty, originalScale)];
+
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleRotationAndTranslationY =
 		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation), (VisualElement.TranslationYProperty, originalTranslationY)];
 
@@ -262,6 +265,32 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 					translationYChanges++;
 				}
 			}
+		});
+	}
+
+	[Fact]
+	public async Task ScaleAnimationStartedWhileHeartbeatRunsStopsItAndReturnsTheViewToItsOriginalValues()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(scaleOnly);
+		var heartbeat = new HeartbeatAnimation { MaximumScale = 1.25, Length = 3 * runLength };
+		var scale = new ScaleAnimation { Scale = 1.6, Length = runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var beating = WaitForValueAsync(view, VisualElement.ScaleProperty, currentScale => currentScale >= originalScale + 0.05);
+			var heartbeatRun = heartbeat.Animate(view);
+			await beating;
+
+			var scaleRun = scale.Animate(view);
+
+			await heartbeatRun.WaitAsync(waitTimeout);
+			Assert.True(heartbeatRun.IsCompletedSuccessfully, $"Heartbeat ended {heartbeatRun.Status}; a stopped attention seeker completes normally.");
+			Assert.False(scaleRun.IsCompleted, "Heartbeat did not end when Scale started, but at its own end.");
+
+			await scaleRun.WaitAsync(waitTimeout);
+			await AssertStaysAtOriginalValuesAsync(handler, view, scaleOnly, nativeStateAtRest, "after Scale stopped Heartbeat");
 		});
 	}
 

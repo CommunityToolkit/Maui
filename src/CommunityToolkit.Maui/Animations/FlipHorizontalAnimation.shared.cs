@@ -33,6 +33,7 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 	async Task FlipAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
+		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.RotationYProperty);
 
 		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationYProperty);
 		var (flipId, originalRotationY) = rotations.Start(view.RotationY);

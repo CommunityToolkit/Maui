@@ -473,20 +473,6 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 
 	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatable => animatable.Property == property);
 
-	static async Task WaitForFramesAsync(VisualElement view, int count, CancellationToken token)
-	{
-		var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var frames = 0;
-		using var observation = view.ObserveAnimationFrames(_ =>
-		{
-			if (++frames >= count)
-			{
-				seen.TrySetResult();
-			}
-		});
-		await seen.Task.WaitAsync(waitTimeout, token);
-	}
-
 	// A restore writes the original value itself, while a tween never lands on it exactly in the frames right after another run takes over.
 	// The window ends after frames, not at the next frame: the mock ticker fires inside Start, before an aborted run's posted continuation.
 	sealed class OriginalValueWrites : IDisposable

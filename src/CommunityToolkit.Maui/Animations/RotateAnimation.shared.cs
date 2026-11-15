@@ -11,6 +11,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// The original rotation is the rotation the view had before it started rotating. An animation that starts while another animation
 /// still rotates the same view, for example when an <see cref="Behaviors.AnimationBehavior"/> is triggered again, takes over and turns the view on to the same end,
 /// <see cref="Rotation"/> degrees from the rotation it had before the first of these animations, so repeated triggers never leave it turned.
+/// Starting it also stops a running attention seeker that animates the rotation, such as <see cref="SwingAnimation"/>, <see cref="TadaAnimation"/> or <see cref="WobbleAnimation"/>, which returns the view to its original values first.
 /// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
 /// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original rotation at once and the returned <see cref="Task"/> completes.
 /// Cancelling the token while the animation runs returns the view to its original rotation and ends the returned <see cref="Task"/> as canceled.
@@ -62,6 +63,7 @@ public partial class RotateAnimation : BaseAnimation
 	async Task RotateAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
+		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.RotationProperty);
 
 		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationProperty);
 		var (rotationId, originalRotation) = rotations.Start(view.Rotation);

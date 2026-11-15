@@ -106,18 +106,4 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		nameof(WobbleAnimation) => new WobbleAnimation { Length = length },
 		_ => throw new NotSupportedException(seekerName)
 	};
-
-	static async Task WaitForFramesAsync(VisualElement view, int count, CancellationToken token)
-	{
-		var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var frames = 0;
-		using var observation = view.ObserveAnimationFrames(_ =>
-		{
-			if (++frames >= count)
-			{
-				seen.TrySetResult();
-			}
-		});
-		await seen.Task.WaitAsync(waitTimeout, token);
-	}
 }

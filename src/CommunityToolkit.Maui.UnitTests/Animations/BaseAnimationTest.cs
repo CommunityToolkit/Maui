@@ -91,6 +91,37 @@ public abstract class BaseAnimationTest : BaseTest
 		return label.GetElapsedAnimationMilliseconds() - startMilliseconds;
 	}
 
+	// Frames of the mock ticker that drives every animation of the view
+	protected static async Task WaitForFramesAsync(VisualElement view, int count, CancellationToken token)
+	{
+		var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var frames = 0;
+		using var observation = view.ObserveAnimationFrames(_ =>
+		{
+			if (++frames >= count)
+			{
+				seen.TrySetResult();
+			}
+		});
+		await seen.Task.WaitAsync(waitTimeout, token);
+	}
+
+	// The mock ticker stops when no animation runs, so a probe keeps it ticking for the frames in which a run that kept going would still move the view
+	protected static async Task WaitForTickerFramesAsync(VisualElement view, int count, CancellationToken token)
+	{
+		const string frameProbeHandle = "CommunityToolkit.Maui.UnitTests.FrameProbe";
+		new Microsoft.Maui.Controls.Animation(_ => { }).Commit(view, frameProbeHandle, length: 60_000);
+
+		try
+		{
+			await WaitForFramesAsync(view, count, token);
+		}
+		finally
+		{
+			view.AbortAnimation(frameProbeHandle);
+		}
+	}
+
 	protected static Task WaitForPropertyAsync(VisualElement view, BindableProperty property, CancellationToken token, params Func<double, bool>[] conditions)
 	{
 		var conditionsMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

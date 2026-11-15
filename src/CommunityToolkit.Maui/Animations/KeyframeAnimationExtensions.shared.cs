@@ -1,4 +1,5 @@
-﻿using System.Runtime.ExceptionServices;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 namespace CommunityToolkit.Maui.Animations;
@@ -7,6 +8,17 @@ static class KeyframeAnimationExtensions
 {
 	// One handle for every keyframe animation: a view runs one at a time, so no run reads another run's keyframe values as the view's original values
 	internal const string AnimationHandle = "CommunityToolkit.Maui.Animations.KeyframeAnimation";
+
+	// A "To" animation that starts while a run animates one of its properties must stop that run, which the run's own handle cannot tell
+	static readonly ConditionalWeakTable<VisualElement, RunningRun> runningRuns = new();
+
+	internal static void StopRunAnimating(VisualElement view, BindableProperty property)
+	{
+		if (runningRuns.TryGetValue(view, out var run) && run.AnimatedProperties.Contains(property))
+		{
+			view.AbortAnimation(AnimationHandle);
+		}
+	}
 
 	public static async Task AnimateKeyframesAsync(this VisualElement view, IReadOnlyList<BindableProperty> animatedProperties,
 		Func<KeyframeTarget, Animation> createKeyframes, uint length, Easing easing, CancellationToken token)
@@ -69,11 +81,15 @@ static class KeyframeAnimationExtensions
 		}
 
 		var target = new KeyframeTarget(view, animatedProperties, originalValues);
+		var run = new RunningRun(animatedProperties);
+		runningRuns.AddOrUpdate(view, run);
 
 		try
 		{
 			createKeyframes(target).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
 			{
+				EndRun(view, run);
+
 				// Runs inside MAUI's ticker or inside the code that aborted the run, neither of which may see a throwing PropertyChanged handler: the run's Task faults instead
 				try
 				{
@@ -92,10 +108,20 @@ static class KeyframeAnimationExtensions
 			// With animations disabled, Commit runs the finished callback itself, which has already restored the view
 			if (!animationEnded.Task.IsCompleted)
 			{
+				EndRun(view, run);
 				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target);
 			}
 
 			throw;
+		}
+	}
+
+	// A newer run has replaced this run's record by the time an aborted run ends
+	static void EndRun(VisualElement view, RunningRun run)
+	{
+		if (runningRuns.TryGetValue(view, out var currentRun) && ReferenceEquals(currentRun, run))
+		{
+			runningRuns.Remove(view);
 		}
 	}
 
@@ -182,5 +208,10 @@ static class KeyframeAnimationExtensions
 		{
 			view.AbortAnimation(AnimationHandle);
 		}
+	}
+
+	sealed class RunningRun(IReadOnlyList<BindableProperty> animatedProperties)
+	{
+		public IReadOnlyList<BindableProperty> AnimatedProperties { get; } = animatedProperties;
 	}
 }

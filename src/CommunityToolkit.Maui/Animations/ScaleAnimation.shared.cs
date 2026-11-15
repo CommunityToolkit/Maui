@@ -9,6 +9,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// The animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>: half of it to reach <see cref="Scale"/>, and half to return to the original scale.
 /// The original scale is the scale the view had before it started scaling. An animation that starts while another animation
 /// still scales the same view takes over from the partially scaled view and returns it to the scale it had before the first of these animations.
+/// Starting it also stops a running attention seeker that animates the scale, such as <see cref="HeartbeatAnimation"/> or <see cref="TadaAnimation"/>, which returns the view to its original values first.
 /// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
 /// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original scale at once and the returned <see cref="Task"/> completes.
 /// Cancelling the token while the animation runs returns the view to its original scale and ends the returned <see cref="Task"/> as canceled.
@@ -39,6 +40,7 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 	async Task ScaleAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
+		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.ScaleProperty);
 
 		var scales = AnimatedPropertyTracker.For(view, VisualElement.ScaleProperty);
 		var (scaleId, originalScale) = scales.Start(view.Scale);
