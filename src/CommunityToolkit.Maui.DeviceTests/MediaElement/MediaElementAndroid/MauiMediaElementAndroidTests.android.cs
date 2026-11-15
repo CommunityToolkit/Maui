@@ -477,6 +477,28 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
+	[Fact]
+	public async Task DetachingTheViewWhileInFullscreenDoesNotLeaveThePlayerAttachedToTheWindow()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.ShouldShowPlaybackControls = true);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			var platformView = GetMauiMediaElement(mediaElement);
+			var relativeLayout = platformView.GetChildAt(0)!;
+			var window = GetActivityWindow();
+			await ShowSystemBarsAsync(window);
+			GetFullscreenButton(mediaElement).PerformClick();
+			Assert.Equal(window.DecorView.Handle, ParentHandle(relativeLayout));
+
+			((ViewGroup)platformView.Parent!).RemoveView(platformView);
+
+			Assert.Equal(platformView.Handle, ParentHandle(relativeLayout));
+			Assert.False(relativeLayout.IsAttachedToWindow);
+		});
+	}
+
 	// Leaving full screen because the view was detached does not go through the full-screen button, so OnDetachedFromWindow also resets the
 	// button's own full-screen state (PlayerView.SetFullscreenButtonState). Otherwise the next tap would report "leave full screen" to a view
 	// that is not in full screen, and adding the player layout to the view that already holds it throws Java IllegalStateException ("The
@@ -508,6 +530,42 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(window.DecorView.Handle, ParentHandle(relativeLayout));
 			button.PerformClick();
 			Assert.Equal(platformView.Handle, ParentHandle(relativeLayout));
+		});
+	}
+
+	// Re-attaching an ancestor requests a layout only for the ancestor, so without the view's own layout request the player layout
+	// would keep the frame of the full-screen layout pass.
+	[Fact]
+	public async Task PlayerLayoutFitsTheViewAgainAfterTheViewLeftFullscreenByDetaching()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.ShouldShowPlaybackControls = true);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			var platformView = GetMauiMediaElement(mediaElement);
+			var relativeLayout = platformView.GetChildAt(0)!;
+			// In full screen the player layout lives in the decor view, where GetController cannot find it.
+			var controller = GetController(mediaElement);
+			var host = (ViewGroup)platformView.Parent!;
+			var root = (ViewGroup)host.Parent!;
+			var window = GetActivityWindow();
+			await ShowSystemBarsAsync(window);
+			GetFullscreenButton(mediaElement).PerformClick();
+			await WaitUntilAsync(() => relativeLayout.Width > platformView.Width, "The player layout never got a full-screen layout pass.", 3000);
+			await WaitUntilSystemBarsAsync(window, visible: false);
+
+			// A visible controller requests a layout up the chain when it attaches, which would mask the missing request.
+			mediaElement.ShouldShowPlaybackControls = false;
+			await WaitUntilAsync(() => controller.Visibility != ViewStates.Visible, "The controller never hid.");
+
+			var index = root.IndexOfChild(host);
+			root.RemoveView(host);
+			root.AddView(host, index);
+			await WaitUntilAsync(() => platformView.IsAttachedToWindow, "The view never attached to the window again.");
+
+			await WaitUntilAsync(() => platformView.Width > 0 && relativeLayout.Width <= platformView.Width && relativeLayout.Height <= platformView.Height, "The player layout kept its full-screen frame after the view attached again.", 3000);
+			await WaitUntilSystemBarsAsync(window, visible: true);
 		});
 	}
 
@@ -726,6 +784,13 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		var playerView = GetPlayerView(mediaElement);
 		var id = playerView.Context!.Resources!.GetIdentifier("exo_fullscreen", "id", playerView.Context.PackageName);
 		return playerView.FindViewById(id) ?? throw new InvalidOperationException("The PlayerView has no full-screen button.");
+	}
+
+	static AView GetController(MediaElement mediaElement)
+	{
+		var playerView = GetPlayerView(mediaElement);
+		var id = playerView.Context!.Resources!.GetIdentifier("exo_controller", "id", playerView.Context.PackageName);
+		return playerView.FindViewById(id) ?? throw new InvalidOperationException("The PlayerView has no controller.");
 	}
 
 	static IntPtr ParentHandle(AView view) => ((Java.Lang.Object)view.Parent!).Handle;
