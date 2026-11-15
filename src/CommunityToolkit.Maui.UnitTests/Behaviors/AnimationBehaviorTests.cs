@@ -242,9 +242,39 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		Assert.IsType<OperationCanceledException>(exception, exactMatch: false);
 	}
 
+	[Fact]
+	public void AnimateCommand_CustomAnimationUsingALinkedToken_CancelledThroughTheCommandToken_DoesNotThrow()
+	{
+		using var commandTokenSource = new CancellationTokenSource();
+		var behavior = new AnimationBehavior
+		{
+			AnimationType = new CancelsTheCommandTokenAndWaitsOnALinkedTokenAnimation(commandTokenSource)
+		};
+
+		new Label
+		{
+			Behaviors = { behavior }
+		}.EnableAnimations();
+
+		// A linked token's OperationCanceledException carries the linked token, not the command's: the caller's cancellation still ends the run as asked
+		var exception = Record.Exception(() => UndisposedAsyncContext.Run(() => behavior.AnimateCommand.Execute(commandTokenSource.Token)));
+
+		Assert.Null(exception);
+	}
+
 	sealed partial class CancelsItselfAnimation : BaseAnimation
 	{
 		public override Task Animate(VisualElement view, CancellationToken token = default) => Task.FromCanceled(new CancellationToken(canceled: true));
+	}
+
+	sealed partial class CancelsTheCommandTokenAndWaitsOnALinkedTokenAnimation(CancellationTokenSource commandTokenSource) : BaseAnimation
+	{
+		public override async Task Animate(VisualElement view, CancellationToken token = default)
+		{
+			using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+			await commandTokenSource.CancelAsync();
+			await Task.Delay(Timeout.Infinite, linkedTokenSource.Token);
+		}
 	}
 
 	class MockAnimation : BaseAnimation
