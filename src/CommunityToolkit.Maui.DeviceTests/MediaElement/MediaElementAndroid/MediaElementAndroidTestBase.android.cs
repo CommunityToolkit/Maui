@@ -188,6 +188,9 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	protected static Notification? FindServiceNotification() =>
 		GetActiveNotifications().FirstOrDefault(notification => notification.Id == serviceNotificationId)?.Notification;
 
+	protected static void CancelAllNotifications() =>
+		((NotificationManager)MauiPlatform.AppContext.GetSystemService(Context.NotificationService)!).CancelAll();
+
 	protected static bool IsMediaStyle(Notification? notification) => notification?.Extras?.GetString(Notification.ExtraTemplate) == mediaStyleTemplate;
 
 	protected static Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout) =>
@@ -277,7 +280,18 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 			}
 
 			// Disconnecting stops MediaControlsService asynchronously: the next test must not start in the middle of that.
-			await WaitForMediaControlsServiceToStopAsync();
+			try
+			{
+				await WaitForMediaControlsServiceToStopAsync();
+			}
+			catch (Exception ex)
+			{
+				var leftovers = string.Join(", ", GetActiveNotifications().Select(notification => $"id {notification.Id} flags {notification.Notification?.Flags}"));
+				var serviceState = FindMediaControlsService() is null ? "gone" : "listed";
+				// A notification that stayed would otherwise fail every later test's teardown too.
+				CancelAllNotifications();
+				throw new InvalidOperationException($"{ex.Message} Service {serviceState}; notifications: [{leftovers}].", ex);
+			}
 
 			if (usesForegroundService)
 			{

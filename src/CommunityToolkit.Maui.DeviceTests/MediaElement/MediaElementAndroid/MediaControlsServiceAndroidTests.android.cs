@@ -25,6 +25,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 {
 	static readonly FieldInfo playerNotificationManagerField = typeof(MediaControlsService).GetField("playerNotificationManager", BindingFlags.Instance | BindingFlags.NonPublic)!;
+	static readonly FieldInfo cancelStragglerHandlerField = typeof(MediaControlsService).GetField("cancelStragglerHandler", BindingFlags.Instance | BindingFlags.NonPublic)!;
 	static readonly FieldInfo notificationBuilderField = typeof(MediaControlsService).GetField("notificationBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
 	async Task HostBoundAsync(MediaElement mediaElement, Func<AndroidMediaElementProbeHandler, BoundServiceConnection, Task> test)
@@ -869,6 +870,10 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		// OnDestroy runs on the UI thread and was running when the notification disappeared, so a Dispose posted to the UI thread runs after it
 		// returned. Disposing earlier crashes the app: OnDestroy's StopSelf then throws ObjectDisposedException.
 		Assert.NotNull(service);
+		// Dispose drops the NotificationManager that the Android 11 straggler cancel needs.
+		await WaitForStragglerCancelAsync(service);
+		await WaitUntilAsync(() => GetActiveNotifications().Length == 0, "The straggler cancel left a notification behind.");
+
 		await InvokeOnMainThreadAsync(service.Dispose);
 
 		Assert.Null(service.NotificationManager);
@@ -1028,6 +1033,15 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	// it again. From Android 13 there is none.
 	static void DetachLegacyNotificationManager(MediaControlsService service) =>
 		((AndroidX.Media3.UI.PlayerNotificationManager?)playerNotificationManagerField.GetValue(service))?.SetPlayer(null);
+
+	// A message posted with the straggler's delay after the straggler runs after it on the same looper.
+	static async Task WaitForStragglerCancelAsync(MediaControlsService service)
+	{
+		var handler = (Android.OS.Handler)cancelStragglerHandlerField.GetValue(service)!;
+		var reached = new TaskCompletionSource();
+		await InvokeOnMainThreadAsync(() => handler.PostDelayed(() => reached.TrySetResult(), MediaControlsService.StragglerCancelDelayMilliseconds));
+		await reached.Task.WaitAsync(TimeSpan.FromSeconds(10));
+	}
 
 	static StatusBarNotification? FindSentinelNotification() => GetActiveNotifications().FirstOrDefault(notification => notification.Id == sentinelNotificationId);
 

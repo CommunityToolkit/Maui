@@ -16,7 +16,7 @@ namespace CommunityToolkit.Maui.Media.Services;
 sealed partial class MediaControlsService : Service
 {
 	const int mediaNotificationId = 1;
-	const int stragglerCancelDelayMilliseconds = 500;
+	internal const int StragglerCancelDelayMilliseconds = 500;
 
 	readonly WeakEventManager taskRemovedEventManager = new();
 	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
@@ -162,7 +162,7 @@ sealed partial class MediaControlsService : Service
 		legacyNotificationPlayer = null;
 		StopForeground(StopForegroundFlags.Detach);
 		NotificationManager?.Cancel(mediaNotificationId);
-		cancelStragglerHandler.PostDelayed(() => NotificationManager?.Cancel(mediaNotificationId), stragglerCancelDelayMilliseconds);
+		cancelStragglerHandler.PostDelayed(() => NotificationManager?.Cancel(mediaNotificationId), StragglerCancelDelayMilliseconds);
 	}
 
 	protected override void Dispose(bool disposing)
