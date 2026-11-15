@@ -56,7 +56,7 @@ public partial class ShakeAnimation() : BaseAnimation(ShakeAnimationDefaults.Len
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var originalTranslationX = target.OriginalValueOf(VisualElement.TranslationXProperty);
-		var setTranslationX = target.SetterFor(VisualElement.TranslationXProperty);
+		var setTranslationX = target.TranslationSetterFor(VisualElement.TranslationXProperty);
 		var swingCount = StartFactor > 0 ? (int)Math.Min(Math.Ceiling(StartFactor / ReducingAmount), maximumSwingCount) : 0;
 
 		var offsets = new List<double>((2 * swingCount) + 1);

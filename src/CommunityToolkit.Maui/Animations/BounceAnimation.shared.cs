@@ -39,7 +39,7 @@ public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.L
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var originalTranslationY = target.OriginalValueOf(VisualElement.TranslationYProperty);
-		var setTranslationY = target.SetterFor(VisualElement.TranslationYProperty);
+		var setTranslationY = target.TranslationSetterFor(VisualElement.TranslationYProperty);
 		var firstHop = Distance;
 		var secondHop = firstHop / 2;
 		var thirdHop = firstHop * 2 / 15;

@@ -23,8 +23,7 @@ sealed class KeyframeTarget
 
 	public double OriginalValueOf(BindableProperty property) => originalValues[property];
 
-	public Action<double> SetterFor(BindableProperty property) =>
-		translationComposers.TryGetValue(property, out var composer) ? composer.Write : value => View.SetValue(property, value);
+	public Action<double> TranslationSetterFor(BindableProperty property) => translationComposers[property].Write;
 
 	public double GetValueToRestore(BindableProperty property) =>
 		translationComposers.TryGetValue(property, out var composer) ? composer.GetValueToRestore() : originalValues[property];

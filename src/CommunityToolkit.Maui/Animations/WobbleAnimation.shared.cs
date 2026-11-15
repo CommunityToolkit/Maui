@@ -50,7 +50,7 @@ public partial class WobbleAnimation() : BaseAnimation(WobbleAnimationDefaults.L
 		var view = target.View;
 		var originalTranslationX = target.OriginalValueOf(VisualElement.TranslationXProperty);
 		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
-		var setTranslationX = target.SetterFor(VisualElement.TranslationXProperty);
+		var setTranslationX = target.TranslationSetterFor(VisualElement.TranslationXProperty);
 		var distance = Distance;
 		var angle = RotationAngle;
 

@@ -116,7 +116,7 @@ static class KeyframeAnimationExtensions
 		}
 	}
 
-	// A newer run has replaced this run's record by the time an aborted run ends
+	// A run that a PropertyChanged handler started during an older run's restore is aborted by the next run, which has recorded itself by then: remove only this run's own record
 	static void EndRun(VisualElement view, RunningRun run)
 	{
 		if (runningRuns.TryGetValue(view, out var currentRun) && ReferenceEquals(currentRun, run))
