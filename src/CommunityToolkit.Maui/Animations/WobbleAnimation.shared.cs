@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// An attention seeker: the sways and tilts are relative to the translation and rotation the view had before the animation started, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
 /// The view returns to its original values when the animation completes and when it is cancelled; in the second case the returned <see cref="Task"/> ends as canceled.
 /// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first.
-/// Starting it also stops a running .NET MAUI RotateToAsync, including a running <see cref="RotateAnimation"/> (but not <see cref="FlipHorizontalAnimation"/> or <see cref="FlipVerticalAnimation"/>, which rotate about the y- and x-axis). A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle.
+/// Starting it also stops a running .NET MAUI RotateToAsync, including a running <see cref="RotateAnimation"/> (but not <see cref="FlipHorizontalAnimation"/> or <see cref="FlipVerticalAnimation"/>, which rotate about the y- and x-axis). A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle. It still reaches its target, with this animation's horizontal offset on top of it.
 /// <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one within 0..1 that only increases (for example <see cref="Easing.Linear"/> or <see cref="Easing.SinInOut"/>).
 /// An easing that overshoots, such as <see cref="Easing.SpringOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run; <see cref="Easing.BounceOut"/> runs through the keyframes in about the first third of the run and then moves the view back and forth within the last keyframe.
 /// </remarks>
@@ -45,10 +45,12 @@ public partial class WobbleAnimation() : BaseAnimation(WobbleAnimationDefaults.L
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalTranslationX = originalValues[VisualElement.TranslationXProperty];
-		var originalRotation = originalValues[VisualElement.RotationProperty];
+		var view = target.View;
+		var originalTranslationX = target.OriginalValueOf(VisualElement.TranslationXProperty);
+		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
+		var setTranslationX = target.SetterFor(VisualElement.TranslationXProperty);
 		var distance = Distance;
 		var angle = RotationAngle;
 
@@ -69,7 +71,7 @@ public partial class WobbleAnimation() : BaseAnimation(WobbleAnimationDefaults.L
 			{ 0.75, 1.0, TiltBetween(-0.2 * angle, 0) },
 		};
 
-		Animation SwayBetween(double fromOffset, double toOffset) => new(translationX => view.TranslationX = translationX, originalTranslationX + fromOffset, originalTranslationX + toOffset, Easing.SinInOut);
+		Animation SwayBetween(double fromOffset, double toOffset) => new(setTranslationX, originalTranslationX + fromOffset, originalTranslationX + toOffset, Easing.SinInOut);
 		Animation TiltBetween(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
 	}
 }

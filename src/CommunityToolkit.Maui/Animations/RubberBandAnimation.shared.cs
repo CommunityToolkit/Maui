@@ -27,10 +27,11 @@ public partial class RubberBandAnimation() : BaseAnimation(RubberBandAnimationDe
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalScaleX = originalValues[VisualElement.ScaleXProperty];
-		var originalScaleY = originalValues[VisualElement.ScaleYProperty];
+		var view = target.View;
+		var originalScaleX = target.OriginalValueOf(VisualElement.ScaleXProperty);
+		var originalScaleY = target.OriginalValueOf(VisualElement.ScaleYProperty);
 
 		return new Animation
 		{

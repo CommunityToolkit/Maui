@@ -9,7 +9,7 @@ static class KeyframeAnimationExtensions
 	internal const string AnimationHandle = "CommunityToolkit.Maui.Animations.KeyframeAnimation";
 
 	public static async Task AnimateKeyframesAsync(this VisualElement view, IReadOnlyList<BindableProperty> animatedProperties,
-		Func<VisualElement, IReadOnlyDictionary<BindableProperty, double>, Animation> createKeyframes, uint length, Easing easing, CancellationToken token)
+		Func<KeyframeTarget, Animation> createKeyframes, uint length, Easing easing, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 
@@ -47,7 +47,7 @@ static class KeyframeAnimationExtensions
 	}
 
 	static void Start(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties,
-		Func<VisualElement, IReadOnlyDictionary<BindableProperty, double>, Animation> createKeyframes, uint length, Easing easing, TaskCompletionSource<bool> animationEnded)
+		Func<KeyframeTarget, Animation> createKeyframes, uint length, Easing easing, TaskCompletionSource<bool> animationEnded)
 	{
 		// Aborting the running keyframe animation returns the view to its original values before this run reads them
 		view.AbortAnimation(AnimationHandle);
@@ -68,14 +68,16 @@ static class KeyframeAnimationExtensions
 			(animationIds[i], originalValues[animatedProperties[i]]) = trackers[i].Start((double)view.GetValue(animatedProperties[i]));
 		}
 
+		var target = new KeyframeTarget(view, animatedProperties, originalValues);
+
 		try
 		{
-			createKeyframes(view, originalValues).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
+			createKeyframes(target).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
 			{
 				// Runs inside MAUI's ticker or inside the code that aborted the run, neither of which may see a throwing PropertyChanged handler: the run's Task faults instead
 				try
 				{
-					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, originalValues);
+					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target);
 					animationEnded.TrySetResult(isAborted);
 				}
 				catch (Exception exception)
@@ -90,7 +92,7 @@ static class KeyframeAnimationExtensions
 			// With animations disabled, Commit runs the finished callback itself, which has already restored the view
 			if (!animationEnded.Task.IsCompleted)
 			{
-				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, originalValues);
+				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target);
 			}
 
 			throw;
@@ -133,17 +135,17 @@ static class KeyframeAnimationExtensions
 		return null;
 	}
 
-	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target)
 	{
 		// A throwing PropertyChanged handler must not leave later properties unrestored, or any tracker with a stale original value
 		ExceptionDispatchInfo? firstException = null;
 
 		for (var i = 0; i < animatedProperties.Count; i++)
 		{
-			var originalValue = originalValues[animatedProperties[i]];
+			var valueToRestore = target.GetValueToRestore(animatedProperties[i]);
 			try
 			{
-				view.SetValue(animatedProperties[i], originalValue);
+				view.SetValue(animatedProperties[i], valueToRestore);
 			}
 			catch (Exception exception)
 			{
@@ -151,7 +153,7 @@ static class KeyframeAnimationExtensions
 			}
 			finally
 			{
-				trackers[i].End(animationIds[i], originalValue);
+				trackers[i].End(animationIds[i], valueToRestore);
 			}
 		}
 

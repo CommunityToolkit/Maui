@@ -18,6 +18,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	const double wobbleRotationAngle = 5;
 	const double rotateBy = 180;
 	const double translateTargetX = 60;
+	const double translateTargetY = 45;
 	const double bounceDistance = 30;
 	const double originalScale = 0.8;
 	const string throwingHandlerMessage = "Thrown by a PropertyChanged handler.";
@@ -153,25 +154,60 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			var translating = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10);
-			var translateRun = view.TranslateToAsync(translateTargetX, originalTranslationY, 3 * runLength, Easing.Linear);
+			var translateRun = view.TranslateToAsync(translateTargetX, translateTargetY, 3 * runLength, Easing.Linear);
 			await translating;
 
-			var bouncePeak = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => Math.Abs(translationY - (originalTranslationY - bounceDistance)) <= valueTolerance);
+			// The hops ride on top of the translation, which has barely left the original translation when the first hop peaks
+			var bounceHopsAboveTheOriginal = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => translationY <= originalTranslationY - (bounceDistance / 2));
 			var bounceRun = bounce.Animate(view);
 
 			await bounceRun.WaitAsync(waitTimeout);
-			await bouncePeak;
+			await bounceHopsAboveTheOriginal;
 
 			// TranslateToAsync reports true when something interrupted it
 			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
 			Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
 
-			Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the target {translateTargetX}.");
-			Assert.True(Math.Abs(view.TranslationY - originalTranslationY) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected its original {originalTranslationY}.");
+			AssertTranslationAtTheAppsTarget(view, "after Bounce ended and the TranslateToAsync reached its target");
 
 			var mismatch = FindNativeMismatch(handler, view);
 			Assert.True(mismatch is null, mismatch);
 		});
+	}
+
+	[Fact]
+	public async Task BounceOutlastingTranslateToHopsOnTopOfTheTranslationsTargetAndLeavesBothAxesThere()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView([(VisualElement.TranslationXProperty, originalTranslationX), (VisualElement.TranslationYProperty, originalTranslationY)]);
+		var bounce = new BounceAnimation { Distance = bounceDistance, Length = 2 * runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var translating = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10);
+			var translateRun = view.TranslateToAsync(translateTargetX, translateTargetY, runLength / 3, Easing.Linear);
+			await translating;
+
+			var firstHopPeak = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => Math.Abs(translationY - (translateTargetY - bounceDistance)) <= valueTolerance);
+			var bounceRun = bounce.Animate(view);
+
+			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
+			await bounceRun.WaitAsync(waitTimeout);
+			await firstHopPeak;
+
+			Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
+			AssertTranslationAtTheAppsTarget(view, "after Bounce, which outlasted the TranslateToAsync, ended");
+
+			var mismatch = FindNativeMismatch(handler, view);
+			Assert.True(mismatch is null, mismatch);
+		});
+	}
+
+	static void AssertTranslationAtTheAppsTarget(VisualElement view, string when)
+	{
+		Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX} {when}, expected the app's target {translateTargetX}.");
+		Assert.True(Math.Abs(view.TranslationY - translateTargetY) <= valueTolerance, $"TranslationY is {view.TranslationY} {when}, expected the app's target {translateTargetY}.");
 	}
 
 	[Fact]

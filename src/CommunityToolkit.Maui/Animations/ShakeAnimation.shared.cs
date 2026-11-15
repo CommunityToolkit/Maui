@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// An attention seeker: the view shakes around, and returns to, the horizontal translation it had before it started shaking, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
 /// A view runs one attention seeker at a time, so an animation that starts while another one still shakes the view ends the running one first,
 /// returning the view to its original translation. <see cref="BaseAnimation{TAnimatable}.Easing"/> shapes each movement. At most 100 swings are made.
-/// A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle.
+/// A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle. It still reaches its target, with this animation's horizontal offset on top of it.
 /// Cancelling the token while the animation runs returns the view to its original translation and ends the returned <see cref="Task"/> as canceled.
 /// </remarks>
 public partial class ShakeAnimation() : BaseAnimation(ShakeAnimationDefaults.Length)
@@ -53,9 +53,10 @@ public partial class ShakeAnimation() : BaseAnimation(ShakeAnimationDefaults.Len
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing.Linear, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalTranslationX = originalValues[VisualElement.TranslationXProperty];
+		var originalTranslationX = target.OriginalValueOf(VisualElement.TranslationXProperty);
+		var setTranslationX = target.SetterFor(VisualElement.TranslationXProperty);
 		var swingCount = StartFactor > 0 ? (int)Math.Min(Math.Ceiling(StartFactor / ReducingAmount), maximumSwingCount) : 0;
 
 		var offsets = new List<double>((2 * swingCount) + 1);
@@ -74,7 +75,7 @@ public partial class ShakeAnimation() : BaseAnimation(ShakeAnimationDefaults.Len
 		{
 			// Dividing, rather than adding up a step, ends the last movement at exactly 1: Animation.Add rejects a fraction above 1
 			keyframes.Add(i / (double)offsets.Count, (i + 1) / (double)offsets.Count,
-				new Animation(translationX => view.TranslationX = translationX, originalTranslationX + previousOffset, originalTranslationX + offsets[i], Easing));
+				new Animation(setTranslationX, originalTranslationX + previousOffset, originalTranslationX + offsets[i], Easing));
 			previousOffset = offsets[i];
 		}
 

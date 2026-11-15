@@ -36,9 +36,10 @@ public partial class HeartbeatAnimation() : BaseAnimation(HeartbeatAnimationDefa
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalScale = originalValues[VisualElement.ScaleProperty];
+		var view = target.View;
+		var originalScale = target.OriginalValueOf(VisualElement.ScaleProperty);
 		var beatScale = originalScale * MaximumScale;
 
 		return new Animation

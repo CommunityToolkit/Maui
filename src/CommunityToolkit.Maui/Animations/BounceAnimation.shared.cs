@@ -9,7 +9,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// An attention seeker: the hops are relative to the vertical translation the view had before the animation started, and the animation plays over <see cref="BaseAnimation{TAnimatable}.Length"/>.
 /// The view returns to its original values when the animation completes and when it is cancelled; in the second case the returned <see cref="Task"/> ends as canceled.
 /// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first.
-/// A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle.
+/// A running .NET MAUI TranslateToAsync keeps running when it starts, because that animation drives both axes in one handle. It still reaches its target, with this animation's vertical offset on top of it.
 /// <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one within 0..1 that only increases (for example <see cref="Easing.Linear"/> or <see cref="Easing.SinInOut"/>).
 /// An easing that overshoots, such as <see cref="Easing.SpringOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run; <see cref="Easing.BounceOut"/> runs through the keyframes in about the first third of the run and then moves the view back and forth within the last keyframe.
 /// </remarks>
@@ -36,9 +36,10 @@ public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.L
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalTranslationY = originalValues[VisualElement.TranslationYProperty];
+		var originalTranslationY = target.OriginalValueOf(VisualElement.TranslationYProperty);
+		var setTranslationY = target.SetterFor(VisualElement.TranslationYProperty);
 		var firstHop = Distance;
 		var secondHop = firstHop / 2;
 		var thirdHop = firstHop * 2 / 15;
@@ -53,7 +54,7 @@ public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.L
 			{ 0.875, 1.0, Fall(thirdHop, 0) },
 		};
 
-		Animation Rise(double fromHeight, double toHeight) => new(translationY => view.TranslationY = translationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicOut);
-		Animation Fall(double fromHeight, double toHeight) => new(translationY => view.TranslationY = translationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicIn);
+		Animation Rise(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicOut);
+		Animation Fall(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicIn);
 	}
 }

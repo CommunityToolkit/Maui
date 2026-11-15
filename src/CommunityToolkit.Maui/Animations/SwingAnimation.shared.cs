@@ -37,9 +37,10 @@ public partial class SwingAnimation() : BaseAnimation(SwingAnimationDefaults.Len
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalRotation = originalValues[VisualElement.RotationProperty];
+		var view = target.View;
+		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
 		var angle = RotationAngle;
 
 		// A pendulum pivots on its top edge

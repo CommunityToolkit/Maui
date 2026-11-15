@@ -54,10 +54,11 @@ public partial class TadaAnimation() : BaseAnimation(TadaAnimationDefaults.Lengt
 		return view.AnimateKeyframesAsync(animatedProperties, CreateKeyframes, Length, Easing, token);
 	}
 
-	Animation CreateKeyframes(VisualElement view, IReadOnlyDictionary<BindableProperty, double> originalValues)
+	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalScale = originalValues[VisualElement.ScaleProperty];
-		var originalRotation = originalValues[VisualElement.RotationProperty];
+		var view = target.View;
+		var originalScale = target.OriginalValueOf(VisualElement.ScaleProperty);
+		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
 		var shrunkScale = originalScale * MinimumScale;
 		var grownScale = originalScale * MaximumScale;
 		var angle = RotationAngle;
