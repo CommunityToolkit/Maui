@@ -99,8 +99,8 @@ public class AnimatedPropertyTrackerTests : BaseTest
 		var (secondId, _) = tracker.Start(75);
 		tracker.End(firstId, 75);
 
-		tracker.HandedOverToApp(firstId);
 		tracker.End(secondId, 75);
+		tracker.HandedOverToApp(firstId);
 		var (_, originalValue) = tracker.Start(75);
 
 		originalValue.Should().Be(30);

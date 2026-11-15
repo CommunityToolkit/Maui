@@ -48,7 +48,7 @@ public class ToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 		var rotateRun = new RotateAnimation { Rotation = 180, Length = functionalTestLength }.Animate(view, token);
 
-		view.AnchorY.Should().Be(originalAnchorY, "stopping Swing returns its anchor before Rotate starts");
+		view.AnchorY.Should().Be(originalAnchorY, "stopping the seeker returns the anchor it moved before Rotate starts");
 		await seekerRun.WaitAsync(waitTimeout, token);
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
 		rotateRun.IsCompleted.Should().BeFalse("the seeker ends when Rotate starts, not at its own end");
