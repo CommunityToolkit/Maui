@@ -4,12 +4,12 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 [Category(TestCategory.FlipVerticalAnimation)]
 [Collection(TestCollections.DisableParallelization)]
-public class FlipVerticalAnimationTests : ToAnimationTestBase<FlipVerticalAnimation>
+public class FlipVerticalAnimationTests : FlipAnimationTestBase<FlipVerticalAnimation>
 {
 	const double originalRotationX = 10;
 	const double targetRotationX = 90;
 
-	// Never 0 while the run lasts: .NET MAUI on Windows keeps an old PlaneProjection when the x/y rotation returns to 0 with other values set
+	// Not 0, which FlipAnimationTestBase covers
 	protected override IReadOnlyList<(BindableProperty Property, double Value)> OriginalValues { get; } = [(VisualElement.RotationXProperty, originalRotationX)];
 
 	protected override BindableProperty PeakProperty => VisualElement.RotationXProperty;

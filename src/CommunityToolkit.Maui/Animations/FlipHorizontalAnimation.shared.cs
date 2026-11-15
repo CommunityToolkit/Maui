@@ -49,6 +49,7 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 		finally
 		{
 			rotations.End(flipId, view.RotationY);
+			FlipProjection.RemoveIfStale(view);
 		}
 
 		Task<bool> FlipLegAsync(double rotationY) =>

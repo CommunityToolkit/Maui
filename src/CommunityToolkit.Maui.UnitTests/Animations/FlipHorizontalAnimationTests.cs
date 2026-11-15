@@ -48,6 +48,24 @@ public class FlipHorizontalAnimationTests : BaseAnimationTests<FlipHorizontalAni
 		view.RotationY.Should().BeApproximately(originalRotationY, precision);
 	}, TestContext.Current.CancellationToken);
 
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_FromZeroWithOtherTransformsSet_ReturnsEveryValue() => RunOnSingleThreadAsync(async token =>
+	{
+		var animation = new FlipHorizontalAnimation { Length = functionalTestLength };
+		var view = CreateAnimatedView();
+		view.RotationY = 0;
+		view.Rotation = 10;
+		view.TranslationX = 5;
+
+		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationYProperty);
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		rotations.Max.Should().BeApproximately(animation.Rotation, precision);
+		view.RotationY.Should().Be(0);
+		view.Rotation.Should().Be(10);
+		view.TranslationX.Should().Be(5);
+	}, TestContext.Current.CancellationToken);
+
 	static Label CreateAnimatedView()
 	{
 		var label = new Label
