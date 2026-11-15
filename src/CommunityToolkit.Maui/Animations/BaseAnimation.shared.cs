@@ -83,10 +83,17 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		animations.End(animationId, valueWhenInterrupted);
 		await Task.Yield();
 
-		if (animations.IsLatest(animationId) && !view.AnimationIsRunning(animationHandle) && (double)view.GetValue(property) == valueWhenInterrupted)
+		if (animations.IsLatest(animationId))
 		{
-			view.SetValue(property, originalValue);
-			animations.ReturnedToOriginalValue(animationId, originalValue);
+			if (!view.AnimationIsRunning(animationHandle) && (double)view.GetValue(property) == valueWhenInterrupted)
+			{
+				view.SetValue(property, originalValue);
+				animations.ReturnedToOriginalValue(animationId, originalValue);
+			}
+			else
+			{
+				animations.HandedOverToApp(animationId);
+			}
 		}
 
 		return false;

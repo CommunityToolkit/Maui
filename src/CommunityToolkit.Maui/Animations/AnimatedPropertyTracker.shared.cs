@@ -66,6 +66,18 @@ sealed class AnimatedPropertyTracker
 		}
 	}
 
+	// An app animation or write that took over at the interrupted value leaves that value at rest, so the next animation must start from it, not from the original value before the interrupted one
+	public void HandedOverToApp(int animationId)
+	{
+		lock (trackerLock)
+		{
+			if (animationId == latestAnimationId && runningAnimationIds.Count is 0)
+			{
+				valueLeftByLastAnimation = null;
+			}
+		}
+	}
+
 	public void End(int animationId, double currentValue)
 	{
 		lock (trackerLock)

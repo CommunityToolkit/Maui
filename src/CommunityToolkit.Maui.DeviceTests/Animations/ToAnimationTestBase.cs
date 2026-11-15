@@ -296,4 +296,28 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the app set the original value again");
 		});
 	}
+
+	[Fact]
+	public async Task AppsOwnToAnimationTakingOverAtTheInterruptedValueMakesTheNextRunReturnToThatValue()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var interruptedRun = CreateAnimation().Animate(view);
+			await midRun;
+
+			var interruptedValue = (double)view.GetValue(PeakProperty);
+			var appRun = AppToAnimation(view, interruptedValue);
+			await Task.WhenAll(interruptedRun, appRun).WaitAsync(waitTimeout);
+
+			await CreateAnimation().Animate(view).WaitAsync(waitTimeout);
+
+			var valueAfterNextRun = (double)view.GetValue(PeakProperty);
+			Assert.True(Math.Abs(valueAfterNextRun - interruptedValue) <= peakTolerance, $"The next run ended at {valueAfterNextRun}; it must return to the value {interruptedValue} the app's own animation left the view at.");
+		});
+	}
 }

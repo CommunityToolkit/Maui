@@ -79,6 +79,34 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	}
 
 	[Fact]
+	public void Start_AfterAnInterruptedAnimationHandedTheValueOverToTheApp_CapturesTheValueTheAppHolds()
+	{
+		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
+		var (id, _) = tracker.Start(30);
+		tracker.End(id, 75);
+		tracker.HandedOverToApp(id);
+
+		var (_, originalValue) = tracker.Start(75);
+
+		originalValue.Should().Be(75);
+	}
+
+	[Fact]
+	public void HandedOverToApp_OfAnAnimationAnotherOneReplaced_KeepsTheOriginalValueBeforeTheFirstAnimation()
+	{
+		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
+		var (firstId, _) = tracker.Start(30);
+		var (secondId, _) = tracker.Start(75);
+		tracker.End(firstId, 75);
+
+		tracker.HandedOverToApp(firstId);
+		tracker.End(secondId, 75);
+		var (_, originalValue) = tracker.Start(75);
+
+		originalValue.Should().Be(30);
+	}
+
+	[Fact]
 	public void For_SeparateViewsAreTrackedIndependently()
 	{
 		var view = new Label();

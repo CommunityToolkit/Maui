@@ -400,6 +400,31 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision, "the app's value was the view's value at rest when the run started");
 	}, TestContext.Current.CancellationToken);
 
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
+	public Task AppsOwnToAnimationTakesOverAtTheInterruptedValue_NextRunReturnsToThatValue(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var (property, _) = PropertyOf(animationName);
+		var original = (double)view.GetValue(property);
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var interruptedRun = Create(animationName, 1000).Animate(view, token);
+		await firstChange;
+
+		var valueWhenInterrupted = (double)view.GetValue(property);
+		var appRun = AppToAnimation(animationName, view, valueWhenInterrupted, token);
+		await interruptedRun.WaitAsync(waitTimeout, token);
+		await appRun.WaitAsync(waitTimeout, token);
+		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision);
+		valueWhenInterrupted.Should().NotBe(original);
+
+		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+
+		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision, "the app's animation left the view at this value, so it was the view's value at rest when the run started");
+	}, TestContext.Current.CancellationToken);
+
 	static BaseAnimation Create(string animationName, uint length) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },
