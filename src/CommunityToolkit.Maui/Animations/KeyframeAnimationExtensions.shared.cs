@@ -56,14 +56,15 @@ static class KeyframeAnimationExtensions
 		{
 			createKeyframes(view, originalValues).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
 			{
-				// A throwing PropertyChanged handler must not leave the awaiting Animate task hanging
+				// Runs inside MAUI's ticker or inside the code that aborted the run, neither of which may see a throwing PropertyChanged handler: the run's Task faults instead
 				try
 				{
 					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, originalValues);
-				}
-				finally
-				{
 					animationEnded.TrySetResult(isAborted);
+				}
+				catch (Exception exception)
+				{
+					animationEnded.TrySetException(exception);
 				}
 			});
 		}

@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Animations;
+﻿using System.Diagnostics;
+using System.Globalization;
+using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -242,7 +244,7 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileTheCancelledRunRestoresTheView_StillEndsAndRestoresThePropertiesAfterTheThrowingOne() => RunOnSingleThreadAsync(async token =>
+	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileTheCancelledRunRestoresTheView_FaultsTheRunWithThatExceptionAndRestoresThePropertiesAfterTheThrowingOne() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
@@ -263,8 +265,9 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 
 		throwOnScaleRestore = true;
 		var cancelException = Record.Exception(cancellationTokenSource.Cancel);
-		cancelException.Should().NotBeNull("the exception of the handler reaches the code that cancels");
-		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout, token));
+		cancelException.Should().BeNull("the run's Task reports the exception of the handler, not the code that cancels");
+		var runException = await Assert.ThrowsAsync<InvalidOperationException>(() => run.WaitAsync(waitTimeout, token));
+		runException.Message.Should().Be("Thrown by a PropertyChanged handler.");
 
 		AssertValuesEqual(view, startingValues);
 
@@ -275,4 +278,135 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 
 		view.Rotation.Should().BeApproximately(laterRunRotation, precision);
 	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileTheCompletedRunRestoresTheView_FaultsTheRunWithThatExceptionAndRestoresEveryProperty() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var restoreThrew = MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(view);
+
+		var run = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
+
+		var runException = await Assert.ThrowsAsync<InvalidOperationException>(() => run.WaitAsync(waitTimeout, token));
+		runException.Message.Should().Be("Thrown by a PropertyChanged handler.");
+		restoreThrew().Should().BeTrue();
+		view.Rotation.Should().BeApproximately(originalRotation, precision, "the properties after the throwing one are restored too");
+		view.Scale.Should().BeApproximately(originalScale, precision);
+		view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle).Should().BeFalse();
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileASupersededRunRestoresTheView_FaultsOnlyTheSupersededRun() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var throwOnScaleRestore = false;
+		view.PropertyChanged += (_, e) =>
+		{
+			if (throwOnScaleRestore && e.PropertyName == nameof(VisualElement.Scale))
+			{
+				throwOnScaleRestore = false;
+				throw new InvalidOperationException("Thrown by a PropertyChanged handler.");
+			}
+		};
+
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var supersededRun = new TadaAnimation { Length = 2000 }.Animate(view, token);
+		await firstChange;
+
+		throwOnScaleRestore = true;
+		var newRun = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
+
+		await Assert.ThrowsAsync<InvalidOperationException>(() => supersededRun.WaitAsync(waitTimeout, token));
+		await newRun.WaitAsync(waitTimeout, token);
+		newRun.IsCompletedSuccessfully.Should().BeTrue("the newer run is not the one that failed to restore the view");
+		AssertValuesEqual(view, startingValues);
+	}, TestContext.Current.CancellationToken);
+
+	[Fact]
+	public void AnimationBehavior_WhenAPropertyChangedHandlerThrowsWhileTheRunRestoresTheView_SuppressesTheExceptionAndReportsItToTheTraceWhenTheOptionIsSet()
+	{
+		var (escapedException, reportedToTheTrace) = RunBehaviorWhoseRestoreThrows(shouldSuppressExceptionsInAnimations: true);
+
+		Assert.Null(escapedException);
+		Assert.Contains(reportedToTheTrace, message => message.Contains("Thrown by a PropertyChanged handler.", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public void AnimationBehavior_WhenAPropertyChangedHandlerThrowsWhileTheRunRestoresTheView_ReportsTheExceptionToTheAppWhenTheOptionIsNotSet()
+	{
+		var (escapedException, reportedToTheTrace) = RunBehaviorWhoseRestoreThrows(shouldSuppressExceptionsInAnimations: false);
+
+		Assert.IsType<InvalidOperationException>(escapedException);
+		Assert.Empty(reportedToTheTrace);
+	}
+
+	static (Exception? EscapedException, List<string> ReportedToTheTrace) RunBehaviorWhoseRestoreThrows(bool shouldSuppressExceptionsInAnimations)
+	{
+		var behavior = new AnimationBehavior { AnimationType = new TadaAnimation { Length = functionalTestLength } };
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		view.Behaviors.Add(behavior);
+		MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(view);
+		var reportedToTheTrace = new List<string>();
+		using var traceListener = new InformationRecordingTraceListener(reportedToTheTrace);
+
+		new Options().SetShouldSuppressExceptionsInAnimations(shouldSuppressExceptionsInAnimations);
+		Trace.Listeners.Add(traceListener);
+		try
+		{
+			// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
+			var escapedException = Record.Exception(() => UndisposedAsyncContext.Run(() => behavior.AnimateCommand.Execute(TestContext.Current.CancellationToken)));
+
+			return (escapedException, reportedToTheTrace);
+		}
+		finally
+		{
+			Trace.Listeners.Remove(traceListener);
+			new Options().SetShouldSuppressExceptionsInAnimations(false);
+		}
+	}
+
+	// The last frame of MAUI's tween always writes the animation's end values, which are the original values, so a restore only writes (and a handler only throws)
+	// when something moved the view after that frame. MAUI leaves a property whose PropertyChanged handler threw unable to change, so the handler throws once.
+	static Func<bool> MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(VisualElement view)
+	{
+		var hasMovedTheView = false;
+		var hasThrown = false;
+		view.PropertyChanged += (_, e) =>
+		{
+			if (!hasMovedTheView && e.PropertyName == nameof(VisualElement.Rotation) && view.Rotation == originalRotation)
+			{
+				hasMovedTheView = true;
+				view.Scale = 3;
+				view.Rotation = 99;
+			}
+			else if (hasMovedTheView && !hasThrown && e.PropertyName == nameof(VisualElement.Scale) && view.Scale == originalScale)
+			{
+				hasThrown = true;
+				throw new InvalidOperationException("Thrown by a PropertyChanged handler.");
+			}
+		};
+
+		return () => hasThrown;
+	}
+
+	// AnimationBehavior reports a suppressed exception with Trace.TraceInformation, while the mock ticker only writes the exceptions that escape a frame with Trace.WriteLine
+	sealed class InformationRecordingTraceListener(List<string> messages) : TraceListener
+	{
+		public override void TraceEvent(TraceEventCache? eventCache, string source, TraceEventType eventType, int id, string? format, params object?[]? args)
+		{
+			if (eventType is TraceEventType.Information && format is not null && args is not null)
+			{
+				messages.Add(string.Format(CultureInfo.InvariantCulture, format, args));
+			}
+		}
+
+		public override void Write(string? message)
+		{
+		}
+
+		public override void WriteLine(string? message)
+		{
+		}
+	}
 }

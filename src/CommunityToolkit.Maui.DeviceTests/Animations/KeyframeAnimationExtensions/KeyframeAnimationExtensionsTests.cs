@@ -19,6 +19,8 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	const double rotateBy = 180;
 	const double translateTargetX = 60;
 	const double bounceDistance = 30;
+	const double originalScale = 0.8;
+	const string throwingHandlerMessage = "Thrown by a PropertyChanged handler.";
 
 	// Swing animates Rotation and AnchorY, Wobble TranslationX and Rotation: each run has a property of its own and one they share
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> originalValues =
@@ -26,6 +28,9 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> rotationAndAnchor =
 		[(VisualElement.RotationProperty, originalRotation), (VisualElement.AnchorYProperty, originalAnchorY)];
+
+	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleAndRotation =
+		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation)];
 
 	[Fact]
 	public async Task AttentionSeekerStartedWhileAnotherRunsReturnsBothPropertySetsToTheirOriginalValues()
@@ -164,5 +169,112 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 			var mismatch = FindNativeMismatch(handler, view);
 			Assert.True(mismatch is null, mismatch);
 		});
+	}
+
+	// MAUI calls the finished callback from its ticker, so an exception escaping it would crash the app
+	[Fact]
+	public async Task SeekerWhoseRestoreThrowsAtTheEndFaultsItsTaskAndRestoresEveryProperty()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(scaleAndRotation);
+		var tada = new TadaAnimation { Length = runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var restoreThrew = MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(view);
+
+			var run = tada.Animate(view);
+
+			var exception = await Record.ExceptionAsync(() => run.WaitAsync(waitTimeout));
+			Assert.True(exception is InvalidOperationException { Message: throwingHandlerMessage }, $"The run ended with {exception?.GetType().Name ?? "no exception"}, expected the exception of the PropertyChanged handler.");
+			Assert.True(restoreThrew(), "The PropertyChanged handler did not throw while Tada restored the view.");
+
+			await AssertRestoredAfterTheThrowingPropertyAsync(handler, view, nativeStateAtRest, "after the run's restore threw");
+		});
+	}
+
+	[Fact]
+	public async Task SeekerCancelledWhileItsRestoreThrowsFaultsItsTaskWithoutThrowingIntoCancel()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(scaleAndRotation);
+		var tada = new TadaAnimation { Length = runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			using var cancellation = new CancellationTokenSource();
+			var midRun = WaitForValueAsync(view, VisualElement.ScaleProperty, scale => Math.Abs(scale - originalScale) > 0.02);
+			var run = tada.Animate(view, cancellation.Token);
+			await midRun;
+
+			var hasThrown = false;
+			view.PropertyChanged += ThrowWhenTheScaleIsRestored;
+
+			try
+			{
+				// On the UI thread, as from a button's Clicked handler: the cancelled run restores the view inside Cancel
+				var cancelException = Record.Exception(cancellation.Cancel);
+				Assert.True(cancelException is null, $"Cancel threw {cancelException}; the exception of the handler belongs to the run's Task.");
+
+				var exception = await Record.ExceptionAsync(() => run.WaitAsync(waitTimeout));
+				Assert.True(exception is InvalidOperationException { Message: throwingHandlerMessage }, $"The run ended with {exception?.GetType().Name ?? "no exception"}, expected the exception of the PropertyChanged handler.");
+				Assert.True(hasThrown, "The PropertyChanged handler did not throw while the cancelled run restored the view.");
+			}
+			finally
+			{
+				view.PropertyChanged -= ThrowWhenTheScaleIsRestored;
+			}
+
+			await AssertRestoredAfterTheThrowingPropertyAsync(handler, view, nativeStateAtRest, "after the cancelled run's restore threw");
+
+			void ThrowWhenTheScaleIsRestored(object? sender, PropertyChangedEventArgs e)
+			{
+				if (!hasThrown && e.PropertyName == VisualElement.ScaleProperty.PropertyName && view.Scale == originalScale)
+				{
+					hasThrown = true;
+					throw new InvalidOperationException(throwingHandlerMessage);
+				}
+			}
+		});
+	}
+
+	// The restore writes the original values, which the last frame of MAUI's tween already wrote, so a restore changes the view (and a handler throws) only when something moved the view after that frame.
+	// MAUI leaves a property whose PropertyChanged handler threw unable to change, so the handler throws once.
+	static Func<bool> MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(VisualElement view)
+	{
+		var hasMovedTheView = false;
+		var hasThrown = false;
+		view.PropertyChanged += HandlePropertyChanged;
+
+		return () => hasThrown;
+
+		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (!hasMovedTheView && e.PropertyName == VisualElement.RotationProperty.PropertyName && view.Rotation == originalRotation)
+			{
+				hasMovedTheView = true;
+				view.Scale = 3;
+				view.Rotation = 99;
+			}
+			else if (hasMovedTheView && !hasThrown && e.PropertyName == VisualElement.ScaleProperty.PropertyName && view.Scale == originalScale)
+			{
+				hasThrown = true;
+				throw new InvalidOperationException(throwingHandlerMessage);
+			}
+		}
+	}
+
+	// The handler that threw kept .NET MAUI from mapping that one property to the platform view, which nothing but the app can do afterwards
+	async Task AssertRestoredAfterTheThrowingPropertyAsync(IPlatformViewHandler handler, VisualElement view, string nativeStateAtRest, string when)
+	{
+		Assert.True(Math.Abs(view.Rotation - originalRotation) <= valueTolerance, $"The view's Rotation is {view.Rotation} {when}, expected the original {originalRotation}, which the restore writes after the property whose handler threw.");
+		Assert.True(Math.Abs(view.Scale - originalScale) <= valueTolerance, $"The view's Scale is {view.Scale} {when}, expected the original {originalScale}.");
+		Assert.False(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), $"The keyframe animation still runs {when}.");
+
+		handler.UpdateValue(VisualElement.ScaleProperty.PropertyName);
+		handler.UpdateValue(VisualElement.RotationProperty.PropertyName);
+		await AssertStaysAtOriginalValuesAsync(handler, view, scaleAndRotation, nativeStateAtRest, when);
 	}
 }
