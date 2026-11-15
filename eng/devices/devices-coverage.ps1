@@ -1,5 +1,5 @@
-# Used by android.ps1, ios.ps1 and catalyst.ps1 with -Coverage (see eng/devices/README.md, "Code coverage"). Dot-source it after
-# devices-shared.ps1. PowerShell 7 only: the Windows device tests collect no coverage.
+# Used by android.ps1, ios.ps1, catalyst.ps1 and windows.ps1 with -Coverage (see eng/devices/README.md, "Code coverage"). Dot-source it
+# after devices-shared.ps1. It must keep working in Windows PowerShell 5.1, which the Windows CI jobs use (see devices-shared.ps1).
 #
 # coverlet (pinned in .config/dotnet-tools.json) instruments assemblies on disk, and writes its report once the command it started
 # (its target) exits. The app runs on a device in between, so the target only waits until this script is done with it. The toolkit
@@ -10,8 +10,12 @@
 # script run (Invoke-DeviceTestAppBuilds). The packaged app keeps the instrumented assemblies until the app is built again: that build
 # packages the original ones (Restore-DeviceTestCoverageAssemblies).
 # The headless runners write the hits files when the tests have run (CoverageRecorder in CommunityToolkit.Maui.DeviceTests.Runners); on
-# Android xharness copies them from the device to the host before it uninstalls the app.
-# Coverage never changes a run's exit code: a run whose coverage fails reports a warning and has no coverage report.
+# Android xharness copies them from the device to the host before it uninstalls the app. On Windows the runners find the hits folder in
+# devicetestcoverage.txt next to the results file, because a packaged app does not inherit the script's environment.
+# Coverage never changes a run's exit code, except that a failed build of the instrumented app fails the run, as any failed build does,
+# and that Android 11 (API 30) fails the run: it blocks adb pull of the app's external files folder, so XHarness ends with 84
+# (DEVICE_FILE_COPY_FAILURE) and the run is retried and fails again. Otherwise a run whose coverage fails reports a warning and has no
+# coverage report.
 
 $script:DeviceTestCoverageAssemblies = @(
     'CommunityToolkit.Maui'
@@ -22,6 +26,9 @@ $script:DeviceTestCoverageAssemblies = @(
 
 # Must match CoverageRecorder.DirectoryVariable, which the headless runners read.
 $script:DeviceTestCoverageVariable = 'CTM_COVERAGE_DIRECTORY'
+
+# Must match CoverageRecorder.DirectoryFileName, which the Windows headless runners read.
+$script:DeviceTestCoverageDirectoryFileName = 'devicetestcoverage.txt'
 
 # A hits file of coverlet: <assembly name>_<instrumentation identifier>, int32 count and int32[count] hits, little-endian.
 $script:DeviceTestCoverageHitsFilePattern = '^(?<assembly>.+)_[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$'
@@ -100,8 +107,14 @@ function Restore-DeviceTestCoverageAssemblies {
             $original = Join-Path $Session.Originals "$($assembly.Name)$extension"
             if (Test-Path -LiteralPath $original -PathType Leaf) {
                 $destination = [System.IO.Path]::ChangeExtension($assembly.Path, $extension)
-                Copy-Item -LiteralPath $original -Destination $destination -Force
-                (Get-Item -LiteralPath $destination).LastWriteTimeUtc = [System.DateTime]::UtcNow
+                try {
+                    Copy-Item -LiteralPath $original -Destination $destination -Force
+                    (Get-Item -LiteralPath $destination).LastWriteTimeUtc = [System.DateTime]::UtcNow
+                }
+                catch {
+                    # A locked file must not turn a passing run into a failure.
+                    Write-DeviceTestWarning "Coverage: could not restore $destination, so the instrumented assembly stays in place; rebuild the library. $($_.Exception.Message)"
+                }
             }
 
             if ($assembly.Intermediate) {
@@ -126,7 +139,13 @@ function Stop-DeviceTestCoverageProcess {
     [System.IO.File]::WriteAllText($Session.DoneMarker, '')
     if (-not $Session.Process.WaitForExit($TimeoutSeconds * 1000)) {
         try {
-            $Session.Process.Kill($true)
+            # Windows PowerShell 5.1 runs on .NET Framework, whose Process.Kill has no entireProcessTree overload.
+            if ($PSVersionTable.PSEdition -eq 'Core') {
+                $Session.Process.Kill($true)
+            }
+            else {
+                $Session.Process.Kill()
+            }
         }
         catch {
             Write-Verbose "Could not stop coverlet: $($_.Exception.Message)"
@@ -174,7 +193,8 @@ function Start-DeviceTestCoverage {
         [Parameter(Mandatory = $true)][string]$Platform,
         # The properties the platform script builds the app with: the reference query and the instrumented build need the same.
         [string[]]$Property = @(),
-        [string[]]$BuildArgs = @()
+        [string[]]$BuildArgs = @(),
+        [string]$Command = 'build'
     )
 
     Write-DeviceTestHeader 'Coverage: build and instrument the toolkit assemblies with coverlet'
@@ -267,6 +287,8 @@ function Start-DeviceTestCoverage {
         $commandLine = ($arguments | ForEach-Object { ConvertTo-WindowsCommandLineArgument $_ }) -join ' '
         $session.Process = Start-Process -FilePath 'dotnet' -ArgumentList $commandLine -WorkingDirectory $script:DeviceTestsRepoRoot -NoNewWindow -PassThru `
             -RedirectStandardOutput $session.Log -RedirectStandardError $session.ErrorLog
+        # Windows PowerShell 5.1 returns a Process without its handle from Start-Process with redirected output, and ExitCode is then null.
+        $null = $session.Process.Handle
 
         $deadline = [System.DateTime]::UtcNow.AddMinutes(10)
         while (-not (Test-Path -LiteralPath $session.StartMarker) -and -not $session.Process.HasExited -and [System.DateTime]::UtcNow -lt $deadline) {
@@ -289,7 +311,7 @@ function Start-DeviceTestCoverage {
         }
 
         foreach ($entry in $session.Projects) {
-            [void](Invoke-DeviceTestBuild -Context $Context -Project $entry.Project -TargetFramework $entry.Framework -BuildArgs $BuildArgs `
+            [void](Invoke-DeviceTestBuild -Context $Context -Project $entry.Project -TargetFramework $entry.Framework -Command $Command -BuildArgs $BuildArgs `
                     -Property ($Property + @('BuildProjectReferences=false')))
         }
 
@@ -315,13 +337,14 @@ function Invoke-DeviceTestAppBuilds {
         [Parameter(Mandatory = $true)][string]$Platform,
         [Parameter(Mandatory = $true)][string]$Target,
         [string[]]$Property = @(),
-        [string[]]$BuildArgs = @()
+        [string[]]$BuildArgs = @(),
+        [string]$Command = 'build'
     )
 
     # A build-only run has no tests to collect hits from, and coverlet's report needs the process that instrumented the assemblies.
     if ($Context.Coverage -and $Target -ne 'buildOnly') {
         # Builds the app too, instrumented. A test-only run builds it here as well: the app it finds was packaged without coverage.
-        $session = Start-DeviceTestCoverage -Context $Context -Platform $Platform -Property $Property -BuildArgs $BuildArgs
+        $session = Start-DeviceTestCoverage -Context $Context -Platform $Platform -Property $Property -BuildArgs $BuildArgs -Command $Command
         if ($null -ne $session) {
             return $session
         }
@@ -330,7 +353,7 @@ function Invoke-DeviceTestAppBuilds {
     if ($Target -ne 'testOnly') {
         foreach ($item in $Context.Projects) {
             $framework = Get-DeviceTestTargetFramework -Project $item -Platform $Platform
-            [void](Invoke-DeviceTestBuild -Context $Context -Project $item -TargetFramework $framework -BuildArgs $BuildArgs -Property $Property)
+            [void](Invoke-DeviceTestBuild -Context $Context -Project $item -TargetFramework $framework -Command $Command -BuildArgs $BuildArgs -Property $Property)
         }
     }
 
@@ -351,6 +374,18 @@ function Get-DeviceTestCoverageArguments {
     }
 
     return , @("--set-env=$script:DeviceTestCoverageVariable=$(Get-DeviceTestCoverageHitsDirectory -Context $Session.Context -Project $Project)")
+}
+
+function Write-DeviceTestCoverageDirectoryFile {
+    # Windows only: the app finds the hits folder in this file next to its results file (CoverageRecorder.ReadDirectoryFile).
+    param($Session, [Parameter(Mandatory = $true)][string]$Folder, [Parameter(Mandatory = $true)]$Project)
+
+    if ($null -eq $Session) {
+        return
+    }
+
+    $directory = Get-DeviceTestCoverageHitsDirectory -Context $Session.Context -Project $Project
+    [System.IO.File]::WriteAllText((Join-Path $Folder $script:DeviceTestCoverageDirectoryFileName), $directory, (New-Object System.Text.UTF8Encoding($false)))
 }
 
 function Read-DeviceTestCoverageHits {

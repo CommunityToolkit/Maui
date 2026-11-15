@@ -28,6 +28,9 @@
     70 timed out, 71 build or script failure, 78 install failure, 80 app crash, 83 launch failure,
     94 no results or no tests ran. See eng/devices/README.md.
 
+    -Coverage (or DEVICE_TEST_COVERAGE=true) builds the app with coverlet-instrumented toolkit assemblies and writes
+    <Results>\coverage\windows-<packaging>.cobertura.xml (README, "Code coverage").
+
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File eng\devices\windows.ps1 -Packaging unpackaged
 
@@ -75,6 +78,11 @@ param(
     # Retries for infrastructure failures only. Defaults to 1 on CI and 0 locally.
     [int]$InfraRetries = -1,
 
+    # Collect code coverage of the toolkit assemblies with coverlet: the app is built with instrumented assemblies (a -Target testOnly run
+    # builds it too), and <Results>\coverage\<Results folder name>.cobertura.xml gets the report. Defaults to $env:DEVICE_TEST_COVERAGE,
+    # which only the CI jobs set.
+    [switch]$Coverage,
+
     # Subject of the MSIX signing certificate. Defaults to the Publisher in Platforms\Windows\Package.appxmanifest.
     [string]$CertificateSubject,
 
@@ -88,6 +96,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 . (Join-Path $PSScriptRoot 'devices-shared.ps1')
+. (Join-Path $PSScriptRoot 'devices-coverage.ps1')
 
 $script:CertificateFriendlyName = 'CommunityToolkit.Maui device tests'
 $script:AppxModuleImported = $false
@@ -482,12 +491,15 @@ function Invoke-WindowsAttempt {
         }
     }
 
-    # A packaged app does not inherit this script's environment, so the capability declarations reach the app in a file next to its results
-    # (DeviceTestCapabilities reads it). Every attempt writes it: a retry moves the previous attempt's files into attempt-<n>.
+    # A packaged app does not inherit this script's environment, so the capability declarations and the coverage folder reach the app in files
+    # next to its results (DeviceTestCapabilities and CoverageRecorder read them). Every attempt writes them: a retry moves the previous
+    # attempt's files into attempt-<n>.
     $declarations = @(Get-DeviceTestCapabilityDeclarations -Context $Context)
     if ($declarations.Count -gt 0) {
         [System.IO.File]::WriteAllLines((Join-Path $Run.Output 'devicetestcapabilities.txt'), [string[]]$declarations, (New-Object System.Text.UTF8Encoding($false)))
     }
+
+    Write-DeviceTestCoverageDirectoryFile -Session $Run.Coverage -Folder $Run.Output -Project $Run.Project
 
     $dumpKey = Enable-CrashDumps -ExecutableName "$($Run.ProcessName).exe" -Folder (Join-Path $Run.Output 'dumps')
     try {
@@ -661,7 +673,7 @@ function Invoke-CategoryRuns {
 }
 
 function Invoke-WindowsDeviceTests {
-    param($Context, $Project, [string]$Architecture)
+    param($Context, $Project, [string]$Architecture, $CoverageSession)
 
     $windowsOutput = Join-Path $Context.Results $Project.Name
     Initialize-DeviceTestResultsDirectory -Path $windowsOutput
@@ -678,6 +690,8 @@ function Invoke-WindowsDeviceTests {
         Identity    = ''
         Package     = ''
         Executable  = ''
+        Project     = $Project
+        Coverage    = $CoverageSession
     }
 
     if ($Packaging -eq 'packaged') {
@@ -740,6 +754,7 @@ function Invoke-WindowsDeviceTests {
 }
 
 $exitCode = 71
+$coverageSession = $null
 try {
     if (-not $script:DeviceTestsOnWindows) {
         throw (New-Object System.ArgumentException 'Windows device tests need Windows.')
@@ -749,32 +764,36 @@ try {
         -Results $Results -BinlogDir $BinlogDir -TestFilter $TestFilter -TestFilterIsBound $PSBoundParameters.ContainsKey('TestFilter') `
         -SkipCapabilities $SkipCapabilities -SkipCapabilitiesIsBound $PSBoundParameters.ContainsKey('SkipCapabilities') `
         -RequireCapabilities $RequireCapabilities -RequireCapabilitiesIsBound $PSBoundParameters.ContainsKey('RequireCapabilities') `
-        -Timeout $Timeout -LaunchTimeout $CategoryTimeout -InfraRetries $InfraRetries
+        -Timeout $Timeout -LaunchTimeout $CategoryTimeout -InfraRetries $InfraRetries `
+        -Coverage $Coverage.IsPresent -CoverageIsBound $PSBoundParameters.ContainsKey('Coverage')
     $context | Add-Member -NotePropertyName 'CategoryTimeoutSeconds' -NotePropertyValue $context.LaunchSeconds
 
     $architecture = Get-DeviceTestHostArchitecture
     $context.DeviceDescription = "$env:COMPUTERNAME, Windows $([System.Environment]::OSVersion.Version), $Packaging, win-$architecture"
 
-    if ($Target -ne 'testOnly') {
-        foreach ($item in $context.Projects) {
-            $framework = Get-DeviceTestTargetFramework -Project $item -Platform 'windows'
-            $thumbprint = ''
-            if ($Packaging -eq 'packaged') {
-                $subject = $CertificateSubject
-                if (-not $subject) {
-                    $subject = Get-ManifestPublisher -Project $item
-                }
+    # A coverage run builds the app for testOnly too: the app it would find was built without coverage.
+    if ($Target -ne 'testOnly' -or $context.Coverage) {
+        $thumbprint = ''
+        if ($Packaging -eq 'packaged') {
+            $subject = $CertificateSubject
+            if (-not $subject) {
+                $subject = Get-ManifestPublisher -Project $context.Projects[0]
+            }
 
-                $thumbprint = Get-SigningCertificateThumbprint -Subject $subject
+            $thumbprint = Get-SigningCertificateThumbprint -Subject $subject
+        }
 
+        # A testOnly run keeps the package it finds, because its coverage setup may fail without building anything.
+        if ($Packaging -eq 'packaged' -and $Target -ne 'testOnly') {
+            foreach ($item in $context.Projects) {
                 # Old packages would otherwise be picked up by Find-AppPackage.
                 Get-ChildItem -LiteralPath $item.Directory -Recurse -Directory -Filter 'AppPackages' -ErrorAction SilentlyContinue |
                     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
             }
-
-            [void](Invoke-DeviceTestBuild -Context $context -Project $item -TargetFramework $framework -Command 'publish' -BuildArgs $BuildArgs `
-                    -Property (Get-WindowsBuildProperties -Architecture $architecture -Thumbprint $thumbprint))
         }
+
+        $coverageSession = Invoke-DeviceTestAppBuilds -Context $context -Platform 'windows' -Target $Target -Command 'publish' `
+            -Property (Get-WindowsBuildProperties -Architecture $architecture -Thumbprint $thumbprint) -BuildArgs $BuildArgs
     }
 
     if ($Target -ne 'buildOnly') {
@@ -783,19 +802,26 @@ try {
                 $verdict = New-DeviceTestVerdict -ExitCode 71 -Directory (Join-Path $context.Results $item.Name) -Reason "Not run: $($context.BuildFailures[$item.Name])."
             }
             else {
-                $verdict = Invoke-WindowsDeviceTests -Context $context -Project $item -Architecture $architecture
+                $verdict = Invoke-WindowsDeviceTests -Context $context -Project $item -Architecture $architecture -CoverageSession $coverageSession
             }
 
             $verdict.Project = $item.Name
             New-Item -ItemType Directory -Force -Path $verdict.Directory | Out-Null
             Add-DeviceTestVerdict -Context $context -Verdict $verdict
         }
+
+        Complete-DeviceTestCoverage -Session $coverageSession
+        $coverageSession = $null
     }
 
     $exitCode = Complete-DeviceTestRun -Context $context
 }
 catch {
     $exitCode = Write-DeviceTestException $_
+}
+finally {
+    # Only when an error stopped the run: reports the coverage recorded so far and puts the original toolkit assemblies back.
+    Complete-DeviceTestCoverage -Session $coverageSession
 }
 
 Write-Host "Exit code: $exitCode ($(Get-DeviceTestExitCodeName $exitCode))"

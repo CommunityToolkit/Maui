@@ -56,8 +56,10 @@ path and lists each toolkit change. The authoring guide for the tests is
   `eng/devices/windows.ps1` reads it when an app crashes or hangs; a packaged app has no other log.
 - **Code coverage**: `CoverageRecorder.cs` (toolkit code) writes the hits that coverlet-instrumented toolkit assemblies recorded, for
   the coverage runs of `eng/devices` (`-Coverage`, see `eng/devices/README.md`). coverlet writes them from a process-exit handler, which
-  never runs in these apps, so the Android instrumentation (before `Finish`) and the iOS and Mac Catalyst headless runner (when the
-  tests have completed) call `CoverageRecorder.Flush` with the folder named by `CTM_COVERAGE_DIRECTORY`. Without it they do nothing.
+  never runs in these apps, so the Android instrumentation (before `Finish`) and the iOS, Mac Catalyst and Windows headless runners (when
+  the tests have completed) call `CoverageRecorder.Flush` with the folder named by `CTM_COVERAGE_DIRECTORY`. A packaged Windows app does
+  not inherit that variable, so the Windows runners read the folder from `devicetestcoverage.txt` next to the results file
+  (`CoverageRecorder.ReadDirectoryFile`). Without a folder they do nothing.
 - **Project settings**: `ImplicitUsings` and `Nullable` are disabled as upstream, and the `.editorconfig` marks the vendored files as
   generated code so that the repository's style analyzers leave them as they are upstream; the toolkit's own files
   (`TestRunLog.cs`, `TestApplicationDispatcher.cs`, `CoverageRecorder.cs`) are analyzed like the rest of the repository. `CS0618` (`Frame` in the visual

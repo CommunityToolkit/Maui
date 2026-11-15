@@ -9,6 +9,7 @@
 //                 which ended discovery and dropped every category found after the first uncategorized test.
 // Toolkit change: a category launch also logs to TestRunLog (<results>_<Category>.log next to its results file), with the test that starts
 //                 and every unhandled exception.
+// Toolkit change: OnTestsCompleted writes the coverage of the instrumented toolkit assemblies (CoverageRecorder), in coverage runs only.
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -136,6 +137,10 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 				_logger.WriteLine("test-execution-summary" + message);
 				_logger.WriteLine("return-code " + (results.FailedTests == 0 ? 0 : 1));
+
+				var coverage = CoverageRecorder.Flush(CoverageRecorder.ReadDirectoryFile(TestsResultsFinalPath));
+				if (coverage is not null)
+					_logger.WriteLine(coverage);
 			}
 		}
 
