@@ -116,7 +116,7 @@ static class KeyframeAnimationExtensions
 		}
 	}
 
-	// A run that a PropertyChanged handler started during an older run's restore is aborted by the next run, which has recorded itself by then: remove only this run's own record
+	// App code that runs while the next run starts, such as the continuation of an aborted To animation, can start a run that the next run's Commit aborts after it recorded itself
 	static void EndRun(VisualElement view, RunningRun run)
 	{
 		if (runningRuns.TryGetValue(view, out var currentRun) && ReferenceEquals(currentRun, run))

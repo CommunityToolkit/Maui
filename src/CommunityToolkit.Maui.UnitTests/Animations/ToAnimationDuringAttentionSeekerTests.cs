@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using CommunityToolkit.Maui.Animations;
+﻿using CommunityToolkit.Maui.Animations;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using FluentAssertions;
 using Xunit;
@@ -80,44 +79,24 @@ public class ToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task ScaleAnimation_StartedWhileASeekerThatAHandlerStartedDuringARestoreRuns_StopsThatSeeker() => RunOnSingleThreadAsync(async token =>
+	public Task ScaleAnimation_StartedWhileASeekerRunsThatAnotherSeekersStartAlsoStarted_StopsTheSeekerItEnded() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var firstRun = new TadaAnimation { Length = seekerLength }.Animate(view, token);
-		await firstChange;
+		Task? seekerStartedDuringTheStart = null;
+		var appRotation = view.RotateToAsync(view.Rotation, seekerLength, Easing.Linear, token);
+		_ = appRotation.ContinueWith(_ => seekerStartedDuringTheStart = new TadaAnimation { Length = seekerLength }.Animate(view, token), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
-		Task? runStartedByTheHandler = null;
-		view.PropertyChanged += StartASeekerWhenTheScaleIsRestored;
-		Task secondRun;
-
-		try
-		{
-			// The second run's start aborts the first run, whose restore starts the run that the second run's tween then aborts
-			secondRun = new TadaAnimation { Length = seekerLength }.Animate(view, token);
-		}
-		finally
-		{
-			view.PropertyChanged -= StartASeekerWhenTheScaleIsRestored;
-		}
-
+		// Tada's start aborts the app's RotateToAsync, whose continuation starts a seeker that Tada's own tween then aborts, after Tada recorded its run
+		var seekerRun = new TadaAnimation { Length = seekerLength }.Animate(view, token);
 		var scaleRun = new ScaleAnimation { Scale = 1.6, Length = functionalTestLength }.Animate(view, token);
 
-		await secondRun.WaitAsync(waitTimeout, token);
-		scaleRun.IsCompleted.Should().BeFalse("the second seeker ends when Scale starts, not at its own end");
-		await Task.WhenAll(firstRun, runStartedByTheHandler ?? throw new InvalidOperationException("The handler did not start a run."), scaleRun).WaitAsync(waitTimeout, token);
+		await seekerRun.WaitAsync(waitTimeout, token);
+		scaleRun.IsCompleted.Should().BeFalse("the seeker ends when Scale starts, not at its own end");
+		await Task.WhenAll(seekerStartedDuringTheStart ?? throw new InvalidOperationException("The aborted RotateToAsync did not start a seeker."), scaleRun).WaitAsync(waitTimeout, token);
 		await WaitForTickerFramesAsync(view, 5, token);
 
 		AssertValuesEqual(view, startingValues);
-
-		void StartASeekerWhenTheScaleIsRestored(object? sender, PropertyChangedEventArgs e)
-		{
-			if (runStartedByTheHandler is null && e.PropertyName == VisualElement.ScaleProperty.PropertyName)
-			{
-				runStartedByTheHandler = new TadaAnimation { Length = seekerLength }.Animate(view, token);
-			}
-		}
 	}, TestContext.Current.CancellationToken);
 
 	static BaseAnimation CreateSeeker(string seekerName) => seekerName switch
