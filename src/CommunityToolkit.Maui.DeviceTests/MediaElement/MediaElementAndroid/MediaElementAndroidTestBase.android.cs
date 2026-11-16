@@ -1,13 +1,15 @@
-using System.Reflection;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
 using Android.Service.Notification;
+using AndroidX.Core.Content;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
@@ -48,6 +50,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	readonly List<MediaElement> hostedElements = [];
 	readonly List<string> temporaryFiles = [];
+	readonly List<MediaController> testControllers = [];
 	bool usesForegroundService;
 
 	protected void SetupProbeBuilder(bool isAndroidForegroundServiceEnabled = false, Action<MediaElementOptions>? configureMediaElementOptions = null, Action<MauiAppBuilder>? configureBuilder = null)
@@ -156,13 +159,19 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	protected static PlayerView GetPlayerView(MediaElement mediaElement) => GetPlayerView(GetMauiMediaElement(mediaElement));
 
+	/// <summary>Only for a MediaElement without the service: with the service its player is a MediaController, which is no IExoPlayer.</summary>
 	protected static IExoPlayer GetPlayer(MediaElement mediaElement) => (IExoPlayer)GetPlayerView(mediaElement).Player!;
+
+	/// <summary>The controller of a MediaElement with the service. The handler adds the PlayerView to the layout once the controller is connected.</summary>
+	protected static MediaController GetController(MediaElement mediaElement) => (MediaController)GetPlayerView(mediaElement).Player!;
+
+	protected static Task WaitForControllerAsync(MediaElement mediaElement, int timeout = waitTimeout) =>
+		WaitUntilAsync(() => mediaElement.Handler?.PlatformView is MauiMediaElement { ChildCount: > 0 } platformView
+			&& ((AViewGroup?)platformView.GetChildAt(0))?.ChildCount > 0
+			&& GetPlayerView(platformView).Player is MediaController, "The MediaElement never connected its MediaController.", timeout);
 
 	/// <summary>The class name that the manifest gives the service ([Service(Name = ...)] on MediaControlsService).</summary>
 	protected const string mediaControlsServiceName = "communityToolkit.maui.media.services";
-
-	/// <summary>The id that MediaControlsService gives its notification (foreground service and media notification share it).</summary>
-	protected const int serviceNotificationId = 1;
 
 	const string mediaStyleTemplate = "android.app.Notification$MediaStyle";
 
@@ -182,19 +191,79 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return notificationManager.GetActiveNotifications() ?? [];
 	}
 
-	protected static Notification? FindServiceNotification() =>
-		GetActiveNotifications().FirstOrDefault(notification => notification.Id == serviceNotificationId)?.Notification;
-
 	protected static bool IsMediaStyle(Notification? notification) => notification?.Extras?.GetString(Notification.ExtraTemplate) == mediaStyleTemplate;
+
+	/// <summary>The notification that Media3 shows for <paramref name="mediaSession"/>: the one whose MediaStyle holds the token of the session. Its id is Media3's and not part of the contract.</summary>
+	protected static StatusBarNotification? FindMediaNotification(MediaSession mediaSession) =>
+		GetActiveNotifications().FirstOrDefault(statusBarNotification => IsMediaStyle(statusBarNotification.Notification) && IsBoundToSession(statusBarNotification.Notification, mediaSession));
+
+	protected static bool IsBoundToSession(Notification? notification, MediaSession mediaSession)
+	{
+#pragma warning disable CS0618, CA1422 // GetParcelable(string) is deprecated from API 33; the typed overload does not exist before.
+		var token = notification?.Extras?.GetParcelable(Notification.ExtraMediaSession);
+#pragma warning restore CS0618, CA1422
+		return token is not null && token.Equals(mediaSession.PlatformToken);
+	}
 
 	protected static Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout) =>
 		WaitUntilAsync(() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0, "MediaControlsService was never stopped (or its notification stayed).", timeout);
 
-	private protected static BoundServiceConnection? GetServiceConnection(MediaManager manager) =>
-		(BoundServiceConnection?)typeof(MediaManager).GetField("connection", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(manager);
+	protected static IReadOnlyCollection<string> GetRegisteredPlayerIds() => MediaControlsService.Running?.RegisteredPlayerIds ?? [];
 
+	/// <summary>The session of the registration that the MediaManager's connection created in the service: null with the service off, or before the controller connected.</summary>
 	protected static MediaSession? GetMediaSession(MediaManager manager) =>
-		(MediaSession?)typeof(MediaManager).GetField("session", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(manager);
+		MediaControlsService.Running is MediaControlsService service && service.TryGetRegistration(manager.AndroidPlayerConnectionKey, out var mediaSession, out _) ? mediaSession : null;
+
+	/// <summary>The ExoPlayer that the service built for the MediaManager's connection: it plays what the MediaElement's controller controls.</summary>
+	protected static IExoPlayer? GetServicePlayer(MediaManager manager) =>
+		MediaControlsService.Running is MediaControlsService service && service.TryGetRegistration(manager.AndroidPlayerConnectionKey, out _, out var exoPlayer) ? exoPlayer : null;
+
+	protected static Task WaitForRegistrationAsync(MediaManager manager, int timeout = waitTimeout) =>
+		WaitUntilAsync(() => GetMediaSession(manager) is not null, "The service never registered the player of the MediaElement.", timeout);
+
+	/// <summary>A controller that a test owns, like the one of the notification or of a Bluetooth headset: connected to the registration with the given key (none: no hint).</summary>
+	protected async Task<MediaController> ConnectTestControllerAsync(string? connectionKey, int timeout = waitTimeout)
+	{
+		var context = MauiPlatform.AppContext;
+		var connected = new TaskCompletionSource<MediaController>(TaskCreationOptions.RunContinuationsAsynchronously);
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var hints = new Bundle();
+			if (connectionKey is not null)
+			{
+				hints.PutString(MediaSessionCallback.PlayerIdKey, connectionKey);
+			}
+
+			var sessionToken = new SessionToken(context, new ComponentName(context, Java.Lang.Class.FromType(typeof(MediaControlsService))));
+			var builder = new MediaController.Builder(context, sessionToken);
+			builder.SetConnectionHints(hints);
+			var future = builder.BuildAsync()!;
+			future.AddListener(new Java.Lang.Runnable(() =>
+			{
+				try
+				{
+					connected.SetResult((MediaController)future.Get()!);
+				}
+				catch (Exception exception)
+				{
+					connected.SetException(exception);
+				}
+			}), ContextCompat.GetMainExecutor(context));
+		});
+
+		var controller = await connected.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		testControllers.Add(controller);
+		return controller;
+	}
+
+	/// <summary>Releases a controller that a test connected, and takes it out of the teardown.</summary>
+	protected Task ReleaseTestControllerAsync(MediaController controller) =>
+		InvokeOnMainThreadAsync(() =>
+		{
+			testControllers.Remove(controller);
+			controller.Release();
+			controller.Dispose();
+		});
 
 	protected static async Task<byte[]> ReadAssetAsync(string asset)
 	{
@@ -272,6 +341,18 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 				// The status timer that setting a Source started would otherwise tick (and keep the element alive) for the rest of the run.
 				await InvokeOnMainThreadAsync(() => mediaElement.Dispose());
 			}
+
+			// A controller keeps the service alive (and bound), so the ones of the test go before the wait for the service to stop.
+			await InvokeOnMainThreadAsync(() =>
+			{
+				foreach (var controller in testControllers)
+				{
+					controller.Release();
+					controller.Dispose();
+				}
+
+				testControllers.Clear();
+			});
 
 			// Disconnecting stops MediaControlsService asynchronously: the next test must not start in the middle of that.
 			await WaitForMediaControlsServiceToStopAsync();

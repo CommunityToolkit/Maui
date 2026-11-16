@@ -111,7 +111,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task ConstructorAddsThePlayerViewToAWrapContentLayoutOnABlackBackground()
+	public async Task ConstructorLeavesTheLayoutEmptyAndSetViewAddsThePlayerViewToAWrapContentLayoutOnABlackBackground()
 	{
 		SetupProbeBuilder();
 		var context = MauiContext.Context!;
@@ -120,18 +120,54 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		{
 			using var playerView = new PlayerView(context);
 			using var view = new MauiMediaElement(context, playerView);
+			Assert.Equal(0, view.ChildCount);
+			var player = new ExoPlayerBuilder(context).Build()!;
+
+			view.SetView(player);
 
 			Assert.Equal(1, view.ChildCount);
 			var relativeLayout = Assert.IsType<ARelativeLayout>(view.GetChildAt(0));
 			Assert.Equal(1, relativeLayout.ChildCount);
 			Assert.Equal(playerView.Handle, relativeLayout.GetChildAt(0)!.Handle);
 			Assert.Equal(AColor.Black, Assert.IsType<ColorDrawable>(playerView.Background).Color);
+			Assert.Equal(player.Handle, playerView.Player!.Handle);
 
 			// The view is a CoordinatorLayout: AddView replaces the RelativeLayout.LayoutParams that the constructor built (with center-in-parent
 			// rules, which only a RelativeLayout parent applies) by its own LayoutParams. The rules have no visible effect: the match_parent
 			// PlayerView makes the layout as large as the view.
 			var layout = Assert.IsType<CoordinatorLayout.LayoutParams>(relativeLayout.LayoutParameters);
 			Assert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (layout.Width, layout.Height));
+		});
+	}
+
+	[Fact]
+	public async Task SetViewTwiceKeepsOnePlayerViewInTheLayout()
+	{
+		SetupProbeBuilder();
+		var context = MauiContext.Context!;
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var playerView = new PlayerView(context);
+			using var view = new MauiMediaElement(context, playerView);
+			var firstPlayer = new ExoPlayerBuilder(context).Build()!;
+			var secondPlayer = new ExoPlayerBuilder(context).Build()!;
+
+			try
+			{
+				view.SetView(firstPlayer);
+				view.SetView(secondPlayer);
+
+				Assert.Equal(1, view.ChildCount);
+				var relativeLayout = Assert.IsType<ARelativeLayout>(view.GetChildAt(0));
+				Assert.Equal(1, relativeLayout.ChildCount);
+				Assert.Equal(playerView.Handle, relativeLayout.GetChildAt(0)!.Handle);
+				Assert.Equal(secondPlayer.Handle, playerView.Player!.Handle);
+			}
+			finally
+			{
+				firstPlayer.Release();
+			}
 		});
 	}
 

@@ -1,4 +1,4 @@
-using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.Common;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
@@ -25,10 +25,10 @@ public sealed class AndroidMediaManagerProbe(IMauiContext context, IMediaElement
 {
 	public PlayerView? ExposedPlayerView => PlayerView;
 
-	public IExoPlayer? ExposedPlayer => Player;
+	public IPlayer? ExposedPlayer => Player;
 
 	// A subclass can set Player without CreatePlatformView ever running: the manager then has a player but no PlayerView.
-	public void AttachPlayer(IExoPlayer player) => Player = player;
+	public void AttachPlayer(IPlayer player) => Player = player;
 
 	public void InvokeDispose(bool disposing) => Dispose(disposing);
 }

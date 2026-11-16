@@ -105,7 +105,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task TheMediaSessionPublishesTheSpeedWhileTheMediaPlays()
 	{
-		SetupProbeBuilder();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.ShouldAutoPlay = true;
@@ -116,6 +116,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
+			await WaitForRegistrationAsync(handler.Manager!);
 			var controller = CreateSystemMediaController(handler.Manager!);
 			await WaitUntilAsync(() => controller.PlaybackState is { State: PlaybackStateCode.Playing, PlaybackSpeed: 1.5f }, "The media session never showed the media as playing at a speed of 1.5.");
 
@@ -130,7 +131,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task PauseShowsTheMediaAsPausedInTheMediaSession()
 	{
-		SetupProbeBuilder();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.ShouldAutoPlay = true;
@@ -141,6 +142,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
+			await WaitForRegistrationAsync(handler.Manager!);
 			var controller = CreateSystemMediaController(handler.Manager!);
 			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Playing, "The media session never showed the media as playing.");
 
@@ -149,7 +151,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Paused, "The media session never showed the media as paused.");
 			var state = controller.PlaybackState!;
 			Assert.Equal(0f, state.PlaybackSpeed);
-			Assert.Equal(GetPlayer(mediaElement).CurrentPosition, state.Position);
+			Assert.Equal(GetServicePlayer(handler.Manager!)!.CurrentPosition, state.Position);
 		});
 	}
 
@@ -414,22 +416,6 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 			// Duration zero means nothing is loaded: the player's position (0) must not overwrite the position.
 			Assert.Equal(TimeSpan.FromSeconds(3), mediaElement.Position);
-		});
-	}
-
-	[Fact]
-	public async Task UpdatingNotificationsWithoutTheForegroundServiceDoesNothing()
-	{
-		SetupProbeBuilder();
-		var mediaElement = await CreateQuietMediaElementAsync();
-
-		await WithHandlerAsync(mediaElement, handler =>
-		{
-			Assert.False(mediaElement.IsAndroidForegroundServiceEnabled);
-
-			var exception = Record.Exception(() => handler.Manager!.UpdateNotifications());
-
-			Assert.Null(exception);
 		});
 	}
 

@@ -155,12 +155,10 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 				Assert.NotNull(manager);
 				Assert.Same(manager, handler.Manager);
 				Assert.NotSame(firstPlatformView, secondPlatformView);
-				Assert.NotSame(GetPlayerView(firstPlatformView).Player, GetPlayerView(secondPlatformView).Player);
+				Assert.Equal(0, secondPlatformView.ChildCount);
 			}
 			finally
 			{
-				// The second player has the manager as its listener: it is released while the manager still exists. A player event that reaches
-				// a manager disposed by the handler crashes the process ("Unable to activate instance of type MediaManager").
 				secondPlatformView.Dispose();
 			}
 		});
