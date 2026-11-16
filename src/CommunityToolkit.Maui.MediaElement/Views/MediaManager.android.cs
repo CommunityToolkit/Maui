@@ -820,8 +820,13 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		{
 			disconnectTokenSource.Cancel();
 
-			Player?.Stop();
-			Player?.RemoveListener(this);
+			// MauiMediaElement.Dispose releases and disposes the player of its PlayerView, which can run before this does
+			var isPlayerAlive = IsAlive(Player);
+			if (isPlayerAlive)
+			{
+				Player?.Stop();
+				Player?.RemoveListener(this);
+			}
 
 			// A seek that waits for the ready state of the released player would only end after its two minute timeout. It ends like a cancelled
 			// seek, once the handler has finished disconnecting: no continuation of SeekTo may run in the middle of the disconnection
@@ -835,23 +840,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
 
-			if (isAndroidForegroundServiceEnabled && Player is MediaController controllerOfRegistration)
+			if (isPlayerAlive && isAndroidForegroundServiceEnabled && Player is MediaController controllerOfRegistration)
 			{
 				ReleasePlayerRegistration(controllerOfRegistration);
 			}
 
-			if (Player is IExoPlayer exoPlayer)
+			if (isPlayerAlive && Player is IExoPlayer exoPlayer)
 			{
 				exoPlayer.Release();
 				exoPlayer.Dispose();
 			}
-			else if (Player is MediaController mediaController)
+			else if (isPlayerAlive && Player is MediaController mediaController)
 			{
 				mediaController.Release();
 				mediaController.Dispose();
 			}
 
-			PlayerView?.Player = null;
+			if (IsAlive(PlayerView))
+			{
+				PlayerView?.Player = null;
+			}
 
 			Player = null;
 			PlayerView = null;
@@ -866,6 +874,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		base.Dispose(disposing);
 	}
+
+	// A disposed Java peer has no handle left, and every call on it throws ObjectDisposedException
+	static bool IsAlive(Android.Runtime.IJavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
 
 	void ReleasePlayerRegistration(MediaController mediaController)
 	{

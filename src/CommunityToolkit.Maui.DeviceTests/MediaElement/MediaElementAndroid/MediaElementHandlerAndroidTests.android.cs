@@ -77,7 +77,7 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 
 			Assert.IsType<TextureView>(playerView.VideoSurfaceView);
 			Assert.Equal(GetResourceId(playerView, "texture_view_media_element"), playerView.Id);
-			Assert.Equal(AColor.White, GetShutterColor(playerView));
+			Assert.Equal(AColor.Black, GetShutterColor(playerView));
 			Assert.False(playerView.UseController);
 			Assert.False(playerView.ControllerAutoShow);
 			Assert.Equal((ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent), (playerView.LayoutParameters!.Width, playerView.LayoutParameters.Height));

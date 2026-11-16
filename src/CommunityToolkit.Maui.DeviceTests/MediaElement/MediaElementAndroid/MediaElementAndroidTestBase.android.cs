@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -15,6 +16,7 @@ using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 using AViewGroup = Android.Views.ViewGroup;
 using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
@@ -207,8 +209,34 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return token is not null && token.Equals(mediaSession.PlatformToken);
 	}
 
-	protected static Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout) =>
-		WaitUntilAsync(() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0, "MediaControlsService was never stopped (or its notification stayed).", timeout);
+	protected static async Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout)
+	{
+		var remaining = timeout;
+		while (!IsMediaControlsServiceStopped())
+		{
+			if (remaining <= 0)
+			{
+				throw new XunitException($"MediaControlsService was not stopped within {timeout} ms. {DescribeMediaControlsService()}");
+			}
+
+			await Task.Delay(25);
+			remaining -= 25;
+		}
+	}
+
+	static bool IsMediaControlsServiceStopped() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0;
+
+	// Names which of the two conditions of the wait still held, because only the exact one tells a service that lingers from a notification that stays
+	static string DescribeMediaControlsService()
+	{
+		var service = FindMediaControlsService();
+		var serviceDescription = service is null
+			? "The service is not listed."
+			: $"The service is listed: Started={service.Started}, Foreground={service.Foreground}, ClientCount={service.ClientCount}, ActiveSince={service.ActiveSince}, LastActivityTime={service.LastActivityTime}, Registrations=[{string.Join(", ", GetRegisteredPlayerIds())}].";
+		var notifications = GetActiveNotifications()
+			.Select(statusBarNotification => $"id={statusBarNotification.Id} tag={statusBarNotification.Tag} package={statusBarNotification.PackageName} channel={statusBarNotification.Notification?.ChannelId} ongoing={statusBarNotification.IsOngoing} mediaStyle={IsMediaStyle(statusBarNotification.Notification)}");
+		return $"{serviceDescription} Active notifications: [{string.Join("; ", notifications)}].";
+	}
 
 	protected static IReadOnlyCollection<string> GetRegisteredPlayerIds() => MediaControlsService.Running?.RegisteredPlayerIds ?? [];
 
@@ -261,6 +289,35 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	protected static Task WaitForRegistrationAsync(MediaManager manager, int timeout = waitTimeout) =>
 		WaitUntilAsync(() => GetMediaSession(manager) is not null, "The service never registered the player of the MediaElement.", timeout);
+
+	/// <summary>
+	/// Starts watching the registry: completes once the registration of <paramref name="connectionKey"/> has appeared and is gone again, which
+	/// is the end of a controller that connected late and released itself. Started before the handler is disconnected, because the whole
+	/// life of that registration can be over by the time the test looks.
+	/// </summary>
+	protected static async Task WatchRegistrationComeAndGoAsync(string connectionKey, int timeout = waitTimeout)
+	{
+		var wasRegistered = false;
+		var stopwatch = Stopwatch.StartNew();
+		while (stopwatch.ElapsedMilliseconds < timeout)
+		{
+			var isRegistered = GetRegisteredPlayerIds().Contains(connectionKey);
+			if (isRegistered)
+			{
+				wasRegistered = true;
+			}
+			else if (wasRegistered)
+			{
+				return;
+			}
+
+			await Task.Delay(5);
+		}
+
+		throw new XunitException(wasRegistered
+			? $"The registration {connectionKey} was never released."
+			: $"The controller of {connectionKey} never connected, so there was nothing to release.");
+	}
 
 	/// <summary>A controller that a test owns, like the one of the notification or of a Bluetooth headset: connected to the registration with the given key (none: no hint).</summary>
 	protected async Task<MediaController> ConnectTestControllerAsync(string? connectionKey, int timeout = waitTimeout)

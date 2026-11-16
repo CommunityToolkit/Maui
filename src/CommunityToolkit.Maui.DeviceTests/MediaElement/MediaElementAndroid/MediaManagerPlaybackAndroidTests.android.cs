@@ -12,6 +12,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 {
 	const int playerStateReady = 3;
+	const int positionToleranceInMilliseconds = 50;
 
 	[Fact]
 	public async Task ShouldLoopPlaybackKeepsPlayingPastTheEndOfTheMedia()
@@ -151,7 +152,10 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Paused, "The media session never showed the media as paused.");
 			var state = controller.PlaybackState!;
 			Assert.Equal(0f, state.PlaybackSpeed);
-			Assert.Equal(GetServicePlayer(handler.Manager!)!.CurrentPosition, state.Position);
+			// The session reports the position through the platform session and the service player is read later, so the two can differ by
+			// the few milliseconds that passed between the pause and the read.
+			var servicePlayerPosition = GetServicePlayer(handler.Manager!)!.CurrentPosition;
+			Assert.InRange(state.Position, servicePlayerPosition - positionToleranceInMilliseconds, servicePlayerPosition + positionToleranceInMilliseconds);
 		});
 	}
 

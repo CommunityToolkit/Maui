@@ -132,22 +132,15 @@ public class MauiMediaElement : CoordinatorLayout
 		// Only the constructor that takes a PlayerView sets playerView and relativeLayout: a view Android created or wrapped has neither to release
 		if (disposing && playerView is not null)
 		{
-			playerView.FullscreenButtonClick -= OnFullscreenButtonClick;
-
-			if (playerView.Parent is ViewGroup playerParent)
-			{
-				playerParent.RemoveView(playerView);
-			}
-
-			if (relativeLayout.Parent is ViewGroup relativeParent)
-			{
-				relativeParent.RemoveView(relativeLayout);
-			}
-
-			relativeLayout.Dispose();
-
 			try
 			{
+				playerView.FullscreenButtonClick -= OnFullscreenButtonClick;
+
+				if (playerView.Parent is ViewGroup playerParent)
+				{
+					playerParent.RemoveView(playerView);
+				}
+
 				if (playerView.Player is not null)
 				{
 					playerView.Player.PlayWhenReady = false;
@@ -162,6 +155,13 @@ public class MauiMediaElement : CoordinatorLayout
 			{
 				// playerView already disposed
 			}
+
+			if (relativeLayout.Parent is ViewGroup relativeParent)
+			{
+				relativeParent.RemoveView(relativeLayout);
+			}
+
+			relativeLayout.Dispose();
 		}
 
 		base.Dispose(disposing);

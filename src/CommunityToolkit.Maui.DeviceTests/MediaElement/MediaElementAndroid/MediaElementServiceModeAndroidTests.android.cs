@@ -6,14 +6,12 @@ using Microsoft.Maui;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // With the foreground service on, every MediaElement controls a MediaController, which controls the player that the service builds for it.
-// Every Media3 call of these tests runs on the UI thread. The late connection of a controller has no event to wait for, so the tests that
-// need the end of it wait for the time it takes (controllerConnectionTime).
+// Every Media3 call of these tests runs on the UI thread. The late connection of a controller has no event: the tests that need its end
+// watch the registry for the registration to appear and go (WatchRegistrationComeAndGoAsync).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 {
-	static readonly TimeSpan controllerConnectionTime = TimeSpan.FromSeconds(3);
-
 	[Fact]
 	public async Task TwoElementsHaveTheirOwnPlayersAndSources()
 	{
@@ -255,9 +253,10 @@ public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 			using var recorder = new MediaElementRecorder(mediaElement);
 
 			var handler = CreateHandler<AndroidMediaElementProbeHandler>(mediaElement);
+			var lateRegistration = WatchRegistrationComeAndGoAsync(handler.Manager!.AndroidPlayerConnectionKey);
 			((IElementHandler)handler).DisconnectHandler();
 			mediaElement.Handler = null;
-			await Task.Delay(controllerConnectionTime);
+			await lateRegistration;
 
 			Assert.Equal(anchorKey, Assert.Single(GetRegisteredPlayerIds()));
 			Assert.Empty(recorder.FailureMessages);
@@ -280,12 +279,13 @@ public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 			using var recorder = new MediaElementRecorder(mediaElement);
 
 			var firstHandler = CreateHandler<AndroidMediaElementProbeHandler>(mediaElement);
+			var lateRegistration = WatchRegistrationComeAndGoAsync(firstHandler.Manager!.AndroidPlayerConnectionKey);
 			((IElementHandler)firstHandler).DisconnectHandler();
 			mediaElement.Handler = null;
 			var secondHandler = CreateHandler<AndroidMediaElementProbeHandler>(mediaElement);
 			await WaitForRegistrationAsync(secondHandler.Manager!);
 			await WaitUntilLoadedAsync(mediaElement, recorder);
-			await Task.Delay(controllerConnectionTime);
+			await lateRegistration;
 
 			Assert.Equal(secondHandler.Manager!.AndroidPlayerConnectionKey, Assert.Single(GetRegisteredPlayerIds()));
 			Assert.False(GetServicePlayer(secondHandler.Manager!)!.IsReleased);

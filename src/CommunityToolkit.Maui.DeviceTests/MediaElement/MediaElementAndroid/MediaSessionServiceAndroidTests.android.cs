@@ -94,11 +94,12 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitForRegistrationAsync(handler.Manager!);
 
-			await Task.Delay(TimeSpan.FromSeconds(15));
-
 			Assert.NotNull(MediaControlsService.Running);
 			Assert.Single(GetRegisteredPlayerIds());
-			Assert.False(FindMediaControlsService()?.Foreground ?? false, "The service is in the foreground although nothing plays.");
+			var service = FindMediaControlsService();
+			Assert.NotNull(service);
+			Assert.False(service.Started, "The service was started although nothing plays: the system would end the app when it does not call startForeground in time.");
+			Assert.False(service.Foreground, "The service is in the foreground although nothing plays.");
 		});
 	}
 
@@ -405,31 +406,28 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// The test calls OnDestroy on the live service, which Media3 answers by releasing its stub while the instance stays bound: the teardown
-	// releases every controller (those of the elements and of the test) and waits for the service to be gone before the next test binds again.
+	// The system destroys the service once its last controller is gone, and the service releases what it still holds. OnDestroy is never
+	// called by the test: Media3's own onDestroy, which the system calls later, throws for a service that was destroyed twice.
 	[Fact]
 	public async Task DestroyingTheServiceReleasesEveryRegistration()
 	{
 		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
-
-		await InvokeOnMainThreadAsync(async () =>
+		const string connectionKey = "destroyed-with-the-service";
+		var controller = await ConnectTestControllerAsync(connectionKey);
+		using var playerReference = await InvokeOnMainThreadAsync(() =>
 		{
-			var first = await CreateMediaElementAsync();
-			var second = await CreateMediaElementAsync();
-			var firstHandler = await ConnectWithServiceAsync(first);
-			var secondHandler = await ConnectWithServiceAsync(second);
-			var keys = GetRegisteredPlayerIds().ToArray();
-			using var firstPlayer = new JavaObjectReference((Java.Lang.Object)GetServicePlayer(firstHandler.Manager!)!);
-			using var secondPlayer = new JavaObjectReference((Java.Lang.Object)GetServicePlayer(secondHandler.Manager!)!);
-			Assert.Equal(2, keys.Length);
+			Assert.True(MediaControlsService.TryGetExoPlayer(connectionKey, out var exoPlayer));
+			return new JavaObjectReference((Java.Lang.Object)exoPlayer);
+		});
 
-			MediaControlsService.Running!.OnDestroy();
+		await ReleaseTestControllerAsync(controller);
+		await WaitUntilAsync(() => FindMediaControlsService() is null, "The system never destroyed the service after its last controller was released.");
 
-			Assert.Empty(GetRegisteredPlayerIds());
-			// The registrations disposed their players: a new peer of the same Java object shows that they were released
-			Assert.True(firstPlayer.GetPeer<AndroidX.Media3.ExoPlayer.IExoPlayer>().IsReleased);
-			Assert.True(secondPlayer.GetPeer<AndroidX.Media3.ExoPlayer.IExoPlayer>().IsReleased);
-			Assert.All(keys, BuildAndReleaseSession);
+		await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.Null(MediaControlsService.Running);
+			Assert.True(playerReference.GetPeer<AndroidX.Media3.ExoPlayer.IExoPlayer>().IsReleased);
+			BuildAndReleaseSession(connectionKey);
 		});
 	}
 
