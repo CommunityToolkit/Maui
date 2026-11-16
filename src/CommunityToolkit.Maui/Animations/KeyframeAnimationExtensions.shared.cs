@@ -82,11 +82,15 @@ static class KeyframeAnimationExtensions
 
 		var target = new KeyframeTarget(view, animatedProperties, originalValues);
 		var run = new RunningRun(animatedProperties);
-		runningRuns.AddOrUpdate(view, run);
 
 		try
 		{
-			createKeyframes(target).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
+			var keyframes = createKeyframes(target);
+
+			// Recorded only now: a write in createKeyframes, such as Swing's anchor, runs PropertyChanged handlers that can start a run, which the Commit below aborts
+			runningRuns.AddOrUpdate(view, run);
+
+			keyframes.Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
 			{
 				var runThatTookOver = GetRunThatTookOver(view, run);
 				EndRun(view, run);
@@ -173,7 +177,7 @@ static class KeyframeAnimationExtensions
 
 		for (var i = 0; i < animatedProperties.Count; i++)
 		{
-			// The run that took over returns these properties when it ends; restoring them now would undo what its start already set, such as Swing's anchor
+			// The run that took over returns its properties when it ends; restoring them now would undo what its start already set, such as Swing's anchor
 			if (runThatTookOver?.AnimatedProperties.Contains(animatedProperties[i]) is true)
 			{
 				trackers[i].End(animationIds[i], (double)view.GetValue(animatedProperties[i]));

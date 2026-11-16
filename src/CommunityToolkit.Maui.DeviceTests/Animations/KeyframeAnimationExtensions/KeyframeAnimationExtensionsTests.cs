@@ -30,6 +30,9 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> rotationAndAnchor =
 		[(VisualElement.RotationProperty, originalRotation), (VisualElement.AnchorYProperty, originalAnchorY)];
 
+	static readonly IReadOnlyList<(BindableProperty Property, double Value)> rotationAnchorAndScale =
+		[(VisualElement.RotationProperty, originalRotation), (VisualElement.AnchorYProperty, originalAnchorY), (VisualElement.ScaleProperty, originalScale)];
+
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleAndRotation =
 		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation)];
 
@@ -365,6 +368,54 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 			await Task.WhenAll(scaleRun, appCode).WaitAsync(waitTimeout);
 			await AssertStaysAtOriginalValuesAsync(handler, view, scaleOnly, nativeStateAtRest, "after Scale stopped Heartbeat");
+		});
+	}
+
+	// Swing moves the anchor while it creates its keyframes, so a PropertyChanged handler can start a seeker that Swing's own tween then aborts
+	[Fact]
+	public async Task RotateAnimationStopsASwingWhoseAnchorChangeStartedAnotherSeeker()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(rotationAnchorAndScale);
+		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = 3 * runLength };
+		var rotate = new RotateAnimation { Rotation = rotateBy, Length = runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			Task? heartbeatStartedByTheAnchorChange = null;
+			view.PropertyChanged += StartHeartbeatWhenTheAnchorMovesToTheTopEdge;
+			Task swingRun;
+
+			try
+			{
+				swingRun = swing.Animate(view);
+			}
+			finally
+			{
+				view.PropertyChanged -= StartHeartbeatWhenTheAnchorMovesToTheTopEdge;
+			}
+
+			await (heartbeatStartedByTheAnchorChange ?? throw new InvalidOperationException("The anchor change did not start Heartbeat.")).WaitAsync(waitTimeout);
+			await WaitForTickerFramesAsync(view);
+			Assert.True(view.AnchorY == 0, $"AnchorY is {view.AnchorY} while Swing runs, expected its top-edge anchor 0.");
+
+			var rotateRun = rotate.Animate(view);
+
+			Assert.True(view.AnchorY == originalAnchorY, $"AnchorY is {view.AnchorY} right after Rotate started, expected the original {originalAnchorY}: Rotate must stop the running Swing.");
+			await swingRun.WaitAsync(waitTimeout);
+			Assert.False(rotateRun.IsCompleted, "Swing did not end when Rotate started, but at its own end.");
+
+			await rotateRun.WaitAsync(waitTimeout);
+			await AssertStaysAtOriginalValuesAsync(handler, view, rotationAnchorAndScale, nativeStateAtRest, "after Rotate stopped the Swing");
+
+			void StartHeartbeatWhenTheAnchorMovesToTheTopEdge(object? sender, PropertyChangedEventArgs e)
+			{
+				if (heartbeatStartedByTheAnchorChange is null && e.PropertyName == VisualElement.AnchorYProperty.PropertyName && view.AnchorY == 0)
+				{
+					heartbeatStartedByTheAnchorChange = new HeartbeatAnimation { Length = runLength }.Animate(view);
+				}
+			}
 		});
 	}
 
