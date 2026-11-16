@@ -293,13 +293,14 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	/// <summary>
 	/// Starts watching the registry: completes once the registration of <paramref name="connectionKey"/> has appeared and is gone again, which
 	/// is the end of a controller that connected late and released itself. Started before the handler is disconnected, because the whole
-	/// life of that registration can be over by the time the test looks. It polls on its own thread, because the UI thread is busy building
-	/// the player of the registration while it appears.
+	/// life of that registration can be over by the time the test looks. It spins on its own thread without sleeping: the registration exists
+	/// for about two milliseconds, and the UI thread is busy building its player while it appears.
 	/// </summary>
 	protected static Task WatchRegistrationComeAndGoAsync(string connectionKey, int timeout = waitTimeout) =>
 		Task.Run(() =>
 		{
 			var wasRegistered = false;
+			var spinWait = new SpinWait();
 			var stopwatch = Stopwatch.StartNew();
 			while (stopwatch.ElapsedMilliseconds < timeout)
 			{
@@ -313,7 +314,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 					return;
 				}
 
-				Thread.Sleep(1);
+				spinWait.SpinOnce(sleep1Threshold: -1);
 			}
 
 			throw new XunitException(wasRegistered
