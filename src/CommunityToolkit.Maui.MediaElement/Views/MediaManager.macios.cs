@@ -718,7 +718,7 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && GetPosterArtworkUrl() is NSUrl artworkUrl)
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && Metadata.ResolveArtworkUrl(MediaElement) is NSUrl artworkUrl)
 		{
 			// Artwork that cannot be read or decoded shows no poster (an image without a size has no aspect ratio to keep)
 			var artworkData = NSData.FromUrl(artworkUrl);
@@ -748,19 +748,6 @@ public partial class MediaManager : IDisposable
 				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
 			]);
 		}
-	}
-
-	NSUrl? GetPosterArtworkUrl()
-	{
-		if (MediaElement.MetadataArtworkSource is MediaSource artworkSource)
-		{
-			return Metadata.GetArtworkUrl(artworkSource);
-		}
-
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		var artworkUrl = MediaElement.MetadataArtworkUrl;
-#pragma warning restore CS0618
-		return string.IsNullOrEmpty(artworkUrl) ? null : NSUrl.FromString(artworkUrl);
 	}
 
 	void VolumeChanged(NSObservedChange e)

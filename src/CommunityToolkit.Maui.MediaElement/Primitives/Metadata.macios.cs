@@ -88,19 +88,13 @@ sealed class Metadata : IDisposable
 			return;
 		}
 
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		var url = mediaElement.MetadataArtworkUrl;
-#pragma warning restore CS0618
-
 		NowPlayingInfo.Title = mediaElement.MetadataTitle;
 		NowPlayingInfo.Artist = mediaElement.MetadataArtist;
 		NowPlayingInfo.PlaybackDuration = playerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
 		NowPlayingInfo.PlaybackRate = GetPlaybackRate(mediaElement.Speed);
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
-		NowPlayingInfo.Artwork = mediaElement.MetadataArtworkSource is MediaSource artworkSource
-			? CreateArtwork(GetArtworkUrl(artworkSource))
-			: new(boundsSize: new(320, 240), requestHandler: _ => GetImage(url));
+		NowPlayingInfo.Artwork = CreateArtwork(ResolveArtworkUrl(mediaElement));
 		PublishNowPlayingInfo();
 	}
 
@@ -139,6 +133,23 @@ sealed class Metadata : IDisposable
 		{
 			ClearNowPlaying();
 		}
+	}
+
+	/// <summary>
+	/// Resolves the location of the artwork a media element shows: <see cref="IMediaElement.MetadataArtworkSource"/> when it is set, else
+	/// <see cref="IMediaElement.MetadataArtworkUrl"/>.
+	/// </summary>
+	/// <returns>The URL, or <see langword="null"/> when there is no artwork to load.</returns>
+	internal static NSUrl? ResolveArtworkUrl(IMediaElement mediaElement)
+	{
+		var (artworkSource, metadataArtworkUrl) = MetadataArtworkResolver.Resolve(mediaElement);
+		if (GetArtworkUrl(artworkSource) is NSUrl artworkUrl)
+		{
+			return artworkUrl;
+		}
+
+		// 17.0.0 gave MetadataArtworkUrl to NSURL as written, and its poster showed any URL that NSData reads (a data: URL, for example)
+		return string.IsNullOrWhiteSpace(metadataArtworkUrl) ? null : NSUrl.FromString(metadataArtworkUrl);
 	}
 
 	/// <summary>
@@ -186,22 +197,6 @@ sealed class Metadata : IDisposable
 
 			// An image without a size has no aspect ratio, which Now Playing needs to scale it
 			return image is null || image.Size.Width <= 0 || image.Size.Height <= 0 ? defaultUIImage : image;
-		}
-		catch
-		{
-			return defaultUIImage;
-		}
-	}
-
-	static UIImage GetImage(string imageUri)
-	{
-		try
-		{
-			if (imageUri.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
-			{
-				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(imageUri))) ?? defaultUIImage;
-			}
-			return defaultUIImage;
 		}
 		catch
 		{
