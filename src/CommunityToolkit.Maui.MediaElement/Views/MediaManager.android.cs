@@ -943,7 +943,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 			else
 			{
-				Trace.WriteLine($"Unable to start {nameof(MediaControlsService)} with no source: {exception}");
+				Trace.WriteLine($"Unable to start {nameof(MediaControlsService)} with no source: {exception.GetType().FullName}: {(exception as Java.Lang.Throwable)?.Message ?? exception.Message}");
 			}
 
 			return;
