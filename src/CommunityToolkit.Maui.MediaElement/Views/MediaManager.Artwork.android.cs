@@ -7,17 +7,16 @@ public partial class MediaManager
 {
 	Task<byte[]> GetMetadataArtworkBytes(CancellationToken token)
 	{
-		if (MediaElement.MetadataArtworkSource is MediaSource artworkSource)
+		var (artworkSource, metadataArtworkUrl) = MetadataArtworkResolver.Resolve(MediaElement);
+		if (artworkSource is null)
 		{
-			return GetBytesFromMetadataArtworkSource(artworkSource, token);
+			return Task.FromResult<byte[]>([]);
 		}
 
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		return GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, token);
-#pragma warning restore CS0618
+		return GetBytesFromMetadataArtworkSource(artworkSource, metadataArtworkUrl, token);
 	}
 
-	async Task<byte[]> GetBytesFromMetadataArtworkSource(MediaSource artworkSource, CancellationToken token)
+	async Task<byte[]> GetBytesFromMetadataArtworkSource(MediaSource artworkSource, string? metadataArtworkUrl, CancellationToken token)
 	{
 		Stream? stream = null;
 
@@ -26,7 +25,7 @@ public partial class MediaManager
 			switch (artworkSource)
 			{
 				case UriMediaSource { Uri: Uri uri } when MetadataArtworkPaths.IsHttpUri(uri):
-					return await DownloadArtwork(uri, token).ConfigureAwait(false);
+					return await DownloadArtwork(uri, sendContentLengthRequest: metadataArtworkUrl is not null, token).ConfigureAwait(false);
 
 				case UriMediaSource { Uri: Uri uri } when uri.IsAbsoluteUri && uri.IsFile:
 					stream = File.OpenRead(uri.LocalPath);
@@ -51,7 +50,7 @@ public partial class MediaManager
 		}
 		catch (Exception e)
 		{
-			Trace.WriteLine($"Unable to retrieve {nameof(MediaElement.MetadataArtworkSource)} from {artworkSource}.{e}\n");
+			Trace.WriteLine($"Unable to retrieve {GetArtworkDescription(artworkSource, metadataArtworkUrl)}.{e}\n");
 			return [];
 		}
 		finally
@@ -63,19 +62,30 @@ public partial class MediaManager
 		}
 	}
 
-	async Task<byte[]> DownloadArtwork(Uri uri, CancellationToken token)
+	// A MetadataArtworkUrl keeps the trace text of 17.0.0, which names the string the app set
+	static string GetArtworkDescription(MediaSource artworkSource, string? metadataArtworkUrl) =>
+		metadataArtworkUrl is null
+			? $"{nameof(MediaElement.MetadataArtworkSource)} from {artworkSource}"
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: its trace text names it
+			: $"{nameof(MediaElement.MetadataArtworkUrl)} for {metadataArtworkUrl}";
+#pragma warning restore CS0618
+
+	async Task<byte[]> DownloadArtwork(Uri uri, bool sendContentLengthRequest, CancellationToken token)
 	{
-		using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+		// 17.0.0 asked for the content length with a HEAD request before the GET of a MetadataArtworkUrl, and a failing HEAD left the artwork out
+		if (sendContentLengthRequest)
+		{
+			using var contentLengthRequest = new HttpRequestMessage(HttpMethod.Head, uri);
+			using var contentLengthResponse = await client.SendAsync(contentLengthRequest, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+		}
+
+		// The whole body is read before this returns, so HttpClient.Timeout also ends a server that stalls halfway: the media item waits for the artwork
+		using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
 		if (!response.IsSuccessStatusCode)
 		{
 			return [];
 		}
 
-		// A length announced by the server only sizes the buffer at first: a server can announce none (a chunked response) or a wrong one
-		var contentLength = response.Content.Headers.ContentLength;
-		using var memoryStream = new MemoryStream(contentLength is > 0 and <= int.MaxValue ? (int)contentLength.Value : 0);
-		await using var contentStream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-		await contentStream.CopyToAsync(memoryStream, token).ConfigureAwait(false);
-		return memoryStream.ToArray();
+		return await response.Content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
 	}
 }
