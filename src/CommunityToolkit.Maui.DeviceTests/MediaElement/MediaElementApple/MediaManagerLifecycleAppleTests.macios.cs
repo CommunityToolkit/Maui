@@ -1,5 +1,6 @@
 using System.Reflection;
 using AVFoundation;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
@@ -159,6 +160,51 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 			NSNotificationCenter.DefaultCenter.PostNotificationName(AVPlayerItem.PlaybackStalledNotification, null);
 
 			Assert.Single(Logs.Entries, entry => entry.Level is LogLevel.Warning);
+		});
+	}
+
+	[Fact]
+	public async Task CreatePlatformViewTwiceDisposesTheObserversOfTheFirstPlayer()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var manager = CreateManager(CreateMediaElement());
+			manager.CreatePlatformView();
+			var firstObservers = new[]
+			{
+				manager.NativeMutedObserver, manager.NativeVolumeObserver, manager.NativeStatusObserver,
+				manager.NativeTimeControlStatusObserver, manager.NativeRateObserver
+			};
+
+			manager.CreatePlatformView();
+			var secondObservers = new[]
+			{
+				manager.NativeMutedObserver, manager.NativeVolumeObserver, manager.NativeStatusObserver,
+				manager.NativeTimeControlStatusObserver, manager.NativeRateObserver
+			};
+
+			Assert.All(firstObservers, observer => Assert.Equal(NativeHandle.Zero, ((NSObject)observer!).Handle));
+			Assert.All(secondObservers, observer => Assert.NotEqual(NativeHandle.Zero, ((NSObject)observer!).Handle));
+		});
+	}
+
+	[Fact]
+	public async Task CreatePlatformViewTwiceDisposesTheMetadataOfTheFirstPlayer()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var manager = CreateManager(CreateMediaElement());
+			manager.CreatePlatformView();
+			var metaDataField = typeof(MediaManager).GetField("metaData", BindingFlags.NonPublic | BindingFlags.Instance)!;
+			metaDataField.SetValue(manager, new Metadata(manager.NativePlayer!, () => { }));
+
+			manager.CreatePlatformView();
+
+			Assert.Null(metaDataField.GetValue(manager));
 		});
 	}
 
