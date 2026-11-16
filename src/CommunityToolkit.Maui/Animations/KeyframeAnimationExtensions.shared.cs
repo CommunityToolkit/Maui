@@ -88,12 +88,13 @@ static class KeyframeAnimationExtensions
 		{
 			createKeyframes(target).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
 			{
+				var runThatTookOver = GetRunThatTookOver(view, run);
 				EndRun(view, run);
 
 				// Runs inside MAUI's ticker or inside the code that aborted the run, neither of which may see a throwing PropertyChanged handler: the run's Task faults instead
 				try
 				{
-					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target);
+					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver);
 					animationEnded.TrySetResult(isAborted);
 				}
 				catch (Exception exception)
@@ -108,8 +109,9 @@ static class KeyframeAnimationExtensions
 			// With animations disabled, Commit runs the finished callback itself, which has already restored the view
 			if (!animationEnded.Task.IsCompleted)
 			{
+				var runThatTookOver = GetRunThatTookOver(view, run);
 				EndRun(view, run);
-				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target);
+				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver);
 			}
 
 			throw;
@@ -124,6 +126,9 @@ static class KeyframeAnimationExtensions
 			runningRuns.Remove(view);
 		}
 	}
+
+	static RunningRun? GetRunThatTookOver(VisualElement view, RunningRun run) =>
+		runningRuns.TryGetValue(view, out var currentRun) && !ReferenceEquals(currentRun, run) ? currentRun : null;
 
 	static void AbortToAnimation(VisualElement view, BindableProperty property)
 	{
@@ -161,13 +166,20 @@ static class KeyframeAnimationExtensions
 		return null;
 	}
 
-	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target)
+	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target, RunningRun? runThatTookOver)
 	{
 		// A throwing PropertyChanged handler must not leave later properties unrestored, or any tracker with a stale original value
 		ExceptionDispatchInfo? firstException = null;
 
 		for (var i = 0; i < animatedProperties.Count; i++)
 		{
+			// The run that took over returns these properties when it ends; restoring them now would undo what its start already set, such as Swing's anchor
+			if (runThatTookOver?.AnimatedProperties.Contains(animatedProperties[i]) is true)
+			{
+				trackers[i].End(animationIds[i], (double)view.GetValue(animatedProperties[i]));
+				continue;
+			}
+
 			var valueToRestore = target.GetValueToRestore(animatedProperties[i]);
 			try
 			{

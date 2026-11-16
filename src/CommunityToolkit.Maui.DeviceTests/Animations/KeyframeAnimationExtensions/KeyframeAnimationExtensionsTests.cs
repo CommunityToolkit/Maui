@@ -368,6 +368,35 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		});
 	}
 
+	// Swing's start aborts the app's RotateToAsync, whose continuation starts a Swing that the first Swing's own tween then aborts
+	[Fact]
+	public async Task SwingWhoseStartAbortsARotateToWhoseContinuationStartsAnotherSwingKeepsTheTopEdgeAnchorUntilItEnds()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(rotationAndAnchor);
+		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			Task? swingStartedByTheContinuation = null;
+			var appRotation = view.RotateToAsync(originalRotation, 2 * runLength);
+			_ = appRotation.ContinueWith(_ => swingStartedByTheContinuation = new SwingAnimation { RotationAngle = swingAngle, Length = runLength }.Animate(view), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+			var swingRun = swing.Animate(view);
+
+			await (swingStartedByTheContinuation ?? throw new InvalidOperationException("The aborted RotateToAsync did not start a Swing.")).WaitAsync(waitTimeout);
+			await WaitForTickerFramesAsync(view);
+
+			Assert.False(swingRun.IsCompleted, "The surviving Swing ended before its length.");
+			Assert.True(view.AnchorY == 0, $"AnchorY is {view.AnchorY} while the surviving Swing runs, expected its top-edge anchor 0.");
+			AssertPlatformViewFollows(handler, view, nativeStateAtRest, "while the surviving Swing runs");
+
+			await swingRun.WaitAsync(waitTimeout);
+			await AssertStaysAtOriginalValuesAsync(handler, view, rotationAndAnchor, nativeStateAtRest, "after the surviving Swing completed");
+		});
+	}
+
 	// MAUI calls the finished callback from its ticker, so an exception escaping it would crash the app
 	[Fact]
 	public async Task SeekerWhoseRestoreThrowsAtTheEndFaultsItsTaskAndRestoresEveryProperty()
