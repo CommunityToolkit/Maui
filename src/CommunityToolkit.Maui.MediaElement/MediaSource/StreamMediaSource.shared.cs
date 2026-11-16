@@ -15,6 +15,17 @@ public sealed partial class StreamMediaSource : MediaSource
 	/// Gets or sets the stream to use as a media source.
 	/// This is a bindable property.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// On iOS, Mac Catalyst and Windows the stream must support seeking (<see cref="System.IO.Stream.CanSeek"/>): a stream that cannot seek is not
+	/// supported there, and the media fails to open (<see cref="MediaElement.MediaFailed"/>).
+	/// </para>
+	/// <para>
+	/// On Android a stream that cannot seek is read once, from its start: the media cannot be sought outside of what the player holds, looped or
+	/// played again after <see cref="MediaElement.Stop"/>, and a seek that needs another part of the stream raises
+	/// <see cref="MediaElement.MediaFailed"/>.
+	/// </para>
+	/// </remarks>
 	public Stream? Stream
 	{
 		get => (Stream?)GetValue(StreamProperty);

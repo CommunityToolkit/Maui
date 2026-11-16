@@ -35,11 +35,8 @@ public partial class Snackbar
 	{
 		token.ThrowIfCancellationRequested();
 
-		if (PlatformSnackbar is not null)
-		{
-			PlatformSnackbar.Dismiss();
-			PlatformSnackbar = null;
-		}
+		// Alert.Dismiss invokes OnDismissed, which forgets and disposes the platform snackbar (see OnPlatformSnackbarDismissed)
+		PlatformSnackbar?.Dismiss();
 
 		return Task.CompletedTask;
 	}
@@ -60,7 +57,7 @@ public partial class Snackbar
 		var cornerRadius = GetCornerRadius(VisualOptions.CornerRadius);
 
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
-		PlatformSnackbar = new PlatformSnackbar(Text,
+		var platformSnackbar = new PlatformSnackbar(Text,
 											VisualOptions.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											VisualOptions.TextColor.ToPlatform(),
@@ -74,12 +71,29 @@ public partial class Snackbar
 			Action = Action,
 			Anchor = Anchor is Page ? null : Anchor?.Handler?.PlatformView as UIView,
 			Duration = Duration,
-			OnDismissed = OnDismissed,
 			OnShown = OnShown
 		};
+		platformSnackbar.OnDismissed = () => OnPlatformSnackbarDismissed(platformSnackbar);
 
+		PlatformSnackbar = platformSnackbar;
 		PlatformSnackbar.Show();
 
 		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
+	}
+
+	// Forget the platform snackbar, so that a later Dismiss or Show does not dismiss it (and raise Dismissed) again, and dispose it, so that
+	// the subscription of its action button no longer keeps it, its AlertView and this Snackbar alive.
+	void OnPlatformSnackbarDismissed(PlatformSnackbar platformSnackbar)
+	{
+		// Alert.Dismiss invokes OnDismissed each time it runs: Dismissed is raised once per platform snackbar
+		platformSnackbar.OnDismissed = null;
+
+		if (PlatformSnackbar == platformSnackbar)
+		{
+			PlatformSnackbar = null;
+		}
+
+		platformSnackbar.Dispose();
+		OnDismissed();
 	}
 }

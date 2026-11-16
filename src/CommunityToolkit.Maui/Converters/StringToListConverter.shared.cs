@@ -16,7 +16,7 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 	/// The string that delimits the substrings in this string
 	/// This value is superseded by the ConverterParameter, if provided
 	/// This value is also superseded by <see cref="Separators"/>, if provided
-	/// If ConverterParameter is null and <see cref="Separators"/> is not assigned, this property will be used to delimit the substrings
+	/// If ConverterParameter is null and <see cref="Separators"/> is empty, this property will be used to delimit the substrings
 	/// </summary>
 	public string Separator
 	{
@@ -97,7 +97,7 @@ public partial class StringToListConverter : BaseConverterOneWay<string?, IEnume
 				throw new ArgumentException("Parameter cannot be cast to string nor string[].", nameof(parameter));
 		}
 
-		return Separators.Count > 1 ? Split(value, [.. Separators]) : Split(value, Separator);
+		return Separators.Count > 0 ? Split(value, [.. Separators]) : Split(value, Separator);
 	}
 
 	string[] Split(string valueToSplit, params string[] separators) => valueToSplit.Split(separators, SplitOptions);

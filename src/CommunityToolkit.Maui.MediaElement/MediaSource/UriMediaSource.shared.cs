@@ -31,7 +31,6 @@ public sealed partial class UriMediaSource : MediaSource
 	/// <remarks>
 	/// Use this to provide authentication tokens (e.g. <c>Authorization: Bearer &lt;token&gt;</c>) or other custom HTTP headers.
 	/// Mutating the contents of the returned dictionary triggers a source update on the underlying platform player.
-	/// Not supported on Tizen.
 	/// </remarks>
 	public IDictionary<string, string> HttpHeaders { get; } = new ObservableDictionary<string, string>();
 

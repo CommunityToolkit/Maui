@@ -17,9 +17,12 @@ public class PopupService : IPopupService
 	/// Creates a new instance of <see cref="PopupService"/>.
 	/// </summary>
 	/// <param name="serviceProvider">The <see cref="IServiceProvider"/> implementation.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceProvider"/> is <see langword="null"/>.</exception>
 	[ActivatorUtilitiesConstructor]
 	public PopupService(IServiceProvider serviceProvider)
 	{
+		ArgumentNullException.ThrowIfNull(serviceProvider);
+
 		this.serviceProvider = serviceProvider;
 	}
 

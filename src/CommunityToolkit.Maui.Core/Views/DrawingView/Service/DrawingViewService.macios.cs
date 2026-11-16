@@ -14,8 +14,11 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
 	public static ValueTask<Stream> GetPlatformImageStream(ImageLineOptions options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(options);
+
 		token.ThrowIfCancellationRequested();
 
 		var image = GetUIImageForLines(options.Lines, options.Background, options.CanvasSize);
@@ -38,8 +41,11 @@ public static partial class DrawingViewService
 	/// <param name="options">The options controlling how the resulting image is generated.</param>
 	/// <param name="token"><see cref="CancellationToken"/></param>
 	/// <returns>Image stream</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
 	public static ValueTask<Stream> GetPlatformImageStream(ImagePointOptions options, CancellationToken token = default)
 	{
+		ArgumentNullException.ThrowIfNull(options);
+
 		token.ThrowIfCancellationRequested();
 
 		var imageSize = options.DesiredSize;
@@ -53,7 +59,7 @@ public static partial class DrawingViewService
 
 		token.ThrowIfCancellationRequested();
 
-		var imageAsPng = GetMaximumUIImage(image, canvasSize?.Width ?? imageSize.Width, canvasSize?.Height ?? imageSize.Height)
+		var imageAsPng = GetMaximumUIImage(image, imageSize.Width, imageSize.Height)
 							.AsPNG() ?? throw new InvalidOperationException("Unable to convert image to PNG");
 
 		return ValueTask.FromResult(imageAsPng.AsStream());
@@ -78,7 +84,8 @@ public static partial class DrawingViewService
 
 		if (drawingLineWithLargestLineWidth is null)
 		{
-			throw new InvalidOperationException("Unable to generate image. No Lines Found");
+			// GetPlatformImageStream returns Stream.Null when there is nothing to draw, as on every platform
+			return null;
 		}
 
 		return GetUIImage(points, (context, offset) =>
@@ -93,6 +100,11 @@ public static partial class DrawingViewService
 	static UIImage? GetUIImage(ICollection<PointF> points, Action<CGContext, Size> drawStrokes, Paint? background, nfloat maxLineWidth, Size? canvasSize)
 	{
 		const int minSize = 1;
+		if (points.Count is 0)
+		{
+			return null;
+		}
+
 		var minPointX = points.Min(p => p.X) - maxLineWidth;
 		var minPointY = points.Min(p => p.Y) - maxLineWidth;
 		var drawingWidth = canvasSize?.Width ?? points.Max(p => p.X) - minPointX + maxLineWidth;
@@ -128,14 +140,27 @@ public static partial class DrawingViewService
 
 	static void DrawStrokes(CGContext context, IList<PointF> points, nfloat lineWidth, Color strokeColor, Size offset)
 	{
-		context.SetStrokeColor(strokeColor.ToCGColor());
+		if (points.Count is 0)
+		{
+			return;
+		}
+
+		context.SetStrokeColor(strokeColor.ToCGColorKeepingThePlatformColorAlive());
 		context.SetLineWidth(lineWidth);
 		context.SetLineCap(CGLineCap.Round);
 		context.SetLineJoin(CGLineJoin.Round);
 
 		var (startPointX, startPointY) = points[0];
 		context.MoveTo(new nfloat(startPointX), new nfloat(startPointY));
-		context.AddLines(points.Select(p => new CGPoint(p.X - offset.Width, p.Y - offset.Height)).ToArray());
+		var linePoints = points.Select(p => new CGPoint(p.X - offset.Width, p.Y - offset.Height)).ToArray();
+		if (linePoints.Length is 1)
+		{
+			// AddLines with one point only moves to it, so a single point (a tap) becomes a zero-length segment, which the round caps draw as a dot
+			// of the line width, as MauiDrawingView draws it
+			linePoints = [linePoints[0], linePoints[0]];
+		}
+
+		context.AddLines(linePoints);
 
 		context.StrokePath();
 	}
@@ -145,8 +170,10 @@ public static partial class DrawingViewService
 		var sourceSize = sourceImage.Size;
 		var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width.Value, maxHeight / sourceSize.Height.Value);
 
-		var width = Math.Max(maxResizeFactor * sourceSize.Width.Value, 1);
-		var height = Math.Max(maxResizeFactor * sourceSize.Height.Value, 1);
+		// In floating point the factor times a side can be a hair off a whole number (1920 / 411 * 411 = 1919.9999999999998): the size is rounded to whole
+		// pixels here, half away from zero as Win2D rounds it on Windows, so the image has exactly the desired size on every platform.
+		var width = Math.Round(Math.Max(maxResizeFactor * sourceSize.Width.Value, 1), MidpointRounding.AwayFromZero);
+		var height = Math.Round(Math.Max(maxResizeFactor * sourceSize.Height.Value, 1), MidpointRounding.AwayFromZero);
 
 		UIGraphics.BeginImageContext(new CGSize(width, height));
 		sourceImage.Draw(new CGRect(0, 0, width, height));
@@ -161,7 +188,13 @@ public static partial class DrawingViewService
 		switch (brush)
 		{
 			case SolidPaint solidColorBrush:
-				context.SetFillColor(solidColorBrush.Color?.ToCGColor() ?? DrawingViewDefaults.BackgroundColor.AsCGColor());
+				context.SetFillColor(solidColorBrush.Color?.ToCGColorKeepingThePlatformColorAlive() ?? DrawingViewDefaults.BackgroundColor.AsCGColor());
+				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
+				break;
+			// CGGradient needs one color or more. A gradient without stops only comes from GradientPaint.SetGradientStops (the GradientStops setter
+			// replaces an empty array with two white stops): it is filled with the default background, as on Android.
+			case GradientPaint { GradientStops.Length: 0 }:
+				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColorKeepingThePlatformColorAlive());
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 			case LinearGradientPaint linearGradientBrush:
@@ -195,31 +228,41 @@ public static partial class DrawingViewService
 						positions[index] = gradientStop.Offset;
 					}
 
-					DrawRadialGradient(context, imageSize, colors, positions);
+					// As in MAUI's canvas, the radius is relative to the larger side of the image, and a radius of 0 spans its diagonal
+					var radius = radialGradientBrush.Radius * Math.Max(imageSize.Width.Value, imageSize.Height.Value);
+					if (radius is not > 0)
+					{
+						radius = Math.Sqrt((imageSize.Width.Value * imageSize.Width.Value) + (imageSize.Height.Value * imageSize.Height.Value));
+					}
+
+					DrawRadialGradient(
+						context,
+						imageSize,
+						colors,
+						positions,
+						new CGPoint(radialGradientBrush.Center.X * imageSize.Width, radialGradientBrush.Center.Y * imageSize.Height),
+						radius);
 					break;
 				}
 			default:
-				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColor());
+				context.SetFillColor(DrawingViewDefaults.BackgroundColor.ToCGColorKeepingThePlatformColorAlive());
 				context.FillRect(new CGRect(CGPoint.Empty, imageSize));
 				break;
 		}
 	}
 
-	static void DrawRadialGradient(CGContext context, CGSize size, CGColor[] colors, nfloat[] locations)
+	static void DrawRadialGradient(CGContext context, CGSize size, CGColor[] colors, nfloat[] locations, CGPoint center, double radius)
 	{
 		var colorSpace = CGColorSpace.CreateDeviceRGB();
 
 		var gradient = new CGGradient(colorSpace, colors, locations);
-		var path = GetBackgroundPath(size);
-		var pathRect = path.BoundingBox;
-		var center = new CGPoint(pathRect.GetMidX(), pathRect.GetMidY());
-		var radius = Math.Max(pathRect.Size.Width / 2.0, pathRect.Size.Height / 2.0) * Math.Sqrt(2);
 
 		context.SaveState();
-		context.AddPath(path);
+		context.AddPath(GetBackgroundPath(size));
 		context.EOClip();
 
-		context.DrawRadialGradient(gradient, center, 0, center, (nfloat)radius, 0);
+		// The end color continues beyond the radius, as in MAUI's canvas and on Android
+		context.DrawRadialGradient(gradient, center, 0, center, (nfloat)radius, CGGradientDrawingOptions.DrawsBeforeStartLocation | CGGradientDrawingOptions.DrawsAfterEndLocation);
 
 		context.RestoreState();
 	}
@@ -235,11 +278,12 @@ public static partial class DrawingViewService
 		context.AddPath(GetBackgroundPath(size));
 		context.EOClip();
 
+		// The start and end colors continue beyond the start and end points, as in MAUI's canvas and on Android
 		context.DrawLinearGradient(
 			gradient,
 			startPoint,
 			endPoint,
-			CGGradientDrawingOptions.DrawsBeforeStartLocation);
+			CGGradientDrawingOptions.DrawsBeforeStartLocation | CGGradientDrawingOptions.DrawsAfterEndLocation);
 
 		context.RestoreState();
 	}
@@ -255,5 +299,15 @@ public static partial class DrawingViewService
 		path.AddLineToPoint(rect.Width, rect.GetMinY());
 		path.CloseSubpath();
 		return path;
+	}
+
+	// Color.ToCGColor is ToPlatform().CGColor: nothing references that new UIColor while its CGColor is read, and the bindings do not keep
+	// it alive either (dotnet/macios#10146). CoreCLR, the default runtime of iOS and Mac Catalyst from .NET 11 on, can then finalize it
+	// during the call, and when the image is drawn off the main thread (GetImageStream allows it) the release that the finalizer queues to
+	// the main thread can free the CGColor before the binding retains it.
+	static CGColor ToCGColorKeepingThePlatformColorAlive(this Color color)
+	{
+		using var platformColor = color.ToPlatform();
+		return platformColor.CGColor;
 	}
 }

@@ -13,7 +13,7 @@ public partial class AvatarViewBindablePropertiesViewModel : BaseViewModel
 			Text = "SW",
 			TextColor = Colors.Blue,
 			BackgroundColor = Colors.Yellow,
-			ImageSource = "https://clipground.com/images/avatar-movie-clipart.png", // Using URL image
+			ImageSource = "https://aka.ms/campus.jpg", // Using URL image
 			BorderWidth = 4,
 			Padding = 5,
 			WidthRequest = 64,
@@ -63,7 +63,7 @@ public partial class AvatarViewBindablePropertiesViewModel : BaseViewModel
 			Text = "SL",
 			TextColor = Colors.White,
 			BackgroundColor = Colors.Black,
-			BorderWidth = Thickness.Zero,
+			BorderWidth = 0,
 			Padding = Thickness.Zero,
 			WidthRequest = 64,
 			HeightRequest = 48,

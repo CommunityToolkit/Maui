@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Layouts;
 using CommunityToolkit.Maui.Layouts;
 using Xunit;
 
@@ -254,6 +255,16 @@ public class DockLayoutTests : BaseTest
 	}
 
 	#endregion
+
+	[Fact]
+	public void DockLayoutManager_NullDockLayout_ThrowsArgumentNullException()
+	{
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var exception = Assert.Throws<ArgumentNullException>(() => new DockLayoutManager(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		Assert.Equal("dockLayout", exception.ParamName);
+	}
 
 	class TestView : View
 	{

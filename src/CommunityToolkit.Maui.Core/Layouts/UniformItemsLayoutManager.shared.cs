@@ -5,14 +5,22 @@ namespace CommunityToolkit.Maui.Core.Layouts;
 /// <summary>
 /// <see cref="LayoutManager"/> for <see cref="IUniformItemsLayout"/>.
 /// </summary>
-/// <remarks>
-/// Initialize a new instance of <see cref="UniformItemsLayoutManager"/>.
-/// </remarks>
-public class UniformItemsLayoutManager(IUniformItemsLayout uniformItemsLayout) : LayoutManager(uniformItemsLayout)
+public class UniformItemsLayoutManager : LayoutManager
 {
-	readonly IUniformItemsLayout uniformItemsLayout = uniformItemsLayout;
+	readonly IUniformItemsLayout uniformItemsLayout;
 
 	double childWidth, childHeight;
+
+	/// <summary>
+	/// Initialize a new instance of <see cref="UniformItemsLayoutManager"/>.
+	/// </summary>
+	/// <param name="uniformItemsLayout">The <see cref="IUniformItemsLayout"/> to manage.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="uniformItemsLayout"/> is null.</exception>
+	public UniformItemsLayoutManager(IUniformItemsLayout uniformItemsLayout) : base(uniformItemsLayout)
+	{
+		ArgumentNullException.ThrowIfNull(uniformItemsLayout);
+		this.uniformItemsLayout = uniformItemsLayout;
+	}
 
 	/// <summary>
 	/// Arrange children

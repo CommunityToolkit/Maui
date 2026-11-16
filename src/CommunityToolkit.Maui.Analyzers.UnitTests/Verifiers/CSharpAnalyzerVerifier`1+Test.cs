@@ -11,11 +11,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 	{
 		public Test(params ReadOnlySpan<Type> assembliesUnderTest)
 		{
-#if NET10_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100;
-#else
-#error ReferenceAssemblies must be updated to current version of .NET
-#endif
+			ReferenceAssemblies = TestReferenceAssemblies.Current;
 			List<Type> typesForAssembliesUnderTest =
 			[
 				typeof(Microsoft.Maui.Controls.Xaml.Extensions), // Microsoft.Maui.Controls.Xaml

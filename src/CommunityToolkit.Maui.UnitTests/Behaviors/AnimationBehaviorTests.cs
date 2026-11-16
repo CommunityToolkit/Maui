@@ -196,7 +196,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 			Behaviors = { behavior }
 		}.EnableAnimations();
 
-		Assert.True(SpinWait.SpinUntil(() => animationCommandCts.IsCancellationRequested, TimeSpan.FromSeconds(1)));
+		Assert.True(SpinWait.SpinUntil(() => animationCommandCts.IsCancellationRequested, TimeSpan.FromMilliseconds((int)TestDuration.Short)));
 
 		try
 		{
@@ -235,11 +235,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 
 			AnimationStarted?.Invoke(this, EventArgs.Empty);
 
-#if NET11_0_OR_GREATER
 			await element.RotateToAsync(70, 250, null, token);
-#else
-			await element.RotateToAsync(70).WaitAsync(token);
-#endif
 
 			HasAnimated = true;
 

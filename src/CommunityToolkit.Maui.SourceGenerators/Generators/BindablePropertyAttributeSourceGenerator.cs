@@ -393,7 +393,7 @@ public class BindablePropertyAttributeSourceGenerator : IIncrementalGenerator
 
 		var @namespace = propertySymbol.ContainingNamespace.ToDisplayString();
 		var className = propertySymbol.ContainingType.Name;
-		var classAccessibility = propertySymbol.ContainingSymbol.DeclaredAccessibility.ToString().ToLower();
+		var classAccessibility = SyntaxFacts.GetText(propertySymbol.ContainingSymbol.DeclaredAccessibility);
 		var returnType = propertySymbol.Type;
 
 		// Build containing types hierarchy

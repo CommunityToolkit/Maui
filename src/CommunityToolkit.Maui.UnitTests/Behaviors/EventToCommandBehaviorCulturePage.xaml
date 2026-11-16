@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    x:Class="CommunityToolkit.Maui.UnitTests.Behaviors.EventToCommandBehaviorCulturePage">
+
+    <ListView x:Name="ListView" x:FieldModifier="public">
+        <ListView.Behaviors>
+            <tk:EventToCommandBehavior x:Name="GermanBehavior" x:FieldModifier="public" EventName="ItemTapped" EventArgsConverterCulture="de-DE" />
+            <tk:EventToCommandBehavior x:Name="DefaultBehavior" x:FieldModifier="public" EventName="ItemTapped" />
+            <tk:EventToCommandBehavior x:TypeArguments="x:String" x:Name="GenericGermanBehavior" x:FieldModifier="public" EventName="ItemTapped" EventArgsConverterCulture="de-DE" />
+        </ListView.Behaviors>
+    </ListView>
+
+</ContentPage>

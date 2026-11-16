@@ -16,6 +16,7 @@
                 <Setter Property="VerticalOptions" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="Margin" Value="15, 10" />
+                <Setter Property="TextColor" Value="Black" />
             </Style>
             <Style TargetType="ScrollView">
                 <Setter Property="VerticalOptions" Value="Fill" />
@@ -24,7 +25,9 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <Grid ColumnDefinitions="*,*,*"
+        <!-- The implicit Grid style paints the app background, dark in the dark theme, over this White page everywhere but Windows -->
+        <Grid BackgroundColor="Transparent"
+                ColumnDefinitions="*,*,*"
                 HorizontalOptions="Center"
                 RowDefinitions="*,*,*,*"
                 VerticalOptions="Center">

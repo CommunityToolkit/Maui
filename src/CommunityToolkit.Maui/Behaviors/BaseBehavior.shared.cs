@@ -32,16 +32,22 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(TView bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
 		((ICommunityToolkitBehavior<TView>)this).InitializeBehavior(bindable);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(TView bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachingFrom(bindable);
 
 		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);

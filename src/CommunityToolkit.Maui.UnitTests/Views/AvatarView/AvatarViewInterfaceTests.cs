@@ -34,7 +34,7 @@ public class AvatarViewInterfaceTests : BaseViewTest
 				Uri = new Uri("https://aka.ms/campus.jpg"),
 			}
 		};
-		avatarView.Content.Should().BeOfType<Image>();
+		avatarView.Content.Should().BeAssignableTo<Image>();
 		if (avatarView.Content is Image avatarImage)
 		{
 			avatarImage.Should().NotBeNull();
@@ -52,6 +52,16 @@ public class AvatarViewInterfaceTests : BaseViewTest
 			Uri = new Uri("https://aka.ms/campus.jpg"),
 		};
 		((IImageSource)avatarView).IsEmpty.Should().BeFalse();
+	}
+
+	[Fact]
+	public void IImageSourceIsEmptyWhenTheImageSourceIsEmpty()
+	{
+		var avatarView = new Maui.Views.AvatarView
+		{
+			ImageSource = new UriImageSource(),
+		};
+		((IImageSource)avatarView).IsEmpty.Should().BeTrue();
 	}
 
 	[Fact]

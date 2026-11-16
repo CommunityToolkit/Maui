@@ -16,8 +16,11 @@ public static class BadgeFactory
 	/// </summary>
 	/// <param name="launcherType">Launcher type</param>
 	/// <param name="provider">Provider implementation</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="launcherType"/> is null.</exception>
 	public static void SetBadgeProvider(string launcherType, IBadgeProvider provider)
 	{
+		ArgumentNullException.ThrowIfNull(launcherType);
+
 		providers[launcherType] = provider;
 	}
 

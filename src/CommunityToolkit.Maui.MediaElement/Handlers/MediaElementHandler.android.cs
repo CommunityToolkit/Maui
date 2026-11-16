@@ -12,8 +12,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	/// </summary>
 	/// <param name="handler">The associated handler.</param>
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void ShouldLoopPlayback(MediaElementHandler handler, MediaElement mediaElement)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+
 		handler.MediaManager?.UpdateShouldLoopPlayback();
 	}
 
@@ -50,8 +53,13 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			((IMediaElement)VirtualView).MediaFailed(new MediaFailedEventArgs(exception.Message));
 		}
 	}
+
+	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
 		Dispose();
 		platformView.Dispose();
 		base.DisconnectHandler(platformView);

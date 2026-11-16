@@ -9,38 +9,40 @@
 	x:DataType="vm:SetFocusOnEntryCompletedBehaviorViewModel"
 	x:TypeArguments="vm:SetFocusOnEntryCompletedBehaviorViewModel">
 
-	<VerticalStackLayout Spacing="12" VerticalOptions="Start">
+	<ScrollView>
+		<VerticalStackLayout Spacing="12" VerticalOptions="Start">
 
-		<VerticalStackLayout.Resources>
-			<ResourceDictionary>
-				<Style TargetType="Entry">
-					<Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
-					<Setter Property="PlaceholderColor" Value="{StaticResource NormalLabelTextColor}" />
-					<Setter Property="TextColor" Value="{StaticResource DarkLabelTextColor}" />
-				</Style>
-			</ResourceDictionary>
-		</VerticalStackLayout.Resources>
+			<VerticalStackLayout.Resources>
+				<ResourceDictionary>
+					<Style TargetType="Entry">
+						<Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
+						<Setter Property="PlaceholderColor" Value="{StaticResource NormalLabelTextColor}" />
+						<Setter Property="TextColor" Value="{StaticResource DarkLabelTextColor}" />
+					</Style>
+				</ResourceDictionary>
+			</VerticalStackLayout.Resources>
 
 
-		<Label Margin="0,10" Text="The SetFocusOnEntryCompletedBehavior is an attached property for entries that allows the user to specify which VisualElement should gain focus after the user completes that entry." />
+			<Label Margin="0,10" Text="The SetFocusOnEntryCompletedBehavior is an attached property for entries that allows the user to specify which VisualElement should gain focus after the user completes that entry." />
 
-		<Entry
-			x:Name="Entry1"
-			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry2}"
-			Placeholder="Entry 1 (Tap `Next` or `Enter` or `Return` when finished)"
-			ReturnType="Next" />
-		<Entry
-			x:Name="Entry2"
-			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry3}"
-			Placeholder="Entry 2 (Tap `Next` or `Enter` or `Return` on the keyboard when finished)"
-			ReturnType="Next" />
-		<Entry
-			x:Name="Entry3"
-			mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry4}"
-			Placeholder="Entry 3 (Tap `Next` or `Enter` or `Return` on the keyboard when finished)"
-			ReturnType="Next" />
+			<Entry
+				x:Name="Entry1"
+				mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry2}"
+				Placeholder="Entry 1 (Tap `Next` or `Enter` or `Return` when finished)"
+				ReturnType="Next" />
+			<Entry
+				x:Name="Entry2"
+				mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry3}"
+				Placeholder="Entry 2 (Tap `Next` or `Enter` or `Return` on the keyboard when finished)"
+				ReturnType="Next" />
+			<Entry
+				x:Name="Entry3"
+				mct:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference Entry4}"
+				Placeholder="Entry 3 (Tap `Next` or `Enter` or `Return` on the keyboard when finished)"
+				ReturnType="Next" />
 
-		<Entry x:Name="Entry4" Placeholder="Entry 4 (no next entry this time)" />
+			<Entry x:Name="Entry4" Placeholder="Entry 4 (no next entry this time)" />
 
-	</VerticalStackLayout>
+		</VerticalStackLayout>
+	</ScrollView>
 </pages:BasePage>

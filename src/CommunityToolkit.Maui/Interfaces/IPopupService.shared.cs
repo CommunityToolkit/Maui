@@ -42,7 +42,8 @@ public interface IPopupService
 	/// <param name="page">The current visible page</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	Task<IPopupResult> ShowPopupAsync<T>(Page page, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
@@ -53,7 +54,8 @@ public interface IPopupService
 	/// <param name="navigation">The <see cref="INavigation"/> implementation responsible for displaying the popup. Make sure to use the one associated with the <see cref="Window"/> that you wish the popup to be displayed on.</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	Task<IPopupResult> ShowPopupAsync<T>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
@@ -65,7 +67,8 @@ public interface IPopupService
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="shellParameters">Parameters that will be passed into the view or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	Task<IPopupResult> ShowPopupAsync<T>(Shell shell, IPopupOptions? options, IDictionary<string, object>? shellParameters = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
@@ -77,7 +80,8 @@ public interface IPopupService
 	/// <param name="page">The current visible page</param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult{TResult}"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult{TResult}"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Page page, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
@@ -89,7 +93,8 @@ public interface IPopupService
 	/// <param name="navigation">The active <see cref="INavigation"/>, a property commonly found in <see cref="Microsoft.Maui.Controls.VisualElement"/></param>
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult{TResult}"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult{TResult}"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(INavigation navigation, IPopupOptions? options = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
@@ -102,7 +107,8 @@ public interface IPopupService
 	/// <param name="options">The <see cref="IPopupOptions"/> that enable support for customizing the display and behavior of the presented popup.</param>
 	/// <param name="shellParameters">Parameters that will be passed into the view or its associated BindingContext if they implement <see cref="IQueryAttributable"/>.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the wait for a result to be returned. This will <b>not</b> close the popup.</param>
-	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed.</returns>
+	/// <returns>An <see cref="IPopupResult"/> when the popup is closed or the <paramref name="cancellationToken"/> is cancelled. Make sure to check the <see cref="IPopupResult.WasDismissedByTappingOutsideOfPopup"/> value to determine how the popup was closed. Also completes when navigation removes the popup's page without <c>CloseAsync</c>.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled (the popup stays open), or when the app cancels the navigation that displays the popup, for example in a <see cref="Shell.Navigating"/> handler (the popup is not displayed).</exception>
 	Task<IPopupResult<TResult>> ShowPopupAsync<T, TResult>(Shell shell, IPopupOptions? options = null, IDictionary<string, object>? shellParameters = null, CancellationToken cancellationToken = default)
 		where T : notnull;
 
@@ -111,6 +117,7 @@ public interface IPopupService
 	/// </summary>
 	/// <param name="page">The current visible page</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
 	Task<IPopupResult> ClosePopupAsync(Page page, CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -119,6 +126,7 @@ public interface IPopupService
 	/// <param name="page">The current visible page</param>
 	/// <param name="result">The result that will be returned to the caller of <c>ShowPopupAsync</c>.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
 	Task<IPopupResult<T>> ClosePopupAsync<T>(Page page, T result, CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -126,6 +134,7 @@ public interface IPopupService
 	/// </summary>
 	/// <param name="navigation">The active <see cref="INavigation"/>, a property commonly found in <see cref="Microsoft.Maui.Controls.VisualElement"/></param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
 	Task<IPopupResult> ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -134,5 +143,6 @@ public interface IPopupService
 	/// <param name="navigation">The active <see cref="INavigation"/>, a property commonly found in <see cref="Microsoft.Maui.Controls.VisualElement"/></param>
 	/// <param name="result">The result that will be returned to the caller of <c>ShowPopupAsync</c>.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
 	Task<IPopupResult<T>> ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default);
 }

@@ -124,7 +124,8 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 			if (appearance.HasValue)
 			{
-				windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value);
+				// The mask also holds the light status bars bit, so that the dialog loses light status bars the activity does not have (.NET MAUI gives the dialog of a modal page light status bars in day mode)
+				windowInsetsController.SetSystemBarsAppearance(appearance.Value, appearance.Value | (int)WindowInsetsControllerAppearance.LightStatusBars);
 			}
 			else
 			{
@@ -135,29 +136,17 @@ sealed partial class DialogFragmentService : IDialogFragmentService
 
 			dialogWindow.SetStatusBarColor(platformColor);
 
-			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
-			{
-				dialogWindow.SetDecorFitsSystemWindows(!isColorTransparent);
-			}
-			else
-			{
-				AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, !isColorTransparent);
-			}
+			// Whatever the color, as StatusBar.SetColor does for the activity's window (#3189)
+			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
 		}
 		else
 		{
 			dialogWindow.SetStatusBarColor(platformColor);
 
-			if (isColorTransparent)
-			{
-				dialogWindow.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				dialogWindow.SetFlags(WindowManagerFlags.LayoutNoLimits, WindowManagerFlags.LayoutNoLimits);
-			}
-			else
-			{
-				dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
-				dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-			}
+			// LayoutNoLimits is cleared for every color, as StatusBar.SetColor does for the activity's window (#3189): it lays the content out behind the system bars with no window insets to avoid them (#2351)
+			dialogWindow.ClearFlags(WindowManagerFlags.LayoutNoLimits);
+			dialogWindow.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
+			AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(dialogWindow, false);
 		}
 	}
 }

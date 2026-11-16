@@ -13,7 +13,39 @@ public abstract class BaseViewTest : BaseTest
 		ServiceProvider = serviceProvider;
 	}
 
+	public enum RootPageType
+	{
+		Shell,
+		ContentPage,
+		NavigationPage
+	}
+
 	protected IServiceProvider ServiceProvider { get; }
+
+	protected static INavigation SetRootPage(RootPageType rootPageType)
+	{
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+
+		switch (rootPageType)
+		{
+			case RootPageType.Shell:
+				var shell = new Shell();
+				shell.Items.Add(new ContentPage());
+				window.Page = shell;
+				return shell.Navigation;
+
+			case RootPageType.ContentPage:
+				window.Page = new ContentPage();
+				return window.Page.Navigation;
+
+			case RootPageType.NavigationPage:
+				window.Page = new NavigationPage(new ContentPage());
+				return window.Page.Navigation;
+
+			default:
+				throw new NotSupportedException($"{rootPageType} is not supported");
+		}
+	}
 
 	protected static TElementHandler CreateElementHandler<TElementHandler>(IElement view, bool doesRequireMauiContext = true)
 		where TElementHandler : IElementHandler, new()

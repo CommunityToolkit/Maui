@@ -77,6 +77,8 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 	[Theory]
 	[InlineData("en-US", false)] // US Culture where a != a-
 	[InlineData("th-TH", true)] // Thai Culture where a == a-
+	[InlineData("tr-TR", false)] // Turkish Culture where a != a-
+	[InlineData("az-Latn-AZ", false)] // Azerbaijani Culture where a != a-
 	public void IsValidShouldReturnResultBasedOnCultureSpecificComparison(string cultureName, bool expectedIsValid)
 	{
 		var currentCulture = Thread.CurrentThread.CurrentCulture;
@@ -157,6 +159,65 @@ public class RequiredStringValidationBehaviorTests() : BaseBehaviorTest<Required
 
 		// Assert
 		Assert.False(confirmPasswordBehavior.IsValid);
+	}
+
+	// RequiredString is bound to the text of the password Entry, and typing a new password takes the focus from the confirmation Entry.
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenRequiredStringChangesAfterTheViewLostFocus()
+	{
+		var passwordEntry = new Entry
+		{
+			Text = "123456"
+		};
+
+		var confirmPasswordBehavior = new RequiredStringValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged
+		};
+		confirmPasswordBehavior.SetBinding(RequiredStringValidationBehavior.RequiredStringProperty, new Binding(nameof(Entry.Text), source: passwordEntry));
+
+		var confirmPasswordEntry = new Entry();
+		confirmPasswordEntry.Behaviors.Add(confirmPasswordBehavior);
+
+		((IView)confirmPasswordEntry).IsFocused = true;
+		confirmPasswordEntry.Text = "123456";
+		((IView)confirmPasswordEntry).IsFocused = false;
+
+		Assert.True(confirmPasswordBehavior.IsValid);
+
+		passwordEntry.Text = "1234567";
+
+		Assert.False(confirmPasswordBehavior.IsValid);
+
+		passwordEntry.Text = "123456";
+
+		Assert.True(confirmPasswordBehavior.IsValid);
+	}
+
+	[Fact]
+	public void IsValid_ShouldRevalidate_WhenExactMatchChanges()
+	{
+		var behavior = new RequiredStringValidationBehavior
+		{
+			Flags = ValidationFlags.ValidateOnValueChanged,
+			RequiredString = "345"
+		};
+
+		var entry = new Entry();
+		entry.Behaviors.Add(behavior);
+
+		((IView)entry).IsFocused = true;
+		entry.Text = "123456";
+
+		Assert.False(behavior.IsValid);
+
+		behavior.ExactMatch = false;
+
+		Assert.True(behavior.IsValid);
+
+		behavior.ExactMatch = true;
+
+		Assert.False(behavior.IsValid);
 	}
 
 	[Fact]

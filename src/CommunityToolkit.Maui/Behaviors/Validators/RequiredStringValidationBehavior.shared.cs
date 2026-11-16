@@ -13,7 +13,10 @@ public partial class RequiredStringValidationBehavior : ValidationBehavior<strin
 	/// <summary>
 	/// The string that will be compared to the value provided by the user. This is a bindable property.
 	/// </summary>
-	[BindableProperty]
+	/// <remarks>
+	/// Like a change of the other validation rules, a new <see cref="RequiredString"/> (for example the text of a password <see cref="Entry"/> that this property is bound to) validates the value again: see <see cref="ValidationBehavior.Flags"/>.
+	/// </remarks>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
 	public partial string? RequiredString { get; set; } = RequiredStringValidationBehaviorDefaults.RequiredString;
 
 	/// <summary>
@@ -22,7 +25,10 @@ public partial class RequiredStringValidationBehavior : ValidationBehavior<strin
 	/// <br/>
 	/// <c>true</c> by default. This is a bindable property.
 	/// </summary>
-	[BindableProperty]
+	/// <remarks>
+	/// Like a change of the other validation rules, a new <see cref="ExactMatch"/> validates the value again: see <see cref="ValidationBehavior.Flags"/>.
+	/// </remarks>
+	[BindableProperty(PropertyChangedMethodName = nameof(OnValidationPropertyChanged))]
 	public partial bool ExactMatch { get; set; } = RequiredStringValidationBehaviorDefaults.ExactMatch;
 
 	/// <inheritdoc/>

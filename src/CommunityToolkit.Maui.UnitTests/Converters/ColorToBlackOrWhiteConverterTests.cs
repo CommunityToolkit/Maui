@@ -5,66 +5,66 @@ namespace CommunityToolkit.Maui.UnitTests.Converters;
 
 public class ColorToBlackOrWhiteConverterTests : BaseOneWayConverterTest<ColorToBlackOrWhiteConverter>
 {
-	public static TheoryData<Color, Color> ColorToBlackOrWhiteData { get; } = new()
+	public static TheoryData<int, int> ColorToBlackOrWhiteData { get; } = new()
 	{
 		{
-			Colors.Black, Colors.Black
+			Colors.Black.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.DarkBlue, Colors.Black
+			Colors.DarkBlue.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.DarkCyan, Colors.Black
+			Colors.DarkCyan.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.Brown, Colors.Black
+			Colors.Brown.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.DarkGreen, Colors.Black
+			Colors.DarkGreen.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.DarkSlateGray, Colors.Black
+			Colors.DarkSlateGray.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.Transparent, Colors.Black
+			Colors.Transparent.ToInt(), Colors.Black.ToInt()
 		},
 		{
-			Colors.White, Colors.White
+			Colors.White.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.DarkSalmon, Colors.White
+			Colors.DarkSalmon.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.DarkOrchid, Colors.White
+			Colors.DarkOrchid.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.DarkGrey, Colors.White
+			Colors.DarkGrey.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.Yellow, Colors.White
+			Colors.Yellow.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.Pink, Colors.White
+			Colors.Pink.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.LightBlue, Colors.White
+			Colors.LightBlue.ToInt(), Colors.White.ToInt()
 		},
 		{
-			Colors.Wheat, Colors.White
+			Colors.Wheat.ToInt(), Colors.White.ToInt()
 		}
 	};
 
 	[Theory]
 	[MemberData(nameof(ColorToBlackOrWhiteData))]
-	public void ColorToBlackOrWhiteConverterValidArgumentsTest(Color initialColor, Color expectedColor)
+	public void ColorToBlackOrWhiteConverterValidArgumentsTest(int initialColor, int expectedColor)
 	{
 		var converter = new ColorToBlackOrWhiteConverter();
 
-		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(initialColor, typeof(Color), null, null);
-		var convertedColorFrom = converter.ConvertFrom(initialColor);
+		var convertedColor = ((ICommunityToolkitValueConverter)converter).Convert(Color.FromInt(initialColor), typeof(Color), null, null);
+		var convertedColorFrom = converter.ConvertFrom(Color.FromInt(initialColor));
 
-		Assert.Equal(expectedColor, convertedColor);
-		Assert.Equal(expectedColor, convertedColorFrom);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColor);
+		Assert.Equal(Color.FromInt(expectedColor), convertedColorFrom);
 	}
 
 	[Theory]

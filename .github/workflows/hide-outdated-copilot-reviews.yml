@@ -1,0 +1,85 @@
+name: Hide outdated Copilot reviews
+
+# Hides Copilot reviews on the Conversation page, with the reason Outdated:
+#   - a review with inline comments, once every one of its threads is Outdated;
+#   - a review with no inline comments, once a newer Copilot review exists.
+# The logic lives in .github/scripts/hide-outdated-copilot-reviews.sh.
+
+on:
+  # pull_request_target (not pull_request) so the token can also hide reviews on
+  # pull requests from forks. This is safe here because the job never checks out
+  # or runs code from the pull request: GitHub runs this workflow, and the
+  # checkout below, from the default branch.
+  pull_request_target:
+    types: [synchronize, reopened]
+
+  # A newly submitted Copilot review can make an older one redundant.
+  pull_request_review:
+    types: [submitted]
+
+  schedule:
+    - cron: '37 9 * * *' # Once per day, early morning PT: sweep every open pull request
+
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Pull request number to check (leave empty to check every open pull request)
+        required: false
+        type: string
+      dry_run:
+        description: Only report what would be hidden
+        required: false
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.pr || 'all-open' }}
+  # Queue runs for the same pull request instead of cancelling them, so a review
+  # arriving right after a push cannot cancel the push's run.
+  cancel-in-progress: false
+
+jobs:
+  hide-outdated-copilot-reviews:
+    name: Hide outdated Copilot reviews
+    # A review on a pull request from a fork only gets a read-only token, so
+    # those pull requests are left to the push trigger and the daily sweep.
+    if: github.event_name != 'pull_request_review' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read       # check out the script
+      pull-requests: write # hide reviews
+    steps:
+      - name: Check out the script from the default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts/hide-outdated-copilot-reviews.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Hide outdated Copilot reviews
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          script=.github/scripts/hide-outdated-copilot-reviews.sh
+          if [ ! -f "$script" ]; then
+            # Only expected on the pull request that adds this workflow, before it merges.
+            echo "::warning::$script is not on the default branch yet, so there is nothing to run."
+            exit 0
+          fi
+          if [ "$EVENT_NAME" = pull_request_target ]; then
+            # Give GitHub a minute to mark the comments Outdated after the push.
+            sleep 60
+          fi
+          if [ -n "$PR_NUMBER" ]; then
+            sh "$script" "$REPOSITORY" "$PR_NUMBER"
+          else
+            sh "$script" "$REPOSITORY" --all-open
+          fi

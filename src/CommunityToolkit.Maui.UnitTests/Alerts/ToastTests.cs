@@ -15,13 +15,32 @@ public class ToastTests : BaseTest
 		Assert.IsType<IAlert>(toast, exactMatch: false);
 	}
 
+	[Fact]
+	public void EnsureWindowsToastEnabled_NotificationsDisabled_ThrowsSetupException()
+	{
+		var exception = Assert.Throws<InvalidOperationException>(Toast.EnsureWindowsToastEnabled);
+
+		Assert.Contains("UseMauiCommunityToolkit", exception.Message);
+		Assert.Contains(nameof(Options.SetShouldEnableSnackbarOnWindows), exception.Message);
+		Assert.Contains("Package.appxmanifest", exception.Message);
+		Assert.Equal("https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/toast", exception.HelpLink);
+	}
+
+	[Fact]
+	public void EnsureWindowsToastEnabled_NotificationsEnabled_DoesNotThrow()
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder.UseMauiCommunityToolkit(options => options.SetShouldEnableSnackbarOnWindows(true));
+
+		Toast.EnsureWindowsToastEnabled();
+	}
+
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task ToastShow_CancellationTokenExpires()
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => toast.Show(cts.Token));
 	}
@@ -43,8 +62,7 @@ public class ToastTests : BaseTest
 	{
 		var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
 
-		// Ensure CancellationToken expires
-		await Task.Delay(100, TestContext.Current.CancellationToken);
+		await WaitForCancellationAsync(cts.Token, TestContext.Current.CancellationToken);
 
 		await Assert.ThrowsAsync<OperationCanceledException>(() => toast.Dismiss(cts.Token));
 	}

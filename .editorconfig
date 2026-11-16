@@ -180,3 +180,5 @@ dotnet_diagnostic.MVMTK0042.severity = error
 
 # XC0045: Binding Property not found
 dotnet_diagnostic.XC0045.severity = error
+
+csharp_space_after_keywords_in_control_flow_statements = true

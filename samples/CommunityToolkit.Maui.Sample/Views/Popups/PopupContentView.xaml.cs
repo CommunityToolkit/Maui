@@ -13,6 +13,6 @@ public partial class PopupContentView : Popup
 
 		Opened += (s, e) =>
 			popupContentViewModel.SetMessage(
-				"This is a dynamically set message, shown in a popup without the need to create your own Popup subclass.");
+				"This message was set through the view model of this Popup after it opened.");
 	}
 }

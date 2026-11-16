@@ -18,5 +18,5 @@ public partial class UriValidationBehavior : TextValidationBehavior
 
 	/// <inheritdoc/>
 	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
-		=> await base.ValidateAsync(value, token).ConfigureAwait(false) && Uri.IsWellFormedUriString(value, UriKind);
+		=> await base.ValidateAsync(value, token) && Uri.IsWellFormedUriString(value, UriKind);
 }

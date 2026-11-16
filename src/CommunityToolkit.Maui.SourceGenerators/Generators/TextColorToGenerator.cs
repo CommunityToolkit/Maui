@@ -152,11 +152,12 @@ class TextColorToGenerator : IIncrementalGenerator
 			  	/// </summary>
 			  	/// <param name="element"></param>
 			  	/// <param name="color">The target color to animate the <see cref="Microsoft.Maui.ITextStyle.TextColor"/> to</param>
-			  	/// <param name="rate">The time, in milliseconds, between the frames of the animation</param>
+			  	/// <param name="rate">The time, in milliseconds, between the frames of the animation. Must be greater than 0.</param>
 			  	/// <param name="length">The duration, in milliseconds, of the animation</param>
 			  	/// <param name="easing">The easing function to be used in the animation</param>
 			  	/// <param name="token"><see cref="CancellationToken"/></param>
 			  	/// <returns>Value indicating if the animation completed successfully or not</returns>
+			  	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rate"/> is 0. It is thrown by the call itself, before the animation starts.</exception>
 			  	public static Task<bool> TextColorTo{{textStyleClassMetadata.GenericArguments}}(this global::{{textStyleClassMetadata.Namespace}}.{{textStyleClassMetadata.ClassName}}{{textStyleClassMetadata.GenericArguments}} element, {{mauiColorFullName}} color, uint rate = 16u, uint length = 250u, Easing? easing = null, CancellationToken token = default)
 			  {{textStyleClassMetadata.GenericConstraints}}
 			  	{
@@ -166,6 +167,9 @@ class TextColorToGenerator : IIncrementalGenerator
 			  
 			  		if(element is not Microsoft.Maui.ITextStyle)
 			  			throw new ArgumentException($"Element must implement {nameof(Microsoft.Maui.ITextStyle)}", nameof(element));
+			  
+			  		// .NET MAUI divides by the rate on every frame of the animation, on the platform's animation ticker: a rate of 0 would throw there, where no caller can catch it, and terminate the app
+			  		ArgumentOutOfRangeException.ThrowIfZero(rate);
 			  
 			  		//Although TextColor is defined as not-nullable, it CAN be null
 			  		//If null => set it to Transparent as Animation will crash on null BackgroundColor

@@ -183,7 +183,7 @@
                     BackgroundColor="Orange" />
             </Grid>
 
-            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Toggle Nonexistent State" />
+            <Button Command="{Binding ToggleNotFoundStateCommand}" Text="Change to Nonexistent State" />
             <Label TextColor="Red">
                 <Label.FormattedText>
                     <FormattedString >
@@ -192,6 +192,10 @@
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <Label
+                IsVisible="{Binding NotFoundStateExceptionMessage, Converter={mct:IsStringNotNullOrEmptyConverter}}"
+                Text="{Binding NotFoundStateExceptionMessage}"
+                TextColor="Red" />
 
             <VerticalStackLayout mct:StateContainer.CurrentState="{Binding NotFoundState}" >
 

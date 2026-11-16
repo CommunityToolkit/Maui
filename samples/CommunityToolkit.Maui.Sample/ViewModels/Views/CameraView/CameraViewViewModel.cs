@@ -13,11 +13,11 @@ public partial class CameraViewViewModel : BaseViewModel
 		this.cameraProvider = cameraProvider;
 
 		cameraProvider.AvailableCamerasChanged += HandleAvailableCamerasChanged;
+
+		UpdateResolutionText();
 	}
 
 	public IReadOnlyList<CameraInfo> Cameras => cameraProvider.AvailableCameras ?? [];
-
-	public CancellationToken Token => CancellationToken.None;
 
 	public ICollection<CameraFlashMode> FlashModes { get; } = Enum.GetValues<CameraFlashMode>();
 
@@ -32,6 +32,9 @@ public partial class CameraViewViewModel : BaseViewModel
 
 	[ObservableProperty]
 	public partial Size SelectedResolution { get; set; }
+
+	[ObservableProperty]
+	public partial IReadOnlyList<Size> SupportedResolutions { get; private set; } = [];
 
 	[ObservableProperty]
 	public partial float CurrentZoom { get; set; }
@@ -68,7 +71,17 @@ public partial class CameraViewViewModel : BaseViewModel
 
 	partial void OnSelectedCameraChanged(CameraInfo? oldValue, CameraInfo? newValue)
 	{
+		UpdateSupportedResolutions();
 		UpdateCameraInfoText();
+	}
+
+	void UpdateSupportedResolutions()
+	{
+		// A camera can list a resolution more than once, for example 1280 x 720 on the Android API 28 emulator.
+		SupportedResolutions = SelectedCamera?.SupportedResolutions
+			.Distinct()
+			.OrderByDescending(static resolution => resolution.Width * resolution.Height)
+			.ToList() ?? [];
 	}
 
 	void UpdateCameraInfoText()
@@ -105,7 +118,10 @@ public partial class CameraViewViewModel : BaseViewModel
 
 	void UpdateResolutionText()
 	{
-		ResolutionText = $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
+		// Size.Zero is the default ImageCaptureResolution of CameraView, which leaves the resolution to the camera.
+		ResolutionText = SelectedResolution.IsZero
+			? "Selected Resolution: Default"
+			: $"Selected Resolution: {SelectedResolution.Width} x {SelectedResolution.Height}";
 	}
 
 	void HandleAvailableCamerasChanged(object? sender, IReadOnlyList<CameraInfo>? e)
