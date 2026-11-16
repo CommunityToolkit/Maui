@@ -29,6 +29,12 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 	static async Task AssertThumbnailIsTheArtworkAsync(WinMediaManagerFixture fixture, WinMediaHttpServer server)
 	{
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+		Assert.Contains(server.Requests, request => request.Method is "GET" && request.Path == "/" + WinMediaAssets.ArtworkServerPath);
+	}
+
+	static async Task AssertThumbnailIsAsync(WinMediaManagerFixture fixture, byte[] expectedBytes)
+	{
 		byte[] bytes;
 		try
 		{
@@ -53,8 +59,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 			}
 		}
 
-		Assert.Equal(WinMediaAssets.ReadArtworkBytes(), bytes);
-		Assert.Contains(server.Requests, request => request.Method is "GET" && request.Path == "/" + WinMediaAssets.ArtworkServerPath);
+		Assert.Equal(expectedBytes, bytes);
 
 		static async Task<byte[]> ReadThumbnailAsync(WinMediaManagerFixture fixture)
 		{
@@ -125,7 +130,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	}
 
 	[Fact]
-	public async Task SetMetadataWithoutArtworkLeavesTheThumbnailUntouched()
+	public async Task SetMetadataWithoutArtworkHasNoThumbnail()
 	{
 		SetupWindowsBuilder();
 		await RequireMediaPlayerAsync();
@@ -146,7 +151,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	[InlineData(@"C:\Users\Public\Pictures\cover.png")]
 	[InlineData("file:///C:/Users/Public/Pictures/cover.png")]
 	[InlineData("ftp://localhost/cover.png")]
-	public async Task SetMetadataWithAnArtworkUrlOfAnUnsupportedSchemeLeavesTheThumbnailUntouched(string artworkUrl)
+	public async Task SetMetadataWithAnArtworkUrlOfAnUnsupportedSchemeHasNoThumbnail(string artworkUrl)
 	{
 		SetupWindowsBuilder();
 		await RequireMediaPlayerAsync();
@@ -330,6 +335,247 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "metadata"));
 	}
 
+	// The artwork file lives in the cache folder, as a file the user picked would: not in the app package, where the resource source reads.
+	string CopyArtworkToCacheFolder(string fileName = "artwork.png")
+	{
+		var folder = Directory.CreateDirectory(Path.Combine(FileSystem.CacheDirectory, $"artwork_{Guid.NewGuid():N}")).FullName;
+		RegisterCleanup(() => Directory.Delete(folder, recursive: true));
+		var path = Path.Combine(folder, fileName);
+		File.WriteAllBytes(path, WinMediaAssets.ReadArtworkBytes());
+		return path;
+	}
+
+	static Task AssertPosterIsTheDecodedArtworkAsync(WinMediaManagerFixture fixture) =>
+		WaitUntilOnUiAsync(() => fixture.Element!.PosterSource is BitmapImage { PixelWidth: 16, PixelHeight: 16 }, "The poster never showed the 16 by 16 artwork.");
+
+	static async Task AssertNoArtworkAsync(WinMediaManagerFixture fixture)
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.Null(fixture.Player!.SystemMediaTransportControls.DisplayUpdater.Thumbnail);
+			Assert.Null(fixture.Element!.PosterSource);
+		});
+	}
+
+	[Fact]
+	public async Task UpdateMetadataWithAUriArtworkSourceSetsTheThumbnailAndThePoster()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		await using var server = WinMediaAssets.StartArtworkServer();
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromUri(ArtworkUri(server)));
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsTheArtworkAsync(fixture, server);
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var poster = Assert.IsType<BitmapImage>(fixture.Element!.PosterSource);
+			Assert.Equal(ArtworkUri(server).AbsoluteUri, poster.UriSource.AbsoluteUri, ignoreCase: true);
+		});
+	}
+
+	[Fact]
+	public async Task UpdateMetadataWithAFileArtworkSourceSetsTheThumbnailAndThePoster()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromFile(path));
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+	}
+
+	[Theory]
+	[InlineData("a Uri source")]
+	[InlineData("a File source")]
+	public async Task UpdateMetadataWithAFileUriArtworkSourceSetsTheThumbnail(string sourceType)
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var fileUri = new Uri(CopyArtworkToCacheFolder());
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = sourceType switch
+		{
+			"a Uri source" => MediaSource.FromUri(fileUri),
+			"a File source" => MediaSource.FromFile(fileUri.AbsoluteUri),
+			_ => throw new ArgumentOutOfRangeException(nameof(sourceType), sourceType, null),
+		});
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+	}
+
+	[Fact]
+	public async Task UpdateMetadataWithAResourceArtworkSourceSetsTheThumbnailAndThePoster()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromResource(WinMediaAssets.ArtworkRelativePath));
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+	}
+
+	// UpdateMetadata runs inside the async void MediaOpened handler, where an exception ends the app.
+	[Theory]
+	[InlineData("a missing file")]
+	[InlineData("a missing resource")]
+	public async Task UpdateMetadataWithAMissingArtworkSourceHasNoThumbnailAndKeepsTheEmptyPosterWithoutThrowing(string missing)
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var missingFile = Path.Combine(FileSystem.CacheDirectory, $"missing_{Guid.NewGuid():N}.png");
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = missing switch
+		{
+			"a missing file" => MediaSource.FromFile(missingFile),
+			"a missing resource" => MediaSource.FromResource("mediaplayer/missing.png"),
+			_ => throw new ArgumentOutOfRangeException(nameof(missing), missing, null),
+		});
+
+		var exception = await Record.ExceptionAsync(() => UpdateMetadataAsync(fixture));
+
+		Assert.Null(exception);
+		await AssertNoArtworkAsync(fixture);
+		await InvokeOnMainThreadAsync(() => Assert.True(fixture.Player!.SystemMediaTransportControls.IsEnabled, "An artwork source counts as metadata, loaded or not."));
+	}
+
+	[Fact]
+	public async Task UpdateMetadataIgnoresAStreamArtworkSource()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		using var stream = new MemoryStream(WinMediaAssets.ReadArtworkBytes());
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromStream(stream));
+
+		var exception = await Record.ExceptionAsync(() => UpdateMetadataAsync(fixture));
+
+		Assert.Null(exception);
+		await AssertNoArtworkAsync(fixture);
+		Assert.Equal(0, stream.Position);
+	}
+
+	// The artwork source wins over MetadataArtworkUrl even when the file is the only one of the two that loads: the url is never read.
+	[Fact]
+	public async Task ArtworkSourceReplacesMetadataArtworkUrl()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		await using var server = WinMediaAssets.StartArtworkServer();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view =>
+		{
+			view.MetadataArtworkUrl = ArtworkUri(server).AbsoluteUri;
+			view.MetadataArtworkSource = MediaSource.FromFile(path);
+		});
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+		await InvokeOnMainThreadAsync(() => Assert.Null(((BitmapImage)fixture.Element!.PosterSource).UriSource));
+		Assert.Empty(server.Requests);
+	}
+
+	// The system media controls belong to the player and outlive the media: the thumbnail of the previous media must not stay behind.
+	[Theory]
+	[InlineData("a MetadataArtworkUrl")]
+	[InlineData("a MetadataArtworkSource")]
+	public async Task MediaWithoutArtworkAfterMediaWithArtworkClearsTheThumbnail(string firstArtwork)
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		await using var server = WinMediaAssets.StartArtworkServer();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view =>
+		{
+			view.MetadataTitle = title;
+			switch (firstArtwork)
+			{
+				case "a MetadataArtworkUrl":
+					view.MetadataArtworkUrl = ArtworkUri(server).AbsoluteUri;
+					break;
+				case "a MetadataArtworkSource":
+					view.MetadataArtworkSource = MediaSource.FromFile(path);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(firstArtwork), firstArtwork, null);
+			}
+		});
+		await UpdateMetadataAsync(fixture);
+		await InvokeOnMainThreadAsync(() => Assert.NotNull(fixture.Player!.SystemMediaTransportControls.DisplayUpdater.Thumbnail));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			fixture.View.MetadataArtworkUrl = null;
+			fixture.View.MetadataArtworkSource = null;
+		});
+		await UpdateMetadataAsync(fixture);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var updater = fixture.Player!.SystemMediaTransportControls.DisplayUpdater;
+			Assert.Null(updater.Thumbnail);
+			Assert.Equal(title, updater.MusicProperties.Title);
+		});
+	}
+
+	// A newer source update (or Dispose) changes sourceUpdateVersion while the artwork loads: the artwork of the superseded update must not be
+	// applied. The superseded update is started with the version before the current one, so that nothing depends on the timing of the load.
+	[Fact]
+	public async Task ArtworkThatLoadsWhileANewerSourceStartsIsNotApplied()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view =>
+		{
+			view.MetadataTitle = title;
+			view.MetadataArtworkSource = MediaSource.FromFile(path);
+		});
+		var supersededVersion = WinMediaReflection.GetField<int>(fixture.Manager, "sourceUpdateVersion") - 1;
+
+		await InvokeOnMainThreadAsync(async () => await (ValueTask)WinMediaReflection.Invoke(fixture.Manager, "UpdateMetadataForSourceUpdate", supersededVersion, CancellationToken.None)!);
+
+		await AssertNoArtworkAsync(fixture);
+		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "metadata"));
+	}
+
+	[Fact]
+	public async Task UpdateMetadataWithAnArtworkSourceAfterDisposeDoesNothing()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view =>
+		{
+			view.MetadataTitle = title;
+			view.MetadataArtworkSource = MediaSource.FromFile(path);
+		});
+		await InvokeOnMainThreadAsync(() => fixture.Manager.Dispose());
+
+		var exception = await Record.ExceptionAsync(() => UpdateMetadataAsync(fixture));
+
+		Assert.Null(exception);
+		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "metadata"));
+		await InvokeOnMainThreadAsync(() => Assert.Null(fixture.Element!.PosterSource));
+	}
+
 	[Fact]
 	public async Task OpeningMediaPublishesTheMetadata()
 	{
@@ -492,6 +738,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	[InlineData(nameof(MediaElement.MetadataTitle))]
 	[InlineData(nameof(MediaElement.MetadataArtist))]
 	[InlineData(nameof(MediaElement.MetadataArtworkUrl))]
+	[InlineData(nameof(MediaElement.MetadataArtworkSource))]
 	public async Task SetMetadataWithMetadataSwitchesTheSystemMediaControlsOn(string metadata)
 	{
 		SetupWindowsBuilder();
@@ -509,6 +756,9 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 					break;
 				case nameof(MediaElement.MetadataArtworkUrl):
 					view.MetadataArtworkUrl = ArtworkUri(server).AbsoluteUri;
+					break;
+				case nameof(MediaElement.MetadataArtworkSource):
+					view.MetadataArtworkSource = MediaSource.FromFile(WinMediaAssets.ArtworkPath);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(metadata), metadata, null);
