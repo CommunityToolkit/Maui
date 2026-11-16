@@ -357,6 +357,12 @@ public partial class KeyboardExtensionsTests
 			}
 			finally
 			{
+				if (call is KeyboardCall.Show)
+				{
+					// On API 30+ a hide sent before the input method answers does not cancel the show, which would then land in the next test.
+					_ = await Wait(SoftKeyboardHelpers.IsShowing, SoftKeyboardHelpers.Timeout);
+				}
+
 				await SoftKeyboardHelpers.HideAsync();
 			}
 		}));
