@@ -45,7 +45,8 @@ $script:DeviceTestExitCodeNames = @{
 }
 
 # Test failures (1), crashes (80, 93), hangs (70) and missing results (94) are never retried, so a retry cannot hide a
-# real problem. Get-DeviceTestVerdict never returns one of the codes below for results that contain a failed test, and
+# real problem. The one exception is a known Android platform crash that explains the whole failure (Get-AndroidPlatformCrash).
+# Get-DeviceTestVerdict never returns one of the codes below for results that contain a failed test, and
 # Invoke-DeviceTestWithRetries never retries such a verdict.
 $script:DeviceTestInfraExitCodes = @(78, 81, 83, 84, 86, 88, 89, 90, 91, 92)
 
@@ -1064,6 +1065,7 @@ function Get-DeviceTestVerdict {
         DeviceOs       = $deviceOs
         Attempt        = $Attempt
         Retried        = @()
+        Attempts       = @()
         Directory      = $Directory
         Project        = ''
         Duration       = [System.TimeSpan]::Zero
@@ -1090,10 +1092,31 @@ function New-DeviceTestVerdict {
         DeviceOs       = ''
         Attempt        = 1
         Retried        = @()
+        Attempts       = @()
         Directory      = $Directory
         Project        = ''
         Duration       = [System.TimeSpan]::Zero
     }
+}
+
+function Get-DeviceTestPlatformCrashMessage {
+    param($Verdict, $PlatformCrash, [int]$Number, [string]$Evidence, [bool]$WillRetry, [string]$NotRetriedBecause)
+
+    $outcome = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, 'Attempt {0} ended with {1} ({2})', $Number, $Verdict.ExitCode, $Verdict.ExitCodeName)
+    if ($PlatformCrash.Error) {
+        return "$outcome. The check for known platform crashes failed ($($PlatformCrash.Error)); the leg was not retried."
+    }
+
+    $known = "$outcome in a known platform crash: $($PlatformCrash.Title). Evidence: $Evidence."
+    if ($PlatformCrash.Detail) {
+        $known = "$known $($PlatformCrash.Detail)"
+    }
+
+    if ($WillRetry) {
+        return "$known The leg ran once more; attempt $($Number + 1) decides the result."
+    }
+
+    return "$known It was not retried: $NotRetriedBecause."
 }
 
 function Invoke-DeviceTestWithRetries {
@@ -1102,11 +1125,14 @@ function Invoke-DeviceTestWithRetries {
         [Parameter(Mandatory = $true)]$Project,
         [Parameter(Mandatory = $true)][string]$Directory,
         [Parameter(Mandatory = $true)][scriptblock]$Attempt,
-        [scriptblock]$BeforeRetry
+        [scriptblock]$BeforeRetry,
+        [scriptblock]$FindPlatformCrash
     )
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $retried = @()
+    $attempts = @()
+    $notes = @()
     $number = 1
     while ($true) {
         $verdict = & $Attempt $number
@@ -1114,25 +1140,121 @@ function Invoke-DeviceTestWithRetries {
         $hasFailedTests = ($verdict.Failed + $verdict.Errors) -gt 0
         # An attempt can say that another one cannot help (NoRetry), for example when the device it ran on is gone.
         $noRetry = $null -ne $verdict.PSObject.Properties['NoRetry'] -and $verdict.NoRetry
-        if ($verdict.ExitCode -eq 0 -or -not $isInfrastructureFailure -or $hasFailedTests -or $noRetry -or $number -gt $Context.InfraRetries) {
+        $hasRetryLeft = $number -le $Context.InfraRetries
+        $isFirstRetry = $retried.Count -eq 0
+
+        $platformCrash = $null
+        if ($null -ne $FindPlatformCrash -and $verdict.ExitCode -ne 0 -and -not $isInfrastructureFailure -and -not $noRetry) {
+            try {
+                $found = @(& $FindPlatformCrash $verdict)
+                if ($found.Count -eq 1) {
+                    $platformCrash = $found[0]
+                }
+            }
+            catch {
+                $platformCrash = New-Object PSObject -Property @{ Id = ''; Title = ''; Explained = $false; Blocker = ''; Evidence = @(); Detail = ''; Error = $_.Exception.Message }
+            }
+        }
+
+        $isPlatformCrashRetry = $null -ne $platformCrash -and $platformCrash.Explained -eq $true -and -not $platformCrash.Error
+        $isInfrastructureRetry = $isInfrastructureFailure -and -not $hasFailedTests
+        $willRetry = $verdict.ExitCode -ne 0 -and -not $noRetry -and $hasRetryLeft -and ($isInfrastructureRetry -or ($isPlatformCrashRetry -and $isFirstRetry))
+
+        $attemptRecord = New-Object PSObject -Property ([ordered]@{
+            Attempt           = $number
+            ExitCode          = $verdict.ExitCode
+            ExitCodeName      = $verdict.ExitCodeName
+            Folder            = '.'
+            PlatformCrashId   = ''
+            PlatformCrash     = ''
+            Evidence          = ''
+            Retried           = $willRetry
+            NotRetriedBecause = ''
+        })
+
+        $platformCrashMessage = ''
+        if ($null -ne $platformCrash) {
+            $attemptRecord.PlatformCrashId = $platformCrash.Id
+            $attemptRecord.PlatformCrash = $platformCrash.Title
+            # Every evidence file moves into attempt-N/ with the retry.
+            $evidencePrefix = ''
+            if ($willRetry) {
+                $evidencePrefix = "attempt-$number/"
+            }
+
+            $evidencePath = (@($platformCrash.Evidence | Where-Object { $_ } | ForEach-Object { "$evidencePrefix$_" }) -join '; ')
+
+            $attemptRecord.Evidence = $evidencePath
+            if (-not $willRetry) {
+                if ($platformCrash.Error) {
+                    $attemptRecord.NotRetriedBecause = "the check failed: $($platformCrash.Error)"
+                }
+                elseif (-not $platformCrash.Explained) {
+                    $attemptRecord.NotRetriedBecause = $platformCrash.Blocker
+                }
+                elseif (-not $isFirstRetry) {
+                    $attemptRecord.NotRetriedBecause = 'the single retry was already used'
+                }
+                elseif ($Context.InfraRetries -eq 0) {
+                    $attemptRecord.NotRetriedBecause = 'it would be retried once on CI (-InfraRetries is 0 here)'
+                }
+                else {
+                    $attemptRecord.NotRetriedBecause = 'the single retry was already used'
+                }
+            }
+
+            $platformCrashMessage = Get-DeviceTestPlatformCrashMessage -Verdict $verdict -PlatformCrash $platformCrash -Number $number -Evidence $evidencePath -WillRetry $willRetry -NotRetriedBecause $attemptRecord.NotRetriedBecause
+            $notes += $platformCrashMessage
+        }
+
+        if (-not $willRetry) {
+            $attempts += $attemptRecord
             break
         }
 
-        Write-DeviceTestWarning -Title "Device tests ($($Context.Leg))" -Message "$($Project.Name): attempt $number ended with $($verdict.ExitCode) ($($verdict.ExitCodeName)), an infrastructure failure; retrying."
-        $retried += "$($verdict.ExitCode) ($($verdict.ExitCodeName))"
+        if ($willRetry -and $isPlatformCrashRetry) {
+            Write-DeviceTestWarning -Title "Device tests ($($Context.Leg))" -Message "$($Project.Name): attempt $number ended with $($verdict.ExitCode) ($($verdict.ExitCodeName)) in the known platform crash $($platformCrash.Id); retrying."
+            $retried += "$($verdict.ExitCode) ($($verdict.ExitCodeName)), known platform crash $($platformCrash.Id)"
+        }
+        else {
+            Write-DeviceTestWarning -Title "Device tests ($($Context.Leg))" -Message "$($Project.Name): attempt $number ended with $($verdict.ExitCode) ($($verdict.ExitCodeName)), an infrastructure failure; retrying."
+            $retried += "$($verdict.ExitCode) ($($verdict.ExitCodeName))"
+        }
+
         Move-DeviceTestAttempt -Path $Directory -Attempt $number
+        $attemptRecord.Folder = "attempt-$number"
+        $attempts += $attemptRecord
+        $verdict.Attempts = $attempts
+        if ($platformCrashMessage) {
+            $verdict.Reasons = @($verdict.Reasons) + $platformCrashMessage
+        }
+
+        Write-DeviceTestGateFile -Verdict $verdict -Directory (Join-Path $Directory "attempt-$number")
         if ($null -ne $BeforeRetry) {
-            & $BeforeRetry
+            & $BeforeRetry $platformCrash
         }
 
         $number++
     }
 
     $stopwatch.Stop()
+    if ($notes.Count -gt 0) {
+        $verdict.Reasons = @($verdict.Reasons) + @($notes | Where-Object { @($verdict.Reasons) -notcontains $_ })
+    }
+
     $verdict.Retried = $retried
+    $verdict.Attempts = $attempts
     $verdict.Project = $Project.Name
     $verdict.Duration = $stopwatch.Elapsed
     return $verdict
+}
+
+function Write-DeviceTestGateFile {
+    param($Verdict, [string]$Directory)
+
+    $Verdict | Select-Object ExitCode, ExitCodeName, RunnerExitCode, Total, Passed, Failed, Skipped, Errors, Attempt, Retried, Attempts, Reasons, Warnings, Device, DeviceOs, ResultFiles |
+        ConvertTo-Json -Depth 4 |
+        ForEach-Object { [System.IO.File]::WriteAllText((Join-Path $Directory 'gate.json'), $_, (New-Object System.Text.UTF8Encoding($false))) }
 }
 
 function Write-DeviceTestVerdict {
@@ -1144,9 +1266,7 @@ function Write-DeviceTestVerdict {
         Write-Host "  - $reason"
     }
 
-    $Verdict | Select-Object ExitCode, ExitCodeName, RunnerExitCode, Total, Passed, Failed, Skipped, Errors, Attempt, Retried, Reasons, Warnings, Device, DeviceOs, ResultFiles |
-        ConvertTo-Json -Depth 4 |
-        ForEach-Object { [System.IO.File]::WriteAllText((Join-Path $Verdict.Directory 'gate.json'), $_, (New-Object System.Text.UTF8Encoding($false))) }
+    Write-DeviceTestGateFile -Verdict $Verdict -Directory $Verdict.Directory
 
     if ($Verdict.ExitCode -ne 0) {
         $message = "$($Verdict.Project) on $($Context.Leg): $($Verdict.ExitCode) ($($Verdict.ExitCodeName)). " + ($Verdict.Reasons -join '; ')
@@ -1230,14 +1350,14 @@ function Write-DeviceTestSummary {
     }
 
     foreach ($verdict in $Context.Verdicts) {
-        if ($verdict.ExitCode -eq 0 -and $verdict.Warnings.Count -eq 0) {
+        if ($verdict.ExitCode -eq 0 -and $verdict.Warnings.Count -eq 0 -and @($verdict.Reasons).Count -eq 0) {
             continue
         }
 
         $lines.Add('')
         $lines.Add("#### $($verdict.Project)")
         foreach ($reason in $verdict.Reasons) {
-            $lines.Add("- $(Format-DeviceTestMarkdownText $reason 500)")
+            $lines.Add("- $(Format-DeviceTestMarkdownText $reason 1000)")
         }
 
         foreach ($warning in $verdict.Warnings) {
@@ -1844,4 +1964,393 @@ function Save-AndroidDeviceEvidence {
     Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, 'done in {0} s', $elapsed))
     Write-Host "Saved device evidence ($Phase) to $Directory"
     return $Directory
+}
+
+# Known Android platform crashes that a failed leg may retry once (see Invoke-DeviceTestWithRetries).
+# Strings are matched ordinally: Turkish casing would corrupt these ASCII keywords.
+$script:AndroidCrashDeadlineChecks = 5000
+$script:AndroidCrashDebugWindow = 150
+$script:AndroidRunnerStartMarker = '[Runner executing:'
+$script:AndroidFailedTestPattern = ' DOTNET\s*: \t\[FAIL\] (.*)$'
+$script:AndroidFatalSignalPattern = ' F libc\s*: Fatal signal 11 \(SIGSEGV\), code (-?\d+)(?: \([A-Z_]+\))?, fault addr 0x([0-9a-f]+) in tid (\d+) \(([^)]*)\), pid \d+ \(([^)]*)\)'
+
+# Android 11 lacks the null check of AOSP 162f643 (https://android.googlesource.com/platform/frameworks/native/+/162f643), so Media3's
+# Surface.setFrameRate crashes surfaceflinger. A probe that cannot make that exact tombstone sets these two to -1 and $false.
+$script:AndroidSurfaceFlingerSignalCode = 1
+$script:AndroidSurfaceFlingerRequiresFrames = $true
+$script:AndroidSurfaceFlingerConsoleMarker = 'INSTRUMENTATION_ABORTED: System has crashed.'
+$script:AndroidSurfaceFlingerFrame = 'libsurfaceflinger.so (android::Layer::setFrameRate('
+$script:AndroidSurfaceFlingerTaskFrame = 'SurfaceFlinger12setFrameRate'
+
+# Android 8 updates a SurfaceView's position on a hwui worker, which dereferences a null pointer right after the surface is destroyed.
+$script:AndroidRenderWorkerConsoleMarker = 'shortMsg=Process crashed.'
+$script:AndroidRenderWorkerThreadPattern = '^(hwuiTask\d+|RenderThread)$'
+$script:AndroidSurfaceTeardownMarker = 'SurfaceViewImpl: Surface destroyed.'
+$script:AndroidSurfaceTeardownLayerMarker = 'Failed to find layer (SurfaceView - '
+
+# CameraAndroidTestBase writes these when the camera stack of the emulator is stuck (a CameraDevice.close() that never returns, or CameraX
+# that lost its cameras); every later camera test then fails at once with the same reason.
+$script:AndroidCameraWedgeOrigin = 'The camera stack of this process is wedged; later camera tests fail at once. '
+$script:AndroidCameraWedgeFailFast = 'An earlier camera test left the camera stack of this process wedged, so this camera test can not run. '
+$script:AndroidCameraWedgeDetectors = @('is still inside CameraDeviceImpl.close', 'CameraX lists no camera in two samples')
+
+function Read-AndroidLogcatMarkers {
+    # One streaming pass; the logcat of a long run has about 250,000 lines.
+    param([string]$Path, [string]$PackageName, [datetime]$DeadlineUtc)
+
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    $ordinal = [System.StringComparison]::Ordinal
+    $markers = New-Object PSObject -Property @{
+        Path            = $Path
+        LineCount       = 0
+        RunnerStartLine = 0
+        FailedTests     = New-Object System.Collections.Generic.List[string]
+        Signals         = New-Object System.Collections.Generic.List[object]
+        DebugHeaders    = New-Object System.Collections.Generic.List[object]
+        FrameLines      = New-Object System.Collections.Generic.List[int]
+        TaskFrameLines  = New-Object System.Collections.Generic.List[int]
+        TeardownLines   = New-Object System.Collections.Generic.List[int]
+        WedgedLine      = 0
+        WatchdogLine    = 0
+    }
+
+    if ([datetime]::UtcNow -ge $DeadlineUtc) {
+        throw 'the time budget for reading the logcat ran out before it started'
+    }
+
+    $layerMarker = $script:AndroidSurfaceTeardownLayerMarker + $PackageName + '/'
+    $number = 0
+    foreach ($line in [System.IO.File]::ReadLines($Path)) {
+        $number++
+        if (($number % $script:AndroidCrashDeadlineChecks) -eq 0 -and [datetime]::UtcNow -ge $DeadlineUtc) {
+            throw "the time budget for reading the logcat ran out at line $number"
+        }
+
+        if ($line.IndexOf(' DOTNET', $ordinal) -ge 0) {
+            if ($markers.RunnerStartLine -eq 0 -and $line.IndexOf($script:AndroidRunnerStartMarker, $ordinal) -ge 0) {
+                $markers.RunnerStartLine = $number
+            }
+            elseif ($line.IndexOf("`t[FAIL] ", $ordinal) -ge 0) {
+                $failed = [regex]::Match($line, $script:AndroidFailedTestPattern, [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+                if ($failed.Success) {
+                    $markers.FailedTests.Add($failed.Groups[1].Value.Trim())
+                }
+            }
+        }
+        elseif ($line.IndexOf('Fatal signal 11', $ordinal) -ge 0) {
+            $signal = [regex]::Match($line, $script:AndroidFatalSignalPattern, [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+            $address = [uint64]0
+            if ($signal.Success -and [uint64]::TryParse($signal.Groups[2].Value, [System.Globalization.NumberStyles]::AllowHexSpecifier, $invariant, [ref]$address)) {
+                $markers.Signals.Add((New-Object PSObject -Property @{
+                            Line    = $number
+                            Code    = [int]$signal.Groups[1].Value
+                            Address = $address
+                            Tid     = $signal.Groups[3].Value
+                            Thread  = $signal.Groups[4].Value
+                            Process = $signal.Groups[5].Value
+                        }))
+            }
+        }
+        elseif ($line.IndexOf(' DEBUG', $ordinal) -ge 0) {
+            if ($line.IndexOf('>>> ', $ordinal) -ge 0) {
+                $markers.DebugHeaders.Add((New-Object PSObject -Property @{ Line = $number; Text = $line }))
+            }
+            elseif ($line.IndexOf(' #00 ', $ordinal) -ge 0 -and $line.IndexOf($script:AndroidSurfaceFlingerFrame, $ordinal) -ge 0) {
+                $markers.FrameLines.Add($number)
+            }
+            elseif ($line.IndexOf($script:AndroidSurfaceFlingerTaskFrame, $ordinal) -ge 0) {
+                $markers.TaskFrameLines.Add($number)
+            }
+        }
+        elseif ($line.IndexOf('SurfaceView', $ordinal) -ge 0) {
+            if ($line.IndexOf($script:AndroidSurfaceTeardownMarker, $ordinal) -ge 0 -or $line.IndexOf($layerMarker, $ordinal) -ge 0) {
+                $markers.TeardownLines.Add($number)
+            }
+        }
+        elseif ($line.IndexOf('CameraWedge', $ordinal) -ge 0) {
+            if ($markers.WedgedLine -eq 0 -and $line.IndexOf('WEDGED: ', $ordinal) -ge 0) {
+                $markers.WedgedLine = $number
+            }
+        }
+        elseif ($line.IndexOf('CameraServiceWatchdog triggering abort', $ordinal) -ge 0) {
+            if ($markers.WatchdogLine -eq 0) {
+                $markers.WatchdogLine = $number
+            }
+        }
+    }
+
+    $markers.LineCount = $number
+    return $markers
+}
+
+function Get-AndroidCrashBlocker {
+    param($Markers, $Verdict)
+
+    if ($Markers.RunnerStartLine -eq 0) {
+        return 'the logcat has no runner start line, so it may not cover the whole run'
+    }
+
+    if ($Markers.FailedTests.Count -gt 0) {
+        $names = @($Markers.FailedTests | Select-Object -First 5) -join ', '
+        return "$($Markers.FailedTests.Count) test(s) failed before the crash and are not explained by it (first: $names)"
+    }
+
+    if (($Verdict.Failed + $Verdict.Errors) -gt 0) {
+        return "the results file reports $($Verdict.Failed + $Verdict.Errors) failed test(s)"
+    }
+
+    return ''
+}
+
+function Test-AndroidTextInFile {
+    param([string]$Path, [string]$Text)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $false
+    }
+
+    return [System.IO.File]::ReadAllText($Path).IndexOf($Text, [System.StringComparison]::Ordinal) -ge 0
+}
+
+function Test-AndroidSurfaceFlingerSetFrameRateCrash {
+    param($Markers)
+
+    $ordinal = [System.StringComparison]::Ordinal
+    foreach ($signal in $Markers.Signals) {
+        if ($signal.Thread -cne 'surfaceflinger' -or $signal.Process -cne 'surfaceflinger' -or $signal.Address -ge 0x10000) {
+            continue
+        }
+
+        if ($script:AndroidSurfaceFlingerSignalCode -ge 0 -and $signal.Code -ne $script:AndroidSurfaceFlingerSignalCode) {
+            continue
+        }
+
+        $last = $signal.Line + $script:AndroidCrashDebugWindow
+        $isSurfaceFlinger = @($Markers.DebugHeaders | Where-Object { $_.Line -gt $signal.Line -and $_.Line -le $last -and $_.Text.IndexOf('>>> /system/bin/surfaceflinger <<<', $ordinal) -ge 0 }).Count -gt 0
+        if (-not $isSurfaceFlinger) {
+            continue
+        }
+
+        if ($script:AndroidSurfaceFlingerRequiresFrames) {
+            $hasFrame = @($Markers.FrameLines | Where-Object { $_ -gt $signal.Line -and $_ -le $last }).Count -gt 0
+            $hasTask = @($Markers.TaskFrameLines | Where-Object { $_ -gt $signal.Line -and $_ -le $last }).Count -gt 0
+            if (-not ($hasFrame -and $hasTask)) {
+                continue
+            }
+        }
+
+        return $signal
+    }
+
+    return $null
+}
+
+function Test-AndroidSurfaceViewRenderWorkerCrash {
+    param($Markers, [string]$PackageName)
+
+    $ordinal = [System.StringComparison]::Ordinal
+    foreach ($signal in $Markers.Signals) {
+        if ($signal.Address -ge 0x1000 -or -not [regex]::IsMatch($signal.Thread, $script:AndroidRenderWorkerThreadPattern, [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)) {
+            continue
+        }
+
+        $last = $signal.Line + $script:AndroidCrashDebugWindow
+        $threadText = "tid: $($signal.Tid), name: $($signal.Thread) "
+        $appText = ">>> $PackageName <<<"
+        $isApp = @($Markers.DebugHeaders | Where-Object { $_.Line -gt $signal.Line -and $_.Line -le $last -and $_.Text.IndexOf($threadText, $ordinal) -ge 0 -and $_.Text.IndexOf($appText, $ordinal) -ge 0 }).Count -gt 0
+        if (-not $isApp) {
+            continue
+        }
+
+        $first = $signal.Line - 300
+        $last = $signal.Line + 20
+        $afterTeardown = @($Markers.TeardownLines | Where-Object { $_ -ge $first -and $_ -le $last }).Count -gt 0
+        if ($afterTeardown) {
+            return $signal
+        }
+    }
+
+    return $null
+}
+
+function Test-AndroidCameraWedge {
+    param($Verdict)
+
+    $ordinal = [System.StringComparison]::Ordinal
+    $failures = @($Verdict.Failures)
+    $origins = @($failures | Where-Object { $_.Message.IndexOf($script:AndroidCameraWedgeOrigin, $ordinal) -ge 0 })
+    $failFast = @($failures | Where-Object { $_.Message.StartsWith($script:AndroidCameraWedgeFailFast, $ordinal) })
+    if ($origins.Count -eq 0 -and $failFast.Count -eq 0) {
+        return $null
+    }
+
+    $blocker = ''
+    $origin = $null
+    $detector = @()
+    $others = @($failures | Where-Object { $origins -notcontains $_ -and $failFast -notcontains $_ })
+    if ($Verdict.Errors -gt 0) {
+        $blocker = "the results report $($Verdict.Errors) assembly error(s)"
+    }
+    elseif ($origins.Count -ne 1) {
+        $blocker = "$($origins.Count) tests report the wedge (exactly one is expected)"
+    }
+    else {
+        $origin = $origins[0]
+        $detector = @($script:AndroidCameraWedgeDetectors | Where-Object { $origin.Message.IndexOf($_, $ordinal) -ge 0 } | Select-Object -First 1)
+        $mismatched = @($failFast | Where-Object {
+                $reason = $_.Message.Substring($script:AndroidCameraWedgeFailFast.Length).Trim()
+                $reason.Length -eq 0 -or $origin.Message.IndexOf($reason, $ordinal) -lt 0
+            })
+        if ($detector.Count -eq 0) {
+            $blocker = 'the wedge message names no known detector'
+        }
+        elseif ($others.Count -gt 0) {
+            $names = @($others | Select-Object -First 5 | ForEach-Object { $_.Name }) -join ', '
+            $blocker = "$($others.Count) failed test(s) do not carry the wedge reason (first: $names)"
+        }
+        elseif ($mismatched.Count -gt 0) {
+            $blocker = "$($mismatched.Count) fail-fast test(s) carry another reason than the first wedge"
+        }
+        elseif (($Verdict.Failed + $Verdict.Errors) -ne $failures.Count) {
+            $blocker = "the results report $($Verdict.Failed + $Verdict.Errors) failed test(s), but only $($failures.Count) are listed"
+        }
+    }
+
+    return New-Object PSObject -Property @{
+        Origin        = $origin
+        FailFastCount = $failFast.Count
+        Detector      = $(if ($detector.Count -gt 0) { [string]$detector[0] } else { '' })
+        Blocker       = $blocker
+    }
+}
+
+function Get-AndroidCameraWedgeDetail {
+    param($Wedge)
+
+    if ($null -eq $Wedge.Origin) {
+        return ''
+    }
+
+    $message = [string]$Wedge.Origin.Message
+    $wedgeStart = $message.IndexOf($script:AndroidCameraWedgeOrigin, [System.StringComparison]::Ordinal)
+    $before = $message.Substring(0, [Math]::Max($wedgeStart, 0))
+    $before = $before.Replace('System.AggregateException : The test left failures behind (cleanup, or exceptions that escaped from async void code).', '')
+    $own = ([regex]::Replace($before, '\s+', ' ')).Trim()
+    $own = [regex]::Replace([regex]::Replace($own, '^\(+', ''), '(?:\)\s*)?\(+\s*$', '')
+    if ($own.Length -gt 300) {
+        $own = $own.Substring(0, 300) + '...'
+    }
+
+    $detail = 'The origin test'
+    if ($own) {
+        $detail += " failed with '$own'."
+    }
+    else {
+        $detail += ' failed with the wedge reason only.'
+    }
+
+    return "$detail $($Wedge.FailFastCount) more camera test(s) failed fast on the same reason."
+}
+
+function Get-AndroidPlatformCrash {
+    # Never throws and never changes the verdict: an error here must not turn into a retry or a pass.
+    param($Verdict, [string]$Directory, [int]$ApiLevel, [string]$PackageName, [int]$TimeoutSeconds = 60)
+
+    try {
+        $noRetry = $null -ne $Verdict.PSObject.Properties['NoRetry'] -and $Verdict.NoRetry
+        if ($noRetry -or $Verdict.ExitCode -eq 0) {
+            return $null
+        }
+
+        $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
+        $exitCode = [int]$Verdict.ExitCode
+        $consolePath = Join-Path $Directory 'xharness-console.log'
+        $logcat = @(Get-ChildItem -LiteralPath $Directory -Filter 'adb-logcat-*.log' -File -ErrorAction SilentlyContinue | Select-Object -First 1)
+
+        $isSurfaceFlinger = $ApiLevel -eq 30 -and ($exitCode -eq 80 -or $exitCode -eq 82) -and (Test-AndroidTextInFile -Path $consolePath -Text $script:AndroidSurfaceFlingerConsoleMarker)
+        $isRenderWorker = ($ApiLevel -eq 26 -or $ApiLevel -eq 27) -and $exitCode -eq 80 -and (Test-AndroidTextInFile -Path $consolePath -Text $script:AndroidRenderWorkerConsoleMarker)
+        if (($isSurfaceFlinger -or $isRenderWorker) -and $logcat.Count -gt 0) {
+            $markers = Read-AndroidLogcatMarkers -Path $logcat[0].FullName -PackageName $PackageName -DeadlineUtc $deadline
+            if ($isSurfaceFlinger) {
+                $signal = Test-AndroidSurfaceFlingerSetFrameRateCrash -Markers $markers
+                if ($null -ne $signal) {
+                    return New-AndroidPlatformCrash -Id 'surfaceflinger-setframerate-api30' `
+                        -Title 'Android 11 SurfaceFlinger crash in Layer::setFrameRate (the API 30 image lacks AOSP 162f643)' `
+                        -Blocker (Get-AndroidCrashBlocker -Markers $markers -Verdict $Verdict) -Evidence @("$($logcat[0].Name) line $($signal.Line)")
+                }
+            }
+            else {
+                $signal = Test-AndroidSurfaceViewRenderWorkerCrash -Markers $markers -PackageName $PackageName
+                if ($null -ne $signal) {
+                    return New-AndroidPlatformCrash -Id 'surfaceview-renderworker-api26-27' `
+                        -Title "Android 8 SurfaceView render-worker crash (SIGSEGV on $($signal.Thread) right after a SurfaceView teardown)" `
+                        -Blocker (Get-AndroidCrashBlocker -Markers $markers -Verdict $Verdict) -Evidence @("$($logcat[0].Name) line $($signal.Line)")
+                }
+            }
+
+            return $null
+        }
+
+        if (($ApiLevel -eq 32 -or $ApiLevel -eq 33) -and $exitCode -eq 1) {
+            $wedge = Test-AndroidCameraWedge -Verdict $Verdict
+            if ($null -eq $wedge) {
+                return $null
+            }
+
+            $evidence = @('testResults.xml')
+            if ($null -ne $wedge.Origin) {
+                $evidence = @("testResults.xml: $($wedge.Origin.Name)")
+            }
+
+            # The wedge text comes from the results; the logcat only corroborates it and may have rotated.
+            if ($logcat.Count -gt 0) {
+                try {
+                    $markers = Read-AndroidLogcatMarkers -Path $logcat[0].FullName -PackageName $PackageName -DeadlineUtc $deadline
+                    if ($markers.WedgedLine -gt 0) {
+                        $evidence += "$($logcat[0].Name) line $($markers.WedgedLine) (CameraWedge: WEDGED)"
+                    }
+                    if ($markers.WatchdogLine -gt 0) {
+                        $evidence += "$($logcat[0].Name) line $($markers.WatchdogLine) (CameraServiceWatchdog triggering abort)"
+                    }
+                }
+                catch {
+                    $evidence += "$($logcat[0].Name) (could not be read for corroboration)"
+                }
+            }
+
+            $cause = 'CameraX lost its cameras'
+            if ($wedge.Detector -ceq $script:AndroidCameraWedgeDetectors[0]) {
+                $cause = 'stuck CameraDevice.close'
+            }
+
+            return New-AndroidPlatformCrash -Id 'camera-wedge-api32-33' -Title "Android 12/13 emulator camera wedge ($cause)" -Blocker $wedge.Blocker -Evidence $evidence -Detail (Get-AndroidCameraWedgeDetail -Wedge $wedge)
+        }
+    }
+    catch {
+        return New-Object PSObject -Property @{
+            Id        = ''
+            Title     = 'the check for known platform crashes'
+            Explained = $false
+            Blocker   = 'the check failed'
+            Evidence  = @()
+            Detail    = ''
+            Error     = $_.Exception.Message
+        }
+    }
+
+    return $null
+}
+
+function New-AndroidPlatformCrash {
+    param([string]$Id, [string]$Title, [string]$Blocker, [string[]]$Evidence, [string]$Detail = '')
+
+    return New-Object PSObject -Property @{
+        Id        = $Id
+        Title     = $Title
+        Explained = [string]::IsNullOrEmpty($Blocker)
+        Blocker   = $Blocker
+        Evidence  = @($Evidence)
+        Detail    = $Detail
+        Error     = ''
+    }
 }

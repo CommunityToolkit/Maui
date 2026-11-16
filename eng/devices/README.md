@@ -120,7 +120,7 @@ Common to every script:
 | `-RequireCapabilities` | `$env:DEVICE_TEST_REQUIRE_CAPABILITIES` | capabilities this machine must offer; their tests fail instead of skipping without them |
 | `-Timeout` | `00:30:00` | limit for one app's test run |
 | `-LaunchTimeout` | `00:10:00` | XHarness launch timeout (Android, iOS, Mac Catalyst) |
-| `-InfraRetries` | 1 on CI, 0 locally | retries for infrastructure failures only (see below) |
+| `-InfraRetries` | 1 on CI, 0 locally | retries for infrastructure failures and three known Android platform crashes (see below) |
 | `-BuildArgs` | none | extra `dotnet build`/`publish` arguments; write properties as `/p:Name=Value`, because PowerShell reads `-p:...` as a parameter name |
 
 Platform parameters:
@@ -203,7 +203,23 @@ With several apps the script returns the first non-zero code in project order.
 
 The XHarness exit code is never trusted on its own, because XHarness reports SUCCESS when an iOS app crashes before its test runner starts and for every Mac Catalyst crash: it treats the missing results file as a device communication problem. After every run `devices-shared.ps1` fails it when the results file is missing or unreadable, when it reports 0 tests or only skipped tests, when a test failed or the results contain errors, when XHarness matched a crash report to the app (`appleLaunch.crashReport.matchedReport`), unless the copied `.ips` names another simulator than the run's (simulators share one `DiagnosticReports` folder, so XHarness can match a parallel run's crash by process name; the gate then warns and ignores it, while an unreadable report still fails the run), or when XHarness says the results file does not exist (`appleLaunch.testResultFile.exists`). A failed test is reported as 1 even when XHarness also returned an infrastructure code (for example 88 because the logcat dump failed after the results were pulled). On Windows a crash is recognized from the app's exit code, or from the app being gone right after activation, when it wrote no results.
 
-Only infrastructure failures (78, 81, 83, 84, 86, 88, 89, 90, 91, 92) are retried, once on CI, and never when the results contain a failed test. Test failures, recognized crashes, hangs and missing results are never retried. Some crashes cannot be told apart from infrastructure failures and are retried once: an iOS app that dies before its runner connects without a matching crash report (92), and a packaged Windows app that dies before activation completes (83). The failed attempt's files stay in `attempt-1/` and the summary says `RETRIED`. A Mac Catalyst retry first stops the app that the previous attempt left running, because XHarness kills only its launcher when the launch times out.
+Infrastructure failures (78, 81, 83, 84, 86, 88, 89, 90, 91, 92) are retried once on CI, unless the results contain a failed test. The only other retry is the one for the three known Android platform crashes below. Every other test failure, recognized crash, hang and missing result is never retried. Some crashes cannot be told apart from infrastructure failures and are retried once: an iOS app that dies before its runner connects without a matching crash report (92), and a packaged Windows app that dies before activation completes (83). The failed attempt's files stay in `attempt-1/` and the summary says `RETRIED`. A Mac Catalyst retry first stops the app that the previous attempt left running, because XHarness kills only its launcher when the launch times out.
+
+#### Known Android platform crashes
+
+`android.ps1` also retries a failed attempt when one of these signatures fully explains it. It uses the same single retry on CI, and only when the leg has not retried yet, so a platform crash never adds a second retry, whatever `-InfraRetries` says. The checks read the failed attempt's logcat, `xharness-console.log` and test results with ordinal string matching and a 60 s budget; a check that fails or times out never retries and never changes the result.
+
+| Id | Where | What is matched | Why it is the platform's bug |
+|---|---|---|---|
+| `surfaceflinger-setframerate-api30` | API 30, exit 80 or 82 | `INSTRUMENTATION_ABORTED: System has crashed.`, and a SIGSEGV of `surfaceflinger` at an address below 0x10000 whose backtrace starts in `android::Layer::setFrameRate(` called from SurfaceFlinger's `setFrameRate` task | Media3's `Surface.setFrameRate` reaches a null dereference that the API 30 image lacks the fix for ([AOSP 162f643](https://android.googlesource.com/platform/frameworks/native/+/162f643)); no toolkit code runs in surfaceflinger |
+| `surfaceview-renderworker-api26-27` | API 26-27, exit 80 | `shortMsg=Process crashed.`, and a SIGSEGV of the app on a `hwuiTask<n>` or `RenderThread` thread at an address below 0x1000, right after a SurfaceView teardown (`SurfaceViewImpl: Surface destroyed.` or SurfaceFlinger's `Failed to find layer (SurfaceView - <app>/`) | On Android 8 the only hwui frame work is the SurfaceView position updater, which crashes right after the surface is destroyed |
+| `camera-wedge-api32-33` | API 32-33, exit 1 | exactly one failed test with the camera-wedge message (`The camera stack of this process is wedged; later camera tests fail at once.` plus a stuck `CameraDeviceImpl.close` or CameraX lost its cameras), and every other failed test is the fail-fast `An earlier camera test left the camera stack of this process wedged` with the same reason | The emulator's camera services stop answering; the origin test may carry its own body failure; the summary note quotes it (first 300 characters before the wedge text) and counts the fail-fast tests, and `attempt-1/testResults.xml` has every message |
+
+The two crash signatures also need the logcat to hold the runner's start line, no `[FAIL]` line and no failed test in the results: a crash after a genuine failure is not retried, and the summary names the failure. A mix of explained and unexplained failures is never retried either.
+
+Before a `camera-wedge-api32-33` retry, `android.ps1` kills the camera provider and cameraserver and waits up to 60 s for cameraserver to list a camera again. The first attempt's files stay in `attempt-1/` with their own `gate.json`.
+
+Every match is reported, retried or not: the summary row says `RETRIED after 80 (APP_CRASH), known platform crash <id>`, with one note below it; `gate.json` has an `Attempts` array (folder, exit code, signature, evidence, whether it was retried, and why not) and the same note in `Reasons`; and the job log has a warning annotation when the retry starts. The evidence names the files of the failed attempt as `attempt-1/...`. A local run (`-InfraRetries` 0) reports a match as one that would be retried once on CI.
 
 ## Code coverage
 

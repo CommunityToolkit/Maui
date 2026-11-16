@@ -213,7 +213,7 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 * A failed CI run blocks a release. Keep every unit-test and device-test check green.
 * Fixing a flaky test is welcome: find the race (in the test, the library or the platform), prove it with evidence (logs, stacks, repeated runs) and fix the cause.
 * Never delete, skip, weaken or blanket-retry a valid test to get green. Improve the test instead.
-* Retry only infrastructure failures and proven platform crashes with a narrow signature, as `eng/devices` does, and report every retry in the run summary.
+* Retry only infrastructure failures and proven platform crashes with a narrow signature. `eng/devices` retries a leg once on CI for infrastructure failures and for the three Android platform crashes listed in `eng/devices/README.md`, only when the crash explains every failure, and shows every retry in the run summary and `gate.json`.
 
 ## Submitting Contributions
 1.	Fork the repository and create a new branch for your changes.

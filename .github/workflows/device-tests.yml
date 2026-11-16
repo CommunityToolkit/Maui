@@ -310,7 +310,8 @@ jobs:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
         runs-on: ubuntu-24.04
-        timeout-minutes: 90
+        # Room for the one retry of a known platform crash, which runs a second attempt of up to 50 minutes.
+        timeout-minutes: 120
         strategy:
             fail-fast: false
             matrix:

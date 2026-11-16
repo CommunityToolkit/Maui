@@ -410,7 +410,7 @@ function Find-AndroidUiThreadWatchdogInLog {
 }
 
 function Invoke-AndroidDeviceTests {
-    param($Context, $Project, [string]$Adb, [string]$Serial, [string]$Abi, $CoverageSession)
+    param($Context, $Project, [string]$Adb, [string]$Serial, [string]$Abi, $CoverageSession, [int]$ApiLevel)
 
     $androidOutput = Join-Path $Context.Results $Project.Name
     Initialize-DeviceTestResultsDirectory -Path $androidOutput
@@ -545,13 +545,67 @@ function Invoke-AndroidDeviceTests {
 
         $verdict
     } -BeforeRetry {
+        param($platformCrash)
+
         # Waiting only helps a device that is still listed (offline, or booting again)
         if (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial) {
             $retryError = Wait-AndroidDevice -Adb $Adb -Serial $Serial -TimeoutSeconds 120
             if ($retryError) {
                 Write-DeviceTestWarning $retryError
             }
+
+            # A stuck camera close or lost CameraX state lives in the emulator's camera services, which outlive the app.
+            if ($null -ne $platformCrash -and $platformCrash.Id -ceq 'camera-wedge-api32-33') {
+                Restart-AndroidCameraStack -Adb $Adb -Serial $Serial
+            }
         }
+    } -FindPlatformCrash {
+        param($attemptVerdict)
+
+        Get-AndroidPlatformCrash -Verdict $attemptVerdict -Directory $androidOutput -ApiLevel $ApiLevel -PackageName $applicationId
+    }
+}
+
+function Restart-AndroidCameraStack {
+    # Best effort: init restarts both services after the kill. The retry runs either way, and its own result decides.
+    param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds = 60)
+
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    $getServerId = {
+        $processes = Get-AndroidEvidenceProcesses -PsOutput (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('ps', '-A') -TimeoutSeconds 20)
+        $server = @($processes | Where-Object { $_.Name -ceq 'cameraserver' } | Select-Object -First 1)
+        if ($server.Count -gt 0) { return $server[0].Id }
+        return 0
+    }
+
+    try {
+        [void](Enable-AndroidRootShell -Adb $Adb -Serial $Serial)
+        $processes = Get-AndroidEvidenceProcesses -PsOutput (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('ps', '-A') -TimeoutSeconds 20)
+        $oldServerId = 0
+        $oldServer = @($processes | Where-Object { $_.Name -ceq 'cameraserver' } | Select-Object -First 1)
+        if ($oldServer.Count -gt 0) { $oldServerId = $oldServer[0].Id }
+        $victims = @($processes | Where-Object { $_.Name.IndexOf('camera.provider', [System.StringComparison]::Ordinal) -ge 0 -or $_.Name -ceq 'cameraserver' })
+        foreach ($victim in $victims) {
+            [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('kill', '-9', "$($victim.Id)") -TimeoutSeconds 10)
+        }
+
+        $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+        while ((Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 2
+            $serverId = & $getServerId
+            $dump = [string](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('dumpsys', '-t', '10', 'media.camera') -TimeoutSeconds 20)
+            $count = 0
+            $found = [regex]::Match($dump, 'Number of camera devices: (\d+)', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+            if ($serverId -ne 0 -and $serverId -ne $oldServerId -and $found.Success -and [int]::TryParse($found.Groups[1].Value, [System.Globalization.NumberStyles]::None, $invariant, [ref]$count) -and $count -ge 1) {
+                Write-Host ([string]::Format($invariant, 'Camera stack restarted: cameraserver pid {0} -> {1}, {2} camera device(s)', $oldServerId, $serverId, $count))
+                return
+            }
+        }
+
+        Write-DeviceTestWarning "The camera stack did not report a camera again within $TimeoutSeconds s of its restart; the retry runs anyway."
+    }
+    catch {
+        Write-DeviceTestWarning "Restarting the camera stack failed ($($_.Exception.Message)); the retry runs anyway."
     }
 }
 
@@ -646,6 +700,8 @@ try {
             }
 
             $apiLevel = Invoke-AndroidShell -Adb $adbPath -Serial $serial -Command @('getprop', 'ro.build.version.sdk')
+            $apiLevelNumber = 0
+            [void][int]::TryParse([string]$apiLevel, [System.Globalization.NumberStyles]::None, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$apiLevelNumber)
             $context.DeviceDescription = "$serial, API $apiLevel, $abi"
         }
 
@@ -657,7 +713,7 @@ try {
                 $verdict = New-DeviceTestVerdict -ExitCode 81 -Directory (Join-Path $context.Results $item.Name) -Reason $deviceError
             }
             else {
-                $verdict = Invoke-AndroidDeviceTests -Context $context -Project $item -Adb $adbPath -Serial $serial -Abi $abi -CoverageSession $coverageSession
+                $verdict = Invoke-AndroidDeviceTests -Context $context -Project $item -Adb $adbPath -Serial $serial -Abi $abi -CoverageSession $coverageSession -ApiLevel $apiLevelNumber
             }
 
             $verdict.Project = $item.Name
