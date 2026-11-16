@@ -233,6 +233,12 @@ partial class CameraManager
 			platformView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
 
+		// Android 8.0 and 8.1 can crash natively when a SurfaceView is removed while its position updates run on a render thread (AOSP 2cafd8b44d0b)
+		if (OperatingSystem.IsAndroidVersionAtLeast(26) && !OperatingSystem.IsAndroidVersionAtLeast(28))
+		{
+			platformView.SetImplementationMode(NativePlatformCameraPreviewView.ImplementationMode.Compatible);
+		}
+
 		UsePreviewView(platformView);
 
 		return platformView;
