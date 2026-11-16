@@ -358,11 +358,8 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 			}
 		}
 
-		public void Dispose()
-		{
-			Looper.MainLooper!.SetMessageLogging(null);
-			printer.Dispose();
-		}
+		// The printer is not disposed: the looper prints the end of the message that is running now through the printer it read before it was reset
+		public void Dispose() => Looper.MainLooper!.SetMessageLogging(null);
 
 		void OnMessageFinished()
 		{
