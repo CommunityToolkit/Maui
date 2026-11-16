@@ -109,6 +109,83 @@ function Invoke-AndroidShell {
     return $result.Output.Trim()
 }
 
+function Enable-AndroidRootShell {
+    # debuggerd, kill -3 and the binder logs need root. adbd restarts to get it, which would end a running xharness, so this runs before xharness starts.
+    param([string]$Adb, [string]$Serial)
+
+    try {
+        if ((Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('id', '-u') -TimeoutSeconds 10) -ceq '0') {
+            return $true
+        }
+
+        $started = Get-Date
+        $root = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'root') -TimeoutSeconds 30
+        [void](Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'wait-for-device') -TimeoutSeconds 60)
+        $rootDeadline = (Get-Date).AddSeconds(10)
+        do {
+            if ((Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('id', '-u') -TimeoutSeconds 10) -ceq '0') {
+                $seconds = [int][Math]::Round(((Get-Date) - $started).TotalSeconds)
+                $script:AndroidRootedSerial = $Serial
+                Write-Host ([string]::Format([System.Globalization.CultureInfo]::InvariantCulture, 'adbd on {0} runs as root ({1} s)', $Serial, $seconds))
+                return $true
+            }
+
+            Start-Sleep -Seconds 1
+        } while ((Get-Date) -lt $rootDeadline)
+
+        Write-Host "adbd on $Serial stays unrooted ($(($root.Output + $root.Error).Trim())); the device evidence of a failing run will be partial."
+    }
+    catch {
+        Write-Host "adbd on $Serial stays unrooted ($($_.Exception.Message)); the device evidence of a failing run will be partial."
+    }
+
+    return $false
+}
+
+function Start-AndroidEvidenceWatch {
+    # A job and not a timer event: the main runspace is blocked in xharness's pipeline, which prints nothing while the app hangs.
+    param([string]$Adb, [string]$Serial, [string]$PackageName, [string]$Directory, [datetime]$DeadlineUtc)
+
+    try {
+        return Start-Job -ArgumentList @((Join-Path $PSScriptRoot 'devices-shared.ps1'), $Adb, $Serial, $PackageName, $Directory, $DeadlineUtc.Ticks) -ScriptBlock {
+            param($sharedScript, $adb, $serial, $packageName, $directory, $deadlineTicks)
+            . $sharedScript
+            $wait = ([datetime]::new([long]$deadlineTicks, [System.DateTimeKind]::Utc) - [datetime]::UtcNow).TotalSeconds
+            if ($wait -gt 0) { Start-Sleep -Seconds ([int][Math]::Ceiling($wait)) }
+            [void](Save-AndroidDeviceEvidence -Adb $adb -Serial $serial -PackageName $packageName -Directory $directory -Phase 'at -Timeout, while xharness still waited for the app')
+        }
+    }
+    catch {
+        Write-DeviceTestWarning "The device evidence watch did not start: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Stop-AndroidEvidenceWatch {
+    # Lets a watch that is due finish, and says out loud when it failed, because its output and errors are otherwise lost.
+    param($Job, [bool]$DeadlinePassed)
+
+    if ($null -eq $Job) {
+        return
+    }
+
+    if ($DeadlinePassed) {
+        [void](Wait-Job -Job $Job -Timeout $script:AndroidEvidenceGraceSeconds -ErrorAction SilentlyContinue)
+    }
+
+    $stillRunning = $Job.State -eq 'Running'
+    Stop-Job -Job $Job -ErrorAction SilentlyContinue
+    Receive-Job -Job $Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors 6>$null
+    $failed = $Job.State -eq 'Failed' -or @($jobErrors).Count -gt 0
+    $stillRunningPastDeadline = $DeadlinePassed -and $stillRunning
+    if ($failed -or $stillRunningPastDeadline) {
+        $detail = if (@($jobErrors).Count -gt 0) { "$($jobErrors[0])" } elseif ($stillRunningPastDeadline) { 'it was still running when the grace period ended' } else { "job state $($Job.State)" }
+        Write-DeviceTestWarning "The device evidence watch did not finish: $detail"
+    }
+
+    Remove-Job -Job $Job -Force -ErrorAction SilentlyContinue
+}
+
 function Wait-AndroidDevice {
     param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds, [System.Diagnostics.Process]$Process)
 
@@ -359,7 +436,8 @@ function Invoke-AndroidDeviceTests {
         "--device-id=$Serial",
         "--device-arch=$Abi",
         "--output-directory=$androidOutput",
-        "--timeout=$($Context.Timeout)",
+        # The evidence watch needs the app alive at -Timeout, and xharness uninstalls it at its own timeout.
+        "--timeout=$([System.TimeSpan]::FromSeconds($Context.TimeoutSeconds + $script:AndroidEvidenceGraceSeconds).ToString('c', [System.Globalization.CultureInfo]::InvariantCulture))",
         "--launch-timeout=$($Context.LaunchTimeout)",
         '--verbosity=Debug',
         "--arg=TestFilter=$($Context.TestFilter)"
@@ -379,6 +457,8 @@ function Invoke-AndroidDeviceTests {
             $goneVerdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true
             return $goneVerdict
         }
+
+        [void](Enable-AndroidRootShell -Adb $Adb -Serial $Serial)
 
         $settleStart = Get-Date
         $settleWarning = Wait-AndroidBroadcastsIdle -Adb $Adb -Serial $Serial
@@ -401,8 +481,26 @@ function Invoke-AndroidDeviceTests {
         # when the run ended. Each attempt sets it again because the size does not survive a restart of the device.
         [void](Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'logcat', '-G', '64M') -TimeoutSeconds 30)
 
-        $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
+        $evidenceDirectory = Join-Path $androidOutput 'device-evidence'
+        $watchDeadlineUtc = [datetime]::UtcNow.AddSeconds($Context.TimeoutSeconds)
+        $evidenceWatch = Start-AndroidEvidenceWatch -Adb $Adb -Serial $Serial -PackageName $applicationId -Directory $evidenceDirectory -DeadlineUtc $watchDeadlineUtc
+        try {
+            $androidExitCode = Invoke-XHarness -ArgumentList $androidArguments -OutputDirectory $androidOutput
+        }
+        finally {
+            $ranPastTimeout = [datetime]::UtcNow -ge $watchDeadlineUtc
+            Stop-AndroidEvidenceWatch -Job $evidenceWatch -DeadlinePassed $ranPastTimeout
+        }
+
         $verdict = Get-DeviceTestVerdict -Platform 'android' -Directory $androidOutput -RunnerExitCode $androidExitCode -Attempt $attemptNumber
+        # The grace period beyond -Timeout must never turn a run that was still going at -Timeout into anything but a timeout.
+        if ($ranPastTimeout -and $verdict.ExitCode -ne 70) {
+            $xharnessResult = "$($verdict.ExitCode) ($($verdict.ExitCodeName))"
+            $verdict.ExitCode = 70
+            $verdict.ExitCodeName = Get-DeviceTestExitCodeName 70
+            $verdict.Reasons = @($verdict.Reasons) + "the run was still going at -Timeout ($($Context.Timeout)), and it counts as timed out whatever XHarness reports afterwards (it ended with $xharnessResult within the $($script:AndroidEvidenceGraceSeconds) s it waits longer)"
+        }
+
         if ($dialog.Warning) {
             $verdict.Warnings = @($verdict.Warnings) + $dialog.Warning
         }
@@ -429,6 +527,22 @@ function Invoke-AndroidDeviceTests {
             $verdict | Add-Member -NotePropertyName 'NoRetry' -NotePropertyValue $true -Force
         }
 
+        # Every failure, test failures included: an in-app SIGQUIT and a cameraserver watchdog abort leave their stacks only in /data/anr and
+        # /data/tombstones. This runs before the retry's reinstall and before the emulator stops.
+        if ($verdict.ExitCode -ne 0 -and -not (Test-Path -LiteralPath $evidenceDirectory) -and (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {
+            try {
+                [void](Enable-AndroidRootShell -Adb $Adb -Serial $Serial)
+                [void](Save-AndroidDeviceEvidence -Adb $Adb -Serial $Serial -PackageName $applicationId -Directory $evidenceDirectory -Phase "after exit code $($verdict.ExitCode) ($($verdict.ExitCodeName))")
+            }
+            catch {
+                Write-DeviceTestWarning "Collecting device evidence failed: $($_.Exception.Message)"
+            }
+        }
+
+        if (Test-Path -LiteralPath $evidenceDirectory) {
+            $verdict | Add-Member -NotePropertyName 'Evidence' -NotePropertyValue $evidenceDirectory -Force
+        }
+
         $verdict
     } -BeforeRetry {
         # Waiting only helps a device that is still listed (offline, or booting again)
@@ -442,6 +556,7 @@ function Invoke-AndroidDeviceTests {
 }
 
 $exitCode = 71
+$script:AndroidRootedSerial = ''
 $emulatorInstance = $null
 $adbPath = ''
 $coverageSession = $null
@@ -562,6 +677,12 @@ catch {
 finally {
     # Only when an error stopped the run: reports the coverage recorded so far and puts the original toolkit assemblies back.
     Complete-DeviceTestCoverage -Session $coverageSession
+
+    # Leaves a developer's emulator as it was; an emulator this script stops anyway needs no unroot.
+    $stoppingEmulator = $null -ne $emulatorInstance -and $emulatorInstance.Started -and -not $KeepDevice
+    if ($script:AndroidRootedSerial -and $adbPath -and -not $stoppingEmulator -and (Test-AndroidDeviceListed -Adb $adbPath -Serial $script:AndroidRootedSerial)) {
+        [void](Invoke-DeviceTestProcess -FilePath $adbPath -ArgumentList @('-s', $script:AndroidRootedSerial, 'unroot') -TimeoutSeconds 30)
+    }
 
     if ($null -ne $emulatorInstance -and $emulatorInstance.Started -and -not $KeepDevice -and $adbPath) {
         Stop-AndroidEmulator -Adb $adbPath -Emulator $emulatorInstance

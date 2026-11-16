@@ -1202,6 +1202,10 @@ function Write-DeviceTestSummary {
             $lines.Add("- Warning: $(Format-DeviceTestMarkdownText $warning 500)")
         }
 
+        if ($null -ne $verdict.PSObject.Properties['Evidence'] -and $verdict.Evidence) {
+            $lines.Add("- Device evidence: $(Format-DeviceTestMarkdownText $verdict.Evidence 500) (collect.log lists what was saved)")
+        }
+
         if ($verdict.Device) {
             $lines.Add("- Device: $(Format-DeviceTestMarkdownText "$($verdict.Device) $($verdict.DeviceOs)" 200)")
         }
@@ -1558,4 +1562,248 @@ function Get-AndroidDevices {
     }
 
     return , $devices
+}
+
+# XHarness uninstalls the app as soon as its own timeout ends, so it waits this much longer than -Timeout and the evidence watch saves
+# the stacks of an app that is still running at -Timeout first.
+$script:AndroidEvidenceGraceSeconds = 180
+$script:AndroidEvidenceBudgetSeconds = 150
+
+function Add-AndroidEvidenceLogLine {
+    param([string]$Directory, [string]$Message)
+
+    $stamp = [datetime]::UtcNow.ToString('HH:mm:ss.fff', [System.Globalization.CultureInfo]::InvariantCulture)
+    [System.IO.File]::AppendAllText((Join-Path $Directory 'collect.log'), "[$stamp] $Message`n", (New-Object System.Text.UTF8Encoding($false)))
+}
+
+function Save-AndroidEvidenceOutput {
+    param([string]$Adb, [string]$Serial, [string]$Directory, [string]$FileName, [string[]]$Command, [int]$TimeoutSeconds = 30)
+
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    $started = [datetime]::UtcNow
+    $result = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList (@('-s', $Serial, 'shell') + $Command) -TimeoutSeconds $TimeoutSeconds
+    $text = [string]$result.Output
+    if ($result.Error) {
+        $text = $text + "`n--- stderr ---`n" + $result.Error
+    }
+
+    [System.IO.File]::WriteAllText((Join-Path $Directory $FileName), $text, (New-Object System.Text.UTF8Encoding($false)))
+    $seconds = [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)
+    if ($result.TimedOut) {
+        Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, '{0}: timed out after {1} s', $FileName, $TimeoutSeconds))
+    }
+    else {
+        Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, '{0}: exit {1}, {2} chars, {3} s', $FileName, $result.ExitCode, $text.Length, $seconds))
+    }
+
+    return $result
+}
+
+function Get-AndroidEvidenceProcesses {
+    # toybox 'ps -A' (API 26+) and toolbox 'ps' (API 25) both print the user first, the pid second and the name last.
+    param([string]$PsOutput)
+
+    $processes = @()
+    $lines = @(([string]$PsOutput) -split "`r?`n" | Select-Object -Skip 1)
+    foreach ($line in $lines) {
+        $tokens = @($line.Trim() -split '\s+')
+        $processId = 0
+        if ($tokens.Count -ge 3 -and [int]::TryParse($tokens[1], [System.Globalization.NumberStyles]::None, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$processId)) {
+            $processes += New-Object PSObject -Property @{ Id = $processId; Name = $tokens[$tokens.Count - 1] }
+        }
+    }
+
+    return , $processes
+}
+
+function Get-AndroidEvidenceListingEntries {
+    # Keyed by size and name: toybox pads the other columns to the widest owner, so whole lines change when a new file appears.
+    param([string]$Listing)
+
+    $entries = @()
+    foreach ($line in @(([string]$Listing) -split "`r?`n")) {
+        $tokens = @($line.Trim() -split '\s+')
+        if ($tokens.Count -ge 6 -and -not $line.TrimStart().StartsWith('total', [System.StringComparison]::Ordinal)) {
+            $entries += New-Object PSObject -Property @{ Key = "$($tokens[$tokens.Count - 4]) $($tokens[$tokens.Count - 1])"; Name = $tokens[$tokens.Count - 1] }
+        }
+    }
+
+    return $entries
+}
+
+function Save-AndroidNativeStacks {
+    param([string]$Adb, [string]$Serial, [string]$Directory, [string]$Name, [int]$ProcessId)
+
+    $shortName = @($Name -split '/')[-1]
+    $safeName = [regex]::Replace($shortName, '[^A-Za-z0-9._@-]', '_', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $fileName = "stacks-$safeName-$ProcessId.txt"
+    $stacks = Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName $fileName -Command @('debuggerd', '-b', "$ProcessId") -TimeoutSeconds 30
+    if (($stacks.Output + $stacks.Error).IndexOf('not found', [System.StringComparison]::Ordinal) -ge 0) {
+        [void](Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName $fileName -Command @('debuggerd64', '-b', "$ProcessId") -TimeoutSeconds 30)
+    }
+}
+
+function Save-AndroidDeviceEvidence {
+    # Best effort: whatever the device still gives is saved, and nothing here fails the job.
+    param([string]$Adb, [string]$Serial, [string]$PackageName, [string]$Directory, [string]$Phase)
+
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    $started = [datetime]::UtcNow
+    $skipped = New-Object System.Collections.Generic.List[string]
+    $hasBudget = {
+        param([string]$Step)
+        if (([datetime]::UtcNow - $started).TotalSeconds -ge $script:AndroidEvidenceBudgetSeconds) {
+            $skipped.Add($Step)
+            return $false
+        }
+        return $true
+    }
+
+    try {
+        New-Item -ItemType Directory -Force -Path $Directory | Out-Null
+        Add-AndroidEvidenceLogLine -Directory $Directory -Message "phase: $Phase; device $Serial; package $PackageName; started $($started.ToString('o', $invariant))"
+
+        $userId = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'id', '-u') -TimeoutSeconds 10
+        if ($userId.ExitCode -ne 0) {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message "device not reachable: $($userId.Error)"
+            return $Directory
+        }
+
+        if ($userId.Output.Trim() -cne '0') {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message "adbd is not root: /data/anr, /data/tombstones, the binder logs and other processes' stacks cannot be read"
+        }
+
+        $processes = @()
+        if (& $hasBudget 'process lists') {
+            $processList = Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'processes.txt' -Command @('ps', '-A')
+            if ($processList.ExitCode -ne 0 -or $processList.Output.IndexOf('bad pid', [System.StringComparison]::Ordinal) -ge 0 -or @($processList.Output -split "`r?`n").Count -lt 5) {
+                $processList = Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'processes.txt' -Command @('ps')
+            }
+
+            $threadList = Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'threads.txt' -Command @('ps', '-A', '-T')
+            if ($threadList.ExitCode -ne 0 -or $threadList.Output.IndexOf('bad pid', [System.StringComparison]::Ordinal) -ge 0 -or @($threadList.Output -split "`r?`n").Count -lt 5) {
+                [void](Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'threads.txt' -Command @('ps', '-t'))
+            }
+
+            $processes = Get-AndroidEvidenceProcesses -PsOutput $processList.Output
+        }
+
+        $appProcesses = @($processes | Where-Object { $_.Name -ceq $PackageName })
+        $cameraServers = @($processes | Where-Object { $_.Name -ceq 'cameraserver' -or $_.Name.EndsWith('/cameraserver', [System.StringComparison]::Ordinal) })
+        $providers = @($processes | Where-Object { $_.Name.IndexOf('camera.provider', [System.StringComparison]::Ordinal) -ge 0 })
+        if ($appProcesses.Count -eq 0) {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message 'the app is not running'
+        }
+        else {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message "app pid: $(($appProcesses | ForEach-Object { $_.Id }) -join ', ')"
+        }
+
+        if ($cameraServers.Count -eq 0) {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message 'no cameraserver process'
+        }
+
+        if ($providers.Count -eq 0) {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message 'no camera provider process'
+        }
+
+        if (& $hasBudget 'binder logs') {
+            $binderBase = '/sys/kernel/debug/binder'
+            $binderFs = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'ls', '/dev/binderfs/binder_logs/state') -TimeoutSeconds 10
+            if ($binderFs.ExitCode -eq 0) {
+                $binderBase = '/dev/binderfs/binder_logs'
+            }
+
+            foreach ($name in @('state', 'transactions', 'failed_transaction_log', 'transaction_log')) {
+                [void](Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName "binder-$name.txt" -Command @('cat', "$binderBase/$name"))
+            }
+        }
+
+        # The app's native stacks come first: on API 25 the kill -3 below makes ART abort the app.
+        foreach ($app in $appProcesses) {
+            if (-not (& $hasBudget "native stacks of $PackageName")) { break }
+            Save-AndroidNativeStacks -Adb $Adb -Serial $Serial -Directory $Directory -Name $PackageName -ProcessId $app.Id
+        }
+
+        if ($appProcesses.Count -gt 0 -and (& $hasBudget 'app Java stacks')) {
+            $appId = $appProcesses[0].Id
+            $anrBefore = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'ls', '-l', '/data/anr') -TimeoutSeconds 10
+            $knownEntries = @(Get-AndroidEvidenceListingEntries -Listing $anrBefore.Output | ForEach-Object { $_.Key })
+            $quit = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'kill', '-3', "$appId") -TimeoutSeconds 10
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message "kill -3 ${appId}: exit $($quit.ExitCode)"
+            $dumpName = ''
+            $checked = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+            for ($second = 0; $second -lt 15 -and -not $dumpName; $second++) {
+                Start-Sleep -Seconds 1
+                # Checked before the scan so a dump written just before the app died is still found.
+                $appWasDead = (Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'kill', '-0', "$appId") -TimeoutSeconds 10).ExitCode -ne 0
+                $anrNow = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'ls', '-l', '/data/anr') -TimeoutSeconds 10
+                foreach ($entry in @(Get-AndroidEvidenceListingEntries -Listing $anrNow.Output)) {
+                    if ($knownEntries -ccontains $entry.Key -or $checked.Contains($entry.Key)) { continue }
+                    [void]$checked.Add($entry.Key)
+                    $match = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'grep', '-c', '-e', "'----- pid $appId '", "/data/anr/$($entry.Name)") -TimeoutSeconds 10
+                    if ($match.ExitCode -eq 0) {
+                        $dumpName = $entry.Name
+                        break
+                    }
+
+                    # The dump may still be growing: look at this file again.
+                    [void]$checked.Remove($entry.Key)
+                }
+
+                if (-not $dumpName -and $appWasDead) {
+                    break
+                }
+            }
+
+            $alive = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'kill', '-0', "$appId") -TimeoutSeconds 10
+            if ($alive.ExitCode -ne 0) {
+                Add-AndroidEvidenceLogLine -Directory $Directory -Message 'kill -3 ended the app (see tombstones/)'
+            }
+
+            if ($dumpName) {
+                Add-AndroidEvidenceLogLine -Directory $Directory -Message "app Java stacks: /data/anr/$dumpName"
+            }
+            else {
+                Add-AndroidEvidenceLogLine -Directory $Directory -Message "no dump for pid $appId found in /data/anr after kill -3"
+            }
+        }
+
+        $otherTargets = @($cameraServers) + @($providers)
+        foreach ($target in $otherTargets) {
+            if (-not (& $hasBudget "native stacks of $($target.Name)")) { break }
+            Save-AndroidNativeStacks -Adb $Adb -Serial $Serial -Directory $Directory -Name $target.Name -ProcessId $target.Id
+        }
+
+        # A wedged cameraserver must not eat the whole budget, hence the shorter limits.
+        if (& $hasBudget 'dumpsys media.camera') {
+            [void](Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'dumpsys-media.camera.txt' -Command @('dumpsys', '-t', '20', 'media.camera') -TimeoutSeconds 40)
+        }
+
+        if (& $hasBudget 'dmesg') {
+            [void](Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'dmesg.txt' -Command @('dmesg'))
+        }
+
+        if (& $hasBudget 'data listing and pulls') {
+            [void](Save-AndroidEvidenceOutput -Adb $Adb -Serial $Serial -Directory $Directory -FileName 'data-listing.txt' -Command @('ls', '-la', '/data/anr', '/data/tombstones'))
+            foreach ($remote in @('/data/anr', '/data/tombstones')) {
+                $pull = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'pull', $remote, $Directory) -TimeoutSeconds 60
+                $lastLine = [string](@(($pull.Output + "`n" + $pull.Error) -split "`r?`n" | Where-Object { $_.Trim() }) | Select-Object -Last 1)
+                Add-AndroidEvidenceLogLine -Directory $Directory -Message "pull $($remote): exit $($pull.ExitCode); $lastLine"
+            }
+        }
+    }
+    catch {
+        Write-DeviceTestWarning "Collecting device evidence failed: $($_.Exception.Message)"
+        try { Add-AndroidEvidenceLogLine -Directory $Directory -Message "collection stopped: $($_.Exception.Message)" } catch { Write-Verbose "No collect.log: $($_.Exception.Message)" }
+        return $Directory
+    }
+
+    if ($skipped.Count -gt 0) {
+        Add-AndroidEvidenceLogLine -Directory $Directory -Message "budget of $($script:AndroidEvidenceBudgetSeconds) s used up; skipped: $($skipped -join ', ')"
+    }
+
+    $elapsed = [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)
+    Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, 'done in {0} s', $elapsed))
+    Write-Host "Saved device evidence ($Phase) to $Directory"
+    return $Directory
 }
