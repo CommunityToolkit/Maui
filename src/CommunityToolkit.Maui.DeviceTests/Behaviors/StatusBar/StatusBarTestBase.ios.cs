@@ -77,10 +77,16 @@ public abstract partial class StatusBarTestBase
 			Assert.NotEmpty(windows);
 			foreach (var window in windows)
 			{
-				Assert.Equal(ExpectedStatusBarViewFrame(window, isUsingSafeArea).ToString(), Assert.Single(IosStatusBarViews.TaggedSubviews(window)).Frame.ToString());
+				var expected = ExpectedStatusBarViewFrame(window, isUsingSafeArea).ToString() ?? string.Empty;
+				var view = Assert.Single(IosStatusBarViews.TaggedSubviews(window));
+				Assert.True(expected == view.Frame.ToString(), DescribeWindow(window, view, expected));
 			}
 		});
 	}
+
+	// Names the failing window: the runner lists system windows (UITextEffectsWindow) next to its own, and all of them get a status bar view.
+	static string DescribeWindow(UIWindow window, UIView view, string expectedFrame) => FormattableString.Invariant(
+		$"Expected the status bar view of {window.GetType().Name} (Hidden: {window.Hidden}, Bounds: {window.Bounds}, SafeAreaInsets: {window.SafeAreaInsets}, scene status bar frame: {IosStatusBarViews.SceneStatusBarFrame(window)}) to be {expectedFrame}, but its frame is {view.Frame}.");
 
 	// A hidden status bar, e.g. of an iPhone in landscape, has an empty frame: the view then has no height and the width of the window.
 	protected static CGRect ExpectedStatusBarViewFrame(UIWindow window, bool isUsingSafeArea)
