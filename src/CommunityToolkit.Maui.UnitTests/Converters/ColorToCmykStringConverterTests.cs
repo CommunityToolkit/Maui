@@ -180,4 +180,36 @@ public class ColorToCmykStringConverterTests : BaseOneWayConverterTest<ColorToCm
 			CultureInfo.CurrentCulture = originalCulture;
 		}
 	}
+
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
+	[MemberData(nameof(ValidInputData))]
+	public void ColorToCmykStringConverter_ValidInput_NullCulture_IgnoresCurrentCulture(float red, float green, float blue, float alpha, string expectedResult)
+	{
+		var converter = new ColorToCmykStringConverter();
+		var color = new Color(red, green, blue, alpha);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, converter.ConvertFrom(color));
+		Assert.Equal(expectedResult, converter.ConvertFrom(color, null));
+	}
+
+	[Theory]
+	[InlineData("en-US")]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	public void ColorToCmykStringConverter_InvariantCulture_UsesDocumentedFormat(string currentCultureName)
+	{
+		var currentCulture = CultureInfo.GetCultureInfo(currentCultureName);
+		CultureInfo.CurrentCulture = currentCulture;
+		CultureInfo.CurrentUICulture = currentCulture;
+		var converter = new ColorToCmykStringConverter();
+		var color = Colors.Red;
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, CultureInfo.InvariantCulture);
+
+		Assert.Equal("CMYK(0%,100%,100%,0%)", resultConvert);
+		Assert.Equal("CMYK(0%,100%,100%,0%)", converter.ConvertFrom(color, CultureInfo.InvariantCulture));
+	}
 }
