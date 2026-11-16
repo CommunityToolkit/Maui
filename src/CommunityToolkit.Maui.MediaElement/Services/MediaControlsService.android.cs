@@ -18,6 +18,8 @@ sealed partial class MediaControlsService : Service
 {
 	readonly WeakEventManager taskRemovedEventManager = new();
 
+	readonly NotificationArtworkCache artworkCache = new();
+
 	bool isDisposed;
 
 	PlayerNotificationManager? playerNotificationManager;
@@ -72,6 +74,7 @@ sealed partial class MediaControlsService : Service
 		notificationBuilder?.SetContentTitle((string?)null);
 		notificationBuilder?.SetContentText((string?)null);
 		notificationBuilder?.SetLargeIcon((Bitmap?)null);
+		artworkCache.Clear();
 		notificationSession = null;
 		NotificationManager?.CancelAll();
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -105,7 +108,7 @@ sealed partial class MediaControlsService : Service
 		notificationBuilder.SetContentTitle(mediaElement.MediaMetadata?.Title);
 		notificationBuilder.SetContentText(mediaElement.MediaMetadata?.Artist);
 		// SystemUI takes the artwork of its card from the notification's large icon while the session has none yet
-		notificationBuilder.SetLargeIcon(DecodeArtwork(mediaElement.MediaMetadata?.ArtworkData));
+		notificationBuilder.SetLargeIcon(artworkCache.GetOrDecode(mediaElement.MediaMetadata?.ArtworkData));
 		notificationBuilder.SetStyle(style);
 		notificationSession = session;
 		NotificationManagerCompat.From(Platform.AppContext)?.Notify(1, notificationBuilder.Build());
@@ -153,6 +156,7 @@ sealed partial class MediaControlsService : Service
 			notificationBuilder?.SetContentTitle((string?)null);
 			notificationBuilder?.SetContentText((string?)null);
 			notificationBuilder?.SetLargeIcon((Bitmap?)null);
+			artworkCache.Clear();
 			notificationSession = null;
 		}
 
@@ -169,6 +173,7 @@ sealed partial class MediaControlsService : Service
 		{
 			if (disposing)
 			{
+				artworkCache.Clear();
 				NotificationManager?.Dispose();
 				NotificationManager = null;
 
@@ -188,17 +193,6 @@ sealed partial class MediaControlsService : Service
 		}
 
 		base.Dispose(disposing);
-	}
-
-	static Bitmap? DecodeArtwork(IList<byte>? artworkData)
-	{
-		if (artworkData is null || artworkData.Count == 0)
-		{
-			return null;
-		}
-
-		var bytes = artworkData.ToArray();
-		return BitmapFactory.DecodeByteArray(bytes, 0, bytes.Length);
 	}
 
 	static void CreateNotificationChannel(in NotificationManager notificationMnaManager)
