@@ -132,9 +132,9 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	MediaSource? MetadataArtworkSource { get; set; }
 
 	/// <summary>
-	/// Gets or sets the artwork Image Url.
+	/// Gets or sets the URL of the artwork of the media (see <see cref="MediaElement.MetadataArtworkUrl"/>).
 	/// </summary>
-	[Obsolete("Use MetadataArtworkSource instead. It also takes a local file or a file of the app package.")]
+	[Obsolete(MetadataArtworkResolver.MetadataArtworkUrlObsoleteMessage)]
 	string MetadataArtworkUrl { get; set; }
 
 	/// <summary>

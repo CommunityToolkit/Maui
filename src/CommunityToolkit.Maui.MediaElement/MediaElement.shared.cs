@@ -127,7 +127,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Bindable property for the <see cref="MetadataArtworkUrl"/> property.
 	/// </summary>
-	[Obsolete("Use MetadataArtworkSource instead. It also takes a local file or a file of the app package.")]
+	[Obsolete(MetadataArtworkResolver.MetadataArtworkUrlObsoleteMessage)]
 	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkUrl);
 
 	// An AsyncLocal follows the source update through its awaits (Android and Windows), and does not reach what runs outside of it: the events that
@@ -374,11 +374,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// (or file URI) of a local file, or a <see cref="ResourceMediaSource"/> for a file of the app package, for example
 	/// <c>MediaSource.FromResource("artwork.png")</c> for <c>Resources/Raw/artwork.png</c>. In XAML a string converts as for
 	/// <see cref="Source"/>: <c>embed://</c> for a file of the app package, <c>filesystem://</c> for a file, otherwise an absolute URI.
-	/// Any other string is read as a file path, so write a relative Android asset path as <c>embed://</c>.
+	/// Any other string is read as a file path, so write a file of the app package as <c>embed://</c>
+	/// (<see cref="MetadataArtworkUrl"/> reads such a relative path as a file of the app package).
 	/// </para>
 	/// <para>
-	/// When it is set, it replaces <see cref="MetadataArtworkUrl"/>. Artwork that cannot be loaded is left out and never makes the
-	/// media fail. Set it before <see cref="Source"/>: the artwork is read when the media is loaded.
+	/// When it is not <see langword="null"/>, it is used and <see cref="MetadataArtworkUrl"/> is ignored, whichever of the two was set
+	/// first; set it back to <see langword="null"/> to use <see cref="MetadataArtworkUrl"/> again. Artwork that cannot be loaded is left
+	/// out and never makes the media fail. Set it before <see cref="Source"/>: the artwork is read when the media is loaded.
 	/// </para>
 	/// <para>
 	/// A <see cref="StreamMediaSource"/> is not supported as artwork and is ignored, and the <see cref="UriMediaSource.HttpHeaders"/>
@@ -395,8 +397,19 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// <summary>
 	/// Gets or sets the URL of the artwork of the media.
 	/// </summary>
-	/// <remarks>Use <see cref="MetadataArtworkSource"/>, which also takes a local file or a file of the app package.</remarks>
-	[Obsolete("Use MetadataArtworkSource instead. It also takes a local file or a file of the app package.")]
+	/// <remarks>
+	/// <para>
+	/// Use <see cref="MetadataArtworkSource"/> instead. This property still works: it is used while <see cref="MetadataArtworkSource"/>
+	/// is <see langword="null"/>, and setting it never changes <see cref="MetadataArtworkSource"/>.
+	/// </para>
+	/// <para>
+	/// The URL is read as in earlier releases: an <c>http</c> or <c>https</c> URL, a file URI or the full path of a local file, a path
+	/// relative to the app package (<c>images/cover.png</c> for <c>Resources/Raw/images/cover.png</c>), and on Windows an <c>ms-appx</c>
+	/// or <c>ms-appdata</c> URI. It is loaded like <see cref="MetadataArtworkSource"/>, so local files and files of the app package
+	/// work on every platform.
+	/// </para>
+	/// </remarks>
+	[Obsolete(MetadataArtworkResolver.MetadataArtworkUrlObsoleteMessage)]
 	public string MetadataArtworkUrl
 	{
 		get => (string)GetValue(MetadataArtworkUrlProperty);
