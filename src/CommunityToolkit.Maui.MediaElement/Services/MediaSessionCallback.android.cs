@@ -53,9 +53,9 @@ sealed partial class MediaSessionCallback(MediaControlsService mediaControlsServ
 				{
 					var playerId = args?.GetString(PlayerIdKey) ?? controller?.ConnectionHints?.GetString(PlayerIdKey);
 
-					// After the answer: releasing the session drops the answers that were not sent yet, and the controller stays bound to the
-					// service until its last command is answered
-					mediaControlsService.ReleasePlayer(playerId);
+					// Media3 only sends the answer once this callback has returned the future, and a released session sends nothing: releasing here
+					// would lose the answer, and the controller stays bound to the service for 30 seconds while it waits for it
+					new Handler(Looper.MainLooper!).Post(() => mediaControlsService.ReleasePlayer(playerId));
 				}
 			}
 			catch (InvalidOperationException exception)
