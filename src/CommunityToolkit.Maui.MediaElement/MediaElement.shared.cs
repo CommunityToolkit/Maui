@@ -373,7 +373,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// Use a <see cref="UriMediaSource"/> with an <c>http</c> or <c>https</c> URI, a <see cref="FileMediaSource"/> with the full path
 	/// (or file URI) of a local file, or a <see cref="ResourceMediaSource"/> for a file of the app package, for example
 	/// <c>MediaSource.FromResource("artwork.png")</c> for <c>Resources/Raw/artwork.png</c>. In XAML a string converts as for
-	/// <see cref="Source"/>: <c>embed://</c> for a resource, <c>filesystem://</c> for a file, otherwise an absolute URI.
+	/// <see cref="Source"/>: <c>embed://</c> for a file of the app package, <c>filesystem://</c> for a file, otherwise an absolute URI.
+	/// Any other string is read as a file path, so write a relative Android asset path as <c>embed://</c>.
 	/// </para>
 	/// <para>
 	/// When it is set, it replaces <see cref="MetadataArtworkUrl"/>. Artwork that cannot be loaded is left out and never makes the
