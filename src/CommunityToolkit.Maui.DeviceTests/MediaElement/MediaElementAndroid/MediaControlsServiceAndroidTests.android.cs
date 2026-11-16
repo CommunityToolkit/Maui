@@ -656,40 +656,64 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task ServiceThatFailsToStartLeavesNoConnectionAndALaterSourceStartsIt()
+	public async Task ServiceThatAndroidRefusesToStartIsReportedOnceAndTheMediaPlaysWithoutIt()
 	{
 		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
 		var baseline = ManagersBoundToTheService;
-		var startFailure = new Java.Lang.IllegalStateException("The service cannot be started from the background.");
+		var startFailure = new Java.Lang.SecurityException("Not allowed to start the service.");
 		var unboundContext = new ContextWithoutTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext);
 		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+
+		// The handler maps the null Source while it connects, and that must neither start the service nor report a failure.
 		MediaManager.ServiceContextOverride = unboundContext;
 
 		try
 		{
 			await WithHandlerAsync(mediaElement, async handler =>
 			{
-				Assert.Null(GetServiceConnection(handler.Manager!));
-
-				mediaElement.Source = MediaSource.FromResource(toneAsset);
-				Assert.Null(GetServiceConnection(handler.Manager!));
-
-				// A Source set that throws leaves MAUI's SourceProperty marked as being set and later sets never map, so the failure is triggered in place.
+				Assert.Empty(recorder.FailureMessages);
 				MediaManager.ServiceContextOverride = failingContext;
-				var exception = Record.Exception(() => ((ResourceMediaSource)mediaElement.Source!).Path = "exoplayer/other.wav");
 
-				Assert.NotNull(exception);
-				Assert.Same(startFailure, FindException(exception, startFailure));
+				var source = MediaSource.FromResource(toneAsset);
+				Assert.Null(Record.Exception(() => mediaElement.Source = source));
+				Assert.Same(source, mediaElement.Source);
+
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 1 && recorder.OpenedCount >= 1 && mediaElement.Duration > TimeSpan.Zero, "The refused start was never reported or the media never opened.");
+				var failure = Assert.Single(recorder.FailureMessages);
+				Assert.Contains(typeof(Java.Lang.SecurityException).FullName!, failure, StringComparison.Ordinal);
+				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
+				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
+				Assert.Equal(toneDuration, mediaElement.Duration);
+
+				var player = GetPlayer(mediaElement);
+				mediaElement.Play();
+				await WaitUntilAsync(() => player.IsPlaying, "The player never started to play.");
+
 				Assert.Null(GetServiceConnection(handler.Manager!));
 				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Equal(1, failingContext.StartCount);
 				Assert.Equal(0, failingContext.BindCount);
+				Assert.Null(FindMediaControlsService());
+
+				var laterSource = MediaSource.FromResource(shortToneAsset);
+				Assert.Null(Record.Exception(() => mediaElement.Source = laterSource));
+				Assert.Same(laterSource, mediaElement.Source);
+
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 2 && recorder.OpenedCount >= 2 && mediaElement.Duration == shortToneDuration, "The later source never retried the service or never opened.");
+				Assert.Equal(2, failingContext.StartCount);
+				Assert.EndsWith(shortToneAsset, player.CurrentMediaItem!.MediaId, StringComparison.Ordinal);
+				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
 
 				MediaManager.ServiceContextOverride = null;
 				mediaElement.Source = MediaSource.FromResource(toneAsset);
 
 				var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
 				await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
+				await WaitUntilAsync(() => recorder.OpenedCount >= 3, "The third source never opened.");
+				Assert.Equal(2, recorder.FailureMessages.Count);
 			});
 		}
 		finally
@@ -701,17 +725,97 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		await WaitUntilAsync(() => ManagersBoundToTheService == baseline, "The manager count never returned to its baseline.");
 	}
 
-	static Exception? FindException(Exception? exception, Exception expected)
+	// The handler connects with no Source and tries to start the service: there is no media to report on, so the refusal stays silent.
+	[Fact]
+	public async Task ServiceThatAndroidRefusesWhileTheHandlerConnectsWithNoSourceIsNotReportedAndTheNextSourceReportsItOnce()
 	{
-		for (var current = exception; current is not null; current = current.InnerException)
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var baseline = ManagersBoundToTheService;
+		var startFailure = new Java.Lang.SecurityException("Not allowed to start the service.");
+		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+		MediaManager.ServiceContextOverride = failingContext;
+
+		try
 		{
-			if (ReferenceEquals(current, expected))
+			await WithHandlerAsync(mediaElement, async handler =>
 			{
-				return current;
-			}
+				Assert.Equal(1, failingContext.StartCount);
+				Assert.Empty(recorder.FailureMessages);
+				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+
+				mediaElement.Source = MediaSource.FromResource(toneAsset);
+
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 1 && recorder.OpenedCount >= 1 && mediaElement.Duration > TimeSpan.Zero, "The refused start was never reported or the media never opened.");
+				var failure = Assert.Single(recorder.FailureMessages);
+				Assert.Contains(typeof(Java.Lang.SecurityException).FullName!, failure, StringComparison.Ordinal);
+				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
+				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.Equal(2, failingContext.StartCount);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+
+				MediaManager.ServiceContextOverride = null;
+				mediaElement.Source = MediaSource.FromResource(shortToneAsset);
+
+				var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
+				await WaitUntilAsync(() => recorder.OpenedCount >= 2, "The next source never opened.");
+				Assert.Single(recorder.FailureMessages);
+				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
 		}
 
-		return null;
+		await WaitForMediaControlsServiceToStopAsync();
+		await WaitUntilAsync(() => ManagersBoundToTheService == baseline, "The manager count never returned to its baseline.");
+	}
+
+	// From XAML the start runs while MAUI connects the handler, where no app code can catch it.
+	[Fact]
+	public async Task ServiceThatAndroidRefusesWhileTheHandlerConnectsIsReportedOnceAndTheMediaPlays()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.ShouldAutoPlay = true;
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var baseline = ManagersBoundToTheService;
+		Java.Lang.Throwable startFailure = OperatingSystem.IsAndroidVersionAtLeast(31)
+			? new ForegroundServiceStartNotAllowedException("The app is in the background.")
+			: new Java.Lang.IllegalStateException("The app is in the background.");
+		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+		MediaManager.ServiceContextOverride = failingContext;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 1 && recorder.OpenedCount >= 1 && mediaElement.Duration > TimeSpan.Zero, "The refused start was never reported or the media never opened.");
+				var failure = Assert.Single(recorder.FailureMessages);
+				Assert.Contains(startFailure.GetType().FullName!, failure, StringComparison.Ordinal);
+				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
+
+				await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Equal(1, failingContext.StartCount);
+				Assert.Equal(0, failingContext.BindCount);
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
 	}
 
 	// The manager unsubscribes from TaskRemoved when it is disposed, so the handler cannot normally run without a player; its null-conditional
@@ -1209,7 +1313,13 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	{
 		public int BindCount { get; private set; }
 
-		public override ComponentName? StartForegroundService(Intent? service) => throw startFailure;
+		public int StartCount { get; private set; }
+
+		public override ComponentName? StartForegroundService(Intent? service)
+		{
+			StartCount++;
+			throw startFailure;
+		}
 
 		public override bool BindService(Intent? service, IServiceConnection? conn, Bind flags)
 		{

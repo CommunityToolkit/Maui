@@ -32,6 +32,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	static int managersBoundToTheService;
 
+	const string serviceStartFailure = $"Android refused to start {nameof(MediaControlsService)}, the foreground service of the media notification, so the media plays without the notification";
+
 	// Device tests swap in a context whose start or bind of the service fails, which the application context never does for the declared service
 	internal static Context? ServiceContextOverride { get; set; }
 
@@ -930,6 +932,21 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			context.StartForegroundService(intent);
 			isBindAttempted = true;
 			isBound = context.BindService(intent, newConnection, Bind.AutoCreate);
+		}
+		// Android 12+ refuses a foreground service to an app in the background. Thrown, it would end the update and, from XAML, leave MAUI's
+		// SourceProperty unable to change again. With no source there is no media to report on, and the next source retries
+		catch (Exception exception)
+		{
+			if (MediaElement.Source is not null)
+			{
+				MediaElement.ReportSourceUpdateException(exception, serviceStartFailure, Logger);
+			}
+			else
+			{
+				Trace.WriteLine($"Unable to start {nameof(MediaControlsService)} with no source: {exception}");
+			}
+
+			return;
 		}
 		finally
 		{
