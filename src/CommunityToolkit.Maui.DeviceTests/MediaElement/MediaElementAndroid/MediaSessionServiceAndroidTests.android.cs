@@ -382,8 +382,15 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 				"A player was not paused by the removal of the task.");
 			await WaitForStateAsync(playing, MediaElementState.Paused);
 			await WaitUntilAsync(() => FindMediaControlsService()?.Foreground != true, "The service stayed in the foreground.");
-			await WaitUntilAsync(() => FindMediaNotification(playingSession)?.Notification is Notification notification && !notification.Flags.HasFlag(NotificationFlags.ForegroundService),
-				"The notification of the paused player still is the foreground notification (or was never posted again).");
+			try
+			{
+				await WaitUntilAsync(() => FindMediaNotification(playingSession)?.Notification is Notification notification && !notification.Flags.HasFlag(NotificationFlags.ForegroundService),
+					"The notification of the paused player still is the foreground notification (or was never posted again).");
+			}
+			catch (Xunit.Sdk.XunitException exception)
+			{
+				throw new Xunit.Sdk.XunitException($"{exception.Message} {DescribeMediaControlsService()}");
+			}
 		});
 	}
 

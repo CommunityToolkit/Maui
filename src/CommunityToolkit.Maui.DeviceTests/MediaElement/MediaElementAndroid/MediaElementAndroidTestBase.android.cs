@@ -227,14 +227,14 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	static bool IsMediaControlsServiceStopped() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0;
 
 	// Names which of the two conditions of the wait still held, because only the exact one tells a service that lingers from a notification that stays
-	static string DescribeMediaControlsService()
+	protected static string DescribeMediaControlsService()
 	{
 		var service = FindMediaControlsService();
 		var serviceDescription = service is null
 			? "The service is not listed."
 			: $"The service is listed: Started={service.Started}, Foreground={service.Foreground}, ClientCount={service.ClientCount}, ActiveSince={service.ActiveSince}, LastActivityTime={service.LastActivityTime}, Registrations=[{string.Join(", ", GetRegisteredPlayerIds())}].";
 		var notifications = GetActiveNotifications()
-			.Select(statusBarNotification => $"id={statusBarNotification.Id} tag={statusBarNotification.Tag} package={statusBarNotification.PackageName} channel={statusBarNotification.Notification?.ChannelId} ongoing={statusBarNotification.IsOngoing} mediaStyle={IsMediaStyle(statusBarNotification.Notification)}");
+			.Select(statusBarNotification => $"id={statusBarNotification.Id} tag={statusBarNotification.Tag} package={statusBarNotification.PackageName} channel={statusBarNotification.Notification?.ChannelId} ongoing={statusBarNotification.IsOngoing} flags={statusBarNotification.Notification?.Flags} mediaStyle={IsMediaStyle(statusBarNotification.Notification)}");
 		return $"{serviceDescription} Active notifications: [{string.Join("; ", notifications)}].";
 	}
 
