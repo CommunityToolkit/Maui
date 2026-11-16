@@ -205,9 +205,9 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return output.ToArray();
 	}
 
-	protected async Task<string> CopyAssetToCacheAsync(string asset)
+	protected async Task<string> CopyAssetToCacheAsync(string asset, string? fileNamePrefix = null)
 	{
-		var path = Path.Combine(FileSystem.CacheDirectory, $"{Guid.NewGuid():N}_{Path.GetFileName(asset)}");
+		var path = Path.Combine(FileSystem.CacheDirectory, $"{fileNamePrefix ?? Guid.NewGuid().ToString("N")}_{Path.GetFileName(asset)}");
 		await File.WriteAllBytesAsync(path, await ReadAssetAsync(asset));
 		temporaryFiles.Add(path);
 		return path;

@@ -16,6 +16,7 @@ public sealed class LoopbackHttpServer : IDisposable
 	readonly IReadOnlySet<string> pathsWithoutContentLength;
 	readonly ConcurrentQueue<string> requests = new();
 	readonly ConcurrentDictionary<string, TaskCompletionSource> heldPaths = new();
+	readonly ConcurrentDictionary<string, TaskCompletionSource> heldBodyPaths = new();
 
 	public LoopbackHttpServer(IReadOnlyDictionary<string, (byte[] Body, string ContentType)> routes, IReadOnlySet<string>? pathsWithoutContentLength = null)
 	{
@@ -33,7 +34,7 @@ public sealed class LoopbackHttpServer : IDisposable
 
 	public void Dispose()
 	{
-		foreach (var hold in heldPaths.Values)
+		foreach (var hold in heldPaths.Values.Concat(heldBodyPaths.Values))
 		{
 			hold.TrySetResult();
 		}
@@ -69,6 +70,10 @@ public sealed class LoopbackHttpServer : IDisposable
 	// Stands in for a slow server, without a delay that a test would have to guess.
 	public TaskCompletionSource HoldResponses(string path) =>
 		heldPaths.GetOrAdd(path, static _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+
+	// Sends the status and headers of a GET at once but not the body, like a server that stalls halfway through a download.
+	public TaskCompletionSource HoldBody(string path) =>
+		heldBodyPaths.GetOrAdd(path, static _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
 
 	async Task AcceptLoop()
 	{
@@ -131,6 +136,12 @@ public sealed class LoopbackHttpServer : IDisposable
 				await stream.WriteAsync(Encoding.ASCII.GetBytes(responseHeader), cancellationTokenSource.Token);
 				if (!string.Equals(method, "HEAD", StringComparison.Ordinal))
 				{
+					if (heldBodyPaths.TryGetValue(path, out var holdBody))
+					{
+						await stream.FlushAsync(cancellationTokenSource.Token);
+						await holdBody.Task.WaitAsync(cancellationTokenSource.Token);
+					}
+
 					await stream.WriteAsync(route.Body, cancellationTokenSource.Token);
 				}
 

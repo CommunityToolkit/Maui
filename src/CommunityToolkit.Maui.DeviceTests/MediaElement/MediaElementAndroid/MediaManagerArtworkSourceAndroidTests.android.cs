@@ -1,3 +1,8 @@
+#pragma warning disable CS0618 // These tests pin the obsolete MetadataArtworkUrl, which keeps working
+using System.Diagnostics;
+using System.Reflection;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -174,9 +179,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		await AssertLoadedAsync(element =>
 		{
 			element.MetadataArtworkSource = MediaSource.FromFile(path);
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: the test pins that the source wins over it
 			element.MetadataArtworkUrl = server.GetUri("/other.png").ToString();
-#pragma warning restore CS0618
 		}, mediaElement =>
 		{
 			Assert.Equal(artwork, GetArtwork(mediaElement));
@@ -192,9 +195,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element =>
 		{
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: the test pins that it is used when no source is set
 			element.MetadataArtworkUrl = path;
-#pragma warning restore CS0618
 		}, mediaElement =>
 		{
 			Assert.Null(mediaElement.MetadataArtworkSource);
@@ -248,6 +249,151 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.EndsWith(shortToneAsset, GetPlayer(mediaElement).CurrentMediaItem!.MediaId, StringComparison.Ordinal);
 			Assert.Equal(1, recorder.OpenedCount);
+		});
+	}
+
+	[Theory]
+	[InlineData("exoplayer/art.png", "exoplayer/art.png")]
+	[InlineData("exoplayer\\art.png", "exoplayer/art.png")]
+	[InlineData("Assets/art.png", "Assets/art.png")]
+	[InlineData("Assets\\art.png", "Assets/art.png")]
+	[InlineData("art.png", "art.png")]
+	public void MetadataArtworkUrlOpensTheAssetPathThat17Opened(string metadataArtworkUrl, string expectedAssetPath)
+	{
+		var artworkSource = MetadataArtworkResolver.FromMetadataArtworkUrl(metadataArtworkUrl);
+
+		var resourceSource = Assert.IsType<ResourceMediaSource>(artworkSource);
+		Assert.Equal(expectedAssetPath, MetadataArtworkPaths.GetAndroidAssetPath(resourceSource.Path));
+	}
+
+	// 17.0.0 asked the asset manager for "/exoplayer/art.png" and found nothing: only the shared loader trims the slash
+	[Fact]
+	public async Task MetadataArtworkUrlWithALeadingBackslashOpensTheAsset()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+
+		await AssertLoadedAsync(element => element.MetadataArtworkUrl = "\\exoplayer\\art.png", mediaElement =>
+			Assert.Equal(artwork, GetArtwork(mediaElement)));
+	}
+
+	[Fact]
+	public async Task MetadataArtworkUrlWithAHashInAnAbsolutePathReadsThatFile()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		var path = await CopyAssetToCacheAsync(artworkAsset, $"art#1_{Guid.NewGuid():N}");
+
+		await AssertLoadedAsync(element => element.MetadataArtworkUrl = path, mediaElement =>
+		{
+			Assert.Contains('#', Path.GetFileName(path));
+			Assert.Equal(artwork, GetArtwork(mediaElement));
+		});
+	}
+
+	[Fact]
+	public async Task MetadataArtworkUrlFileUriWithAnEscapedHashReadsThatFile()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		var path = await CopyAssetToCacheAsync(artworkAsset, $"art#1_{Guid.NewGuid():N}");
+		var fileUri = new Uri(path).AbsoluteUri;
+
+		await AssertLoadedAsync(element => element.MetadataArtworkUrl = fileUri, mediaElement =>
+		{
+			Assert.Contains("%23", fileUri, StringComparison.Ordinal);
+			Assert.Equal(artwork, GetArtwork(mediaElement));
+		});
+	}
+
+	[Fact]
+	public async Task MetadataArtworkUrlWithABackslashInAnAbsolutePathIsNormalized()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		var path = await CopyAssetToCacheAsync(artworkAsset);
+		var pathWithBackslash = $"{Path.GetDirectoryName(path)}\\{Path.GetFileName(path)}";
+
+		await AssertLoadedAsync(element => element.MetadataArtworkUrl = pathWithBackslash, mediaElement =>
+		{
+			Assert.Contains('\\', pathWithBackslash);
+			Assert.Equal(artwork, GetArtwork(mediaElement));
+		});
+	}
+
+	[Theory]
+	[InlineData("content://media/external/images/media/1")]
+	[InlineData("data")]
+	[InlineData("ms-appx:///art.png")]
+	public async Task MetadataArtworkUrlOfAnotherSchemeIsLeftOutWithoutATrace(string metadataArtworkUrl)
+	{
+		using var trace = new TraceCapture();
+		var artwork = await ReadAssetAsync(artworkAsset);
+		var url = metadataArtworkUrl is "data" ? $"data:image/png;base64,{Convert.ToBase64String(artwork)}" : metadataArtworkUrl;
+
+		await AssertLoadedAsync(element => element.MetadataArtworkUrl = url, mediaElement =>
+		{
+			Assert.Empty(GetArtwork(mediaElement));
+			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+		});
+	}
+
+	[Theory]
+	[InlineData("http://")]
+	[InlineData("http://[not a host/art.png")]
+	public async Task MetadataArtworkUrlThatIsNeitherAbsoluteNorRelativeIsLeftOutWithoutATrace(string metadataArtworkUrl)
+	{
+		using var trace = new TraceCapture();
+
+		await AssertLoadedAsync(element => element.MetadataArtworkUrl = metadataArtworkUrl, mediaElement =>
+		{
+			Assert.Empty(GetArtwork(mediaElement));
+			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+		});
+	}
+
+	[Fact]
+	public async Task ClearingTheArtworkSourceFallsBackToMetadataArtworkUrl()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		byte[] legacyArtwork = [.. artwork, 0];
+		var path = await CopyAssetToCacheAsync(artworkAsset);
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/legacy.png"] = (legacyArtwork, "image/png") });
+
+		await AssertLoadedAsync(element =>
+		{
+			element.MetadataArtworkSource = MediaSource.FromFile(path);
+			element.MetadataArtworkUrl = server.GetUri("/legacy.png").ToString();
+			element.MetadataArtworkSource = null;
+		}, mediaElement =>
+		{
+			Assert.Equal(legacyArtwork, GetArtwork(mediaElement));
+			Assert.True(server.HasRequest("GET", "/legacy.png"));
+		});
+	}
+
+	// 17.0.0 read the whole body inside HttpClient.Timeout and opened the media without artwork when the server stalled halfway
+	[Fact]
+	public async Task ArtworkThatStallsHalfwayIsGivenUpOnAfterTheTimeoutAndTheMediaOpens()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/stalled.png"] = (artwork, "image/png") });
+		server.HoldBody("/stalled.png");
+		using var trace = new TraceCapture();
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var client = (HttpClient)typeof(MediaManager).GetField("client", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(handler.Manager)!;
+			client.Timeout = TimeSpan.FromSeconds(2);
+			var stopwatch = Stopwatch.StartNew();
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/stalled.png"));
+			mediaElement.Source = MediaSource.FromResource(toneAsset);
+			await WaitUntilLoadedAsync(mediaElement, recorder, 10_000);
+
+			Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(10), $"The media opened after {stopwatch.Elapsed}.");
+			Assert.True(server.HasRequest("GET", "/stalled.png"));
+			Assert.Empty(GetArtwork(mediaElement));
+			Assert.Contains(trace.Messages, message => message.StartsWith(unableToRetrieveArtworkSource, StringComparison.Ordinal));
 		});
 	}
 
