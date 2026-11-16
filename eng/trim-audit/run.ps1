@@ -256,6 +256,7 @@ New-Item -ItemType Directory -Force $OutRoot | Out-Null
 Remove-StaleLegResults
 Remove-StalePackedVersions
 $OutRoot = (Resolve-Path $OutRoot).Path
+if ($CI -and $env:GITHUB_OUTPUT) { Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "out-root=$($OutRoot.Replace('\', '/'))" }
 $feedFolder = ''
 if ($feedMode -eq 'folder') {
     if (-not (Test-Path -LiteralPath $Feed -PathType Container)) { Stop-Run "no such feed folder: $Feed" 2 }

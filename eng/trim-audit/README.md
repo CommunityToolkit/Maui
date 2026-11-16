@@ -52,7 +52,7 @@ The `Build Library` job of `.github/workflows/dotnet-build.yml` calls `pwsh eng/
 
 ## A failing leg
 
-Fix the warning in the library. Adding a line to `allow.tsv` needs a maintainer's approval and a reason that names the issue or upstream blocker. Open `<out-root>/<leg>/warnings-summary.txt` or `warnings-unique.tsv` for the list, and `build.binlog` for the build.
+Fix the warning in the library. Adding a line to `allow.tsv` needs a maintainer's approval and a reason that names the issue or upstream blocker. Open `<out-root>/<leg>/warnings-summary.txt` or `warnings-unique.tsv` for the list, and `build.binlog` for the build. On CI, download the `trim-audit-<OS>` artifact of the run (`trim-audit-macOS`, `trim-audit-Windows`; 14 days, without `bin`, `obj` and `publish`).
 
 ## Internals (advanced)
 
