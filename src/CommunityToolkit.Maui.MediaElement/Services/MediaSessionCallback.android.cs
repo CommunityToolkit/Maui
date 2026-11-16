@@ -27,7 +27,7 @@ sealed partial class MediaSessionCallback(MediaControlsService mediaControlsServ
 
 	public global::Google.Common.Util.Concurrent.IListenableFuture? OnCustomCommand(MediaSession? session, MediaSession.ControllerInfo? controller, SessionCommand? customCommand, Bundle? args)
 	{
-        return CallbackToFutureAdapter.GetFuture(new FutureResolver(mediaControlsService, controller, customCommand, args));
+		return CallbackToFutureAdapter.GetFuture(new FutureResolver(mediaControlsService, controller, customCommand, args));
 	}
 
 	sealed class FutureResolver(

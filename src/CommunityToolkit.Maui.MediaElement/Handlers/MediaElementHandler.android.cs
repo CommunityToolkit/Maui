@@ -48,6 +48,10 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 			platformView.SetView(player);
 			await MediaManager.SynchronizePlayerStateAsync();
 		}
+		catch (OperationCanceledException)
+		{
+			// The handler was disconnected while the player was connecting: there is no element left to report to
+		}
 		catch (Exception exception)
 		{
 			((IMediaElement)VirtualView).MediaFailed(new MediaFailedEventArgs(exception.Message));

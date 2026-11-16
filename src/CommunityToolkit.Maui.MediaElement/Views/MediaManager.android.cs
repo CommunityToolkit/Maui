@@ -34,8 +34,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int stateReady = 3;
 	const int stateEnded = 4;
 
+	// Media3's Player.EVENT_PLAYBACK_STATE_CHANGED and Player.EVENT_PLAY_WHEN_READY_CHANGED, which the binding does not expose as constants
+	const int eventPlaybackStateChanged = 4;
+	const int eventPlayWhenReadyChanged = 5;
+
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	readonly CancellationTokenSource disconnectTokenSource = new();
+	readonly string playerConnectionId = Guid.NewGuid().ToString("N");
 	bool isAndroidForegroundServiceEnabled = false;
 	bool hasPendingSourceUpdate;
 	DefaultTrackSelector? localTrackSelector;
@@ -50,6 +56,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
 	protected PlayerView? PlayerView { get; set; }
+
+	// Per connection, not per element: the registration of a connection that was disconnected must not be taken for that of the same element
+	// when it is hosted again right away (the late release of the old controller would release the new player)
+	internal string AndroidPlayerConnectionKey => $"{MediaElement.AndroidPlayerId}:{playerConnectionId}";
 
 	/// <summary>
 	/// Occurs when ExoPlayer changes the playback parameters.
@@ -70,23 +80,84 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 
-	public void OnIsPlayingChanged(bool isPlaying)
+	/// <summary>
+	/// Occurs when ExoPlayer changes the player state.
+	/// </summary>
+	/// <paramref name="playWhenReady">Indicates whether the player should start playing the media whenever the media is ready.</paramref>
+	/// <paramref name="playbackState">The state that the player has transitioned to.</paramref>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
 	{
 		if (Player is null || MediaElement.Source is null)
 		{
 			return;
 		}
 
-		if (Player.PlaybackState is not stateReady)
+		// ExoPlayer reports Media3's Player.STATE_* values (stateIdle to stateEnded), not android.media.session.PlaybackState values: the
+		// PlaybackState arms only map the values that are not Media3 states.
+		var newState = playbackState switch
+		{
+			// ExoPlayer is idle until a source is prepared: a source that is opening has not stopped, and a failed one stays failed
+			stateIdle => MediaElement.CurrentState is MediaElementState.Opening or MediaElementState.Failed
+				? MediaElement.CurrentState
+				: MediaElementState.Stopped,
+
+			stateBuffering => MediaElementState.Buffering,
+
+			stateReady => playWhenReady
+				? MediaElementState.Playing
+				: MediaElementState.Paused,
+
+			stateEnded => MediaElementState.Stopped,
+
+			PlaybackState.StateRewinding
+				or PlaybackState.StateSkippingToNext
+				or PlaybackState.StateSkippingToPrevious
+				or PlaybackState.StateSkippingToQueueItem => playWhenReady
+					? MediaElementState.Playing
+					: MediaElementState.Paused,
+
+			PlaybackState.StateConnecting
+				or PlaybackState.StateBuffering => MediaElementState.Buffering,
+
+			PlaybackState.StateNone => MediaElementState.None,
+
+			PlaybackState.StateError => MediaElementState.Failed,
+
+			_ => MediaElementState.None,
+		};
+
+		MediaElement.CurrentStateChanged(newState);
+		if (playbackState is stateReady)
+		{
+			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
+			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
+		}
+	}
+
+	/// <summary>
+	/// Occurs when a player reports that some of its state changed, after the callbacks of the individual changes.
+	/// </summary>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
+	{
+		// A MediaController reports the state through the individual callbacks and OnEvents only, never through OnPlayerStateChanged,
+		// which ExoPlayer calls itself
+		if (player is null or IExoPlayer || playerEvents is null)
 		{
 			return;
 		}
 
-		var newState = isPlaying
-			? MediaElementState.Playing
-			: MediaElementState.Paused;
-
-		MediaElement.CurrentStateChanged(newState);
+		if (playerEvents.ContainsAny(eventPlaybackStateChanged, eventPlayWhenReadyChanged))
+		{
+			OnPlayerStateChanged(player.PlayWhenReady, player.PlaybackState);
+		}
 	}
 
 	public void OnTracksChanged(Tracks? tracks)
@@ -152,9 +223,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	}
 
 	public async Task<PlatformMediaElement> CreatePlatformPlayer(CancellationToken cancellationToken = default)
-		=> isAndroidForegroundServiceEnabled
-		? await CreateMediaController(cancellationToken)
-		: CreateLocalPlayer();
+	{
+		PlatformMediaElement player = isAndroidForegroundServiceEnabled
+			? await CreateMediaController(cancellationToken)
+			: CreateLocalPlayer();
+
+		disconnectTokenSource.Token.ThrowIfCancellationRequested();
+		return player;
+	}
 
 	internal ValueTask SynchronizePlayerStateAsync()
 	{
@@ -166,12 +242,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		PlatformUpdateShouldLoopPlayback();
 		PlatformUpdateSpeed();
 
-		if (hasPendingSourceUpdate || MediaElement.Source is not null)
-		{
-			return PlatformUpdateSource();
-		}
-
-		return ValueTask.CompletedTask;
+		// A Source set before the player exists was only noted: the mapper has already run, which is not the case for a Source of the
+		// MediaElement that the handler connects to, whose mapper runs right after this and loads it
+		return hasPendingSourceUpdate ? UpdateSource() : ValueTask.CompletedTask;
 	}
 
 	IExoPlayer CreateLocalPlayer()
@@ -186,31 +259,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			throw new InvalidOperationException($"{nameof(PlayerView)} cannot be null");
 		}
 
-		var audioAttribute = new AndroidX.Media3.Common.AudioAttributes.Builder()?
-			.SetContentType(C.AudioContentTypeMusic)?
-			.SetUsage(C.UsageMedia)?
-			.Build();
-
-		localTrackSelector = new DefaultTrackSelector(Platform.AppContext);
-		var trackSelectionParameters = localTrackSelector.BuildUponParameters()?
-			.SetPreferredAudioLanguage(C.LanguageUndetermined)?
-			.SetPreferredTextLanguage(C.LanguageUndetermined)?
-			.SetIgnoredTextSelectionFlags(C.SelectionFlagAutoselect);
-		localTrackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters);
-
-		var loadControlBuilder = new DefaultLoadControl.Builder();
-		loadControlBuilder.SetBufferDurationsMs(
-			minBufferMs: 15000,
-			maxBufferMs: 50000,
-			bufferForPlaybackMs: 2500,
-			bufferForPlaybackAfterRebufferMs: 5000);
-
-		var builder = new ExoPlayerBuilder(Platform.AppContext) ?? throw new InvalidOperationException("ExoPlayerBuilder returned null");
-		builder.SetTrackSelector(localTrackSelector);
-		builder.SetAudioAttributes(audioAttribute, true);
-		builder.SetHandleAudioBecomingNoisy(true);
-		builder.SetLoadControl(loadControlBuilder.Build());
-		var exoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+		var (exoPlayer, trackSelector) = ExoPlayerFactory.Create(Platform.AppContext);
+		localTrackSelector = trackSelector;
 
 		Player = exoPlayer;
 		Player.AddListener(this);
@@ -219,16 +269,19 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		return exoPlayer;
 	}
-	public async Task<AndroidX.Media3.Session.MediaController> CreateMediaController(CancellationToken cancellationToken = default)
+	public async Task<MediaController> CreateMediaController(CancellationToken cancellationToken = default)
 	{
 		if (Player is MediaController mediaController)
 		{
 			return mediaController;
 		}
 
+		var disconnectToken = disconnectTokenSource.Token;
+		disconnectToken.ThrowIfCancellationRequested();
+
 		var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var connectionHints = new Android.OS.Bundle();
-		connectionHints.PutString(MediaSessionCallback.PlayerIdKey, MediaElement.AndroidPlayerId);
+		connectionHints.PutString(MediaSessionCallback.PlayerIdKey, AndroidPlayerConnectionKey);
 
 		var builder = new MediaController.Builder(Platform.AppContext, new SessionToken(Platform.AppContext, new ComponentName(Platform.AppContext, Java.Lang.Class.FromType(typeof(MediaControlsService)))));
 		builder.SetConnectionHints(connectionHints);
@@ -238,30 +291,34 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			try
 			{
 				var result = future.Get() ?? throw new InvalidOperationException("MediaController.Builder.BuildAsync().Get() returned null");
-				if (result is MediaController mc)
-				{
-					Player = mc;
-					Player.AddListener(this);
-					if (PlayerView is null)
-					{
-						throw new InvalidOperationException($"{nameof(PlayerView)} cannot be null");
-					}
-
-					PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
-					PlayerView.Player = Player;
-
-					if (isAndroidForegroundServiceEnabled)
-					{
-						using var intent = new Intent(Android.App.Application.Context, typeof(MediaControlsService));
-						Android.App.Application.Context.StartForegroundService(intent);
-					}
-
-					tcs.SetResult();
-				}
-				else
+				if (result is not MediaController mc)
 				{
 					tcs.SetException(new InvalidOperationException("MediaController.Builder.BuildAsync().Get() did not return a MediaController"));
+					return;
 				}
+
+				// The service created the registration of this connection while the controller connected: it is released again, because
+				// the handler was disconnected in the meantime and nothing else would release it
+				if (disconnectToken.IsCancellationRequested)
+				{
+					ReleasePlayerRegistration(mc);
+					mc.Release();
+					mc.Dispose();
+					tcs.SetCanceled(disconnectToken);
+					return;
+				}
+
+				Player = mc;
+				Player.AddListener(this);
+				if (PlayerView is null)
+				{
+					throw new InvalidOperationException($"{nameof(PlayerView)} cannot be null");
+				}
+
+				PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
+				PlayerView.Player = Player;
+
+				tcs.SetResult();
 			}
 			catch (Exception ex)
 			{
@@ -269,7 +326,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				tcs.SetException(ex);
 			}
 		}), ContextCompat.GetMainExecutor(Platform.AppContext));
-		await tcs.Task.WaitAsync(cancellationToken);
+
+		using var waitTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
+		await tcs.Task.WaitAsync(waitTokenSource.Token);
+
+		disconnectToken.ThrowIfCancellationRequested();
 		return Player as MediaController ?? throw new InvalidOperationException("MediaController is null");
 	}
 
@@ -296,27 +357,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				break;
 			case stateEnded:
 				newState = MediaElementState.Stopped;
-				MediaElement.CurrentStateChanged(newState);
 				MediaElement.MediaEnded();
-				return;
+				break;
 			case stateReady:
 				seekToTaskCompletionSource?.TrySetResult();
-				// Update duration and position when ready
-				if (Player is not null)
-				{
-					MediaElement.Duration = TimeSpan.FromMilliseconds(
-						Player.Duration < 0 ? 0 : Player.Duration
-					);
-					MediaElement.Position = TimeSpan.FromMilliseconds(
-						Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition
-					);
-					newState = Player.IsPlaying
-						? MediaElementState.Playing
-						: MediaElementState.Paused;
-				}
-				break;
-			case stateIdle:
-				newState = MediaElementState.None;
 				break;
 		}
 
@@ -402,7 +446,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		// The player has no media: prepared, it would end at once and report MediaEnded for a media that never played
-		if (Player.MediaItemCount is 0)
+		if (!PlayerHasMediaItems())
 		{
 			// A source that is still loading (its artwork downloads) plays once it is loaded. A source without data, or one that could not be
 			// applied, has nothing to play, like a null Source.
@@ -440,7 +484,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 		if (Player is null)
 		{
-			throw new InvalidOperationException($"{nameof(IExoPlayer)} is not yet initialized");
+			throw new InvalidOperationException($"{nameof(Player)} is not yet initialized");
 		}
 
 		await seekToSemaphoreSlim.WaitAsync(token);
@@ -560,12 +604,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					mediaSource = mediaSourceFactory.CreateMediaSource(item);
 				}
 
+				IExoPlayer? mediaSourcePlayer = null;
+				if (mediaSource is not null && !TryGetExoPlayer(out mediaSourcePlayer))
+				{
+					throw new InvalidOperationException($"The {nameof(MediaElement.Source)} needs the ExoPlayer of the {nameof(MediaElement)}, which is not available yet or any more.");
+				}
+
 				// The player raises its events synchronously while it takes the source (StateChanged for Buffering, for example): from here on, only
 				// an exception of the player itself, a Java exception, is a failure of the source
 				isPlayerTakingTheSource = true;
-				if (mediaSource is not null && Player is IExoPlayer exoPlayer)
+				if (mediaSource is not null)
 				{
-					exoPlayer.SetMediaSource(mediaSource);
+					mediaSourcePlayer?.SetMediaSource(mediaSource);
 				}
 				else
 				{
@@ -752,11 +802,23 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
 
+	// A MediaController cannot carry a MediaSource (a stream, or a source with HTTP headers): it is set on the ExoPlayer of the service, which is
+	// the player the controller controls. Both run on the main thread, which is the application thread of that player.
+	bool TryGetExoPlayer([NotNullWhen(true)] out IExoPlayer? exoPlayer)
+	{
+		exoPlayer = Player as IExoPlayer;
+		return exoPlayer is not null || MediaControlsService.TryGetExoPlayer(AndroidPlayerConnectionKey, out exoPlayer);
+	}
+
+	// The controller learns of an item that was set on the player of the service only once the session has told it
+	bool PlayerHasMediaItems() =>
+		Player?.MediaItemCount > 0 || (TryGetExoPlayer(out var exoPlayer) && exoPlayer.MediaItemCount > 0);
+
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing)
 		{
-			seekToSemaphoreSlim?.Dispose();
+			disconnectTokenSource.Cancel();
 
 			Player?.Stop();
 			Player?.RemoveListener(this);
@@ -773,7 +835,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
 
-			ReleasePlayerRegistration();
+			if (isAndroidForegroundServiceEnabled && Player is MediaController controllerOfRegistration)
+			{
+				ReleasePlayerRegistration(controllerOfRegistration);
+			}
 
 			if (Player is IExoPlayer exoPlayer)
 			{
@@ -792,20 +857,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			PlayerView = null;
 			localTrackSelector?.Dispose();
 			localTrackSelector = null;
+
+			currentStreamDataSourceFactory?.Dispose();
+			currentStreamDataSourceFactory = null;
+
+			client.Dispose();
 		}
 
 		base.Dispose(disposing);
 	}
 
-	void ReleasePlayerRegistration()
+	void ReleasePlayerRegistration(MediaController mediaController)
 	{
-		if (!isAndroidForegroundServiceEnabled || Player is not MediaController mediaController)
-		{
-			return;
-		}
-
 		using var args = new Android.OS.Bundle();
-		args.PutString(MediaSessionCallback.PlayerIdKey, MediaElement.AndroidPlayerId);
+		args.PutString(MediaSessionCallback.PlayerIdKey, AndroidPlayerConnectionKey);
 
 		var commandResult = mediaController.SendCustomCommand(new SessionCommand(MediaSessionCallback.ReleasePlayer, new Android.OS.Bundle()), args);
 		commandResult?.AddListener(new Runnable(() =>
@@ -1007,8 +1072,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnCues(CueGroup? cues) { }
 	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
 	public void OnDeviceVolumeChanged(int volume, bool muted) { }
-	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents) { }
 	public void OnIsLoadingChanged(bool isLoading) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
 	public void OnLoadingChanged(bool isLoading) { }
 	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
 	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
@@ -1018,7 +1083,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
 	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
 	public void OnPlayerErrorChanged(PlaybackException? error) { }
-	public void OnPlayerStateChanged(bool playWhenReady, int playbackState) { }
 	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
 	public void OnRenderedFirstFrame() { }
 	public void OnRepeatModeChanged(int repeatMode) { }
@@ -1030,4 +1094,21 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	public void OnTimelineChanged(Timeline? timeline, int reason) { }
 	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	#endregion
+
+	static class PlaybackState
+	{
+		public const int StateBuffering = 6;
+		public const int StateConnecting = 8;
+		public const int StateFailed = 7;
+		public const int StateFastForwarding = 4;
+		public const int StateNone = 0;
+		public const int StatePaused = 2;
+		public const int StatePlaying = 3;
+		public const int StateRewinding = 5;
+		public const int StateSkippingToNext = 10;
+		public const int StateSkippingToPrevious = 9;
+		public const int StateSkippingToQueueItem = 11;
+		public const int StateStopped = 1;
+		public const int StateError = 7;
+	}
 }

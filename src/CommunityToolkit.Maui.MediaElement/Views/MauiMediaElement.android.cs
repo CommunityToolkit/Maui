@@ -86,6 +86,10 @@ public class MauiMediaElement : CoordinatorLayout
 		SetBackgroundResource(Android.Resource.Color.Black);
 	}
 
+	/// <summary>
+	/// Shows the video of <paramref name="player"/> in this view and adds the <see cref="PlayerView"/> to the layout.
+	/// </summary>
+	/// <param name="player">The player that renders into this view. Calling this again moves the view instead of adding a second one.</param>
 	public void SetView(AndroidX.Media3.Common.IPlayer player)
 	{
 		playerView.Player = player;

@@ -1,4 +1,5 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -16,8 +17,58 @@ namespace CommunityToolkit.Maui.Media.Services;
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
 sealed partial class MediaControlsService : MediaSessionService
 {
+	static readonly Lock runningServiceLock = new();
+	static MediaControlsService? runningService;
+
 	readonly Dictionary<string, PlayerRegistration> playerRegistrations = [];
 	readonly Lock syncLock = new();
+
+	// The system creates the service, so a MediaElement and the tests can only reach the running instance through the process
+	internal static MediaControlsService? Running
+	{
+		get
+		{
+			lock (runningServiceLock)
+			{
+				return runningService;
+			}
+		}
+	}
+
+	internal IReadOnlyCollection<string> RegisteredPlayerIds
+	{
+		get
+		{
+			lock (syncLock)
+			{
+				return [.. playerRegistrations.Keys];
+			}
+		}
+	}
+
+	// A MediaController cannot carry a custom MediaSource (a stream, or a source with HTTP headers), so MediaManager hands it to the player of the service
+	internal static bool TryGetExoPlayer(string playerId, [NotNullWhen(true)] out IExoPlayer? exoPlayer)
+	{
+		exoPlayer = null;
+		return Running?.TryGetRegistration(playerId, out _, out exoPlayer) is true;
+	}
+
+	internal bool TryGetRegistration(string playerId, [NotNullWhen(true)] out MediaSession? mediaSession, [NotNullWhen(true)] out IExoPlayer? exoPlayer)
+	{
+		lock (syncLock)
+		{
+			if (playerRegistrations.TryGetValue(playerId, out var registration))
+			{
+				mediaSession = registration.MediaSession;
+				exoPlayer = registration.ExoPlayer;
+				return true;
+			}
+		}
+
+		mediaSession = null;
+		exoPlayer = null;
+		return false;
+	}
 
 	public override void OnTaskRemoved(Intent? rootIntent)
 	{
@@ -28,12 +79,18 @@ sealed partial class MediaControlsService : MediaSessionService
 	public override void OnCreate()
 	{
 		base.OnCreate();
+
+		lock (runningServiceLock)
+		{
+			runningService = this;
+		}
 	}
 
 	protected override void Dispose(bool disposing)
 	{
 		if (disposing)
 		{
+			ForgetRunningService();
 			ReleaseAllPlayers();
 		}
 		base.Dispose(disposing);
@@ -41,6 +98,7 @@ sealed partial class MediaControlsService : MediaSessionService
 
 	public override void OnDestroy()
 	{
+		ForgetRunningService();
 		ReleaseAllPlayers();
 		base.OnDestroy();
 	}
@@ -99,6 +157,17 @@ sealed partial class MediaControlsService : MediaSessionService
 		}
 	}
 
+	void ForgetRunningService()
+	{
+		lock (runningServiceLock)
+		{
+			if (ReferenceEquals(runningService, this))
+			{
+				runningService = null;
+			}
+		}
+	}
+
 	void ReleaseAllPlayers()
 	{
 		PlayerRegistration[] registrations;
@@ -117,39 +186,32 @@ sealed partial class MediaControlsService : MediaSessionService
 
 	PlayerRegistration CreatePlayerRegistration(string playerId)
 	{
-		var audioAttribute = new AndroidX.Media3.Common.AudioAttributes.Builder()?
-			.SetContentType(C.AudioContentTypeMusic)?
-			.SetUsage(C.UsageMedia)?
-			.Build();
-
-		var trackSelector = new DefaultTrackSelector(this);
-		var trackSelectionParameters = trackSelector.BuildUponParameters()?
-			.SetPreferredAudioLanguage(C.LanguageUndetermined)?
-			.SetPreferredTextLanguage(C.LanguageUndetermined)?
-			.SetIgnoredTextSelectionFlags(C.SelectionFlagAutoselect);
-		trackSelector.SetParameters((DefaultTrackSelector.Parameters.Builder?)trackSelectionParameters);
-
-		var loadControlBuilder = new DefaultLoadControl.Builder();
-		loadControlBuilder.SetBufferDurationsMs(
-			minBufferMs: 15000,
-			maxBufferMs: 50000,
-			bufferForPlaybackMs: 2500,
-			bufferForPlaybackAfterRebufferMs: 5000);
-
-		var builder = new ExoPlayerBuilder(this) ?? throw new InvalidOperationException("ExoPlayerBuilder returned null");
-		builder.SetTrackSelector(trackSelector);
-		builder.SetAudioAttributes(audioAttribute, true);
-		builder.SetHandleAudioBecomingNoisy(true);
-		builder.SetLoadControl(loadControlBuilder.Build());
-		var exoPlayer = builder.Build() ?? throw new InvalidOperationException("ExoPlayerBuilder.Build() returned null");
+		var (exoPlayer, trackSelector) = ExoPlayerFactory.Create(this);
 
 		var mediaSessionBuilder = new MediaSession.Builder(this, exoPlayer);
 		mediaSessionBuilder.SetId(playerId);
 		mediaSessionBuilder.SetBitmapLoader(new DataSourceBitmapLoader(this));
 		mediaSessionBuilder.SetCallback(new MediaSessionCallback(this));
+		if (CreateLaunchAppPendingIntent() is PendingIntent sessionActivity)
+		{
+			mediaSessionBuilder.SetSessionActivity(sessionActivity);
+		}
+
 		var mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
 
 		return new PlayerRegistration(mediaSession, exoPlayer, trackSelector);
+	}
+
+	PendingIntent? CreateLaunchAppPendingIntent()
+	{
+		var launchIntent = PackageManager?.GetLaunchIntentForPackage(PackageName ?? string.Empty);
+		if (launchIntent is null)
+		{
+			return null;
+		}
+
+		launchIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+		return PendingIntent.GetActivity(this, 0, launchIntent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
 	}
 
 	sealed class PlayerRegistration(MediaSession mediaSession, IExoPlayer exoPlayer, DefaultTrackSelector trackSelector) : IDisposable
