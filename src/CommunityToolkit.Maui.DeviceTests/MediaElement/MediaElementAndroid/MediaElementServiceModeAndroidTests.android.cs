@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // With the foreground service on, every MediaElement controls a MediaController, which controls the player that the service builds for it.
 // Every Media3 call of these tests runs on the UI thread. The late connection of a controller has no event: the tests that need its end
-// watch the registry for the registration to appear and go (WatchRegistrationComeAndGoAsync).
+// watch the registry for the registration to appear and go (WatchRegistrationComeAndGo).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
@@ -253,13 +253,37 @@ public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 			using var recorder = new MediaElementRecorder(mediaElement);
 
 			var handler = CreateHandler<AndroidMediaElementProbeHandler>(mediaElement);
-			var lateRegistration = WatchRegistrationComeAndGoAsync(handler.Manager!.AndroidPlayerConnectionKey);
+			using var lateRegistration = WatchRegistrationComeAndGo(handler.Manager!.AndroidPlayerConnectionKey);
 			((IElementHandler)handler).DisconnectHandler();
 			mediaElement.Handler = null;
-			await lateRegistration;
+			await lateRegistration.WaitAsync();
 
 			Assert.Equal(anchorKey, Assert.Single(GetRegisteredPlayerIds()));
 			Assert.Empty(recorder.FailureMessages);
+		});
+	}
+
+	// A second platform view of the element can dispose the PlayerView and its controller before the MediaManager is disposed. The manager then
+	// has no controller to send the release command with, and the service stays alive for as long as another element uses it.
+	[Fact]
+	public async Task DisposingThePlatformViewFirstStillReleasesTheRegistration()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var anchor = await CreateMediaElementAsync();
+			var anchorHandler = await ConnectWithServiceAsync(anchor);
+			var mediaElement = await CreateMediaElementAsync();
+			var handler = await ConnectWithServiceAsync(mediaElement);
+			var connectionKey = handler.Manager!.AndroidPlayerConnectionKey;
+			Assert.Equal(2, GetRegisteredPlayerIds().Count);
+
+			GetMauiMediaElement(mediaElement).Dispose();
+			await DisconnectAsync(mediaElement);
+
+			await WaitUntilAsync(() => !GetRegisteredPlayerIds().Contains(connectionKey), "The registration of the element was never released.");
+			Assert.Equal(anchorHandler.Manager!.AndroidPlayerConnectionKey, Assert.Single(GetRegisteredPlayerIds()));
 		});
 	}
 
@@ -278,13 +302,13 @@ public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 			using var recorder = new MediaElementRecorder(mediaElement);
 
 			var firstHandler = CreateHandler<AndroidMediaElementProbeHandler>(mediaElement);
-			var lateRegistration = WatchRegistrationComeAndGoAsync(firstHandler.Manager!.AndroidPlayerConnectionKey);
+			using var lateRegistration = WatchRegistrationComeAndGo(firstHandler.Manager!.AndroidPlayerConnectionKey);
 			((IElementHandler)firstHandler).DisconnectHandler();
 			mediaElement.Handler = null;
 			var secondHandler = CreateHandler<AndroidMediaElementProbeHandler>(mediaElement);
 			await WaitForRegistrationAsync(secondHandler.Manager!);
 			await WaitUntilLoadedAsync(mediaElement, recorder);
-			await lateRegistration;
+			await lateRegistration.WaitAsync();
 
 			Assert.Equal(secondHandler.Manager!.AndroidPlayerConnectionKey, Assert.Single(GetRegisteredPlayerIds()));
 			Assert.False(GetServicePlayer(secondHandler.Manager!)!.IsReleased);

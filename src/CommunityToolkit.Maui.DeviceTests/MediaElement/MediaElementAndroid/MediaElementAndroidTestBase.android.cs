@@ -226,6 +226,38 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	static bool IsMediaControlsServiceStopped() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0;
 
+	/// <summary>
+	/// Waits until the media notification has not changed for longer than API 28's NotificationManagerService needs to post it. That service
+	/// posts every update 100 ms after it received it, and strips the foreground flag of a service that detaches only from the records it
+	/// knows at that moment: a detach during that time leaves the notification of a service that is gone flagged as foreground, and the app
+	/// cannot cancel it. Task removal detaches the service on purpose, so it must not come while the last update is still pending.
+	/// </summary>
+	protected static async Task WaitForMediaNotificationToSettleAsync()
+	{
+		const int quietPeriod = 300;
+		var timeout = Stopwatch.StartNew();
+		var quiet = Stopwatch.StartNew();
+		var lastPosts = DescribeMediaNotificationPosts();
+		while (quiet.ElapsedMilliseconds < quietPeriod)
+		{
+			if (timeout.ElapsedMilliseconds > waitTimeout)
+			{
+				throw new XunitException($"The media notification kept changing for {waitTimeout} ms. {DescribeMediaControlsService()}");
+			}
+
+			await Task.Delay(25);
+			var posts = DescribeMediaNotificationPosts();
+			if (posts != lastPosts)
+			{
+				lastPosts = posts;
+				quiet.Restart();
+			}
+		}
+	}
+
+	static string DescribeMediaNotificationPosts() =>
+		string.Join(",", GetActiveNotifications().Where(statusBarNotification => IsMediaStyle(statusBarNotification.Notification)).Select(statusBarNotification => $"{statusBarNotification.Id}@{statusBarNotification.PostTime}"));
+
 	// Names which of the two conditions of the wait still held, because only the exact one tells a service that lingers from a notification that stays
 	protected static string DescribeMediaControlsService()
 	{
@@ -291,36 +323,70 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		WaitUntilAsync(() => GetMediaSession(manager) is not null, "The service never registered the player of the MediaElement.", timeout);
 
 	/// <summary>
-	/// Starts watching the registry: completes once the registration of <paramref name="connectionKey"/> has appeared and is gone again, which
-	/// is the end of a controller that connected late and released itself. Started before the handler is disconnected, because the whole
-	/// life of that registration can be over by the time the test looks. It spins on its own thread without sleeping: the registration exists
-	/// for about two milliseconds, and the UI thread is busy building its player while it appears.
+	/// Starts watching the registry before the handler is disconnected. The late controller of a disconnected handler gets its registration
+	/// in one message of the main looper and releases it in a later one, which lives for about two milliseconds: the registry is read after
+	/// every message of the main looper, the only way to see it without a gap.
 	/// </summary>
-	protected static Task WatchRegistrationComeAndGoAsync(string connectionKey, int timeout = waitTimeout) =>
-		Task.Run(() =>
+	protected static RegistrationWatcher WatchRegistrationComeAndGo(string connectionKey) => new(connectionKey);
+
+	protected sealed class RegistrationWatcher : IDisposable
+	{
+		readonly string connectionKey;
+		readonly TaskCompletionSource comeAndGone = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		readonly MainLooperMessagePrinter printer;
+		bool wasRegistered;
+
+		public RegistrationWatcher(string connectionKey)
 		{
-			var wasRegistered = false;
-			var spinWait = new SpinWait();
-			var stopwatch = Stopwatch.StartNew();
-			while (stopwatch.ElapsedMilliseconds < timeout)
+			this.connectionKey = connectionKey;
+			printer = new MainLooperMessagePrinter(OnMessageFinished);
+			Looper.MainLooper!.SetMessageLogging(printer);
+		}
+
+		/// <summary>Completes once the registration has appeared and is gone again.</summary>
+		public async Task WaitAsync(int timeout = waitTimeout)
+		{
+			try
 			{
-				var isRegistered = GetRegisteredPlayerIds().Contains(connectionKey);
-				if (isRegistered)
-				{
-					wasRegistered = true;
-				}
-				else if (wasRegistered)
-				{
-					return;
-				}
-
-				spinWait.SpinOnce(sleep1Threshold: -1);
+				await comeAndGone.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 			}
+			catch (TimeoutException)
+			{
+				throw new XunitException(wasRegistered
+					? $"The registration {connectionKey} was never released."
+					: $"The controller of {connectionKey} never connected, so there was nothing to release.");
+			}
+		}
 
-			throw new XunitException(wasRegistered
-				? $"The registration {connectionKey} was never released."
-				: $"The controller of {connectionKey} never connected, so there was nothing to release.");
-		});
+		public void Dispose()
+		{
+			Looper.MainLooper!.SetMessageLogging(null);
+			printer.Dispose();
+		}
+
+		void OnMessageFinished()
+		{
+			if (GetRegisteredPlayerIds().Contains(connectionKey))
+			{
+				wasRegistered = true;
+			}
+			else if (wasRegistered)
+			{
+				comeAndGone.TrySetResult();
+			}
+		}
+	}
+
+	sealed class MainLooperMessagePrinter(Action onMessageFinished) : Java.Lang.Object, Android.Util.IPrinter
+	{
+		public void Println(string? message)
+		{
+			if (message?.StartsWith("<<<<< Finished", StringComparison.Ordinal) is true)
+			{
+				onMessageFinished();
+			}
+		}
+	}
 
 	/// <summary>A controller that a test owns, like the one of the notification or of a Bluetooth headset: connected to the registration with the given key (none: no hint).</summary>
 	protected async Task<MediaController> ConnectTestControllerAsync(string? connectionKey, int timeout = waitTimeout)

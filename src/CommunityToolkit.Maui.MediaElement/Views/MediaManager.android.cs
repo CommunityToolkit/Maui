@@ -843,9 +843,17 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				exoPlayer.Release();
 				exoPlayer.Dispose();
 			}
-			else if (isPlayerAlive && Player is MediaController mediaController)
+			else if (Player is MediaController mediaController)
 			{
-				ReleaseControllerAndItsPlayerRegistration(mediaController);
+				if (isPlayerAlive)
+				{
+					ReleaseControllerAndItsPlayerRegistration(mediaController);
+				}
+				else if (isAndroidForegroundServiceEnabled)
+				{
+					// The PlayerView released the controller first: no release command can be sent, and another MediaElement can keep the service alive
+					MediaControlsService.Running?.ReleasePlayer(AndroidPlayerConnectionKey);
+				}
 			}
 
 			if (IsAlive(PlayerView))

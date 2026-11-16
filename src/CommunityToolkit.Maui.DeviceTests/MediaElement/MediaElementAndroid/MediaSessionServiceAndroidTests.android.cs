@@ -363,7 +363,7 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	// Media3 posts the paused notification again with stopForeground(false) after the players are paused, so it stays until its session is
-	// released: the notification is not asserted to be gone.
+	// released: it is gone once both elements are disconnected.
 	[Fact]
 	public async Task TaskRemovedPausesEveryPlayerAndLeavesTheForeground()
 	{
@@ -380,6 +380,7 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 			await WaitForStateAsync(playing, MediaElementState.Playing);
 			await WaitUntilLoadedAsync(idle, idleRecorder);
 			await WaitForForegroundAsync();
+			await WaitForMediaNotificationToSettleAsync();
 
 			MediaControlsService.Running!.OnTaskRemoved(null);
 
@@ -397,6 +398,11 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 			{
 				throw new Xunit.Sdk.XunitException($"{exception.Message} {DescribeMediaControlsService()}");
 			}
+
+			await DisconnectAsync(playing);
+			await DisconnectAsync(idle);
+
+			await WaitForMediaControlsServiceToStopAsync();
 		});
 	}
 
