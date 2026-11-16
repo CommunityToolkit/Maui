@@ -376,8 +376,10 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		Assert.Equal(1, proxy.CloseCount);
 	}
 
+	const string subscriberFailureMessage = "The subscriber failed.";
+
 	[Fact]
-	public async Task ImageCallbackReportsTheFailureRethrowsAndClosesTheImageProxyWhenASubscriberThrows()
+	public async Task ImageCallbackReportsAThrowingSubscriberOnceWithoutRethrowingAndClosesTheImageProxy()
 	{
 		SetupBuilder();
 		var view = new CameraView();
@@ -390,12 +392,43 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		var exception = Record.Exception(() => callback.OnCaptureSuccess(proxy));
 
-		Assert.NotNull(exception);
-		Assert.Equal(exception.Message, Assert.Single(recorder.Failures));
-		Assert.Equal(1, proxy.CloseCount);
+		Assert.Null(exception);
+		Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
 		Assert.Single(recorder.Captured);
+		Assert.Equal(1, proxy.CloseCount);
 
-		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException("The subscriber failed.");
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
+	}
+
+	// CameraX calls the image callback on its executor thread, where an exception that escaped the callback would end the app
+	[Fact]
+	public async Task TakePictureWhenAMediaCapturedSubscriberThrowsReportsItOnceAndTheNextCaptureSucceeds()
+	{
+		SetupBuilder();
+		RequireStillCapture();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var recorder = new CaptureRecorder(session.View);
+			session.View.MediaCaptured += ThrowingSubscriber;
+
+			await session.Manager.TakePicture(CancellationToken.None);
+			await recorder.WaitForFailureAsync();
+			session.View.MediaCaptured -= ThrowingSubscriber;
+
+			Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
+			Assert.Single(recorder.Captured);
+
+			var nextRecorder = new CaptureRecorder(session.View);
+			await session.Manager.TakePicture(CancellationToken.None);
+			await nextRecorder.WaitForCaptureAsync();
+
+			Assert.True(IsJpeg(await ReadAllBytesAsync(nextRecorder.Captured[0])), "The capture after the failed one is not a JPEG.");
+			Assert.Empty(nextRecorder.Failures);
+			Assert.Single(recorder.Failures);
+		});
+
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
 	}
 
 	[Fact]

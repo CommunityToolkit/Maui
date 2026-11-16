@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using Windows.Media;
@@ -262,7 +263,9 @@ static class WinMediaProbe
 		}
 	}
 
-	static async Task<string?> ProbeDisplayUpdaterAsync()
+	static Task<string?> ProbeDisplayUpdaterAsync() => ProbeDisplayUpdaterAsync(WinMediaAssets.ReadThumbnailOnceAsync);
+
+	public static async Task<string?> ProbeDisplayUpdaterAsync(Func<IRandomAccessStreamReference, Task<byte[]>> readThumbnailOnce)
 	{
 		var playerReason = await PlayerUnavailableReason;
 		if (playerReason is not null)
@@ -274,6 +277,52 @@ static class WinMediaProbe
 		var artworkUri = server.UriFor(WinMediaAssets.ArtworkServerPath);
 		MediaPlayer? player = null;
 		try
+		{
+			string? capabilityReason;
+			IRandomAccessStreamReference? thumbnail;
+			try
+			{
+				(capabilityReason, thumbnail) = await ReadBackAssignedDisplayUpdaterAsync();
+			}
+			catch (Exception ex)
+			{
+				return Describe(ex);
+			}
+
+			if (capabilityReason is not null)
+			{
+				return capabilityReason;
+			}
+
+			var failedReads = 0;
+			byte[] bytes;
+			try
+			{
+				bytes = await WinMediaAssets.ReadThumbnailAsync(() => readThumbnailOnce(thumbnail!), (attempt, ex) =>
+				{
+					failedReads = attempt;
+					Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"[WinMediaProbe] Reading back the DisplayUpdater thumbnail failed transiently (attempt {attempt} of {WinMediaAssets.ThumbnailReadAttempts}, {Describe(ex)}) at {server.Uptime.TotalMilliseconds:0} ms; the artwork server received: {server.DescribeRequests()}"));
+				});
+			}
+			catch (Exception ex)
+			{
+				// Its own artwork failing to come back is a test-infrastructure failure, not a missing capability: every test that needs the probe fails with this.
+				throw new InvalidOperationException(string.Create(CultureInfo.InvariantCulture, $"The DisplayUpdater probe could not read back its own artwork ({artworkUri}) after {failedReads + 1} attempt(s): {Describe(ex)}. The artwork server received: {server.DescribeRequests()}."), ex);
+			}
+
+			return bytes.AsSpan().SequenceEqual(WinMediaAssets.ReadArtworkBytes())
+				? null
+				: $"the thumbnail read back from the DisplayUpdater delivers {bytes.Length} bytes that are not the artwork that was assigned";
+		}
+		finally
+		{
+			if (player is not null)
+			{
+				await TestDispatcher.Current.DispatchAsync(player.Dispose);
+			}
+		}
+
+		async Task<(string? Reason, IRandomAccessStreamReference? Thumbnail)> ReadBackAssignedDisplayUpdaterAsync()
 		{
 			var assigned = await TestDispatcher.Current.DispatchAsync(() =>
 			{
@@ -291,30 +340,16 @@ static class WinMediaProbe
 			});
 			if (!assigned)
 			{
-				return "the DisplayUpdater does not return the type, title and artist assigned to it";
+				return ("the DisplayUpdater does not return the type, title and artist assigned to it", null);
 			}
 
 			var thumbnail = await TestDispatcher.Current.DispatchAsync(() => player!.SystemMediaTransportControls.DisplayUpdater.Thumbnail);
 			if (thumbnail is null)
 			{
-				return "the DisplayUpdater returns no thumbnail after one was assigned";
+				return ("the DisplayUpdater returns no thumbnail after one was assigned", null);
 			}
 
-			var bytes = await WinMediaAssets.ReadAllBytesAsync(thumbnail).WaitAsync(TimeSpan.FromSeconds(15));
-			return bytes.AsSpan().SequenceEqual(WinMediaAssets.ReadArtworkBytes())
-				? null
-				: $"the thumbnail read back from the DisplayUpdater delivers {bytes.Length} bytes that are not the artwork that was assigned";
-		}
-		catch (Exception ex)
-		{
-			return Describe(ex);
-		}
-		finally
-		{
-			if (player is not null)
-			{
-				await TestDispatcher.Current.DispatchAsync(player.Dispose);
-			}
+			return (null, thumbnail);
 		}
 	}
 

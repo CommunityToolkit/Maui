@@ -357,6 +357,9 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   - Only this assembly's `[Fact]`/`[Theory]` turn `SkipException` into Skipped. The results then show `result="Skip"` with the
     reason, and the run is not failed.
   - For a skip known at compile time, use `[Fact(Skip = "reason, issue link")]` under `#if`.
+  - A probe skips only for what the machine lacks. When it cannot read back what it set up itself (its own server, its own file), it
+    retries a known transient failure within a bound and then fails, so a flake can never turn tests into skips
+    (`WinMediaProbe.ProbeDisplayUpdaterAsync` is the example).
   - When the missing thing is a machine capability that a CI runner may lack (a camera, a second camera, video rendering, media
     playback, an on-device speech service), guard it with `DeviceTestCapabilities` (in
     `CommunityToolkit.Maui.DeviceTests.Shared`) instead, so that each CI job can declare it missing or required:
