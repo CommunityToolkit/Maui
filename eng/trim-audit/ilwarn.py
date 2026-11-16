@@ -4,7 +4,8 @@
   ilwarn.py summarize <warnings.log> <out-dir> [<packages-dir> ...]
       writes <out-dir>/warnings-unique.tsv, warnings-summary.txt and warnings-counts.json, and prints the summary.
       Each packages-dir (the audit's restored packages folder) is searched for the toolkit DLLs, so that a warning on a toolkit
-      member can be attributed to the assembly that defines it.
+      member can be attributed to the assembly that defines it. Their type counts go to warnings-counts.json (toolkit_type_counts); a DLL
+      without readable types, or no toolkit DLL at all, makes summarize exit 4 and the gate refuse the leg (exit 4).
   ilwarn.py diff <a/warnings-unique.tsv> <b/warnings-unique.tsv>
       the toolkit and Sample warnings that only one of two builds has.
   ilwarn.py gate <warnings-unique.tsv> [--allow allow.tsv] [--log warnings.log] [--assets-check assets-check.txt]
@@ -34,12 +35,14 @@
       it needs ROOTS-CHECK=OK in the roots-check.txt next to it.
       Exit codes: 0 clean; 1 new toolkit or toolkit-api warnings; 2 bad arguments or a bad allow-list; 3 the assets check did not say OK
       (the build did not use the feed's packages) or an aotroot leg's roots check did not; 4 the build failed, result.json, the tsv or
-      the --log file is missing, or the parser could not read every IL warning line of the log (a broken run must not pass as a clean one).
+      the --log file is missing, the parser could not read every IL warning line of the log, or a toolkit DLL's types could not be read (a broken run must not pass as a clean one).
       A stale allow-list entry (in scope on this leg, matches nothing) is reported and does not fail.
 
 warnings-unique.tsv has one row per distinct warning, tab separated: bucket, tool, code, origin_assembly, member, location, message
 bucket: where the member that triggers the warning lives.
-  toolkit      a member of CommunityToolkit.Maui, .Core, .Camera or .MediaElement
+  toolkit      a member of CommunityToolkit.Maui, .Core, .Camera or .MediaElement, or of generated code that one of their DLLs defines
+               (judged by the type names in the DLLs and the warning's source path), or code of the toolkit's own source generators in an app
+               (a source path under /CommunityToolkit.Maui.SourceGenerators/)
   toolkit-api  Sample (or device-test) code that calls a toolkit API marked RequiresUnreferencedCode/RequiresDynamicCode/RequiresAssemblyFiles
   sample       other warnings on Sample code
   maui         Microsoft.Maui.* members
@@ -88,6 +91,140 @@ def toolkit_string_index(packages_dirs):
     return index
 
 
+EMBEDDED_NAMESPACES = ('System.Runtime.CompilerServices', 'Microsoft.CodeAnalysis')
+# Every assembly has these synthesized types, so a member of another assembly's copy would land on the toolkit.
+SYNTHESIZED_TYPE_PREFIXES = ('<Module>', '<PrivateImplementationDetails>', '<>')
+ARITY_SUFFIX = re.compile(r'`\d+$')
+# The generic argument list that ILLink appends to a file-local type '<F>F..__Gen<T>'; a lone '<.ctor>' has nothing before its '<'.
+GENERIC_LIST = re.compile(r'(?<=[^<>])<[^<>]*(?:<[^<>]*>[^<>]*)*>$')
+TOP_LEVEL_VISIBILITIES = (0, 1)
+STRINGS_HEAP_WIDE, GUID_HEAP_WIDE, EXTRA_DATA = 0x01, 0x02, 0x40
+# ECMA-335 table numbers and the coded indexes that the reader needs to step over Module and TypeRef to reach TypeDef.
+MODULE, TYPE_REF, TYPE_DEF, FIELD, METHOD_DEF, MODULE_REF, ASSEMBLY_REF, TYPE_SPEC = 0x00, 0x01, 0x02, 0x04, 0x06, 0x1A, 0x23, 0x1B
+
+
+def number_at(data, offset, width):
+    return int.from_bytes(data[offset:offset + width], 'little')
+
+
+def metadata_streams(dll):
+    """name -> (offset, size) of the streams of the metadata root of a .NET assembly; raises on anything else."""
+    pe = number_at(dll, 0x3C, 4)
+    if dll[pe:pe + 4] != b'PE\0\0':
+        raise ValueError('not a PE file')
+    optional = pe + 24
+    directories = optional + (96 if number_at(dll, optional, 2) == 0x10B else 112)
+    first_section = optional + number_at(dll, pe + 20, 2)
+    sections = [(number_at(dll, entry + 12, 4), number_at(dll, entry + 16, 4), number_at(dll, entry + 20, 4))
+                for entry in (first_section + 40 * index for index in range(number_at(dll, pe + 6, 2)))]
+
+    def offset_of(rva):
+        for virtual_address, raw_size, raw_pointer in sections:
+            if virtual_address <= rva < virtual_address + raw_size:
+                return rva - virtual_address + raw_pointer
+        raise ValueError('RVA %#x is in no section' % rva)
+    root = offset_of(number_at(dll, offset_of(number_at(dll, directories + 14 * 8, 4)) + 8, 4))
+    if number_at(dll, root, 4) != 0x424A5342:
+        raise ValueError('no metadata root')
+    position = root + 20 + number_at(dll, root + 12, 4)
+    streams = {}
+    for _ in range(number_at(dll, position - 2, 2)):
+        end = dll.index(b'\0', position + 8)
+        streams[dll[position + 8:end].decode('ascii')] = (root + number_at(dll, position, 4), number_at(dll, position + 4, 4))
+        position += 8 + ((end - position - 8 + 4) & ~3)
+    return streams
+
+
+def top_level_type_names(dll):
+    """Full names of the top-level types in the TypeDef table (not the string heap, which also holds the names of referenced types).
+    Generic arity is dropped. Nested types are left out: a member of one starts with the name of its top-level type."""
+    streams = metadata_streams(dll)
+    tables, _ = streams['#~']
+    strings, _ = streams['#Strings']
+    heap_sizes = dll[tables + 6]
+    valid = number_at(dll, tables + 8, 8)
+    position = tables + 24
+    rows = {}
+    for table in range(64):
+        if valid >> table & 1:
+            rows[table] = number_at(dll, position, 4)
+            position += 4
+    if heap_sizes & EXTRA_DATA:
+        position += 4
+
+    def coded_width(*coded_tables):
+        return 4 if max(rows.get(table, 0) for table in coded_tables) >= 1 << 14 else 2
+
+    string_width = 4 if heap_sizes & STRINGS_HEAP_WIDE else 2
+    guid_width = 4 if heap_sizes & GUID_HEAP_WIDE else 2
+    module_row = 2 + string_width + 3 * guid_width
+    type_ref_row = coded_width(MODULE, MODULE_REF, ASSEMBLY_REF, TYPE_REF) + 2 * string_width
+    extends_width = coded_width(TYPE_DEF, TYPE_REF, TYPE_SPEC)
+    field_width = 4 if rows.get(FIELD, 0) >= 1 << 16 else 2
+    method_width = 4 if rows.get(METHOD_DEF, 0) >= 1 << 16 else 2
+    type_def_row = 4 + 2 * string_width + extends_width + field_width + method_width
+    position += rows.get(MODULE, 0) * module_row + rows.get(TYPE_REF, 0) * type_ref_row
+
+    def string_at(index):
+        start = strings + index
+        return dll[start:dll.index(b'\0', start)].decode('utf-8')
+    names = set()
+    for row in range(rows.get(TYPE_DEF, 0)):
+        start = position + row * type_def_row
+        if number_at(dll, start, 4) & 0x7 not in TOP_LEVEL_VISIBILITIES:
+            continue
+        name = ARITY_SUFFIX.sub('', string_at(number_at(dll, start + 4, string_width)))
+        namespace = string_at(number_at(dll, start + 4 + string_width, string_width))
+        if not name or name.startswith(SYNTHESIZED_TYPE_PREFIXES) or any(namespace == embedded or namespace.startswith(embedded + '.') for embedded in EMBEDDED_NAMESPACES):
+            continue
+        names.add(namespace + '.' + name if namespace else name)
+    return names
+
+
+def toolkit_type_index(packages_dirs):
+    """(type full name -> toolkit assembly, DLL path -> number of top-level types it defines) over every target framework of the four DLLs.
+    A DLL that cannot be read counts 0, and summarize and the gate treat that as a broken reader."""
+    types, counts = {}, {}
+    for root in packages_dirs:
+        for directory, _, files in os.walk(root):
+            if '/lib/' not in directory.replace(os.sep, '/') + '/':
+                continue
+            for name in TOOLKIT_ASSEMBLIES:
+                if name + '.dll' not in files:
+                    continue
+                path = os.path.join(directory, name + '.dll')
+                try:
+                    with open(path, 'rb') as dll:
+                        defined = top_level_type_names(dll.read())
+                except (OSError, ValueError, KeyError, IndexError):
+                    defined = set()
+                counts[os.path.relpath(path, root).replace(os.sep, '/')] = len(defined)
+                for type_name in defined:
+                    types.setdefault(type_name, name)
+    return types, counts
+
+
+def member_type_prefixes(member):
+    """Candidate declaring-type names of an ILLink or ILC member display name, shortest first.
+    Split at '.' outside <> and (); a generic argument list (ILLink) or arity (ILC) goes, except on compiler names that start with '<'."""
+    segments, depth, start = [], 0, 0
+    text = strip_arguments(member)
+    for position, char in enumerate(text):
+        depth += char == '<'
+        depth -= char == '>'
+        if char == '.' and depth == 0:
+            segments.append(text[start:position])
+            start = position + 1
+    segments.append(text[start:])
+    segments = [GENERIC_LIST.sub('', segment) if segment.startswith('<') else segment.split('<')[0] for segment in segments]
+    segments = [ARITY_SUFFIX.sub('', segment) for segment in segments]
+    return ['.'.join(segments[:count]) for count in range(1, len(segments) + 1)]
+
+
+def defining_toolkit_assembly(member, types):
+    return next((types[prefix] for prefix in member_type_prefixes(member) if prefix in types), None)
+
+
 def strip_arguments(member):
     depth, cut = 0, len(member)
     for position, char in enumerate(member):
@@ -119,7 +256,27 @@ def toolkit_assembly_of(member, location, index):
     return 'CommunityToolkit.Maui.?'
 
 
-def assembly_of(member, location, index):
+# Only the project's own obj folder or a non-obj source counts, so a clone under .../src/CommunityToolkit.Maui does not make the Sample's obj copy a toolkit one.
+TOOLKIT_SOURCE = re.compile(r'/src/CommunityToolkit\.Maui(?:\.Core|\.Camera|\.MediaElement)?/(?:obj/|(?!.*/obj/))')
+# Roslyn names a generated file <base>/<generator assembly>/<generator type>/<hint>, so this folder holds code that the toolkit's own generators emit into an app.
+TOOLKIT_GENERATOR_FOLDER = '/CommunityToolkit.Maui.SourceGenerators/'
+GENERATED_TOOLKIT = 'CommunityToolkit.Maui.SourceGenerators'
+
+
+def generated_by_toolkit(source_path):
+    return TOOLKIT_GENERATOR_FOLDER in '/' + source_path
+
+
+def compiled_elsewhere(source_path):
+    # The toolkit DLLs embed their PDB, so ILLink and ILC name a toolkit member's own source file. The Sample, MAUI and Markup define
+    # some of the same generated type names (GeneratedBindingInterceptors) and print their own paths.
+    return bool(source_path) and not TOOLKIT_SOURCE.search('/' + source_path)
+
+
+def assembly_of(member, location, index, types, source_path=''):
+    # The generators emit into the app's own types too, so this runs before the Sample and device-test prefixes.
+    if generated_by_toolkit(source_path) and compiled_elsewhere(source_path):
+        return GENERATED_TOOLKIT
     if member.startswith(SAMPLE):
         return SAMPLE
     if member.startswith(DEVICE_TESTS):
@@ -128,6 +285,9 @@ def assembly_of(member, location, index):
         return 'CommunityToolkit.Maui.Markup'
     if member.startswith('CommunityToolkit.Maui'):
         return toolkit_assembly_of(member, location, index)
+    defining = defining_toolkit_assembly(member, types)
+    if defining and not compiled_elsewhere(source_path):
+        return defining
     if member.startswith('Microsoft.Maui'):
         return 'Microsoft.Maui'
     if member.startswith(('Android.', 'Java.', 'AndroidX.', 'Google.')):
@@ -142,7 +302,7 @@ def assembly_of(member, location, index):
 def bucket_of(assembly, calls_toolkit_api):
     if assembly in (SAMPLE, DEVICE_TESTS):
         return 'toolkit-api' if calls_toolkit_api else 'sample'
-    if assembly in TOOLKIT_ASSEMBLIES or assembly == 'CommunityToolkit.Maui.?':
+    if assembly in TOOLKIT_ASSEMBLIES or assembly in ('CommunityToolkit.Maui.?', GENERATED_TOOLKIT):
         return 'toolkit'
     if assembly == 'Microsoft.Maui':
         return 'maui'
@@ -160,7 +320,7 @@ def split_origin(text):
     return '', text
 
 
-def parse(path, index):
+def parse(path, index, types):
     rows = set()
     if not os.path.exists(path):
         return []
@@ -182,7 +342,9 @@ def parse(path, index):
         if kind is None:
             tool, member, message = 'analyzer', '', text
             source = location.split(':')[0]
-            if source.startswith('samples/') or '/Microsoft.Maui.Controls.SourceGen/' in source:
+            if generated_by_toolkit(located.group('path') if located else ''):
+                assembly = GENERATED_TOOLKIT
+            elif source.startswith('samples/') or '/Microsoft.Maui.Controls.SourceGen/' in source:
                 assembly = SAMPLE
             elif source.startswith('src/' + DEVICE_TESTS):
                 assembly = DEVICE_TESTS
@@ -193,7 +355,7 @@ def parse(path, index):
             tool = 'ilc' if re.search(r'(?i)\bilc\b', loc) or (located and not located.group('column')) else 'illink'
             member, message = split_origin(text)
             if member:
-                assembly = assembly_of(member, location, index)
+                assembly = assembly_of(member, location, index, types, located.group('path') if located else '')
             else:
                 quoted = ASSEMBLY_QUOTED.search(text)
                 assembly = quoted.group(1) if quoted else 'unknown'
@@ -201,6 +363,7 @@ def parse(path, index):
     return sorted(rows)
 
 
+TYPE_INDEX_FAILURE = 'TYPE-INDEX=FAIL: no top-level types could be read from %s (the metadata reader is broken or the toolkit DLLs were not found, so generated toolkit code would pass unseen)'
 IL_LINE = re.compile(r'warning IL[234]\d{3}')
 
 
@@ -222,10 +385,13 @@ def first_unparsed(unparsed):
 
 
 def summarize(log, out_dir, packages_dirs):
-    rows = parse(log, toolkit_string_index(packages_dirs))
+    types, type_counts = toolkit_type_index(packages_dirs)
+    rows = parse(log, toolkit_string_index(packages_dirs), types)
     lines_in_log = il_line_count(log)
     unparsed = unparsed_il_lines(log)
     parser_broken = bool(unparsed) or (lines_in_log > 0 and not rows)
+    no_dll_found = [] if type_counts else ['(no toolkit DLL found in %s)' % (', '.join(packages_dirs) or 'no packages folder')]
+    empty_type_indexes = [path for path, count in sorted(type_counts.items()) if count == 0] or no_dll_found
     with open(os.path.join(out_dir, 'warnings-unique.tsv'), 'w', encoding='utf-8') as tsv:
         for row in rows:
             tsv.write('\t'.join(field.replace('\t', ' ') for field in row) + '\n')
@@ -233,7 +399,7 @@ def summarize(log, out_dir, packages_dirs):
     by_assembly = collections.Counter((r[0], r[3]) for r in rows)
     by_code = collections.Counter((r[0], r[1], r[2]) for r in rows)
     with open(os.path.join(out_dir, 'warnings-counts.json'), 'w', encoding='utf-8') as counts_file:
-        json.dump({'distinct': len(rows), 'by_bucket': dict(by_bucket),
+        json.dump({'distinct': len(rows), 'by_bucket': dict(by_bucket), 'toolkit_type_counts': type_counts,
                    'by_origin_assembly': {'%s | %s' % key: value for key, value in sorted(by_assembly.items())}}, counts_file, indent=1)
     lines = ['distinct IL warnings: %d (log: %s)' % (len(rows), log), '', 'bucket        count']
     lines += ['%-13s %5d' % item for item in sorted(by_bucket.items())]
@@ -248,11 +414,14 @@ def summarize(log, out_dir, packages_dirs):
     if parser_broken:
         lines += ['', 'PARSER-SANITY=FAIL: %d of %d IL warning lines in the log could not be parsed (first 3: %s)'
                   % (len(unparsed) or lines_in_log, lines_in_log, first_unparsed(unparsed) or 'all of them')]
+    if empty_type_indexes:
+        lines += ['', TYPE_INDEX_FAILURE % ', '.join(empty_type_indexes)]
+    lines += ['', 'toolkit types indexed per DLL: ' + ', '.join('%s %d' % item for item in sorted(type_counts.items()))] if type_counts else []
     text = '\n'.join(lines) + '\n'
     with open(os.path.join(out_dir, 'warnings-summary.txt'), 'w', encoding='utf-8') as summary_file:
         summary_file.write(text)
     sys.stdout.write(text)
-    return 4 if parser_broken else 0
+    return 4 if parser_broken or empty_type_indexes else 0
 
 
 def diff(a_path, b_path):
@@ -447,6 +616,15 @@ def parsed_warnings_of_failed_leg(tsv, allow_path, leg=''):
     return rows, split_by_allow_list(rows, allow, leg)[0]
 
 
+def toolkit_dlls_without_types(counts_path):
+    try:
+        with open(counts_path, encoding='utf-8') as source:
+            counts = json.load(source).get('toolkit_type_counts', {})
+        return sorted(path for path, count in counts.items() if count == 0) or ([] if counts else ['(no toolkit DLL was indexed)'])
+    except (OSError, ValueError, AttributeError):
+        return []
+
+
 def gate(tsv, allow_path, log, assets_check, github=False, summary=None, result=None, report_only=False, max_annotations=DEFAULT_MAX_ANNOTATIONS):
     leg = leg_name(result)
     level = 'warning' if report_only else 'error'
@@ -473,6 +651,9 @@ def gate(tsv, allow_path, log, assets_check, github=False, summary=None, result=
             return fail(3, 'GATE: assets check is not OK (%s): the build did not use the feed packages' % assets_check)
     if not os.path.exists(tsv):
         return fail(4, 'GATE: %s does not exist: the build produced no warning list' % tsv)
+    empty_type_indexes = toolkit_dlls_without_types(os.path.join(os.path.dirname(tsv), 'warnings-counts.json'))
+    if empty_type_indexes:
+        return fail(4, 'GATE: ' + TYPE_INDEX_FAILURE % ', '.join(empty_type_indexes))
     rows = [line.rstrip('\n').split('\t') for line in read_lines(tsv) if line.strip()]
     if log is not None:
         if not os.path.exists(log):

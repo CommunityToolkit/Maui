@@ -2,6 +2,8 @@
 
 Checks that the four NuGet packages stay trim-safe and NativeAOT-safe in an app. A library build can pass its analyzers and still hand an app warnings, because the trimmer and ILC see the whole app. So this builds the Sample against the packed packages and fails when the toolkit adds a warning that [allow.tsv](allow.tsv) does not list.
 
+A warning counts as the toolkit's when its member is defined by a toolkit DLL (generated types included, judged by the DLL's types and the warning's source path) or comes from the toolkit's own source generators in an app.
+
 ## The one command
 
 ```bash

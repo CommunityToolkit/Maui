@@ -10,6 +10,7 @@ import io
 import json
 import os
 import runpy
+import struct
 import tempfile
 import unittest
 import unittest.mock
@@ -17,10 +18,10 @@ import unittest.mock
 import ilwarn
 
 PREFIX = '     1>/_/'
-ISINRANGE_ILC = (PREFIX + "src/CommunityToolkit.Maui/obj/Release/net11.0-ios/Gen/IsInRangeConverter.g.cs(11): Trim analysis warning IL2087: "
+ISINRANGE_ILC = (PREFIX + "src/CommunityToolkit.Maui/obj/Release/net11.0-ios/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.BindablePropertyAttributeSourceGenerator/IsInRangeConverter.g.cs(11): Trim analysis warning IL2087: "
                  "CommunityToolkit.Maui.Converters.IsInRangeConverter`2..cctor(): 'returnType' argument does not satisfy "
                  "'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'BindableProperty.Create'. [/_/Sample.csproj]")
-ISINRANGE_ILLINK = (PREFIX + "src/CommunityToolkit.Maui/obj/Release/net11.0-android/Gen/IsInRangeConverter.g.cs(11,5): Trim analysis warning IL2087: "
+ISINRANGE_ILLINK = (PREFIX + "src/CommunityToolkit.Maui/obj/Release/net11.0-android/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.BindablePropertyAttributeSourceGenerator/IsInRangeConverter.g.cs(11,5): Trim analysis warning IL2087: "
                     "CommunityToolkit.Maui.Converters.IsInRangeConverter<TValue,TReturnObject>..cctor(): 'returnType' argument does not satisfy "
                     "'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'BindableProperty.Create'. [/_/Sample.csproj]")
 TOOLKIT_API_ROW = ("     1>/repo/obj/Microsoft.Maui.Controls.SourceGen/Pages_EmailValidationBehaviorPage.xaml.xsg.cs(128,36): warning IL2026: "
@@ -60,10 +61,18 @@ class Workspace(unittest.TestCase):
             out.write(text)
         return self.path(name)
 
+    def write_toolkit_dll(self, content):
+        folder = self.path('packages/communitytoolkit.maui/1.0.0/lib/net11.0')
+        os.makedirs(folder, exist_ok=True)
+        with open(os.path.join(folder, 'CommunityToolkit.Maui.dll'), 'wb') as out:
+            out.write(content)
+
     def summarize(self, lines):
+        # A summarize without any toolkit DLL fails closed, so these tests index one DLL whose only type matches none of their members.
+        self.write_toolkit_dll(metadata_only_assembly([(1, 'Unrelated.Namespace', 'Marker')]))
         log = self.write('warnings.log', '\n'.join(lines) + ('\n' if lines else ''))
         with contextlib.redirect_stdout(io.StringIO()):
-            rc = ilwarn.summarize(log, self.directory.name, [])
+            rc = ilwarn.summarize(log, self.directory.name, [self.path('packages')])
         return rc, log
 
     def rows(self):
@@ -83,8 +92,8 @@ class ParserTests(Workspace):
         for line, tool in ((ISINRANGE_ILC, 'ilc'), (ISINRANGE_ILLINK, 'illink')):
             with self.subTest(tool=tool):
                 self.assertEqual(self.summarize([line])[0], 0)
-                (bucket, parsed_tool, code, *_), = self.rows()
-                self.assertEqual((bucket, parsed_tool, code), ('toolkit', tool, 'IL2087'))
+                (bucket, parsed_tool, code, assembly, *_), = self.rows()
+                self.assertEqual((bucket, parsed_tool, code, assembly), ('toolkit', tool, 'IL2087', 'CommunityToolkit.Maui'))
 
     def test_xaml_call_site_of_a_toolkit_api_is_bucket_toolkit_api(self):
         self.summarize([TOOLKIT_API_ROW])
@@ -535,6 +544,206 @@ class GateTests(Workspace):
                 with self.assertRaises(SystemExit) as raised:
                     runpy.run_path(ilwarn.__file__, run_name='__main__')
                 self.assertEqual(raised.exception.code, expected)
+
+
+def metadata_only_assembly(type_defs, type_refs=(), heap_sizes=0):
+    """Smallest PE that ilwarn's reader accepts: headers, one section, a CLI header and the Module, TypeRef and TypeDef tables.
+    type_defs and type_refs are (flags, namespace, name) and (namespace, name) tuples."""
+    heap = bytearray(b'\0')
+    offsets = {}
+
+    def string(text):
+        if text not in offsets:
+            offsets[text] = len(heap)
+            heap.extend(text.encode('utf-8') + b'\0')
+        return offsets[text]
+    module = struct.pack('<5H', 0, string('Test.dll'), 0, 0, 0)
+    refs = b''.join(struct.pack('<3H', 0, string(name), string(namespace)) for namespace, name in type_refs)
+    defs = b''.join(struct.pack('<IHHHHH', flags, string(name), string(namespace), 0, 1, 1) for flags, namespace, name in type_defs)
+    extra_data = struct.pack('<I', 0xDEADBEEF) if heap_sizes & 0x40 else b''
+    tables = (struct.pack('<IBBBBQQ', 0, 2, 0, heap_sizes, 1, 0b111, 0) + struct.pack('<3I', 1, len(type_refs), len(type_defs)) + extra_data
+              + module + refs + defs)
+    strings = bytes(heap) + b'\0' * (-len(heap) % 4)
+    tables += b'\0' * (-len(tables) % 4)
+    version = b'v4.0.30319\0\0'
+    headers_size = 16 + len(version) + 4 + (8 + 4) + (8 + 12)
+    stream_headers = (struct.pack('<II', headers_size, len(tables)) + b'#~\0\0'
+                      + struct.pack('<II', headers_size + len(tables), len(strings)) + b'#Strings\0\0\0\0')
+    root = struct.pack('<IHHII', 0x424A5342, 1, 1, 0, len(version)) + version + struct.pack('<HH', 0, 2) + stream_headers + tables + strings
+    section_rva, section_pointer = 0x1000, 0x200
+    cli_header = struct.pack('<IHHII', 72, 2, 5, section_rva + 72, len(root)).ljust(72, b'\0')
+    section = cli_header + root
+    optional = bytearray(0xE0)
+    struct.pack_into('<H', optional, 0, 0x10B)
+    struct.pack_into('<I', optional, 96 + 14 * 8, section_rva)
+    section_header = b'.text\0\0\0' + struct.pack('<IIII', len(section), section_rva, len(section), section_pointer).ljust(32, b'\0')
+    pe = b'PE\0\0' + struct.pack('<HHIIIHH', 0x14C, 1, 0, 0, 0, len(optional), 0) + bytes(optional) + section_header
+    dos = bytearray(0x40)
+    struct.pack_into('<I', dos, 0x3C, 0x40)
+    return (bytes(dos) + pe).ljust(section_pointer, b'\0') + section
+
+
+PUBLIC, NESTED_PUBLIC = 1, 2
+GENERATED = 'Microsoft.Maui.Controls.Generated'
+REGEX_GENERATED = 'System.Text.RegularExpressions.Generated'
+
+
+class TypeIndexTests(Workspace):
+    """Warnings of generated code in the toolkit DLLs that sit outside the CommunityToolkit.Maui namespace belong to the toolkit."""
+
+    def summarize_with_toolkit_dll(self, type_defs, member_names, type_refs=(), dll=None):
+        self.write_toolkit_dll(dll if dll is not None else metadata_only_assembly(type_defs, type_refs))
+        rows = ['ILC : Trim analysis warning IL2026: %s: Using member.' % member for member in member_names]
+        log = self.write('warnings.log', '\n'.join(rows) + '\n')
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc = ilwarn.summarize(log, self.directory.name, [self.path('packages')])
+        return rc, {row[4]: row[0] for row in self.rows()}
+
+    def test_the_reader_lists_top_level_types_only_and_drops_generic_arity(self):
+        names = ilwarn.top_level_type_names(metadata_only_assembly([
+            (PUBLIC, GENERATED, 'Gen`2'), (NESTED_PUBLIC, '', 'Inner'), (0, '', '<Module>'), (PUBLIC, '', '<>z__ReadOnlyList')],
+            type_refs=[(GENERATED, 'OnlyReferenced')]))
+        self.assertEqual(names, {GENERATED + '.Gen'})
+
+    def test_generic_arity_in_ilc_and_illink_spelling_attributes_to_the_toolkit(self):
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen`1')], [GENERATED + '.Gen`1.Run()', GENERATED + '.Gen<T>.Run()'])
+        self.assertEqual(buckets, {GENERATED + '.Gen`1.Run()': 'toolkit', GENERATED + '.Gen<T>.Run()': 'toolkit'})
+
+    def test_a_member_of_a_nested_type_matches_through_its_top_level_type(self):
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen'), (NESTED_PUBLIC, '', 'Inner')], [GENERATED + '.Gen.Inner.Run()'])
+        self.assertEqual(buckets, {GENERATED + '.Gen.Inner.Run()': 'toolkit'})
+
+    def test_a_file_local_type_name_starting_with_an_angle_bracket_is_kept_verbatim(self):
+        defined = REGEX_GENERATED + '.<RegexGenerator_g>F1A2B__Utilities'
+        other = REGEX_GENERATED + '.<RegexGenerator_g>FFFFF__Utilities'
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, REGEX_GENERATED, '<RegexGenerator_g>F1A2B__Utilities')],
+                                                     [defined + '.IsMatch(String)', other + '.IsMatch(String)'])
+        self.assertEqual(buckets, {defined + '.IsMatch(String)': 'toolkit', other + '.IsMatch(String)': 'other'})
+
+    def test_attributes_that_every_assembly_embeds_are_not_indexed(self):
+        member = 'System.Runtime.CompilerServices.NullableAttribute..ctor(Byte)'
+        _, buckets = self.summarize_with_toolkit_dll(
+            [(PUBLIC, 'System.Runtime.CompilerServices', 'NullableAttribute'), (PUBLIC, 'Microsoft.CodeAnalysis', 'EmbeddedAttribute'), (PUBLIC, GENERATED, 'Gen')],
+            [member])
+        self.assertEqual(buckets, {member: 'other'})
+
+    def test_a_type_that_the_dll_only_references_keeps_its_bucket(self):
+        member = GENERATED + '.OnlyReferenced.Run()'
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen')], [member], type_refs=[(GENERATED, 'OnlyReferenced')])
+        self.assertEqual(buckets, {member: 'maui'})
+
+    def test_a_defined_generated_type_gates_while_an_undefined_one_in_the_same_namespace_stays_maui(self):
+        defined, undefined = GENERATED + '.Gen.Run()', GENERATED + '.NotTheToolkits.Run()'
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen')], [defined, undefined])
+        self.assertEqual(buckets, {defined: 'toolkit', undefined: 'maui'})
+        rc, output = self.gate()
+        self.assertEqual(rc, 1)
+        self.assertIn(defined, output)
+
+    def test_a_toolkit_dll_without_readable_types_fails_summarize_and_the_gate_closed(self):
+        for label, dll in (('no types', metadata_only_assembly([(0, '', '<Module>')])), ('not a PE', b'MZ not an assembly')):
+            with self.subTest(label):
+                rc, buckets = self.summarize_with_toolkit_dll([], [GENERATED + '.Gen.Run()'], dll=dll)
+                self.assertEqual(rc, 4)
+                with open(self.path('warnings-summary.txt'), encoding='utf-8') as summary:
+                    self.assertIn('TYPE-INDEX=FAIL', summary.read())
+                gate_rc, output = self.gate()
+                self.assertEqual(gate_rc, 4)
+                self.assertIn('TYPE-INDEX=FAIL', output)
+
+    def summarize_lines_with_toolkit_dll(self, type_defs, lines):
+        self.write_toolkit_dll(metadata_only_assembly(type_defs))
+        log = self.write('warnings.log', '\n'.join(lines) + '\n')
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc = ilwarn.summarize(log, self.directory.name, [self.path('packages')])
+        return rc, {row[4]: (row[0], row[3]) for row in self.rows()}
+
+    def test_a_type_name_that_other_assemblies_define_too_is_toolkit_only_by_its_source_path(self):
+        interceptors = GENERATED + '.GeneratedBindingInterceptors'
+        shapes = {
+            'none': 'ILC',
+            'toolkit': '/_/src/CommunityToolkit.Maui/obj/Release/net11.0-ios/Gen/Interceptors.g.cs(5)',
+            'toolkit core on windows': 'D:\\a\\Maui\\src\\CommunityToolkit.Maui.Core\\obj\\Release\\net11.0-windows10.0.19041.0\\Interceptors.g.cs(5,1)',
+            'toolkit media element': '/_/src/CommunityToolkit.Maui.MediaElement/obj/Interceptors.g.cs(5,1)',
+            'sample': '/Users/runner/trim-audit/ios-aotroot/obj/Release/net11.0-ios/Interceptors.g.cs(5,1)',
+            'maui': '/_/src/Controls/src/Core/Interceptors.g.cs(5,1)',
+            'markup': '/_/src/CommunityToolkit.Maui.Markup/obj/Release/net11.0/Interceptors.g.cs(5,1)',
+        }
+        expected = {'none': 'toolkit', 'toolkit': 'toolkit', 'toolkit core on windows': 'toolkit', 'toolkit media element': 'toolkit',
+                    'sample': 'maui', 'maui': 'maui', 'markup': 'maui'}
+        lines = ['%s: Trim analysis warning IL2026: %s.Run%s(): Using member.' % ('ILC ' if label == 'none' else path, interceptors, number)
+                 for number, (label, path) in enumerate(shapes.items())]
+        _, buckets = self.summarize_lines_with_toolkit_dll([(PUBLIC, GENERATED, 'GeneratedBindingInterceptors')], lines)
+        for number, label in enumerate(shapes):
+            with self.subTest(label):
+                self.assertEqual(buckets['%s.Run%d()' % (interceptors, number)][0], expected[label])
+
+    def test_a_global_constants_class_of_another_assembly_is_not_the_toolkits(self):
+        lines = ['ILC : Trim analysis warning IL2026: Constants.Toolkit(): Using member.',
+                 '/_/src/CommunityToolkit.Maui.Camera/Constants.cs(3): Trim analysis warning IL2026: Constants.Located(): Using member.',
+                 '/_/src/Somewhere/Constants.cs(3): Trim analysis warning IL2026: Constants.Foreign(): Using member.']
+        _, buckets = self.summarize_lines_with_toolkit_dll([(PUBLIC, '', 'Constants')], lines)
+        self.assertEqual({member: bucket for member, (bucket, _) in buckets.items()},
+                         {'Constants.Toolkit()': 'toolkit', 'Constants.Located()': 'toolkit', 'Constants.Foreign()': 'other'})
+
+    def test_code_that_the_toolkit_generators_emit_into_an_app_is_toolkit_for_every_tool(self):
+        folder = 'obj/Release/net11.0-android/CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.TextColorToGenerator'
+        generated = '/repo/samples/CommunityToolkit.Maui.Sample/%s/ColorAnimationExtensions.g.cs' % folder
+        lines = [
+            '%s(12,5): Trim analysis warning IL2026: Microsoft.Maui.Controls.ColorAnimationExtensions_Label.Run(): Using member.' % generated,
+            'D:\\a\\repo\\samples\\CommunityToolkit.Maui.Sample\\%s\\Other.g.cs(12): Trim analysis warning IL2026: Microsoft.Maui.Controls.ColorAnimationExtensions_Button.Run(): Using member.' % folder.replace('/', '\\'),
+            '%s(12,5): Trim analysis warning IL2026: CommunityToolkit.Maui.Sample.Pages.Page.Run(): Using member.' % generated,
+            '%s(12,5): warning IL2026: Using member Y which has RequiresUnreferencedCodeAttribute can break functionality.' % generated,
+            'CommunityToolkit.Maui.SourceGenerators/CommunityToolkit.Maui.SourceGenerators.X/Relative.g.cs(3,1): warning IL2026: Using member Z.',
+            '/repo/obj/Elsewhere/Microsoft.Maui.Controls.SourceGen/Pages.xsg.cs(3,1): Trim analysis warning IL2026: Microsoft.Maui.Controls.Thing.Run(): Using member.',
+        ]
+        _, rows = self.summarize_lines_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen')], lines)
+        self.assertEqual(rows['Microsoft.Maui.Controls.ColorAnimationExtensions_Label.Run()'], ('toolkit', 'CommunityToolkit.Maui.SourceGenerators'))
+        self.assertEqual(rows['Microsoft.Maui.Controls.ColorAnimationExtensions_Button.Run()'][0], 'toolkit')
+        self.assertEqual(rows['CommunityToolkit.Maui.Sample.Pages.Page.Run()'], ('toolkit', 'CommunityToolkit.Maui.SourceGenerators'))
+        self.assertEqual(rows['Microsoft.Maui.Controls.Thing.Run()'][0], 'maui')
+        analyzer = [row for row in self.rows() if row[1] == 'analyzer']
+        self.assertEqual([row[0] for row in analyzer], ['toolkit', 'toolkit'])
+        self.assertEqual({row[3] for row in analyzer}, {'CommunityToolkit.Maui.SourceGenerators'})
+
+    def test_an_origin_that_is_the_type_itself_matches_the_index(self):
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen'), (NESTED_PUBLIC, '', 'Inner')], [GENERATED + '.Gen', GENERATED + '.Gen.Inner'])
+        self.assertEqual(buckets, {GENERATED + '.Gen': 'toolkit', GENERATED + '.Gen.Inner': 'toolkit'})
+
+    def test_a_generic_file_local_type_matches_in_ilc_and_illink_spelling(self):
+        local = REGEX_GENERATED + '.<RegexGenerator_g>F1__Gen'
+        members = [local + '`1.Run()', local + '<T>.Run()', local + '`1<__Canon>.Run()']
+        _, buckets = self.summarize_with_toolkit_dll([(PUBLIC, REGEX_GENERATED, '<RegexGenerator_g>F1__Gen`1')], members)
+        self.assertEqual(set(buckets.values()), {'toolkit'})
+        self.assertEqual(len(buckets), 3)
+
+    def test_the_reader_skips_the_extra_data_of_a_heap_sizes_flag_of_0x40(self):
+        names = ilwarn.top_level_type_names(metadata_only_assembly([(PUBLIC, GENERATED, 'Gen')], heap_sizes=0x40))
+        self.assertEqual(names, {GENERATED + '.Gen'})
+
+    def test_no_toolkit_dll_at_all_fails_summarize_and_the_gate_closed(self):
+        log = self.write('warnings.log', 'ILC : Trim analysis warning IL2026: Microsoft.Maui.Controls.Thing.Run(): Using member.\n')
+        os.makedirs(self.path('packages/empty'))
+        for label, packages in (('no packages folder', []), ('a packages folder without the DLLs', [self.path('packages')])):
+            with self.subTest(label), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(ilwarn.summarize(log, self.directory.name, packages), 4)
+                gate_rc, output = self.gate()
+                self.assertEqual(gate_rc, 4)
+                self.assertIn('TYPE-INDEX=FAIL', output)
+
+    def test_the_type_count_of_every_dll_is_recorded(self):
+        self.summarize_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen'), (PUBLIC, GENERATED, 'Other')], [])
+        with open(self.path('warnings-counts.json'), encoding='utf-8') as counts:
+            self.assertEqual(json.load(counts)['toolkit_type_counts'], {'communitytoolkit.maui/1.0.0/lib/net11.0/CommunityToolkit.Maui.dll': 2})
+
+
+class CompiledElsewhereTests(unittest.TestCase):
+    def test_a_clone_under_a_toolkit_named_folder_does_not_make_the_sample_obj_copy_a_toolkit_one(self):
+        compiled_elsewhere = ilwarn.compiled_elsewhere
+        clone = '/home/me/src/CommunityToolkit.Maui/'
+        self.assertTrue(compiled_elsewhere(clone + 'artifacts/trim-audit/android-aot/obj/Release/Gen.g.cs(5)'))
+        self.assertFalse(compiled_elsewhere(clone + 'src/CommunityToolkit.Maui/obj/Release/net11.0/Gen.g.cs(5)'))
+        self.assertFalse(compiled_elsewhere(clone + 'src/CommunityToolkit.Maui.Core/Views/Thing.cs(5,3)'))
 
 
 if __name__ == '__main__':
