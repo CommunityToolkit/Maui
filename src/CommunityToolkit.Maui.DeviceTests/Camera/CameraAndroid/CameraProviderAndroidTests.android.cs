@@ -506,25 +506,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		AndroidX.Camera.Lifecycle.ProcessCameraProvider.ConfigureInstance(configuration.Build()!);
 	}
 
-	static Task WaitForFutureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
-	{
-		var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		future.AddListener(new Java.Lang.Runnable(() =>
-		{
-			try
-			{
-				future.Get();
-				done.TrySetResult();
-			}
-			catch (Exception ex)
-			{
-				done.TrySetException(ex);
-			}
-		}), AndroidX.Core.Content.ContextCompat.GetMainExecutor(AppContext));
-
-		return done.Task.WaitAsync(CameraTimeout);
-	}
-
 	sealed class NoCameraFilter : Java.Lang.Object, ICameraFilter
 	{
 		public IList<ICameraInfo> Filter(IList<ICameraInfo>? cameraInfos) => [];

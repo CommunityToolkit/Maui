@@ -592,8 +592,8 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Skip.IfNot(camera.CameraInfo!.IsFocusMeteringSupported(probe),
 				"The camera supports no AF, AE or AWB metering region, so CameraX rejects every focus and metering action.");
 
-			// One UI-thread message: CameraX handles both requests on its camera thread in this order, long before a capture result
-			// could complete the first one. The bound session is not bound again, so nothing else can end the test's action.
+			// The probe is started first, in the same UI-thread message that starts the preview: CameraX handles both requests in this order,
+			// long before a capture result could complete the first one. The bound session is not bound again, so nothing else can end the test's action.
 			var probeOutcome = ObserveFailureAsync(camera.CameraControl!.StartFocusAndMetering(probe)!);
 			var start = session.Manager.StartCameraPreview(CancellationToken.None);
 
@@ -602,6 +602,121 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 				?? throw new Xunit.Sdk.XunitException("The test's focus and metering action completed: StartCameraPreview started no action of its own.");
 			Assert.Equal("Cancelled by another startFocusAndMetering()", failure.Message);
 		});
+	}
+
+	// CameraX 1.5 answers startFocusAndMetering only after its camera thread ran a task, and that thread can hang in CameraDevice.close():
+	// the start must not hold the UI thread while the camera thread is stuck.
+	[Fact]
+	public async Task StartCameraPreviewDoesNotBlockTheUiThreadWhileTheCameraThreadIsStuck()
+	{
+		SetupBuilder();
+		var cameraThread = new GatedExecutor();
+		await ConfigureCameraXToUseAsync(cameraThread);
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var cameraId = session.View.SelectedCamera!.DeviceId;
+			await InvokeOnMainThreadAsync(session.Manager.StopCameraPreview);
+			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+
+			cameraThread.Close();
+			var uiThreadStaysFree = Task.Run(() => PingTheUiThreadWhileTheCameraThreadIsStuckAsync(cameraThread));
+
+			var start = session.Manager.StartCameraPreview(CancellationToken.None);
+
+			Assert.True(await uiThreadStaysFree, "The UI thread did not answer a ping within 2 s: StartCameraPreview blocked it while the camera thread was stuck.");
+			await start.WaitAsync(CameraTimeout);
+			await WaitUntilCameraIsStreamingAsync(session);
+		});
+	}
+
+	// The gate stays shut for a fixed window, so a block that starts late in the preview start (after its main-executor hops) is still caught.
+	// It is opened from a pool thread, so a start that blocks the UI thread cannot keep it shut and wedge the run.
+	static async Task<bool> PingTheUiThreadWhileTheCameraThreadIsStuckAsync(GatedExecutor cameraThread)
+	{
+		try
+		{
+			var stuckWindow = System.Diagnostics.Stopwatch.StartNew();
+			while (stuckWindow.Elapsed < TimeSpan.FromSeconds(5))
+			{
+				var uiThreadAnswered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				new Android.OS.Handler(Android.OS.Looper.MainLooper!).Post(() => uiThreadAnswered.TrySetResult());
+				if (await Task.WhenAny(uiThreadAnswered.Task, Task.Delay(2000)) != uiThreadAnswered.Task)
+				{
+					return false;
+				}
+
+				await Task.Delay(50);
+			}
+
+			return true;
+		}
+		finally
+		{
+			cameraThread.Open();
+		}
+	}
+
+	// Shutting down and then configuring is how CameraX's own tests reconfigure it. The cleanup shuts CameraX down once more, so that the next
+	// test starts it with its default configuration again.
+	async Task ConfigureCameraXToUseAsync(Java.Util.Concurrent.IExecutor cameraExecutor)
+	{
+		var native = await GetNativeCameraProviderAsync();
+		RegisterCleanup(() => native.ShutdownAsync());
+
+		await InvokeOnMainThreadAsync(() => WaitForFutureAsync(native.ShutdownAsync()));
+		var configuration = CameraXConfig.Builder.FromConfig(AndroidX.Camera.Camera2.Camera2Config.DefaultConfig())!.SetCameraExecutor(cameraExecutor)!;
+		AndroidX.Camera.Lifecycle.ProcessCameraProvider.ConfigureInstance(configuration.Build()!);
+	}
+
+	sealed class GatedExecutor : Java.Lang.Object, Java.Util.Concurrent.IExecutor
+	{
+		readonly Lock gate = new();
+		readonly List<Java.Lang.IRunnable> held = [];
+		bool isOpen = true;
+
+		public void Execute(Java.Lang.IRunnable? command)
+		{
+			if (command is null)
+			{
+				return;
+			}
+
+			lock (gate)
+			{
+				if (!isOpen)
+				{
+					held.Add(command);
+					return;
+				}
+			}
+
+			ThreadPool.QueueUserWorkItem(_ => command.Run());
+		}
+
+		public void Close()
+		{
+			lock (gate)
+			{
+				isOpen = false;
+			}
+		}
+
+		public void Open()
+		{
+			List<Java.Lang.IRunnable> released;
+			lock (gate)
+			{
+				isOpen = true;
+				released = [.. held];
+				held.Clear();
+			}
+
+			foreach (var command in released)
+			{
+				ThreadPool.QueueUserWorkItem(_ => command.Run());
+			}
+		}
 	}
 
 	static Task<Java.Lang.Throwable?> ObserveFailureAsync(Google.Common.Util.Concurrent.IListenableFuture future)

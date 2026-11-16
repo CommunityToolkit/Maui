@@ -43,6 +43,25 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	protected static Context AppContext => MauiProgramDefaults.DefaultContext;
 
+	protected static Task WaitForFutureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
+	{
+		var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		future.AddListener(new Java.Lang.Runnable(() =>
+		{
+			try
+			{
+				future.Get();
+				done.TrySetResult();
+			}
+			catch (Exception ex)
+			{
+				done.TrySetException(ex);
+			}
+		}), AndroidX.Core.Content.ContextCompat.GetMainExecutor(AppContext));
+
+		return done.Task.WaitAsync(CameraTimeout);
+	}
+
 	protected void SetupBuilder(Action<MauiAppBuilder>? configureBuilder = null, [CallerMemberName] string? testName = null)
 	{
 		// The runner only reports results when the whole run ends, so a crash of the app (the camera HAL, the media codec or
