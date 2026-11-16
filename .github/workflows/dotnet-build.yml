@@ -219,7 +219,7 @@ jobs:
                     cd ${{ env.PathToCommunityToolkitUnitTestProjectDirectory }}
                     dotnet test -c Release --report-gh -report-xunit-trx --report-xunit-trx-filename "ut.trx" --results-directory "${{ runner.temp }}"
 
-            # Servicing releases change behavior: dotnet/maui#38063 (11.0.10) broke three TouchBehavior unit tests that pass on the pinned 11.0.0,
+            # Servicing releases change behavior: dotnet/maui#38063 (11.0.10) broke three TouchBehavior unit tests that passed on 11.0.0,
             # and only the device tests caught it. Tag builds skip this run, as they skip the device tests: a new .NET MAUI release must not block one.
             -   name: Run the UnitTests against the latest .NET MAUI release
                 if: ${{ !startsWith(github.ref, 'refs/tags/') }}

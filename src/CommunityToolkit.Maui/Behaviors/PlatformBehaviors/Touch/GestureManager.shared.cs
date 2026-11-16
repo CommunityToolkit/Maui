@@ -993,9 +993,9 @@ sealed partial class GestureManager : IDisposable, IAsyncDisposable
 	{
 		if (stateBackgroundBrush is not SolidColorBrush brush)
 		{
-			// The element's own colour from then on: taking it away would change how the element looks at a touch that configures no colour
-			// (an Android Button would get its Material fill back).
-			if (isFirstBackgroundColorUpdate && element.BackgroundColor is null)
+			// The element's own colour from then on (an Android Button would get its Material fill back without it), but not over a binding,
+			// Style or DynamicResource of the app: a value would hide it for good, also while it gives no colour.
+			if (isFirstBackgroundColorUpdate && element.BackgroundColor is null && !element.IsSet(VisualElement.BackgroundColorProperty))
 			{
 				backgroundColorAnimation = null;
 				element.BackgroundColor = TouchBehaviorDefaults.DefaultBackgroundColor;

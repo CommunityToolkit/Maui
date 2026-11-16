@@ -86,8 +86,11 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
+	static partial void ReplaceSoftwareKeyboard(InputView input);
+
 	static async Task FocusAsync(Entry entry)
 	{
+		ReplaceSoftwareKeyboard(entry);
 		Assert.True(entry.Focus(), "The Entry did not accept the focus.");
 		await AssertEventually(() => entry.IsFocused, timeout: 3000, message: "The Entry never got the focus.");
 	}

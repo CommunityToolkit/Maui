@@ -20,11 +20,11 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
 ### .NET and .NET MAUI Versions
-* The libraries pin the first .NET and .NET MAUI release of each major version (for example the .NET 11.0.100 SDK and `MauiPackageVersion` 11.0.0 in `Directory.Build.props`), so apps can use any later release.
-* Raise a pinned version only when a bug fix or a feature requires it.
+* The libraries pin the first .NET SDK of each major version (11.0.100) and the oldest .NET MAUI release they support (`MauiPackageVersion` in `Directory.Build.props`), so apps can use any later release.
+* Raise a pinned version only when a bug fix or a feature requires it. `MauiPackageVersion` is 11.0.10, not 11.0.0: .NET MAUI 11.0.0 crashes on iOS 17 and earlier when a view with a managed KVO observer is collected (dotnet/maui#38662).
 * The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
-* The device test app builds the same way in CI (`DEVICE_TEST_BUILD_ARGS` in `device-tests.yml`), so the device tests run on the .NET MAUI release that apps get. .NET MAUI 11.0.0 crashes on iOS 17 and earlier when a view with a managed KVO observer is collected (dotnet/maui#38662).
-* The Build workflow runs the unit tests on the pinned `MauiPackageVersion` and again on the latest .NET MAUI release (`-p:MauiPackageVersion="*"`), because servicing releases change behavior (dotnet/maui#38063).
+* The device test app builds with the pinned `MauiPackageVersion`, so the device tests run on the .NET MAUI version that the packages declare.
+* The Build workflow runs the unit tests on the pinned `MauiPackageVersion` and again on the latest .NET MAUI release (`-p:MauiPackageVersion="*"`), because servicing releases change behavior (dotnet/maui#38063). A failure in either run stops the packages.
 
 ### C# File Naming
 * Platform-suffix naming is required for files in projects that produce NuGet packages.
@@ -208,6 +208,12 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 * Give every test class a `[Category(TestCategory.X)]` and name platform-specific test files with the same suffixes as the libraries (`.android.cs`, `.ios.cs`, `.macos.cs`, `.macios.cs`, `.windows.cs`). How to write them is in [src/CommunityToolkit.Maui.DeviceTests/README.md](https://github.com/CommunityToolkit/Maui/blob/main/src/CommunityToolkit.Maui.DeviceTests/README.md).
 * Device tests run on the newest release of every supported major iOS and Android version (Android 17: the newest without 16 KB pages; `.github/workflows/device-tests.yml`). A PR that raises an OS minimum, adds a supported major version, or changes the device-test CI must keep that true; flag a PR that drops or skips one.
 * `dotnet test` does not run them. Use `eng/devices/run.ps1`, which runs every platform the machine can run and is the command of the `Device Tests` workflow on every pull request (one `-Platform` per job), or one platform's script (`android.ps1`, `ios.ps1`, `catalyst.ps1` or `windows.ps1`), as described in [eng/devices/LOCAL.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/LOCAL.md) and [eng/devices/README.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/README.md).
+
+## Failing and Flaky Tests
+* A failed CI run blocks a release. Keep every unit-test and device-test check green.
+* Fixing a flaky test is welcome: find the race (in the test, the library or the platform), prove it with evidence (logs, stacks, repeated runs) and fix the cause.
+* Never delete, skip, weaken or blanket-retry a valid test to get green. Improve the test instead.
+* Retry only infrastructure failures and proven platform crashes with a narrow signature. `eng/devices` retries a leg once on CI for infrastructure failures and for the three Android platform crashes listed in `eng/devices/README.md`, only when the crash explains every failure, and shows every retry in the run summary and `gate.json`.
 
 ## Submitting Contributions
 1.	Fork the repository and create a new branch for your changes.

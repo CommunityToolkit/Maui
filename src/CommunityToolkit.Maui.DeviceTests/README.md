@@ -226,7 +226,10 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
   `CameraAndroidTestBase`: their tests grant CAMERA and RECORD_AUDIO with `pm grant`, and the app keeps a grant until XHarness
   uninstalls it, because revoking one kills the process. `PermanentGrantsLastOrderer`, an assembly-level
   `TestCollectionOrderer`, runs this collection after every other one, so the SpeechToText tests that need RECORD_AUDIO denied run
-  first. The base class's constructor fails a test whose class forgot the attribute.
+  first. The base class's constructor fails a test whose class forgot the attribute. When the cleanup of such a test finds a camera that
+  stays open, it logs every Java stack (logcat tag `CameraWedge`) and sends SIGQUIT (not on Android 7, where it aborts the app), so ART
+  writes the Java and native stacks under `/data/anr` (only root can read them). If a thread is stuck in `CameraDeviceImpl.close`, or
+  CameraX lost its cameras, every later camera test fails at once with that reason.
 
 Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the platforms that build a test
 of the category; see [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its

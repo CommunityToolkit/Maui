@@ -98,6 +98,8 @@ public partial class MediaManager : IDisposable
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
+		ReleasePreviousPlayer();
+
 		Player = new();
 		PlayerViewController = new()
 		{
@@ -222,8 +224,9 @@ public partial class MediaManager : IDisposable
 			return ValueTask.CompletedTask;
 		}
 
-		// Before iOS 17 an AVPlayer whose item failed never readies another item, and a failed AVPlayer cannot play again (AVPlayer.status)
-		if (Player.Status is AVPlayerStatus.Failed || Player.CurrentItem?.Status is AVPlayerItemStatus.Failed)
+		// A failed AVPlayer cannot play again (AVPlayer.status). Before iOS 17 an AVPlayer whose item failed never readies another item either
+		if (Player.Status is AVPlayerStatus.Failed
+			|| (!OperatingSystem.IsIOSVersionAtLeast(17) && Player.CurrentItem?.Status is AVPlayerItemStatus.Failed))
 		{
 			ReplacePlayer(Player);
 		}
@@ -474,17 +477,7 @@ public partial class MediaManager : IDisposable
 
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
-				MutedObserver?.Dispose();
-				MutedObserver = null;
-
-				VolumeObserver?.Dispose();
-				VolumeObserver = null;
-
-				StatusObserver?.Dispose();
-				StatusObserver = null;
-
-				TimeControlStatusObserver?.Dispose();
-				TimeControlStatusObserver = null;
+				RemovePlayerObservers();
 
 				Player.Dispose();
 				Player = null;
@@ -702,13 +695,16 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+		// Overwriting a live observer would only log "observer object was not disposed" and leave its registration on the old player
+		RemovePlayerObservers();
+
 		MutedObserver = Player.AddObserver("muted", options, MutedChanged);
 		VolumeObserver = Player.AddObserver("volume", options, VolumeChanged);
 		StatusObserver = Player.AddObserver("status", options, StatusChanged);
 		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", options, TimeControlStatusChanged);
 	}
 
-	void ReplacePlayer(AVPlayer unusablePlayer)
+	void RemovePlayerObservers()
 	{
 		MutedObserver?.Dispose();
 		MutedObserver = null;
@@ -718,6 +714,32 @@ public partial class MediaManager : IDisposable
 		StatusObserver = null;
 		TimeControlStatusObserver?.Dispose();
 		TimeControlStatusObserver = null;
+	}
+
+	void ReleasePreviousPlayer()
+	{
+		RateObserver?.Dispose();
+		RateObserver = null;
+		RemovePlayerObservers();
+
+		// Its remote command handlers target the player that is released below
+		metaData?.Dispose();
+		metaData = null;
+
+		if (Player is null)
+		{
+			return;
+		}
+
+		DestroyPlayerItemStatusObserver();
+		Player.ReplaceCurrentItemWithPlayerItem(null);
+		Player.Dispose();
+		Player = null;
+	}
+
+	void ReplacePlayer(AVPlayer unusablePlayer)
+	{
+		RemovePlayerObservers();
 
 		metaData?.Dispose();
 		metaData = null;

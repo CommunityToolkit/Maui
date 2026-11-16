@@ -227,8 +227,11 @@ public partial class SelectAllTextBehaviorTests : CommunityToolkitHandlerTestBas
 		_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
 	};
 
+	static partial void ReplaceSoftwareKeyboard(InputView input);
+
 	static async Task FocusAsync(InputView input)
 	{
+		ReplaceSoftwareKeyboard(input);
 		Assert.True(input.Focus(), "The view did not accept the focus.");
 		await AssertEventually(() => input.IsFocused, timeout: 3000, message: "The view never got the focus.");
 	}
