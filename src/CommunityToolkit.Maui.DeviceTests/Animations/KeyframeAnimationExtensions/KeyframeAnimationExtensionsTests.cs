@@ -426,7 +426,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		SetupBuilder();
 
 		var view = CreateAnimatedView(rotationAndAnchor);
-		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = runLength };
+		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = 3 * runLength };
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
