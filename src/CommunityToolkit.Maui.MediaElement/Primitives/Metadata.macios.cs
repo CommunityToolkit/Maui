@@ -1,4 +1,5 @@
 ﻿using AVFoundation;
+using CommunityToolkit.Maui.Views;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -97,7 +98,9 @@ sealed class Metadata : IDisposable
 		NowPlayingInfo.IsLiveStream = false;
 		NowPlayingInfo.PlaybackRate = GetPlaybackRate(mediaElement.Speed);
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
-		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(url));
+		NowPlayingInfo.Artwork = mediaElement.MetadataArtworkSource is MediaSource artworkSource
+			? CreateArtwork(GetArtworkUrl(artworkSource))
+			: new(boundsSize: new(320, 240), requestHandler: _ => GetImage(url));
 		PublishNowPlayingInfo();
 	}
 
@@ -135,6 +138,58 @@ sealed class Metadata : IDisposable
 		if (ReferenceEquals(nowPlayingInfoPublisher, this))
 		{
 			ClearNowPlaying();
+		}
+	}
+
+	/// <summary>
+	/// Resolves the location of the artwork a <see cref="MediaSource"/> points to.
+	/// </summary>
+	/// <returns>The URL, or <see langword="null"/> for a source that cannot be an artwork (such as a stream) or that points to nothing.</returns>
+	internal static NSUrl? GetArtworkUrl(MediaSource? artworkSource)
+	{
+		switch (artworkSource)
+		{
+			case UriMediaSource { Uri: Uri uri } when MetadataArtworkPaths.IsHttpUri(uri) || (uri.IsAbsoluteUri && uri.IsFile):
+				return NSUrl.FromString(uri.AbsoluteUri);
+
+			case FileMediaSource fileMediaSource:
+				return MetadataArtworkPaths.GetLocalFilePath(fileMediaSource.Path) is string localFilePath
+					? NSUrl.CreateFileUrl(localFilePath)
+					: null;
+
+			case ResourceMediaSource { Path: string path } when !string.IsNullOrWhiteSpace(path) && Path.HasExtension(path):
+				// Same split as MediaManager.CreateAsset, so a resource resolves to the file the player would open
+				return NSBundle.MainBundle.GetUrlForResource(
+					Path.GetFileNameWithoutExtension(path),
+					Path.GetExtension(path)[1..],
+					Path.GetDirectoryName(path) ?? string.Empty);
+
+			default:
+				return null;
+		}
+	}
+
+	// The location is resolved on the calling thread and captured alone: Now Playing outlives the media element, so the handler must not hold it
+	static MPMediaItemArtwork CreateArtwork(NSUrl? artworkUrl) =>
+		new(boundsSize: new(320, 240), requestHandler: _ => LoadArtworkImage(artworkUrl));
+
+	static UIImage LoadArtworkImage(NSUrl? artworkUrl)
+	{
+		if (artworkUrl is null)
+		{
+			return defaultUIImage;
+		}
+
+		try
+		{
+			var image = NSData.FromUrl(artworkUrl) is NSData data ? UIImage.LoadFromData(data) : null;
+
+			// An image without a size has no aspect ratio, which Now Playing needs to scale it
+			return image is null || image.Size.Width <= 0 || image.Size.Height <= 0 ? defaultUIImage : image;
+		}
+		catch
+		{
+			return defaultUIImage;
 		}
 	}
 

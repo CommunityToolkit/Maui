@@ -718,12 +718,10 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && GetPosterArtworkUrl() is NSUrl artworkUrl)
 		{
 			// Artwork that cannot be read or decoded shows no poster (an image without a size has no aspect ratio to keep)
-			var artworkData = NSUrl.FromString(MediaElement.MetadataArtworkUrl) is NSUrl artworkUrl ? NSData.FromUrl(artworkUrl) : null;
-#pragma warning restore CS0618
+			var artworkData = NSData.FromUrl(artworkUrl);
 			var image = artworkData is null ? null : UIImage.LoadFromData(artworkData);
 			if (image is null || image.Size.Width <= 0 || image.Size.Height <= 0)
 			{
@@ -750,6 +748,19 @@ public partial class MediaManager : IDisposable
 				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
 			]);
 		}
+	}
+
+	NSUrl? GetPosterArtworkUrl()
+	{
+		if (MediaElement.MetadataArtworkSource is MediaSource artworkSource)
+		{
+			return Metadata.GetArtworkUrl(artworkSource);
+		}
+
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
+		var artworkUrl = MediaElement.MetadataArtworkUrl;
+#pragma warning restore CS0618
+		return string.IsNullOrEmpty(artworkUrl) ? null : NSUrl.FromString(artworkUrl);
 	}
 
 	void VolumeChanged(NSObservedChange e)
