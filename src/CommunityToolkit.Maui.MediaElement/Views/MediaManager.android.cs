@@ -32,6 +32,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	static int managersBoundToTheService;
 
+	// Device tests swap in a context whose start or bind of the service fails, which the application context never does for the declared service
+	internal static Context? ServiceContextOverride { get; set; }
+
+	static Context ServiceContext => ServiceContextOverride ?? global::Android.App.Application.Context;
+
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -831,9 +836,10 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
 		}
 
-		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		global::Android.App.Application.Context.StopService(serviceIntent);
-		Platform.AppContext.UnbindService(boundServiceConnection);
+		var context = ServiceContext;
+		var serviceIntent = new Intent(context, typeof(MediaControlsService));
+		context.StopService(serviceIntent);
+		context.UnbindService(boundServiceConnection);
 		boundServiceConnection.Dispose();
 	}
 
@@ -913,14 +919,41 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		var intent = new Intent(global::Android.App.Application.Context, typeof(MediaControlsService));
-		connection = new BoundServiceConnection(this);
+		var context = ServiceContext;
+		var intent = new Intent(context, typeof(MediaControlsService));
+		var newConnection = new BoundServiceConnection(this);
+		var isBindAttempted = false;
+		var isBound = false;
+
+		try
+		{
+			context.StartForegroundService(intent);
+			isBindAttempted = true;
+			isBound = context.BindService(intent, newConnection, Bind.AutoCreate);
+		}
+		finally
+		{
+			if (!isBound)
+			{
+				// Android keeps a connection registered from the bind call on, even when the bind fails, until it is unbound
+				if (isBindAttempted)
+				{
+					context.UnbindService(newConnection);
+				}
+
+				newConnection.Dispose();
+			}
+		}
+
+		if (!isBound)
+		{
+			Trace.WriteLine($"Unable to bind {nameof(MediaControlsService)}: the media notification is not shown.");
+			return;
+		}
+
+		connection = newConnection;
 		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
-
 		Interlocked.Increment(ref managersBoundToTheService);
-
-		global::Android.App.Application.Context.StartForegroundService(intent);
-		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
 	}
 
 	void StopService(BoundServiceConnection boundServiceConnection)

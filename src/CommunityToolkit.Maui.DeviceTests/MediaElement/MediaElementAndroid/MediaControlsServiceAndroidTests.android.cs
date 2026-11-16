@@ -616,6 +616,104 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
+	static int ManagersBoundToTheService => (int)typeof(MediaManager).GetField("managersBoundToTheService", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+
+	// The failing context must be in place before the handler connects, because that maps the null Source and starts the service.
+	// A failed bind must be unbound and not counted, or nothing would ever decrement the count again.
+	[Fact]
+	public async Task ServiceThatCannotBeBoundLeavesNoConnectionAndKeepsTheManagerCountUnchanged()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		var baseline = ManagersBoundToTheService;
+		var context = new ContextWithoutTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext);
+		MediaManager.ServiceContextOverride = context;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, handler =>
+			{
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.NotNull(context.BoundConnection);
+				Assert.Same(context.BoundConnection, context.UnboundConnection);
+				Assert.Null(FindMediaControlsService());
+
+				var exception = Record.Exception(() => mediaElement.Source = MediaSource.FromResource(toneAsset));
+
+				Assert.Null(exception);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Null(FindMediaControlsService());
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
+
+		Assert.Equal(baseline, ManagersBoundToTheService);
+	}
+
+	[Fact]
+	public async Task ServiceThatFailsToStartLeavesNoConnectionAndALaterSourceStartsIt()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		var baseline = ManagersBoundToTheService;
+		var startFailure = new Java.Lang.IllegalStateException("The service cannot be started from the background.");
+		var unboundContext = new ContextWithoutTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext);
+		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+		MediaManager.ServiceContextOverride = unboundContext;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				Assert.Null(GetServiceConnection(handler.Manager!));
+
+				mediaElement.Source = MediaSource.FromResource(toneAsset);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+
+				// A Source set that throws leaves MAUI's SourceProperty marked as being set and later sets never map, so the failure is triggered in place.
+				MediaManager.ServiceContextOverride = failingContext;
+				var exception = Record.Exception(() => ((ResourceMediaSource)mediaElement.Source!).Path = "exoplayer/other.wav");
+
+				Assert.NotNull(exception);
+				Assert.Same(startFailure, FindException(exception, startFailure));
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Equal(0, failingContext.BindCount);
+
+				MediaManager.ServiceContextOverride = null;
+				mediaElement.Source = MediaSource.FromResource(toneAsset);
+
+				var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
+
+		await WaitForMediaControlsServiceToStopAsync();
+		await WaitUntilAsync(() => ManagersBoundToTheService == baseline, "The manager count never returned to its baseline.");
+	}
+
+	static Exception? FindException(Exception? exception, Exception expected)
+	{
+		for (var current = exception; current is not null; current = current.InnerException)
+		{
+			if (ReferenceEquals(current, expected))
+			{
+				return current;
+			}
+		}
+
+		return null;
+	}
+
 	// The manager unsubscribes from TaskRemoved when it is disposed, so the handler cannot normally run without a player; its null-conditional
 	// keeps a late TaskRemoved from touching a player that does not exist.
 	[Fact]
@@ -1081,6 +1179,42 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				return () => playerProperty.SetValue(manager, player);
 			default:
 				throw new ArgumentOutOfRangeException(nameof(missing), missing, null);
+		}
+	}
+
+	sealed class ContextWithoutTheService(Context baseContext) : ContextWrapper(baseContext)
+	{
+		public IServiceConnection? BoundConnection { get; private set; }
+
+		public IServiceConnection? UnboundConnection { get; private set; }
+
+		public override ComponentName? StartForegroundService(Intent? service) => base.StartForegroundService(CreateMissingServiceIntent());
+
+		public override bool BindService(Intent? service, IServiceConnection? conn, Bind flags)
+		{
+			BoundConnection = conn;
+			return base.BindService(CreateMissingServiceIntent(), conn, flags);
+		}
+
+		public override void UnbindService(IServiceConnection? conn)
+		{
+			UnboundConnection = conn;
+			base.UnbindService(conn);
+		}
+
+		Intent CreateMissingServiceIntent() => new Intent().SetClassName(PackageName!, "communityToolkit.maui.media.services.missing");
+	}
+
+	sealed class ContextThatCannotStartTheService(Context baseContext, Java.Lang.Throwable startFailure) : ContextWrapper(baseContext)
+	{
+		public int BindCount { get; private set; }
+
+		public override ComponentName? StartForegroundService(Intent? service) => throw startFailure;
+
+		public override bool BindService(Intent? service, IServiceConnection? conn, Bind flags)
+		{
+			BindCount++;
+			return false;
 		}
 	}
 
