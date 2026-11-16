@@ -92,15 +92,29 @@ Windows offline speech-to-text uses `System.Speech`, which needs built-in COM. A
 
 Windows, a .NET MAUI issue rather than a toolkit one: under full trimming, a `CollectionView` on the legacy Windows handler (`UseWindowsCollectionView2Handler=false`) shows no templated items. WinUI binds the properties of `ItemTemplateContext` and `GroupTemplateContext` by reflection, and the trimmer removes them ([dotnet/maui#31227](https://github.com/dotnet/maui/issues/31227)). The device tests use that handler and keep those properties in `src/CommunityToolkit.Maui.DeviceTests/NativeAotReflectionRoots.windows.cs`. Apps use the `DynamicDependency` attributes from the docs page Trimming and Native AOT.
 
-**Agents: if you notice that dotnet/maui#39053 is closed or fixed, tell the maintainers** (open an issue, or mention it in your PR or review). Windows NativeAOT can then be enabled in the toolkit, and the Windows leg of the CI step switched from full trimming to NativeAOT.
+**Agents: if you notice that dotnet/maui#39053 is closed or fixed, tell the maintainers** (open an issue, or mention it in your PR or review). Windows NativeAOT can then be enabled in the toolkit, and the Windows leg of the CI step and the Windows job of the trimmed device tests switched from full trimming to NativeAOT.
 
 ## Device tests stay NativeAOT-safe
 
-The device tests run fully trimmed and with NativeAOT, so a test must reach its product assertions there too:
+The `Trimmed Device Tests` workflow (`.github/workflows/device-tests-trimmed.yml`) runs the device tests fully trimmed and with NativeAOT; the `Device Tests` check of every pull request does not.
+
+* It runs the newest Android API level in `device-tests.yml` (full and NativeAOT), the iOS simulator (NativeAOT) and Windows unpackaged (full) on every pull request and push to `main` (`dotnet-build.yml` calls it), and from the Actions tab.
+* Locally: `pwsh eng/devices/run.ps1 -Platform ios -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=nativeaot'` (see [eng/devices/README.md](../../eng/devices/README.md#trimmed-and-nativeaot-runs)).
+
+A test must reach its product assertions there too:
 
 * Reach private toolkit members with `[UnsafeAccessor]`, or with reflection the trimmer can see (`typeof(T).GetField("name", ...)` with literal names). Add `[DynamicDependency]` for a type that only reflection reaches, such as a private nested type. Never reflect over `GetType()` or a type name from a string without annotations.
 * Use `AotSafeAssert` (in `CommunityToolkit.Maui.DeviceTests.Shared`) instead of xunit's `Assert.Equal`, `Assert.Empty`, `Assert.All` or `Assert.Collection` over value-type items (tuples, `Nullable<T>`, structs). xunit builds their comparers with `MakeGenericMethod`, which fails under NativeAOT.
 * Put Windows-only roots that the tests need in `NativeAotReflectionRoots.windows.cs`.
+
+## Newest OS versions (interim)
+
+The device test workflows (`device-tests.yml`, `device-tests-trimmed.yml`) should run on the newest GA OS releases. Until CommunityToolkit/Maui#3438 (a weekly bump bot, auto-merged) lands and replaces this list, check these when reviewing a workflow change or a release, and recommend a bump when a newer GA release exists:
+
+* Android: the newest level is the highest `api-level` in `device-tests.yml`; the trimmed Android leg follows the level automatically, but its `target`, `ram-size` and `emulator-features` are fixed in `device-tests-trimmed.yml`: a new newest leg with its own values needs the same change in `device-tests-trimmed.yml` (`target` and `ram-size` in the `Run device tests` step, `emulator-features` in the `api` step).
+* iOS: the newest simulator runtime on the Xcode image.
+* Xcode: `CommunityToolkitSample_Xcode_Version` in `.github/workflows/shared.env` (it moves with each .NET and .NET MAUI release, E0191), and the `xcode-NN` runner label in all three workflows (`dotnet-build.yml` `build_sample` and `build_library`, `device-tests.yml`, `device-tests-trimmed.yml`); the image must also have `CommunityToolkitLibrary_Xcode_Version`.
+* Windows: the `windows-2025` runner label in both workflows.
 
 ## Code review guidance (Copilot and humans)
 
@@ -109,7 +123,7 @@ Flag a change that:
 * adds reflection, a string-path binding, `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or any suppression of an `IL` warning;
 * removes a `[DynamicallyAccessedMembers]` annotation that a MAUI API needs;
 * disables an analyzer, removes an `IL` code from `WarningsAsErrors`, removes `TrimMode` or `IsAotCompatible`, or weakens the `CTMTRIM` guard;
-* adds a line to `eng/trim-audit/allow.tsv`, puts an `IL` code in `NoWarn`, `WarningsNotAsErrors`, `.editorconfig` or `.globalconfig`, or removes or weakens the `Build Library` trim/AOT step or the gate;
+* adds a line to `eng/trim-audit/allow.tsv`, puts an `IL` code in `NoWarn`, `WarningsNotAsErrors`, `.editorconfig` or `.globalconfig`, or removes or weakens the `Build Library` trim/AOT step, the gate or the trimmed device tests (`device-tests-trimmed.yml`, `CtmDeviceTestsTrimming`);
 * adds output from `CommunityToolkit.Maui.SourceGenerators` that does not start with `GeneratedCodePragmas.Header`, or formats with the current culture;
 * adds a `Type`-based `Enum` call, or JSON without a source-generated context;
 * adds private reflection or an xunit value-type assert to the device tests that NativeAOT cannot run.

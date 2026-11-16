@@ -129,7 +129,7 @@ Here we will have some:
 
 ## Device tests
 
-Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test app `src/CommunityToolkit.Maui.DeviceTests`. The `Device Tests` check of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them.
+Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test app `src/CommunityToolkit.Maui.DeviceTests`. The `Device Tests` check of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them. The `Trimmed Device Tests` check of every pull request runs them fully trimmed and with NativeAOT ([Trimmed and NativeAOT runs](eng/devices/README.md#trimmed-and-nativeaot-runs)).
 
 Run them on your machine before you push, with one command from the repository root:
 

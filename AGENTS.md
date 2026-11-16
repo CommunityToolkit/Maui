@@ -14,6 +14,10 @@ This is the .NET MAUI Community Toolkit: four NuGet packages (`CommunityToolkit.
 
 Every change to the four packages must keep them fully trim-safe and NativeAOT-safe. The trim, AOT and single-file analyzers run in every library build, every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is an error, and a guard fails the build with `CTMTRIM001-004` if an analyzer is ever off or `IsAotCompatible` is not `true`. Do not use reflection on unannotated types or string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. Read [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md) before changing code, and check your change with `pwsh eng/trim-audit/run.ps1` (packs the libraries, builds the Sample with NativeAOT or full trimming and prints PASS or FAIL).
 
+## Newest OS versions
+
+Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: when you review or change a device test workflow, check its Android API level, iOS runtime, Xcode and Windows runner against the newest GA releases and recommend a bump. The list is in [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
+
 ## Instructions
 
 * [.github/copilot-instructions.md](.github/copilot-instructions.md): general rules for contributors and agents

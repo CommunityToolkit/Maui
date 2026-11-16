@@ -24,6 +24,9 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Raise a pinned version only when a bug fix or a feature requires it.
 * The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
 
+### Newest OS versions
+* Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: check the Android API level, iOS runtime, Xcode and Windows runner of the device test workflows against the newest GA releases and recommend a bump; the list is in [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
+
 ### Trimming and NativeAOT
 * The four packages must stay fully trim-safe and NativeAOT-safe: every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error. Never add reflection on unannotated types, string-path bindings, or `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]` on a public API. A trim or AOT (`IL`) warning suppression needs maintainer approval and proof; an `eng/trim-audit/allow.tsv` line needs maintainer approval and a reason that names the issue or upstream blocker.
 * The rules, the local checks and the platform support table are in [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md). Read it before changing package code, MSBuild files or source generators, and flag violations when reviewing.
