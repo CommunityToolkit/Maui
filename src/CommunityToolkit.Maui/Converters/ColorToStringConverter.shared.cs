@@ -56,13 +56,19 @@ public partial class ColorToRgbaStringConverter : BaseConverter<Color, string>
 			return color;
 		}
 
-		// ConvertFrom writes the alpha with the culture ("RGBA(255,0,0,0,5)" in de-DE), which the invariant Color.TryParse rejects. A null culture means CurrentCulture here too, as in ConvertFrom.
+		// A comma-decimal culture writes the alpha as "0,5" ("RGBA(255,0,0,0,5)" in de-DE), which the invariant Color.TryParse rejects.
+		// A null culture reads CurrentCulture here so strings that v17.0.0 wrote for a null culture still convert back.
 		return TryParseCultureAwareRgba(value, culture ?? CultureInfo.CurrentCulture, out color)
 			? color
 			: DefaultConvertBackReturnValue;
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Converts <paramref name="value"/> to its RGBA string.
+	/// </summary>
+	/// <param name="value">The <see cref="Color"/> to convert.</param>
+	/// <param name="culture">The culture that formats the numbers. In a binding, .NET MAUI passes <c>ConverterCulture</c>, or <see cref="CultureInfo.CurrentUICulture"/> when it is not set. <see langword="null"/> or <see cref="CultureInfo.InvariantCulture"/> gives the culture-invariant format, for example <c>RGBA(255,0,0,0.5)</c>.</param>
+	/// <returns>The <see cref="string"/> representation of <paramref name="value"/>, for example <c>RGBA(255,0,0,0.5)</c> for <see cref="Colors.Red"/> with an alpha of 0.5 where the format has an alpha.</returns>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
@@ -190,7 +196,12 @@ public partial class ColorToCmykStringConverter : BaseConverterOneWay<Color, str
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Converts <paramref name="value"/> to its CMYK string.
+	/// </summary>
+	/// <param name="value">The <see cref="Color"/> to convert.</param>
+	/// <param name="culture">The culture that formats the numbers. In a binding, .NET MAUI passes <c>ConverterCulture</c>, or <see cref="CultureInfo.CurrentUICulture"/> when it is not set. <see langword="null"/> or <see cref="CultureInfo.InvariantCulture"/> gives the culture-invariant format, for example <c>CMYK(0%,100%,100%,0%)</c>.</param>
+	/// <returns>The <see cref="string"/> representation of <paramref name="value"/>, for example <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/>.</returns>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
@@ -207,7 +218,12 @@ public partial class ColorToCmykaStringConverter : BaseConverterOneWay<Color, st
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Converts <paramref name="value"/> to its CMYKA string.
+	/// </summary>
+	/// <param name="value">The <see cref="Color"/> to convert.</param>
+	/// <param name="culture">The culture that formats the numbers. In a binding, .NET MAUI passes <c>ConverterCulture</c>, or <see cref="CultureInfo.CurrentUICulture"/> when it is not set. <see langword="null"/> or <see cref="CultureInfo.InvariantCulture"/> gives the culture-invariant format, for example <c>CMYKA(0%,100%,100%,0%,0.5)</c>.</param>
+	/// <returns>The <see cref="string"/> representation of <paramref name="value"/>, for example <c>CMYKA(0%,100%,100%,0%,0.5)</c> for <see cref="Colors.Red"/> with an alpha of 0.5 where the format has an alpha.</returns>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
@@ -224,7 +240,12 @@ public partial class ColorToHslStringConverter : BaseConverterOneWay<Color, stri
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Converts <paramref name="value"/> to its HSL string.
+	/// </summary>
+	/// <param name="value">The <see cref="Color"/> to convert.</param>
+	/// <param name="culture">The culture that formats the numbers. In a binding, .NET MAUI passes <c>ConverterCulture</c>, or <see cref="CultureInfo.CurrentUICulture"/> when it is not set. <see langword="null"/> or <see cref="CultureInfo.InvariantCulture"/> gives the culture-invariant format, for example <c>HSL(360,100%,50%)</c>.</param>
+	/// <returns>The <see cref="string"/> representation of <paramref name="value"/>, for example <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/>.</returns>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
@@ -241,7 +262,12 @@ public partial class ColorToHslaStringConverter : BaseConverterOneWay<Color, str
 	/// <inheritdoc/>
 	public override string DefaultConvertReturnValue { get; set; } = string.Empty;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Converts <paramref name="value"/> to its HSLA string.
+	/// </summary>
+	/// <param name="value">The <see cref="Color"/> to convert.</param>
+	/// <param name="culture">The culture that formats the numbers. In a binding, .NET MAUI passes <c>ConverterCulture</c>, or <see cref="CultureInfo.CurrentUICulture"/> when it is not set. <see langword="null"/> or <see cref="CultureInfo.InvariantCulture"/> gives the culture-invariant format, for example <c>HSLA(360,100%,50%,0.5)</c>.</param>
+	/// <returns>The <see cref="string"/> representation of <paramref name="value"/>, for example <c>HSLA(360,100%,50%,0.5)</c> for <see cref="Colors.Red"/> with an alpha of 0.5 where the format has an alpha.</returns>
 	public override string ConvertFrom(Color value, CultureInfo? culture = null)
 	{
 		ArgumentNullException.ThrowIfNull(value);
