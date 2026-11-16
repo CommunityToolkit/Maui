@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
@@ -357,7 +359,16 @@ public partial class CameraView : View, ICameraView, IDisposable
 		// TrySetResult: a second answer of the platform must not throw into the platform's callback
 		Volatile.Read(ref pendingPictureTCS)?.TrySetResult(new(imageData, string.Empty));
 
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+		// MAUI's WeakEventManager invokes handlers by reflection, so a handler's own exception arrives wrapped in a TargetInvocationException
+		// whose message says nothing about the failure; MediaCaptureFailed reports the message
+		try
+		{
+			weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+		}
+		catch (TargetInvocationException ex) when (ex.InnerException is Exception handlerException)
+		{
+			ExceptionDispatchInfo.Throw(handlerException);
+		}
 	}
 
 	void ICameraView.OnMediaCapturedFailed(string failureReason)

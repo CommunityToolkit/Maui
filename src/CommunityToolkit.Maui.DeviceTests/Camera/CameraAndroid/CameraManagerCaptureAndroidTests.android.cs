@@ -376,8 +376,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		Assert.Equal(1, proxy.CloseCount);
 	}
 
-	// MAUI's WeakEventManager invokes handlers by reflection, so the subscriber's exception arrives wrapped in a TargetInvocationException
-	static string WrappedSubscriberFailureMessage { get; } = new TargetInvocationException(null).Message;
+	const string subscriberFailureMessage = "The subscriber failed.";
 
 	[Fact]
 	public async Task ImageCallbackReportsAThrowingSubscriberOnceWithoutRethrowingAndClosesTheImageProxy()
@@ -394,11 +393,11 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var exception = Record.Exception(() => callback.OnCaptureSuccess(proxy));
 
 		Assert.Null(exception);
-		Assert.Equal(WrappedSubscriberFailureMessage, Assert.Single(recorder.Failures));
+		Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
 		Assert.Single(recorder.Captured);
 		Assert.Equal(1, proxy.CloseCount);
 
-		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException("The subscriber failed.");
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
 	}
 
 	// CameraX calls the image callback on its executor thread, where an exception that escaped the callback would end the app
@@ -417,7 +416,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			await recorder.WaitForFailureAsync();
 			session.View.MediaCaptured -= ThrowingSubscriber;
 
-			Assert.Equal(WrappedSubscriberFailureMessage, Assert.Single(recorder.Failures));
+			Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
 			Assert.Single(recorder.Captured);
 
 			var nextRecorder = new CaptureRecorder(session.View);
@@ -429,7 +428,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			Assert.Single(recorder.Failures);
 		});
 
-		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException("The subscriber failed.");
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
 	}
 
 	[Fact]

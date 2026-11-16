@@ -62,6 +62,18 @@ public class CameraViewTests : BaseViewTest
 	}
 
 	[Fact]
+	public void OnMediaCaptured_RethrowsAThrowingSubscribersOwnException()
+	{
+		cameraView.MediaCaptured += ThrowingSubscriber;
+
+		var exception = Assert.Throws<InvalidOperationException>(() => ((ICameraView)cameraView).OnMediaCaptured(new MemoryStream()));
+
+		Assert.Equal("The subscriber failed.", exception.Message);
+
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException("The subscriber failed.");
+	}
+
+	[Fact]
 	public async Task StartVideoRecording_ShouldThrowException()
 	{
 		var imageData = new MemoryStream();
