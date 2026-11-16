@@ -1,0 +1,346 @@
+name: Trimmed Device Tests
+
+# The device tests fully trimmed and with NativeAOT (/p:CtmDeviceTestsTrimming, eng/devices/README.md). They find run-time breaks that give
+# no trim warning, such as the System.Speech COM crash under TrimMode=full and the trimmed MediaElement constructor (#3114).
+# dotnet-build.yml calls this workflow on every pull request and push to main; it can also run on demand.
+on:
+    workflow_call:
+    workflow_dispatch:
+        inputs:
+            test-filter:
+                description: 'TestFilter, for example Category=IconTintColorBehavior or SkipCategories=A,B (empty runs every test). A platform with no test of the category fails (exit code 94).'
+                required: false
+                default: ''
+
+permissions:
+    contents: read
+
+env:
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+    TEST_FILTER: ${{ inputs.test-filter }}
+    # Apps ship trimmed or compiled with NativeAOT in Release.
+    DEVICE_TEST_CONFIGURATION: Release
+    # coverlet rewrites the toolkit assemblies, so the app would not trim or compile the IL that ships.
+    DEVICE_TEST_COVERAGE: false
+
+# No concurrency group: under workflow_call github.workflow is the caller's name, so a group here would be the Build run's own and deadlock
+# with it; the Build run's group cancels this workflow with the rest of the run, and a manual run cancels nothing. Keep the steps in sync with device-tests.yml.
+
+jobs:
+    device_tests_android:
+        name: Trimmed Device Tests (Android newest API, ${{ matrix.trimming }})
+        permissions:
+            contents: read
+        runs-on: ubuntu-24.04
+        timeout-minutes: 120
+        strategy:
+            fail-fast: false
+            matrix:
+                # Android NativeAOT is experimental in .NET 11; full trimming also covers CoreCLR, the runtime Android apps use by default.
+                trimming: [ full, nativeaot ]
+        env:
+            # As in device-tests.yml: the emulator's on-device recognizer may never answer.
+            DEVICE_TEST_SKIP_CAPABILITIES: 'OnDeviceSpeech'
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'SecondCamera'
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+                with:
+                    distribution: 'microsoft'
+                    java-version: '21'
+
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            # The same keys as device-tests.yml, so both workflows share the caches.
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-android-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
+            -   name: Install .NET MAUI Android Workload
+                run: dotnet workload install maui-android --version ${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Enable KVM
+                run: |
+                    echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                    sudo udevadm control --reload-rules
+                    sudo udevadm trigger --name-match=kvm --settle
+                    if ! { test -r /dev/kvm && test -w /dev/kvm; }; then
+                        echo '::error::/dev/kvm is not usable, so the Android emulator cannot use hardware acceleration.'
+                        exit 1
+                    fi
+
+            -   name: Runner diagnostics
+                run: |
+                    nproc
+                    free -h
+                    df -h "$GITHUB_WORKSPACE" "$HOME"
+
+            # The untrimmed matrix in device-tests.yml is the single source of the newest API level.
+            -   name: Find the newest Android API level
+                id: api
+                shell: bash
+                run: |
+                    level=$(python3 -I .github/scripts/newest-android-api-level.py .github/workflows/device-tests.yml)
+                    echo "level=$level" | tee -a "$GITHUB_OUTPUT"
+                    # Android 17: the goldfish H.264 decoder is denied its BufferPool memfd by SELinux, so the AOSP software decoder decodes (as in device-tests.yml).
+                    case "$level" in 37|37.*) echo 'emulator-features=-feature -HardwareDecoder' | tee -a "$GITHUB_OUTPUT" ;; esac
+
+            -   name: Build device test apps
+                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs '/p:CtmDeviceTestsTrimming=${{ matrix.trimming }}'
+
+            -   name: Check that the app is ${{ matrix.trimming == 'full' && 'fully trimmed' || 'compiled with NativeAOT' }}
+                id: check
+                run: bash .github/scripts/check-trimmed-device-test-app.sh ${{ matrix.trimming }}
+
+            # The runner image's cmdline-tools 12.0 write target=android-0 into the AVD of a dotted API level (actions/runner-images #14484,
+            # android-emulator-runner #482 and #494); without the image's tools, the action installs its own (20.0 has the fix).
+            -   name: Remove the runner image's old cmdline-tools
+                if: ${{ contains(steps.api.outputs.level, '.') }}
+                run: sudo rm -rf "$ANDROID_HOME/cmdline-tools"
+
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' && steps.check.outcome == 'success' }}
+                uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+                with:
+                    api-level: ${{ steps.api.outputs.level }}
+                    target: google_apis
+                    arch: x86_64
+                    profile: pixel_7_pro
+                    cores: 4
+                    ram-size: 4096M
+                    disk-size: 6000M
+                    force-avd-creation: false
+                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated ${{ steps.api.outputs.emulator-features }}
+                    disable-animations: true
+                    # The first line guards against target=android-0: a failing pre-launch step does not stop the action. It stays on one
+                    # line because the action runs each line in its own shell.
+                    script: |
+                        avd="${ANDROID_AVD_HOME:-$HOME/.android/avd}"; grep -s '^target=' "$avd/test.ini" "$avd/test.avd/config.ini"; if [ ! -f "$avd/test.ini" ] || grep -qs '^target=android-0$' "$avd/test.ini" "$avd/test.avd/config.ini"; then echo "::error::The AVD in $avd is missing or has target=android-0 (old cmdline-tools)."; exit 1; fi
+                        pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api${{ steps.api.outputs.level }}-${{ matrix.trimming }}
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-trimmed-android-api${{ steps.api.outputs.level }}-${{ matrix.trimming }}
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+    # NativeAOT only: it is how iOS apps are meant to ship, it trims fully, and the untrimmed iOS job does not trim at all. Mac Catalyst
+    # NativeAOT passed by hand too, but would add a second macOS runner and has hung at launch once.
+    device_tests_ios:
+        name: Trimmed Device Tests (iOS Simulator, nativeaot)
+        permissions:
+            contents: read
+        runs-on: xcode-27
+        timeout-minutes: 150
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Set Xcode Version
+                uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+                with:
+                    xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
+
+            -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.LATEST_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Locate the .NET install
+                id: dotnet-root
+                shell: bash
+                run: |
+                    p=$(dirname "$(readlink -f "$(command -v dotnet)")"); echo "path=$p" | tee -a "$GITHUB_OUTPUT"
+                    echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
+                    wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
+
+            -   name: Cache .NET workload packs
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: |
+                        ${{ steps.dotnet-root.outputs.path }}/packs
+                        ${{ steps.dotnet-root.outputs.path }}/sdk-manifests
+                        ${{ steps.dotnet-root.outputs.path }}/metadata/workloads
+                        ${{ steps.dotnet-root.outputs.path }}/template-packs
+                    key: dotnet-workload-maui-${{ runner.os }}-${{ runner.arch }}-${{ steps.dotnet-root.outputs.sdk }}-${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
+            -   name: Install .NET MAUI Workload
+                run: dotnet workload install maui --version ${{ steps.dotnet-root.outputs.workload-version }}
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            -   name: Restore .NET tools
+                id: tools
+                run: dotnet tool restore
+
+            -   name: Runner diagnostics
+                run: |
+                    sw_vers
+                    sysctl -n hw.ncpu hw.memsize
+                    xcrun simctl list runtimes
+
+            -   name: Build device test apps
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -BuildArgs '/p:CtmDeviceTestsTrimming=nativeaot'
+
+            -   name: Check that the app is compiled with NativeAOT
+                id: check
+                run: bash .github/scripts/check-trimmed-device-test-app.sh nativeaot
+
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' && steps.check.outcome == 'success' }}
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00 -ResultsFolder artifacts/device-tests/ios-nativeaot
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-trimmed-ios-nativeaot
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
+
+    # Full trimming only: NativeAOT does not work for .NET MAUI on Windows (https://github.com/dotnet/maui/issues/39053). Unpackaged: the
+    # trimmer treats both packagings alike, and this one needs no signing certificate.
+    device_tests_windows:
+        name: Trimmed Device Tests (Windows unpackaged, full)
+        permissions:
+            contents: read
+        runs-on: windows-2025
+        timeout-minutes: 100
+        env:
+            # As in device-tests.yml: no GPU and no camera on the runner; this job installs Media Foundation, so media playback must work.
+            DEVICE_TEST_SKIP_CAPABILITIES: 'VideoRendering,Camera'
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'MediaPlayback'
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            -   name: Load shared environment variables
+                uses: ./.github/actions/load-shared-env
+
+            -   name: Install Media Foundation
+                shell: powershell
+                run: |
+                    if (-not (Get-Command Get-WindowsFeature -ErrorAction SilentlyContinue)) {
+                        Write-Output 'No ServerManager module (client Windows): Media Foundation is part of the operating system.'
+                        exit 0
+                    }
+                    $feature = Get-WindowsFeature -Name Server-Media-Foundation
+                    if ($null -eq $feature) {
+                        throw 'This Windows Server has no Server-Media-Foundation feature.'
+                    }
+                    if ($feature.InstallState -ne 'Installed') {
+                        $result = Install-WindowsFeature -Name Server-Media-Foundation
+                        if (-not $result.Success) {
+                            throw "Install-WindowsFeature Server-Media-Foundation failed (exit code $($result.ExitCode))."
+                        }
+                        if ("$($result.RestartNeeded)" -ne 'No') {
+                            Write-Output "::warning::Server-Media-Foundation reports RestartNeeded=$($result.RestartNeeded); the runner cannot restart, so the MediaElement tests show whether media playback works without it."
+                        }
+                    }
+                    Get-WindowsFeature -Name Server-Media-Foundation | Format-Table -AutoSize Name, InstallState
+
+            -   name: Install .NET SDK v${{ env.TOOLKIT_NET_VERSION }}
+                uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    dotnet-version: ${{ env.TOOLKIT_NET_VERSION }}
+                    dotnet-quality: 'ga'
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'NuGet.config', 'global.json', '.config/dotnet-tools.json') }}
+
+            -   name: Install .NET MAUI Workload
+                id: workload
+                run: dotnet workload install maui
+
+            -   name: Display dotnet info
+                run: dotnet --info
+
+            # The trimmed app keeps built-in COM on (CtmDeviceTestsTrimming=full), so the offline speech-to-text tests drive System.Speech
+            # through its COM interfaces when the runner has an English recognizer.
+            -   name: System.Speech recognizers
+                shell: powershell
+                run: |
+                    Add-Type -AssemblyName System.Speech
+                    'System.Speech recognizers: ' + (([System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers() | ForEach-Object { $_.Culture.Name }) -join ', ')
+
+            -   name: Set the display resolution
+                shell: powershell
+                run: Set-DisplayResolution -Width 1920 -Height 1080 -Force
+
+            -   name: Build device test apps
+                shell: powershell
+                run: .\eng\devices\run.ps1 -Platform windows-unpackaged -Target buildOnly -Configuration $env:DEVICE_TEST_CONFIGURATION -BuildArgs '/p:CtmDeviceTestsTrimming=full'
+
+            -   name: Check that the app is fully trimmed
+                id: check
+                shell: bash
+                run: bash .github/scripts/check-trimmed-device-test-app.sh full
+
+            -   name: Run device tests
+                if: ${{ !cancelled() && steps.workload.outcome == 'success' && steps.check.outcome == 'success' }}
+                shell: powershell
+                run: .\eng\devices\run.ps1 -Platform windows-unpackaged -Target testOnly -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00 -ResultsFolder artifacts/device-tests/windows-unpackaged-full
+
+            -   name: Upload device test results
+                if: always()
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: device-tests-trimmed-windows-unpackaged-full
+                    path: |
+                        artifacts/device-tests/
+                        artifacts/logs/
