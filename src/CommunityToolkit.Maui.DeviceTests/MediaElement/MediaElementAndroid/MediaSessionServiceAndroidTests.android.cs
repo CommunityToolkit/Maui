@@ -29,6 +29,12 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 			configure?.Invoke(element);
 		});
 
+	static bool HasMediaNotificationWithoutForegroundFlag()
+	{
+		var mediaNotifications = GetActiveNotifications().Where(notification => IsMediaStyle(notification.Notification)).ToArray();
+		return mediaNotifications.Length > 0 && mediaNotifications.All(notification => !notification.Notification!.Flags.HasFlag(NotificationFlags.ForegroundService));
+	}
+
 	static Task WaitForForegroundAsync() =>
 		WaitUntilAsync(() => FindMediaControlsService()?.Foreground == true, "MediaControlsService never entered the foreground.");
 
@@ -374,7 +380,6 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 			await WaitForStateAsync(playing, MediaElementState.Playing);
 			await WaitUntilLoadedAsync(idle, idleRecorder);
 			await WaitForForegroundAsync();
-			var playingSession = GetMediaSession(playingHandler.Manager!)!;
 
 			MediaControlsService.Running!.OnTaskRemoved(null);
 
@@ -382,10 +387,11 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 				"A player was not paused by the removal of the task.");
 			await WaitForStateAsync(playing, MediaElementState.Paused);
 			await WaitUntilAsync(() => FindMediaControlsService()?.Foreground != true, "The service stayed in the foreground.");
+			// Media3 shows one notification for all sessions, and it picks the session that it shows: only its media style is the contract here
 			try
 			{
-				await WaitUntilAsync(() => FindMediaNotification(playingSession)?.Notification is Notification notification && !notification.Flags.HasFlag(NotificationFlags.ForegroundService),
-					"The notification of the paused player still is the foreground notification (or was never posted again).");
+				await WaitUntilAsync(HasMediaNotificationWithoutForegroundFlag,
+					"The media notification of the paused players still is the foreground notification (or was never posted again).");
 			}
 			catch (Xunit.Sdk.XunitException exception)
 			{
