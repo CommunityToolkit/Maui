@@ -505,11 +505,12 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
-	public async Task SourceAfterAFailedSourcePlaysInANewPlayerWithTheSameSettings()
+	public async Task SourceAfterAFailedSourcePlaysWithTheSameSettingsInANewPlayerOnlyBeforeIOS17()
 	{
 		SetupApple();
 		var mediaElement = CreateMediaElement();
 		var events = new MediaElementEvents(mediaElement);
+		var isPlayerReplacedAfterAFailedItem = !OperatingSystem.IsIOSVersionAtLeast(17);
 		var path = CreateCorruptMediaFile();
 
 		try
@@ -537,18 +538,27 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 				// Asserted before MediaOpened so a stall of the new player is told apart from a player that was never replaced
 				var player = handler.Manager.NativePlayer!;
-				Assert.NotSame(failedPlayer, player);
 				Assert.Same(player, handler.Manager.NativePlayerViewController!.Player);
-				Assert.Equal(NativeHandle.Zero, failedPlayer.Handle);
-				Assert.NotEqual(NativeHandle.Zero, failedPlayerHandle);
+				if (isPlayerReplacedAfterAFailedItem)
+				{
+					Assert.NotSame(failedPlayer, player);
+					Assert.Equal(NativeHandle.Zero, failedPlayer.Handle);
+					Assert.NotEqual(NativeHandle.Zero, failedPlayerHandle);
+					Assert.NotSame(failedMetadata, GetMetadata(handler.Manager));
+				}
+				else
+				{
+					// From iOS 17 the player readies a new item after a failed one; keeping it keeps everything the app set on it
+					Assert.Same(failedPlayer, player);
+					Assert.Same(failedMetadata, GetMetadata(handler.Manager));
+				}
+
 				Assert.True(player.Muted);
 				Assert.Equal(0.4f, player.Volume, 0.001f);
 				if (OperatingSystem.IsIOSVersionAtLeast(16))
 				{
 					Assert.Equal(1.5f, player.DefaultRate, 0.001f);
 				}
-
-				Assert.NotSame(failedMetadata, GetMetadata(handler.Manager));
 
 				await WaitAsync(opened, "MediaOpened was not raised.");
 				await WaitUntilReadyAsync(handler);

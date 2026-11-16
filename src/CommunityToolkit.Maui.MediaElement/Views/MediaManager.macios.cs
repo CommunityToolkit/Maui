@@ -222,8 +222,9 @@ public partial class MediaManager : IDisposable
 			return ValueTask.CompletedTask;
 		}
 
-		// Before iOS 17 an AVPlayer whose item failed never readies another item, and a failed AVPlayer cannot play again (AVPlayer.status)
-		if (Player.Status is AVPlayerStatus.Failed || Player.CurrentItem?.Status is AVPlayerItemStatus.Failed)
+		// A failed AVPlayer cannot play again (AVPlayer.status). Before iOS 17 an AVPlayer whose item failed never readies another item either
+		if (Player.Status is AVPlayerStatus.Failed
+			|| (!OperatingSystem.IsIOSVersionAtLeast(17) && Player.CurrentItem?.Status is AVPlayerItemStatus.Failed))
 		{
 			ReplacePlayer(Player);
 		}
