@@ -41,7 +41,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 	async Task FadeAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.OpacityProperty);
+		StopAnimationsOf(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync));
 
 		var fades = AnimatedPropertyTracker.For(view, VisualElement.OpacityProperty);
 		var (fadeId, originalOpacity) = fades.Start(view.Opacity);

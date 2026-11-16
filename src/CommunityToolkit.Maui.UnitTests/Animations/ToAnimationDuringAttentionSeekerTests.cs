@@ -99,6 +99,44 @@ public class ToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(nameof(ScaleAnimation), nameof(HeartbeatAnimation))]
+	[InlineData(nameof(RotateAnimation), nameof(SwingAnimation))]
+	public Task ToAnimation_StartedWhileTheContinuationOfTheAppsOwnToAnimationStartsASeeker_StopsThatSeeker(string toAnimationName, string seekerName) => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		Task? seekerStartedByTheApp = null;
+		var appCode = AnimateThenStartASeekerAsync();
+
+		// The To animation's start aborts the app's animation, whose continuation starts the seeker inside that abort
+		var toRun = CreateToAnimation(toAnimationName).Animate(view, token);
+		var seekerRun = seekerStartedByTheApp ?? throw new InvalidOperationException("The aborted app animation did not start a seeker.");
+
+		await seekerRun.WaitAsync(waitTimeout, token);
+		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
+		toRun.IsCompleted.Should().BeFalse("the seeker ends when the To animation starts, not at its own end");
+		await Task.WhenAll(toRun, appCode).WaitAsync(waitTimeout, token);
+		await WaitForTickerFramesAsync(view, 5, token);
+
+		AssertValuesEqual(view, startingValues);
+
+		async Task AnimateThenStartASeekerAsync()
+		{
+			await (toAnimationName is nameof(ScaleAnimation)
+				? view.ScaleToAsync(view.Scale, seekerLength, Easing.Linear, token)
+				: view.RotateToAsync(view.Rotation, seekerLength, Easing.Linear, token));
+			seekerStartedByTheApp = (seekerName is nameof(HeartbeatAnimation) ? new HeartbeatAnimation { Length = seekerLength } : CreateSeeker(seekerName)).Animate(view, token);
+		}
+	}, TestContext.Current.CancellationToken);
+
+	static BaseAnimation CreateToAnimation(string toAnimationName) => toAnimationName switch
+	{
+		nameof(ScaleAnimation) => new ScaleAnimation { Scale = 1.6, Length = functionalTestLength },
+		nameof(RotateAnimation) => new RotateAnimation { Rotation = 180, Length = functionalTestLength },
+		_ => throw new NotSupportedException(toAnimationName)
+	};
+
 	static BaseAnimation CreateSeeker(string seekerName) => seekerName switch
 	{
 		nameof(SwingAnimation) => new SwingAnimation { Length = seekerLength },

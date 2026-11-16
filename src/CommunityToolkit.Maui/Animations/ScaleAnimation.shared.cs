@@ -40,7 +40,7 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 	async Task ScaleAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.ScaleProperty);
+		StopAnimationsOf(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync));
 
 		var scales = AnimatedPropertyTracker.For(view, VisualElement.ScaleProperty);
 		var (scaleId, originalScale) = scales.Start(view.Scale);

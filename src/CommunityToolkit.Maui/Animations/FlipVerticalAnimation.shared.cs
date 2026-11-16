@@ -33,7 +33,7 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 	async Task FlipAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.RotationXProperty);
+		StopAnimationsOf(view, VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync));
 
 		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationXProperty);
 		var (flipId, originalRotationX) = rotations.Start(view.RotationX);

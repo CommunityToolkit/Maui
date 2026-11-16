@@ -427,6 +427,35 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(ToAnimationNames))]
+	public Task RunStartedByTheAppAfterItsOwnToAnimationEnds_WhileAnotherRunStarts_ReturnsTheViewToItsStartingValues(string animationName) => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var (property, handle) = PropertyOf(animationName);
+		Task? runStartedByTheApp = null;
+		var appCode = AnimateThenStartARunAsync();
+
+		// The run's start aborts the app's animation, whose continuation starts a run inside that abort; MAUI then aborts the nested run's tween before it starts the outer run's
+		var run = Create(animationName, functionalTestLength).Animate(view, token);
+		runStartedByTheApp.Should().NotBeNull("the app's continuation runs inside the abort of its animation");
+
+		await Task.WhenAll(run, appCode, runStartedByTheApp!).WaitAsync(waitTimeout, token);
+		await WaitForTickerFramesAsync(view, 5, token);
+
+		run.IsCompletedSuccessfully.Should().BeTrue();
+		runStartedByTheApp!.IsCompletedSuccessfully.Should().BeTrue();
+		view.AnimationIsRunning(handle).Should().BeFalse();
+		AssertValuesEqual(view, startingValues);
+
+		async Task AnimateThenStartARunAsync()
+		{
+			await AppToAnimation(animationName, view, (double)view.GetValue(property), token);
+			runStartedByTheApp = Create(animationName, functionalTestLength).Animate(view, token);
+		}
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(ToAnimationNames))]
 	public Task TokenCancelledWhileTheRunStartsItsTween_EndsCanceledWithoutPlayingTheTween(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
 		using var cancellation = new CancellationTokenSource();

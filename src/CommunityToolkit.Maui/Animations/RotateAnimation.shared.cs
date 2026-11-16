@@ -63,7 +63,7 @@ public partial class RotateAnimation : BaseAnimation
 	async Task RotateAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
-		KeyframeAnimationExtensions.StopRunAnimating(view, VisualElement.RotationProperty);
+		StopAnimationsOf(view, VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync));
 
 		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationProperty);
 		var (rotationId, originalRotation) = rotations.Start(view.Rotation);

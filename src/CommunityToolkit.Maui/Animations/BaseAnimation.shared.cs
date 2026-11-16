@@ -47,6 +47,14 @@ public abstract partial class BaseAnimation<TAnimatable>(uint defaultLength = Ba
 /// <param name="defaultLength">The default time, in milliseconds, over which to animate the transition</param>
 public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.Length) : BaseAnimation<VisualElement>(defaultLength)
 {
+	// App code after an aborted animation's await runs inside this abort and can start a run; MAUI's abort loop ends that run here, before this run takes the newest tracker id.
+	// StopRunAnimating comes second so it also stops a seeker that code started.
+	private protected static void StopAnimationsOf(VisualElement view, BindableProperty property, string animationHandle)
+	{
+		view.AbortAnimation(animationHandle);
+		KeyframeAnimationExtensions.StopRunAnimating(view, property);
+	}
+
 	// Returns false when the leg was interrupted (another animation took over, or CancelAnimations stopped it), which ends the run: the legs after it would interrupt whatever took over.
 	// animateTo must not pass the token to MAUI: for a token cancelled off the UI thread, MAUI queues AbortAnimation(handle), which a newer run that took the handle before it ran would suffer.
 	private protected static async Task<bool> AnimateLegAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> animateTo, CancellationToken token)

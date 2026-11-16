@@ -350,4 +350,26 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the new run ended");
 		});
 	}
+
+	[Fact]
+	public async Task RunStartedByTheAppWhenAnotherRunsStartAbortsTheAppsOwnToAnimationReturnsTheViewToItsOriginalValues()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			Task? runStartedByTheApp = null;
+			var appRun = AppToAnimation(view, (double)view.GetValue(PeakProperty));
+			var appCode = appRun.ContinueWith(_ => runStartedByTheApp = CreateAnimation().Animate(view), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+			// The run's start aborts the app's animation, whose continuation starts a run inside that abort
+			var run = CreateAnimation().Animate(view);
+			Assert.True(runStartedByTheApp is not null, "The app's continuation did not run inside the abort of its animation.");
+
+			await Task.WhenAll(run, appCode, runStartedByTheApp).WaitAsync(waitTimeout);
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after both runs ended");
+		});
+	}
 }

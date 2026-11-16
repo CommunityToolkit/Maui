@@ -340,6 +340,34 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		});
 	}
 
+	[Fact]
+	public async Task ScaleAnimationWhoseStartAbortsTheAppsScaleToAsyncStopsTheHeartbeatThatItsContinuationStarted()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(scaleOnly);
+		var heartbeat = new HeartbeatAnimation { MaximumScale = 1.25, Length = 3 * runLength };
+		var scale = new ScaleAnimation { Scale = 1.6, Length = runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			Task? heartbeatRun = null;
+			var appScale = view.ScaleToAsync(originalScale, 3 * runLength, Easing.Linear);
+			var appCode = appScale.ContinueWith(_ => heartbeatRun = heartbeat.Animate(view), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+			// Scale's start aborts the app's ScaleToAsync, whose continuation starts Heartbeat inside that abort
+			var scaleRun = scale.Animate(view);
+			Assert.True(heartbeatRun is not null, "The app's continuation did not run inside the abort of its ScaleToAsync.");
+
+			await heartbeatRun.WaitAsync(waitTimeout);
+			Assert.True(heartbeatRun.IsCompletedSuccessfully, $"Heartbeat ended {heartbeatRun.Status}; a stopped attention seeker completes normally.");
+			Assert.False(scaleRun.IsCompleted, "Heartbeat did not end when Scale started, but at its own end.");
+
+			await Task.WhenAll(scaleRun, appCode).WaitAsync(waitTimeout);
+			await AssertStaysAtOriginalValuesAsync(handler, view, scaleOnly, nativeStateAtRest, "after Scale stopped Heartbeat");
+		});
+	}
+
 	// MAUI calls the finished callback from its ticker, so an exception escaping it would crash the app
 	[Fact]
 	public async Task SeekerWhoseRestoreThrowsAtTheEndFaultsItsTaskAndRestoresEveryProperty()
