@@ -77,6 +77,7 @@ partial class CameraManager
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
+	IExecutorService? focusAndMeteringExecutor;
 	ProcessCameraProvider? processCameraProvider;
 	ImageCapture? imageCapture;
 	ImageCallBack? imageCallback;
@@ -179,6 +180,11 @@ partial class CameraManager
 		cameraExecutor?.Shutdown();
 		cameraExecutor?.Dispose();
 		cameraExecutor = null;
+
+		// The interrupt frees a thread that waits for the camera in StartFocusAndMetering
+		focusAndMeteringExecutor?.ShutdownNow();
+		focusAndMeteringExecutor?.Dispose();
+		focusAndMeteringExecutor = null;
 
 		imageCapture?.Dispose();
 		imageCapture = null;
@@ -320,6 +326,7 @@ partial class CameraManager
 		previewView = platformView;
 
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+		focusAndMeteringExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(OnOrientationChanged, context);
 		orientationListener.Enable();
 
@@ -723,7 +730,7 @@ partial class CameraManager
 			var meteringPointFactory = previewView.MeteringPointFactory ?? throw new InvalidOperationException("The PreviewView has no MeteringPointFactory.");
 			var point = meteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 			var action = new FocusMeteringAction.Builder(point).Build();
-			camera?.CameraControl?.StartFocusAndMetering(action);
+			StartFocusAndMeteringOffTheUiThread(camera?.CameraControl, action);
 
 			isInitialized = true;
 			onLoaded.Invoke();
@@ -733,6 +740,27 @@ partial class CameraManager
 		{
 			cameraPreviewSemaphoreSlim.Release();
 		}
+	}
+
+	// CameraX 1.5 blocks the caller until its camera thread answers (isRepeatingRequestAvailable), and that thread can hang in CameraDevice.close()
+	void StartFocusAndMeteringOffTheUiThread(ICameraControl? control, FocusMeteringAction? action)
+	{
+		if (control is null || action is null || focusAndMeteringExecutor is null)
+		{
+			return;
+		}
+
+		focusAndMeteringExecutor.Execute(new Runnable(() =>
+		{
+			try
+			{
+				control.StartFocusAndMetering(action);
+			}
+			catch (System.Exception ex)
+			{
+				Trace.TraceWarning($"{nameof(CameraManager)}: unable to start focus and metering: {ex}");
+			}
+		}));
 	}
 
 	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred until the
