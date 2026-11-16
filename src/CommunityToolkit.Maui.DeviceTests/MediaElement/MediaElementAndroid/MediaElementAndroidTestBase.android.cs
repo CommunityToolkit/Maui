@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using Android.App;
 using Android.Content;
@@ -210,6 +211,72 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		await File.WriteAllBytesAsync(path, await ReadAssetAsync(asset));
 		temporaryFiles.Add(path);
 		return path;
+	}
+
+	protected static string[] GetOpenFileTargets() =>
+		Directory.GetFiles("/proc/self/fd")
+			.Select(descriptor =>
+			{
+				try
+				{
+					return new FileInfo(descriptor).LinkTarget;
+				}
+				catch (IOException)
+				{
+					// The descriptor was closed while the directory was read.
+					return null;
+				}
+			})
+			.OfType<string>()
+			.ToArray();
+
+	protected static byte[] GetArtwork(MediaElement mediaElement) =>
+		GetPlayer(mediaElement).CurrentMediaItem!.MediaMetadata!.ArtworkData?.ToArray() ?? [];
+
+	// The manager reports an artwork it could not load with Trace.WriteLine, which is how the failure branch becomes observable.
+	protected sealed class TraceCapture : IDisposable
+	{
+		readonly CapturingTraceListener listener = new();
+
+		public TraceCapture() => Trace.Listeners.Add(listener);
+
+		public IReadOnlyList<string> Messages => listener.Messages;
+
+		public void Dispose() => Trace.Listeners.Remove(listener);
+	}
+
+	protected sealed class CapturingTraceListener : TraceListener
+	{
+		readonly object gate = new();
+		readonly List<string> messages = [];
+
+		public IReadOnlyList<string> Messages
+		{
+			get
+			{
+				lock (gate)
+				{
+					return messages.ToArray();
+				}
+			}
+		}
+
+		public override void Write(string? message) => Add(message);
+
+		public override void WriteLine(string? message) => Add(message);
+
+		void Add(string? message)
+		{
+			if (message is null)
+			{
+				return;
+			}
+
+			lock (gate)
+			{
+				messages.Add(message);
+			}
+		}
 	}
 
 	/// <summary>
