@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Dispatching;
 using Windows.Media;
+using Windows.Storage.Streams;
 
 namespace CommunityToolkit.Maui.Core.Primitives;
 
@@ -22,7 +23,12 @@ sealed partial class Metadata : IDisposable
 	/// <summary>
 	/// Sets the metadata for the given MediaElement.
 	/// </summary>
-	public void SetMetadata(IMediaElement mp)
+	/// <param name="mp">The MediaElement whose metadata is published.</param>
+	/// <param name="artworkSourceThumbnail">
+	/// The loaded artwork of <see cref="IMediaElement.MetadataArtworkSource"/>. It is used instead of <see cref="IMediaElement.MetadataArtworkUrl"/>
+	/// when that source is set, and <see langword="null"/> then clears the thumbnail (the artwork could not be loaded).
+	/// </param>
+	public void SetMetadata(IMediaElement mp, RandomAccessStreamReference? artworkSourceThumbnail = null)
 	{
 		if (systemMediaControls is null || mediaElement is null)
 		{
@@ -33,16 +39,9 @@ sealed partial class Metadata : IDisposable
 		// Media without metadata leaves the controls off, as MediaManager.CreatePlatformView does.
 		systemMediaControls.IsEnabled = HasMetadata(mp);
 
-		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only, so any other url (a relative
-		// or malformed one, or a file path, for example) is ignored instead of passed on.
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		var artworkUrl = mp.MetadataArtworkUrl;
-#pragma warning restore CS0618
-		if (Uri.TryCreate(artworkUrl, UriKind.Absolute, out var artworkUri)
-			&& artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata")
-		{
-			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(artworkUri);
-		}
+		systemMediaControls.DisplayUpdater.Thumbnail = mp.MetadataArtworkSource is not null
+			? artworkSourceThumbnail
+			: CreateThumbnailFromArtworkUrl(mp);
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
 		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataTitle;
 		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataArtist;
@@ -58,9 +57,29 @@ sealed partial class Metadata : IDisposable
 		systemMediaControls?.ButtonPressed -= OnSystemMediaControlsButtonPressed;
 	}
 
+	// Null clears the thumbnail: the controls are the player's own and outlive the media, so a thumbnail left in place would show the artwork
+	// of the previous media.
+	static RandomAccessStreamReference? CreateThumbnailFromArtworkUrl(IMediaElement mediaElement)
+	{
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
+		var artworkUrl = mediaElement.MetadataArtworkUrl;
+#pragma warning restore CS0618
+
+		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only, so any other url (a relative
+		// or malformed one, or a file path, for example) is ignored instead of passed on.
+		if (Uri.TryCreate(artworkUrl, UriKind.Absolute, out var artworkUri)
+			&& artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata")
+		{
+			return RandomAccessStreamReference.CreateFromUri(artworkUri);
+		}
+
+		return null;
+	}
+
 	static bool HasMetadata(IMediaElement mediaElement) =>
 		!string.IsNullOrWhiteSpace(mediaElement.MetadataTitle)
 		|| !string.IsNullOrWhiteSpace(mediaElement.MetadataArtist)
+		|| mediaElement.MetadataArtworkSource is not null
 		|| HasArtworkUrl(mediaElement);
 
 	static bool HasArtworkUrl(IMediaElement mediaElement)

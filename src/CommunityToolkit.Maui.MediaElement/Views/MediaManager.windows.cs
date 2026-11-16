@@ -791,9 +791,28 @@ partial class MediaManager : IDisposable
 
 	async ValueTask UpdateMetadata()
 	{
+		var version = Volatile.Read(ref sourceUpdateVersion);
+		await UpdateMetadataForSourceUpdate(version, CancellationToken.None);
+	}
+
+	// A separate method with its own name: device tests find UpdateMetadata by name, and call this one with a superseded version.
+	async ValueTask UpdateMetadataForSourceUpdate(int version, CancellationToken token)
+	{
 		if (Player is null)
 		{
 			return;
+		}
+
+		var artworkSource = MediaElement.MetadataArtworkSource;
+		MetadataArtwork? artwork = null;
+		if (artworkSource is not null)
+		{
+			// The source update version, not a token, tells whether this artwork is still wanted: a newer source update or Dispose changes it
+			artwork = await LoadMetadataArtwork(artworkSource, token);
+			if (!IsCurrentSourceUpdate(version))
+			{
+				return;
+			}
 		}
 
 		lock (metadataLock)
@@ -805,7 +824,17 @@ partial class MediaManager : IDisposable
 			}
 
 			metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-			metadata.SetMetadata(MediaElement);
+			metadata.SetMetadata(MediaElement, artwork?.Thumbnail);
+		}
+
+		if (artworkSource is not null)
+		{
+			if (artwork is not null)
+			{
+				await SetPosterFromArtwork(artwork, version, token);
+			}
+
+			return;
 		}
 
 #pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
