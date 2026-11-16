@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Animations;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // A flip from 0 is the case that .NET MAUI on Windows handles apart from every other value, so it needs a view whose other transforms are set
-public abstract class FlipAnimationTestBase<TAnimation> : ToAnimationTestBase<TAnimation> where TAnimation : BaseAnimation
+public abstract partial class FlipAnimationTestBase<TAnimation> : ToAnimationTestBase<TAnimation> where TAnimation : RotateAnimation
 {
 	const double originalRotation = 10;
 	const double originalTranslationX = 5;

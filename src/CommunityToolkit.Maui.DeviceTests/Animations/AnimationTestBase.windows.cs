@@ -15,7 +15,7 @@ public abstract partial class AnimationTestBase
 	protected static double GetNativeOpacity(IPlatformViewHandler handler) => GetTransformedView(handler).Opacity;
 
 	// .NET MAUI's mappers write to the container view when the handler has one (ToPlatform())
-	static FrameworkElement GetTransformedView(IPlatformViewHandler handler) => (FrameworkElement)(handler.ContainerView ?? handler.PlatformView!);
+	protected static FrameworkElement GetTransformedView(IPlatformViewHandler handler) => (FrameworkElement)(handler.ContainerView ?? handler.PlatformView!);
 
 	static string DescribeNativeValues(IPlatformViewHandler handler) => DescribeNativeValues(GetTransformedView(handler));
 
