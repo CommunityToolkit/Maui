@@ -288,6 +288,34 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// Simulates another app component that uses CameraX. Must run on the UI thread.
 	protected static async Task UnbindAllNativeAsync() => (await GetNativeCameraProviderAsync()).UnbindAll();
 
+	// CameraX must find the back camera that the device declares, but its camera limiter selects no camera. Without retries it fails at
+	// once, instead of after retrying for 6 seconds.
+	protected Task MakeCameraXFailToInitializeAsync() => ReconfigureCameraXAsync(
+		new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingBack)!.AddCameraFilter(new NoCameraFilter())!.Build()!,
+		RetryPolicy.Never);
+
+	// Shutting down and then configuring is how CameraX's own tests reconfigure it (ProcessCameraProvider.ShutdownAsync, then
+	// ConfigureInstance). The cleanup shuts CameraX down once more, so that the next test starts it with its default configuration again.
+	protected async Task ReconfigureCameraXAsync(CameraSelector availableCamerasLimiter, IRetryPolicy? initializationRetryPolicy = null)
+	{
+		var native = await GetNativeCameraProviderAsync();
+		RegisterCleanup(() => native.ShutdownAsync());
+
+		await InvokeOnMainThreadAsync(() => WaitForFutureAsync(native.ShutdownAsync()));
+		var configuration = CameraXConfig.Builder.FromConfig(AndroidX.Camera.Camera2.Camera2Config.DefaultConfig())!.SetAvailableCamerasLimiter(availableCamerasLimiter)!;
+		if (initializationRetryPolicy is not null)
+		{
+			configuration = configuration.SetCameraProviderInitRetryPolicy(initializationRetryPolicy)!;
+		}
+
+		AndroidX.Camera.Lifecycle.ProcessCameraProvider.ConfigureInstance(configuration.Build()!);
+	}
+
+	protected sealed class NoCameraFilter : Java.Lang.Object, ICameraFilter
+	{
+		public IList<ICameraInfo> Filter(IList<ICameraInfo>? cameraInfos) => [];
+	}
+
 	// A 4:3 capture size that is smaller than what the cameras of the emulators capture by default (the largest 4:3 size: 640x480 on
 	// the Android 9 emulator, 2048x1536 and more on newer ones), so that restricting the capture resolution to it visibly changes the
 	// resolution CameraX negotiates.

@@ -1,5 +1,7 @@
-﻿using Android.Runtime;
+﻿using Android.Content.PM;
+using Android.Runtime;
 using AndroidX.Camera.Core;
+using AndroidX.Camera.Extensions;
 using AndroidX.Camera.View;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
@@ -655,6 +657,27 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		{
 			cameraThread.Open();
 		}
+	}
+
+	// CameraX reports a failed initialization through the future that EnableModes reads in a listener on the UI thread: the exception escaped
+	// from that listener and terminated the app, and the rebind never completed.
+	[Fact]
+	public async Task SetExtensionModeThrowsTheErrorOfCameraXWhenCameraXCanNotInitialize()
+	{
+		SetupBuilder();
+		Skip.IfNot(AppContext.PackageManager?.HasSystemFeature(PackageManager.FeatureCamera) is true,
+			"Needs a device that declares a back camera (android.hardware.camera): CameraX only fails to initialize when it misses a camera that the device declares.");
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			await MakeCameraXFailToInitializeAsync();
+
+			var exception = await Assert.ThrowsAsync<Java.Util.Concurrent.ExecutionException>(
+				() => session.Manager.SetExtensionMode(ExtensionMode.None, CancellationToken.None).WaitAsync(CameraTimeout));
+
+			var initializationException = Assert.IsType<InitializationException>(exception.Cause);
+			Assert.IsType<CameraUnavailableException>(initializationException.Cause);
+		});
 	}
 
 	// Shutting down and then configuring is how CameraX's own tests reconfigure it. The cleanup shuts CameraX down once more, so that the next

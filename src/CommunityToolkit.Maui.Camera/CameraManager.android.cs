@@ -1238,27 +1238,40 @@ partial class CameraManager
 		var cameraFutureCts = new TaskCompletionSource();
 		var cameraSelector = selectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context) ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
+		// The listeners run later on the UI thread, outside of this method: an exception that escaped from them would terminate the app, so their
+		// outcome completes the task instead. Get() throws when CameraX cannot initialize
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
-			var cameraProviderInstance = cameraProviderFuture.Get().JavaCast<AndroidX.Camera.Core.ICameraProvider>();
-			if (cameraProviderInstance is null)
+			try
 			{
-				return;
-			}
+				var cameraProviderInstance = cameraProviderFuture.Get().JavaCast<AndroidX.Camera.Core.ICameraProvider>()
+											 ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
 
-			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
-									  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
+				var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
+										  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
 
-			extensionsManagerFuture.AddListener(new Runnable(() =>
-			{
-				var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
-				if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+				extensionsManagerFuture.AddListener(new Runnable(() =>
 				{
-					cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
-				}
+					try
+					{
+						var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
+						if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+						{
+							cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
+						}
 
-				cameraFutureCts.SetResult();
-			}), ContextCompat.GetMainExecutor(context));
+						cameraFutureCts.SetResult();
+					}
+					catch (System.Exception ex)
+					{
+						cameraFutureCts.TrySetException(ex);
+					}
+				}), ContextCompat.GetMainExecutor(context));
+			}
+			catch (System.Exception ex)
+			{
+				cameraFutureCts.TrySetException(ex);
+			}
 		}), ContextCompat.GetMainExecutor(context));
 
 		await cameraFutureCts.Task.WaitAsync(token);
