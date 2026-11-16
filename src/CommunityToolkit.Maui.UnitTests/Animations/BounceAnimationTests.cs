@@ -128,18 +128,36 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var distance = animation.Distance;
-		KeyframeSegment[] segments =
-		[
-			Hop(0.0, 0.25, 0, distance, Easing.CubicOut),
-			Hop(0.2875, 0.4125, distance, 0, Easing.CubicIn),
-			Hop(0.4125, 0.625, 0, distance / 2, Easing.CubicOut),
-			Hop(0.625, 0.75, distance / 2, 0, Easing.CubicIn),
-			Hop(0.75, 0.875, 0, distance * 2 / 15, Easing.CubicOut),
-			Hop(0.875, 1.0, distance * 2 / 15, 0, Easing.CubicIn)
-		];
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, segments, animation.Length, easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, HopsOf(animation.Distance), animation.Length, easing);
 	}, testToken);
+
+	// A TranslateToAsync writes TranslationY on every frame too, so a frame that the hops leave unwritten shows the view at rest
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task Animate_DuringAHorizontalTranslateToAsync_HoldsEveryHopsHeightFrameByFrame() => RunOnSingleThreadAsync(async token =>
+	{
+		// At the default length, frames land in the pause between the first hop's rise and its fall
+		var animation = new BounceAnimation();
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var translation = view.TranslateToAsync(view.TranslationX + 100, view.TranslationY, 2 * animation.Length, Easing.Linear, token);
+		await WaitForFramesAsync(view, 2, token);
+
+		using var recorder = new FrameRecorder(view, VisualElement.TranslationYProperty);
+		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
+
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, HopsOf(animation.Distance), animation.Length);
+		var wasTranslationInterrupted = await translation.WaitAsync(waitTimeout, token);
+		wasTranslationInterrupted.Should().BeFalse();
+	}, TestContext.Current.CancellationToken);
+
+	static KeyframeSegment[] HopsOf(double distance) =>
+	[
+		Hop(0.0, 0.25, 0, distance, Easing.CubicOut),
+		Hop(0.2875, 0.4125, distance, 0, Easing.CubicIn),
+		Hop(0.4125, 0.625, 0, distance / 2, Easing.CubicOut),
+		Hop(0.625, 0.75, distance / 2, 0, Easing.CubicIn),
+		Hop(0.75, 0.875, 0, distance * 2 / 15, Easing.CubicOut),
+		Hop(0.875, 1.0, distance * 2 / 15, 0, Easing.CubicIn)
+	];
 
 	static KeyframeSegment Hop(double begin, double end, double fromHeight, double toHeight, Easing easing) =>
 		new(begin, end, originalTranslationY - fromHeight, originalTranslationY - toHeight, easing);

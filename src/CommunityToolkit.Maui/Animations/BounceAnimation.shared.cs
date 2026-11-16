@@ -47,6 +47,7 @@ public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.L
 		return new Animation
 		{
 			{ 0.0, 0.25, Rise(0, firstHop) },
+			{ 0.25, 0.2875, Hold(firstHop) },
 			{ 0.2875, 0.4125, Fall(firstHop, 0) },
 			{ 0.4125, 0.625, Rise(0, secondHop) },
 			{ 0.625, 0.75, Fall(secondHop, 0) },
@@ -56,5 +57,9 @@ public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.L
 
 		Animation Rise(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicOut);
 		Animation Fall(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicIn);
+
+		// A running TranslateToAsync writes TranslationY every frame, so the pause at the peak must keep writing the height
+		// or the view drops back to rest
+		Animation Hold(double height) => new(setTranslationY, originalTranslationY - height, originalTranslationY - height);
 	}
 }
