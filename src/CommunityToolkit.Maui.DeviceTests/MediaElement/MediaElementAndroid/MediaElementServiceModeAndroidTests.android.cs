@@ -261,7 +261,6 @@ public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(anchorKey, Assert.Single(GetRegisteredPlayerIds()));
 			Assert.Empty(recorder.FailureMessages);
 		});
-		await WaitForMediaControlsServiceToStopAsync();
 	}
 
 	// One turn of the UI thread: the first handler is disconnected before its controller connects, and a second one is connected for the same

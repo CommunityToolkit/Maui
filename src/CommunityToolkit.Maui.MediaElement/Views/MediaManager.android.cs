@@ -907,8 +907,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 			finally
 			{
-				mediaController.Release();
-				mediaController.Dispose();
+				// MauiMediaElement.Dispose releases and disposes the controller of its PlayerView too, which can run before the answer arrives
+				if (IsAlive(mediaController))
+				{
+					mediaController.Release();
+					mediaController.Dispose();
+				}
 			}
 		}), ContextCompat.GetMainExecutor(Platform.AppContext));
 	}
