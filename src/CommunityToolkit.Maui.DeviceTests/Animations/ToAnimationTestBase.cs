@@ -7,6 +7,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // A "To" animation runs under .NET MAUI's own animation handles, so a run started while another one runs interrupts it without AnimationBehavior's help
 public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBase<TAnimation> where TAnimation : BaseAnimation
 {
+	// Longer than the first leg of every To animation here (Fade's is the longest, 800 ms), so the late frame ends that leg at once
+	static readonly TimeSpan lateFrameDelay = TimeSpan.FromMilliseconds(runLength);
+
 	protected abstract Task<bool> AppToAnimation(VisualElement view, double target);
 
 	[Fact]
@@ -29,6 +32,32 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
 			var peakError = await Record.ExceptionAsync(() => peakAgain);
 			Assert.True(peakError is null, "The second animation did not reach its peak.");
+			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after both animations ended");
+		});
+	}
+
+	// A cold process can draw a run's first frame this late, as on Windows in the first test of a launch
+	[Fact]
+	public async Task AnimationStartedMidRunAfterALateFrameReachesItsPeak()
+	{
+		SetupBuilder();
+
+		var view = CreateAnimatedView(OriginalValues);
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var midRun = WaitForMidRunAsync(view);
+			var firstRun = CreateAnimation().Animate(view);
+			Thread.Sleep(lateFrameDelay);
+			await midRun;
+
+			var peakAgain = WaitForPeakAsync(view);
+			var secondRun = CreateAnimation().Animate(view);
+			await Task.WhenAll(firstRun, secondRun).WaitAsync(waitTimeout);
+
+			// The wait task completes through a continuation, so it can trail the end of the run by a moment
+			var peakError = await Record.ExceptionAsync(() => peakAgain);
+			Assert.True(peakError is null, "The animation started after the running one's late frame did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after both animations ended");
 		});
 	}

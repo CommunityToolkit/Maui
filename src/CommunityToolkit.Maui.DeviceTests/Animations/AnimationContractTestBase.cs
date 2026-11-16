@@ -230,9 +230,20 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 		});
 	}
 
-	protected Task WaitForMidRunAsync(VisualElement view) => WaitForValueAsync(view, PeakProperty, IsMidRun);
+	protected async Task WaitForMidRunAsync(VisualElement view)
+	{
+		await WaitForValueAsync(view, PeakProperty, IsMidRun);
 
-	protected Task WaitForPeakAsync(VisualElement view) => WaitForValueAsync(view, PeakProperty, value => Math.Abs(value - PeakValue) <= peakTolerance);
+		// A late frame can end the first leg at once, and a run started while the view holds its peak writes the peak over itself, which raises no PropertyChanged
+		while (IsAtPeak((double)view.GetValue(PeakProperty)))
+		{
+			await WaitForValueAsync(view, PeakProperty, value => IsMidRun(value) && !IsAtPeak(value));
+		}
+	}
+
+	protected Task WaitForPeakAsync(VisualElement view) => WaitForValueAsync(view, PeakProperty, IsAtPeak);
+
+	bool IsAtPeak(double value) => Math.Abs(value - PeakValue) <= peakTolerance;
 
 	// A third of the way to the peak: the run moves the view, and most of it is still ahead
 	bool IsMidRun(double value)
