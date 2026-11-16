@@ -322,8 +322,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// source, and once the change has ended the first of these exceptions is reported through <see cref="MediaFailed"/>, without setting
 	/// <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/>. The events that the player raises afterwards, for example
 	/// <see cref="MediaOpened"/> on iOS, Mac Catalyst and Windows, are not part of the change. On Android, when the system refuses to start the
-	/// foreground service of the media notification (see <see cref="IsAndroidForegroundServiceEnabled"/>) while a source is applied, the change reports it the same way: the
-	/// media plays without the notification, and the next change of the source starts the service again.
+	/// foreground service of the media notification (see <see cref="IsAndroidForegroundServiceEnabled"/>) while a source is applied, the
+	/// change reports it the same way: the media plays without the notification, and the next change of the source starts the service again.
 	/// </para>
 	/// </remarks>
 	[TypeConverter(typeof(MediaSourceConverter))]

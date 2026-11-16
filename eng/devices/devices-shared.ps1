@@ -1195,11 +1195,8 @@ function Invoke-DeviceTestWithRetries {
                 elseif (-not $isFirstRetry) {
                     $attemptRecord.NotRetriedBecause = 'the single retry was already used'
                 }
-                elseif ($Context.InfraRetries -eq 0) {
-                    $attemptRecord.NotRetriedBecause = 'it would be retried once on CI (-InfraRetries is 0 here)'
-                }
                 else {
-                    $attemptRecord.NotRetriedBecause = 'the single retry was already used'
+                    $attemptRecord.NotRetriedBecause = 'it would be retried once on CI (-InfraRetries is 0 here)'
                 }
             }
 
@@ -1975,7 +1972,7 @@ $script:AndroidFailedTestPattern = ' DOTNET\s*: \t\[FAIL\] (.*)$'
 $script:AndroidFatalSignalPattern = ' F libc\s*: Fatal signal 11 \(SIGSEGV\), code (-?\d+)(?: \([A-Z_]+\))?, fault addr 0x([0-9a-f]+) in tid (\d+) \(([^)]*)\), pid \d+ \(([^)]*)\)'
 
 # Android 11 lacks the null check of AOSP 162f643 (https://android.googlesource.com/platform/frameworks/native/+/162f643), so Media3's
-# Surface.setFrameRate crashes surfaceflinger. A probe that cannot make that exact tombstone sets these two to -1 and $false.
+# Surface.setFrameRate crashes surfaceflinger. Signal code 1 and both backtrace frames are the exact CI tombstone; looser matching could retry an unrelated surfaceflinger crash.
 $script:AndroidSurfaceFlingerSignalCode = 1
 $script:AndroidSurfaceFlingerRequiresFrames = $true
 $script:AndroidSurfaceFlingerConsoleMarker = 'INSTRUMENTATION_ABORTED: System has crashed.'

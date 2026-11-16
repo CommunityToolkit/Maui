@@ -571,19 +571,18 @@ function Restart-AndroidCameraStack {
     param([string]$Adb, [string]$Serial, [int]$TimeoutSeconds = 60)
 
     $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    $getProcesses = { Get-AndroidEvidenceProcesses -PsOutput (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('ps', '-A') -TimeoutSeconds 20) }
     $getServerId = {
-        $processes = Get-AndroidEvidenceProcesses -PsOutput (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('ps', '-A') -TimeoutSeconds 20)
-        $server = @($processes | Where-Object { $_.Name -ceq 'cameraserver' } | Select-Object -First 1)
+        param($Processes)
+        $server = @($Processes | Where-Object { $_.Name -ceq 'cameraserver' } | Select-Object -First 1)
         if ($server.Count -gt 0) { return $server[0].Id }
         return 0
     }
 
     try {
         [void](Enable-AndroidRootShell -Adb $Adb -Serial $Serial)
-        $processes = Get-AndroidEvidenceProcesses -PsOutput (Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('ps', '-A') -TimeoutSeconds 20)
-        $oldServerId = 0
-        $oldServer = @($processes | Where-Object { $_.Name -ceq 'cameraserver' } | Select-Object -First 1)
-        if ($oldServer.Count -gt 0) { $oldServerId = $oldServer[0].Id }
+        $processes = & $getProcesses
+        $oldServerId = & $getServerId $processes
         $victims = @($processes | Where-Object { $_.Name.IndexOf('camera.provider', [System.StringComparison]::Ordinal) -ge 0 -or $_.Name -ceq 'cameraserver' })
         foreach ($victim in $victims) {
             [void](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('kill', '-9', "$($victim.Id)") -TimeoutSeconds 10)
@@ -592,7 +591,7 @@ function Restart-AndroidCameraStack {
         $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
         while ((Get-Date) -lt $deadline) {
             Start-Sleep -Seconds 2
-            $serverId = & $getServerId
+            $serverId = & $getServerId (& $getProcesses)
             $dump = [string](Invoke-AndroidShell -Adb $Adb -Serial $Serial -Command @('dumpsys', '-t', '10', 'media.camera') -TimeoutSeconds 20)
             $count = 0
             $found = [regex]::Match($dump, 'Number of camera devices: (\d+)', [System.Text.RegularExpressions.RegexOptions]::CultureInvariant)
