@@ -61,10 +61,12 @@ public static class JavaThreadDump
 		}
 	}
 
+	// On Android 7 the SIGQUIT dump aborts the app ("pthread_getschedparam failed for DumpState"), which would lose every result.
+	public static bool CanRequestArtDump => OperatingSystem.IsAndroidVersionAtLeast(26);
+
 	public static bool RequestArtDump()
 	{
-		// On Android 7 the SIGQUIT dump aborts the app ("pthread_getschedparam failed for DumpState"), which would lose every result.
-		if (!OperatingSystem.IsAndroidVersionAtLeast(26))
+		if (!CanRequestArtDump)
 		{
 			return false;
 		}

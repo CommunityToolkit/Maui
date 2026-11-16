@@ -1731,23 +1731,19 @@ function Save-AndroidDeviceEvidence {
             $quit = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'kill', '-3', "$appId") -TimeoutSeconds 10
             Add-AndroidEvidenceLogLine -Directory $Directory -Message "kill -3 ${appId}: exit $($quit.ExitCode)"
             $dumpName = ''
-            $checked = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
             for ($second = 0; $second -lt 15 -and -not $dumpName; $second++) {
                 Start-Sleep -Seconds 1
                 # Checked before the scan so a dump written just before the app died is still found.
                 $appWasDead = (Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'kill', '-0', "$appId") -TimeoutSeconds 10).ExitCode -ne 0
                 $anrNow = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'ls', '-l', '/data/anr') -TimeoutSeconds 10
+                # Every pass greps each new file again: a dump may still be growing when it is first listed.
                 foreach ($entry in @(Get-AndroidEvidenceListingEntries -Listing $anrNow.Output)) {
-                    if ($knownEntries -ccontains $entry.Key -or $checked.Contains($entry.Key)) { continue }
-                    [void]$checked.Add($entry.Key)
+                    if ($knownEntries -ccontains $entry.Key) { continue }
                     $match = Invoke-DeviceTestProcess -FilePath $Adb -ArgumentList @('-s', $Serial, 'shell', 'grep', '-c', '-e', "'----- pid $appId '", "/data/anr/$($entry.Name)") -TimeoutSeconds 10
                     if ($match.ExitCode -eq 0) {
                         $dumpName = $entry.Name
                         break
                     }
-
-                    # The dump may still be growing: look at this file again.
-                    [void]$checked.Remove($entry.Key)
                 }
 
                 if (-not $dumpName -and $appWasDead) {

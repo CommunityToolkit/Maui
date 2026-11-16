@@ -879,17 +879,18 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	static string RequestArtDumpOnce()
 	{
+		if (!JavaThreadDump.CanRequestArtDump)
+		{
+			return "ART dump: not requested on Android 7, where SIGQUIT aborts the app.";
+		}
+
 		var pid = Android.OS.Process.MyPid();
 		if (Interlocked.Exchange(ref artDumpRequested, 1) != 0)
 		{
 			return $"ART dump: sent once already for pid {pid} by an earlier diagnosis.";
 		}
 
-		if (!JavaThreadDump.RequestArtDump())
-		{
-			return "ART dump: not requested on Android 7, where SIGQUIT aborts the app.";
-		}
-
+		JavaThreadDump.RequestArtDump();
 		return $"ART dump of every thread (Java and native): SIGQUIT sent at {DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture)}; ART writes it under /data/anr for pid {pid}; reading it needs adb root.";
 	}
 
