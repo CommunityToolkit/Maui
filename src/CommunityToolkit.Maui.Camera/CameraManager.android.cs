@@ -1332,8 +1332,8 @@ partial class CameraManager
 			}
 			catch (System.Exception ex)
 			{
+				// Not rethrown: CameraX calls this on its executor thread, where an exception ends the app after the failure was reported
 				cameraView.OnMediaCapturedFailed(ex.Message);
-				throw;
 			}
 			finally
 			{
