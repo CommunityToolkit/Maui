@@ -899,6 +899,34 @@ function Read-XHarnessResult {
     }
 }
 
+function Get-CrashReportSimulatorId {
+    # Returns the simulator UDID a copied .ips belongs to, '' when it names none, and $null when it cannot be read.
+    param([string]$Directory, [string]$ReportName)
+
+    $path = Join-Path $Directory $ReportName
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+        $found = Get-ChildItem -LiteralPath $Directory -Filter "$([System.IO.Path]::GetFileNameWithoutExtension($ReportName))*.ips" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($null -eq $found) {
+            return $null
+        }
+
+        $path = $found.FullName
+    }
+
+    try {
+        $text = Get-Content -LiteralPath $path -Raw
+    }
+    catch {
+        return $null
+    }
+
+    if ($text -match 'com\.apple\.CoreSimulator\.SimDevice\.([0-9A-Fa-f-]{36})' -or $text -match 'CoreSimulator\\?/Devices\\?/([0-9A-Fa-f-]{36})') {
+        return $Matches[1]
+    }
+
+    return ''
+}
+
 function Get-DeviceTestVerdict {
     # The results gate: the exit code comes from what the run left on disk, never from the runner's exit code
     # alone, because xharness reports SUCCESS when an iOS app crashes before the test runner starts and for every
@@ -928,8 +956,22 @@ function Get-DeviceTestVerdict {
         if ($null -ne $xharness) {
             $matched = Get-DeviceTestJsonValue $xharness 'appleLaunch.crashReport.matchedReport'
             if ($null -ne $matched) {
-                $crashReport = Get-DeviceTestJsonValue $matched 'name'
-                $reasons.Add("xharness matched a crash report for the app: $crashReport")
+                $matchedName = Get-DeviceTestJsonValue $matched 'name'
+                $targetId = Get-DeviceTestJsonValue $xharness 'environment.target.identifier'
+                $reportSimulator = $null
+                if ($Platform -eq 'ios' -and $targetId) {
+                    $reportSimulator = Get-CrashReportSimulatorId -Directory $Directory -ReportName $matchedName
+                }
+
+                # Simulators share one DiagnosticReports folder, so xharness can match, by process name, the crash report of
+                # another run's app on another simulator. A report that cannot be read still fails the run.
+                if ($reportSimulator -and $reportSimulator -ne $targetId) {
+                    Write-DeviceTestWarning "Ignored crash report $matchedName of simulator $reportSimulator (another run); this run's simulator is $targetId."
+                }
+                else {
+                    $crashReport = $matchedName
+                    $reasons.Add("xharness matched a crash report for the app: $crashReport")
+                }
             }
 
             if ((Get-DeviceTestJsonValue $xharness 'appleLaunch.testResultFile.exists') -eq $false) {
