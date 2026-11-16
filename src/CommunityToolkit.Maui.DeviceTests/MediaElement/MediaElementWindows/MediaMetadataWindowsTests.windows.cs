@@ -521,7 +521,7 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			fixture.View.MetadataArtworkUrl = null;
+			fixture.View.MetadataArtworkUrl = string.Empty;
 			fixture.View.MetadataArtworkSource = null;
 		});
 		await UpdateMetadataAsync(fixture);
