@@ -344,3 +344,23 @@ jobs:
                     path: |
                         artifacts/device-tests/
                         artifacts/logs/
+
+    device_tests_trimmed:
+        name: Trimmed Device Tests
+        if: ${{ always() }}
+        # One check for branch protection to require, so the required set does not change when a leg is added or renamed
+        needs: [ device_tests_android, device_tests_ios, device_tests_windows ]
+        runs-on: ubuntu-latest
+        permissions: {}
+        timeout-minutes: 5
+        steps:
+            -   name: Check trimmed device test jobs
+                env:
+                    NEEDS: ${{ toJSON(needs) }}
+                    ANY_JOB_NOT_SUCCEEDED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+                run: |
+                    echo "$NEEDS"
+                    if [ "$ANY_JOB_NOT_SUCCEEDED" = "true" ]; then
+                        echo "::error::One or more trimmed device test jobs did not succeed."
+                        exit 1
+                    fi
