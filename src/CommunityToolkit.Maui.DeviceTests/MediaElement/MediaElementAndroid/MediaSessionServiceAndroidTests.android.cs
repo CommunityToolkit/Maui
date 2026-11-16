@@ -435,10 +435,11 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 
 		await ReleaseTestControllerAsync(controller);
 		await WaitUntilAsync(() => FindMediaControlsService() is null, "The system never destroyed the service after its last controller was released.");
+		// The system lists the service as gone before it calls onDestroy on the main thread
+		await WaitUntilAsync(() => MediaControlsService.Running is null, "The service never ran its OnDestroy.");
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			Assert.Null(MediaControlsService.Running);
 			Assert.True(playerReference.GetPeer<AndroidX.Media3.ExoPlayer.IExoPlayer>().IsReleased);
 			BuildAndReleaseSession(connectionKey);
 		});
