@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Globalization;
 using CommunityToolkit.Maui.Behaviors;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
@@ -283,6 +284,29 @@ public sealed class ValidationBehaviorValuePropertyNameTests : CommunityToolkitH
 	}
 
 	[Fact]
+	public async Task ValueFollowsAPickerWhoseBoundValuePropertyNameArrivesAfterTheBehaviorIsAttached()
+	{
+		SetupBuilder();
+		var behavior = new CapturingValidationBehavior();
+		behavior.SetBinding(ValidationBehavior.ValuePropertyNameProperty, new Binding(nameof(ValuePropertyNameViewModel.PropName)));
+		var picker = new Picker { ItemsSource = new[] { "first", "second" }, SelectedIndex = 0 };
+
+		await AttachAndRun(picker, async _ =>
+		{
+			await picker.OnLoadedAsync();
+
+			picker.Behaviors.Add(behavior);
+			Assert.Null(behavior.Value);
+
+			behavior.BindingContext = new ValuePropertyNameViewModel { PropName = nameof(Picker.SelectedIndex) };
+			await AssertValueEventually(behavior, 0);
+
+			picker.SelectedIndex = 1;
+			await AssertValueEventually(behavior, 1);
+		});
+	}
+
+	[Fact]
 	public async Task SubclassDefaultValuePropertyNameIsFollowed()
 	{
 		SetupBuilder();
@@ -354,6 +378,21 @@ public sealed class ValidationBehaviorValuePropertyNameTests : CommunityToolkitH
 		protected override string DefaultValuePropertyName => nameof(CheckBox.IsChecked);
 
 		protected override ValueTask<bool> ValidateAsync(object? value, CancellationToken token) => ValueTask.FromResult(value is not null);
+	}
+
+	sealed class ValuePropertyNameViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public string? PropName
+		{
+			get;
+			set
+			{
+				field = value;
+				PropertyChanged?.Invoke(this, new(nameof(PropName)));
+			}
+		}
 	}
 
 	sealed class AmountView : ContentView

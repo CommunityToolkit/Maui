@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -122,26 +123,6 @@ public class ValidationBehaviorValuePropertyNameTests : BaseTest
 		Assert.Contains(nameof(PlainPropertyView), exception.Message, StringComparison.Ordinal);
 		Assert.Contains("{x:Null}", exception.Message, StringComparison.Ordinal);
 		Assert.Null(behavior.Value);
-	}
-
-	[Fact]
-	public void Attach_OfSubclassWhoseDefaultValuePropertyNameIsClrProperty_ThrowsArgumentException()
-	{
-		var view = new PlainPropertyView { Plain = "plain" };
-		var behavior = new PlainValidationBehavior();
-
-		var exception = Assert.Throws<ArgumentException>(() => view.Behaviors.Add(behavior));
-
-		Assert.Equal(nameof(ValidationBehavior.ValuePropertyName), exception.ParamName);
-	}
-
-	[Fact]
-	public void Attach_OfDefaultTextNameToViewWithoutTextProperty_ThrowsArgumentException()
-	{
-		var view = new CodeView { Code = "A1" };
-		var behavior = new ValueCapturingBehavior();
-
-		Assert.Throws<ArgumentException>(() => view.Behaviors.Add(behavior));
 	}
 
 	[Fact]
@@ -571,6 +552,268 @@ public class ValidationBehaviorValuePropertyNameTests : BaseTest
 		}
 	}
 
+	[Fact]
+	public void Attach_OfDefaultTextNameToViewWithoutTextProperty_TracesWarningAndLeavesValueUnbound()
+	{
+		var listener = new CapturingTraceListener();
+		Trace.Listeners.Add(listener);
+
+		try
+		{
+			var view = new CodeView { Code = "A1" };
+			var behavior = new ValueCapturingBehavior();
+
+			view.Behaviors.Add(behavior);
+			view.Code = "B2";
+
+			Assert.Null(behavior.Value);
+			Assert.Contains(listener.Messages, message => message.Contains(nameof(ValueCapturingBehavior), StringComparison.Ordinal)
+				&& message.Contains(nameof(Entry.Text), StringComparison.Ordinal)
+				&& message.Contains(nameof(CodeView), StringComparison.Ordinal)
+				&& message.Contains("{x:Null}", StringComparison.Ordinal));
+		}
+		finally
+		{
+			Trace.Listeners.Remove(listener);
+		}
+	}
+
+	[Fact]
+	public void Attach_OfPickerWithTextValidationBehaviorAndNoValuePropertyName_DoesNotThrowAndLeavesValueUnbound()
+	{
+		var picker = new Picker { ItemsSource = new[] { "a", "b" }, SelectedIndex = 1 };
+		var behavior = new TextValidationBehavior { MinimumLength = 1 };
+
+		picker.Behaviors.Add(behavior);
+
+		Assert.Null(behavior.Value);
+	}
+
+	[Fact]
+	public void Attach_OfPickerWithValuePropertyNameBoundToViewModelThatArrivesLater_BindsOnceTheNameArrives()
+	{
+		var picker = new Picker { ItemsSource = new[] { "a", "b" }, SelectedIndex = 0 };
+		var behavior = new ObjectValueCapturingBehavior();
+		behavior.SetBinding(ValidationBehavior.ValuePropertyNameProperty, new Binding(nameof(NameViewModel.PropName)));
+
+		picker.Behaviors.Add(behavior);
+		Assert.Null(behavior.Value);
+
+		behavior.BindingContext = new NameViewModel { PropName = nameof(Picker.SelectedIndex) };
+		Assert.Equal<object?>(0, behavior.Value);
+
+		picker.SelectedIndex = 1;
+		Assert.Equal<object?>(1, behavior.Value);
+	}
+
+	[Fact]
+	public void ValuePropertyName_BoundNameThatArrivesInvalid_ThrowsAtThatChange()
+	{
+		var picker = new Picker();
+		var behavior = new ObjectValueCapturingBehavior();
+		behavior.SetBinding(ValidationBehavior.ValuePropertyNameProperty, new Binding(nameof(NameViewModel.PropName)));
+		picker.Behaviors.Add(behavior);
+
+		var exception = Assert.Throws<ArgumentException>(() => behavior.BindingContext = new NameViewModel { PropName = "DoesNotExist" });
+
+		Assert.Equal(nameof(ValidationBehavior.ValuePropertyName), exception.ParamName);
+	}
+
+	[Fact]
+	public void ValuePropertyName_BoundNameThatArrivesInvalidAndSuppressedExceptions_TracesAtThatChange()
+	{
+		var originalSetting = Options.ShouldSuppressExceptionsInBehaviors;
+		var listener = new CapturingTraceListener();
+		Trace.Listeners.Add(listener);
+
+		try
+		{
+			new Options().SetShouldSuppressExceptionsInBehaviors(true);
+			var picker = new Picker();
+			var behavior = new ObjectValueCapturingBehavior();
+			behavior.SetBinding(ValidationBehavior.ValuePropertyNameProperty, new Binding(nameof(NameViewModel.PropName)));
+			picker.Behaviors.Add(behavior);
+
+			behavior.BindingContext = new NameViewModel { PropName = "DoesNotExist" };
+
+			Assert.Null(behavior.Value);
+			Assert.Contains(listener.Messages, message => message.Contains("DoesNotExist", StringComparison.Ordinal));
+		}
+		finally
+		{
+			Trace.Listeners.Remove(listener);
+			new Options().SetShouldSuppressExceptionsInBehaviors(originalSetting);
+		}
+	}
+
+	[Fact]
+	public void Attach_OfPickerWithExplicitNameThatIsNotTheDefault_StillThrows()
+	{
+		var picker = new Picker();
+		var behavior = new ObjectValueCapturingBehavior { ValuePropertyName = nameof(DatePicker.Date) };
+
+		var exception = Assert.Throws<ArgumentException>(() => picker.Behaviors.Add(behavior));
+
+		Assert.Equal(nameof(ValidationBehavior.ValuePropertyName), exception.ParamName);
+	}
+
+	[Fact]
+	public void Attach_WithNameChangedAwayFromTheDefaultAndBackToIt_TracesWarningAndLeavesValueUnbound()
+	{
+		var listener = new CapturingTraceListener();
+		Trace.Listeners.Add(listener);
+
+		try
+		{
+			var picker = new Picker();
+			var behavior = new ObjectValueCapturingBehavior { ValuePropertyName = nameof(Picker.Title) };
+			behavior.ValuePropertyName = nameof(Entry.Text);
+
+			picker.Behaviors.Add(behavior);
+
+			Assert.Null(behavior.Value);
+			Assert.Contains(listener.Messages, message => message.Contains("has its default", StringComparison.Ordinal));
+		}
+		finally
+		{
+			Trace.Listeners.Remove(listener);
+		}
+	}
+
+	[Fact]
+	public void BindingContext_SetToNullOnAttachedPicker_FallsBackToTheDefaultNameWithATraceInsteadOfThrowing()
+	{
+		var listener = new CapturingTraceListener();
+		Trace.Listeners.Add(listener);
+
+		try
+		{
+			var picker = new Picker { ItemsSource = new[] { "a", "b" }, SelectedIndex = 0 };
+			var behavior = new ObjectValueCapturingBehavior();
+			behavior.SetBinding(ValidationBehavior.ValuePropertyNameProperty, new Binding(nameof(NameViewModel.PropName)));
+			picker.Behaviors.Add(behavior);
+			behavior.BindingContext = new NameViewModel { PropName = nameof(Picker.SelectedIndex) };
+			Assert.Equal<object?>(0, behavior.Value);
+
+			behavior.BindingContext = null;
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(nameof(Entry.Text), behavior.ValuePropertyName);
+			Assert.NotEqual<object?>(1, behavior.Value);
+			Assert.Contains(listener.Messages, message => message.Contains("has its default", StringComparison.Ordinal));
+		}
+		finally
+		{
+			Trace.Listeners.Remove(listener);
+		}
+	}
+
+	[Fact]
+	public void ClearValue_OfValuePropertyNameOnAttachedPicker_FallsBackToTheDefaultNameWithATraceInsteadOfThrowing()
+	{
+		var listener = new CapturingTraceListener();
+		Trace.Listeners.Add(listener);
+
+		try
+		{
+			var picker = new Picker { ItemsSource = new[] { "a", "b" }, SelectedIndex = 0 };
+			var behavior = new ObjectValueCapturingBehavior { ValuePropertyName = nameof(Picker.SelectedIndex) };
+			picker.Behaviors.Add(behavior);
+
+			behavior.ClearValue(ValidationBehavior.ValuePropertyNameProperty);
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(nameof(Entry.Text), behavior.ValuePropertyName);
+			Assert.NotEqual<object?>(1, behavior.Value);
+			Assert.Contains(listener.Messages, message => message.Contains("has its default", StringComparison.Ordinal));
+		}
+		finally
+		{
+			Trace.Listeners.Remove(listener);
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR", "isChecked")]
+	[InlineData("tr-TR", "ISCHECKED")]
+	[InlineData("tr-TR", "İsChecked")]
+	[InlineData("tr-TR", "ısChecked")]
+	[InlineData("az-Latn-AZ", "isChecked")]
+	[InlineData("az-Latn-AZ", "ISCHECKED")]
+	[InlineData("az-Latn-AZ", "İsChecked")]
+	[InlineData("az-Latn-AZ", "ısChecked")]
+	public void Attach_OfEntryWithNameDifferingFromTheDefaultOnlyByCasing_ThrowsUnderTurkishAndAzeriCultures(string cultureName, string name)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		var originalUICulture = CultureInfo.CurrentUICulture;
+
+		try
+		{
+			CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+			var behavior = new IsCheckedDefaultBehavior { ValuePropertyName = name };
+
+			Assert.Throws<ArgumentException>(() => new Entry().Behaviors.Add(behavior));
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+			CultureInfo.CurrentUICulture = originalUICulture;
+		}
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void Attach_OfEntryWithTheDefaultNameIsChecked_TracesInsteadOfThrowingUnderTurkishAndAzeriCultures(string cultureName)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		var originalUICulture = CultureInfo.CurrentUICulture;
+		var listener = new CapturingTraceListener();
+		Trace.Listeners.Add(listener);
+
+		try
+		{
+			CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+			var behavior = new IsCheckedDefaultBehavior { ValuePropertyName = nameof(CheckBox.IsChecked) };
+
+			new Entry().Behaviors.Add(behavior);
+
+			Assert.Contains(listener.Messages, message => message.Contains("has its default", StringComparison.Ordinal));
+		}
+		finally
+		{
+			Trace.Listeners.Remove(listener);
+			CultureInfo.CurrentCulture = originalCulture;
+			CultureInfo.CurrentUICulture = originalUICulture;
+		}
+	}
+
+	[Fact]
+	public void Attach_OfSubclassWhoseDefaultValuePropertyNameIsClrProperty_TracesWarningAndLeavesValueUnbound()
+	{
+		var view = new PlainPropertyView { Plain = "plain" };
+		var behavior = new PlainValidationBehavior();
+
+		view.Behaviors.Add(behavior);
+
+		Assert.Null(behavior.Value);
+	}
+
+	sealed class NameViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public string? PropName
+		{
+			get;
+			set
+			{
+				field = value;
+				PropertyChanged?.Invoke(this, new(nameof(PropName)));
+			}
+		}
+	}
+
 	static async Task WaitUntil(Func<bool> condition)
 	{
 		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -609,6 +852,13 @@ public class ValidationBehaviorValuePropertyNameTests : BaseTest
 	sealed class ObjectValueCapturingBehavior : ValidationBehavior
 	{
 		protected override ValueTask<bool> ValidateAsync(object? value, CancellationToken token) => ValueTask.FromResult(true);
+	}
+
+	sealed class IsCheckedDefaultBehavior : ValidationBehavior<string>
+	{
+		protected override string DefaultValuePropertyName => nameof(CheckBox.IsChecked);
+
+		protected override ValueTask<bool> ValidateAsync(string? value, CancellationToken token) => ValueTask.FromResult(true);
 	}
 
 	sealed class PlainValidationBehavior : ValidationBehavior<string>

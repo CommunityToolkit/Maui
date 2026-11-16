@@ -127,6 +127,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 	/// A name that matches a <see cref="BindableProperty"/> on the view (for example <c>Text</c>, <c>IsChecked</c> or <c>SelectedItem</c>) is safe to use with trimming and NativeAOT.
 	/// To validate any other property, set this property to <see langword="null"/> first, then bind <see cref="Value"/> with a compiled binding, which the behavior leaves untouched.
 	/// Any other non-empty name (a CLR property, a dotted path, a typo) throws an <see cref="ArgumentException"/> when the behavior attaches, or when the name changes while attached (a trace warning instead when exceptions in behaviors are suppressed).
+	/// Exception: while the name has its default (<see cref="DefaultValuePropertyName"/>, set or not), for example before a binding on it delivers or after it loses its value, a view without that BindableProperty only gets a trace warning and <see cref="Value"/> stays unbound until the name changes.
 	/// </remarks>
 	[BindableProperty(DefaultValueCreatorMethodName = nameof(GetDefaultValuePropertyName), PropertyChangedMethodName = nameof(OnValuePropertyNamePropertyChanged))]
 	public partial string? ValuePropertyName { get; set; }
@@ -221,7 +222,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	/// <inheritdoc/>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
-	/// <exception cref="ArgumentException">Thrown when <see cref="ValuePropertyName"/> names no BindableProperty on <paramref name="bindable"/>, unless exceptions in behaviors are suppressed.</exception>
+	/// <exception cref="ArgumentException">Thrown when <see cref="ValuePropertyName"/> names no BindableProperty on <paramref name="bindable"/>, unless exceptions in behaviors are suppressed or the name has its default (<see cref="DefaultValuePropertyName"/>).</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
 		ArgumentNullException.ThrowIfNull(bindable);
@@ -229,7 +230,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		// Resolved here, not in the async void ValidateOnAttaching, because a throw there would crash the app
 		if (!IsValuePropertyNameValidFor(bindable))
 		{
-			ReportInvalidValuePropertyName(bindable);
+			ReportOrTraceInvalidValuePropertyName(bindable);
 		}
 
 		base.OnAttachedTo(bindable);
@@ -345,7 +346,7 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 		if (!TryGetViewBindableProperty(view, ValuePropertyName, out var viewProperty))
 		{
 			RemoveValueBindingOfBehavior();
-			ReportInvalidValuePropertyName(view);
+			ReportOrTraceInvalidValuePropertyName(view);
 			return;
 		}
 
@@ -390,6 +391,25 @@ public abstract partial class ValidationBehavior : BaseBehavior<VisualElement>, 
 
 	bool IsValuePropertyNameValidFor(VisualElement view)
 		=> string.IsNullOrEmpty(ValuePropertyName) || TryGetViewBindableProperty(view, ValuePropertyName, out _);
+
+	bool HasDefaultValuePropertyName => string.Equals(ValuePropertyName, DefaultValuePropertyName, StringComparison.Ordinal);
+
+	void ReportOrTraceInvalidValuePropertyName(VisualElement view)
+	{
+		if (HasDefaultValuePropertyName)
+		{
+			TraceDefaultValuePropertyNameIsInvalid(view);
+		}
+		else
+		{
+			ReportInvalidValuePropertyName(view);
+		}
+	}
+
+	// A binding on ValuePropertyName that has not delivered yet, or lost its value, leaves the default in place, and the bound name may be valid once it arrives
+	void TraceDefaultValuePropertyNameIsInvalid(VisualElement view)
+		=> Trace.TraceWarning("{0}", $"{GetType().Name}.{nameof(ValuePropertyName)} has its default '{ValuePropertyName}', which names no BindableProperty on {view.GetType().Name}, so {nameof(Value)} stays unbound. "
+			+ $"Set {nameof(ValuePropertyName)} to a BindableProperty name, or to {{x:Null}} and bind {nameof(Value)} with a compiled binding. A later change of {nameof(ValuePropertyName)} is checked again.");
 
 	[SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "The invalid argument is the ValuePropertyName property.")]
 	void ReportInvalidValuePropertyName(VisualElement view)

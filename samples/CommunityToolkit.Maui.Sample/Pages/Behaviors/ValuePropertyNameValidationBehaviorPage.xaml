@@ -32,7 +32,7 @@
                              Spacing="24"
                              VerticalOptions="Start">
 
-            <Label Text="ValidationBehavior.ValuePropertyName names the property of the attached view that is validated. It must name a BindableProperty of that view, for example Text, SelectedItem or a BindableProperty of your own view. Any other name (a plain CLR property, a dotted path, a typo) throws an ArgumentException when the behavior attaches (a trace warning instead when exceptions in behaviors are suppressed)."
+            <Label Text="ValidationBehavior.ValuePropertyName names the property of the attached view that is validated. It must name a BindableProperty of that view, for example Text, SelectedItem or a BindableProperty of your own view. Any other name (a plain CLR property, a dotted path, a typo) throws an ArgumentException when the behavior attaches (a trace warning instead when exceptions in behaviors are suppressed). The default name Text only writes a trace warning."
                    TextColor="{StaticResource NormalLabelTextColor}" />
 
             <Label Text="1. A built-in control: ValuePropertyName=&quot;SelectedItem&quot; validates the Picker's SelectedItem. The text turns green after choosing Pro." />
