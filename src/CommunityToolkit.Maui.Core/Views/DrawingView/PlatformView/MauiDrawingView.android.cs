@@ -12,17 +12,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsView(context)
 {
 	/// <inheritdoc />
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			currentPath.Dispose();
-		}
-
-		base.Dispose(disposing);
-	}
-
-	/// <inheritdoc />
 	public override bool OnTouchEvent(MotionEvent? e)
 	{
 		base.OnTouchEvent(e);
@@ -39,7 +28,8 @@ public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsVie
 				break;
 
 			case MotionEventActions.Move:
-				if (touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
+				// Like OnMoving, only a started gesture extends the in-progress path
+				if (isDrawing && touchX > 0 && touchY > 0 && touchX < Width && touchY < Height)
 				{
 					AddPointToPath(point);
 				}
@@ -74,9 +64,15 @@ public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsVie
 		Lines.CollectionChanged += OnLinesCollectionChanged;
 	}
 
-	void Redraw()
+	/// <inheritdoc />
+	protected override void Dispose(bool disposing)
 	{
-		Invalidate();
+		if (disposing)
+		{
+			currentPath.Dispose();
+		}
+
+		base.Dispose(disposing);
 	}
 
 	static ObservableCollection<PointF> CreateCollectionWithNormalizedPoints(in ObservableCollection<PointF> points, in int drawingViewWidth, in int drawingViewHeight, in float canvasScale)
@@ -90,5 +86,10 @@ public partial class MauiDrawingView(Context context) : PlatformTouchGraphicsVie
 		}
 
 		return newPoints.ToObservableCollection();
+	}
+
+	void Redraw()
+	{
+		Invalidate();
 	}
 }

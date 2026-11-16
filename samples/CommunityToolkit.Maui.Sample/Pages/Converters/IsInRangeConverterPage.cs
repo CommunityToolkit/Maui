@@ -222,10 +222,13 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 						.Row(Row.TimeSpanTitle).Column(Column.Input)
 						.Text("TimeSpan Input").Font(size: 24, bold: true),
 
-					new TimePicker { Time = new TimeSpan(12, 0, 0),  }
+					// TimePicker.Time is a TimeSpan? and IsInRangeConverter does not accept null: the view model keeps a TimeSpan and stores TimeSpan.Zero for a null Time
+					new TimePicker()
 						.Row(Row.TimeSpanInput).Column(Column.Input)
 						.Start().CenterVertical()
-						.Assign(out TimePicker timeSpanInputPicker),
+						.Bind(TimePicker.TimeProperty,
+								static (IsInRangeConverterViewModel vm) => vm.InputTime,
+								static (IsInRangeConverterViewModel vm, TimeSpan? time) => vm.InputTime = time ?? TimeSpan.Zero),
 
 					new ExampleLabel()
 						.Row(Row.TimeSpanExample1).Column(Column.Input)
@@ -234,8 +237,9 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.TimeSpanExample1).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(Label.StyleProperty,
-								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time ?? TimeSpan.Zero,
+						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, TimeSpan>(
+								Label.StyleProperty,
+								static (IsInRangeConverterViewModel vm) => vm.InputTime,
 								mode: BindingMode.OneWay,
 								converter: new IsInRangeConverter
 								{
@@ -243,8 +247,7 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 									FalseObject = GetFalseLabelStyle(),
 									MinValue = TimeSpan.FromHours(7),
 									MaxValue = TimeSpan.FromHours(17)
-								},
-								source: timeSpanInputPicker),
+								}),
 
 					new ExampleLabel()
 						.Row(Row.TimeSpanExample2).Column(Column.Input)
@@ -253,17 +256,16 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.TimeSpanExample2).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(
+						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, TimeSpan>(
 								Label.StyleProperty,
-								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time ?? TimeSpan.Zero,
+								static (IsInRangeConverterViewModel vm) => vm.InputTime,
 								mode: BindingMode.OneWay,
 								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
 									MinValue = TimeSpan.FromHours(7),
-								},
-								source: timeSpanInputPicker),
+								}),
 
 					new ExampleLabel()
 						.Row(Row.TimeSpanExample3).Column(Column.Input)
@@ -272,17 +274,16 @@ public partial class IsInRangeConverterPage : BasePage<IsInRangeConverterViewMod
 					new Label()
 						.Row(Row.TimeSpanExample3).Column(Column.Result)
 						.TextCenter()
-						.Bind<Label, TimePicker, TimeSpan, TimeSpan>(
+						.Bind<Label, IsInRangeConverterViewModel, TimeSpan, TimeSpan>(
 								Label.StyleProperty,
-								static (TimePicker timeSpanInputPicker) => timeSpanInputPicker.Time ?? TimeSpan.Zero,
+								static (IsInRangeConverterViewModel vm) => vm.InputTime,
 								mode: BindingMode.OneWay,
 								converter: new IsInRangeConverter
 								{
 									TrueObject = GetTrueLabelStyle(),
 									FalseObject = GetFalseLabelStyle(),
 									MaxValue = TimeSpan.FromHours(17),
-								},
-								source: timeSpanInputPicker),
+								}),
 
 					GetSeparator()
 						.Row(Row.TimeSpanSeparator).ColumnSpan(All<Column>()),

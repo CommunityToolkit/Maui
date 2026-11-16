@@ -20,11 +20,6 @@ sealed partial class BoundServiceConnection(MediaManager mediaManager) : Java.La
 
 	public BoundServiceBinder? Binder { get; private set; }
 
-	void HandleTaskRemoved(object? sender, EventArgs e)
-	{
-		taskRemovedEventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaControlsServiceTaskRemoved));
-	}
-
 	void IServiceConnection.OnServiceConnected(ComponentName? name, IBinder? service)
 	{
 		Binder = service as BoundServiceBinder;
@@ -45,5 +40,10 @@ sealed partial class BoundServiceConnection(MediaManager mediaManager) : Java.La
 			Binder.Service.TaskRemoved -= HandleTaskRemoved;
 			Binder = null;
 		}
+	}
+
+	void HandleTaskRemoved(object? sender, EventArgs e)
+	{
+		taskRemovedEventManager.HandleEvent(this, EventArgs.Empty, nameof(MediaControlsServiceTaskRemoved));
 	}
 }

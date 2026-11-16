@@ -4,8 +4,6 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN
-using PlatformView = Tizen.NUI.BaseComponents.View;
 #elif NET6_0_OR_GREATER || (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 #endif
@@ -42,16 +40,18 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 
 	}
 
-	/// <summary>
-	/// View used by the Behavior
-	/// </summary>
-	protected TView? View { get; set; }
-
 	TView? ICommunityToolkitBehavior<TView>.View
 	{
 		get => View;
 		set => View = value;
 	}
+
+	/// <summary>
+	/// View used by the Behavior
+	/// </summary>
+	protected TView? View { get; set; }
+
+	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 
 	/// <summary>
 	/// Virtual method that executes when a property on the View has changed
@@ -64,20 +64,24 @@ public abstract class BasePlatformBehavior<TView, TPlatformView> : PlatformBehav
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(TView bindable, TPlatformView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable, platformView);
 
 		((ICommunityToolkitBehavior<TView>)this).InitializeBehavior(bindable);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(TView bindable, TPlatformView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);
 	}
-
-	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 }

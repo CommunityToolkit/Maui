@@ -46,7 +46,7 @@
                     EventName="ItemSelected"
                     BindingContext="{Binding Path=BindingContext, Source={x:Reference ListView},x:DataType=ListView}"
                     Command="{Binding HandleItemSelectedCommand}"
-                    CommandParameter="{Binding ItemSelected}"/>
+                    EventArgsConverter="{StaticResource SelectedItemEventArgsConverter}"/>
             </ListView.Behaviors>
         </ListView>
 

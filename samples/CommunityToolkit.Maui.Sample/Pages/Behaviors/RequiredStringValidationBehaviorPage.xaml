@@ -18,32 +18,34 @@
         </Style>
     </pages:BasePage.Resources>
 
-    <VerticalStackLayout Padding="{StaticResource ContentPadding}"
-                 Spacing="50"
-                 VerticalOptions="Start">
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource ContentPadding}"
+                     Spacing="50"
+                     VerticalOptions="Start">
 
-        <Label Text="The RequiredStringValidationBehavior is a behavior that allows the user to determine if text input is equal to specific text. For example, an Entry control can be styled differently depending on whether a valid or an invalid text input is provided. Additional properties handling validation are inherited from ValidationBehavior"
-               TextColor="{StaticResource NormalLabelTextColor}" />
+            <Label Text="The RequiredStringValidationBehavior is a behavior that allows the user to determine if text input is equal to specific text. For example, an Entry control can be styled differently depending on whether a valid or an invalid text input is provided. Additional properties handling validation are inherited from ValidationBehavior"
+                   TextColor="{StaticResource NormalLabelTextColor}" />
 
-        <Label Text="Text color will change accordingly to the style that is configured when a required string is not entered." />
+            <Label Text="Text color will change accordingly to the style that is configured when a required string is not entered." />
 
-        <Entry Placeholder="Required String: 123. Exact match">
-            <Entry.Behaviors>
-                <mct:RequiredStringValidationBehavior RequiredString="123"
-                                                      InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                      ValidStyle="{StaticResource ValidEntryStyle}"
-                                                      Flags="ValidateOnValueChanged"/>
-            </Entry.Behaviors>
-        </Entry>
+            <Entry Placeholder="Required String: 123. Exact match">
+                <Entry.Behaviors>
+                    <mct:RequiredStringValidationBehavior RequiredString="123"
+                                                          InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                          ValidStyle="{StaticResource ValidEntryStyle}"
+                                                          Flags="ValidateOnValueChanged"/>
+                </Entry.Behaviors>
+            </Entry>
 
-        <Entry Placeholder="Required substring: 123">
-            <Entry.Behaviors>
-                <mct:RequiredStringValidationBehavior RequiredString="123" ExactMatch="False"
-                                                      InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                                      ValidStyle="{StaticResource ValidEntryStyle}"
-                                                      Flags="ValidateOnValueChanged"/>
-            </Entry.Behaviors>
-        </Entry>
-    </VerticalStackLayout>
+            <Entry Placeholder="Required substring: 123">
+                <Entry.Behaviors>
+                    <mct:RequiredStringValidationBehavior RequiredString="123" ExactMatch="False"
+                                                          InvalidStyle="{StaticResource InvalidEntryStyle}"
+                                                          ValidStyle="{StaticResource ValidEntryStyle}"
+                                                          Flags="ValidateOnValueChanged"/>
+                </Entry.Behaviors>
+            </Entry>
+        </VerticalStackLayout>
+    </ScrollView>
 
 </pages:BasePage>

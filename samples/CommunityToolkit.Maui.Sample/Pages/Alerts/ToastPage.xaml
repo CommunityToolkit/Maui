@@ -12,7 +12,7 @@
         <Label Text="The Toast is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time." 
                 LineBreakMode = "WordWrap" />
         
-        <Label Text="Windows uses toast notifications to display toast. Make sure you switched off Focus Assist."
+        <Label Text="Windows uses toast notifications to display toast, so the text size of the custom Toast is not applied. Make sure you switched off Focus Assist."
                IsVisible="{OnPlatform Default='false', WinUI='true'}"/>
 
         <Button Clicked="ShowToastButtonClicked"

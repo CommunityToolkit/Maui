@@ -29,8 +29,17 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="platformView"/> is <see langword="null"/>.</exception>
 	protected override void DisconnectHandler(MauiMediaElement platformView)
 	{
+		ArgumentNullException.ThrowIfNull(platformView);
+
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
+		if (OperatingSystem.IsIOSVersionAtLeast(16))
+		{
+			platformView.DetachFromParentViewController();
+		}
+
 		platformView.Dispose();
 		Dispose();
 
@@ -41,5 +50,14 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 	{
 		playerViewController?.Dispose();
 		playerViewController = null;
+	}
+
+	partial void PlatformRefreshPlaybackControlsVisibility(bool shouldShowPlaybackControls)
+	{
+		// The mapper also runs while the handler has no platform view (after DisconnectHandler), and the PlatformView property throws then
+		if (((IElementHandler)this).PlatformView is MauiMediaElement platformView)
+		{
+			platformView.RefreshPlaybackControlsVisibility(shouldShowPlaybackControls);
+		}
 	}
 }

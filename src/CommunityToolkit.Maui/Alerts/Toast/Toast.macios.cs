@@ -31,13 +31,19 @@ public partial class Toast
 
 	static void DismissPlatform(CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
+
 		if (PlatformToast is null)
 		{
 			return;
 		}
 
-		token.ThrowIfCancellationRequested();
 		PlatformToast.Dismiss();
+	}
+
+	static CGRect CreateCornerRadius(int radius = 4)
+	{
+		return new CGRect(radius, radius, radius, radius);
 	}
 
 	/// <summary>
@@ -50,12 +56,14 @@ public partial class Toast
 
 		var cornerRadius = CreateCornerRadius();
 		var padding = GetMaximum(cornerRadius.X, cornerRadius.Y, cornerRadius.Width, cornerRadius.Height);
+		var font = UIFont.SystemFontOfSize((NFloat)TextSize)
+			?? throw new InvalidOperationException("Unable to create the toast font.");
 
 		PlatformToast = new PlatformToast(Text,
 											AlertDefaults.BackgroundColor.ToPlatform(),
 											cornerRadius,
 											AlertDefaults.TextColor.ToPlatform(),
-											UIFont.SystemFontOfSize((NFloat)TextSize),
+											font,
 											AlertDefaults.CharacterSpacing,
 											padding)
 		{
@@ -65,10 +73,5 @@ public partial class Toast
 		PlatformToast.Show();
 
 		static T? GetMaximum<T>(params IReadOnlyList<T> items) => items.Max();
-	}
-
-	static CGRect CreateCornerRadius(int radius = 4)
-	{
-		return new CGRect(radius, radius, radius, radius);
 	}
 }

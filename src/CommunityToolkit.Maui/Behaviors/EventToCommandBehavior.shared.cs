@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// </summary>
 public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 {
+	[DynamicDependency(nameof(OnTriggerHandled), typeof(EventToCommandBehavior))]
 	readonly MethodInfo eventHandlerMethodInfo = typeof(EventToCommandBehavior).GetTypeInfo().GetDeclaredMethod(nameof(OnTriggerHandled)) ?? throw new InvalidOperationException($"Cannot find method {nameof(OnTriggerHandled)}");
 
 	Delegate? eventHandler;
@@ -41,18 +43,51 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 	[BindableProperty]
 	public partial IValueConverter? EventArgsConverter { get; set; }
 
+	/// <summary>
+	/// The <see cref="CultureInfo"/> passed to <see cref="EventArgsConverter"/> when it converts the <see cref="EventArgs"/>. When <see langword="null"/>, <see cref="CultureInfo.InvariantCulture"/> is used. This is a bindable property.
+	/// </summary>
+	/// <remarks>
+	/// Unlike a binding, which passes <see cref="CultureInfo.CurrentUICulture"/> when no converter culture is set, this behavior keeps passing <see cref="CultureInfo.InvariantCulture"/> by default.
+	/// </remarks>
+	[TypeConverter(typeof(CultureInfoConverter))]
+	[BindableProperty]
+	public partial CultureInfo? EventArgsConverterCulture { get; set; }
+
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 		RegisterEvent();
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		UnregisterEvent();
 		base.OnDetachingFrom(bindable);
+	}
+
+	/// <summary>
+	/// Virtual method that executes when a Command is invoked
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="eventArgs"></param>
+	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
+	{
+		var parameter = CommandParameter
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, EventArgsConverterCulture ?? CultureInfo.InvariantCulture);
+
+		var command = Command;
+		if (command?.CanExecute(parameter) ?? false)
+		{
+			command.Execute(parameter);
+		}
 	}
 
 	static void OnEventNamePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -89,23 +124,5 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 
 		eventInfo = null;
 		eventHandler = null;
-	}
-
-	/// <summary>
-	/// Virtual method that executes when a Command is invoked
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="eventArgs"></param>
-	[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
-	{
-		var parameter = CommandParameter
-			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture);
-
-		var command = Command;
-		if (command?.CanExecute(parameter) ?? false)
-		{
-			command.Execute(parameter);
-		}
 	}
 }

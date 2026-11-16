@@ -191,6 +191,168 @@ public class UseCommunityToolkitInitializationAnalyzerTests
 		await VerifyMauiToolkitAnalyzer(source, Diagnostic().WithSpan(12, 4, 12, 61).WithSeverity(DiagnosticSeverity.Error));
 	}
 
+	[Fact]
+	public async Task VerifyCodeFixInitializesToolkitBeforeBuild()
+	{
+		const string source =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						return {|#0:MauiApp.CreateBuilder().UseMauiApp<Microsoft.Maui.Controls.Application>()|}.Build();
+					}
+				}
+			}
+			""";
+
+		const string fixedSource =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+			using CommunityToolkit.Maui;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						return MauiApp.CreateBuilder().UseMauiApp<Microsoft.Maui.Controls.Application>().UseMauiCommunityToolkit().Build();
+					}
+				}
+			}
+			""";
+
+		await VerifyCodeFixAsync(
+			source,
+			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
+			fixedSource,
+			typeof(Options),
+			typeof(Core.Options));
+	}
+
+	[Fact]
+	public async Task VerifyCodeFixPreservesFormattingOfMultiLineBuilderChain()
+	{
+		const string source =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
+			public static class MauiProgram
+			{
+				public static MauiApp CreateMauiApp()
+				{
+					var builder = MauiApp.CreateBuilder();
+					{|#0:builder
+						.UseMauiApp<Microsoft.Maui.Controls.Application>()|} // Comment
+						.ConfigureFonts(fonts =>
+						{
+							fonts.AddFont("OpenSans-Regular.ttf",   "OpenSansRegular");
+							fonts.AddFont( "OpenSans-Semibold.ttf", "OpenSansSemibold" );
+						});
+
+					return builder.Build();
+				}
+			}
+			""";
+
+		const string fixedSource =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+			using CommunityToolkit.Maui;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
+			public static class MauiProgram
+			{
+				public static MauiApp CreateMauiApp()
+				{
+					var builder = MauiApp.CreateBuilder();
+					builder
+						.UseMauiApp<Microsoft.Maui.Controls.Application>() // Comment
+						.UseMauiCommunityToolkit()
+						.ConfigureFonts(fonts =>
+						{
+							fonts.AddFont("OpenSans-Regular.ttf",   "OpenSansRegular");
+							fonts.AddFont( "OpenSans-Semibold.ttf", "OpenSansSemibold" );
+						});
+
+					return builder.Build();
+				}
+			}
+			""";
+
+		await VerifyCodeFixAsync(
+			source,
+			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
+			fixedSource,
+			typeof(Options),
+			typeof(Core.Options));
+	}
+
+	[Fact]
+	public async Task VerifyCodeFixPreservesFormattingWhenDocumentHasNoTopLevelUsings()
+	{
+		const string source =
+			"""
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						var  builder = MauiApp.CreateBuilder();
+						{|#0:builder.UseMauiApp<Microsoft.Maui.Controls.Application>()|};
+
+						return builder.Build();
+					}
+				}
+			}
+			""";
+
+		const string fixedSource =
+			"""
+			using CommunityToolkit.Maui;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						var  builder = MauiApp.CreateBuilder();
+						builder.UseMauiApp<Microsoft.Maui.Controls.Application>().UseMauiCommunityToolkit();
+
+						return builder.Build();
+					}
+				}
+			}
+			""";
+
+		await VerifyCodeFixAsync(
+			source,
+			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
+			fixedSource,
+			typeof(Options),
+			typeof(Core.Options));
+	}
+
 	static Task VerifyMauiToolkitAnalyzer(string source, params IReadOnlyList<DiagnosticResult> expected)
 	{
 		return VerifyAnalyzerAsync(

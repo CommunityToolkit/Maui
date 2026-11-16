@@ -12,13 +12,21 @@ public partial class KeyboardExtensionsViewModel : BaseViewModel
 	[RelayCommand]
 	void OnIsKeyboardShowing(ITextInput view)
 	{
-		if (view.IsSoftKeyboardShowing())
+		try
 		{
-			OperationResult = $"Soft Input Is Currently Showing";
+			if (view.IsSoftKeyboardShowing())
+			{
+				OperationResult = $"Soft Input Is Currently Showing";
+			}
+			else
+			{
+				OperationResult = $"Soft Input Is Currently Hidden";
+			}
 		}
-		else
+		catch (Exception e)
 		{
-			OperationResult = $"Soft Input Is Currently Hidden";
+			// Mac Catalyst has no soft keyboard: IsSoftKeyboardShowing throws a NotSupportedException there, like ShowKeyboardAsync and HideKeyboardAsync
+			OperationResult = e.Message;
 		}
 	}
 

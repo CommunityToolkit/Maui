@@ -1,4 +1,9 @@
-﻿# Async Programming Best Practices
+﻿---
+description: 'Best practices for writing asynchronous C# code: Task/ValueTask usage, CancellationToken support, avoiding async void, ConfigureAwait guidance'
+applyTo: '**/*.cs'
+---
+
+# Async Programming Best Practices
 
 This cheat sheet should serve as a quick reminder of best practices when writing asynchronous code. Following these guidelines will help you avoid common pitfalls such as unobserved exceptions, deadlocks, and unexpected UI blocking.
 

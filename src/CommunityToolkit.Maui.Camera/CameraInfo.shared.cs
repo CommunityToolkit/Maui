@@ -15,6 +15,7 @@ namespace CommunityToolkit.Maui.Core;
 /// <summary>
 /// Represents information about a camera device.
 /// </summary>
+/// <exception cref="ArgumentNullException">Thrown when <c>name</c>, <c>deviceId</c> or <c>supportedResolutions</c> is <see langword="null"/>; on iOS and Mac Catalyst also when <c>supportedFormats</c> is <see langword="null"/>; on Windows also when <c>imageEncodingProperties</c> is <see langword="null"/>.</exception>
 public class CameraInfo(
 	string name,
 	string deviceId,
@@ -40,12 +41,12 @@ public class CameraInfo(
 	/// <summary>
 	/// Gets the name of the camera device.
 	/// </summary>
-	public string Name { get; } = name;
+	public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 
 	/// <summary>
 	/// Gets the unique identifier of the camera device.
 	/// </summary>
-	public string DeviceId { get; } = deviceId;
+	public string DeviceId { get; } = deviceId ?? throw new ArgumentNullException(nameof(deviceId));
 
 	/// <summary>
 	/// Gets the <see cref="CameraPosition"/> of the camera device.
@@ -70,7 +71,7 @@ public class CameraInfo(
 	/// <summary>
 	/// Gets the supported resolutions of the camera device.
 	/// </summary>
-	public IReadOnlyList<Size> SupportedResolutions { get; } = [.. supportedResolutions];
+	public IReadOnlyList<Size> SupportedResolutions { get; } = [.. supportedResolutions ?? throw new ArgumentNullException(nameof(supportedResolutions))];
 
 #if ANDROID
 	internal CameraSelector? CameraSelector { get; } = cameraSelector;
@@ -78,12 +79,12 @@ public class CameraInfo(
 
 #if IOS || MACCATALYST
 	internal AVCaptureDevice? CaptureDevice { get; } = captureDevice;
-	internal IReadOnlyList<AVCaptureDeviceFormat> SupportedFormats { get; } = [.. supportedFormats];
+	internal IReadOnlyList<AVCaptureDeviceFormat> SupportedFormats { get; } = [.. supportedFormats ?? throw new ArgumentNullException(nameof(supportedFormats))];
 #endif
 
 #if WINDOWS
     internal MediaFrameSourceGroup FrameSourceGroup { get; } = frameSourceGroup;
-	internal IReadOnlyList<ImageEncodingProperties> ImageEncodingProperties { get; } = [.. imageEncodingProperties];
+	internal IReadOnlyList<ImageEncodingProperties> ImageEncodingProperties { get; } = [.. imageEncodingProperties ?? throw new ArgumentNullException(nameof(imageEncodingProperties))];
 #endif
 
 	/// <inheritdoc cref="Equals(object)"/>
@@ -111,9 +112,12 @@ public class CameraInfo(
 	{
 		var resolutionStringBuilder = new StringBuilder();
 
-		foreach (var resolutionSize in SupportedResolutions)
+		for (var i = 0; i < SupportedResolutions.Count; i++)
 		{
-			var endString = resolutionSize == SupportedResolutions.Last()
+			var resolutionSize = SupportedResolutions[i];
+
+			// Compare the position, not the value: a resolution can be listed more than once
+			var endString = i == SupportedResolutions.Count - 1
 				? "."
 				: ", ";
 

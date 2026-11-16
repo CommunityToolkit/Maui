@@ -17,9 +17,6 @@ public sealed partial class CompareConverter : CompareConverter<IComparable, obj
 /// </summary>
 public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, TReturnObject> : BaseConverterOneWay<TValue, object> where TValue : IComparable
 {
-	/// <inheritdoc/>
-	public override object DefaultConvertReturnValue { get; set; } = new();
-
 	/// <summary>
 	/// Math operator type
 	/// </summary>
@@ -57,6 +54,9 @@ public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAc
 		GreaterOrEqual = 1 << 4,
 	}
 
+	/// <inheritdoc/>
+	public override object DefaultConvertReturnValue { get; set; } = new();
+
 	/// <summary>
 	/// The comparing value.
 	/// </summary>
@@ -81,7 +81,7 @@ public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAc
 	/// Converts an object that implements IComparable to a specified object or a boolean based on a comparison result.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <param name="culture">The culture to use in the converter.  This is not implemented.</param>
+	/// <param name="culture">The culture used to compare <see cref="string"/> values. When <see langword="null"/>, <see cref="CultureInfo.CurrentCulture"/> is used. Values of other types are compared without regard to culture.</param>
 	/// <returns>The object assigned to <see cref="TrueObject"/> if (value <see cref="ComparisonOperator"/> <see cref="ComparingValue"/>) equals True and <see cref="TrueObject"/> is not null, if <see cref="TrueObject"/> is null it returns true, otherwise the value assigned to <see cref="FalseObject"/>, if no value is assigned then it returns false.</returns>
 	[MemberNotNull(nameof(ComparingValue))]
 	public override object ConvertFrom(TValue value, CultureInfo? culture = null)
@@ -99,7 +99,7 @@ public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAc
 			throw new InvalidOperationException($"{nameof(TrueObject)} and {nameof(FalseObject)} should either be both defined both or both omitted.");
 		}
 
-		var result = value.CompareTo(ComparingValue);
+		var result = CultureAwareComparison.Compare(value, ComparingValue, culture);
 		var shouldReturnObjectResult = TrueObject is not null && FalseObject is not null;
 
 		return ComparisonOperator switch

@@ -13,8 +13,14 @@ public static class MauiDrawingViewExtensions
 	/// <summary>
 	/// Get smoothed path.
 	/// </summary>
+	/// <param name="currentPoints">The points to smooth.</param>
+	/// <param name="granularity">The number of points to add between two points.</param>
+	/// <returns>The smoothed points.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="currentPoints"/> is null.</exception>
 	public static ObservableCollection<PointF> CreateSmoothedPathWithGranularity(this IEnumerable<PointF> currentPoints, int granularity)
 	{
+		ArgumentNullException.ThrowIfNull(currentPoints);
+
 		var currentPointsList = new List<PointF>(currentPoints);
 
 		// not enough points to smooth effectively, so return the original path and points.
@@ -68,8 +74,11 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="multiLineMode">value</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetIsMultiLineModeEnabled(this MauiDrawingView mauiDrawingView, bool multiLineMode)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+
 		mauiDrawingView.IsMultiLineModeEnabled = multiLineMode;
 	}
 
@@ -78,8 +87,11 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="draw">value</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetDrawAction(this MauiDrawingView mauiDrawingView, Action<ICanvas, RectF>? draw)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+
 		mauiDrawingView.DrawAction = draw;
 	}
 
@@ -88,8 +100,11 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="clearOnFinish">value</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetShouldClearOnFinish(this MauiDrawingView mauiDrawingView, bool clearOnFinish)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+
 		mauiDrawingView.ShouldClearOnFinish = clearOnFinish;
 	}
 
@@ -98,8 +113,11 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="lineColor">line color</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetLineColor(this MauiDrawingView mauiDrawingView, Color lineColor)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+
 		mauiDrawingView.LineColor = lineColor;
 	}
 
@@ -108,8 +126,11 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="lineWidth">line width</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetLineWidth(this MauiDrawingView mauiDrawingView, float lineWidth)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+
 		mauiDrawingView.LineWidth = lineWidth;
 	}
 
@@ -118,8 +139,11 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/></param>
 	/// <param name="background">background</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> is null.</exception>
 	public static void SetPaint(this MauiDrawingView mauiDrawingView, Paint background)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+
 		mauiDrawingView.Paint = background;
 	}
 
@@ -128,8 +152,12 @@ public static class MauiDrawingViewExtensions
 	/// </summary>
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="mauiDrawingView"/> or <paramref name="drawingView"/> is null.</exception>
 	public static void SetLines(this MauiDrawingView mauiDrawingView, IDrawingView drawingView)
 	{
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+		ArgumentNullException.ThrowIfNull(drawingView);
+
 		var lines = drawingView.Lines.ToImmutableList();
 		if (!drawingView.IsMultiLineModeEnabled && lines.Count > 1)
 		{
@@ -157,8 +185,13 @@ public static class MauiDrawingViewExtensions
 	/// <param name="mauiDrawingView"><see cref="MauiDrawingView"/><see cref="MauiDrawingView"/></param>
 	/// <param name="drawingView"><see cref="IDrawingView"/></param>
 	/// <param name="adapter"><see cref="IDrawingLineAdapter"/></param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="drawingView"/>, <paramref name="mauiDrawingView"/> or <paramref name="adapter"/> is null.</exception>
 	public static void SetLines(this IDrawingView drawingView, MauiDrawingView mauiDrawingView, IDrawingLineAdapter adapter)
 	{
+		ArgumentNullException.ThrowIfNull(drawingView);
+		ArgumentNullException.ThrowIfNull(mauiDrawingView);
+		ArgumentNullException.ThrowIfNull(adapter);
+
 		var lines = mauiDrawingView.Lines.ToImmutableList();
 		if (!mauiDrawingView.IsMultiLineModeEnabled && lines.Count > 1)
 		{

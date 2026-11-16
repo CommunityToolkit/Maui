@@ -1,0 +1,4 @@
+# Treated as generated code so the repository's style analyzers do not rewrite these vendored and ported dotnet/maui sources, which
+# keeps them diffable against dotnet/maui.
+[*.cs]
+generated_code = true

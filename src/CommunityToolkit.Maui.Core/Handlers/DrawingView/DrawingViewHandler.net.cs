@@ -4,16 +4,17 @@ namespace CommunityToolkit.Maui.Core.Handlers;
 
 public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDrawingViewHandler
 {
-	/// <inheritdoc />
-	protected override object CreatePlatformView() => throw new NotSupportedException();
-
 	/// <summary>
 	/// Action that's triggered when the DrawingView <see cref="IDrawingView.Lines"/> property changes.
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapLines(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <summary>
@@ -21,8 +22,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapShouldClearOnFinish(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <summary>
@@ -30,8 +35,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapLineColor(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <summary>
@@ -39,8 +48,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapLineWidth(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <summary>
@@ -48,8 +61,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapIsMultiLineModeEnabled(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <summary>
@@ -57,8 +74,12 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapDrawAction(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <summary>
@@ -66,12 +87,29 @@ public partial class DrawingViewHandler : ViewHandler<IDrawingView, object>, IDr
 	/// </summary>
 	/// <param name="handler">An instance of <see cref="DrawingViewHandler"/>.</param>
 	/// <param name="view">An instance of <see cref="IDrawingView"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> or <paramref name="view"/> is null.</exception>
 	public static void MapDrawingViewBackground(DrawingViewHandler handler, IDrawingView view)
 	{
+		ArgumentNullException.ThrowIfNull(handler);
+		ArgumentNullException.ThrowIfNull(view);
+
 	}
 
 	/// <inheritdoc/>
 	public void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter)
 	{
+		ArgumentNullException.ThrowIfNull(drawingLineAdapter);
 	}
+
+	// Without a platform there is no platform view and nothing to stop listening to: the handler stays connected, as on the platforms
+	internal void StopListeningUntilLoaded()
+	{
+	}
+
+	internal void ListenAgain()
+	{
+	}
+
+	/// <inheritdoc />
+	protected override object CreatePlatformView() => throw new NotSupportedException();
 }

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.UnitTests.Mocks;
@@ -6,7 +7,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToCommandBehavior<Coffee>, VisualElement>(new EventToCommandBehavior<Coffee>(), new View())
+public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToCommandBehavior<Coffee>, VisualElement>(new EventToCommandBehavior<Coffee>(), new MockView())
 {
 	[Fact]
 	public void ArgumentExceptionIfSpecifiedEventDoesNotExist()
@@ -163,6 +164,43 @@ public class EventToCommandBehaviorGenericTests() : BaseBehaviorTest<EventToComm
 		TriggerEventToCommandBehavior(behavior, nullArgs);
 
 		Assert.Equal(cappuccino, convertedValue);
+	}
+
+	[Fact]
+	public void EventArgsConverterCulture_IsPassedToEventArgsConverter()
+	{
+		var culture = new CultureInfo("de-DE");
+		var spy = new CultureSpyConverter();
+		var behavior = new EventToCommandBehavior<Coffee>
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = spy,
+			EventArgsConverterCulture = culture,
+			Command = new Command(() => { })
+		};
+
+		TriggerEventToCommandBehavior(behavior, [null, null]);
+
+		Assert.Same(culture, spy.ReceivedCulture);
+	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	public void EventArgsConverterCulture_DefaultsToInvariantCulture(string uiCultureName)
+	{
+		Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCultureName);
+		var spy = new CultureSpyConverter();
+		var behavior = new EventToCommandBehavior<Coffee>
+		{
+			EventName = nameof(ListView.ItemTapped),
+			EventArgsConverter = spy,
+			Command = new Command(() => { })
+		};
+
+		TriggerEventToCommandBehavior(behavior, [null, null]);
+
+		Assert.Same(CultureInfo.InvariantCulture, spy.ReceivedCulture);
 	}
 
 	static void TriggerEventToCommandBehavior<T>(EventToCommandBehavior<T> eventToCommand, object?[] args)

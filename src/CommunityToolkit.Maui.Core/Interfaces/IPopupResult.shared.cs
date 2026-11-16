@@ -22,7 +22,7 @@ public interface IPopupResult<out TResult> : IPopupResult
 public interface IPopupResult
 {
 	/// <summary>
-	/// Gets whether the popup was closed by tapping outside the popup.
+	/// Gets whether the popup was closed without a result: by tapping outside the popup, or because navigation removed it without <c>CloseAsync</c>.
 	/// </summary>
 	bool WasDismissedByTappingOutsideOfPopup { get; }
 }

@@ -22,7 +22,7 @@ public class PlatformToast : Alert, IDisposable
 	/// <param name="cornerRadius">Toast Border Corner Radius</param>
 	/// <param name="textColor">Toast Text Color</param>
 	/// <param name="font">Toast Font</param>
-	/// <param name="characterSpacing">Toast Message Character Spacing</param>
+	/// <param name="characterSpacing">Toast Message Character Spacing, in the unit of <see cref="CharacterSpacing"/></param>
 	/// <param name="padding">Toast Padding</param>
 	/// <param name="shouldFillAndExpandHorizontally">Should stretch container horizontally to fit the screen</param>
 	public PlatformToast(
@@ -84,8 +84,12 @@ public class PlatformToast : Alert, IDisposable
 	}
 
 	/// <summary>
-	/// Toast CharacterSpacing
+	/// Toast message character spacing, applied as the kerning of the message, in points: 100 times the value divided by the point size of
+	/// <see cref="Font"/> (no kerning when that point size is 0), so 1 with a 20-point font kerns by 5 points
 	/// </summary>
+	/// <remarks>
+	/// This is not the unit of the CharacterSpacing of a .NET MAUI Label, which iOS and Mac Catalyst apply as a kerning of that many points.
+	/// </remarks>
 	public double CharacterSpacing
 	{
 		init

@@ -5,12 +5,20 @@ namespace CommunityToolkit.Maui.Core.Layouts;
 /// <summary>
 /// <see cref="LayoutManager"/> for <see cref="IDockLayout"/>.
 /// </summary>
-/// <remarks>
-/// Initialize a new instance of <see cref="DockLayoutManager"/>.
-/// </remarks>
-public class DockLayoutManager(IDockLayout dockLayout) : LayoutManager(dockLayout)
+public class DockLayoutManager : LayoutManager
 {
-	readonly IDockLayout dockLayout = dockLayout;
+	readonly IDockLayout dockLayout;
+
+	/// <summary>
+	/// Initialize a new instance of <see cref="DockLayoutManager"/>.
+	/// </summary>
+	/// <param name="dockLayout">The <see cref="IDockLayout"/> to manage.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="dockLayout"/> is null.</exception>
+	public DockLayoutManager(IDockLayout dockLayout) : base(dockLayout)
+	{
+		ArgumentNullException.ThrowIfNull(dockLayout);
+		this.dockLayout = dockLayout;
+	}
 
 	/// <inheritdoc />
 	public override Size Measure(double widthConstraint, double heightConstraint)

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using FluentAssertions.Equivalency;
 using Xunit;
 
@@ -139,9 +140,10 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 	{
 		var converter = new ColorToHslStringConverter();
 		var color = new Color(red, green, blue, alpha);
+		var culture = new CultureInfo("en-US");
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
-		var resultConvertFrom = converter.ConvertFrom(color);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -155,5 +157,25 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("de-DE", "HSL(360,100 %,50 %)")]
+	[InlineData("tr-TR", "HSL(360,%100,%50)")]
+	public void ColorToHslStringConverter_UsesPassedCulture_NotCurrentCulture(string cultureName, string expectedResult)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("en-US");
+
+			var result = new ColorToHslStringConverter().ConvertFrom(Colors.Red, new CultureInfo(cultureName));
+
+			Assert.Equal(expectedResult, result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 }

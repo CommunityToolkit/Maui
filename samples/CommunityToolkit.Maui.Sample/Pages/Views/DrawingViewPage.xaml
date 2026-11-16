@@ -42,7 +42,7 @@
                 Grid.ColumnSpan="2"
                 BackgroundColor="White"
                 Clicked="GetCurrentDrawingViewImageClicked"
-                Text="Display current gesture pad image"
+                Text="Display current DrawingView image"
                 TextColor="Black" />
             <Button
                 Grid.Row="6" Grid.Column="0"

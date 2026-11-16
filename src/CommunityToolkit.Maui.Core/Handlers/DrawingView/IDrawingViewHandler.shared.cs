@@ -9,5 +9,6 @@ public interface IDrawingViewHandler
 	/// Set <see cref="IDrawingLineAdapter"/>.
 	/// </summary>
 	/// <param name="drawingLineAdapter"><see cref="IDrawingLineAdapter"/></param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="drawingLineAdapter"/> is null.</exception>
 	void SetDrawingLineAdapter(IDrawingLineAdapter drawingLineAdapter);
 }

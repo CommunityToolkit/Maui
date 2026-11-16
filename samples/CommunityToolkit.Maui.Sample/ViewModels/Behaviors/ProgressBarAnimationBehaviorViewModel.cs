@@ -5,15 +5,15 @@ namespace CommunityToolkit.Maui.Sample.ViewModels.Behaviors;
 
 public partial class ProgressBarAnimationBehaviorViewModel : BaseViewModel
 {
-	[ObservableProperty]
-	public partial double Progress { get; private set; }
-
 	public ProgressBarAnimationBehaviorViewModel()
 	{
 		SetTo0Command = new Command(() => SetProgress(0));
 		SetTo50Command = new Command(() => SetProgress(0.5));
 		SetTo100Command = new Command(() => SetProgress(1));
 	}
+
+	[ObservableProperty]
+	public partial double Progress { get; private set; }
 
 	public ICommand SetTo0Command { get; }
 

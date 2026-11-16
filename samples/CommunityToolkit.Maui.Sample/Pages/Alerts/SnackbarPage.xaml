@@ -16,14 +16,14 @@
     </pages:BasePage.Resources>
     
     <Grid RowSpacing="12"
-          RowDefinitions="70,20,40,40,40,20">
+          RowDefinitions="70,Auto,40,40,40,20">
         <Label Grid.Row="0"
                Text="The Snackbar is a timed alert that appears at the bottom of the screen by default. It is dismissed after a configurable duration of time. Snackbar is fully customizable and can be anchored to any IView."
                HorizontalTextAlignment="Justify"
                LineBreakMode = "WordWrap" />
         
         <Label Grid.Row="1"
-               Text="NOTE: Windows uses toast notifications to display snackbar. Be sure you've switched off Focus Assist."
+               Text="NOTE: Windows uses toast notifications to display snackbar, so the SnackbarOptions (colors, fonts, corner radius) and the anchor are not applied. Be sure you've switched off Focus Assist."
                IsVisible="{OnPlatform Default='false', WinUI='true'}"/>
         
         <Button Grid.Row="2"

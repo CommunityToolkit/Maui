@@ -42,7 +42,8 @@ public partial class ColorAnimationExtensionsPage : BasePage<ColorAnimationExten
 			duration = 1500;
 		}
 
-		if (!uint.TryParse(RateInput.Text, out var rate))
+		// The rate is the time between two frames of the animation, so it must be at least 1 ms: BackgroundColorTo and TextColorTo cannot animate with a rate of 0
+		if (!uint.TryParse(RateInput.Text, out var rate) || rate is 0)
 		{
 			rate = 16;
 		}

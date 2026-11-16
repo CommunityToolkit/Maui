@@ -85,4 +85,54 @@ public class DoubleToIntConverterTests : BaseConverterTest<DoubleToIntConverter>
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new DoubleToIntConverter()).ConvertBack(null, typeof(int), null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("en-US")]
+	[InlineData("fr-FR")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void DoubleToIntConverter_StringParameterWithDotIsInvariant(string cultureName)
+	{
+		var culture = new CultureInfo(cultureName);
+		Thread.CurrentThread.CurrentCulture = culture;
+		var converter = new DoubleToIntConverter();
+
+		Assert.Equal(5, converter.ConvertFrom(2, "2.5", culture));
+		Assert.Equal(5, converter.ConvertFrom(2, "2.5", null));
+		Assert.Equal(2d, converter.ConvertBackTo(5, "2.5", culture));
+	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void DoubleToIntConverter_StringParameterWithCommaUsesPassedCulture(string cultureName)
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		var converter = new DoubleToIntConverter();
+
+		Assert.Equal(5, converter.ConvertFrom(2, "2,5", new CultureInfo(cultureName)));
+		Assert.Equal(2d, converter.ConvertBackTo(5, "2,5", new CultureInfo(cultureName)));
+	}
+
+	[Theory]
+	[InlineData("de-DE")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void DoubleToIntConverter_StringParameterWithCommaWithoutCultureUsesCurrentCulture(string cultureName)
+	{
+		Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+
+		Assert.Equal(5, new DoubleToIntConverter().ConvertFrom(2, "2,5"));
+	}
+
+	[Fact]
+	public void DoubleToIntConverter_StringParameterWithTurkishThousandsSeparator()
+	{
+		// The invariant parse fails on the comma, so the Turkish parse with its dot as group separator applies.
+		Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+		Assert.Equal(2469, new DoubleToIntConverter().ConvertFrom(2, "1.234,5", new CultureInfo("tr-TR")));
+	}
 }

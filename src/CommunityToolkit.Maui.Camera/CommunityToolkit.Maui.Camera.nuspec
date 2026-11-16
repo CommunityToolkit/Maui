@@ -1,3 +1,0 @@
-<files>
-  <file src="build\$(PackageId).LinkerConfigurationFile.xml" target="build\$(PackageId).LinkerConfigurationFile.xml" />
-</files>

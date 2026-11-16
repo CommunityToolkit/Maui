@@ -1,5 +1,4 @@
 ﻿using AVFoundation;
-using CommunityToolkit.Maui.Views;
 using CoreMedia;
 using Foundation;
 using MediaPlayer;
@@ -7,7 +6,7 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.Core;
 
-sealed class Metadata
+sealed class Metadata : IDisposable
 {
 	static readonly UIImage defaultUIImage = new();
 	static readonly MPNowPlayingInfo nowPlayingInfoDefault = new()
@@ -22,36 +21,42 @@ sealed class Metadata
 		Artwork = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage)
 	};
 
+	static Metadata? nowPlayingInfoPublisher;
+
 	readonly PlatformMediaElement player;
+	readonly Action play;
+	readonly List<(MPRemoteCommand Command, NSObject Target)> remoteCommandTargets = [];
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Metadata"/> class.
 	/// </summary>
 	/// <param name="player"></param>
-	public Metadata(PlatformMediaElement player)
+	/// <param name="play">Starts playback at the requested speed (<see cref="AVPlayer.Play"/> starts at <see cref="AVPlayer.DefaultRate"/>, which only exists from iOS 16 and Mac Catalyst 16).</param>
+	public Metadata(PlatformMediaElement player, Action play)
 	{
 		this.player = player;
+		this.play = play;
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
 
 		var commandCenter = MPRemoteCommandCenter.Shared;
 
 		commandCenter.TogglePlayPauseCommand.Enabled = true;
-		commandCenter.TogglePlayPauseCommand.AddTarget(ToggleCommand);
+		AddTarget(commandCenter.TogglePlayPauseCommand, ToggleCommand);
 
 		commandCenter.PlayCommand.Enabled = true;
-		commandCenter.PlayCommand.AddTarget(PlayCommand);
+		AddTarget(commandCenter.PlayCommand, PlayCommand);
 
 		commandCenter.PauseCommand.Enabled = true;
-		commandCenter.PauseCommand.AddTarget(PauseCommand);
+		AddTarget(commandCenter.PauseCommand, PauseCommand);
 
 		commandCenter.ChangePlaybackPositionCommand.Enabled = true;
-		commandCenter.ChangePlaybackPositionCommand.AddTarget(SeekCommand);
+		AddTarget(commandCenter.ChangePlaybackPositionCommand, SeekCommand);
 
 		commandCenter.SeekBackwardCommand.Enabled = true;
-		commandCenter.SeekBackwardCommand.AddTarget(SeekBackwardCommand);
+		AddTarget(commandCenter.SeekBackwardCommand, SeekBackwardCommand);
 
 		commandCenter.SeekForwardCommand.Enabled = false;
-		commandCenter.SeekForwardCommand.AddTarget(SeekForwardCommand);
+		AddTarget(commandCenter.SeekForwardCommand, SeekForwardCommand);
 	}
 
 	/// <summary>
@@ -63,39 +68,92 @@ sealed class Metadata
 	/// <summary>
 	/// Clears the metadata for the currently playing media.
 	/// </summary>
-	public static void ClearNowPlaying() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
+	public static void ClearNowPlaying()
+	{
+		nowPlayingInfoPublisher = null;
+		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = nowPlayingInfoDefault;
+	}
 
 	/// <summary>
 	/// Sets the data for the currently playing media from the media element.
 	/// </summary>
 	/// <param name="playerItem"></param>
 	/// <param name="mediaElement"></param>
-	/// <param name="cancellationToken"></param>
-	public async Task SetMetadata(AVPlayerItem? playerItem, IMediaElement? mediaElement, CancellationToken cancellationToken = default)
+	public void SetMetadata(AVPlayerItem? playerItem, IMediaElement? mediaElement)
 	{
 		if (mediaElement is null)
 		{
+			Metadata.ClearNowPlaying();
 			return;
 		}
-		ClearNowPlaying();
-		var artwork = await MetadataArtworkMediaSource(mediaElement.MetadataArtworkSource, cancellationToken).ConfigureAwait(false);
 
-		if (artwork is UIImage image)
-		{
-			NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => image);
-		}
-		else
-		{
-			NowPlayingInfo.Artwork = new(boundsSize: new(0, 0), requestHandler: _ => defaultUIImage);
-		}
+		var url = mediaElement.MetadataArtworkUrl;
+
 		NowPlayingInfo.Title = mediaElement.MetadataTitle;
 		NowPlayingInfo.Artist = mediaElement.MetadataArtist;
 		NowPlayingInfo.PlaybackDuration = playerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
-		NowPlayingInfo.PlaybackRate = mediaElement.Speed;
+		NowPlayingInfo.PlaybackRate = GetPlaybackRate(mediaElement.Speed);
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
+		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(url));
+		PublishNowPlayingInfo();
+	}
+
+	public void PublishNowPlayingInfo()
+	{
+		nowPlayingInfoPublisher = this;
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 	}
+
+	public void PublishPlaybackRate(double speed)
+	{
+		NowPlayingInfo.PlaybackRate = GetPlaybackRate(speed);
+		PublishNowPlayingInfo();
+	}
+
+	// A rate of 0 is how Now Playing shows paused media: the system advances the elapsed time on the lock screen and in Control Center at this rate
+	double GetPlaybackRate(double speed) => player.TimeControlStatus is AVPlayerTimeControlStatus.Playing ? speed : 0;
+
+	/// <summary>
+	/// Unregisters from the shared <see cref="MPRemoteCommandCenter"/>, which would otherwise keep this instance alive and keep
+	/// sending it commands for a player that is gone.
+	/// </summary>
+	public void Dispose()
+	{
+		// The command center is shared by every player of the app: only this instance's targets are removed
+		foreach (var (command, target) in remoteCommandTargets)
+		{
+			command.RemoveTarget(target);
+			target.Dispose();
+		}
+
+		remoteCommandTargets.Clear();
+
+		// The lock screen and Control Center must not keep showing the media of a player that is gone; another player's media stays
+		if (ReferenceEquals(nowPlayingInfoPublisher, this))
+		{
+			ClearNowPlaying();
+		}
+	}
+
+	static UIImage GetImage(string imageUri)
+	{
+		try
+		{
+			if (imageUri.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+			{
+				return UIImage.LoadFromData(NSData.FromUrl(new NSUrl(imageUri))) ?? defaultUIImage;
+			}
+			return defaultUIImage;
+		}
+		catch
+		{
+			return defaultUIImage;
+		}
+	}
+
+	void AddTarget(MPRemoteCommand command, Func<MPRemoteCommandEvent, MPRemoteCommandHandlerStatus> handler) =>
+		remoteCommandTargets.Add((command, command.AddTarget(handler)));
 
 	MPRemoteCommandHandlerStatus SeekCommand(MPRemoteCommandEvent? commandEvent)
 	{
@@ -104,7 +162,8 @@ sealed class Metadata
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
 
-		var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1);
+		// A time scale of 1000 keeps the milliseconds of the requested position (a time scale of 1 rounds it to whole seconds)
+		var seekTime = CMTime.FromSeconds(eventArgs.PositionTime, 1000);
 		player.Seek(seekTime);
 		return MPRemoteCommandHandlerStatus.Success;
 	}
@@ -140,7 +199,7 @@ sealed class Metadata
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
 
-		player.Play();
+		play();
 		return MPRemoteCommandHandlerStatus.Success;
 	}
 
@@ -157,14 +216,14 @@ sealed class Metadata
 
 	MPRemoteCommandHandlerStatus ToggleCommand(MPRemoteCommandEvent? commandEvent)
 	{
-		if (commandEvent is not null)
+		if (commandEvent is null)
 		{
 			return MPRemoteCommandHandlerStatus.CommandFailed;
 		}
 
 		if (player.Rate is 0)
 		{
-			player.Play();
+			play();
 		}
 		else
 		{
@@ -172,112 +231,5 @@ sealed class Metadata
 		}
 
 		return MPRemoteCommandHandlerStatus.Success;
-	}
-
-	public static async Task<UIImage?> MetadataArtworkMediaSource(MediaSource? artworkUrl, CancellationToken cancellationToken = default)
-	{
-		switch(artworkUrl)
-		{
-			case UriMediaSource uriMediaSource:
-				var uri = uriMediaSource.Uri;
-				return GetBitmapFromUrl(uri?.AbsoluteUri);
-			case FileMediaSource fileMediaSource:
-				var uriFile = fileMediaSource.Path;
-				return await GetBitmapFromFile(uriFile, cancellationToken).ConfigureAwait(false);
-			case ResourceMediaSource resourceMediaSource:
-				var path = resourceMediaSource.Path;
-				return await GetBitmapFromResource(path, cancellationToken).ConfigureAwait(false);
-			case null:
-				return null;
-		}
-		return null;
-	}
-
-	static async Task<UIImage?> GetBitmapFromFile(string? resource, CancellationToken cancellationToken = default)
-	{
-		if (string.IsNullOrEmpty(resource))
-		{
-			System.Diagnostics.Trace.WriteLine("Metadata artwork file path is null or empty.");
-			return null;
-		}
-		if (!File.Exists(resource))
-		{
-			System.Diagnostics.Trace.WriteLine($"Metadata artwork file not found: '{resource}'.");
-			return null;
-		}
-		try
-		{
-			using var fileStream = File.OpenRead(resource);
-			using var memoryStream = new MemoryStream();
-			await fileStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-			memoryStream.Position = 0;
-			NSData temp = NSData.FromStream(memoryStream) ?? new NSData();
-			return UIImage.LoadFromData(temp);
-		}
-		catch (IOException ex)
-		{
-			System.Diagnostics.Trace.WriteLine($"Error reading metadata artwork file '{resource}': {ex}");
-			return null;
-		}
-		catch (UnauthorizedAccessException ex)
-		{
-			System.Diagnostics.Trace.WriteLine($"Access denied reading metadata artwork file '{resource}': {ex}");
-			return null;
-		}
-	}
-
-	static UIImage? GetBitmapFromUrl(string? resource)
-	{
-		if (string.IsNullOrEmpty(resource))
-		{
-			return null;
-		}
-
-		try
-		{
-			var nsUrl = new NSUrl(resource);
-			NSData? data = NSData.FromUrl(nsUrl);
-			if (data is null)
-			{
-				System.Diagnostics.Trace.WriteLine($"Failed to load metadata artwork from URL: '{resource}' - NSData.FromUrl returned null.");
-				return null;
-			}
-
-			UIImage? image = UIImage.LoadFromData(data);
-			if (image is null)
-			{
-				System.Diagnostics.Trace.WriteLine($"Failed to create UIImage from URL: '{resource}' - UIImage.LoadFromData returned null.");
-			}
-
-			return image;
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Trace.WriteLine($"Error loading metadata artwork from URL '{resource}': {ex}");
-			return null;
-		}
-	}
-	static async Task<UIImage?> GetBitmapFromResource(string? resource, CancellationToken cancellationToken = default)
-	{
-		if (string.IsNullOrWhiteSpace(resource))
-		{
-			return null;
-		}
-		using var inputStream = await FileSystem.OpenAppPackageFileAsync(resource).ConfigureAwait(false);
-		using var memoryStream = new MemoryStream();
-		if (inputStream is null)
-		{
-			System.Diagnostics.Trace.WriteLine($"Failed to open app package file: '{resource}' - stream is null.");
-			return null;
-		}
-		await inputStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-		memoryStream.Position = 0;
-		NSData? nsdata = NSData.FromStream(memoryStream);
-		if (nsdata is null)
-		{
-			System.Diagnostics.Trace.TraceInformation($"NSData create from stream: {nsdata} is null.");
-			return null;
-		}
-		return UIImage.LoadFromData(nsdata);
 	}
 }

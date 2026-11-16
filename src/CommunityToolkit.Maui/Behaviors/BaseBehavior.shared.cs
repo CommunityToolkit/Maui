@@ -8,16 +8,18 @@ namespace CommunityToolkit.Maui.Behaviors;
 /// <typeparam name="TView">The <see cref="VisualElement"/> that the behavior can be applied to</typeparam>
 public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBehavior<TView> where TView : VisualElement
 {
-	/// <summary>
-	/// View used by the Behavior
-	/// </summary>
-	protected TView? View { get; private set; }
-
 	TView? ICommunityToolkitBehavior<TView>.View
 	{
 		get => View;
 		set => View = value;
 	}
+
+	/// <summary>
+	/// View used by the Behavior
+	/// </summary>
+	protected TView? View { get; private set; }
+
+	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 
 	/// <summary>
 	/// Virtual method that executes when a property on the View has changed
@@ -30,20 +32,24 @@ public abstract class BaseBehavior<TView> : Behavior<TView>, ICommunityToolkitBe
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(TView bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
 		((ICommunityToolkitBehavior<TView>)this).InitializeBehavior(bindable);
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(TView bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachingFrom(bindable);
 
 		((ICommunityToolkitBehavior<TView>)this).UninitializeBehavior(bindable);
 	}
-
-	void ICommunityToolkitBehavior<TView>.OnViewPropertyChanged(TView sender, PropertyChangedEventArgs e) => OnViewPropertyChanged(sender, e);
 }

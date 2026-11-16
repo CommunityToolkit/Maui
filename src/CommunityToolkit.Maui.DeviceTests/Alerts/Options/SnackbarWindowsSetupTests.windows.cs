@@ -1,0 +1,238 @@
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Windows.AppNotifications;
+using Application = Microsoft.Maui.Controls.Application;
+using Window = Microsoft.Maui.Controls.Window;
+
+namespace CommunityToolkit.Maui.DeviceTests;
+
+// The lifecycle delegates that Options.SetShouldEnableSnackbarOnWindows registers (OnLaunched, OnClosed) are taken from the test's
+// MauiApp and invoked directly, except for the two arms that call the process-wide AppNotificationManager Register() and Unregister():
+// the runner's own launch ran the first one (RunnerLaunchRanTheRegistrationArmOfThisConfiguration), the second one would stop the
+// runner's registration. A person checks it in the Sample (Alerts pages) by closing the last window, and the button of a notification
+// by pressing it (SnackbarTests.PressingTheButtonOfTheNotificationRunsTheActionOnTheUiThreadAndDismissesTheSnackbar).
+public partial class SnackbarWindowsSetupTests
+{
+	const string documentationUrl = "https://learn.microsoft.com/dotnet/communitytoolkit/maui/alerts/snackbar";
+	const string insightsResourceDll = "Microsoft.WindowsAppRuntime.Insights.Resource.dll";
+
+	[Fact]
+	public void EnablingTheOptionWithoutABuilderThrows()
+	{
+		var snapshot = new StaticPropertySnapshot().Capture(typeof(Options)).Capture(typeof(Core.Options));
+		try
+		{
+			var before = Options.ShouldEnableSnackbarOnWindows;
+
+			var exception = Assert.Throws<InvalidOperationException>(() => new Options().SetShouldEnableSnackbarOnWindows(true));
+
+			// A literal: CommunityToolkit.Maui.AppBuilderExtensions exists in CommunityToolkit.Maui, .MediaElement and .Camera, all of which this app references, so nameof cannot name it (CS0433).
+			Assert.Contains("UseMauiCommunityToolkit", exception.Message);
+			Assert.Equal(documentationUrl, exception.HelpLink);
+			Assert.Equal(before, Options.ShouldEnableSnackbarOnWindows);
+
+			new Options().SetShouldEnableSnackbarOnWindows(false);
+			Assert.False(Options.ShouldEnableSnackbarOnWindows);
+		}
+		finally
+		{
+			snapshot.Restore();
+		}
+	}
+
+	[Fact]
+	public async Task DisablingTheOptionRegistersNoLifecycleDelegates()
+	{
+		SetupBuilder(configureToolkitOptions: static options => options.SetShouldEnableSnackbarOnWindows(false));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.False(Options.ShouldEnableSnackbarOnWindows);
+			Assert.Empty(GetToolkitDelegates<WindowsLifecycle.OnLaunched>(nameof(WindowsLifecycle.OnLaunched)));
+			Assert.Empty(GetToolkitDelegates<WindowsLifecycle.OnClosed>(nameof(WindowsLifecycle.OnClosed)));
+		});
+	}
+
+	[Fact]
+	public async Task EnablingTheOptionRegistersTheLaunchedAndClosedDelegates()
+	{
+		SetupBuilder(configureToolkitOptions: static options => options.SetShouldEnableSnackbarOnWindows(true));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.True(Options.ShouldEnableSnackbarOnWindows);
+			Assert.Single(GetToolkitDelegates<WindowsLifecycle.OnLaunched>(nameof(WindowsLifecycle.OnLaunched)));
+			Assert.Single(GetToolkitDelegates<WindowsLifecycle.OnClosed>(nameof(WindowsLifecycle.OnClosed)));
+		});
+	}
+
+	[Fact]
+	public async Task LaunchedDelegateThrowsWithoutAnApplication()
+	{
+		SetupBuilder(configureToolkitOptions: static options => options.SetShouldEnableSnackbarOnWindows(true));
+		var launched = Assert.Single(GetToolkitDelegates<WindowsLifecycle.OnLaunched>(nameof(WindowsLifecycle.OnLaunched)));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousApplication = Application.Current;
+			Application.Current = null;
+			try
+			{
+				var exception = Assert.Throws<InvalidOperationException>(() => launched(null!, null!));
+
+				Assert.Contains("cannot be null when Windows are launched", exception.Message);
+			}
+			finally
+			{
+				Application.Current = previousApplication;
+			}
+		});
+	}
+
+	[Theory]
+	[InlineData(0)]
+	[InlineData(2)]
+	public async Task LaunchedDelegateRegistersNothingUnlessExactlyOneWindowIsOpen(int windowCount)
+	{
+		SetupBuilder(configureToolkitOptions: static options => options.SetShouldEnableSnackbarOnWindows(true));
+		var launched = Assert.Single(GetToolkitDelegates<WindowsLifecycle.OnLaunched>(nameof(WindowsLifecycle.OnLaunched)));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousApplication = Application.Current;
+			var wasRegistered = IsNotificationManagerRegistered;
+			IsNotificationManagerRegistered = false;
+			try
+			{
+				_ = new WindowsTestApplication(windowCount);
+
+				var exception = Record.Exception(() => launched(null!, null!));
+
+				Assert.Null(exception);
+
+				// Register() would have set the flag.
+				Assert.False(IsNotificationManagerRegistered);
+			}
+			finally
+			{
+				IsNotificationManagerRegistered = wasRegistered;
+				Application.Current = previousApplication;
+			}
+		});
+	}
+
+	// The runner's MauiProgram enables the Windows Snackbar and its first window is open when OnLaunched runs, so the runner's launch
+	// ran the arm of the launched delegate that registers the app notification manager. Which way that arm ended depends on the process
+	// and on how the app was built. In an elevated process, such as a GitHub-hosted runner (administrator, UAC off),
+	// AppNotificationManager.IsSupported() is false and Register() returns without doing anything, so the flag is set whatever the build.
+	// Otherwise Register() succeeds in a packaged app and in an unpackaged app that finds the Windows App Runtime Insights resource module,
+	// and sets the flag. A self-contained unpackaged app without that module gets the COMException of WindowsAppSDK#6071, which the
+	// toolkit tolerates (the catch arm): the finally block unsubscribes the handler, the flag stays false and the Snackbar stays enabled,
+	// without action callbacks. Windows App SDK 1.8 (.NET 10) copied the module out of its runtime MSIX into a self-contained app; 2.x
+	// (.NET 11) copies only the component packages, which do not have it. CI builds both: packaged (MSIX) and unpackaged with the Windows
+	// App SDK bundled, but runs them elevated, so only a non-elevated run reaches the catch arm.
+	[Fact]
+	public void RunnerLaunchRanTheRegistrationArmOfThisConfiguration()
+	{
+		var isSupported = AppNotificationManager.IsSupported();
+		var isPackaged = AppInfo.Current.PackagingModel is AppPackagingModel.Packaged;
+		var bundlesTheWindowsAppRuntime = File.Exists(Path.Combine(AppContext.BaseDirectory, "Microsoft.WindowsAppRuntime.dll"));
+		var insightsModuleIsMissing = !File.Exists(Path.Combine(AppContext.BaseDirectory, insightsResourceDll));
+
+		Assert.True(Options.ShouldEnableSnackbarOnWindows);
+		if (isSupported && !isPackaged && bundlesTheWindowsAppRuntime && insightsModuleIsMissing)
+		{
+			Assert.False(IsNotificationManagerRegistered, $"Register() succeeded although this self-contained unpackaged app has no {insightsResourceDll}.");
+		}
+		else
+		{
+			Assert.True(IsNotificationManagerRegistered, $"The runner's launch did not register the app notification manager (supported: {isSupported}, packaged: {isPackaged}, Windows App Runtime bundled: {bundlesTheWindowsAppRuntime}, {insightsResourceDll} missing: {insightsModuleIsMissing}).");
+		}
+	}
+
+	[Fact]
+	public async Task ClosedDelegateThrowsWithoutAnApplication()
+	{
+		SetupBuilder(configureToolkitOptions: static options => options.SetShouldEnableSnackbarOnWindows(true));
+		var closed = Assert.Single(GetToolkitDelegates<WindowsLifecycle.OnClosed>(nameof(WindowsLifecycle.OnClosed)));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousApplication = Application.Current;
+			Application.Current = null;
+			try
+			{
+				var exception = Assert.Throws<InvalidOperationException>(() => closed(null!, null!));
+
+				Assert.Contains("cannot be null when Windows are closed", exception.Message);
+			}
+			finally
+			{
+				Application.Current = previousApplication;
+			}
+		});
+	}
+
+	[Theory]
+	[InlineData(1, true)]
+	[InlineData(0, false)]
+	public async Task ClosedDelegateUnregistersNothingWhileAWindowIsOpenOrWhenNothingIsRegistered(int windowCount, bool isRegistered)
+	{
+		SetupBuilder(configureToolkitOptions: static options => options.SetShouldEnableSnackbarOnWindows(true));
+		var closed = Assert.Single(GetToolkitDelegates<WindowsLifecycle.OnClosed>(nameof(WindowsLifecycle.OnClosed)));
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var previousApplication = Application.Current;
+			var wasRegistered = IsNotificationManagerRegistered;
+			IsNotificationManagerRegistered = isRegistered;
+			try
+			{
+				_ = new WindowsTestApplication(windowCount);
+
+				var exception = Record.Exception(() => closed(null!, null!));
+
+				Assert.Null(exception);
+
+				// Unregister() would have cleared the flag.
+				Assert.Equal(isRegistered, IsNotificationManagerRegistered);
+			}
+			finally
+			{
+				IsNotificationManagerRegistered = wasRegistered;
+				Application.Current = previousApplication;
+			}
+		});
+	}
+
+	static bool IsNotificationManagerRegistered
+	{
+		get => (bool)NotificationManagerRegisteredField.GetValue(null)!;
+		set => NotificationManagerRegisteredField.SetValue(null, value);
+	}
+
+	static FieldInfo NotificationManagerRegisteredField =>
+		typeof(Options).GetField("isSnackbarNotificationManagerRegistered", BindingFlags.Static | BindingFlags.NonPublic)
+			?? throw new InvalidOperationException("Options.isSnackbarNotificationManagerRegistered was not found.");
+
+	// The delegates of Options.SetShouldEnableSnackbarOnWindows are told apart by their lambdas being nested in Options.
+	List<TDelegate> GetToolkitDelegates<TDelegate>(string eventName)
+		where TDelegate : Delegate =>
+		[.. ApplicationServices.GetService<ILifecycleEventService>()?.GetEventDelegates<TDelegate>(eventName).Where(del => del.Method.DeclaringType?.DeclaringType == typeof(Options)) ?? []];
+
+	// Application.Current is set by its constructor: the tests put the runner's back.
+	sealed class WindowsTestApplication : Application
+	{
+		public WindowsTestApplication(int windowCount)
+		{
+			for (var i = 0; i < windowCount; i++)
+			{
+				((IApplication)this).CreateWindow(null);
+			}
+		}
+
+		protected override Window CreateWindow(IActivationState? activationState) => new();
+	}
+}

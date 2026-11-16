@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <pages:BasePage
     x:Class="CommunityToolkit.Maui.Sample.Pages.Behaviors.StatusBarBehaviorPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -15,10 +16,10 @@
 
     <ContentPage.Resources>
         <ControlTemplate x:Key="RadioButtonTemplate">
-            <Border Stroke="#F3F2F1"
+            <Border Stroke="{AppThemeBinding Light=#F3F2F1, Dark={StaticResource Gray900}}"
                     StrokeThickness="2"
                     StrokeShape="RoundRectangle 10"
-                    BackgroundColor="#F3F2F1"
+                    BackgroundColor="{AppThemeBinding Light=#F3F2F1, Dark={StaticResource Gray900}}"
                     HeightRequest="90"
                     WidthRequest="90"
                     HorizontalOptions="Start"
@@ -50,7 +51,8 @@
                           WidthRequest="18"
                           HeightRequest="18"
                           HorizontalOptions="End"
-                          VerticalOptions="Start">
+                          VerticalOptions="Start"
+                          BackgroundColor="Transparent">
                         <Ellipse Stroke="Blue"
                                  Fill="White"
                                  WidthRequest="16"
@@ -64,13 +66,16 @@
                                  HorizontalOptions="Center"
                                  VerticalOptions="Center" />
                     </Grid>
-                    <ContentPresenter />
+                    <ContentPresenter Margin="10,0,0,0"
+                                      VerticalOptions="Center" />
                 </Grid>
             </Border>
         </ControlTemplate>
 
         <Style TargetType="RadioButton">
             <Setter Property="ControlTemplate" Value="{StaticResource RadioButtonTemplate}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+            <Setter Property="FontSize" Value="14" />
         </Style>
     </ContentPage.Resources>
 
@@ -84,6 +89,9 @@
     <ScrollView Padding="{StaticResource ContentPadding}">
 
         <VerticalStackLayout Padding="15,0" Spacing="30" IgnoreSafeArea="False">
+
+            <Label Text="NOTE: StatusBarBehavior changes the status bar on Android and iOS only. It has no effect on Mac Catalyst and Windows."
+                   IsVisible="{OnPlatform Default='false', MacCatalyst='true', WinUI='true'}" />
 
             <Label Text="Slide to change StatusBar color" />
 
@@ -118,9 +126,9 @@
                 Value="{Binding BlueSliderValue}" />
             <HorizontalStackLayout>
                 <Label Text="Alpha: " />
-                <Label Text="{Binding AlphaSliderValue}"/>
+                <Label Text="{Binding AlphaSliderValue}" />
             </HorizontalStackLayout>
-           
+
             <Stepper
                 HorizontalOptions="Start"
                 Margin="20,0"
@@ -129,37 +137,32 @@
                 Minimum="0"
                 Value="{Binding AlphaSliderValue}" />
 
-            <Label Text="Select StatusBar and NavigationBar style" />
-            
+            <Label Text="Select StatusBar style" />
+
             <HorizontalStackLayout Spacing="15">
+                <RadioButton Content="Default"
+                             IsChecked="{Binding IsDefaultChecked}"
+                             VerticalOptions="Center" />
 
-                
+                <RadioButton Content="Light&#10;Content"
+                             IsChecked="{Binding IsLightContentChecked}"
+                             VerticalOptions="Center" />
 
-                <RadioButton
-                    Content="Default"
-                    IsChecked="{Binding IsDefaultChecked}"
-                    VerticalOptions="Center" />
-
-                <RadioButton VerticalOptions="Center" IsChecked="{Binding IsLightContentChecked}">
-                    <RadioButton.Content>
-                        <Label Text="Light Content" Margin="10,0,0,0" VerticalTextAlignment="Center"
-                               VerticalOptions="Center" />
-                    </RadioButton.Content>
-                </RadioButton>
-
-                <RadioButton IsChecked="{Binding IsDarkContentChecked}">
-                    <RadioButton.Content>
-                        <Label Text="Dark Content" Margin="10,0,0,0" VerticalTextAlignment="Center"
-                               VerticalOptions="Center" />
-                    </RadioButton.Content>
-                </RadioButton>
+                <RadioButton Content="Dark&#10;Content"
+                             IsChecked="{Binding IsDarkContentChecked}"
+                             VerticalOptions="Center" />
 
             </HorizontalStackLayout>
-            
+
             <Button
                 x:Name="ModalPageButton"
                 HorizontalOptions="Center"
-                VerticalOptions="Center"/>
+                VerticalOptions="Center" />
+             <Button
+                Clicked="OnTitleViewShellButtonClicked"
+                HorizontalOptions="Center"
+                Text="Go to Shell.TitleView"
+                VerticalOptions="Center" />
         </VerticalStackLayout>
     </ScrollView>
 </pages:BasePage>

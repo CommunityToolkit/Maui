@@ -53,7 +53,7 @@ public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, T
 	/// </summary>
 	/// <param name="value">The text to convert.</param>
 	/// <param name="parameter">The desired text case that the text should be converted to. Must match <see cref="TextCaseType"/> enum value.</param>
-	/// <param name="culture">The culture to use in the converter. This is not implemented.</param>
+	/// <param name="culture">The culture whose casing rules are used, for example Turkish dotted and dotless I. <see langword="null"/> uses <see cref="CultureInfo.InvariantCulture"/>.</param>
 	/// <returns>The converted text representation with the desired casing.</returns>
 	[return: NotNullIfNotNull(nameof(value))]
 	public override string? ConvertFrom(string? value, TextCaseType? parameter = null, CultureInfo? culture = null)
@@ -75,11 +75,13 @@ public partial class TextCaseConverter : BaseConverterOneWay<string?, string?, T
 			parameter = Type;
 		}
 
+		var textInfo = (culture ?? CultureInfo.InvariantCulture).TextInfo;
+
 		return parameter switch
 		{
-			TextCaseType.Lower => value.ToLowerInvariant(),
-			TextCaseType.Upper => value.ToUpperInvariant(),
-			TextCaseType.FirstUpperRestLower => value[..1].ToUpperInvariant() + value[1..].ToLowerInvariant(),
+			TextCaseType.Lower => textInfo.ToLower(value),
+			TextCaseType.Upper => textInfo.ToUpper(value),
+			TextCaseType.FirstUpperRestLower => textInfo.ToUpper(value[..1]) + textInfo.ToLower(value[1..]),
 			TextCaseType.None => value,
 			_ => throw new NotSupportedException()
 		};

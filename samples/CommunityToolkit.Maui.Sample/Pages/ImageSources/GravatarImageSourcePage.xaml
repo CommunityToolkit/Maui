@@ -10,7 +10,8 @@
     x:DataType="vm:GravatarImageSourceViewModel"
     x:TypeArguments="vm:GravatarImageSourceViewModel">
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="0,12,0,0" >
+        <!-- Android 15+ draws the page edge to edge: the bottom padding keeps the last Slider clear of the navigation bar and the system gesture area -->
+        <VerticalStackLayout Spacing="12" Padding="{OnPlatform Default='0,12,0,0', Android='0,12,0,48'}" >
             <VerticalStackLayout.Resources>
                 <ResourceDictionary>
                     <Style x:Key="Description" TargetType="Label">

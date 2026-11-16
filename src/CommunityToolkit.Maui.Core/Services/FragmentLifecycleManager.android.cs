@@ -4,9 +4,20 @@ using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 
 namespace CommunityToolkit.Maui.Core.Services;
 
-public sealed class FragmentLifecycleManager(IDialogFragmentService dialogFragmentService) : FragmentManager.FragmentLifecycleCallbacks
+public sealed class FragmentLifecycleManager : FragmentManager.FragmentLifecycleCallbacks
 {
-	readonly IDialogFragmentService dialogFragmentService = dialogFragmentService;
+	readonly IDialogFragmentService dialogFragmentService;
+
+	/// <summary>
+	/// Initializes a new instance of <see cref="FragmentLifecycleManager"/>.
+	/// </summary>
+	/// <param name="dialogFragmentService">The <see cref="IDialogFragmentService"/> that receives the fragment lifecycle callbacks.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="dialogFragmentService"/> is null.</exception>
+	public FragmentLifecycleManager(IDialogFragmentService dialogFragmentService)
+	{
+		ArgumentNullException.ThrowIfNull(dialogFragmentService);
+		this.dialogFragmentService = dialogFragmentService;
+	}
 
 	public override void OnFragmentAttached(FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context)
 	{

@@ -15,8 +15,11 @@ public partial class IconTintColorBehavior
 	AndroidView? nativeView;
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(View bindable, AndroidView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable, platformView);
 		nativeView = platformView;
 
@@ -27,14 +30,20 @@ public partial class IconTintColorBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachedFrom(View bindable, AndroidView platformView)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnDetachedFrom(bindable, platformView);
 
 		ClearTintColor(platformView);
 
 		bindable.PropertyChanged -= OnElementPropertyChanged;
 		PropertyChanged -= OnTintedImagePropertyChanged;
+
+		// A detached behavior that is still referenced must not keep the platform view (and its Activity) alive.
+		nativeView = null;
 	}
 
 	static void ApplyTintColor(AndroidView? nativeView, Color? tintColor)
@@ -52,7 +61,7 @@ public partial class IconTintColorBehavior
 					SetImageViewTintColor(image, tintColor);
 					break;
 
-				case AndroidMaterialButton materialButton when tintColor is not null:
+				case AndroidMaterialButton materialButton:
 					SetMaterialButtonTintColor(materialButton, tintColor);
 					break;
 
@@ -79,29 +88,48 @@ public partial class IconTintColorBehavior
 			image.SetColorFilter(new PorterDuffColorFilter(color.ToPlatform(), PorterDuff.Mode.SrcIn ?? throw new InvalidOperationException("PorterDuff.Mode.SrcIn should not be null at runtime.")));
 		}
 
-		static void SetMaterialButtonTintColor(AndroidMaterialButton button, Color color)
+		static void SetMaterialButtonTintColor(AndroidMaterialButton button, Color? color)
 		{
+			// A MaterialButton is also an Android.Widget.Button. Its icon is one of its compound drawables, but MaterialButton tints it with
+			// IconTint, which it applies again whenever it updates the icon.
+			if (color is null)
+			{
+				button.IconTint = null;
+				return;
+			}
+
 			button.IconTintMode = PorterDuff.Mode.SrcIn;
 			button.IconTint = new Android.Content.Res.ColorStateList([[]], [color.ToPlatform()]);
 		}
 
 		static void SetWidgetButtonTintColor(AndroidWidgetButton button, Color? color)
 		{
-			var drawables = button.GetCompoundDrawables().ToList();
-
 			if (color is null)
 			{
-				foreach (var img in drawables)
-				{
-					img.ClearColorFilter();
-				}
-				color = Colors.Transparent;
+				ClearWidgetButtonTintColor(button);
+				return;
 			}
 
-			foreach (var img in drawables)
+			// getCompoundDrawables() returns null for each side that has no drawable.
+			foreach (var img in button.GetCompoundDrawables())
 			{
-				img.SetTint(color.ToPlatform());
+				img?.SetTint(color.ToPlatform());
 			}
+		}
+	}
+
+	static void ClearWidgetButtonTintColor(AndroidWidgetButton button)
+	{
+		// getCompoundDrawables() returns null for each side that has no drawable.
+		foreach (var drawable in button.GetCompoundDrawables())
+		{
+			if (drawable is null)
+			{
+				continue;
+			}
+
+			drawable.ClearColorFilter();
+			drawable.SetTintList(null);
 		}
 	}
 
@@ -125,11 +153,7 @@ public partial class IconTintColorBehavior
 					break;
 
 				case AndroidWidgetButton button:
-					foreach (var drawable in button.GetCompoundDrawables())
-					{
-						drawable.ClearColorFilter();
-					}
-
+					ClearWidgetButtonTintColor(button);
 					break;
 			}
 		}

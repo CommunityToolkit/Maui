@@ -56,7 +56,8 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 					await DisplayCustomSnackbarButtonAnchoredToButton.BackgroundColorTo(colors[Random.Shared.Next(colors.Count)], length: 500);
 					DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
 				},
-				FontAwesomeIcons.Microsoft,
+				// Windows shows the Snackbar as an app notification, which draws its button in the system font: the Font Awesome glyph would be an empty box
+				OperatingSystem.IsWindows() ? "Change Color" : FontAwesomeIcons.Microsoft,
 				TimeSpan.FromSeconds(30),
 				options,
 				DisplayCustomSnackbarButtonAnchoredToButton);
@@ -87,6 +88,11 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 	void Snackbar_Dismissed(object? sender, EventArgs e)
 	{
 		SnackbarShownStatus.Text = $"Snackbar dismissed. Snackbar.IsShown={Snackbar.IsShown}";
+
+		if (ReferenceEquals(sender, customSnackbar))
+		{
+			DisplayCustomSnackbarButtonAnchoredToButton.Text = DisplayCustomSnackbarText;
+		}
 	}
 
 	void Snackbar_Shown(object? sender, EventArgs e)
@@ -102,18 +108,20 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 				.CenterHorizontal()
 				.Text("Display Snackbar");
 			button.Command = new AsyncRelayCommand(token => button.DisplaySnackbar(
-				"This Snackbar is anchored to the button on the bottom to avoid clipping the Snackbar on the top of the Page.",
+				"On Android, iOS and Mac Catalyst, this Snackbar is anchored to the Display Snackbar button at the bottom of the Page to avoid clipping it at the top of the Page.",
 				() => { },
 				"Close",
 				TimeSpan.FromSeconds(5), token: token));
 
 			var backButton = new Button()
 				.CenterHorizontal()
-				.Text("Back to Snackbar MainPage");
+				.Text("Back to Snackbar Page");
 			backButton.Command = new AsyncRelayCommand(mainPage.Navigation.PopModalAsync);
 
-			await mainPage.Navigation.PushModalAsync(new ContentPage
+			var modalPage = new ContentPage
 			{
+				// A Snackbar anchored to a View appears above that View (on iOS and MacCatalyst, below it when there is no room above it),
+				// so the buttons are at the bottom of the Page, and the Back button is below the anchor, where the Snackbar does not cover it
 				Content = new VerticalStackLayout
 				{
 					Spacing = 12,
@@ -124,8 +132,17 @@ public partial class SnackbarPage : BasePage<SnackbarViewModel>
 
 						backButton
 					}
-				}
-			}.Padding(12));
+				}.Bottom()
+			}.Padding(12);
+
+			// The implicit Page style makes every Page Transparent on Windows, so that the Mica backdrop of the window shows through it. On Windows, .NET MAUI keeps
+			// the Page below a modal Page that has a BackgroundColor on screen, where it shows through the Transparent modal Page: without one, the modal Page replaces it
+			if (OperatingSystem.IsWindows())
+			{
+				modalPage.SetValue(BackgroundColorProperty, null);
+			}
+
+			await mainPage.Navigation.PushModalAsync(modalPage);
 		}
 	}
 }

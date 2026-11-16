@@ -10,8 +10,8 @@
     Title="AvatarView Bindable"
     x:DataType="vm:AvatarViewBindablePropertiesViewModel"
     x:TypeArguments="vm:AvatarViewBindablePropertiesViewModel">
-    <VerticalStackLayout Spacing="12">
-        <VerticalStackLayout.Resources>
+    <Grid RowDefinitions="Auto, Auto, *" RowSpacing="12">
+        <Grid.Resources>
             <ResourceDictionary>
                 <Style x:Key="Description" TargetType="Label">
                     <Setter Property="VerticalTextAlignment" Value="Start" />
@@ -25,11 +25,19 @@
                     <Setter Property="HorizontalOptions" Value="Center" />
                 </Style>
             </ResourceDictionary>
-        </VerticalStackLayout.Resources>
+        </Grid.Resources>
 
-        <Label Style="{StaticResource Description}" Text="AvatarView supports data binding." />
-        <Line Style="{StaticResource HR}" />
-        <CollectionView Margin="4" ItemsSource="{Binding AvatarList}" WidthRequest="200">
+        <Label
+            Grid.Row="0"
+            Style="{StaticResource Description}"
+            Text="AvatarView supports data binding." />
+        <Line Grid.Row="1" Style="{StaticResource HR}" />
+        <!--  The star row gives the CollectionView the rest of the page's height, so it scrolls when the avatars do not fit (phone landscape)  -->
+        <CollectionView
+            Grid.Row="2"
+            Margin="4"
+            ItemsSource="{Binding AvatarList}"
+            WidthRequest="200">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout ItemSpacing="8" Orientation="Vertical" />
             </CollectionView.ItemsLayout>
@@ -54,5 +62,5 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-    </VerticalStackLayout>
+    </Grid>
 </pages:BasePage>

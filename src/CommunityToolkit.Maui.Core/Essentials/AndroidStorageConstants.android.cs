@@ -4,5 +4,7 @@ static class AndroidStorageConstants
 {
 	public const string PrimaryStorage = "primary";
 	public const string Storage = "storage";
-	public const string ExternalStorageBaseUrl = "content://com.android.externalstorage.documents/document/primary%3A";
+	public const string ExternalStorageDocumentsAuthority = "com.android.externalstorage.documents";
+	public const string DownloadsDocumentsAuthority = "com.android.providers.downloads.documents";
+	public const string RawDocumentIdPrefix = "raw:";
 }

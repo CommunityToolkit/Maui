@@ -12,26 +12,16 @@ namespace CommunityToolkit.Maui.Sample.Pages.Views;
 public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMultipleWindowsViewModel>
 {
 #if WINDOWS || MACCATALYST
-	readonly Window secondWindow;
+	Window? secondWindow;
 #endif
 
 	public MediaElementMultipleWindowsPage(MediaElementMultipleWindowsViewModel viewModel) : base(viewModel)
 	{
 #if WINDOWS || MACCATALYST
-		secondWindow = new Window(new ContentPage
-		{
-			Content = new MediaElement
-			{
-				AndroidViewType= AndroidViewType.SurfaceView,
-				Source = StreamingVideoUrls.ElephantsDream,
-				ShouldAutoPlay = true
-			}
-		});
-
 		Content = new MediaElement
 		{
 			AndroidViewType= AndroidViewType.SurfaceView,
-			Source = StreamingVideoUrls.BuckBunny,
+			Source = StreamingUrls.BuckBunny,
 			ShouldAutoPlay = true
 		};
 #else
@@ -45,7 +35,44 @@ public partial class MediaElementMultipleWindowsPage : BasePage<MediaElementMult
 	{
 		base.OnAppearing();
 #if WINDOWS || MACCATALYST
+		// The page opens its second window once, however often it appears.
+		if (secondWindow is not null)
+		{
+			return;
+		}
+
+		secondWindow = new Window(new ContentPage
+		{
+			Content = new MediaElement
+			{
+				AndroidViewType= AndroidViewType.SurfaceView,
+				Source = StreamingUrls.Jellyfish,
+				ShouldAutoPlay = true
+			}
+		});
+
 		Application.Current?.OpenWindow(secondWindow);
+#endif
+	}
+
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+#if WINDOWS || MACCATALYST
+		// Otherwise every visit to the page leaves one more window open.
+		if (secondWindow is null)
+		{
+			return;
+		}
+
+		if (secondWindow.Page is ContentPage { Content: MediaElement mediaElement })
+		{
+			mediaElement.Stop();
+			mediaElement.Handler?.DisconnectHandler();
+		}
+
+		Application.Current?.CloseWindow(secondWindow);
+		secondWindow = null;
 #endif
 	}
 }

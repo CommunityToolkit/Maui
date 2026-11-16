@@ -6,7 +6,7 @@
            x:Class="CommunityToolkit.Maui.Sample.Views.Popups.DynamicStylePopup"
            Style="{DynamicResource DynamicPopupStyle}">
     <mct:Popup.Resources>
-        <Style TargetType="{x:Type popups:DynamicStylePopup}">
+        <Style x:Key="DynamicPopupStyle" TargetType="{x:Type popups:DynamicStylePopup}">
             <Setter Property="WidthRequest" Value="100" />
             <Setter Property="HeightRequest" Value="200" />
             <Setter Property="BackgroundColor" Value="Green" />

@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.Maui.Layouts;
+﻿using ViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
+
+namespace CommunityToolkit.Maui.Layouts;
 
 /// <summary>
 /// The <see cref="StateContainer"/> attached properties enable any <see cref="Layout"/> inheriting element to become state-aware.
@@ -28,12 +30,50 @@ public static partial class StateContainer
 	/// <summary>
 	/// Change state with custom animation.
 	/// </summary>
-	public static async Task ChangeStateWithAnimation(
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(
 		BindableObject bindable,
 		string? state,
 		Animation? beforeStateChange,
 		Animation? afterStateChange,
 		CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, beforeStateChange, afterStateChange, token);
+	}
+
+	/// <summary>
+	/// Change state with custom animation.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(
+		BindableObject bindable,
+		string? state,
+		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
+		Func<VisualElement, CancellationToken, Task>? afterStateChange,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, beforeStateChange, afterStateChange, cancellationToken);
+	}
+
+	/// <summary>
+	/// Change state using the default fade animation: the current views fade out, then the views for <paramref name="state"/> replace them and fade in.
+	/// The views that faded out get their <see cref="VisualElement.Opacity"/> back when the state change ends, also when it fails or is canceled, so they are visible the next time they are shown.
+	/// Canceling <paramref name="token"/> ends the fade at once instead of letting it run on: a view that was fading in gets an <see cref="VisualElement.Opacity"/> of 1.
+	/// </summary>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	public static Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		return ChangeStateWithAnimationAsync(bindable, state, token);
+	}
+
+	// ChangeStateWithAnimation validates its arguments before it calls these methods: in an async method, a null argument would only fault the returned Task instead of throwing at the call that passed it
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, Animation? beforeStateChange, Animation? afterStateChange, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
@@ -50,20 +90,14 @@ public static partial class StateContainer
 		{
 			if (layout.Children.Count > 0 && beforeStateChange is not null)
 			{
-				var beforeAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(beforeStateChange), beforeStateChange, finished: (_, result) => beforeAnimationTCS.SetResult(result)));
-
-				await beforeAnimationTCS.Task.WaitAsync(token);
+				await AnimateChildren(layout, nameof(beforeStateChange), beforeStateChange, token);
 			}
 
 			ChangeState(bindable, state);
 
 			if (layout.Children.Count > 0 && afterStateChange is not null)
 			{
-				var animationAnimationTCS = new TaskCompletionSource<bool>();
-				layout.Children.OfType<View>().ForEach(view => view.Animate(nameof(afterStateChange), afterStateChange, finished: (_, result) => animationAnimationTCS.SetResult(result)));
-
-				await animationAnimationTCS.Task.WaitAsync(token);
+				await AnimateChildren(layout, nameof(afterStateChange), afterStateChange, token);
 			}
 		}
 		finally
@@ -73,15 +107,7 @@ public static partial class StateContainer
 		}
 	}
 
-	/// <summary>
-	/// Change state with custom animation.
-	/// </summary>
-	public static async Task ChangeStateWithAnimation(
-		BindableObject bindable,
-		string? state,
-		Func<VisualElement, CancellationToken, Task>? beforeStateChange,
-		Func<VisualElement, CancellationToken, Task>? afterStateChange,
-		CancellationToken cancellationToken = default)
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, Func<VisualElement, CancellationToken, Task>? beforeStateChange, Func<VisualElement, CancellationToken, Task>? afterStateChange, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		if (beforeStateChange is null && afterStateChange is null)
@@ -115,16 +141,15 @@ public static partial class StateContainer
 		}
 	}
 
-	/// <summary>
-	/// Change state using the default fade animation.
-	/// </summary>
-	public static async Task ChangeStateWithAnimation(BindableObject bindable, string? state, CancellationToken token = default)
+	static async Task ChangeStateWithAnimationAsync(BindableObject bindable, string? state, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		ValidateCanStateChange(bindable);
 		SetCanStateChange(bindable, false);
 
 		var layout = GetLayoutController(bindable).GetLayout();
+		var replacedViews = layout.Children.OfType<View>().Select(static view => (View: view, view.Opacity)).ToList();
+		List<View> shownViews = [];
 
 		try
 		{
@@ -137,14 +162,53 @@ public static partial class StateContainer
 
 			if (layout.Children.Count > 0)
 			{
-				await Task.WhenAll(layout.Children.OfType<View>().Select(view => view.FadeToAsync(1))).WaitAsync(token);
+				shownViews.AddRange(layout.Children.OfType<View>());
+
+				// Fade in from transparent, also the first time a view is shown
+				foreach (var view in shownViews)
+				{
+					view.Opacity = 0;
+				}
+
+				await Task.WhenAll(shownViews.Select(view => view.FadeToAsync(1))).WaitAsync(token);
 			}
 		}
 		finally
 		{
+			// WaitAsync stops waiting when the token is canceled, not the fade: end it here, or it goes on changing Opacity after the state change ended,
+			// and the next state change would give a view the Opacity it had in the middle of the fade
+			foreach (var view in shownViews)
+			{
+				if (view.AbortAnimation(nameof(ViewExtensions.FadeToAsync)))
+				{
+					view.Opacity = 1;
+				}
+			}
+
+			// Otherwise a view that the new state replaced stays transparent when a later state change without the fade animation shows it again,
+			// and the current views stay transparent when the state change fails, for example for a state without a StateView
+			foreach (var (view, opacity) in replacedViews)
+			{
+				view.AbortAnimation(nameof(ViewExtensions.FadeToAsync));
+				view.Opacity = opacity;
+			}
+
 			SetCanStateChange(bindable, true);
 			SetCurrentState(bindable, state);
 		}
+	}
+
+	static async Task AnimateChildren(Layout layout, string name, Animation animation, CancellationToken token)
+	{
+		List<Task<bool>> animationTasks = [];
+		foreach (var view in layout.Children.OfType<View>())
+		{
+			var animationTCS = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			view.Animate(name, animation, finished: (_, result) => animationTCS.TrySetResult(result));
+			animationTasks.Add(animationTCS.Task);
+		}
+
+		await Task.WhenAll(animationTasks).WaitAsync(token);
 	}
 
 	static void OnCurrentStateChanging(BindableObject bindable, object oldValue, object newValue)

@@ -32,6 +32,42 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	[GeneratedRegex(@"(@)(.+)$", RegexOptions.None, 250)]
 	protected static partial Regex EmailDomainRegex();
 
+	/// <inheritdoc /> 
+	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
+	{
+		return IsValidEmail(value) && await base.ValidateAsync(value, token);
+	}
+
+	/// <inheritdoc /> 
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected override void OnAttachedTo(VisualElement bindable)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		// Assign Keyboard.Email if the user has not specified a specific Keyboard layout
+		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Default)
+		{
+			inputView.Keyboard = Keyboard.Email;
+		}
+
+		base.OnAttachedTo(bindable);
+	}
+
+	/// <inheritdoc /> 
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
+	protected override void OnDetachingFrom(VisualElement bindable)
+	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
+		// Assign Keyboard.Default if the user has not specified a different Keyboard layout
+		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Email)
+		{
+			inputView.Keyboard = Keyboard.Default;
+		}
+
+		base.OnDetachingFrom(bindable);
+	}
+
 	/// <summary>
 	/// Examines the email address domain and normalizes it to ASCII
 	/// </summary>
@@ -41,7 +77,7 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 	private protected static string DomainMapper(Match match)
 	{
 		var domainName = match.Groups[2].Value;
-		if (domainName.StartsWith('-'))
+		if (domainName.StartsWith("-", StringComparison.Ordinal))
 		{
 			throw new ArgumentException("Domain name cannot start with hyphen.");
 		}
@@ -65,41 +101,11 @@ public partial class EmailValidationBehavior : TextValidationBehavior
 		return match.Groups[1].Value + asciiDomainName;
 	}
 
-	/// <inheritdoc /> 
-	protected override async ValueTask<bool> ValidateAsync(string? value, CancellationToken token)
-	{
-		return IsValidEmail(value) && await base.ValidateAsync(value, token);
-	}
-
-	/// <inheritdoc /> 
-	protected override void OnAttachedTo(VisualElement bindable)
-	{
-		// Assign Keyboard.Email if the user has not specified a specific Keyboard layout
-		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Default)
-		{
-			inputView.Keyboard = Keyboard.Email;
-		}
-
-		base.OnAttachedTo(bindable);
-	}
-
-	/// <inheritdoc /> 
-	protected override void OnDetachingFrom(VisualElement bindable)
-	{
-		// Assign Keyboard.Default if the user has not specified a different Keyboard layout
-		if (bindable is InputView inputView && inputView.Keyboard == Keyboard.Email)
-		{
-			inputView.Keyboard = Keyboard.Default;
-		}
-
-		base.OnDetachingFrom(bindable);
-	}
-
 	// https://docs.microsoft.com/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
 	static bool IsValidEmail(string? email)
 	{
 		if (string.IsNullOrWhiteSpace(email)
-			|| email.StartsWith('.')
+			|| email.StartsWith(".", StringComparison.Ordinal)
 			|| email.Contains("..", StringComparison.Ordinal)
 			|| email.Contains(".@", StringComparison.Ordinal))
 		{

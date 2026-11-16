@@ -52,8 +52,11 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	public partial bool AnimateOnTap { get; set; }
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		base.OnAttachedTo(bindable);
 
 		if (AnimateOnTap)
@@ -63,8 +66,11 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	}
 
 	/// <inheritdoc/>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnDetachingFrom(VisualElement bindable)
 	{
+		ArgumentNullException.ThrowIfNull(bindable);
+
 		if (tapGestureRecognizer is not null)
 		{
 			tapGestureRecognizer.Tapped -= OnTriggerHandled;
@@ -99,6 +105,21 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		}
 	}
 
+	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
+	{
+		var animationBehavior = (AnimationBehavior)bindable;
+		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
+	}
+
+	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		if (newValue is not Command<CancellationToken>)
+		{
+			var animationBehavior = (AnimationBehavior)bindable;
+			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
+		}
+	}
+
 	void AddTapGestureRecognizer()
 	{
 		if (View is not IGestureRecognizers gestureRecognizers)
@@ -126,21 +147,6 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		gestureRecognizers.GestureRecognizers.Remove(tapGestureRecognizer);
 		tapGestureRecognizer.Tapped -= OnTriggerHandled;
 		tapGestureRecognizer = null;
-	}
-
-	static Command<CancellationToken> CreateAnimateCommand(BindableObject bindable)
-	{
-		var animationBehavior = (AnimationBehavior)bindable;
-		return new Command<CancellationToken>(async token => await animationBehavior.OnAnimate(token).ConfigureAwait(false));
-	}
-
-	static void OnAnimateCommandChanging(BindableObject bindable, object oldValue, object newValue)
-	{
-		if (newValue is not Command<CancellationToken>)
-		{
-			var animationBehavior = (AnimationBehavior)bindable;
-			throw new InvalidOperationException($"{nameof(AnimateCommand)} must of Type {animationBehavior.AnimateCommand.GetType().FullName}");
-		}
 	}
 
 	async Task OnAnimate(CancellationToken token)

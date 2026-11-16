@@ -4,7 +4,7 @@ public class AvatarModel
 {
 	public Color BackgroundColor { get; init; } = Colors.Black;
 	public Color BorderColor { get; init; } = Colors.White;
-	public Thickness BorderWidth { get; init; } = 0;
+	public double BorderWidth { get; init; } = 0;
 	public CornerRadius CornerRadius { get; init; } = new(50, 50, 50, 50);
 	public string Description { get; init; } = string.Empty;
 	public FontAttributes FontAttributes { get; init; } = FontAttributes.None;

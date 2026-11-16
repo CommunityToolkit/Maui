@@ -1,0 +1,91 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetVersion)-android;$(NetVersion)-ios;$(NetVersion)-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);$(NetVersion)-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>CommunityToolkit.Maui.DeviceTests</RootNamespace>
+    <AssemblyName>CommunityToolkit.Maui.DeviceTests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- This app is not a `dotnet test` project: global.json runs `dotnet test` with Microsoft.Testing.Platform, which rejects
+         the whole run when a test project is not an MTP application. XHarness (eng/devices) runs it on devices instead. -->
+    <IsTestProject>false</IsTestProject>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <!-- Same as dotnet/maui: one Mac Catalyst RID (the host's) to work around a parallel build issue, two Android RIDs so the
+         APK runs on arm64 (Apple silicon) and x86_64 (Linux CI) emulators. -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- .NET MAUI 11 makes CollectionViewHandler2 (a WinUI ItemsView) the Windows default. It throws COMException 0x800F1000, which ends the
+       app, when an item root that needs a WrapperView after it loaded is wrapped (a Label or Image whose Background TouchBehavior sets),
+       and the Windows CollectionView and Expander tests target the ListView handler. Remove once the toolkit mitigates
+       https://github.com/CommunityToolkit/Maui/issues/3375 -->
+  <PropertyGroup>
+    <UseWindowsCollectionView2Handler>false</UseWindowsCollectionView2Handler>
+  </PropertyGroup>
+
+  <!-- UIKit's thread checks, which the SDK keeps in Debug builds only: six tests verify that the toolkit lets UIKitThreadAccessException
+       through when it is called off the main thread, and CI runs the device tests in Release. -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <CheckForIllegalCrossThreadCalls>true</CheckForIllegalCrossThreadCalls>
+  </PropertyGroup>
+
+  <Import Project="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.props" />
+
+  <PropertyGroup>
+    <ApplicationTitle>CommunityToolkit.Maui.DeviceTests</ApplicationTitle>
+    <ApplicationId>com.communitytoolkit.maui.devicetests</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <!-- The library minimums, so version-gated branches can run on older devices, except Android: 26, MediaElement's minimum,
+       because this one app holds the tests of every package (the other packages' Android branches below 26 have no device test). -->
+  <PropertyGroup>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+    <MauiImage Include="Resources\Images\**" />
+    <!-- Raw files keep their path without the Resources\Raw prefix. -->
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Only the Android tests use this 0-byte PNG. The .NET 11 Apple SDK optimizes every PNG of a Release build and fails with a missing file when it is empty. -->
+    <MauiAsset Remove="Resources\Raw\exoplayer\empty.png" Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
+    <!-- Direct reference so the xUnit analyzers run on the tests. -->
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.DeviceTests.Runners.SourceGen\CommunityToolkit.Maui.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.DeviceTests.Shared\CommunityToolkit.Maui.DeviceTests.Shared.csproj" />
+
+    <!-- The packages under test, with the analyzers and source generators that their NuGet packages add to an app. -->
+    <ProjectReference Include="..\CommunityToolkit.Maui\CommunityToolkit.Maui.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Core\CommunityToolkit.Maui.Core.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Analyzers\CommunityToolkit.Maui.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement\CommunityToolkit.Maui.MediaElement.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.Analyzers\CommunityToolkit.Maui.MediaElement.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.MediaElement.SourceGenerators\CommunityToolkit.Maui.MediaElement.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Camera\CommunityToolkit.Maui.Camera.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Maui.Camera.Analyzers\CommunityToolkit.Maui.Camera.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="..\CommunityToolkit.Maui.DeviceTests.Runners\CommunityToolkit.Maui.DeviceTests.Runners.targets" />
+
+</Project>

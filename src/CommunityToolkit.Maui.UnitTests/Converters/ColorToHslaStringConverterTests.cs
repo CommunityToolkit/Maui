@@ -146,18 +146,45 @@ public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHs
 		Assert.Equal(expectedResult, resultConvertFrom);
 	}
 
-	[Fact]
-	public void ColorToRgbStringConverterCultureTest()
+	[Theory]
+	[InlineData("uk-UA", "HSLA(0,0%,0%,0,5)")]
+	[InlineData("tr-TR", "HSLA(0,%0,%0,0,5)")]
+	public void ColorToRgbStringConverterCultureTest(string cultureName, string expectedResult)
 	{
-		var expectedResult = "HSLA(0,0%,0%,0,5)";
+		var culture = new System.Globalization.CultureInfo(cultureName);
 		var converter = new ColorToHslaStringConverter();
 		var color = new Color(0, 0, 0, 0.5f);
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("uk-UA"));
-		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("uk-UA"));
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Theory]
+	[InlineData("de-DE", "HSLA(360,100 %,50 %,0,5)")]
+	[InlineData("tr-TR", "HSLA(360,%100,%50,0,5)")]
+	public void ColorToHslaStringConverter_UsesPassedCultureForAllComponents(string cultureName, string expectedResult)
+	{
+		var originalCulture = System.Globalization.CultureInfo.CurrentCulture;
+		try
+		{
+			System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+			var converter = new ColorToHslaStringConverter();
+			var color = Colors.Red.WithAlpha(0.5f);
+			var culture = new System.Globalization.CultureInfo(cultureName);
+
+			var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+			var resultConvertFrom = converter.ConvertFrom(color, culture);
+
+			Assert.Equal(expectedResult, resultConvert);
+			Assert.Equal(expectedResult, resultConvertFrom);
+		}
+		finally
+		{
+			System.Globalization.CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 
 	[Fact]
