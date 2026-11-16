@@ -83,8 +83,8 @@ sealed class WinMediaPlainPlayer : IAsyncDisposable
 			try
 			{
 				Player.Pause();
-				WinMediaAssets.DisposeSource(Player);
-				Player.Source = null;
+				var source = WinMediaAssets.TakeSource(Player);
+				source?.Dispose();
 				Player.Dispose();
 			}
 			catch (Exception)

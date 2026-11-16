@@ -65,8 +65,19 @@ static class WinMediaAssets
 	// can get null there and dereference it: the access violation at +0x3299d that ended CI runs 38115049024 and 39907681941.
 	public static MediaPlaybackItem NewPlaybackItem(Uri source) => new(WinMediaSource.CreateFromUri(source));
 
-	public static void DisposeSource(MediaPlayer player) =>
-		(player.Source is MediaPlaybackItem item ? item.Source : player.Source as IDisposable)?.Dispose();
+	// A Source assignment starts an engine load whose async error work item races MediaPlayer.Dispose (an MFMediaEngine access violation), so
+	// only a player that has a source gets Source = null.
+	public static IDisposable? TakeSource(MediaPlayer player)
+	{
+		var attachedSource = player.Source;
+		if (attachedSource is null)
+		{
+			return null;
+		}
+
+		player.Source = null;
+		return attachedSource is MediaPlaybackItem item ? item.Source : attachedSource as IDisposable;
+	}
 
 	public static byte[] ReadVideoBytes() => File.ReadAllBytes(VideoPath);
 
