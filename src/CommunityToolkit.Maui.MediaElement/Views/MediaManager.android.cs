@@ -301,9 +301,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				// the handler was disconnected in the meantime and nothing else would release it
 				if (disconnectToken.IsCancellationRequested)
 				{
-					ReleasePlayerRegistration(mc);
-					mc.Release();
-					mc.Dispose();
+					ReleaseControllerAndItsPlayerRegistration(mc);
 					tcs.SetCanceled(disconnectToken);
 					return;
 				}
@@ -840,11 +838,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
 
-			if (isPlayerAlive && isAndroidForegroundServiceEnabled && Player is MediaController controllerOfRegistration)
-			{
-				ReleasePlayerRegistration(controllerOfRegistration);
-			}
-
 			if (isPlayerAlive && Player is IExoPlayer exoPlayer)
 			{
 				exoPlayer.Release();
@@ -852,8 +845,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			}
 			else if (isPlayerAlive && Player is MediaController mediaController)
 			{
-				mediaController.Release();
-				mediaController.Dispose();
+				ReleaseControllerAndItsPlayerRegistration(mediaController);
 			}
 
 			if (IsAlive(PlayerView))
@@ -878,13 +870,29 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	// A disposed Java peer has no handle left, and every call on it throws ObjectDisposedException
 	static bool IsAlive(Android.Runtime.IJavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
 
-	void ReleasePlayerRegistration(MediaController mediaController)
+	// Media3 unbinds a released controller from the service only once every command it sent was answered, or after 30 seconds: releasing the
+	// controller right after the release command would keep the service bound, and so alive, for that long.
+	void ReleaseControllerAndItsPlayerRegistration(MediaController mediaController)
 	{
+		if (!isAndroidForegroundServiceEnabled)
+		{
+			mediaController.Release();
+			mediaController.Dispose();
+			return;
+		}
+
 		using var args = new Android.OS.Bundle();
 		args.PutString(MediaSessionCallback.PlayerIdKey, AndroidPlayerConnectionKey);
 
 		var commandResult = mediaController.SendCustomCommand(new SessionCommand(MediaSessionCallback.ReleasePlayer, new Android.OS.Bundle()), args);
-		commandResult?.AddListener(new Runnable(() =>
+		if (commandResult is null)
+		{
+			mediaController.Release();
+			mediaController.Dispose();
+			return;
+		}
+
+		commandResult.AddListener(new Runnable(() =>
 		{
 			try
 			{
@@ -896,6 +904,11 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			catch (Exception ex)
 			{
 				Trace.WriteLine($"Error releasing Android MediaElement player registration: {ex}");
+			}
+			finally
+			{
+				mediaController.Release();
+				mediaController.Dispose();
 			}
 		}), ContextCompat.GetMainExecutor(Platform.AppContext));
 	}

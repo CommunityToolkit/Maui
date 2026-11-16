@@ -293,31 +293,33 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	/// <summary>
 	/// Starts watching the registry: completes once the registration of <paramref name="connectionKey"/> has appeared and is gone again, which
 	/// is the end of a controller that connected late and released itself. Started before the handler is disconnected, because the whole
-	/// life of that registration can be over by the time the test looks.
+	/// life of that registration can be over by the time the test looks. It polls on its own thread, because the UI thread is busy building
+	/// the player of the registration while it appears.
 	/// </summary>
-	protected static async Task WatchRegistrationComeAndGoAsync(string connectionKey, int timeout = waitTimeout)
-	{
-		var wasRegistered = false;
-		var stopwatch = Stopwatch.StartNew();
-		while (stopwatch.ElapsedMilliseconds < timeout)
+	protected static Task WatchRegistrationComeAndGoAsync(string connectionKey, int timeout = waitTimeout) =>
+		Task.Run(() =>
 		{
-			var isRegistered = GetRegisteredPlayerIds().Contains(connectionKey);
-			if (isRegistered)
+			var wasRegistered = false;
+			var stopwatch = Stopwatch.StartNew();
+			while (stopwatch.ElapsedMilliseconds < timeout)
 			{
-				wasRegistered = true;
-			}
-			else if (wasRegistered)
-			{
-				return;
+				var isRegistered = GetRegisteredPlayerIds().Contains(connectionKey);
+				if (isRegistered)
+				{
+					wasRegistered = true;
+				}
+				else if (wasRegistered)
+				{
+					return;
+				}
+
+				Thread.Sleep(1);
 			}
 
-			await Task.Delay(5);
-		}
-
-		throw new XunitException(wasRegistered
-			? $"The registration {connectionKey} was never released."
-			: $"The controller of {connectionKey} never connected, so there was nothing to release.");
-	}
+			throw new XunitException(wasRegistered
+				? $"The registration {connectionKey} was never released."
+				: $"The controller of {connectionKey} never connected, so there was nothing to release.");
+		});
 
 	/// <summary>A controller that a test owns, like the one of the notification or of a Bluetooth headset: connected to the registration with the given key (none: no hint).</summary>
 	protected async Task<MediaController> ConnectTestControllerAsync(string? connectionKey, int timeout = waitTimeout)
