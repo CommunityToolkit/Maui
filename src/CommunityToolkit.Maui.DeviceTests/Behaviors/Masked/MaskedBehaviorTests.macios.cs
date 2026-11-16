@@ -44,6 +44,47 @@ public partial class MaskedBehaviorTests
 		});
 	}
 
+	// The format characters at the end of the mask come with the last character typed, and backspace must delete them instead of the
+	// behavior adding them back.
+	[Fact]
+	public async Task TrailingFormatCharactersAreAddedByTheLastKeystrokeAndDeletedByBackspace()
+	{
+		SetupBuilder();
+		var entry = CreateEntryWithMask("XX-XX-XX\"");
+
+		await AttachAndRun(entry, async handler =>
+		{
+			await entry.OnLoadedAsync();
+			var textField = Assert.IsType<UITextField>(handler.PlatformView, exactMatch: false);
+			Assert.True(textField.BecomeFirstResponder(), "The text field did not become the first responder.");
+
+			try
+			{
+				foreach (var keystroke in "abcdef")
+				{
+					textField.InsertText(keystroke.ToString());
+				}
+
+				Assert.Equal("ab-cd-ef\"", textField.Text);
+				Assert.Equal("ab-cd-ef\"", entry.Text);
+
+				textField.DeleteBackward();
+
+				Assert.Equal("ab-cd-ef", textField.Text);
+				Assert.Equal("ab-cd-ef", entry.Text);
+
+				textField.DeleteBackward();
+
+				Assert.Equal("ab-cd-e", textField.Text);
+				Assert.Equal("ab-cd-e", entry.Text);
+			}
+			finally
+			{
+				textField.ResignFirstResponder();
+			}
+		});
+	}
+
 	// MauiTextField raises TextPropertySet when code sets the text, so every pass of the behavior, until the text fits the mask, is done
 	// when the setter returns.
 	[Fact]
