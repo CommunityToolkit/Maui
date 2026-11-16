@@ -75,7 +75,7 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_TriggeredAgainMidTurn_EndsTheTurnWhereTheFirstWouldHaveEnded() => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new ObservedRotateAnimation { Length = 1000 };
+		var animation = new ObservedRotateAnimation { Length = 3 * functionalTestLength };
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedView();
 		view.Behaviors.Add(behavior);
