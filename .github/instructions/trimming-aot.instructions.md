@@ -68,7 +68,7 @@ Run these before opening a PR that touches package code, MSBuild files or genera
    pwsh eng/trim-audit/run.ps1 -Feed <folder-of-nupkgs>              # packages that are already packed
    ```
 
-   Exit 0 means no toolkit warning outside `allow.tsv`. `-Mode aot` is NativeAOT (`aotroot`), `-Mode full` is full trimming with all toolkit code analyzed (`rootlibs`). On Windows, `-Mode aot` only reports until [dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053) is fixed. Without a working Python, Windows still builds and checks the assets, shows the leg as `NOT GATED` and exits 4; gate its zip on macOS or Linux with `eng/trim-audit/gate-windows-result.sh <zip or folder>`. The internal scripts (`audit.sh`, `audit-win.ps1`) and their flags are listed in the README.
+   Exit 0 means no toolkit warning outside `allow.tsv`. `-Mode aot` is NativeAOT (`aotroot`), `-Mode full` is full trimming with all toolkit code analyzed (`rootlibs`). On Windows, `-Mode aot` only reports until [dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053) is fixed. Without Python 3 it stops before any build with exit 4. The internal scripts (`audit.sh`, `audit-win.ps1`) and their flags are listed in the README.
 
    In CI, the job summary and the `GATE-EXIT` and `AUDIT-EXIT` log lines always carry the verdict. Annotations may not appear: GitHub keeps 50 per job, and earlier steps can use them all.
 

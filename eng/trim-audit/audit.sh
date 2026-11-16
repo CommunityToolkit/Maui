@@ -10,25 +10,27 @@
 #       with the variant's trim settings (Directory.Build.targets), into <out-root>/<platform>-<variant>/:
 #       build.binlog, build.log, warnings.log, warnings-summary.txt, warnings-unique.tsv, warnings-counts.json, assets-check.txt,
 #       roots-check.txt (aotroot), linked-sizes.txt, app.txt (path of the .apk or .app), result.json.
-#       Exit code: the build's, 3 when the assets check (or, for aotroot, the roots check) fails, 4 when warnings.log has IL warnings that
-#       the parser could not read. 'none' is refused on iOS (exit 2): the iOS SDK requires PublishTrimmed=true, and an untrimmed iOS build
-#       needs MtouchLink=None, which this leg does not run.
+#       Exit code: the build's, 3 when the assets check (or, for aotroot, the roots check) fails, 4 when Python 3 is missing or
+#       warnings.log has IL warnings that the parser could not read. 'none' is refused on iOS (exit 2): the iOS SDK requires
+#       PublishTrimmed=true, and an untrimmed iOS build needs MtouchLink=None, which this leg does not run.
 #       'aot' and 'aotroot' are NativeAOT and run `dotnet publish` (PublishAot needs it; iOS builds with _IsPublishing); the others run
 #       `dotnet build`. aotroot roots the four toolkit assemblies so that ILC analyzes all toolkit code.
 #   eng/trim-audit/audit.sh gate <leg-dir> [--github] [--max-annotations <n>] [--summary <file>] [--report-only]   (n: this gate's share)
 #       the CI check on a finished leg (<out-root>/<platform>-<variant>): fails on a toolkit or toolkit-api warning that allow.tsv does
 #       not list. Exit: 0 clean, 1 new warnings, 2 usage or a bad allow-list, 3 assets or roots check not OK, 4 build failed, result.json,
-#       warnings.log or the warning list missing, or the parser could not read every IL line. --report-only: same report, exit 0 (not 2).
+#       warnings.log or the warning list missing, the parser could not read every IL line, or Python 3 is missing.
+#       --report-only: same report, exit 0 (not 2).
 #   eng/trim-audit/audit.sh run <platform[,platform]> <variant> (--repo <source-repo> [--version <v>] | --feed <folder-of-nupkgs>)
 #                               [--out-root <dir>] [--github] [--max-annotations <n>] [--summary <file>] [--report-only]
 #       the one command a CI step runs: with --repo it packs that checkout first (into <out-root>/feed); with --feed it uses the nupkgs
 #       a CI pack step left in <folder> (the four libraries, one version each, any other files are ignored). Then it builds the leg and
 #       gates it. A platform list (`run android,ios aotroot --feed ...`) packs once, then builds and gates every platform even when an
-#       earlier one fails, and exits with the first non-zero code. Exit: the gate's (0, 1, 3, 4 above), 2 for a usage error, 5 when packing
-#       failed. --github prints ::error annotations. GitHub shows 10 error annotations per step and 50 per job, summed over steps, so the job summary is the reliable
-#       channel; --max-annotations <n> (default 10) is one budget for the whole call: each gate gets an equal share of what is left (a leg that needs fewer leaves more for the
-#       next), so the failure of a later leg is never hidden behind the warnings of an earlier one. --summary appends a Markdown report
-#       (give it $GITHUB_STEP_SUMMARY; it lists every leg); a failure before the gate runs is annotated and summarized too.
+#       earlier one fails, and exits with the first non-zero code. Exit: the gate's (0, 1, 3, 4 above; 4 also when Python 3 is missing),
+#       2 for a usage error, 5 when packing failed. --github prints ::error annotations. GitHub shows 10 error annotations per step and
+#       50 per job, summed over steps, so the job summary is the reliable channel; --max-annotations <n> (default 10) is one budget for
+#       the whole call: each gate gets an equal share of what is left (a leg that needs fewer leaves more for the next), so the failure of
+#       a later leg is never hidden behind the warnings of an earlier one. --summary appends a Markdown report (give it
+#       $GITHUB_STEP_SUMMARY; it lists every leg); a failure before the gate runs is annotated and summarized too.
 #   eng/trim-audit/audit.sh pack <source-repo> [version] [feed]
 #       packs the four libraries of <source-repo> (any checkout of the toolkit; Release; its bin and obj are written to) into the feed
 #       (default $CTM_TRIM_AUDIT_FEED or eng/trim-audit/feed) as version [version] (default $CTM_TRIM_AUDIT_VERSION or 99.0.0-trim1),
@@ -48,6 +50,8 @@ feed=${CTM_TRIM_AUDIT_FEED:-$here/feed}
 usage() { awk 'NR == 1 { next } /^#/ { print; next } { exit }' "$0" >&2; exit 2; }
 [ $# -ge 1 ] || usage
 if command -v python3 > /dev/null 2>&1; then python=python3; else python=python; fi
+# Without this the build runs for minutes and only verify-assets.py fails; pack and env need no Python.
+case $1 in pack|env) ;; *) command -v "$python" > /dev/null 2>&1 || { echo "Python 3 is required (brew install python, or apt install python3)" >&2; exit 4; } ;; esac
 sha256() { if command -v shasum > /dev/null 2>&1; then shasum -a 256 "$@"; else sha256sum "$@"; fi; }
 file_size() { wc -c < "$1" | tr -d ' '; }
 

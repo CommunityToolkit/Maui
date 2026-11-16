@@ -275,11 +275,11 @@ jobs:
                     path: ${{ github.workspace }}/nuget/
 
             # Last, so that a failed gate still leaves the packages artifact to reproduce it. On macOS, run.ps1 first runs the gate's own
-            # tests (also under a Turkish locale), because the gate's parser decides pass or fail; Windows skips them (they need bash and
-            # zip). Then it builds the Sample against the packed packages (NativeAOT on iOS and Android on macOS, full trimming on Windows)
-            # because an app can get trim and NativeAOT warnings that the library build never shows. It fails on toolkit and toolkit-api
-            # warnings that eng/trim-audit/allow.tsv does not accept and on a failed build, never on MAUI or Sample warnings. Anyone can
-            # run the same check with `pwsh eng/trim-audit/run.ps1`.
+            # tests (also under a Turkish locale), because the gate's parser decides pass or fail; Windows skips them (the Turkish pass
+            # needs POSIX locales). Then it builds the Sample against the packed packages (NativeAOT on iOS and Android on macOS, full
+            # trimming on Windows) because an app can get trim and NativeAOT warnings that the library build never shows. It fails on
+            # toolkit and toolkit-api warnings that eng/trim-audit/allow.tsv does not accept and on a failed build, never on MAUI or Sample
+            # warnings. Anyone can run the same check with `pwsh eng/trim-audit/run.ps1`.
             # GitHub keeps 50 annotations per job, summed over all steps, and the library-build steps above can use all 50 (fork run r1 did),
             # so no annotation of this step is guaranteed. The guaranteed channels are the job summary (no cap) and the GATE-EXIT and
             # AUDIT-EXIT lines of the log, because the pwsh wrapper reports any non-zero exit as 1.

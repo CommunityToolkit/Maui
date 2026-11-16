@@ -8,7 +8,7 @@ Checks that the four NuGet packages stay trim-safe and NativeAOT-safe in an app.
 pwsh eng/trim-audit/run.ps1
 ```
 
-On macOS and Linux it runs the gate's own tests first (Windows skips them: they call bash, zip and python3, and CI runs them on the macOS leg). Then it packs the four libraries from this checkout, builds the Sample for every platform this machine can build, and prints a verdict: PASS or FAIL, the warnings per bucket for each leg, and where the logs are.
+On macOS and Linux it runs the gate's own tests first (Windows skips them: the Turkish pass sets POSIX locale variables, and CI runs them on the macOS leg). Then it packs the four libraries from this checkout, builds the Sample for every platform this machine can build, and prints a verdict: PASS or FAIL, the warnings per bucket for each leg, and where the logs are.
 
 | Machine | Default legs |
 | --- | --- |
@@ -16,7 +16,7 @@ On macOS and Linux it runs the gate's own tests first (Windows skips them: they 
 | Windows | Windows, full trimming (`rootlibs`) |
 | Linux | Android, NativeAOT (`aotroot`) |
 
-Needs the .NET SDK and MAUI workload from `global.json`, PowerShell 7 and Python 3 (Windows without Python still builds, shows the leg as `NOT GATED` and exits 4; gate its zip with `gate-windows-result.sh` on a machine with Python). Each run packs a new version and deletes the old audit versions and the leg folders of the legs it plans, so a leg that does not run shows `NOT RUN`. A default platform that is not set up (no Xcode, no Android SDK) is skipped, and the plan says so.
+Needs the .NET SDK and MAUI workload from `global.json`, PowerShell 7 and Python 3 (without Python the run stops before any build with exit 4). Each run packs a new version and deletes the old audit versions and the leg folders of the legs it plans, so a leg that does not run shows `NOT RUN`. A default platform that is not set up (no Xcode, no Android SDK) is skipped, and the plan says so.
 
 ## Options
 
@@ -39,9 +39,9 @@ Needs the .NET SDK and MAUI workload from `global.json`, PowerShell 7 and Python
 | --- | --- |
 | 0 | Every leg passed |
 | 1 | New toolkit or toolkit-api warnings |
-| 2 | Usage error, missing Python or a bad feed |
+| 2 | Usage error or a bad feed |
 | 3 | The build did not use the packages, or the NativeAOT roots check failed |
-| 4 | A build failed, or its logs are unreadable (Windows without Python: build ok, gate not run) |
+| 4 | A build failed, its logs are unreadable, or Python 3 is missing |
 | 5 | Packing failed |
 | 6 | The gate's own tests failed (macOS, Linux) |
 | 71 | No platform can be built here |
@@ -60,5 +60,4 @@ Fix the warning in the library. Adding a line to `allow.tsv` needs a maintainer'
 
 * `audit.sh run <platforms> <variant> (--repo . | --feed <dir>)`: macOS and Linux. Also `audit.sh <platform> <variant>` (one leg, build only), `gate`, `pack` and `env`.
 * `audit-win.ps1 -Variant <v> (-Repo . | -Feed <dir>)`: Windows.
-* `gate-windows-result.sh <zip or folder>`: gates a Windows result on a machine with Python.
 * `ilwarn.py`: parses the warnings and judges them; `test_ilwarn.py` tests it.

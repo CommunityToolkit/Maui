@@ -14,17 +14,17 @@
       Linux    Android, with NativeAOT (aotroot)
     A default platform that this machine cannot build (no Xcode, no Android SDK) is skipped and the plan says why; with -CI nothing is
     skipped. Mac Catalyst builds with -Platform maccatalyst. On macOS and Linux it first runs the gate's own Python tests (a few
-    seconds, then again under a Turkish locale) unless -SkipSelfTest. Windows skips them: they call bash, zip and python3, which a
-    Windows machine may lack, and CI runs them on the macOS leg.
+    seconds, then again under a Turkish locale) unless -SkipSelfTest. Windows skips them: the Turkish pass sets POSIX locale
+    variables, and CI runs them on the macOS leg.
 
     The plan (platforms, modes, packages and out-root) is printed first. -DryRun prints it and stops.
 
     This script drives audit.sh (macOS, Linux) and audit-win.ps1 (Windows); their headers document every flag for advanced use, such as
-    building one leg or gating a result elsewhere. Python 3 is needed to judge the warnings. Without it Windows still builds and exits 4
-    (see the audit-win.ps1 header); macOS and Linux stop with exit 2.
+    building one leg or gating a result elsewhere. Python 3 is needed to judge the warnings: without it
+    the script stops before any build with exit 4 and says what to install.
 
-    Exit codes: 0 every leg passed; 1 new toolkit or toolkit-api warnings; 2 usage error, missing Python or a bad feed; 3 the build did not
-    use the packages (assets check) or the NativeAOT roots check failed; 4 a build failed or its logs are unreadable; 5 packing failed;
+    Exit codes: 0 every leg passed; 1 new toolkit or toolkit-api warnings; 2 usage error or a bad feed; 3 the build did not
+    use the packages (assets check) or the NativeAOT roots check failed; 4 a build failed, its logs are unreadable or Python 3 is missing; 5 packing failed;
     6 the gate's own tests failed (macOS, Linux); 71 no platform can run here. With several legs, the first non-zero code of the legs.
 
 .PARAMETER Platform
@@ -193,9 +193,9 @@ function Remove-StalePackedVersions {
 function Get-ExitHint([int]$Code) {
     switch ($Code) {
         1 { return "fix the new toolkit or toolkit-api warnings in the library; an allow.tsv line needs a maintainer's approval (see eng/trim-audit/README.md)." }
-        2 { return 'usage error, missing Python or a bad feed: see the message above.' }
+        2 { return 'usage error or a bad feed: see the message above.' }
         3 { return 'the build did not use the packed packages, or the NativeAOT roots check failed: see <leg>/assets-check.txt.' }
-        4 { return 'a build failed or its logs are unreadable: see <leg>/build.log.' }
+        4 { return 'a build failed, its logs are unreadable or Python 3 is missing: see the message above or <leg>/build.log.' }
         5 { return 'packing failed: see the dotnet pack errors above.' }
         default { return '' }
     }
@@ -238,15 +238,16 @@ switch ($feedMode) {
     'folder' { Write-Host "  packages $Feed" }
 }
 Write-Host "  out-root $OutRoot"
-Write-Host ("  self-test {0}" -f $(if ($runsSelfTest) { 'python -m unittest on eng/trim-audit (default locale, then tr_TR.UTF-8)' } elseif ($onWindows) { 'skipped on Windows: the tests call bash, zip and python3, and CI runs them on the macOS leg' } else { 'skipped' }))
+Write-Host ("  self-test {0}" -f $(if ($runsSelfTest) { 'python -m unittest on eng/trim-audit (default locale, then tr_TR.UTF-8)' } elseif ($onWindows) { 'skipped on Windows: the Turkish pass needs POSIX locales, and CI runs them on the macOS leg' } else { 'skipped' }))
 if ($DryRun) {
     Write-Host 'dry run: nothing was run'
     exit 0
 }
 
 $python = Find-Python
-if (-not $python -and -not $onWindows) {
-    Stop-Run 'needs Python 3 to judge the warnings: install python3 (for example brew install python, or apt install python3) and run again' 2
+if (-not $python) {
+    $installHint = if ($onWindows) { 'winget install Python.Python.3.13, then reopen the shell' } else { 'brew install python, or apt install python3' }
+    Stop-Run "needs Python 3 to judge the warnings: install it ($installHint) and run again" 4
 }
 
 if ($runsSelfTest) { Invoke-SelfTest }
@@ -311,8 +312,6 @@ function Get-LegVerdict([string]$LegFolder) {
     $gateText = Get-Content -LiteralPath $gateOutputPath -Raw
     if ($gateText -match '(?m)^GATE: OK') { return 'PASS' }
     if ($gateText -match '(?m)^GATE: REPORT ONLY') { return 'REPORT' }
-    $buildExit = (Read-Json (Join-Path $LegFolder 'result.json')).build_exit
-    if ($gateText -match 'no working Python on PATH' -and $buildExit -eq 0) { return 'NOT GATED' }
     return 'FAIL'
 }
 $verdict = if ($overallExit -eq 0) { 'PASS' } else { 'FAIL' }
@@ -339,13 +338,7 @@ Write-Host "== Trim and AOT audit: $verdict (exit $overallExit) =="
 $rows | Format-Table -AutoSize @{ n = 'leg'; e = 'Leg' }, @{ n = 'verdict'; e = 'Verdict' }, @{ n = 'toolkit'; e = 'Toolkit' }, @{ n = 'toolkit-api'; e = 'ToolkitApi' },
     @{ n = 'sample'; e = 'Sample' }, @{ n = 'maui'; e = 'Maui' }, @{ n = 'other'; e = 'Other' } | Out-String | Write-Host
 Write-Host "Logs and warning lists: $(Join-Path $OutRoot '<leg>')$([IO.Path]::DirectorySeparatorChar) (build.log, warnings.log, warnings-summary.txt, warnings-unique.tsv, gate-output.txt)"
-$notGatedCommands = @($rows | Where-Object { $_.Verdict -eq 'NOT GATED' } | ForEach-Object {
-    "eng/trim-audit/gate-windows-result.sh $(Join-Path $OutRoot "$($_.Leg).zip")$(if ($_.Leg -like '*-aot') { ' --report-only' })"
-})
-$exitHint = if ($notGatedCommands.Count -gt 0) {
-    "not gated: no working Python here, but the build succeeded; on a machine with Python run $($notGatedCommands -join ' and '), or install Python 3 and run again."
-}
-else { Get-ExitHint $overallExit }
+$exitHint = Get-ExitHint $overallExit
 if ($exitHint) { Write-Host $exitHint }
 if ($summaryFile) { Add-Content -Path $summaryFile -Value "`n**Trim and AOT audit: $verdict (exit $overallExit)**" }
 if ($CI) {
