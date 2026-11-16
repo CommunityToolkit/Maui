@@ -320,6 +320,18 @@ function Find-AndroidErrorDialogInLog {
     return ''
 }
 
+function Find-AndroidUiThreadWatchdogInLog {
+    param([string]$Directory)
+
+    # The watchdog kills the app, which reaches XHarness as a crash (80), so the logcat line is the only place that names the hang.
+    foreach ($log in Get-ChildItem -Path $Directory -Filter 'adb-logcat-*.log' -File -ErrorAction SilentlyContinue) {
+        $match = Select-String -Path $log.FullName -Pattern 'CtmUiThreadWatchdog: (The UI thread has not answered[^\r\n]*)' -CaseSensitive -List -ErrorAction SilentlyContinue
+        if ($match) { return $match.Matches[0].Groups[1].Value }
+    }
+
+    return ''
+}
+
 function Invoke-AndroidDeviceTests {
     param($Context, $Project, [string]$Adb, [string]$Serial, [string]$Abi, $CoverageSession)
 
@@ -405,6 +417,10 @@ function Invoke-AndroidDeviceTests {
             $anrProcess = Find-AndroidErrorDialogInLog -Directory $androidOutput
             if ($anrProcess) {
                 $verdict.Warnings = @($verdict.Warnings) + "An ANR of $anrProcess appears in the logcat; failures that need window focus (keyboard, dialogs, system bars) may come from its dialog."
+            }
+            $watchdogLine = Find-AndroidUiThreadWatchdogInLog -Directory $androidOutput
+            if ($watchdogLine) {
+                $verdict.Reasons = @($verdict.Reasons) + "The UI-thread watchdog ended the app: $watchdogLine"
             }
         }
         if ($verdict.ExitCode -ne 0 -and -not (Test-AndroidDeviceListed -Adb $Adb -Serial $Serial)) {

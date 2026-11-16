@@ -58,9 +58,13 @@ path and lists each toolkit change. The authoring guide for the tests is
   the coverage runs of `eng/devices` (`-Coverage`, see `eng/devices/README.md`). coverlet writes them from a process-exit handler, which
   never runs in these apps, so the Android instrumentation (before `Finish`) and the iOS and Mac Catalyst headless runner (when the
   tests have completed) call `CoverageRecorder.Flush` with the folder named by `CTM_COVERAGE_DIRECTORY`. Without it they do nothing.
+- **UI-thread watchdog (Android)**: `HeadlessRunner/android/UiThreadWatchdog.cs` pings the main looper every 5 s. After 90 s without an
+  answer it logs every Java stack (tag `CtmUiThreadWatchdog`, via `JavaThreadDump.android.cs`), sends SIGQUIT (not on Android 7, where it aborts the app) and ends the app, so XHarness
+  reports 80 within minutes instead of at its timeout. It is off while a debugger is attached. Neither the Java stacks nor the ART dump show
+  managed (.NET) frames: a hang in .NET code on the UI thread shows `main` inside `RunnableImplementor.n_run`.
 - **Project settings**: `ImplicitUsings` and `Nullable` are disabled as upstream, and the `.editorconfig` marks the vendored files as
   generated code so that the repository's style analyzers leave them as they are upstream; the toolkit's own files
-  (`TestRunLog.cs`, `TestApplicationDispatcher.cs`, `CoverageRecorder.cs`) are analyzed like the rest of the repository. `CS0618` (`Frame` in the visual
+  (`TestRunLog.cs`, `TestApplicationDispatcher.cs`, `CoverageRecorder.cs`, `JavaThreadDump.android.cs`, `UiThreadWatchdog.cs`) are analyzed like the rest of the repository. `CS0618` (`Frame` in the visual
   runner XAML) and `CsWinRT1028` are not reported, and `AllowUnsafeBlocks` is set for CsWinRT.
 - **MSBuild files**: `CommunityToolkit.Maui.DeviceTests.Runners.targets` drops upstream's Arcade-only property and an
   asset-less `xunit.runner.visualstudio` reference. `CommunityToolkit.Maui.DeviceTests.Runners.props` names the unpackaged

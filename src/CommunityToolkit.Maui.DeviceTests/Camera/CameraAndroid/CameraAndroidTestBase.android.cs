@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Android.App;
@@ -30,6 +31,12 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	// Only an upper bound: reached when a test fails or the machine is overloaded.
 	internal static readonly TimeSpan CameraTimeout = TimeSpan.FromSeconds(45);
+
+	const string cameraWedgeLogTag = "CameraWedge";
+
+	// Process-wide, because the wedge never recovers in this process.
+	static string? wedgedCameraStack;
+	static int artDumpRequested;
 
 	readonly List<Action> cleanups = [];
 	readonly AsyncVoidExceptionGuard asyncVoidGuard = new();
@@ -67,6 +74,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		// The runner only reports results when the whole run ends, so a crash of the app (the camera HAL, the media codec or
 		// the toolkit) loses them all. This marker in the device log tells which test was running.
 		Android.Util.Log.Info("CameraDeviceTests", $"START {GetType().Name}.{testName}");
+		FailIfAnEarlierTestWedgedTheCameraStack();
 
 		base.SetupBuilder(configureBuilder);
 		InstallAsyncVoidGuard();
@@ -750,6 +758,12 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 				catch (Exception ex)
 				{
 					failures.Add(ex);
+					await DiagnoseACameraThatStaysOpenAsync(failures);
+				}
+
+				if (Volatile.Read(ref wedgedCameraStack) is null)
+				{
+					await DiagnoseCameraXWithoutItsCamerasAsync(failures);
 				}
 			}
 		}
@@ -773,6 +787,117 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		{
 			throw new AggregateException("The test left failures behind (cleanup, or exceptions that escaped from async void code).", failures);
 		}
+	}
+
+	static void FailIfAnEarlierTestWedgedTheCameraStack()
+	{
+		if (Volatile.Read(ref wedgedCameraStack) is string reason)
+		{
+			Assert.Fail($"An earlier camera test left the camera stack of this process wedged, so this camera test can not run. {reason}");
+		}
+	}
+
+	static async Task DiagnoseACameraThatStaysOpenAsync(List<Exception> failures)
+	{
+		try
+		{
+			var states = await DescribeNativeCameraStatesAsync();
+			var first = JavaThreadDump.Capture();
+			JavaThreadDump.Write(cameraWedgeLogTag, "A camera is still open: Java stacks, sample 1", first);
+			var artDump = RequestArtDumpOnce();
+			await Task.Delay(CameraWedgeSignature.ConfirmationDelay);
+			var second = JavaThreadDump.Capture();
+			JavaThreadDump.Write(cameraWedgeLogTag, "A camera is still open: Java stacks, sample 2", second);
+
+			if (CameraWedgeSignature.FindStuckClose(first, second, CameraWedgeSignature.ConfirmationDelay) is string stuck)
+			{
+				MarkTheCameraStackWedged($"{stuck} Camera states: {states}. Java stacks: logcat tag {cameraWedgeLogTag} at {DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture)}. {artDump}", failures);
+			}
+			else
+			{
+				Android.Util.Log.Warn(cameraWedgeLogTag, "No thread is stuck in CameraDeviceImpl.close, so later camera tests run as usual.");
+			}
+		}
+		catch (Exception ex)
+		{
+			failures.Add(new Xunit.Sdk.XunitException($"Diagnosing the camera that stays open failed: {ex}"));
+		}
+	}
+
+	static async Task DiagnoseCameraXWithoutItsCamerasAsync(List<Exception> failures)
+	{
+		try
+		{
+			var provider = await GetNativeCameraProviderAsync();
+			var cameraXCamerasFirst = provider.AvailableCameraInfos.Count;
+			if (cameraXCamerasFirst > 0)
+			{
+				return;
+			}
+
+			await Task.Delay(CameraWedgeSignature.ConfirmationDelay);
+			var cameraXCamerasSecond = provider.AvailableCameraInfos.Count;
+			var platformCameraIds = await ReadCamera2CameraIdsAsync();
+
+			if (CameraWedgeSignature.FindLostCameras(cameraXCamerasFirst, cameraXCamerasSecond, platformCameraIds, CameraWedgeSignature.ConfirmationDelay) is string lost)
+			{
+				JavaThreadDump.Write(cameraWedgeLogTag, "CameraX lost its cameras: Java stacks", JavaThreadDump.Capture());
+				// In the failure that this detects the camera thread was still stuck in close, so the ART dump names its native frame.
+				var artDump = RequestArtDumpOnce();
+				MarkTheCameraStackWedged($"{lost} Java stacks: logcat tag {cameraWedgeLogTag}. {artDump}", failures);
+			}
+		}
+		catch (Exception ex)
+		{
+			failures.Add(new Xunit.Sdk.XunitException($"Diagnosing CameraX without its cameras failed: {ex}"));
+		}
+	}
+
+	static async Task<string> DescribeNativeCameraStatesAsync()
+	{
+		var provider = await GetNativeCameraProviderAsync();
+		var states = provider.AvailableCameraInfos.Select(info => $"{GetNativeCameraId(info)}={GetNativeCameraState(info)}").ToList();
+		return states.Count == 0 ? "none" : string.Join(", ", states);
+	}
+
+	static async Task<IReadOnlyList<string>?> ReadCamera2CameraIdsAsync()
+	{
+		try
+		{
+			var manager = (Android.Hardware.Camera2.CameraManager?)AppContext.GetSystemService(Context.CameraService)
+				?? throw new InvalidOperationException("The app has no Camera2 CameraManager.");
+
+			// A hung cameraserver must not hang the cleanup.
+			return await Task.Run(() => (IReadOnlyList<string>)(manager.GetCameraIdList() ?? [])).WaitAsync(TimeSpan.FromSeconds(10));
+		}
+		catch (Exception ex)
+		{
+			Android.Util.Log.Warn(cameraWedgeLogTag, $"Camera2 did not list its cameras: {ex.Message}");
+			return null;
+		}
+	}
+
+	static string RequestArtDumpOnce()
+	{
+		var pid = Android.OS.Process.MyPid();
+		if (Interlocked.Exchange(ref artDumpRequested, 1) != 0)
+		{
+			return $"ART dump: sent once already for pid {pid} by an earlier diagnosis.";
+		}
+
+		if (!JavaThreadDump.RequestArtDump())
+		{
+			return "ART dump: not requested on Android 7, where SIGQUIT aborts the app.";
+		}
+
+		return $"ART dump of every thread (Java and native): SIGQUIT sent at {DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture)}; ART writes it under /data/anr for pid {pid}; reading it needs adb root.";
+	}
+
+	static void MarkTheCameraStackWedged(string reason, List<Exception> failures)
+	{
+		Interlocked.CompareExchange(ref wedgedCameraStack, reason, null);
+		Android.Util.Log.Error(cameraWedgeLogTag, "WEDGED: " + reason);
+		failures.Add(new Xunit.Sdk.XunitException($"The camera stack of this process is wedged; later camera tests fail at once. {reason}"));
 	}
 
 	sealed class AsyncVoidExceptionGuard : SynchronizationContext

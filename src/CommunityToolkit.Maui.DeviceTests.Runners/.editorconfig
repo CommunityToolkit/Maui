@@ -4,5 +4,5 @@
 generated_code = true
 
 # Toolkit code, not vendored (see the header of each file): the repository's analyzers apply.
-[{HeadlessRunner/windows/TestRunLog.cs,TestApplicationDispatcher.cs,CoverageRecorder.cs}]
+[{HeadlessRunner/windows/TestRunLog.cs,TestApplicationDispatcher.cs,CoverageRecorder.cs,JavaThreadDump.android.cs,HeadlessRunner/android/UiThreadWatchdog.cs}]
 generated_code = false

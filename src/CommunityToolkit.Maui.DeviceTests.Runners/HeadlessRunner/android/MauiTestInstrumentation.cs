@@ -4,6 +4,7 @@
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
 // Toolkit change: moved from HeadlessRunner/Android to HeadlessRunner/android (toolkit platform-folder convention).
 // Toolkit change: OnStart writes the coverage of the instrumented toolkit assemblies (CoverageRecorder) before it finishes, in coverage runs only.
+// Toolkit change: OnStart starts UiThreadWatchdog, which ends the run when the UI thread stops answering for 90 s.
 // Toolkit change: OnTestActivityRecreated points the pass at the activity that Android recreated (MauiTestActivity).
 #nullable enable
 using System;
@@ -66,6 +67,8 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 		public override async void OnStart()
 		{
 			base.OnStart();
+
+			UiThreadWatchdog.Start();
 
 			await _waitForApplication.Task;
 

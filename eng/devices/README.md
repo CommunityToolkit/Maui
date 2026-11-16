@@ -152,7 +152,7 @@ The app has one `TestCategory` class, spread over partial files: the MediaElemen
 
 If one package's tests crash the app and lose the results of the whole platform, rerun everything except that package with `SkipCategories`. These two lists are generated from the two files above; regenerate them with `for f in Camera/TestCategory.Camera.cs MediaElement/TestCategory.MediaElement.cs; do grep -h -o 'const string [A-Za-z]*' src/CommunityToolkit.Maui.DeviceTests/$f | sed 's/const string //' | paste -sd, -; done`:
 
-* Everything but Camera: `SkipCategories=CameraViewExtensionsAndroid,CameraInfoAndroid,CameraProviderAndroid,CameraManagerAndroid,CameraViewHandlerAndroid,CameraViewAndroid,CameraSwitchStopAndroid,CameraPermissionResumeAndroid,CameraStartStopAndroid,CameraApple,CameraWindows`
+* Everything but Camera: `SkipCategories=CameraViewExtensionsAndroid,CameraInfoAndroid,CameraProviderAndroid,CameraManagerAndroid,CameraViewHandlerAndroid,CameraViewAndroid,CameraSwitchStopAndroid,CameraPermissionResumeAndroid,CameraStartStopAndroid,CameraWedgeSignatureAndroid,CameraApple,CameraWindows`
 * Everything but MediaElement: `SkipCategories=MediaElementAndroid,MediaElementApple,MediaManagerWindows,MediaManagerPlaybackWindows,MediaManagerSourceWindows,MediaElementHandlerWindows,MauiMediaElementWindows,CustomTransportControlsWindows,HttpRandomAccessStreamWindows,MediaMetadataWindows,AppPackageServiceWindows`
 
 The scripts pass it the way dotnet/maui does: `--arg TestFilter=...` on Android, `--set-env TestFilter=...` on iOS and Mac Catalyst. On Windows a packaged app started through package activation does not inherit the caller's environment, so a filter uses dotnet/maui's category protocol instead: the app is launched once with `-1` to list its categories and then once per selected category, skipping every other category. Without a filter one launch runs every test.
@@ -193,7 +193,7 @@ The scripts exit with XHarness's exit codes, on every platform:
 | 70 | TIMED_OUT | the run did not finish within `-Timeout` |
 | 71 | GENERAL_FAILURE | build failure or script error |
 | 78 | PACKAGE_INSTALLATION_FAILURE | the app could not be installed |
-| 80 | APP_CRASH | the app crashed |
+| 80 | APP_CRASH | the app crashed (on Android also: the UI-thread watchdog ended a hung app; the summary quotes its line, and the stacks are in the logcat and in `/data/anr`) |
 | 81 | DEVICE_NOT_FOUND | no usable Android device or emulator |
 | 83 | APP_LAUNCH_FAILURE | the app could not be started |
 | 88 | SIMULATOR_FAILURE | the iOS simulator could not be created or booted, or simctl did not answer in time (every simctl call has a timeout; a created simulator that does not boot is replaced once on CI) |
