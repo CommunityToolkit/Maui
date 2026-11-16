@@ -803,7 +803,7 @@ partial class MediaManager : IDisposable
 			return;
 		}
 
-		var artworkSource = MediaElement.MetadataArtworkSource;
+		var artworkSource = MetadataArtworkResolver.Resolve(MediaElement).Source;
 		MetadataArtwork? artwork = null;
 		if (artworkSource is not null)
 		{
@@ -824,44 +824,12 @@ partial class MediaManager : IDisposable
 			}
 
 			metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-			metadata.SetMetadata(MediaElement, artwork?.Thumbnail);
+			metadata.SetMetadata(MediaElement, artworkSource, artwork?.Thumbnail);
 		}
 
-		if (artworkSource is not null)
+		if (artwork is not null)
 		{
-			if (artwork is not null)
-			{
-				await SetPosterFromArtwork(artwork, version, token);
-			}
-
-			return;
-		}
-
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
-		{
-			return;
-		}
-		// BitmapImage needs an absolute URI (a relative one cannot be converted to a Windows.Foundation.Uri)
-		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.Absolute, out var metadataArtworkUri))
-		{
-			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
-			return;
-		}
-#pragma warning restore CS0618
-
-		if (Dispatcher.IsDispatchRequired)
-		{
-			await Dispatcher.DispatchAsync(() => UpdatePosterSource(Player, metadataArtworkUri));
-		}
-		else
-		{
-			UpdatePosterSource(Player, metadataArtworkUri);
-		}
-
-		static void UpdatePosterSource(in MediaPlayerElement player, in Uri metadataArtworkUri)
-		{
-			player.PosterSource = new BitmapImage(metadataArtworkUri);
+			await SetPosterFromArtwork(artwork, version, token);
 		}
 	}
 

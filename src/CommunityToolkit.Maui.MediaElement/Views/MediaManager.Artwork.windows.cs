@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Dispatching;
@@ -11,7 +12,7 @@ partial class MediaManager
 {
 	// The thumbnail goes to the system media controls from any thread; the poster is a XAML object, so it is created by the caller of CreatePoster
 	// on the UI thread.
-	sealed record MetadataArtwork(RandomAccessStreamReference Thumbnail, Func<CancellationToken, Task<BitmapImage>> CreatePoster);
+	sealed record MetadataArtwork(RandomAccessStreamReference? Thumbnail, Func<CancellationToken, Task<BitmapImage>> CreatePoster);
 
 	// Runs inside the async void MediaOpened handler, where an exception would end the app: every failure is logged and means "no artwork".
 	async Task<MetadataArtwork?> LoadMetadataArtwork(MediaSource artworkSource, CancellationToken token)
@@ -23,7 +24,7 @@ partial class MediaManager
 				case UriMediaSource uriSource when uriSource.Uri is Uri artworkUri && artworkUri.IsAbsoluteUri && artworkUri.IsFile:
 					return await LoadMetadataArtworkFromFile(artworkUri.LocalPath, token);
 
-				case UriMediaSource uriSource when uriSource.Uri is Uri artworkUri && IsSupportedThumbnailUri(artworkUri):
+				case UriMediaSource uriSource when uriSource.Uri is Uri artworkUri && Metadata.IsSupportedThumbnailUri(artworkUri):
 					return new MetadataArtwork(RandomAccessStreamReference.CreateFromUri(artworkUri), _ => Task.FromResult(new BitmapImage(artworkUri)));
 
 				case FileMediaSource fileSource when MetadataArtworkPaths.GetLocalFilePath(fileSource.Path) is string localFilePath:
@@ -31,6 +32,10 @@ partial class MediaManager
 
 				case ResourceMediaSource resourceSource when !string.IsNullOrWhiteSpace(resourceSource.Path):
 					return await LoadMetadataArtworkFromFile(GetFullAppPackageFilePath(resourceSource.Path), token);
+
+				// 17.0.0 set the poster from any absolute MetadataArtworkUrl; the system media controls take only the schemes above
+				case UriMediaSource uriSource when uriSource.Uri is Uri artworkUri && artworkUri.IsAbsoluteUri:
+					return new MetadataArtwork(null, _ => Task.FromResult(new BitmapImage(artworkUri)));
 
 				default:
 					return null;
@@ -41,12 +46,6 @@ partial class MediaManager
 			Logger.LogWarning(ex, "Unable to load the metadata artwork {ArtworkSource}", artworkSource);
 			return null;
 		}
-	}
-
-	static bool IsSupportedThumbnailUri(Uri artworkUri)
-	{
-		// RandomAccessStreamReference.CreateFromUri supports these schemes only. System.Uri lowercases the scheme.
-		return artworkUri.IsAbsoluteUri && artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata";
 	}
 
 	static async Task<MetadataArtwork> LoadMetadataArtworkFromFile(string path, CancellationToken token)

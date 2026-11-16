@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Dispatching;
+﻿using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Dispatching;
 using Windows.Media;
 using Windows.Storage.Streams;
 
@@ -24,11 +25,19 @@ sealed partial class Metadata : IDisposable
 	/// Sets the metadata for the given MediaElement.
 	/// </summary>
 	/// <param name="mp">The MediaElement whose metadata is published.</param>
-	/// <param name="artworkSourceThumbnail">
-	/// The loaded artwork of <see cref="IMediaElement.MetadataArtworkSource"/>. It is used instead of <see cref="IMediaElement.MetadataArtworkUrl"/>
-	/// when that source is set, and <see langword="null"/> then clears the thumbnail (the artwork could not be loaded).
+	public void SetMetadata(IMediaElement mp) =>
+		SetMetadata(mp, MetadataArtworkResolver.Resolve(mp).Source, loadedThumbnail: null);
+
+	/// <summary>
+	/// Sets the metadata for the given MediaElement, with the artwork the caller resolved.
+	/// </summary>
+	/// <param name="mp">The MediaElement whose metadata is published.</param>
+	/// <param name="artworkSource">The artwork the caller resolved from the MediaElement, so the thumbnail and the poster come from the same artwork.</param>
+	/// <param name="loadedThumbnail">
+	/// The thumbnail loaded from <paramref name="artworkSource"/> (a local file or a file of the app package). Without it, an http, https,
+	/// ms-appx or ms-appdata artwork URI becomes the thumbnail, and any other artwork clears it.
 	/// </param>
-	public void SetMetadata(IMediaElement mp, RandomAccessStreamReference? artworkSourceThumbnail = null)
+	public void SetMetadata(IMediaElement mp, MediaSource? artworkSource, RandomAccessStreamReference? loadedThumbnail)
 	{
 		if (systemMediaControls is null || mediaElement is null)
 		{
@@ -39,9 +48,7 @@ sealed partial class Metadata : IDisposable
 		// Media without metadata leaves the controls off, as MediaManager.CreatePlatformView does.
 		systemMediaControls.IsEnabled = HasMetadata(mp);
 
-		systemMediaControls.DisplayUpdater.Thumbnail = mp.MetadataArtworkSource is not null
-			? artworkSourceThumbnail
-			: CreateThumbnailFromArtworkUrl(mp);
+		systemMediaControls.DisplayUpdater.Thumbnail = loadedThumbnail ?? CreateThumbnailFromUri(artworkSource);
 		systemMediaControls.DisplayUpdater.Type = MediaPlaybackType.Music;
 		systemMediaControls.DisplayUpdater.MusicProperties.Title = mp.MetadataTitle;
 		systemMediaControls.DisplayUpdater.MusicProperties.Artist = mp.MetadataArtist;
@@ -59,22 +66,14 @@ sealed partial class Metadata : IDisposable
 
 	// Null clears the thumbnail: the controls are the player's own and outlive the media, so a thumbnail left in place would show the artwork
 	// of the previous media.
-	static RandomAccessStreamReference? CreateThumbnailFromArtworkUrl(IMediaElement mediaElement)
-	{
-#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
-		var artworkUrl = mediaElement.MetadataArtworkUrl;
-#pragma warning restore CS0618
+	static RandomAccessStreamReference? CreateThumbnailFromUri(MediaSource? artworkSource) =>
+		artworkSource is UriMediaSource { Uri: Uri artworkUri } && IsSupportedThumbnailUri(artworkUri)
+			? RandomAccessStreamReference.CreateFromUri(artworkUri)
+			: null;
 
-		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only, so any other url (a relative
-		// or malformed one, or a file path, for example) is ignored instead of passed on.
-		if (Uri.TryCreate(artworkUrl, UriKind.Absolute, out var artworkUri)
-			&& artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata")
-		{
-			return RandomAccessStreamReference.CreateFromUri(artworkUri);
-		}
-
-		return null;
-	}
+	// RandomAccessStreamReference.CreateFromUri supports these schemes only. System.Uri lowercases the scheme.
+	internal static bool IsSupportedThumbnailUri(Uri artworkUri) =>
+		artworkUri.IsAbsoluteUri && artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata";
 
 	static bool HasMetadata(IMediaElement mediaElement) =>
 		!string.IsNullOrWhiteSpace(mediaElement.MetadataTitle)
