@@ -40,7 +40,9 @@ Do:
 
 * Use `Enum.GetValues<T>()` and `Enum.GetNames<T>()`, not the `Type` overloads.
 * Keep the DAM annotations that MAUI APIs need. Example: `BindableProperty.Create(returnType: typeof(T))` needs `T` annotated with `PublicParameterlessConstructor`, so generic parameters that flow into it carry `[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]` (`IsInRangeConverter<TValue, TReturnObject>`). Removing such an annotation reintroduces `IL2087` in apps.
-* Source generators: generated code must never suppress `IL2xxx`, `IL3xxx` or `IL4xxx` warnings. Any suppression in generated code is a narrow list of codes with a WHY comment in the generator source, limited to diagnostics the user's own declarations cause (no blanket `#pragma warning disable`). Generated code must also be culture-invariant (`FormattableString.Invariant`, `ToLowerInvariant`). Generators run in the developer's culture; see `.github/instructions/culture.instructions.md`.
+* Source generators in `CommunityToolkit.Maui.SourceGenerators` start every file with `GeneratedCodePragmas.Header`: a blanket `#pragma warning disable`, then `#pragma warning restore` for exactly the `IL` codes in `Directory.Build.props` `WarningsAsErrors` (a unit test keeps the lists equal). Consumers cannot fix generated code, so no other warning may break their `TreatWarningsAsErrors` build; trim and AOT warnings stay visible.
+* CI stays strict: the generator unit tests strip these pragmas and fail on any warning except CS0108, CS0109, CS9258, the IDs the test source declares, and CS0612/CS0618 when the test source uses `[Obsolete]`.
+* Generated code must also be culture-invariant (`FormattableString.Invariant`, `ToLowerInvariant`). Generators run in the developer's culture; see `.github/instructions/culture.instructions.md`.
 * Android: use `JavaCast<T>()` for a Java object whose binding type may be trimmed. A plain C# cast fails in a trimmed app.
 * Apple (iOS, Mac Catalyst): members exported to Objective-C with `[Export]` are kept by the SDK; no extra annotation is needed.
 * Windows: a class that crosses the WinRT ABI is `partial`, so the CsWinRT generator can emit its vtable. That includes a class that gets WinRT interfaces from its base class, such as a `ContentView` subclass; without `partial` the Windows build fails with `CsWinRT1028`.
@@ -108,6 +110,6 @@ Flag a change that:
 * removes a `[DynamicallyAccessedMembers]` annotation that a MAUI API needs;
 * disables an analyzer, removes an `IL` code from `WarningsAsErrors`, removes `TrimMode` or `IsAotCompatible`, or weakens the `CTMTRIM` guard;
 * adds a line to `eng/trim-audit/allow.tsv`, puts an `IL` code in `NoWarn`, `WarningsNotAsErrors`, `.editorconfig` or `.globalconfig`, or removes or weakens the `Build Library` trim/AOT step or the gate;
-* adds generator output that suppresses an `IL` warning, uses a blanket `#pragma warning disable`, or adds a suppression without a WHY comment, or formats with the current culture;
+* adds output from `CommunityToolkit.Maui.SourceGenerators` that does not start with `GeneratedCodePragmas.Header`, or formats with the current culture;
 * adds a `Type`-based `Enum` call, or JSON without a source-generated context;
 * adds private reflection or an xunit value-type assert to the device tests that NativeAOT cannot run.
