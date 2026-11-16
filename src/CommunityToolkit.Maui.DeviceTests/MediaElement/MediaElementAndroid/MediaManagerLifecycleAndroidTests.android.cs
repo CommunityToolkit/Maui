@@ -244,20 +244,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
-	// Media3 refuses a second live session with the same id, so building one shows whether the manager's session was released.
-	void BuildAndReleaseSession(string id)
-	{
-		var player = new ExoPlayerBuilder(MauiContext.Context!).Build()!;
-		try
-		{
-			new MediaSession.Builder(MauiContext.Context!, player).SetId(id)!.Build()!.Release();
-		}
-		finally
-		{
-			player.Release();
-		}
-	}
-
 	static object? GetPrivateField(object instance, string name) =>
 		instance.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(instance);
 

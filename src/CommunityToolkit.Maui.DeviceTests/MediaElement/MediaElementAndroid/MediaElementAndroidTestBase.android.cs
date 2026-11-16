@@ -3,12 +3,14 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Service.Notification;
+using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
@@ -217,6 +219,45 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	/// <summary>The ExoPlayer that the service built for the MediaManager's connection: it plays what the MediaElement's controller controls.</summary>
 	protected static IExoPlayer? GetServicePlayer(MediaManager manager) =>
 		MediaControlsService.Running is MediaControlsService service && service.TryGetRegistration(manager.AndroidPlayerConnectionKey, out _, out var exoPlayer) ? exoPlayer : null;
+
+	/// <summary>Hosts the element without a window, like WithHandlerAsync, but leaves the handler connected until the teardown, so that a test can use several.</summary>
+	protected async Task<AndroidMediaElementProbeHandler> ConnectWithServiceAsync(MediaElement mediaElement)
+	{
+		DisposeWhenTheTestEnds(mediaElement);
+		var handler = await InvokeOnMainThreadAsync(() => CreateHandler<AndroidMediaElementProbeHandler>(mediaElement));
+		await WaitForRegistrationAsync(handler.Manager!);
+		await WaitForControllerAsync(mediaElement);
+		return handler;
+	}
+
+	/// <summary>Media3 refuses a second live session with the same id, so building one shows whether the session of that id was released.</summary>
+	protected void BuildAndReleaseSession(string id)
+	{
+		var player = new ExoPlayerBuilder(MauiContext.Context!).Build()!;
+		try
+		{
+			new MediaSession.Builder(MauiContext.Context!, player).SetId(id)!.Build()!.Release();
+		}
+		finally
+		{
+			player.Release();
+		}
+	}
+
+	// Android 13 and later need the POST_NOTIFICATIONS runtime permission for a notification that is not the foreground service's (the paused
+	// media notification is none). The headless runner (XHarness instrumentation) grants it through UiAutomation; the visual runner has no
+	// instrumentation and skips when it is missing.
+	protected static void EnsureNotificationPermission()
+	{
+		var context = MauiPlatform.AppContext;
+		if (OperatingSystem.IsAndroidVersionAtLeast(33) && !NotificationManagerCompat.From(context)!.AreNotificationsEnabled())
+		{
+			MauiTestInstrumentation.Current?.UiAutomation?.GrantRuntimePermission(context.PackageName!, "android.permission.POST_NOTIFICATIONS");
+		}
+
+		Skip.IfNot(NotificationManagerCompat.From(context)!.AreNotificationsEnabled(),
+			"Needs the POST_NOTIFICATIONS permission, which only the headless runner can grant without a person (Android 13 and later).");
+	}
 
 	protected static Task WaitForRegistrationAsync(MediaManager manager, int timeout = waitTimeout) =>
 		WaitUntilAsync(() => GetMediaSession(manager) is not null, "The service never registered the player of the MediaElement.", timeout);
