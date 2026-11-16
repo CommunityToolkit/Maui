@@ -16,6 +16,8 @@ public class MaskedBehaviorTests() : BaseBehaviorTest<MaskedBehavior, InputView>
 	[InlineData("XX-XX-XXX", "ab12cdefg", "ab-12-cde")]
 	[InlineData("XX/XX/XXXX", "05312021", "05/31/2021")]
 	[InlineData("XX/XX/XXXX", "05312021abc", "05/31/2021")]
+	[InlineData("XX-XX-XX", "abcd", "ab-cd-")]
+	[InlineData("XX-XX-XX\"", "abcdef", "ab-cd-ef\"")]
 	public void ValidMaskTests(string? mask, string? input, string? expectedResult)
 	{
 		var maskedBehavior = new MaskedBehavior
@@ -40,6 +42,7 @@ public class MaskedBehaviorTests() : BaseBehaviorTest<MaskedBehavior, InputView>
 	[InlineData("@@-@@-@@@", '@', "ab12cdefg", "ab-12-cde")]
 	[InlineData("zz/zz/zzzz", 'z', "05312021", "05/31/2021")]
 	[InlineData("!!/!!/!!!!", '!', "05312021abc", "05/31/2021")]
+	[InlineData("11-11-11\"", '1', "123456", "12-34-56\"")]
 	public void ValidMaskWithUniqueUnmaskedCharacterTests(string? mask, char unmaskedCharacter, string? input, string? expectedResult)
 	{
 		var maskedBehavior = new MaskedBehavior

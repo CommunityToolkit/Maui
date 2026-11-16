@@ -179,7 +179,7 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 				text = RemoveMask(text);
 				foreach (var position in maskPositions)
 				{
-					if (text.Length < position.Key + 1)
+					if (text.Length < position.Key)
 					{
 						continue;
 					}
@@ -187,7 +187,8 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 					var value = position.Value.ToString();
 
 					// !important - If user types in masked value, don't add masked value
-					if (text.Substring(position.Key, 1) != value)
+					// A masked character at the end of the text (position == Length) is always added, so trailing format characters are shown
+					if (text.Length == position.Key || text.Substring(position.Key, 1) != value)
 					{
 						text = text.Insert(position.Key, value);
 					}
