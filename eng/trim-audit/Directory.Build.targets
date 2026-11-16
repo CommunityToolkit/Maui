@@ -102,7 +102,8 @@
 
   <!-- Full trimming (and NativeAOT) removes what xunit and the XHarness runner find by reflection (TypeLoadException: Xunit.Sdk.ReflectionAssemblyInfo,
        then "No test cases discovered"). Rooting the test harness keeps the tests runnable; the toolkit, MAUI and the platform bindings stay
-       fully trimmed. Rooting the test assembly also keeps every toolkit member that a test calls directly. -->
+       fully trimmed. Rooting the test assembly also keeps every toolkit member that a test calls directly.
+       Keep in sync with the TrimmerRootAssembly items of src/CommunityToolkit.Maui.DeviceTests/Directory.Build.props. -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'CommunityToolkit.Maui.DeviceTests' and ('$(CtmTrimAuditMode)' == 'full' or '$(CtmTrimAuditMode)' == 'rootlibs' or '$(CtmTrimAuditMode)' == 'aot' or '$(CtmTrimAuditMode)' == 'aotroot')">
     <TrimmerRootAssembly Include="xunit.abstractions;xunit.assert;xunit.core;xunit.execution.dotnet;xunit.runner.utility.netcoreapp10" />
     <TrimmerRootAssembly Include="Microsoft.DotNet.XHarness.TestRunners.Common;Microsoft.DotNet.XHarness.TestRunners.Xunit" />
