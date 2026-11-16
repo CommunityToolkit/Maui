@@ -1,4 +1,4 @@
-#pragma warning disable CS0618 // Two tests pin that the obsolete MetadataArtworkUrl keeps its own rules when MetadataArtworkSource is not set
+#pragma warning disable CS0618 // These tests pin that the obsolete MetadataArtworkUrl keeps working when MetadataArtworkSource is not set
 using System.Reflection;
 using AVFoundation;
 using CommunityToolkit.Maui.Core;
@@ -50,6 +50,20 @@ public class MediaManagerArtworkSourceAppleTests : AppleMediaElementTestBase
 
 			return MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.Artwork!.ImageWithSize(new CGSize(320, 240));
 		});
+
+	static string CreateDataUrl(byte[] image) => $"data:image/png;base64,{Convert.ToBase64String(image)}";
+
+	// Noise does not compress, so the PNG (and its base64 form) is long enough to pass the 65,519 characters that mark a long data URL
+	static byte[] CreateNoisePng(int side)
+	{
+		var pixels = new byte[side * side * 4];
+		new Random(1).NextBytes(pixels);
+		using var colorSpace = CGColorSpace.CreateDeviceRGB();
+		using var context = new CGBitmapContext(pixels, side, side, 8, side * 4, colorSpace, CGImageAlphaInfo.NoneSkipLast);
+		using var cgImage = context.ToImage()!;
+		using var image = UIImage.FromImage(cgImage);
+		return image.AsPNG()!.ToArray();
+	}
 
 	static AppleLoopbackHttpServer CreateServerWithPoster()
 	{
@@ -171,9 +185,9 @@ public class MediaManagerArtworkSourceAppleTests : AppleMediaElementTestBase
 			Assert.Equal(posterSize, image!.Size);
 			Assert.DoesNotContain(server.Requests, request => request.Path == "/art.png");
 
-			// Without a source the URL keeps its own rules: only an http(s) URL is loaded
+			// Without a source the URL is read through the same rules, so a file URL loads too
 			var legacyFileUrl = new MediaElement { MetadataArtworkUrl = new Uri(path).AbsoluteUri };
-			AssertIsTheDefaultImage(await ReadNowPlayingArtworkAsync(legacyFileUrl));
+			Assert.Equal(posterSize, (await ReadNowPlayingArtworkAsync(legacyFileUrl))!.Size);
 
 			var legacyHttpUrl = new MediaElement { MetadataArtworkUrl = server.GetUri("/art.png").AbsoluteUri };
 			Assert.Equal(posterSize, (await ReadNowPlayingArtworkAsync(legacyHttpUrl))!.Size);
@@ -225,6 +239,174 @@ public class MediaManagerArtworkSourceAppleTests : AppleMediaElementTestBase
 		{
 			File.Delete(path);
 		}
+	}
+
+	[Fact]
+	public async Task ResolveArtworkUrlKeepsThe17RulesForEachMetadataArtworkUrlForm()
+	{
+		SetupApple();
+		var path = CopyPosterToCache();
+		var posterDataUrl = CreateDataUrl(File.ReadAllBytes(BundlePath("poster", "png")));
+		var longDataUrl = $"data:image/png;base64,{new string('A', 70_000)}";
+		const string unparseableUrl = "http://[not a host/art.png";
+		try
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				static NSUrl? Resolve(string? url) => Metadata.ResolveArtworkUrl(new MediaElement { MetadataArtworkUrl = url! });
+
+				const string httpUrl = "http://127.0.0.1:1/Art.png?size=2";
+				Assert.Equal(new Uri(httpUrl).AbsoluteUri, Resolve(httpUrl)!.AbsoluteString);
+				Assert.Equal("http", Resolve("HTTP://127.0.0.1:1/art.png")!.Scheme);
+
+				var fileUrl = Resolve(new Uri(path).AbsoluteUri)!;
+				Assert.True(fileUrl.IsFileUrl);
+				Assert.Equal(path, fileUrl.Path);
+
+				var absolutePathUrl = Resolve(path)!;
+				Assert.True(absolutePathUrl.IsFileUrl);
+				Assert.Equal(path, absolutePathUrl.Path);
+
+				Assert.Equal(
+					NSBundle.MainBundle.GetUrlForResource("poster", "png", "avplayer")!.AbsoluteString,
+					Resolve(posterResource)!.AbsoluteString);
+
+				Assert.Equal(posterDataUrl, Resolve(posterDataUrl)!.AbsoluteString);
+				Assert.Equal(longDataUrl, Resolve(longDataUrl)!.AbsoluteString);
+				Assert.Equal("ftp://127.0.0.1/art.png", Resolve("ftp://127.0.0.1/art.png")!.AbsoluteString);
+				Assert.Equal(NSUrl.FromString(unparseableUrl)?.AbsoluteString, Resolve(unparseableUrl)?.AbsoluteString);
+
+				Assert.Null(Resolve(null));
+				Assert.Null(Resolve(string.Empty));
+				Assert.Null(Resolve("   "));
+
+				using var stream = new MemoryStream();
+				var sourceWins = new MediaElement { MetadataArtworkUrl = new Uri(path).AbsoluteUri, MetadataArtworkSource = MediaSource.FromStream(stream) };
+				Assert.Null(Metadata.ResolveArtworkUrl(sourceWins));
+			});
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	public enum MetadataArtworkUrlForm
+	{
+		FileUrl,
+		AbsolutePath,
+		AppPackagePath
+	}
+
+	[Theory]
+	[InlineData(MetadataArtworkUrlForm.FileUrl)]
+	[InlineData(MetadataArtworkUrlForm.AbsolutePath)]
+	[InlineData(MetadataArtworkUrlForm.AppPackagePath)]
+	public async Task NowPlayingArtworkIsLoadedFromAMetadataArtworkUrlFilePathOrResource(MetadataArtworkUrlForm form)
+	{
+		SetupApple();
+		var path = CopyPosterToCache();
+		try
+		{
+			var url = form switch
+			{
+				MetadataArtworkUrlForm.FileUrl => new Uri(path).AbsoluteUri,
+				MetadataArtworkUrlForm.AbsolutePath => path,
+				_ => posterResource
+			};
+			var mediaElement = new MediaElement { MetadataArtworkUrl = url };
+
+			var image = await ReadNowPlayingArtworkAsync(mediaElement);
+
+			Assert.Equal(posterSize, image!.Size);
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public async Task NowPlayingArtworkIsLoadedFromAMetadataArtworkUrlDataUrl()
+	{
+		SetupApple();
+		var mediaElement = new MediaElement { MetadataArtworkUrl = CreateDataUrl(File.ReadAllBytes(BundlePath("poster", "png"))) };
+
+		var image = await ReadNowPlayingArtworkAsync(mediaElement);
+
+		Assert.Equal(posterSize, image!.Size);
+	}
+
+	public enum PosterUrlForm
+	{
+		AbsolutePath,
+		AppPackagePath,
+		DataUrl,
+		LongDataUrl,
+		SingleSlashFileUrl
+	}
+
+	// 17.0.0 showed the poster of any URL that NSData reads, so each form that worked then has to keep working
+	[Theory]
+	[InlineData(PosterUrlForm.AbsolutePath)]
+	[InlineData(PosterUrlForm.AppPackagePath)]
+	[InlineData(PosterUrlForm.DataUrl)]
+	[InlineData(PosterUrlForm.LongDataUrl)]
+	[InlineData(PosterUrlForm.SingleSlashFileUrl)]
+	public async Task AudioShowsAPosterFromEachMetadataArtworkUrlForm(PosterUrlForm form)
+	{
+		SetupApple();
+		var path = CopyPosterToCache();
+		var noisePng = CreateNoisePng(200);
+		var expectedSize = form is PosterUrlForm.LongDataUrl ? new CGSize(200, 200) : posterSize;
+		try
+		{
+			var url = form switch
+			{
+				PosterUrlForm.AbsolutePath => path,
+				PosterUrlForm.AppPackagePath => posterResource,
+				PosterUrlForm.DataUrl => CreateDataUrl(File.ReadAllBytes(BundlePath("poster", "png"))),
+				PosterUrlForm.LongDataUrl => CreateDataUrl(noisePng),
+				// .NET reads "file:/path" as a relative path, so only the raw string handed to NSURL finds the file
+				_ => $"file:{BundlePath("poster", "png")}"
+			};
+			var mediaElement = CreateMediaElement();
+			mediaElement.MetadataArtworkUrl = url;
+
+			await HostAsync(mediaElement, async handler =>
+			{
+				await LoadAsync(mediaElement, handler, ResourceSource(AudioResource));
+
+				Assert.True(form is not PosterUrlForm.LongDataUrl || url.Length > 65_519, $"The data URL has {url.Length} characters.");
+				var poster = Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews));
+				Assert.Equal(expectedSize, poster.Image!.Size);
+			});
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public async Task ClearingTheArtworkSourceFallsBackToMetadataArtworkUrlInNowPlaying()
+	{
+		SetupApple();
+		using var server = CreateServerWithPoster();
+		server.Add("/source.png", File.ReadAllBytes(BundlePath("poster", "png")), "image/png");
+		server.Add("/legacy.png", File.ReadAllBytes(BundlePath("poster", "png")), "image/png");
+		var mediaElement = new MediaElement
+		{
+			MetadataArtworkUrl = server.GetUri("/legacy.png").AbsoluteUri,
+			MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/source.png"))
+		};
+		mediaElement.MetadataArtworkSource = null;
+
+		var image = await ReadNowPlayingArtworkAsync(mediaElement);
+
+		Assert.Equal(posterSize, image!.Size);
+		Assert.Contains(server.Requests, request => request.Path == "/legacy.png");
+		Assert.DoesNotContain(server.Requests, request => request.Path == "/source.png");
 	}
 
 	[Fact]
