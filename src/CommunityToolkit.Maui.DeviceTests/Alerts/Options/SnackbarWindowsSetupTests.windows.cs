@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Windows.AppNotifications;
 using Application = Microsoft.Maui.Controls.Application;
 using Window = Microsoft.Maui.Controls.Window;
 
@@ -123,26 +124,31 @@ public partial class SnackbarWindowsSetupTests
 	}
 
 	// The runner's MauiProgram enables the Windows Snackbar and its first window is open when OnLaunched runs, so the runner's launch
-	// ran the arm of the launched delegate that registers the app notification manager. Which way that arm ended depends on how the app
-	// was built: Register() succeeds in a packaged app and in an unpackaged app that finds the Windows App Runtime Insights resource
-	// module, and sets the flag. A self-contained unpackaged app without that module gets the COMException of WindowsAppSDK#6071, which
-	// the toolkit tolerates (the catch arm): the finally block unsubscribes the handler, the flag stays false and the Snackbar stays
-	// enabled, without action callbacks. CI builds both: packaged (MSIX) and unpackaged with the Windows App SDK bundled.
+	// ran the arm of the launched delegate that registers the app notification manager. Which way that arm ended depends on the process
+	// and on how the app was built. In an elevated process, such as a GitHub-hosted runner (administrator, UAC off),
+	// AppNotificationManager.IsSupported() is false and Register() returns without doing anything, so the flag is set whatever the build.
+	// Otherwise Register() succeeds in a packaged app and in an unpackaged app that finds the Windows App Runtime Insights resource module,
+	// and sets the flag. A self-contained unpackaged app without that module gets the COMException of WindowsAppSDK#6071, which the
+	// toolkit tolerates (the catch arm): the finally block unsubscribes the handler, the flag stays false and the Snackbar stays enabled,
+	// without action callbacks. Windows App SDK 1.8 (.NET 10) copied the module out of its runtime MSIX into a self-contained app; 2.x
+	// (.NET 11) copies only the component packages, which do not have it. CI builds both: packaged (MSIX) and unpackaged with the Windows
+	// App SDK bundled, but runs them elevated, so only a non-elevated run reaches the catch arm.
 	[Fact]
 	public void RunnerLaunchRanTheRegistrationArmOfThisConfiguration()
 	{
+		var isSupported = AppNotificationManager.IsSupported();
 		var isPackaged = AppInfo.Current.PackagingModel is AppPackagingModel.Packaged;
 		var bundlesTheWindowsAppRuntime = File.Exists(Path.Combine(AppContext.BaseDirectory, "Microsoft.WindowsAppRuntime.dll"));
 		var insightsModuleIsMissing = !File.Exists(Path.Combine(AppContext.BaseDirectory, insightsResourceDll));
 
 		Assert.True(Options.ShouldEnableSnackbarOnWindows);
-		if (!isPackaged && bundlesTheWindowsAppRuntime && insightsModuleIsMissing)
+		if (isSupported && !isPackaged && bundlesTheWindowsAppRuntime && insightsModuleIsMissing)
 		{
 			Assert.False(IsNotificationManagerRegistered, $"Register() succeeded although this self-contained unpackaged app has no {insightsResourceDll}.");
 		}
 		else
 		{
-			Assert.True(IsNotificationManagerRegistered, $"The runner's launch did not register the app notification manager (packaged: {isPackaged}, Windows App Runtime bundled: {bundlesTheWindowsAppRuntime}, {insightsResourceDll} missing: {insightsModuleIsMissing}).");
+			Assert.True(IsNotificationManagerRegistered, $"The runner's launch did not register the app notification manager (supported: {isSupported}, packaged: {isPackaged}, Windows App Runtime bundled: {bundlesTheWindowsAppRuntime}, {insightsResourceDll} missing: {insightsModuleIsMissing}).");
 		}
 	}
 

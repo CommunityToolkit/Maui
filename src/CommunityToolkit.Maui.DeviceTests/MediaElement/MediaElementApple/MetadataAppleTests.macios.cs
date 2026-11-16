@@ -234,10 +234,32 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			Assert.Equal("Artist", info.Artist);
 			Assert.Equal(200d, info.PlaybackDuration!.Value, precision: 3);
 			Assert.Equal(42.5, info.ElapsedPlaybackTime!.Value, precision: 3);
-			Assert.Equal(1.5f, info.PlaybackRate);
+			Assert.Equal(0f, info.PlaybackRate); // The player is not playing
 			Assert.False(info.IsLiveStream);
 			Assert.Equal(new CGSize(320, 240), info.Artwork!.Bounds.Size);
 		}));
+	}
+
+	[Fact]
+	public async Task SetMetadataPublishesTheSpeedAsThePlaybackRateOnlyWhileThePlayerPlays()
+	{
+		// https://github.com/CommunityToolkit/Maui/issues/3383
+		SetupApple();
+
+		await WithPlayerAsync(async (player, metadata) =>
+		{
+			var mediaElement = await InvokeOnMainThreadAsync(() => new MediaElement { MetadataTitle = "Song", Speed = 1.5 });
+
+			await InvokeOnMainThreadAsync(player.Play);
+			await WaitUntilAsync(() => player.TimeControlStatus is AVPlayerTimeControlStatus.Playing, "The player did not start playing.");
+			await InvokeOnMainThreadAsync(() => metadata.SetMetadata(player.CurrentItem, mediaElement));
+			Assert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.PlaybackRate);
+
+			await InvokeOnMainThreadAsync(player.Pause);
+			await WaitUntilAsync(() => player.TimeControlStatus is AVPlayerTimeControlStatus.Paused, "The player did not pause.");
+			await InvokeOnMainThreadAsync(() => metadata.SetMetadata(player.CurrentItem, mediaElement));
+			Assert.Equal(0f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.PlaybackRate);
+		});
 	}
 
 	[Fact]

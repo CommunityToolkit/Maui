@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.Versioning;
-using Android.Content;
+﻿using Android.Content;
 using Microsoft.Maui.Platform;
 using AView = Android.Views.View;
 
@@ -13,7 +11,6 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// Initialize <see cref="MauiSemanticOrderView"/>
 /// </remarks>
 /// <param name="context">Android Context</param>
-[SupportedOSPlatform("Android22.0")]
 public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 {
 	// The next update removes the links between these views that the new order does not have
@@ -39,10 +36,7 @@ public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 		// Entries without an Android platform view (not realized yet, or with a platform view of another type) cannot be ordered, so they are left out
 		var viewOrder = VirtualView.ViewOrder.Select(static view => view.Handler?.PlatformView).OfType<AView>().ToList();
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(22))
-		{
-			RemoveLinksOfThePreviousOrder(viewOrder);
-		}
+		RemoveLinksOfThePreviousOrder(viewOrder);
 
 		for (var i = 1; i < viewOrder.Count; i++)
 		{
@@ -59,15 +53,8 @@ public class MauiSemanticOrderView(Context context) : ContentViewGroup(context)
 				view2.Id = GenerateViewId();
 			}
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(22))
-			{
-				view2.AccessibilityTraversalAfter = view1.Id;
-				view1.AccessibilityTraversalBefore = view2.Id;
-			}
-			else
-			{
-				Trace.WriteLine($"{nameof(ISemanticOrderView)} is only supported on Android 22.0 and higher");
-			}
+			view2.AccessibilityTraversalAfter = view1.Id;
+			view1.AccessibilityTraversalBefore = view2.Id;
 		}
 
 		orderedViews.Clear();

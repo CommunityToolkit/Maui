@@ -93,7 +93,7 @@ sealed class Metadata : IDisposable
 		NowPlayingInfo.Artist = mediaElement.MetadataArtist;
 		NowPlayingInfo.PlaybackDuration = playerItem?.Duration.Seconds ?? 0;
 		NowPlayingInfo.IsLiveStream = false;
-		NowPlayingInfo.PlaybackRate = mediaElement.Speed;
+		NowPlayingInfo.PlaybackRate = GetPlaybackRate(mediaElement.Speed);
 		NowPlayingInfo.ElapsedPlaybackTime = playerItem?.CurrentTime.Seconds ?? 0;
 		NowPlayingInfo.Artwork = new(boundsSize: new(320, 240), requestHandler: _ => GetImage(url));
 		PublishNowPlayingInfo();
@@ -104,6 +104,15 @@ sealed class Metadata : IDisposable
 		nowPlayingInfoPublisher = this;
 		MPNowPlayingInfoCenter.DefaultCenter.NowPlaying = NowPlayingInfo;
 	}
+
+	public void PublishPlaybackRate(double speed)
+	{
+		NowPlayingInfo.PlaybackRate = GetPlaybackRate(speed);
+		PublishNowPlayingInfo();
+	}
+
+	// A rate of 0 is how Now Playing shows paused media: the system advances the elapsed time on the lock screen and in Control Center at this rate
+	double GetPlaybackRate(double speed) => player.TimeControlStatus is AVPlayerTimeControlStatus.Playing ? speed : 0;
 
 	/// <summary>
 	/// Unregisters from the shared <see cref="MPRemoteCommandCenter"/>, which would otherwise keep this instance alive and keep

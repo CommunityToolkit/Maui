@@ -1,4 +1,6 @@
+using Android.Media.Session;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
 using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
@@ -95,6 +97,59 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 			}, "The clip did not play to its end again after Play().");
 			Assert.True(hasGoneBackToTheStart, "The clip did not play again from its start.");
 			Assert.Contains(MediaElementState.Playing, recorder.States.Skip(statesBeforePlay));
+		});
+	}
+
+	// The media notification and the lock screen show the state of the platform media session: while the media plays, its playback speed is the
+	// Speed of the MediaElement, the rate at which they advance the position they show.
+	[Fact]
+	public async Task TheMediaSessionPublishesTheSpeedWhileTheMediaPlays()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.ShouldAutoPlay = true;
+			element.ShouldLoopPlayback = true;
+			element.Speed = 1.5;
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var controller = CreateSystemMediaController(handler.Manager!);
+			await WaitUntilAsync(() => controller.PlaybackState is { State: PlaybackStateCode.Playing, PlaybackSpeed: 1.5f }, "The media session never showed the media as playing at a speed of 1.5.");
+
+			mediaElement.Speed = 2;
+
+			await WaitUntilAsync(() => controller.PlaybackState is { State: PlaybackStateCode.Playing, PlaybackSpeed: 2f }, "The media session never showed the new speed.");
+		});
+	}
+
+	// While the media is paused, the media session is paused at the position of the player, with a playback speed of 0: the position that the
+	// media notification and the lock screen show does not advance.
+	[Fact]
+	public async Task PauseShowsTheMediaAsPausedInTheMediaSession()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.ShouldAutoPlay = true;
+			element.ShouldLoopPlayback = true;
+			element.Speed = 1.5;
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var controller = CreateSystemMediaController(handler.Manager!);
+			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Playing, "The media session never showed the media as playing.");
+
+			mediaElement.Pause();
+
+			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Paused, "The media session never showed the media as paused.");
+			var state = controller.PlaybackState!;
+			Assert.Equal(0f, state.PlaybackSpeed);
+			Assert.Equal(GetPlayer(mediaElement).CurrentPosition, state.Position);
 		});
 	}
 
@@ -434,4 +489,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 	// OnPlaybackStateChanged(ready).
 	static Task<MediaElement> CreateQuietMediaElementAsync() =>
 		CreateMediaElementAsync(element => element.Source = new UriMediaSource());
+
+	// Reads the platform media session of the Media3 session, as the media notification and the lock screen do.
+	MediaController CreateSystemMediaController(MediaManager manager) =>
+		new(MauiContext.Context!, GetMediaSession(manager)!.PlatformToken!);
 }

@@ -210,9 +210,8 @@ public class PaddedButtonTests : AlertsTestBase
 		});
 	}
 
-	// SetPadding uses UIButton.Configuration on iOS 15 and later when the button has one. The guard is true on both Apple platforms
-	// (Mac Catalyst reports its iOS version), but a button created with a constructor has no configuration, so PaddedButton always takes
-	// the ContentEdgeInsets arm: the Configuration arm cannot be reached.
+	// SetPadding uses UIButton.Configuration when the button has one. A button created with a constructor has no configuration, so
+	// PaddedButton always takes the ContentEdgeInsets arm: the Configuration arm cannot be reached.
 	[Fact]
 	public async Task ButtonWithoutAConfigurationUsesContentEdgeInsetsEvenWhereConfigurationsAreSupported()
 	{
@@ -220,8 +219,6 @@ public class PaddedButtonTests : AlertsTestBase
 
 		await InvokeOnMainThreadAsync(() =>
 		{
-			Assert.True(OperatingSystem.IsIOSVersionAtLeast(15));
-
 			var button = new PaddedButton(7, 8, 9, 10);
 
 			Assert.Null(button.Configuration);

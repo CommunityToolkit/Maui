@@ -229,15 +229,126 @@ public class UseCommunityToolkitInitializationAnalyzerTests
 			}
 			""";
 
-		var normalizedFixedSource = Microsoft.CodeAnalysis.CSharp.SyntaxFactory
-			.ParseCompilationUnit(fixedSource)
-			.NormalizeWhitespace()
-			.ToFullString();
+		await VerifyCodeFixAsync(
+			source,
+			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
+			fixedSource,
+			typeof(Options),
+			typeof(Core.Options));
+	}
+
+	[Fact]
+	public async Task VerifyCodeFixPreservesFormattingOfMultiLineBuilderChain()
+	{
+		const string source =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
+			public static class MauiProgram
+			{
+				public static MauiApp CreateMauiApp()
+				{
+					var builder = MauiApp.CreateBuilder();
+					{|#0:builder
+						.UseMauiApp<Microsoft.Maui.Controls.Application>()|} // Comment
+						.ConfigureFonts(fonts =>
+						{
+							fonts.AddFont("OpenSans-Regular.ttf",   "OpenSansRegular");
+							fonts.AddFont( "OpenSans-Semibold.ttf", "OpenSansSemibold" );
+						});
+
+					return builder.Build();
+				}
+			}
+			""";
+
+		const string fixedSource =
+			"""
+			using Microsoft.Maui.Controls.Hosting;
+			using Microsoft.Maui.Hosting;
+			using CommunityToolkit.Maui;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests;
+
+			public static class MauiProgram
+			{
+				public static MauiApp CreateMauiApp()
+				{
+					var builder = MauiApp.CreateBuilder();
+					builder
+						.UseMauiApp<Microsoft.Maui.Controls.Application>() // Comment
+						.UseMauiCommunityToolkit()
+						.ConfigureFonts(fonts =>
+						{
+							fonts.AddFont("OpenSans-Regular.ttf",   "OpenSansRegular");
+							fonts.AddFont( "OpenSans-Semibold.ttf", "OpenSansSemibold" );
+						});
+
+					return builder.Build();
+				}
+			}
+			""";
 
 		await VerifyCodeFixAsync(
 			source,
 			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
-			normalizedFixedSource,
+			fixedSource,
+			typeof(Options),
+			typeof(Core.Options));
+	}
+
+	[Fact]
+	public async Task VerifyCodeFixPreservesFormattingWhenDocumentHasNoTopLevelUsings()
+	{
+		const string source =
+			"""
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						var  builder = MauiApp.CreateBuilder();
+						{|#0:builder.UseMauiApp<Microsoft.Maui.Controls.Application>()|};
+
+						return builder.Build();
+					}
+				}
+			}
+			""";
+
+		const string fixedSource =
+			"""
+			using CommunityToolkit.Maui;
+
+			namespace CommunityToolkit.Maui.Analyzers.UnitTests
+			{
+				using Microsoft.Maui.Controls.Hosting;
+				using Microsoft.Maui.Hosting;
+
+				public static class MauiProgram
+				{
+					public static MauiApp CreateMauiApp()
+					{
+						var  builder = MauiApp.CreateBuilder();
+						builder.UseMauiApp<Microsoft.Maui.Controls.Application>().UseMauiCommunityToolkit();
+
+						return builder.Build();
+					}
+				}
+			}
+			""";
+
+		await VerifyCodeFixAsync(
+			source,
+			[Diagnostic().WithLocation(0).WithSeverity(DiagnosticSeverity.Error)],
+			fixedSource,
 			typeof(Options),
 			typeof(Core.Options));
 	}

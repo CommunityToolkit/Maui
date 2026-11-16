@@ -51,7 +51,7 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 		// MauiSemanticOrderView applies ViewOrder
 		this.SetVirtualViewWithItsOwnPlatformView(view, base.SetVirtualView, CreatePlatformView);
 
-#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
+#if WINDOWS || IOS || MACCATALYST || ANDROID
 		if (PlatformView is MauiSemanticOrderView semanticOrderView)
 		{
 			semanticOrderView.VirtualView = (ISemanticOrderView)VirtualView;
@@ -61,7 +61,7 @@ public partial class SemanticOrderViewHandler : ContentViewHandler
 
 	static void MapViewOrder(SemanticOrderViewHandler handler, ISemanticOrderView view)
 	{
-#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
+#if WINDOWS || IOS || MACCATALYST || ANDROID
 		if (handler.PlatformView is MauiSemanticOrderView semanticOrderView)
 		{
 			semanticOrderView.UpdateViewOrder();

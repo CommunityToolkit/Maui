@@ -114,7 +114,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			Assert.Equal(0f, player.Rate);
 
 			// Play() and the playback controls still start at the last positive Speed: a default rate of 0 would not start playback at all.
-			if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				Assert.Equal(1f, player.DefaultRate);
 			}
@@ -152,7 +152,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 	[Fact]
 	public async Task SpeedUpdatesBeforeAutoPlayLeaveTheStartToTheAutoPlay()
 	{
-		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16), "AVPlayer.DefaultRate needs iOS 16 or Mac Catalyst 16.");
+		Skip.IfNot(OperatingSystem.IsIOSVersionAtLeast(16), "AVPlayer.DefaultRate needs iOS 16.");
 		SetupApple();
 		var mediaElement = CreateMediaElement();
 		mediaElement.Speed = 2;
@@ -208,6 +208,32 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			await WaitUntilAsync(() => Math.Abs(mediaElement.Speed - 1.5) < 0.01, "MediaElement.Speed did not follow the native rate.", timeout: 2000);
 			Assert.Equal(1.5f, GetMetadata(handler.Manager).NowPlayingInfo.PlaybackRate);
 			Assert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate);
+		});
+	}
+
+	[Fact]
+	public async Task PauseShowsTheMediaAsPausedInNowPlaying()
+	{
+		// https://github.com/CommunityToolkit/Maui/issues/3383
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			var player = handler.Manager!.NativePlayer!;
+			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+			mediaElement.Play();
+			await WaitUntilAsync(() => mediaElement.CurrentState is MediaElementState.Playing, "The player did not start playing.");
+			mediaElement.Speed = 1.5;
+			await WaitUntilAsync(() => MPNowPlayingInfoCenter.DefaultCenter.NowPlaying?.PlaybackRate is 1.5, "Now Playing did not show the speed.", timeout: 2000);
+
+			mediaElement.Pause();
+			await WaitUntilAsync(() => mediaElement.CurrentState is MediaElementState.Paused && player.Rate is 0, "The player did not pause.");
+
+			var nowPlaying = MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!;
+			Assert.Equal(0f, nowPlaying.PlaybackRate);
+			Assert.Equal(player.CurrentTime.Seconds, nowPlaying.ElapsedPlaybackTime!.Value, tolerance: 0.1);
+			Assert.Equal(1.5, mediaElement.Speed);
 		});
 	}
 
@@ -388,7 +414,7 @@ public class MediaManagerSpeedAppleTests : AppleMediaElementTestBase
 			Assert.Equal(MediaElementState.Paused, mediaElement.CurrentState);
 
 			// The default rate that the playback controls start at is not set to 0: it stays AVPlayer's own default of 1.
-			if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				Assert.Equal(1f, player.DefaultRate);
 			}

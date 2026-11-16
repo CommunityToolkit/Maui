@@ -6,7 +6,6 @@ using AndroidPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 namespace CommunityToolkit.Maui.UnitTests.PlatformConfiguration;
 
 // NavigationBar is an Android platform configuration, but its attached properties and the extension methods of the platform configuration are plain logic that every platform compiles
-#pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CS8604, CS8625 // Possible null reference argument; cannot convert null literal to non-nullable reference type.
 public class NavigationBarNullArgumentTests : BaseTest
 {
@@ -29,4 +28,3 @@ public class NavigationBarNullArgumentTests : BaseTest
 	}
 }
 #pragma warning restore CS8604, CS8625
-#pragma warning restore CA1416

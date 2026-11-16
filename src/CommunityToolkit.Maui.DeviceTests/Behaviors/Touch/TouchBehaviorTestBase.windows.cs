@@ -1,9 +1,11 @@
 using System.Reflection;
 using CommunityToolkit.Maui.Behaviors;
+using Microsoft.Maui.Animations;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.UI.ViewManagement;
 using SolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Stretch = Microsoft.UI.Xaml.Media.Stretch;
 
@@ -17,6 +19,8 @@ public abstract partial class TouchBehaviorTestBase
 	public const string PointerDownAnimationKey = "PointerDownAnimation";
 
 	public const string PointerUpAnimationKey = "PointerUpAnimation";
+
+	readonly SystemAnimationsTickerOverride animationsOffOverride = new(static () => !new UISettings().AnimationsEnabled);
 
 	protected static bool SupportsNativePointerInput => false;
 
@@ -45,10 +49,19 @@ public abstract partial class TouchBehaviorTestBase
 	// Managed objects with a native peer are released by the normal collections.
 	protected static Task ReleaseNativeReferencesAsync() => Task.CompletedTask;
 
-	// MAUI's Windows ticker animates whatever the system's animation setting (MAUI 10 does not read it).
-	protected Task EnableAnimationsAsync(IPlatformViewHandler handler) => Task.CompletedTask;
+	// With "Show animations in Windows" off, MAUI 11 jumps to the end of every animation, so no timing or intermediate step could be observed.
+	protected async Task EnableAnimationsAsync(IPlatformViewHandler handler)
+	{
+		string? error = null;
+		await InvokeOnMainThreadAsync(() => error = animationsOffOverride.TryEnable(handler));
 
-	ValueTask PlatformDisposeAsync() => ValueTask.CompletedTask;
+		Skip.If(error is not null, $"Windows animations are off and MAUI's animations could not be switched on for this process ({error}), so MAUI jumps to the end of every animation.");
+
+		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker;
+		Assert.True(ticker is null || ticker.SystemEnabled, "MAUI's ticker must see the enabled animations.");
+	}
+
+	ValueTask PlatformDisposeAsync() => new(InvokeOnMainThreadAsync(animationsOffOverride.Restore));
 
 	protected static (FrameworkElement Parent, FrameworkElement Child) CreateDetachedPlatformViews()
 	{

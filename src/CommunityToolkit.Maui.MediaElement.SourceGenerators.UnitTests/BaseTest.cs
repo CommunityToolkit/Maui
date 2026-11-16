@@ -18,11 +18,7 @@ public abstract class BaseTest
 
 		var test = new MediaElementSourceGeneratorTest<TSourceGenerator>
 		{
-#if NET10_0
-			ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net100,
-#else
-#error ReferenceAssemblies must be updated to current version of .NET
-#endif
+			ReferenceAssemblies = TestReferenceAssemblies.Current,
 			TestState =
 			{
 				Sources = { source },

@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
@@ -116,16 +114,12 @@ static partial class StatusBar
 		_ => throw new NotSupportedException($"{nameof(StatusBarStyle)} {statusBarStyle} is not yet supported on iOS")
 	};
 
-	static bool TryUpdateStatusBarAppearance()
+	static void UpdateStatusBarAppearanceOfEveryWindow()
 	{
-		var didUpdateAllStatusBars = true;
-
 		foreach (var window in GetApplicationWindows())
 		{
-			didUpdateAllStatusBars &= TryUpdateStatusBarAppearance(window);
+			TryUpdateStatusBarAppearance(window);
 		}
-
-		return didUpdateAllStatusBars;
 	}
 
 	const string viewControllerBasedStatusBarAppearanceKey = "UIViewControllerBasedStatusBarAppearance";
@@ -137,12 +131,12 @@ static partial class StatusBar
 	internal static Func<UIStatusBarStyle, bool> TrySetApplicationStatusBarStyle { get; set; } = static uiStatusBarStyle =>
 	{
 		UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, false);
-		TryUpdateStatusBarAppearance();
+		UpdateStatusBarAppearanceOfEveryWindow();
 
 		return UIApplication.SharedApplication.Windows.All(window => window.WindowScene?.StatusBarManager is not UIStatusBarManager statusBarManager || statusBarManager.StatusBarStyle == uiStatusBarStyle);
 	};
 
-	// A <false/> value is an NSNumber. False is the setup that StatusBarBehavior documents for .NET 10.
+	// A <false/> value is an NSNumber.
 	internal static bool IsViewControllerBasedStatusBarAppearanceOff => ReadViewControllerBasedStatusBarAppearance() is NSNumber { BoolValue: false };
 
 	// An app built with the iOS 27 SDK or later ignores UIApplication.SetStatusBarStyle: only view controller-based status bar appearance can change its style
@@ -154,7 +148,6 @@ static partial class StatusBar
 		}
 	}
 
-#if NET11_0_OR_GREATER
 	// Set by CommunityToolkit.Maui in UseMauiCommunityToolkit: only Microsoft.Maui.Controls.Window can change the theme, and
 	// CommunityToolkit.Maui.Core does not reference Microsoft.Maui.Controls.
 	internal static Action<StatusBarTheme>? SetStatusBarThemeOfEveryWindow { get; set; }
@@ -185,160 +178,6 @@ static partial class StatusBar
 		StatusBarStyle.DarkContent => StatusBarTheme.Light,
 		_ => throw new NotSupportedException($"{nameof(StatusBarStyle)} {statusBarStyle} is not yet supported on iOS")
 	};
-#else
-	// While no style is requested (SetStyle(Default)), every view controller returns its own style.
-	const nint noRequestedStatusBarStyle = -1;
-
-	static readonly Lock preferredStatusBarStyleLock = new();
-
-	// One implementation per class: each calls the implementation that it replaced in its own class, so a call to the implementation of the
-	// superclass ([super preferredStatusBarStyle]) never comes back to the same one.
-	static readonly unsafe IntPtr toolkitViewControllerImplementation = (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, nint>)&ViewControllerPreferredStatusBarStyle;
-	static readonly unsafe IntPtr toolkitNavigationControllerImplementation = (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, nint>)&NavigationControllerPreferredStatusBarStyle;
-	static readonly unsafe IntPtr toolkitTabBarControllerImplementation = (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, nint>)&TabBarControllerPreferredStatusBarStyle;
-	static readonly unsafe IntPtr toolkitSplitViewControllerImplementation = (IntPtr)(delegate* unmanaged<IntPtr, IntPtr, nint>)&SplitViewControllerPreferredStatusBarStyle;
-
-	static nint requestedStatusBarStyle = noRequestedStatusBarStyle;
-	static bool isPreferredStatusBarStyleReplaced;
-
-	// IntPtr.Zero for a class whose implementation the toolkit did not replace.
-	static IntPtr replacedViewControllerImplementation, replacedNavigationControllerImplementation, replacedTabBarControllerImplementation, replacedSplitViewControllerImplementation;
-
-	// Unless Info.plist turns view controller-based status bar appearance off, UIKit takes the style from the view controllers, and those of .NET MAUI 10
-	// choose none (an app built with the iOS 27 SDK also ignores UIApplication.SetStatusBarStyle). So the first LightContent or DarkContent replaces the
-	// implementation of -preferredStatusBarStyle (public Objective-C runtime API) of UIViewController and of the UIKit containers that have their own;
-	// view controllers that override preferredStatusBarStyle keep their style.
-	static void PlatformSetStyle(StatusBarStyle statusBarStyle)
-	{
-		// UIKit asks the view controllers for their style on the main thread, and .NET for iOS does not check the thread of UIKit calls in a Release build.
-		if (!NSThread.IsMain)
-		{
-			throw new UIKitThreadAccessException();
-		}
-
-		var uiStatusBarStyle = ToUIStatusBarStyle(statusBarStyle);
-
-		// UIKit ignores the style of the view controllers then, so they are left alone.
-		if (IsViewControllerBasedStatusBarAppearanceOff)
-		{
-			SetStyleOfTheWholeApp(statusBarStyle);
-			return;
-		}
-
-		Volatile.Write(ref requestedStatusBarStyle, statusBarStyle is StatusBarStyle.Default ? noRequestedStatusBarStyle : (nint)uiStatusBarStyle);
-		if (statusBarStyle is not StatusBarStyle.Default)
-		{
-			ReplacePreferredStatusBarStyle();
-		}
-
-		TryUpdateStatusBarAppearance();
-	}
-
-	// On iOS 27 UINavigationController has its own implementation; UITabBarController and UISplitViewController are replaced too in case an iOS
-	// version gives them one. The lock makes a second call, also one on another thread at the same time, change nothing.
-	static void ReplacePreferredStatusBarStyle()
-	{
-		lock (preferredStatusBarStyleLock)
-		{
-			if (isPreferredStatusBarStyleReplaced)
-			{
-				return;
-			}
-
-			isPreferredStatusBarStyleReplaced = true;
-
-			var selector = Selector.GetHandle("preferredStatusBarStyle");
-			var viewControllerMethod = GetInstanceMethod("UIViewController", selector);
-			if (viewControllerMethod == IntPtr.Zero)
-			{
-				return;
-			}
-
-			ReplaceImplementation(viewControllerMethod, toolkitViewControllerImplementation, ref replacedViewControllerImplementation);
-			ReplaceOwnImplementation("UINavigationController", selector, viewControllerMethod, toolkitNavigationControllerImplementation, ref replacedNavigationControllerImplementation);
-			ReplaceOwnImplementation("UITabBarController", selector, viewControllerMethod, toolkitTabBarControllerImplementation, ref replacedTabBarControllerImplementation);
-			ReplaceOwnImplementation("UISplitViewController", selector, viewControllerMethod, toolkitSplitViewControllerImplementation, ref replacedSplitViewControllerImplementation);
-		}
-	}
-
-	// A class that has no implementation of its own has the method of its superclass, and UIViewController's is replaced already.
-	static void ReplaceOwnImplementation(string className, IntPtr selector, IntPtr viewControllerMethod, IntPtr implementation, ref IntPtr replacedImplementation)
-	{
-		var method = GetInstanceMethod(className, selector);
-		if (method != viewControllerMethod)
-		{
-			ReplaceImplementation(method, implementation, ref replacedImplementation);
-		}
-	}
-
-	// Never replaces one of the toolkit's own implementations: the toolkit would call itself.
-	static void ReplaceImplementation(IntPtr method, IntPtr implementation, ref IntPtr replacedImplementation)
-	{
-		if (method == IntPtr.Zero)
-		{
-			return;
-		}
-
-		var currentImplementation = method_getImplementation(method);
-		if (currentImplementation == IntPtr.Zero || IsToolkitImplementation(currentImplementation))
-		{
-			return;
-		}
-
-		Volatile.Write(ref replacedImplementation, currentImplementation);
-		method_setImplementation(method, implementation);
-	}
-
-	static bool IsToolkitImplementation(IntPtr implementation) =>
-		implementation == toolkitViewControllerImplementation
-		|| implementation == toolkitNavigationControllerImplementation
-		|| implementation == toolkitTabBarControllerImplementation
-		|| implementation == toolkitSplitViewControllerImplementation;
-
-	static IntPtr GetInstanceMethod(string className, IntPtr selector)
-	{
-		IntPtr objectiveCClass = Class.GetHandle(className);
-		return objectiveCClass == IntPtr.Zero ? IntPtr.Zero : class_getInstanceMethod(objectiveCClass, selector);
-	}
-
-	[UnmanagedCallersOnly]
-	static nint ViewControllerPreferredStatusBarStyle(IntPtr self, IntPtr selector) =>
-		PreferredStatusBarStyle(self, selector, Volatile.Read(ref replacedViewControllerImplementation));
-
-	[UnmanagedCallersOnly]
-	static nint NavigationControllerPreferredStatusBarStyle(IntPtr self, IntPtr selector) =>
-		PreferredStatusBarStyle(self, selector, Volatile.Read(ref replacedNavigationControllerImplementation));
-
-	[UnmanagedCallersOnly]
-	static nint TabBarControllerPreferredStatusBarStyle(IntPtr self, IntPtr selector) =>
-		PreferredStatusBarStyle(self, selector, Volatile.Read(ref replacedTabBarControllerImplementation));
-
-	[UnmanagedCallersOnly]
-	static nint SplitViewControllerPreferredStatusBarStyle(IntPtr self, IntPtr selector) =>
-		PreferredStatusBarStyle(self, selector, Volatile.Read(ref replacedSplitViewControllerImplementation));
-
-	static unsafe nint PreferredStatusBarStyle(IntPtr self, IntPtr selector, IntPtr replacedImplementation)
-	{
-		var statusBarStyle = Volatile.Read(ref requestedStatusBarStyle);
-		if (statusBarStyle != noRequestedStatusBarStyle)
-		{
-			return statusBarStyle;
-		}
-
-		return replacedImplementation == IntPtr.Zero
-			? (nint)UIStatusBarStyle.Default
-			: ((delegate* unmanaged<IntPtr, IntPtr, nint>)replacedImplementation)(self, selector);
-	}
-
-	[LibraryImport(ObjCRuntime.Constants.ObjectiveCLibrary)]
-	private static partial IntPtr class_getInstanceMethod(IntPtr cls, IntPtr name);
-
-	[LibraryImport(ObjCRuntime.Constants.ObjectiveCLibrary)]
-	private static partial IntPtr method_getImplementation(IntPtr method);
-
-	[LibraryImport(ObjCRuntime.Constants.ObjectiveCLibrary)]
-	private static partial IntPtr method_setImplementation(IntPtr method, IntPtr implementation);
-#endif
 
 	static bool TryUpdateStatusBarAppearance(UIWindow? window)
 	{

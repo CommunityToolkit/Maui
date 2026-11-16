@@ -11,10 +11,9 @@ namespace CommunityToolkit.Maui.Core;
 /// <see cref="MauiAppBuilder"/> Extensions
 /// </summary>
 [SupportedOSPlatform("iOS15.0")]
-[SupportedOSPlatform("MacCatalyst15.0")]
-[SupportedOSPlatform("Android21.0")]
+[SupportedOSPlatform("MacCatalyst17.0")]
+[SupportedOSPlatform("Android24.0")]
 [SupportedOSPlatform("Windows10.0.17763")]
-[SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
 	static readonly WeakEventManager weakEventManager = new();

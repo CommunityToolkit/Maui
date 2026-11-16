@@ -40,6 +40,26 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 		controller.Dispose();
 	}
 
+	// Hosts a view controller the way Shell hosts a page: its view gets the content, then it becomes a child of the root and enters the window.
+	static void ShowInRoot(UIViewController root, UIViewController child, UIView? content = null)
+	{
+		if (content is not null)
+		{
+			child.View!.AddSubview(content);
+		}
+
+		root.AddChildViewController(child);
+		root.View!.AddSubview(child.View!);
+		child.DidMoveToParentViewController(root);
+	}
+
+	static void RemoveFromRoot(UIViewController child)
+	{
+		child.WillMoveToParentViewController(null);
+		child.View?.RemoveFromSuperview();
+		child.RemoveFromParentViewController();
+	}
+
 	[Fact]
 	public async Task ConstructorAddsThePlayerViewAsSubview()
 	{
@@ -401,6 +421,87 @@ public class MauiMediaElementAppleTests : AppleMediaElementTestBase
 			Assert.Same(controller.View, Assert.Single(view.Subviews));
 			Assert.Equal(view.Bounds, controller.View!.Frame);
 			Cleanup(view, controller);
+		});
+	}
+
+	// #3066: when the user comes back to a ShellContent, Shell hosts the same page in a new view controller. The page enters the window inside it
+	// while the player view controller is still a child of the previous one, and iOS 26.1 and later check that containment while the views move
+	// to the window, before MovedToWindow: UIViewControllerHierarchyInconsistency.
+	[Fact]
+	public async Task MovingIntoTheWindowInsideAnotherViewControllerMovesThePlayerViewControllerToIt()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var root = TopMostViewController()!;
+			var first = new AppleInsetViewController(parentInsets);
+			var second = new AppleInsetViewController(new UIEdgeInsets(1, 2, 3, 4));
+			var controller = new AppleParentTrackingPlayerViewController();
+			var view = new MauiMediaElement(controller, CreateMediaElement());
+			var page = new UIView();
+			page.AddSubview(view);
+
+			try
+			{
+				ShowInRoot(root, first, page);
+				Assert.Same(first, controller.ParentViewController);
+				RemoveFromRoot(first);
+
+				ShowInRoot(root, second, page);
+
+				Assert.NotNull(view.Window);
+				Assert.Same(second, controller.ParentViewController);
+				Assert.DoesNotContain(controller, first.ChildViewControllers);
+				Assert.Contains(controller, second.ChildViewControllers);
+				Assert.Equal(new UIViewController?[] { first, null, second }, controller.MovedToParents);
+				Assert.Same(controller.View, Assert.Single(view.Subviews));
+			}
+			finally
+			{
+				RemoveFromRoot(first);
+				RemoveFromRoot(second);
+				Cleanup(view, controller);
+			}
+		});
+	}
+
+	// Between two view controllers that are both in the window, the MauiMediaElement stays in the window and only MovedToSuperview runs. The player
+	// view enters the window again inside the new view controller when it is added back, so it must have left the previous view controller by then.
+	[Fact]
+	public async Task MovingToAnotherViewControllerInTheWindowMovesThePlayerViewControllerToIt()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var root = TopMostViewController()!;
+			var first = new AppleInsetViewController(parentInsets);
+			var second = new AppleInsetViewController(new UIEdgeInsets(1, 2, 3, 4));
+			var controller = new AppleParentTrackingPlayerViewController();
+			var view = new MauiMediaElement(controller, CreateMediaElement());
+
+			try
+			{
+				ShowInRoot(root, first, view);
+				ShowInRoot(root, second);
+				Assert.Same(first, controller.ParentViewController);
+
+				second.View!.AddSubview(view);
+
+				Assert.NotNull(view.Window);
+				Assert.Same(second, controller.ParentViewController);
+				Assert.DoesNotContain(controller, first.ChildViewControllers);
+				Assert.Contains(controller, second.ChildViewControllers);
+				Assert.Equal(new UIViewController?[] { first, null, second }, controller.MovedToParents);
+				Assert.Same(controller.View, Assert.Single(view.Subviews));
+			}
+			finally
+			{
+				RemoveFromRoot(first);
+				RemoveFromRoot(second);
+				Cleanup(view, controller);
+			}
 		});
 	}
 

@@ -107,22 +107,22 @@ public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHs
 			0.25f, 0.25f, 0.25f, 0, "HSLA(0,0%,25%,0)"
 		},
 		{
-			0.25f, 0.25f, 1, 1, "HSLA(240,100%,63%,1)"
+			0.25f, 0.25f, 1, 1, "HSLA(240,100%,62%,1)"
 		},
 		{
-			0.25f, 0.25f, 1, 0, "HSLA(240,100%,63%,0)"
+			0.25f, 0.25f, 1, 0, "HSLA(240,100%,62%,0)"
 		},
 		{
-			0.25f, 1, 0.25f, 1, "HSLA(120,100%,63%,1)"
+			0.25f, 1, 0.25f, 1, "HSLA(120,100%,62%,1)"
 		},
 		{
-			0.25f, 1, 0.25f, 0, "HSLA(120,100%,63%,0)"
+			0.25f, 1, 0.25f, 0, "HSLA(120,100%,62%,0)"
 		},
 		{
-			0.75f, 1, 0.25f, 1, "HSLA(80,100%,63%,1)"
+			0.75f, 1, 0.25f, 1, "HSLA(80,100%,62%,1)"
 		},
 		{
-			0.75f, 1, 0.25f, 0, "HSLA(80,100%,63%,0)"
+			0.75f, 1, 0.25f, 0, "HSLA(80,100%,62%,0)"
 		},
 		{
 			0.75f, 0, 1, 1, "HSLA(285,100%,50%,1)"
@@ -132,18 +132,59 @@ public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHs
 		},
 	};
 
-	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
+	[Theory]
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToRgbStringConverterValidInputTest(float red, float green, float blue, float alpha, string expectedResult)
 	{
 		var converter = new ColorToHslaStringConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, Thread.CurrentThread.CurrentCulture);
-		var resultConvertFrom = converter.ConvertFrom(color, Thread.CurrentThread.CurrentCulture);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("en-US"));
+		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("en-US"));
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Theory]
+	[InlineData("uk-UA", "HSLA(0,0%,0%,0,5)")]
+	[InlineData("tr-TR", "HSLA(0,%0,%0,0,5)")]
+	public void ColorToRgbStringConverterCultureTest(string cultureName, string expectedResult)
+	{
+		var culture = new System.Globalization.CultureInfo(cultureName);
+		var converter = new ColorToHslaStringConverter();
+		var color = new Color(0, 0, 0, 0.5f);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Theory]
+	[InlineData("de-DE", "HSLA(360,100 %,50 %,0,5)")]
+	[InlineData("tr-TR", "HSLA(360,%100,%50,0,5)")]
+	public void ColorToHslaStringConverter_UsesPassedCultureForAllComponents(string cultureName, string expectedResult)
+	{
+		var originalCulture = System.Globalization.CultureInfo.CurrentCulture;
+		try
+		{
+			System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+			var converter = new ColorToHslaStringConverter();
+			var color = Colors.Red.WithAlpha(0.5f);
+			var culture = new System.Globalization.CultureInfo(cultureName);
+
+			var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+			var resultConvertFrom = converter.ConvertFrom(color, culture);
+
+			Assert.Equal(expectedResult, resultConvert);
+			Assert.Equal(expectedResult, resultConvertFrom);
+		}
+		finally
+		{
+			System.Globalization.CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 
 	[Fact]

@@ -33,7 +33,6 @@ using Microsoft.Maui.LifecycleEvents;
 using Polly;
 
 #if WINDOWS10_0_17763_0_OR_GREATER
-using CommunityToolkit.Maui.Maps;
 using Microsoft.UI;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
@@ -47,8 +46,6 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		// The compiler reports the deprecated Maps call at the start of the builder statement, so only a pragma around the whole statement covers it.
-#pragma warning disable CS0618
 		var builder = MauiApp.CreateBuilder()
 #if DEBUG
 								.UseMauiCommunityToolkit(static options =>
@@ -84,19 +81,11 @@ public static class MauiProgram
 #endif
 								})
 
-#if WINDOWS
-								// The sample keeps demonstrating the deprecated Maps library on Windows until the library is removed in the .NET 11 update (#3331).
-								.UseMauiCommunityToolkitMaps("KEY") // You should add your own key here from https://bingmapsportal.com
-#else
-								.UseMauiMaps()
-#endif
-
 								.UseMauiApp<App>()
 								.ConfigureFonts(static fonts =>
 								{
 									fonts.AddFont("Font Awesome 6 Brands-Regular-400.otf", FontFamilies.FontAwesomeBrands);
 								});
-#pragma warning restore CS0618
 
 		builder.ConfigureLifecycleEvents(events =>
 		{
@@ -250,13 +239,10 @@ public static class MauiProgram
 		services.AddTransientWithShellRoute<NavigationBarPage, NavigationBarAndroidViewModel>();
 
 		// Add Views Pages + ViewModels
-		services.AddTransientWithShellRoute<BasicMapsPage, BasicMapsViewModel>();
 		services.AddTransientWithShellRoute<CameraViewPage, CameraViewViewModel>();
 		services.AddTransientWithShellRoute<DrawingViewPage, DrawingViewViewModel>();
 		services.AddTransientWithShellRoute<ExpanderPage, ExpanderViewModel>();
 		services.AddTransientWithShellRoute<LazyViewPage, LazyViewViewModel>();
-		services.AddTransientWithShellRoute<MapsPage, MapsViewModel>();
-		services.AddTransientWithShellRoute<MapsPinsPage, MapsPinsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementsPage, MediaElementsViewModel>();
 		services.AddTransientWithShellRoute<MediaElementPage, MediaElementViewModel>();
 		services.AddTransientWithShellRoute<MediaElementFromStreamPage, MediaElementFromStreamViewModel>();

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -298,14 +299,14 @@ static class InitializerExpressionResolver
 			: double.IsNaN(d) ? "double.NaN"
 			: FormattableString.Invariant($"{d}d"),
 		decimal m => FormattableString.Invariant($"{m}m"),
-		byte b => b.ToString(),
-		sbyte sb => sb.ToString(),
-		short s => s.ToString(),
-		ushort us => us.ToString(),
-		int i => i.ToString(),
-		uint u => $"{u}u",
-		long l => $"{l}L",
-		ulong ul => $"{ul}UL",
+		byte b => b.ToString(CultureInfo.InvariantCulture),
+		sbyte sb => sb.ToString(CultureInfo.InvariantCulture),
+		short s => s.ToString(CultureInfo.InvariantCulture),
+		ushort us => us.ToString(CultureInfo.InvariantCulture),
+		int i => i.ToString(CultureInfo.InvariantCulture),
+		uint u => FormattableString.Invariant($"{u}u"),
+		long l => FormattableString.Invariant($"{l}L"),
+		ulong ul => FormattableString.Invariant($"{ul}UL"),
 		_ => value.ToString() ?? "null"
 	};
 

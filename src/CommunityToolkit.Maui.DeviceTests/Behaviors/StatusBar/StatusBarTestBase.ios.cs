@@ -1,7 +1,3 @@
-#if !NET11_0_OR_GREATER
-using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Platform;
-#endif
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CoreGraphics;
 using UIKit;
@@ -10,14 +6,10 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public abstract partial class StatusBarTestBase
 {
-	// .NET 10: a style that a test set stays the style of the whole app until SetStyle(Default), also after the test ends
 	protected partial Task ResetNativeStateAsync() =>
 		InvokeOnMainThreadAsync(static () =>
 		{
 			IosStatusBarViews.Reset();
-#if !NET11_0_OR_GREATER
-			StatusBar.SetStyle(StatusBarStyle.Default);
-#endif
 		});
 
 	protected Task AssertStatusBarShowsAsync(Color color) => InvokeOnMainThreadAsync(() => AssertStatusBarShows(color));
@@ -109,11 +101,10 @@ public abstract partial class StatusBarTestBase
 	// The call is counted on the topmost view controller (the one that controls the status bar) itself, so the check does not depend on UIKit
 	// re-reading the style, which it only does with view controller-based status bar appearance (an app may set
 	// UIViewControllerBasedStatusBarAppearance to false).
-	protected async Task AssertUpdatesTheStatusBarAppearanceAsync(Action statusBarCall, bool keepPresentingViewLoaded = false)
+	protected async Task AssertUpdatesTheStatusBarAppearanceAsync(Action statusBarCall)
 	{
 		var rootViewController = await InvokeOnMainThreadAsync(static () => TestWindow.PlatformWindow.RootViewController ?? throw new InvalidOperationException("The runner's window has no root view controller."));
-		// OverFullScreen leaves the presenting views in the window, so a hosted page stays loaded.
-		var presented = new QueryCountingViewController(keepPresentingViewLoaded ? UIModalPresentationStyle.OverFullScreen : UIModalPresentationStyle.FullScreen);
+		var presented = new QueryCountingViewController();
 
 		try
 		{
@@ -148,9 +139,9 @@ public abstract partial class StatusBarTestBase
 
 	protected sealed class QueryCountingViewController : UIViewController
 	{
-		public QueryCountingViewController(UIModalPresentationStyle presentationStyle = UIModalPresentationStyle.FullScreen)
+		public QueryCountingViewController()
 		{
-			ModalPresentationStyle = presentationStyle;
+			ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
 			ModalPresentationCapturesStatusBarAppearance = true;
 		}
 

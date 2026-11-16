@@ -21,7 +21,7 @@ public partial class MediaElementHandler
 		[nameof(IMediaElement.Volume)] = MapVolume,
 		[nameof(IMediaElement.ShouldKeepScreenOn)] = MapShouldKeepScreenOn,
 		[nameof(IMediaElement.ShouldMute)] = MapShouldMute,
-#if ANDROID || WINDOWS || TIZEN
+#if ANDROID || WINDOWS
 		[nameof(IMediaElement.ShouldLoopPlayback)] = ShouldLoopPlayback
 #endif
 	};
@@ -57,7 +57,7 @@ public partial class MediaElementHandler
 
 	}
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS || TIZEN
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 	/// <summary>
 	/// The <see cref="Views.MediaManager"/> that is managing the <see cref="IMediaElement"/> instance.
 	/// </summary>

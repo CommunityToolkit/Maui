@@ -11,10 +11,9 @@ namespace CommunityToolkit.Maui;
 /// Extensions for MauiAppBuilder
 /// </summary>
 [SupportedOSPlatform("iOS15.0")]
-[SupportedOSPlatform("MacCatalyst15.0")]
-[SupportedOSPlatform("Android21.0")]
+[SupportedOSPlatform("MacCatalyst17.0")]
+[SupportedOSPlatform("Android24.0")]
 [SupportedOSPlatform("Windows10.0.17763")]
-[SupportedOSPlatform("Tizen6.5")]
 public static class AppBuilderExtensions
 {
 	/// <summary>
@@ -46,7 +45,7 @@ public static class AppBuilderExtensions
 
 #if ANDROID
 		NavigationBar.RemapForControls();
-#elif IOS && NET11_0_OR_GREATER
+#elif IOS
 		// StatusBar.SetStyle can only set the StatusBarTheme through Microsoft.Maui.Controls.Window, which Core does not reference
 		Core.Platform.StatusBar.SetStatusBarThemeOfEveryWindow = Behaviors.StatusBarBehavior.SetStatusBarThemeOfEveryWindow;
 #endif

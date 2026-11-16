@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
-using Android.OS;
 using Android.Views;
 using AndroidX.Core.View;
 using CommunityToolkit.Maui.Core.Extensions;
@@ -10,27 +9,12 @@ using PlatformColor = Android.Graphics.Color;
 
 namespace CommunityToolkit.Maui.Core.Platform;
 
-[SupportedOSPlatform("Android23.0")] // StatusBar is only supported on Android 23.0+
 static partial class StatusBar
 {
 	const int statusBarHeightPadding = 3;
 	const string statusBarOverlayTag = "StatusBarOverlay";
 
-	static readonly Lazy<bool> isSupportedHolder = new(() =>
-	{
-		if (OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M))
-		{
-			return true;
-		}
-
-		System.Diagnostics.Trace.WriteLine($"{nameof(StatusBar)} Color + Style functionality is not supported on this version of the Android operating system. Minimum supported Android API is {BuildVersionCodes.M}");
-
-		return false;
-	});
-
 	static Activity Activity => Microsoft.Maui.ApplicationModel.Platform.CurrentActivity ?? throw new InvalidOperationException("Android Activity can't be null.");
-
-	static bool IsSupported => isSupportedHolder.Value;
 
 	/// <summary>
 	/// Update the status bar size
@@ -170,11 +154,6 @@ static partial class StatusBar
 
 	static void PlatformSetStyle(StatusBarStyle style)
 	{
-		if (!IsSupported)
-		{
-			return;
-		}
-
 		switch (style)
 		{
 			case StatusBarStyle.DarkContent:
@@ -202,7 +181,7 @@ static partial class StatusBar
 
 	static bool TryGetWindowAndDecorGroup([NotNullWhen(true)] out Window? window, [NotNullWhen(true)] out ViewGroup? decorGroup)
 	{
-		if (!IsSupported || Activity.GetCurrentWindow() is not Window { DecorView.RootView: not null } currentWindow)
+		if (Activity.GetCurrentWindow() is not Window { DecorView.RootView: not null } currentWindow)
 		{
 			window = null;
 			decorGroup = null;

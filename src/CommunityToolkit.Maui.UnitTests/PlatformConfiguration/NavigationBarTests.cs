@@ -5,10 +5,9 @@ using AndroidPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 
 namespace CommunityToolkit.Maui.UnitTests.PlatformConfiguration;
 
-// NavigationBar is an Android platform configuration (SupportedOSPlatform Android 23), but its attached properties and the extension
+// NavigationBar is an Android platform configuration, but its attached properties and the extension
 // methods of the platform configuration are plain logic that every platform compiles. What the Android page handler does with them
 // is tested by NavigationBarTests in CommunityToolkit.Maui.DeviceTests.
-#pragma warning disable CA1416 // Validate platform compatibility
 public class NavigationBarTests : BaseTest
 {
 	[Fact]
@@ -78,4 +77,3 @@ public class NavigationBarTests : BaseTest
 		Assert.Equal(NavigationBarStyle.LightContent, page.On<AndroidPlatform>().GetStyle());
 	}
 }
-#pragma warning restore CA1416 // Validate platform compatibility

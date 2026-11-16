@@ -36,7 +36,7 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 	{
 		SetupWindowsBuilder();
 
-		// Windows is one of the platforms (#if ANDROID || WINDOWS || TIZEN) that map ShouldLoopPlayback.
+		// Windows is one of the platforms (#if ANDROID || WINDOWS) that map ShouldLoopPlayback.
 		await InvokeOnMainThreadAsync(() => Assert.Contains(nameof(IMediaElement.ShouldLoopPlayback), MediaElementHandler.PropertyMapper.GetKeys()));
 	}
 

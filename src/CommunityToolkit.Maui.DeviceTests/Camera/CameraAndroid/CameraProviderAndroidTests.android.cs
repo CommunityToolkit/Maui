@@ -30,10 +30,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		var map = (StreamConfigurationMap)GetCamera2Characteristics(cameraId).Get(CameraCharacteristics.ScalerStreamConfigurationMap)!;
 		var sizes = new List<Size>();
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(23))
-		{
-			sizes.AddRange((map.GetHighResolutionOutputSizes((int)ImageFormatType.Jpeg) ?? []).Select(size => new Size(size.Width, size.Height)));
-		}
+		sizes.AddRange((map.GetHighResolutionOutputSizes((int)ImageFormatType.Jpeg) ?? []).Select(size => new Size(size.Width, size.Height)));
 
 		sizes.AddRange((map.GetOutputSizes((int)ImageFormatType.Jpeg) ?? []).Select(size => new Size(size.Width, size.Height)));
 		return sizes;
@@ -427,22 +424,6 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 			Assert.Equal("Unknown Position Camera", camera.Name);
 			Assert.Equal(CameraPosition.Unknown, camera.Position);
 		});
-	}
-
-	[Fact]
-	public async Task RefreshSkipsHighResolutionSizesBelowAndroid6()
-	{
-		SetupBuilder();
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(23), "Needs Android 5 (API 21 or 22): StreamConfigurationMap.GetHighResolutionOutputSizes is only skipped there, and the pool (like CI) runs API 28 and 36.");
-		using var provider = new CameraProvider();
-
-		var cameras = await RefreshAsync(provider);
-
-		foreach (var camera in cameras)
-		{
-			var map = (StreamConfigurationMap)GetCamera2Characteristics(camera.DeviceId).Get(CameraCharacteristics.ScalerStreamConfigurationMap)!;
-			Assert.Equal((map.GetOutputSizes((int)ImageFormatType.Jpeg) ?? []).Select(size => new Size(size.Width, size.Height)), camera.SupportedResolutions);
-		}
 	}
 
 	[Fact]

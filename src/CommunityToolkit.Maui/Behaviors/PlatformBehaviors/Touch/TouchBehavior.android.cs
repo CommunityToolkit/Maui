@@ -1,13 +1,11 @@
 using System.Runtime.CompilerServices;
 using Android.Content;
-using Android.OS;
 using Android.Views;
 using Android.Views.Accessibility;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using static System.OperatingSystem;
 using AView = Android.Views.View;
 using MColor = Microsoft.Maui.Graphics.Color;
 using Trace = System.Diagnostics.Trace;
@@ -80,11 +78,6 @@ public partial class TouchBehavior
 
 		// Once the accessibility manager is known: the click listener depends on touch exploration
 		UpdateClickHandler();
-
-		if (!IsAndroidVersionAtLeast((int)BuildVersionCodes.Lollipop))
-		{
-			return;
-		}
 
 		platformView.Clickable = true;
 		platformView.LongClickable = true;

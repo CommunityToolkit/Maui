@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -135,15 +136,16 @@ public class ColorToCmykStringConverterTests : BaseOneWayConverterTest<ColorToCm
 		},
 	};
 
-	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
+	[Theory]
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToCmykStringConverterValidInputTest(float red, float green, float blue, float alpha, string expectedResult)
 	{
 		var converter = new ColorToCmykStringConverter();
 		var color = new Color(red, green, blue, alpha);
+		var culture = new CultureInfo("en-US");
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, Thread.CurrentThread.CurrentCulture);
-		var resultConvertFrom = converter.ConvertFrom(color, Thread.CurrentThread.CurrentCulture);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -157,5 +159,25 @@ public class ColorToCmykStringConverterTests : BaseOneWayConverterTest<ColorToCm
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToCmykStringConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToCmykStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("de-DE", "CMYK(0 %,100 %,100 %,0 %)")]
+	[InlineData("tr-TR", "CMYK(%0,%100,%100,%0)")]
+	public void ColorToCmykStringConverter_UsesPassedCulture_NotCurrentCulture(string cultureName, string expectedResult)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("en-US");
+
+			var result = new ColorToCmykStringConverter().ConvertFrom(Colors.Red, new CultureInfo(cultureName));
+
+			Assert.Equal(expectedResult, result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 }

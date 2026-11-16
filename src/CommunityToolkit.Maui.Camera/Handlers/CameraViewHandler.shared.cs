@@ -140,8 +140,6 @@ public partial class CameraViewHandler : ViewHandler<ICameraView, NativePlatform
 		}
 #elif IOS || MACCATALYST
 		cameraView.UpdateAvailability();
-#elif TIZEN
-		throw new NotSupportedException("Tizen is not yet supported");
 #elif NET
 		throw new NotSupportedException("A specific platform is required, eg net-ios, net-android, net-maccatalyst, net-windows");
 #endif

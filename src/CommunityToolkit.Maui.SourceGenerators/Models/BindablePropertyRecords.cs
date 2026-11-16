@@ -10,7 +10,7 @@ public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType,
 	public bool ShouldUsePropertyInitializer => HasInitializer && DefaultValueCreatorMethodName is "null" && ResolvedInitializerExpression is null;
 	public bool ShouldUseDirectDefaultValue => ResolvedInitializerExpression is not null;
 	public string BindablePropertyName => $"{PropertyName}Property";
-	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
+	public string BindablePropertyKeyName => $"{char.ToLowerInvariant(PropertyName[0])}{PropertyName[1..]}PropertyKey";
 	public string EffectiveDefaultValueCreatorMethodName => ShouldUsePropertyInitializer ? $"CreateDefault{PropertyName}" : DefaultValueCreatorMethodName;
 	public string InitializingPropertyName => $"IsInitializing{PropertyName}";
 }
@@ -19,7 +19,7 @@ public record AttachedBindablePropertyModel(string PropertyName, ITypeSymbol Ret
 {
 	public string BindablePropertyName => $"{PropertyName}Property";
 	public bool ShouldPostpendNullable => ShouldPostpendNullableToType(ReturnType, IsDeclaringTypeNullable);
-	public string BindablePropertyKeyName => $"{char.ToLower(PropertyName[0])}{PropertyName[1..]}PropertyKey";
+	public string BindablePropertyKeyName => $"{char.ToLowerInvariant(PropertyName[0])}{PropertyName[1..]}PropertyKey";
 
 	public string EffectiveBindablePropertyXmlDocumentation => BindablePropertyXmlDocumentation ??
 														/* language=C#-test */

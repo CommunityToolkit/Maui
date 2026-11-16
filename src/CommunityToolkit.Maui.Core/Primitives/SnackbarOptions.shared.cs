@@ -14,7 +14,7 @@ public class SnackbarOptions : ITextStyle
 	/// <list type="bullet">
 	/// <item><description>Android: the letter spacing of the message (<c>TextView.LetterSpacing</c>), in em, whatever the font size: 0.1 adds a tenth of the text size between characters.</description></item>
 	/// <item><description>iOS and Mac Catalyst: the kerning of the message, in points: 100 times the value divided by the point size of the message font (no kerning when that point size is 0), so 1 with a 20-point font kerns by 5 points.</description></item>
-	/// <item><description>Windows and Tizen: not applied.</description></item>
+	/// <item><description>Windows: not applied.</description></item>
 	/// </list>
 	/// </remarks>
 	public double CharacterSpacing { get; set; } = AlertDefaults.CharacterSpacing;

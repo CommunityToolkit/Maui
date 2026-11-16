@@ -37,22 +37,22 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 			testDateTimeOffsetUnspecified, testDateTimeUnspecified, null
 		},
 		{
-			testDateTimeOffsetNow, testDateTimeNow, CultureInfo.CurrentCulture
+			testDateTimeOffsetNow, testDateTimeNow, CultureInfo.InvariantCulture
 		},
 		{
-			DateTimeOffset.MinValue, DateTime.MinValue, CultureInfo.CurrentCulture
+			DateTimeOffset.MinValue, DateTime.MinValue, CultureInfo.InvariantCulture
 		},
 		{
-			DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.CurrentCulture
+			DateTimeOffset.MaxValue, DateTime.MaxValue, CultureInfo.InvariantCulture
 		},
 		{
-			testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.CurrentCulture
+			testDateTimeOffsetLocal, testDateTimeLocal, CultureInfo.InvariantCulture
 		},
 		{
-			testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.CurrentCulture
+			testDateTimeOffsetUtc, testDateTimeUtc, CultureInfo.InvariantCulture
 		},
 		{
-			testDateTimeOffsetUnspecified, testDateTimeUnspecified, CultureInfo.CurrentCulture
+			testDateTimeOffsetUnspecified, testDateTimeUnspecified, CultureInfo.InvariantCulture
 		},
 	};
 
@@ -77,28 +77,28 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 			testDateTimeUnspecified, testDateTimeOffsetUnspecified, null
 		},
 		{
-			testDateTimeNow, testDateTimeOffsetNow, CultureInfo.CurrentCulture
+			testDateTimeNow, testDateTimeOffsetNow, CultureInfo.InvariantCulture
 		},
 		{
-			DateTime.MinValue, DateTimeOffset.MinValue, CultureInfo.CurrentCulture
+			DateTime.MinValue, DateTimeOffset.MinValue, CultureInfo.InvariantCulture
 		},
 		{
-			DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.CurrentCulture
+			DateTime.MaxValue, DateTimeOffset.MaxValue, CultureInfo.InvariantCulture
 		},
 		{
-			testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.CurrentCulture
+			testDateTimeLocal, testDateTimeOffsetLocal, CultureInfo.InvariantCulture
 		},
 		{
-			testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.CurrentCulture
+			testDateTimeUtc, testDateTimeOffsetUtc, CultureInfo.InvariantCulture
 		},
 		{
-			testDateTimeUnspecified, testDateTimeOffsetUnspecified, CultureInfo.CurrentCulture
+			testDateTimeUnspecified, testDateTimeOffsetUnspecified, CultureInfo.InvariantCulture
 		},
 		{
-			new(2026, 03, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 03, 15, 13, 37, 00, TimeZoneInfo.Local.GetUtcOffset(new(2026, 03, 15, 13, 37, 00))), CultureInfo.CurrentCulture
+			new(2026, 03, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 03, 15, 13, 37, 00, TimeZoneInfo.Local.GetUtcOffset(new(2026, 03, 15, 13, 37, 00))), CultureInfo.InvariantCulture
 		},
 		{
-			new(2026, 07, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 07, 15, 13, 37, 00, TimeZoneInfo.Local.GetUtcOffset(new(2026, 07, 15, 13, 37, 00))), CultureInfo.CurrentCulture
+			new(2026, 07, 15, 13, 37, 00, DateTimeKind.Local), new(2026, 07, 15, 13, 37, 00, TimeZoneInfo.Local.GetUtcOffset(new(2026, 07, 15, 13, 37, 00))), CultureInfo.InvariantCulture
 		},
 	};
 
@@ -129,6 +129,22 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	}
 
 	[Theory]
+	[InlineData("th-TH")]
+	[InlineData("fa-IR")]
+	[InlineData("ar-SA")]
+	[InlineData("en-US")]
+	[InlineData("tr-TR")]
+	public void DateTimeOffsetConverterBack_IgnoresCultureCalendar(string cultureName)
+	{
+		var value = new DateTime(2026, 3, 15, 13, 37, 0, DateTimeKind.Utc).AddTicks(1234567);
+
+		var result = new DateTimeOffsetConverter().ConvertBackTo(value, new CultureInfo(cultureName));
+
+		Assert.Equal(new DateTimeOffset(value, TimeSpan.Zero), result);
+		Assert.Equal(value.Ticks, result.Ticks);
+	}
+
+	[Theory]
 	[InlineData(5.5)]
 	[InlineData('c')]
 	[InlineData(true)]
@@ -137,7 +153,7 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).Convert(invalidData, typeof(DateTime), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).Convert(invalidData, typeof(DateTime), null, CultureInfo.InvariantCulture));
 	}
 
 	[Theory]
@@ -149,7 +165,7 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	{
 		var dateTimeOffsetConverter = new DateTimeOffsetConverter();
 
-		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).ConvertBack(invalidData, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture));
+		Assert.Throws<ArgumentException>(() => ((ICommunityToolkitValueConverter)dateTimeOffsetConverter).ConvertBack(invalidData, typeof(DateTimeOffset), null, CultureInfo.InvariantCulture));
 	}
 
 	[Fact]
@@ -165,15 +181,7 @@ public class DateTimeOffsetConverterTests : BaseConverterTest<DateTimeOffsetConv
 	{
 		public bool Equals(DateTimeOffset x, DateTimeOffset y)
 		{
-			return x.Year == y.Year
-				   && x.Month == y.Month
-				   && x.Day == y.Day
-				   && x.Hour == y.Hour
-				   && x.Minute == y.Minute
-				   && x.Second == y.Second
-				   && x.Millisecond == y.Millisecond
-				   && x.Microsecond == y.Microsecond
-				   && x.Offset == y.Offset;
+			return x.Ticks == y.Ticks && x.Offset == y.Offset;
 		}
 
 		public int GetHashCode(DateTimeOffset obj)

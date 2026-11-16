@@ -5,7 +5,7 @@ applyTo: 'src/CommunityToolkit.Maui.DeviceTests*/**'
 
 # Device Tests
 
-The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running the tests is described in `eng/devices/README.md` and, for a local machine, in `eng/devices/LOCAL.md`. The app uses dotnet/maui's device-test architecture: xUnit v2, a vendored runner, XHarness on CI. There is one app for every shipped package: `CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement`, `.Camera` and `.Maps`).
+The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running the tests is described in `eng/devices/README.md` and, for a local machine, in `eng/devices/LOCAL.md`. The app uses dotnet/maui's device-test architecture: xUnit v2, a vendored runner, XHarness on CI. There is one app for every shipped package: `CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`).
 
 ## Rules
 
@@ -36,7 +36,7 @@ The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running
     - Assert what the other branch is specified to do.
     - Or skip visibly, which is reported as Skipped:
       - `Skip.If(condition, reason)` or `Skip.IfNot(condition, reason)` at run time;
-      - `DeviceTestCapabilities.Require(capability, isAvailable, reason)` for a machine capability that a CI runner may lack (camera, second camera, video rendering, media playback, on-device speech, WebView2), so the CI job can declare it missing or required;
+      - `DeviceTestCapabilities.Require(capability, isAvailable, reason)` for a machine capability that a CI runner may lack (camera, second camera, video rendering, media playback, on-device speech), so the CI job can declare it missing or required;
       - `[SkipOnIOSVersion(...)]`;
       - `[Fact(Skip = "reason, issue link")]` under `#if`.
     - Never add a placeholder, a test whose body only skips or is empty, for a branch that only a person or special hardware reaches. Put the interactive version under `RequiresUserInteraction` (rule 11), or leave the branch to a reproduction in the Sample (`samples/CommunityToolkit.Maui.Sample`).

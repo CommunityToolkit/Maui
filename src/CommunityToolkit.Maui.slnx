@@ -41,7 +41,6 @@
   </Folder>
   <Project Path="CommunityToolkit.Maui.Camera/CommunityToolkit.Maui.Camera.csproj" />
   <Project Path="CommunityToolkit.Maui.Core/CommunityToolkit.Maui.Core.csproj" />
-  <Project Path="CommunityToolkit.Maui.Maps/CommunityToolkit.Maui.Maps.csproj" />
   <Project Path="CommunityToolkit.Maui.MediaElement/CommunityToolkit.Maui.MediaElement.csproj" />
   <Project Path="CommunityToolkit.Maui/CommunityToolkit.Maui.csproj" />
 </Solution>

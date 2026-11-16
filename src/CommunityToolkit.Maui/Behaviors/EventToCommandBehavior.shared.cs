@@ -43,6 +43,16 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 	[BindableProperty]
 	public partial IValueConverter? EventArgsConverter { get; set; }
 
+	/// <summary>
+	/// The <see cref="CultureInfo"/> passed to <see cref="EventArgsConverter"/> when it converts the <see cref="EventArgs"/>. When <see langword="null"/>, <see cref="CultureInfo.InvariantCulture"/> is used. This is a bindable property.
+	/// </summary>
+	/// <remarks>
+	/// Unlike a binding, which passes <see cref="CultureInfo.CurrentUICulture"/> when no converter culture is set, this behavior keeps passing <see cref="CultureInfo.InvariantCulture"/> by default.
+	/// </remarks>
+	[TypeConverter(typeof(CultureInfoConverter))]
+	[BindableProperty]
+	public partial CultureInfo? EventArgsConverterCulture { get; set; }
+
 	/// <inheritdoc/>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="bindable"/> is <see langword="null"/>.</exception>
 	protected override void OnAttachedTo(VisualElement bindable)
@@ -71,7 +81,7 @@ public partial class EventToCommandBehavior : BaseBehavior<VisualElement>
 	protected virtual void OnTriggerHandled(object? sender = null, object? eventArgs = null)
 	{
 		var parameter = CommandParameter
-			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, CultureInfo.InvariantCulture);
+			?? EventArgsConverter?.Convert(eventArgs, typeof(object), null, EventArgsConverterCulture ?? CultureInfo.InvariantCulture);
 
 		var command = Command;
 		if (command?.CanExecute(parameter) ?? false)

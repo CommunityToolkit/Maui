@@ -18,7 +18,6 @@ $script:DeviceTestCoverageAssemblies = @(
     'CommunityToolkit.Maui.Core'
     'CommunityToolkit.Maui.MediaElement'
     'CommunityToolkit.Maui.Camera'
-    'CommunityToolkit.Maui.Maps'
 )
 
 # Must match CoverageRecorder.DirectoryVariable, which the headless runners read.

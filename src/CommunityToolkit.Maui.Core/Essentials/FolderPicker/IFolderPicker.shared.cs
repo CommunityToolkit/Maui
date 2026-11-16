@@ -14,9 +14,8 @@ public interface IFolderPicker
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="FolderPickerResult"/>. A null <paramref name="initialPath"/> is reported in <see cref="FolderPickerResult.Exception"/> as an <see cref="ArgumentNullException"/> (it is not thrown), and no picker is shown</returns>
 	[SupportedOSPlatform("Android26.0")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FolderPickerResult> PickAsync(string initialPath, CancellationToken cancellationToken = default);
 
@@ -26,9 +25,8 @@ public interface IFolderPicker
 	/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
 	/// <returns><see cref="FolderPickerResult"/></returns>
 	[SupportedOSPlatform("Android")]
-	[SupportedOSPlatform("iOS14.0")]
-	[SupportedOSPlatform("MacCatalyst14.0")]
-	[SupportedOSPlatform("Tizen")]
+	[SupportedOSPlatform("iOS")]
+	[SupportedOSPlatform("MacCatalyst")]
 	[SupportedOSPlatform("Windows")]
 	Task<FolderPickerResult> PickAsync(CancellationToken cancellationToken = default);
 }

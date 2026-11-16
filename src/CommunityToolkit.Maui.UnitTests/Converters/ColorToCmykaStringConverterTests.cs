@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using CommunityToolkit.Maui.Converters;
+﻿using CommunityToolkit.Maui.Converters;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Converters;
@@ -136,15 +135,31 @@ public class ColorToCmykaStringConverterTests : BaseOneWayConverterTest<ColorToC
 		},
 	};
 
-	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
+	[Theory]
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToCmykaStringConverterValidInputTest(float red, float green, float blue, float alpha, string expectedResult)
 	{
 		var converter = new ColorToCmykaStringConverter();
 		var color = new Color(red, green, blue, alpha);
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, Thread.CurrentThread.CurrentCulture);
-		var resultConvertFrom = converter.ConvertFrom(color, Thread.CurrentThread.CurrentCulture);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, new System.Globalization.CultureInfo("en-US"));
+		var resultConvertFrom = converter.ConvertFrom(color, new System.Globalization.CultureInfo("en-US"));
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, resultConvertFrom);
+	}
+
+	[Theory]
+	[InlineData("uk-UA", "CMYKA(0%,0%,0%,100%,0,5)")]
+	[InlineData("tr-TR", "CMYKA(%0,%0,%0,%100,0,5)")]
+	public void ColorToRgbStringConverterCultureTest(string cultureName, string expectedResult)
+	{
+		var culture = new System.Globalization.CultureInfo(cultureName);
+		var converter = new ColorToCmykaStringConverter();
+		var color = new Color(0, 0, 0, 0.5f);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);

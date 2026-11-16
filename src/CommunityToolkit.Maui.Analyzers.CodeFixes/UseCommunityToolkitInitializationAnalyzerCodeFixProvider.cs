@@ -43,26 +43,54 @@ public class UseCommunityToolkitInitializationAnalyzerCodeFixProvider : CodeFixP
 			return document;
 		}
 
-		var updatedInvocationExpression =
-			InvocationExpression(
-				MemberAccessExpression(
-					SyntaxKind.SimpleMemberAccessExpression, invocationExpression, IdentifierName("UseMauiCommunityToolkit")));
+		// Don't call NormalizeWhitespace(): it reformats the user's entire document (https://github.com/CommunityToolkit/Maui/issues/1720)
+		var endOfLine = root.DescendantTrivia().FirstOrDefault(static trivia => trivia.IsKind(SyntaxKind.EndOfLineTrivia));
+		if (endOfLine.IsKind(SyntaxKind.None))
+		{
+			endOfLine = ElasticCarriageReturnLineFeed;
+		}
 
-		var mauiCommunityToolkitUsingStatement =
-			UsingDirective(
-				QualifiedName(
-					IdentifierName("CommunityToolkit"),
-					IdentifierName("Maui")));
-
-		var newRoot = root.ReplaceNode(invocationExpression, updatedInvocationExpression);
+		var newRoot = root.ReplaceNode(invocationExpression, CreateUseMauiCommunityToolkitInvocation(invocationExpression, endOfLine));
 
 		if (newRoot is CompilationUnitSyntax compilationSyntax)
 		{
-			newRoot = compilationSyntax.AddUsings(mauiCommunityToolkitUsingStatement).NormalizeWhitespace();
+			var mauiCommunityToolkitUsingDirective = UsingDirective(ParseName("CommunityToolkit.Maui"))
+				.WithUsingKeyword(Token(TriviaList(), SyntaxKind.UsingKeyword, TriviaList(Space)))
+				.WithSemicolonToken(Token(TriviaList(), SyntaxKind.SemicolonToken, compilationSyntax.Usings.Count is 0 ? TriviaList(endOfLine, endOfLine) : TriviaList(endOfLine)));
+
+			newRoot = compilationSyntax.AddUsings(mauiCommunityToolkitUsingDirective);
 		}
 
-		var newDocument = document.WithSyntaxRoot(newRoot);
+		return document.WithSyntaxRoot(newRoot);
+	}
 
-		return newDocument;
+	static InvocationExpressionSyntax CreateUseMauiCommunityToolkitInvocation(InvocationExpressionSyntax useMauiAppInvocation, SyntaxTrivia endOfLine)
+	{
+		var expression = useMauiAppInvocation.WithoutTrailingTrivia();
+		var dotTokenLeadingTrivia = TriviaList();
+		var trailingTrivia = useMauiAppInvocation.GetTrailingTrivia();
+
+		// Follow the user's style when the builder chain has one call per line, e.g. `builder\n\t.UseMauiApp<App>()\n\t.ConfigureFonts(...)` in the .NET MAUI template
+		if (useMauiAppInvocation.Parent is MemberAccessExpressionSyntax { OperatorToken: var nextDotToken }
+			&& trailingTrivia.Any(SyntaxKind.EndOfLineTrivia))
+		{
+			var indentation = nextDotToken.LeadingTrivia.LastOrDefault();
+
+			expression = useMauiAppInvocation;
+			dotTokenLeadingTrivia = indentation.IsKind(SyntaxKind.WhitespaceTrivia) ? TriviaList(indentation) : TriviaList();
+			trailingTrivia = TriviaList(endOfLine);
+		}
+
+		// Every token gets explicit trivia because the elastic trivia added by SyntaxFactory lets the code action's formatter re-indent the surrounding code
+		return InvocationExpression(
+			MemberAccessExpression(
+				SyntaxKind.SimpleMemberAccessExpression,
+				expression,
+				Token(dotTokenLeadingTrivia, SyntaxKind.DotToken, TriviaList()),
+				IdentifierName(Identifier(TriviaList(), "UseMauiCommunityToolkit", TriviaList()))),
+			ArgumentList(
+				Token(TriviaList(), SyntaxKind.OpenParenToken, TriviaList()),
+				SeparatedList<ArgumentSyntax>(),
+				Token(TriviaList(), SyntaxKind.CloseParenToken, trailingTrivia)));
 	}
 }

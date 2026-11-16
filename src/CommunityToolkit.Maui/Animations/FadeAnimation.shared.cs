@@ -44,11 +44,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 		try
 		{
-#if NET11_0_OR_GREATER
 			await view.FadeToAsync(Opacity, Length, Easing, token);
-#else
-			await view.FadeToAsync(Opacity, Length, Easing).WaitAsync(token);
-#endif
 
 			// A newer animation started fading the view meanwhile and returns it to its original opacity: fading it back here would interrupt it.
 			if (!fades.IsLatest(fadeId))
@@ -56,11 +52,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 				return;
 			}
 
-#if NET11_0_OR_GREATER
 			await view.FadeToAsync(originalOpacity, Length, Easing, token);
-#else
-			await view.FadeToAsync(originalOpacity, Length, Easing).WaitAsync(token);
-#endif
 		}
 		finally
 		{

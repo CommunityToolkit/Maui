@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Core;
 
@@ -16,20 +17,20 @@ sealed partial class MathExpression
 {
 	readonly IReadOnlyList<MathOperator> operators;
 
-	internal MathExpression(in string expression, in IReadOnlyList<object?> arguments)
+	internal MathExpression(in string expression, in IReadOnlyList<object?> arguments, CultureInfo? culture = null)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(expression, "Expression can't be null or empty.");
 		ArgumentNullException.ThrowIfNull(arguments, "Arguments cannot be null.");
 
-		Expression = expression.ToLower();
+		Expression = expression.ToLowerInvariant();
 
 		List<MathOperator> operators =
 		[
-			new ("+", 2, x => Convert.ToDouble(x[0]) + Convert.ToDouble(x[1])),
-			new ("-", 2, x => Convert.ToDouble(x[0]) - Convert.ToDouble(x[1])),
-			new ("*", 2, x => Convert.ToDouble(x[0]) * Convert.ToDouble(x[1])),
-			new ("/", 2, x => Convert.ToDouble(x[0]) / Convert.ToDouble(x[1])),
-			new ("%", 2, x => Convert.ToDouble(x[0]) % Convert.ToDouble(x[1])),
+			new ("+", 2, x => Convert.ToDouble(x[0], culture) + Convert.ToDouble(x[1], culture)),
+			new ("-", 2, x => Convert.ToDouble(x[0], culture) - Convert.ToDouble(x[1], culture)),
+			new ("*", 2, x => Convert.ToDouble(x[0], culture) * Convert.ToDouble(x[1], culture)),
+			new ("/", 2, x => Convert.ToDouble(x[0], culture) / Convert.ToDouble(x[1], culture)),
+			new ("%", 2, x => Convert.ToDouble(x[0], culture) % Convert.ToDouble(x[1], culture)),
 
 			new ("and", 2, x => ConvertToBoolean(x[0]) ? x[1] : x[0]),
 			new ("or", 2, x => ConvertToBoolean(x[0]) ? x[0] : x[1]),
@@ -37,44 +38,44 @@ sealed partial class MathExpression
 			new ("==", 2, x => object.Equals(x[0], x[1])),
 			new ("!=", 2, x => !object.Equals(x[0], x[1])),
 
-			new ("ge", 2, x => Convert.ToDouble(x[0]) >= Convert.ToDouble(x[1])),
-			new ("gt", 2, x => Convert.ToDouble(x[0]) > Convert.ToDouble(x[1])),
-			new ("le", 2, x => Convert.ToDouble(x[0]) <= Convert.ToDouble(x[1])),
-			new ("lt", 2, x => Convert.ToDouble(x[0]) < Convert.ToDouble(x[1])),
-			new ("neg", 1, x => -Convert.ToDouble(x[0])),
+			new ("ge", 2, x => Convert.ToDouble(x[0], culture) >= Convert.ToDouble(x[1], culture)),
+			new ("gt", 2, x => Convert.ToDouble(x[0], culture) > Convert.ToDouble(x[1], culture)),
+			new ("le", 2, x => Convert.ToDouble(x[0], culture) <= Convert.ToDouble(x[1], culture)),
+			new ("lt", 2, x => Convert.ToDouble(x[0], culture) < Convert.ToDouble(x[1], culture)),
+			new ("neg", 1, x => -Convert.ToDouble(x[0], culture)),
 			new ("not", 1, x => !ConvertToBoolean(x[0])),
 			new ("if", 3, x => ConvertToBoolean(x[0]) ? x[1] : x[2]),
 
-			new ("abs", 1, x => Math.Abs(Convert.ToDouble(x[0]))),
-			new ("acos", 1, x => Math.Acos(Convert.ToDouble(x[0]))),
-			new ("asin", 1, x => Math.Asin(Convert.ToDouble(x[0]))),
-			new ("atan", 1, x => Math.Atan(Convert.ToDouble(x[0]))),
-			new ("atan2", 2, x => Math.Atan2(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
-			new ("ceiling", 1, x => Math.Ceiling(Convert.ToDouble(x[0]))),
-			new ("cos", 1, x => Math.Cos(Convert.ToDouble(x[0]))),
-			new ("cosh", 1, x => Math.Cosh(Convert.ToDouble(x[0]))),
-			new ("exp", 1, x => Math.Exp(Convert.ToDouble(x[0]))),
-			new ("floor", 1, x => Math.Floor(Convert.ToDouble(x[0]))),
-			new ("ieeeremainder", 2, x => Math.IEEERemainder(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
-			new ("log", 2, x => Math.Log(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
-			new ("log10", 1, x => Math.Log10(Convert.ToDouble(x[0]))),
-			new ("max", 2, x => Math.Max(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
-			new ("min", 2, x => Math.Min(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
-			new ("pow", 2, x => Math.Pow(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
-			new ("round", 2, x => Math.Round(Convert.ToDouble(x[0]), Convert.ToInt32(x[1]))),
-			new ("sign", 1, x => Math.Sign(Convert.ToDouble(x[0]))),
-			new ("sin", 1, x => Math.Sin(Convert.ToDouble(x[0]))),
-			new ("sinh", 1, x => Math.Sinh(Convert.ToDouble(x[0]))),
-			new ("sqrt", 1, x => Math.Sqrt(Convert.ToDouble(x[0]))),
-			new ("tan", 1, x => Math.Tan(Convert.ToDouble(x[0]))),
-			new ("tanh", 1, x => Math.Tanh(Convert.ToDouble(x[0]))),
-			new ("truncate", 1, x => Math.Truncate(Convert.ToDouble(x[0]))),
-			new ("int", 1, x => Convert.ToInt32(x[0])),
-			new ("double", 1, x => Convert.ToDouble(x[0])),
-			new ("bool", 1, x => Convert.ToBoolean(x[0])),
-			new ("str", 1, x => x[0]?.ToString()),
-			new ("len", 1, x => x[0]?.ToString()?.Length),
-			new ("^", 2, x => Math.Pow(Convert.ToDouble(x[0]), Convert.ToDouble(x[1]))),
+			new ("abs", 1, x => Math.Abs(Convert.ToDouble(x[0], culture))),
+			new ("acos", 1, x => Math.Acos(Convert.ToDouble(x[0], culture))),
+			new ("asin", 1, x => Math.Asin(Convert.ToDouble(x[0], culture))),
+			new ("atan", 1, x => Math.Atan(Convert.ToDouble(x[0], culture))),
+			new ("atan2", 2, x => Math.Atan2(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
+			new ("ceiling", 1, x => Math.Ceiling(Convert.ToDouble(x[0], culture))),
+			new ("cos", 1, x => Math.Cos(Convert.ToDouble(x[0], culture))),
+			new ("cosh", 1, x => Math.Cosh(Convert.ToDouble(x[0], culture))),
+			new ("exp", 1, x => Math.Exp(Convert.ToDouble(x[0], culture))),
+			new ("floor", 1, x => Math.Floor(Convert.ToDouble(x[0], culture))),
+			new ("ieeeremainder", 2, x => Math.IEEERemainder(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
+			new ("log", 2, x => Math.Log(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
+			new ("log10", 1, x => Math.Log10(Convert.ToDouble(x[0], culture))),
+			new ("max", 2, x => Math.Max(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
+			new ("min", 2, x => Math.Min(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
+			new ("pow", 2, x => Math.Pow(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
+			new ("round", 2, x => Math.Round(Convert.ToDouble(x[0], culture), Convert.ToInt32(x[1], culture))),
+			new ("sign", 1, x => Math.Sign(Convert.ToDouble(x[0], culture))),
+			new ("sin", 1, x => Math.Sin(Convert.ToDouble(x[0], culture))),
+			new ("sinh", 1, x => Math.Sinh(Convert.ToDouble(x[0], culture))),
+			new ("sqrt", 1, x => Math.Sqrt(Convert.ToDouble(x[0], culture))),
+			new ("tan", 1, x => Math.Tan(Convert.ToDouble(x[0], culture))),
+			new ("tanh", 1, x => Math.Tanh(Convert.ToDouble(x[0], culture))),
+			new ("truncate", 1, x => Math.Truncate(Convert.ToDouble(x[0], culture))),
+			new ("int", 1, x => Convert.ToInt32(x[0], culture)),
+			new ("double", 1, x => Convert.ToDouble(x[0], culture)),
+			new ("bool", 1, x => Convert.ToBoolean(x[0], culture)),
+			new ("str", 1, x => Convert.ToString(x[0], culture)),
+			new ("len", 1, x => Convert.ToString(x[0], culture)?.Length),
+			new ("^", 2, x => Math.Pow(Convert.ToDouble(x[0], culture), Convert.ToDouble(x[1], culture))),
 			new ("pi", 0, _ => Math.PI),
 			new ("e", 0, _ => Math.E),
 			new ("true", 0, _ => true),
@@ -360,7 +361,7 @@ sealed partial class MathExpression
 		if (ParsePattern(EvaluateNumberPattern()))
 		{
 			string _number = PatternMatch.Groups[1].Value;
-			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number)));
+			RPN.Add(new MathToken(MathTokenType.Value, _number, double.Parse(_number, CultureInfo.InvariantCulture)));
 			return true;
 		}
 

@@ -39,9 +39,6 @@ public static class DeviceTestCapabilities
 	/// <summary>Android: an on-device speech recognition service that answers and has a language installed.</summary>
 	public const string OnDeviceSpeech = nameof(OnDeviceSpeech);
 
-	/// <summary>Windows: the WebView2 Runtime, which hosts the map of CommunityToolkit.Maui.Maps.</summary>
-	public const string WebView2 = nameof(WebView2);
-
 	const string workflow = ".github/workflows/device-tests.yml";
 	const string skipKey = "SkipCapabilities";
 	const string requireKey = "RequireCapabilities";

@@ -50,6 +50,17 @@ public class MauiMediaElement : UIView
 	}
 
 	/// <inheritdoc/>
+	public override void WillMoveToWindow(UIWindow? window)
+	{
+		base.WillMoveToWindow(window);
+
+		// While views move into a window, iOS 26.1 and later check that a view controller's view is inside the views of its parent view controller,
+		// and throw UIViewControllerHierarchyInconsistency otherwise. That check runs after this method and before MovedToWindow, so a parent that
+		// is not the view controller of these views anymore (Shell shows a page in a new view controller when the user comes back to it) goes here.
+		DetachFromStaleParentViewController();
+	}
+
+	/// <inheritdoc/>
 	public override void MovedToWindow()
 	{
 		base.MovedToWindow();
@@ -85,7 +96,6 @@ public class MauiMediaElement : UIView
 	/// here to avoid leaving a stale/disposed child controller in the parent view controller.
 	/// </remarks>
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	public void DetachFromParentViewController()
 	{
 		if (playerViewController.ParentViewController is not null)
@@ -103,7 +113,8 @@ public class MauiMediaElement : UIView
 
 	void TryAttachToParentViewController(bool forceReattach = false)
 	{
-		if (!OperatingSystem.IsIOSVersionAtLeast(16) && !OperatingSystem.IsMacCatalystVersionAtLeast(16, 1))
+		// OperatingSystem.IsIOSVersionAtLeast is also true on Mac Catalyst, which reports its iOS-compatible version (17 or later on .NET 11), so Mac Catalyst needs no separate check
+		if (!OperatingSystem.IsIOSVersionAtLeast(16))
 		{
 			return;
 		}
@@ -130,8 +141,12 @@ public class MauiMediaElement : UIView
 			return;
 		}
 
-		if (playerViewController.ParentViewController is UIViewController previousParent)
+		if (playerViewController.ParentViewController is not null)
 		{
+			// The player view enters the window again below, inside the views of the new parent: leave the previous parent first (see WillMoveToWindow)
+			playerViewController.WillMoveToParentViewController(null);
+			playerViewController.RemoveFromParentViewController();
+
 			if (playerViewController.View is UIView attachedView)
 			{
 				attachedView.RemoveFromSuperview();
@@ -139,8 +154,6 @@ public class MauiMediaElement : UIView
 
 			AddSubview(playerView);
 			playerView.Frame = Bounds;
-			playerViewController.WillMoveToParentViewController(null);
-			playerViewController.RemoveFromParentViewController();
 		}
 
 		ApplySafeAreaInsets(parentView);
@@ -148,8 +161,25 @@ public class MauiMediaElement : UIView
 		playerViewController.DidMoveToParentViewController(viewController);
 	}
 
+	// Leaves only the view controllers: UIKit calls this while it moves these views into a window, so they must stay where they are
+	void DetachFromStaleParentViewController()
+	{
+		if (!OperatingSystem.IsIOSVersionAtLeast(16) || playerViewController.Handle == NativeHandle.Zero)
+		{
+			return;
+		}
+
+		if (playerViewController.ParentViewController is not UIViewController parent
+			|| (TryGetParentViewController(out var viewController) && ReferenceEquals(parent, viewController)))
+		{
+			return;
+		}
+
+		playerViewController.WillMoveToParentViewController(null);
+		playerViewController.RemoveFromParentViewController();
+	}
+
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	bool IsAdditionalSafeAreaInsetsStale(UIView parentView)
 	{
 		UIEdgeInsets expected = CreateSafeAreaInsets(parentView);
@@ -162,14 +192,12 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	void ApplySafeAreaInsets(UIView parentView)
 	{
 		playerViewController.AdditionalSafeAreaInsets = CreateSafeAreaInsets(parentView);
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	static UIEdgeInsets CreateSafeAreaInsets(UIView parentView)
 	{
 		// The view of the AVPlayerViewController already gets the parent's safe area where the two overlap, so its additional safe area insets
@@ -180,7 +208,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	bool TryGetParentViewController([NotNullWhen(true)] out UIViewController? viewController)
 	{
 		viewController = GetViewControllerFromResponderChain();
@@ -188,7 +215,6 @@ public class MauiMediaElement : UIView
 	}
 
 	[SupportedOSPlatform("ios16.0")]
-	[SupportedOSPlatform("maccatalyst16.1")]
 	UIViewController? GetViewControllerFromResponderChain()
 	{
 		for (UIResponder? responder = NextResponder; responder is not null; responder = responder.NextResponder)

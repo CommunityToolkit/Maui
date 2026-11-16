@@ -271,7 +271,6 @@ public class DialogFragmentServiceTests : FragmentTestBase
 	[InlineData(0x00FFFFFFu)]
 	public async Task ModalPageLaysOutBelowTheStatusBarLikeThePageWindowForEveryStatusBarColor(uint argb)
 	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(23), "StatusBar does nothing before Android 6 (API 23), so the page's window has no layout to compare with.");
 		var color = Color.FromUint(argb);
 		var lifecycleCallbacks = new FragmentLifecycleManager(new DialogFragmentService());
 		var modalPage = new ModalPageFragment();

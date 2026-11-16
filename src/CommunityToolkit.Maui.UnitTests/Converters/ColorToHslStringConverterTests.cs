@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Converters;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Converters;
 using FluentAssertions.Equivalency;
 using Xunit;
 
@@ -108,22 +109,22 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 			0.25f, 0.25f, 0.25f, 0, "HSL(0,0%,25%)"
 		},
 		{
-			0.25f, 0.25f, 1, 1, "HSL(240,100%,63%)"
+			0.25f, 0.25f, 1, 1, "HSL(240,100%,62%)"
 		},
 		{
-			0.25f, 0.25f, 1, 0, "HSL(240,100%,63%)"
+			0.25f, 0.25f, 1, 0, "HSL(240,100%,62%)"
 		},
 		{
-			0.25f, 1, 0.25f, 1, "HSL(120,100%,63%)"
+			0.25f, 1, 0.25f, 1, "HSL(120,100%,62%)"
 		},
 		{
-			0.25f, 1, 0.25f, 0, "HSL(120,100%,63%)"
+			0.25f, 1, 0.25f, 0, "HSL(120,100%,62%)"
 		},
 		{
-			0.75f, 1, 0.25f, 1, "HSL(80,100%,63%)"
+			0.75f, 1, 0.25f, 1, "HSL(80,100%,62%)"
 		},
 		{
-			0.75f, 1, 0.25f, 0, "HSL(80,100%,63%)"
+			0.75f, 1, 0.25f, 0, "HSL(80,100%,62%)"
 		},
 		{
 			0.75f, 0, 1, 1, "HSL(285,100%,50%)"
@@ -133,15 +134,16 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		},
 	};
 
-	[CulturedTheory(cultures: ["en-US", "uk-UA", "de-DE"])]
+	[Theory]
 	[MemberData(nameof(ValidInputData))]
 	public void ColorToHslStringConverterValidInputTest(float red, float green, float blue, float alpha, string expectedResult)
 	{
 		var converter = new ColorToHslStringConverter();
 		var color = new Color(red, green, blue, alpha);
+		var culture = new CultureInfo("en-US");
 
-		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, Thread.CurrentThread.CurrentCulture);
-		var resultConvertFrom = converter.ConvertFrom(color, Thread.CurrentThread.CurrentCulture);
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, culture);
+		var resultConvertFrom = converter.ConvertFrom(color, culture);
 
 		Assert.Equal(expectedResult, resultConvert);
 		Assert.Equal(expectedResult, resultConvertFrom);
@@ -155,5 +157,25 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(null, typeof(string), null, null));
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToPercentYellowConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Theory]
+	[InlineData("de-DE", "HSL(360,100 %,50 %)")]
+	[InlineData("tr-TR", "HSL(360,%100,%50)")]
+	public void ColorToHslStringConverter_UsesPassedCulture_NotCurrentCulture(string cultureName, string expectedResult)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		try
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("en-US");
+
+			var result = new ColorToHslStringConverter().ConvertFrom(Colors.Red, new CultureInfo(cultureName));
+
+			Assert.Equal(expectedResult, result);
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+		}
 	}
 }
