@@ -1197,6 +1197,87 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 	}
 
+	// A colour that the attach set as a value would hide the app's source for good, also one without a colour yet (a CollectionView item
+	// gets its BindingContext after the attach).
+	[Theory]
+	[InlineData("Binding")]
+	[InlineData("BindingContextAfterTheAttach")]
+	[InlineData("DynamicResource")]
+	[InlineData("Style")]
+	public void VerifyBackgroundColorSourceWithoutAColorAtTheAttachShowsItsLaterColor(string source)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = null };
+		var view = new MockView { Resources = new ResourceDictionary { [colorKey] = null! } };
+
+		switch (source)
+		{
+			case "Binding":
+				view.BindingContext = viewModel;
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "BindingContextAfterTheAttach":
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "DynamicResource":
+				view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(null);
+				break;
+		}
+
+		touchBehavior.PressedScale = 0.9;
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Null(view.BackgroundColor);
+
+		switch (source)
+		{
+			case "Binding":
+				viewModel.Color = Colors.Green;
+				break;
+			case "BindingContextAfterTheAttach":
+				viewModel.Color = Colors.Green;
+				view.BindingContext = viewModel;
+				break;
+			case "DynamicResource":
+				view.Resources[colorKey] = Colors.Green;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Green);
+				break;
+		}
+
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
+	}
+
+	[Fact]
+	public void VerifyBackgroundBindingWithoutABrushShowsItsLatestBrushWhenTheStateColorEnds()
+	{
+		var viewModel = new BackgroundColorViewModel();
+		var view = new MockView { BackgroundColor = Colors.Red, BindingContext = viewModel };
+		view.SetBinding(VisualElement.BackgroundProperty, nameof(BackgroundColorViewModel.Brush));
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
+
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		viewModel.Brush = appBrush;
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Same(appBrush, view.Background);
+	}
+
+	static Style CreateBackgroundStyle(Color? color) => new(typeof(MockView))
+	{
+		Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
+	};
+
 	[Theory]
 	[InlineData("Binding")]
 	[InlineData("DynamicResource")]
@@ -1257,11 +1338,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		touchBehavior.HandleTouch(TouchStatus.Completed);
 		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
-
-		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
-		{
-			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
-		};
 	}
 
 	[Theory]
@@ -1401,11 +1477,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 					break;
 			}
 		}
-
-		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
-		{
-			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
-		};
 	}
 
 	[Fact]
@@ -1770,17 +1841,28 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 	sealed class BackgroundColorViewModel : System.ComponentModel.INotifyPropertyChanged
 	{
-		Color color = Colors.Transparent;
+		Color? color = Colors.Transparent;
+		Brush? brush;
 
 		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
-		public Color Color
+		public Color? Color
 		{
 			get => color;
 			set
 			{
 				color = value;
 				PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Color)));
+			}
+		}
+
+		public Brush? Brush
+		{
+			get => brush;
+			set
+			{
+				brush = value;
+				PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Brush)));
 			}
 		}
 	}

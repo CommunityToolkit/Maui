@@ -1245,6 +1245,43 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		});
 	}
 
+	// Catches: the attach giving a bound element Transparent as a value of its own, which hides the binding for good (a CollectionView item
+	// gets its BindingContext after the attach).
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task BackgroundColorFromABindingWithoutAColorAtTheAttachShowsItsLaterColor(bool bindingContextAfterTheAttach)
+	{
+		SetupBuilder();
+
+		var source = new BackgroundColorSource { Color = null };
+		var host = CreateUnpaintedHost();
+		if (!bindingContextAfterTheAttach)
+		{
+			host.BindingContext = source;
+		}
+		host.SetBinding(VisualElement.BackgroundColorProperty, new Binding(nameof(BackgroundColorSource.Color)));
+
+		var behavior = new TouchBehavior { PressedOpacity = 0.5 };
+
+		await RunAttachedAsync(host, behavior, async handler =>
+		{
+			SimulatePress(behavior);
+			SimulateRelease(behavior);
+			await SettleAsync();
+			Assert.True(host.BackgroundColor is null,
+				$"The attach must leave a bound element without a colour, but it has {host.BackgroundColor?.ToArgbHex()}.");
+
+			source.Color = Colors.Green;
+			if (bindingContextAfterTheAttach)
+			{
+				host.BindingContext = source;
+			}
+
+			await AssertBackgroundAsync(handler, Colors.Green, "after the binding gave a colour");
+		});
+	}
+
 	// Catches: SetBackgroundColor writing the app's colour back as a value of the element (the binding, DynamicResource, AppThemeBinding or
 	// Style it hides stops working for good), or not setting a value of the app's own back after taking its value off.
 	[Theory]
@@ -2131,11 +2168,11 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 
 	sealed class BackgroundColorSource : System.ComponentModel.INotifyPropertyChanged
 	{
-		Color color = Colors.Transparent;
+		Color? color = Colors.Transparent;
 
 		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
-		public Color Color
+		public Color? Color
 		{
 			get => color;
 			set
