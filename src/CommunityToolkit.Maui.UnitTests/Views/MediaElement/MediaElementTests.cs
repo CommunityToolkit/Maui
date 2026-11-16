@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using System.Globalization;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Xunit;
@@ -144,5 +145,65 @@ public class MediaElementTests : BaseViewTest
 				Volume = -double.Epsilon
 			};
 		});
+	}
+
+	[Fact]
+	public void AndroidPlayerIdIsAGuidInTheNFormat()
+	{
+		using var mediaElement = new MediaElement();
+
+		var androidPlayerId = ((IMediaElement)mediaElement).AndroidPlayerId;
+
+		Assert.True(Guid.TryParseExact(androidPlayerId, "N", out _));
+		Assert.Equal(32, androidPlayerId.Length);
+	}
+
+	[Fact]
+	public void AndroidPlayerIdIsStableForOneElement()
+	{
+		using var mediaElement = new MediaElement();
+
+		Assert.Equal(((IMediaElement)mediaElement).AndroidPlayerId, ((IMediaElement)mediaElement).AndroidPlayerId);
+	}
+
+	[Fact]
+	public void AndroidPlayerIdsOfDifferentElementsDiffer()
+	{
+		var androidPlayerIds = new HashSet<string>(StringComparer.Ordinal);
+
+		for (var index = 0; index < 1000; index++)
+		{
+			using var mediaElement = new MediaElement();
+			androidPlayerIds.Add(((IMediaElement)mediaElement).AndroidPlayerId);
+		}
+
+		Assert.Equal(1000, androidPlayerIds.Count);
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	[InlineData("ar-SA")]
+	public void AndroidPlayerIdIsTheSameMachineStringInEveryCulture(string cultureName)
+	{
+		var originalCulture = CultureInfo.CurrentCulture;
+		var originalUICulture = CultureInfo.CurrentUICulture;
+		try
+		{
+			CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+
+			using var mediaElement = new MediaElement();
+			var androidPlayerId = ((IMediaElement)mediaElement).AndroidPlayerId;
+
+			Assert.True(Guid.TryParseExact(androidPlayerId, "N", out _));
+			Assert.Equal(androidPlayerId.ToLowerInvariant(), androidPlayerId);
+			Assert.All(androidPlayerId, character => Assert.True(char.IsAsciiHexDigitLower(character) || char.IsAsciiDigit(character)));
+		}
+		finally
+		{
+			CultureInfo.CurrentCulture = originalCulture;
+			CultureInfo.CurrentUICulture = originalUICulture;
+		}
 	}
 }
