@@ -138,7 +138,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 		// At the default length, frames land in the pause between the first hop's rise and its fall
 		var animation = new BounceAnimation();
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var translation = view.TranslateToAsync(view.TranslationX + 100, view.TranslationY, 2 * animation.Length, Easing.Linear, token);
+		var translation = view.TranslateToAsync(view.TranslationX + 100, view.TranslationY, animation.Length + functionalTestLength, Easing.Linear, token);
 		await WaitForFramesAsync(view, 2, token);
 
 		using var recorder = new FrameRecorder(view, VisualElement.TranslationYProperty);
