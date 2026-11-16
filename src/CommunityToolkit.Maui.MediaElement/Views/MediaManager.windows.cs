@@ -808,6 +808,7 @@ partial class MediaManager : IDisposable
 			metadata.SetMetadata(MediaElement);
 		}
 
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
 		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
 			return;
@@ -818,6 +819,7 @@ partial class MediaManager : IDisposable
 			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
 			return;
 		}
+#pragma warning restore CS0618
 
 		if (Dispatcher.IsDispatchRequired)
 		{

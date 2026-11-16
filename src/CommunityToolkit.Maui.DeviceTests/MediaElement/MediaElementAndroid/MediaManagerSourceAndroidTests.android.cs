@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // These tests pin the obsolete MetadataArtworkUrl, which keeps working
 using System.Reflection;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.ExoPlayer;

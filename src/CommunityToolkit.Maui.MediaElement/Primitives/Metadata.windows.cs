@@ -35,7 +35,10 @@ sealed partial class Metadata : IDisposable
 
 		// RandomAccessStreamReference.CreateFromUri supports the http, https, ms-appx and ms-appdata schemes only, so any other url (a relative
 		// or malformed one, or a file path, for example) is ignored instead of passed on.
-		if (Uri.TryCreate(mp.MetadataArtworkUrl, UriKind.Absolute, out var artworkUri)
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
+		var artworkUrl = mp.MetadataArtworkUrl;
+#pragma warning restore CS0618
+		if (Uri.TryCreate(artworkUrl, UriKind.Absolute, out var artworkUri)
 			&& artworkUri.Scheme is "http" or "https" or "ms-appx" or "ms-appdata")
 		{
 			systemMediaControls.DisplayUpdater.Thumbnail = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromUri(artworkUri);
@@ -58,7 +61,14 @@ sealed partial class Metadata : IDisposable
 	static bool HasMetadata(IMediaElement mediaElement) =>
 		!string.IsNullOrWhiteSpace(mediaElement.MetadataTitle)
 		|| !string.IsNullOrWhiteSpace(mediaElement.MetadataArtist)
-		|| !string.IsNullOrWhiteSpace(mediaElement.MetadataArtworkUrl);
+		|| HasArtworkUrl(mediaElement);
+
+	static bool HasArtworkUrl(IMediaElement mediaElement)
+	{
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
+		return !string.IsNullOrWhiteSpace(mediaElement.MetadataArtworkUrl);
+#pragma warning restore CS0618
+	}
 
 	void OnSystemMediaControlsButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
 	{

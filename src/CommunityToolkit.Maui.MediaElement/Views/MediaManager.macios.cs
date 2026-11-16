@@ -718,10 +718,12 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
 		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && !string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
 		{
 			// Artwork that cannot be read or decoded shows no poster (an image without a size has no aspect ratio to keep)
 			var artworkData = NSUrl.FromString(MediaElement.MetadataArtworkUrl) is NSUrl artworkUrl ? NSData.FromUrl(artworkUrl) : null;
+#pragma warning restore CS0618
 			var image = artworkData is null ? null : UIImage.LoadFromData(artworkData);
 			if (image is null || image.Size.Width <= 0 || image.Size.Height <= 0)
 			{

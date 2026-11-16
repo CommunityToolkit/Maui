@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // These tests pin the obsolete MetadataArtworkUrl, which keeps working
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;

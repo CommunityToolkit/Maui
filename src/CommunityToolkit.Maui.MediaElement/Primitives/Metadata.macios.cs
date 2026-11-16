@@ -87,7 +87,9 @@ sealed class Metadata : IDisposable
 			return;
 		}
 
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
 		var url = mediaElement.MetadataArtworkUrl;
+#pragma warning restore CS0618
 
 		NowPlayingInfo.Title = mediaElement.MetadataTitle;
 		NowPlayingInfo.Artist = mediaElement.MetadataArtist;

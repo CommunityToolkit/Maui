@@ -120,8 +120,14 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtist);
 
 	/// <summary>
+	/// Bindable property for the <see cref="MetadataArtworkSource"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtworkSourceProperty = BindableProperty.Create(nameof(MetadataArtworkSource), typeof(MediaSource), typeof(MediaElement), MediaElementDefaults.MetadataArtworkSource, propertyChanged: OnMetadataArtworkSourcePropertyChanged);
+
+	/// <summary>
 	/// Bindable property for the <see cref="MetadataArtworkUrl"/> property.
 	/// </summary>
+	[Obsolete("Use MetadataArtworkSource instead. It also takes a local file or a file of the app package.")]
 	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkUrl);
 
 	// An AsyncLocal follows the source update through its awaits (Android and Windows), and does not reach what runs outside of it: the events that
@@ -359,8 +365,37 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets the <see cref="MetadataArtworkUrl"/> of the media.
+	/// Gets or sets the artwork of the media: the image that the system media controls show (the media notification on Android,
+	/// Now Playing on iOS and Mac Catalyst, the system media transport controls on Windows) and the poster shown for audio.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// Use a <see cref="UriMediaSource"/> with an <c>http</c> or <c>https</c> URI, a <see cref="FileMediaSource"/> with the full path
+	/// (or file URI) of a local file, or a <see cref="ResourceMediaSource"/> for a file of the app package, for example
+	/// <c>MediaSource.FromResource("artwork.png")</c> for <c>Resources/Raw/artwork.png</c>. In XAML a string converts as for
+	/// <see cref="Source"/>: <c>embed://</c> for a resource, <c>filesystem://</c> for a file, otherwise an absolute URI.
+	/// </para>
+	/// <para>
+	/// When it is set, it replaces <see cref="MetadataArtworkUrl"/>. Artwork that cannot be loaded is left out and never makes the
+	/// media fail. Set it before <see cref="Source"/>: the artwork is read when the media is loaded.
+	/// </para>
+	/// <para>
+	/// A <see cref="StreamMediaSource"/> is not supported as artwork and is ignored, and the <see cref="UriMediaSource.HttpHeaders"/>
+	/// of a <see cref="UriMediaSource"/> are not sent when the artwork is downloaded.
+	/// </para>
+	/// </remarks>
+	[TypeConverter(typeof(MediaSourceConverter))]
+	public MediaSource? MetadataArtworkSource
+	{
+		get => (MediaSource?)GetValue(MetadataArtworkSourceProperty);
+		set => SetValue(MetadataArtworkSourceProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the URL of the artwork of the media.
+	/// </summary>
+	/// <remarks>Use <see cref="MetadataArtworkSource"/>, which also takes a local file or a file of the app package.</remarks>
+	[Obsolete("Use MetadataArtworkSource instead. It also takes a local file or a file of the app package.")]
 	public string MetadataArtworkUrl
 	{
 		get => (string)GetValue(MetadataArtworkUrlProperty);
@@ -591,6 +626,11 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			SetInheritedBindingContext(Source, BindingContext);
 		}
 
+		if (MetadataArtworkSource is not null)
+		{
+			SetInheritedBindingContext(MetadataArtworkSource, BindingContext);
+		}
+
 		base.OnBindingContextChanged();
 	}
 
@@ -626,6 +666,14 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 		mediaElement.InvalidateMeasure();
 		mediaElement.InitializeTimer();
+	}
+
+	static void OnMetadataArtworkSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		if (newValue is MediaSource artworkSource)
+		{
+			SetInheritedBindingContext(artworkSource, ((MediaElement)bindable).BindingContext);
+		}
 	}
 
 	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue)

@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // These tests pin the obsolete MetadataArtworkUrl, which keeps working
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 using CommunityToolkit.Maui.DeviceTests.Runners;

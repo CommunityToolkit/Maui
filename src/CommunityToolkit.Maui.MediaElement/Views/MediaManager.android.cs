@@ -876,7 +876,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 		catch (Exception e)
 		{
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
 			Trace.WriteLine($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}.{e}\n");
+#pragma warning restore CS0618
 			return [];
 		}
 		finally
@@ -984,7 +986,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
 		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+#pragma warning restore CS0618
 		if (data is not null && data.Length > 0)
 		{
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
@@ -1003,7 +1007,9 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
+#pragma warning disable CS0618 // MetadataArtworkUrl stays supported: it is used when MetadataArtworkSource is not set
 		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+#pragma warning restore CS0618
 		if (data is not null && data.Length > 0)
 		{
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);

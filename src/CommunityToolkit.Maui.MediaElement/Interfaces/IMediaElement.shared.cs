@@ -127,8 +127,14 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	string MetadataArtist { get; set; }
 
 	/// <summary>
+	/// Gets or sets the artwork of the media (see <see cref="MediaElement.MetadataArtworkSource"/>).
+	/// </summary>
+	MediaSource? MetadataArtworkSource { get; set; }
+
+	/// <summary>
 	/// Gets or sets the artwork Image Url.
 	/// </summary>
+	[Obsolete("Use MetadataArtworkSource instead. It also takes a local file or a file of the app package.")]
 	string MetadataArtworkUrl { get; set; }
 
 	/// <summary>
