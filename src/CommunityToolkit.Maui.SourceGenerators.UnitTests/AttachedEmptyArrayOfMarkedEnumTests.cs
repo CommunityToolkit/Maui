@@ -42,20 +42,14 @@ public class AttachedEmptyArrayOfMarkedEnumTests : BaseTest
 	}
 
 	[Theory]
-	[InlineData("", "ExpScalarHost.g.cs", "USR77")]
-	[InlineData("tr-TR", "ExpScalarHost.g.cs", "USR77")]
-	[InlineData("az-Latn-AZ", "ExpScalarHost.g.cs", "USR77")]
-	[InlineData("", "ExpNestedHost.g.cs", "USR77")]
-	[InlineData("tr-TR", "ExpNestedHost.g.cs", "USR77")]
-	[InlineData("az-Latn-AZ", "ExpNestedHost.g.cs", "USR77")]
-	[InlineData("", "ObsScalarHost.g.cs", "USR78")]
-	[InlineData("tr-TR", "ObsScalarHost.g.cs", "USR78")]
-	[InlineData("az-Latn-AZ", "ObsScalarHost.g.cs", "USR78")]
-	public void GeneratedPragma_ContainsTheIdOfTheEnum(string cultureName, string fileName, string expectedId)
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	public void StrictMode_ReportsTheIdsOfTheMarkedEnums(string cultureName)
 	{
-		var source = GeneratedCodeCompilation.Run(emptyArraySource, cultureName, TestContext.Current.CancellationToken).GetSource(fileName);
-		var pragmaLine = source.Split('\n').First(static line => line.StartsWith("#pragma warning disable", StringComparison.Ordinal));
+		var findingIds = GeneratedCodeCompilation.RunStrict(emptyArraySource, cultureName).Findings.Select(static finding => finding.Id).ToHashSet(StringComparer.Ordinal);
 
-		Assert.Contains(expectedId, pragmaLine, StringComparison.Ordinal);
+		Assert.Contains("USR77", findingIds);
+		Assert.Contains("USR78", findingIds);
 	}
 }

@@ -1,5 +1,6 @@
 using System.IO;
 using CommunityToolkit.Maui.SourceGenerators.Generators;
+using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -18,7 +19,7 @@ public class TextColorToGeneratorTests : BaseTest
 	}
 
 	[Fact]
-	public void Generator_SuppressesOnlyDeprecationWarnings_AndNeverTrimOrAotWarnings()
+	public void Generator_EmitsOnlyTheSharedHeaderPragmas()
 	{
 		var generatedSources = GenerateSources(TestContext.Current.CancellationToken);
 
@@ -26,7 +27,7 @@ public class TextColorToGeneratorTests : BaseTest
 		foreach (var source in generatedSources)
 		{
 			var pragmaLines = source.Split('\n').Where(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).Select(static line => line.TrimEnd('\r')).ToList();
-			Assert.Equal(["#pragma warning disable CS0612, CS0618"], pragmaLines);
+			Assert.Equal(["#pragma warning disable", $"#pragma warning restore {GeneratedCodePragmas.TrimAndAotWarnings}"], pragmaLines);
 		}
 	}
 

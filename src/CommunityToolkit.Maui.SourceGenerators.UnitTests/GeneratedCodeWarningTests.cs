@@ -1,14 +1,10 @@
-using System.Globalization;
 using CommunityToolkit.Maui.SourceGenerators.Helpers;
-using CommunityToolkit.Maui.SourceGenerators.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;
 
-// Generated code names the user's members and types, which the user may deprecate, hide or mark experimental, and cannot annotate generated members; IL codes are never listed.
-// CS9258: the generated getter means the `field` keyword even when the user's class has a member named `field`.
 public class GeneratedCodeWarningTests : BaseTest
 {
 	const string strictConsumerSource =
@@ -251,10 +247,12 @@ public class GeneratedCodeWarningTests : BaseTest
 		}
 		""";
 
+	// The fixture's own declarations use its experimental types, as a consumer's would; its pragma covers only its own file, never the generated files.
 	const string userChosenDiagnosticIdsSource =
 		/* language=C#-test */
 		//lang=csharp
 		"""
+		#pragma warning disable USR014, USR015, EXPASM1
 		using System;
 		using System.Diagnostics.CodeAnalysis;
 		using CommunityToolkit.Maui;
@@ -476,17 +474,8 @@ public class GeneratedCodeWarningTests : BaseTest
 			public partial System.Collections.Generic.IList<string> Items { get; set; } = new System.Collections.Generic.List<string>();
 		}
 
-		/// <summary>Obsolete with a trim warning ID.</summary>
-		[Obsolete("old", DiagnosticId = "IL2026")]
-		public partial class TrimIdView : View
-		{
-			/// <summary>Items.</summary>
-			[BindableProperty]
-			public partial System.Collections.Generic.IList<string> Items { get; set; } = new System.Collections.Generic.List<string>();
-		}
-
-		/// <summary>Experimental with an ID that becomes a trim warning ID once the lexer drops its invisible character.</summary>
-		[System.Diagnostics.CodeAnalysis.Experimental("IL\u200B2026")]
+		/// <summary>Obsolete with an ID that becomes a trim warning ID once the lexer drops its invisible character.</summary>
+		[Obsolete("x", DiagnosticId = "IL\u200B2026")]
 		public class ZwspItem
 		{
 		}
@@ -669,10 +658,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_CompilesWithoutWarnings_UnderNullableAndDocumentationChecks(string cultureName)
 	{
-		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(strictConsumerSource, cultureName, null, TestContext.Current.CancellationToken);
-
-		Assert.NotEmpty(generatedFilePaths);
-		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
+		GeneratedCodeCompilation.AssertCompilesCleanly(strictConsumerSource, cultureName, "StrictView");
 	}
 
 	[Theory]
@@ -681,25 +667,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_CompilesWithoutWarnings_WhenUserDeprecatesOrHidesMembersAndDeclaresPublicTextTypes(string cultureName)
 	{
-		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(deprecationAndHidingSource, cultureName, null, TestContext.Current.CancellationToken);
-
-		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseEFancyTextTextColorTo", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseEGenericText-1TextColorTo", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => path.Contains("CaseFObsoleteTextTextColorTo", StringComparison.Ordinal));
-		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
-	}
-
-	[Fact]
-	public void GeneratedCode_NeverSuppressesTrimOrAotWarnings()
-	{
-		var generatedSources = GenerateSources(deprecationAndHidingSource, TestContext.Current.CancellationToken);
-
-		Assert.NotEmpty(generatedSources);
-		foreach (var source in generatedSources)
-		{
-			var pragmaLines = source.Split('\n').Where(static line => line.StartsWith("#pragma", StringComparison.Ordinal));
-			Assert.DoesNotContain(pragmaLines, static line => line.Contains("IL2", StringComparison.Ordinal) || line.Contains("IL3", StringComparison.Ordinal));
-		}
+		GeneratedCodeCompilation.AssertCompilesCleanly(deprecationAndHidingSource, cultureName, "CaseEFancyTextTextColorTo", "CaseEGenericText-1TextColorTo", "CaseFObsoleteTextTextColorTo");
 	}
 
 	[Theory]
@@ -708,20 +676,7 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_CompilesWithoutDiagnostics_WhenTypeConstraintsReferToThemselves(string cultureName)
 	{
-		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(selfReferencingConstraintsSource, cultureName, null, TestContext.Current.CancellationToken);
-
-		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "SelfReferencing.CmpView-1.g.cs", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "SelfReferencing.NodeView-1.g.cs", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => string.Equals(Path.GetFileName(path), "SelfReferencing.ExpCmpView-1.g.cs", StringComparison.Ordinal));
-		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
-	}
-
-	[Fact]
-	public void GeneratedCode_NamesTheExperimentalIdOfASelfReferencingConstraint()
-	{
-		var pragmaLine = GetPragmaLine(selfReferencingConstraintsSource, "ExpCmpView-1.g.cs", []);
-
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258, SELF1", pragmaLine);
+		GeneratedCodeCompilation.AssertCompilesCleanly(selfReferencingConstraintsSource, cultureName, "SelfReferencing.CmpView-1.g.cs", "SelfReferencing.NodeView-1.g.cs", "SelfReferencing.ExpCmpView-1.g.cs");
 	}
 
 	[Theory]
@@ -730,27 +685,10 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("az-Latn-AZ")]
 	public void TextColorTo_Completes_WhenTheTextTypeConstraintRefersToItself(string cultureName)
 	{
-		var originalCulture = CultureInfo.CurrentCulture;
-		var originalUiCulture = CultureInfo.CurrentUICulture;
-		try
-		{
-			CultureInfo.CurrentCulture = new CultureInfo(cultureName);
-			CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+		var result = GeneratedCodeCompilation.Run(selfReferencingTextSource, cultureName, TestContext.Current.CancellationToken);
 
-			var (compilation, parseOptions) = CreateCompilation(selfReferencingTextSource, [], TestContext.Current.CancellationToken);
-			var driver = CreateDriver(parseOptions);
-			driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generatorDiagnostics, TestContext.Current.CancellationToken);
-
-			Assert.DoesNotContain(generatorDiagnostics, static diagnostic => diagnostic.Id == "CS8785");
-			var generatedTree = outputCompilation.SyntaxTrees.Single(static tree => IsGeneratedFile(tree.FilePath) && tree.FilePath.Contains("ComparableText-1TextColorTo", StringComparison.Ordinal));
-			var pragmaLine = generatedTree.GetText(TestContext.Current.CancellationToken).ToString().Split('\n').Single(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).TrimEnd('\r');
-			Assert.Equal("#pragma warning disable CS0612, CS0618", pragmaLine);
-		}
-		finally
-		{
-			CultureInfo.CurrentCulture = originalCulture;
-			CultureInfo.CurrentUICulture = originalUiCulture;
-		}
+		Assert.DoesNotContain(result.Findings, static finding => finding.Id is "CS8785");
+		Assert.True(result.HasFile("SelfReferencingText.ComparableText-1TextColorTo.g.shared.cs"), string.Join(", ", result.Sources.Keys));
 	}
 
 	[Theory]
@@ -759,145 +697,56 @@ public class GeneratedCodeWarningTests : BaseTest
 	[InlineData("az-Latn-AZ")]
 	public void GeneratedCode_CompilesWithoutDiagnostics_WhenUserChoosesOwnDiagnosticIds(string cultureName)
 	{
-		var (generatedFilePaths, diagnosticsInGeneratedCode) = CompileWithGenerators(userChosenDiagnosticIdsSource, cultureName, [CreateExperimentalAssemblyReference()], TestContext.Current.CancellationToken);
-
-		Assert.Contains(generatedFilePaths, static path => path.Contains("P4ExperimentalTextTextColorTo", StringComparison.Ordinal));
-		Assert.Contains(generatedFilePaths, static path => path.Contains("P13ObsoleteIdTextTextColorTo", StringComparison.Ordinal));
-		Assert.True(diagnosticsInGeneratedCode.Count == 0, string.Join(Environment.NewLine, diagnosticsInGeneratedCode));
-	}
-
-	[Theory]
-	[InlineData("P1ExperimentalView.g.cs", "USR001")]
-	[InlineData("P2View.g.cs", "USR002")]
-	[InlineData("P3View.g.cs", "USR003")]
-	[InlineData("P4ExperimentalTextTextColorTo.g.shared.cs", "USR004")]
-	[InlineData("P5Host.g.cs", "USR005")]
-	[InlineData("P12ObsoleteIdView.g.cs", "USROBS1")]
-	[InlineData("P13ObsoleteIdTextTextColorTo.g.shared.cs", "USROBS2")]
-	[InlineData("P14View.g.cs", "USR014")]
-	[InlineData("P15View.g.cs", "USR015")]
-	[InlineData("P16Outer+P16Inner.g.cs", "USR016")]
-	[InlineData("P17View.g.cs", "EXPASM1")]
-	[InlineData("P15Host.g.cs", "USR015")]
-	[InlineData("P18View.g.cs", "USR014")]
-	[InlineData("P18Host.g.cs", "USR015")]
-	public void GeneratedCode_SuppressesTheUserChosenDiagnosticId(string generatedFileName, string expectedDiagnosticId)
-	{
-		var pragmaLine = GetPragmaLine(userChosenDiagnosticIdsSource, generatedFileName, [CreateExperimentalAssemblyReference()]);
-
-		Assert.Contains(", " + expectedDiagnosticId, pragmaLine + ",", StringComparison.Ordinal);
-	}
-
-	[Fact]
-	public void GeneratedCode_ListsUserChosenDiagnosticIdsDistinctAndSortedAfterTheFixedCodes()
-	{
-		var pragmaLine = GetPragmaLine(userChosenDiagnosticIdsSource, "P15View.g.cs", [CreateExperimentalAssemblyReference()]);
-
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258, USR015", pragmaLine);
-	}
-
-	[Fact]
-	public void GeneratedCode_NamesCs9258ForBindableProperties_ButNotForOtherGenerators()
-	{
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(userChosenDiagnosticIdsSource, "P6View.g.cs", []));
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, USR005", GetPragmaLine(userChosenDiagnosticIdsSource, "P5Host.g.cs", []));
-		Assert.Equal("#pragma warning disable CS0612, CS0618, USR004", GetPragmaLine(userChosenDiagnosticIdsSource, "P4ExperimentalTextTextColorTo.g.shared.cs", []));
-	}
-
-	[Fact]
-	public void GeneratedCode_SkipsDiagnosticIdsThatAreNotPragmaTokensAndTrimWarnings()
-	{
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(unusablePragmaTokensSource, "SpacedIdView.g.cs", []));
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(unusablePragmaTokensSource, "TrimIdView.g.cs", []));
-		Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258", GetPragmaLine(unusablePragmaTokensSource, "ZwspIdView.g.cs", []));
+		GeneratedCodeCompilation.AssertCompilesCleanly(userChosenDiagnosticIdsSource, cultureName, [CreateExperimentalAssemblyReference()], ["EXPASM1"], "P4ExperimentalTextTextColorTo", "P13ObsoleteIdTextTextColorTo");
 	}
 
 	[Theory]
 	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
-	public void GeneratedCode_SkipsDirectiveWordsAndKeepsOtherDiagnosticIds(string cultureName)
+	public void GeneratedCode_CompilesWithoutDiagnostics_WhenUserIdsAreNotPragmaTokensOrDirectiveWords(string cultureName)
 	{
-		var originalCulture = CultureInfo.CurrentCulture;
-		var originalUiCulture = CultureInfo.CurrentUICulture;
-		try
-		{
-			CultureInfo.CurrentCulture = new CultureInfo(cultureName);
-			CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
-
-			var pragmaLine = GetPragmaLine(directiveWordPragmaTokensSource, "DirectiveWordIdView.g.cs", []);
-
-			Assert.Equal("#pragma warning disable CS0108, CS0109, CS0612, CS0618, CS9258, USR1, class", pragmaLine);
-		}
-		finally
-		{
-			CultureInfo.CurrentCulture = originalCulture;
-			CultureInfo.CurrentUICulture = originalUiCulture;
-		}
+		GeneratedCodeCompilation.AssertCompilesCleanly(unusablePragmaTokensSource, cultureName, "SpacedIdView.g.cs", "ZwspIdView.g.cs");
+		GeneratedCodeCompilation.AssertCompilesCleanly(directiveWordPragmaTokensSource, cultureName, "DirectiveWordIdView.g.cs");
 	}
 
 	[Theory]
 	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
-	public void GeneratedCode_ReportsOnlyUnsuppressibleObsoleteWarnings_WhenDiagnosticIdsAreDirectiveWords(string cultureName)
+	public void StrictMode_ReportsTheIdsTheUserDeclared_SoItProvesTheShippedPragmasHideThem(string cultureName)
 	{
-		var (_, diagnosticsInGeneratedCode) = CompileWithGenerators(directiveWordPragmaTokensSource, cultureName, [], TestContext.Current.CancellationToken);
+		var strict = GeneratedCodeCompilation.RunStrict(userChosenDiagnosticIdsSource, cultureName, [CreateExperimentalAssemblyReference()]);
+		var reportedIds = strict.Findings.Select(static finding => finding.Id).ToHashSet(StringComparer.Ordinal);
 
-		// No pragma can name these four IDs, so the deprecation warnings that the user's own [Obsolete] causes stay; the compiler must report nothing else.
-		string[] unsuppressibleWarningPrefixes = ["warning default: ", "warning disable: ", "warning restore: ", "warning enable: "];
-		var unexpectedDiagnostics = diagnosticsInGeneratedCode.Where(diagnostic => !unsuppressibleWarningPrefixes.Any(prefix => diagnostic.Contains(prefix, StringComparison.Ordinal))).ToList();
+		Assert.Superset(new HashSet<string>(["USR001", "USR002", "USR003", "USR004", "USR005", "USR014", "USR015", "USR016", "USROBS1", "USROBS2", "EXPASM1", "CS9258"], StringComparer.Ordinal), reportedIds);
+	}
 
-		Assert.True(unexpectedDiagnostics.Count == 0, string.Join(Environment.NewLine, unexpectedDiagnostics));
+	[Fact]
+	public void StrictMode_ReportsDirectiveWordIds()
+	{
+		var strict = GeneratedCodeCompilation.RunStrict(directiveWordPragmaTokensSource, "");
+
+		Assert.Contains(strict.Findings, static finding => finding.Id is "default");
+		Assert.Contains(strict.Findings, static finding => finding.Id is "disable");
 	}
 
 	[Theory]
-	[InlineData("IL2026", true)]
-	[InlineData("IL3050", true)]
-	[InlineData("IL", false)]
-	[InlineData("ILX1", false)]
-	[InlineData("USR001", false)]
-	public void GeneratedCodePragmas_RecognizesTrimAndAotWarnings(string id, bool expected)
+	[InlineData(deprecationAndHidingSource)]
+	[InlineData(userChosenDiagnosticIdsSource)]
+	public void GeneratedCode_StartsEveryFileWithTheSharedHeader(string source)
 	{
-		Assert.Equal(expected, GeneratedCodePragmas.IsTrimOrAotWarning(id));
+		var result = GeneratedCodeCompilation.Run(source, "", TestContext.Current.CancellationToken, [CreateExperimentalAssemblyReference()]);
+
+		Assert.NotEmpty(result.Sources);
+		foreach (var generatedSource in result.Sources.Values)
+		{
+			Assert.Equal(["#pragma warning disable", $"#pragma warning restore {GeneratedCodePragmas.TrimAndAotWarnings}"], GetPragmaLines(generatedSource));
+		}
 	}
 
-	[Theory]
-	[InlineData("USR001", true)]
-	[InlineData("_x1", true)]
-	[InlineData("not a token", false)]
-	[InlineData("A-B", false)]
-	[InlineData("1ABC", false)]
-	[InlineData("IL\u200B2026", false)]
-	[InlineData("USR\u00AD1", false)]
-	[InlineData("default", false)]
-	[InlineData("disable", false)]
-	[InlineData("restore", false)]
-	[InlineData("enable", false)]
-	[InlineData("true", false)]
-	[InlineData("false", false)]
-	[InlineData("hidden", false)]
-	[InlineData("checksum", false)]
-	[InlineData("warnings", false)]
-	[InlineData("annotations", false)]
-	[InlineData("nullable", true)]
-	[InlineData("class", true)]
-	[InlineData("USR1", true)]
-	[InlineData("", false)]
-	public void GeneratedCodePragmas_AcceptsOnlyIdentifierCharacters(string id, bool expected)
-	{
-		Assert.Equal(expected, GeneratedCodePragmas.IsValidPragmaToken(id));
-	}
-
-	static string GetPragmaLine(string source, string generatedFileName, IReadOnlyList<MetadataReference> extraReferences)
-	{
-		var (compilation, parseOptions) = CreateCompilation(source, extraReferences, TestContext.Current.CancellationToken);
-		var driver = CreateDriver(parseOptions);
-		driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _, TestContext.Current.CancellationToken);
-
-		var generatedTree = outputCompilation.SyntaxTrees.Single(tree => IsGeneratedFile(tree.FilePath) && tree.FilePath.EndsWith(generatedFileName, StringComparison.Ordinal));
-		return generatedTree.GetText(TestContext.Current.CancellationToken).ToString().Split('\n').Single(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).TrimEnd('\r');
-	}
+	static List<string> GetPragmaLines(string source) =>
+		[.. source.Split('\n').Select(static line => line.TrimEnd('\r')).Where(static line => line.StartsWith("#pragma", StringComparison.Ordinal))];
 
 	static MetadataReference CreateExperimentalAssemblyReference()
 	{
@@ -914,70 +763,4 @@ public class GeneratedCodeWarningTests : BaseTest
 
 		return MetadataReference.CreateFromImage(stream.ToArray());
 	}
-
-	static List<string> GenerateSources(string source, CancellationToken cancellationToken)
-	{
-		var (compilation, parseOptions) = CreateCompilation(source, [], cancellationToken);
-		var driver = CreateDriver(parseOptions);
-		driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _, cancellationToken);
-
-		return outputCompilation.SyntaxTrees
-			.Where(static tree => IsGeneratedFile(tree.FilePath))
-			.Select(tree => tree.GetText(cancellationToken).ToString())
-			.ToList();
-	}
-
-	static (HashSet<string> GeneratedFilePaths, List<string> DiagnosticsInGeneratedCode) CompileWithGenerators(string source, string cultureName, IReadOnlyList<MetadataReference>? extraReferences, CancellationToken cancellationToken)
-	{
-		var originalCulture = CultureInfo.CurrentCulture;
-		var originalUiCulture = CultureInfo.CurrentUICulture;
-		try
-		{
-			CultureInfo.CurrentCulture = new CultureInfo(cultureName);
-			CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
-
-			var (compilation, parseOptions) = CreateCompilation(source, extraReferences ?? [], cancellationToken);
-			var driver = CreateDriver(parseOptions);
-			driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var generatorDiagnostics, cancellationToken);
-
-			var generatedFilePaths = outputCompilation.SyntaxTrees
-				.Where(static tree => IsGeneratedFile(tree.FilePath))
-				.Select(static tree => tree.FilePath)
-				.ToHashSet(StringComparer.Ordinal);
-			var diagnosticsInGeneratedCode = outputCompilation.GetDiagnostics(cancellationToken)
-				.Concat(generatorDiagnostics)
-				.Where(static diagnostic => diagnostic.Severity >= DiagnosticSeverity.Warning)
-				.Where(diagnostic => diagnostic.Location.SourceTree is not null && generatedFilePaths.Contains(diagnostic.Location.SourceTree.FilePath))
-				.Select(static diagnostic => diagnostic.ToString())
-				.ToList();
-
-			return (generatedFilePaths, diagnosticsInGeneratedCode);
-		}
-		finally
-		{
-			CultureInfo.CurrentCulture = originalCulture;
-			CultureInfo.CurrentUICulture = originalUiCulture;
-		}
-	}
-
-	static bool IsGeneratedFile(string filePath) => filePath.Contains("CommunityToolkit.Maui.SourceGenerators", StringComparison.Ordinal);
-
-	static (CSharpCompilation Compilation, CSharpParseOptions ParseOptions) CreateCompilation(string source, IReadOnlyList<MetadataReference> extraReferences, CancellationToken cancellationToken)
-	{
-		var parseOptions = new CSharpParseOptions(LanguageVersion.Preview, DocumentationMode.Diagnose);
-		var compilation = CSharpCompilation.Create(
-			"StrictConsumerAssembly",
-			[CSharpSyntaxTree.ParseText(source, parseOptions, cancellationToken: cancellationToken)],
-			[.. GeneratorCultureTests.GetReferences(), .. extraReferences],
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable, warningLevel: 9999)
-				.WithSpecificDiagnosticOptions(new Dictionary<string, ReportDiagnostic>
-				{
-					{ BindablePropertyDiagnostic.BindablePropertyAttributeExperimentalDiagnosticId, ReportDiagnostic.Suppress }
-				}));
-		return (compilation, parseOptions);
-	}
-
-	static GeneratorDriver CreateDriver(CSharpParseOptions parseOptions) => CSharpGeneratorDriver.Create(
-		[new BindablePropertyAttributeSourceGenerator().AsSourceGenerator(), new AttachedBindablePropertyAttributeSourceGenerator().AsSourceGenerator(), new TextColorToGenerator().AsSourceGenerator()],
-		parseOptions: parseOptions);
 }

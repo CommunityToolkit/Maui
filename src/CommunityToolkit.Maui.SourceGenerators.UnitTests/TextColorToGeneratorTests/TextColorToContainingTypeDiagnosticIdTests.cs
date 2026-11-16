@@ -35,12 +35,9 @@ public class TextColorToContainingTypeDiagnosticIdTests : BaseTest
 	[InlineData("")]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
-	public void GeneratedCode_NamesTheExperimentalIdOfAContainingTypeConstraint(string cultureName)
+	public void GeneratedCode_CompilesCleanly_WhenAContainingTypeConstraintIsExperimental(string cultureName)
 	{
-		var result = GeneratedCodeCompilation.Run(experimentalOuterConstraintSource, cultureName, TestContext.Current.CancellationToken);
-
-		Assert.Empty(result.Diagnostics);
-		var pragmaLine = result.GetSource("ExperimentalOuter.ExpOuter-1+InnerTextTextColorTo.g.shared.cs").Split('\n').Single(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).TrimEnd('\r');
-		Assert.Equal("#pragma warning disable CS0612, CS0618, USR9", pragmaLine);
+		GeneratedCodeCompilation.AssertCompilesCleanly(experimentalOuterConstraintSource, cultureName, "ExpOuter-1+InnerTextTextColorTo");
+		Assert.Contains(GeneratedCodeCompilation.RunStrict(experimentalOuterConstraintSource, cultureName).Findings, static finding => finding.Id is "USR9");
 	}
 }

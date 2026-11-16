@@ -1,4 +1,5 @@
 using System.Globalization;
+using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -147,16 +148,14 @@ public class GeneratorCultureTests : BaseTest
 	[Theory]
 	[InlineData("tr-TR")]
 	[InlineData("az-Latn-AZ")]
-	public void GeneratedSourceSuppressesOnlyUserDeclaredMemberWarnings(string cultureName)
+	public void GeneratedSourceKeepsTheSharedHeader(string cultureName)
 	{
 		var sources = RunGenerators(testSource, new CultureInfo(cultureName), out _);
 
 		Assert.NotEmpty(sources);
 		foreach (var text in sources.Values)
 		{
-			Assert.Matches(@"(?m)^#pragma warning disable (CS0108, CS0109, )?CS0612, CS0618(, CS9258)?\r?$", text);
-			Assert.DoesNotContain("IL2", text, StringComparison.Ordinal);
-			Assert.DoesNotContain("IL3", text, StringComparison.Ordinal);
+			Assert.Contains(GeneratedCodePragmas.Header.ReplaceLineEndings("\r\n"), text, StringComparison.Ordinal);
 		}
 	}
 
