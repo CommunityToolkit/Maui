@@ -41,6 +41,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
 * Code that reads or formats with **CurrentCulture** or takes a **CultureInfo** must be tested in Turkish (tr-TR, az-Latn-AZ) and the other notorious cultures; see `.github/instructions/culture.instructions.md`.
+* Handler lifecycle: confirmed in .NET MAUI 11.0.10, `CreatePlatformView` runs once per handler in a real app; do not ask for guards against a second call; see `.github/instructions/handler-lifecycle.instructions.md`.
 
 ### Element Positioning (enforced as build warnings)
 StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **build warnings** via `.editorconfig`. Always write new and modified C# code in the correct order so no warnings are introduced:
