@@ -13,6 +13,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// again before its animation ended, takes over from the partially faded opacity and returns the view to the opacity it had before the first of these animations.
 /// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
 /// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original opacity at once and the returned <see cref="Task"/> completes.
+/// Setting the opacity yourself as you stop it also takes over, except setting exactly the opacity the animation had reached: that changes nothing, so the view still returns to its original opacity.
 /// Cancelling the token while the animation runs returns the view to its original opacity and ends the returned <see cref="Task"/> as canceled.
 /// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), also when they are switched off while the animation runs, the view ends at its original opacity.
 /// </remarks>

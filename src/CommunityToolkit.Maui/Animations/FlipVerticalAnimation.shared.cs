@@ -11,6 +11,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// An animation that starts while another one still flips the same view takes over and returns the view to the x-axis rotation it had before the first of these animations.
 /// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
 /// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original x-axis rotation at once and the returned <see cref="Task"/> completes.
+/// Setting the x-axis rotation yourself as you stop it also takes over, except setting exactly the x-axis rotation the animation had reached: that changes nothing, so the view still returns to its original x-axis rotation.
 /// Cancelling the token while the animation runs returns the view to that rotation and ends the returned <see cref="Task"/> as canceled.
 /// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), also when they are switched off while the animation runs, the view ends at its original x-axis rotation.
 /// </remarks>

@@ -14,6 +14,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// Starting it also stops a running attention seeker that animates the rotation, such as <see cref="SwingAnimation"/>, <see cref="TadaAnimation"/> or <see cref="WobbleAnimation"/>, which returns the view to its original values first.
 /// When the animation is stopped and nothing takes over, for example by <see cref="Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(VisualElement)"/> or by another
 /// <see cref="Behaviors.AnimationBehavior"/> of the same view, the view returns to its original rotation at once and the returned <see cref="Task"/> completes.
+/// Setting the rotation yourself as you stop it also takes over, except setting exactly the rotation the animation had reached: that changes nothing, so the view still returns to its original rotation.
 /// Cancelling the token while the animation runs returns the view to its original rotation and ends the returned <see cref="Task"/> as canceled.
 /// With the system's animations off (for example iOS Reduce Motion or Android's "Remove animations"), also when they are switched off while the animation runs, the view ends at its original rotation.
 /// </remarks>
