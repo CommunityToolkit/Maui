@@ -222,6 +222,20 @@ pwsh eng/coverage-report.ps1 -Report artifacts/coverage,artifacts/device-tests/i
 # artifacts/coverage-report/summary.md and artifacts/coverage-report/report/index.html
 ```
 
+## Trimmed and NativeAOT runs
+
+`/p:CtmDeviceTestsTrimming=full` builds the app fully trimmed, and `/p:CtmDeviceTestsTrimming=nativeaot` compiles it with NativeAOT (Android, iOS and Mac Catalyst). Pass it with `-BuildArgs`, in `Release`:
+
+```bash
+pwsh eng/devices/run.ps1 -Platform ios -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=nativeaot'
+pwsh eng/devices/run.ps1 -Platform android -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=full'
+```
+
+* Only the app changes (`src/CommunityToolkit.Maui.DeviceTests/Directory.Build.props`): it roots xunit, the XHarness runner and the test assemblies, and a Windows build keeps built-in COM on for offline speech-to-text. The app stays where an untrimmed build puts it, so `-Target testOnly` needs no `-BuildArgs`.
+* The build fails when the SDK would not trim or compile with NativeAOT, when `DEVICE_TEST_COVERAGE` is `true` (coverlet rewrites the toolkit assemblies; do not pass `-Coverage` either), and for `nativeaot` on Windows ([dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053)).
+* Delete the app's `bin` and `obj` folders when you switch modes: the trimmer's incremental check ignores `TrimMode`.
+* CI: the `Trimmed Device Tests` workflow (`.github/workflows/device-tests-trimmed.yml`) runs the newest Android API level in `device-tests.yml` (`full` and `nativeaot`), the iOS simulator (`nativeaot`) and Windows unpackaged (`full`) on every pull request and push to `main` (the `Build` workflow calls it) and from the Actions tab. After each build, `.github/scripts/check-trimmed-device-test-app.sh` fails the job unless the build used the switch and the trimmer or ILC processed the app.
+
 ## Windows details
 
 * `unpackaged` publishes a self-contained app with `-p:WindowsPackageType=None -p:_CtmDeviceTestUnpackaged=true`; the app project bundles the Windows App SDK in that case (`WindowsAppSDKSelfContained` must not be passed on the command line, it would reach every library) and builds into `bin\unpackaged` and `obj\unpackaged`. In the folders of a packaged build, an unpackaged build keeps the packaged `resources.pri`, which lacks the Windows App SDK resources that the unpackaged app needs, and the app crashes at startup (0xC000027B).

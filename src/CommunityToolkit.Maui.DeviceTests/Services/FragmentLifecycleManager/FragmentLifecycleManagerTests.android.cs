@@ -158,7 +158,7 @@ public class FragmentLifecycleManagerTests : FragmentTestBase
 			nameof(IDialogFragmentService.OnFragmentDetached),
 		];
 		Assert.Equal(expected, service.CallsFor(fragment));
-		Assert.All(service.Calls.Where(call => ReferenceEquals(call.Arguments[1], fragment)), call => Assert.Same(childManager, call.Arguments[0]));
+		AotSafeAssert.All(service.Calls.Where(call => ReferenceEquals(call.Arguments[1], fragment)), call => Assert.Same(childManager, call.Arguments[0]));
 	}
 
 	[Fact]
