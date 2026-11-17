@@ -129,7 +129,7 @@ Here we will have some:
 
 ## Device tests
 
-Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test app `src/CommunityToolkit.Maui.DeviceTests`. The `Device Tests` check of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them.
+Code that only runs on a platform (handlers, platform views, platform services, and the `*.android.cs`, `*.ios.cs`, `*.macos.cs`, `*.macios.cs` and `*.windows.cs` files) is tested by the device test app `src/CommunityToolkit.Maui.DeviceTests`. The `Device Tests` check of every pull request builds and runs it on Android, iOS, Mac Catalyst and Windows. `dotnet test` does not run them. The `Trimmed Device Tests` check of every pull request runs them fully trimmed and with NativeAOT ([Trimmed and NativeAOT runs](eng/devices/README.md#trimmed-and-nativeaot-runs)).
 
 Run them on your machine before you push, with one command from the repository root:
 
@@ -146,6 +146,10 @@ It runs every platform that your machine can run (on a Mac the iOS simulator and
 * [Running the device tests on your machine](eng/devices/LOCAL.md): the one command, running a test app from Visual Studio, Rider or Visual Studio Code, running the tests that need a person, and what a local run does differently from CI.
 * [Device test scripts and CI](eng/devices/README.md): every script and parameter, the exit codes, the capability declarations, code coverage and the CI jobs.
 * [Writing device tests](src/CommunityToolkit.Maui.DeviceTests/README.md): where a test belongs, the base classes, the categories and the patterns. A test that `CommunityToolkit.Maui.UnitTests` can cover belongs there instead.
+
+## Trimming and NativeAOT
+
+The four NuGet packages must stay fully trim-safe and NativeAOT-safe. Every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error, so avoid reflection on unannotated types and string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. See [the trimming and NativeAOT instructions](.github/instructions/trimming-aot.instructions.md) for the rules and how to check your change locally with one command: `pwsh eng/trim-audit/run.ps1`.
 
 ## Contributing Code - Best Practices
 

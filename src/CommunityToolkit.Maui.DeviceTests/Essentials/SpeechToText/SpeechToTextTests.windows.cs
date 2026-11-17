@@ -68,7 +68,11 @@ public sealed partial class SpeechToTextTests
 		typeof(SpeechToTextImplementation).GetField("speechRecognizerLifetime", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(speech);
 
 	// IsType fails on a count of another type, which would otherwise read as no running operation
-	static int RunningOperations(object lifetime) => Assert.IsType<int>(SpeechInternals.GetField<object>(lifetime, "runningOperations"));
+	static int RunningOperations(object lifetime) => Assert.IsType<int>(GetLifetimeType().GetField("runningOperations", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(lifetime));
+
+	// SpeechInternals reaches the two speech implementations only; the lifetime is a private nested type of SpeechToTextImplementation
+	static Type GetLifetimeType() =>
+		typeof(SpeechToTextImplementation).GetNestedType("SpeechRecognizerLifetime", BindingFlags.NonPublic)!;
 
 	// A released recognizer is closed as soon as its compilation has ended, which on a slow runner can happen before the check: a closed recognizer
 	// is a failure only while its lifetime still counts a running operation. IsClosed comes first, because a released lifetime's count only falls
