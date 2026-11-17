@@ -18,7 +18,7 @@
 #   eng/trim-audit/audit.sh gate <leg-dir> [--github] [--max-annotations <n>] [--summary <file>] [--report-only]   (n: this gate's share)
 #       the CI check on a finished leg (<out-root>/<platform>-<variant>): fails on a toolkit or toolkit-api warning that allow.tsv does
 #       not list. Exit: 0 clean, 1 new warnings, 2 usage or a bad allow-list, 3 assets or roots check not OK, 4 build failed, result.json,
-#       warnings.log or the warning list missing, the parser could not read every IL line, or Python 3 is missing.
+#       warnings.log, the warning list or warnings-counts.json missing, the parser could not read every IL line, or Python 3 is missing.
 #       --report-only: same report, exit 0 (not 2).
 #   eng/trim-audit/audit.sh run <platform[,platform]> <variant> (--repo <source-repo> [--version <v>] | --feed <folder-of-nupkgs>)
 #                               [--out-root <dir>] [--github] [--max-annotations <n>] [--summary <file>] [--report-only]

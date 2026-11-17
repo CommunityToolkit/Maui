@@ -35,14 +35,14 @@
       it needs ROOTS-CHECK=OK in the roots-check.txt next to it.
       Exit codes: 0 clean; 1 new toolkit or toolkit-api warnings; 2 bad arguments or a bad allow-list; 3 the assets check did not say OK
       (the build did not use the feed's packages) or an aotroot leg's roots check did not; 4 the build failed, result.json, the tsv or
-      the --log file is missing, the parser could not read every IL warning line of the log, or a toolkit DLL's types could not be read (a broken run must not pass as a clean one).
+      the --log file or the warnings-counts.json next to the tsv is missing or unreadable, the parser could not read every IL warning line of the log, or a toolkit DLL's types could not be read (a broken run must not pass as a clean one).
       A stale allow-list entry (in scope on this leg, matches nothing) is reported and does not fail.
 
 warnings-unique.tsv has one row per distinct warning, tab separated: bucket, tool, code, origin_assembly, member, location, message
 bucket: where the member that triggers the warning lives.
   toolkit      a member of CommunityToolkit.Maui, .Core, .Camera or .MediaElement, or of generated code that one of their DLLs defines
                (judged by the type names in the DLLs and the warning's source path), or code of the toolkit's own source generators in an app
-               (a source path under /CommunityToolkit.Maui.SourceGenerators/)
+               (a source path under /CommunityToolkit.Maui.SourceGenerators/ or /CommunityToolkit.Maui.MediaElement.SourceGenerators/)
   toolkit-api  Sample (or device-test) code that calls a toolkit API marked RequiresUnreferencedCode/RequiresDynamicCode/RequiresAssemblyFiles
   sample       other warnings on Sample code
   maui         Microsoft.Maui.* members
@@ -258,13 +258,21 @@ def toolkit_assembly_of(member, location, index):
 
 # Only the project's own obj folder or a non-obj source counts, so a clone under .../src/CommunityToolkit.Maui does not make the Sample's obj copy a toolkit one.
 TOOLKIT_SOURCE = re.compile(r'/src/CommunityToolkit\.Maui(?:\.Core|\.Camera|\.MediaElement)?/(?:obj/|(?!.*/obj/))')
-# Roslyn names a generated file <base>/<generator assembly>/<generator type>/<hint>, so this folder holds code that the toolkit's own generators emit into an app.
-TOOLKIT_GENERATOR_FOLDER = '/CommunityToolkit.Maui.SourceGenerators/'
-GENERATED_TOOLKIT = 'CommunityToolkit.Maui.SourceGenerators'
+# Roslyn names a generated file <base>/<generator assembly>/<generator type>/<hint>, so these folders hold code that the toolkit's own generators emit into an app.
+TOOLKIT_GENERATOR_FOLDERS = ('/CommunityToolkit.Maui.SourceGenerators/', '/CommunityToolkit.Maui.MediaElement.SourceGenerators/')
+TOOLKIT_GENERATOR_ASSEMBLIES = tuple(folder.strip('/') for folder in TOOLKIT_GENERATOR_FOLDERS)
+
+
+def toolkit_generator_of(source_path):
+    """The toolkit generator assembly whose folder holds this path, or None."""
+    for folder, assembly in zip(TOOLKIT_GENERATOR_FOLDERS, TOOLKIT_GENERATOR_ASSEMBLIES):
+        if folder in '/' + source_path:
+            return assembly
+    return None
 
 
 def generated_by_toolkit(source_path):
-    return TOOLKIT_GENERATOR_FOLDER in '/' + source_path
+    return toolkit_generator_of(source_path) is not None
 
 
 def compiled_elsewhere(source_path):
@@ -275,8 +283,9 @@ def compiled_elsewhere(source_path):
 
 def assembly_of(member, location, index, types, source_path=''):
     # The generators emit into the app's own types too, so this runs before the Sample and device-test prefixes.
-    if generated_by_toolkit(source_path) and compiled_elsewhere(source_path):
-        return GENERATED_TOOLKIT
+    generator = toolkit_generator_of(source_path)
+    if generator and compiled_elsewhere(source_path):
+        return generator
     if member.startswith(SAMPLE):
         return SAMPLE
     if member.startswith(DEVICE_TESTS):
@@ -302,7 +311,7 @@ def assembly_of(member, location, index, types, source_path=''):
 def bucket_of(assembly, calls_toolkit_api):
     if assembly in (SAMPLE, DEVICE_TESTS):
         return 'toolkit-api' if calls_toolkit_api else 'sample'
-    if assembly in TOOLKIT_ASSEMBLIES or assembly in ('CommunityToolkit.Maui.?', GENERATED_TOOLKIT):
+    if assembly in TOOLKIT_ASSEMBLIES or assembly == 'CommunityToolkit.Maui.?' or assembly in TOOLKIT_GENERATOR_ASSEMBLIES:
         return 'toolkit'
     if assembly == 'Microsoft.Maui':
         return 'maui'
@@ -342,8 +351,9 @@ def parse(path, index, types):
         if kind is None:
             tool, member, message = 'analyzer', '', text
             source = location.split(':')[0]
-            if generated_by_toolkit(located.group('path') if located else ''):
-                assembly = GENERATED_TOOLKIT
+            generator = toolkit_generator_of(located.group('path') if located else '')
+            if generator:
+                assembly = generator
             elif source.startswith('samples/') or '/Microsoft.Maui.Controls.SourceGen/' in source:
                 assembly = SAMPLE
             elif source.startswith('src/' + DEVICE_TESTS):
@@ -363,7 +373,7 @@ def parse(path, index, types):
     return sorted(rows)
 
 
-TYPE_INDEX_FAILURE = 'TYPE-INDEX=FAIL: no top-level types could be read from %s (the metadata reader is broken or the toolkit DLLs were not found, so generated toolkit code would pass unseen)'
+TYPE_INDEX_FAILURE = 'TYPE-INDEX=FAIL: no top-level types could be read from %s (the metadata reader is broken, the type index is missing or the toolkit DLLs were not found, so generated toolkit code would pass unseen)'
 IL_LINE = re.compile(r'warning IL[234]\d{3}')
 
 
@@ -622,7 +632,7 @@ def toolkit_dlls_without_types(counts_path):
             counts = json.load(source).get('toolkit_type_counts', {})
         return sorted(path for path, count in counts.items() if count == 0) or ([] if counts else ['(no toolkit DLL was indexed)'])
     except (OSError, ValueError, AttributeError):
-        return []
+        return ['(%s is missing or unreadable)' % counts_path]
 
 
 def gate(tsv, allow_path, log, assets_check, github=False, summary=None, result=None, report_only=False, max_annotations=DEFAULT_MAX_ANNOTATIONS):

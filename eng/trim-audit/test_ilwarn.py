@@ -651,6 +651,30 @@ class TypeIndexTests(Workspace):
                 self.assertEqual(gate_rc, 4)
                 self.assertIn('TYPE-INDEX=FAIL', output)
 
+    def test_code_that_the_media_element_generator_emits_into_an_app_is_toolkit(self):
+        folder = 'obj/Release/net11.0-android/CommunityToolkit.Maui.MediaElement.SourceGenerators/CommunityToolkit.Maui.MediaElement.SourceGenerators.AndroidMediaElementForegroundServiceConfigurationGenerator'
+        generated = '/repo/samples/CommunityToolkit.Maui.Sample/%s/AndroidMediaElementServiceConfiguration.g.cs' % folder
+        lines = ['%s(12,5): warning IL2026: Using member Y which has RequiresUnreferencedCodeAttribute can break functionality.' % generated,
+                 '%s(12,5): Trim analysis warning IL2026: CommunityToolkit.Maui.Sample.Pages.Page.Run(): Using member.' % generated]
+        self.summarize_lines_with_toolkit_dll([(PUBLIC, GENERATED, 'Gen')], lines)
+        origins = {tool: (bucket, origin_assembly) for bucket, tool, _, origin_assembly, *_ in self.rows()}
+        self.assertEqual(origins['analyzer'], ('toolkit', 'CommunityToolkit.Maui.MediaElement.SourceGenerators'))
+        self.assertEqual(origins['illink'], ('toolkit', 'CommunityToolkit.Maui.MediaElement.SourceGenerators'))
+
+    def test_a_gate_without_the_counts_file_next_to_the_tsv_is_exit_4(self):
+        self.summarize([])
+        os.remove(self.path('warnings-counts.json'))
+        rc, output = self.gate()
+        self.assertEqual(rc, 4)
+        self.assertIn('TYPE-INDEX=FAIL', output)
+
+    def test_a_gate_with_an_unreadable_counts_file_is_exit_4(self):
+        self.summarize([])
+        for label, content in (('not json', '{not json'), ('not an object', '[]')):
+            with self.subTest(label):
+                self.write('warnings-counts.json', content)
+                self.assertEqual(self.gate()[0], 4)
+
     def summarize_lines_with_toolkit_dll(self, type_defs, lines):
         self.write_toolkit_dll(metadata_only_assembly(type_defs))
         log = self.write('warnings.log', '\n'.join(lines) + '\n')

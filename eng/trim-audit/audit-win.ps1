@@ -217,6 +217,7 @@ else {
     $assetsExit = 1
 }
 & $python -I (Join-Path $here 'ilwarn.py') summarize (Join-Path $out 'warnings.log') $out $packages | Out-Null
+$summarizeExit = $LASTEXITCODE
 $ErrorActionPreference = 'Stop'
 
 $sizes = @('# assembly | package bytes | trimmed bytes (none: not trimmed)')
@@ -240,6 +241,8 @@ $ErrorActionPreference = 'Continue'
 & $python @gateArguments 2>&1 | ForEach-Object { "$_" } | ForEach-Object { $_; Add-Content -LiteralPath $script:gateOutputPath -Value $_ -Encoding UTF8 }
 $gateExit = $LASTEXITCODE
 $ErrorActionPreference = 'Stop'
+# Same mapping as audit.sh: the gate cannot see a summarize that failed after writing its files.
+if ($summarizeExit -ne 0 -and -not $reportOnly -and $gateExit -eq 0) { $gateExit = 4 }
 Write-GateExit $gateExit
 
 exit $gateExit
