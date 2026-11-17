@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using CommunityToolkit.Maui.Extensions;
 
@@ -11,7 +10,7 @@ namespace CommunityToolkit.Maui.Converters;
 /// <typeparam name="TFrom">Type of the input value.</typeparam>
 /// <typeparam name="TTo">Type of the output value.</typeparam>
 /// <typeparam name="TParam">Type of parameter</typeparam>
-public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TFrom, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
+public abstract class BaseConverter<TFrom, TTo, TParam> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
@@ -26,11 +25,9 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 	public abstract TFrom DefaultConvertBackReturnValue { get; set; }
 
 	/// <inheritdoc/>
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	public Type FromType { get; } = typeof(TFrom);
 
 	/// <inheritdoc/>
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	public Type ToType { get; } = typeof(TTo);
 
 	/// <summary>
@@ -60,7 +57,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 	public abstract TFrom ConvertBackTo(TTo value, TParam parameter, CultureInfo? culture);
 
 	/// <inheritdoc/>
-	object? ICommunityToolkitValueConverter.ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo? culture)
+	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		try
 		{
@@ -79,7 +76,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 	}
 
 	/// <inheritdoc/>
-	object? ICommunityToolkitValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo? culture)
+	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		try
 		{
@@ -103,7 +100,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 /// </summary>
 /// <typeparam name="TFrom">Type of the input value.</typeparam>
 /// <typeparam name="TTo">Type of the output value.</typeparam>
-public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TFrom, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
+public abstract class BaseConverter<TFrom, TTo> : ValueConverterExtension, ICommunityToolkitValueConverter
 {
 	/// <summary>
 	/// Default value to return when <see cref="IValueConverter.Convert(object?, Type, object?, CultureInfo?)"/> throws an <see cref="Exception"/>.
@@ -118,11 +115,9 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 	public abstract TFrom DefaultConvertBackReturnValue { get; set; }
 
 	/// <inheritdoc/>
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	public Type FromType { get; } = typeof(TFrom);
 
 	/// <inheritdoc/>
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 	public Type ToType { get; } = typeof(TTo);
 
 	object? ICommunityToolkitValueConverter.DefaultConvertReturnValue => DefaultConvertReturnValue;
@@ -145,7 +140,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 	public abstract TFrom ConvertBackTo(TTo value, CultureInfo? culture);
 
 	/// <inheritdoc/>
-	object? ICommunityToolkitValueConverter.ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo? culture)
+	object? ICommunityToolkitValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		try
 		{
@@ -163,7 +158,7 @@ public abstract class BaseConverter<[DynamicallyAccessedMembers(DynamicallyAcces
 	}
 
 	/// <inheritdoc/>
-	object? ICommunityToolkitValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo? culture)
+	object? ICommunityToolkitValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		try
 		{

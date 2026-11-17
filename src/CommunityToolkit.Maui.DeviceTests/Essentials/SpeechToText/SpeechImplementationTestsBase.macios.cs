@@ -88,7 +88,7 @@ public abstract partial class SpeechImplementationTestsBase
 	protected static void AssertStartedRecordingIsReleased(ISpeechToText speech, AppleStart start, SpeechFakeTask task, SFSpeechRecognizer recognizer, IntPtr requestHandle)
 	{
 		Assert.Equal<string>(["installTap", "prepare", "start", "stop", "removeTap"], start.EngineCalls);
-		Assert.Equal<IntPtr>([requestHandle], start.Framework.EndAudioRequests);
+		AotSafeAssert.SequenceEqual<IntPtr>([requestHandle], start.Framework.EndAudioRequests);
 		Assert.Equal(1, task.FinishCount);
 		Assert.True(task.IsDisposed, "StopRecording must dispose the recognition task.");
 		Assert.Equal(NativeHandle.Zero, recognizer.Handle);
@@ -658,7 +658,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
 
 		Assert.Equal<string>(["stop", "removeTap"], start.EngineCalls);
-		Assert.Empty(start.Framework.EndAudioRequests);
+		AotSafeAssert.Empty(start.Framework.EndAudioRequests);
 		Assert.Empty(events.Entries);
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
 
@@ -714,7 +714,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 		Assert.Equal(0, task.FinishCount);
 		Assert.Equal<string>(["installTap", "prepare", "start"], start.EngineCalls);
-		Assert.Empty(start.Framework.EndAudioRequests);
+		AotSafeAssert.Empty(start.Framework.EndAudioRequests);
 		Assert.Empty(events.Entries);
 		Assert.Equal(SpeechToTextState.Listening, speech.CurrentState);
 		Assert.Same(task, GetTask(speech));
@@ -839,7 +839,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 
 		Assert.Equal<string>(["installTap", "prepare", "start", "stop", "removeTap"], start.EngineCalls);
-		Assert.Equal<IntPtr>([requestHandle], start.Framework.EndAudioRequests);
+		AotSafeAssert.SequenceEqual<IntPtr>([requestHandle], start.Framework.EndAudioRequests);
 		Assert.Equal(1, task.FinishCount);
 		Assert.True(task.IsDisposed, "DisposeAsync must dispose the recognition task.");
 		Assert.Equal(NativeHandle.Zero, recognizer.Handle);
@@ -936,7 +936,7 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.False(session.SupportsMultichannelContent);
 		var arguments = new object?[1];
 
-		await InvokeOnMainThreadAsync(() => SpeechInternals.InvokeStatic(speech.GetType(), "InitializeAvAudioSession", arguments));
+		await InvokeOnMainThreadAsync(() => SpeechInternals.InvokeStatic(speech, "InitializeAvAudioSession", arguments));
 
 		Assert.Same(session, arguments[0]);
 		Assert.Equal(AVAudioSession.CategoryPlayAndRecord.ToString(), session.Category.ToString());
@@ -969,7 +969,7 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.Equal("DE", recognizer.Locale.CountryCode);
 		Assert.Equal(shouldReportPartialResults, request.ShouldReportPartialResults);
 		Assert.Equal(IsOffline, request.RequiresOnDeviceRecognition);
-		Assert.Equal<bool>(IsOffline ? new[] { true } : Array.Empty<bool>(), start.Framework.SupportsOnDeviceRecognitionValues);
+		AotSafeAssert.SequenceEqual<bool>(IsOffline ? new[] { true } : Array.Empty<bool>(), start.Framework.SupportsOnDeviceRecognitionValues);
 
 		Assert.Equal(1, start.Framework.RecognitionTaskCalls);
 		Assert.Same(recognizer, start.Framework.Recognizer);
@@ -1013,7 +1013,7 @@ public abstract partial class SpeechImplementationTestsBase
 		var first = await Task.Run(() => start.Engine.FakeInputNode.DeliverBuffer());
 		var second = await Task.Run(() => start.Engine.FakeInputNode.DeliverBuffer());
 
-		Assert.Equal<(IntPtr, IntPtr)>([(requestHandle, first.Handle), (requestHandle, second.Handle)], start.Framework.AppendedBuffers);
+		AotSafeAssert.SequenceEqual<(IntPtr, IntPtr)>([(requestHandle, first.Handle), (requestHandle, second.Handle)], start.Framework.AppendedBuffers);
 
 		await InvokeOnMainThreadAsync(() => speech.StopListenAsync());
 
@@ -1085,7 +1085,7 @@ public abstract partial class SpeechImplementationTestsBase
 		// The binding reports the nil that SFSpeechRecognizer(locale:) returns for a locale it does not support.
 		Assert.Contains("initWithLocale", exception.Message);
 		Assert.Equal<string>(["stop", "removeTap"], start.EngineCalls);
-		Assert.Empty(start.Framework.SupportsOnDeviceRecognitionValues);
+		AotSafeAssert.Empty(start.Framework.SupportsOnDeviceRecognitionValues);
 		Assert.Null(GetRecognizer(speech));
 		Assert.Empty(events.Entries);
 		Assert.Equal(SpeechToTextState.Stopped, speech.CurrentState);
@@ -1109,7 +1109,7 @@ public abstract partial class SpeechImplementationTestsBase
 		Assert.IsType(IsOffline ? typeof(InvalidOperationException) : typeof(ArgumentException), exception);
 		Assert.Equal("Speech recognizer is not available", exception.Message);
 		// The on-device implementation asks for on-device recognition before it checks the availability.
-		Assert.Equal<bool>(IsOffline ? new[] { true } : Array.Empty<bool>(), start.Framework.SupportsOnDeviceRecognitionValues);
+		AotSafeAssert.SequenceEqual<bool>(IsOffline ? new[] { true } : Array.Empty<bool>(), start.Framework.SupportsOnDeviceRecognitionValues);
 		Assert.Equal<string>(["stop", "removeTap"], start.EngineCalls);
 		Assert.Equal(0, start.Framework.RecognitionTaskCalls);
 		Assert.NotNull(start.Framework.AvailabilityRecognizer);

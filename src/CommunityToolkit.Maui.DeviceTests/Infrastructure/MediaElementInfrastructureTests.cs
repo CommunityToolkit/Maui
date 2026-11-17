@@ -43,7 +43,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 		if (previousRowServices is not null)
 		{
 			Assert.Throws<ObjectDisposedException>(() => previousRowServices.GetService(typeof(IMauiHandlersFactory)));
-			Assert.Equal(original, (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType));
+			AotSafeAssert.Equal(original, (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType));
 		}
 
 		var changedViewType = original.DefaultAndroidViewType is AndroidViewType.SurfaceView ? AndroidViewType.TextureView : AndroidViewType.SurfaceView;
@@ -53,7 +53,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 			options.SetDefaultAndroidViewType(changedViewType);
 		});
 
-		Assert.Equal((!original.IsAndroidForegroundServiceEnabled, changedViewType), (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType));
+		AotSafeAssert.Equal((!original.IsAndroidForegroundServiceEnabled, changedViewType), (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType));
 		previousRowServices = ApplicationServices;
 	}
 
