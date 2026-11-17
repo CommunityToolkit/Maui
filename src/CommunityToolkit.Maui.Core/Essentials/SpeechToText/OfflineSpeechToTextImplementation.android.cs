@@ -61,7 +61,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		return new ValueTask(MainThread.InvokeOnMainThreadAsync(ReleaseRecognizer));
 	}
 
-	static Intent CreateSpeechIntent(SpeechToTextOptions options)
+	internal static Intent CreateSpeechIntent(SpeechToTextOptions options)
 	{
 		var intent = new Intent(RecognizerIntent.ActionRecognizeSpeech);
 
@@ -75,9 +75,7 @@ public sealed partial class OfflineSpeechToTextImplementation
 		intent.PutExtra(RecognizerIntent.ExtraOnlyReturnLanguagePreference, javaLocale);
 		if (options.AutoStopSilenceTimeout < SpeechToTextOptionsDefaults.AutoStopSilenceTimeout)
 		{
-			long autoStopSilenceTimeoutInMilliseconds = options.AutoStopSilenceTimeout.TotalMilliseconds >= long.MaxValue
-				? long.MaxValue
-				: checked((long)options.AutoStopSilenceTimeout.TotalMilliseconds);
+			var autoStopSilenceTimeoutInMilliseconds = SilenceTimeoutMilliseconds.From(options.AutoStopSilenceTimeout);
 
 			intent.PutExtra(RecognizerIntent.ExtraSpeechInputCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);
 			intent.PutExtra(RecognizerIntent.ExtraSpeechInputPossiblyCompleteSilenceLengthMillis, autoStopSilenceTimeoutInMilliseconds);

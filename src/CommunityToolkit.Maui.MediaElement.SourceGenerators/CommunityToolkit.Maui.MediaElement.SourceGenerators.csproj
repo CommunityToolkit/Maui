@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" PrivateAssets="all" />
-    <PackageReference Include="PolySharp" Version="1.17.0" PrivateAssets="all" />
+    <PackageReference Include="PolySharp" Version="1.17.1" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

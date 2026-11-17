@@ -96,20 +96,26 @@ public abstract partial class AlertsTestBase
 		}
 		finally
 		{
-			toastObserver?.Dispose();
-			toastObserver = null;
-			ResetToolkitAlertState();
-
-			if (previousApplication is not null)
+			try
 			{
-				Application.Current = previousApplication;
-				previousApplication = null;
+				toastObserver?.Dispose();
+				toastObserver = null;
+				ResetToolkitAlertState();
 			}
-
-			if (releaseAccessibilityService)
+			finally
 			{
-				releaseAccessibilityService = false;
-				accessibilityServiceLeftOn = !await ToastObserver.ReleaseAccessibilityServiceAsync(GetAccessibilityManager());
+				// Each step must run even when an earlier one throws, or the failure cascades into the following tests.
+				if (previousApplication is not null)
+				{
+					Application.Current = previousApplication;
+					previousApplication = null;
+				}
+
+				if (releaseAccessibilityService)
+				{
+					releaseAccessibilityService = false;
+					accessibilityServiceLeftOn = !await ToastObserver.ReleaseAccessibilityServiceAsync(GetAccessibilityManager());
+				}
 			}
 		}
 
