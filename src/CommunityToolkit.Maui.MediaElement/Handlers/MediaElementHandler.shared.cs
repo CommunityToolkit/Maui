@@ -325,6 +325,10 @@ public partial class MediaElementHandler
 			if (((IElementHandler)this).VirtualView is MediaElement mediaElement)
 			{
 				mediaElement.StopPositionTimer();
+
+				// The platform view is released while it is shown full screen (the page is left, or the app disconnects the handler): it reports
+				// nothing more, so the state it left behind would stay, and the next handler's first full screen would raise no event
+				((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.Default);
 			}
 		}
 	}
