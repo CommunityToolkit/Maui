@@ -20,7 +20,7 @@ public class CameraInfoAppleTests : CameraHandlerTestBase
 		Assert.True(cameraInfo.IsFlashSupported);
 		Assert.Equal(1f, cameraInfo.MinimumZoomFactor);
 		Assert.Equal(5f, cameraInfo.MaximumZoomFactor);
-		Assert.Equal([new Size(640, 480), new Size(1280, 720)], cameraInfo.SupportedResolutions);
+		AotSafeAssert.SequenceEqual([new Size(640, 480), new Size(1280, 720)], cameraInfo.SupportedResolutions);
 	}
 
 	[Fact]

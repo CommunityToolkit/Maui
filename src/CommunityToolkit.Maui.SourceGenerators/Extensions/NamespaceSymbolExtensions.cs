@@ -5,6 +5,9 @@ namespace CommunityToolkit.Maui.SourceGenerators.Extensions;
 
 static class NamespaceSymbolExtensions
 {
+	// Type arguments (IComparable<T>) and type parameters as constraints (where T : U) must survive; the global:: prefix keeps the names valid inside any namespace.
+	static readonly SymbolDisplayFormat constraintTypeFormat = SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
 	public static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(this INamespaceSymbol namespaceSymbol)
 	{
 		var stack = new Stack<INamespaceSymbol>();
@@ -79,7 +82,8 @@ static class NamespaceSymbolExtensions
 	/// <returns>A text string containing all Generic Type Constraints for <see cref="INamedTypeSymbol"/>, eg "where T : ITextStyle, notnull". Returns <see cref="string.Empty"/> if no generic type constrants found</returns>
 	public static string GetGenericTypeConstraintsAsString(this INamedTypeSymbol type)
 	{
-		if (!type.TypeParameters.Any())
+		var allTypeParameters = type.GetAllTypeParameters().ToList();
+		if (allTypeParameters.Count is 0)
 		{
 			return string.Empty;
 		}
@@ -87,7 +91,7 @@ static class NamespaceSymbolExtensions
 		StringBuilder result = new();
 		StringBuilder constraints = new();
 
-		foreach (var typeParameterSymbol in type.TypeParameters)
+		foreach (var typeParameterSymbol in allTypeParameters)
 		{
 			if (typeParameterSymbol.HasNotNullConstraint)
 			{
@@ -111,16 +115,14 @@ static class NamespaceSymbolExtensions
 				constraints.Append("struct");
 			}
 
-			foreach (INamedTypeSymbol contstraintType in typeParameterSymbol.ConstraintTypes.Cast<INamedTypeSymbol>())
+			foreach (var constraintType in typeParameterSymbol.ConstraintTypes)
 			{
 				if (constraints.Length > 0)
 				{
 					constraints.Append(", ");
 				}
 
-				var symbolDisplayFormat = new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-																	miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
-				constraints.Append(contstraintType.ToDisplayString(symbolDisplayFormat));
+				constraints.Append(constraintType.ToDisplayString(constraintTypeFormat));
 			}
 
 			if (typeParameterSymbol.HasConstructorConstraint)
@@ -141,6 +143,20 @@ static class NamespaceSymbolExtensions
 		}
 
 		return result.ToString();
+	}
+
+	/// <summary>
+	/// The type parameters of the containing types, outermost first, followed by those of the type itself
+	/// </summary>
+	public static IEnumerable<ITypeParameterSymbol> GetAllTypeParameters(this INamedTypeSymbol type)
+	{
+		var types = new List<INamedTypeSymbol>();
+		for (var current = type; current is not null; current = current.ContainingType)
+		{
+			types.Insert(0, current);
+		}
+
+		return types.SelectMany(static containingType => containingType.TypeParameters);
 	}
 
 	public static bool ContainsSymbolBaseType(this IEnumerable<INamedTypeSymbol> namedSymbolList, INamedTypeSymbol symbol)
