@@ -18,17 +18,17 @@ public partial class MauiDrawingViewTests
 		var parent = (DrawingViewTestPlatform.RecordingFrameLayout)view.Parent!;
 
 		DrawingViewTestPlatform.TouchDown(view, 20, 20);
-		Assert.Equal(new[] { true }, parent.DisallowInterceptRequests);
+		AotSafeAssert.SequenceEqual(new[] { true }, parent.DisallowInterceptRequests);
 
 		DrawingViewTestPlatform.TouchMove(view, 40, 40);
-		Assert.Equal(new[] { true }, parent.DisallowInterceptRequests);
+		AotSafeAssert.SequenceEqual(new[] { true }, parent.DisallowInterceptRequests);
 
 		DrawingViewTestPlatform.TouchUp(view, 40, 40);
-		Assert.Equal(new[] { true, false }, parent.DisallowInterceptRequests);
+		AotSafeAssert.SequenceEqual(new[] { true, false }, parent.DisallowInterceptRequests);
 
 		DrawingViewTestPlatform.TouchDown(view, 20, 20);
 		DrawingViewTestPlatform.TouchCancel(view, 20, 20);
-		Assert.Equal(new[] { true, false, true, false }, parent.DisallowInterceptRequests);
+		AotSafeAssert.SequenceEqual(new[] { true, false, true, false }, parent.DisallowInterceptRequests);
 	});
 
 	[Fact]
@@ -67,7 +67,7 @@ public partial class MauiDrawingViewTests
 		var handled = DrawingViewTestPlatform.Send(view, action, 60, 60);
 
 		Assert.False(handled);
-		Assert.Empty(recorder.Points);
+		AotSafeAssert.Empty(recorder.Points);
 		Assert.Empty(recorder.Completed);
 		Assert.Equal(0, recorder.Cancelled);
 	});

@@ -1,4 +1,5 @@
 #pragma warning disable CA1422, CS0618 // Window.StatusBarColor / NavigationBarColor / SystemUiVisibility are obsolete from API 30-35 but still readable: the tests read the native state of every API level.
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Android.Views;
 using AndroidX.Core.View;
@@ -187,6 +188,9 @@ static class AndroidSystemBars
 
 	// Platform.CurrentActivity is where the toolkit's status bar code takes its window from. MAUI's ActivityStateManager keeps it in a
 	// lifecycle listener; there is no public way to replace it.
+	// NativeAOT keeps no reflection metadata for MAUI's internal types unless told so.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicFields, "Microsoft.Maui.ApplicationModel.ActivityStateManagerImplementation", "Microsoft.Maui.Essentials")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicProperties, "Microsoft.Maui.ApplicationModel.ActivityLifecycleContextListener", "Microsoft.Maui.Essentials")]
 	public static T WithCurrentActivity<T>(Android.App.Activity? activity, Func<T> action)
 	{
 		var manager = ActivityStateManager.Default;
