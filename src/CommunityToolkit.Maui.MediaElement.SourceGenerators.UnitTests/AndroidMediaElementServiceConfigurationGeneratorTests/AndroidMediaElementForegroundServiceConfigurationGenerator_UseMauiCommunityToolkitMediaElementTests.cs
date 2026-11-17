@@ -66,7 +66,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -84,8 +83,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -161,7 +160,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -179,8 +177,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -256,7 +254,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -274,8 +271,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -405,7 +402,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -423,8 +419,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -498,7 +494,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -516,8 +511,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -590,7 +585,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -608,8 +602,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -688,7 +682,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -706,8 +699,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration
@@ -831,7 +824,6 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			// This file provides assembly-level Android permissions and service attributes
 			// when Android Foreground Service is enabled for MediaElement.
 
-			#pragma warning disable
 			#nullable enable
 
 			#if ANDROID
@@ -849,8 +841,8 @@ public class AndroidMediaElementForegroundServiceConfigurationGenerator_UseMauiC
 			/// </summary>
 			/// <remarks>
 			/// This file is auto-generated and provides assembly-level permissions
-			/// for MediaElement when <see cref="CommunityToolkit.Maui.Core.MediaElementOptions.IsAndroidForegroundServiceEnabled"/> is enabled
-			/// or when <see cref="UseMauiCommunityToolkitMediaElement(Microsoft.Maui.MauiAppBuilder, bool, System.Action{CommunityToolkit.Maui.Core.MediaElementOptions})"/>
+			/// for MediaElement when <c>MediaElementOptions.SetIsAndroidForegroundServiceEnabled</c> enables it
+			/// or when <c>UseMauiCommunityToolkitMediaElement</c>
 			/// is called with <c>isAndroidForegroundServiceEnabled</c> set to <c>true</c>.
 			/// </remarks>
 			internal static class AndroidMediaElementServiceConfiguration

@@ -198,7 +198,7 @@ public partial class StatusBarTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var overlay = Assert.Single(AndroidSystemBars.FindTagged(unshown.Window, AndroidSystemBars.StatusBarOverlayTag));
-				Assert.Equal(ExpectedOverlayHeight(unshown.Window), overlay.LayoutParameters?.Height);
+				AotSafeAssert.Equal(ExpectedOverlayHeight(unshown.Window), overlay.LayoutParameters?.Height);
 				AndroidSystemBars.AssertDrawnAboveTheContent(unshown.Window, overlay);
 				Assert.True(AndroidSystemBars.HasFlag(unshown.Window, Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds));
 				Assert.False(AndroidSystemBars.HasFlag(unshown.Window, Android.Views.WindowManagerFlags.LayoutNoLimits));
@@ -223,7 +223,7 @@ public partial class StatusBarTests
 			await InvokeOnMainThreadAsync(static () => StatusBar.SetColor(Colors.Red));
 			await InvokeOnMainThreadAsync(static () => AndroidSystemBars.FlushPostedActions(AndroidSystemBars.ActivityWindow));
 
-			await InvokeOnMainThreadAsync(() => Assert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
+			await InvokeOnMainThreadAsync(() => AotSafeAssert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
 			await AssertStatusBarShowsAsync(Colors.Red);
 		}
 		finally
@@ -256,8 +256,8 @@ public partial class StatusBarTests
 
 			var overlay = AndroidSystemBars.FindOverlay(AndroidSystemBars.ActivityWindow, AndroidSystemBars.StatusBarOverlayTag);
 			Assert.NotNull(overlay);
-			Assert.Equal(AndroidSystemBars.FrameworkDimension("status_bar_height") + overlayHeightPadding, overlay.LayoutParameters?.Height);
-			Assert.Equal(Colors.Red.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
+			AotSafeAssert.Equal(AndroidSystemBars.FrameworkDimension("status_bar_height") + overlayHeightPadding, overlay.LayoutParameters?.Height);
+			AotSafeAssert.Equal(Colors.Red.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
 		});
 	}
 
@@ -277,7 +277,7 @@ public partial class StatusBarTests
 			StatusBar.SetColor(Colors.Green);
 
 			Assert.Same(overlay, Assert.Single(AndroidSystemBars.FindTagged(AndroidSystemBars.ActivityWindow, AndroidSystemBars.StatusBarOverlayTag)));
-			Assert.Equal(Colors.Green.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
+			AotSafeAssert.Equal(Colors.Green.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
 		});
 	}
 
@@ -306,7 +306,7 @@ public partial class StatusBarTests
 			api35Implementation.Invoke(null, [window, Colors.Red.ToPlatform(), decorGroup]);
 
 			var overlay = Assert.Single(AndroidSystemBars.FindTagged(window, AndroidSystemBars.StatusBarOverlayTag));
-			Assert.Equal(Colors.Red.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
+			AotSafeAssert.Equal(Colors.Red.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
 			var parameters = Assert.IsType<Android.Widget.FrameLayout.LayoutParams>(overlay.LayoutParameters);
 			Assert.Equal(Android.Views.ViewGroup.LayoutParams.MatchParent, parameters.Width);
 			Assert.Equal(ExpectedOverlayHeight(window), parameters.Height);
@@ -318,7 +318,7 @@ public partial class StatusBarTests
 			api35Implementation.Invoke(null, [window, Colors.Transparent.ToPlatform(), decorGroup]);
 
 			Assert.Same(overlay, Assert.Single(AndroidSystemBars.FindTagged(window, AndroidSystemBars.StatusBarOverlayTag)));
-			Assert.Equal(Colors.Transparent.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
+			AotSafeAssert.Equal(Colors.Transparent.ToPlatform(), AndroidSystemBars.BackgroundColor(overlay));
 			Assert.True(AndroidSystemBars.HasFlag(window, Android.Views.WindowManagerFlags.LayoutNoLimits));
 			Assert.False(AndroidSystemBars.HasFlag(window, Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds));
 		});
@@ -453,7 +453,7 @@ public partial class StatusBarTests
 				Assert.NotNull(overlay.LayoutParameters);
 				overlay.LayoutParameters.Height = 1;
 				var appViewHeight = appView.LayoutParameters?.Height;
-				Assert.Equal(AppViewSize, appViewHeight);
+				AotSafeAssert.Equal(AppViewSize, appViewHeight);
 				Assert.NotEqual(AppViewSize, ExpectedOverlayHeight(window));
 
 				StatusBar.UpdateBarSize();
@@ -535,7 +535,7 @@ public partial class StatusBarTests
 				return true;
 			});
 
-			Assert.Equal(overlayHeightPadding, overlay.LayoutParameters?.Height);
+			AotSafeAssert.Equal(overlayHeightPadding, overlay.LayoutParameters?.Height);
 		});
 	}
 

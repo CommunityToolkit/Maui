@@ -3,8 +3,7 @@ using Microsoft.Maui.Graphics;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // Derives from the plain VisualElement, so that giving it any handler does not set up gesture managers or other platform plumbing that
-// expects a real platform view. It is a top-level type, not a nested one, because the toolkit's TextColorTo source generator generates
-// code for every ITextStyle view and cannot reference nested types.
+// expects a real platform view.
 sealed class TextInputStub : VisualElement, ITextInput
 {
 	public string Text { get; set; } = string.Empty;

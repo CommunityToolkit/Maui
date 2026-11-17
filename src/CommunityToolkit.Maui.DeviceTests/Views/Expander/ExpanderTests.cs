@@ -44,6 +44,32 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 	}
 
 	[Fact]
+	public async Task ReplacedContentIsShownAndHiddenOnThePlatformWithIsExpanded()
+	{
+		SetupBuilder();
+		var header = new Label { Text = "Header" };
+		var oldContent = new Label { Text = "Old content" };
+		var newContent = new Label { Text = "New content" };
+		var expander = new Expander { Header = header, Content = oldContent };
+
+		await AttachAndRun(expander, async _ =>
+		{
+			await expander.OnLoadedAsync();
+			expander.IsExpanded = true;
+			await AssertionExtensions.AssertEventually(() => IsPlatformViewVisible(oldContent), message: "The original content should be visible when expanded.");
+
+			expander.Content = newContent;
+
+			await AssertionExtensions.AssertEventually(() => IsPlatformViewVisible(newContent), message: "The replaced content should be visible while the expander is expanded.");
+			Assert.DoesNotContain(oldContent, ((Grid)((ContentView)expander).Content!).Children);
+
+			expander.IsExpanded = false;
+
+			await AssertionExtensions.AssertEventually(() => !IsPlatformViewVisible(newContent), message: "The replaced content should be hidden when the expander is collapsed.");
+		});
+	}
+
+	[Fact]
 	public async Task HeaderTapInsideAListViewGrowsAndShrinksTheRow()
 	{
 		Skip.If(OperatingSystem.IsWindows(), listViewRowsDoNotResizeOnWindows);

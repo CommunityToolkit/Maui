@@ -690,7 +690,7 @@ public partial class StatusBarTests
 
 				var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit: true, static () => StatusBar.SetStyle(StatusBarStyle.LightContent));
 
-				Assert.Equal([UIStatusBarStyle.LightContent], stylesOfTheWholeApp);
+				AotSafeAssert.SequenceEqual([UIStatusBarStyle.LightContent], stylesOfTheWholeApp);
 				Assert.DoesNotContain(windowsUnknownMessage, listener.Messages);
 				Assert.Equal(StatusBarTheme.Default, mauiWindow.Window.StatusBarTheme);
 				return Task.CompletedTask;
@@ -739,7 +739,7 @@ public partial class StatusBarTests
 			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(viewControllerBasedStatusBarAppearance, isAppliedByUIKit: true, static () => StatusBar.SetStyle(StatusBarStyle.LightContent));
 
 			UIStatusBarStyle[] expectedStylesOfTheWholeApp = setsTheStyleOfTheWholeApp ? [UIStatusBarStyle.LightContent] : [];
-			Assert.Equal(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
+			AotSafeAssert.SequenceEqual(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 			return Task.CompletedTask;
@@ -759,7 +759,7 @@ public partial class StatusBarTests
 		{
 			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit, static () => StatusBar.SetStyle(StatusBarStyle.DarkContent));
 
-			Assert.Equal([UIStatusBarStyle.DarkContent], stylesOfTheWholeApp);
+			AotSafeAssert.SequenceEqual([UIStatusBarStyle.DarkContent], stylesOfTheWholeApp);
 			Assert.Equal(isTraced, listener.Messages.Contains(styleIgnoredByUIKitMessage));
 			return Task.CompletedTask;
 		});
@@ -778,7 +778,7 @@ public partial class StatusBarTests
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.Default);
 
 			Assert.False(StatusBar.TrySetApplicationStatusBarStyle(UIStatusBarStyle.LightContent));
-			Assert.Equal(UIStatusBarStyle.Default, mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
+			AotSafeAssert.Equal(UIStatusBarStyle.Default, mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
 		});
 	}
 

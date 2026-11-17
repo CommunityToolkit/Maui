@@ -10,7 +10,7 @@ public abstract class BaseAttachedBindablePropertyAttributeSourceGeneratorTest :
 	{
 		List<(string FileName, string GeneratedFile)> expectedGeneratedFilesList =
 		[
-			($"{defaultTestClassName}.g.cs", expectedGeneratedFile)
+			($"{defaultTestNamespace}.{defaultTestClassName}.g.cs", expectedGeneratedFile)
 		];
 
 		return VerifySourceGeneratorAsync<AttachedBindablePropertyAttributeSourceGenerator>(source, expectedGeneratedFilesList);
