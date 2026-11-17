@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Behaviors;
 using Xunit;
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new MockView())
+public class EmailValidationBehaviorTests() : BaseBehaviorTest<EmailValidationBehavior, VisualElement>(new EmailValidationBehavior(), new Entry())
 {
 	public static TheoryData<Keyboard> NonDefaultKeyboardData { get; } =
 	[

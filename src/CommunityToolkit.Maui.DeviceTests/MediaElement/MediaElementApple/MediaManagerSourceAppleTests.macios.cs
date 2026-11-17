@@ -29,7 +29,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			Assert.EndsWith("/avplayer/video.mp4", AssetPath(item));
 			Assert.Same(item, handler.Manager.NativePlayerItem);
 			Assert.Equal(1, events.Opened);
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -67,7 +67,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Null(manager.NativePlayer!.CurrentItem);
 			Assert.Null(manager.NativePlayerItem);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Contains(events.States, state => state is MediaElementState.None);
 			Assert.Equal(1, events.Opened);
 			Assert.Contains(Logs.Entries, entry => entry.Level is LogLevel.Warning && entry.Message == "Resource file was not found.");
@@ -115,7 +115,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await LoadAsync(mediaElement, handler, MediaSource.FromFile(path));
 
 			Assert.Equal(path, AssetPath(handler.Manager!.NativePlayer!.CurrentItem));
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -142,7 +142,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await manager.TakeSourceUpdates();
 
 			Assert.Null(manager.NativePlayer.CurrentItem);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -159,7 +159,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await LoadAsync(mediaElement, handler, MediaSource.FromUri(server.GetUri("/video.mp4")));
 
 			Assert.Equal("/video.mp4", AssetPath(handler.Manager!.NativePlayer!.CurrentItem));
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.NotEmpty(server.Requests);
 			Assert.All(server.Requests, request => Assert.False(request.Headers.ContainsKey("X-Device-Test")));
 		});
@@ -229,7 +229,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await manager.TakeSourceUpdates();
 
 			Assert.Null(manager.NativePlayer!.CurrentItem);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -258,7 +258,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			Assert.Contains(typeof(AppleUnknownMediaSource).FullName!, failure);
 			Assert.Contains("is not yet supported", failure);
 			Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -295,7 +295,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Null(manager.NativePlayer.CurrentItem);
 			Assert.Null(manager.NativePlayerItem);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(MediaElementState.None, mediaElement.CurrentState);
 			Assert.Empty(events.Failures);
 		});
@@ -312,14 +312,14 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		{
 			var manager = handler.Manager!;
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			events.States.Clear();
 
 			mediaElement.Source = null;
 			await manager.TakeSourceUpdates();
 
 			Assert.Null(manager.NativePlayer!.CurrentItem);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(MediaElementState.Opening, events.States[0]);
 			Assert.Contains(events.States, state => state is MediaElementState.None);
 		});
@@ -339,7 +339,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
 
 			Assert.Equal(MediaElementState.Opening, events.States[0]);
-			Assert.Contains(MediaElementState.Paused, events.States);
+			AotSafeAssert.Contains(MediaElementState.Paused, events.States);
 		});
 	}
 
@@ -390,8 +390,8 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await LoadAsync(mediaElement, handler, ResourceSource(RotatedVideoResource));
 
 			var track = handler.Manager!.NativePlayerItem!.Asset.Tracks.Single();
-			Assert.Equal((64, 48), (track.NaturalSize.Width, track.NaturalSize.Height));
-			Assert.Equal((48, 64), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (track.NaturalSize.Width, track.NaturalSize.Height));
+			AotSafeAssert.Equal((48, 64), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -408,7 +408,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Equal(1, events.Opened);
 			Assert.Empty(events.Failures);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(AVMediaTypes.Audio.GetConstant()!.ToString(), handler.Manager!.NativePlayerItem!.Asset.Tracks.Single().MediaType);
 		});
 	}
@@ -434,7 +434,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			Assert.NotEqual(AVPlayerItemStatus.ReadyToPlay, item.Status);
 			Assert.Equal(0, events.Opened);
 			Assert.Single(events.Failures);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 
 			// Bounded wait (it does not fail) for the player's own status, which must not hide the failure.
 			await AssertHelpers.Wait(() => player.Status is not AVPlayerStatus.Unknown, timeout: 2000, interval: 20);
@@ -493,7 +493,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 				await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
 
-				Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+				AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 				Assert.Equal(AVPlayerItemStatus.ReadyToPlay, handler.Manager.NativePlayerItem!.Status);
 				Assert.Single(events.Failures);
 			});
@@ -548,12 +548,12 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await HostAsync(mediaElement, async handler =>
 			{
 				await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
-				Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+				AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 
 				await SetSourceAsync(mediaElement, handler, MediaSource.FromFile(path));
 				await WaitUntilAsync(() => events.Failures.Count > 0, "MediaFailed was not raised.");
 
-				Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+				AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			});
 		}
 		finally
@@ -655,7 +655,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Null(setterException);
 			AssertReportsTheExceptionOfTheHandler(events, handlerException);
-			Assert.Contains(MediaElementState.Opening, events.States.Skip(statesBeforeTheSource));
+			AotSafeAssert.Contains(MediaElementState.Opening, events.States.Skip(statesBeforeTheSource));
 
 			await WaitAsync(opened, "The media of the source was not opened.");
 			Assert.NotNull(manager.NativePlayer?.CurrentItem);
@@ -808,7 +808,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 			await AssertHelpers.Wait(() => player.Status is not AVPlayerStatus.Unknown, timeout: 2000, interval: 20);
 
 			Assert.Null(player.CurrentItem);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 			Assert.Equal(MediaElementState.None, mediaElement.CurrentState);
 		});
 	}
@@ -841,7 +841,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 
 			Assert.Null(player.CurrentItem);
 			Assert.Equal(0f, player.Rate);
-			Assert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((0, 0), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 
@@ -898,10 +898,10 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		{
 			// An HLS stream has no tracks to ask, but the item knows how large it presents the video.
 			var sized = new AppleFakeAVPlayerItem(audioAsset) { PresentationSizeOverride = new CoreGraphics.CGSize(320.7, 180.2) };
-			Assert.Equal((320, 180), await GetVideoDimensions(sized));
+			AotSafeAssert.Equal((320, 180), await GetVideoDimensions(sized));
 
 			var unsized = new AppleFakeAVPlayerItem(audioAsset) { PresentationSizeOverride = CoreGraphics.CGSize.Empty };
-			Assert.Equal((0, 0), await GetVideoDimensions(unsized));
+			AotSafeAssert.Equal((0, 0), await GetVideoDimensions(unsized));
 		});
 	}
 
@@ -918,7 +918,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 		{
 			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
 
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 

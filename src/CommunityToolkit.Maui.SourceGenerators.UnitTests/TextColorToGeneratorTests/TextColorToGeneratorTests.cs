@@ -1,17 +1,51 @@
 using System.IO;
 using CommunityToolkit.Maui.SourceGenerators.Generators;
+using CommunityToolkit.Maui.SourceGenerators.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace CommunityToolkit.Maui.SourceGenerators.UnitTests;
 
-public class TextColorToGeneratorTests
+public class TextColorToGeneratorTests : BaseTest
 {
 	[Fact]
-	public async Task Generator_DoesNotEmitCode_ForInternalMauiControlsTypes()
+	public void Generator_DoesNotEmitCode_ForInternalMauiControlsTypes()
 	{
-		var cancellationToken = TestContext.Current.CancellationToken;
+		var generatedSources = GenerateSources(TestContext.Current.CancellationToken);
+
+		Assert.Contains(generatedSources, src => src.Contains("PublicLabel"));
+		Assert.DoesNotContain(generatedSources, src => src.Contains("InternalLabel"));
+	}
+
+	[Fact]
+	public void Generator_EmitsOnlyTheSharedHeaderPragmas()
+	{
+		var generatedSources = GenerateSources(TestContext.Current.CancellationToken);
+
+		Assert.NotEmpty(generatedSources);
+		foreach (var source in generatedSources)
+		{
+			var pragmaLines = source.Split('\n').Where(static line => line.StartsWith("#pragma", StringComparison.Ordinal)).Select(static line => line.TrimEnd('\r')).ToList();
+			Assert.Equal(["#pragma warning disable", $"#pragma warning restore {GeneratedCodePragmas.TrimAndAotWarnings}"], pragmaLines);
+		}
+	}
+
+	[Fact]
+	public void Generator_DocumentsTheGeneratedExtensionClass()
+	{
+		var generatedSources = GenerateSources(TestContext.Current.CancellationToken);
+
+		Assert.NotEmpty(generatedSources);
+		foreach (var source in generatedSources)
+		{
+			var classDeclarationIndex = source.IndexOf("static partial class ColorAnimationExtensions_", StringComparison.Ordinal);
+			Assert.Contains("/// </summary>", source[..classDeclarationIndex], StringComparison.Ordinal);
+		}
+	}
+
+	static List<string> GenerateSources(CancellationToken cancellationToken)
+	{
 		// Arrange: create a synthetic "Microsoft.Maui.Controls" assembly that
 		// contains both a public and an internal type implementing ITextStyle + IAnimatable.
 		const string syntheticMauiSource =
@@ -115,8 +149,6 @@ public class TextColorToGeneratorTests
 			.Select(t => t.GetText(cancellationToken).ToString())
 			.ToList();
 
-		// Assert: code is generated for the public type, but NOT the internal one.
-		Assert.Contains(generatedSources, src => src.Contains("PublicLabel"));
-		Assert.DoesNotContain(generatedSources, src => src.Contains("InternalLabel"));
+		return generatedSources;
 	}
 }

@@ -281,7 +281,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 			var jpeg = await CaptureJpegAsync(host.View);
 
 			var resolution = GetNativeResolution(host.Native<ImageCapture>("imageCapture")!.ResolutionInfo);
-			Assert.Equal(resolution, GetJpegSize(jpeg));
+			AotSafeAssert.Equal(resolution, GetJpegSize(jpeg));
 		});
 	}
 
