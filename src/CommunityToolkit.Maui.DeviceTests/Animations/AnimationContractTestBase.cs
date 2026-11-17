@@ -21,6 +21,9 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 	protected abstract TAnimation CreateAnimation();
 
+	// A run that ends before the test cancels it can't end Canceled, and a slow CI simulator can stall for longer than the last part of a 1-second run
+	const uint lengthOfARunCancelledMidRun = 3 * runLength;
+
 	[Fact]
 	public async Task AnimateCompletesAndReturnsTheViewToItsOriginalValues()
 	{
@@ -51,8 +54,11 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			using var cancellation = new CancellationTokenSource();
+			var animation = CreateAnimation();
+			animation.Length = lengthOfARunCancelledMidRun;
+
 			var midRun = WaitForMidRunAsync(view);
-			var run = CreateAnimation().Animate(view, cancellation.Token);
+			var run = animation.Animate(view, cancellation.Token);
 			await midRun;
 
 			// On the UI thread, as from a button's Clicked handler: the cancelled run can continue inside Cancel
@@ -86,6 +92,7 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 				Assert.Null(completion);
 				AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after a run started off the UI thread completed");
 
+				animation.Length = lengthOfARunCancelledMidRun;
 				using var cancellation = new CancellationTokenSource();
 				var midRun = WaitForMidRunAsync(view);
 				var run = Task.Run(() => animation.Animate(view, cancellation.Token));
