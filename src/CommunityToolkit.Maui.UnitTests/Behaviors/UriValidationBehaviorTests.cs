@@ -4,7 +4,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
 
-public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavior, VisualElement>(new UriValidationBehavior(), new MockView())
+public class UriValidationBehaviorTests() : BaseBehaviorTest<UriValidationBehavior, VisualElement>(new UriValidationBehavior(), new Entry())
 {
 	[Theory]
 	[InlineData(@"http://microsoft.com", UriKind.Absolute, true)]

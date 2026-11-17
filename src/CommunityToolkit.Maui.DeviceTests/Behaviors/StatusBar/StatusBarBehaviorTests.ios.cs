@@ -493,7 +493,7 @@ public partial class StatusBarBehaviorTests
 			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 
 			var runnerScene = IosStatusBarViews.RunnerScene;
-			Assert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, IosStatusBarStyle.StyleProvider(IosStatusBarViews.RunnerWindow).TraitCollection), runnerScene.StatusBarManager?.StatusBarStyle);
+			AotSafeAssert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, IosStatusBarStyle.StyleProvider(IosStatusBarViews.RunnerWindow).TraitCollection), runnerScene.StatusBarManager?.StatusBarStyle);
 			return Task.CompletedTask;
 		});
 	}
@@ -553,7 +553,7 @@ public partial class StatusBarBehaviorTests
 			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(viewControllerBasedStatusBarAppearance, isAppliedByUIKit: true, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
 
 			UIStatusBarStyle[] expectedStylesOfTheWholeApp = setsTheStyleOfTheWholeApp ? [UIStatusBarStyle.LightContent] : [];
-			Assert.Equal(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
+			AotSafeAssert.SequenceEqual(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 			return Task.CompletedTask;
@@ -572,7 +572,7 @@ public partial class StatusBarBehaviorTests
 			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit: false, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
 
 			Assert.False(behavior.IsAttached);
-			Assert.Empty(stylesOfTheWholeApp);
+			AotSafeAssert.Empty(stylesOfTheWholeApp);
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 		});
 	}

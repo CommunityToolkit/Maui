@@ -2,6 +2,7 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Graphics;
 using Android.OS;
 using AndroidX.Core.App;
 using AndroidX.Media3.Session;
@@ -20,6 +21,8 @@ sealed partial class MediaControlsService : Service
 
 	readonly WeakEventManager taskRemovedEventManager = new();
 	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
+
+	readonly NotificationArtworkCache artworkCache = new();
 
 	bool isDisposed;
 
@@ -72,6 +75,10 @@ sealed partial class MediaControlsService : Service
 		// The binder of a former binding can keep the destroyed service alive: the MediaStyle of its notification must not keep the media
 		// session alive with it (and, through the session's player, the MediaElement's platform view)
 		notificationBuilder?.SetStyle(null);
+		notificationBuilder?.SetContentTitle((string?)null);
+		notificationBuilder?.SetContentText((string?)null);
+		notificationBuilder?.SetLargeIcon((Bitmap?)null);
+		artworkCache.Clear();
 		notificationSession = null;
 		NotificationManager?.CancelAll();
 		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
@@ -100,6 +107,12 @@ sealed partial class MediaControlsService : Service
 			SetLegacyNotifications(session, mediaElement);
 		}
 
+		// SystemUI's media card falls back to "<app> is running..." when neither the notification nor the session has a title at the moment
+		// it reads them, and it does not re-read the session when the metadata arrives later.
+		notificationBuilder.SetContentTitle(mediaElement.MediaMetadata?.Title);
+		notificationBuilder.SetContentText(mediaElement.MediaMetadata?.Artist);
+		// SystemUI takes the artwork of its card from the notification's large icon while the session has none yet
+		notificationBuilder.SetLargeIcon(artworkCache.GetOrDecode(mediaElement.MediaMetadata?.ArtworkData));
 		notificationBuilder.SetStyle(style);
 		notificationSession = session;
 		NotificationManagerCompat.From(Platform.AppContext)?.Notify(mediaNotificationId, notificationBuilder.Build());
@@ -144,6 +157,10 @@ sealed partial class MediaControlsService : Service
 		if (ReferenceEquals(notificationSession, session))
 		{
 			notificationBuilder?.SetStyle(null);
+			notificationBuilder?.SetContentTitle((string?)null);
+			notificationBuilder?.SetContentText((string?)null);
+			notificationBuilder?.SetLargeIcon((Bitmap?)null);
+			artworkCache.Clear();
 			notificationSession = null;
 		}
 
@@ -171,6 +188,7 @@ sealed partial class MediaControlsService : Service
 		{
 			if (disposing)
 			{
+				artworkCache.Clear();
 				NotificationManager?.Dispose();
 				NotificationManager = null;
 

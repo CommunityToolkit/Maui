@@ -21,7 +21,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingViewTestPlatform.TouchDown(view, 30, 40);
 
 		AssertPoint(30, 40, Assert.Single(recorder.Started));
-		Assert.Empty(recorder.Points);
+		AotSafeAssert.Empty(recorder.Points);
 		Assert.Empty(recorder.Completed);
 		Assert.Equal(0, recorder.Cancelled);
 	});
@@ -51,8 +51,8 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		DrawingViewTestPlatform.TouchMove(view, 50, 50);
 		DrawingViewTestPlatform.TouchMove(view, 60, 60);
 
-		Assert.Empty(recorder.Started);
-		Assert.Empty(recorder.Points);
+		AotSafeAssert.Empty(recorder.Started);
+		AotSafeAssert.Empty(recorder.Points);
 		Assert.Empty(recorder.Completed);
 		Assert.Empty(view.Lines);
 	});
@@ -188,7 +188,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 
 		DrawingViewTestPlatform.TouchMove(view, 60, 60);
 
-		Assert.Empty(recorder.Points);
+		AotSafeAssert.Empty(recorder.Points);
 	});
 
 	// Catches: the product raises DrawingCancelled with EventArgs.Empty although the event is declared with MauiDrawingStartedEventArgs
@@ -233,7 +233,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 
 		Gestures();
 		var before = otherEvents.ToDictionary(name => name, recorder.Count);
-		Assert.All(before.Values, count => Assert.True(count > 0, "Precondition: every event is raised by the gestures."));
+		AotSafeAssert.All(before.Values, count => Assert.True(count > 0, "Precondition: every event is raised by the gestures."));
 
 		recorder.Unsubscribe(eventName);
 		Gestures();
@@ -409,7 +409,7 @@ public partial class MauiDrawingViewTests : CommunityToolkitHandlerTestBase
 		{
 			await RenderAsync(view);
 
-			Assert.NotEmpty(counter.Rects);
+			AotSafeAssert.NotEmpty(counter.Rects);
 			Assert.Contains(counter.Rects, rect => Math.Abs(rect.Width - DrawingViewTestPlatform.DefaultWidth) < 1 && Math.Abs(rect.Height - DrawingViewTestPlatform.DefaultHeight) < 1);
 		}, view => view.DrawAction = counter.Draw);
 	}

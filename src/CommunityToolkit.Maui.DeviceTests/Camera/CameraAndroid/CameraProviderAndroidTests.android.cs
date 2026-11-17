@@ -136,8 +136,8 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		foreach (var camera in cameras)
 		{
 			var expected = GetCamera2JpegSizesInCameraProviderOrder(camera.DeviceId);
-			Assert.NotEmpty(expected);
-			Assert.Equal(expected, camera.SupportedResolutions);
+			AotSafeAssert.NotEmpty(expected);
+			AotSafeAssert.SequenceEqual(expected, camera.SupportedResolutions);
 		}
 	}
 
@@ -352,7 +352,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 
 		var highResolutions = GetCamera2HighResolutionSizes(camera.DeviceId)!;
 
-		Assert.Equal(highResolutions, camera.SupportedResolutions.Take(highResolutions.Count));
+		AotSafeAssert.SequenceEqual(highResolutions, camera.SupportedResolutions.Take(highResolutions.Count));
 		Assert.True(camera.SupportedResolutions.Count > highResolutions.Count, "The normal sizes follow the high resolution sizes.");
 	}
 
@@ -365,7 +365,7 @@ public class CameraProviderAndroidTests : CameraAndroidTestBase
 		var camera = cameras.FirstOrDefault(camera => GetCamera2HighResolutionSizes(camera.DeviceId) is null or { Count: 0 });
 		Skip.If(camera is null, "Every camera of this device supports high resolution capture, so the arm without high resolution sizes is not taken here.");
 
-		Assert.Equal(GetCamera2JpegSizesInCameraProviderOrder(camera.DeviceId), camera.SupportedResolutions);
+		AotSafeAssert.SequenceEqual(GetCamera2JpegSizesInCameraProviderOrder(camera.DeviceId), camera.SupportedResolutions);
 	}
 
 	[Fact]

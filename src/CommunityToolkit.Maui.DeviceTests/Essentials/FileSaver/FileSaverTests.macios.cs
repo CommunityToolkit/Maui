@@ -20,14 +20,14 @@ public partial class FileSaverTests
 		var (operation, picker, pickerDelegate) = await StartSaveAsync(fileName, new FilesScriptedStream(sample));
 
 		var temporaryFolder = Assert.IsType<string>(folders.FolderWithFile());
-		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
 		await InvokeOnMainThreadAsync(() =>
 		{
 			Assert.Equal(UIDocumentPickerMode.ExportToService, picker.DocumentPickerMode);
 			Assert.Null(picker.DirectoryUrl);
 			Assert.False(picker.AllowsMultipleSelection);
 		});
-		Assert.Equal((1, 1), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((1, 1), FilesApplePicker.CountSubscribers(pickerDelegate));
 
 		const string chosenPath = "/tmp/files-tests-chosen.txt";
 		await FilesApplePicker.SimulateUserPicksAsync(picker, NSUrl.CreateFileUrl(chosenPath, false));
@@ -36,7 +36,7 @@ public partial class FileSaverTests
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
 		Assert.Equal(chosenPath, result.FilePath);
 		Assert.False(Directory.Exists(temporaryFolder), "The temporary folder was not removed.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Theory]
@@ -51,7 +51,7 @@ public partial class FileSaverTests
 		var (operation, picker, _) = await StartSaveAsync(fileName, new MemoryStream([1, 2, 3]));
 
 		var temporaryFolder = Assert.IsType<string>(folders.FolderWithFile());
-		Assert.Equal([1, 2, 3], await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
+		AotSafeAssert.SequenceEqual<byte>([1, 2, 3], await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
 		await FilesApplePicker.SimulateUserCancelsAsync(picker);
 		Assert.True((await operation.WaitAsync(operationTimeout)).IsCancelled);
 	}
@@ -139,7 +139,7 @@ public partial class FileSaverTests
 
 		var values = progress.Values;
 		Assert.True(values.Count >= 2, $"Expected the progress of each chunk and the final report, got {values.Count} values.");
-		Assert.Equal(values.Order(), values);
+		AotSafeAssert.SequenceEqual(values.Order(), values);
 		Assert.Equal(values.Max(), values[^1]);
 	}
 
@@ -155,12 +155,12 @@ public partial class FileSaverTests
 		var streamed = new FilesScriptedStream(sample, canSeek: false);
 
 		var (seekableOperation, seekablePicker, _) = await StartSaveAsync(seekableName, seekable);
-		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(seekableFolders.FolderWithFile()!, seekableName)));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(Path.Combine(seekableFolders.FolderWithFile()!, seekableName)));
 		await FilesApplePicker.SimulateUserCancelsAsync(seekablePicker);
 		await seekableOperation.WaitAsync(operationTimeout);
 
 		var (streamedOperation, streamedPicker, _) = await StartSaveAsync(streamedName, streamed);
-		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(streamedFolders.FolderWithFile()!, streamedName)));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(Path.Combine(streamedFolders.FolderWithFile()!, streamedName)));
 		await FilesApplePicker.SimulateUserCancelsAsync(streamedPicker);
 		await streamedOperation.WaitAsync(operationTimeout);
 
@@ -184,7 +184,7 @@ public partial class FileSaverTests
 		Assert.IsType<OperationCanceledException>(result.Exception, exactMatch: false);
 		Assert.NotNull(temporaryFolder);
 		Assert.False(Directory.Exists(temporaryFolder), "The temporary folder was not removed.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Fact]
@@ -203,7 +203,7 @@ public partial class FileSaverTests
 		Assert.Null(result.FilePath);
 		Assert.NotNull(temporaryFolder);
 		Assert.False(Directory.Exists(temporaryFolder), "The temporary folder was not removed.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Fact]

@@ -44,9 +44,9 @@ public class StreamDataSourceFactoryAndroidTests
 
 		Assert.NotSame(first, second);
 		first.Open(CreateSpec(0));
-		Assert.Equal(data[..5], Read(first, 5));
+		AotSafeAssert.SequenceEqual(data[..5], Read(first, 5));
 		second.Open(CreateSpec(50));
-		Assert.Equal(data[50..55], Read(second, 5));
+		AotSafeAssert.SequenceEqual(data[50..55], Read(second, 5));
 	}
 
 	[Theory]
@@ -62,7 +62,7 @@ public class StreamDataSourceFactoryAndroidTests
 
 		Assert.Equal(expectedLength, length);
 		Assert.Equal(position, stream.Position);
-		Assert.Equal(data[position..Math.Min(position + 10, data.Length)], Read(source, 10));
+		AotSafeAssert.SequenceEqual(data[position..Math.Min(position + 10, data.Length)], Read(source, 10));
 	}
 
 	[Fact]
@@ -74,8 +74,8 @@ public class StreamDataSourceFactoryAndroidTests
 		var length = source.Open(CreateSpec(10, 20));
 
 		Assert.Equal(20, length);
-		Assert.Equal(data[10..30], Read(source, 50));
-		Assert.Empty(Read(source, 50));
+		AotSafeAssert.SequenceEqual(data[10..30], Read(source, 50));
+		AotSafeAssert.Empty(Read(source, 50));
 		Assert.Equal(30, stream.Position);
 	}
 
@@ -172,7 +172,7 @@ public class StreamDataSourceFactoryAndroidTests
 
 		Assert.Equal(0, read);
 		Assert.Equal(0, stream.Position);
-		Assert.Equal(data[..3], Read(source, 3));
+		AotSafeAssert.SequenceEqual(data[..3], Read(source, 3));
 	}
 
 	[Fact]
@@ -200,7 +200,7 @@ public class StreamDataSourceFactoryAndroidTests
 			received.AddRange(chunk);
 		}
 
-		Assert.Equal(data, received);
+		AotSafeAssert.SequenceEqual(data, received);
 		Assert.Equal(C.ResultEndOfInput, source.Read(new byte[10], 0, 10));
 	}
 
@@ -213,7 +213,7 @@ public class StreamDataSourceFactoryAndroidTests
 		var length = source.Open(CreateSpec(0, 150));
 
 		Assert.Equal(150, length);
-		Assert.Equal(data, Read(source, 200));
+		AotSafeAssert.SequenceEqual(data, Read(source, 200));
 		Assert.Equal(C.ResultEndOfInput, source.Read(new byte[10], 0, 10));
 	}
 
@@ -228,7 +228,7 @@ public class StreamDataSourceFactoryAndroidTests
 		var read = source.Read(buffer, 4, 3);
 
 		Assert.Equal(3, read);
-		Assert.Equal(new byte[] { 0, 0, 0, 0, 0, 1, 2, 0, 0, 0 }, buffer);
+		AotSafeAssert.SequenceEqual(new byte[] { 0, 0, 0, 0, 0, 1, 2, 0, 0, 0 }, buffer);
 	}
 
 	[Fact]
@@ -240,9 +240,9 @@ public class StreamDataSourceFactoryAndroidTests
 		var length = source.Open(CreateSpec(0, 100));
 
 		Assert.Equal(100, length);
-		Assert.Equal(data[..40], Read(source, 40));
-		Assert.Equal(data[40..], Read(source, 100));
-		Assert.Empty(Read(source, 10));
+		AotSafeAssert.SequenceEqual(data[..40], Read(source, 40));
+		AotSafeAssert.SequenceEqual(data[40..], Read(source, 100));
+		AotSafeAssert.Empty(Read(source, 10));
 	}
 
 	// A seek outside of what the player has buffered needs the stream at another position, which a non-seekable stream cannot give: a source
@@ -270,8 +270,8 @@ public class StreamDataSourceFactoryAndroidTests
 		var length = source.Open(CreateSpec());
 
 		Assert.Equal(C.LengthUnset, length);
-		Assert.Equal(data[..60], Read(source, 60));
-		Assert.Equal(data[60..], Read(source, 100));
+		AotSafeAssert.SequenceEqual(data[..60], Read(source, 60));
+		AotSafeAssert.SequenceEqual(data[60..], Read(source, 100));
 		Assert.Equal(C.ResultEndOfInput, source.Read(new byte[10], 0, 10));
 	}
 
@@ -301,7 +301,7 @@ public class StreamDataSourceFactoryAndroidTests
 
 		Assert.Null(exception);
 		Assert.NotNull(source.ResponseHeaders);
-		Assert.Empty(source.ResponseHeaders);
+		AotSafeAssert.Empty(source.ResponseHeaders);
 	}
 
 	[Fact]
