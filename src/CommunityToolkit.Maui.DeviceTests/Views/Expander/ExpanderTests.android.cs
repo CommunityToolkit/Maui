@@ -51,16 +51,16 @@ public partial class ExpanderTests
 			await expander.OnLoadedAsync();
 
 			var collapsedActions = GetAccessibilityActionIds(GetPlatformView(expander.Header));
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, collapsedActions);
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, collapsedActions);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionClick, collapsedActions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionExpand, collapsedActions);
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, collapsedActions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionClick, collapsedActions);
 
 			expander.IsExpanded = true;
 
 			var expandedActions = GetAccessibilityActionIds(GetPlatformView(expander.Header));
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionCollapse, expandedActions);
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, expandedActions);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionClick, expandedActions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionCollapse, expandedActions);
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, expandedActions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionClick, expandedActions);
 		});
 	}
 
@@ -86,8 +86,8 @@ public partial class ExpanderTests
 			Assert.True(header.PerformAccessibilityAction(AccessibilityAction.Expand, null));
 			Assert.True(expander.IsExpanded);
 			var expandedActions = GetAccessibilityActionIds(header);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionCollapse, expandedActions);
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, expandedActions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionCollapse, expandedActions);
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, expandedActions);
 			await AssertionExtensions.AssertEventually(() => IsPlatformViewVisible(expander.Content), message: "The expand action did not show the content.");
 
 			Assert.False(header.PerformAccessibilityAction(AccessibilityAction.Expand, null));
@@ -96,10 +96,10 @@ public partial class ExpanderTests
 			Assert.True(header.PerformAccessibilityAction(AccessibilityAction.Collapse, null));
 			Assert.False(expander.IsExpanded);
 			var collapsedActions = GetAccessibilityActionIds(header);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, collapsedActions);
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, collapsedActions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionExpand, collapsedActions);
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, collapsedActions);
 
-			Assert.Equal<bool>([true, false], expandedChanges);
+			AotSafeAssert.SequenceEqual<bool>([true, false], expandedChanges);
 			Assert.Equal<object?>([nameof(Expander.CommandParameter), nameof(Expander.CommandParameter)], commandParameters);
 		});
 	}
@@ -118,19 +118,19 @@ public partial class ExpanderTests
 		{
 			await expander.OnLoadedAsync();
 			var header = GetPlatformView(expander.Header);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(header));
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(header));
 
 			SetHeaderActivationBlocked(expander, blockingProperty, isBlocked: true);
 
 			var blockedActions = GetAccessibilityActionIds(header);
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, blockedActions);
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, blockedActions);
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, blockedActions);
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionCollapse, blockedActions);
 			Assert.False(header.PerformAccessibilityAction(AccessibilityAction.Expand, null));
 			Assert.False(expander.IsExpanded);
 
 			SetHeaderActivationBlocked(expander, blockingProperty, isBlocked: false);
 
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(header));
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(header));
 		});
 	}
 
@@ -148,11 +148,11 @@ public partial class ExpanderTests
 
 			expander.Header = newHeader;
 
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(replacedHeader));
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(replacedHeader));
 			Assert.False(replacedHeader.PerformAccessibilityAction(AccessibilityAction.Expand, null));
 			Assert.False(expander.IsExpanded);
 
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(GetPlatformView(newHeader)));
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(GetPlatformView(newHeader)));
 			Assert.True(GetPlatformView(newHeader).PerformAccessibilityAction(AccessibilityAction.Expand, null));
 			Assert.True(expander.IsExpanded);
 		});
@@ -175,14 +175,14 @@ public partial class ExpanderTests
 			header.Handler?.DisconnectHandler();
 			header.Handler = null;
 
-			Assert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(firstPlatformView));
+			AotSafeAssert.DoesNotContain(AccessibilityNodeInfoCompat.ActionExpand, GetAccessibilityActionIds(firstPlatformView));
 
 			var secondPlatformView = Assert.IsType<AView>(header.ToPlatform(MauiContext), exactMatch: false);
 
 			Assert.NotSame(firstPlatformView, secondPlatformView);
 			var actions = GetAccessibilityActionIds(secondPlatformView);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionExpand, actions);
-			Assert.Contains(AccessibilityNodeInfoCompat.ActionClick, actions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionExpand, actions);
+			AotSafeAssert.Contains(AccessibilityNodeInfoCompat.ActionClick, actions);
 		});
 	}
 }

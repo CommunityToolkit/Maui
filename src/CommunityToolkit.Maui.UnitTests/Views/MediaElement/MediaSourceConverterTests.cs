@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
+using System.Reflection;
 using CommunityToolkit.Maui.Converters;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
@@ -70,6 +72,14 @@ public class MediaSourceConverterTests : BaseTest
 		var result = mediaSourceConverter.ConvertFrom(null, CultureInfo.InvariantCulture, input);
 
 		result.Should().BeOfType<FileMediaSource>().Which.Path.Should().Be(input);
+	}
+
+	[Fact]
+	public void FileMediaSourceConverterShouldNotDeclareAnotherTypeAsItsTypeConverter()
+	{
+		var typeConverterAttribute = typeof(FileMediaSourceConverter).GetCustomAttribute<TypeConverterAttribute>(inherit: false);
+
+		typeConverterAttribute.Should().BeNull();
 	}
 
 #pragma warning disable CS8600, CS8604, CS8625 // The tests pass null to parameters that are not nullable on purpose
