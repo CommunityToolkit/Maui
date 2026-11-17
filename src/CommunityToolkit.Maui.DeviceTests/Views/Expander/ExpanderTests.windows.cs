@@ -10,16 +10,19 @@ using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using LayoutPanel = Microsoft.Maui.Platform.LayoutPanel;
 using WControl = Microsoft.UI.Xaml.Controls.Control;
+using WDependencyObject = Microsoft.UI.Xaml.DependencyObject;
 using WFocusState = Microsoft.UI.Xaml.FocusState;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WGridView = Microsoft.UI.Xaml.Controls.GridView;
 using WGridViewItem = Microsoft.UI.Xaml.Controls.GridViewItem;
 using WListView = Microsoft.UI.Xaml.Controls.ListView;
+using WListViewBase = Microsoft.UI.Xaml.Controls.ListViewBase;
 using WListViewItem = Microsoft.UI.Xaml.Controls.ListViewItem;
 using WPoint = Windows.Foundation.Point;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using WVisualTreeHelper = Microsoft.UI.Xaml.Media.VisualTreeHelper;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -87,10 +90,10 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetItemContainer(native, index).Height).ToArray();
 			var tapY = GetItemContainer(native, 0).ActualHeight + GetItemContainer(native, 1).ActualHeight / 2;
-			var expander = GetExpanderOfItem(expanders, 1);
+			var expander = GetExpanderOfItem(native, expanders, 1);
 
 			expander.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, tapY)));
 
@@ -113,8 +116,8 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
-			var expander = GetExpanderOfItem(expanders, 0);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
+			var expander = GetExpanderOfItem(native, expanders, 0);
 			var tapY = GetItemContainer(native, 0).ActualHeight / 2;
 
 			expander.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, tapY)));
@@ -141,10 +144,10 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 			var heightsBefore = Enumerable.Range(0, 3).Select(index => GetItemContainer(native, index).Height).ToArray();
 
-			GetExpanderOfItem(expanders, 1).HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, tapY)));
+			GetExpanderOfItem(native, expanders, 1).HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, tapY)));
 
 			Assert.Equal(heightsBefore, Enumerable.Range(0, 3).Select(index => GetItemContainer(native, index).Height));
 		});
@@ -159,9 +162,9 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 			var heightsBefore = Enumerable.Range(0, 3).Select(index => GetItemContainer(native, index).Height).ToArray();
-			var expander = GetExpanderOfItem(expanders, 1);
+			var expander = GetExpanderOfItem(native, expanders, 1);
 
 			var args = new TappedEventArgs(null);
 			Assert.Null(args.GetPosition(collectionView));
@@ -182,10 +185,10 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 			Assert.Equal(itemCount, native.Items.Count);
 			Assert.Null(native.ContainerFromIndex(itemCount - 1));
-			var expander = GetExpanderOfItem(expanders, 0);
+			var expander = GetExpanderOfItem(native, expanders, 0);
 			var tapY = GetItemContainer(native, 0).ActualHeight / 2;
 
 			var exception = Record.Exception(() => expander.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, tapY))));
@@ -209,9 +212,9 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 			var heightsBefore = GetItemContainerHeights(native, 3);
-			var expander = GetExpanderOfItem(expanders, 2);
+			var expander = GetExpanderOfItem(native, expanders, 2);
 
 			expander.HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetItemContainer(native, 2), native)));
 
@@ -239,9 +242,9 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
-			var first = GetExpanderOfItem(expanders, 0);
-			var second = GetExpanderOfItem(expanders, 1);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
+			var first = GetExpanderOfItem(native, expanders, 0);
+			var second = GetExpanderOfItem(native, expanders, 1);
 
 			first.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, GetTop(GetItemContainer(native, 0), native) + GetItemContainer(native, 0).ActualHeight / 2)));
 			await WaitForContainerHeightAsync(native, 0, headerHeight + contentHeight);
@@ -276,16 +279,13 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 
 			collectionView.ScrollTo(tappedItem, position: ScrollToPosition.Start, animate: false);
-			await AssertionExtensions.AssertEventually(
-				() => native.ContainerFromIndex(tappedItem) is WFrameworkElement { ActualHeight: > 0 } container && Math.Abs(GetTop(container, native)) < headerHeight,
-				timeout: 5000,
-				message: $"The CollectionView never scrolled item {tappedItem} to its top.");
+			await WaitForItemAtTheTopAsync(native, expanders, tappedItem);
 			var realized = Enumerable.Range(0, itemCount).Where(index => native.ContainerFromIndex(index) is WListViewItem).ToArray();
 			var heightsBefore = realized.ToDictionary(index => index, index => GetItemContainer(native, index).Height);
-			var expander = GetExpanderOfItem(expanders, tappedItem);
+			var expander = GetExpanderOfItem(native, expanders, tappedItem);
 
 			// The tap position is relative to the CollectionView, i.e. to what it shows: the header of the item at its top.
 			expander.HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, GetTop(GetItemContainer(native, tappedItem), native) + headerHeight / 2)));
@@ -308,9 +308,9 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WGridView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height).ToArray();
-			var expander = GetExpanderOfItem(expanders, 3);
+			var expander = GetExpanderOfItem(native, expanders, 3);
 
 			expander.HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetGridItemContainer(native, 3), native)));
 
@@ -333,9 +333,9 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WGridView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 			var heightsBefore = Enumerable.Range(0, 3).Select(index => GetGridItemContainer(native, index).Height).ToArray();
-			var expander = GetExpanderOfItem(expanders, 2);
+			var expander = GetExpanderOfItem(native, expanders, 2);
 
 			// The last row only holds item 2 while the span is 2, so IterateItemsInRow must stop at the end of the items.
 			var exception = Record.Exception(() => expander.HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetGridItemContainer(native, 2), native))));
@@ -356,10 +356,10 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WGridView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height).ToArray();
 
-			GetExpanderOfItem(expanders, 0).HandleHeaderTap(new PositionedTappedEventArgs(new Point(-50, -50)));
+			GetExpanderOfItem(native, expanders, 0).HandleHeaderTap(new PositionedTappedEventArgs(new Point(-50, -50)));
 
 			Assert.Equal(heightsBefore, Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height));
 		});
@@ -374,10 +374,10 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WGridView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height).ToArray();
 
-			GetExpanderOfItem(expanders, 1).HandleHeaderTap(new TappedEventArgs(null));
+			GetExpanderOfItem(native, expanders, 1).HandleHeaderTap(new TappedEventArgs(null));
 
 			Assert.Equal(heightsBefore, Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height));
 		});
@@ -392,15 +392,15 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WGridView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 
 			// MAUI keeps the platform view it created, so the GridView stays while the virtual layout is not a grid anymore.
 			collectionView.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
 			Assert.Same(native, handler.PlatformView);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height).ToArray();
 
-			GetExpanderOfItem(expanders, 0).HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetGridItemContainer(native, 0), native)));
+			GetExpanderOfItem(native, expanders, 0).HandleHeaderTap(new PositionedTappedEventArgs(CenterOf(GetGridItemContainer(native, 0), native)));
 
 			Assert.Equal(heightsBefore, Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height));
 		});
@@ -416,13 +416,13 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WGridView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 4);
+			await WaitForRealizedItemsAsync(native, expanders, 4);
 			Assert.Equal(itemCount, native.Items.Count);
 			Assert.Null(native.ContainerFromIndex(itemCount - 1));
 			var heightsBefore = Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height).ToArray();
 
 			// The tap is below every item, so the loop does not stop at an item: it passes over the items that are not realized.
-			var exception = Record.Exception(() => GetExpanderOfItem(expanders, 0).HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, 100000))));
+			var exception = Record.Exception(() => GetExpanderOfItem(native, expanders, 0).HandleHeaderTap(new PositionedTappedEventArgs(new Point(10, 100000))));
 
 			Assert.Null(exception);
 			Assert.Equal(heightsBefore, Enumerable.Range(0, 4).Select(index => GetGridItemContainer(native, index).Height));
@@ -877,9 +877,9 @@ public partial class ExpanderTests
 		await AttachAndRun(collectionView, async handler =>
 		{
 			var native = Assert.IsType<WListView>(handler.PlatformView, exactMatch: false);
-			await WaitForRealizedItemsAsync(native, 3);
+			await WaitForRealizedItemsAsync(native, expanders, 3);
 			var heightsBefore = GetItemContainerHeights(native, 3);
-			var expander = GetExpanderOfItem(expanders, 1);
+			var expander = GetExpanderOfItem(native, expanders, 1);
 
 			Assert.True(GetLayoutPanel(expander).HandleKey(VirtualKey.Enter, isKeyDown: true, isRepeat: false));
 			Assert.True(GetLayoutPanel(expander).HandleKey(VirtualKey.Enter, isKeyDown: false, isRepeat: false));
@@ -963,16 +963,49 @@ public partial class ExpanderTests
 		return (collectionView, expanders);
 	}
 
-	// The template also runs while MAUI measures, so not every Expander it created is on screen: the realized one has the item as its
-	// binding context and a handler.
-	static Expander GetExpanderOfItem(List<Expander> expanders, int index) =>
-		expanders.Last(expander => expander.Handler is not null && Equals(expander.BindingContext, $"Item {index}"));
+	// The template also runs while MAUI measures, and WinUI lays out a container (MAUI gives it a height) before it puts the item's Expander in it,
+	// so only an Expander bound to the item inside the item's container is the realized one.
+	static Expander? FindRealizedExpanderOfItem(WListViewBase native, List<Expander> expanders, int index) =>
+		native.ContainerFromIndex(index) is WDependencyObject container
+			? expanders.LastOrDefault(expander => Equals(expander.BindingContext, $"Item {index}")
+				&& expander.Handler?.PlatformView is WDependencyObject platformView
+				&& IsVisualDescendant(platformView, container))
+			: null;
 
-	static Task WaitForRealizedItemsAsync(Microsoft.UI.Xaml.Controls.ListViewBase native, int count) =>
+	static Expander GetExpanderOfItem(WListViewBase native, List<Expander> expanders, int index) =>
+		FindRealizedExpanderOfItem(native, expanders, index)
+			?? throw new InvalidOperationException($"Item {index} has no realized Expander in its container yet.");
+
+	static bool IsVisualDescendant(WDependencyObject element, WDependencyObject ancestor)
+	{
+		for (var current = element; current is not null; current = WVisualTreeHelper.GetParent(current))
+		{
+			if (ReferenceEquals(current, ancestor))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool IsRealized(WListViewBase native, List<Expander> expanders, int index) =>
+		native.ContainerFromIndex(index) is WFrameworkElement { ActualHeight: > 0 } && FindRealizedExpanderOfItem(native, expanders, index) is not null;
+
+	static bool IsRealizedAtTheTop(WListView native, List<Expander> expanders, int index) =>
+		native.ContainerFromIndex(index) is WFrameworkElement container && Math.Abs(GetTop(container, native)) < headerHeight && IsRealized(native, expanders, index);
+
+	static Task WaitForRealizedItemsAsync(WListViewBase native, List<Expander> expanders, int count) =>
 		AssertionExtensions.AssertEventually(
-			() => Enumerable.Range(0, count).All(index => native.ContainerFromIndex(index) is WFrameworkElement { ActualHeight: > 0 }),
+			() => Enumerable.Range(0, count).All(index => IsRealized(native, expanders, index)),
 			timeout: 5000,
-			message: $"The CollectionView never realized its first {count} items.");
+			message: $"The CollectionView never realized the Expanders of its first {count} items.");
+
+	static Task WaitForItemAtTheTopAsync(WListView native, List<Expander> expanders, int index) =>
+		AssertionExtensions.AssertEventually(
+			() => IsRealizedAtTheTop(native, expanders, index),
+			timeout: 5000,
+			message: $"The CollectionView never showed the realized Expander of item {index} at its top.");
 
 	static WListViewItem GetItemContainer(WListView native, int index) => Assert.IsType<WListViewItem>(native.ContainerFromIndex(index), exactMatch: false);
 
