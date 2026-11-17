@@ -63,11 +63,11 @@ public partial class SemanticOrderViewTests
 		await InvokeOnMainThreadAsync(() =>
 		{
 			var ids = buttons.Select(button => PlatformViewOf(button).Id).ToArray();
-			Assert.All(ids, id => Assert.True(id > 0));
+			AotSafeAssert.All(ids, id => Assert.True(id > 0));
 
 			Assert.IsType<MauiSemanticOrderView>(handler.PlatformView).UpdateViewOrder();
 
-			Assert.Equal(ids, buttons.Select(button => PlatformViewOf(button).Id));
+			AotSafeAssert.SequenceEqual(ids, buttons.Select(button => PlatformViewOf(button).Id));
 		});
 	}
 

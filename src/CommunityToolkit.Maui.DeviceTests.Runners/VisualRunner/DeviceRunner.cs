@@ -3,6 +3,7 @@
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
 // Toolkit change: on Windows the internal FileSystemUtils.PlatformGetFullAppPackageFilePath is replaced by AppContext.BaseDirectory (the app's install folder, packaged or unpackaged).
+// Toolkit change: on iOS and Mac Catalyst the assembly path falls back to a placeholder file in the temp folder when Assembly.Location is empty (NativeAOT).
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -108,6 +109,18 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.VisualRunner
 			return tcs.Task;
 		}
 
+#if !WINDOWS && !ANDROID
+		// NativeAOT has no assembly files and XunitFrontController throws unless the file exists, so discovery gets an empty placeholder named after the assembly.
+		static string CreatePlaceholderAssemblyFile(string assemblyName)
+		{
+			var placeholderPath = Path.Combine(Path.GetTempPath(), $"{assemblyName}.dll");
+			if (!File.Exists(placeholderPath))
+				File.Create(placeholderPath).Close();
+
+			return placeholderPath;
+		}
+#endif
+
 		IEnumerable<AssemblyRunInfo> DiscoverTestsInAssemblies()
 		{
 			var result = new List<AssemblyRunInfo>();
@@ -126,7 +139,7 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.VisualRunner
 					if (!File.Exists(assemblyFileName))
 						File.Create(assemblyFileName).Close();
 #else
-					var assemblyFileName = assm.Location;
+					var assemblyFileName = string.IsNullOrEmpty(assm.Location) ? CreatePlaceholderAssemblyFile(assm.GetName().Name) : assm.Location;
 #endif
 
 					var configuration = GetConfiguration(assemblyFileName);

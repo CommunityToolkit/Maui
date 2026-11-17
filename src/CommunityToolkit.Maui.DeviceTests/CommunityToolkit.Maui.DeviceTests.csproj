@@ -63,6 +63,11 @@
     <MauiAsset Remove="Resources\Raw\exoplayer\empty.png" Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst'" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <!-- R8 runs in a NativeAOT publish and drops the package-private factories that the camera tests call through JNI, as no Java code calls them. -->
+    <ProguardConfiguration Include="Platforms\Android\proguard.cfg" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
     <!-- Direct reference so the xUnit analyzers run on the tests. -->
