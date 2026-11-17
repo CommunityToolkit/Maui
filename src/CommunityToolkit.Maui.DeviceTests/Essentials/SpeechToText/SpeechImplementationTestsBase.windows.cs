@@ -10,6 +10,10 @@ public abstract partial class SpeechImplementationTestsBase
 
 	protected object? GetRecognizer(ISpeechToText speech) => SpeechInternals.GetField<object>(speech, IsOffline ? "offlineSpeechRecognizer" : "speechRecognizer");
 
+	// The offline implementation refuses to start before it asks System.Speech for a recognizer.
+	static bool IsBuiltInComInteropSwitchedOff() =>
+		AppContext.TryGetSwitch("System.Runtime.InteropServices.BuiltInComInterop.IsSupported", out var isSupported) && !isSupported;
+
 	protected static void AssertIsAPlatformFailure(Exception exception)
 	{
 		Assert.False(exception is OperationCanceledException, $"A failure of the platform is not a cancellation: {exception}");
@@ -18,7 +22,7 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// "fo-FO" (Faroese) has no speech recognizer on Windows, so creating the recognizer throws: System.Speech throws
-	// ArgumentException ("No recognizer of the required ID found", decompiled System.Speech 10.0.11), the WinRT recognizer an
+	// ArgumentException ("No recognizer of the required ID found", decompiled System.Speech 11.0.0), the WinRT recognizer an
 	// exception carrying the platform's HRESULT.
 	[Fact]
 	public async Task StartListenAsyncWithAnUnsupportedCultureThrowsAndStaysStopped()
@@ -30,7 +34,11 @@ public abstract partial class SpeechImplementationTestsBase
 		var exception = await Record.ExceptionAsync(() => InvokeOnMainThreadAsync(() => speech.StartListenAsync(options)));
 
 		Assert.NotNull(exception);
-		if (IsOffline)
+		if (IsOffline && IsBuiltInComInteropSwitchedOff())
+		{
+			Assert.IsType<NotSupportedException>(exception);
+		}
+		else if (IsOffline)
 		{
 			Assert.IsType<ArgumentException>(exception);
 		}

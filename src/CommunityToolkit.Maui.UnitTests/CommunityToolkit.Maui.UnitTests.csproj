@@ -24,6 +24,14 @@
     <ProjectReference Include="..\CommunityToolkit.Maui.SourceGenerators\CommunityToolkit.Maui.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- OfflineSpeechToTextWindowsTrimmingTests read System.Speech's Windows assembly and Core's Windows source as files: Core builds its
+       Windows target framework (and restores System.Speech) only on Windows. Keep the version equal to Core's System.Speech reference. -->
+  <ItemGroup>
+    <PackageReference Include="System.Speech" Version="11.0.0" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
+    <AssemblyMetadata Include="SystemSpeechPackageFolder" Value="$(PkgSystem_Speech)" />
+    <AssemblyMetadata Include="CoreProjectFolder" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\CommunityToolkit.Maui.Core'))" />
+  </ItemGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />

@@ -147,15 +147,15 @@ public abstract partial class SpeechImplementationTestsBase : CommunityToolkitHa
 
 		SpeechInternals.RaiseStateChanged(speech, SpeechToTextState.Listening);
 
-		Assert.Equal(new[] { SpeechToTextState.Listening }, first);
-		Assert.Equal(new[] { SpeechToTextState.Listening }, second);
+		AotSafeAssert.SequenceEqual(new[] { SpeechToTextState.Listening }, first);
+		AotSafeAssert.SequenceEqual(new[] { SpeechToTextState.Listening }, second);
 		Assert.Same(speech, Assert.Single(senders));
 
 		speech.StateChanged -= firstHandler;
 		SpeechInternals.RaiseStateChanged(speech, SpeechToTextState.Silence);
 
-		Assert.Equal(new[] { SpeechToTextState.Listening }, first);
-		Assert.Equal(new[] { SpeechToTextState.Listening, SpeechToTextState.Silence }, second);
+		AotSafeAssert.SequenceEqual(new[] { SpeechToTextState.Listening }, first);
+		AotSafeAssert.SequenceEqual(new[] { SpeechToTextState.Listening, SpeechToTextState.Silence }, second);
 
 		speech.StateChanged -= secondHandler;
 		SpeechInternals.RaiseStateChanged(speech, SpeechToTextState.Stopped);

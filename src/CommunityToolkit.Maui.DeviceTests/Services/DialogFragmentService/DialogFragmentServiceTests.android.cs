@@ -368,9 +368,9 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		{
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
-			Assert.Empty(scenario.DialogWindow.StatusBarColorCalls);
-			Assert.Empty(scenario.DialogWindow.DecorFitsSystemWindowsCalls);
-			Assert.Empty(scenario.ActivityController!.AppearanceCalls);
+			AotSafeAssert.Empty(scenario.DialogWindow.StatusBarColorCalls);
+			AotSafeAssert.Empty(scenario.DialogWindow.DecorFitsSystemWindowsCalls);
+			AotSafeAssert.Empty(scenario.ActivityController!.AppearanceCalls);
 			return Task.CompletedTask;
 		});
 
@@ -421,7 +421,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 
 			// A transparent status bar clears the light icons, any other color asks for them.
 			var call = Assert.Single(scenario.DialogController!.AppearanceCalls);
-			Assert.Equal((transparent ? 0 : lightStatusBarsBit, lightStatusBarsBit), call);
+			AotSafeAssert.Equal((transparent ? 0 : lightStatusBarsBit, lightStatusBarsBit), call);
 			return Task.CompletedTask;
 		});
 	}
@@ -439,10 +439,10 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		{
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
-			Assert.Equal([activityColor], scenario.DialogWindow.StatusBarColorCalls);
+			AotSafeAssert.SequenceEqual([activityColor], scenario.DialogWindow.StatusBarColorCalls);
 			Assert.NotNull(scenario.DialogController);
-			Assert.Equal((lightStatusBarsBit, lightStatusBarsBit), Assert.Single(scenario.DialogController.AppearanceCalls));
-			Assert.Equal([false], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
+			AotSafeAssert.Equal((lightStatusBarsBit, lightStatusBarsBit), Assert.Single(scenario.DialogController.AppearanceCalls));
+			AotSafeAssert.SequenceEqual([false], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
 			return Task.CompletedTask;
 		});
 	}
@@ -462,9 +462,9 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		{
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
-			Assert.Equal([activityColor], scenario.DialogWindow.StatusBarColorCalls);
-			Assert.Empty(scenario.DialogWindow.ClearFlagsCalls);
-			Assert.Empty(scenario.DialogWindow.SetFlagsCalls);
+			AotSafeAssert.SequenceEqual([activityColor], scenario.DialogWindow.StatusBarColorCalls);
+			AotSafeAssert.Empty(scenario.DialogWindow.ClearFlagsCalls);
+			AotSafeAssert.Empty(scenario.DialogWindow.SetFlagsCalls);
 			return Task.CompletedTask;
 		});
 	}
@@ -511,12 +511,12 @@ public class DialogFragmentServiceTests : FragmentTestBase
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
 			var dialogWindow = scenario.DialogWindow;
-			Assert.Equal([activityColor], dialogWindow.StatusBarColorCalls);
-			Assert.Equal([WindowManagerFlags.LayoutNoLimits], dialogWindow.ClearFlagsCalls);
-			Assert.Equal([(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds)], dialogWindow.SetFlagsCalls);
+			AotSafeAssert.SequenceEqual([activityColor], dialogWindow.StatusBarColorCalls);
+			AotSafeAssert.SequenceEqual([WindowManagerFlags.LayoutNoLimits], dialogWindow.ClearFlagsCalls);
+			AotSafeAssert.SequenceEqual([(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds)], dialogWindow.SetFlagsCalls);
 
 			// Window.SetDecorFitsSystemWindows needs Android 11: WindowCompat lays the decor view out behind the system bars with system UI flags instead.
-			Assert.Empty(dialogWindow.DecorFitsSystemWindowsCalls);
+			AotSafeAssert.Empty(dialogWindow.DecorFitsSystemWindowsCalls);
 			Assert.Equal(AndroidSystemBars.LayoutSystemUiFlags, AndroidSystemBars.SystemUiVisibility(dialogWindow) & AndroidSystemBars.LayoutSystemUiFlags);
 			return Task.CompletedTask;
 		});
@@ -629,7 +629,7 @@ public class DialogFragmentServiceTests : FragmentTestBase
 		{
 			service.OnFragmentStarted(HostActivity.SupportFragmentManager, scenario.Fragment);
 
-			Assert.Equal([false], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
+			AotSafeAssert.SequenceEqual([false], scenario.DialogWindow.DecorFitsSystemWindowsCalls);
 			if (!OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
 				Assert.Equal(AndroidSystemBars.LayoutStableSystemUiFlag, AndroidSystemBars.SystemUiVisibility(scenario.DialogWindow) & AndroidSystemBars.LayoutStableSystemUiFlag);
