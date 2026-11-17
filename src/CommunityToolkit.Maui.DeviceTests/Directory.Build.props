@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CtmDeviceTestsTrimming=full|nativeaot builds this app fully trimmed or with NativeAOT (eng/devices/README.md). A global PublishAot or
+     TrimMode would reach every referenced project (PublishAot breaks the netstandard2.0 source generators), and the Apple SDK props read
+     PublishAot and _IsPublishing before the project file, hence a props file. -->
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <_CtmDeviceTestsPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_CtmDeviceTestsPlatform>
+    <_CtmDeviceTestsTrimmed Condition="'$(CtmDeviceTestsTrimming)' == 'full' or '$(CtmDeviceTestsTrimming)' == 'nativeaot'">true</_CtmDeviceTestsTrimmed>
+  </PropertyGroup>
+
+  <!-- The repo makes every IL warning an error. Here they come from MAUI, xunit and the tests; the toolkit's own are gated by its library
+       builds and eng/trim-audit. -->
+  <PropertyGroup Condition="'$(_CtmDeviceTestsTrimmed)' == 'true'">
+    <WarningsAsErrors>$([System.Text.RegularExpressions.Regex]::Replace('$(WarningsAsErrors)', 'IL[234]\d{3}', ''))</WarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Full trimming removes what xunit and the XHarness runner find by reflection (TypeLoadException: Xunit.Sdk.ReflectionAssemblyInfo, then
+       "No test cases discovered"). The toolkit, MAUI and the platform bindings stay fully trimmed. -->
+  <!-- Keep in sync with the TrimmerRootAssembly items of eng/trim-audit/Directory.Build.targets. -->
+  <ItemGroup Condition="'$(_CtmDeviceTestsTrimmed)' == 'true'">
+    <TrimmerRootAssembly Include="xunit.abstractions;xunit.assert;xunit.core;xunit.execution.dotnet;xunit.runner.utility.netcoreapp10" />
+    <TrimmerRootAssembly Include="Microsoft.DotNet.XHarness.TestRunners.Common;Microsoft.DotNet.XHarness.TestRunners.Xunit" />
+    <TrimmerRootAssembly Include="CommunityToolkit.Maui.DeviceTests;CommunityToolkit.Maui.DeviceTests.Shared;CommunityToolkit.Maui.DeviceTests.Runners" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(CtmDeviceTestsTrimming)' == 'full'">
+    <TrimMode>full</TrimMode>
+    <!-- Apple trims by TrimMode alone; Android and Windows trim only a PublishTrimmed build. -->
+    <PublishTrimmed Condition="'$(_CtmDeviceTestsPlatform)' == 'android' or '$(_CtmDeviceTestsPlatform)' == 'windows'">true</PublishTrimmed>
+    <!-- Trimming turns built-in COM off, which System.Speech (offline speech-to-text) needs; the docs tell trimmed Windows apps to set it. -->
+    <BuiltInComInteropSupport Condition="'$(_CtmDeviceTestsPlatform)' == 'windows'">true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CtmDeviceTestsTrimming)' == 'nativeaot' and ('$(_CtmDeviceTestsPlatform)' == 'ios' or '$(_CtmDeviceTestsPlatform)' == 'maccatalyst' or '$(_CtmDeviceTestsPlatform)' == 'android')">
+    <PublishAot>true</PublishAot>
+    <!-- eng/devices builds instead of publishing; the Apple SDK, and the Android SDK in Debug, use NativeAOT only when they think they publish. -->
+    <_IsPublishing>true</_IsPublishing>
+  </PropertyGroup>
+
+  <!-- A build that silently fell back to an untrimmed or JIT app would pass every test and prove nothing. -->
+  <Target Name="_CtmDeviceTestsCheckTrimming" BeforeTargets="CoreCompile" Condition="'$(CtmDeviceTestsTrimming)' != '' and '$(CtmDeviceTestsTrimming)' != 'none'">
+    <Error Condition="'$(_CtmDeviceTestsTrimmed)' != 'true'"
+           Text="CtmDeviceTestsTrimming='$(CtmDeviceTestsTrimming)' is not none, full or nativeaot." />
+    <Error Condition="'$(DEVICE_TEST_COVERAGE)' == 'true'"
+           Text="CtmDeviceTestsTrimming=$(CtmDeviceTestsTrimming) cannot collect coverage: coverlet rewrites the toolkit assemblies, so the app would not trim or compile the IL that ships. Unset DEVICE_TEST_COVERAGE." />
+    <Error Condition="'$(CtmDeviceTestsTrimming)' == 'nativeaot' and '$(_CtmDeviceTestsPlatform)' == 'windows'"
+           Text="NativeAOT does not work for .NET MAUI apps on Windows (https://github.com/dotnet/maui/issues/39053). Use CtmDeviceTestsTrimming=full." />
+    <Error Condition="'$(CtmDeviceTestsTrimming)' == 'nativeaot' and ('$(_CtmDeviceTestsPlatform)' == 'ios' or '$(_CtmDeviceTestsPlatform)' == 'maccatalyst') and '$(_UseNativeAot)' != 'true'"
+           Text="CtmDeviceTestsTrimming=nativeaot: the Apple SDK would not compile $(TargetFramework) with NativeAOT (_UseNativeAot='$(_UseNativeAot)')." />
+    <Error Condition="'$(CtmDeviceTestsTrimming)' == 'nativeaot' and '$(_CtmDeviceTestsPlatform)' == 'android' and '$(_AndroidRuntime)' != 'NativeAOT'"
+           Text="CtmDeviceTestsTrimming=nativeaot: the Android SDK would not use NativeAOT for $(TargetFramework) (_AndroidRuntime='$(_AndroidRuntime)')." />
+    <Error Condition="'$(CtmDeviceTestsTrimming)' == 'full' and '$(TrimMode)' != 'full'"
+           Text="CtmDeviceTestsTrimming=full: $(TargetFramework) would build with TrimMode='$(TrimMode)'. A global TrimMode overrides this app's." />
+    <Error Condition="'$(CtmDeviceTestsTrimming)' == 'full' and ('$(_CtmDeviceTestsPlatform)' == 'android' or '$(_CtmDeviceTestsPlatform)' == 'windows') and '$(PublishTrimmed)' != 'true'"
+           Text="CtmDeviceTestsTrimming=full: $(TargetFramework) would not be trimmed (PublishTrimmed='$(PublishTrimmed)')." />
+    <Error Condition="'$(CtmDeviceTestsTrimming)' == 'full' and '$(_CtmDeviceTestsPlatform)' == 'windows' and '$(BuiltInComInteropSupport)' != 'true'"
+           Text="CtmDeviceTestsTrimming=full: a global BuiltInComInteropSupport='$(BuiltInComInteropSupport)' would turn built-in COM off and skip the offline speech-to-text tests." />
+    <!-- Proves to .github/scripts/check-trimmed-device-test-app.sh that this guard ran; Android's default Release build also leaves a linked/ folder. -->
+    <WriteLinesToFile File="$(IntermediateOutputPath)ctm-device-tests-trimming.txt" Lines="$(CtmDeviceTestsTrimming)" Overwrite="true" />
+  </Target>
+</Project>

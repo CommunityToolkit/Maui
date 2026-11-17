@@ -27,7 +27,7 @@ public partial class BadgeTests : FilesTestBase
 		Badge.Default.SetCount(0);
 
 		Assert.Same(recording, Badge.Default);
-		Assert.Equal([3u, 0u], recording.Counts);
+		AotSafeAssert.SequenceEqual([3u, 0u], recording.Counts);
 	}
 
 	sealed class RecordingBadge : IBadge

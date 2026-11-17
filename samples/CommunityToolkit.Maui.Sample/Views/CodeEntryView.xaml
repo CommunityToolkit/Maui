@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentView
+    x:Class="CommunityToolkit.Maui.Sample.Views.CodeEntryView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:CommunityToolkit.Maui.Sample.Views"
+    x:DataType="views:CodeEntryView">
+
+    <Entry Placeholder="Code (at least 4 characters)"
+           Text="{Binding Code, Source={x:RelativeSource AncestorType={x:Type views:CodeEntryView}}, Mode=TwoWay}" />
+</ContentView>
