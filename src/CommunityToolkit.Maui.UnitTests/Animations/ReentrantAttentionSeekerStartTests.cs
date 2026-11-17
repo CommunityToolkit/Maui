@@ -67,7 +67,6 @@ public class ReentrantAttentionSeekerStartTests : BaseAnimationTest
 		_ = appRotation.ContinueWith(_ => swingStartedDuringTheStart = new SwingAnimation { Length = seekerLength }.Animate(view, token), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
 		// The Swing's start aborts the app's RotateToAsync, whose continuation starts a Swing that the first Swing's own tween then aborts.
-		// The run plays to its end, one mock tick per real timer wake-up, so a short run keeps it inside the test timeout on a slow CI runner.
 		var swingRun = new SwingAnimation { Length = 3 * functionalTestLength }.Animate(view, token);
 
 		await (swingStartedDuringTheStart ?? throw new InvalidOperationException("The aborted RotateToAsync did not start a Swing.")).WaitAsync(waitTimeout, token);
