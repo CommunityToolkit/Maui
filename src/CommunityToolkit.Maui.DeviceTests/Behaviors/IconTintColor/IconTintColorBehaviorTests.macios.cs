@@ -389,7 +389,7 @@ public partial class IconTintColorBehaviorTests
 
 		// The behavior shows the image in its own colors again (AlwaysOriginal); Automatic, the mode of an image that was never tinted,
 		// would let a template image or a button follow the tint color.
-		Assert.Equal(UIImageRenderingMode.AlwaysOriginal, GetNativeImage(handler.PlatformView!)?.RenderingMode);
+		AotSafeAssert.Equal(UIImageRenderingMode.AlwaysOriginal, GetNativeImage(handler.PlatformView!)?.RenderingMode);
 		Assert.Equal(tintColorsBefore, DescribeNativeTintColors(handler.PlatformView!));
 	}
 
@@ -577,7 +577,7 @@ public partial class IconTintColorBehaviorTests
 
 				view.Behaviors.Add(behavior);
 
-				Assert.Equal(UIImageRenderingMode.AlwaysTemplate, GetNativeImage(platformView)?.RenderingMode);
+				AotSafeAssert.Equal(UIImageRenderingMode.AlwaysTemplate, GetNativeImage(platformView)?.RenderingMode);
 			}
 			finally
 			{
@@ -630,7 +630,7 @@ public partial class IconTintColorBehaviorTests
 
 				button.Behaviors.Add(behavior);
 
-				Assert.Equal(UIImageRenderingMode.AlwaysTemplate, uiButton.CurrentImage?.RenderingMode);
+				AotSafeAssert.Equal(UIImageRenderingMode.AlwaysTemplate, uiButton.CurrentImage?.RenderingMode);
 			}
 			finally
 			{
@@ -675,7 +675,7 @@ public partial class IconTintColorBehaviorTests
 			{
 				view.Behaviors.Add(behavior);
 
-				Assert.Equal(UIImageRenderingMode.AlwaysTemplate, GetNativeImage(platformView)?.RenderingMode);
+				AotSafeAssert.Equal(UIImageRenderingMode.AlwaysTemplate, GetNativeImage(platformView)?.RenderingMode);
 				Assert.Equal(UIViewTintAdjustmentMode.Dimmed, platformView.TintAdjustmentMode);
 
 				view.Behaviors.Remove(behavior);

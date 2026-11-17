@@ -136,7 +136,7 @@ public partial class StatusBarBehaviorTests : StatusBarTestBase
 		var behavior = await CreateBehaviorAsync();
 		page.Behaviors.Add(behavior);
 		page.Title = "before attach";
-		Assert.Empty(behavior.ViewPropertyChanges);
+		AotSafeAssert.Empty(behavior.ViewPropertyChanges);
 
 		await AttachPageAndRun(page, _ =>
 		{

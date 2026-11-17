@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AVFoundation;
 using CommunityToolkit.Maui.Core;
@@ -220,6 +221,7 @@ sealed class CameraManagerAccessor(CameraManager manager)
 	public static bool MatchesResolution(AVCaptureDeviceFormat format, Size resolution) =>
 		(bool)GetStaticMethod("MatchesResolution").Invoke(null, [format, resolution])!;
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicConstructors, "CommunityToolkit.Maui.Core.CameraManager.AVCapturePhotoCaptureDelegateWrapper", "CommunityToolkit.Maui.Camera")]
 	public static AVCapturePhotoCaptureDelegate CreatePhotoCaptureDelegateWrapper()
 	{
 		var wrapperType = typeof(CameraManager).GetNestedType("AVCapturePhotoCaptureDelegateWrapper", BindingFlags.NonPublic)
@@ -228,6 +230,10 @@ sealed class CameraManagerAccessor(CameraManager manager)
 		return (AVCapturePhotoCaptureDelegate)Activator.CreateInstance(wrapperType, nonPublic: true)!;
 	}
 
+	// NativeAOT keeps no metadata for the product's private nested types, nor for Task<T>.Result, unless it is told so.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, "CommunityToolkit.Maui.Core.CameraManager.AVCapturePhotoCaptureDelegateWrapper", "CommunityToolkit.Maui.Camera")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, "CommunityToolkit.Maui.Core.CameraManager.CapturePhotoResult", "CommunityToolkit.Maui.Camera")]
+	[DynamicDependency("Result", typeof(Task<>))]
 	public static Task<(AVCapturePhotoOutput? Output, AVCapturePhoto? Photo, NSError? Error)> GetPhotoCaptureResultAsync(AVCapturePhotoCaptureDelegate wrapper)
 	{
 		var task = (Task)wrapper.GetType().GetProperty("Task", BindingFlags.Public | BindingFlags.Instance)!.GetValue(wrapper)!;

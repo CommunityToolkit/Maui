@@ -94,8 +94,8 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			List<(CameraViewHandler Handler, float ZoomFactor)> expectedZoomFactors = [(parameterless, 2f), (withNullMappers, 3f)];
 			List<(CameraViewHandler Handler, object? Argument)> expectedCommandArguments = [(parameterless, 1), (withNullMappers, 2)];
-			Assert.Equal(expectedZoomFactors, mappedZoomFactors);
-			Assert.Equal(expectedCommandArguments, commandArguments);
+			AotSafeAssert.SequenceEqual(expectedZoomFactors, mappedZoomFactors);
+			AotSafeAssert.SequenceEqual(expectedCommandArguments, commandArguments);
 			// The probes inherit the default mappings, so the flash mode of the view still reaches the camera manager.
 			Assert.Equal(AVCaptureFlashMode.Auto, new CameraManagerAccessor(withNullMappers.CameraManager).FlashMode);
 			view.CameraFlashMode = CameraFlashMode.On;
@@ -137,7 +137,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			// The initialized device shows that the replacement ran instead of CameraViewHandler.MapZoomFactor, which would have zoomed it, and the
 			// flash mode shows that the mappings that the custom mapper inherits still run.
-			Assert.Equal([2.5f], mappedZoomFactors.Skip(mappedBeforeTheChange));
+			AotSafeAssert.SequenceEqual([2.5f], mappedZoomFactors.Skip(mappedBeforeTheChange));
 			Assert.Empty(device.Calls);
 			Assert.Equal(AVCaptureFlashMode.On, access.FlashMode);
 			Assert.Equal([(object?)42], commandArguments);
@@ -758,7 +758,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			using var copy = new MemoryStream();
 			stream.CopyTo(copy);
-			Assert.Equal(jpegBytes, copy.ToArray());
+			AotSafeAssert.SequenceEqual(jpegBytes, copy.ToArray());
 			Assert.Equal(1, output.CaptureCount);
 			DisconnectAndRelease(view);
 		});
