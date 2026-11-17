@@ -37,10 +37,10 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		Assert.Equal(string.Empty, info.Title);
 		Assert.Equal(string.Empty, info.Artist);
 		Assert.Equal(string.Empty, info.AlbumTitle);
-		Assert.Equal(0d, info.PlaybackDuration);
+		AotSafeAssert.Equal(0d, info.PlaybackDuration);
 		Assert.False(info.IsLiveStream);
-		Assert.Equal(0f, info.PlaybackRate);
-		Assert.Equal(0d, info.ElapsedPlaybackTime);
+		AotSafeAssert.Equal(0f, info.PlaybackRate);
+		AotSafeAssert.Equal(0d, info.ElapsedPlaybackTime);
 		Assert.Equal(CGSize.Empty, info.Artwork!.Bounds.Size);
 	}
 
@@ -234,7 +234,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			Assert.Equal("Artist", info.Artist);
 			Assert.Equal(200d, info.PlaybackDuration!.Value, precision: 3);
 			Assert.Equal(42.5, info.ElapsedPlaybackTime!.Value, precision: 3);
-			Assert.Equal(0f, info.PlaybackRate); // The player is not playing
+			AotSafeAssert.Equal(0f, info.PlaybackRate); // The player is not playing
 			Assert.False(info.IsLiveStream);
 			Assert.Equal(new CGSize(320, 240), info.Artwork!.Bounds.Size);
 		}));
@@ -253,12 +253,12 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 			await InvokeOnMainThreadAsync(player.Play);
 			await WaitUntilAsync(() => player.TimeControlStatus is AVPlayerTimeControlStatus.Playing, "The player did not start playing.");
 			await InvokeOnMainThreadAsync(() => metadata.SetMetadata(player.CurrentItem, mediaElement));
-			Assert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.PlaybackRate);
+			AotSafeAssert.Equal(1.5f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.PlaybackRate);
 
 			await InvokeOnMainThreadAsync(player.Pause);
 			await WaitUntilAsync(() => player.TimeControlStatus is AVPlayerTimeControlStatus.Paused, "The player did not pause.");
 			await InvokeOnMainThreadAsync(() => metadata.SetMetadata(player.CurrentItem, mediaElement));
-			Assert.Equal(0f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.PlaybackRate);
+			AotSafeAssert.Equal(0f, MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.PlaybackRate);
 		});
 	}
 
@@ -284,8 +284,8 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 
 			var info = MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!;
 			Assert.Equal("Song", info.Title);
-			Assert.Equal(0d, info.PlaybackDuration);
-			Assert.Equal(0d, info.ElapsedPlaybackTime);
+			AotSafeAssert.Equal(0d, info.PlaybackDuration);
+			AotSafeAssert.Equal(0d, info.ElapsedPlaybackTime);
 		}));
 	}
 
@@ -386,7 +386,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		});
 
 		Assert.StartsWith("file://", url, StringComparison.Ordinal);
-		Assert.Equal(new CGSize(40, 30), loadable);
+		AotSafeAssert.Equal(new CGSize(40, 30), loadable);
 		Assert.Same(DefaultImage, image);
 	}
 

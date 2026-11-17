@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
@@ -403,9 +404,21 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static void SetPrivateField(object target, string name, object? value) =>
 		GetFieldInfo(target, name).SetValue(target, value);
 
-	static FieldInfo GetFieldInfo(object target, string name) =>
-		target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
-			?? throw new MissingFieldException(target.GetType().FullName, name);
+	static FieldInfo GetFieldInfo(object target, string name)
+	{
+		var type = GetTypeWithPrivateFields(target);
+		return type.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
+			?? throw new MissingFieldException(type.FullName, name);
+	}
+
+	// NativeAOT keeps the private fields only of types that the code names or annotates, which target.GetType() does not.
+	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicFields)]
+	static Type GetTypeWithPrivateFields(object target) => target switch
+	{
+		CameraManager => typeof(CameraManager),
+		CameraProvider => typeof(CameraProvider),
+		_ => throw new InvalidOperationException($"{target.GetType().FullName} has no private fields that the camera tests read.")
+	};
 
 	// Unlike AttachAndRun, this can host several views at once, and AttachAndRun can not be nested.
 	protected Task HostAsync(Func<Task> body, params AView[] views) =>

@@ -81,7 +81,7 @@ public class BasePlatformBehaviorTests : StatusBarTestBase
 		var behavior = new ProbeBehavior();
 		label.Behaviors.Add(behavior);
 		label.Text = "before attach";
-		Assert.Empty(behavior.ViewPropertyChanges);
+		AotSafeAssert.Empty(behavior.ViewPropertyChanges);
 
 		await AttachViewAndRun(label, async _ =>
 		{
@@ -222,7 +222,7 @@ public class BasePlatformBehaviorTests : StatusBarTestBase
 
 			Assert.Equal(0, behavior.AttachedCount);
 			Assert.Null(behavior.TrackedView);
-			Assert.Empty(behavior.ViewPropertyChanges);
+			AotSafeAssert.Empty(behavior.ViewPropertyChanges);
 		});
 		await label.OnUnloadedAsync(loadTimeout);
 
