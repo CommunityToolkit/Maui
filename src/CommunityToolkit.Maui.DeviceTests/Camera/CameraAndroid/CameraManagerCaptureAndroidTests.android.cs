@@ -81,7 +81,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			Assert.Equal(0, stream.Position);
 			var jpeg = await ReadAllBytesAsync(stream);
 			Assert.True(IsJpeg(jpeg), "The captured stream is not a JPEG.");
-			Assert.Equal(session.CaptureResolution, GetJpegSize(jpeg));
+			AotSafeAssert.Equal(session.CaptureResolution, GetJpegSize(jpeg));
 			Assert.Empty(recorder.Failures);
 		});
 	}
@@ -102,7 +102,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			await recorder.WaitForCaptureAsync();
 
 			var jpeg = await ReadAllBytesAsync(Assert.Single(recorder.Captured));
-			Assert.Equal(SmallSize, GetJpegSize(jpeg));
+			AotSafeAssert.Equal(SmallSize, GetJpegSize(jpeg));
 		}, view: new CameraView { SelectedCamera = camera, ImageCaptureResolution = SmallResolution });
 	}
 
@@ -337,7 +337,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		var stream = Assert.IsType<MemoryStream>(Assert.Single(recorder.Captured));
 		Assert.Equal(0, stream.Position);
-		Assert.Equal(expected, await ReadAllBytesAsync(stream));
+		AotSafeAssert.SequenceEqual(expected, await ReadAllBytesAsync(stream));
 		Assert.Empty(recorder.Failures);
 		Assert.Equal(1, proxy.CloseCount);
 	}
@@ -416,7 +416,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		var filtered = filter.Filter(supported, 0);
 
-		Assert.Equal(new[] { (1280, 720), (640, 480), (320, 240) }, Dimensions(filtered));
+		AotSafeAssert.SequenceEqual(new[] { (1280, 720), (640, 480), (320, 240) }, Dimensions(filtered));
 	}
 
 	[Fact]
@@ -427,7 +427,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		var filtered = filter.Filter(supported, 0);
 
-		Assert.Equal(new[] { (640, 480) }, Dimensions(filtered));
+		AotSafeAssert.SequenceEqual(new[] { (640, 480) }, Dimensions(filtered));
 	}
 
 	[Fact]
@@ -437,7 +437,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		var filtered = filter.Filter(Sizes((640, 480), (641, 480), (640, 481)), 0);
 
-		Assert.Equal(new[] { (640, 480) }, Dimensions(filtered));
+		AotSafeAssert.SequenceEqual(new[] { (640, 480) }, Dimensions(filtered));
 	}
 
 	[Fact]
@@ -447,7 +447,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 		var filtered = filter.Filter(Sizes((400, 300), (300, 400), (100, 100)), 0);
 
-		Assert.Equal(new[] { (400, 300), (300, 400), (100, 100) }, Dimensions(filtered));
+		AotSafeAssert.SequenceEqual(new[] { (400, 300), (300, 400), (100, 100) }, Dimensions(filtered));
 	}
 
 	[Fact]
@@ -489,6 +489,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 	{
 		var filter = CreateResolutionFilter(640, 480);
 
-		Assert.Equal(new[] { (640, 480) }, Dimensions(filter.Filter(Sizes((1280, 960), (640, 480)), 90)));
+		AotSafeAssert.SequenceEqual(new[] { (640, 480) }, Dimensions(filter.Filter(Sizes((1280, 960), (640, 480)), 90)));
 	}
 }
