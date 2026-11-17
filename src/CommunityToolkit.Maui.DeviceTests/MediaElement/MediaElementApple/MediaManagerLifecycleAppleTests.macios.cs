@@ -1,5 +1,6 @@
 using System.Reflection;
 using AVFoundation;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Views;
@@ -33,6 +34,125 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 			Assert.Same(player, controller.Player);
 			Assert.Same(player, manager.NativePlayer);
 			Assert.Same(controller, manager.NativePlayerViewController);
+		});
+	}
+
+	// AVKit tells the delegate of the AVPlayerViewController about a full screen transition before the transition runs
+	[Fact]
+	public async Task FullScreenTransitionChangesTheScreenStateOfTheMediaElementOnceItHasEnded()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var mediaElement = CreateMediaElement();
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			mediaElement.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+			using var manager = CreateManager(mediaElement);
+			var (_, controller) = manager.CreatePlatformView();
+			var fullScreenDelegate = Assert.IsType<MediaManagerDelegate>(controller.Delegate);
+			using var coordinator = new AppleFakeTransitionCoordinator();
+
+			fullScreenDelegate.WillBeginFullScreenPresentation(controller, coordinator);
+
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+			coordinator.End(cancelled: false);
+			Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+			var entered = Assert.Single(screenStateChanges);
+			Assert.Equal(MediaElementScreenState.Default, entered.PreviousState);
+			Assert.Equal(MediaElementScreenState.FullScreen, entered.NewState);
+
+			fullScreenDelegate.WillEndFullScreenPresentation(controller, coordinator);
+
+			Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+			coordinator.End(cancelled: false);
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+			Assert.Equal(2, screenStateChanges.Count);
+			Assert.Equal(MediaElementScreenState.FullScreen, screenStateChanges[1].PreviousState);
+			Assert.Equal(MediaElementScreenState.Default, screenStateChanges[1].NewState);
+		});
+	}
+
+	// The user can let go of the swipe that dismisses the full screen player before it is far enough: the player then stays full screen
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public async Task CancelledFullScreenTransitionKeepsTheScreenStateOfTheMediaElement(bool isLeavingFullScreen)
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var mediaElement = CreateMediaElement();
+			using var manager = CreateManager(mediaElement);
+			var (_, controller) = manager.CreatePlatformView();
+			var fullScreenDelegate = Assert.IsType<MediaManagerDelegate>(controller.Delegate);
+			using var coordinator = new AppleFakeTransitionCoordinator();
+			if (isLeavingFullScreen)
+			{
+				fullScreenDelegate.WillBeginFullScreenPresentation(controller, coordinator);
+				coordinator.End(cancelled: false);
+			}
+
+			var screenStateBefore = mediaElement.ScreenState;
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			mediaElement.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+
+			if (isLeavingFullScreen)
+			{
+				fullScreenDelegate.WillEndFullScreenPresentation(controller, coordinator);
+			}
+			else
+			{
+				fullScreenDelegate.WillBeginFullScreenPresentation(controller, coordinator);
+			}
+
+			coordinator.End(cancelled: true);
+
+			Assert.Equal(isLeavingFullScreen ? MediaElementScreenState.FullScreen : MediaElementScreenState.Default, screenStateBefore);
+			Assert.Equal(screenStateBefore, mediaElement.ScreenState);
+			Assert.Empty(screenStateChanges);
+		});
+	}
+
+	[Fact]
+	public async Task FullScreenTransitionThatTakesNoCompletionHandlerChangesTheScreenStateAtOnce()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var mediaElement = CreateMediaElement();
+			using var manager = CreateManager(mediaElement);
+			var (_, controller) = manager.CreatePlatformView();
+			var fullScreenDelegate = Assert.IsType<MediaManagerDelegate>(controller.Delegate);
+			using var coordinator = new AppleFakeTransitionCoordinator { AcceptsCompletions = false };
+
+			fullScreenDelegate.WillBeginFullScreenPresentation(controller, coordinator);
+
+			Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+		});
+	}
+
+	[Fact]
+	public async Task FullScreenTransitionThatEndsAfterTheManagerWasDisposedLeavesTheScreenStateOfTheMediaElement()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var mediaElement = CreateMediaElement();
+			var manager = CreateManager(mediaElement);
+			var (_, controller) = manager.CreatePlatformView();
+			var fullScreenDelegate = Assert.IsType<MediaManagerDelegate>(controller.Delegate);
+			using var coordinator = new AppleFakeTransitionCoordinator();
+			fullScreenDelegate.WillBeginFullScreenPresentation(controller, coordinator);
+
+			manager.Dispose();
+			var failure = Record.Exception(() => coordinator.End(cancelled: false));
+
+			Assert.Null(failure);
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
 		});
 	}
 

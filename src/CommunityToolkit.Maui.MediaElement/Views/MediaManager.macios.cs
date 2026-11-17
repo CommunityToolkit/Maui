@@ -25,20 +25,6 @@ public partial class MediaManager : IDisposable
 
 	bool hasMediaOpened;
 
-	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
-	{
-		UpdateFullScreenState(e.NewState);
-	}
-
-	/// <summary>
-	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
-	/// </summary>
-	public void Dispose()
-	{
-		Dispose(true);
-		GC.SuppressFinalize(this);
-	}
-
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
@@ -145,6 +131,15 @@ public partial class MediaManager : IDisposable
 		AddErrorObservers();
 
 		return (Player, PlayerViewController);
+	}
+
+	/// <summary>
+	/// Releases the managed and unmanaged resources used by the <see cref="MediaManager"/>.
+	/// </summary>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
 	}
 
 	protected virtual partial void PlatformPlay()
@@ -462,7 +457,7 @@ public partial class MediaManager : IDisposable
 				UIApplication.SharedApplication.IdleTimerDisabled = false;
 				var audioSession = AVAudioSession.SharedInstance();
 				audioSession.SetActive(false);
-				fullScreenDelegate?.ScreenStateChanged -= OnScreenStateChanged;
+
 				DestroyErrorObservers();
 				DestroyPlayedToEndObserver();
 
@@ -499,6 +494,14 @@ public partial class MediaManager : IDisposable
 
 			PlayerViewController?.Dispose();
 			PlayerViewController = null;
+
+			// After its view controller, which holds it as its delegate
+			if (fullScreenDelegate is not null)
+			{
+				fullScreenDelegate.ScreenStateChanged -= OnScreenStateChanged;
+				fullScreenDelegate.Dispose();
+				fullScreenDelegate = null;
+			}
 		}
 	}
 
@@ -1096,27 +1099,48 @@ public partial class MediaManager : IDisposable
 			Player.Rate = (float)MediaElement.Speed;
 		}
 	}
+
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
+	{
+		UpdateFullScreenState(e.NewState);
+	}
 }
 
 sealed class MediaManagerDelegate : AVPlayerViewControllerDelegate
 {
-	readonly WeakEventManager fullScreenEventManager = new();
+	readonly WeakEventManager screenStateEventManager = new();
+
 	internal event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged
 	{
-		add => fullScreenEventManager.AddEventHandler(value);
-		remove => fullScreenEventManager.RemoveEventHandler(value);
+		add => screenStateEventManager.AddEventHandler(value);
+		remove => screenStateEventManager.RemoveEventHandler(value);
 	}
 
-	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
+	public override void WillBeginFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator) =>
+		RaiseScreenStateChangedAfterTransition(coordinator, MediaElementScreenState.Default, MediaElementScreenState.FullScreen);
+
+	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator) =>
+		RaiseScreenStateChangedAfterTransition(coordinator, MediaElementScreenState.FullScreen, MediaElementScreenState.Default);
+
+	// AVKit calls the delegate before the transition runs, and the user can cancel an interactive one (a swipe down on the full screen player
+	// that is released early): the player then stays as it was, so the state only changes once the transition has ended without being cancelled
+	void RaiseScreenStateChangedAfterTransition(IUIViewControllerTransitionCoordinator coordinator, MediaElementScreenState previousState, MediaElementScreenState newState)
 	{
-		var oldState = MediaElementScreenState.Default;
-		var newState = MediaElementScreenState.FullScreen;
-		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
+		var isCompletionQueued = coordinator.AnimateAlongsideTransition(static _ => { }, context =>
+		{
+			if (!context.IsCancelled)
+			{
+				RaiseScreenStateChanged(previousState, newState);
+			}
+		});
+
+		// A transition that takes no completion handler anymore cannot be waited for
+		if (!isCompletionQueued)
+		{
+			RaiseScreenStateChanged(previousState, newState);
+		}
 	}
-	public override void WillEndFullScreenPresentation(AVPlayerViewController playerViewController, IUIViewControllerTransitionCoordinator coordinator)
-	{
-		var oldState = MediaElementScreenState.FullScreen;
-		var newState = MediaElementScreenState.Default;
-		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(ScreenStateChanged));
-	}
+
+	void RaiseScreenStateChanged(MediaElementScreenState previousState, MediaElementScreenState newState) =>
+		screenStateEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(previousState, newState), nameof(ScreenStateChanged));
 }

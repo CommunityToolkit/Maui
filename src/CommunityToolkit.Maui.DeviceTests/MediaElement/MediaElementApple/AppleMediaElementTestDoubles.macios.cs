@@ -9,6 +9,7 @@ using CoreMedia;
 using Foundation;
 using MediaPlayer;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -364,6 +365,53 @@ sealed class AppleTrackLoadingAsset(NSUrl url) : AVUrlAsset(url)
 	public void CompleteTrackLoad() => tracks.TrySetResult(new NSArray<AVFoundation.AVMutableCompositionTrack>());
 
 	public void FailTrackLoad(NSError error) => tracks.TrySetException(new NSErrorException(error));
+}
+
+// A full screen transition of AVPlayerViewController cannot be started without a person, and one that is cancelled needs a swipe that is let
+// go halfway. The toolkit only asks the coordinator to be told how the transition ended, so the test ends it here. It is not an NSObject:
+// the toolkit calls it through the interface and nothing passes it to UIKit, so the members left to the interface are never called.
+sealed class AppleFakeTransitionCoordinator : IUIViewControllerTransitionCoordinator
+{
+	readonly List<Action<IUIViewControllerTransitionCoordinatorContext>> completions = [];
+	bool isCancelled;
+
+	/// <summary>What AnimateAlongsideTransition answers: <see langword="false"/> when the transition takes no more handlers.</summary>
+	public bool AcceptsCompletions { get; set; } = true;
+
+	public NativeHandle Handle => NativeHandle.Zero;
+
+	bool IUIViewControllerTransitionCoordinatorContext.IsCancelled => isCancelled;
+
+	/// <summary>Ends the transition as UIKit does: every completion handler gets the context, which says whether it was cancelled.</summary>
+	public void End(bool cancelled)
+	{
+		isCancelled = cancelled;
+		var pending = completions.ToArray();
+		completions.Clear();
+		foreach (var completion in pending)
+		{
+			completion(this);
+		}
+	}
+
+	public void Dispose()
+	{
+	}
+
+	bool IUIViewControllerTransitionCoordinator.AnimateAlongsideTransition(Action<IUIViewControllerTransitionCoordinatorContext> animate, Action<IUIViewControllerTransitionCoordinatorContext>? completion)
+	{
+		if (!AcceptsCompletions)
+		{
+			return false;
+		}
+
+		if (completion is not null)
+		{
+			completions.Add(completion);
+		}
+
+		return true;
+	}
 }
 
 sealed class AppleViewlessPlayerViewController : AVPlayerViewController
