@@ -131,7 +131,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			// rules, which only a RelativeLayout parent applies) by its own LayoutParams. The rules have no visible effect: the match_parent
 			// PlayerView makes the layout as large as the view.
 			var layout = Assert.IsType<CoordinatorLayout.LayoutParams>(relativeLayout.LayoutParameters);
-			Assert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (layout.Width, layout.Height));
+			AotSafeAssert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (layout.Width, layout.Height));
 		});
 	}
 
@@ -440,7 +440,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 				}
 				else
 				{
-					Assert.Equal(flagsBefore, window.DecorView.SystemUiFlags);
+					AotSafeAssert.Equal(flagsBefore, window.DecorView.SystemUiFlags);
 				}
 			}
 			finally

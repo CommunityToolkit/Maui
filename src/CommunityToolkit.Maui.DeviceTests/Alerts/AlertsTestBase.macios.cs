@@ -22,20 +22,26 @@ public abstract partial class AlertsTestBase
 
 	Task CleanUpAlertsAsync()
 	{
-		_ = Snackbar.Make(string.Empty).Dismiss(CancellationToken.None);
-		_ = Toast.Make(string.Empty).Dismiss(CancellationToken.None);
-
-		foreach (var alertView in AlertsApple.GetAlertViews())
+		try
 		{
-			alertView.RemoveFromSuperview();
+			_ = Snackbar.Make(string.Empty).Dismiss(CancellationToken.None);
+			_ = Toast.Make(string.Empty).Dismiss(CancellationToken.None);
+
+			foreach (var alertView in AlertsApple.GetAlertViews())
+			{
+				alertView.RemoveFromSuperview();
+			}
+
+			ResetToolkitAlertState();
 		}
-
-		ResetToolkitAlertState();
-
-		if (applicationWithTestHandler is not null)
+		finally
 		{
-			applicationWithTestHandler.Handler = previousApplicationHandler;
-			applicationWithTestHandler = null;
+			// A failure above must not leave the stub handler installed: later tests would resolve IFontManager from its disposed MauiContext.
+			if (applicationWithTestHandler is not null)
+			{
+				applicationWithTestHandler.Handler = previousApplicationHandler;
+				applicationWithTestHandler = null;
+			}
 		}
 
 		return Task.CompletedTask;
