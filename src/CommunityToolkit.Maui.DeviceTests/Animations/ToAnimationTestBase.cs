@@ -277,7 +277,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 
 		var view = CreateAnimatedView(OriginalValues);
 		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
-		// Outside the run's span, so no frame holds it: a write of the value the view already holds raises no PropertyChanged, so the run can't see it
+		// Outside the run's span, so no frame holds it: the run sees the app's write only as a change of value
 		var appValue = originalValue - (PeakValue - originalValue) / 10;
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
