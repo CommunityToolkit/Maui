@@ -123,7 +123,7 @@ static class AnimationExtensions
 
 						try
 						{
-							await Task.Delay(TimeSpan.FromMilliseconds(millisecondTickIncrement), cancellationTokenSource.Token);
+							await FramePacer.WaitForNextFrameAsync(TimeSpan.FromMilliseconds(millisecondTickIncrement), cancellationTokenSource.Token);
 						}
 						catch (TaskCanceledException)
 						{
@@ -241,6 +241,96 @@ static class AnimationExtensions
 						animation.RemoveFromParent();
 					}
 				}
+			}
+		}
+	}
+
+	// Paces the frames of every mock ticker on one thread that spins on the Stopwatch: slow CI runners and macOS background QoS coalesce
+	// every timed wait (Task.Delay, Thread.Sleep, a wait with a timeout), which stretched each 16 ms frame to 75-115 ms
+	static class FramePacer
+	{
+		static readonly object gate = new();
+		static readonly List<WaitingFrame> waitingFrames = [];
+		static Thread? pacingThread;
+
+		public static Task WaitForNextFrameAsync(TimeSpan frameLength, CancellationToken token)
+		{
+			var frame = new WaitingFrame(Stopwatch.GetTimestamp() + (long)(frameLength.TotalSeconds * Stopwatch.Frequency), token);
+
+			lock (gate)
+			{
+				waitingFrames.Add(frame);
+
+				if (pacingThread is null)
+				{
+					pacingThread = new Thread(PaceFrames) { IsBackground = true, Name = nameof(FramePacer) };
+					pacingThread.Start();
+				}
+
+				Monitor.Pulse(gate);
+			}
+
+			return frame.Task;
+		}
+
+		static void PaceFrames()
+		{
+			while (true)
+			{
+				long nextDueTimestamp;
+
+				lock (gate)
+				{
+					// Untimed, so no timer coalescing: the next waiting frame pulses the gate
+					while (waitingFrames.Count is 0)
+					{
+						Monitor.Wait(gate);
+					}
+
+					var now = Stopwatch.GetTimestamp();
+					waitingFrames.RemoveAll(frame => frame.TryStart(now));
+					nextDueTimestamp = waitingFrames.Count is 0 ? now : waitingFrames.Min(frame => frame.DueTimestamp);
+				}
+
+				while (Stopwatch.GetTimestamp() < nextDueTimestamp)
+				{
+					Thread.Yield();
+				}
+			}
+		}
+
+		sealed class WaitingFrame
+		{
+			// Continuations run on the ticker's own SynchronizationContext or the thread pool, never on the pacing thread, which keeps the frames of other tickers on time
+			readonly TaskCompletionSource started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+			readonly CancellationTokenRegistration cancellationRegistration;
+
+			public WaitingFrame(long dueTimestamp, CancellationToken token)
+			{
+				DueTimestamp = dueTimestamp;
+				cancellationRegistration = token.Register(() => started.TrySetCanceled(token));
+			}
+
+			public long DueTimestamp { get; }
+
+			public Task Task => started.Task;
+
+			public bool TryStart(long now)
+			{
+				if (started.Task.IsCompleted)
+				{
+					cancellationRegistration.Dispose();
+					return true;
+				}
+
+				if (now < DueTimestamp)
+				{
+					return false;
+				}
+
+				cancellationRegistration.Dispose();
+				started.TrySetResult();
+				return true;
 			}
 		}
 	}
