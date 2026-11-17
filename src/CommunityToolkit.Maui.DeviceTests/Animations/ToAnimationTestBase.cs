@@ -277,7 +277,8 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 
 		var view = CreateAnimatedView(OriginalValues);
 		var originalValue = OriginalValues.Single(original => original.Property == PeakProperty).Value;
-		var appValue = (originalValue + PeakValue) / 2;
+		// Outside the run's span, so no frame holds it: a write of the value the view already holds raises no PropertyChanged, so the run can't see it
+		var appValue = originalValue - (PeakValue - originalValue) / 10;
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
@@ -288,6 +289,9 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			view.CancelAnimations();
 			view.SetValue(PeakProperty, appValue);
 			await interruptedRun.WaitAsync(waitTimeout);
+
+			var valueAfterInterruptedRun = (double)view.GetValue(PeakProperty);
+			Assert.True(Math.Abs(valueAfterInterruptedRun - appValue) <= peakTolerance, $"The interrupted run left the view at {valueAfterInterruptedRun}; it must keep the value {appValue} the app set.");
 
 			await CreateAnimation().Animate(view).WaitAsync(waitTimeout);
 
