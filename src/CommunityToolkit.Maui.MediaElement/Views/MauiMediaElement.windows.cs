@@ -30,12 +30,6 @@ public partial class MauiMediaElement : Grid, IDisposable
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
 
-	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
-	{
-		add => fullScreenEventManager.AddEventHandler(value);
-		remove => fullScreenEventManager.RemoveEventHandler(value);
-	}
-
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
@@ -55,6 +49,15 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Finalizer
 	/// </summary>
 	~MauiMediaElement() => Dispose(false);
+
+	/// <summary>
+	/// Occurs when the full screen button moved the element into its full screen popup, or back out of it.
+	/// </summary>
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Gets the presented page.
@@ -207,7 +210,6 @@ public partial class MauiMediaElement : Grid, IDisposable
 		// The window can also enter or leave full screen without this button (F11, the app, the user), so the element and the navigation bar
 		// are only changed when they are not already as the new presenter needs them.
 		var isElementInFullScreenPopup = fullScreenGrid.Children.Contains(mediaPlayerElement);
-		var mediaElementState = MediaElementScreenState.Default;
 
 		if (appWindow.Presenter.Kind is AppWindowPresenterKind.FullScreen)
 		{
@@ -228,6 +230,8 @@ public partial class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+
+			OnFullScreenStateChanged(MediaElementScreenState.FullScreen, MediaElementScreenState.Default);
 		}
 		else
 		{
@@ -262,10 +266,12 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
-			mediaElementState = MediaElementScreenState.FullScreen;
+
+			OnFullScreenStateChanged(MediaElementScreenState.Default, MediaElementScreenState.FullScreen);
 		}
-		var newState = mediaElementState;
-		var oldState = newState == MediaElementScreenState.FullScreen ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
-		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
 	}
+
+	// Raised only where the element moved: the early returns above change the presenter of the window alone, the element stays where it is
+	void OnFullScreenStateChanged(MediaElementScreenState previousState, MediaElementScreenState newState) =>
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(previousState, newState), nameof(FullScreenStateChanged));
 }

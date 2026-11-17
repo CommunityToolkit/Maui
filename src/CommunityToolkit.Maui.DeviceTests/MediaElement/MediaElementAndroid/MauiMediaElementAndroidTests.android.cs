@@ -9,6 +9,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.UI;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
@@ -716,6 +717,62 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal(legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
 			Assert.NotEqual(flagsBefore & legacyFullscreenFlags, window.DecorView.SystemUiFlags & legacyFullscreenFlags);
 		}
+	}
+
+	[Fact]
+	public async Task FullscreenButtonChangesTheScreenStateOfTheMediaElementAndRaisesScreenStateChanged()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.ShouldShowPlaybackControls = true);
+		List<ScreenStateChangedEventArgs> screenStateChanges = [];
+		mediaElement.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			var window = GetActivityWindow();
+			var button = GetFullscreenButton(mediaElement);
+			await ShowSystemBarsAsync(window);
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+
+			button.PerformClick();
+
+			Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+			var entered = Assert.Single(screenStateChanges);
+			Assert.Equal(MediaElementScreenState.Default, entered.PreviousState);
+			Assert.Equal(MediaElementScreenState.FullScreen, entered.NewState);
+			await WaitUntilSystemBarsAsync(window, visible: false);
+
+			button.PerformClick();
+
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+			Assert.Equal(2, screenStateChanges.Count);
+			Assert.Equal(MediaElementScreenState.FullScreen, screenStateChanges[1].PreviousState);
+			Assert.Equal(MediaElementScreenState.Default, screenStateChanges[1].NewState);
+			await WaitUntilSystemBarsAsync(window, visible: true);
+		});
+	}
+
+	// The view leaves full screen without its button when it is detached, which the MediaElement must also be told
+	[Fact]
+	public async Task DetachingTheViewWhileInFullscreenSetsTheScreenStateOfTheMediaElementToDefault()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.ShouldShowPlaybackControls = true);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			var platformView = GetMauiMediaElement(mediaElement);
+			var window = GetActivityWindow();
+			await ShowSystemBarsAsync(window);
+			GetFullscreenButton(mediaElement).PerformClick();
+			Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+			await WaitUntilSystemBarsAsync(window, visible: false);
+
+			((ViewGroup)platformView.Parent!).RemoveView(platformView);
+
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+			await WaitUntilSystemBarsAsync(window, visible: true);
+		});
 	}
 
 	static AWindow GetActivityWindow() =>

@@ -31,15 +31,11 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		return new(Context, playerView);
 	}
 
+	/// <inheritdoc/>
 	protected override void ConnectHandler(MauiMediaElement platformView)
 	{
 		platformView.FullScreenStateChanged += OnScreenStateChanged;
 		base.ConnectHandler(platformView);
-	}
-
-	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
-	{
-		MediaManager?.UpdateFullScreenState(e.NewState);
 	}
 
 	/// <inheritdoc/>
@@ -53,5 +49,10 @@ public partial class MediaElementHandler : ViewHandler<MediaElement, MauiMediaEl
 		platformView.Dispose();
 		Dispose();
 		base.DisconnectHandler(platformView);
+	}
+
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
+	{
+		MediaManager?.UpdateFullScreenState(e.NewState);
 	}
 }

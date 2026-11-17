@@ -26,12 +26,6 @@ public class MauiMediaElement : CoordinatorLayout
 	bool isNavigationBarVisible;
 	bool isFullScreen;
 
-	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
-	{
-		add => fullScreenEventManager.AddEventHandler(value);
-		remove => fullScreenEventManager.RemoveEventHandler(value);
-	}
-
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
@@ -85,6 +79,15 @@ public class MauiMediaElement : CoordinatorLayout
 		relativeLayout.AddView(playerView);
 
 		AddView(relativeLayout);
+	}
+
+	/// <summary>
+	/// Occurs when the view entered or left full screen.
+	/// </summary>
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
 	}
 
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
@@ -177,9 +180,10 @@ public class MauiMediaElement : CoordinatorLayout
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility(saveSystemBarsVisibility: e.P0);
 
-		var newState = e.P0 ? MediaElementScreenState.FullScreen : MediaElementScreenState.Default;
-		var oldState = e.P0 ? MediaElementScreenState.Default : MediaElementScreenState.FullScreen;
-		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(oldState, newState), nameof(FullScreenStateChanged));
+		var (previousState, newState) = isFullScreen
+			? (MediaElementScreenState.Default, MediaElementScreenState.FullScreen)
+			: (MediaElementScreenState.FullScreen, MediaElementScreenState.Default);
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(previousState, newState), nameof(FullScreenStateChanged));
 	}
 
 	void SetSystemBarsVisibility(bool saveSystemBarsVisibility)
