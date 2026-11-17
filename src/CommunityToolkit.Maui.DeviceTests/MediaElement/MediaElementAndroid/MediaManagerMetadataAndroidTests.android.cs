@@ -50,7 +50,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			var metadata = GetPlayer(mediaElement).CurrentMediaItem!.MediaMetadata!;
 			Assert.Equal("A stream title", metadata.Title?.ToString());
 			Assert.Equal("A stream artist", metadata.Artist?.ToString());
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 		});
 	}
 
@@ -71,7 +71,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("HEAD", "/art.png"), "The content length is asked with a HEAD request first.");
 			Assert.True(server.HasRequest("GET", "/art.png"));
 		});
@@ -94,7 +94,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/missing.png"));
 			// A 404 is not an exception, so nothing is traced.
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
@@ -120,7 +120,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			Assert.True(server.HasRequest("GET", "/art.png"));
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -143,7 +143,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 
 			Assert.True(server.HasRequest("HEAD", "/empty.png"));
 			Assert.True(server.HasRequest("GET", "/empty.png"));
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
 		});
 	}
@@ -165,7 +165,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.Contains(trace.Messages, message => message.StartsWith($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}.", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
@@ -187,7 +187,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
 			Assert.Empty(recorder.FailureMessages);
 		});
@@ -210,7 +210,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 			// The finally block closes the file again: no file descriptor of the process still points to it.
 			Assert.DoesNotContain(GetOpenFileTargets(), target => target.EndsWith(Path.GetFileName(path), StringComparison.Ordinal));
 		});
@@ -234,7 +234,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			Assert.StartsWith("file:///", fileUri);
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -255,7 +255,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.Contains(trace.Messages, message => message.StartsWith($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {path}.", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
@@ -302,7 +302,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -322,7 +322,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
 		});
 	}
@@ -343,7 +343,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.Contains(trace.Messages, message => message.StartsWith($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for exoplayer/no_such_artwork.png.", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
@@ -367,7 +367,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
 		});
 	}
@@ -390,7 +390,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
