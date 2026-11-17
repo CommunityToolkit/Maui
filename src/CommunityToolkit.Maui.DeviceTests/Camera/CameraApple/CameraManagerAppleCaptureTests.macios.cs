@@ -138,7 +138,7 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 			Assert.Equal(0, result.Position);
 			Assert.True(destination.Length > 100);
 			var header = destination.ToArray().AsSpan(4, 4);
-			Assert.Equal("ftyp"u8.ToArray(), header.ToArray());
+			AotSafeAssert.SequenceEqual("ftyp"u8.ToArray(), header.ToArray());
 			Assert.False(File.Exists(recordedFile));
 			Assert.Null(scope.Access.VideoOutput);
 		});
@@ -193,7 +193,7 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 			var session = new CameraManagerAccessor(((CameraViewHandler)view.Handler!).CameraManager).CaptureSession;
 			view.Handler!.DisconnectHandler();
 			view.Handler = null;
-			Assert.Equal(NativeHandle.Zero, session?.Handle);
+			AotSafeAssert.Equal(NativeHandle.Zero, session?.Handle);
 		});
 	}
 

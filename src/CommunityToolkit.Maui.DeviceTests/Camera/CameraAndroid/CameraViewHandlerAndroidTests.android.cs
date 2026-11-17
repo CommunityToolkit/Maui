@@ -223,7 +223,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			host.View.CameraFlashMode = CameraFlashMode.On;
 
-			Assert.Equal(new[] { CameraFlashMode.On }, mappedFlashModes);
+			AotSafeAssert.SequenceEqual(new[] { CameraFlashMode.On }, mappedFlashModes);
 			Assert.Equal(ImageCapture.FlashModeOff, host.Native<ImageCapture>("imageCapture")!.FlashMode);
 			return Task.CompletedTask;
 		}, view);
@@ -545,8 +545,8 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 		await RunWithCameraViewAsync(host =>
 		{
-			Assert.Equal(SmallSize, GetNativeResolution(host.Native<ImageCapture>("imageCapture")!.ResolutionInfo));
-			Assert.Equal(SmallSize, GetNativeResolution(host.Native<Preview>("cameraPreview")!.ResolutionInfo));
+			AotSafeAssert.Equal(SmallSize, GetNativeResolution(host.Native<ImageCapture>("imageCapture")!.ResolutionInfo));
+			AotSafeAssert.Equal(SmallSize, GetNativeResolution(host.Native<Preview>("cameraPreview")!.ResolutionInfo));
 			return Task.CompletedTask;
 		}, view);
 	}
@@ -644,7 +644,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			var manager = host.Manager;
 			var nativeObjects = new[] { "camera", "cameraControl", "cameraPreview", "imageCapture", "videoCapture", "processCameraProvider", "orientationListener" }
 				.ToDictionary(name => name, name => host.Native<Java.Lang.Object>(name));
-			Assert.All(nativeObjects, entry => Assert.NotNull(entry.Value));
+			AotSafeAssert.All(nativeObjects, entry => Assert.NotNull(entry.Value));
 
 			host.Handler.Dispose();
 
@@ -652,7 +652,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			// CameraX's shared ProcessCameraProvider, camera and camera control are only released, not disposed (see
 			// CameraManagerConnectionAndroidTests.DisposeClosesTheCameraAndReleasesTheNativeObjects).
-			Assert.All(nativeObjects.Where(entry => !CameraManagerConnectionAndroidTests.IsSharedCameraXObject(entry.Key)), entry => Assert.True(entry.Value!.Handle == IntPtr.Zero, $"{entry.Key} was not disposed."));
+			AotSafeAssert.All(nativeObjects.Where(entry => !CameraManagerConnectionAndroidTests.IsSharedCameraXObject(entry.Key)), entry => Assert.True(entry.Value!.Handle == IntPtr.Zero, $"{entry.Key} was not disposed."));
 			Assert.All(nativeObjects.Keys, name => Assert.Null(GetPrivateField<object>(manager, name)));
 			var exception = Assert.Throws<InvalidOperationException>(() => host.Handler.CameraManager);
 			Assert.Equal("CameraManager cannot be used until the native view has been created", exception.Message);

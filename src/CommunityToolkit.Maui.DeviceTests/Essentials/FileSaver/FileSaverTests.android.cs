@@ -163,11 +163,11 @@ public partial class FileSaverTests
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
 		Assert.Equal($"{ExternalStorage}/Documents/Reports/saved.bin", result.FilePath);
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		Assert.Equal(["wt"], FilesTestContentProvider.OpenModes);
 		var values = progress.Values;
 		Assert.True(values.Count >= 2, $"Expected the progress of each chunk and the final report, got {values.Count} values.");
-		Assert.Equal(values.Order(), values);
+		AotSafeAssert.SequenceEqual(values.Order(), values);
 		Assert.Equal(values.Max(), values[^1]);
 	}
 
@@ -184,7 +184,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Fact]
@@ -201,7 +201,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Fact]
@@ -218,7 +218,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Empty(await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.Empty(await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		Assert.Single(progress.Values);
 	}
 
@@ -236,7 +236,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		Assert.Equal(1, stream.SeekCalls);
 	}
 
@@ -253,7 +253,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		Assert.Equal(0, stream.SeekCalls);
 	}
 
@@ -414,8 +414,8 @@ public partial class FileSaverTests
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
 		Assert.Equal(documentUri.ToString(), result.FilePath);
-		Assert.Equal([1], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("plain-document-id")));
-		Assert.Equal([100d], progress.Values);
+		AotSafeAssert.SequenceEqual<byte>([1], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("plain-document-id")));
+		AotSafeAssert.SequenceEqual([100d], progress.Values);
 	}
 
 	[Fact]
@@ -437,7 +437,7 @@ public partial class FileSaverTests
 		Assert.Contains("EBADF", exception.Message, StringComparison.Ordinal);
 		Assert.Equal(1, stream.ReadsWithData);
 		Assert.Equal(["wt"], FilesTestContentProvider.OpenModes);
-		Assert.Equal([9, 9, 9], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual<byte>([9, 9, 9], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Fact]
@@ -495,7 +495,7 @@ public partial class FileSaverTests
 		Assert.True(result.IsCancelled, result.Exception?.ToString());
 		Assert.Null(result.FilePath);
 		Assert.Equal(2, stream.ReadsWithData);
-		Assert.Equal(content[..4096], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content[..4096], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Fact]
@@ -518,7 +518,7 @@ public partial class FileSaverTests
 		Assert.Null(result.FilePath);
 		Assert.Equal(2, stream.ReadCalls);
 		Assert.Equal(1, stream.ReadsWithData);
-		Assert.Equal(content[..4096], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content[..4096], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Fact]
@@ -541,7 +541,7 @@ public partial class FileSaverTests
 		Assert.Equal(2, stream.ReadsWithData);
 		// The token was canceled after the last block was written, and the provider emptied the document when it was opened ("wt"), so the
 		// document already holds the whole stream although the save reports Canceled.
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Fact]
@@ -557,7 +557,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		Assert.Equal(100, progress.Values[^1]);
 	}
 
@@ -576,7 +576,7 @@ public partial class FileSaverTests
 		var values = progress.Values;
 		Assert.Equal(40.96, values[0], 2);
 		Assert.Equal(81.92, values[1], 2);
-		Assert.All(values, value => Assert.InRange(value, 0, 100));
+		AotSafeAssert.All(values, value => Assert.InRange(value, 0, 100));
 		Assert.Equal(100, values[^1]);
 	}
 
@@ -624,7 +624,7 @@ public partial class FileSaverTests
 
 		Assert.False(result.IsSuccessful);
 		Assert.Equal(canceled, result.IsCancelled);
-		Assert.Equal(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		var values = progress.Values;
 		Assert.True(values.Count is 0 || values[^1] < 100, $"A {(canceled ? "canceled" : "failed")} save reported {string.Join(", ", values)}.");
 	}
@@ -642,7 +642,7 @@ public partial class FileSaverTests
 
 		var values = progress.Values;
 		Assert.Equal(100, values[^1]);
-		Assert.All(values.SkipLast(1), value => Assert.True(value < 100, $"The save reported {string.Join(", ", values)}."));
+		AotSafeAssert.All(values.SkipLast(1), value => Assert.True(value < 100, $"The save reported {string.Join(", ", values)}."));
 	}
 
 	[Fact]
@@ -711,7 +711,7 @@ public partial class FileSaverTests
 		});
 
 		await AssertionExtensions.AssertEventually(() => FilesTestContentProvider.CleanCloseCount is 1, timeout: 5000, message: "The provider did not see the descriptor closed.");
-		Assert.Equal([7, 8], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual<byte>([7, 8], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	// Calibrates the tests of a save that fails or is canceled: the test provider sees a descriptor that its client closes with an error as
@@ -732,7 +732,7 @@ public partial class FileSaverTests
 		});
 
 		await AssertTheDescriptorWasClosedWithAnErrorAsync("The client failed.");
-		Assert.Equal([7, 8], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual<byte>([7, 8], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 	}
 
 	[Theory]
@@ -761,7 +761,7 @@ public partial class FileSaverTests
 		var initialDocumentId = DocumentsContract.GetDocumentId(InitialUri(launch.Intent))!.Replace("primary:/", "primary:", StringComparison.Ordinal);
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
 		Assert.Equal($"{ExternalStorage}/Documents/overload-{overload}-{useStaticApi}.txt", result.FilePath);
-		Assert.Equal([4, 5, 6], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
+		AotSafeAssert.SequenceEqual<byte>([4, 5, 6], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile(documentId)));
 		Assert.Equal(hasInitialPath ? "primary:Music" : "primary:", initialDocumentId);
 		Assert.Equal(hasProgress, progress.Values.Count > 0);
 	}
@@ -783,8 +783,8 @@ public partial class FileSaverTests
 
 		Assert.Equal($"{ExternalStorage}/Documents/first.txt", firstResult.FilePath);
 		Assert.Equal($"{ExternalStorage}/Documents/second.txt", secondResult.FilePath);
-		Assert.Equal([1, 1, 1], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("primary:Documents/first.txt")));
-		Assert.Equal([2, 2], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("primary:Documents/second.txt")));
+		AotSafeAssert.SequenceEqual<byte>([1, 1, 1], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("primary:Documents/first.txt")));
+		AotSafeAssert.SequenceEqual<byte>([2, 2], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("primary:Documents/second.txt")));
 	}
 
 	[Fact]
@@ -799,7 +799,7 @@ public partial class FileSaverTests
 		var result = await operation.WaitAsync(operationTimeout);
 
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
-		Assert.Equal([3, 2, 1], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("primary:Documents/background.txt")));
+		AotSafeAssert.SequenceEqual<byte>([3, 2, 1], await File.ReadAllBytesAsync(FilesTestContentProvider.GetBackingFile("primary:Documents/background.txt")));
 	}
 
 	[Fact]
