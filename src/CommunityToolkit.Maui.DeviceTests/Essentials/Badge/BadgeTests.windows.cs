@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Maui.ApplicationModel;
 
@@ -23,6 +24,37 @@ public partial class BadgeTests
 		await InvokeOnMainThreadAsync(() => Badge.SetCount(count));
 
 		AssertNoUnpackagedAppTrace(trace);
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("ar-SA")]
+	public async Task SetCountAcceptsACountUnderEachCurrentCulture(string cultureName)
+	{
+		AddCleanup(() => Badge.SetCount(0));
+		using var trace = new FilesTraceCapture();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var originalCulture = CultureInfo.CurrentCulture;
+			var originalUICulture = CultureInfo.CurrentUICulture;
+
+			try
+			{
+				CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(cultureName);
+				Badge.SetCount(1234);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = originalCulture;
+				CultureInfo.CurrentUICulture = originalUICulture;
+			}
+		});
+
+		var wasTracedAsUnpackaged = trace.Contains(unpackagedAppTrace);
+		Assert.Equal(!HasPackageIdentity(), wasTracedAsUnpackaged);
 	}
 
 	[Fact]

@@ -1,0 +1,4 @@
+feed/
+__pycache__/
+# The repo-wide *.log rule would otherwise drop the verbatim excerpts of real audit logs that test_ilwarn.py reads.
+!fixtures/*.log

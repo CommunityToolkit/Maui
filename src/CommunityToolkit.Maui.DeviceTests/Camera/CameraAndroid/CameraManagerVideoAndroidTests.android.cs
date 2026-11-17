@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -94,7 +95,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		return consumer;
 	}
 
-	static TEvent CreateRecordEvent<TEvent>() where TEvent : VideoRecordEvent
+	static TEvent CreateRecordEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] TEvent>() where TEvent : VideoRecordEvent
 	{
 		// The other VideoRecordEvent classes can only be created by CameraX as well. A managed peer of the event binding over a plain
 		// Java object is enough for CameraConsumer, which only looks at the managed type of the events that it ignores.
@@ -822,7 +823,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			var recordingState = GetPrivateField<VideoRecordingState>(session.Manager, "videoRecordingState")!;
 			await UnbindAllNativeAsync();
 			await AssertionExtensions.AssertEventually(() => recordingState.Finalized.IsCompletedSuccessfully, 10000, 50, "CameraX did not finalize the recording whose VideoCapture was unbound.");
-			Assert.Equal(VideoRecordEvent.Finalize.ErrorSourceInactive, GetPrivateField<CameraConsumer>(session.Manager, "videoRecordingConsumer")?.Error);
+			AotSafeAssert.Equal(VideoRecordEvent.Finalize.ErrorSourceInactive, GetPrivateField<CameraConsumer>(session.Manager, "videoRecordingConsumer")?.Error);
 
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 
@@ -892,7 +893,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			const string prefix = "Video recording failed: CameraX finalized the recording with VideoRecordEvent.Finalize error code ";
 			Assert.StartsWith(prefix, exception.Message);
-			Assert.Contains(int.Parse(exception.Message[prefix.Length..].Split(' ')[0]), new[] { VideoRecordEvent.Finalize.ErrorSourceInactive, VideoRecordEvent.Finalize.ErrorNoValidData });
+			AotSafeAssert.Contains(int.Parse(exception.Message[prefix.Length..].Split(' ')[0]), new[] { VideoRecordEvent.Finalize.ErrorSourceInactive, VideoRecordEvent.Finalize.ErrorNoValidData });
 			Assert.Equal(0, stream.Length);
 			Assert.Empty(ListRecordingFiles().Except(before));
 			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
