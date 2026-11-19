@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
@@ -80,6 +81,14 @@ public static class FilesApplePicker
 	static Task DismissAsync(UIDocumentPickerViewController picker) =>
 		MainThread.InvokeOnMainThreadAsync(() => picker.DismissViewControllerAsync(false));
 
+#if MACCATALYST
+	const string appleAssembly = "Microsoft.MacCatalyst";
+#else
+	const string appleAssembly = "Microsoft.iOS";
+#endif
+
+	// The delegate class is private to the Apple assembly, so NativeAOT only keeps its fields when told to.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields, "UIKit.UIDocumentPickerViewController._UIDocumentPickerDelegate", appleAssembly)]
 	static int CountHandlers(object pickerDelegate, string field)
 	{
 		var type = pickerDelegate.GetType();
