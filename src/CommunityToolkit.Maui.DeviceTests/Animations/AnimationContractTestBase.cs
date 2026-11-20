@@ -21,7 +21,7 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 	protected abstract TAnimation CreateAnimation();
 
-	// A run that ends before the test cancels it can't end Canceled, and a slow CI simulator can stall for longer than the last part of a 1-second run
+	// Leaves an abort queued from a pool thread time to reach the UI thread before the run ends, and makes a missed attempt rare
 	const uint lengthOfARunCancelledMidRun = 3 * runLength;
 
 	[Fact]
@@ -33,11 +33,8 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var midRun = WaitForMidRunAsync(view);
-			var run = CreateAnimation().Animate(view);
-			await midRun;
-
-			AssertPlatformViewFollows(handler, view, nativeStateAtRest, "in the middle of the run");
+			var run = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view),
+				() => AssertPlatformViewFollows(handler, view, nativeStateAtRest, "in the middle of the run"));
 
 			await run.WaitAsync(waitTimeout);
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the run completed");
@@ -57,12 +54,8 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 			var animation = CreateAnimation();
 			animation.Length = lengthOfARunCancelledMidRun;
 
-			var midRun = WaitForMidRunAsync(view);
-			var run = animation.Animate(view, cancellation.Token);
-			await midRun;
-
 			// On the UI thread, as from a button's Clicked handler: the cancelled run can continue inside Cancel
-			Assert.Null(Record.Exception(cancellation.Cancel));
+			var run = await StartAndActMidRunAsync(view, () => animation.Animate(view, cancellation.Token), () => Assert.Null(Record.Exception(cancellation.Cancel)));
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout));
 			Assert.True(run.IsCanceled, $"The run ended {run.Status}, expected Canceled.");
@@ -94,10 +87,9 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 				animation.Length = lengthOfARunCancelledMidRun;
 				using var cancellation = new CancellationTokenSource();
-				var midRun = WaitForMidRunAsync(view);
-				var run = Task.Run(() => animation.Animate(view, cancellation.Token));
-				await midRun;
-				await Task.Run(cancellation.Cancel);
+				// The UI thread waits while a pool thread cancels, so no frame can end the run before the cancellation queued its abort
+				var run = await StartAndActMidRunAsync(view, () => Task.Run(() => animation.Animate(view, cancellation.Token)),
+					() => Assert.True(Task.Run(cancellation.Cancel).Wait(waitTimeout), "The pool thread did not cancel the token."));
 
 				var cancellationOutcome = await Record.ExceptionAsync(() => run.WaitAsync(waitTimeout));
 				AssertNoChangeOffTheUIThread("while a run started off the UI thread was cancelled off the UI thread");
@@ -136,16 +128,16 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var midRun = WaitForMidRunAsync(view);
-			behavior.AnimateCommand.Execute(CancellationToken.None);
-			await midRun;
-
-			var peakAgain = WaitForPeakAsync(view);
-			behavior.AnimateCommand.Execute(CancellationToken.None);
+			Task? peakAgain = null;
+			await TriggerAndActMidRunAsync(view, behavior, animation, () =>
+			{
+				peakAgain = WaitForPeakAsync(view);
+				behavior.AnimateCommand.Execute(CancellationToken.None);
+			}, CancellationToken.None);
 			await animation.WaitForEndedAnimationsAsync(2);
 
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
-			var peakError = await Record.ExceptionAsync(() => peakAgain);
+			var peakError = await Record.ExceptionAsync(() => peakAgain!);
 			Assert.True(peakError is null, "The animation triggered again did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the animation triggered again");
 
@@ -182,12 +174,8 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var midRun = WaitForMidRunAsync(view);
-			var run = CreateAnimation().Animate(view);
-			await midRun;
-
 			// MAUI force-finishes every running tween when its ticker reports the system's animations off, as when Reduce Motion is switched on
-			await DisableSystemAnimationsAsync(handler);
+			var run = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view), () => DisableSystemAnimations(handler));
 
 			await run.WaitAsync(waitTimeout);
 			Assert.True(run.IsCompletedSuccessfully, $"The run ended {run.Status}, expected it to complete.");
@@ -208,12 +196,9 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			using var cancellation = new CancellationTokenSource();
-			var midRun = WaitForMidRunAsync(view);
-			behavior.AnimateCommand.Execute(cancellation.Token);
-			await midRun;
 
 			// The command is async void: an OperationCanceledException escaping it would crash this test app
-			cancellation.Cancel();
+			await TriggerAndActMidRunAsync(view, behavior, animation, cancellation.Cancel, cancellation.Token);
 			await animation.WaitForEndedAnimationsAsync(1);
 
 			await AssertStaysAtOriginalValuesAsync(handler, view, OriginalValues, nativeStateAtRest, "after the command's token was cancelled mid-run");
@@ -237,16 +222,13 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 		});
 	}
 
-	protected async Task WaitForMidRunAsync(VisualElement view)
-	{
-		await WaitForValueAsync(view, PeakProperty, IsMidRun);
+	// A late frame can end the first leg at once, and a run started while the view holds its peak writes the peak over itself, which raises no PropertyChanged
+	protected Task<Task> StartAndActMidRunAsync(VisualElement view, Func<Task> startRun, Action actMidRun, Func<Task, Task>? waitForAMissedRunToEnd = null) =>
+		StartAndActMidRunAsync(view, PeakProperty, values => IsMidRun(values[^1]) && !IsAtPeak(values[^1]), startRun, actMidRun, waitForAMissedRunToEnd);
 
-		// A late frame can end the first leg at once, and a run started while the view holds its peak writes the peak over itself, which raises no PropertyChanged
-		while (IsAtPeak((double)view.GetValue(PeakProperty)))
-		{
-			await WaitForValueAsync(view, PeakProperty, value => IsMidRun(value) && !IsAtPeak(value));
-		}
-	}
+	// A missed run's end is not one of the ends the test waits for afterwards
+	protected Task<Task> TriggerAndActMidRunAsync(VisualElement view, AnimationBehavior behavior, ObservedAnimation animation, Action actMidRun, CancellationToken token) =>
+		StartAndActMidRunAsync(view, () => animation.Trigger(behavior, token), actMidRun, _ => animation.WaitForEndedAnimationsAsync(1));
 
 	protected Task WaitForPeakAsync(VisualElement view) => WaitForValueAsync(view, PeakProperty, IsAtPeak);
 

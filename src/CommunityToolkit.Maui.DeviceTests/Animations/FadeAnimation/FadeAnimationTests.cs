@@ -43,11 +43,12 @@ public class FadeAnimationTests : ToAnimationTestBase<FadeAnimation>
 			await border.OnLoadedAsync();
 			await EnableAnimationsAsync(handler);
 
-			var fadingOut = WaitForOpacityAsync(border, opacity => opacity < originalOpacity - 0.2);
-			behavior.AnimateCommand.Execute(CancellationToken.None);
-			await fadingOut;
+			Task? fadedAgain = null;
+			await StartAndActMidRunAsync(border, VisualElement.OpacityProperty,
+				opacities => opacities.All(opacity => opacity > fadedOpacity + opacityTolerance) && opacities[^1] < originalOpacity - 0.2,
+				() => animation.Trigger(behavior, CancellationToken.None), () => fadedAgain = TriggerAgain(border, behavior), _ => animation.WaitForEndedAnimationsAsync(1));
 
-			await TriggerAgainAndAssertOriginalOpacityAsync(handler, border, behavior, animation);
+			await AssertOriginalOpacityAfterTriggeredAgainAsync(handler, border, behavior, animation, fadedAgain!);
 		});
 	}
 
@@ -65,11 +66,12 @@ public class FadeAnimationTests : ToAnimationTestBase<FadeAnimation>
 			await border.OnLoadedAsync();
 			await EnableAnimationsAsync(handler);
 
-			var fadingBack = WaitForOpacityAsync(border, opacity => opacity <= fadedOpacity + opacityTolerance, opacity => opacity >= fadedOpacity + 0.3);
-			behavior.AnimateCommand.Execute(CancellationToken.None);
-			await fadingBack;
+			Task? fadedAgain = null;
+			await StartAndActMidRunAsync(border, VisualElement.OpacityProperty,
+				opacities => opacities.Any(opacity => opacity <= fadedOpacity + opacityTolerance) && opacities[^1] >= fadedOpacity + 0.3 && opacities[^1] < originalOpacity - opacityTolerance,
+				() => animation.Trigger(behavior, CancellationToken.None), () => fadedAgain = TriggerAgain(border, behavior), _ => animation.WaitForEndedAnimationsAsync(1));
 
-			await TriggerAgainAndAssertOriginalOpacityAsync(handler, border, behavior, animation);
+			await AssertOriginalOpacityAfterTriggeredAgainAsync(handler, border, behavior, animation, fadedAgain!);
 		});
 	}
 
@@ -89,26 +91,37 @@ public class FadeAnimationTests : ToAnimationTestBase<FadeAnimation>
 			await border.OnLoadedAsync();
 			await EnableAnimationsAsync(handler);
 
-			var fadingOut = WaitForOpacityAsync(border, opacity => opacity < originalOpacity - 0.2);
-			var firstFade = firstAnimation.Animate(border);
-			await fadingOut;
+			Task? fadedAgain = null;
+			Task? secondFade = null;
 
-			var fadedAgain = WaitForOpacityAsync(border, opacity => opacity <= fadedOpacity + opacityTolerance);
-			var secondFade = secondAnimation.Animate(border);
-			await Task.WhenAll(firstFade, secondFade).WaitAsync(waitTimeout);
+			// Started at the faded opacity, the second animation would fade to the opacity the view already has, which raises no PropertyChanged
+			var firstFade = await StartAndActMidRunAsync(border, VisualElement.OpacityProperty, opacity => opacity < originalOpacity - 0.2 && opacity > fadedOpacity + opacityTolerance,
+				() => firstAnimation.Animate(border), () =>
+				{
+					fadedAgain = WaitForOpacityAsync(border, opacity => opacity <= fadedOpacity + opacityTolerance);
+					secondFade = secondAnimation.Animate(border);
+				});
+			await Task.WhenAll(firstFade, secondFade!).WaitAsync(waitTimeout);
 
-			Assert.True(fadedAgain.IsCompletedSuccessfully, "The second animation did not fade the view out.");
+			// The wait task completes through a continuation, so it can trail the end of the run by a moment
+			Assert.True(await Record.ExceptionAsync(() => fadedAgain!) is null, "The second animation did not fade the view out.");
 			AssertOpacity(handler, border, originalOpacity, "after both animations ended");
 		});
 	}
 
-	static async Task TriggerAgainAndAssertOriginalOpacityAsync(IPlatformViewHandler handler, VisualElement view, AnimationBehavior behavior, ObservedAnimation animation)
+	static Task TriggerAgain(VisualElement view, AnimationBehavior behavior)
 	{
 		var fadedAgain = WaitForOpacityAsync(view, opacity => opacity <= fadedOpacity + opacityTolerance);
 		behavior.AnimateCommand.Execute(CancellationToken.None);
+		return fadedAgain;
+	}
+
+	static async Task AssertOriginalOpacityAfterTriggeredAgainAsync(IPlatformViewHandler handler, VisualElement view, AnimationBehavior behavior, ObservedAnimation animation, Task fadedAgain)
+	{
 		await animation.WaitForEndedAnimationsAsync(2);
 
-		Assert.True(fadedAgain.IsCompletedSuccessfully, "The animation triggered again did not fade the view out.");
+		// The wait task completes through a continuation, so it can trail the end of the run by a moment
+		Assert.True(await Record.ExceptionAsync(() => fadedAgain) is null, "The animation triggered again did not fade the view out.");
 		AssertOpacity(handler, view, originalOpacity, "after the animation triggered again");
 
 		behavior.AnimateCommand.Execute(CancellationToken.None);

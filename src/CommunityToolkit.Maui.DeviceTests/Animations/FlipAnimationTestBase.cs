@@ -21,11 +21,8 @@ public abstract partial class FlipAnimationTestBase<TAnimation> : ToAnimationTes
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var midRun = WaitForMidRunAsync(view);
-			var run = CreateAnimation().Animate(view);
-			await midRun;
-
-			AssertPlatformViewFollows(handler, view, nativeStateAtRest, "in the middle of the flip");
+			var run = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view),
+				() => AssertPlatformViewFollows(handler, view, nativeStateAtRest, "in the middle of the flip"));
 
 			await run.WaitAsync(waitTimeout);
 			await AssertStaysAtOriginalValuesAsync(handler, view, originalValues, nativeStateAtRest, "after a flip from 0 with other transforms set");
