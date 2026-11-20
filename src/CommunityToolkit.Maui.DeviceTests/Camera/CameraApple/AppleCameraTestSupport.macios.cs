@@ -663,3 +663,13 @@ sealed class AppleMediaRecorder
 		FirstCapture.TrySetException(new CameraException(e.FailureReason));
 	}
 }
+
+// Referenced by the test for the same reason as AppleMediaRecorder: the view holds its subscribers weakly.
+sealed class AppleThrowingMediaCapturedSubscriber
+{
+	public const string FailureMessage = "The subscriber failed.";
+
+	public AppleThrowingMediaCapturedSubscriber(CameraView view) => view.MediaCaptured += OnMediaCaptured;
+
+	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(FailureMessage);
+}

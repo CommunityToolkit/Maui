@@ -62,16 +62,107 @@ public class CameraViewTests : BaseViewTest
 	}
 
 	[Fact]
-	public void OnMediaCaptured_RethrowsAThrowingSubscribersOwnException()
+	public void OnMediaCaptured_WithAThrowingSubscriber_RaisesMediaCaptureFailedOnceWithItsMessageAndThrowsNothing()
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> failureHandler = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += failureHandler;
+		cameraView.MediaCaptured += ThrowingSubscriber;
+
+		var exception = Record.Exception(() => ((ICameraView)cameraView).OnMediaCaptured(new MemoryStream()));
+
+		Assert.Null(exception);
+		Assert.Equal(["The subscriber failed."], failures);
+		GC.KeepAlive(failureHandler);
+	}
+
+	[Fact]
+	public void OnMediaCaptured_WithoutAThrowingSubscriber_RaisesNoMediaCaptureFailed()
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> failureHandler = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += failureHandler;
+		cameraView.MediaCaptured += (_, _) => { };
+
+		((ICameraView)cameraView).OnMediaCaptured(new MemoryStream());
+
+		Assert.Empty(failures);
+		GC.KeepAlive(failureHandler);
+	}
+
+	[Fact]
+	public void OnMediaCaptured_WithAThrowingSubscriber_DoesNotCallTheSubscribersAfterIt()
+	{
+		var wasLaterSubscriberCalled = false;
+		EventHandler<MediaCapturedEventArgs> laterSubscriber = (_, _) => wasLaterSubscriberCalled = true;
+		cameraView.MediaCaptured += ThrowingSubscriber;
+		cameraView.MediaCaptured += laterSubscriber;
+
+		((ICameraView)cameraView).OnMediaCaptured(new MemoryStream());
+
+		Assert.False(wasLaterSubscriberCalled);
+		GC.KeepAlive(laterSubscriber);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task CaptureImage_WhenAMediaCapturedSubscriberThrows_ReturnsTheImageAndRaisesMediaCaptureFailedOnce(bool answersLaterOnAnotherThread)
+	{
+		var failures = new List<string>();
+		EventHandler<MediaCaptureFailedEventArgs> failureHandler = (_, e) => failures.Add(e.FailureReason);
+		cameraView.MediaCaptureFailed += failureHandler;
+		cameraView.MediaCaptured += ThrowingSubscriber;
+		var image = new MemoryStream();
+		Exception? answerException = null;
+		var answered = new TaskCompletionSource();
+
+		ValueTask TakePlatformPicture(CancellationToken token)
+		{
+			if (answersLaterOnAnotherThread)
+			{
+				_ = Task.Run(() =>
+				{
+					answerException = Record.Exception(() => ((ICameraView)cameraView).OnMediaCaptured(image));
+					answered.SetResult();
+				}, CancellationToken.None);
+			}
+			else
+			{
+				answerException = Record.Exception(() => ((ICameraView)cameraView).OnMediaCaptured(image));
+				answered.SetResult();
+			}
+
+			return ValueTask.CompletedTask;
+		}
+
+		var captured = await cameraView.CaptureImage(TakePlatformPicture, TestContext.Current.CancellationToken);
+		await answered.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+		Assert.Same(image, captured);
+		Assert.Null(answerException);
+		Assert.Equal(["The subscriber failed."], failures);
+		GC.KeepAlive(failureHandler);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CaptureImage_AfterAMediaCapturedSubscriberThrew_CapturesAgain()
 	{
 		cameraView.MediaCaptured += ThrowingSubscriber;
 
-		var exception = Assert.Throws<InvalidOperationException>(() => ((ICameraView)cameraView).OnMediaCaptured(new MemoryStream()));
+		ValueTask TakePlatformPicture(CancellationToken token)
+		{
+			((ICameraView)cameraView).OnMediaCaptured(new MemoryStream());
+			return ValueTask.CompletedTask;
+		}
 
-		Assert.Equal("The subscriber failed.", exception.Message);
+		var first = await cameraView.CaptureImage(TakePlatformPicture, TestContext.Current.CancellationToken);
+		var second = await cameraView.CaptureImage(TakePlatformPicture, TestContext.Current.CancellationToken);
 
-		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException("The subscriber failed.");
+		Assert.NotSame(first, second);
 	}
+
+	static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException("The subscriber failed.");
 
 	[Fact]
 	public async Task StartVideoRecording_ShouldThrowException()
