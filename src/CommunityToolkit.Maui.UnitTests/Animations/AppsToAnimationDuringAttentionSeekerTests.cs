@@ -215,7 +215,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 
 	// MAUI plays a run's first step inside Commit; stopping the run there would leave Commit to start an animation that keeps ticking for the run's whole length
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task AppsScaleToAsyncStartedInsideTheSeekersStart_LeavesNoTweenTickingAfterItEnds() => RunOnSingleThreadAsync(async token =>
+	public Task AppsScaleToAsyncStartedInsideTheSeekersStart_LeavesNoAnimationTickingAfterItEnds() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		Task<bool>? appsScaleStartedInsideTheSeekersStart = null;

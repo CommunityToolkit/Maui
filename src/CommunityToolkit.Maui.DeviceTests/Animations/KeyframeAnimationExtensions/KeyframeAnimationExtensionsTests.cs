@@ -809,15 +809,15 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			var isTweenRunning = view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle);
+			var isKeyframeAnimationRunning = view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle);
 
-			if (isTweenRunning && e.PropertyName == VisualElement.RotationProperty.PropertyName && view.Rotation == originalRotation)
+			if (isKeyframeAnimationRunning && e.PropertyName == VisualElement.RotationProperty.PropertyName && view.Rotation == originalRotation)
 			{
 				hasMovedTheView = true;
 				view.Scale = 3;
 				view.Rotation = 99;
 			}
-			else if (!isTweenRunning && hasMovedTheView && !hasThrown && e.PropertyName == VisualElement.ScaleProperty.PropertyName && view.Scale == originalScale)
+			else if (!isKeyframeAnimationRunning && hasMovedTheView && !hasThrown && e.PropertyName == VisualElement.ScaleProperty.PropertyName && view.Scale == originalScale)
 			{
 				hasThrown = true;
 				throw new InvalidOperationException(throwingHandlerMessage);

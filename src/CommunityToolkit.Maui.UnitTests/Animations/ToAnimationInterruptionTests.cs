@@ -456,7 +456,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(ToAnimationNames))]
-	public Task TokenCancelledWhileTheRunStartsItsTween_EndsCanceledWithoutPlayingTheTween(string animationName) => RunOnSingleThreadAsync(async token =>
+	public Task TokenCancelledWhileTheRunStartsItsAnimation_EndsCanceledWithoutPlayingIt(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
 		using var cancellation = new CancellationTokenSource();
 		var view = CreateAnimatedViewWithNonDefaultValues();

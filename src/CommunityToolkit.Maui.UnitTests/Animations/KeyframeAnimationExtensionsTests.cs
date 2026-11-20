@@ -374,15 +374,15 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var hasThrown = false;
 		view.PropertyChanged += (_, e) =>
 		{
-			var isTweenRunning = view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle);
+			var isKeyframeAnimationRunning = view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle);
 
-			if (isTweenRunning && e.PropertyName == nameof(VisualElement.Rotation) && view.Rotation == originalRotation)
+			if (isKeyframeAnimationRunning && e.PropertyName == nameof(VisualElement.Rotation) && view.Rotation == originalRotation)
 			{
 				hasMovedTheView = true;
 				view.Scale = 3;
 				view.Rotation = 99;
 			}
-			else if (!isTweenRunning && hasMovedTheView && !hasThrown && e.PropertyName == nameof(VisualElement.Scale) && view.Scale == originalScale)
+			else if (!isKeyframeAnimationRunning && hasMovedTheView && !hasThrown && e.PropertyName == nameof(VisualElement.Scale) && view.Scale == originalScale)
 			{
 				hasThrown = true;
 				throw new InvalidOperationException("Thrown by a PropertyChanged handler.");
