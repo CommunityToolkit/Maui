@@ -56,8 +56,7 @@ public abstract partial class StatusBarTestBase
 		});
 
 	// The runner's Info.plist supports portrait and both landscape orientations on iPhone.
-	// Only a refusal of the app's own scene (UISceneErrorDomain) is final: an error of the system's windowing service (BSActionErrorDomain)
-	// can arrive while the scene still rotates, so the test waits for the scene and fails with the error only if it never gets there.
+	// Only a UISceneErrorDomain refusal is final: a BSActionErrorDomain error can arrive while the scene still rotates.
 	protected async Task RotateAsync(UIInterfaceOrientationMask orientation)
 	{
 		const int timeoutMilliseconds = 10000, pollMilliseconds = 50, settledMilliseconds = 400;
@@ -89,7 +88,8 @@ public abstract partial class StatusBarTestBase
 		{
 			if (sceneRefusal.Task.IsCompleted)
 			{
-				throw new Xunit.Sdk.XunitException($"UIKit refused to rotate the interface to {orientation}: {sceneRefusal.Task.Result}");
+				var refusedSnapshot = await InvokeOnMainThreadAsync(static () => IosStatusBarViews.Snapshot(IosStatusBarViews.RunnerScene, IosStatusBarViews.RunnerWindow));
+				throw new Xunit.Sdk.XunitException($"UIKit refused to rotate the interface to {orientation}: {sceneRefusal.Task.Result}. Now: {refusedSnapshot}.");
 			}
 
 			current = await InvokeOnMainThreadAsync(static () => IosStatusBarViews.Snapshot(IosStatusBarViews.RunnerScene, IosStatusBarViews.RunnerWindow));
