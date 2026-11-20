@@ -97,6 +97,9 @@
 .PARAMETER BuildArgs
     Extra arguments for dotnet build and publish; write properties as /p:Name=Value.
 
+.PARAMETER XHarnessArgs
+    Extra arguments for xharness, for example '--set-env=NAME=value'. Only the platforms whose script takes -XHarnessArgs (android, ios, catalyst) get them.
+
 .PARAMETER DryRun
     Prints the plan and runs nothing. Also available as -WhatIf.
 
@@ -161,6 +164,8 @@ param(
 
     [string[]]$BuildArgs = @(),
 
+    [string[]]$XHarnessArgs = @(),
+
     [Alias('WhatIf')]
     [switch]$DryRun
 )
@@ -188,7 +193,7 @@ $script:RunPlatformAliases = @{
 $script:RunOperatingSystemNames = @{ 'macos' = 'macOS'; 'windows' = 'Windows'; 'linux' = 'Linux' }
 
 $script:RunArgumentOrder = @('Packaging', 'Target', 'Project', 'Configuration', 'TestFilter', 'Results', 'BinlogDir', 'SkipCapabilities', 'RequireCapabilities',
-    'Timeout', 'InfraRetries', 'Avd', 'EmulatorPort', 'DeviceId', 'Udid', 'Runtime', 'Xcode', 'KeepDevice', 'BuildArgs')
+    'Timeout', 'InfraRetries', 'Avd', 'EmulatorPort', 'DeviceId', 'Udid', 'Runtime', 'Xcode', 'KeepDevice', 'BuildArgs', 'XHarnessArgs')
 
 # As Directory.Build.targets builds them: a *.macos.cs file (or a file in a macos folder) for Mac Catalyst only, a *.macios.cs file for both
 # Apple platforms.
@@ -293,7 +298,7 @@ function Format-RunCommandLine {
             continue
         }
 
-        if ($name -eq 'BuildArgs' -and @($value).Count -eq 0) {
+        if ($name -in @('BuildArgs', 'XHarnessArgs') -and @($value).Count -eq 0) {
             continue
         }
 
@@ -1283,6 +1288,10 @@ try {
 
         foreach ($name in $entry.Arguments.Keys) {
             $arguments[$name] = $entry.Arguments[$name]
+        }
+
+        if ($PSBoundParameters.ContainsKey('XHarnessArgs') -and (Get-Command (Join-Path $PSScriptRoot $entry.ScriptName)).Parameters.ContainsKey('XHarnessArgs')) {
+            $arguments['XHarnessArgs'] = $XHarnessArgs
         }
 
         if ($PSBoundParameters.ContainsKey('Results') -or $ResultsFolder) {

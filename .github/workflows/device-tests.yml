@@ -631,10 +631,12 @@ jobs:
                 run: bash .github/scripts/check-trimmed-device-test-app.sh ${{ matrix.trimming }}
 
             # 60 minutes: the tests of every package took 22 minutes on this runner (232630d9; 3 M1 cores, runs vary by about 30%).
+            # The NativeAOT leg prints a backtrace at every Objective-C throw: run 44690666767 died inside the runner's MarshalObjectiveCException
+            # handler and left no stack.
             # The untrimmed leg keeps run.ps1's default results folder, which the coverage upload below reads.
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.tools.outcome == 'success' && (matrix.trimming == 'none' || steps.check.outcome == 'success') }}
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00 ${{ matrix.trimming != 'none' && format('-ResultsFolder artifacts/device-tests/ios-{0}', matrix.trimming) || '' }}
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00 ${{ matrix.trimming != 'none' && format('-ResultsFolder artifacts/device-tests/ios-{0} -XHarnessArgs ''--set-env=OBJC_PRINT_EXCEPTION_THROW=YES''', matrix.trimming) || '' }}
 
             -   name: Upload device test results
                 if: always()
