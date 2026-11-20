@@ -256,6 +256,57 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		});
 	}
 
+	[Fact]
+	public async Task TranslateToStartedDuringABounceKeepsTheHopsVisibleOnTopOfTheTranslation()
+	{
+		const string frameSamplerHandle = "CommunityToolkit.Maui.DeviceTests.HeightAboveTheTranslationSampler";
+
+		SetupBuilder();
+
+		var view = CreateAnimatedView([(VisualElement.TranslationXProperty, originalTranslationX), (VisualElement.TranslationYProperty, originalTranslationY)]);
+		var bounce = new BounceAnimation { Distance = bounceDistance, Length = 2 * runLength };
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var hopping = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => translationY <= originalTranslationY - 1);
+			var bounceRun = bounce.Animate(view);
+			await hopping;
+
+			// Translating to the height the view has now keeps the translation's own TranslationY still, so any height a frame shows comes from the hops
+			var translateTargetYNow = view.TranslationY;
+			var translateRun = view.TranslateToAsync(translateTargetX, translateTargetYNow, 2 * runLength, Easing.Linear);
+
+			// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
+			var heightAboveTheTranslationPerFrame = new List<double>();
+			new Microsoft.Maui.Controls.Animation(_ =>
+			{
+				if (!bounceRun.IsCompleted)
+				{
+					heightAboveTheTranslationPerFrame.Add(translateTargetYNow - view.TranslationY);
+				}
+			}).Commit(view, frameSamplerHandle, length: 60_000);
+			try
+			{
+				await bounceRun.WaitAsync(waitTimeout);
+			}
+			finally
+			{
+				view.AbortAnimation(frameSamplerHandle);
+			}
+
+			Assert.True(heightAboveTheTranslationPerFrame.Any(height => height >= bounceDistance / 4),
+				$"The hops never showed while TranslateToAsync ran. Height above the translation per frame: {string.Join(", ", heightAboveTheTranslationPerFrame.Select(FormatNativeValue))}");
+
+			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
+			Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that started during it.");
+			Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
+			Assert.True(Math.Abs(view.TranslationY - translateTargetYNow) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {translateTargetYNow}.");
+
+			var mismatch = FindNativeMismatch(handler, view);
+			Assert.True(mismatch is null, mismatch);
+		});
+	}
+
 	static void AssertTranslationAtTheAppsTarget(VisualElement view, string when)
 	{
 		Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX} {when}, expected the app's target {translateTargetX}.");

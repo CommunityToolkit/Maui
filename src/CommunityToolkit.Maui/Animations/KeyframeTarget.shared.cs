@@ -28,6 +28,14 @@ sealed class KeyframeTarget
 	public double GetValueToRestore(BindableProperty property) =>
 		translationComposers.TryGetValue(property, out var composer) ? composer.GetValueToRestore() : originalValues[property];
 
+	public void StopComposingTranslations()
+	{
+		foreach (var composer in translationComposers.Values)
+		{
+			composer.Stop();
+		}
+	}
+
 	// A .NET MAUI TranslateToAsync keeps running under an attention seeker and writes the translation as an absolute value too, so the keyframes
 	// ride on top of the value the other writer left: the keyframes' offset from the original value is added to it.
 	sealed class TranslationComposer
@@ -43,6 +51,7 @@ sealed class KeyframeTarget
 		double baseValue;
 		double keyframeValue;
 		object? lastWrittenValue;
+		bool isWriting;
 
 		public TranslationComposer(VisualElement view, BindableProperty property, double originalValue)
 		{
@@ -54,6 +63,12 @@ sealed class KeyframeTarget
 
 		public void Write(double keyframeValue)
 		{
+			if (lastWrittenValue is null)
+			{
+				// A writer whose animation started after this run ticks after it in every frame, so its write would otherwise be the one the frame shows
+				view.BatchCommitted += HandleBatchCommitted;
+			}
+
 			if (WasWrittenByAnotherWriter())
 			{
 				baseValue = (double)view.GetValue(property);
@@ -63,7 +78,19 @@ sealed class KeyframeTarget
 			WriteComposedValue();
 		}
 
+		public void Stop() => view.BatchCommitted -= HandleBatchCommitted;
+
 		public double GetValueToRestore() => WasWrittenByAnotherWriter() ? (double)view.GetValue(property) : baseValue;
+
+		void HandleBatchCommitted(object? sender, EventArgs e)
+		{
+			// A PropertyChanged handler that batches the view raises this inside this composer's own write
+			if (!isWriting && WasWrittenByAnotherWriter())
+			{
+				baseValue = (double)view.GetValue(property);
+				WriteComposedValue();
+			}
+		}
 
 		bool WasWrittenByAnotherWriter()
 		{
@@ -74,6 +101,7 @@ sealed class KeyframeTarget
 
 		void WriteComposedValue()
 		{
+			isWriting = true;
 			try
 			{
 				// Adding 0 when nothing else writes the property keeps every frame exactly the keyframe's value
@@ -81,6 +109,8 @@ sealed class KeyframeTarget
 			}
 			finally
 			{
+				isWriting = false;
+
 				// Read back even when a PropertyChanged handler throws or answers this write, so neither looks like another writer's write next time
 				lastWrittenValue = view.GetValue(property);
 			}

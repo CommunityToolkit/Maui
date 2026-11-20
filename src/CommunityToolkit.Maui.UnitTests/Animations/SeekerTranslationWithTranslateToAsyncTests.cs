@@ -21,6 +21,13 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 
 	public static TheoryData<string> TranslatingSeekerNames { get; } = [nameof(BounceAnimation), nameof(ShakeAnimation), nameof(WobbleAnimation)];
 
+	public static TheoryData<string, bool> SeekersAndWhetherAPropertyChangedHandlerBatchesTheView { get; } = new()
+	{
+		{ nameof(BounceAnimation), false }, { nameof(BounceAnimation), true },
+		{ nameof(ShakeAnimation), false }, { nameof(ShakeAnimation), true },
+		{ nameof(WobbleAnimation), false }, { nameof(WobbleAnimation), true },
+	};
+
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(SeekersAndWhetherTheyOutlastTheTranslation))]
 	public Task Seeker_StartedWhileTranslateToAsyncRuns_LeavesBothAxesAtTheAppsTarget(string seekerName, bool seekerOutlastsTheTranslation) => RunOnSingleThreadAsync(async token =>
@@ -135,6 +142,122 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		view.TranslationY.Should().Be(targetTranslationY);
 	}, TestContext.Current.CancellationToken);
 
+	// A translation that starts during a seeker ticks after it in every frame, so its absolute write is the last one before the frame shows.
+	// A PropertyChanged handler that batches the view raises BatchCommitted inside the seeker's own write, which must not count as another writer's
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(SeekersAndWhetherAPropertyChangedHandlerBatchesTheView))]
+	public Task TranslateToAsync_StartedWhileASeekerRuns_ShowsTheSeekersOffsetOnTopOfTheTranslationEveryFrame(string seekerName, bool aPropertyChangedHandlerBatchesTheView) => RunOnSingleThreadAsync(async token =>
+	{
+		const int framesBeforeTheTranslation = 3;
+		const uint seekerLength = 320;
+		const uint translationLength = 160;
+		var property = TranslationPropertyOf(seekerName);
+		var seekerOffsets = await RecordSeekerOffsetsAtEachFrameAsync(seekerName, seekerLength, property, token);
+
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		if (aPropertyChangedHandlerBatchesTheView)
+		{
+			view.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == property.PropertyName)
+				{
+					using (view.Batch())
+					{
+					}
+				}
+			};
+		}
+
+		var targetTranslation = (double)view.GetValue(property) + translationDistance;
+		var (targetX, targetY) = (view.TranslationX + translationDistance, view.TranslationY + translationDistance);
+		var valuesAtEachFrame = new List<double>();
+		var translationStart = double.NaN;
+		Task<bool>? translation = null;
+
+		using (view.ObserveAnimationFrames(_ =>
+		{
+			valuesAtEachFrame.Add((double)view.GetValue(property));
+			if (valuesAtEachFrame.Count == framesBeforeTheTranslation)
+			{
+				translationStart = (double)view.GetValue(property);
+				translation = view.TranslateToAsync(targetX, targetY, translationLength, Easing.Linear, token);
+			}
+		}))
+		{
+			await Create(seekerName, seekerLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		}
+
+		var wasTranslationInterrupted = await (translation ?? throw new InvalidOperationException("No frame started the translation")).WaitAsync(waitTimeout, token);
+		wasTranslationInterrupted.Should().BeFalse();
+		valuesAtEachFrame.Should().HaveCount(seekerOffsets.Count);
+		for (var frame = framesBeforeTheTranslation; frame < seekerOffsets.Count; frame++)
+		{
+			var translationProgress = Math.Min(1, (frame - framesBeforeTheTranslation + 1) * 16 / (double)translationLength);
+			var translationValue = translationStart + ((targetTranslation - translationStart) * translationProgress);
+			valuesAtEachFrame[frame].Should().BeApproximately(translationValue + seekerOffsets[frame], precision, $"frame {frame} shows the translation plus the seeker's offset");
+		}
+
+		((double)view.GetValue(property)).Should().BeApproximately(targetTranslation, precision);
+	}, TestContext.Current.CancellationToken);
+
+	// Cancelled mid-hop, the seeker must stop adding its last offset to the frames the translation still writes
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(TranslatingSeekerNames))]
+	public Task Seeker_CancelledWhileTheTranslationRuns_LeavesTheTranslationToReachItsTarget(string seekerName) => RunOnSingleThreadAsync(async token =>
+	{
+		const int seekerFramesBeforeCancelling = 4;
+		using var seekerTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var (targetX, targetY) = (view.TranslationX + translationDistance, view.TranslationY + translationDistance);
+		var translation = view.TranslateToAsync(targetX, targetY, longRunLength, Easing.Linear, token);
+		await WaitForFramesAsync(view, 2, token);
+
+		var seekerFrames = 0;
+		using var cancelMidHop = view.ObserveAnimationFrames(_ =>
+		{
+			if (++seekerFrames == seekerFramesBeforeCancelling)
+			{
+				seekerTokenSource.Cancel();
+			}
+		});
+		var seekerRun = Create(seekerName, 2 * longRunLength).Animate(view, seekerTokenSource.Token);
+
+		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => seekerRun.WaitAsync(waitTimeout, token));
+		var wasTranslationInterrupted = await translation.WaitAsync(waitTimeout, token);
+		wasTranslationInterrupted.Should().BeFalse();
+		view.TranslationX.Should().BeApproximately(targetX, precision);
+		view.TranslationY.Should().BeApproximately(targetY, precision);
+	}, TestContext.Current.CancellationToken);
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(TranslatingSeekerNames))]
+	public Task Seeker_RetriggeredWhileTheTranslationRuns_LeavesTheTranslationToReachItsTarget(string seekerName) => RunOnSingleThreadAsync(async token =>
+	{
+		const int seekerFramesBeforeRetriggering = 4;
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var (targetX, targetY) = (view.TranslationX + translationDistance, view.TranslationY + translationDistance);
+		var translation = view.TranslateToAsync(targetX, targetY, 2 * longRunLength, Easing.Linear, token);
+		await WaitForFramesAsync(view, 2, token);
+
+		var seekerFrames = 0;
+		Task? retriggeredRun = null;
+		using var retriggerMidHop = view.ObserveAnimationFrames(_ =>
+		{
+			if (++seekerFrames == seekerFramesBeforeRetriggering)
+			{
+				retriggeredRun = Create(seekerName, longRunLength).Animate(view, token);
+			}
+		});
+		var firstRun = Create(seekerName, longRunLength).Animate(view, token);
+
+		await firstRun.WaitAsync(waitTimeout, token);
+		var wasTranslationInterrupted = await translation.WaitAsync(waitTimeout, token);
+		await (retriggeredRun ?? throw new InvalidOperationException("No frame retriggered the seeker")).WaitAsync(waitTimeout, token);
+		wasTranslationInterrupted.Should().BeFalse();
+		view.TranslationX.Should().BeApproximately(targetX, precision);
+		view.TranslationY.Should().BeApproximately(targetY, precision);
+	}, TestContext.Current.CancellationToken);
+
 	// The composer reads another writer's write of an equal value from the boxed value BindableObject stores, because an equal write raises no PropertyChanged
 	[Fact]
 	public void BindableObject_WriteOfTheCurrentValue_StoresANewBoxWithoutRaisingPropertyChanged()
@@ -149,6 +272,20 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 
 		translationYChanges.Should().Be(0);
 		view.GetValue(VisualElement.TranslationYProperty).Should().NotBeSameAs(storedValue);
+	}
+
+	static async Task<IReadOnlyList<double>> RecordSeekerOffsetsAtEachFrameAsync(string seekerName, uint seekerLength, BindableProperty property, CancellationToken token)
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var originalValue = (double)view.GetValue(property);
+		var offsets = new List<double>();
+
+		using (view.ObserveAnimationFrames(_ => offsets.Add((double)view.GetValue(property) - originalValue)))
+		{
+			await Create(seekerName, seekerLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		}
+
+		return offsets;
 	}
 
 	static async Task<(Task Seeker, Task<bool> Translation)> StartSeekerDuringTranslateToAsync(Label view, string seekerName, uint seekerLength, uint translationLength, CancellationToken token, double distance = 30)

@@ -172,6 +172,9 @@ static class KeyframeAnimationExtensions
 
 	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target, RunningRun? runThatTookOver)
 	{
+		// A composer still listening would put its offset back on top of the next write by another writer
+		target.StopComposingTranslations();
+
 		// A throwing PropertyChanged handler must not leave later properties unrestored, or any tracker with a stale original value
 		ExceptionDispatchInfo? firstException = null;
 
