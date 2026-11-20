@@ -135,7 +135,7 @@ static class KeyframeAnimationExtensions
 		}
 	}
 
-	// The app's own ScaleToAsync or RotateToAsync that started during the run ticks after it in every frame, so it hides the run, which would then undo it when it restores the view.
+	// The app's own ScaleToAsync or RotateToAsync that started during the run usually ticks after it, so it hides the run, which would then undo it when it restores the view.
 	// The handle, not the value, tells it apart from a direct write, which the run keeps overwriting as before
 	static bool FindPropertiesTakenOverByTheApp(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, List<BindableProperty> propertiesTakenOverByTheApp)
 	{

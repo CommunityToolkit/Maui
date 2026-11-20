@@ -8,7 +8,7 @@ using MauiViewExtensions = Microsoft.Maui.Controls.ViewExtensions;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-// An app's own .NET MAUI To animation that starts during an attention seeker ticks after it in every frame, and writes the property as an absolute value
+// An app's own .NET MAUI To animation that starts during an attention seeker usually ticks after it, and writes the property as an absolute value
 public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 {
 	const uint seekerLength = 640;
@@ -96,7 +96,8 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 			}
 		}
 
-		writesAfterTheAppsStart.Should().OnlyContain(value => IsBetween(value, appsStart, appsTarget), "nothing but the app's animation writes the property after it took over");
+		var appsFrameValues = AppsFrameValues(appsStart, appsTarget);
+		writesAfterTheAppsStart.Should().OnlyContain(value => IsOneOf(value, appsFrameValues), "nothing but the app's animation writes the property after it started");
 		AssertValuesEqual(view, WithValue(startingValues, property, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
@@ -164,8 +165,26 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 		Task<bool>? appsScaleStartedInsideTheSeekersStart = null;
+		var appsStart = double.NaN;
+		var isRecordingScaleWrites = false;
+		var scaleWritesAfterTheAppsStart = new List<double>();
+		void RecordScaleWrite(object? sender, PropertyChangedEventArgs e)
+		{
+			if (isRecordingScaleWrites && e.PropertyName == VisualElement.ScaleProperty.PropertyName)
+			{
+				scaleWritesAfterTheAppsStart.Add(view.Scale);
+			}
+		}
+
+		view.PropertyChanged += RecordScaleWrite;
 		var appsRotation = view.RotateToAsync(view.Rotation, seekerLength, Easing.Linear, token);
-		_ = appsRotation.ContinueWith(_ => appsScaleStartedInsideTheSeekersStart = view.ScaleToAsync(appsTarget, appsAnimationLength, Easing.Linear, token), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+		_ = appsRotation.ContinueWith(_ =>
+		{
+			// MAUI writes the app's first frame before ScaleToAsync returns
+			appsStart = view.Scale;
+			isRecordingScaleWrites = true;
+			appsScaleStartedInsideTheSeekersStart = view.ScaleToAsync(appsTarget, appsAnimationLength, Easing.Linear, token);
+		}, token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
 		var seekerRun = CreateSeeker(nameof(TadaAnimation)).Animate(view, token);
 		var appsScale = appsScaleStartedInsideTheSeekersStart ?? throw new InvalidOperationException("Tada's start did not abort the app's RotateToAsync.");
@@ -173,8 +192,11 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		await seekerRun.WaitAsync(waitTimeout, token);
 		(await appsScale.WaitAsync(waitTimeout, token)).Should().BeFalse();
 		await WaitForTickerFramesAsync(view, 3, token);
+		view.PropertyChanged -= RecordScaleWrite;
 
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
+		var appsFrameValues = AppsFrameValues(appsStart, appsTarget);
+		scaleWritesAfterTheAppsStart.Should().OnlyContain(value => IsOneOf(value, appsFrameValues), "the seeker writes no scale after the app's ScaleToAsync started");
 		AssertValuesEqual(view, WithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
@@ -354,7 +376,9 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		return current + (current >= original ? distance : -distance);
 	}
 
-	static bool IsBetween(double value, double first, double second) => value >= Math.Min(first, second) - precision && value <= Math.Max(first, second) + precision;
+	static double[] AppsFrameValues(double appsStart, double appsTarget) => [.. Enumerable.Range(0, appsAnimationFrames + 1).Select(step => appsStart + ((appsTarget - appsStart) * step / appsAnimationFrames))];
+
+	static bool IsOneOf(double value, double[] allowedValues) => allowedValues.Any(allowedValue => Math.Abs(allowedValue - value) <= precision);
 
 	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatable => animatable.Property == property);
 
