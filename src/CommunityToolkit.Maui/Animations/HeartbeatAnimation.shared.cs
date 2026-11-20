@@ -10,6 +10,7 @@ namespace CommunityToolkit.Maui.Animations;
 /// The view returns to its original values when the animation completes and when it is cancelled; in the second case the returned <see cref="Task"/> ends as canceled.
 /// A view runs one attention seeker at a time, so an animation that starts while another one still animates the view ends the running one first.
 /// Starting it also stops a running .NET MAUI ScaleToAsync, including a running <see cref="ScaleAnimation"/>.
+/// A .NET MAUI ScaleToAsync that starts while this animation runs takes over: this animation ends in its next frame, the returned <see cref="Task"/> completes, and the view keeps the scale the ScaleToAsync reaches.
 /// <see cref="BaseAnimation{TAnimatable}.Easing"/> warps the progress of the whole run, so use one within 0..1 that only increases (for example <see cref="Easing.Linear"/> or <see cref="Easing.SinInOut"/>).
 /// An easing that overshoots, such as <see cref="Easing.SpringOut"/>, plays every keyframe early and then holds the view still until <see cref="BaseAnimation{TAnimatable}.Length"/> ends; <see cref="Easing.SpringIn"/> holds the view still until late in the run; <see cref="Easing.BounceOut"/> runs through the keyframes in about the first third of the run and then moves the view back and forth within the last keyframe.
 /// </remarks>
