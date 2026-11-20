@@ -50,9 +50,9 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 
 		try
 		{
-			if (await ScaleLegAsync(Scale) && scales.IsLatest(scaleId))
+			if (await ScaleToValueAsync(Scale) && scales.IsLatest(scaleId))
 			{
-				await ScaleLegAsync(originalScale);
+				await ScaleToValueAsync(originalScale);
 			}
 		}
 		finally
@@ -60,7 +60,7 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 			scales.End(scaleId, view.Scale);
 		}
 
-		Task<bool> ScaleLegAsync(double scale) =>
-			AnimateLegAsync(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync), scaleId, originalScale, () => view.ScaleToAsync(scale, halfLength, Easing, CancellationToken.None), token);
+		Task<bool> ScaleToValueAsync(double scale) =>
+			AnimateAndRestoreIfStoppedAsync(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync), scaleId, originalScale, () => view.ScaleToAsync(scale, halfLength, Easing, CancellationToken.None), token);
 	}
 }

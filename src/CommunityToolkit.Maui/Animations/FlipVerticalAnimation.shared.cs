@@ -44,9 +44,9 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 
 		try
 		{
-			if (await FlipLegAsync(Rotation) && rotations.IsLatest(flipId))
+			if (await FlipToRotationAsync(Rotation) && rotations.IsLatest(flipId))
 			{
-				await FlipLegAsync(originalRotationX);
+				await FlipToRotationAsync(originalRotationX);
 			}
 		}
 		finally
@@ -55,7 +55,7 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 			FlipProjection.RemoveIfStale(view, projectionAtStart);
 		}
 
-		Task<bool> FlipLegAsync(double rotationX) =>
-			AnimateLegAsync(view, VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync), flipId, originalRotationX, () => view.RotateXToAsync(rotationX, halfLength, Easing, CancellationToken.None), token);
+		Task<bool> FlipToRotationAsync(double rotationX) =>
+			AnimateAndRestoreIfStoppedAsync(view, VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync), flipId, originalRotationX, () => view.RotateXToAsync(rotationX, halfLength, Easing, CancellationToken.None), token);
 	}
 }

@@ -52,9 +52,9 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 
 		try
 		{
-			if (await FadeLegAsync(Opacity) && fades.IsLatest(fadeId))
+			if (await FadeToOpacityAsync(Opacity) && fades.IsLatest(fadeId))
 			{
-				await FadeLegAsync(originalOpacity);
+				await FadeToOpacityAsync(originalOpacity);
 			}
 		}
 		finally
@@ -62,7 +62,7 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 			fades.End(fadeId, view.Opacity);
 		}
 
-		Task<bool> FadeLegAsync(double opacity) =>
-			AnimateLegAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, CancellationToken.None), token);
+		Task<bool> FadeToOpacityAsync(double opacity) =>
+			AnimateAndRestoreIfStoppedAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, CancellationToken.None), token);
 	}
 }

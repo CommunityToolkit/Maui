@@ -55,19 +55,19 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		KeyframeAnimationExtensions.StopRunAnimating(view, property);
 	}
 
-	// Returns false when the leg was interrupted (another animation took over, or CancelAnimations stopped it), which ends the run: the legs after it would interrupt whatever took over.
+	// Returns false when this animation was interrupted (another animation took over, or CancelAnimations stopped it), which ends the run: the rest of the run would interrupt whatever took over.
 	// animateTo must not pass the token to MAUI: for a token cancelled off the UI thread, MAUI queues AbortAnimation(handle), which a newer run that took the handle before it ran would suffer.
-	private protected static async Task<bool> AnimateLegAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> animateTo, CancellationToken token)
+	private protected static async Task<bool> AnimateAndRestoreIfStoppedAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> animateTo, CancellationToken token)
 	{
-		var hasLegEnded = false;
+		var hasAnimationEnded = false;
 		bool wasAborted;
 
 		// MAUI's animation starts first, so that a token that is already cancelled aborts it
-		var leg = animateTo();
-		await using (token.Register(() => AbortLegOnDispatcher(view, animationHandle, () => hasLegEnded)))
+		var animation = animateTo();
+		await using (token.Register(() => AbortAnimationOnDispatcher(view, animationHandle, () => hasAnimationEnded)))
 		{
-			wasAborted = await leg;
-			hasLegEnded = true;
+			wasAborted = await animation;
+			hasAnimationEnded = true;
 		}
 
 		if (!wasAborted)
@@ -88,7 +88,7 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 			token.ThrowIfCancellationRequested();
 		}
 
-		// With the system's animations off, also when they were switched off during the leg, MAUI jumps the animation to its end and reports it as aborted
+		// With the system's animations off, also when they were switched off during this animation, MAUI jumps the animation to its end and reports it as aborted
 		if (!AreSystemAnimationsOn(view))
 		{
 			return true;
@@ -118,24 +118,24 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 	}
 
 	// Dispatch returns false only for a dispatcher that takes no more work (app closing), which leaves no animation to stop
-	static void AbortLegOnDispatcher(VisualElement view, string animationHandle, Func<bool> hasLegEnded)
+	static void AbortAnimationOnDispatcher(VisualElement view, string animationHandle, Func<bool> hasAnimationEnded)
 	{
 		var dispatcher = view.Dispatcher;
 
 		if (dispatcher.IsDispatchRequired)
 		{
-			dispatcher.Dispatch(() => AbortIfLegIsRunning(view, animationHandle, hasLegEnded));
+			dispatcher.Dispatch(() => AbortIfAnimationIsRunning(view, animationHandle, hasAnimationEnded));
 		}
 		else
 		{
-			AbortIfLegIsRunning(view, animationHandle, hasLegEnded);
+			AbortIfAnimationIsRunning(view, animationHandle, hasAnimationEnded);
 		}
 	}
 
-	// A leg that ended, whatever ended it, resumed on the UI thread inside the abort before a newer run could take the handle, so the handle may belong to that run now
-	static void AbortIfLegIsRunning(VisualElement view, string animationHandle, Func<bool> hasLegEnded)
+	// An animation that ended, whatever ended it, resumed on the UI thread inside the abort before a newer run could take the handle, so the handle may belong to that run now
+	static void AbortIfAnimationIsRunning(VisualElement view, string animationHandle, Func<bool> hasAnimationEnded)
 	{
-		if (!hasLegEnded())
+		if (!hasAnimationEnded())
 		{
 			view.AbortAnimation(animationHandle);
 		}

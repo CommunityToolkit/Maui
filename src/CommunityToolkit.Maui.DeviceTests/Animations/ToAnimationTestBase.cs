@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // A "To" animation runs under .NET MAUI's own animation handles, so a run started while another one runs interrupts it without AnimationBehavior's help
 public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBase<TAnimation> where TAnimation : BaseAnimation
 {
-	// Longer than the first leg of every two-leg To animation here (Fade's is the longest, 800 ms), so the late frame ends that leg at once
+	// Longer than the way out of every round-trip To animation here (Fade's is the longest, 800 ms), so the late frame ends it at once
 	protected virtual TimeSpan LateFrameDelay { get; } = TimeSpan.FromMilliseconds(runLength);
 
 	protected abstract Task<bool> AppToAnimation(VisualElement view, double target);

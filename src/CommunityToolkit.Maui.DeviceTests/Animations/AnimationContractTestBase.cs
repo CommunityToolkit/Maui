@@ -231,7 +231,7 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 		});
 	}
 
-	// A late frame can end the first leg at once, and a run started while the view holds its peak writes the peak over itself, which raises no PropertyChanged
+	// A late frame can end the way out at once, and a run started while the view holds its peak writes the peak over itself, which raises no PropertyChanged
 	protected Task<Task> StartAndActMidRunAsync(VisualElement view, Func<Task> startRun, Action actMidRun, Func<Task, Task>? waitForAMissedRunToEnd = null) =>
 		StartAndActMidRunAsync(view, PeakProperty, values => IsMidRun(values[^1]) && !IsAtPeak(values[^1]), startRun, actMidRun, waitForAMissedRunToEnd);
 

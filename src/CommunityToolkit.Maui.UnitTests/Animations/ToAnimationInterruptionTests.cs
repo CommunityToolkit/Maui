@@ -11,7 +11,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 {
 	public static TheoryData<string> ToAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
 
-	public static TheoryData<string> TwoLegAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
+	public static TheoryData<string> RoundTripAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation)];
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(ToAnimationNames))]
@@ -36,8 +36,8 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
-	[MemberData(nameof(TwoLegAnimationNames))]
-	public Task CancelAnimationsDuringTheReturnLeg_ReturnsTheViewToItsStartingValues(string animationName) => RunOnSingleThreadAsync(async token =>
+	[MemberData(nameof(RoundTripAnimationNames))]
+	public Task CancelAnimationsOnTheWayBack_ReturnsTheViewToItsStartingValues(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
@@ -352,18 +352,18 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
-	public Task FadeInterruptedAtTheLegBoundaryThenTheAppSetsTheTargetValue_NextRunReturnsToTheAppsValue() => RunOnSingleThreadAsync(async token =>
+	public Task FadeInterruptedAsItTurnsBackThenTheAppSetsTheTargetValue_NextRunReturnsToTheAppsValue() => RunOnSingleThreadAsync(async token =>
 	{
 		const double target = 0.0;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var originalOpacity = view.Opacity;
 
-		// A keyframe animation keeps the ticker running, so the return leg's first frame comes a tick after the first leg ends, as on a device
+		// A keyframe animation keeps the ticker running, so the way back's first frame comes a tick after the way out ends, as on a device
 		var keepTicking = new ShakeAnimation { Length = 800 }.Animate(view, token);
 		var atTarget = WaitForPropertyAsync(view, VisualElement.OpacityProperty, token, value => value == target);
 		var run = new FadeAnimation { Opacity = target, Length = 400 }.Animate(view, token);
 		await atTarget;
-		view.Opacity.Should().Be(target, "still at the boundary between the legs");
+		view.Opacity.Should().Be(target, "still at the turn between the way out and the way back");
 
 		view.CancelAnimations();
 		await run.WaitAsync(waitTimeout, token);
