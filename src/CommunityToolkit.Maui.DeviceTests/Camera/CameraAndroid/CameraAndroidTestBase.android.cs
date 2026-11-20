@@ -38,6 +38,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// Process-wide, because the wedge never recovers in this process.
 	static string? wedgedCameraStack;
 	static int artDumpRequested;
+	internal static string? LastDroppedClosedPublication { get; set; }
 
 	readonly List<Action> cleanups = [];
 	readonly AsyncVoidExceptionGuard asyncVoidGuard = new();
@@ -247,13 +248,86 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static bool IsStreaming(PreviewView previewView) =>
 		previewView.PreviewStreamState!.Value?.ToString() == "STREAMING";
 
-	protected static async Task WaitForAllCamerasClosedAsync(int timeoutMilliseconds = 30000)
+	protected static async Task WaitForAllCamerasClosedAsync(int timeoutMilliseconds = 30000) =>
+		await WaitForClosedAsync(null, timeoutMilliseconds, "A camera is still open");
+
+	protected static Task WaitForCameraClosedAsync(string cameraId, int timeoutMilliseconds = 30000) =>
+		WaitForClosedAsync([cameraId], timeoutMilliseconds, $"Camera {cameraId} is not closed");
+
+	// Waits out the stable window from now: a camera that was freed a moment ago, or is about to be opened, must not pass as closed.
+	protected static async Task AssertCameraIsClosedAsync(string cameraId) =>
+		await AssertClosedNowAsync([cameraId]);
+
+	static async Task WaitForClosedAsync(IReadOnlyCollection<string>? cameraIds, int timeoutMilliseconds, string failureMessage)
 	{
-		await AssertionExtensions.AssertEventuallyAsync(async () =>
+		var monitor = await CameraAvailabilityMonitor.GetAsync();
+		var ids = cameraIds ?? monitor.CameraIds;
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		var result = EvaluateSince(stopwatch, monitor, ids);
+		while (result.Verdict is not CameraClosedVerdict.Closed)
+		{
+			if (stopwatch.ElapsedMilliseconds > timeoutMilliseconds)
+			{
+				throw new Xunit.Sdk.XunitException($"{failureMessage} (camera service: {result.Description}; CameraX: {await DescribeNativeCameraStatesAsync()}).");
+			}
+
+			await Task.Delay(100);
+			result = EvaluateSince(stopwatch, monitor, ids);
+		}
+
+		await LogDroppedClosedPublicationAsync(ids, result);
+	}
+
+	static CameraClosedResult EvaluateSince(System.Diagnostics.Stopwatch checkStarted, CameraAvailabilityMonitor monitor, IReadOnlyCollection<string> cameraIds) =>
+		CameraClosedCheck.Evaluate(cameraIds, monitor.Snapshot(), CameraClosedCheck.StableWindow, checkStarted.Elapsed);
+
+	static async Task AssertClosedNowAsync(IReadOnlyCollection<string>? cameraIds)
+	{
+		var monitor = await CameraAvailabilityMonitor.GetAsync();
+		var ids = cameraIds ?? monitor.CameraIds;
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		var result = EvaluateSince(stopwatch, monitor, ids);
+		while (true)
+		{
+			var canStillBecomeClosed = result.Verdict is CameraClosedVerdict.Settling || (result.Verdict is CameraClosedVerdict.Unknown && stopwatch.Elapsed < TimeSpan.FromSeconds(2));
+			if (!canStillBecomeClosed)
+			{
+				break;
+			}
+
+			await Task.Delay(result.Verdict is CameraClosedVerdict.Settling ? result.RemainingStableTime + TimeSpan.FromMilliseconds(10) : TimeSpan.FromMilliseconds(50));
+			result = EvaluateSince(stopwatch, monitor, ids);
+		}
+
+		if (result.Verdict is not CameraClosedVerdict.Closed)
+		{
+			throw new Xunit.Sdk.XunitException($"A camera is not closed (camera service: {result.Description}; CameraX: {await DescribeNativeCameraStatesAsync()}).");
+		}
+
+		await LogDroppedClosedPublicationAsync(ids, result);
+	}
+
+	// CameraX's public state is only a diagnostic here: it is exactly what drops the CLOSED that these checks must not depend on.
+	static async Task LogDroppedClosedPublicationAsync(IReadOnlyCollection<string> cameraIds, CameraClosedResult closed)
+	{
+		try
 		{
 			var provider = await GetNativeCameraProviderAsync();
-			return provider.AvailableCameraInfos.All(info => GetNativeCameraState(info) is "CLOSED" or "UNKNOWN");
-		}, timeoutMilliseconds, 100, "A camera is still open.");
+			var cameraXStates = provider.AvailableCameraInfos
+				.Select(info => (CameraId: GetNativeCameraId(info), State: GetNativeCameraState(info)))
+				.Where(camera => cameraIds.Contains(camera.CameraId, StringComparer.Ordinal))
+				.ToList();
+
+			if (CameraClosedCheck.DescribeDroppedClosedPublication(closed, cameraXStates) is string dropped)
+			{
+				LastDroppedClosedPublication = dropped;
+				Android.Util.Log.Warn(cameraWedgeLogTag, dropped);
+			}
+		}
+		catch (Exception ex)
+		{
+			Android.Util.Log.Warn(cameraWedgeLogTag, $"CameraX's camera states could not be compared with the camera service: {ex.Message}");
+		}
 	}
 
 	protected static async Task<bool> IsNativelyBoundAsync(UseCase useCase) =>
@@ -265,7 +339,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// restarted preview), CameraX's camera thread goes CLOSING, REOPENING and OPENED before the UI thread dispatched the states it
 	// posted, and CameraStateMachine drops the final OPEN because LiveData still holds the OPEN of before (logcat:
 	// "Transitioning camera internal state: REOPENING --> OPENED" without a following "Publishing new public camera state ... OPEN").
-	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
+	// The public state then stays OPENING for good while the camera streams. It drops the final CLOSED the same way (see
+	// CameraClosedCheck). A camera that was closed before (never rebound while open)
 	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
 	internal static Task WaitUntilCameraIsStreamingAsync(ManagerSession session) =>
 		WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."), session.Errors);
@@ -718,14 +793,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return provider.AvailableCameras!;
 	}
 
-	protected static async Task AssertEveryCameraIsClosedAsync()
-	{
-		var provider = await GetNativeCameraProviderAsync();
-		foreach (var info in provider.AvailableCameraInfos)
-		{
-			Assert.Equal("CLOSED", GetNativeCameraState(info));
-		}
-	}
+	protected static async Task AssertEveryCameraIsClosedAsync() => await AssertClosedNowAsync(null);
 
 	protected void MarkCameraSessionUsed() => usedCameraSession = true;
 
@@ -828,7 +896,9 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			}
 			else
 			{
-				Android.Util.Log.Warn(cameraWedgeLogTag, "No thread is stuck in CameraDeviceImpl.close, so later camera tests run as usual.");
+				// Not wedged: CameraX can also drop the CLOSED of a camera, so the camera service's view is logged next to CameraX's.
+				var cameraService = await DescribeCameraServiceAsync();
+				Android.Util.Log.Warn(cameraWedgeLogTag, $"No thread is stuck in CameraDeviceImpl.close, so later camera tests run as usual. CameraX: {states}; camera service: {cameraService}.");
 			}
 		}
 		catch (Exception ex)
@@ -863,6 +933,19 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		catch (Exception ex)
 		{
 			failures.Add(new Xunit.Sdk.XunitException($"Diagnosing CameraX without its cameras failed: {ex}"));
+		}
+	}
+
+	static async Task<string> DescribeCameraServiceAsync()
+	{
+		try
+		{
+			var monitor = await CameraAvailabilityMonitor.GetAsync();
+			return CameraClosedCheck.Evaluate(monitor.CameraIds, monitor.Snapshot(), CameraClosedCheck.StableWindow).Description;
+		}
+		catch (Exception ex)
+		{
+			return $"unavailable ({ex.Message})";
 		}
 	}
 

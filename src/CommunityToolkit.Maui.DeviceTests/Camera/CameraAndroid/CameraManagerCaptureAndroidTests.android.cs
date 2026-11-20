@@ -145,7 +145,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		{
 			var recorder = new CaptureRecorder(session.View);
 			session.Manager.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(session.View.SelectedCamera!.DeviceId);
 
 			await session.Manager.TakePicture(CancellationToken.None);
 			await recorder.WaitForFailureAsync();

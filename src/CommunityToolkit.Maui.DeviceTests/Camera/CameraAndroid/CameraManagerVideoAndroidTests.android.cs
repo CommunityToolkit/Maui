@@ -928,7 +928,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			AotSafeAssert.Contains(int.Parse(exception.Message[prefix.Length..].Split(' ')[0]), new[] { VideoRecordEvent.Finalize.ErrorSourceInactive, VideoRecordEvent.Finalize.ErrorNoValidData });
 			Assert.Equal(0, stream.Length);
 			Assert.Empty(ListRecordingFiles().Except(before));
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			Assert.False(await IsNativelyBoundAsync(session.ImageCapture), "StopVideoRecording bound the photo session of a stopped preview.");
 		}, includeRecordAudio: true);
 	}
@@ -1119,7 +1119,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordedVideoAsync(before);
 			session.Manager.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 			await SettleUiThreadAsync();
@@ -1144,7 +1144,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 		{
 			var cameraId = session.View.SelectedCamera!.DeviceId;
 			session.Manager.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			await session.Manager.StartVideoRecording(stream, CancellationToken.None).WaitAsync(CameraTimeout);
 			await WaitForRecordedVideoAsync(before);
 
@@ -1155,7 +1155,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.False(await IsNativelyBoundAsync(session.ImageCapture), "StopVideoRecording bound the photo session of a stopped preview.");
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture), "StopVideoRecording left the VideoCapture of the recording bound.");
 			Assert.Equal(ImageCapture.CaptureModeMaximizeQuality, session.ImageCapture.CaptureMode);
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 		}, includeRecordAudio: true);
 	}
 
@@ -1202,7 +1202,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecordingFile"));
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecording"));
 			Assert.Null(GetPrivateField<object>(session.Manager, "videoRecordingState"));
-			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(session.View.SelectedCamera!.DeviceId);
 		}, includeRecordAudio: true);
 	}
 
@@ -1469,7 +1469,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Same(other, session.View.SelectedCamera);
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is no longer bound.");
 			Assert.Equal(first.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
-			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
+			await AssertCameraIsClosedAsync(other.DeviceId);
 			Assert.Equal(loadedBefore, session.LoadedCount);
 			await AssertTheRecordingKeepsRunningAsync(recordingState, "the camera switch");
 			sinceTheRecordingHadData.Stop();
@@ -1504,7 +1504,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is no longer bound.");
 			Assert.Equal(first.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
-			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
+			await AssertCameraIsClosedAsync(other.DeviceId);
 			await AssertTheRecordingKeepsRunningAsync(recordingState, "the camera switches");
 			sinceTheRecordingHadData.Stop();
 			var loadedBefore = session.LoadedCount;
@@ -1518,7 +1518,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.True(await IsNativelyBoundAsync(session.CameraPreview), "The Preview of the selected camera is not bound.");
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the selected camera is not bound.");
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the stopped recording is still bound.");
-			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
+			await AssertCameraIsClosedAsync(other.DeviceId);
 			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
@@ -1550,7 +1550,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Equal(first.DeviceId, GetBoundCameraId(session.Native<ICamera>("camera")!));
 			Assert.True(await IsNativelyBoundAsync(session.ImageCapture), "The ImageCapture of the recording is not bound.");
 			Assert.True(await IsNativelyBoundAsync(session.VideoCapture), "The VideoCapture of the recording is no longer bound.");
-			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
+			await AssertCameraIsClosedAsync(other.DeviceId);
 			Assert.Equal(loadedBefore, session.LoadedCount);
 			await AssertTheRecordingKeepsRunningAsync(recordingState, "the picture taken while the camera switch waits");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
@@ -1586,7 +1586,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Equal(loadedBefore + 1, session.LoadedCount);
 			Assert.Empty(ListRecordingFiles().Except(before));
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 			await WaitUntilCameraIsStreamingAsync(session);
 		}, includeRecordAudio: true);
 	}
@@ -1620,7 +1620,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 			Assert.Null(GetPrivateField<object>(session.Manager, "camera"));
 			Assert.False(stream.CanWrite, "The manager disposes the stream of the recording.");
 			Assert.Empty(ListRecordingFiles().Except(before));
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 			await AssertEveryCameraIsClosedAsync();
 		}, includeRecordAudio: true);
 	}
@@ -1646,7 +1646,7 @@ public partial class CameraManagerVideoAndroidTests : CameraAndroidTestBase
 
 			session.Manager.StopCameraPreview();
 
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 			Assert.False(await IsNativelyBoundAsync(session.VideoCapture), "StopCameraPreview kept the VideoCapture of the recording bound.");
 			AssertIsAPlayableVideo(await StopAndReadAsync(session, stream));
 			await SettleUiThreadAsync();

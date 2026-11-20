@@ -178,7 +178,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			Assert.Contains("name=HIGHEST", session.Native<AndroidX.Camera.Video.Recorder>("videoRecorder")!.QualitySelector!.ToString());
 			foreach (var other in session.Provider.AvailableCameras!.Where(camera => camera.DeviceId != selected.DeviceId))
 			{
-				Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
+				await AssertCameraIsClosedAsync(other.DeviceId);
 			}
 		});
 	}
@@ -220,7 +220,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.Same(second, session.View.SelectedCamera);
 			await WaitForNativeCameraStateAsync(second.DeviceId, "OPEN");
-			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(session.Provider.AvailableCameras[0].DeviceId));
+			await AssertCameraIsClosedAsync(session.Provider.AvailableCameras[0].DeviceId);
 		});
 	}
 
@@ -504,7 +504,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.False(await IsNativelyBoundAsync(preview));
 			Assert.False(await IsNativelyBoundAsync(imageCapture));
-			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(session.View.SelectedCamera!.DeviceId);
 			await AssertionExtensions.AssertEventually(() => !IsStreaming(session.PreviewView!), 30000, 100, "The preview kept streaming after StopCameraPreview.");
 		});
 	}
@@ -548,7 +548,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session);
 			session.Manager.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(session.View.SelectedCamera!.DeviceId);
 
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 
@@ -569,7 +569,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		{
 			var cameraId = session.View.SelectedCamera!.DeviceId;
 			session.Manager.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			var loadedBefore = session.LoadedCount;
 			using var cancellation = new CancellationTokenSource();
 			await cancellation.CancelAsync();
@@ -679,7 +679,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		{
 			var cameraId = session.View.SelectedCamera!.DeviceId;
 			await InvokeOnMainThreadAsync(session.Manager.StopCameraPreview);
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 
 			cameraThread.Close();
 			var uiThreadStaysFree = Task.Run(() => PingTheUiThreadWhileTheCameraThreadIsStuckAsync(cameraThread));
@@ -1063,7 +1063,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
 			await WaitUntilCameraIsStreamingAsync(session);
 			session.Manager.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(session.View.SelectedCamera!.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(session.View.SelectedCamera!.DeviceId);
 
 			await session.Manager.UpdateCurrentCamera(session.View.SelectedCamera, CancellationToken.None);
 			await SettleUiThreadAsync();
@@ -1093,7 +1093,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			Assert.Equal(2, session.LoadedCount);
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 			await WaitUntilCameraIsStreamingAsync(session);
 		});
 	}
@@ -1185,7 +1185,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			await SettleUiThreadAsync();
 
 			Assert.Null(GetPrivateField<object>(session.Manager, "camera"));
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			await AssertEveryCameraIsClosedAsync();
 		});
 	}
@@ -1199,7 +1199,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 		{
 			var cameraId = session.View.SelectedCamera!.DeviceId;
 			session.Manager.Dispose();
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			var loadedBefore = session.LoadedCount;
 
 			// The manager still counts as initialized and the view still has its selected camera, but every native object the manager
@@ -1238,7 +1238,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 
 			session.Manager.Dispose();
 
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			await AssertionExtensions.AssertEventually(() => streamState.Value?.ToString() == "IDLE", 30000, 100, "The preview kept streaming after Dispose.");
 
 			// CameraX's ProcessCameraProvider, camera and camera control are shared: every manager that binds to the same LifecycleOwner gets the

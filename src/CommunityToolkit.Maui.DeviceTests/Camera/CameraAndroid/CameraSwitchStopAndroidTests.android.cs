@@ -21,7 +21,7 @@ public class CameraSwitchStopAndroidTests : CameraAndroidTestBase
 			var other = cameras.First(camera => camera.DeviceId != first.DeviceId);
 			var preview = host.Native<Preview>("cameraPreview") ?? throw new InvalidOperationException("The manager has no Preview.");
 			host.View.StopCameraPreviewCommand.Execute(null);
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 
 			host.View.SelectedCamera = other;
 			await WaitForTheListenersOfCameraXAsync();

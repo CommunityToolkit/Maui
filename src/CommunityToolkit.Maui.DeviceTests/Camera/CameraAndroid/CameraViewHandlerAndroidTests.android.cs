@@ -31,7 +31,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			Assert.Equal("OPEN", await GetNativeCameraStateAsync(firstId));
 			foreach (var other in nativeCameras.Skip(1))
 			{
-				Assert.Equal("CLOSED", GetNativeCameraState(other));
+				await AssertCameraIsClosedAsync(GetNativeCameraId(other));
 			}
 
 			Assert.True(await IsNativelyBoundAsync(host.Native<Preview>("cameraPreview")!));
@@ -379,7 +379,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			host.View.SelectedCamera = other;
 
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		});
@@ -412,13 +412,13 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 			await WaitUntilAsync(() => recordingState.Finalized.IsCompleted || window.ElapsedMilliseconds >= 2000, "The observation window did not end.");
 			Assert.False(recordingState.Finalized.IsCompleted, "CameraX finalized the recording after the camera switch.");
 			Assert.Equal(first.DeviceId, GetBoundCameraId(host.Native<ICamera>("camera")!));
-			Assert.Equal("CLOSED", await GetNativeCameraStateAsync(other.DeviceId));
+			await AssertCameraIsClosedAsync(other.DeviceId);
 
 			Assert.Same(stream, await host.View.StopVideoRecording().WaitAsync(CameraTimeout));
 
 			Assert.True(ReadVideoInfo(stream.ToArray()).HasVideo, "Android does not find a video track in the recording.");
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitForNativeCameraStateAsync(first.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(first.DeviceId);
 			await WaitUntilCameraIsStreamingAsync(host);
 			Assert.True(await IsNativelyBoundAsync(host.Native<ImageCapture>("imageCapture")!));
 		}, includeRecordAudio: true);
@@ -510,7 +510,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			host.View.SelectedCamera = other;
 			await WaitForNativeCameraStateAsync(other.DeviceId, "OPEN");
-			await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(camera.DeviceId);
 			Assert.True(host.View.IsTorchOn);
 
 			// The torch of the first camera went out with its session; loading it again maps IsTorchOn once more.
@@ -590,7 +590,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			((IElementHandler)host.Handler).DisconnectHandler();
 
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			await WaitUntilAsync(() => streamState.Value?.ToString() == "IDLE", "The preview kept streaming after the handler disconnected.");
 			var exception = Assert.Throws<InvalidOperationException>(() => host.Handler.CameraManager);
 			Assert.Equal("CameraManager cannot be used until the native view has been created", exception.Message);
@@ -648,7 +648,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			host.Handler.Dispose();
 
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 
 			// CameraX's shared ProcessCameraProvider, camera and camera control are only released, not disposed (see
 			// CameraManagerConnectionAndroidTests.DisposeClosesTheCameraAndReleasesTheNativeObjects).
@@ -866,7 +866,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			handler.Dispose();
 
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 			Assert.Throws<InvalidOperationException>(() => handler.CameraManager);
 		}, view, disconnectWhenDone: false);
 	}
@@ -943,7 +943,7 @@ public class CameraViewHandlerAndroidTests : CameraAndroidTestBase
 
 			((IElementHandler)host.Handler).DisconnectHandler();
 
-			await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraId);
 			await WaitUntilAsync(() => streamState.Value?.ToString() == "IDLE", "The preview kept streaming after the handler disconnected.");
 			var exception = Assert.Throws<InvalidOperationException>(() => host.Handler.CameraManager);
 			Assert.Equal("CameraManager cannot be used until the native view has been created", exception.Message);
