@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -28,6 +29,9 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 	// So long that only the test ends the seeker within the wait, never the seeker's own end, also when the UI thread stalls for seconds
 	const uint seekerLengthFarBeyondTheWait = 60_000;
+
+	// Far longer than any run it times
+	const uint tickerTimeSamplerLength = 60_000;
 
 	// A run that has had its whole length may have ended on its own; a frame can arrive this late on a slow emulator
 	static readonly TimeSpan slowestFrameInterval = TimeSpan.FromMilliseconds(100);
@@ -177,18 +181,18 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			Task? bounceHopsAboveTheOriginal = null;
+			Task? bounceHopsAboveTheTranslation = null;
 			Task? bounceRun = null;
 			var translateRun = (Task<bool>)await StartAndActMidRunAsync(view, VisualElement.TranslationXProperty, IsTranslatingX,
 				() => StartTranslateToFromTheOriginalTranslation(view, translateTargetX, translateTargetY, 3 * runLength), () =>
 				{
-					// The hops ride on top of the translation, which has barely left the original translation when the first hop peaks
-					bounceHopsAboveTheOriginal = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => translationY <= originalTranslationY - (bounceDistance / 2));
+					// The hops ride on top of the translation, wherever a stalled UI thread has let it get to when the first hop peaks
+					bounceHopsAboveTheTranslation = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => TranslationYOfTheTranslationAt(view.TranslationX) - translationY >= bounceDistance / 2);
 					bounceRun = bounce.Animate(view);
 				});
 
 			await bounceRun!.WaitAsync(waitTimeout);
-			await bounceHopsAboveTheOriginal!;
+			await bounceHopsAboveTheTranslation!;
 
 			// TranslateToAsync reports true when something interrupted it
 			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
@@ -242,35 +246,26 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		var view = CreateAnimatedView([(VisualElement.TranslationXProperty, originalTranslationX), (VisualElement.TranslationYProperty, originalTranslationY)]);
 		// The bounce is long enough for its pause at the peak to catch a frame on a slow device
 		var bounce = new BounceAnimation { Distance = bounceDistance, Length = 2 * runLength };
-
-		// The view is within a tenth of the first hop's height for over a fifth of the bounce (CubicOut rise, pause, CubicIn fall), so only a longer gap between frames can skip it
-		var shortestTimeNearTheFirstHopsPeak = TimeSpan.FromMilliseconds(bounce.Length / 5);
+		var timesNearTheFirstHopsPeak = FindTimesAHopIsAtLeast(0.9, bounce.Length, riseStart: 0, peakStart: 0.25, fallStart: 0.2875, fallEnd: 0.4125);
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var heightPerFrame = new List<double>();
-			var longestGapBetweenFrames = TimeSpan.Zero;
+			var frames = new List<BounceFrame>();
 
 			await RepeatAttemptsThatMissedTheRunAsync(async () =>
 			{
-				heightPerFrame.Clear();
-				var frameTimes = new List<TimeSpan>();
-				var sinceTheBounceStarted = new Stopwatch();
+				frames.Clear();
 				Task? bounceRun = null;
 
 				// With half the translation ahead, the TranslateToAsync still writes TranslationY every frame while the bounce pauses at its first peak
 				var translateRun = (Task<bool>)await StartAndActMidRunAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10 && translationX <= (originalTranslationX + translateTargetX) / 2,
 					() => StartTranslateToFromTheOriginalTranslation(view, translateTargetX, originalTranslationY, 4 * runLength), () =>
 					{
-						sinceTheBounceStarted.Start();
 						bounceRun = bounce.Animate(view);
 
-						// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
-						new Microsoft.Maui.Controls.Animation(_ =>
-						{
-							frameTimes.Add(sinceTheBounceStarted.Elapsed);
-							heightPerFrame.Add(originalTranslationY - view.TranslationY);
-						}).Commit(view, frameSamplerHandle, length: 60_000);
+						// Committed right after the bounce, in its turn, the sampler reads the bounce's time; ticking last in every frame, it sees the height that frame shows
+						CommitTickerTimeSampler(view, frameSamplerHandle, timeSinceTheBounceStarted =>
+							frames.Add(new(timeSinceTheBounceStarted, originalTranslationY - view.TranslationY, view.TranslationX < translateTargetX)));
 					});
 
 				try
@@ -282,14 +277,15 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 					view.AbortAnimation(frameSamplerHandle);
 				}
 
-				longestGapBetweenFrames = FindLongestGap([TimeSpan.Zero, .. frameTimes, sinceTheBounceStarted.Elapsed]);
-				var framesAtTheFirstHopsPeak = heightPerFrame.Select((height, frame) => (height, frame)).Where(sample => sample.height >= 0.9 * bounceDistance).Select(sample => sample.frame).ToList();
-
-				if (framesAtTheFirstHopsPeak.Count is 0 && longestGapBetweenFrames >= shortestTimeNearTheFirstHopsPeak)
+				// A stalled UI thread can carry the bounce past its peak in one frame; only a frame in that span shows whether the peak holds under the TranslateToAsync
+				if (!frames.Any(frame => frame.IsTranslating && timesNearTheFirstHopsPeak.Contains(frame.Time)))
 				{
 					await translateRun.WaitAsync(waitTimeout);
 					return false;
 				}
+
+				var heightPerFrame = frames.Select(frame => frame.Height).ToList();
+				var framesAtTheFirstHopsPeak = heightPerFrame.Select((height, frame) => (height, frame)).Where(sample => sample.height >= 0.9 * bounceDistance).Select(sample => sample.frame).ToList();
 
 				Assert.NotEmpty(framesAtTheFirstHopsPeak);
 				Assert.True(framesAtTheFirstHopsPeak[^1] - framesAtTheFirstHopsPeak[0] == framesAtTheFirstHopsPeak.Count - 1,
@@ -303,13 +299,14 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				var mismatch = FindNativeMismatch(handler, view);
 				Assert.True(mismatch is null, mismatch);
 				return true;
-			}, () => $"a gap of {longestGapBetweenFrames.TotalMilliseconds:F0} ms between frames could skip the first hop's peak. Height per frame: {string.Join(", ", heightPerFrame.Select(FormatNativeValue))}");
+			}, () => $"no frame fell within {timesNearTheFirstHopsPeak} of the bounce while the TranslateToAsync ran. Frames: {DescribeFrames(frames)}");
 		});
 	}
 
 	[Fact]
 	public async Task TranslateToStartedDuringABounceKeepsTheHopsVisibleOnTopOfTheTranslation()
 	{
+		const string bounceClockHandle = "CommunityToolkit.Maui.DeviceTests.BounceClock";
 		const string frameSamplerHandle = "CommunityToolkit.Maui.DeviceTests.HeightAboveTheTranslationSampler";
 
 		SetupBuilder();
@@ -317,64 +314,70 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		var view = CreateAnimatedView([(VisualElement.TranslationXProperty, originalTranslationX), (VisualElement.TranslationYProperty, originalTranslationY)]);
 		var bounce = new BounceAnimation { Distance = bounceDistance, Length = 2 * runLength };
 
-		// The second hop alone stays above a quarter of the first hop's height for over a quarter of the bounce, so only a longer gap between frames can skip every hop
-		var shortestTimeTheHopsShowAQuarterOfTheirHeight = TimeSpan.FromMilliseconds(bounce.Length / 4);
+		// The third hop never reaches a quarter of the first hop's height
+		TimeSpanOfTheBounce[] timesTheHopsShowAQuarterOfTheFirstHop =
+		[
+			FindTimesAHopIsAtLeast(0.25, bounce.Length, riseStart: 0, peakStart: 0.25, fallStart: 0.2875, fallEnd: 0.4125),
+			FindTimesAHopIsAtLeast(0.5, bounce.Length, riseStart: 0.4125, peakStart: 0.625, fallStart: 0.625, fallEnd: 0.75)
+		];
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var heightAboveTheTranslationPerFrame = new List<double>();
-			var longestGapBetweenFrames = TimeSpan.Zero;
+			var frames = new List<BounceFrame>();
 
 			await RepeatAttemptsThatMissedTheRunAsync(async () =>
 			{
-				heightAboveTheTranslationPerFrame.Clear();
-				var frameTimes = new List<TimeSpan>();
-				var sinceTheTranslateStarted = new Stopwatch();
+				frames.Clear();
+				var timeSinceTheBounceStarted = 0.0;
 				var translateTargetYNow = double.NaN;
 				Task<bool>? translateRun = null;
 				Task? bounceRunOfThisAttempt = null;
-
-				// Still rising to the first hop's peak, so the first two hops, the high ones, are still ahead
-				var bounceRun = await StartAndActMidRunAsync(view, VisualElement.TranslationYProperty,
-					translationYs => translationYs[^1] <= originalTranslationY - 1 && translationYs.All(translationY => translationY > originalTranslationY - bounceDistance + valueTolerance),
-					() => bounceRunOfThisAttempt = StartBounceFromTheOriginalTranslation(view, bounce), () =>
-					{
-						// Translating to the height the view has now keeps the translation's own TranslationY still, so any height a frame shows comes from the hops
-						translateTargetYNow = view.TranslationY;
-						sinceTheTranslateStarted.Start();
-						translateRun = view.TranslateToAsync(translateTargetX, translateTargetYNow, 2 * runLength, Easing.Linear);
-
-						// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
-						new Microsoft.Maui.Controls.Animation(_ =>
-						{
-							if (!bounceRunOfThisAttempt!.IsCompleted)
-							{
-								frameTimes.Add(sinceTheTranslateStarted.Elapsed);
-								heightAboveTheTranslationPerFrame.Add(translateTargetYNow - view.TranslationY);
-							}
-						}).Commit(view, frameSamplerHandle, length: 60_000);
-					});
+				Task bounceRun;
 
 				try
 				{
+					// Still rising to the first hop's peak, so the first two hops, the high ones, are still ahead
+					bounceRun = await StartAndActMidRunAsync(view, VisualElement.TranslationYProperty,
+						translationYs => translationYs[^1] <= originalTranslationY - 1 && translationYs.All(translationY => translationY > originalTranslationY - bounceDistance + valueTolerance),
+						() =>
+						{
+							bounceRunOfThisAttempt = StartBounceFromTheOriginalTranslation(view, bounce);
+							CommitTickerTimeSampler(view, bounceClockHandle, time => timeSinceTheBounceStarted = time);
+							return bounceRunOfThisAttempt;
+						}, () =>
+						{
+							// Translating to the height the view has now keeps the translation's own TranslationY still, so any height a frame shows comes from the hops
+							translateTargetYNow = view.TranslationY;
+							translateRun = view.TranslateToAsync(translateTargetX, translateTargetYNow, 2 * runLength, Easing.Linear);
+
+							// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows; the clock ticked earlier in the same frame
+							new Microsoft.Maui.Controls.Animation(_ =>
+							{
+								if (!bounceRunOfThisAttempt!.IsCompleted)
+								{
+									frames.Add(new(timeSinceTheBounceStarted, translateTargetYNow - view.TranslationY, view.TranslationX < translateTargetX));
+								}
+							}).Commit(view, frameSamplerHandle, length: tickerTimeSamplerLength);
+						});
+
 					await bounceRun.WaitAsync(waitTimeout);
 				}
 				finally
 				{
 					view.AbortAnimation(frameSamplerHandle);
+					view.AbortAnimation(bounceClockHandle);
 				}
 
-				longestGapBetweenFrames = FindLongestGap([TimeSpan.Zero, .. frameTimes, sinceTheTranslateStarted.Elapsed]);
-				var didTheHopsShow = heightAboveTheTranslationPerFrame.Any(height => height >= bounceDistance / 4);
-
-				if (!didTheHopsShow && longestGapBetweenFrames >= shortestTimeTheHopsShowAQuarterOfTheirHeight)
+				// A stalled UI thread can carry the bounce past the hops in one frame; only a frame in their span shows whether they stay on top of the translation
+				if (!frames.Any(frame => frame.IsTranslating && timesTheHopsShowAQuarterOfTheFirstHop.Any(times => times.Contains(frame.Time))))
 				{
 					await translateRun!.WaitAsync(waitTimeout);
 					return false;
 				}
 
+				var didTheHopsShow = frames.Any(frame => frame.Height >= bounceDistance / 4);
 				Assert.True(didTheHopsShow,
-					$"The hops never showed while TranslateToAsync ran. Height above the translation per frame: {string.Join(", ", heightAboveTheTranslationPerFrame.Select(FormatNativeValue))}");
+					$"The hops never showed while TranslateToAsync ran. Height above the translation per frame: {string.Join(", ", frames.Select(frame => FormatNativeValue(frame.Height)))}");
 
 				var translateWasInterrupted = await translateRun!.WaitAsync(waitTimeout);
 				Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that started during it.");
@@ -384,12 +387,16 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				var mismatch = FindNativeMismatch(handler, view);
 				Assert.True(mismatch is null, mismatch);
 				return true;
-			}, () => $"a gap of {longestGapBetweenFrames.TotalMilliseconds:F0} ms between frames could skip every hop. Height above the translation per frame: {string.Join(", ", heightAboveTheTranslationPerFrame.Select(FormatNativeValue))}");
+			}, () => $"no frame fell within {string.Join(" or ", timesTheHopsShowAQuarterOfTheFirstHop)} of the bounce while the TranslateToAsync ran. Frames: {DescribeFrames(frames)}");
 		});
 	}
 
 	// Short of the target, so a translation that already ended cannot pass for one in progress
 	static bool IsTranslatingX(double translationX) => translationX >= originalTranslationX + 10 && translationX < translateTargetX;
+
+	// TranslateToAsync moves both axes with one linear tween, so the TranslationX of a frame tells the TranslationY the translation itself has in it
+	static double TranslationYOfTheTranslationAt(double translationX) =>
+		originalTranslationY + ((translationX - originalTranslationX) * (translateTargetY - originalTranslationY) / (translateTargetX - originalTranslationX));
 
 	// A missed attempt's TranslateToAsync left the view at its target
 	static Task<bool> StartTranslateToFromTheOriginalTranslation(VisualElement view, double targetX, double targetY, uint length)
@@ -407,7 +414,32 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		return bounce.Animate(view);
 	}
 
-	static TimeSpan FindLongestGap(IReadOnlyList<TimeSpan> times) => times.Zip(times.Skip(1), (earlier, later) => later - earlier).Max();
+	// MAUI gives every animation the same milliseconds in a frame, from the previous frame however long the UI thread stalled, and a linear animation's progress
+	// is its time: a sampler committed in the same turn as a run reads that run's time, which a stopwatch cannot (it misses a stall before the first frame)
+	static void CommitTickerTimeSampler(VisualElement view, string handle, Action<double> readTimeSinceCommitted) =>
+		new Microsoft.Maui.Controls.Animation(progress => readTimeSinceCommitted(progress * tickerTimeSamplerLength)).Commit(view, handle, length: tickerTimeSamplerLength);
+
+	// From Bounce's keyframes: a hop rises with CubicOut (1 - (1 - x)³), may hold, then falls with CubicIn (x³); the times are fractions of the bounce
+	static TimeSpanOfTheBounce FindTimesAHopIsAtLeast(double shareOfItsHeight, uint bounceLength, double riseStart, double peakStart, double fallStart, double fallEnd)
+	{
+		var shareOfTheRiseOrFallAboveIt = Math.Cbrt(1 - shareOfItsHeight);
+		return new(bounceLength * (peakStart - ((peakStart - riseStart) * shareOfTheRiseOrFallAboveIt)), bounceLength * (fallStart + ((fallEnd - fallStart) * shareOfTheRiseOrFallAboveIt)));
+	}
+
+	static string DescribeFrames(IEnumerable<BounceFrame> frames) =>
+		string.Join(", ", frames.Select(frame => string.Create(CultureInfo.InvariantCulture, $"{frame.Time:F0} ms: {FormatNativeValue(frame.Height)}{(frame.IsTranslating ? string.Empty : " (translation ended)")}")));
+
+	readonly record struct BounceFrame(double Time, double Height, bool IsTranslating);
+
+	readonly record struct TimeSpanOfTheBounce(double Start, double End)
+	{
+		// Android's ticker can play a frame inside the Commit that starts it, which the run committed first gets alone
+		const double tickerMismatchMilliseconds = 20;
+
+		public bool Contains(double time) => time >= Start + tickerMismatchMilliseconds && time <= End - tickerMismatchMilliseconds;
+
+		public override string ToString() => string.Create(CultureInfo.InvariantCulture, $"{Start:F0}-{End:F0} ms");
+	}
 
 	static void AssertTranslationAtTheAppsTarget(VisualElement view, string when)
 	{
@@ -624,8 +656,10 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 			var rotateRun = rotate.Animate(view);
 
 			Assert.True(view.AnchorY == originalAnchorY, $"AnchorY is {view.AnchorY} right after Rotate started, expected the original {originalAnchorY}: Rotate must stop the running Swing.");
+
+			// Swing runs twice as long as the wait, so only Rotate can have ended it in time, however long the UI thread stalls (and lets Rotate end too)
 			await swingRun.WaitAsync(waitTimeout);
-			Assert.False(rotateRun.IsCompleted, "Swing did not end when Rotate started, but at its own end.");
+			Assert.True(swingRun.IsCompletedSuccessfully, $"Swing ended {swingRun.Status}; a stopped attention seeker completes normally.");
 
 			await rotateRun.WaitAsync(waitTimeout);
 			await AssertStaysAtOriginalValuesAsync(handler, view, rotationAnchorAndScale, nativeStateAtRest, "after Rotate stopped the Swing");
