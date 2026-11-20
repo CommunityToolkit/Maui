@@ -109,7 +109,7 @@ A test must reach its product assertions there too:
 
 ## Newest OS versions (interim)
 
-The device test workflow (`device-tests.yml`) should run on the newest GA OS releases. Until CommunityToolkit/Maui#3438 (a weekly bump bot, auto-merged) lands and replaces this list, check these when reviewing a workflow change or a release, and recommend a bump when a newer GA release exists:
+The device test workflow (`device-tests.yml`) should run on the newest GA OS releases. Until CommunityToolkit/Maui#3438 (a nightly bump bot; GitHub Actions approves and auto-merges its pull requests once CI passes) lands and replaces this list, check these when reviewing a workflow change or a release, and recommend a bump when a newer GA release exists:
 
 * Android: the newest level is the highest `api-level` in `device-tests.yml`; the trimmed Android legs (job `device_tests_android`) follow the level automatically, but their `target`, `ram-size` and `emulator-features` are fixed in that job: a new newest leg with its own values needs the same change there (`target` in its `Run device tests` step, `ram-size` in the trimmed entries of its matrix `include`, `emulator-features` in its `api` step).
 * iOS: the newest simulator runtime on the Xcode image.
