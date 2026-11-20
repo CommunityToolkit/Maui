@@ -16,7 +16,7 @@ public abstract partial class ColorAnimationTestBase
 		string? error = null;
 		await InvokeOnMainThreadAsync(() =>
 		{
-			AnimatorDurationScale.TryEnable(out var previous, out error);
+			error = AnimatorDurationScale.TryEnable(out var previous);
 			if (previous is float scale)
 			{
 				animatorScaleToRestore ??= scale;

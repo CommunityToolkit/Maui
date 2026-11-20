@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Android.Animation;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -38,31 +37,29 @@ static class AnimatorDurationScale
 		}
 	}
 
-	public static bool TryEnable(out float? scaleToRestore, [NotNullWhen(false)] out string? error)
+	public static string? TryEnable(out float? scaleToRestore)
 	{
 		scaleToRestore = null;
-		error = null;
 
 		try
 		{
 			if (IsEnabled)
 			{
-				return true;
+				return null;
 			}
 
 			var previous = Get();
-			error = TrySet(1f);
+			var error = TrySet(1f);
 			if (error is null)
 			{
 				scaleToRestore = previous;
 			}
 
-			return error is null;
+			return error;
 		}
 		catch (Java.Lang.Throwable ex)
 		{
-			error = $"{ex.GetType().Name}: {ex.Message}";
-			return false;
+			return $"{ex.GetType().Name}: {ex.Message}";
 		}
 	}
 }
