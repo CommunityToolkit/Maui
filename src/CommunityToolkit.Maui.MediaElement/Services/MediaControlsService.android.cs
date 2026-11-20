@@ -118,7 +118,7 @@ sealed partial class MediaControlsService : Service
 		var notification = notificationBuilder.Build() ?? throw new InvalidOperationException("The notification cannot be null");
 
 		// StartForeground's notification reaches the NotificationManager later from a system queue, so a Notify can be overtaken by it.
-		// Below Android 13 the PlayerNotificationManager posts under the same id with Notify.
+		// Below Android 13 the PlayerNotificationManager posts under the same id with Notify, which a queued StartForeground update could overtake.
 		if (OperatingSystem.IsAndroidVersionAtLeast(33) && ForegroundServiceType is not ForegroundService.TypeNone)
 		{
 			StartForeground(mediaNotificationId, notification, ForegroundService.TypeMediaPlayback);
