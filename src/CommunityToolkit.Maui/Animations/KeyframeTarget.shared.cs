@@ -30,32 +30,60 @@ sealed class KeyframeTarget
 
 	// A .NET MAUI TranslateToAsync keeps running under an attention seeker and writes the translation as an absolute value too, so the keyframes
 	// ride on top of the value the other writer left: the keyframes' offset from the original value is added to it.
-	sealed class TranslationComposer(VisualElement view, BindableProperty property, double originalValue)
+	sealed class TranslationComposer
 	{
+		readonly VisualElement view;
+		readonly BindableProperty property;
+		readonly double originalValue;
+
+		// An equal write raises no PropertyChanged, but BindableObject still stores the new box, which tells another writer's equal write apart from none.
+		// A .NET MAUI that boxed on every read would make every read look like another writer's, so it falls back to comparing values
+		readonly bool canSeeAnEqualWrite;
+
 		double baseValue;
-		double lastWrittenValue;
-		bool hasWritten;
+		double keyframeValue;
+		object? lastWrittenValue;
+
+		public TranslationComposer(VisualElement view, BindableProperty property, double originalValue)
+		{
+			this.view = view;
+			this.property = property;
+			this.originalValue = originalValue;
+			canSeeAnEqualWrite = ReferenceEquals(view.GetValue(property), view.GetValue(property));
+		}
 
 		public void Write(double keyframeValue)
 		{
-			var currentValue = (double)view.GetValue(property);
-
-			if (!hasWritten || currentValue != lastWrittenValue)
+			if (WasWrittenByAnotherWriter())
 			{
-				baseValue = currentValue;
+				baseValue = (double)view.GetValue(property);
 			}
 
-			// Adding 0 when nothing else writes the property keeps every frame exactly the keyframe's value
-			lastWrittenValue = keyframeValue + (baseValue - originalValue);
-			hasWritten = true;
-			view.SetValue(property, lastWrittenValue);
+			this.keyframeValue = keyframeValue;
+			WriteComposedValue();
 		}
 
-		public double GetValueToRestore()
-		{
-			var currentValue = (double)view.GetValue(property);
+		public double GetValueToRestore() => WasWrittenByAnotherWriter() ? (double)view.GetValue(property) : baseValue;
 
-			return hasWritten && currentValue == lastWrittenValue ? baseValue : currentValue;
+		bool WasWrittenByAnotherWriter()
+		{
+			var currentValue = view.GetValue(property);
+
+			return canSeeAnEqualWrite ? !ReferenceEquals(currentValue, lastWrittenValue) : !Equals(currentValue, lastWrittenValue);
+		}
+
+		void WriteComposedValue()
+		{
+			try
+			{
+				// Adding 0 when nothing else writes the property keeps every frame exactly the keyframe's value
+				view.SetValue(property, keyframeValue + (baseValue - originalValue));
+			}
+			finally
+			{
+				// Read back even when a PropertyChanged handler throws or answers this write, so neither looks like another writer's write next time
+				lastWrittenValue = view.GetValue(property);
+			}
 		}
 	}
 }

@@ -110,6 +110,47 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		((double)view.GetValue(translationProperty)).Should().Be(appTranslation, "the app wrote the translation after the seeker's last frame, so nothing but the app's value is left to keep");
 	}, TestContext.Current.CancellationToken);
 
+	// Copilot's numbers: the hop puts the view at -105 on the third frame, so the translation's last write of -105 changes nothing and raises no PropertyChanged
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task BounceAnimation_WhenTheTranslationsLastWriteEqualsTheBouncedValue_EndsAtTheTranslationsTarget() => RunOnSingleThreadAsync(async token =>
+	{
+		const double targetTranslationY = -105;
+		var view = new Label();
+		view.EnableAnimations();
+		var translationYAtEachFrame = new List<double>();
+		Task? bounceRun = null;
+
+		using (view.ObserveAnimationFrames(_ =>
+		{
+			translationYAtEachFrame.Add(view.TranslationY);
+			bounceRun ??= new BounceAnimation { Distance = 30, Length = 256 }.Animate(view, token);
+		}))
+		{
+			var wasTranslationInterrupted = await view.TranslateToAsync(0, targetTranslationY, 64, Easing.Linear, token).WaitAsync(waitTimeout, token);
+			wasTranslationInterrupted.Should().BeFalse();
+			await (bounceRun ?? throw new InvalidOperationException("No frame started the Bounce")).WaitAsync(waitTimeout, token);
+		}
+
+		translationYAtEachFrame[2].Should().Be(targetTranslationY, "the third frame's hop already puts the view where the translation's last write does");
+		view.TranslationY.Should().Be(targetTranslationY);
+	}, TestContext.Current.CancellationToken);
+
+	// The composer reads another writer's write of an equal value from the boxed value BindableObject stores, because an equal write raises no PropertyChanged
+	[Fact]
+	public void BindableObject_WriteOfTheCurrentValue_StoresANewBoxWithoutRaisingPropertyChanged()
+	{
+		var view = new Label { TranslationY = 5 };
+		var storedValue = view.GetValue(VisualElement.TranslationYProperty);
+		var translationYChanges = 0;
+		view.PropertyChanged += (_, e) => translationYChanges += e.PropertyName == nameof(VisualElement.TranslationY) ? 1 : 0;
+
+		view.GetValue(VisualElement.TranslationYProperty).Should().BeSameAs(storedValue, "reading twice returns the one stored box");
+		view.TranslationY = 5;
+
+		translationYChanges.Should().Be(0);
+		view.GetValue(VisualElement.TranslationYProperty).Should().NotBeSameAs(storedValue);
+	}
+
 	static async Task<(Task Seeker, Task<bool> Translation)> StartSeekerDuringTranslateToAsync(Label view, string seekerName, uint seekerLength, uint translationLength, CancellationToken token, double distance = 30)
 	{
 		var startingTranslationX = view.TranslationX;
