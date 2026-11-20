@@ -1215,7 +1215,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		}
 		else
 		{
-			host.SetBinding(VisualElement.BackgroundColorProperty, new Binding(nameof(BackgroundColorSource.Color)));
+			host.SetBinding(VisualElement.BackgroundColorProperty, BindingBase.Create(static (BackgroundColorSource s) => s.Color));
 		}
 
 		var behavior = new TouchBehavior { PressedOpacity = 0.5 };
@@ -1260,7 +1260,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		{
 			host.BindingContext = source;
 		}
-		host.SetBinding(VisualElement.BackgroundColorProperty, new Binding(nameof(BackgroundColorSource.Color)));
+		host.SetBinding(VisualElement.BackgroundColorProperty, BindingBase.Create(static (BackgroundColorSource s) => s.Color));
 
 		var behavior = new TouchBehavior { PressedOpacity = 0.5 };
 
@@ -2089,7 +2089,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		{
 			case AppColorSource.Binding:
 				host.BindingContext = colorSource;
-				host.SetBinding(VisualElement.BackgroundColorProperty, new Binding(nameof(BackgroundColorSource.Color)));
+				host.SetBinding(VisualElement.BackgroundColorProperty, BindingBase.Create(static (BackgroundColorSource s) => s.Color));
 				break;
 
 			case AppColorSource.DynamicResource:
@@ -2166,7 +2166,7 @@ public class GestureManagerStateTests : TouchBehaviorTestBase
 		? InvokeOnMainThreadAsync(() => Application.Current!.UserAppTheme = AppTheme.Unspecified)
 		: Task.CompletedTask;
 
-	sealed class BackgroundColorSource : System.ComponentModel.INotifyPropertyChanged
+	internal sealed class BackgroundColorSource : System.ComponentModel.INotifyPropertyChanged
 	{
 		Color? color = Colors.Transparent;
 
