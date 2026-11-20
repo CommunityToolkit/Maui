@@ -35,6 +35,19 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		{ nameof(TadaAnimation), nameof(MauiViewExtensions.RotateToAsync) },
 	};
 
+	public static TheoryData<string, string> SeekersAndTheAppsToAnimationsOfAPropertyTheyDoNotAnimate { get; } = new()
+	{
+		{ nameof(HeartbeatAnimation), nameof(MauiViewExtensions.RotateToAsync) },
+		{ nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleXToAsync) },
+		{ nameof(TadaAnimation), nameof(MauiViewExtensions.ScaleYToAsync) },
+		{ nameof(RubberBandAnimation), nameof(MauiViewExtensions.ScaleToAsync) },
+		{ nameof(RubberBandAnimation), nameof(MauiViewExtensions.RotateToAsync) },
+		{ nameof(SwingAnimation), nameof(MauiViewExtensions.ScaleToAsync) },
+		{ nameof(WobbleAnimation), nameof(MauiViewExtensions.ScaleToAsync) },
+		{ nameof(BounceAnimation), nameof(MauiViewExtensions.RotateToAsync) },
+		{ nameof(ShakeAnimation), nameof(MauiViewExtensions.ScaleToAsync) },
+	};
+
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(SeekersAndTheAppsToAnimationsOfTheirProperties))]
 	public Task AppsToAnimation_StartedWhileASeekerAnimatesItsProperty_TakesOverAndKeepsItsTarget(string seekerName, string appsAnimationName) => RunOnSingleThreadAsync(async token =>
@@ -253,6 +266,56 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
+	// A seeker is only ended by a To animation of a property it animates, so the others cannot tell a seeker's end from its running on
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[MemberData(nameof(SeekersAndTheAppsToAnimationsOfAPropertyTheyDoNotAnimate))]
+	public Task AppsToAnimationOfAPropertyTheSeekerDoesNotAnimate_LeavesTheSeekerRunningToItsEnd(string seekerName, string appsAnimationName) => RunOnSingleThreadAsync(async token =>
+	{
+		const double appsScaleTarget = 1.6;
+		const double appsRotationTarget = 90;
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var property = PropertyOf(appsAnimationName);
+		var appsTarget = property == VisualElement.RotationProperty ? appsRotationTarget : appsScaleTarget;
+		SeekerPropertiesOf(seekerName).Should().NotContain(property, "the row is about a property the seeker does not animate");
+		var elapsedMillisecondsBeforeTheSeeker = view.GetElapsedAnimationMilliseconds();
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var seekerRun = CreateSeeker(seekerName).Animate(view, token);
+		await firstChange;
+
+		var appsAnimation = StartAppsAnimation(view, appsAnimationName, appsTarget, appsAnimationLength, token);
+		await seekerRun.WaitAsync(waitTimeout, token);
+		var elapsedMillisecondsWhenTheSeekerEnded = view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeTheSeeker;
+		(await appsAnimation.WaitAsync(waitTimeout, token)).Should().BeFalse();
+		await WaitForTickerFramesAsync(view, 3, token);
+
+		elapsedMillisecondsWhenTheSeekerEnded.Should().BeGreaterThanOrEqualTo(seekerLength, "the app's animation of another property does not end the seeker");
+		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
+		AssertValuesEqual(view, WithValue(startingValues, property, appsTarget));
+	}, TestContext.Current.CancellationToken);
+
+	[Fact(Timeout = (int)TestDuration.Long)]
+	public Task RotateAnimation_StartedWhileHeartbeatRuns_LeavesHeartbeatRunningToItsEnd() => RunOnSingleThreadAsync(async token =>
+	{
+		var view = CreateAnimatedViewWithNonDefaultValues();
+		var startingValues = CaptureValues(view);
+		var elapsedMillisecondsBeforeTheSeeker = view.GetElapsedAnimationMilliseconds();
+		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
+		var seekerRun = CreateSeeker(nameof(HeartbeatAnimation)).Animate(view, token);
+		await firstChange;
+
+		var rotateRun = new RotateAnimation { Rotation = 90, Length = functionalTestLength }.Animate(view, token);
+		await rotateRun.WaitAsync(waitTimeout, token);
+		seekerRun.IsCompleted.Should().BeFalse("Rotate does not animate the scale, so it does not end Heartbeat");
+		await seekerRun.WaitAsync(waitTimeout, token);
+		var elapsedMillisecondsWhenTheSeekerEnded = view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeTheSeeker;
+		await WaitForTickerFramesAsync(view, 3, token);
+
+		elapsedMillisecondsWhenTheSeekerEnded.Should().BeGreaterThanOrEqualTo(seekerLength);
+		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
+		AssertValuesEqual(view, startingValues);
+	}, TestContext.Current.CancellationToken);
+
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task SeekerStartedWhileTheAppsToAnimationThatTookOverRuns_StopsItAndReturnsToTheValueItStoppedAt() => RunOnSingleThreadAsync(async token =>
 	{
@@ -416,6 +479,8 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		nameof(RubberBandAnimation) => [VisualElement.ScaleXProperty, VisualElement.ScaleYProperty],
 		nameof(SwingAnimation) => [VisualElement.RotationProperty, VisualElement.AnchorYProperty],
 		nameof(WobbleAnimation) => [VisualElement.TranslationXProperty, VisualElement.RotationProperty],
+		nameof(BounceAnimation) => [VisualElement.TranslationYProperty],
+		nameof(ShakeAnimation) => [VisualElement.TranslationXProperty],
 		_ => throw new NotSupportedException(seekerName)
 	};
 
@@ -426,6 +491,8 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		nameof(RubberBandAnimation) => new RubberBandAnimation { Length = seekerLength },
 		nameof(SwingAnimation) => new SwingAnimation { Length = seekerLength },
 		nameof(WobbleAnimation) => new WobbleAnimation { Length = seekerLength },
+		nameof(BounceAnimation) => new BounceAnimation { Length = seekerLength },
+		nameof(ShakeAnimation) => new ShakeAnimation { Length = seekerLength },
 		_ => throw new NotSupportedException(seekerName)
 	};
 }
