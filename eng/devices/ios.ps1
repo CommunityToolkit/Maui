@@ -453,9 +453,7 @@ function Save-SimulatorEvidenceCommand {
         $result = Invoke-DeviceTestProcess -FilePath $FilePath -ArgumentList $ArgumentList -TimeoutSeconds $timeout
         $text = [string]$result.Output
         if ($result.Error) {
-            $text = $text + "`
---- stderr ---`
-" + $result.Error
+            $text = $text + "`n--- stderr ---`n" + $result.Error
         }
 
         [System.IO.File]::WriteAllText((Join-Path $Directory $FileName), $text, (New-Object System.Text.UTF8Encoding($false)))
@@ -484,8 +482,7 @@ function Save-SimulatorEvidenceCommand {
 function Get-SimulatorProcessLines {
     param([string]$PsOutput, [string]$Udid)
 
-    $lines = @(([string]$PsOutput) -split "`?`
-" | Select-Object -Skip 1)
+    $lines = @(([string]$PsOutput) -split "`r?`n" | Select-Object -Skip 1)
     return @($lines | Where-Object { $_.IndexOf($Udid, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
 }
 
@@ -501,16 +498,13 @@ function Save-SimulatorEvidence {
         $processes = Save-SimulatorEvidenceCommand -Directory $directory -FileName 'processes.txt' -FilePath 'ps' -ArgumentList @('-axo', 'pid,lstart,etime,command') -TimeoutSeconds 20 -Deadline $deadline
         if ($null -ne $processes -and -not $processes.TimedOut) {
             $lines = @(Get-SimulatorProcessLines -PsOutput $processes.Output -Udid $Udid)
-            [System.IO.File]::WriteAllText((Join-Path $directory 'processes.txt'), (("pid lstart etime command (only processes of this simulator)`
-") + ($lines -join "`
-") + "`
-"), (New-Object System.Text.UTF8Encoding($false)))
+            [System.IO.File]::WriteAllText((Join-Path $directory 'processes.txt'), (("pid lstart etime command (only processes of this simulator)`n") + ($lines -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
             Add-AndroidEvidenceLogLine -Directory $directory -Message "processes.txt: $($lines.Count) processes of this simulator"
 
             foreach ($daemon in $script:SimulatorMediaDaemons) {
                 $matching = @($lines | Where-Object { $_ -match "/$([regex]::Escape($daemon))(\s|$)" })
                 if ($matching.Count -eq 0) {
-                    Add-AndroidEvidenceLogLine -Directory $directory -Message "sample-$daemon: not running in this simulator"
+                    Add-AndroidEvidenceLogLine -Directory $directory -Message "sample-$($daemon): not running in this simulator"
                     continue
                 }
 
