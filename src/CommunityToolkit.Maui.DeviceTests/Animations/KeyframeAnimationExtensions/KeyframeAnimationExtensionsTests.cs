@@ -280,7 +280,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				// A stalled UI thread can carry the bounce past its peak in one frame; only a frame in that span shows whether the peak holds under the TranslateToAsync
 				if (!frames.Any(frame => frame.IsTranslating && timesNearTheFirstHopsPeak.Contains(frame.Time)))
 				{
-					await translateRun.WaitAsync(waitTimeout);
+					await AssertTheTranslateToEndedAtTheAppsTargetAsync();
 					return false;
 				}
 
@@ -291,14 +291,19 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				Assert.True(framesAtTheFirstHopsPeak[^1] - framesAtTheFirstHopsPeak[0] == framesAtTheFirstHopsPeak.Count - 1,
 					$"The view left the first hop's peak and came back to it. Height per frame: {string.Join(", ", heightPerFrame.Select(FormatNativeValue))}");
 
-				var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
-				Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
-				Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
-				Assert.True(Math.Abs(view.TranslationY - originalTranslationY) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {originalTranslationY}.");
-
-				var mismatch = FindNativeMismatch(handler, view);
-				Assert.True(mismatch is null, mismatch);
+				await AssertTheTranslateToEndedAtTheAppsTargetAsync();
 				return true;
+
+				async Task AssertTheTranslateToEndedAtTheAppsTargetAsync()
+				{
+					var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
+					Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
+					Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
+					Assert.True(Math.Abs(view.TranslationY - originalTranslationY) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {originalTranslationY}.");
+
+					var mismatch = FindNativeMismatch(handler, view);
+					Assert.True(mismatch is null, mismatch);
+				}
 			}, () => $"no frame fell within {timesNearTheFirstHopsPeak} of the bounce while the TranslateToAsync ran. Frames: {DescribeFrames(frames)}");
 		});
 	}
@@ -371,7 +376,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				// A stalled UI thread can carry the bounce past the hops in one frame; only a frame in their span shows whether they stay on top of the translation
 				if (!frames.Any(frame => frame.IsTranslating && timesTheHopsShowAQuarterOfTheFirstHop.Any(times => times.Contains(frame.Time))))
 				{
-					await translateRun!.WaitAsync(waitTimeout);
+					await AssertTheTranslateToEndedAtTheAppsTargetAsync();
 					return false;
 				}
 
@@ -379,14 +384,19 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				Assert.True(didTheHopsShow,
 					$"The hops never showed while TranslateToAsync ran. Height above the translation per frame: {string.Join(", ", frames.Select(frame => FormatNativeValue(frame.Height)))}");
 
-				var translateWasInterrupted = await translateRun!.WaitAsync(waitTimeout);
-				Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that started during it.");
-				Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
-				Assert.True(Math.Abs(view.TranslationY - translateTargetYNow) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {translateTargetYNow}.");
-
-				var mismatch = FindNativeMismatch(handler, view);
-				Assert.True(mismatch is null, mismatch);
+				await AssertTheTranslateToEndedAtTheAppsTargetAsync();
 				return true;
+
+				async Task AssertTheTranslateToEndedAtTheAppsTargetAsync()
+				{
+					var translateWasInterrupted = await translateRun!.WaitAsync(waitTimeout);
+					Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that started during it.");
+					Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
+					Assert.True(Math.Abs(view.TranslationY - translateTargetYNow) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {translateTargetYNow}.");
+
+					var mismatch = FindNativeMismatch(handler, view);
+					Assert.True(mismatch is null, mismatch);
+				}
 			}, () => $"no frame fell within {string.Join(" or ", timesTheHopsShowAQuarterOfTheFirstHop)} of the bounce while the TranslateToAsync ran. Frames: {DescribeFrames(frames)}");
 		});
 	}
@@ -414,8 +424,8 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		return bounce.Animate(view);
 	}
 
-	// MAUI gives every animation the same milliseconds in a frame, from the previous frame however long the UI thread stalled, and a linear animation's progress
-	// is its time: a sampler committed in the same turn as a run reads that run's time, which a stopwatch cannot (it misses a stall before the first frame)
+	// MAUI gives every animation committed in the same turn the same milliseconds in each frame, and a linear animation's progress is its time: a sampler
+	// committed with a run reads that run's time, which a stopwatch cannot, because platforms differ in how much of a stall before the first frame their ticker credits
 	static void CommitTickerTimeSampler(VisualElement view, string handle, Action<double> readTimeSinceCommitted) =>
 		new Microsoft.Maui.Controls.Animation(progress => readTimeSinceCommitted(progress * tickerTimeSamplerLength)).Commit(view, handle, length: tickerTimeSamplerLength);
 
@@ -704,6 +714,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 				if (!view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle) && timeTheLastSwingRan >= TimeSpan.FromMilliseconds(swing.Length) - slowestFrameInterval)
 				{
 					await swingRun.WaitAsync(waitTimeout);
+					await AssertStaysAtOriginalValuesAsync(handler, view, rotationAndAnchor, nativeStateAtRest, "after the surviving Swing, which ended before the test looked, completed");
 					return false;
 				}
 

@@ -122,7 +122,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 					{
 						if (isLastValueMidRun)
 						{
-							throw new XunitException($"The run ended {run.Status} and left the view in the middle of the run: it wrote {property.PropertyName} {string.Join(", ", valuesWritten.Select(FormatNativeValue))}.");
+							throw new XunitException($"The run ended {run.Status}{(run.Exception is null ? string.Empty : $" with {run.Exception}")} and left the view in the middle of the run: it wrote {property.PropertyName} {string.Join(", ", valuesWritten.Select(FormatNativeValue))}.");
 						}
 
 						break;
@@ -146,6 +146,9 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 
 			valuesOfTheLastMissedRun = valuesWritten;
 			await (waitForAMissedRunToEnd?.Invoke(run) ?? run).WaitAsync(waitTimeout);
+
+			// The end channel a waitForAMissedRunToEnd reads never reports a fault of the run itself; the run has completed, so this surfaces it at once
+			await run;
 			return false;
 
 			void RecordValue(object? sender, PropertyChangedEventArgs e)

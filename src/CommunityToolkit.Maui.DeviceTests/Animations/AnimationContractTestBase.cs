@@ -38,7 +38,12 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			var run = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view),
-				() => AssertPlatformViewFollows(handler, view, nativeStateAtRest, "in the middle of the run"));
+				() => AssertPlatformViewFollows(handler, view, nativeStateAtRest, "in the middle of the run"),
+				async missedRun =>
+				{
+					await missedRun.WaitAsync(waitTimeout);
+					AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after a run that ended before the test could act completed");
+				});
 
 			await run.WaitAsync(waitTimeout);
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the run completed");
