@@ -30,6 +30,17 @@ public abstract partial class SpeechImplementationTestsBase
 
 	protected static Java.Lang.Object? GetListener(ISpeechToText speech) => SpeechInternals.GetField<Java.Lang.Object>(speech, "listener");
 
+	protected static void SetListenerProperty(ISpeechToText speech, object listener, string propertyName, object? value) =>
+		(SpeechInternals.GetNestedType(speech, "SpeechRecognitionListener").GetProperty(propertyName)
+			?? throw new MissingMemberException("SpeechRecognitionListener", propertyName)).SetValue(listener, value);
+
+	protected static void SetListenerPhase(ISpeechToText speech, object listener, string phaseName)
+	{
+		var phase = SpeechInternals.GetNestedType(speech, "SpeechRecognitionListener").GetProperty("Phase")
+			?? throw new InvalidOperationException("The listener has no Phase.");
+		phase.SetValue(listener, Enum.Parse(phase.PropertyType, phaseName));
+	}
+
 	// A recognizer that was started without RECORD_AUDIO answers on the main looper with ERROR_INSUFFICIENT_PERMISSIONS (measured: 28 to
 	// 44 ms after the start). A recognizer that the toolkit stopped and destroyed never answers, so 2 s is long enough to see that no
 	// answer comes.
@@ -649,11 +660,10 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	// A session that the test has ended cannot report the late ERROR_CLIENT, as a replaced session cannot.
-	static void DetachAndDestroyAndEnd(SpeechRecognizer recognizer, Java.Lang.Object listener)
+	static void DetachAndDestroyAndEnd(ISpeechToText speech, SpeechRecognizer recognizer, Java.Lang.Object listener)
 	{
 		DetachAndDestroy(recognizer);
-		var phase = listener.GetType().GetProperty("Phase") ?? throw new InvalidOperationException("The listener has no Phase.");
-		phase.SetValue(listener, Enum.Parse(phase.PropertyType, "Ended"));
+		SetListenerPhase(speech, listener, "Ended");
 	}
 
 	// A late ERROR_CLIENT can still reach the detached listener (see DetachAndDestroy): the helper drains the main looper and starts again with a
@@ -866,7 +876,7 @@ public abstract partial class SpeechImplementationTestsBase
 		{
 			Assert.Null(startException);
 			var recognizer = GetRecognizer(speech)!;
-			DetachAndDestroyAndEnd(recognizer, GetListener(speech)!);
+			DetachAndDestroyAndEnd(speech, recognizer, GetListener(speech)!);
 			return Task.FromResult(recognizer);
 		});
 

@@ -19,7 +19,7 @@ public class WinMediaThumbnailReadWindowsTests : WinMediaTestBase
 			() => ++reads is 1 ? throw transientFailure : Task.FromResult<byte[]>([1, 2, 3]),
 			(attempt, failure) => retriedFailures.Add((attempt, failure)));
 
-		Assert.Equal(new byte[] { 1, 2, 3 }, bytes);
+		AotSafeAssert.SequenceEqual(new byte[] { 1, 2, 3 }, bytes);
 		Assert.Equal(2, reads);
 		var retried = Assert.Single(retriedFailures);
 		Assert.Equal(1, retried.Attempt);

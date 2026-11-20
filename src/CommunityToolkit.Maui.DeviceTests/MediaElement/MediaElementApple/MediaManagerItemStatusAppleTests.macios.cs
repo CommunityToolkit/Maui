@@ -468,7 +468,7 @@ public class MediaManagerItemStatusAppleTests : AppleMediaElementTestBase
 				await manager.RunItemStatusHandler(item, CancellationToken.None);
 
 				Assert.Equal(0, fake.PlayCount);
-				Assert.Empty(fake.RatesSet);
+				AotSafeAssert.Empty(fake.RatesSet);
 				Assert.Equal(0f, fake.Rate);
 				Assert.Equal(0, events.Opened);
 				Assert.Equal(MediaElementState.Failed, mediaElement.CurrentState);

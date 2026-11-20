@@ -566,7 +566,7 @@ public class MediaManagerSourceAppleTests : AppleMediaElementTestBase
 				player.Muted = false;
 				await DrainMainQueueAsync();
 				Assert.False(mediaElement.ShouldMute);
-				Assert.DoesNotContain(MediaElementState.Stopped, events.States.Skip(statesBeforeValidSource));
+				AotSafeAssert.DoesNotContain(MediaElementState.Stopped, events.States.Skip(statesBeforeValidSource));
 			});
 		}
 		finally

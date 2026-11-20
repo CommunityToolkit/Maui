@@ -751,7 +751,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				var failure = Assert.Single(recorder.FailureMessages);
 				Assert.Contains(typeof(Java.Lang.SecurityException).FullName!, failure, StringComparison.Ordinal);
 				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
-				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 				Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
 				Assert.Equal(toneDuration, mediaElement.Duration);
 
@@ -772,7 +772,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 2 && recorder.OpenedCount >= 2 && mediaElement.Duration == shortToneDuration, "The later source never retried the service or never opened.");
 				Assert.Equal(2, failingContext.StartCount);
 				Assert.EndsWith(shortToneAsset, player.CurrentMediaItem!.MediaId, StringComparison.Ordinal);
-				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 
 				MediaManager.ServiceContextOverride = null;
 				mediaElement.Source = MediaSource.FromResource(toneAsset);
@@ -810,7 +810,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			{
 				Assert.Equal(1, failingContext.StartCount);
 				Assert.Empty(recorder.FailureMessages);
-				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 				Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
 				Assert.Null(GetServiceConnection(handler.Manager!));
 				Assert.Equal(baseline, ManagersBoundToTheService);
@@ -821,7 +821,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				var failure = Assert.Single(recorder.FailureMessages);
 				Assert.Contains(typeof(Java.Lang.SecurityException).FullName!, failure, StringComparison.Ordinal);
 				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
-				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 				Assert.Equal(2, failingContext.StartCount);
 				Assert.Null(GetServiceConnection(handler.Manager!));
 
@@ -832,7 +832,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
 				await WaitUntilAsync(() => recorder.OpenedCount >= 2, "The next source never opened.");
 				Assert.Single(recorder.FailureMessages);
-				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 			});
 		}
 		finally
@@ -872,7 +872,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
 
 				await WaitForStateAsync(mediaElement, MediaElementState.Playing);
-				Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 				Assert.Null(GetServiceConnection(handler.Manager!));
 				Assert.Equal(baseline, ManagersBoundToTheService);
 				Assert.Equal(1, failingContext.StartCount);
