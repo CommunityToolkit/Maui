@@ -96,7 +96,7 @@ Windows, a .NET MAUI issue rather than a toolkit one: under full trimming, a `Co
 
 ## Device tests stay NativeAOT-safe
 
-The `Trimmed Device Tests` check (`device-tests.yml` with `trimming: full-and-nativeaot`, called by `dotnet-build.yml`) runs the device tests fully trimmed and with NativeAOT; the `Device Tests` check of every pull request does not.
+The `Trimmed Device Tests` check (`device-tests.yml` with `trimming: full-and-nativeaot`) runs the device tests fully trimmed and with NativeAOT; the `Device Tests` check of every pull request does not.
 
 * It runs the newest Android API level in `device-tests.yml` (full and NativeAOT), the iOS simulator (NativeAOT) and Windows unpackaged (full) on every pull request and push to `main` (`dotnet-build.yml` calls it), and from the Actions tab (the `Device Tests` workflow with the `trimming` input).
 * Locally: `pwsh eng/devices/run.ps1 -Platform ios -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=nativeaot'` (see [eng/devices/README.md](../../eng/devices/README.md#trimmed-and-nativeaot-runs)).
