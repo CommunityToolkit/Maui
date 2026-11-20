@@ -43,7 +43,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 	// A recognizer that was started without RECORD_AUDIO answers on the main looper with ERROR_INSUFFICIENT_PERMISSIONS (measured: 28 to
 	// 44 ms after the start). A session that the toolkit ended or destroyed reports nothing, so 2 s is long enough to see that no
-	// answer comes. From Android 15 the detach and the destroy wait behind the start until the recognizer has connected.
+	// answer comes.
 	const int lateAnswerQuietMilliseconds = 2000;
 
 	protected static async Task AssertNoLateRecognitionServiceAnswerAsync(SpeechEventRecorder events)
@@ -661,14 +661,14 @@ public abstract partial class SpeechImplementationTestsBase
 		recognizer?.Destroy();
 	}
 
-	// A session that the test has ended cannot report the late ERROR_CLIENT, as a replaced session cannot.
+	// A session that the test has ended cannot report the service's late answer to the start, as a replaced session cannot.
 	static void DetachAndDestroyAndEnd(ISpeechToText speech, SpeechRecognizer recognizer, Java.Lang.Object listener)
 	{
 		DetachAndDestroy(recognizer);
 		SetListenerPhase(speech, listener, "Ended");
 	}
 
-	// A late ERROR_CLIENT can still reach the detached listener (see DetachAndDestroy): the helper waits for it and starts again with a
+	// The service's answer to the start can still reach the detached listener (see DetachAndDestroy): the helper waits for it and starts again with a
 	// new implementation when it did, so the returned session is still Listening and has reported nothing.
 	const int destroyedSessionAttempts = 3;
 
@@ -683,8 +683,7 @@ public abstract partial class SpeechImplementationTestsBase
 			var listener = await StartOnMainThreadAsync(speech, options, startException =>
 			{
 				Assert.Null(startException);
-				// Destroyed in the same main-thread turn as the start, so the service cannot call the listener first (StopListenAsync would not do:
-				// the stopped session still reports its outcome), and the session stays the toolkit's running session.
+				// Detached and destroyed, not stopped: a stopped session still reports its outcome, and the session must stay the toolkit's running session.
 				DetachAndDestroy(GetRecognizer(speech)!);
 				return Task.FromResult((IRecognitionListener)GetListener(speech)!);
 			});
@@ -863,10 +862,8 @@ public abstract partial class SpeechImplementationTestsBase
 		await speech.DisposeAsync();
 	}
 
-	// A start after StopListenAsync cancels the stopped session instead of waiting for its outcome. The first start, the stop and the second
-	// start share one main-thread turn: no platform callback can reach the stopped session in between, on any API level (the service's answer
-	// to the first start would otherwise be reported by the stopped session, which correctly reports its outcome). Only the first recognizer
-	// is not destroyed by the test, so the replacement alone must silence it.
+	// A start after StopListenAsync replaces the stopped session instead of waiting for its outcome. Stop and restart run in the turn of the
+	// first start, before the service can answer it, so its real answer reaches an ended listener on every API level.
 	[Fact]
 	public async Task StartListenAsyncAfterStopListenAsyncReplacesTheStoppedSession()
 	{
@@ -876,7 +873,7 @@ public abstract partial class SpeechImplementationTestsBase
 
 		try
 		{
-			var (firstRecognizer, firstListener, secondRecognizer) = await StartOnMainThreadAsync(speech, options, async startException =>
+			var (stoppedSessionRecognizer, stoppedSessionListener, replacingSessionRecognizer) = await StartOnMainThreadAsync(speech, options, async startException =>
 			{
 				Assert.Null(startException);
 				var stoppedRecognizer = GetRecognizer(speech);
@@ -890,12 +887,12 @@ public abstract partial class SpeechImplementationTestsBase
 			});
 
 			using var bundle = CreateResultsBundle("from the stopped session");
-			firstListener.OnResults(bundle);
-			firstListener.OnError(SpeechRecognizerError.NoMatch);
+			stoppedSessionListener.OnResults(bundle);
+			stoppedSessionListener.OnError(SpeechRecognizerError.NoMatch);
 
-			Assert.NotNull(firstRecognizer);
-			Assert.NotSame(firstRecognizer, secondRecognizer);
-			Assert.NotSame(firstListener, GetListener(speech));
+			Assert.NotNull(stoppedSessionRecognizer);
+			Assert.NotSame(stoppedSessionRecognizer, replacingSessionRecognizer);
+			Assert.NotSame(stoppedSessionListener, GetListener(speech));
 			Assert.Empty(events.Entries);
 
 			await AssertNoLateRecognitionServiceAnswerAsync(events);
