@@ -435,7 +435,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		Task? runStartedByTheApp = null;
 		var appCode = AnimateThenStartARunAsync();
 
-		// The run's start aborts the app's animation, whose continuation starts a run inside that abort; MAUI then aborts the nested run's tween before it starts the outer run's
+		// The run's start aborts the app's animation, whose continuation starts a run inside that abort; MAUI then aborts the nested run's animation before it starts the outer run's
 		var run = Create(animationName, functionalTestLength).Animate(view, token);
 		runStartedByTheApp.Should().NotBeNull("the app's continuation runs inside the abort of its animation");
 
@@ -463,7 +463,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		var startingValues = CaptureValues(view);
 		var (property, handle) = PropertyOf(animationName);
 
-		// The run's tween aborts the app's on the same handle, which resumes the app's task in the turn between the run's check of the token and its registration for it
+		// The run's animation aborts the app's on the same handle, which resumes the app's task in the turn between the run's check of the token and its registration for it
 		var appRun = AppToAnimation(animationName, view, (double)view.GetValue(property), token);
 		_ = appRun.ContinueWith(_ => cancellation.Cancel(), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 		var elapsedMillisecondsBeforeRun = view.GetElapsedAnimationMilliseconds();
@@ -474,7 +474,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		run.IsCanceled.Should().BeTrue();
 		AssertValuesEqual(view, startingValues);
 		view.AnimationIsRunning(handle).Should().BeFalse();
-		(view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeRun).Should().BeLessThan(functionalTestLength / 2, "a cancelled run aborts its tween before the first frames");
+		(view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeRun).Should().BeLessThan(functionalTestLength / 2, "a cancelled run aborts its animation before the first frames");
 	}, TestContext.Current.CancellationToken);
 
 	static BaseAnimation Create(string animationName, uint length) => animationName switch
@@ -525,7 +525,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 
 	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatable => animatable.Property == property);
 
-	// A restore writes the original value itself, while a tween never lands on it exactly in the frames right after another run takes over.
+	// A restore writes the original value itself, while an animation never lands on it exactly in the frames right after another run takes over.
 	// The window ends after frames, not at the next frame: the mock ticker fires inside Start, before an aborted run's posted continuation.
 	sealed class OriginalValueWrites : IDisposable
 	{

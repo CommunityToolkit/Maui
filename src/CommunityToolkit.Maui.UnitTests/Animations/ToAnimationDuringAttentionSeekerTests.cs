@@ -87,7 +87,7 @@ public class ToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		var appRotation = view.RotateToAsync(view.Rotation, seekerLength, Easing.Linear, token);
 		_ = appRotation.ContinueWith(_ => seekerStartedDuringTheStart = new TadaAnimation { Length = seekerLength }.Animate(view, token), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
-		// Tada's start aborts the app's RotateToAsync, whose continuation starts a seeker that Tada's own tween then aborts, after Tada recorded its run
+		// Tada's start aborts the app's RotateToAsync, whose continuation starts a seeker that Tada's own animation then aborts, after Tada recorded its run
 		var seekerRun = new TadaAnimation { Length = seekerLength }.Animate(view, token);
 		var scaleRun = new ScaleAnimation { Scale = 1.6, Length = functionalTestLength }.Animate(view, token);
 

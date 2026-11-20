@@ -183,7 +183,7 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			// MAUI force-finishes every running tween when its ticker reports the system's animations off, as when Reduce Motion is switched on
+			// MAUI force-finishes every running animation when its ticker reports the system's animations off, as when Reduce Motion is switched on
 			var run = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view), () => DisableSystemAnimations(handler));
 
 			await run.WaitAsync(waitTimeout);

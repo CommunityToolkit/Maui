@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-// App code that runs while an attention seeker starts can start another seeker, which the starting seeker's own tween then aborts
+// App code that runs while an attention seeker starts can start another seeker, which the starting seeker's own animation then aborts
 public class ReentrantAttentionSeekerStartTests : BaseAnimationTest
 {
 	const double originalAnchorY = 0.7;
@@ -24,7 +24,7 @@ public class ReentrantAttentionSeekerStartTests : BaseAnimationTest
 
 		try
 		{
-			// Swing moves the anchor while it creates its keyframes, before its tween starts and aborts the seeker the handler started
+			// Swing moves the anchor while it creates its keyframes, before its animation starts and aborts the seeker the handler started
 			swingRun = new SwingAnimation { Length = seekerLength }.Animate(view, token);
 		}
 		finally
@@ -66,7 +66,7 @@ public class ReentrantAttentionSeekerStartTests : BaseAnimationTest
 		var appRotation = view.RotateToAsync(view.Rotation, seekerLength, Easing.Linear, token);
 		_ = appRotation.ContinueWith(_ => swingStartedDuringTheStart = new SwingAnimation { Length = seekerLength }.Animate(view, token), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
-		// The Swing's start aborts the app's RotateToAsync, whose continuation starts a Swing that the first Swing's own tween then aborts.
+		// The Swing's start aborts the app's RotateToAsync, whose continuation starts a Swing that the first Swing's own animation then aborts.
 		var swingRun = new SwingAnimation { Length = 3 * functionalTestLength }.Animate(view, token);
 
 		await (swingStartedDuringTheStart ?? throw new InvalidOperationException("The aborted RotateToAsync did not start a Swing.")).WaitAsync(waitTimeout, token);

@@ -404,7 +404,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	// Short of the target, so a translation that already ended cannot pass for one in progress
 	static bool IsTranslatingX(double translationX) => translationX >= originalTranslationX + 10 && translationX < translateTargetX;
 
-	// TranslateToAsync moves both axes with one linear tween, so the TranslationX of a frame tells the TranslationY the translation itself has in it
+	// TranslateToAsync moves both axes with one linear animation, so the TranslationX of a frame tells the TranslationY the translation itself has in it
 	static double TranslationYOfTheTranslationAt(double translationX) =>
 		originalTranslationY + ((translationX - originalTranslationX) * (translateTargetY - originalTranslationY) / (translateTargetX - originalTranslationX));
 
@@ -634,7 +634,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		Assert.True(mismatch is null, $"{mismatch} ({when})");
 	}
 
-	// Swing moves the anchor while it creates its keyframes, so a PropertyChanged handler can start a seeker that Swing's own tween then aborts
+	// Swing moves the anchor while it creates its keyframes, so a PropertyChanged handler can start a seeker that Swing's own animation then aborts
 	[Fact]
 	public async Task RotateAnimationStopsASwingWhoseAnchorChangeStartedAnotherSeeker()
 	{
@@ -684,7 +684,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		});
 	}
 
-	// Swing's start aborts the app's RotateToAsync, whose continuation starts a Swing that the first Swing's own tween then aborts
+	// Swing's start aborts the app's RotateToAsync, whose continuation starts a Swing that the first Swing's own animation then aborts
 	[Fact]
 	public async Task SwingWhoseStartAbortsARotateToWhoseContinuationStartsAnotherSwingKeepsTheTopEdgeAnchorUntilItEnds()
 	{
@@ -798,7 +798,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	}
 
 	// A frame before the last can write the original rotation too, so every such write moves the view and the last move follows the last frame, which the restore then undoes.
-	// The tween's handle is gone only while the restore runs, which is when the handler throws, once: MAUI leaves a property whose PropertyChanged handler threw unable to change.
+	// The animation's handle is gone only while the restore runs, which is when the handler throws, once: MAUI leaves a property whose PropertyChanged handler threw unable to change.
 	static Func<bool> MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(VisualElement view)
 	{
 		var hasMovedTheView = false;

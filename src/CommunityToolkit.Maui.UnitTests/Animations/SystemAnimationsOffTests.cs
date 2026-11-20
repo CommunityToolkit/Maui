@@ -6,7 +6,7 @@ using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Animations;
 
-// With the system's animations off (iOS Reduce Motion, Android's "Remove animations"), MAUI jumps every tween to its end and reports it as aborted
+// With the system's animations off (iOS Reduce Motion, Android's "Remove animations"), MAUI jumps every animation to its end and reports it as aborted
 public class SystemAnimationsOffTests : BaseAnimationTest
 {
 	public static TheoryData<string> AnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation), nameof(ShakeAnimation), nameof(TadaAnimation), nameof(HeartbeatAnimation), nameof(RubberBandAnimation), nameof(BounceAnimation), nameof(SwingAnimation), nameof(WobbleAnimation)];

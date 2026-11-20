@@ -213,7 +213,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		AssertValuesEqual(view, WithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
-	// MAUI plays a run's first step inside Commit; stopping the run there would leave Commit to start a tween that keeps ticking for the run's whole length
+	// MAUI plays a run's first step inside Commit; stopping the run there would leave Commit to start an animation that keeps ticking for the run's whole length
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task AppsScaleToAsyncStartedInsideTheSeekersStart_LeavesNoTweenTickingAfterItEnds() => RunOnSingleThreadAsync(async token =>
 	{

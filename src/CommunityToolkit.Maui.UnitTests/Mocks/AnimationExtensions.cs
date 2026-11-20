@@ -10,14 +10,14 @@ static class AnimationExtensions
 {
 	public static void EnableAnimations(this IView view) => MockAnimationHandler.Prepare(view);
 
-	// What MAUI's ticker reports when the system's animations are off (iOS Reduce Motion, Android's "Remove animations"): every tween jumps to its end
+	// What MAUI's ticker reports when the system's animations are off (iOS Reduce Motion, Android's "Remove animations"): every animation jumps to its end
 	public static void DisableSystemAnimations(this IView view) =>
 		(view.Handler as MockAnimationHandler ?? throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first")).DisableSystemAnimations();
 
 	public static long GetElapsedAnimationMilliseconds(this IView view) =>
 		view.Handler is MockAnimationHandler handler ? handler.ElapsedAnimationMilliseconds : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
-	// Counts the tweens the ticker still advances, including one no animation owns any more
+	// Counts the animations the ticker still advances, including one that no animation handle owns any more
 	public static int GetTickingAnimationCount(this IView view) =>
 		view.Handler is MockAnimationHandler handler ? handler.TickingAnimationCount : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
@@ -91,7 +91,7 @@ static class AnimationExtensions
 			bool isRunning;
 
 			// Base Ticker.IsRunning reports on a private Timer this mock's Start never creates, so it stays false;
-			// Tweener.Start then launches a second Fire loop per animation segment and ticks run at double speed.
+			// starting an animation (`Tweener.Start`) then launches a second Fire loop per animation segment and ticks run at double speed.
 			public override bool IsRunning => isRunning;
 
 			public void DisableSystemAnimations() => SystemEnabled = false;
@@ -139,7 +139,7 @@ static class AnimationExtensions
 				}
 				finally
 				{
-					// A Tweener.Start running inside Fire may already have handed off to a fresh loop;
+					// Starting an animation (`Tweener.Start`) inside Fire may already have handed off to a fresh loop;
 					// don't clear the flag that loop owns.
 					if (ReferenceEquals(this.cancellationTokenSource, cancellationTokenSource))
 					{
@@ -148,7 +148,7 @@ static class AnimationExtensions
 				}
 			}
 
-			// Clear the flag before cancelling: the next segment's Tweener.Start often runs inline inside
+			// Clear the flag before cancelling: the next segment's animation start (`Tweener.Start`) often runs inline inside
 			// Fire (via the finished callback), and must see the loop as dead so it launches a new one.
 			public override void Stop()
 			{

@@ -62,7 +62,7 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		var hasLegEnded = false;
 		bool wasAborted;
 
-		// The tween starts first, so that a token that is already cancelled aborts it
+		// MAUI's animation starts first, so that a token that is already cancelled aborts it
 		var leg = animateTo();
 		await using (token.Register(() => AbortLegOnDispatcher(view, animationHandle, () => hasLegEnded)))
 		{
@@ -88,13 +88,13 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 			token.ThrowIfCancellationRequested();
 		}
 
-		// With the system's animations off, also when they were switched off during the leg, MAUI jumps the tween to its end and reports it as aborted
+		// With the system's animations off, also when they were switched off during the leg, MAUI jumps the animation to its end and reports it as aborted
 		if (!AreSystemAnimationsOn(view))
 		{
 			return true;
 		}
 
-		// CancelAnimations, a new run and an attention seeker abort the tween, which resumes this method inside the abort, before whatever takes over starts in
+		// CancelAnimations, a new run and an attention seeker abort the animation, which resumes this method inside the abort, before whatever takes over starts in
 		// the same turn. The tracker sees the toolkit's own runs, the handle the app's own FadeToAsync, ScaleToAsync, RotateToAsync, RotateYToAsync or RotateXToAsync, the value the app's own write.
 		var valueWhenInterrupted = (double)view.GetValue(property);
 		// Ending the run before the yield lets a value the app sets in this turn become the next run's original
@@ -150,7 +150,7 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		await animation!;
 	}
 
-	// MAUI reads the same ticker to decide that a tween was aborted (AnimationExtensions.HandleTweenerFinished)
+	// MAUI reads the same ticker to decide that an animation was aborted (`AnimationExtensions.HandleTweenerFinished`)
 	static bool AreSystemAnimationsOn(VisualElement view) =>
 		FindMauiContext(view)?.Services.GetService(typeof(IAnimationManager)) is not IAnimationManager animationManager || animationManager.Ticker.SystemEnabled;
 

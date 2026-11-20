@@ -91,7 +91,7 @@ static class KeyframeAnimationExtensions
 			// Recorded only now: a write in createKeyframes, such as Swing's anchor, runs PropertyChanged handlers that can start a run, which the Commit below aborts
 			runningRuns.AddOrUpdate(view, run);
 
-			// MAUI plays the first step inside Commit, where an abort would leave Commit to start a tween that no run owns; that step writes no keyframe anyway
+			// MAUI plays the first step inside Commit, where an abort would leave Commit to start an animation that no run owns; that step writes no keyframe anyway
 			var isCommitting = true;
 			new Animation(progress =>
 			{
