@@ -41,9 +41,8 @@ public abstract partial class SpeechImplementationTestsBase
 		phase.SetValue(listener, Enum.Parse(phase.PropertyType, phaseName));
 	}
 
-	// A recognizer that was started without RECORD_AUDIO answers on the main looper with ERROR_INSUFFICIENT_PERMISSIONS (measured: 28 to
-	// 44 ms after the start). A session that the toolkit ended or destroyed reports nothing, so 2 s is long enough to see that no
-	// answer comes.
+	// A recognizer started without RECORD_AUDIO answers ERROR_INSUFFICIENT_PERMISSIONS 28 to 44 ms after the start (measured), and a session
+	// that the toolkit ended or destroyed reports nothing, so 2 s is long enough to see that no answer comes.
 	const int lateAnswerQuietMilliseconds = 2000;
 
 	protected static async Task AssertNoLateRecognitionServiceAnswerAsync(SpeechEventRecorder events)
