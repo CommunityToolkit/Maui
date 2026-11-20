@@ -20,6 +20,9 @@ public class RotateAnimationTests : ToAnimationTestBase<RotateAnimation>
 
 	protected override Task<bool> AppToAnimation(VisualElement view, double target) => view.RotateToAsync(target, runLength, Easing.Linear);
 
+	// The only leg is the whole run, so a frame as late as the two-leg animations' would end the run before a second one could start in the middle of it
+	protected override TimeSpan LateFrameDelay { get; } = TimeSpan.FromMilliseconds(runLength / 2);
+
 	[Fact]
 	public async Task DefaultRotationTurnsATiltedViewAFullTurnAndEndsAtItsTilt()
 	{
