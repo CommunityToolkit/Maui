@@ -21,6 +21,8 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	const double translateTargetY = 45;
 	const double bounceDistance = 30;
 	const double originalScale = 0.8;
+	const double originalScaleX = 0.9;
+	const double originalScaleY = 1.2;
 	const string throwingHandlerMessage = "Thrown by a PropertyChanged handler.";
 
 	// Swing animates Rotation and AnchorY, Wobble TranslationX and Rotation: each run has a property of its own and one they share
@@ -38,6 +40,12 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleOnly =
 		[(VisualElement.ScaleProperty, originalScale)];
+
+	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleXAndScaleY =
+		[(VisualElement.ScaleXProperty, originalScaleX), (VisualElement.ScaleYProperty, originalScaleY)];
+
+	static readonly IReadOnlyList<(BindableProperty Property, double Value)> translationXAndRotation =
+		[(VisualElement.TranslationXProperty, originalTranslationX), (VisualElement.RotationProperty, originalRotation)];
 
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> scaleRotationAndTranslationY =
 		[(VisualElement.ScaleProperty, originalScale), (VisualElement.RotationProperty, originalRotation), (VisualElement.TranslationYProperty, originalTranslationY)];
@@ -420,6 +428,78 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 			await Task.WhenAll(scaleRun, appCode).WaitAsync(waitTimeout);
 			await AssertStaysAtOriginalValuesAsync(handler, view, scaleOnly, nativeStateAtRest, "after Scale stopped Heartbeat");
 		});
+	}
+
+	// The seeker runs far longer than the wait, so only the app's animation taking over ends it in time
+	[Theory]
+	[InlineData(nameof(HeartbeatAnimation))]
+	[InlineData(nameof(TadaAnimation))]
+	[InlineData(nameof(RubberBandAnimation))]
+	[InlineData(nameof(SwingAnimation))]
+	[InlineData(nameof(WobbleAnimation))]
+	public async Task AppsToAnimationStartedWhileASeekerAnimatesItsPropertyTakesOverAndTheViewKeepsItsTarget(string seekerName)
+	{
+		const uint seekerLengthFarBeyondTheWait = 60_000;
+
+		SetupBuilder();
+
+		var (seeker, seekerValues, appsProperty, appsTarget, startAppsAnimation) = CreateSeekerAndAppsToAnimation(seekerName, seekerLengthFarBeyondTheWait);
+		var view = CreateAnimatedView(seekerValues);
+		var originalAppsValue = seekerValues.Single(value => value.Property == appsProperty).Value;
+		IReadOnlyList<(BindableProperty Property, double Value)> expectedValues = [.. seekerValues.Select(value => value.Property == appsProperty ? (value.Property, appsTarget) : value)];
+
+		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
+		{
+			var seekerMoved = WaitForValueAsync(view, appsProperty, value => Math.Abs(value - originalAppsValue) > valueTolerance);
+			var seekerRun = seeker.Animate(view);
+			await seekerMoved;
+
+			var appsRun = startAppsAnimation(view, appsTarget);
+
+			await seekerRun.WaitAsync(waitTimeout);
+			Assert.True(seekerRun.IsCompletedSuccessfully, $"{seekerName} ended {seekerRun.Status}; a seeker that the app's animation takes over completes normally.");
+
+			// .NET MAUI's To animations report true when something interrupted them
+			var appsRunWasInterrupted = await appsRun.WaitAsync(waitTimeout);
+			Assert.False(appsRunWasInterrupted, $"{seekerName} interrupted the app's animation that started during it.");
+
+			await AssertStaysAtValuesAsync(handler, view, expectedValues, $"after the app's animation took over from {seekerName}");
+		});
+	}
+
+	static (BaseAnimation Seeker, IReadOnlyList<(BindableProperty Property, double Value)> SeekerValues, BindableProperty AppsProperty, double AppsTarget, Func<VisualElement, double, Task<bool>> StartAppsAnimation)
+		CreateSeekerAndAppsToAnimation(string seekerName, uint seekerLength) => seekerName switch
+		{
+			nameof(HeartbeatAnimation) => (new HeartbeatAnimation { Length = seekerLength }, scaleOnly, VisualElement.ScaleProperty, 1.5,
+				(view, target) => view.ScaleToAsync(target, runLength / 2, Easing.Linear)),
+			nameof(TadaAnimation) => (new TadaAnimation { Length = seekerLength }, scaleAndRotation, VisualElement.RotationProperty, originalRotation + 90,
+				(view, target) => view.RotateToAsync(target, runLength / 2, Easing.Linear)),
+			nameof(RubberBandAnimation) => (new RubberBandAnimation { Length = seekerLength }, scaleXAndScaleY, VisualElement.ScaleYProperty, 1.5,
+				(view, target) => view.ScaleYToAsync(target, runLength / 2, Easing.Linear)),
+			nameof(SwingAnimation) => (new SwingAnimation { RotationAngle = swingAngle, Length = seekerLength }, rotationAndAnchor, VisualElement.RotationProperty, originalRotation + 90,
+				(view, target) => view.RotateToAsync(target, runLength / 2, Easing.Linear)),
+			nameof(WobbleAnimation) => (new WobbleAnimation { Distance = wobbleDistance, RotationAngle = wobbleRotationAngle, Length = seekerLength }, translationXAndRotation, VisualElement.RotationProperty, originalRotation + 90,
+				(view, target) => view.RotateToAsync(target, runLength / 2, Easing.Linear)),
+			_ => throw new NotSupportedException(seekerName)
+		};
+
+	static async Task AssertStaysAtValuesAsync(IPlatformViewHandler handler, VisualElement view, IReadOnlyList<(BindableProperty Property, double Value)> expectedValues, string when)
+	{
+		AssertAtValues(handler, view, expectedValues, when);
+		await WaitForTickerFramesAsync(view);
+		AssertAtValues(handler, view, expectedValues, $"a few frames {when}");
+	}
+
+	static void AssertAtValues(IPlatformViewHandler handler, VisualElement view, IReadOnlyList<(BindableProperty Property, double Value)> expectedValues, string when)
+	{
+		foreach (var (property, expectedValue) in expectedValues)
+		{
+			var value = (double)view.GetValue(property);
+			Assert.True(Math.Abs(value - expectedValue) <= valueTolerance, $"The view's {property.PropertyName} is {value} {when}, expected {expectedValue}.");
+		}
+
+		var mismatch = FindNativeMismatch(handler, view);
+		Assert.True(mismatch is null, $"{mismatch} ({when})");
 	}
 
 	// Swing moves the anchor while it creates its keyframes, so a PropertyChanged handler can start a seeker that Swing's own tween then aborts

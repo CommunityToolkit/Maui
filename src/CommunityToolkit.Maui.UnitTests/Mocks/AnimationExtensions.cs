@@ -17,6 +17,10 @@ static class AnimationExtensions
 	public static long GetElapsedAnimationMilliseconds(this IView view) =>
 		view.Handler is MockAnimationHandler handler ? handler.ElapsedAnimationMilliseconds : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
+	// Counts the tweens the ticker still advances, including one no animation owns any more
+	public static int GetTickingAnimationCount(this IView view) =>
+		view.Handler is MockAnimationHandler handler ? handler.TickingAnimationCount : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
+
 	// Reports the mock clock once per ticker frame, after every animation has been ticked, so a test sees values that held still as well as values that changed
 	public static IDisposable ObserveAnimationFrames(this IView view, Action<long> onFrame) =>
 		view.Handler is MockAnimationHandler handler ? handler.ObserveFrames(onFrame) : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
@@ -42,6 +46,8 @@ static class AnimationExtensions
 		public long ElapsedAnimationMilliseconds => animationManager.ElapsedMilliseconds;
 
 		public IDisposable ObserveFrames(Action<long> onFrame) => animationManager.ObserveFrames(onFrame);
+
+		public int TickingAnimationCount => animationManager.TickingAnimationCount;
 
 		public void DisableSystemAnimations() => ((AsyncTicker)animationManager.Ticker).DisableSystemAnimations();
 
@@ -170,6 +176,8 @@ static class AnimationExtensions
 			readonly List<Action<long>> frameObservers = [];
 
 			public long ElapsedMilliseconds { get; private set; }
+
+			public int TickingAnimationCount => animations.Count(animation => !animation.HasFinished);
 
 			public IDisposable ObserveFrames(Action<long> onFrame)
 			{

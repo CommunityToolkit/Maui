@@ -82,15 +82,27 @@ static class KeyframeAnimationExtensions
 
 		var target = new KeyframeTarget(view, animatedProperties, originalValues);
 		var run = new RunningRun(animatedProperties);
+		var propertiesTakenOverByTheApp = new List<BindableProperty>();
 
 		try
 		{
-			var keyframes = createKeyframes(target);
+			var playKeyframes = createKeyframes(target).GetCallback();
 
 			// Recorded only now: a write in createKeyframes, such as Swing's anchor, runs PropertyChanged handlers that can start a run, which the Commit below aborts
 			runningRuns.AddOrUpdate(view, run);
 
-			keyframes.Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
+			// MAUI plays the first step inside Commit, where an abort would leave Commit to start a tween that no run owns; that step writes no keyframe anyway
+			var isCommitting = true;
+			new Animation(progress =>
+			{
+				if (!isCommitting && FindPropertiesTakenOverByTheApp(view, animatedProperties, propertiesTakenOverByTheApp))
+				{
+					view.AbortAnimation(AnimationHandle);
+					return;
+				}
+
+				playKeyframes(progress);
+			}).Commit(view, AnimationHandle, 16, length, easing, (_, isAborted) =>
 			{
 				var runThatTookOver = GetRunThatTookOver(view, run);
 				EndRun(view, run);
@@ -98,7 +110,7 @@ static class KeyframeAnimationExtensions
 				// Runs inside MAUI's ticker or inside the code that aborted the run, neither of which may see a throwing PropertyChanged handler: the run's Task faults instead
 				try
 				{
-					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver);
+					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver, propertiesTakenOverByTheApp);
 					animationEnded.TrySetResult(isAborted);
 				}
 				catch (Exception exception)
@@ -106,6 +118,7 @@ static class KeyframeAnimationExtensions
 					animationEnded.TrySetException(exception);
 				}
 			});
+			isCommitting = false;
 		}
 		catch
 		{
@@ -115,11 +128,26 @@ static class KeyframeAnimationExtensions
 			{
 				var runThatTookOver = GetRunThatTookOver(view, run);
 				EndRun(view, run);
-				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver);
+				ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver, propertiesTakenOverByTheApp);
 			}
 
 			throw;
 		}
+	}
+
+	// The app's own ScaleToAsync or RotateToAsync that started during the run ticks after it in every frame, so it hides the run, which would then undo it when it restores the view.
+	// The handle, not the value, tells it apart from a direct write, which the run keeps overwriting as before
+	static bool FindPropertiesTakenOverByTheApp(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, List<BindableProperty> propertiesTakenOverByTheApp)
+	{
+		foreach (var property in animatedProperties)
+		{
+			if (GetToAnimationHandle(property) is string handle && view.AnimationIsRunning(handle))
+			{
+				propertiesTakenOverByTheApp.Add(property);
+			}
+		}
+
+		return propertiesTakenOverByTheApp.Count > 0;
 	}
 
 	// App code that runs while the next run starts, such as the continuation of an aborted To animation, can start a run that the next run's Commit aborts after it recorded itself
@@ -170,7 +198,7 @@ static class KeyframeAnimationExtensions
 		return null;
 	}
 
-	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target, RunningRun? runThatTookOver)
+	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target, RunningRun? runThatTookOver, IReadOnlyList<BindableProperty> propertiesTakenOverByTheApp)
 	{
 		// A composer still listening would put its offset back on top of the next write by another writer
 		target.StopComposingTranslations();
@@ -184,6 +212,14 @@ static class KeyframeAnimationExtensions
 			if (runThatTookOver?.AnimatedProperties.Contains(animatedProperties[i]) is true)
 			{
 				trackers[i].End(animationIds[i], (double)view.GetValue(animatedProperties[i]));
+				continue;
+			}
+
+			// The app's animation owns the value now, so the next animation of the property starts from where the app leaves it, even from the value this run reached
+			if (propertiesTakenOverByTheApp.Contains(animatedProperties[i]))
+			{
+				trackers[i].End(animationIds[i], (double)view.GetValue(animatedProperties[i]));
+				trackers[i].HandedOverToApp(animationIds[i]);
 				continue;
 			}
 
