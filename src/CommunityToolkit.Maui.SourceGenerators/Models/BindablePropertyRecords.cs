@@ -3,7 +3,14 @@ using Microsoft.CodeAnalysis;
 
 namespace CommunityToolkit.Maui.SourceGenerators.Models;
 
-public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "");
+public readonly record struct ClassInformation(string ClassName, string DeclaredAccessibility, string ContainingNamespace, string ContainingTypes = "", string GenericTypeParameters = "", EquatableArray<string> ContainingTypeKeywords = default, string TypeIdentity = "")
+{
+	public IEnumerable<string> GetContainingTypeKeywords(int containingTypeCount) => ContainingTypeKeywords.AsImmutableArray().IsDefaultOrEmpty
+		? Enumerable.Repeat("class", containingTypeCount)
+		: ContainingTypeKeywords;
+
+	public bool IsInGenericType => GenericTypeParameters.Length > 0 || ContainingTypes.Contains('<');
+}
 public record BindablePropertyModel(string PropertyName, ITypeSymbol ReturnType, ITypeSymbol DeclaringType, string DefaultBindingMode, string ValidateValueMethodName, string PropertyChangedMethodName, string PropertyChangingMethodName, string CoerceValueMethodName, string DefaultValueCreatorMethodName, string NewKeywordText, bool IsReadOnlyBindableProperty, string? SetterAccessibility, bool HasInitializer, string? PropertyAccessibility, string? ResolvedInitializerExpression)
 {
 	// When both a DefaultValueCreatorMethodName and an initializer are provided, we implement the DefaultValueCreator method and the ignore the partial Property initializer

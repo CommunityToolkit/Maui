@@ -98,7 +98,7 @@ public partial class ExpanderTests
 			expander.IsExpanded = false;
 			Assert.Equal(UIAccessibilityExpandedStatus.Collapsed, GetAccessibilityExpandedStatus(headerElement));
 
-			Assert.Equal<bool>([true, false, true, false], expandedChanges);
+			AotSafeAssert.SequenceEqual<bool>([true, false, true, false], expandedChanges);
 		});
 	}
 
@@ -120,12 +120,12 @@ public partial class ExpanderTests
 
 			var contentView = GetUIView(expander.Content);
 			NativeHandle[] expectedOrder = direction is ExpandDirection.Down ? [headerElement.Handle, contentView.Handle] : [contentView.Handle, headerElement.Handle];
-			Assert.Equal(expectedOrder, (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
+			AotSafeAssert.SequenceEqual(expectedOrder, (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
 
 			expander.IsExpanded = false;
 			await AssertionExtensions.AssertEventually(() => !IsPlatformViewVisible(expander.Content), message: "Collapsing did not hide the content.");
 
-			Assert.Equal<NativeHandle>([headerElement.Handle], (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
+			AotSafeAssert.SequenceEqual<NativeHandle>([headerElement.Handle], (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
 		});
 	}
 

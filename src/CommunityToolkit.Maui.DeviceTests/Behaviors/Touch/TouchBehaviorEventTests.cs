@@ -47,11 +47,11 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 			behavior.HandleHover(HoverStatus.Exited);
 			await WaitUntilAsync(() => hoverState.Count == 2, "HoverStateChanged did not fire for the exit.");
 
-			Assert.Equal([HoverStatus.Entered, HoverStatus.Exited], hoverStatus.Items.Select(static args => args.Status));
-			Assert.Equal([HoverState.Hovered, HoverState.Default], hoverState.Items.Select(static args => args.State));
-			Assert.Equal([TouchStatus.Started, TouchStatus.Completed], touchStatus.Items.Select(static args => args.Status));
-			Assert.Equal([TouchState.Pressed, TouchState.Default], touchState.Items.Select(static args => args.State));
-			Assert.Equal([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interaction.Items.Select(static args => args.TouchInteractionStatus));
+			AotSafeAssert.SequenceEqual([HoverStatus.Entered, HoverStatus.Exited], hoverStatus.Items.Select(static args => args.Status));
+			AotSafeAssert.SequenceEqual([HoverState.Hovered, HoverState.Default], hoverState.Items.Select(static args => args.State));
+			AotSafeAssert.SequenceEqual([TouchStatus.Started, TouchStatus.Completed], touchStatus.Items.Select(static args => args.Status));
+			AotSafeAssert.SequenceEqual([TouchState.Pressed, TouchState.Default], touchState.Items.Select(static args => args.State));
+			AotSafeAssert.SequenceEqual([TouchInteractionStatus.Started, TouchInteractionStatus.Completed], interaction.Items.Select(static args => args.TouchInteractionStatus));
 			Assert.Equal("tap", Assert.Single(tapCompleted.Items).TouchCommandParameter);
 			Assert.Equal("long", Assert.Single(longPressCompleted.Items).LongPressCommandParameter);
 
@@ -104,7 +104,7 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 			SimulateRelease(behavior);
 			await WaitUntilAsync(() => stateLog.Count == 2, "CurrentTouchStateChanged did not fire twice.");
 
-			Assert.Equal([TouchState.Pressed, TouchState.Default], stateLog.Items.Select(static args => args.State));
+			AotSafeAssert.SequenceEqual([TouchState.Pressed, TouchState.Default], stateLog.Items.Select(static args => args.State));
 		});
 	}
 
@@ -127,7 +127,7 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 			behavior.HandleHover(HoverStatus.Exited);
 			await WaitUntilAsync(() => stateLog.Count == 2, "HoverStateChanged did not fire twice.");
 
-			Assert.Equal([HoverState.Hovered, HoverState.Default], stateLog.Items.Select(static args => args.State));
+			AotSafeAssert.SequenceEqual([HoverState.Hovered, HoverState.Default], stateLog.Items.Select(static args => args.State));
 		});
 	}
 
@@ -376,7 +376,7 @@ public class TouchBehaviorEventTests : TouchBehaviorTestBase
 		await RunAttachedAsync(CreateHost(), behavior, _ =>
 		{
 			SetOpacity(behavior, state, value);
-			Assert.Equal(value, GetOpacity(behavior, state));
+			AotSafeAssert.Equal(value, GetOpacity(behavior, state));
 		});
 	}
 

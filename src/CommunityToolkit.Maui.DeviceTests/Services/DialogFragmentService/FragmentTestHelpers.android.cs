@@ -1,5 +1,6 @@
 #pragma warning disable CA1416, CA1422, CS0618, CS0672 // the spy window overrides every abstract Window member, obsolete ones included
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Android.Content;
 using Android.OS;
@@ -259,6 +260,9 @@ public sealed class CurrentActivityScope : IDisposable
 
 	public CurrentActivityScope(Android.App.Activity? replacement) => Set(replacement);
 
+	// NativeAOT keeps no reflection metadata for MAUI's internal types unless told so.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicFields, "Microsoft.Maui.ApplicationModel.ActivityStateManagerImplementation", "Microsoft.Maui.Essentials")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicProperties, "Microsoft.Maui.ApplicationModel.ActivityLifecycleContextListener", "Microsoft.Maui.Essentials")]
 	public static void Set(Android.App.Activity? activity)
 	{
 		var manager = ActivityStateManager.Default;
@@ -289,6 +293,7 @@ public sealed class ActivityStateListenerScope : IDisposable
 	readonly FieldInfo listenerField;
 	readonly object? previous;
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicFields, "Microsoft.Maui.ApplicationModel.ActivityStateManagerImplementation", "Microsoft.Maui.Essentials")]
 	public ActivityStateListenerScope()
 	{
 		listenerField = manager.GetType().GetField("lifecycleListener", BindingFlags.Instance | BindingFlags.NonPublic)

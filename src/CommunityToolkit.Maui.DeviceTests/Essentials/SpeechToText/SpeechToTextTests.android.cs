@@ -151,11 +151,9 @@ public sealed partial class SpeechToTextTests
 	{
 		var recognizer = SpeechRecognizer.CreateSpeechRecognizer(AppContext) ?? throw new InvalidOperationException("The recognizer could not be created.");
 		var scope = new ListenerScope(speech);
-		var listenerType = scope.Listener.GetType();
-		var phase = listenerType.GetProperty("Phase") ?? throw new InvalidOperationException("The listener has no Phase.");
-		listenerType.GetProperty("StartIntent")!.SetValue(scope.Listener, CreateSpeechIntent(speech, DefaultOptions));
-		listenerType.GetProperty("HadPreviousRecognizer")!.SetValue(scope.Listener, hadPreviousRecognizer);
-		phase.SetValue(scope.Listener, Enum.Parse(phase.PropertyType, "Listening"));
+		SetListenerProperty(speech, scope.Listener, "StartIntent", CreateSpeechIntent(speech, DefaultOptions));
+		SetListenerProperty(speech, scope.Listener, "HadPreviousRecognizer", hadPreviousRecognizer);
+		SetListenerPhase(speech, scope.Listener, "Listening");
 		recognizer.SetRecognitionListener(scope.Listener);
 		SpeechInternals.SetField(speech, "speechRecognizer", recognizer);
 		SpeechInternals.SetField(speech, "listener", scope.Listener);
@@ -178,7 +176,7 @@ public sealed partial class SpeechToTextTests
 		var (speech, events, entriesRightAfterTheBusyAnswer) = await StartRealSessionAsync((session, recorded) => InvokeOnMainThreadAsync(() =>
 		{
 			var listener = AttachListeningSession(session, hadPreviousRecognizer: true);
-			listener.GetType().GetProperty("RestartsAfterRecognizerBusy")!.SetValue(listener, earlierRestarts);
+			SetListenerProperty(session, listener, "RestartsAfterRecognizerBusy", earlierRestarts);
 			listener.OnError(SpeechRecognizerError.RecognizerBusy);
 			return recorded.Entries;
 		}));
@@ -210,7 +208,7 @@ public sealed partial class SpeechToTextTests
 			return entriesAfterEachAnswer;
 		});
 
-		Assert.Equal([0, 0, 0, 1], entriesAfterTheRestartedAnswers);
+		AotSafeAssert.SequenceEqual([0, 0, 0, 1], entriesAfterTheRestartedAnswers);
 		await Task.Delay(500);
 		events.AssertEntries($"Completed:Failed:Failure in speech engine - {SpeechRecognizerError.RecognizerBusy}");
 

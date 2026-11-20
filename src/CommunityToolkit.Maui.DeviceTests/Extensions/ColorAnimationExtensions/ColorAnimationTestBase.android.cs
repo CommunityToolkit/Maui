@@ -2,13 +2,13 @@ using Android.Animation;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-public partial class ColorAnimationExtensionsTests
+public abstract partial class ColorAnimationTestBase
 {
 	float? animatorScaleToRestore;
 
 	// Below API 26 MAUI's ticker only checks battery saver, so with the animator scale at 0 its ValueAnimator stops after one frame and
 	// the animation never ends. The scale is switched on for this process only; the global setting is never touched.
-	async Task EnsureAnimationsCanEndAsync()
+	protected async Task EnsureAnimationsCanEndAsync()
 	{
 		if (OperatingSystem.IsAndroidVersionAtLeast(26))
 		{

@@ -7,16 +7,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // such exceptions, so only a device shows the crash.
 [Category(TestCategory.ColorAnimationExtensions)]
 [Collection(TestCollections.DisableParallelization)]
-public partial class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
+public class ColorAnimationExtensionsTests : ColorAnimationTestBase
 {
-	// The animation name of the generated TextColorTo: nameof(TextColorTo).
-	const string textColorToAnimationName = "TextColorTo";
-
-	const uint animationLength = 100;
-
-	// A stalled animation fails the test instead of hanging the whole run until the runner's timeout.
-	static readonly TimeSpan animationTimeout = TimeSpan.FromSeconds(10);
-
 	[Fact]
 	public async Task BackgroundColorToThrowsForAZeroRateAndRunsAtTheSmallestRate()
 	{
@@ -59,17 +51,5 @@ public partial class ColorAnimationExtensionsTests : CommunityToolkitHandlerTest
 			Assert.True(await label.TextColorTo(Colors.Red, rate: 1, length: animationLength).WaitAsync(animationTimeout));
 			Assert.Equal(Colors.Red, label.TextColor);
 		});
-	}
-
-	protected override async ValueTask DisposeAsyncCore()
-	{
-		try
-		{
-			await base.DisposeAsyncCore();
-		}
-		finally
-		{
-			await PlatformDisposeAsync();
-		}
 	}
 }

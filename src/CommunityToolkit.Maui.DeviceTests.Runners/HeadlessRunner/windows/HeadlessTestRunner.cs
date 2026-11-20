@@ -6,6 +6,7 @@
 // Toolkit change: UI.Xaml.Application is fully qualified (the enclosing Microsoft namespace no longer resolves it).
 // Toolkit change: the run's log goes to TestRunLog (<results>.log next to the results file) as well, with the test that starts and every unhandled exception.
 // Toolkit change: OnTestsCompleted writes the coverage of the instrumented toolkit assemblies (CoverageRecorder), in coverage runs only.
+// Toolkit change: the assembly path falls back to the base directory when Assembly.Location is empty (NativeAOT).
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,13 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 		protected override IEnumerable<TestAssemblyInfo> GetTestAssemblies() =>
 			_options.Assemblies
 				.Distinct()
-				.Select(assembly => new TestAssemblyInfo(assembly, assembly.Location));
+				.Select(assembly => new TestAssemblyInfo(assembly, GetAssemblyPath(assembly)));
+
+		// NativeAOT has no assembly files, so Assembly.Location is empty; xunit only needs a non-empty path whose file name is the assembly name.
+		static string GetAssemblyPath(System.Reflection.Assembly assembly) =>
+			string.IsNullOrEmpty(assembly.Location)
+				? Path.Combine(AppContext.BaseDirectory, assembly.GetName().Name + ".dll")
+				: assembly.Location;
 
 		protected override void TerminateWithSuccess()
 		{

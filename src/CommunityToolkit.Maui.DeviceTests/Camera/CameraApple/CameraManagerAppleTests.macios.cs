@@ -854,7 +854,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				Assert.Same(destination, result);
 				Assert.Equal(0, result.Position);
 				byte[] expectedBytes = [1, 2, 3, .. recordedBytes];
-				Assert.Equal(expectedBytes, destination.ToArray());
+				AotSafeAssert.SequenceEqual(expectedBytes, destination.ToArray());
 				Assert.False(File.Exists(recordedFile));
 				Assert.Null(scope.Access.VideoRecordingFileName);
 				Assert.Null(scope.Access.VideoOutput);
@@ -891,7 +891,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 				var result = await scope.Manager.StopVideoRecording(CancellationToken.None);
 
 				Assert.Same(destination, result);
-				Assert.Equal(recordedBytes, destination.WrittenBytes);
+				AotSafeAssert.SequenceEqual(recordedBytes, destination.WrittenBytes);
 				Assert.False(File.Exists(recordedFile));
 			});
 		}
@@ -981,7 +981,7 @@ public class CameraManagerAppleTests : CameraHandlerTestBase
 
 				Assert.Same(destination, result);
 				byte[] expectedBytes = [4, 5, 6];
-				Assert.Equal(expectedBytes, destination.ToArray());
+				AotSafeAssert.SequenceEqual(expectedBytes, destination.ToArray());
 			});
 		}
 		finally

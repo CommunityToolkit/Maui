@@ -242,6 +242,20 @@ pwsh eng/coverage-report.ps1 -Report artifacts/coverage,artifacts/device-tests/i
 # artifacts/coverage-report/summary.md and artifacts/coverage-report/report/index.html
 ```
 
+## Trimmed and NativeAOT runs
+
+`/p:CtmDeviceTestsTrimming=full` builds the app fully trimmed, and `/p:CtmDeviceTestsTrimming=nativeaot` compiles it with NativeAOT (Android, iOS and Mac Catalyst). Pass it with `-BuildArgs`, in `Release`:
+
+```bash
+pwsh eng/devices/run.ps1 -Platform ios -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=nativeaot'
+pwsh eng/devices/run.ps1 -Platform android -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=full'
+```
+
+* Only the app changes (`src/CommunityToolkit.Maui.DeviceTests/Directory.Build.props`): it roots xunit, the XHarness runner and the test assemblies, and a Windows build keeps built-in COM on for offline speech-to-text. The app stays where an untrimmed build puts it, so `-Target testOnly` needs no `-BuildArgs`.
+* The build fails when the SDK would not trim or compile with NativeAOT, when `DEVICE_TEST_COVERAGE` is `true` (coverlet rewrites the toolkit assemblies; do not pass `-Coverage` either), and for `nativeaot` on Windows ([dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053)).
+* Delete the app's `bin` and `obj` folders when you switch modes: the trimmer's incremental check ignores `TrimMode`.
+* CI: the `Trimmed Device Tests` check (the `Build` workflow calls `device-tests.yml` with `trimming: full-and-nativeaot`) runs the newest Android API level in `device-tests.yml` (`full` and `nativeaot`), the iOS simulator (`nativeaot`) and Windows unpackaged (`full`) on every pull request and push to `main`. From the Actions tab, start the `Device Tests` workflow with that input. After each build, `.github/scripts/check-trimmed-device-test-app.sh` fails the job unless the build used the switch and the trimmer or ILC processed the app.
+
 ## Windows details
 
 * `unpackaged` publishes a self-contained app with `-p:WindowsPackageType=None -p:_CtmDeviceTestUnpackaged=true`; the app project bundles the Windows App SDK in that case (`WindowsAppSDKSelfContained` must not be passed on the command line, it would reach every library) and builds into `bin\unpackaged` and `obj\unpackaged`. In the folders of a packaged build, an unpackaged build keeps the packaged `resources.pri`, which lacks the Windows App SDK resources that the unpackaged app needs, and the app crashes at startup (0xC000027B).
@@ -263,6 +277,7 @@ The device test jobs, in `.github/workflows/device-tests.yml`, run the app on th
 * iOS simulator: 27.2 (`xcode-27`), 26.5 (`macos-26`), 18.6, 17.5, 16.4 and 15.5 (`macos-15`; the runtimes before 18 are downloaded with `xcodes`).
 * Mac Catalyst (`xcode-27`).
 * Windows packaged and unpackaged (`windows-2025`).
+* With `trimming: full-and-nativeaot` (the `Trimmed Device Tests` check), only the trimmed legs run; see [Trimmed and NativeAOT runs](#trimmed-and-nativeaot-runs).
 
 Every job that runs tests uploads `artifacts/device-tests` and `artifacts/logs`. The `Build` workflow (`dotnet-build.yml`) runs the device test jobs as its `Device Tests` job (a reusable workflow) for pushes to `main` and pull requests, not for tags, and they load the .NET and Xcode versions from `.github/workflows/shared.env`, as the `Build` jobs do. The `Device Tests / Device Tests` job fails when any of the others fails; make it the required status check. To run a subset, start the `Device Tests` workflow from the Actions tab (`workflow_dispatch`) and choose the input `test-filter`, for example `Category=MediaElementAndroid`; a platform with no test of the category fails with 94, and so does the API 25 leg for `MediaElementAndroid`, whose tests skip below API 26.
 
@@ -276,6 +291,7 @@ Every job builds and tests with [`run.ps1`](#one-command-runps1), the command th
 | iOS 26.5, 18.6, 17.5, 16.4 and 15.5 simulators | `ios`, and `-Runtime <version>` in the test step | `ios-<version>`, named with `-ResultsFolder` |
 | Mac Catalyst (coverage) | `maccatalyst` | `maccatalyst` |
 | Windows (coverage) | `windows-packaged` and `windows-unpackaged`, run by Windows PowerShell 5.1 | `windows-packaged` and `windows-unpackaged` |
+| Trimmed legs | `android`, `ios` and `windows-unpackaged`, built with `-BuildArgs '/p:CtmDeviceTestsTrimming=<mode>'` | `trimmed-android-api<level>-<mode>`, `ios-nativeaot`, `windows-unpackaged-full` |
 
 The platform script runs in the process of `run.ps1`, so a step gets the script's exit code (such as 94 for an app that produced no results, which fails the step), its `::error` and `::warning` annotations, and the table that it appends to the job summary (`$GITHUB_STEP_SUMMARY`). A Windows step ends with exit code 1 for every failure, because the runner starts a `shell: powershell` step as `powershell -command ". '<script>'"`, which turns a non-zero exit code into 1; the code itself is in the step's annotation and in the last line that `run.ps1` prints (`Exit code: 94 (TEST_RESULTS_MISSING)`). The script reads the `env` of the job (`DEVICE_TEST_COVERAGE`, `DEVICE_TEST_SKIP_CAPABILITIES`, `DEVICE_TEST_REQUIRE_CAPABILITIES` and `TEST_FILTER`), and the log gains the plan that `run.ps1` prints first and its summary last. To replay a job on your machine, set its `env` and run its lines, for example Mac Catalyst:
 

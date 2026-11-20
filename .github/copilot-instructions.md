@@ -26,6 +26,13 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * The device test app builds with the pinned `MauiPackageVersion`, so the device tests run on the .NET MAUI version that the packages declare.
 * The Build workflow runs the unit tests on the pinned `MauiPackageVersion` and again on the latest .NET MAUI release (`-p:MauiPackageVersion="*"`), because servicing releases change behavior (dotnet/maui#38063). A failure in either run stops the packages.
 
+### Newest OS versions
+* Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: check the Android API level, iOS runtime, Xcode and Windows runner of the device test workflows against the newest GA releases and recommend a bump; the list is in [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
+
+### Trimming and NativeAOT
+* The four packages must stay fully trim-safe and NativeAOT-safe: every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error. Never add reflection on unannotated types, string-path bindings, or `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]` on a public API. A trim or AOT (`IL`) warning suppression needs maintainer approval and proof; an `eng/trim-audit/allow.tsv` line needs maintainer approval and a reason that names the issue or upstream blocker.
+* The rules, the local checks and the platform support table are in [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md). Read it before changing package code, MSBuild files or source generators, and flag violations when reviewing.
+
 ### C# File Naming
 * Platform-suffix naming is required for files in projects that produce NuGet packages.
 * Determine package-producing projects by checking for NuGet metadata in the `.csproj` (for example `PackageId`) and by following the pack targets in `.github/workflows/dotnet-build.yml`.
