@@ -212,6 +212,30 @@ var duration = playerItem.Duration;
 * Follow naming guidelines for tense... `SensorSpeed` not `SensorSpeeds`
 * Assign values (0,1,2,3) for all enums
 
+### Naming Conventions
+
+Names tell the story of the code, so it needs no comment that says *what* it does. Apply these rules to code you add or change. Don't rename code you aren't otherwise changing.
+
+* **Methods, `Action`s and `Func`s are verbs** that describe both the action they do and the result they return.
+  * `GetOrCreate(view, property)`, not `For(view, property)`
+  * `StartAnimationAndGetOriginalValue(currentValue)`, not `Start(currentValue)`
+* **Past tense is only for events.** A method that records that something happened still starts with a verb.
+  * `RecordHandOverToApp(animationId)`, not `HandedOverToApp(animationId)`
+* **A method that returns a `bool` to say whether it succeeded follows the [Try-Parse pattern](https://learn.microsoft.com/dotnet/standard/design-guidelines/exceptions-and-performance#try-parse-pattern).**
+  * Start its name with `Try` and return `true` on success.
+  * Return any other result through an `out` parameter. The parameter is `null` when the method returns `false`, and `[NotNullWhen(true)]` tells the compiler it isn't `null` when the method returns `true`.
+  * A method that only answers a question, such as `IsLatest(animationId)`, is not a `Try` method.
+
+  ```csharp
+  public bool TryGetTracker(VisualElement view, [NotNullWhen(true)] out AnimatedPropertyTracker? tracker)
+  ```
+
+* **Properties, fields and local variables are nouns.** A `bool` is a question.
+  * `public bool DidAnimationComplete { get; private set; }`
+  * `var wasTranslationInterrupted = ...`, not `var translationWasInterrupted = ...`
+* **Events are past-tense verbs** that describe what happened.
+  * `MediaFailed`, `MediaEnded`
+
 ### Property Names
 
 * Include units only if one of the platforms includes it in their implementation. For instance HeadingMagneticNorth implies degrees on all platforms, but PressureInHectopascals is needed since platforms don't provide a consistent API for this.
