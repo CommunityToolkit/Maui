@@ -94,7 +94,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 	}
 
 	// Acts in the same UI-thread turn in which it sees the run still in progress, so no frame can end the run in between, as a button's Clicked handler would.
-	// isMidRun gets the values of property that the run wrote in this attempt, in order; it must be false at rest and at the end of the run, so that true proves the run still goes on
+	// isMidRun gets the values of property that the run wrote in this attempt, in order; it must be false at rest and at the end of the run, so that true, while the run's Task is not complete, proves the run still goes on
 	protected static async Task<Task> StartAndActMidRunAsync(VisualElement view, BindableProperty property, Func<IReadOnlyList<double>, bool> isMidRun,
 		Func<Task> startRun, Action actMidRun, Func<Task, Task>? waitForAMissedRunToEnd = null)
 	{
@@ -116,16 +116,23 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 				{
 					await Task.WhenAny(midRunValueWritten.Task, run).WaitAsync(waitTimeout);
 
-					if (valuesWritten.Count > 0 && isMidRun(valuesWritten))
+					var isLastValueMidRun = valuesWritten.Count > 0 && isMidRun(valuesWritten);
+
+					if (run.IsCompleted)
+					{
+						if (isLastValueMidRun)
+						{
+							throw new XunitException($"The run ended {run.Status} and left the view in the middle of the run: it wrote {property.PropertyName} {string.Join(", ", valuesWritten.Select(FormatNativeValue))}.");
+						}
+
+						break;
+					}
+
+					if (isLastValueMidRun)
 					{
 						actMidRun();
 						runActedOn = run;
 						return true;
-					}
-
-					if (run.IsCompleted)
-					{
-						break;
 					}
 
 					// The run went on past the middle, to a peak or back near rest, before the test resumed
