@@ -4,6 +4,30 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
+// The status bar of an iPhone in landscape is hidden, so its frame is empty there.
+readonly record struct OrientationSnapshot(UIInterfaceOrientation SceneOrientation, CGRect WindowBounds, CGRect StatusBarFrame)
+{
+	public bool IsPortraitWithStatusBar => SceneOrientation is UIInterfaceOrientation.Portrait && WindowBounds.Height > WindowBounds.Width && !StatusBarFrame.IsEmpty;
+
+	public bool Matches(UIInterfaceOrientationMask requested)
+	{
+		var sceneIsLandscape = IosStatusBarViews.IsLandscape(SceneOrientation);
+		var windowIsLandscape = WindowBounds.Width > WindowBounds.Height;
+		var requestedMatches = requested switch
+		{
+			UIInterfaceOrientationMask.Portrait => SceneOrientation is UIInterfaceOrientation.Portrait && !StatusBarFrame.IsEmpty,
+			UIInterfaceOrientationMask.LandscapeLeft => SceneOrientation is UIInterfaceOrientation.LandscapeLeft,
+			UIInterfaceOrientationMask.LandscapeRight => SceneOrientation is UIInterfaceOrientation.LandscapeRight,
+			UIInterfaceOrientationMask.Landscape => sceneIsLandscape,
+			_ => throw new ArgumentOutOfRangeException(nameof(requested), requested, "The test rotates to portrait or landscape.")
+		};
+
+		return requestedMatches && windowIsLandscape == sceneIsLandscape;
+	}
+
+	public override string ToString() => FormattableString.Invariant($"scene orientation {SceneOrientation}, window bounds {WindowBounds}, status bar frame {StatusBarFrame}");
+}
+
 // Call it on the UI thread.
 static class IosStatusBarViews
 {
@@ -39,6 +63,16 @@ static class IosStatusBarViews
 		window.WindowScene = null;
 		window.Dispose();
 	}
+
+	// EffectiveGeometry (iOS 16+) replaces InterfaceOrientation, which iOS 26 obsoletes.
+	public static UIInterfaceOrientation SceneOrientation(UIWindowScene scene) =>
+		OperatingSystem.IsIOSVersionAtLeast(16) ? scene.EffectiveGeometry.InterfaceOrientation : scene.InterfaceOrientation;
+
+	public static bool IsLandscape(UIInterfaceOrientation orientation) => orientation is UIInterfaceOrientation.LandscapeLeft or UIInterfaceOrientation.LandscapeRight;
+
+	// What the scene, the window and the status bar report right now: a rotation is over when all three agree and stop changing.
+	public static OrientationSnapshot Snapshot(UIWindowScene scene, UIWindow window) =>
+		new(SceneOrientation(scene), window.Bounds, scene.StatusBarManager?.StatusBarFrame ?? CGRect.Empty);
 
 	public static void Reset()
 	{
