@@ -49,6 +49,11 @@ public static class FilesApplePicker
 		return onTop!;
 	}
 
+	// The library keeps the picker until it has been off screen for a while (DocumentPickerRelease). Waiting for that release before
+	// WaitForGCAsync keeps the parked collection passes, which slow down every delayed check, out of the GC budget.
+	public static Task WaitUntilReleasedAsync(WeakReference picker) =>
+		AssertionExtensions.AssertEventuallyAsync(() => Task.FromResult(picker.Target is not NSObject releasedPicker || releasedPicker.Handle == NativeHandle.Zero), timeout: 10000, message: "The picker was never released.");
+
 	public static Task<object> GetDelegateAsync(UIDocumentPickerViewController picker) =>
 		MainThread.InvokeOnMainThreadAsync(() => (object)picker.Delegate);
 
