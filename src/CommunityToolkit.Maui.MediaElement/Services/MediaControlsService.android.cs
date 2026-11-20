@@ -115,7 +115,18 @@ sealed partial class MediaControlsService : Service
 		notificationBuilder.SetLargeIcon(artworkCache.GetOrDecode(mediaElement.MediaMetadata?.ArtworkData));
 		notificationBuilder.SetStyle(style);
 		notificationSession = session;
-		NotificationManagerCompat.From(Platform.AppContext)?.Notify(mediaNotificationId, notificationBuilder.Build());
+		var notification = notificationBuilder.Build() ?? throw new InvalidOperationException("The notification cannot be null");
+
+		// StartForeground's notification reaches the NotificationManager later from a system queue, so a Notify can be overtaken by it.
+		// Below Android 13 the PlayerNotificationManager posts under the same id with Notify.
+		if (OperatingSystem.IsAndroidVersionAtLeast(33) && ForegroundServiceType is not ForegroundService.TypeNone)
+		{
+			StartForeground(mediaNotificationId, notification, ForegroundService.TypeMediaPlayback);
+		}
+		else
+		{
+			NotificationManagerCompat.From(Platform.AppContext)?.Notify(mediaNotificationId, notification);
+		}
 	}
 
 	[MemberNotNull(nameof(playerNotificationManager))]

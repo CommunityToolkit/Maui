@@ -232,6 +232,23 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	protected static Task WaitUntilAsync(Func<bool> condition, string message, int timeout = waitTimeout) =>
 		AssertEventually(condition, timeout, 25, message);
 
+	protected static async Task WaitUntilAsync(Func<bool> condition, Func<string> failureMessage, int timeout = waitTimeout)
+	{
+		if (!await Wait(condition, timeout, 25))
+		{
+			Assert.Fail(failureMessage());
+		}
+	}
+
+	protected static string DescribeServiceNotification()
+	{
+		var statusBarNotification = GetActiveNotifications().FirstOrDefault(notification => notification.Id == serviceNotificationId);
+		var notification = statusBarNotification?.Notification;
+		return FormattableString.Invariant($"title: '{GetNotificationExtra(notification, Notification.ExtraTitle)}', text: '{GetNotificationExtra(notification, Notification.ExtraText)}', IsMediaStyle: {IsMediaStyle(notification)}, Flags: {notification?.Flags}, PostTime: {statusBarNotification?.PostTime}");
+	}
+
+	static string? GetNotificationExtra(Notification? notification, string key) => notification?.Extras?.GetCharSequence(key)?.ToString();
+
 	protected static Task WaitForStateAsync(MediaElement mediaElement, MediaElementState state, int timeout = waitTimeout) =>
 		WaitUntilAsync(() => mediaElement.CurrentState == state, $"The MediaElement never reached {state}.", timeout);
 
