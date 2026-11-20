@@ -539,9 +539,13 @@ function Get-HostProcessTable {
 }
 
 function Save-MediaDaemonSamples {
-    param([string]$Directory, $Owned)
+    param([string]$Directory, $Owned, [datetime]$Deadline)
 
     $sampleDeadline = [datetime]::UtcNow.AddSeconds($script:SimulatorSampleBudgetSeconds)
+    if ($Deadline -lt $sampleDeadline) {
+        $sampleDeadline = $Deadline
+    }
+
     foreach ($daemon in $script:SimulatorMediaDaemons) {
         $matching = @($Owned | Where-Object { $_.Line -cmatch "/$([regex]::Escape($daemon))(\s|$)" })
         if ($matching.Count -eq 0) {
@@ -551,8 +555,8 @@ function Save-MediaDaemonSamples {
 
         foreach ($entry in $matching) {
             $result = Save-SimulatorEvidenceCommand -Directory $Directory -FileName "sample-$daemon-$($entry.ProcessId).txt" -FilePath 'sample' -ArgumentList @("$($entry.ProcessId)", '3') -TimeoutSeconds 30 -Deadline $sampleDeadline
-            # sample also writes its own copy into the host's /tmp, which would litter local Macs.
-            if ($null -ne $result -and ([string]$result.Output) -match 'written to file (\S+)') {
+            # sample prints the path of its own copy in the host's /tmp on stderr, which would litter local Macs.
+            if ($null -ne $result -and (([string]$result.Output + "`n" + [string]$result.Error) -match 'written to file ((?:/private)?/tmp/\S+)')) {
                 Remove-Item -LiteralPath $Matches[1] -Force -ErrorAction SilentlyContinue
             }
         }
@@ -590,7 +594,7 @@ function Save-AppCrashReport {
                 }
 
                 Copy-Item -LiteralPath $report.FullName -Destination (Join-Path $Directory $report.Name) -Force
-                Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, 'app crash report: copied {0} after {1} s', $report.Name, [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)))
+                Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, 'app crash report: copied {0} of simulator {1} after {2} s', $report.Name, $Udid, [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)))
                 $copied++
             }
 
@@ -642,7 +646,7 @@ function Save-SimulatorEvidence {
             $header = "pid ppid lstart etime command (launchd_sim of this simulator and its descendants with start time and age)`n"
             [System.IO.File]::WriteAllText((Join-Path $directory 'processes.txt'), ($header + (($owned | ForEach-Object { $_.Line }) -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false)))
             Add-AndroidEvidenceLogLine -Directory $directory -Message "processes.txt: $($owned.Count) processes of this simulator"
-            Save-MediaDaemonSamples -Directory $directory -Owned $owned
+            Save-MediaDaemonSamples -Directory $directory -Owned $owned -Deadline $deadline
         }
 
         Save-AppCrashReport -Directory $directory -Udid $Udid -ExecutableName $ExecutableName -LaunchedAfter $LaunchedAfter -Deadline $crashReportDeadline
