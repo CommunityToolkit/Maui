@@ -282,7 +282,7 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   first focusable view, so without it such a test fails only on the API 25 and 27 legs.
 - `MediaElementSupport.SkipIfUnsupported()` (`MediaElement/`): first line of a MediaElement test outside the `MediaElementAndroid` category, since
   the app's Android minimum is 24 and MediaElement needs 26.
-- `WindowSceneRotation.Request(windowScene, mask, onRefused)` (iOS and Mac Catalyst): rotates a window scene on iOS 15 as on later versions.
+- `WindowSceneRotation.Request(windowScene, mask, onError)` (iOS and Mac Catalyst): rotates a window scene on iOS 15 as on later versions.
 - `AndroidHostContext.Restore(context)` (Android): puts the runner's activity back as `MauiProgramDefaults.DefaultContext` after a test
   replaced it. `TranslucentPauseActivity` (Camera tests, Android) pauses the runner's activity without stopping it, as the permission dialog does.
 - `[Repeat(n)]` with a `[Theory]` and an `int` parameter repeats a test n times while you hunt flakiness. Do not commit it.

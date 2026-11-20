@@ -1,15 +1,17 @@
+using Foundation;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
 static class WindowSceneRotation
 {
-	// Must run on the main thread. onRefused is called with UIKit's reason when iOS 16+ refuses the request.
-	public static void Request(UIWindowScene windowScene, UIInterfaceOrientationMask requestedMask, Action<string>? onRefused = null)
+	// Must run on the main thread. onError is called with UIKit's error when iOS 16+ reports one: its Domain tells a refusal of the app's
+	// scene (UISceneErrorDomain) from an error of the system's windowing service (BSActionErrorDomain), after which the scene may still rotate.
+	public static void Request(UIWindowScene windowScene, UIInterfaceOrientationMask requestedMask, Action<NSError>? onError = null)
 	{
 		if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
 		{
-			windowScene.RequestGeometryUpdate(new UIWindowSceneGeometryPreferencesIOS(requestedMask), error => onRefused?.Invoke(error.LocalizedDescription));
+			windowScene.RequestGeometryUpdate(new UIWindowSceneGeometryPreferencesIOS(requestedMask), error => onError?.Invoke(error));
 			return;
 		}
 

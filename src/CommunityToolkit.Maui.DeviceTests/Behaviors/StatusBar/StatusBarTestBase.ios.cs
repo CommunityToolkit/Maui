@@ -6,11 +6,21 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public abstract partial class StatusBarTestBase
 {
-	protected partial Task ResetNativeStateAsync() =>
-		InvokeOnMainThreadAsync(static () =>
+	// A rotation that an earlier test left unfinished hides the status bar (iPhone in landscape) for the tests that follow.
+	protected async partial Task ResetNativeStateAsync()
+	{
+		await InvokeOnMainThreadAsync(static () =>
 		{
 			IosStatusBarViews.Reset();
 		});
+
+		if (!await InvokeOnMainThreadAsync(static () => IosStatusBarViews.Snapshot(IosStatusBarViews.RunnerScene, IosStatusBarViews.RunnerWindow).IsPortraitWithStatusBar))
+		{
+			await RotateAsync(UIInterfaceOrientationMask.Portrait);
+			var snapshot = await InvokeOnMainThreadAsync(static () => IosStatusBarViews.Snapshot(IosStatusBarViews.RunnerScene, IosStatusBarViews.RunnerWindow));
+			Assert.True(snapshot.IsPortraitWithStatusBar, $"The runner is not in portrait with a status bar after the reset: {snapshot}.");
+		}
+	}
 
 	protected Task AssertStatusBarShowsAsync(Color color) => InvokeOnMainThreadAsync(() => AssertStatusBarShows(color));
 
@@ -46,17 +56,61 @@ public abstract partial class StatusBarTestBase
 		});
 
 	// The runner's Info.plist supports portrait and both landscape orientations on iPhone.
+	// Only a refusal of the app's own scene (UISceneErrorDomain) is final: an error of the system's windowing service (BSActionErrorDomain)
+	// can arrive while the scene still rotates, so the test waits for the scene and fails with the error only if it never gets there.
 	protected async Task RotateAsync(UIInterfaceOrientationMask orientation)
 	{
-		var isLandscape = orientation is UIInterfaceOrientationMask.Landscape or UIInterfaceOrientationMask.LandscapeLeft or UIInterfaceOrientationMask.LandscapeRight;
-		var refusal = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+		const int timeoutMilliseconds = 10000, pollMilliseconds = 50, settledMilliseconds = 400;
+		var sceneRefusal = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+		string? lastSystemError = null;
+
 		await InvokeOnMainThreadAsync(() =>
 		{
-			WindowSceneRotation.Request(IosStatusBarViews.RunnerScene, orientation, error => refusal.TrySetResult(error));
+			WindowSceneRotation.Request(IosStatusBarViews.RunnerScene, orientation, error =>
+			{
+				var description = FormattableString.Invariant($"{error.Domain} error {error.Code}: {error.LocalizedDescription}");
+				if (error.Domain == "UISceneErrorDomain")
+				{
+					sceneRefusal.TrySetResult(description);
+					return;
+				}
+
+				lastSystemError = description;
+				Console.WriteLine($"UIKit reported an error for the rotation to {orientation}, waiting for the scene to rotate anyway: {description}");
+			});
 		});
 
-		await AssertEventuallyOnMainThread(() => refusal.Task.IsCompleted || IsLandscape(TestWindow.PlatformWindow) == isLandscape, $"The runner's window did not rotate to {orientation}.");
-		Assert.False(refusal.Task.IsCompleted, $"UIKit refused to rotate the interface to {orientation}: {(refusal.Task.IsCompleted ? refusal.Task.Result : string.Empty)}");
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		var settledSince = TimeSpan.Zero;
+		OrientationSnapshot? previous = null;
+		OrientationSnapshot current = default;
+
+		while (stopwatch.ElapsedMilliseconds < timeoutMilliseconds)
+		{
+			if (sceneRefusal.Task.IsCompleted)
+			{
+				throw new Xunit.Sdk.XunitException($"UIKit refused to rotate the interface to {orientation}: {sceneRefusal.Task.Result}");
+			}
+
+			current = await InvokeOnMainThreadAsync(static () => IosStatusBarViews.Snapshot(IosStatusBarViews.RunnerScene, IosStatusBarViews.RunnerWindow));
+			if (!current.Matches(orientation))
+			{
+				previous = null;
+			}
+			else if (previous != current)
+			{
+				previous = current;
+				settledSince = stopwatch.Elapsed;
+			}
+			else if ((stopwatch.Elapsed - settledSince).TotalMilliseconds >= settledMilliseconds)
+			{
+				return;
+			}
+
+			await Task.Delay(pollMilliseconds);
+		}
+
+		throw new Xunit.Sdk.XunitException($"The runner's window did not settle in {orientation} within {timeoutMilliseconds} ms: {current}. Last UIKit error: {lastSystemError ?? "none"}.");
 	}
 
 	// The window resizes the views when it rotates, and UIKit lays them out afterwards.
@@ -96,8 +150,6 @@ public abstract partial class StatusBarTestBase
 
 		return isUsingSafeArea ? new CGRect(frame.X, frame.Y, frame.Width, window.SafeAreaInsets.Top) : frame;
 	}
-
-	static bool IsLandscape(UIWindow window) => window.Bounds.Width > window.Bounds.Height;
 
 	// The call is counted on the topmost view controller (the one that controls the status bar) itself, so the check does not depend on UIKit
 	// re-reading the style, which it only does with view controller-based status bar appearance (an app may set

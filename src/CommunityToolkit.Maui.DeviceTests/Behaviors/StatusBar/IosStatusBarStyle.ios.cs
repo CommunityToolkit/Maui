@@ -94,6 +94,11 @@ static class IosStatusBarStyle
 	public static StatusBarContent CaptureContent(UIWindowScene scene)
 	{
 		var statusBarFrame = scene.StatusBarManager?.StatusBarFrame ?? throw new InvalidOperationException("The scene has no status bar.");
+		if (statusBarFrame.IsEmpty)
+		{
+			throw new InvalidOperationException($"The status bar is hidden: its frame is empty and the scene is in {IosStatusBarViews.SceneOrientation(scene)} (status bar frame {statusBarFrame}), so there are no status bar pixels to read.");
+		}
+
 		var createScreenImage = Dlfcn.dlsym(Dlfcn.RTLD.Default, "_UICreateScreenUIImage");
 		if (createScreenImage == IntPtr.Zero)
 		{
