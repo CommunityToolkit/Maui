@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Animations;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -24,6 +25,12 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	const double originalScaleX = 0.9;
 	const double originalScaleY = 1.2;
 	const string throwingHandlerMessage = "Thrown by a PropertyChanged handler.";
+
+	// So long that only the test ends the seeker within the wait, never the seeker's own end, also when the UI thread stalls for seconds
+	const uint seekerLengthFarBeyondTheWait = 60_000;
+
+	// A run that has had its whole length may have ended on its own; a frame can arrive this late on a slow emulator
+	static readonly TimeSpan slowestFrameInterval = TimeSpan.FromMilliseconds(100);
 
 	// Swing animates Rotation and AnchorY, Wobble TranslationX and Rotation: each run has a property of its own and one they share
 	static readonly IReadOnlyList<(BindableProperty Property, double Value)> originalValues =
@@ -61,29 +68,31 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var swinging = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => rotation >= originalRotation + (swingAngle / 3));
-			var swingRun = swing.Animate(view);
-			await swinging;
-
-			var wobblePeak = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => Math.Abs(translationX - (originalTranslationX - wobbleDistance)) <= valueTolerance);
-			var wobbleTiltPeak = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => Math.Abs(rotation - (originalRotation - wobbleRotationAngle)) <= valueTolerance);
+			Task? wobblePeak = null;
+			Task? wobbleTiltPeak = null;
+			Task? wobbleRun = null;
 			var rotationsWrittenByStartingWobble = new List<double>();
-			view.PropertyChanged += RecordRotation;
 			try
 			{
-				var wobbleRun = wobble.Animate(view);
-				view.PropertyChanged -= RecordRotation;
+				var swingRun = await StartAndActMidRunAsync(view, VisualElement.RotationProperty, rotation => rotation >= originalRotation + (swingAngle / 3), () => swing.Animate(view), () =>
+				{
+					wobblePeak = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => Math.Abs(translationX - (originalTranslationX - wobbleDistance)) <= valueTolerance);
+					wobbleTiltPeak = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => Math.Abs(rotation - (originalRotation - wobbleRotationAngle)) <= valueTolerance);
+					view.PropertyChanged += RecordRotation;
+					wobbleRun = wobble.Animate(view);
+					view.PropertyChanged -= RecordRotation;
 
-				// Android's ValueAnimator.start() ticks the new run inside Animate, so Rotation may already be a few milliseconds into Wobble.
-				// The first write is exact: Swing's abort returned the view before Wobble read its original values.
-				Assert.True(rotationsWrittenByStartingWobble.Count > 0 && rotationsWrittenByStartingWobble[0] == originalRotation, $"Swing's abort wrote the rotations {string.Join(", ", rotationsWrittenByStartingWobble)}; the first must be the original {originalRotation}.");
-				Assert.True(view.AnchorY == originalAnchorY, $"AnchorY is {view.AnchorY} right after Wobble started, expected the original {originalAnchorY}, which only Swing's abort restores.");
+					// Android's ValueAnimator.start() ticks the new run inside Animate, so Rotation may already be a few milliseconds into Wobble.
+					// The first write is exact: Swing's abort returned the view before Wobble read its original values.
+					Assert.True(rotationsWrittenByStartingWobble.Count > 0 && rotationsWrittenByStartingWobble[0] == originalRotation, $"Swing's abort wrote the rotations {string.Join(", ", rotationsWrittenByStartingWobble)}; the first must be the original {originalRotation}.");
+					Assert.True(view.AnchorY == originalAnchorY, $"AnchorY is {view.AnchorY} right after Wobble started, expected the original {originalAnchorY}, which only Swing's abort restores.");
+				});
 
 				await swingRun.WaitAsync(waitTimeout);
 				Assert.True(swingRun.IsCompletedSuccessfully, $"Swing ended {swingRun.Status}; a replaced attention seeker completes normally.");
 
-				await wobbleRun.WaitAsync(waitTimeout);
-				await Task.WhenAll(wobblePeak, wobbleTiltPeak);
+				await wobbleRun!.WaitAsync(waitTimeout);
+				await Task.WhenAll(wobblePeak!, wobbleTiltPeak!);
 				AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, "after Wobble completed");
 			}
 			finally
@@ -112,22 +121,23 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var rotating = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => rotation >= originalRotation + 20);
-			var rotateRun = rotate.Animate(view);
-			await rotating;
-
-			var swingPeak = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => Math.Abs(rotation - (originalRotation + swingAngle)) <= valueTolerance);
+			Task? swingPeak = null;
+			Task? swingRun = null;
 			var restoreWrites = 0;
 			var swingPeakReached = false;
 			var swingAnimateReturned = false;
-			view.PropertyChanged += CountRestoreWritesUntilSwingPeaks;
 			try
 			{
-				var swingRun = swing.Animate(view);
-				swingAnimateReturned = true;
+				var rotateRun = await StartAndActMidRunAsync(view, VisualElement.RotationProperty, rotation => rotation >= originalRotation + 20 && rotation < originalRotation + rotateBy, () => rotate.Animate(view), () =>
+				{
+					swingPeak = WaitForValueAsync(view, VisualElement.RotationProperty, rotation => Math.Abs(rotation - (originalRotation + swingAngle)) <= valueTolerance);
+					view.PropertyChanged += CountRestoreWritesUntilSwingPeaks;
+					swingRun = swing.Animate(view);
+					swingAnimateReturned = true;
+				});
 
-				await Task.WhenAll(rotateRun, swingRun).WaitAsync(waitTimeout);
-				await swingPeak;
+				await Task.WhenAll(rotateRun, swingRun!).WaitAsync(waitTimeout);
+				await swingPeak!;
 			}
 			finally
 			{
@@ -167,16 +177,18 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var translating = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10);
-			var translateRun = view.TranslateToAsync(translateTargetX, translateTargetY, 3 * runLength, Easing.Linear);
-			await translating;
+			Task? bounceHopsAboveTheOriginal = null;
+			Task? bounceRun = null;
+			var translateRun = (Task<bool>)await StartAndActMidRunAsync(view, VisualElement.TranslationXProperty, IsTranslatingX,
+				() => StartTranslateToFromTheOriginalTranslation(view, translateTargetX, translateTargetY, 3 * runLength), () =>
+				{
+					// The hops ride on top of the translation, which has barely left the original translation when the first hop peaks
+					bounceHopsAboveTheOriginal = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => translationY <= originalTranslationY - (bounceDistance / 2));
+					bounceRun = bounce.Animate(view);
+				});
 
-			// The hops ride on top of the translation, which has barely left the original translation when the first hop peaks
-			var bounceHopsAboveTheOriginal = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => translationY <= originalTranslationY - (bounceDistance / 2));
-			var bounceRun = bounce.Animate(view);
-
-			await bounceRun.WaitAsync(waitTimeout);
-			await bounceHopsAboveTheOriginal;
+			await bounceRun!.WaitAsync(waitTimeout);
+			await bounceHopsAboveTheOriginal!;
 
 			// TranslateToAsync reports true when something interrupted it
 			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
@@ -199,16 +211,18 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var translating = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10);
-			var translateRun = view.TranslateToAsync(translateTargetX, translateTargetY, runLength / 3, Easing.Linear);
-			await translating;
-
-			var firstHopPeak = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => Math.Abs(translationY - (translateTargetY - bounceDistance)) <= valueTolerance);
-			var bounceRun = bounce.Animate(view);
+			Task? firstHopPeak = null;
+			Task? bounceRun = null;
+			var translateRun = (Task<bool>)await StartAndActMidRunAsync(view, VisualElement.TranslationXProperty, IsTranslatingX,
+				() => StartTranslateToFromTheOriginalTranslation(view, translateTargetX, translateTargetY, runLength / 3), () =>
+				{
+					firstHopPeak = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => Math.Abs(translationY - (translateTargetY - bounceDistance)) <= valueTolerance);
+					bounceRun = bounce.Animate(view);
+				});
 
 			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
-			await bounceRun.WaitAsync(waitTimeout);
-			await firstHopPeak;
+			await bounceRun!.WaitAsync(waitTimeout);
+			await firstHopPeak!;
 
 			Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
 			AssertTranslationAtTheAppsTarget(view, "after Bounce, which outlasted the TranslateToAsync, ended");
@@ -229,38 +243,67 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		// The bounce is long enough for its pause at the peak to catch a frame on a slow device
 		var bounce = new BounceAnimation { Distance = bounceDistance, Length = 2 * runLength };
 
+		// The view is within a tenth of the first hop's height for over a fifth of the bounce (CubicOut rise, pause, CubicIn fall), so only a longer gap between frames can skip it
+		var shortestTimeNearTheFirstHopsPeak = TimeSpan.FromMilliseconds(bounce.Length / 5);
+
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var translating = WaitForValueAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10);
-			var translateRun = view.TranslateToAsync(translateTargetX, originalTranslationY, 4 * runLength, Easing.Linear);
-			await translating;
-
 			var heightPerFrame = new List<double>();
-			var bounceRun = bounce.Animate(view);
+			var longestGapBetweenFrames = TimeSpan.Zero;
 
-			// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
-			new Microsoft.Maui.Controls.Animation(_ => heightPerFrame.Add(originalTranslationY - view.TranslationY)).Commit(view, frameSamplerHandle, length: 60_000);
-			try
+			await RepeatAttemptsThatMissedTheRunAsync(async () =>
 			{
-				await bounceRun.WaitAsync(waitTimeout);
-			}
-			finally
-			{
-				view.AbortAnimation(frameSamplerHandle);
-			}
+				heightPerFrame.Clear();
+				var frameTimes = new List<TimeSpan>();
+				var sinceTheBounceStarted = new Stopwatch();
+				Task? bounceRun = null;
 
-			var framesAtTheFirstHopsPeak = heightPerFrame.Select((height, frame) => (height, frame)).Where(sample => sample.height >= 0.9 * bounceDistance).Select(sample => sample.frame).ToList();
-			Assert.NotEmpty(framesAtTheFirstHopsPeak);
-			Assert.True(framesAtTheFirstHopsPeak[^1] - framesAtTheFirstHopsPeak[0] == framesAtTheFirstHopsPeak.Count - 1,
-				$"The view left the first hop's peak and came back to it. Height per frame: {string.Join(", ", heightPerFrame.Select(FormatNativeValue))}");
+				// With half the translation ahead, the TranslateToAsync still writes TranslationY every frame while the bounce pauses at its first peak
+				var translateRun = (Task<bool>)await StartAndActMidRunAsync(view, VisualElement.TranslationXProperty, translationX => translationX >= originalTranslationX + 10 && translationX <= (originalTranslationX + translateTargetX) / 2,
+					() => StartTranslateToFromTheOriginalTranslation(view, translateTargetX, originalTranslationY, 4 * runLength), () =>
+					{
+						sinceTheBounceStarted.Start();
+						bounceRun = bounce.Animate(view);
 
-			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
-			Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
-			Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
-			Assert.True(Math.Abs(view.TranslationY - originalTranslationY) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {originalTranslationY}.");
+						// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
+						new Microsoft.Maui.Controls.Animation(_ =>
+						{
+							frameTimes.Add(sinceTheBounceStarted.Elapsed);
+							heightPerFrame.Add(originalTranslationY - view.TranslationY);
+						}).Commit(view, frameSamplerHandle, length: 60_000);
+					});
 
-			var mismatch = FindNativeMismatch(handler, view);
-			Assert.True(mismatch is null, mismatch);
+				try
+				{
+					await bounceRun!.WaitAsync(waitTimeout);
+				}
+				finally
+				{
+					view.AbortAnimation(frameSamplerHandle);
+				}
+
+				longestGapBetweenFrames = FindLongestGap([TimeSpan.Zero, .. frameTimes, sinceTheBounceStarted.Elapsed]);
+				var framesAtTheFirstHopsPeak = heightPerFrame.Select((height, frame) => (height, frame)).Where(sample => sample.height >= 0.9 * bounceDistance).Select(sample => sample.frame).ToList();
+
+				if (framesAtTheFirstHopsPeak.Count is 0 && longestGapBetweenFrames >= shortestTimeNearTheFirstHopsPeak)
+				{
+					await translateRun.WaitAsync(waitTimeout);
+					return false;
+				}
+
+				Assert.NotEmpty(framesAtTheFirstHopsPeak);
+				Assert.True(framesAtTheFirstHopsPeak[^1] - framesAtTheFirstHopsPeak[0] == framesAtTheFirstHopsPeak.Count - 1,
+					$"The view left the first hop's peak and came back to it. Height per frame: {string.Join(", ", heightPerFrame.Select(FormatNativeValue))}");
+
+				var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
+				Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that was running.");
+				Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
+				Assert.True(Math.Abs(view.TranslationY - originalTranslationY) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {originalTranslationY}.");
+
+				var mismatch = FindNativeMismatch(handler, view);
+				Assert.True(mismatch is null, mismatch);
+				return true;
+			}, () => $"a gap of {longestGapBetweenFrames.TotalMilliseconds:F0} ms between frames could skip the first hop's peak. Height per frame: {string.Join(", ", heightPerFrame.Select(FormatNativeValue))}");
 		});
 	}
 
@@ -274,46 +317,97 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		var view = CreateAnimatedView([(VisualElement.TranslationXProperty, originalTranslationX), (VisualElement.TranslationYProperty, originalTranslationY)]);
 		var bounce = new BounceAnimation { Distance = bounceDistance, Length = 2 * runLength };
 
+		// The second hop alone stays above a quarter of the first hop's height for over a quarter of the bounce, so only a longer gap between frames can skip every hop
+		var shortestTimeTheHopsShowAQuarterOfTheirHeight = TimeSpan.FromMilliseconds(bounce.Length / 4);
+
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var hopping = WaitForValueAsync(view, VisualElement.TranslationYProperty, translationY => translationY <= originalTranslationY - 1);
-			var bounceRun = bounce.Animate(view);
-			await hopping;
-
-			// Translating to the height the view has now keeps the translation's own TranslationY still, so any height a frame shows comes from the hops
-			var translateTargetYNow = view.TranslationY;
-			var translateRun = view.TranslateToAsync(translateTargetX, translateTargetYNow, 2 * runLength, Easing.Linear);
-
-			// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
 			var heightAboveTheTranslationPerFrame = new List<double>();
-			new Microsoft.Maui.Controls.Animation(_ =>
+			var longestGapBetweenFrames = TimeSpan.Zero;
+
+			await RepeatAttemptsThatMissedTheRunAsync(async () =>
 			{
-				if (!bounceRun.IsCompleted)
+				heightAboveTheTranslationPerFrame.Clear();
+				var frameTimes = new List<TimeSpan>();
+				var sinceTheTranslateStarted = new Stopwatch();
+				var translateTargetYNow = double.NaN;
+				Task<bool>? translateRun = null;
+				Task? bounceRunOfThisAttempt = null;
+
+				// Still rising to the first hop's peak, so the first two hops, the high ones, are still ahead
+				var bounceRun = await StartAndActMidRunAsync(view, VisualElement.TranslationYProperty,
+					translationYs => translationYs[^1] <= originalTranslationY - 1 && translationYs.All(translationY => translationY > originalTranslationY - bounceDistance + valueTolerance),
+					() => bounceRunOfThisAttempt = StartBounceFromTheOriginalTranslation(view, bounce), () =>
+					{
+						// Translating to the height the view has now keeps the translation's own TranslationY still, so any height a frame shows comes from the hops
+						translateTargetYNow = view.TranslationY;
+						sinceTheTranslateStarted.Start();
+						translateRun = view.TranslateToAsync(translateTargetX, translateTargetYNow, 2 * runLength, Easing.Linear);
+
+						// Committed after both runs, the sampler ticks last in every frame and so sees the height that frame shows
+						new Microsoft.Maui.Controls.Animation(_ =>
+						{
+							if (!bounceRunOfThisAttempt!.IsCompleted)
+							{
+								frameTimes.Add(sinceTheTranslateStarted.Elapsed);
+								heightAboveTheTranslationPerFrame.Add(translateTargetYNow - view.TranslationY);
+							}
+						}).Commit(view, frameSamplerHandle, length: 60_000);
+					});
+
+				try
 				{
-					heightAboveTheTranslationPerFrame.Add(translateTargetYNow - view.TranslationY);
+					await bounceRun.WaitAsync(waitTimeout);
 				}
-			}).Commit(view, frameSamplerHandle, length: 60_000);
-			try
-			{
-				await bounceRun.WaitAsync(waitTimeout);
-			}
-			finally
-			{
-				view.AbortAnimation(frameSamplerHandle);
-			}
+				finally
+				{
+					view.AbortAnimation(frameSamplerHandle);
+				}
 
-			Assert.True(heightAboveTheTranslationPerFrame.Any(height => height >= bounceDistance / 4),
-				$"The hops never showed while TranslateToAsync ran. Height above the translation per frame: {string.Join(", ", heightAboveTheTranslationPerFrame.Select(FormatNativeValue))}");
+				longestGapBetweenFrames = FindLongestGap([TimeSpan.Zero, .. frameTimes, sinceTheTranslateStarted.Elapsed]);
+				var didTheHopsShow = heightAboveTheTranslationPerFrame.Any(height => height >= bounceDistance / 4);
 
-			var translateWasInterrupted = await translateRun.WaitAsync(waitTimeout);
-			Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that started during it.");
-			Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
-			Assert.True(Math.Abs(view.TranslationY - translateTargetYNow) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {translateTargetYNow}.");
+				if (!didTheHopsShow && longestGapBetweenFrames >= shortestTimeTheHopsShowAQuarterOfTheirHeight)
+				{
+					await translateRun!.WaitAsync(waitTimeout);
+					return false;
+				}
 
-			var mismatch = FindNativeMismatch(handler, view);
-			Assert.True(mismatch is null, mismatch);
+				Assert.True(didTheHopsShow,
+					$"The hops never showed while TranslateToAsync ran. Height above the translation per frame: {string.Join(", ", heightAboveTheTranslationPerFrame.Select(FormatNativeValue))}");
+
+				var translateWasInterrupted = await translateRun!.WaitAsync(waitTimeout);
+				Assert.False(translateWasInterrupted, "Bounce interrupted the TranslateToAsync that started during it.");
+				Assert.True(Math.Abs(view.TranslationX - translateTargetX) <= valueTolerance, $"TranslationX is {view.TranslationX}, expected the app's target {translateTargetX}.");
+				Assert.True(Math.Abs(view.TranslationY - translateTargetYNow) <= valueTolerance, $"TranslationY is {view.TranslationY}, expected the app's target {translateTargetYNow}.");
+
+				var mismatch = FindNativeMismatch(handler, view);
+				Assert.True(mismatch is null, mismatch);
+				return true;
+			}, () => $"a gap of {longestGapBetweenFrames.TotalMilliseconds:F0} ms between frames could skip every hop. Height above the translation per frame: {string.Join(", ", heightAboveTheTranslationPerFrame.Select(FormatNativeValue))}");
 		});
 	}
+
+	// Short of the target, so a translation that already ended cannot pass for one in progress
+	static bool IsTranslatingX(double translationX) => translationX >= originalTranslationX + 10 && translationX < translateTargetX;
+
+	// A missed attempt's TranslateToAsync left the view at its target
+	static Task<bool> StartTranslateToFromTheOriginalTranslation(VisualElement view, double targetX, double targetY, uint length)
+	{
+		view.TranslationX = originalTranslationX;
+		view.TranslationY = originalTranslationY;
+		return view.TranslateToAsync(targetX, targetY, length, Easing.Linear);
+	}
+
+	// A missed attempt's TranslateToAsync left the view translated
+	static Task StartBounceFromTheOriginalTranslation(VisualElement view, BounceAnimation bounce)
+	{
+		view.TranslationX = originalTranslationX;
+		view.TranslationY = originalTranslationY;
+		return bounce.Animate(view);
+	}
+
+	static TimeSpan FindLongestGap(IReadOnlyList<TimeSpan> times) => times.Zip(times.Skip(1), (earlier, later) => later - earlier).Max();
 
 	static void AssertTranslationAtTheAppsTarget(VisualElement view, string when)
 	{
@@ -333,7 +427,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 			using var runningTokenSource = new CancellationTokenSource();
 			using var cancelledTokenSource = new CancellationTokenSource();
 			var midRun = WaitForValueAsync(view, VisualElement.ScaleProperty, scale => Math.Abs(scale - originalScale) > 0.02);
-			var runningRun = new TadaAnimation { Length = 3 * runLength }.Animate(view, runningTokenSource.Token);
+			var runningRun = new TadaAnimation { Length = seekerLengthFarBeyondTheWait }.Animate(view, runningTokenSource.Token);
 			await midRun;
 
 			var translationYChanges = 0;
@@ -387,15 +481,13 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			var beating = WaitForValueAsync(view, VisualElement.ScaleProperty, currentScale => currentScale >= originalScale + 0.05);
-			var heartbeatRun = heartbeat.Animate(view);
-			await beating;
-
-			var scaleRun = scale.Animate(view);
+			Task? scaleRun = null;
+			var heartbeatRun = await StartAndActMidRunAsync(view, VisualElement.ScaleProperty, currentScale => currentScale >= originalScale + 0.05, () => heartbeat.Animate(view),
+				() => scaleRun = scale.Animate(view));
 
 			await heartbeatRun.WaitAsync(waitTimeout);
 			Assert.True(heartbeatRun.IsCompletedSuccessfully, $"Heartbeat ended {heartbeatRun.Status}; a stopped attention seeker completes normally.");
-			Assert.False(scaleRun.IsCompleted, "Heartbeat did not end when Scale started, but at its own end.");
+			Assert.False(scaleRun!.IsCompleted, "Heartbeat did not end when Scale started, but at its own end.");
 
 			await scaleRun.WaitAsync(waitTimeout);
 			await AssertStaysAtOriginalValuesAsync(handler, view, scaleOnly, nativeStateAtRest, "after Scale stopped Heartbeat");
@@ -439,8 +531,6 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 	[InlineData(nameof(WobbleAnimation))]
 	public async Task AppsToAnimationStartedWhileASeekerAnimatesItsPropertyTakesOverAndTheViewKeepsItsTarget(string seekerName)
 	{
-		const uint seekerLengthFarBeyondTheWait = 60_000;
-
 		SetupBuilder();
 
 		var (seeker, seekerValues, appsProperty, appsTarget, startAppsAnimation) = CreateSeekerAndAppsToAnimation(seekerName, seekerLengthFarBeyondTheWait);
@@ -509,7 +599,7 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		SetupBuilder();
 
 		var view = CreateAnimatedView(rotationAnchorAndScale);
-		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = 3 * runLength };
+		var swing = new SwingAnimation { RotationAngle = swingAngle, Length = seekerLengthFarBeyondTheWait };
 		var rotate = new RotateAnimation { Rotation = rotateBy, Length = runLength };
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
@@ -561,21 +651,36 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			Task? swingStartedByTheContinuation = null;
-			var appRotation = view.RotateToAsync(originalRotation, 2 * runLength);
-			_ = appRotation.ContinueWith(_ => swingStartedByTheContinuation = new SwingAnimation { RotationAngle = swingAngle, Length = runLength }.Animate(view), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			var timeTheLastSwingRan = TimeSpan.Zero;
 
-			var swingRun = swing.Animate(view);
+			await RepeatAttemptsThatMissedTheRunAsync(async () =>
+			{
+				Task? swingStartedByTheContinuation = null;
+				var appRotation = view.RotateToAsync(originalRotation, 2 * runLength);
+				_ = appRotation.ContinueWith(_ => swingStartedByTheContinuation = new SwingAnimation { RotationAngle = swingAngle, Length = runLength }.Animate(view), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
-			await (swingStartedByTheContinuation ?? throw new InvalidOperationException("The aborted RotateToAsync did not start a Swing.")).WaitAsync(waitTimeout);
-			await WaitForTickerFramesAsync(view);
+				var sinceTheSwingStarted = Stopwatch.StartNew();
+				var swingRun = swing.Animate(view);
 
-			Assert.False(swingRun.IsCompleted, "The surviving Swing ended before its length.");
-			Assert.True(view.AnchorY == 0, $"AnchorY is {view.AnchorY} while the surviving Swing runs, expected its top-edge anchor 0.");
-			AssertPlatformViewFollows(handler, view, nativeStateAtRest, "while the surviving Swing runs");
+				await (swingStartedByTheContinuation ?? throw new InvalidOperationException("The aborted RotateToAsync did not start a Swing.")).WaitAsync(waitTimeout);
+				await WaitForTickerFramesAsync(view);
 
-			await swingRun.WaitAsync(waitTimeout);
-			await AssertStaysAtOriginalValuesAsync(handler, view, rotationAndAnchor, nativeStateAtRest, "after the surviving Swing completed");
+				// Only a Swing that had its whole length can have reached its own end by now, which a stalled UI thread allows
+				timeTheLastSwingRan = sinceTheSwingStarted.Elapsed;
+				if (!view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle) && timeTheLastSwingRan >= TimeSpan.FromMilliseconds(swing.Length) - slowestFrameInterval)
+				{
+					await swingRun.WaitAsync(waitTimeout);
+					return false;
+				}
+
+				Assert.False(swingRun.IsCompleted, "The surviving Swing ended before its length.");
+				Assert.True(view.AnchorY == 0, $"AnchorY is {view.AnchorY} while the surviving Swing runs, expected its top-edge anchor 0.");
+				AssertPlatformViewFollows(handler, view, nativeStateAtRest, "while the surviving Swing runs");
+
+				await swingRun.WaitAsync(waitTimeout);
+				await AssertStaysAtOriginalValuesAsync(handler, view, rotationAndAnchor, nativeStateAtRest, "after the surviving Swing completed");
+				return true;
+			}, () => $"the surviving Swing had ended after {timeTheLastSwingRan.TotalMilliseconds:F0} ms when the test looked.");
 		});
 	}
 
@@ -613,18 +718,17 @@ public class KeyframeAnimationExtensionsTests : AnimationTestBase
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			using var cancellation = new CancellationTokenSource();
-			var midRun = WaitForValueAsync(view, VisualElement.ScaleProperty, scale => Math.Abs(scale - originalScale) > 0.02);
-			var run = tada.Animate(view, cancellation.Token);
-			await midRun;
-
 			var hasThrown = false;
-			view.PropertyChanged += ThrowWhenTheScaleIsRestored;
 
 			try
 			{
 				// On the UI thread, as from a button's Clicked handler: the cancelled run restores the view inside Cancel
-				var cancelException = Record.Exception(cancellation.Cancel);
-				Assert.True(cancelException is null, $"Cancel threw {cancelException}; the exception of the handler belongs to the run's Task.");
+				var run = await StartAndActMidRunAsync(view, VisualElement.ScaleProperty, scale => Math.Abs(scale - originalScale) > 0.02, () => tada.Animate(view, cancellation.Token), () =>
+				{
+					view.PropertyChanged += ThrowWhenTheScaleIsRestored;
+					var cancelException = Record.Exception(cancellation.Cancel);
+					Assert.True(cancelException is null, $"Cancel threw {cancelException}; the exception of the handler belongs to the run's Task.");
+				});
 
 				var exception = await Record.ExceptionAsync(() => run.WaitAsync(waitTimeout));
 				Assert.True(exception is InvalidOperationException { Message: throwingHandlerMessage }, $"The run ended with {exception?.GetType().Name ?? "no exception"}, expected the exception of the PropertyChanged handler.");
