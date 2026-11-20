@@ -292,7 +292,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		await HostBoundAsync(mediaElement, async (handler, connection) =>
 		{
 			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && GetServiceNotificationText() == "A notification artist",
-				$"The notification never showed the media's title and artist (title: '{GetServiceNotificationTitle()}', text: '{GetServiceNotificationText()}').");
+				() => $"The notification never showed the media's title and artist ({DescribeServiceNotification()}).");
 
 			Assert.True(IsMediaStyle(FindServiceNotification()));
 		});
@@ -312,7 +312,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		await HostBoundAsync(mediaElement, async (handler, connection) =>
 		{
 			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && FindServiceNotification()?.GetLargeIcon() is not null,
-				"The notification never showed the media's artwork as its large icon.");
+				() => $"The notification never showed the media's artwork as its large icon ({DescribeServiceNotification()}).");
 
 			Assert.True(IsMediaStyle(FindServiceNotification()));
 		});

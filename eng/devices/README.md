@@ -252,7 +252,7 @@ pwsh eng/devices/run.ps1 -Platform android -Configuration Release -BuildArgs '/p
 ```
 
 * Only the app changes (`src/CommunityToolkit.Maui.DeviceTests/Directory.Build.props`): it roots xunit, the XHarness runner and the test assemblies, and a Windows build keeps built-in COM on for offline speech-to-text. The app stays where an untrimmed build puts it, so `-Target testOnly` needs no `-BuildArgs`.
-* The build fails when the SDK would not trim or compile with NativeAOT, when `DEVICE_TEST_COVERAGE` is `true` (coverlet rewrites the toolkit assemblies; do not pass `-Coverage` either), and for `nativeaot` on Windows ([dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053)).
+* The build fails when the SDK would not trim or compile with NativeAOT, when `DEVICE_TEST_COVERAGE` is `true` or `-Coverage` is passed (coverlet rewrites the toolkit assemblies), and for `nativeaot` on Windows ([dotnet/maui#39053](https://github.com/dotnet/maui/issues/39053)).
 * Delete the app's `bin` and `obj` folders when you switch modes: the trimmer's incremental check ignores `TrimMode`.
 * CI: the `Trimmed Device Tests` check (the `Build` workflow calls `device-tests.yml` with `trimming: full-and-nativeaot`) runs the newest Android API level in `device-tests.yml` (`full` and `nativeaot`), the iOS simulator (`nativeaot`) and Windows unpackaged (`full`) on every pull request and push to `main`. From the Actions tab, start the `Device Tests` workflow with that input. After each build, `.github/scripts/check-trimmed-device-test-app.sh` fails the job unless the build used the switch and the trimmer or ILC processed the app.
 

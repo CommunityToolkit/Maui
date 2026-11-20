@@ -1,5 +1,3 @@
-using Android.Animation;
-
 namespace CommunityToolkit.Maui.DeviceTests;
 
 public abstract partial class ColorAnimationTestBase
@@ -15,26 +13,18 @@ public abstract partial class ColorAnimationTestBase
 			return;
 		}
 
-		float scale = 1f;
+		string? error = null;
 		await InvokeOnMainThreadAsync(() =>
 		{
-			using var valueAnimatorClass = Java.Lang.Class.FromType(typeof(ValueAnimator));
-			using var getDurationScale = valueAnimatorClass.GetDeclaredMethod("getDurationScale")
-				?? throw new InvalidOperationException("ValueAnimator.getDurationScale was not found.");
-			using var setDurationScale = valueAnimatorClass.GetDeclaredMethod("setDurationScale", Java.Lang.Float.Type!)
-				?? throw new InvalidOperationException("ValueAnimator.setDurationScale was not found.");
-
-			var previous = ((Java.Lang.Float)getDurationScale.Invoke(null)!).FloatValue();
-			if (previous <= 0f)
+			error = AnimatorDurationScale.TryEnable(out var previous);
+			if (previous is float scale)
 			{
-				setDurationScale.Invoke(null, Java.Lang.Float.ValueOf(1f));
-				animatorScaleToRestore ??= previous;
+				animatorScaleToRestore ??= scale;
 			}
-
-			scale = ((Java.Lang.Float)getDurationScale.Invoke(null)!).FloatValue();
 		});
 
-		Assert.True(scale > 0f, "The animator duration scale must be on for this process.");
+		Assert.True(error is null, $"The animator duration scale could not be switched on for this process ({error}).");
+		Assert.True(AnimatorDurationScale.IsEnabled, "The animator duration scale must be on for this process.");
 	}
 
 	ValueTask PlatformDisposeAsync()
@@ -45,11 +35,6 @@ public abstract partial class ColorAnimationTestBase
 		}
 
 		animatorScaleToRestore = null;
-		return new ValueTask(InvokeOnMainThreadAsync(() =>
-		{
-			using var valueAnimatorClass = Java.Lang.Class.FromType(typeof(ValueAnimator));
-			using var setDurationScale = valueAnimatorClass.GetDeclaredMethod("setDurationScale", Java.Lang.Float.Type!);
-			setDurationScale?.Invoke(null, Java.Lang.Float.ValueOf(scale));
-		}));
+		return new ValueTask(InvokeOnMainThreadAsync(() => AnimatorDurationScale.TrySet(scale)));
 	}
 }
