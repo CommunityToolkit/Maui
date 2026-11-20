@@ -8,6 +8,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 - **Methods, `Action`s and `Func`s are verbs** that describe both the action they do and the result they return.
   - `GetOrCreate(view, property)`, not `For(view, property)`
   - `StartAnimationAndGetOriginalValue(currentValue)`, not `Start(currentValue)`
+  - A method that handles an event keeps the .NET `On<EventName>` form, such as `OnRegexPropertyChanged`. A callback passed as a parameter is still a verb: `handleFrame`, not `onFrame`.
 - **Past tense is only for events.** A method that records that something happened still starts with a verb.
   - `RecordHandOverToApp(animationId)`, not `HandedOverToApp(animationId)`
 - **A method that returns a `bool` to say whether it succeeded follows the [Try-Parse pattern](https://learn.microsoft.com/dotnet/standard/design-guidelines/exceptions-and-performance#try-parse-pattern).**
@@ -22,6 +23,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 - **Properties, fields and local variables are nouns.** A `bool` is a question.
   - `public bool DidAnimationComplete { get; private set; }`
   - `var wasTranslationInterrupted = ...`, not `var translationWasInterrupted = ...`
+  - A `Task` or `TaskCompletionSource` ends with what it is: `peakReachedTask` and `animationEndedSource`, not `peakReached` and `animationEnded`.
 - **Events are past-tense verbs** that describe what happened.
   - `MediaFailed`, `MediaEnded`
 
@@ -57,10 +59,10 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 
 - Prefer range indexers over LINQ:
 	```csharp
-	// Good: Using range indexers with clear comments
-	var lastItem = items[^1];  // ^1 means "1 from the end"
-	var firstThree = items[..3];  // ..3 means "take first 3 items"
-	var slice = items[2..5];  // take items from index 2 to 4 (5 exclusive)
+	// Good: Using range indexers
+	var lastItem = items[^1];
+	var firstThree = items[..3];
+	var slice = items[2..5];
 	
 	// Avoid: Using LINQ when range indexers are clearer
 	var lastItem = items.LastOrDefault();
@@ -233,12 +235,10 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 			_ => ImageSource.FromResource(value, Application.Current?.GetType().Assembly)
 		};
 		
-		// Method never returns null
 		[return: NotNull]
 		public static string EnsureNotNull(string? input) =>
 			input ?? string.Empty;
 		
-		// Parameter must not be null when method returns true
 		public static bool TryParse(string? input, [NotNullWhen(true)] out string? result)
 		{
 			result = null;
@@ -278,14 +278,11 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 	```csharp
 	public interface IOrderRepository
 	{
-		// Explicitly shows that null is a valid return value
 		Task<Order?> FindByIdAsync(OrderId id, CancellationToken ct = default);
 		
-		// Method will never return null
 		[return: NotNull]
 		Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken ct = default);
 		
-		// Parameter cannot be null
 		Task SaveAsync([NotNull] Order order, CancellationToken ct = default);
 	}
 	```
@@ -340,8 +337,8 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 
 	// Good: Using Try methods in LINQ with pattern matching
 	var validNumbers = strings
-		.Select(s => (Success: int.TryParse(s, out var num), Value: num))
-		.Where(x => x.Success)
+		.Select(s => (WasParsed: int.TryParse(s, out var num), Value: num))
+		.Where(x => x.WasParsed)
 		.Select(x => x.Value);
 	```
 
@@ -426,11 +423,11 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 - Use TaskCompletionSource correctly:
 	```csharp
 	// Good: Using RunContinuationsAsynchronously
-	private readonly TaskCompletionSource<Order> _tcs = 
+	private readonly TaskCompletionSource<Order> orderSource = 
 		new(TaskCreationOptions.RunContinuationsAsynchronously);
 	
 	// Avoid: Default TaskCompletionSource can cause deadlocks
-	private readonly TaskCompletionSource<Order> _tcs = new();
+	private readonly TaskCompletionSource<Order> orderSource = new();
 	```
 - Always dispose CancellationTokenSources:
 	```csharp

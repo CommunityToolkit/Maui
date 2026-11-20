@@ -190,7 +190,7 @@ if (canRetry)
 
 // Prefer - a comment that explains why
 // AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
-await readyToPlay.Task.WaitAsync(token);
+await readyToPlaySource.Task.WaitAsync(token);
 var duration = playerItem.Duration;
 ```
 
@@ -209,7 +209,7 @@ var duration = playerItem.Duration;
 
 * Always use `Unknown` at index 0 for return types that may have a value that is not known
 * Always use `Default` at index 0 for option types that can use the system default option
-* Follow naming guidelines for tense... `SensorSpeed` not `SensorSpeeds`
+* Follow naming guidelines for number (singular, not plural)... `SensorSpeed` not `SensorSpeeds`
 * Assign values (0,1,2,3) for all enums
 
 ### Naming Conventions
@@ -219,6 +219,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 * **Methods, `Action`s and `Func`s are verbs** that describe both the action they do and the result they return.
   * `GetOrCreate(view, property)`, not `For(view, property)`
   * `StartAnimationAndGetOriginalValue(currentValue)`, not `Start(currentValue)`
+  * A method that handles an event keeps the .NET `On<EventName>` form, such as `OnRegexPropertyChanged`. A callback passed as a parameter is still a verb: `handleFrame`, not `onFrame`.
 * **Past tense is only for events.** A method that records that something happened still starts with a verb.
   * `RecordHandOverToApp(animationId)`, not `HandedOverToApp(animationId)`
 * **A method that returns a `bool` to say whether it succeeded follows the [Try-Parse pattern](https://learn.microsoft.com/dotnet/standard/design-guidelines/exceptions-and-performance#try-parse-pattern).**
@@ -233,6 +234,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 * **Properties, fields and local variables are nouns.** A `bool` is a question.
   * `public bool DidAnimationComplete { get; private set; }`
   * `var wasTranslationInterrupted = ...`, not `var translationWasInterrupted = ...`
+  * A `Task` or `TaskCompletionSource` ends with what it is: `peakReachedTask` and `animationEndedSource`, not `peakReached` and `animationEnded`.
 * **Events are past-tense verbs** that describe what happened.
   * `MediaFailed`, `MediaEnded`
 

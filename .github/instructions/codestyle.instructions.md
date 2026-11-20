@@ -23,7 +23,7 @@ This guide provides a set of best practices and coding standards for writing C# 
 
 	// Good: the comment explains why
 	// AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
-	await readyToPlay.Task.WaitAsync(token);
+	await readyToPlaySource.Task.WaitAsync(token);
 
 	// Avoid: the comment repeats the code
 	// Check whether the user can retry
@@ -37,6 +37,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 - **Methods, `Action`s and `Func`s are verbs** that describe both the action they do and the result they return.
   - `GetOrCreate(view, property)`, not `For(view, property)`
   - `StartAnimationAndGetOriginalValue(currentValue)`, not `Start(currentValue)`
+  - A method that handles an event keeps the .NET `On<EventName>` form, such as `OnRegexPropertyChanged`. A callback passed as a parameter is still a verb: `handleFrame`, not `onFrame`.
 - **Past tense is only for events.** A method that records that something happened still starts with a verb.
   - `RecordHandOverToApp(animationId)`, not `HandedOverToApp(animationId)`
 - **A method that returns a `bool` to say whether it succeeded follows the [Try-Parse pattern](https://learn.microsoft.com/dotnet/standard/design-guidelines/exceptions-and-performance#try-parse-pattern).**
@@ -51,6 +52,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 - **Properties, fields and local variables are nouns.** A `bool` is a question.
   - `public bool DidAnimationComplete { get; private set; }`
   - `var wasTranslationInterrupted = ...`, not `var translationWasInterrupted = ...`
+  - A `Task` or `TaskCompletionSource` ends with what it is: `peakReachedTask` and `animationEndedSource`, not `peakReached` and `animationEnded`.
 - **Events are past-tense verbs** that describe what happened.
   - `MediaFailed`, `MediaEnded`
 
@@ -243,12 +245,10 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 			_ => ImageSource.FromResource(value, Application.Current?.GetType().Assembly)
 		};
 		
-		// Method never returns null
 		[return: NotNull]
 		public static string EnsureNotNull(string? input) =>
 			input ?? string.Empty;
 		
-		// Parameter must not be null when method returns true
 		public static bool TryParse(string? input, [NotNullWhen(true)] out string? result)
 		{
 			result = null;
@@ -276,14 +276,11 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 	```csharp
 	public interface IOrderRepository
 	{
-		// Explicitly shows that null is a valid return value
 		Task<Order?> FindByIdAsync(OrderId id, CancellationToken ct = default);
 		
-		// Method will never return null
 		[return: NotNull]
 		Task<IReadOnlyList<Order>> GetAllAsync(CancellationToken ct = default);
 		
-		// Parameter cannot be null
 		Task SaveAsync([NotNull] Order order, CancellationToken ct = default);
 	}
 	```
@@ -373,8 +370,8 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 
 	// Good: Using Try methods in LINQ with pattern matching
 	var validNumbers = strings
-		.Select(s => (Success: int.TryParse(s, out var num), Value: num))
-		.Where(x => x.Success)
+		.Select(s => (WasParsed: int.TryParse(s, out var num), Value: num))
+		.Where(x => x.WasParsed)
 		.Select(x => x.Value);
 	```
 
@@ -459,11 +456,11 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 - Use TaskCompletionSource correctly:
 	```csharp
 	// Good: Using RunContinuationsAsynchronously
-	private readonly TaskCompletionSource<Order> _tcs = 
+	private readonly TaskCompletionSource<Order> orderSource = 
 		new(TaskCreationOptions.RunContinuationsAsynchronously);
 	
 	// Avoid: Default TaskCompletionSource can cause deadlocks
-	private readonly TaskCompletionSource<Order> _tcs = new();
+	private readonly TaskCompletionSource<Order> orderSource = new();
 	```
 - Always dispose CancellationTokenSources:
 	```csharp
@@ -654,15 +651,3 @@ Within a class, struct, or interface, elements should be positioned in the follo
 11. Records
 12. Structs
 13. Classes
-
-### Try Pattern
-
-When a method name begins with `Try` and returns a variable, ensure it adheres to the Try Pattern.
-
-Here Key Components of the Try Pattern:
-1. Method Name: Begins with Try (e.g., TryParse, TryGetValue).
-2. Return Type: bool (indicating success or failure).
-3. Out Parameter: An out parameter to return the result if successful.
-4. Null Analysis Attribute: [NotNullWhen(true)] (or [MaybeNullWhen(false)]) informs the compiler that if the method returns true, the out parameter is guaranteed to be non-null. 
-
-This pattern allows for high-performance retrieval or parsing without throwing exceptions for expected failures. It also allows cleaner call sites by eliminating the need for null-checking the output variable within the if block, as seen in Dictionary<TKey, TValue>.TryGetValue. 

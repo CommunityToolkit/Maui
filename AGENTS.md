@@ -20,9 +20,9 @@ Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: when you revi
 
 ## Naming
 
-* Methods, `Action`s and `Func`s are verbs that say the action and the result: `GetOrCreate`, not `For`. Past tense is only for events.
+* Methods, `Action`s and `Func`s are verbs that say the action and the result: `GetOrCreate`, not `For`. Past tense is only for events. A method that handles an event keeps the .NET `On<EventName>` form (`OnRegexPropertyChanged`); a callback parameter is a verb (`handleFrame`).
 * A method that returns a `bool` to say whether it succeeded starts with `Try` and returns any other result through a `[NotNullWhen(true)] out` parameter. A method that only answers a question, such as `IsLatest`, is not a `Try` method.
-* Properties, fields and locals are nouns; a `bool` is a question (`DidAnimationComplete`).
+* Properties, fields and locals are nouns; a `bool` is a question (`DidAnimationComplete`). A `Task` ends with `Task` and a `TaskCompletionSource` with `Source` (`peakReachedTask`, `animationEndedSource`).
 * Apply this to code you add or change. Don't rename code you aren't otherwise changing. Full rules: [CONTRIBUTING.md](CONTRIBUTING.md#naming-conventions).
 
 ## Instructions

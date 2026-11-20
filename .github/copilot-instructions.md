@@ -44,7 +44,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Use file-scoped namespaces to reduce code verbosity.
 * Write comments only to explain **why** (a non-intuitive decision, a platform quirk or workaround, code that looks out of scope); never to explain **what** the code does. Use descriptive names instead.
 * Avoid using the **!** null forgiving operator.
-* Follow naming conventions for enums and property names.
+* Follow the Naming Conventions section below, and the naming guidelines for enums and property names.
 * Code that reads or formats with **CurrentCulture** or takes a **CultureInfo** must be tested in Turkish (tr-TR, az-Latn-AZ) and the other notorious cultures; see `.github/instructions/culture.instructions.md`.
 
 ### Element Positioning (enforced as build warnings)
@@ -68,7 +68,7 @@ StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **buil
 ### Enums
 * Always use `Unknown` at index 0 for return types that may have a value that is not known
 * Always use `Default` at index 0 for option types that can use the system default option
-* Follow naming guidelines for tense... `SensorSpeed` not `SensorSpeeds`
+* Follow naming guidelines for number (singular, not plural)... `SensorSpeed` not `SensorSpeeds`
 * Assign values (0,1,2,3) for all enums, if not marked with a `Flags` attribute. This is to ensure that the enum can be serialized and deserialized correctly across platforms.
 
 ### Naming Conventions
@@ -78,6 +78,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 * **Methods, `Action`s and `Func`s are verbs** that describe both the action they do and the result they return.
   * `GetOrCreate(view, property)`, not `For(view, property)`
   * `StartAnimationAndGetOriginalValue(currentValue)`, not `Start(currentValue)`
+  * A method that handles an event keeps the .NET `On<EventName>` form, such as `OnRegexPropertyChanged`. A callback passed as a parameter is still a verb: `handleFrame`, not `onFrame`.
 * **Past tense is only for events.** A method that records that something happened still starts with a verb.
   * `RecordHandOverToApp(animationId)`, not `HandedOverToApp(animationId)`
 * **A method that returns a `bool` to say whether it succeeded follows the [Try-Parse pattern](https://learn.microsoft.com/dotnet/standard/design-guidelines/exceptions-and-performance#try-parse-pattern).**
@@ -92,6 +93,7 @@ Names tell the story of the code, so it needs no comment that says *what* it doe
 * **Properties, fields and local variables are nouns.** A `bool` is a question.
   * `public bool DidAnimationComplete { get; private set; }`
   * `var wasTranslationInterrupted = ...`, not `var translationWasInterrupted = ...`
+  * A `Task` or `TaskCompletionSource` ends with what it is: `peakReachedTask` and `animationEndedSource`, not `peakReached` and `animationEnded`.
 * **Events are past-tense verbs** that describe what happened.
   * `MediaFailed`, `MediaEnded`
 
@@ -123,7 +125,7 @@ if (canRetry)
 
 // Prefer - a comment that explains why
 // AVPlayerItem reports an indefinite duration until its asset has loaded, so wait for ReadyToPlay before reading it
-await readyToPlay.Task.WaitAsync(token);
+await readyToPlaySource.Task.WaitAsync(token);
 ```
 
 ### Pattern matching
