@@ -429,6 +429,111 @@ function New-TestSimulator {
     return New-Object PSObject -Property @{ Simulator = $simulator; Error = (Wait-Simulator -Identifier $udid -TimeoutSeconds $BootTimeoutSeconds) }
 }
 
+# The device log of a failed leg is often lost: on iOS 27 launchd_sim kills logd when the app starts and the xharness log stream dies with it.
+# The simulator's unified log, its process table and a sample of its media daemons are therefore saved before the simulator is deleted.
+$script:SimulatorEvidenceBudgetSeconds = 170
+$script:SimulatorMediaDaemons = @('mediaplaybackd', 'mediaserverd', 'audiomxd', 'mediaremoted', 'mediaparserd')
+$script:SimulatorMediaLogPredicate = 'subsystem BEGINSWITH "com.apple.coremedia" OR subsystem == "com.apple.avfoundation" OR process IN {"mediaplaybackd","mediaserverd","audiomxd","mediaremoted","mediaparserd"}'
+$script:SimulatorErrorLogPredicate = 'messageType == error OR messageType == fault'
+
+function Save-SimulatorEvidenceCommand {
+    # Best effort: never throws, and never waits longer than the budget that is left.
+    param([string]$Directory, [string]$FileName, [string]$FilePath, [string[]]$ArgumentList, [int]$TimeoutSeconds, [datetime]$Deadline)
+
+    $invariant = [System.Globalization.CultureInfo]::InvariantCulture
+    try {
+        $remaining = [int][Math]::Floor(($Deadline - [datetime]::UtcNow).TotalSeconds)
+        if ($remaining -lt 5) {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message "$($FileName): skipped, the evidence time budget is used up"
+            return $null
+        }
+
+        $timeout = [Math]::Min($TimeoutSeconds, $remaining)
+        $started = [datetime]::UtcNow
+        $result = Invoke-DeviceTestProcess -FilePath $FilePath -ArgumentList $ArgumentList -TimeoutSeconds $timeout
+        $text = [string]$result.Output
+        if ($result.Error) {
+            $text = $text + "`
+--- stderr ---`
+" + $result.Error
+        }
+
+        [System.IO.File]::WriteAllText((Join-Path $Directory $FileName), $text, (New-Object System.Text.UTF8Encoding($false)))
+        $seconds = [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)
+        if ($result.TimedOut) {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, '{0}: timed out after {1} s, {2} chars saved', $FileName, $timeout, $text.Length))
+        }
+        else {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message ([string]::Format($invariant, '{0}: exit {1}, {2} chars, {3} s', $FileName, $result.ExitCode, $text.Length, $seconds))
+        }
+
+        return $result
+    }
+    catch {
+        try {
+            Add-AndroidEvidenceLogLine -Directory $Directory -Message "$($FileName): failed: $($_.Exception.Message)"
+        }
+        catch {
+            Write-Verbose "Could not write collect.log: $($_.Exception.Message)"
+        }
+
+        return $null
+    }
+}
+
+function Get-SimulatorProcessLines {
+    param([string]$PsOutput, [string]$Udid)
+
+    $lines = @(([string]$PsOutput) -split "`?`
+" | Select-Object -Skip 1)
+    return @($lines | Where-Object { $_.IndexOf($Udid, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+}
+
+function Save-SimulatorEvidence {
+    param([string]$Udid, [string]$ResultsDirectory)
+
+    $directory = Join-Path $ResultsDirectory 'device-evidence'
+    try {
+        New-Item -ItemType Directory -Force -Path $directory | Out-Null
+        $deadline = [datetime]::UtcNow.AddSeconds($script:SimulatorEvidenceBudgetSeconds)
+        Add-AndroidEvidenceLogLine -Directory $directory -Message "collecting evidence of simulator $Udid (budget $($script:SimulatorEvidenceBudgetSeconds) s)"
+
+        $processes = Save-SimulatorEvidenceCommand -Directory $directory -FileName 'processes.txt' -FilePath 'ps' -ArgumentList @('-axo', 'pid,lstart,etime,command') -TimeoutSeconds 20 -Deadline $deadline
+        if ($null -ne $processes -and -not $processes.TimedOut) {
+            $lines = @(Get-SimulatorProcessLines -PsOutput $processes.Output -Udid $Udid)
+            [System.IO.File]::WriteAllText((Join-Path $directory 'processes.txt'), (("pid lstart etime command (only processes of this simulator)`
+") + ($lines -join "`
+") + "`
+"), (New-Object System.Text.UTF8Encoding($false)))
+            Add-AndroidEvidenceLogLine -Directory $directory -Message "processes.txt: $($lines.Count) processes of this simulator"
+
+            foreach ($daemon in $script:SimulatorMediaDaemons) {
+                $matching = @($lines | Where-Object { $_ -match "/$([regex]::Escape($daemon))(\s|$)" })
+                if ($matching.Count -eq 0) {
+                    Add-AndroidEvidenceLogLine -Directory $directory -Message "sample-$daemon: not running in this simulator"
+                    continue
+                }
+
+                foreach ($line in $matching) {
+                    $processId = 0
+                    $first = ($line.Trim() -split '\s+')[0]
+                    if ([int]::TryParse($first, [System.Globalization.NumberStyles]::None, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$processId)) {
+                        [void](Save-SimulatorEvidenceCommand -Directory $directory -FileName "sample-$daemon-$processId.txt" -FilePath 'sample' -ArgumentList @("$processId", '3') -TimeoutSeconds 30 -Deadline $deadline)
+                    }
+                }
+            }
+        }
+
+        [void](Save-SimulatorEvidenceCommand -Directory $directory -FileName 'log-media.txt' -FilePath 'xcrun' `
+            -ArgumentList @('simctl', 'spawn', $Udid, 'log', 'show', '--last', '60m', '--style', 'compact', '--predicate', $script:SimulatorMediaLogPredicate) -TimeoutSeconds 60 -Deadline $deadline)
+        [void](Save-SimulatorEvidenceCommand -Directory $directory -FileName 'log-errors.txt' -FilePath 'xcrun' `
+            -ArgumentList @('simctl', 'spawn', $Udid, 'log', 'show', '--last', '60m', '--style', 'compact', '--predicate', $script:SimulatorErrorLogPredicate) -TimeoutSeconds 60 -Deadline $deadline)
+    }
+    catch {
+        Write-DeviceTestWarning "Collecting simulator evidence failed: $($_.Exception.Message)"
+    }
+}
+
 function Get-AppBundleIdentifiers {
     param($Context)
 
@@ -610,6 +715,7 @@ try {
                     -OnFailure {
                         param($failureOutput)
                         [void](Invoke-Simctl -ArgumentList @('io', $simulator.Udid, 'screenshot', (Join-Path $failureOutput 'screenshot.png')) -TimeoutSeconds 60)
+                        Save-SimulatorEvidence -Udid $simulator.Udid -ResultsDirectory $failureOutput
                     }
             }
 
