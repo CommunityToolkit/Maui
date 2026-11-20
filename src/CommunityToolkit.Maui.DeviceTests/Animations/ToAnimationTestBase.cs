@@ -171,7 +171,10 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 	{
 		SetupBuilder();
 
-		var animation = new ObservedAnimation(CreateAnimation());
+		var animatedByTheBehavior = CreateAnimation();
+		var lengthOfTheNewRun = animatedByTheBehavior.Length;
+		animatedByTheBehavior.Length = lengthOfARunActedOnOffTheUIThread;
+		var animation = new ObservedAnimation(animatedByTheBehavior);
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedView(OriginalValues);
 		view.Behaviors.Add(behavior);
@@ -187,6 +190,8 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 				// The UI thread waits while a pool thread triggers the behavior, so no frame can end the run before the new run's start is queued
 				await TriggerAndActMidRunAsync(view, behavior, animation, () =>
 				{
+					// The running run read its length when it started
+					animatedByTheBehavior.Length = lengthOfTheNewRun;
 					view.PropertyChanged += CountWritesUntilThePeak;
 					Assert.True(Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None)).Wait(waitTimeout), "The pool thread did not trigger the behavior.");
 				}, CancellationToken.None);

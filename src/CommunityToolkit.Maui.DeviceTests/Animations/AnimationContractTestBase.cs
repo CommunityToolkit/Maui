@@ -21,8 +21,12 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 	protected abstract TAnimation CreateAnimation();
 
-	// Leaves an abort queued from a pool thread time to reach the UI thread before the run ends, and makes a missed attempt rare
+	// Makes a missed attempt rare
 	const uint lengthOfARunCancelledMidRun = 3 * runLength;
+
+	// A pool thread's cancellation queues the abort, and a frame after a stall can run ahead of a queued item on some platforms (Android draws at the vsync time),
+	// so the rest of the run must outlast a stall of several seconds
+	protected const uint lengthOfARunActedOnOffTheUIThread = 10 * runLength;
 
 	[Fact]
 	public async Task AnimateCompletesAndReturnsTheViewToItsOriginalValues()
@@ -85,7 +89,7 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 				Assert.Null(completion);
 				AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after a run started off the UI thread completed");
 
-				animation.Length = lengthOfARunCancelledMidRun;
+				animation.Length = lengthOfARunActedOnOffTheUIThread;
 				using var cancellation = new CancellationTokenSource();
 				// The UI thread waits while a pool thread cancels, so no frame can end the run before the cancellation queued its abort
 				var run = await StartAndActMidRunAsync(view, () => Task.Run(() => animation.Animate(view, cancellation.Token)),
