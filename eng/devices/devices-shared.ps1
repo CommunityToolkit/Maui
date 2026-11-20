@@ -1667,7 +1667,7 @@ function Invoke-AppleDeviceTests {
 
     if ($verdict.ExitCode -ne 0 -and $null -ne $OnFailure) {
         try {
-            & $OnFailure $appleOutput
+            & $OnFailure $appleOutput $appBundle
         }
         catch {
             Write-DeviceTestWarning "Collecting failure diagnostics failed: $($_.Exception.Message)"
