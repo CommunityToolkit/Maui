@@ -1,8 +1,15 @@
 name: Device Tests
 
 # dotnet-build.yml calls this workflow, so the device tests are part of the Build run and its jobs can wait for them.
+# It calls it twice: the call with `trimming` is the "Trimmed Device Tests" check.
 on:
     workflow_call:
+        inputs:
+            trimming:
+                description: 'none, or full-and-nativeaot to run only the trimmed legs (eng/devices/README.md, "Trimmed and NativeAOT runs")'
+                required: false
+                type: string
+                default: 'none'
     workflow_dispatch:
         inputs:
             test-filter:
@@ -22,6 +29,14 @@ on:
                 options:
                     - Release
                     - Debug
+            trimming:
+                description: 'none, or full-and-nativeaot: only the trimmed legs, built with /p:CtmDeviceTestsTrimming (Android newest API full and NativeAOT, iOS simulator NativeAOT, Windows unpackaged full)'
+                required: false
+                type: choice
+                default: 'none'
+                options:
+                    - none
+                    - full-and-nativeaot
 
 permissions:
     contents: read
@@ -43,22 +58,31 @@ env:
 # Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
 # (eng/devices/LOCAL.md), so this file shows how to run them. -Platform is explicit because without it run.ps1 runs every platform of the
 # machine and, for a Category= filter, skips a platform that has no test of the category instead of failing with 94.
+# With `trimming` set, only device_tests_android, device_tests_ios and device_tests_windows run, built trimmed and checked by
+# check-trimmed-device-test-app.sh; the other jobs are skipped.
 jobs:
     # Collecting coverage (DEVICE_TEST_COVERAGE; eng/devices/README.md, "Code coverage") builds the app with instrumented toolkit
     # assemblies, so a manual run collects none: nothing merges it there, a run with a filter covers only part of the
     # tests, and a run started to answer a question does not need the instrumentation. In a called workflow, github.event_name is the
     # caller's event, so != 'workflow_dispatch' is true in a Build run only.
     device_tests_android:
-        name: Device Tests (Android API 36)
+        name: ${{ matrix.trimming == 'none' && 'Device Tests (Android API 36)' || format('Trimmed Device Tests (Android newest API, {0})', matrix.trimming) }}
         permissions:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
         runs-on: ubuntu-24.04
-        # 110 minutes: this job also builds the app in its test step (coverage), with the emulator running.
-        timeout-minutes: 110
+        # 110 minutes: this job also builds the app in its test step (coverage), with the emulator running. A trimmed leg gets 120: its
+        # build step runs before the emulator, and a known platform crash gets one retry.
+        timeout-minutes: ${{ matrix.trimming == 'none' && 110 || 120 }}
+        strategy:
+            fail-fast: false
+            matrix:
+                # Android NativeAOT is experimental in .NET 11; full trimming also covers CoreCLR, the runtime Android apps use by default.
+                trimming: ${{ fromJSON(inputs.trimming == 'none' && '["none"]' || '["full","nativeaot"]') }}
         env:
             # One Android level is enough for the merged coverage report; device_tests_android_runtime runs the others without the instrumented build.
-            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
+            # Trimmed legs never collect it: coverlet rewrites the toolkit assemblies, and the trimming guard fails such a build.
+            DEVICE_TEST_COVERAGE: ${{ matrix.trimming == 'none' && github.event_name != 'workflow_dispatch' }}
             # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
             # answer, and then every OfflineSpeechToTextTests question waits 30 s (25 rows on API 36), which can exceed the time budget.
             # Delete it when a run-everything run shows those rows passing, or skipping without the 30 s waits, on every API level.
@@ -142,18 +166,47 @@ jobs:
                     free -h
                     df -h "$GITHUB_WORKSPACE" "$HOME"
 
+            -   name: Choose the Android API level
+                id: api
+                shell: bash
+                env:
+                    TRIMMING: ${{ matrix.trimming }}
+                run: |
+                    if [ "$TRIMMING" = none ]; then
+                        echo 'level=36' | tee -a "$GITHUB_OUTPUT"
+                        echo 'leg=android-api36' | tee -a "$GITHUB_OUTPUT"
+                        exit 0
+                    fi
+                    # The trimmed legs follow the newest level of device_tests_android_runtime, so adding a level needs no second edit.
+                    level=$(python3 -I .github/scripts/newest-android-api-level.py .github/workflows/device-tests.yml)
+                    echo "level=$level" | tee -a "$GITHUB_OUTPUT"
+                    echo "leg=trimmed-android-api$level-$TRIMMING" | tee -a "$GITHUB_OUTPUT"
+                    # Android 17: the goldfish H.264 decoder is denied its BufferPool memfd by SELinux, so the AOSP software decoder decodes.
+                    case "$level" in 37|37.*) echo 'emulator-features=-feature -HardwareDecoder' | tee -a "$GITHUB_OUTPUT" ;; esac
+
             # A job that collects coverage builds in its test step instead: the app is built once, with the instrumented toolkit assemblies,
             # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
                 if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform android -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" ${{ matrix.trimming != 'none' && format('-BuildArgs ''/p:CtmDeviceTestsTrimming={0}''', matrix.trimming) || '' }}
 
-            # Runs even when the build step failed: run.ps1 then reports Not run (71) with the build error.
+            -   name: Check that the app is ${{ matrix.trimming == 'nativeaot' && 'compiled with NativeAOT' || 'fully trimmed' }}
+                id: check
+                if: ${{ matrix.trimming != 'none' }}
+                run: bash .github/scripts/check-trimmed-device-test-app.sh ${{ matrix.trimming }}
+
+            # See device_tests_android_runtime for why the runner image's old cmdline-tools go.
+            -   name: Remove the runner image's old cmdline-tools
+                if: ${{ contains(steps.api.outputs.level, '.') }}
+                run: sudo rm -rf "$ANDROID_HOME/cmdline-tools"
+
+            # Runs even when the build step failed: run.ps1 then reports Not run (71) with the build error. A trimmed leg runs only an app
+            # that the check step accepted.
             -   name: Run device tests
-                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' && (matrix.trimming == 'none' || steps.check.outcome == 'success') }}
                 uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
                 with:
-                    api-level: 36
+                    api-level: ${{ steps.api.outputs.level }}
                     target: google_apis
                     arch: x86_64
                     profile: pixel_7_pro
@@ -165,18 +218,22 @@ jobs:
                     # emulator, so a saved snapshot never matched the next start's configuration ("The emulator is starting from scratch.
                     # Reason: different AVD configuration") and every run cold-booted anyway. AVDs that avdmanager creates have no front
                     # camera (hw.camera.front=none); -camera-front emulated adds one for the two-camera tests.
-                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated
+                    emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front emulated ${{ steps.api.outputs.emulator-features }}
                     disable-animations: true
+                    # The first script line is the target=android-0 guard (see device_tests_android_runtime), on one line because the action
+                    # runs each line in its own shell.
                     # 50 minutes: the tests of every package took 14.7 minutes on API 36 and 14.6 on API 28 on this runner (232630d9, three apps then) and
                     # 13.4 minutes on an arm64 emulator on an M4 Max (one app); a slow runner is about 2x slower.
                     # -ResultsFolder, not -Results: the coverage upload below reads this exact folder, and the coverage report is named after it.
-                    script: pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api36
+                    script: |
+                        avd="${ANDROID_AVD_HOME:-$HOME/.android/avd}"; grep -s '^target=' "$avd/test.ini" "$avd/test.avd/config.ini"; if [ ! -f "$avd/test.ini" ] || grep -qs '^target=android-0$' "$avd/test.ini" "$avd/test.avd/config.ini"; then echo "::error::The AVD in $avd is missing or has target=android-0 (old cmdline-tools)."; exit 1; fi
+                        pwsh ./eng/devices/run.ps1 -Platform android -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/${{ steps.api.outputs.leg }}
 
             -   name: Upload device test results
                 if: always()
                 uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
-                    name: device-tests-android-api36
+                    name: device-tests-${{ steps.api.outputs.leg }}
                     path: |
                         artifacts/device-tests/
                         artifacts/logs/
@@ -193,6 +250,7 @@ jobs:
     # coverage, so it builds an instrumented app in its test step.
     device_tests_android_app:
         name: Device Tests (Android app for the other API levels)
+        if: ${{ inputs.trimming == 'none' }}
         permissions:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
@@ -305,6 +363,7 @@ jobs:
     # No coverage: device_tests_android collects the Android coverage.
     device_tests_android_runtime:
         name: Device Tests (Android API ${{ matrix.api-level }})
+        if: ${{ inputs.trimming == 'none' }}
         needs: [ device_tests_android_app ]
         permissions:
             contents: read
@@ -475,14 +534,22 @@ jobs:
                         artifacts/logs/
 
     device_tests_ios:
-        name: Device Tests (iOS Simulator)
+        name: ${{ matrix.trimming == 'none' && 'Device Tests (iOS Simulator)' || format('Trimmed Device Tests (iOS Simulator, {0})', matrix.trimming) }}
         permissions:
             contents: read
         runs-on: xcode-27
         # Release compiles every assembly ahead of time with LLVM: about 12 minutes for the test app on a busy M4 Max, against 1.5 in Debug.
-        timeout-minutes: 120
+        # A trimmed leg gets 150: NativeAOT compiles the whole app, which took about 6 minutes more than the build here.
+        timeout-minutes: ${{ matrix.trimming == 'none' && 120 || 150 }}
+        strategy:
+            fail-fast: false
+            matrix:
+                # NativeAOT only: it is how iOS apps are meant to ship, it trims fully, and the untrimmed iOS job does not trim at all. Mac Catalyst
+                # NativeAOT passed by hand too, but would add a second macOS runner and has hung at launch once.
+                trimming: ${{ fromJSON(inputs.trimming == 'none' && '["none"]' || '["nativeaot"]') }}
         env:
-            DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
+            # Trimmed legs never collect coverage: coverlet rewrites the toolkit assemblies, and the trimming guard fails such a build.
+            DEVICE_TEST_COVERAGE: ${{ matrix.trimming == 'none' && github.event_name != 'workflow_dispatch' }}
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -553,18 +620,24 @@ jobs:
             # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
                 if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION"
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target buildOnly -Configuration "$DEVICE_TEST_CONFIGURATION" ${{ matrix.trimming != 'none' && format('-BuildArgs ''/p:CtmDeviceTestsTrimming={0}''', matrix.trimming) || '' }}
+
+            -   name: Check that the app is compiled with NativeAOT
+                id: check
+                if: ${{ matrix.trimming != 'none' }}
+                run: bash .github/scripts/check-trimmed-device-test-app.sh ${{ matrix.trimming }}
 
             # 60 minutes: the tests of every package took 22 minutes on this runner (232630d9; 3 M1 cores, runs vary by about 30%).
+            # The untrimmed leg keeps run.ps1's default results folder, which the coverage upload below reads.
             -   name: Run device tests
-                if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
-                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00
+                if: ${{ !cancelled() && steps.tools.outcome == 'success' && (matrix.trimming == 'none' || steps.check.outcome == 'success') }}
+                run: pwsh ./eng/devices/run.ps1 -Platform ios -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration "$DEVICE_TEST_CONFIGURATION" -Timeout 01:00:00 ${{ matrix.trimming != 'none' && format('-ResultsFolder artifacts/device-tests/ios-{0}', matrix.trimming) || '' }}
 
             -   name: Upload device test results
                 if: always()
                 uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
-                    name: device-tests-ios
+                    name: ${{ matrix.trimming == 'none' && 'device-tests-ios' || format('device-tests-trimmed-ios-{0}', matrix.trimming) }}
                     path: |
                         artifacts/device-tests/
                         artifacts/logs/
@@ -581,6 +654,7 @@ jobs:
     # coverage, so it builds an instrumented app in its test step.
     device_tests_ios_app:
         name: Device Tests (iOS app for older iOS versions)
+        if: ${{ inputs.trimming == 'none' }}
         permissions:
             contents: read
         runs-on: xcode-27
@@ -676,6 +750,7 @@ jobs:
     #   - 17.5, 16.4, 15.5: no runner image has them, so the install step downloads the runtime. They run on macos-15 like 18.6.
     device_tests_ios_runtime:
         name: Device Tests (iOS ${{ matrix.ios-version }} Simulator)
+        if: ${{ inputs.trimming == 'none' }}
         needs: [ device_tests_ios_app ]
         permissions:
             contents: read
@@ -811,6 +886,7 @@ jobs:
 
     device_tests_maccatalyst:
         name: Device Tests (Mac Catalyst)
+        if: ${{ inputs.trimming == 'none' }}
         permissions:
             contents: read
         runs-on: xcode-27
@@ -957,7 +1033,7 @@ jobs:
                     if-no-files-found: warn
 
     device_tests_windows:
-        name: Device Tests (Windows ${{ matrix.packaging }})
+        name: ${{ matrix.trimming == 'none' && format('Device Tests (Windows {0})', matrix.packaging) || format('Trimmed Device Tests (Windows {0}, {1})', matrix.packaging, matrix.trimming) }}
         permissions:
             contents: read
         # Pinned: windows-latest, windows-2025 and windows-2025-vs2026 run the same image today (Windows Server 2025, x64), but windows-latest
@@ -967,7 +1043,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                packaging: [ packaged, unpackaged ]
+                # Trimmed: full only (NativeAOT does not work for .NET MAUI on Windows, https://github.com/dotnet/maui/issues/39053) and
+                # unpackaged only (the trimmer treats both packagings alike, and it needs no signing certificate).
+                packaging: ${{ fromJSON(inputs.trimming == 'none' && '["packaged","unpackaged"]' || '["unpackaged"]') }}
+                trimming: ${{ fromJSON(inputs.trimming == 'none' && '["none"]' || '["full"]') }}
         env:
             # VideoRendering: the runner has no GPU (Direct3D on WARP), and no run has shown its MediaPlayer rendering the H.264 test clip, so the
             # 48 MediaElement tests that need rendering are skipped here; local runs keep them. Delete it when a run-everything run shows them
@@ -1059,25 +1138,32 @@ jobs:
             # run.ps1 runs windows.ps1 in the same process, so in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
             -   name: Build device test apps
                 shell: powershell
-                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Configuration $env:DEVICE_TEST_CONFIGURATION
+                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Configuration $env:DEVICE_TEST_CONFIGURATION ${{ matrix.trimming != 'none' && format('-BuildArgs ''/p:CtmDeviceTestsTrimming={0}''', matrix.trimming) || '' }}
+
+            -   name: Check that the app is fully trimmed
+                id: check
+                if: ${{ matrix.trimming != 'none' }}
+                shell: bash
+                run: bash .github/scripts/check-trimmed-device-test-app.sh ${{ matrix.trimming }}
 
             -   name: Run device tests
-                if: ${{ !cancelled() && steps.workload.outcome == 'success' }}
+                if: ${{ !cancelled() && steps.workload.outcome == 'success' && (matrix.trimming == 'none' || steps.check.outcome == 'success') }}
                 shell: powershell
-                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target testOnly -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00
+                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target testOnly -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00 ${{ matrix.trimming != 'none' && format('-ResultsFolder artifacts/device-tests/windows-{0}-{1}', matrix.packaging, matrix.trimming) || '' }}
 
             -   name: Upload device test results
                 if: always()
                 uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
-                    name: device-tests-windows-${{ matrix.packaging }}
+                    name: ${{ matrix.trimming == 'none' && format('device-tests-windows-{0}', matrix.packaging) || format('device-tests-trimmed-windows-{0}-{1}', matrix.packaging, matrix.trimming) }}
                     path: |
                         artifacts/device-tests/
                         artifacts/logs/
 
-    # The single status check to require in branch protection ("Device Tests / Device Tests" in a Build run).
+    # The single status check to require in branch protection: "Device Tests / Device Tests" in a Build run, and
+    # "Trimmed Device Tests / Trimmed Device Tests" for the call with `trimming`.
     device_tests:
-        name: Device Tests
+        name: ${{ inputs.trimming == 'none' && 'Device Tests' || 'Trimmed Device Tests' }}
         if: ${{ always() }}
         # A failed app build skips device_tests_ios_runtime or device_tests_android_runtime, and the check below counts a skipped job as not succeeded.
         needs: [ device_tests_android, device_tests_android_app, device_tests_android_runtime, device_tests_ios, device_tests_ios_app, device_tests_ios_runtime, device_tests_maccatalyst, device_tests_windows ]
@@ -1088,7 +1174,8 @@ jobs:
             -   name: Check device test jobs
                 env:
                     NEEDS: ${{ toJSON(needs) }}
-                    ANY_JOB_NOT_SUCCEEDED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+                    # A trimmed run skips the untrimmed-only jobs on purpose, so there only the three jobs that run in both modes must succeed.
+                    ANY_JOB_NOT_SUCCEEDED: ${{ needs.device_tests_android.result != 'success' || needs.device_tests_ios.result != 'success' || needs.device_tests_windows.result != 'success' || (inputs.trimming == 'none' && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped'))) }}
                 run: |
                     echo "$NEEDS"
                     if [ "$ANY_JOB_NOT_SUCCEEDED" = "true" ]; then

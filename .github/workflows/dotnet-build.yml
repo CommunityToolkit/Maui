@@ -331,7 +331,9 @@ jobs:
     device_tests_trimmed:
         name: Trimmed Device Tests
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        uses: ./.github/workflows/device-tests-trimmed.yml
+        uses: ./.github/workflows/device-tests.yml
+        with:
+            trimming: full-and-nativeaot
 
     # Runs whatever the tests' results, and on tag builds, which skip the device tests. What a called workflow uploads belongs to the run
     # of the workflow that called it, so this job waits for the whole device_tests job, the Windows jobs too, which collect no coverage.
