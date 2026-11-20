@@ -94,7 +94,7 @@ public partial class MediaManager : IDisposable
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
-	/// <remarks>After a failed source, the next source gets a new <see cref="AVPlayer"/>; <see cref="PlayerViewController"/>.Player always holds the current one.</remarks>
+	/// <remarks>After a failed source, the next source gets a new <see cref="AVPlayer"/>; <see cref="PlayerViewController"/>.Player always holds the current one. Calling it again disposes the current <see cref="AVPlayer"/>, with its observers, remote-command targets and Now Playing info.</remarks>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{

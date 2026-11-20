@@ -229,7 +229,10 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
   first. The base class's constructor fails a test whose class forgot the attribute. When the cleanup of such a test finds a camera that
   stays open, it logs every Java stack (logcat tag `CameraWedge`) and sends SIGQUIT (not on Android 7, where it aborts the app), so ART
   writes the Java and native stacks under `/data/anr` (only root can read them). If a thread is stuck in `CameraDeviceImpl.close`, or
-  CameraX lost its cameras, every later camera test fails at once with that reason.
+  CameraX lost its cameras, every later camera test fails at once with that reason. Whether a camera is closed comes from the
+  camera service (Camera2's availability callbacks, `CameraClosedCheck`), never from CameraX's `CameraState`, which CameraX 1.5.3
+  can leave at OPENING after a close: use `WaitForAllCamerasClosedAsync`, `WaitForCameraClosedAsync` or
+  `AssertCameraIsClosedAsync`.
 
 Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the platforms that build a test
 of the category; see [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its
@@ -276,10 +279,16 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   `await VisibleFrame.RecordWithoutKeyboardAsync(platformView)` hides any soft keyboard first and records the frame that
   `ShowsKeyboard` measures against; `frame.WaitUntilTheKeyboardShowsSteadilyAsync(timeout)` waits, before a test types, until the
   input method has laid the keyboard out (a keyboard that flashes and hides again fails the wait); `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
-  opened it can no longer hide, because it has left the window.
+  opened it can no longer hide, because it has left the window. A test that needs the focus but not the keyboard calls
+  `SoftKeyboardHelpers.KeepFocusFromShowingTheKeyboard(input)` first, so the keyboard show that MAUI's focus posts can't land in
+  the next test.
 - Main app, `FocusHelpers.AddClearedFocusTargetAsync` (app root; a no-op off Android): `await using var _ = await FocusHelpers.AddClearedFocusTargetAsync();`
   before `AttachAndRun` in a test that clears the focus or checks that it was lost. Android 8.1 and earlier give the focus back to the
   first focusable view, so without it such a test fails only on the API 25 and 27 legs.
+- Android only, `AnimatorDurationScale` (app root): on the UI thread, `TryEnable(out var previous)` switches the animator duration
+  scale on for this process and returns null, or the error. When `previous` has a value, `TrySet(previous.Value)` restores it. Below API
+  26, a test that waits for a .NET MAUI animation to end calls it first (`ColorAnimationTestBase.EnsureAnimationsCanEndAsync`
+  shows how): CI sets the scale to 0, so MAUI's ticker stops after one frame and the test hangs on the API 25 leg.
 - `MediaElementSupport.SkipIfUnsupported()` (`MediaElement/`): first line of a MediaElement test outside the `MediaElementAndroid` category, since
   the app's Android minimum is 24 and MediaElement needs 26.
 - `WindowSceneRotation.Request(windowScene, mask, onError)` (iOS and Mac Catalyst): rotates a window scene on iOS 15 as on later versions.
@@ -340,6 +349,9 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   The Mono runtime of Android, iOS and Mac Catalyst scans thread stacks conservatively, so a stale stack slot of the thread that
   hosted the views can, rarely, keep one object alive through every collection that thread runs. The behavior leak tests collect
   from a fresh thread for that reason (`VisualBehaviorHelpers.WaitForGCAsync`); use it for a leak test that has to be deterministic there.
+  On iOS and Mac Catalyst the main thread waits while that thread collects, because finalizers there release UIKit objects off the main
+  thread. A leak test of an object that the library releases after a delay waits for that release first, as the document picker tests
+  do (`FilesApplePicker.WaitUntilReleasedAsync`).
 - **OS-version branches.** Platform code can branch on `OperatingSystem.IsAndroidVersionAtLeast(n)`, `IsIOSVersionAtLeast`,
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
