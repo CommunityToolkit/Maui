@@ -18,7 +18,7 @@ public class RotateAnimationTests : ToAnimationTestBase<RotateAnimation>
 
 	protected override RotateAnimation CreateAnimation() => new() { Rotation = rotation, Length = runLength };
 
-	protected override Task<bool> AppToAnimation(VisualElement view, double target) => view.RotateToAsync(target, runLength, Easing.Linear);
+	protected override Task<bool> StartAppsToAnimation(VisualElement view, double target) => view.RotateToAsync(target, runLength, Easing.Linear);
 
 	// A rotation is one animation that lasts the whole run, so a frame as late as the round-trip animations' would end the run before a second one could start in the middle of it
 	protected override TimeSpan LateFrameDelay { get; } = TimeSpan.FromMilliseconds(runLength / 2);

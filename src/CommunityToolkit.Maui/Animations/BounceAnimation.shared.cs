@@ -38,28 +38,28 @@ public partial class BounceAnimation() : BaseAnimation(BounceAnimationDefaults.L
 
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
-		var originalTranslationY = target.OriginalValueOf(VisualElement.TranslationYProperty);
-		var setTranslationY = target.TranslationSetterFor(VisualElement.TranslationYProperty);
+		var originalTranslationY = target.GetOriginalValue(VisualElement.TranslationYProperty);
+		var setTranslationY = target.GetTranslationSetter(VisualElement.TranslationYProperty);
 		var firstHop = Distance;
 		var secondHop = firstHop / 2;
 		var thirdHop = firstHop * 2 / 15;
 
 		return new Animation
 		{
-			{ 0.0, 0.25, Rise(0, firstHop) },
-			{ 0.25, 0.2875, Hold(firstHop) },
-			{ 0.2875, 0.4125, Fall(firstHop, 0) },
-			{ 0.4125, 0.625, Rise(0, secondHop) },
-			{ 0.625, 0.75, Fall(secondHop, 0) },
-			{ 0.75, 0.875, Rise(0, thirdHop) },
-			{ 0.875, 1.0, Fall(thirdHop, 0) },
+			{ 0.0, 0.25, CreateRiseKeyframe(0, firstHop) },
+			{ 0.25, 0.2875, CreateHoldKeyframe(firstHop) },
+			{ 0.2875, 0.4125, CreateFallKeyframe(firstHop, 0) },
+			{ 0.4125, 0.625, CreateRiseKeyframe(0, secondHop) },
+			{ 0.625, 0.75, CreateFallKeyframe(secondHop, 0) },
+			{ 0.75, 0.875, CreateRiseKeyframe(0, thirdHop) },
+			{ 0.875, 1.0, CreateFallKeyframe(thirdHop, 0) },
 		};
 
-		Animation Rise(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicOut);
-		Animation Fall(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicIn);
+		Animation CreateRiseKeyframe(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicOut);
+		Animation CreateFallKeyframe(double fromHeight, double toHeight) => new(setTranslationY, originalTranslationY - fromHeight, originalTranslationY - toHeight, Easing.CubicIn);
 
 		// A running TranslateToAsync writes TranslationY every frame, so the pause at the peak must keep writing the height
 		// or the view drops back to rest
-		Animation Hold(double height) => new(setTranslationY, originalTranslationY - height, originalTranslationY - height);
+		Animation CreateHoldKeyframe(double height) => new(setTranslationY, originalTranslationY - height, originalTranslationY - height);
 	}
 }

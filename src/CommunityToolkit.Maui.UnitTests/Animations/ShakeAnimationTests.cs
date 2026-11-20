@@ -139,7 +139,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList();
+		var translations = recorder.GetValues(nameof(VisualElement.TranslationX)).ToList();
 		var lastQuarter = translations.Skip(translations.Count * 3 / 4).Take(translations.Count / 4 - 1);
 		lastQuarter.Max(translationX => Math.Abs(translationX - originalTranslationX)).Should().BeGreaterThan(10);
 	}, TestContext.Current.CancellationToken);
@@ -153,7 +153,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList();
+		var translations = recorder.GetValues(nameof(VisualElement.TranslationX)).ToList();
 		translations[^1].Should().BeApproximately(originalTranslationX, precision);
 		translations[^2].Should().BeLessThan(originalTranslationX + animation.ReducingAmount - precision);
 	}, TestContext.Current.CancellationToken);
@@ -167,7 +167,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		recorder.ValuesOf(nameof(VisualElement.TranslationX)).Should().OnlyContain(translationX => Math.Abs(translationX - originalTranslationX) <= precision);
+		recorder.GetValues(nameof(VisualElement.TranslationX)).Should().OnlyContain(translationX => Math.Abs(translationX - originalTranslationX) <= precision);
 		view.TranslationX.Should().BeApproximately(originalTranslationX, precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -180,7 +180,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList();
+		var translations = recorder.GetValues(nameof(VisualElement.TranslationX)).ToList();
 		translations[^2].Should().BeApproximately(originalTranslationX + animation.StartFactor - (99 * animation.ReducingAmount), precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -194,7 +194,7 @@ public class ShakeAnimationTests : BaseKeyframeAnimationTests<ShakeAnimation>
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		// CubicIn over the whole run barely moves the view on the first tick; over the first movement alone it moves it more than 1
-		recorder.ValuesOf(nameof(VisualElement.TranslationX)).First().Should().BeLessThan(originalTranslationX - 1);
+		recorder.GetValues(nameof(VisualElement.TranslationX)).First().Should().BeLessThan(originalTranslationX - 1);
 	}, TestContext.Current.CancellationToken);
 
 	[Theory]

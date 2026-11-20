@@ -37,25 +37,25 @@ public partial class FlipHorizontalAnimation() : RotateAnimation(FlipHorizontalA
 		var projectionAtStart = FlipProjection.GetCurrent(view);
 		StopAnimationsOf(view, VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync));
 
-		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationYProperty);
-		var (flipId, originalRotationY) = rotations.Start(view.RotationY);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(view, VisualElement.RotationYProperty);
+		var (flipId, originalRotationY) = tracker.StartAnimationAndGetOriginalValue(view.RotationY);
 
 		var halfLength = Length / 2;
 
 		try
 		{
-			if (await FlipToRotationAsync(Rotation) && rotations.IsLatest(flipId))
+			if (await TryFlipToRotationAsync(Rotation) && tracker.IsLatest(flipId))
 			{
-				await FlipToRotationAsync(originalRotationY);
+				await TryFlipToRotationAsync(originalRotationY);
 			}
 		}
 		finally
 		{
-			rotations.End(flipId, view.RotationY);
+			tracker.EndAnimation(flipId, view.RotationY);
 			FlipProjection.RemoveIfStale(view, projectionAtStart);
 		}
 
-		Task<bool> FlipToRotationAsync(double rotationY) =>
-			AnimateAndRestoreIfStoppedAsync(view, VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync), flipId, originalRotationY, () => view.RotateYToAsync(rotationY, halfLength, Easing, CancellationToken.None), token);
+		Task<bool> TryFlipToRotationAsync(double rotationY) =>
+			TryAnimateAndRestoreIfStoppedAsync(view, VisualElement.RotationYProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync), flipId, originalRotationY, () => view.RotateYToAsync(rotationY, halfLength, Easing, CancellationToken.None), token);
 	}
 }

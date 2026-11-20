@@ -22,8 +22,8 @@ static class AnimationExtensions
 		view.Handler is MockAnimationHandler handler ? handler.TickingAnimationCount : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
 	// Reports the mock clock once per ticker frame, after every animation has been ticked, so a test sees values that held still as well as values that changed
-	public static IDisposable ObserveAnimationFrames(this IView view, Action<long> onFrame) =>
-		view.Handler is MockAnimationHandler handler ? handler.ObserveFrames(onFrame) : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
+	public static IDisposable ObserveAnimationFrames(this IView view, Action<long> handleFrame) =>
+		view.Handler is MockAnimationHandler handler ? handler.ObserveFrames(handleFrame) : throw new InvalidOperationException($"Call {nameof(EnableAnimations)} first");
 
 	// Inspired by Microsoft.Maui.Controls.Core.UnitTests.AnimationReadyHandler
 	sealed class MockAnimationHandler : ViewHandler<IView, object>
@@ -45,7 +45,7 @@ static class AnimationExtensions
 		// The ticker advances animations a fixed 16 ms per tick however long a tick really takes, so this clock does not depend on the speed of the machine
 		public long ElapsedAnimationMilliseconds => animationManager.ElapsedMilliseconds;
 
-		public IDisposable ObserveFrames(Action<long> onFrame) => animationManager.ObserveFrames(onFrame);
+		public IDisposable ObserveFrames(Action<long> handleFrame) => animationManager.ObserveFrames(handleFrame);
 
 		public int TickingAnimationCount => animationManager.TickingAnimationCount;
 
@@ -179,11 +179,11 @@ static class AnimationExtensions
 
 			public int TickingAnimationCount => animations.Count(animation => !animation.HasFinished);
 
-			public IDisposable ObserveFrames(Action<long> onFrame)
+			public IDisposable ObserveFrames(Action<long> handleFrame)
 			{
-				frameObservers.Add(onFrame);
+				frameObservers.Add(handleFrame);
 
-				return new FrameObservation(() => frameObservers.Remove(onFrame));
+				return new FrameObservation(() => frameObservers.Remove(handleFrame));
 			}
 
 			public double SpeedModifier { get; set; } = 1;
@@ -296,7 +296,7 @@ static class AnimationExtensions
 					}
 
 					var now = Stopwatch.GetTimestamp();
-					waitingFrames.RemoveAll(frame => frame.TryStart(now));
+					waitingFrames.RemoveAll(frame => frame.TryFinishWaiting(now));
 					nextDueTimestamp = waitingFrames.Count is 0 ? now : waitingFrames.Min(frame => frame.DueTimestamp);
 				}
 
@@ -310,22 +310,22 @@ static class AnimationExtensions
 		sealed class WaitingFrame
 		{
 			// Continuations run on the ticker's own SynchronizationContext or the thread pool, never on the pacing thread, which keeps the frames of other tickers on time
-			readonly TaskCompletionSource started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+			readonly TaskCompletionSource startedSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 			readonly CancellationTokenRegistration cancellationRegistration;
 
 			public WaitingFrame(long dueTimestamp, CancellationToken token)
 			{
 				DueTimestamp = dueTimestamp;
-				cancellationRegistration = token.Register(() => started.TrySetCanceled(token));
+				cancellationRegistration = token.Register(() => startedSource.TrySetCanceled(token));
 			}
 
 			public long DueTimestamp { get; }
 
-			public Task Task => started.Task;
+			public Task Task => startedSource.Task;
 
-			public bool TryStart(long now)
+			public bool TryFinishWaiting(long now)
 			{
-				if (started.Task.IsCompleted)
+				if (startedSource.Task.IsCompleted)
 				{
 					cancellationRegistration.Dispose();
 					return true;
@@ -337,7 +337,7 @@ static class AnimationExtensions
 				}
 
 				cancellationRegistration.Dispose();
-				started.TrySetResult();
+				startedSource.TrySetResult();
 				return true;
 			}
 		}

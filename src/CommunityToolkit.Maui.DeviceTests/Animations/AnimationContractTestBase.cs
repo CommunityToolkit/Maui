@@ -89,9 +89,9 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 			{
 				var animation = CreateAnimation();
 
-				var completion = await Record.ExceptionAsync(() => Task.Run(() => animation.Animate(view)).WaitAsync(waitTimeout));
+				var completionError = await Record.ExceptionAsync(() => Task.Run(() => animation.Animate(view)).WaitAsync(waitTimeout));
 				AssertNoChangeOffTheUIThread("while a run started off the UI thread played");
-				Assert.Null(completion);
+				Assert.Null(completionError);
 				AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after a run started off the UI thread completed");
 
 				animation.Length = lengthOfARunActedOnOffTheUIThread;
@@ -112,8 +112,8 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 			}
 
 			// .NET MAUI maps each change to the platform view on the thread that made it, and only the UI thread may touch platform views
-			void AssertNoChangeOffTheUIThread(string when) =>
-				Assert.True(changesOffTheUIThread.IsEmpty, $"The view changed off the UI thread {when}: {string.Join(", ", changesOffTheUIThread)}.");
+			void AssertNoChangeOffTheUIThread(string moment) =>
+				Assert.True(changesOffTheUIThread.IsEmpty, $"The view changed off the UI thread {moment}: {string.Join(", ", changesOffTheUIThread)}.");
 
 			void RecordChangeOffTheUIThread(object? sender, PropertyChangedEventArgs e)
 			{
@@ -137,16 +137,16 @@ public abstract class AnimationContractTestBase<TAnimation> : AnimationTestBase 
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			Task? peakAgain = null;
+			Task? peakAgainTask = null;
 			await TriggerAndActMidRunAsync(view, behavior, animation, () =>
 			{
-				peakAgain = WaitForPeakAsync(view);
+				peakAgainTask = WaitForPeakAsync(view);
 				behavior.AnimateCommand.Execute(CancellationToken.None);
 			}, CancellationToken.None);
 			await animation.WaitForEndedAnimationsAsync(2);
 
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
-			var peakError = await Record.ExceptionAsync(() => peakAgain!);
+			var peakError = await Record.ExceptionAsync(() => peakAgainTask!);
 			Assert.True(peakError is null, "The animation triggered again did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the animation triggered again");
 

@@ -7,22 +7,22 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 public class AnimatedPropertyTrackerTests : BaseTest
 {
 	[Fact]
-	public void Start_AtRest_CapturesTheCurrentValueAsOriginal()
+	public void StartAnimationAndGetOriginalValue_AtRest_CapturesTheCurrentValueAsOriginal()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
 
-		var (_, originalValue) = tracker.Start(30);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(30);
 
 		originalValue.Should().Be(30);
 	}
 
 	[Fact]
-	public void Start_WhileAnotherAnimationRuns_KeepsTheValueBeforeTheFirstAnimation()
+	public void StartAnimationAndGetOriginalValue_WhileAnotherAnimationRuns_KeepsTheValueBeforeTheFirstAnimation()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (firstId, _) = tracker.Start(30);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (firstId, _) = tracker.StartAnimationAndGetOriginalValue(30);
 
-		var (secondId, originalValue) = tracker.Start(75);
+		var (secondId, originalValue) = tracker.StartAnimationAndGetOriginalValue(75);
 
 		originalValue.Should().Be(30);
 		tracker.IsLatest(firstId).Should().BeFalse();
@@ -30,123 +30,123 @@ public class AnimatedPropertyTrackerTests : BaseTest
 	}
 
 	[Fact]
-	public void Start_AfterAnInterruptedAnimationLeftAPartialValue_KeepsTheValueBeforeTheInterruptedAnimation()
+	public void StartAnimationAndGetOriginalValue_AfterAnInterruptedAnimationLeftAPartialValue_KeepsTheValueBeforeTheInterruptedAnimation()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (id, _) = tracker.Start(30);
-		tracker.End(id, 75);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (id, _) = tracker.StartAnimationAndGetOriginalValue(30);
+		tracker.EndAnimation(id, 75);
 
-		var (_, originalValue) = tracker.Start(75);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(75);
 
 		originalValue.Should().Be(30);
 	}
 
 	[Fact]
-	public void Start_AfterTheValueChangedFollowingAnInterruptedAnimation_CapturesTheNewValue()
+	public void StartAnimationAndGetOriginalValue_AfterTheValueChangedFollowingAnInterruptedAnimation_CapturesTheNewValue()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (id, _) = tracker.Start(30);
-		tracker.End(id, 75);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (id, _) = tracker.StartAnimationAndGetOriginalValue(30);
+		tracker.EndAnimation(id, 75);
 
-		var (_, originalValue) = tracker.Start(10);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(10);
 
 		originalValue.Should().Be(10);
 	}
 
 	[Fact]
-	public void Start_AfterACompletedAnimation_CapturesTheCurrentValue()
+	public void StartAnimationAndGetOriginalValue_AfterACompletedAnimation_CapturesTheCurrentValue()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (id, _) = tracker.Start(30);
-		tracker.End(id, 30);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (id, _) = tracker.StartAnimationAndGetOriginalValue(30);
+		tracker.EndAnimation(id, 30);
 
-		var (_, originalValue) = tracker.Start(50);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(50);
 
 		originalValue.Should().Be(50);
 	}
 
 	[Fact]
-	public void End_OfTheInterruptedAnimationAlone_DoesNotMakeTheViewRestForTheAnimationThatInterruptedIt()
+	public void EndAnimation_OfTheInterruptedAnimationAlone_DoesNotMakeTheViewRestForTheAnimationThatInterruptedIt()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (firstId, _) = tracker.Start(30);
-		tracker.Start(75);
-		tracker.End(firstId, 75);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (firstId, _) = tracker.StartAnimationAndGetOriginalValue(30);
+		tracker.StartAnimationAndGetOriginalValue(75);
+		tracker.EndAnimation(firstId, 75);
 
-		var (_, originalValue) = tracker.Start(75);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(75);
 
 		originalValue.Should().Be(30);
 	}
 
 	[Fact]
-	public void Start_AfterAnInterruptedAnimationHandedTheValueOverToTheApp_CapturesTheValueTheAppHolds()
+	public void StartAnimationAndGetOriginalValue_AfterAnInterruptedAnimationHandedTheValueOverToTheApp_CapturesTheValueTheAppHolds()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (id, _) = tracker.Start(30);
-		tracker.End(id, 75);
-		tracker.HandedOverToApp(id);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (id, _) = tracker.StartAnimationAndGetOriginalValue(30);
+		tracker.EndAnimation(id, 75);
+		tracker.RecordHandOverToApp(id);
 
-		var (_, originalValue) = tracker.Start(75);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(75);
 
 		originalValue.Should().Be(75);
 	}
 
 	[Fact]
-	public void HandedOverToApp_OfAnAnimationAnotherOneReplaced_KeepsTheOriginalValueBeforeTheFirstAnimation()
+	public void RecordHandOverToApp_OfAnAnimationAnotherOneReplaced_KeepsTheOriginalValueBeforeTheFirstAnimation()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (firstId, _) = tracker.Start(30);
-		var (secondId, _) = tracker.Start(75);
-		tracker.End(firstId, 75);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (firstId, _) = tracker.StartAnimationAndGetOriginalValue(30);
+		var (secondId, _) = tracker.StartAnimationAndGetOriginalValue(75);
+		tracker.EndAnimation(firstId, 75);
 
-		tracker.End(secondId, 75);
-		tracker.HandedOverToApp(firstId);
-		var (_, originalValue) = tracker.Start(75);
+		tracker.EndAnimation(secondId, 75);
+		tracker.RecordHandOverToApp(firstId);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(75);
 
 		originalValue.Should().Be(30);
 	}
 
 	[Fact]
-	public void For_SeparateViewsAreTrackedIndependently()
+	public void GetOrCreate_SeparateViewsAreTrackedIndependently()
 	{
 		var view = new Label();
 		var otherView = new Label();
-		AnimatedPropertyTracker.For(view, VisualElement.RotationProperty).Start(30);
+		AnimatedPropertyTracker.GetOrCreate(view, VisualElement.RotationProperty).StartAnimationAndGetOriginalValue(30);
 
-		var (_, otherOriginalValue) = AnimatedPropertyTracker.For(otherView, VisualElement.RotationProperty).Start(60);
+		var (_, otherOriginalValue) = AnimatedPropertyTracker.GetOrCreate(otherView, VisualElement.RotationProperty).StartAnimationAndGetOriginalValue(60);
 
 		otherOriginalValue.Should().Be(60);
 	}
 
 	[Fact]
-	public void End_IgnoresASecondEndOfTheSameAnimation()
+	public void EndAnimation_IgnoresASecondEndOfTheSameAnimation()
 	{
-		var tracker = AnimatedPropertyTracker.For(new Label(), VisualElement.RotationProperty);
-		var (animationId, _) = tracker.Start(30);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(new Label(), VisualElement.RotationProperty);
+		var (animationId, _) = tracker.StartAnimationAndGetOriginalValue(30);
 
-		tracker.End(animationId, 75);
-		tracker.End(animationId, 10);
-		var (_, originalValue) = tracker.Start(10);
+		tracker.EndAnimation(animationId, 75);
+		tracker.EndAnimation(animationId, 10);
+		var (_, originalValue) = tracker.StartAnimationAndGetOriginalValue(10);
 
 		originalValue.Should().Be(10);
 	}
 
 	[Fact]
-	public void For_SeparatePropertiesOfOneViewAreTrackedIndependently()
+	public void GetOrCreate_SeparatePropertiesOfOneViewAreTrackedIndependently()
 	{
 		var view = new Label();
-		AnimatedPropertyTracker.For(view, VisualElement.RotationProperty).Start(30);
+		AnimatedPropertyTracker.GetOrCreate(view, VisualElement.RotationProperty).StartAnimationAndGetOriginalValue(30);
 
-		var (_, originalScale) = AnimatedPropertyTracker.For(view, VisualElement.ScaleProperty).Start(0.8);
+		var (_, originalScale) = AnimatedPropertyTracker.GetOrCreate(view, VisualElement.ScaleProperty).StartAnimationAndGetOriginalValue(0.8);
 
 		originalScale.Should().Be(0.8);
 	}
 
 	[Fact]
-	public void For_ReturnsTheSameTrackerForTheSameViewAndProperty()
+	public void GetOrCreate_ReturnsTheSameTrackerForTheSameViewAndProperty()
 	{
 		var view = new Label();
 
-		AnimatedPropertyTracker.For(view, VisualElement.RotationProperty).Should().BeSameAs(AnimatedPropertyTracker.For(view, VisualElement.RotationProperty));
+		AnimatedPropertyTracker.GetOrCreate(view, VisualElement.RotationProperty).Should().BeSameAs(AnimatedPropertyTracker.GetOrCreate(view, VisualElement.RotationProperty));
 	}
 }

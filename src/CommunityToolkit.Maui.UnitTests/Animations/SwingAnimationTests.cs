@@ -61,8 +61,8 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		}
 
 		rotationChangeCount.Should().BeGreaterThan(0);
-		recorder.ValuesOf(nameof(VisualElement.AnchorY)).Last().Should().BeApproximately(originalAnchorY, precision);
-		recorder.ValuesOf(nameof(VisualElement.AnchorX)).Should().BeEmpty();
+		recorder.GetValues(nameof(VisualElement.AnchorY)).Last().Should().BeApproximately(originalAnchorY, precision);
+		recorder.GetValues(nameof(VisualElement.AnchorX)).Should().BeEmpty();
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -88,7 +88,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var angle = animation.RotationAngle;
-		var turningOffsets = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).Select(rotation => rotation - originalRotation).ToList();
+		var turningOffsets = GetTurningPoints(recorder.GetValues(nameof(VisualElement.Rotation))).Select(rotation => rotation - originalRotation).ToList();
 		turningOffsets.Should().HaveCount(4);
 		turningOffsets.Zip([angle, -2 * angle / 3, angle / 3, -angle / 3]).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
 	}, TestContext.Current.CancellationToken);
@@ -102,7 +102,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var rotations = recorder.ValuesOf(nameof(VisualElement.Rotation)).ToList();
+		var rotations = recorder.GetValues(nameof(VisualElement.Rotation)).ToList();
 		var lastTurningPoint = originalRotation - (animation.RotationAngle / 3);
 		var lastTurningPointIndex = rotations.FindLastIndex(rotation => Math.Abs(rotation - lastTurningPoint) <= precision);
 		lastTurningPointIndex.Should().BeGreaterThanOrEqualTo(0);
@@ -120,18 +120,18 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var firstTurningOffset = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).First() - originalRotation;
+		var firstTurningOffset = GetTurningPoints(recorder.GetValues(nameof(VisualElement.Rotation))).First() - originalRotation;
 		firstTurningOffset.Should().BeApproximately(rotationAngle, precision);
-		recorder.ValuesOf(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation + Math.Min(rotationAngle, -2 * rotationAngle / 3), precision);
+		recorder.GetValues(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation + Math.Min(rotationAngle, -2 * rotationAngle / 3), precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task Animate_AfterAnInterruptedRotateAnimation_SwingsAroundTheOriginalRotation() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var rotated = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 20);
+		var rotatedTask = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 20);
 		var rotateRun = new RotateAnimation { Length = 2000 }.Animate(view, token);
-		await rotated;
+		await rotatedTask;
 		view.CancelAnimations();
 		await rotateRun.WaitAsync(waitTimeout, token);
 		view.Rotation.Should().BeApproximately(originalRotation, precision);
@@ -140,8 +140,8 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		using var recorder = new PropertyRecorder(view);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		recorder.ValuesOf(nameof(VisualElement.Rotation)).Max().Should().BeApproximately(originalRotation + animation.RotationAngle, precision);
-		recorder.ValuesOf(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation - (2 * animation.RotationAngle / 3), precision);
+		recorder.GetValues(nameof(VisualElement.Rotation)).Max().Should().BeApproximately(originalRotation + animation.RotationAngle, precision);
+		recorder.GetValues(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation - (2 * animation.RotationAngle / 3), precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -152,9 +152,9 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		using var recorder = new PropertyRecorder(view);
 
-		var swung = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 5);
+		var swungTask = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 5);
 		var run = animation.Animate(view, cancellationTokenSource.Token);
-		await swung;
+		await swungTask;
 		cancellationTokenSource.Cancel();
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout, token));
 
@@ -191,7 +191,7 @@ public class SwingAnimationTests : BaseKeyframeAnimationTests<SwingAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var rotations = SinInOutSegments([0, 0.2, 0.4, 0.6, 0.8, 1.0], [.. new[] { 0, angle, -2 * angle / 3, angle / 3, -angle / 3, 0 }.Select(offset => originalRotation + offset)]);
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, rotations, animation.Length, animation.Easing);
+		var rotationSegments = CreateSinInOutSegments([0, 0.2, 0.4, 0.6, 0.8, 1.0], [.. new[] { 0, angle, -2 * angle / 3, angle / 3, -angle / 3, 0 }.Select(offset => originalRotation + offset)]);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, rotationSegments, animation.Length, animation.Easing);
 	}, testToken);
 }

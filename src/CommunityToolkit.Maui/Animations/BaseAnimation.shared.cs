@@ -56,14 +56,14 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 	}
 
 	// Returns false when this animation was interrupted (another animation took over, or CancelAnimations stopped it), which ends the run: the rest of the run would interrupt whatever took over.
-	// animateTo must not pass the token to MAUI: for a token cancelled off the UI thread, MAUI queues AbortAnimation(handle), which a newer run that took the handle before it ran would suffer.
-	private protected static async Task<bool> AnimateAndRestoreIfStoppedAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> animateTo, CancellationToken token)
+	// startToAnimation must not pass the token to MAUI: for a token cancelled off the UI thread, MAUI queues AbortAnimation(handle), which a newer run that took the handle before it ran would suffer.
+	private protected static async Task<bool> TryAnimateAndRestoreIfStoppedAsync(VisualElement view, BindableProperty property, string animationHandle, int animationId, double originalValue, Func<Task<bool>> startToAnimation, CancellationToken token)
 	{
 		var hasAnimationEnded = false;
 		bool wasAborted;
 
 		// MAUI's animation starts first, so that a token that is already cancelled aborts it
-		var animation = animateTo();
+		var animation = startToAnimation();
 		await using (token.Register(() => AbortAnimationOnDispatcher(view, animationHandle, () => hasAnimationEnded)))
 		{
 			wasAborted = await animation;
@@ -75,12 +75,12 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 			return true;
 		}
 
-		var animations = AnimatedPropertyTracker.For(view, property);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(view, property);
 
 		if (token.IsCancellationRequested)
 		{
 			// A cancelled animation has no successor to return the view to its original value
-			if (animations.IsLatest(animationId))
+			if (tracker.IsLatest(animationId))
 			{
 				view.SetValue(property, originalValue);
 			}
@@ -98,19 +98,19 @@ public abstract class BaseAnimation(uint defaultLength = BaseAnimationDefaults.L
 		// the same turn. The tracker sees the toolkit's own runs, the handle the app's own FadeToAsync, ScaleToAsync, RotateToAsync, RotateYToAsync or RotateXToAsync, the value the app's own write.
 		var valueWhenInterrupted = (double)view.GetValue(property);
 		// Ending the run before the yield lets a value the app sets in this turn become the next run's original
-		animations.End(animationId, valueWhenInterrupted);
+		tracker.EndAnimation(animationId, valueWhenInterrupted);
 		await Task.Yield();
 
-		if (animations.IsLatest(animationId))
+		if (tracker.IsLatest(animationId))
 		{
 			if (!view.AnimationIsRunning(animationHandle) && (double)view.GetValue(property) == valueWhenInterrupted)
 			{
 				view.SetValue(property, originalValue);
-				animations.ReturnedToOriginalValue(animationId, originalValue);
+				tracker.RecordReturnToOriginalValue(animationId, originalValue);
 			}
 			else
 			{
-				animations.HandedOverToApp(animationId);
+				tracker.RecordHandOverToApp(animationId);
 			}
 		}
 

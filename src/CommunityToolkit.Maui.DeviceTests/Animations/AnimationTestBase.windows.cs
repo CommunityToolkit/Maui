@@ -22,10 +22,10 @@ public abstract partial class AnimationTestBase
 	// The extensions that ViewHandler's mappers call, applied to an element that no window shows
 	static string DescribeExpectedNativeValues(IPlatformViewHandler handler, VisualElement view)
 	{
-		var expected = new Microsoft.UI.Xaml.Controls.Border();
-		expected.UpdateOpacity(view);
-		expected.UpdateTransformation(view);
-		return DescribeNativeValues(expected);
+		var expectedElement = new Microsoft.UI.Xaml.Controls.Border();
+		expectedElement.UpdateOpacity(view);
+		expectedElement.UpdateTransformation(view);
+		return DescribeNativeValues(expectedElement);
 	}
 
 	static string DescribeNativeValues(FrameworkElement element) => string.Create(CultureInfo.InvariantCulture,
@@ -54,9 +54,9 @@ public abstract partial class AnimationTestBase
 	static string DescribeNativeLayout(IPlatformViewHandler handler)
 	{
 		var element = GetTransformedView(handler);
-		var inWindow = element.TransformToVisual(null).TransformPoint(new WPoint(0, 0));
+		var locationInWindow = element.TransformToVisual(null).TransformPoint(new WPoint(0, 0));
 		return string.Create(CultureInfo.InvariantCulture,
-			$"offset ({FormatNativeValue(element.ActualOffset.X)}, {FormatNativeValue(element.ActualOffset.Y)}), size ({FormatNativeValue(element.ActualSize.X)}, {FormatNativeValue(element.ActualSize.Y)}), in window ({FormatNativeValue(inWindow.X)}, {FormatNativeValue(inWindow.Y)})");
+			$"offset ({FormatNativeValue(element.ActualOffset.X)}, {FormatNativeValue(element.ActualOffset.Y)}), size ({FormatNativeValue(element.ActualSize.X)}, {FormatNativeValue(element.ActualSize.Y)}), in window ({FormatNativeValue(locationInWindow.X)}, {FormatNativeValue(locationInWindow.Y)})");
 	}
 
 	// With "Show animations in Windows" off, MAUI 11 jumps to the end of every animation, so no animation could start while another one runs.

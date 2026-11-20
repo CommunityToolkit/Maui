@@ -19,10 +19,10 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, handle) = PropertyOf(animationName);
+		var (property, handle) = GetPropertyAndHandle(animationName);
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		using var restores = new OriginalValueWrites(view, property, startingValues[IndexOf(property)]);
@@ -41,14 +41,14 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(animationName);
-		var animation = Create(animationName, 1000);
-		var peak = PeakOf(animationName, animation, startingValues[IndexOf(property)]);
-		var original = startingValues[IndexOf(property)];
+		var (property, _) = GetPropertyAndHandle(animationName);
+		var animation = CreateAnimation(animationName, 1000);
+		var peak = GetPeak(animationName, animation, startingValues[IndexOf(property)]);
+		var originalValue = startingValues[IndexOf(property)];
 
-		var returning = WaitForPropertyAsync(view, property, token, value => Math.Abs(value - peak) <= precision, value => Math.Abs(value - peak) > Math.Abs(peak - original) / 3);
+		var returningTask = WaitForPropertyAsync(view, property, token, value => Math.Abs(value - peak) <= precision, value => Math.Abs(value - peak) > Math.Abs(peak - originalValue) / 3);
 		var run = animation.Animate(view, token);
-		await returning;
+		await returningTask;
 
 		view.CancelAnimations();
 		await run.WaitAsync(waitTimeout, token);
@@ -61,12 +61,12 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	[MemberData(nameof(ToAnimationNames))]
 	public Task AnimationBehaviorTriggeredAgainMidRun_TakesOverWithoutReturningTheViewFirst(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
-		var animation = new ObservedAnimation(Create(animationName, 1000));
+		var animation = new ObservedAnimation(CreateAnimation(animationName, 1000));
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(animationName);
+		var (property, _) = GetPropertyAndHandle(animationName);
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
 		behavior.AnimateCommand.Execute(token);
@@ -93,29 +93,29 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(toAnimationName);
+		var (property, _) = GetPropertyAndHandle(toAnimationName);
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var toRun = Create(toAnimationName, 1000).Animate(view, token);
+		var toAnimationRun = CreateAnimation(toAnimationName, 1000).Animate(view, token);
 		await firstChange;
 
 		Task seekerRun;
 		using (var restores = new OriginalValueWrites(view, property, startingValues[IndexOf(property)]))
 		{
-			seekerRun = Create(seekerName, functionalTestLength).Animate(view, token);
+			seekerRun = CreateAnimation(seekerName, functionalTestLength).Animate(view, token);
 			await WaitForFramesAsync(view, 3, token);
 			restores.Count.Should().Be(0, "the interrupted To animation must leave the view to the attention seeker");
 		}
 
-		await Task.WhenAll(toRun, seekerRun).WaitAsync(waitTimeout, token);
-		toRun.IsCompletedSuccessfully.Should().BeTrue();
+		await Task.WhenAll(toAnimationRun, seekerRun).WaitAsync(waitTimeout, token);
+		toAnimationRun.IsCompletedSuccessfully.Should().BeTrue();
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[InlineData(true)]
 	[InlineData(false)]
-	public Task AppFadeToAsyncTakesOver_TheInterruptedFadeAnimationDoesNotReturnTheView(bool cancelAnimationsFirst) => RunOnSingleThreadAsync(async token =>
+	public Task AppFadeToAsyncTakesOver_TheInterruptedFadeAnimationDoesNotReturnTheView(bool shouldCancelAnimationsFirst) => RunOnSingleThreadAsync(async token =>
 	{
 		const double appTarget = 0.5;
 		var view = CreateAnimatedViewWithNonDefaultValues();
@@ -129,7 +129,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		Task<bool> appFade;
 		using (var restores = new OriginalValueWrites(view, VisualElement.OpacityProperty, originalOpacity))
 		{
-			if (cancelAnimationsFirst)
+			if (shouldCancelAnimationsFirst)
 			{
 				view.CancelAnimations();
 			}
@@ -155,27 +155,27 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(ToAnimationsAndWhetherCancelAnimationsComesFirst))]
-	public Task AppsOwnToAnimationHoldingTheCurrentValueTakesOver_TheInterruptedRunDoesNotReturnTheView(string animationName, bool cancelAnimationsFirst) => RunOnSingleThreadAsync(async token =>
+	public Task AppsOwnToAnimationHoldingTheCurrentValueTakesOver_TheInterruptedRunDoesNotReturnTheView(string animationName, bool shouldCancelAnimationsFirst) => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(animationName);
+		var (property, _) = GetPropertyAndHandle(animationName);
 		var originalValue = startingValues[IndexOf(property)];
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		Task<bool> appRun;
 		using (var restores = new OriginalValueWrites(view, property, originalValue))
 		{
-			if (cancelAnimationsFirst)
+			if (shouldCancelAnimationsFirst)
 			{
 				view.CancelAnimations();
 			}
 
 			// Targeting the current value keeps the app's frames from changing it, so only the AnimationIsRunning guard can tell the run that it was taken over
-			appRun = AppToAnimation(animationName, view, (double)view.GetValue(property), token);
+			appRun = StartAppsToAnimation(animationName, view, (double)view.GetValue(property), token);
 			await run.WaitAsync(waitTimeout, token);
 			await appRun.WaitAsync(waitTimeout, token);
 			restores.Count.Should().Be(0, "the app's own To animation took over");
@@ -189,10 +189,10 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		const double appValue = 0.55;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(animationName);
+		var (property, _) = GetPropertyAndHandle(animationName);
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		view.CancelAnimations();
@@ -206,10 +206,10 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task SecondAnimationBehaviorOnTheSameView_ReturnsThePropertyTheFirstOneAnimated() => RunOnSingleThreadAsync(async token =>
 	{
-		var scale = new ObservedAnimation(new ScaleAnimation { Scale = 1.6, Length = 1000 });
-		var fade = new ObservedAnimation(new FadeAnimation { Opacity = 0.2, Length = functionalTestLength });
-		var scaleBehavior = new AnimationBehavior { AnimationType = scale };
-		var fadeBehavior = new AnimationBehavior { AnimationType = fade };
+		var scaleAnimation = new ObservedAnimation(new ScaleAnimation { Scale = 1.6, Length = 1000 });
+		var fadeAnimation = new ObservedAnimation(new FadeAnimation { Opacity = 0.2, Length = functionalTestLength });
+		var scaleBehavior = new AnimationBehavior { AnimationType = scaleAnimation };
+		var fadeBehavior = new AnimationBehavior { AnimationType = fadeAnimation };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(scaleBehavior);
 		view.Behaviors.Add(fadeBehavior);
@@ -227,8 +227,8 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 			view.Scale.Should().Be(startingValues[IndexOf(VisualElement.ScaleProperty)]);
 		}
 
-		await scale.WaitForEndedAnimationsAsync(1, token);
-		await fade.WaitForEndedAnimationsAsync(1, token);
+		await scaleAnimation.WaitForEndedAnimationsAsync(1, token);
+		await fadeAnimation.WaitForEndedAnimationsAsync(1, token);
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
@@ -239,10 +239,10 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		const double appValue = 0.55;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(animationName).Property;
+		var property = GetPropertyAndHandle(animationName).Property;
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		view.CancelAnimations();
@@ -250,7 +250,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		await run.WaitAsync(waitTimeout, token);
 		((double)view.GetValue(property)).Should().Be(appValue);
 
-		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		await CreateAnimation(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
 		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision, "the app's own value was the view's value at rest when the second run started");
 	}, TestContext.Current.CancellationToken);
 
@@ -261,17 +261,17 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		const double appValue = 0.55;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(animationName).Property;
+		var property = GetPropertyAndHandle(animationName).Property;
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		view.CancelAnimations();
 		await run.WaitAsync(waitTimeout, token);
 		view.SetValue(property, appValue);
 
-		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		await CreateAnimation(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
 		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -280,15 +280,15 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	public Task AnimationBehavior_AfterTheAppSetTheValueInTheSameTurnAsCancelAnimations_ReturnsToTheAppsValue(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
 		const double appValue = 0.55;
-		var animation = new ObservedAnimation(Create(animationName, functionalTestLength));
+		var animation = new ObservedAnimation(CreateAnimation(animationName, functionalTestLength));
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(animationName).Property;
+		var property = GetPropertyAndHandle(animationName).Property;
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		view.CancelAnimations();
@@ -307,16 +307,16 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		const double appValue = 0.55;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(animationName).Property;
+		var property = GetPropertyAndHandle(animationName).Property;
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		view.CancelAnimations();
 		view.SetValue(property, appValue);
-		var second = Create(animationName, functionalTestLength).Animate(view, token);
-		await Task.WhenAll(run, second).WaitAsync(waitTimeout, token);
+		var secondRun = CreateAnimation(animationName, functionalTestLength).Animate(view, token);
+		await Task.WhenAll(run, secondRun).WaitAsync(waitTimeout, token);
 		((double)view.GetValue(property)).Should().BeApproximately(appValue, precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -330,24 +330,24 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(toAnimationName);
-		var original = (double)view.GetValue(property);
+		var (property, _) = GetPropertyAndHandle(toAnimationName);
+		var originalValue = (double)view.GetValue(property);
 
 		// A second animation keeps the ticker running, so the seeker's first frame comes a tick later, as on iOS
-		var keepTicking = new FadeAnimation { Opacity = 0.2, Length = 700 }.Animate(view, token);
-		var changed = WaitForPropertyAsync(view, property, token, value => Math.Abs(value - original) > 0.05);
-		var toRun = Create(toAnimationName, 600).Animate(view, token);
-		await changed;
+		var backgroundRun = new FadeAnimation { Opacity = 0.2, Length = 700 }.Animate(view, token);
+		var changedTask = WaitForPropertyAsync(view, property, token, value => Math.Abs(value - originalValue) > 0.05);
+		var toAnimationRun = CreateAnimation(toAnimationName, 600).Animate(view, token);
+		await changedTask;
 
 		Task seekerRun;
-		using (var restores = new OriginalValueWrites(view, property, original))
+		using (var restores = new OriginalValueWrites(view, property, originalValue))
 		{
-			seekerRun = Create(seekerName, 600).Animate(view, token);
+			seekerRun = CreateAnimation(seekerName, 600).Animate(view, token);
 			await WaitForFramesAsync(view, 3, token);
 			restores.Count.Should().Be(0, "a restore after the yield would undo the seeker's first frames");
 		}
 
-		await Task.WhenAll(toRun, seekerRun, keepTicking).WaitAsync(waitTimeout, token);
+		await Task.WhenAll(toAnimationRun, seekerRun, backgroundRun).WaitAsync(waitTimeout, token);
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
@@ -359,10 +359,10 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		var originalOpacity = view.Opacity;
 
 		// A keyframe animation keeps the ticker running, so the way back's first frame comes a tick after the way out ends, as on a device
-		var keepTicking = new ShakeAnimation { Length = 800 }.Animate(view, token);
-		var atTarget = WaitForPropertyAsync(view, VisualElement.OpacityProperty, token, value => value == target);
+		var backgroundRun = new ShakeAnimation { Length = 800 }.Animate(view, token);
+		var atTargetTask = WaitForPropertyAsync(view, VisualElement.OpacityProperty, token, value => value == target);
 		var run = new FadeAnimation { Opacity = target, Length = 400 }.Animate(view, token);
-		await atTarget;
+		await atTargetTask;
 		view.Opacity.Should().Be(target, "still at the turn between the way out and the way back");
 
 		view.CancelAnimations();
@@ -373,7 +373,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		await new FadeAnimation { Opacity = 1, Length = functionalTestLength }.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		view.Opacity.Should().BeApproximately(target, precision, "the app's own value was the view's value at rest when the second run started");
-		await keepTicking.WaitAsync(waitTimeout, token);
+		await backgroundRun.WaitAsync(waitTimeout, token);
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
@@ -382,20 +382,20 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(animationName);
-		var original = (double)view.GetValue(property);
+		var (property, _) = GetPropertyAndHandle(animationName);
+		var originalValue = (double)view.GetValue(property);
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var run = Create(animationName, 1000).Animate(view, token);
+		var run = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		var valueWhenInterrupted = (double)view.GetValue(property);
 		view.CancelAnimations();
 		await run.WaitAsync(waitTimeout, token);
-		((double)view.GetValue(property)).Should().Be(original);
+		((double)view.GetValue(property)).Should().Be(originalValue);
 
 		view.SetValue(property, valueWhenInterrupted);
-		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		await CreateAnimation(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
 
 		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision, "the app's value was the view's value at rest when the run started");
 	}, TestContext.Current.CancellationToken);
@@ -406,21 +406,21 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, _) = PropertyOf(animationName);
-		var original = (double)view.GetValue(property);
+		var (property, _) = GetPropertyAndHandle(animationName);
+		var originalValue = (double)view.GetValue(property);
 
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
-		var interruptedRun = Create(animationName, 1000).Animate(view, token);
+		var interruptedRun = CreateAnimation(animationName, 1000).Animate(view, token);
 		await firstChange;
 
 		var valueWhenInterrupted = (double)view.GetValue(property);
-		var appRun = AppToAnimation(animationName, view, valueWhenInterrupted, token);
+		var appRun = StartAppsToAnimation(animationName, view, valueWhenInterrupted, token);
 		await interruptedRun.WaitAsync(waitTimeout, token);
 		await appRun.WaitAsync(waitTimeout, token);
 		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision);
-		valueWhenInterrupted.Should().NotBe(original);
+		valueWhenInterrupted.Should().NotBe(originalValue);
 
-		await Create(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
+		await CreateAnimation(animationName, functionalTestLength).Animate(view, token).WaitAsync(waitTimeout, token);
 
 		((double)view.GetValue(property)).Should().BeApproximately(valueWhenInterrupted, precision, "the app's animation left the view at this value, so it was the view's value at rest when the run started");
 	}, TestContext.Current.CancellationToken);
@@ -431,12 +431,12 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, handle) = PropertyOf(animationName);
+		var (property, handle) = GetPropertyAndHandle(animationName);
 		Task? runStartedByTheApp = null;
 		var appCode = AnimateThenStartARunAsync();
 
 		// The run's start aborts the app's animation, whose continuation starts a run inside that abort; MAUI then aborts the nested run's animation before it starts the outer run's
-		var run = Create(animationName, functionalTestLength).Animate(view, token);
+		var run = CreateAnimation(animationName, functionalTestLength).Animate(view, token);
 		runStartedByTheApp.Should().NotBeNull("the app's continuation runs inside the abort of its animation");
 
 		await Task.WhenAll(run, appCode, runStartedByTheApp!).WaitAsync(waitTimeout, token);
@@ -449,8 +449,8 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 
 		async Task AnimateThenStartARunAsync()
 		{
-			await AppToAnimation(animationName, view, (double)view.GetValue(property), token);
-			runStartedByTheApp = Create(animationName, functionalTestLength).Animate(view, token);
+			await StartAppsToAnimation(animationName, view, (double)view.GetValue(property), token);
+			runStartedByTheApp = CreateAnimation(animationName, functionalTestLength).Animate(view, token);
 		}
 	}, TestContext.Current.CancellationToken);
 
@@ -461,14 +461,14 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		using var cancellation = new CancellationTokenSource();
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, handle) = PropertyOf(animationName);
+		var (property, handle) = GetPropertyAndHandle(animationName);
 
 		// The run's animation aborts the app's on the same handle, which resumes the app's task in the turn between the run's check of the token and its registration for it
-		var appRun = AppToAnimation(animationName, view, (double)view.GetValue(property), token);
+		var appRun = StartAppsToAnimation(animationName, view, (double)view.GetValue(property), token);
 		_ = appRun.ContinueWith(_ => cancellation.Cancel(), token, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 		var elapsedMillisecondsBeforeRun = view.GetElapsedAnimationMilliseconds();
 
-		var run = Create(animationName, functionalTestLength).Animate(view, cancellation.Token);
+		var run = CreateAnimation(animationName, functionalTestLength).Animate(view, cancellation.Token);
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(waitTimeout, token));
 
 		run.IsCanceled.Should().BeTrue();
@@ -477,7 +477,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		(view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeRun).Should().BeLessThan(functionalTestLength / 2, "a cancelled run aborts its animation before the first frames");
 	}, TestContext.Current.CancellationToken);
 
-	static BaseAnimation Create(string animationName, uint length) => animationName switch
+	static BaseAnimation CreateAnimation(string animationName, uint length) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },
 		nameof(ScaleAnimation) => new ScaleAnimation { Scale = 1.6, Length = length },
@@ -494,16 +494,16 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		_ => throw new NotSupportedException(animationName)
 	};
 
-	static double PeakOf(string animationName, BaseAnimation animation, double original) => animationName switch
+	static double GetPeak(string animationName, BaseAnimation animation, double originalValue) => animationName switch
 	{
 		nameof(FadeAnimation) => ((FadeAnimation)animation).Opacity,
 		nameof(ScaleAnimation) => ((ScaleAnimation)animation).Scale,
 		nameof(FlipHorizontalAnimation) or nameof(FlipVerticalAnimation) => ((RotateAnimation)animation).Rotation,
-		nameof(RotateAnimation) => original + ((RotateAnimation)animation).Rotation,
+		nameof(RotateAnimation) => originalValue + ((RotateAnimation)animation).Rotation,
 		_ => throw new NotSupportedException(animationName)
 	};
 
-	static (BindableProperty Property, string Handle) PropertyOf(string animationName) => animationName switch
+	static (BindableProperty Property, string Handle) GetPropertyAndHandle(string animationName) => animationName switch
 	{
 		nameof(FadeAnimation) => (VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync)),
 		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync)),
@@ -513,7 +513,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		_ => throw new NotSupportedException(animationName)
 	};
 
-	static Task<bool> AppToAnimation(string animationName, VisualElement view, double target, CancellationToken token) => animationName switch
+	static Task<bool> StartAppsToAnimation(string animationName, VisualElement view, double target, CancellationToken token) => animationName switch
 	{
 		nameof(FadeAnimation) => view.FadeToAsync(target, functionalTestLength, Easing.Linear, token),
 		nameof(ScaleAnimation) => view.ScaleToAsync(target, functionalTestLength, Easing.Linear, token),
@@ -523,7 +523,7 @@ public class ToAnimationInterruptionTests : BaseAnimationTest
 		_ => throw new NotSupportedException(animationName)
 	};
 
-	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatable => animatable.Property == property);
+	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatableProperty => animatableProperty.Property == property);
 
 	// A restore writes the original value itself, while an animation never lands on it exactly in the frames right after another run takes over.
 	// The window ends after frames, not at the next frame: the mock ticker fires inside Start, before an aborted run's posted continuation.

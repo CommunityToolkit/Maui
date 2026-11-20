@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.UnitTests.Animations;
 public class AnimationBehaviorCancellationTests : BaseAnimationTest
 {
 	// Only a stopped animation returns the view in time
-	const uint runLongerThanAnyWait = 60_000;
+	const uint lengthLongerThanAnyWait = 60_000;
 
 	public static TheoryData<string> AllAnimationNames { get; } = [nameof(FadeAnimation), nameof(ScaleAnimation), nameof(RotateAnimation), nameof(FlipHorizontalAnimation), nameof(FlipVerticalAnimation), nameof(ShakeAnimation), nameof(TadaAnimation), nameof(HeartbeatAnimation), nameof(RubberBandAnimation), nameof(BounceAnimation), nameof(SwingAnimation), nameof(WobbleAnimation)];
 
@@ -16,7 +16,7 @@ public class AnimationBehaviorCancellationTests : BaseAnimationTest
 	public Task AnimationBehaviorCommandTokenCancelledMidRun_EndsWithoutAnExceptionAndReturnsTheView(string animationName) => RunOnSingleThreadAsync(async token =>
 	{
 		using var commandTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-		var animation = new ObservedAnimation(Create(animationName, 1000));
+		var animation = new ObservedAnimation(CreateAnimation(animationName, 1000));
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);
@@ -38,7 +38,7 @@ public class AnimationBehaviorCancellationTests : BaseAnimationTest
 	{
 		using var cancelledTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		await cancelledTokenSource.CancelAsync();
-		var animation = new ObservedAnimation(Create(animationName, runLongerThanAnyWait));
+		var animation = new ObservedAnimation(CreateAnimation(animationName, lengthLongerThanAnyWait));
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);
@@ -54,7 +54,7 @@ public class AnimationBehaviorCancellationTests : BaseAnimationTest
 		AssertValuesEqual(view, startingValues);
 	}, TestContext.Current.CancellationToken);
 
-	static BaseAnimation Create(string animationName, uint length) => animationName switch
+	static BaseAnimation CreateAnimation(string animationName, uint length) => animationName switch
 	{
 		nameof(FadeAnimation) => new FadeAnimation { Opacity = 0.2, Length = length },
 		nameof(ScaleAnimation) => new ScaleAnimation { Scale = 1.6, Length = length },

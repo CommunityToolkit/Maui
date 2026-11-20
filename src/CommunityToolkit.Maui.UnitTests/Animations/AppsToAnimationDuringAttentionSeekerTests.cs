@@ -54,19 +54,19 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(appsAnimationName);
-		var otherSeekerProperties = SeekerPropertiesOf(seekerName).Where(seekerProperty => seekerProperty != property).ToArray();
-		var original = (double)view.GetValue(property);
+		var property = GetAnimatedProperty(appsAnimationName);
+		var otherSeekerProperties = GetSeekerProperties(seekerName).Where(seekerProperty => seekerProperty != property).ToArray();
+		var originalValue = (double)view.GetValue(property);
 		var valuesAtEachFrame = new List<double>();
 		var otherValuesAtEachFrame = new List<double[]>();
 		var isSeekerRunningAtEachFrame = new List<bool>();
 		var (appsStart, appsTarget) = (double.NaN, double.NaN);
-		var appsAnimationStarted = new TaskCompletionSource<Task<bool>>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var appsAnimationStartedSource = new TaskCompletionSource<Task<bool>>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var writesAfterTheAppsStart = new List<double>();
 
 		void RecordWrite(object? sender, PropertyChangedEventArgs e)
 		{
-			if (appsAnimationStarted.Task.IsCompleted && e.PropertyName == property.PropertyName)
+			if (appsAnimationStartedSource.Task.IsCompleted && e.PropertyName == property.PropertyName)
 			{
 				writesAfterTheAppsStart.Add((double)view.GetValue(property));
 			}
@@ -82,13 +82,13 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 			if (valuesAtEachFrame.Count == framesBeforeTheAppsAnimation)
 			{
 				appsStart = (double)view.GetValue(property);
-				appsTarget = TargetAwayFromTheOriginal(property, original, appsStart);
-				appsAnimationStarted.SetResult(StartAppsAnimation(view, appsAnimationName, appsTarget, appsAnimationLength, token));
+				appsTarget = ChooseTargetAwayFromTheOriginal(property, originalValue, appsStart);
+				appsAnimationStartedSource.SetResult(StartAppsAnimation(view, appsAnimationName, appsTarget, appsAnimationLength, token));
 			}
 		}))
 		{
 			seekerRun = CreateSeeker(seekerName).Animate(view, token);
-			var appsAnimation = await appsAnimationStarted.Task.WaitAsync(waitTimeout, token);
+			var appsAnimation = await appsAnimationStartedSource.Task.WaitAsync(waitTimeout, token);
 			var wasAppsAnimationInterrupted = await appsAnimation.WaitAsync(waitTimeout, token);
 			wasAppsAnimationInterrupted.Should().BeFalse();
 			await seekerRun.WaitAsync(waitTimeout, token);
@@ -109,9 +109,9 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 			}
 		}
 
-		var appsFrameValues = AppsFrameValues(appsStart, appsTarget);
+		var appsFrameValues = CalculateAppsFrameValues(appsStart, appsTarget);
 		writesAfterTheAppsStart.Should().OnlyContain(value => IsOneOf(value, appsFrameValues), "nothing but the app's animation writes the property after it started");
-		AssertValuesEqual(view, WithValue(startingValues, property, appsTarget));
+		AssertValuesEqual(view, CopyWithValue(startingValues, property, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
@@ -120,15 +120,15 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(appsAnimationName);
-		var (seekerRun, appsAnimation, appsStart) = await StartTheAppsAnimationDuringASeekerAsync(view, seekerName, appsAnimationName, (_, current) => current, appsAnimationLength, token);
+		var property = GetAnimatedProperty(appsAnimationName);
+		var (seekerRun, appsAnimation, appsStart) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, seekerName, appsAnimationName, (_, currentValue) => currentValue, appsAnimationLength, token);
 
 		(await appsAnimation.WaitAsync(waitTimeout, token)).Should().BeFalse();
 		await seekerRun.WaitAsync(waitTimeout, token);
 		await WaitForTickerFramesAsync(view, 3, token);
 
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
-		AssertValuesEqual(view, WithValue(startingValues, property, appsStart));
+		AssertValuesEqual(view, CopyWithValue(startingValues, property, appsStart));
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
@@ -137,16 +137,16 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(appsAnimationName);
+		var property = GetAnimatedProperty(appsAnimationName);
 		var appsTarget = double.NaN;
-		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAsync(view, seekerName, appsAnimationName, (original, current) => appsTarget = TargetAwayFromTheOriginal(property, original, current), 0, token);
+		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, seekerName, appsAnimationName, (originalValue, currentValue) => appsTarget = ChooseTargetAwayFromTheOriginal(property, originalValue, currentValue), 0, token);
 
 		(await appsAnimation.WaitAsync(waitTimeout, token)).Should().BeFalse();
 		await seekerRun.WaitAsync(waitTimeout, token);
 		await WaitForTickerFramesAsync(view, 3, token);
 
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
-		AssertValuesEqual(view, WithValue(startingValues, property, appsTarget));
+		AssertValuesEqual(view, CopyWithValue(startingValues, property, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
 	[Theory(Timeout = (int)TestDuration.Long)]
@@ -156,8 +156,8 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		using var appsTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(appsAnimationName);
-		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAsync(view, seekerName, appsAnimationName, (original, current) => TargetAwayFromTheOriginal(property, original, current), 10 * appsAnimationLength, token, appsTokenSource.Token);
+		var property = GetAnimatedProperty(appsAnimationName);
+		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, seekerName, appsAnimationName, (originalValue, currentValue) => ChooseTargetAwayFromTheOriginal(property, originalValue, currentValue), 10 * appsAnimationLength, token, appsTokenSource.Token);
 		await WaitForFramesAsync(view, 3, token);
 
 		await appsTokenSource.CancelAsync();
@@ -167,7 +167,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		await WaitForTickerFramesAsync(view, 3, token);
 
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
-		AssertValuesEqual(view, WithValue(startingValues, property, valueWhenCancelled));
+		AssertValuesEqual(view, CopyWithValue(startingValues, property, valueWhenCancelled));
 	}, TestContext.Current.CancellationToken);
 
 	// Tada stops the app's ScaleToAsync before its RotateToAsync, whose continuation starts a ScaleToAsync that MAUI ticks before Tada in every frame
@@ -208,9 +208,9 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		view.PropertyChanged -= RecordScaleWrite;
 
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
-		var appsFrameValues = AppsFrameValues(appsStart, appsTarget);
+		var appsFrameValues = CalculateAppsFrameValues(appsStart, appsTarget);
 		scaleWritesAfterTheAppsStart.Should().OnlyContain(value => IsOneOf(value, appsFrameValues), "the seeker writes no scale after the app's ScaleToAsync started");
-		AssertValuesEqual(view, WithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
+		AssertValuesEqual(view, CopyWithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
 	// MAUI plays a run's first step inside Commit; stopping the run there would leave Commit to start an animation that keeps ticking for the run's whole length
@@ -239,7 +239,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 		var elapsedMillisecondsBeforeTheSeeker = view.GetElapsedAnimationMilliseconds();
-		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAsync(view, nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => 1.6, appsAnimationLength, token);
+		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => 1.6, appsAnimationLength, token);
 		view.AbortAnimation(nameof(MauiViewExtensions.ScaleToAsync));
 
 		(await appsAnimation.WaitAsync(waitTimeout, token)).Should().BeTrue();
@@ -275,9 +275,9 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		const double appsRotationTarget = 90;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var property = PropertyOf(appsAnimationName);
+		var property = GetAnimatedProperty(appsAnimationName);
 		var appsTarget = property == VisualElement.RotationProperty ? appsRotationTarget : appsScaleTarget;
-		SeekerPropertiesOf(seekerName).Should().NotContain(property, "the row is about a property the seeker does not animate");
+		GetSeekerProperties(seekerName).Should().NotContain(property, "the row is about a property the seeker does not animate");
 		var elapsedMillisecondsBeforeTheSeeker = view.GetElapsedAnimationMilliseconds();
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
 		var seekerRun = CreateSeeker(seekerName).Animate(view, token);
@@ -291,7 +291,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 
 		elapsedMillisecondsWhenTheSeekerEnded.Should().BeGreaterThanOrEqualTo(seekerLength, "the app's animation of another property does not end the seeker");
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
-		AssertValuesEqual(view, WithValue(startingValues, property, appsTarget));
+		AssertValuesEqual(view, CopyWithValue(startingValues, property, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -321,7 +321,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (firstSeekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAsync(view, nameof(TadaAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => 1.6, 10 * appsAnimationLength, token);
+		var (firstSeekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, nameof(TadaAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => 1.6, 10 * appsAnimationLength, token);
 		await WaitForFramesAsync(view, 3, token);
 
 		var scaleWhenTheSecondSeekerStarts = view.Scale;
@@ -331,7 +331,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		await Task.WhenAll(firstSeekerRun, secondSeekerRun).WaitAsync(waitTimeout, token);
 		await WaitForTickerFramesAsync(view, 3, token);
 
-		AssertValuesEqual(view, WithValue(startingValues, VisualElement.ScaleProperty, scaleWhenTheSecondSeekerStarts));
+		AssertValuesEqual(view, CopyWithValue(startingValues, VisualElement.ScaleProperty, scaleWhenTheSecondSeekerStarts));
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -339,7 +339,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 	{
 		const double appsTarget = 1.6;
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAsync(view, nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => appsTarget, appsAnimationLength, token);
+		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => appsTarget, appsAnimationLength, token);
 		await appsAnimation.WaitAsync(waitTimeout, token);
 		await seekerRun.WaitAsync(waitTimeout, token);
 
@@ -349,12 +349,12 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		view.Scale.Should().BeApproximately(appsTarget, precision, "the app's ScaleToAsync left the view at its target, so that was the scale at rest when Scale started");
 	}, TestContext.Current.CancellationToken);
 
-	// The scale the app held is the scale the seeker reached, which only HandedOverToApp tells apart from a value an interrupted run left behind
+	// The scale the app held is the scale the seeker reached, which only RecordHandOverToApp tells apart from a value an interrupted run left behind
 	[Fact(Timeout = (int)TestDuration.Long)]
 	public Task ScaleAnimation_AfterTheAppsScaleToAsyncHeldTheScaleASeekerReached_ReturnsToThatScale() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var (seekerRun, appsAnimation, appsStart) = await StartTheAppsAnimationDuringASeekerAsync(view, nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, current) => current, appsAnimationLength, token);
+		var (seekerRun, appsAnimation, appsStart) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, nameof(HeartbeatAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, currentValue) => currentValue, appsAnimationLength, token);
 		await appsAnimation.WaitAsync(waitTimeout, token);
 		await seekerRun.WaitAsync(waitTimeout, token);
 
@@ -384,7 +384,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		(await appsAnimation.WaitAsync(waitTimeout, token)).Should().BeFalse();
 		await WaitForTickerFramesAsync(view, 3, token);
 
-		AssertValuesEqual(view, WithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
+		AssertValuesEqual(view, CopyWithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -393,24 +393,24 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		const double appsTarget = 1.6;
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAsync(view, nameof(TadaAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => appsTarget, 10 * appsAnimationLength, token);
+		var (seekerRun, appsAnimation, _) = await StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(view, nameof(TadaAnimation), nameof(MauiViewExtensions.ScaleToAsync), (_, _) => appsTarget, 10 * appsAnimationLength, token);
 		await WaitForFramesAsync(view, 3, token);
 
 		view.DisableSystemAnimations();
 		await appsAnimation.WaitAsync(waitTimeout, token);
 		await seekerRun.WaitAsync(waitTimeout, token);
 
-		AssertValuesEqual(view, WithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
+		AssertValuesEqual(view, CopyWithValue(startingValues, VisualElement.ScaleProperty, appsTarget));
 	}, TestContext.Current.CancellationToken);
 
-	static async Task<(Task SeekerRun, Task<bool> AppsAnimation, double AppsStart)> StartTheAppsAnimationDuringASeekerAsync(Label view, string seekerName, string appsAnimationName,
+	static async Task<(Task SeekerRun, Task<bool> AppsAnimation, double AppsStart)> StartTheAppsAnimationDuringASeekerAndGetItsStartValueAsync(Label view, string seekerName, string appsAnimationName,
 		Func<double, double, double> chooseTarget, uint appsLength, CancellationToken token, CancellationToken? appsToken = null)
 	{
-		var property = PropertyOf(appsAnimationName);
-		var original = (double)view.GetValue(property);
+		var property = GetAnimatedProperty(appsAnimationName);
+		var originalValue = (double)view.GetValue(property);
 		var frames = 0;
 		var appsStart = double.NaN;
-		var appsAnimationStarted = new TaskCompletionSource<Task<bool>>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var appsAnimationStartedSource = new TaskCompletionSource<Task<bool>>(TaskCreationOptions.RunContinuationsAsynchronously);
 		Task seekerRun;
 		Task<bool> appsAnimation;
 
@@ -419,33 +419,33 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 			if (++frames == framesBeforeTheAppsAnimation)
 			{
 				appsStart = (double)view.GetValue(property);
-				appsAnimationStarted.SetResult(StartAppsAnimation(view, appsAnimationName, chooseTarget(original, appsStart), appsLength, appsToken ?? token));
+				appsAnimationStartedSource.SetResult(StartAppsAnimation(view, appsAnimationName, chooseTarget(originalValue, appsStart), appsLength, appsToken ?? token));
 			}
 		}))
 		{
 			seekerRun = CreateSeeker(seekerName).Animate(view, token);
-			appsAnimation = await appsAnimationStarted.Task.WaitAsync(waitTimeout, token);
+			appsAnimation = await appsAnimationStartedSource.Task.WaitAsync(waitTimeout, token);
 		}
 
-		appsStart.Should().NotBe(original, "the seeker has moved the property when the app's animation starts");
+		appsStart.Should().NotBe(originalValue, "the seeker has moved the property when the app's animation starts");
 
 		return (seekerRun, appsAnimation, appsStart);
 	}
 
 	// On the far side of the value the app's animation starts from, so a write of the original value stands out from every value the app's animation writes
-	static double TargetAwayFromTheOriginal(BindableProperty property, double original, double current)
+	static double ChooseTargetAwayFromTheOriginal(BindableProperty property, double originalValue, double currentValue)
 	{
 		var distance = property == VisualElement.RotationProperty ? 90 : 0.6;
-		return current + (current >= original ? distance : -distance);
+		return currentValue + (currentValue >= originalValue ? distance : -distance);
 	}
 
-	static double[] AppsFrameValues(double appsStart, double appsTarget) => [.. Enumerable.Range(0, appsAnimationFrames + 1).Select(step => appsStart + ((appsTarget - appsStart) * step / appsAnimationFrames))];
+	static double[] CalculateAppsFrameValues(double appsStart, double appsTarget) => [.. Enumerable.Range(0, appsAnimationFrames + 1).Select(step => appsStart + ((appsTarget - appsStart) * step / appsAnimationFrames))];
 
 	static bool IsOneOf(double value, double[] allowedValues) => allowedValues.Any(allowedValue => Math.Abs(allowedValue - value) <= precision);
 
-	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatable => animatable.Property == property);
+	static int IndexOf(BindableProperty property) => Array.FindIndex(animatableProperties, animatableProperty => animatableProperty.Property == property);
 
-	static double[] WithValue(double[] values, BindableProperty property, double value)
+	static double[] CopyWithValue(double[] values, BindableProperty property, double value)
 	{
 		var result = values.ToArray();
 		result[IndexOf(property)] = value;
@@ -463,7 +463,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		_ => throw new NotSupportedException(appsAnimationName)
 	};
 
-	static BindableProperty PropertyOf(string appsAnimationName) => appsAnimationName switch
+	static BindableProperty GetAnimatedProperty(string appsAnimationName) => appsAnimationName switch
 	{
 		nameof(MauiViewExtensions.ScaleToAsync) or nameof(MauiViewExtensions.RelScaleToAsync) => VisualElement.ScaleProperty,
 		nameof(MauiViewExtensions.ScaleXToAsync) => VisualElement.ScaleXProperty,
@@ -472,7 +472,7 @@ public class AppsToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		_ => throw new NotSupportedException(appsAnimationName)
 	};
 
-	static BindableProperty[] SeekerPropertiesOf(string seekerName) => seekerName switch
+	static BindableProperty[] GetSeekerProperties(string seekerName) => seekerName switch
 	{
 		nameof(HeartbeatAnimation) => [VisualElement.ScaleProperty],
 		nameof(TadaAnimation) => [VisualElement.ScaleProperty, VisualElement.RotationProperty],

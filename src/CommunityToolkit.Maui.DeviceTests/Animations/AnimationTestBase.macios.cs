@@ -19,16 +19,16 @@ public abstract partial class AnimationTestBase
 	// UpdateTransformation reads the frame and parent of the .NET MAUI view, not of the platform view, so a view that no window shows gets the same transform
 	static string DescribeExpectedNativeValues(IPlatformViewHandler handler, VisualElement view)
 	{
-		using var expected = new UIView();
-		expected.UpdateOpacity(view);
-		expected.UpdateTransformation(view);
-		return DescribeNativeValues(expected);
+		using var expectedView = new UIView();
+		expectedView.UpdateOpacity(view);
+		expectedView.UpdateTransformation(view);
+		return DescribeNativeValues(expectedView);
 	}
 
 	static string DescribeNativeValues(UIView view)
 	{
-		var t = view.Layer.Transform;
-		double[] matrix = [t.M11, t.M12, t.M13, t.M14, t.M21, t.M22, t.M23, t.M24, t.M31, t.M32, t.M33, t.M34, t.M41, t.M42, t.M43, t.M44];
+		var transform = view.Layer.Transform;
+		double[] matrix = [transform.M11, transform.M12, transform.M13, transform.M14, transform.M21, transform.M22, transform.M23, transform.M24, transform.M31, transform.M32, transform.M33, transform.M34, transform.M41, transform.M42, transform.M43, transform.M44];
 		return string.Create(CultureInfo.InvariantCulture,
 			$"alpha {FormatNativeValue(view.Alpha)}, anchor ({FormatNativeValue(view.Layer.AnchorPoint.X)}, {FormatNativeValue(view.Layer.AnchorPoint.Y)}), transform [{string.Join(' ', matrix.Select(FormatNativeValue))}]");
 	}
@@ -37,9 +37,9 @@ public abstract partial class AnimationTestBase
 	static string DescribeNativeLayout(IPlatformViewHandler handler)
 	{
 		var view = GetTransformedView(handler);
-		var inWindow = view.ConvertRectToView(view.Bounds, null);
+		var boundsInWindow = view.ConvertRectToView(view.Bounds, null);
 		return string.Create(CultureInfo.InvariantCulture,
-			$"center ({FormatNativeValue(view.Center.X)}, {FormatNativeValue(view.Center.Y)}), bounds ({FormatNativeValue(view.Bounds.Width)}, {FormatNativeValue(view.Bounds.Height)}), in window ({FormatNativeValue(inWindow.X)}, {FormatNativeValue(inWindow.Y)}, {FormatNativeValue(inWindow.Width)}, {FormatNativeValue(inWindow.Height)})");
+			$"center ({FormatNativeValue(view.Center.X)}, {FormatNativeValue(view.Center.Y)}), bounds ({FormatNativeValue(view.Bounds.Width)}, {FormatNativeValue(view.Bounds.Height)}), in window ({FormatNativeValue(boundsInWindow.X)}, {FormatNativeValue(boundsInWindow.Y)}, {FormatNativeValue(boundsInWindow.Width)}, {FormatNativeValue(boundsInWindow.Height)})");
 	}
 
 	// With Reduce Motion on, MAUI 11 jumps to the end of every animation, so no animation could start while another one runs.

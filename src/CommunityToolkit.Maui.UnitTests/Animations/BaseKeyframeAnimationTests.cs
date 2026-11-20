@@ -122,23 +122,23 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 		}
 	}
 
-	protected static KeyframeSegment[] SinInOutSegments(double[] fractions, double[] values) =>
+	protected static KeyframeSegment[] CreateSinInOutSegments(double[] fractions, double[] values) =>
 		[.. fractions.Zip(values).Zip(fractions.Skip(1).Zip(values.Skip(1)), (start, end) => new KeyframeSegment(start.First, end.First, start.Second, end.Second, Easing.SinInOut))];
 
 	// A segment that has not begun yet leaves the property at the value the previous one ended on, as the animation does.
 	// Expects the animation to start on the tick the recorder started (a fresh view's mock clock starts at 0); where one segment ends and the next begins on the same tick, the later write wins.
-	protected static double ValueAt(IReadOnlyList<KeyframeSegment> segments, double progress)
+	protected static double CalculateValueAt(IReadOnlyList<KeyframeSegment> segments, double progress)
 	{
-		var value = segments[0].From;
-		foreach (var (begin, end, from, to, easing) in segments)
+		var value = segments[0].FromValue;
+		foreach (var (start, end, fromValue, toValue, easing) in segments)
 		{
 			if (progress >= end)
 			{
-				value = to;
+				value = toValue;
 			}
-			else if (progress > begin)
+			else if (progress > start)
 			{
-				return from + ((to - from) * easing.Ease((progress - begin) / (end - begin)));
+				return fromValue + ((toValue - fromValue) * easing.Ease((progress - start) / (end - start)));
 			}
 			else
 			{
@@ -157,7 +157,7 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 		foreach (var frame in recorder.Frames)
 		{
 			var progress = (timelineEasing ?? Easing.Linear).Ease(Math.Min(1.0, frame.Milliseconds / (double)length));
-			frame.ValueOf(property).Should().BeApproximately(ValueAt(segments, progress), precision, $"{property.PropertyName} at {frame.Milliseconds} ms");
+			frame.GetValue(property).Should().BeApproximately(CalculateValueAt(segments, progress), precision, $"{property.PropertyName} at {frame.Milliseconds} ms");
 		}
 	}
 
@@ -184,11 +184,11 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 		return turningPoints;
 	}
 
-	protected readonly record struct KeyframeSegment(double Begin, double End, double From, double To, Easing Easing);
+	protected readonly record struct KeyframeSegment(double Start, double End, double FromValue, double ToValue, Easing Easing);
 
 	protected readonly record struct Frame(long Milliseconds, IReadOnlyDictionary<BindableProperty, double> Values)
 	{
-		public double ValueOf(BindableProperty property) => Values[property];
+		public double GetValue(BindableProperty property) => Values[property];
 	}
 
 	protected readonly record struct Write(long Milliseconds, BindableProperty Property, double Value);
@@ -249,7 +249,7 @@ public abstract class BaseKeyframeAnimationTests<TAnimation> : BaseAnimationTest
 
 		public IReadOnlyList<(string Name, double Value)> Changes => changes;
 
-		public IEnumerable<double> ValuesOf(string propertyName) => changes.Where(change => change.Name == propertyName).Select(change => change.Value);
+		public IEnumerable<double> GetValues(string propertyName) => changes.Where(change => change.Name == propertyName).Select(change => change.Value);
 
 		public void Dispose() => view.PropertyChanged -= HandlePropertyChanged;
 

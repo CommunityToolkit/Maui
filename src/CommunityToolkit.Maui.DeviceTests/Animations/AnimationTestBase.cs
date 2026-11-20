@@ -47,7 +47,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 	}
 
 	// .NET MAUI writes the transform on iOS and Mac Catalyst only for a view with a parent and a size (TransformationExtensions.UpdateTransformation)
-	protected Task RunLoadedAsync(VisualElement view, Func<IPlatformViewHandler, string, Task> action) =>
+	protected Task RunLoadedAsync(VisualElement view, Func<IPlatformViewHandler, string, Task> runTest) =>
 		AttachAndRun(new Grid { Children = { view } }, async _ =>
 		{
 			await view.OnLoadedAsync();
@@ -56,35 +56,35 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 			await EnableAnimationsAsync(handler);
 			await WaitUntilThePlatformViewShowsTheViewAsync(handler, view);
 
-			await action(handler, DescribeNativeState(handler));
+			await runTest(handler, DescribeNativeState(handler));
 		});
 
 	// Continuations run asynchronously: the test continues after the animation frame that met the last condition, as it would after a tap
 	protected static Task WaitForValueAsync(VisualElement view, BindableProperty property, params Func<double, bool>[] conditionsInOrder)
 	{
-		var conditionsMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var conditionsMetSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var nextCondition = 0;
 
 		view.PropertyChanged += HandlePropertyChanged;
 
-		return conditionsMet.Task.WaitAsync(waitTimeout);
+		return conditionsMetSource.Task.WaitAsync(waitTimeout);
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == property.PropertyName && conditionsInOrder[nextCondition]((double)view.GetValue(property)) && ++nextCondition == conditionsInOrder.Length)
 			{
 				view.PropertyChanged -= HandlePropertyChanged;
-				conditionsMet.SetResult();
+				conditionsMetSource.SetResult();
 			}
 		}
 	}
 
-	// attempt returns false only when its run provably ended before the attempt could catch it in progress
-	protected static async Task RepeatAttemptsThatMissedTheRunAsync(Func<Task<bool>> attempt, Func<string> describeTheLastMiss)
+	// tryCatchTheRunInProgress returns false only when its run provably ended before the attempt could catch it in progress
+	protected static async Task RepeatAttemptsThatMissedTheRunAsync(Func<Task<bool>> tryCatchTheRunInProgress, Func<string> describeTheLastMiss)
 	{
 		for (var attemptNumber = 1; attemptNumber <= attemptsToCatchARunInProgress; attemptNumber++)
 		{
-			if (await attempt())
+			if (await tryCatchTheRunInProgress())
 			{
 				return;
 			}
@@ -104,7 +104,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 		await RepeatAttemptsThatMissedTheRunAsync(async () =>
 		{
 			var valuesWritten = new List<double>();
-			var midRunValueWritten = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			var midRunValueWrittenSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			Task run;
 
 			view.PropertyChanged += RecordValue;
@@ -114,7 +114,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 
 				while (true)
 				{
-					await Task.WhenAny(midRunValueWritten.Task, run).WaitAsync(waitTimeout);
+					await Task.WhenAny(midRunValueWrittenSource.Task, run).WaitAsync(waitTimeout);
 
 					var isLastValueMidRun = valuesWritten.Count > 0 && isMidRun(valuesWritten);
 
@@ -136,7 +136,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 					}
 
 					// The run went on past the middle, to a peak or back near rest, before the test resumed
-					midRunValueWritten = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+					midRunValueWrittenSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				}
 			}
 			finally
@@ -159,7 +159,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 
 					if (isMidRun(valuesWritten))
 					{
-						midRunValueWritten.TrySetResult();
+						midRunValueWrittenSource.TrySetResult();
 					}
 				}
 			}
@@ -174,20 +174,20 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 	// Frames of the ticker that drives every animation of the view: a run that kept going after it ended would move the view in them
 	protected static async Task WaitForTickerFramesAsync(VisualElement view, int frameCount = 3)
 	{
-		var framesSeen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var framesSeenSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var frames = 0;
 
 		new Microsoft.Maui.Controls.Animation(_ =>
 		{
 			if (++frames >= frameCount)
 			{
-				framesSeen.TrySetResult();
+				framesSeenSource.TrySetResult();
 			}
-		}).Commit(view, frameProbeHandle, length: 60_000, finished: (_, _) => framesSeen.TrySetResult());
+		}).Commit(view, frameProbeHandle, length: 60_000, finished: (_, _) => framesSeenSource.TrySetResult());
 
 		try
 		{
-			await framesSeen.Task.WaitAsync(waitTimeout);
+			await framesSeenSource.Task.WaitAsync(waitTimeout);
 		}
 		finally
 		{
@@ -208,35 +208,35 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 	// Rounded and culture-invariant (adding 0.0 turns -0 into 0), so equal native values give equal text on every device and in every culture
 	protected static string FormatNativeValue(double value) => (Math.Round(value, 3) + 0.0).ToString("F3", CultureInfo.InvariantCulture);
 
-	protected static void AssertPlatformViewFollows(IPlatformViewHandler handler, VisualElement view, string nativeStateAtRest, string when)
+	protected static void AssertPlatformViewFollows(IPlatformViewHandler handler, VisualElement view, string nativeStateAtRest, string moment)
 	{
 		var mismatch = FindNativeMismatch(handler, view);
-		Assert.True(mismatch is null, $"{mismatch} ({when})");
+		Assert.True(mismatch is null, $"{mismatch} ({moment})");
 
 		var nativeState = DescribeNativeState(handler);
-		Assert.True(nativeState != nativeStateAtRest, $"The platform view {when} still has its state at rest: {nativeState}.");
+		Assert.True(nativeState != nativeStateAtRest, $"The platform view {moment} still has its state at rest: {nativeState}.");
 	}
 
-	protected static void AssertAtOriginalValues(IPlatformViewHandler handler, VisualElement view, IReadOnlyList<(BindableProperty Property, double Value)> originalValues, string nativeStateAtRest, string when)
+	protected static void AssertAtOriginalValues(IPlatformViewHandler handler, VisualElement view, IReadOnlyList<(BindableProperty Property, double Value)> originalValues, string nativeStateAtRest, string moment)
 	{
 		foreach (var (property, originalValue) in originalValues)
 		{
 			var value = (double)view.GetValue(property);
-			Assert.True(Math.Abs(value - originalValue) <= valueTolerance, $"The view's {property.PropertyName} is {value} {when}, expected {originalValue}.");
+			Assert.True(Math.Abs(value - originalValue) <= valueTolerance, $"The view's {property.PropertyName} is {value} {moment}, expected {originalValue}.");
 		}
 
 		var mismatch = FindNativeMismatch(handler, view);
-		Assert.True(mismatch is null, $"{mismatch} ({when})");
+		Assert.True(mismatch is null, $"{mismatch} ({moment})");
 
 		var nativeState = DescribeNativeState(handler);
-		Assert.True(nativeState == nativeStateAtRest, $"The platform view {when} has {nativeState}; at rest it had {nativeStateAtRest}.");
+		Assert.True(nativeState == nativeStateAtRest, $"The platform view {moment} has {nativeState}; at rest it had {nativeStateAtRest}.");
 	}
 
-	protected static async Task AssertStaysAtOriginalValuesAsync(IPlatformViewHandler handler, VisualElement view, IReadOnlyList<(BindableProperty Property, double Value)> originalValues, string nativeStateAtRest, string when)
+	protected static async Task AssertStaysAtOriginalValuesAsync(IPlatformViewHandler handler, VisualElement view, IReadOnlyList<(BindableProperty Property, double Value)> originalValues, string nativeStateAtRest, string moment)
 	{
-		AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, when);
+		AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, moment);
 		await WaitForTickerFramesAsync(view);
-		AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, $"a few frames {when}");
+		AssertAtOriginalValues(handler, view, originalValues, nativeStateAtRest, $"a few frames {moment}");
 	}
 
 	static async Task WaitUntilThePlatformViewShowsTheViewAsync(IPlatformViewHandler handler, VisualElement view)
@@ -262,7 +262,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 	protected void DisableSystemAnimations(IPlatformViewHandler handler)
 	{
 		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker ?? throw new InvalidOperationException("The view has no animation ticker.");
-		var error = SystemAnimationsTickerOverride.TrySetSystemEnabled(ticker, false);
+		var error = SystemAnimationsTickerOverride.SetSystemEnabledAndGetFailureReason(ticker, false);
 		Assert.True(error is null, error);
 
 		Assert.False(ticker.SystemEnabled, "MAUI's ticker must see the disabled animations.");
@@ -275,7 +275,7 @@ public abstract partial class AnimationTestBase : CommunityToolkitHandlerTestBas
 		{
 			if (tickerWithAnimationsOff is not null)
 			{
-				await InvokeOnMainThreadAsync(() => SystemAnimationsTickerOverride.TrySetSystemEnabled(tickerWithAnimationsOff, true));
+				await InvokeOnMainThreadAsync(() => SystemAnimationsTickerOverride.SetSystemEnabledAndGetFailureReason(tickerWithAnimationsOff, true));
 				tickerWithAnimationsOff = null;
 			}
 

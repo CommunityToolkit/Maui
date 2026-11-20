@@ -40,17 +40,17 @@ public partial class HeartbeatAnimation() : BaseAnimation(HeartbeatAnimationDefa
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var view = target.View;
-		var originalScale = target.OriginalValueOf(VisualElement.ScaleProperty);
+		var originalScale = target.GetOriginalValue(VisualElement.ScaleProperty);
 		var beatScale = originalScale * MaximumScale;
 
 		return new Animation
 		{
-			{ 0.0, 0.2, Beat(originalScale, beatScale) },
-			{ 0.2, 0.4, Beat(beatScale, originalScale) },
-			{ 0.4, 0.6, Beat(originalScale, beatScale) },
-			{ 0.6, 1.0, Beat(beatScale, originalScale) },
+			{ 0.0, 0.2, CreateBeatKeyframe(originalScale, beatScale) },
+			{ 0.2, 0.4, CreateBeatKeyframe(beatScale, originalScale) },
+			{ 0.4, 0.6, CreateBeatKeyframe(originalScale, beatScale) },
+			{ 0.6, 1.0, CreateBeatKeyframe(beatScale, originalScale) },
 		};
 
-		Animation Beat(double from, double to) => new(scale => view.Scale = scale, from, to, Easing.SinInOut);
+		Animation CreateBeatKeyframe(double fromScale, double toScale) => new(scale => view.Scale = scale, fromScale, toScale, Easing.SinInOut);
 	}
 }

@@ -35,8 +35,8 @@ public abstract class BaseAnimationTest : BaseTest
 	// Running the test on one thread, like an app runs its animations on its UI thread, makes the mock ticker of EnableAnimations fire on that
 	// thread too. On the thread pool it races the test, and the tickers of other views, for MAUI's animation bookkeeping (a static Dictionary
 	// that is not thread-safe).
-	protected static Task RunOnSingleThreadAsync(Func<CancellationToken, Task> test, CancellationToken token) =>
-		Task.Run(() => UndisposedAsyncContext.Run(() => test(token)), token);
+	protected static Task RunOnSingleThreadAsync(Func<CancellationToken, Task> runTest, CancellationToken token) =>
+		Task.Run(() => UndisposedAsyncContext.Run(() => runTest(token)), token);
 
 	protected static Label CreateAnimatedViewWithNonDefaultValues()
 	{
@@ -93,16 +93,16 @@ public abstract class BaseAnimationTest : BaseTest
 
 	protected static async Task WaitForFramesAsync(VisualElement view, int count, CancellationToken token)
 	{
-		var seen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var framesSeenSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var frames = 0;
 		using var observation = view.ObserveAnimationFrames(_ =>
 		{
 			if (++frames >= count)
 			{
-				seen.TrySetResult();
+				framesSeenSource.TrySetResult();
 			}
 		});
-		await seen.Task.WaitAsync(waitTimeout, token);
+		await framesSeenSource.Task.WaitAsync(waitTimeout, token);
 	}
 
 	// The mock ticker stops when no animation runs, so a probe keeps it ticking for the frames in which a run that kept going would still move the view
@@ -123,37 +123,37 @@ public abstract class BaseAnimationTest : BaseTest
 
 	protected static Task WaitForPropertyAsync(VisualElement view, BindableProperty property, CancellationToken token, params Func<double, bool>[] conditions)
 	{
-		var conditionsMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var conditionsMetSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var nextCondition = 0;
 
 		view.PropertyChanged += HandlePropertyChanged;
 
-		return conditionsMet.Task.WaitAsync(waitTimeout, token);
+		return conditionsMetSource.Task.WaitAsync(waitTimeout, token);
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == property.PropertyName && conditions[nextCondition]((double)view.GetValue(property)) && ++nextCondition == conditions.Length)
 			{
 				view.PropertyChanged -= HandlePropertyChanged;
-				conditionsMet.SetResult();
+				conditionsMetSource.SetResult();
 			}
 		}
 	}
 
 	protected static Task WaitForAnyChangeAsync(VisualElement view, double[] baseline, CancellationToken token)
 	{
-		var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var changeSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		view.PropertyChanged += HandlePropertyChanged;
 
-		return changed.Task.WaitAsync(waitTimeout, token);
+		return changeSource.Task.WaitAsync(waitTimeout, token);
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (HasAnyValueChanged(CaptureValues(view), baseline))
 			{
 				view.PropertyChanged -= HandlePropertyChanged;
-				changed.TrySetResult();
+				changeSource.TrySetResult();
 			}
 		}
 	}

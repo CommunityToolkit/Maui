@@ -110,13 +110,13 @@ public class ToAnimationDuringAttentionSeekerTests : BaseAnimationTest
 		var appCode = AnimateThenStartASeekerAsync();
 
 		// The To animation's start aborts the app's animation, whose continuation starts the seeker inside that abort
-		var toRun = CreateToAnimation(toAnimationName).Animate(view, token);
+		var toAnimationRun = CreateToAnimation(toAnimationName).Animate(view, token);
 		var seekerRun = seekerStartedByTheApp ?? throw new InvalidOperationException("The aborted app animation did not start a seeker.");
 
 		await seekerRun.WaitAsync(waitTimeout, token);
 		seekerRun.IsCompletedSuccessfully.Should().BeTrue();
-		toRun.IsCompleted.Should().BeFalse("the seeker ends when the To animation starts, not at its own end");
-		await Task.WhenAll(toRun, appCode).WaitAsync(waitTimeout, token);
+		toAnimationRun.IsCompleted.Should().BeFalse("the seeker ends when the To animation starts, not at its own end");
+		await Task.WhenAll(toAnimationRun, appCode).WaitAsync(waitTimeout, token);
 		await WaitForTickerFramesAsync(view, 5, token);
 
 		AssertValuesEqual(view, startingValues);

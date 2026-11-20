@@ -15,11 +15,11 @@ static class UndisposedAsyncContext
 		task.WaitAndUnwrapException();
 	}
 
-	public static void Run(Func<Task> test)
+	public static void Run(Func<Task> runTest)
 	{
 		var context = new AsyncContext();
 		context.SynchronizationContext.OperationStarted();
-		var testTask = context.Factory.Run(test).ContinueWith(task =>
+		var testTask = context.Factory.Run(runTest).ContinueWith(task =>
 		{
 			context.SynchronizationContext.OperationCompleted();
 			task.WaitAndUnwrapException();

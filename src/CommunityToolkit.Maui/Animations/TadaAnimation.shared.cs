@@ -58,30 +58,30 @@ public partial class TadaAnimation() : BaseAnimation(TadaAnimationDefaults.Lengt
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var view = target.View;
-		var originalScale = target.OriginalValueOf(VisualElement.ScaleProperty);
-		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
+		var originalScale = target.GetOriginalValue(VisualElement.ScaleProperty);
+		var originalRotation = target.GetOriginalValue(VisualElement.RotationProperty);
 		var shrunkScale = originalScale * MinimumScale;
 		var grownScale = originalScale * MaximumScale;
 		var angle = RotationAngle;
 
 		return new Animation
 		{
-			{ 0.0, 0.1, ScaleBetween(originalScale, shrunkScale) },
-			{ 0.2, 0.3, ScaleBetween(shrunkScale, grownScale) },
-			{ 0.9, 1.0, ScaleBetween(grownScale, originalScale) },
+			{ 0.0, 0.1, CreateScaleKeyframe(originalScale, shrunkScale) },
+			{ 0.2, 0.3, CreateScaleKeyframe(shrunkScale, grownScale) },
+			{ 0.9, 1.0, CreateScaleKeyframe(grownScale, originalScale) },
 
-			{ 0.0, 0.1, TiltBetween(0, -angle) },
-			{ 0.2, 0.3, TiltBetween(-angle, angle) },
-			{ 0.3, 0.4, TiltBetween(angle, -angle) },
-			{ 0.4, 0.5, TiltBetween(-angle, angle) },
-			{ 0.5, 0.6, TiltBetween(angle, -angle) },
-			{ 0.6, 0.7, TiltBetween(-angle, angle) },
-			{ 0.7, 0.8, TiltBetween(angle, -angle) },
-			{ 0.8, 0.9, TiltBetween(-angle, angle) },
-			{ 0.9, 1.0, TiltBetween(angle, 0) },
+			{ 0.0, 0.1, CreateTiltKeyframe(0, -angle) },
+			{ 0.2, 0.3, CreateTiltKeyframe(-angle, angle) },
+			{ 0.3, 0.4, CreateTiltKeyframe(angle, -angle) },
+			{ 0.4, 0.5, CreateTiltKeyframe(-angle, angle) },
+			{ 0.5, 0.6, CreateTiltKeyframe(angle, -angle) },
+			{ 0.6, 0.7, CreateTiltKeyframe(-angle, angle) },
+			{ 0.7, 0.8, CreateTiltKeyframe(angle, -angle) },
+			{ 0.8, 0.9, CreateTiltKeyframe(-angle, angle) },
+			{ 0.9, 1.0, CreateTiltKeyframe(angle, 0) },
 		};
 
-		Animation ScaleBetween(double from, double to) => new(scale => view.Scale = scale, from, to, Easing.SinInOut);
-		Animation TiltBetween(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
+		Animation CreateScaleKeyframe(double fromScale, double toScale) => new(scale => view.Scale = scale, fromScale, toScale, Easing.SinInOut);
+		Animation CreateTiltKeyframe(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
 	}
 }

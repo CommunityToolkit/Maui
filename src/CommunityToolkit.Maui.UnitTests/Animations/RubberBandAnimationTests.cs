@@ -61,7 +61,7 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var factors = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.ScaleX))).Select(scaleX => scaleX / originalScaleX);
+		var factors = GetTurningPoints(recorder.GetValues(nameof(VisualElement.ScaleX))).Select(scaleX => scaleX / originalScaleX);
 		factors.Should().HaveCount(5);
 		factors.Zip(new[] { 1.25, 0.75, 1.15, 0.95, 1.05 }).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
 	}, TestContext.Current.CancellationToken);
@@ -75,7 +75,7 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var factors = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.ScaleY))).Select(scaleY => scaleY / originalScaleY);
+		var factors = GetTurningPoints(recorder.GetValues(nameof(VisualElement.ScaleY))).Select(scaleY => scaleY / originalScaleY);
 		factors.Should().HaveCount(5);
 		factors.Zip(new[] { 0.75, 1.25, 0.85, 1.05, 0.95 }).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
 	}, TestContext.Current.CancellationToken);
@@ -89,14 +89,14 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var scaleXValues = recorder.ValuesOf(nameof(VisualElement.ScaleX)).ToList();
+		var scaleXValues = recorder.GetValues(nameof(VisualElement.ScaleX)).ToList();
 		scaleXValues[^1].Should().BeApproximately(originalScaleX, precision);
 		var lastScaleXPeak = originalScaleX * 1.05;
 		var lastScaleXPeakIndex = scaleXValues.FindLastIndex(scaleX => Math.Abs(scaleX - lastScaleXPeak) <= precision);
 		lastScaleXPeakIndex.Should().BeGreaterThanOrEqualTo(0);
 		scaleXValues.Skip(lastScaleXPeakIndex + 1).Should().Contain(scaleX => scaleX > originalScaleX + precision && scaleX < lastScaleXPeak - precision);
 
-		var scaleYValues = recorder.ValuesOf(nameof(VisualElement.ScaleY)).ToList();
+		var scaleYValues = recorder.GetValues(nameof(VisualElement.ScaleY)).ToList();
 		scaleYValues[^1].Should().BeApproximately(originalScaleY, precision);
 		var lastScaleYTrough = originalScaleY * 0.95;
 		var lastScaleYTroughIndex = scaleYValues.FindLastIndex(scaleY => Math.Abs(scaleY - lastScaleYTrough) <= precision);
@@ -119,7 +119,7 @@ public class RubberBandAnimationTests : BaseKeyframeAnimationTests<RubberBandAni
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleXProperty, SinInOutSegments(fractions, [.. scaleXFactors.Select(factor => factor * originalScaleX)]), animation.Length, easing);
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleYProperty, SinInOutSegments(fractions, [.. scaleYFactors.Select(factor => factor * originalScaleY)]), animation.Length, easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleXProperty, CreateSinInOutSegments(fractions, [.. scaleXFactors.Select(factor => factor * originalScaleX)]), animation.Length, easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleYProperty, CreateSinInOutSegments(fractions, [.. scaleYFactors.Select(factor => factor * originalScaleY)]), animation.Length, easing);
 	}, testToken);
 }

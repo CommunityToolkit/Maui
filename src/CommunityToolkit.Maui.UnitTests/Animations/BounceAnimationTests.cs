@@ -89,7 +89,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var heights = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.TranslationY)).Select(translationY => originalTranslationY - translationY));
+		var heights = GetTurningPoints(recorder.GetValues(nameof(VisualElement.TranslationY)).Select(translationY => originalTranslationY - translationY));
 		var expectedHeights = new[] { animation.Distance, 0, animation.Distance / 2, 0, animation.Distance * 2 / 15 };
 		heights.Should().HaveCount(expectedHeights.Length);
 		heights.Zip(expectedHeights).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
@@ -104,7 +104,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var translations = recorder.ValuesOf(nameof(VisualElement.TranslationY)).ToList();
+		var translations = recorder.GetValues(nameof(VisualElement.TranslationY)).ToList();
 		translations[^1].Should().BeApproximately(originalTranslationY, precision);
 		var lastHopHeight = animation.Distance * 2 / 15;
 		var heights = translations.Select(translationY => originalTranslationY - translationY).ToList();
@@ -128,7 +128,7 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, HopsOf(animation.Distance), animation.Length, easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, CreateHopSegments(animation.Distance), animation.Length, easing);
 	}, testToken);
 
 	// A TranslateToAsync writes TranslationY on every frame too, so a frame that the hops leave unwritten shows the view at rest
@@ -144,21 +144,21 @@ public class BounceAnimationTests : BaseKeyframeAnimationTests<BounceAnimation>
 		using var recorder = new FrameRecorder(view, VisualElement.TranslationYProperty);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, HopsOf(animation.Distance), animation.Length);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationYProperty, CreateHopSegments(animation.Distance), animation.Length);
 		var wasTranslationInterrupted = await translation.WaitAsync(waitTimeout, token);
 		wasTranslationInterrupted.Should().BeFalse();
 	}, TestContext.Current.CancellationToken);
 
-	static KeyframeSegment[] HopsOf(double distance) =>
+	static KeyframeSegment[] CreateHopSegments(double distance) =>
 	[
-		Hop(0.0, 0.25, 0, distance, Easing.CubicOut),
-		Hop(0.2875, 0.4125, distance, 0, Easing.CubicIn),
-		Hop(0.4125, 0.625, 0, distance / 2, Easing.CubicOut),
-		Hop(0.625, 0.75, distance / 2, 0, Easing.CubicIn),
-		Hop(0.75, 0.875, 0, distance * 2 / 15, Easing.CubicOut),
-		Hop(0.875, 1.0, distance * 2 / 15, 0, Easing.CubicIn)
+		CreateHopSegment(0.0, 0.25, 0, distance, Easing.CubicOut),
+		CreateHopSegment(0.2875, 0.4125, distance, 0, Easing.CubicIn),
+		CreateHopSegment(0.4125, 0.625, 0, distance / 2, Easing.CubicOut),
+		CreateHopSegment(0.625, 0.75, distance / 2, 0, Easing.CubicIn),
+		CreateHopSegment(0.75, 0.875, 0, distance * 2 / 15, Easing.CubicOut),
+		CreateHopSegment(0.875, 1.0, distance * 2 / 15, 0, Easing.CubicIn)
 	];
 
-	static KeyframeSegment Hop(double begin, double end, double fromHeight, double toHeight, Easing easing) =>
-		new(begin, end, originalTranslationY - fromHeight, originalTranslationY - toHeight, easing);
+	static KeyframeSegment CreateHopSegment(double start, double end, double fromHeight, double toHeight, Easing easing) =>
+		new(start, end, originalTranslationY - fromHeight, originalTranslationY - toHeight, easing);
 }

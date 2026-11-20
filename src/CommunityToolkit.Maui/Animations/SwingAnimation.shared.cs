@@ -41,7 +41,7 @@ public partial class SwingAnimation() : BaseAnimation(SwingAnimationDefaults.Len
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var view = target.View;
-		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
+		var originalRotation = target.GetOriginalValue(VisualElement.RotationProperty);
 		var angle = RotationAngle;
 
 		// A pendulum pivots on its top edge
@@ -49,13 +49,13 @@ public partial class SwingAnimation() : BaseAnimation(SwingAnimationDefaults.Len
 
 		return new Animation
 		{
-			{ 0.0, 0.2, SwingBetween(0, angle) },
-			{ 0.2, 0.4, SwingBetween(angle, -2 * angle / 3) },
-			{ 0.4, 0.6, SwingBetween(-2 * angle / 3, angle / 3) },
-			{ 0.6, 0.8, SwingBetween(angle / 3, -angle / 3) },
-			{ 0.8, 1.0, SwingBetween(-angle / 3, 0) },
+			{ 0.0, 0.2, CreateSwingKeyframe(0, angle) },
+			{ 0.2, 0.4, CreateSwingKeyframe(angle, -2 * angle / 3) },
+			{ 0.4, 0.6, CreateSwingKeyframe(-2 * angle / 3, angle / 3) },
+			{ 0.6, 0.8, CreateSwingKeyframe(angle / 3, -angle / 3) },
+			{ 0.8, 1.0, CreateSwingKeyframe(-angle / 3, 0) },
 		};
 
-		Animation SwingBetween(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
+		Animation CreateSwingKeyframe(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
 	}
 }

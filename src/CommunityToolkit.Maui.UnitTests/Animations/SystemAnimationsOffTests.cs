@@ -66,7 +66,7 @@ public class SystemAnimationsOffTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var (property, target) = TargetOf(animationName, view);
+		var (property, target) = GetPropertyAndTarget(animationName, view);
 		var firstChange = WaitForAnyChangeAsync(view, startingValues, token);
 
 		var run = CreateAnimation(animationName, 1000).Animate(view, token);
@@ -104,7 +104,7 @@ public class SystemAnimationsOffTests : BaseAnimationTest
 		await run;
 	}, TestContext.Current.CancellationToken);
 
-	static (BindableProperty Property, double Target) TargetOf(string animationName, VisualElement view) => animationName switch
+	static (BindableProperty Property, double Target) GetPropertyAndTarget(string animationName, VisualElement view) => animationName switch
 	{
 		nameof(FadeAnimation) => (VisualElement.OpacityProperty, 0.3),
 		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, 1.2),

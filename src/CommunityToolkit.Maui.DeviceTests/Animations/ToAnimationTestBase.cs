@@ -10,7 +10,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 	// Longer than the way out of every round-trip To animation here (Fade's is the longest, 800 ms), so the late frame ends it at once
 	protected virtual TimeSpan LateFrameDelay { get; } = TimeSpan.FromMilliseconds(runLength);
 
-	protected abstract Task<bool> AppToAnimation(VisualElement view, double target);
+	protected abstract Task<bool> StartAppsToAnimation(VisualElement view, double target);
 
 	[Fact]
 	public async Task AnimationStartedMidRunStopsTheRunningOneAndReturnsTheViewToItsOriginalValues()
@@ -21,17 +21,17 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			Task? peakAgain = null;
+			Task? peakAgainTask = null;
 			Task? secondRun = null;
 			var firstRun = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view), () =>
 			{
-				peakAgain = WaitForPeakAsync(view);
+				peakAgainTask = WaitForPeakAsync(view);
 				secondRun = CreateAnimation().Animate(view);
 			});
 			await Task.WhenAll(firstRun, secondRun!).WaitAsync(waitTimeout);
 
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
-			var peakError = await Record.ExceptionAsync(() => peakAgain!);
+			var peakError = await Record.ExceptionAsync(() => peakAgainTask!);
 			Assert.True(peakError is null, "The second animation did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after both animations ended");
 		});
@@ -47,17 +47,17 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
-			Task? peakAgain = null;
+			Task? peakAgainTask = null;
 			Task? secondRun = null;
 			var firstRun = await StartAndActMidRunAsync(view, StartARunWhoseFirstFrameIsLate, () =>
 			{
-				peakAgain = WaitForPeakAsync(view);
+				peakAgainTask = WaitForPeakAsync(view);
 				secondRun = CreateAnimation().Animate(view);
 			});
 			await Task.WhenAll(firstRun, secondRun!).WaitAsync(waitTimeout);
 
 			// The wait task completes through a continuation, so it can trail the end of the run by a moment
-			var peakError = await Record.ExceptionAsync(() => peakAgain!);
+			var peakError = await Record.ExceptionAsync(() => peakAgainTask!);
 			Assert.True(peakError is null, "The animation started after the running one's late frame did not reach its peak.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after both animations ended");
 		});
@@ -128,7 +128,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			var restoreWrites = 0;
-			var peakReached = false;
+			var wasPeakReached = false;
 			try
 			{
 				await TriggerAndActMidRunAsync(view, behavior, animation, () =>
@@ -143,14 +143,14 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 				view.PropertyChanged -= CountRestoreWritesUntilThePeak;
 			}
 
-			Assert.True(peakReached, "The animation triggered again did not reach its peak.");
+			Assert.True(wasPeakReached, "The animation triggered again did not reach its peak.");
 			Assert.True(restoreWrites is 0, $"The interrupted run wrote the original value {restoreWrites} time(s) before the new run's peak; it must leave the view to the new run.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the animation triggered again");
 
 			// A restore writes the original value itself, while the new run moves from where the view is toward the peak
 			void CountRestoreWritesUntilThePeak(object? sender, PropertyChangedEventArgs e)
 			{
-				if (peakReached || e.PropertyName != PeakProperty.PropertyName)
+				if (wasPeakReached || e.PropertyName != PeakProperty.PropertyName)
 				{
 					return;
 				}
@@ -161,7 +161,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 					restoreWrites++;
 				}
 
-				peakReached = Math.Abs(value - PeakValue) <= peakTolerance;
+				wasPeakReached = Math.Abs(value - PeakValue) <= peakTolerance;
 			}
 		});
 	}
@@ -171,10 +171,10 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 	{
 		SetupBuilder();
 
-		var animatedByTheBehavior = CreateAnimation();
-		var lengthOfTheNewRun = animatedByTheBehavior.Length;
-		animatedByTheBehavior.Length = lengthOfARunActedOnOffTheUIThread;
-		var animation = new ObservedAnimation(animatedByTheBehavior);
+		var animationPlayedByTheBehavior = CreateAnimation();
+		var lengthOfTheNewRun = animationPlayedByTheBehavior.Length;
+		animationPlayedByTheBehavior.Length = lengthOfARunActedOnOffTheUIThread;
+		var animation = new ObservedAnimation(animationPlayedByTheBehavior);
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		var view = CreateAnimatedView(OriginalValues);
 		view.Behaviors.Add(behavior);
@@ -184,14 +184,14 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 		{
 			var restoreWrites = 0;
 			var writesOffTheUIThread = 0;
-			var peakReached = false;
+			var wasPeakReached = false;
 			try
 			{
 				// The UI thread waits while a pool thread triggers the behavior, so no frame can end the run before the new run's start is queued
 				await TriggerAndActMidRunAsync(view, behavior, animation, () =>
 				{
 					// The running run read its length when it started
-					animatedByTheBehavior.Length = lengthOfTheNewRun;
+					animationPlayedByTheBehavior.Length = lengthOfTheNewRun;
 					view.PropertyChanged += CountWritesUntilThePeak;
 					Assert.True(Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None)).Wait(waitTimeout), "The pool thread did not trigger the behavior.");
 				}, CancellationToken.None);
@@ -202,7 +202,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 				view.PropertyChanged -= CountWritesUntilThePeak;
 			}
 
-			Assert.True(peakReached, "The animation triggered from a background thread did not reach its peak.");
+			Assert.True(wasPeakReached, "The animation triggered from a background thread did not reach its peak.");
 			Assert.True(restoreWrites is 0, $"The interrupted run wrote the original value {restoreWrites} time(s) before the new run's peak; it must leave the view to the new run.");
 			Assert.True(writesOffTheUIThread is 0, $"The view changed {writesOffTheUIThread} time(s) off the UI thread.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the animation triggered from a background thread");
@@ -214,7 +214,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 					writesOffTheUIThread++;
 				}
 
-				if (peakReached || e.PropertyName != PeakProperty.PropertyName)
+				if (wasPeakReached || e.PropertyName != PeakProperty.PropertyName)
 				{
 					return;
 				}
@@ -225,7 +225,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 					restoreWrites++;
 				}
 
-				peakReached = Math.Abs(value - PeakValue) <= peakTolerance;
+				wasPeakReached = Math.Abs(value - PeakValue) <= peakTolerance;
 			}
 		});
 	}
@@ -233,7 +233,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
-	public async Task AppsOwnToAnimationHoldingTheCurrentValueTakesOverWithoutTheInterruptedRunReturningTheView(bool cancelAnimationsFirst)
+	public async Task AppsOwnToAnimationHoldingTheCurrentValueTakesOverWithoutTheInterruptedRunReturningTheView(bool shouldCancelAnimationsFirst)
 	{
 		SetupBuilder();
 
@@ -252,12 +252,12 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 					appTarget = (double)view.GetValue(PeakProperty);
 					view.PropertyChanged += CountOriginalValueWrites;
 
-					if (cancelAnimationsFirst)
+					if (shouldCancelAnimationsFirst)
 					{
 						view.CancelAnimations();
 					}
 
-					appRun = AppToAnimation(view, appTarget);
+					appRun = StartAppsToAnimation(view, appTarget);
 				});
 				await Task.WhenAll(run, appRun!).WaitAsync(waitTimeout);
 			}
@@ -353,7 +353,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			var interruptedRun = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view), () =>
 			{
 				interruptedValue = (double)view.GetValue(PeakProperty);
-				appRun = AppToAnimation(view, interruptedValue);
+				appRun = StartAppsToAnimation(view, interruptedValue);
 			});
 			await Task.WhenAll(interruptedRun, appRun!).WaitAsync(waitTimeout);
 
@@ -374,11 +374,11 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			using var cancellation = new CancellationTokenSource();
-			Task? peakAgain = null;
+			Task? peakAgainTask = null;
 			Task? secondRun = null;
 			var firstRun = await StartAndActMidRunAsync(view, () => CreateAnimation().Animate(view, cancellation.Token), () =>
 			{
-				peakAgain = WaitForPeakAsync(view);
+				peakAgainTask = WaitForPeakAsync(view);
 
 				// This turn keeps the UI thread busy, so the abort that the pool thread's cancellation queues can only run after the new run took the handle
 				var wasCancelled = Task.Run(cancellation.Cancel).Wait(waitTimeout);
@@ -389,7 +389,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => firstRun.WaitAsync(waitTimeout));
 			await secondRun!.WaitAsync(waitTimeout);
 
-			var peakError = await Record.ExceptionAsync(() => peakAgain!);
+			var peakError = await Record.ExceptionAsync(() => peakAgainTask!);
 			Assert.True(peakError is null, "The new run did not reach its peak; the abort that the cancelled run queued stopped it.");
 			AssertAtOriginalValues(handler, view, OriginalValues, nativeStateAtRest, "after the new run ended");
 		});
@@ -405,7 +405,7 @@ public abstract class ToAnimationTestBase<TAnimation> : AnimationContractTestBas
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
 		{
 			Task? runStartedByTheApp = null;
-			var appRun = AppToAnimation(view, (double)view.GetValue(PeakProperty));
+			var appRun = StartAppsToAnimation(view, (double)view.GetValue(PeakProperty));
 			var appCode = appRun.ContinueWith(_ => runStartedByTheApp = CreateAnimation().Animate(view), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
 			// The run's start aborts the app's animation, whose continuation starts a run inside that abort

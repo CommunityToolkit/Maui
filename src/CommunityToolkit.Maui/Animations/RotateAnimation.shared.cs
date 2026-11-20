@@ -66,23 +66,23 @@ public partial class RotateAnimation : BaseAnimation
 		token.ThrowIfCancellationRequested();
 		StopAnimationsOf(view, VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync));
 
-		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationProperty);
-		var (rotationId, originalRotation) = rotations.Start(view.Rotation);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(view, VisualElement.RotationProperty);
+		var (rotationId, originalRotation) = tracker.StartAnimationAndGetOriginalValue(view.Rotation);
 
 		try
 		{
 			// Turning by Rotation from the tracked original, not from the current rotation, ends a run that interrupted another one where the first run would have ended
-			var hasTurned = await AnimateAndRestoreIfStoppedAsync(view, VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync), rotationId, originalRotation,
+			var hasTurned = await TryAnimateAndRestoreIfStoppedAsync(view, VisualElement.RotationProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateToAsync), rotationId, originalRotation,
 				() => view.RotateToAsync(originalRotation + Rotation, Length, Easing, CancellationToken.None), token);
 
-			if (hasTurned && rotations.IsLatest(rotationId))
+			if (hasTurned && tracker.IsLatest(rotationId))
 			{
 				view.Rotation = originalRotation;
 			}
 		}
 		finally
 		{
-			rotations.End(rotationId, view.Rotation);
+			tracker.EndAnimation(rotationId, view.Rotation);
 		}
 	}
 

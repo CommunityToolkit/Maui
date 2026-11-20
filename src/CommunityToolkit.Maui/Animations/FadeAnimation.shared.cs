@@ -44,25 +44,25 @@ public partial class FadeAnimation() : BaseAnimation(FadeAnimationDefaults.Lengt
 		token.ThrowIfCancellationRequested();
 		StopAnimationsOf(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync));
 
-		var fades = AnimatedPropertyTracker.For(view, VisualElement.OpacityProperty);
-		var (fadeId, originalOpacity) = fades.Start(view.Opacity);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(view, VisualElement.OpacityProperty);
+		var (fadeId, originalOpacity) = tracker.StartAnimationAndGetOriginalValue(view.Opacity);
 
 		// Length is the duration of the whole animation, fading out and back: https://github.com/CommunityToolkit/Maui/discussions/1231
 		var halfLength = Length / 2;
 
 		try
 		{
-			if (await FadeToOpacityAsync(Opacity) && fades.IsLatest(fadeId))
+			if (await TryFadeToOpacityAsync(Opacity) && tracker.IsLatest(fadeId))
 			{
-				await FadeToOpacityAsync(originalOpacity);
+				await TryFadeToOpacityAsync(originalOpacity);
 			}
 		}
 		finally
 		{
-			fades.End(fadeId, view.Opacity);
+			tracker.EndAnimation(fadeId, view.Opacity);
 		}
 
-		Task<bool> FadeToOpacityAsync(double opacity) =>
-			AnimateAndRestoreIfStoppedAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, CancellationToken.None), token);
+		Task<bool> TryFadeToOpacityAsync(double opacity) =>
+			TryAnimateAndRestoreIfStoppedAsync(view, VisualElement.OpacityProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync), fadeId, originalOpacity, () => view.FadeToAsync(opacity, halfLength, Easing, CancellationToken.None), token);
 	}
 }

@@ -31,27 +31,27 @@ public partial class RubberBandAnimation() : BaseAnimation(RubberBandAnimationDe
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var view = target.View;
-		var originalScaleX = target.OriginalValueOf(VisualElement.ScaleXProperty);
-		var originalScaleY = target.OriginalValueOf(VisualElement.ScaleYProperty);
+		var originalScaleX = target.GetOriginalValue(VisualElement.ScaleXProperty);
+		var originalScaleY = target.GetOriginalValue(VisualElement.ScaleYProperty);
 
 		return new Animation
 		{
-			{ 0.0, 0.3, StretchX(1, 1.25) },
-			{ 0.3, 0.4, StretchX(1.25, 0.75) },
-			{ 0.4, 0.5, StretchX(0.75, 1.15) },
-			{ 0.5, 0.65, StretchX(1.15, 0.95) },
-			{ 0.65, 0.75, StretchX(0.95, 1.05) },
-			{ 0.75, 1.0, StretchX(1.05, 1) },
+			{ 0.0, 0.3, CreateStretchXKeyframe(1, 1.25) },
+			{ 0.3, 0.4, CreateStretchXKeyframe(1.25, 0.75) },
+			{ 0.4, 0.5, CreateStretchXKeyframe(0.75, 1.15) },
+			{ 0.5, 0.65, CreateStretchXKeyframe(1.15, 0.95) },
+			{ 0.65, 0.75, CreateStretchXKeyframe(0.95, 1.05) },
+			{ 0.75, 1.0, CreateStretchXKeyframe(1.05, 1) },
 
-			{ 0.0, 0.3, StretchY(1, 0.75) },
-			{ 0.3, 0.4, StretchY(0.75, 1.25) },
-			{ 0.4, 0.5, StretchY(1.25, 0.85) },
-			{ 0.5, 0.65, StretchY(0.85, 1.05) },
-			{ 0.65, 0.75, StretchY(1.05, 0.95) },
-			{ 0.75, 1.0, StretchY(0.95, 1) },
+			{ 0.0, 0.3, CreateStretchYKeyframe(1, 0.75) },
+			{ 0.3, 0.4, CreateStretchYKeyframe(0.75, 1.25) },
+			{ 0.4, 0.5, CreateStretchYKeyframe(1.25, 0.85) },
+			{ 0.5, 0.65, CreateStretchYKeyframe(0.85, 1.05) },
+			{ 0.65, 0.75, CreateStretchYKeyframe(1.05, 0.95) },
+			{ 0.75, 1.0, CreateStretchYKeyframe(0.95, 1) },
 		};
 
-		Animation StretchX(double fromFactor, double toFactor) => new(scaleX => view.ScaleX = scaleX, originalScaleX * fromFactor, originalScaleX * toFactor, Easing.SinInOut);
-		Animation StretchY(double fromFactor, double toFactor) => new(scaleY => view.ScaleY = scaleY, originalScaleY * fromFactor, originalScaleY * toFactor, Easing.SinInOut);
+		Animation CreateStretchXKeyframe(double fromFactor, double toFactor) => new(scaleX => view.ScaleX = scaleX, originalScaleX * fromFactor, originalScaleX * toFactor, Easing.SinInOut);
+		Animation CreateStretchYKeyframe(double fromFactor, double toFactor) => new(scaleY => view.ScaleY = scaleY, originalScaleY * fromFactor, originalScaleY * toFactor, Easing.SinInOut);
 	}
 }

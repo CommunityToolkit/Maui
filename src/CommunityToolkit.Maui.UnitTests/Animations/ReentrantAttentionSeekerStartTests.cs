@@ -14,7 +14,7 @@ public class ReentrantAttentionSeekerStartTests : BaseAnimationTest
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[InlineData(nameof(HeartbeatAnimation))]
 	[InlineData(nameof(SwingAnimation))]
-	public Task SwingAnimation_WhoseAnchorChangeStartsAnotherSeeker_KeepsItsTopEdgeAnchorAndRotateAnimationStillStopsIt(string seekerStartedByTheAnchorChange) => RunOnSingleThreadAsync(async token =>
+	public Task SwingAnimation_WhoseAnchorChangeStartsAnotherSeeker_KeepsItsTopEdgeAnchorAndRotateAnimationStillStopsIt(string anchorChangeSeekerName) => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
@@ -52,7 +52,7 @@ public class ReentrantAttentionSeekerStartTests : BaseAnimationTest
 		{
 			if (seekerStartedDuringSwingsStart is null && e.PropertyName == VisualElement.AnchorYProperty.PropertyName && view.AnchorY == 0)
 			{
-				seekerStartedDuringSwingsStart = CreateSeeker(seekerStartedByTheAnchorChange).Animate(view, token);
+				seekerStartedDuringSwingsStart = CreateSeeker(anchorChangeSeekerName).Animate(view, token);
 			}
 		}
 	}, TestContext.Current.CancellationToken);

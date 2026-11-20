@@ -110,9 +110,9 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);
 
-		var scaled = WaitForPropertyAsync(view, VisualElement.ScaleProperty, token, scale => Math.Abs(scale - originalScale) > 0.05);
+		var scaledTask = WaitForPropertyAsync(view, VisualElement.ScaleProperty, token, scale => Math.Abs(scale - originalScale) > 0.05);
 		var scaleRun = new ScaleAnimation { Length = 400 }.Animate(view, token);
-		await scaled;
+		await scaledTask;
 
 		behavior.AnimateCommand.Execute(token);
 
@@ -126,9 +126,9 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 
-		var rotated = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => Math.Abs(rotation - originalRotation) > 5);
+		var rotatedTask = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => Math.Abs(rotation - originalRotation) > 5);
 		var rotateRun = new RotateAnimation { Length = 2 * functionalTestLength }.Animate(view, token);
-		await rotated;
+		await rotatedTask;
 		var swingRun = new SwingAnimation { Length = functionalTestLength }.Animate(view, token);
 
 		await Task.WhenAll(rotateRun, swingRun).WaitAsync(waitTimeout, token);
@@ -142,9 +142,9 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 
-		var scaled = WaitForPropertyAsync(view, VisualElement.ScaleProperty, token, scale => Math.Abs(scale - originalScale) > 0.05);
+		var scaledTask = WaitForPropertyAsync(view, VisualElement.ScaleProperty, token, scale => Math.Abs(scale - originalScale) > 0.05);
 		var scaleRun = new ScaleAnimation { Length = 4 * functionalTestLength }.Animate(view, token);
-		await scaled;
+		await scaledTask;
 		var tadaRun = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
 
 		await Task.WhenAll(scaleRun, tadaRun).WaitAsync(waitTimeout, token);
@@ -159,10 +159,10 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var scaleXBeforeScaleToAsync = view.ScaleX;
 
-		var scaled = WaitForPropertyAsync(view, VisualElement.ScaleXProperty, token, scaleX => Math.Abs(scaleX - scaleXBeforeScaleToAsync) > 0.05);
+		var scaledTask = WaitForPropertyAsync(view, VisualElement.ScaleXProperty, token, scaleX => Math.Abs(scaleX - scaleXBeforeScaleToAsync) > 0.05);
 		var scaleXRun = view.ScaleXToAsync(2, 4 * functionalTestLength, null, token);
 		var scaleYRun = view.ScaleYToAsync(2, 4 * functionalTestLength, null, token);
-		await scaled;
+		await scaledTask;
 		// A raw ScaleXToAsync is not tracked, so the attention seeker takes the mid-animation values as its originals
 		var scaleXWhenRubberBandStarts = view.ScaleX;
 		var scaleYWhenRubberBandStarts = view.ScaleY;
@@ -186,15 +186,15 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var startingTranslationY = view.TranslationY;
 		var targetTranslationX = startingTranslationX + 100;
 
-		var moved = WaitForPropertyAsync(view, VisualElement.TranslationXProperty, token, translationX => translationX - startingTranslationX > 5);
+		var movedTask = WaitForPropertyAsync(view, VisualElement.TranslationXProperty, token, translationX => translationX - startingTranslationX > 5);
 		var translateRun = view.TranslateToAsync(targetTranslationX, startingTranslationY, 4 * functionalTestLength, null, token);
-		await moved;
+		await movedTask;
 		var bounceRun = new BounceAnimation { Length = functionalTestLength }.Animate(view, token);
 
 		await bounceRun.WaitAsync(waitTimeout, token);
-		var wasTranslateInterrupted = await translateRun.WaitAsync(waitTimeout, token);
+		var wasTranslationInterrupted = await translateRun.WaitAsync(waitTimeout, token);
 
-		wasTranslateInterrupted.Should().BeFalse();
+		wasTranslationInterrupted.Should().BeFalse();
 		view.TranslationX.Should().BeApproximately(targetTranslationX, precision);
 		view.TranslationY.Should().BeApproximately(startingTranslationY, precision);
 	}, TestContext.Current.CancellationToken);
@@ -204,9 +204,9 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 
-		var rotated = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => Math.Abs(rotation - originalRotation) > 5);
+		var rotatedTask = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => Math.Abs(rotation - originalRotation) > 5);
 		var rotateRun = new RotateAnimation { Length = functionalTestLength }.Animate(view, token);
-		await rotated;
+		await rotatedTask;
 		var swingRun = new SwingAnimation { Length = 2 * functionalTestLength }.Animate(view, token);
 
 		await Task.WhenAll(rotateRun, swingRun).WaitAsync(waitTimeout, token);
@@ -249,12 +249,12 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-		var throwOnScaleRestore = false;
+		var shouldThrowOnScaleRestore = false;
 		view.PropertyChanged += (_, e) =>
 		{
-			if (throwOnScaleRestore && e.PropertyName == nameof(VisualElement.Scale))
+			if (shouldThrowOnScaleRestore && e.PropertyName == nameof(VisualElement.Scale))
 			{
-				throwOnScaleRestore = false;
+				shouldThrowOnScaleRestore = false;
 				throw new InvalidOperationException("Thrown by a PropertyChanged handler.");
 			}
 		};
@@ -263,7 +263,7 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var run = new TadaAnimation { Length = 2000 }.Animate(view, cancellationTokenSource.Token);
 		await firstChange;
 
-		throwOnScaleRestore = true;
+		shouldThrowOnScaleRestore = true;
 		var cancelException = Record.Exception(cancellationTokenSource.Cancel);
 		cancelException.Should().BeNull("the run's Task reports the exception of the handler, not the code that cancels");
 		var runException = await Assert.ThrowsAsync<InvalidOperationException>(() => run.WaitAsync(waitTimeout, token));
@@ -283,13 +283,13 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	public Task TadaAnimation_WhenAPropertyChangedHandlerThrowsWhileTheCompletedRunRestoresTheView_FaultsTheRunWithThatExceptionAndRestoresEveryProperty() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var restoreThrew = MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(view);
+		var hasRestoreThrown = MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestoredAndGetHasThrown(view);
 
 		var run = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
 
 		var runException = await Assert.ThrowsAsync<InvalidOperationException>(() => run.WaitAsync(waitTimeout, token));
 		runException.Message.Should().Be("Thrown by a PropertyChanged handler.");
-		restoreThrew().Should().BeTrue();
+		hasRestoreThrown().Should().BeTrue();
 		view.Rotation.Should().BeApproximately(originalRotation, precision, "the properties after the throwing one are restored too");
 		view.Scale.Should().BeApproximately(originalScale, precision);
 		view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle).Should().BeFalse();
@@ -300,12 +300,12 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var startingValues = CaptureValues(view);
-		var throwOnScaleRestore = false;
+		var shouldThrowOnScaleRestore = false;
 		view.PropertyChanged += (_, e) =>
 		{
-			if (throwOnScaleRestore && e.PropertyName == nameof(VisualElement.Scale))
+			if (shouldThrowOnScaleRestore && e.PropertyName == nameof(VisualElement.Scale))
 			{
-				throwOnScaleRestore = false;
+				shouldThrowOnScaleRestore = false;
 				throw new InvalidOperationException("Thrown by a PropertyChanged handler.");
 			}
 		};
@@ -314,7 +314,7 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 		var supersededRun = new TadaAnimation { Length = 2000 }.Animate(view, token);
 		await firstChange;
 
-		throwOnScaleRestore = true;
+		shouldThrowOnScaleRestore = true;
 		var newRun = new TadaAnimation { Length = functionalTestLength }.Animate(view, token);
 
 		await Assert.ThrowsAsync<InvalidOperationException>(() => supersededRun.WaitAsync(waitTimeout, token));
@@ -326,29 +326,29 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 	[Fact]
 	public void AnimationBehavior_WhenAPropertyChangedHandlerThrowsWhileTheRunRestoresTheView_SuppressesTheExceptionAndReportsItToTheTraceWhenTheOptionIsSet()
 	{
-		var (escapedException, reportedToTheTrace) = RunBehaviorWhoseRestoreThrows(shouldSuppressExceptionsInAnimations: true);
+		var (escapedException, traceMessages) = RunBehaviorWhoseRestoreThrowsAndGetTheReports(shouldSuppressExceptionsInAnimations: true);
 
 		Assert.Null(escapedException);
-		Assert.Contains(reportedToTheTrace, message => message.Contains("Thrown by a PropertyChanged handler.", StringComparison.Ordinal));
+		Assert.Contains(traceMessages, message => message.Contains("Thrown by a PropertyChanged handler.", StringComparison.Ordinal));
 	}
 
 	[Fact]
 	public void AnimationBehavior_WhenAPropertyChangedHandlerThrowsWhileTheRunRestoresTheView_ReportsTheExceptionToTheAppWhenTheOptionIsNotSet()
 	{
-		var (escapedException, reportedToTheTrace) = RunBehaviorWhoseRestoreThrows(shouldSuppressExceptionsInAnimations: false);
+		var (escapedException, traceMessages) = RunBehaviorWhoseRestoreThrowsAndGetTheReports(shouldSuppressExceptionsInAnimations: false);
 
 		Assert.IsType<InvalidOperationException>(escapedException);
-		Assert.Empty(reportedToTheTrace);
+		Assert.Empty(traceMessages);
 	}
 
-	static (Exception? EscapedException, List<string> ReportedToTheTrace) RunBehaviorWhoseRestoreThrows(bool shouldSuppressExceptionsInAnimations)
+	static (Exception? EscapedException, List<string> TraceMessages) RunBehaviorWhoseRestoreThrowsAndGetTheReports(bool shouldSuppressExceptionsInAnimations)
 	{
 		var behavior = new AnimationBehavior { AnimationType = new TadaAnimation { Length = functionalTestLength } };
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		view.Behaviors.Add(behavior);
-		MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(view);
-		var reportedToTheTrace = new List<string>();
-		using var traceListener = new InformationRecordingTraceListener(reportedToTheTrace);
+		MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestoredAndGetHasThrown(view);
+		var traceMessages = new List<string>();
+		using var traceListener = new InformationRecordingTraceListener(traceMessages);
 
 		new Options().SetShouldSuppressExceptionsInAnimations(shouldSuppressExceptionsInAnimations);
 		Trace.Listeners.Add(traceListener);
@@ -357,7 +357,7 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 			// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
 			var escapedException = Record.Exception(() => UndisposedAsyncContext.Run(() => behavior.AnimateCommand.Execute(TestContext.Current.CancellationToken)));
 
-			return (escapedException, reportedToTheTrace);
+			return (escapedException, traceMessages);
 		}
 		finally
 		{
@@ -368,7 +368,7 @@ public class KeyframeAnimationExtensionsTests : BaseAnimationTest
 
 	// A frame before the last can write the original rotation too, so every such write moves the view and the last move follows the last frame, which the restore then undoes.
 	// The animation's handle is gone only while the restore runs, which is when the handler throws, once: MAUI leaves a property whose PropertyChanged handler threw unable to change.
-	static Func<bool> MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestored(VisualElement view)
+	static Func<bool> MoveTheViewAfterTheLastFrameAndThrowWhenTheScaleIsRestoredAndGetHasThrown(VisualElement view)
 	{
 		var hasMovedTheView = false;
 		var hasThrown = false;

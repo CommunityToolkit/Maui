@@ -81,15 +81,15 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingOut = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity < originalOpacity - 0.2);
+		var fadingOutTask = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity < originalOpacity - 0.2);
 		var firstFade = animation.Animate(label, token);
-		await fadingOut;
+		await fadingOutTask;
 
-		var fadedAgain = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision);
+		var fadedAgainTask = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision);
 		var secondFade = animation.Animate(label, token);
 		await Task.WhenAll(firstFade, secondFade).WaitAsync(waitTimeout, token);
 
-		await fadedAgain;
+		await fadedAgainTask;
 		label.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -99,15 +99,15 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingBack = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
+		var fadingBackTask = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
 		var firstFade = animation.Animate(label, token);
-		await fadingBack;
+		await fadingBackTask;
 
-		var fadedAgain = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision);
+		var fadedAgainTask = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision);
 		var secondFade = animation.Animate(label, token);
 		await Task.WhenAll(firstFade, secondFade).WaitAsync(waitTimeout, token);
 
-		await fadedAgain;
+		await fadedAgainTask;
 		label.Opacity.Should().BeApproximately(originalOpacity, precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -117,9 +117,9 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingBack = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
+		var fadingBackTask = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
 		var interruptedFade = animation.Animate(label, token);
-		await fadingBack;
+		await fadingBackTask;
 
 		label.CancelAnimations();
 		await interruptedFade.WaitAsync(waitTimeout, token);
@@ -139,9 +139,9 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 		var animation = new FadeAnimation { Opacity = fadedOpacity, Length = fadeLength };
 		var label = CreateAnimatedLabel();
 
-		var fadingBack = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
+		var fadingBackTask = WaitForPropertyAsync(label, VisualElement.OpacityProperty, token, opacity => opacity <= fadedOpacity + precision, opacity => opacity >= fadedOpacity + 0.3);
 		var interruptedFade = animation.Animate(label, token);
-		await fadingBack;
+		await fadingBackTask;
 
 		label.CancelAnimations();
 		await interruptedFade.WaitAsync(waitTimeout, token);
@@ -185,9 +185,9 @@ public class FadeAnimationTests : BaseAnimationTests<FadeAnimation>
 		};
 		border.EnableAnimations();
 
-		var fadingOut = WaitForPropertyAsync(border, VisualElement.OpacityProperty, token, opacity => opacity < originalOpacity - 0.2);
+		var fadingOutTask = WaitForPropertyAsync(border, VisualElement.OpacityProperty, token, opacity => opacity < originalOpacity - 0.2);
 		behavior.AnimateCommand.Execute(token);
-		await fadingOut;
+		await fadingOutTask;
 
 		// AnimationBehavior cancels the running animation and starts a new one, so two animations end
 		behavior.AnimateCommand.Execute(token);

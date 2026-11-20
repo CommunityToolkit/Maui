@@ -71,7 +71,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var halfwayScale = originalScale * (1 + animation.MaximumScale) / 2;
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
 		var upwardCrossings = scales.Zip(scales.Skip(1)).Count(pair => pair.First < halfwayScale && pair.Second >= halfwayScale);
 		upwardCrossings.Should().Be(2);
 		scales[^1].Should().BeApproximately(originalScale, precision);
@@ -87,7 +87,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var peakScale = originalScale * animation.MaximumScale;
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
 		var peakIndexes = scales.Select((scale, index) => (scale, index)).Where(sample => Math.Abs(sample.scale - peakScale) <= precision).Select(sample => sample.index).ToList();
 		peakIndexes.Should().HaveCountGreaterThanOrEqualTo(2);
 		var troughBetweenPeaks = scales.Skip(peakIndexes[0]).Take(peakIndexes[^1] - peakIndexes[0]).Min();
@@ -103,7 +103,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
 		scales.Last(scale => Math.Abs(scale - originalScale) > precision).Should().BeInRange(originalScale + precision, (originalScale * animation.MaximumScale) - precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -121,7 +121,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		using var recorder = new PropertyRecorder(view);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
 		scales.Max().Should().BeApproximately(originalScale * animation.MaximumScale, precision);
 		scales.Min().Should().BeGreaterThanOrEqualTo(originalScale - precision);
 	}, TestContext.Current.CancellationToken);
@@ -158,7 +158,7 @@ public class HeartbeatAnimationTests : BaseKeyframeAnimationTests<HeartbeatAnima
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var peakScale = originalScale * animation.MaximumScale;
-		var scaleSegments = SinInOutSegments([0, 0.2, 0.4, 0.6, 1], [originalScale, peakScale, originalScale, peakScale, originalScale]);
+		var scaleSegments = CreateSinInOutSegments([0, 0.2, 0.4, 0.6, 1], [originalScale, peakScale, originalScale, peakScale, originalScale]);
 		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleProperty, scaleSegments, animation.Length, easing);
 	}, testToken);
 }

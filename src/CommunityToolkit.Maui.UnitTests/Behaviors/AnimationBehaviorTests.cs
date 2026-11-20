@@ -154,7 +154,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		}));
 
 		Assert.Null(exception);
-		Assert.False(mockAnimation.AnimationHasStarted);
+		Assert.False(mockAnimation.HasAnimationStarted);
 		Assert.False(mockAnimation.HasAnimated);
 	}
 
@@ -174,14 +174,14 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		};
 		label.EnableAnimations();
 
-		var shaking = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var shakingSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		label.PropertyChanged += HandlePropertyChanged;
 
 		// AsyncContext rethrows an exception that escapes the fire-and-forget AnimateCommand, which would crash an app
 		var exception = Record.Exception(() => UndisposedAsyncContext.Run(async () =>
 		{
 			behavior.AnimateCommand.Execute(animationCommandCts.Token);
-			await shaking.Task.WaitAsync(TimeSpan.FromSeconds(15), TestContext.Current.CancellationToken);
+			await shakingSource.Task.WaitAsync(TimeSpan.FromSeconds(15), TestContext.Current.CancellationToken);
 			animationCommandCts.Cancel();
 		}));
 
@@ -193,7 +193,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 			if (e.PropertyName == nameof(VisualElement.TranslationX))
 			{
 				label.PropertyChanged -= HandlePropertyChanged;
-				shaking.TrySetResult();
+				shakingSource.TrySetResult();
 			}
 		}
 	}
@@ -219,7 +219,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		var exception = Record.Exception(() => UndisposedAsyncContext.Run(() => behavior.AnimateCommand.Execute(animationCommandCts.Token)));
 
 		Assert.Null(exception);
-		Assert.False(mockAnimation.AnimationHasStarted);
+		Assert.False(mockAnimation.HasAnimationStarted);
 		Assert.False(mockAnimation.HasAnimated);
 	}
 
@@ -283,7 +283,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 
 		public event EventHandler? AnimationEnded;
 
-		public bool AnimationHasStarted { get; private set; }
+		public bool HasAnimationStarted { get; private set; }
 
 		public bool HasAnimated { get; private set; }
 
@@ -291,7 +291,7 @@ public class AnimationBehaviorTests() : BaseBehaviorTest<AnimationBehavior, Visu
 		{
 			ArgumentNullException.ThrowIfNull(element);
 
-			AnimationHasStarted = true;
+			HasAnimationStarted = true;
 			AnimationStarted?.Invoke(this, EventArgs.Empty);
 
 			await element.RotateToAsync(70, 250, null, token);

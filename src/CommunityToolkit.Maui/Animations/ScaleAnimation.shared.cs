@@ -43,24 +43,24 @@ public partial class ScaleAnimation() : BaseAnimation(ScaleAnimationDefaults.Len
 		token.ThrowIfCancellationRequested();
 		StopAnimationsOf(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync));
 
-		var scales = AnimatedPropertyTracker.For(view, VisualElement.ScaleProperty);
-		var (scaleId, originalScale) = scales.Start(view.Scale);
+		var tracker = AnimatedPropertyTracker.GetOrCreate(view, VisualElement.ScaleProperty);
+		var (scaleId, originalScale) = tracker.StartAnimationAndGetOriginalValue(view.Scale);
 
 		var halfLength = Length / 2;
 
 		try
 		{
-			if (await ScaleToValueAsync(Scale) && scales.IsLatest(scaleId))
+			if (await TryScaleToValueAsync(Scale) && tracker.IsLatest(scaleId))
 			{
-				await ScaleToValueAsync(originalScale);
+				await TryScaleToValueAsync(originalScale);
 			}
 		}
 		finally
 		{
-			scales.End(scaleId, view.Scale);
+			tracker.EndAnimation(scaleId, view.Scale);
 		}
 
-		Task<bool> ScaleToValueAsync(double scale) =>
-			AnimateAndRestoreIfStoppedAsync(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync), scaleId, originalScale, () => view.ScaleToAsync(scale, halfLength, Easing, CancellationToken.None), token);
+		Task<bool> TryScaleToValueAsync(double scale) =>
+			TryAnimateAndRestoreIfStoppedAsync(view, VisualElement.ScaleProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync), scaleId, originalScale, () => view.ScaleToAsync(scale, halfLength, Easing, CancellationToken.None), token);
 	}
 }

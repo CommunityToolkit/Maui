@@ -26,10 +26,10 @@ sealed class AnimatedPropertyTracker
 	double originalValue;
 	double? valueLeftByLastAnimation;
 
-	public static AnimatedPropertyTracker For(VisualElement view, BindableProperty property) =>
+	public static AnimatedPropertyTracker GetOrCreate(VisualElement view, BindableProperty property) =>
 		viewTrackers.GetValue(view, static _ => new()).GetOrAdd(property, static _ => new());
 
-	public (int AnimationId, double OriginalValue) Start(double currentValue)
+	public (int AnimationId, double OriginalValue) StartAnimationAndGetOriginalValue(double currentValue)
 	{
 		lock (trackerLock)
 		{
@@ -55,7 +55,7 @@ sealed class AnimatedPropertyTracker
 	}
 
 	// An interrupted run ends before it returns the view, so the value it left is the original value, not the one it was interrupted at
-	public void ReturnedToOriginalValue(int animationId, double restoredValue)
+	public void RecordReturnToOriginalValue(int animationId, double restoredValue)
 	{
 		lock (trackerLock)
 		{
@@ -67,7 +67,7 @@ sealed class AnimatedPropertyTracker
 	}
 
 	// An app animation or write that took over at the interrupted value leaves that value at rest, so the next animation must start from it, not from the original value before the interrupted one
-	public void HandedOverToApp(int animationId)
+	public void RecordHandOverToApp(int animationId)
 	{
 		lock (trackerLock)
 		{
@@ -78,7 +78,7 @@ sealed class AnimatedPropertyTracker
 		}
 	}
 
-	public void End(int animationId, double currentValue)
+	public void EndAnimation(int animationId, double currentValue)
 	{
 		lock (trackerLock)
 		{

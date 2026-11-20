@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
@@ -25,10 +26,10 @@ static class KeyframeAnimationExtensions
 	{
 		token.ThrowIfCancellationRequested();
 
-		var animationEnded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var animationEndedSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		// The dispatch is not cancellable: a start that runs always leaves a run for the registration below to abort, so the view is never left mid-animation.
-		// A token cancelled while the start waited skips it, because Start would stop an unrelated run and animate the view before anything could abort it.
+		// A token cancelled while the start waited skips it, because StartRun would stop an unrelated run and animate the view before anything could abort it.
 		var wasCancelledBeforeStart = false;
 		await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(view.Dispatcher, () =>
 		{
@@ -38,7 +39,7 @@ static class KeyframeAnimationExtensions
 				return;
 			}
 
-			Start(view, animatedProperties, createKeyframes, length, easing, animationEnded);
+			StartRun(view, animatedProperties, createKeyframes, length, easing, animationEndedSource);
 		}, CancellationToken.None);
 
 		if (wasCancelledBeforeStart)
@@ -47,9 +48,9 @@ static class KeyframeAnimationExtensions
 		}
 
 		bool wasAborted;
-		await using (token.Register(() => AbortOnDispatcher(view, animationEnded.Task)))
+		await using (token.Register(() => AbortOnDispatcher(view, animationEndedSource.Task)))
 		{
-			wasAborted = await animationEnded.Task;
+			wasAborted = await animationEndedSource.Task;
 		}
 
 		if (wasAborted)
@@ -58,8 +59,8 @@ static class KeyframeAnimationExtensions
 		}
 	}
 
-	static void Start(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties,
-		Func<KeyframeTarget, Animation> createKeyframes, uint length, Easing easing, TaskCompletionSource<bool> animationEnded)
+	static void StartRun(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties,
+		Func<KeyframeTarget, Animation> createKeyframes, uint length, Easing easing, TaskCompletionSource<bool> animationEndedSource)
 	{
 		// Aborting the running keyframe animation returns the view to its original values before this run reads them
 		view.AbortAnimation(AnimationHandle);
@@ -76,13 +77,13 @@ static class KeyframeAnimationExtensions
 		var originalValues = new Dictionary<BindableProperty, double>(animatedProperties.Count);
 		for (var i = 0; i < animatedProperties.Count; i++)
 		{
-			trackers[i] = AnimatedPropertyTracker.For(view, animatedProperties[i]);
-			(animationIds[i], originalValues[animatedProperties[i]]) = trackers[i].Start((double)view.GetValue(animatedProperties[i]));
+			trackers[i] = AnimatedPropertyTracker.GetOrCreate(view, animatedProperties[i]);
+			(animationIds[i], originalValues[animatedProperties[i]]) = trackers[i].StartAnimationAndGetOriginalValue((double)view.GetValue(animatedProperties[i]));
 		}
 
 		var target = new KeyframeTarget(view, animatedProperties, originalValues);
 		var run = new RunningRun(animatedProperties);
-		var propertiesTakenOverByTheApp = new List<BindableProperty>();
+		List<BindableProperty>? propertiesTakenOverByTheApp = null;
 
 		try
 		{
@@ -95,8 +96,9 @@ static class KeyframeAnimationExtensions
 			var isCommitting = true;
 			new Animation(progress =>
 			{
-				if (!isCommitting && FindPropertiesTakenOverByTheApp(view, animatedProperties, propertiesTakenOverByTheApp))
+				if (!isCommitting && TryFindPropertiesTakenOverByTheApp(view, animatedProperties, out var propertiesTakenOver))
 				{
+					propertiesTakenOverByTheApp = propertiesTakenOver;
 					view.AbortAnimation(AnimationHandle);
 					return;
 				}
@@ -111,11 +113,11 @@ static class KeyframeAnimationExtensions
 				try
 				{
 					ReturnToOriginalValues(view, animatedProperties, trackers, animationIds, target, runThatTookOver, propertiesTakenOverByTheApp);
-					animationEnded.TrySetResult(isAborted);
+					animationEndedSource.TrySetResult(isAborted);
 				}
 				catch (Exception exception)
 				{
-					animationEnded.TrySetException(exception);
+					animationEndedSource.TrySetException(exception);
 				}
 			});
 			isCommitting = false;
@@ -124,7 +126,7 @@ static class KeyframeAnimationExtensions
 		{
 			// createKeyframes may have moved an anchor, and Commit throws ArgumentException for a view without an IAnimationManager.
 			// With animations disabled, Commit runs the finished callback itself, which has already restored the view
-			if (!animationEnded.Task.IsCompleted)
+			if (!animationEndedSource.Task.IsCompleted)
 			{
 				var runThatTookOver = GetRunThatTookOver(view, run);
 				EndRun(view, run);
@@ -137,17 +139,20 @@ static class KeyframeAnimationExtensions
 
 	// The app's own ScaleToAsync or RotateToAsync that started during the run usually ticks after it, so it hides the run, which would then undo it when it restores the view.
 	// The handle, not the value, tells it apart from a direct write, which the run keeps overwriting as before
-	static bool FindPropertiesTakenOverByTheApp(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, List<BindableProperty> propertiesTakenOverByTheApp)
+	static bool TryFindPropertiesTakenOverByTheApp(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, [NotNullWhen(true)] out List<BindableProperty>? propertiesTakenOverByTheApp)
 	{
+		propertiesTakenOverByTheApp = null;
+
 		foreach (var property in animatedProperties)
 		{
 			if (GetToAnimationHandle(property) is string handle && view.AnimationIsRunning(handle))
 			{
+				propertiesTakenOverByTheApp ??= [];
 				propertiesTakenOverByTheApp.Add(property);
 			}
 		}
 
-		return propertiesTakenOverByTheApp.Count > 0;
+		return propertiesTakenOverByTheApp is not null;
 	}
 
 	// App code that runs while the next run starts, such as the continuation of an aborted To animation, can start a run that the next run's Commit aborts after it recorded itself
@@ -198,7 +203,7 @@ static class KeyframeAnimationExtensions
 		return null;
 	}
 
-	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target, RunningRun? runThatTookOver, IReadOnlyList<BindableProperty> propertiesTakenOverByTheApp)
+	static void ReturnToOriginalValues(VisualElement view, IReadOnlyList<BindableProperty> animatedProperties, AnimatedPropertyTracker[] trackers, int[] animationIds, KeyframeTarget target, RunningRun? runThatTookOver, IReadOnlyList<BindableProperty>? propertiesTakenOverByTheApp)
 	{
 		// A composer still listening would put its offset back on top of the next write by another writer
 		target.StopComposingTranslations();
@@ -211,15 +216,15 @@ static class KeyframeAnimationExtensions
 			// The run that took over returns its properties when it ends; restoring them now would undo what its start already set, such as Swing's anchor
 			if (runThatTookOver?.AnimatedProperties.Contains(animatedProperties[i]) is true)
 			{
-				trackers[i].End(animationIds[i], (double)view.GetValue(animatedProperties[i]));
+				trackers[i].EndAnimation(animationIds[i], (double)view.GetValue(animatedProperties[i]));
 				continue;
 			}
 
 			// The app's animation owns the value now, so the next animation of the property starts from where the app leaves it, even from the value this run reached
-			if (propertiesTakenOverByTheApp.Contains(animatedProperties[i]))
+			if (propertiesTakenOverByTheApp?.Contains(animatedProperties[i]) is true)
 			{
-				trackers[i].End(animationIds[i], (double)view.GetValue(animatedProperties[i]));
-				trackers[i].HandedOverToApp(animationIds[i]);
+				trackers[i].EndAnimation(animationIds[i], (double)view.GetValue(animatedProperties[i]));
+				trackers[i].RecordHandOverToApp(animationIds[i]);
 				continue;
 			}
 
@@ -234,7 +239,7 @@ static class KeyframeAnimationExtensions
 			}
 			finally
 			{
-				trackers[i].End(animationIds[i], valueToRestore);
+				trackers[i].EndAnimation(animationIds[i], valueToRestore);
 			}
 		}
 
@@ -242,24 +247,24 @@ static class KeyframeAnimationExtensions
 	}
 
 	// Dispatch returns false only for a dispatcher that takes no more work (app closing), which leaves no animation to stop
-	static void AbortOnDispatcher(VisualElement view, Task animationEnded)
+	static void AbortOnDispatcher(VisualElement view, Task animationEndedTask)
 	{
 		var dispatcher = view.Dispatcher;
 
 		if (dispatcher.IsDispatchRequired)
 		{
-			dispatcher.Dispatch(() => AbortIfRunning(view, animationEnded));
+			dispatcher.Dispatch(() => AbortIfRunning(view, animationEndedTask));
 		}
 		else
 		{
-			AbortIfRunning(view, animationEnded);
+			AbortIfRunning(view, animationEndedTask);
 		}
 	}
 
-	static void AbortIfRunning(VisualElement view, Task animationEnded)
+	static void AbortIfRunning(VisualElement view, Task animationEndedTask)
 	{
 		// Once this run ended the handle may belong to a newer run, which this token must not stop
-		if (!animationEnded.IsCompleted)
+		if (!animationEndedTask.IsCompleted)
 		{
 			view.AbortAnimation(AnimationHandle);
 		}

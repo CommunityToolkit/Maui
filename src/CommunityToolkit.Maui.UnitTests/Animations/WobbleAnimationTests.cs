@@ -70,7 +70,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var distance = animation.Distance;
-		var swayOffsets = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.TranslationX))).Select(translationX => translationX - originalTranslationX).ToList();
+		var swayOffsets = GetTurningPoints(recorder.GetValues(nameof(VisualElement.TranslationX))).Select(translationX => translationX - originalTranslationX).ToList();
 		swayOffsets.Should().HaveCount(5);
 		swayOffsets.Zip([-distance, 0.8 * distance, -0.6 * distance, 0.4 * distance, -0.2 * distance]).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
 	}, TestContext.Current.CancellationToken);
@@ -85,7 +85,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var angle = animation.RotationAngle;
-		var tiltOffsets = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.Rotation))).Select(rotation => rotation - originalRotation).ToList();
+		var tiltOffsets = GetTurningPoints(recorder.GetValues(nameof(VisualElement.Rotation))).Select(rotation => rotation - originalRotation).ToList();
 		tiltOffsets.Should().HaveCount(5);
 		tiltOffsets.Zip([-angle, 0.6 * angle, -0.6 * angle, 0.4 * angle, -0.2 * angle]).Should().OnlyContain(pair => Math.Abs(pair.First - pair.Second) <= precision);
 	}, TestContext.Current.CancellationToken);
@@ -99,8 +99,8 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		AssertReturnsGraduallyAfterLastTurningPoint(recorder.ValuesOf(nameof(VisualElement.TranslationX)).ToList(), originalTranslationX - (0.2 * animation.Distance), originalTranslationX);
-		AssertReturnsGraduallyAfterLastTurningPoint(recorder.ValuesOf(nameof(VisualElement.Rotation)).ToList(), originalRotation - (0.2 * animation.RotationAngle), originalRotation);
+		AssertReturnsGraduallyAfterLastTurningPoint(recorder.GetValues(nameof(VisualElement.TranslationX)).ToList(), originalTranslationX - (0.2 * animation.Distance), originalTranslationX);
+		AssertReturnsGraduallyAfterLastTurningPoint(recorder.GetValues(nameof(VisualElement.Rotation)).ToList(), originalRotation - (0.2 * animation.RotationAngle), originalRotation);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -131,7 +131,7 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var firstSwayOffset = GetTurningPoints(recorder.ValuesOf(nameof(VisualElement.TranslationX))).First() - originalTranslationX;
+		var firstSwayOffset = GetTurningPoints(recorder.GetValues(nameof(VisualElement.TranslationX))).First() - originalTranslationX;
 		firstSwayOffset.Should().BeApproximately(25, precision);
 	}, TestContext.Current.CancellationToken);
 
@@ -139,9 +139,9 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 	public Task Animate_AfterAnInterruptedRotateAnimation_TiltsAroundTheOriginalRotation() => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var rotated = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 20);
+		var rotatedTask = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 20);
 		var rotateRun = new RotateAnimation { Length = 2000 }.Animate(view, token);
-		await rotated;
+		await rotatedTask;
 		view.CancelAnimations();
 		await rotateRun.WaitAsync(waitTimeout, token);
 		view.Rotation.Should().BeApproximately(originalRotation, precision);
@@ -150,8 +150,8 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		using var recorder = new PropertyRecorder(view);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		recorder.ValuesOf(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
-		recorder.ValuesOf(nameof(VisualElement.Rotation)).Max().Should().BeApproximately(originalRotation + (0.6 * animation.RotationAngle), precision);
+		recorder.GetValues(nameof(VisualElement.Rotation)).Min().Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
+		recorder.GetValues(nameof(VisualElement.Rotation)).Max().Should().BeApproximately(originalRotation + (0.6 * animation.RotationAngle), precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -174,8 +174,8 @@ public class WobbleAnimationTests : BaseKeyframeAnimationTests<WobbleAnimation>
 		double[] fractions = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1.0];
 		var swayOffsets = new[] { 0, -distance, 0.8 * distance, -0.6 * distance, 0.4 * distance, -0.2 * distance, 0 };
 		var tiltOffsets = new[] { 0, -angle, 0.6 * angle, -0.6 * angle, 0.4 * angle, -0.2 * angle, 0 };
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationXProperty, SinInOutSegments(fractions, [.. swayOffsets.Select(offset => originalTranslationX + offset)]), animation.Length, animation.Easing);
-		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, SinInOutSegments(fractions, [.. tiltOffsets.Select(offset => originalRotation + offset)]), animation.Length, animation.Easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.TranslationXProperty, CreateSinInOutSegments(fractions, [.. swayOffsets.Select(offset => originalTranslationX + offset)]), animation.Length, animation.Easing);
+		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, CreateSinInOutSegments(fractions, [.. tiltOffsets.Select(offset => originalRotation + offset)]), animation.Length, animation.Easing);
 	}, testToken);
 
 	static void AssertReturnsGraduallyAfterLastTurningPoint(List<double> values, double lastTurningPoint, double restingValue)

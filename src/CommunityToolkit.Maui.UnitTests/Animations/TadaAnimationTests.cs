@@ -93,7 +93,7 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
 		var shrunkScale = originalScale * animation.MinimumScale;
 		var grownScale = originalScale * animation.MaximumScale;
 		var firstShrunkIndex = scales.FindIndex(scale => Math.Abs(scale - shrunkScale) <= precision);
@@ -113,7 +113,7 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
 		var tiltSides = new List<int>();
-		foreach (var rotation in recorder.ValuesOf(nameof(VisualElement.Rotation)))
+		foreach (var rotation in recorder.GetValues(nameof(VisualElement.Rotation)))
 		{
 			var offset = rotation - originalRotation;
 			if (Math.Abs(offset) < animation.RotationAngle - precision)
@@ -140,8 +140,8 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var rotations = recorder.ValuesOf(nameof(VisualElement.Rotation)).ToList();
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
+		var rotations = recorder.GetValues(nameof(VisualElement.Rotation)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
 		rotations[^1].Should().BeApproximately(originalRotation, precision);
 		scales[^1].Should().BeApproximately(originalScale, precision);
 		rotations.Last(rotation => Math.Abs(rotation - originalRotation) > precision).Should().BeInRange(originalRotation + precision, originalRotation + animation.RotationAngle - precision);
@@ -164,8 +164,8 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		using var recorder = new PropertyRecorder(view);
 		await animation.Animate(view, token).WaitAsync(waitTimeout, token);
 
-		var scales = recorder.ValuesOf(nameof(VisualElement.Scale)).ToList();
-		var rotations = recorder.ValuesOf(nameof(VisualElement.Rotation)).ToList();
+		var scales = recorder.GetValues(nameof(VisualElement.Scale)).ToList();
+		var rotations = recorder.GetValues(nameof(VisualElement.Rotation)).ToList();
 		scales.Min().Should().BeApproximately(originalScale * animation.MinimumScale, precision);
 		scales.Max().Should().BeApproximately(originalScale * animation.MaximumScale, precision);
 		rotations.Min().Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
@@ -184,8 +184,8 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 		var lastFrameBeforeTwentyPercent = ((int)Math.Ceiling(0.2 * animation.Length / frameMilliseconds) - 1) * frameMilliseconds;
 		((double)lastFrameBeforeTwentyPercent).Should().BeGreaterThanOrEqualTo(0.1 * animation.Length);
 		var endOfThatFrame = recorder.Frames.Last(frame => frame.Milliseconds <= lastFrameBeforeTwentyPercent);
-		endOfThatFrame.ValueOf(VisualElement.ScaleProperty).Should().BeApproximately(originalScale * animation.MinimumScale, precision);
-		endOfThatFrame.ValueOf(VisualElement.RotationProperty).Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
+		endOfThatFrame.GetValue(VisualElement.ScaleProperty).Should().BeApproximately(originalScale * animation.MinimumScale, precision);
+		endOfThatFrame.GetValue(VisualElement.RotationProperty).Should().BeApproximately(originalRotation - animation.RotationAngle, precision);
 	}, TestContext.Current.CancellationToken);
 
 	[Fact(Timeout = (int)TestDuration.Long)]
@@ -205,10 +205,10 @@ public class TadaAnimationTests : BaseKeyframeAnimationTests<TadaAnimation>
 
 		var shrunkScale = originalScale * animation.MinimumScale;
 		var grownScale = originalScale * animation.MaximumScale;
-		var left = originalRotation - animation.RotationAngle;
-		var right = originalRotation + animation.RotationAngle;
-		var scaleSegments = SinInOutSegments([0, 0.1, 0.2, 0.3, 0.9, 1], [originalScale, shrunkScale, shrunkScale, grownScale, grownScale, originalScale]);
-		var rotationSegments = SinInOutSegments([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], [originalRotation, left, left, right, left, right, left, right, left, right, originalRotation]);
+		var leftRotation = originalRotation - animation.RotationAngle;
+		var rightRotation = originalRotation + animation.RotationAngle;
+		var scaleSegments = CreateSinInOutSegments([0, 0.1, 0.2, 0.3, 0.9, 1], [originalScale, shrunkScale, shrunkScale, grownScale, grownScale, originalScale]);
+		var rotationSegments = CreateSinInOutSegments([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1], [originalRotation, leftRotation, leftRotation, rightRotation, leftRotation, rightRotation, leftRotation, rightRotation, leftRotation, rightRotation, originalRotation]);
 		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.ScaleProperty, scaleSegments, animation.Length, easing);
 		AssertEveryFrameFollowsTheKeyframes(recorder, VisualElement.RotationProperty, rotationSegments, animation.Length, easing);
 	}, testToken);

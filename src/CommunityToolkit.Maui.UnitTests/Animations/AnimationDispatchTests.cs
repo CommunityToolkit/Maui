@@ -14,7 +14,7 @@ public class AnimationDispatchTests : BaseTest
 {
 	const uint animationLength = 200;
 	// Only a stopped animation returns the view within the wait timeout
-	const uint runLongerThanTheWaitTimeout = 60_000;
+	const uint lengthLongerThanTheWaitTimeout = 60_000;
 	const double precision = 0.001;
 	static readonly BindableProperty[] animatedProperties = [VisualElement.OpacityProperty, VisualElement.ScaleProperty, VisualElement.RotationProperty, VisualElement.RotationXProperty, VisualElement.RotationYProperty, VisualElement.ScaleXProperty, VisualElement.ScaleYProperty, VisualElement.TranslationXProperty, VisualElement.TranslationYProperty, VisualElement.AnchorYProperty];
 	static readonly TimeSpan waitTimeout = TimeSpan.FromSeconds(5);
@@ -65,7 +65,7 @@ public class AnimationDispatchTests : BaseTest
 	{
 		var animation = CreateAnimation(animationName);
 		var view = dispatcherThread.CreateAnimatedView();
-		dispatcherThread.RefuseDispatch = true;
+		dispatcherThread.ShouldRefuseDispatch = true;
 
 		var run = Task.Run(() => animation.Animate(view, TestContext.Current.CancellationToken));
 
@@ -83,7 +83,7 @@ public class AnimationDispatchTests : BaseTest
 		await firstChange;
 
 		// The dispatcher must not run the abort that the pool thread's cancellation queues until the new run has taken the handle
-		dispatcherThread.WaitsForDispatchedWork = false;
+		dispatcherThread.ShouldWaitForDispatchedWork = false;
 		Task.Run(supersededRunTokenSource.Cancel, token).Wait(token);
 		var newRun = new TadaAnimation { Length = animationLength }.Animate(view, token);
 		await Task.Yield();
@@ -101,21 +101,21 @@ public class AnimationDispatchTests : BaseTest
 		var token = TestContext.Current.CancellationToken;
 		var view = dispatcherThread.CreateAnimatedView();
 		var originalValues = CaptureValues(view);
-		var (property, peak) = ToAnimationPropertyAndPeak(animationName, view);
+		var (property, peak) = GetToAnimationPropertyAndPeak(animationName, view);
 		using var supersededRunTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		var firstChange = dispatcherThread.WaitForChangeAsync(view);
 		var supersededRun = CreateToAnimation(animationName, 2000).Animate(view, supersededRunTokenSource.Token);
 		await firstChange;
 
 		// The dispatcher must not run the abort that the pool thread's cancellation queues until the new run has taken the handle
-		dispatcherThread.WaitsForDispatchedWork = false;
+		dispatcherThread.ShouldWaitForDispatchedWork = false;
 		Task.Run(supersededRunTokenSource.Cancel, token).Wait(token);
 		var elapsedMillisecondsBeforeTheNewRun = view.GetElapsedAnimationMilliseconds();
-		var peakReached = WaitForValueAsync(view, property, value => Math.Abs(value - peak) <= precision, token);
+		var peakReachedTask = WaitForValueAsync(view, property, value => Math.Abs(value - peak) <= precision, token);
 		var newRun = CreateToAnimation(animationName, animationLength).Animate(view, token);
 
 		await newRun.WaitAsync(waitTimeout, token);
-		await peakReached;
+		await peakReachedTask;
 		Assert.True(view.GetElapsedAnimationMilliseconds() - elapsedMillisecondsBeforeTheNewRun >= animationLength, "the superseded run's token aborted the new run before its full length");
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => supersededRun.WaitAsync(waitTimeout, token));
 		AssertValuesEqual(view, originalValues);
@@ -135,7 +135,7 @@ public class AnimationDispatchTests : BaseTest
 		view.PropertyChanged += RecordTranslationY;
 
 		// The pool thread's dispatch only queues the start, and this turn keeps the dispatcher from running it until the token is cancelled
-		dispatcherThread.WaitsForDispatchedWork = false;
+		dispatcherThread.ShouldWaitForDispatchedWork = false;
 		Task? cancelledAnimation = null;
 		Task.Run(() =>
 		{
@@ -150,7 +150,7 @@ public class AnimationDispatchTests : BaseTest
 		Assert.True(view.AnimationIsRunning(KeyframeAnimationExtensions.AnimationHandle), "The animation that was running no longer runs.");
 		Assert.Empty(translationYChanges);
 
-		dispatcherThread.WaitsForDispatchedWork = true;
+		dispatcherThread.ShouldWaitForDispatchedWork = true;
 		await runningAnimationTokenSource.CancelAsync();
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => runningAnimation.WaitAsync(waitTimeout, token));
 
@@ -171,7 +171,7 @@ public class AnimationDispatchTests : BaseTest
 		var token = TestContext.Current.CancellationToken;
 		var view = dispatcherThread.CreateAnimatedView();
 		var originalValues = CaptureValues(view);
-		var (property, target) = ToAnimationPropertyAndTarget(animationName);
+		var (property, target) = GetToAnimationPropertyAndTarget(animationName);
 		var originalValue = (double)view.GetValue(property);
 		var behavior = new AnimationBehavior { AnimationType = CreateToAnimation(animationName, 1000) };
 		view.Behaviors.Add(behavior);
@@ -182,10 +182,10 @@ public class AnimationDispatchTests : BaseTest
 
 		var valuesFromTheReTrigger = new List<double>();
 		view.PropertyChanged += RecordValue;
-		var peak = WaitForValueAsync(view, property, value => Math.Abs(value - target) <= precision, token);
+		var peakReachedTask = WaitForValueAsync(view, property, value => Math.Abs(value - target) <= precision, token);
 		// The dispatcher thread stays free: only a stop and start in one turn keeps the view from returning to rest in between
 		await Task.Run(() => behavior.AnimateCommand.Execute(CancellationToken.None), token);
-		await peak;
+		await peakReachedTask;
 		view.PropertyChanged -= RecordValue;
 
 		Assert.DoesNotContain(originalValue, valuesFromTheReTrigger);
@@ -211,9 +211,9 @@ public class AnimationDispatchTests : BaseTest
 		var token = TestContext.Current.CancellationToken;
 		var view = dispatcherThread.CreateAnimatedView();
 		var originalValues = CaptureValues(view);
-		var (property, _) = ToAnimationPropertyAndTarget(animationName);
+		var (property, _) = GetToAnimationPropertyAndTarget(animationName);
 		var originalValue = (double)view.GetValue(property);
-		var behavior = new AnimationBehavior { AnimationType = CreateToAnimation(animationName, runLongerThanTheWaitTimeout) };
+		var behavior = new AnimationBehavior { AnimationType = CreateToAnimation(animationName, lengthLongerThanTheWaitTimeout) };
 		view.Behaviors.Add(behavior);
 		using var cancelledTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		await cancelledTokenSource.CancelAsync();
@@ -222,10 +222,10 @@ public class AnimationDispatchTests : BaseTest
 		behavior.AnimateCommand.Execute(CancellationToken.None);
 		await firstChange;
 
-		var backAtRest = WaitForValueAsync(view, property, value => value == originalValue, token);
+		var backAtRestTask = WaitForValueAsync(view, property, value => value == originalValue, token);
 		await Task.Run(() => behavior.AnimateCommand.Execute(cancelledTokenSource.Token), token);
 
-		await backAtRest;
+		await backAtRestTask;
 		Assert.False(view.AnimationIsRunning(nameof(Microsoft.Maui.Controls.ViewExtensions.FadeToAsync)) || view.AnimationIsRunning(nameof(Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync)));
 		dispatcherThread.AssertNoChangeOffTheDispatcherThread("while the cancelled trigger stopped the animation");
 		AssertValuesEqual(view, originalValues);
@@ -238,7 +238,7 @@ public class AnimationDispatchTests : BaseTest
 	{
 		var token = TestContext.Current.CancellationToken;
 		var view = dispatcherThread.CreateAnimatedView();
-		var (property, _) = ToAnimationPropertyAndTarget(animationName);
+		var (property, _) = GetToAnimationPropertyAndTarget(animationName);
 		var animation = new StartRecordingAnimation(CreateToAnimation(animationName, 1000));
 		var behavior = new AnimationBehavior { AnimationType = animation };
 		view.Behaviors.Add(behavior);
@@ -251,27 +251,27 @@ public class AnimationDispatchTests : BaseTest
 		var valueWhenReTriggered = (double)view.GetValue(property);
 		await WaitForValueAsync(view, property, value => Math.Abs(value - valueWhenReTriggered) > precision, token);
 
-		Assert.Equal([false, false], animation.StartedOffTheDispatcherThread);
+		Assert.Equal([false, false], animation.IsDispatchRequiredAtEachStart);
 	}, TestContext.Current.CancellationToken);
 
-	static Task WaitForValueAsync(VisualElement view, BindableProperty property, Func<double, bool> condition, CancellationToken token)
+	static Task WaitForValueAsync(VisualElement view, BindableProperty property, Func<double, bool> isExpectedValue, CancellationToken token)
 	{
-		var conditionMet = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var conditionMetSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		view.PropertyChanged += HandlePropertyChanged;
 
-		return conditionMet.Task.WaitAsync(waitTimeout, token);
+		return conditionMetSource.Task.WaitAsync(waitTimeout, token);
 
 		void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == property.PropertyName && condition((double)view.GetValue(property)))
+			if (e.PropertyName == property.PropertyName && isExpectedValue((double)view.GetValue(property)))
 			{
 				view.PropertyChanged -= HandlePropertyChanged;
-				conditionMet.TrySetResult();
+				conditionMetSource.TrySetResult();
 			}
 		}
 	}
 
-	static (BindableProperty Property, double Target) ToAnimationPropertyAndTarget(string animationName) => animationName switch
+	static (BindableProperty Property, double Target) GetToAnimationPropertyAndTarget(string animationName) => animationName switch
 	{
 		nameof(FadeAnimation) => (VisualElement.OpacityProperty, 0.2),
 		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, 1.6),
@@ -288,7 +288,7 @@ public class AnimationDispatchTests : BaseTest
 		_ => throw new NotSupportedException(animationName)
 	};
 
-	static (BindableProperty Property, double Peak) ToAnimationPropertyAndPeak(string animationName, VisualElement view) => animationName switch
+	static (BindableProperty Property, double Peak) GetToAnimationPropertyAndPeak(string animationName, VisualElement view) => animationName switch
 	{
 		nameof(FadeAnimation) => (VisualElement.OpacityProperty, 0.2),
 		nameof(ScaleAnimation) => (VisualElement.ScaleProperty, 1.6),
@@ -327,18 +327,18 @@ public class AnimationDispatchTests : BaseTest
 		}
 	}
 
-	static Task RunOnDispatcherThreadAsync(Func<DispatcherThread, Task> test, CancellationToken token) =>
-		Task.Run(() => UndisposedAsyncContext.Run(() => test(new DispatcherThread())), token);
+	static Task RunOnDispatcherThreadAsync(Func<DispatcherThread, Task> runTest, CancellationToken token) =>
+		Task.Run(() => UndisposedAsyncContext.Run(() => runTest(new DispatcherThread())), token);
 
 	sealed class StartRecordingAnimation(BaseAnimation inner) : BaseAnimation
 	{
-		readonly ConcurrentQueue<bool> startedOffTheDispatcherThread = new();
+		readonly ConcurrentQueue<bool> isDispatchRequiredAtEachStart = new();
 
-		public IReadOnlyCollection<bool> StartedOffTheDispatcherThread => startedOffTheDispatcherThread;
+		public IReadOnlyCollection<bool> IsDispatchRequiredAtEachStart => isDispatchRequiredAtEachStart;
 
 		public override Task Animate(VisualElement view, CancellationToken token = default)
 		{
-			startedOffTheDispatcherThread.Enqueue(view.Dispatcher.IsDispatchRequired);
+			isDispatchRequiredAtEachStart.Enqueue(view.Dispatcher.IsDispatchRequired);
 			return inner.Animate(view, token);
 		}
 	}
@@ -353,9 +353,9 @@ public class AnimationDispatchTests : BaseTest
 
 		public DispatcherThread() => DispatcherProvider.SetCurrent(new Provider(this));
 
-		public bool RefuseDispatch { get; set; }
+		public bool ShouldRefuseDispatch { get; set; }
 
-		public bool WaitsForDispatchedWork { get; set; } = true;
+		public bool ShouldWaitForDispatchedWork { get; set; } = true;
 
 		public bool IsDispatchRequired => Environment.CurrentManagedThreadId != threadId;
 
@@ -382,37 +382,37 @@ public class AnimationDispatchTests : BaseTest
 
 		public Task WaitForChangeAsync(VisualElement view)
 		{
-			var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			var changeSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			view.PropertyChanged += HandlePropertyChanged;
 
-			return changed.Task.WaitAsync(waitTimeout, TestContext.Current.CancellationToken);
+			return changeSource.Task.WaitAsync(waitTimeout, TestContext.Current.CancellationToken);
 
 			void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
 			{
 				view.PropertyChanged -= HandlePropertyChanged;
-				changed.TrySetResult();
+				changeSource.TrySetResult();
 			}
 		}
 
-		public void AssertNoChangeOffTheDispatcherThread(string when) =>
-			Assert.True(changesOffTheDispatcherThread.IsEmpty, $"The view changed off the dispatcher thread {when}: {string.Join(", ", changesOffTheDispatcherThread)}.");
+		public void AssertNoChangeOffTheDispatcherThread(string moment) =>
+			Assert.True(changesOffTheDispatcherThread.IsEmpty, $"The view changed off the dispatcher thread {moment}: {string.Join(", ", changesOffTheDispatcherThread)}.");
 
 		public IDispatcherTimer CreateTimer() => throw new NotSupportedException();
 
 		public bool Dispatch(Action action)
 		{
-			if (RefuseDispatch)
+			if (ShouldRefuseDispatch)
 			{
 				return false;
 			}
 
-			if (!IsDispatchRequired || !WaitsForDispatchedWork)
+			if (!IsDispatchRequired || !ShouldWaitForDispatchedWork)
 			{
 				synchronizationContext.Post(_ => action(), null);
 				return true;
 			}
 
-			using var dispatchedWorkRan = new ManualResetEventSlim();
+			using var dispatchedWorkRanSignal = new ManualResetEventSlim();
 			synchronizationContext.Post(_ =>
 			{
 				try
@@ -421,11 +421,11 @@ public class AnimationDispatchTests : BaseTest
 				}
 				finally
 				{
-					synchronizationContext.Post(_ => dispatchedWorkRan.Set(), null);
+					synchronizationContext.Post(_ => dispatchedWorkRanSignal.Set(), null);
 				}
 			}, null);
 
-			if (!dispatchedWorkRan.Wait(waitTimeout))
+			if (!dispatchedWorkRanSignal.Wait(waitTimeout))
 			{
 				throw new TimeoutException("The dispatcher thread did not run the dispatched action.");
 			}

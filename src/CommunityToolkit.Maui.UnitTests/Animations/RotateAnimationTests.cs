@@ -81,9 +81,9 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 		view.Behaviors.Add(behavior);
 		using var rotations = new ExtremeValueRecorder(view, VisualElement.RotationProperty);
 
-		var partwayThroughTheTurn = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, value => value > originalRotation + 120);
+		var partwayThroughTheTurnTask = WaitForPropertyAsync(view, VisualElement.RotationProperty, token, value => value > originalRotation + 120);
 		behavior.AnimateCommand.Execute(token);
-		await partwayThroughTheTurn;
+		await partwayThroughTheTurnTask;
 		behavior.AnimateCommand.Execute(token);
 		await animation.WaitForEndedAnimationsAsync(2, token);
 
@@ -118,9 +118,9 @@ public class RotateAnimationTests : BaseAnimationTests<RotateAnimation>
 		};
 		border.EnableAnimations();
 
-		var rotating = WaitForPropertyAsync(border, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 20);
+		var rotatingTask = WaitForPropertyAsync(border, VisualElement.RotationProperty, token, rotation => rotation > originalRotation + 20);
 		behavior.AnimateCommand.Execute(token);
-		await rotating;
+		await rotatingTask;
 
 		// AnimationBehavior cancels the running animation and starts a new one, so two animations end
 		behavior.AnimateCommand.Execute(token);

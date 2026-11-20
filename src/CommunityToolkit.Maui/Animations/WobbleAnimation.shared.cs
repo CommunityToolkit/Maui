@@ -49,30 +49,30 @@ public partial class WobbleAnimation() : BaseAnimation(WobbleAnimationDefaults.L
 	Animation CreateKeyframes(KeyframeTarget target)
 	{
 		var view = target.View;
-		var originalTranslationX = target.OriginalValueOf(VisualElement.TranslationXProperty);
-		var originalRotation = target.OriginalValueOf(VisualElement.RotationProperty);
-		var setTranslationX = target.TranslationSetterFor(VisualElement.TranslationXProperty);
+		var originalTranslationX = target.GetOriginalValue(VisualElement.TranslationXProperty);
+		var originalRotation = target.GetOriginalValue(VisualElement.RotationProperty);
+		var setTranslationX = target.GetTranslationSetter(VisualElement.TranslationXProperty);
 		var distance = Distance;
 		var angle = RotationAngle;
 
 		return new Animation
 		{
-			{ 0.0, 0.15, SwayBetween(0, -distance) },
-			{ 0.15, 0.3, SwayBetween(-distance, 0.8 * distance) },
-			{ 0.3, 0.45, SwayBetween(0.8 * distance, -0.6 * distance) },
-			{ 0.45, 0.6, SwayBetween(-0.6 * distance, 0.4 * distance) },
-			{ 0.6, 0.75, SwayBetween(0.4 * distance, -0.2 * distance) },
-			{ 0.75, 1.0, SwayBetween(-0.2 * distance, 0) },
+			{ 0.0, 0.15, CreateSwayKeyframe(0, -distance) },
+			{ 0.15, 0.3, CreateSwayKeyframe(-distance, 0.8 * distance) },
+			{ 0.3, 0.45, CreateSwayKeyframe(0.8 * distance, -0.6 * distance) },
+			{ 0.45, 0.6, CreateSwayKeyframe(-0.6 * distance, 0.4 * distance) },
+			{ 0.6, 0.75, CreateSwayKeyframe(0.4 * distance, -0.2 * distance) },
+			{ 0.75, 1.0, CreateSwayKeyframe(-0.2 * distance, 0) },
 
-			{ 0.0, 0.15, TiltBetween(0, -angle) },
-			{ 0.15, 0.3, TiltBetween(-angle, 0.6 * angle) },
-			{ 0.3, 0.45, TiltBetween(0.6 * angle, -0.6 * angle) },
-			{ 0.45, 0.6, TiltBetween(-0.6 * angle, 0.4 * angle) },
-			{ 0.6, 0.75, TiltBetween(0.4 * angle, -0.2 * angle) },
-			{ 0.75, 1.0, TiltBetween(-0.2 * angle, 0) },
+			{ 0.0, 0.15, CreateTiltKeyframe(0, -angle) },
+			{ 0.15, 0.3, CreateTiltKeyframe(-angle, 0.6 * angle) },
+			{ 0.3, 0.45, CreateTiltKeyframe(0.6 * angle, -0.6 * angle) },
+			{ 0.45, 0.6, CreateTiltKeyframe(-0.6 * angle, 0.4 * angle) },
+			{ 0.6, 0.75, CreateTiltKeyframe(0.4 * angle, -0.2 * angle) },
+			{ 0.75, 1.0, CreateTiltKeyframe(-0.2 * angle, 0) },
 		};
 
-		Animation SwayBetween(double fromOffset, double toOffset) => new(setTranslationX, originalTranslationX + fromOffset, originalTranslationX + toOffset, Easing.SinInOut);
-		Animation TiltBetween(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
+		Animation CreateSwayKeyframe(double fromOffset, double toOffset) => new(setTranslationX, originalTranslationX + fromOffset, originalTranslationX + toOffset, Easing.SinInOut);
+		Animation CreateTiltKeyframe(double fromOffset, double toOffset) => new(rotation => view.Rotation = rotation, originalRotation + fromOffset, originalRotation + toOffset, Easing.SinInOut);
 	}
 }

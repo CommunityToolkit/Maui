@@ -20,17 +20,17 @@ public abstract partial class AnimationTestBase
 	// The extensions that ViewHandler's mappers call, applied to a view that no window shows
 	static string DescribeExpectedNativeValues(IPlatformViewHandler handler, VisualElement view)
 	{
-		using var expected = new AView(GetTransformedView(handler).Context);
-		expected.UpdateOpacity(view);
-		expected.UpdateTranslationX(view);
-		expected.UpdateTranslationY(view);
-		expected.UpdateScale(view);
-		expected.UpdateRotation(view);
-		expected.UpdateRotationX(view);
-		expected.UpdateRotationY(view);
-		expected.UpdateAnchorX(view);
-		expected.UpdateAnchorY(view);
-		return DescribeNativeValues(expected);
+		using var expectedView = new AView(GetTransformedView(handler).Context);
+		expectedView.UpdateOpacity(view);
+		expectedView.UpdateTranslationX(view);
+		expectedView.UpdateTranslationY(view);
+		expectedView.UpdateScale(view);
+		expectedView.UpdateRotation(view);
+		expectedView.UpdateRotationX(view);
+		expectedView.UpdateRotationY(view);
+		expectedView.UpdateAnchorX(view);
+		expectedView.UpdateAnchorY(view);
+		return DescribeNativeValues(expectedView);
 	}
 
 	static string DescribeNativeValues(AView view) => string.Create(CultureInfo.InvariantCulture,

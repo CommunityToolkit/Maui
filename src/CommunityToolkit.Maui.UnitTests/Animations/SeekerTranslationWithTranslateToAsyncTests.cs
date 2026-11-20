@@ -30,17 +30,17 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(SeekersAndWhetherTheyOutlastTheTranslation))]
-	public Task Seeker_StartedWhileTranslateToAsyncRuns_LeavesBothAxesAtTheAppsTarget(string seekerName, bool seekerOutlastsTheTranslation) => RunOnSingleThreadAsync(async token =>
+	public Task Seeker_StartedWhileTranslateToAsyncRuns_LeavesBothAxesAtTheAppsTarget(string seekerName, bool doesSeekerOutlastTheTranslation) => RunOnSingleThreadAsync(async token =>
 	{
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var (targetX, targetY) = (view.TranslationX + translationDistance, view.TranslationY + translationDistance);
 
-		var seekerRun = await StartSeekerDuringTranslateToAsync(view, seekerName, seekerOutlastsTheTranslation ? longRunLength : shortRunLength, seekerOutlastsTheTranslation ? shortRunLength : longRunLength, token);
+		var seekerRun = await StartTranslationThenSeekerAsync(view, seekerName, doesSeekerOutlastTheTranslation ? longRunLength : shortRunLength, doesSeekerOutlastTheTranslation ? shortRunLength : longRunLength, token);
 
 		await seekerRun.Seeker.WaitAsync(waitTimeout, token);
-		var wasTranslateInterrupted = await seekerRun.Translation.WaitAsync(waitTimeout, token);
+		var wasTranslationInterrupted = await seekerRun.Translation.WaitAsync(waitTimeout, token);
 
-		wasTranslateInterrupted.Should().BeFalse();
+		wasTranslationInterrupted.Should().BeFalse();
 		view.TranslationX.Should().BeApproximately(targetX, precision);
 		view.TranslationY.Should().BeApproximately(targetY, precision);
 	}, TestContext.Current.CancellationToken);
@@ -52,7 +52,7 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var targetY = view.TranslationY + translationDistance;
 
-		var run = await StartSeekerDuringTranslateToAsync(view, nameof(BounceAnimation), 2 * longRunLength, shortRunLength, token, distance);
+		var run = await StartTranslationThenSeekerAsync(view, nameof(BounceAnimation), 2 * longRunLength, shortRunLength, token, distance);
 		await run.Translation.WaitAsync(waitTimeout, token);
 		using var translationYRecorder = new ExtremeValueRecorder(view, VisualElement.TranslationYProperty);
 		await run.Seeker.WaitAsync(waitTimeout, token);
@@ -69,7 +69,7 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var (targetX, targetY) = (view.TranslationX + translationDistance, view.TranslationY + translationDistance);
 
-		var run = await StartSeekerDuringTranslateToAsync(view, seekerName, 10 * longRunLength, shortRunLength, seekerTokenSource.Token);
+		var run = await StartTranslationThenSeekerAsync(view, seekerName, 10 * longRunLength, shortRunLength, seekerTokenSource.Token);
 		await run.Translation.WaitAsync(waitTimeout, token);
 		await WaitForFramesAsync(view, 8, token);
 		seekerTokenSource.Cancel();
@@ -86,10 +86,10 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		var view = CreateAnimatedViewWithNonDefaultValues();
 		var (targetX, targetY) = (view.TranslationX + translationDistance, view.TranslationY + translationDistance);
 
-		var run = await StartSeekerDuringTranslateToAsync(view, seekerName, 10 * longRunLength, shortRunLength, token);
+		var run = await StartTranslationThenSeekerAsync(view, seekerName, 10 * longRunLength, shortRunLength, token);
 		await run.Translation.WaitAsync(waitTimeout, token);
 		await WaitForFramesAsync(view, 8, token);
-		var retriggeredRun = Create(seekerName, shortRunLength).Animate(view, token);
+		var retriggeredRun = CreateSeeker(seekerName, shortRunLength).Animate(view, token);
 
 		await Task.WhenAll(run.Seeker, retriggeredRun).WaitAsync(waitTimeout, token);
 		view.TranslationX.Should().BeApproximately(targetX, precision);
@@ -103,12 +103,12 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		const double appTranslation = 55;
 		using var seekerTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		var translationProperty = TranslationPropertyOf(seekerName);
+		var translationProperty = GetTranslationProperty(seekerName);
 		var startingTranslation = (double)view.GetValue(translationProperty);
 
-		var hasMoved = WaitForPropertyAsync(view, translationProperty, token, translation => Math.Abs(translation - startingTranslation) > precision);
-		var run = Create(seekerName, longRunLength).Animate(view, seekerTokenSource.Token);
-		await hasMoved;
+		var movedTask = WaitForPropertyAsync(view, translationProperty, token, translation => Math.Abs(translation - startingTranslation) > precision);
+		var run = CreateSeeker(seekerName, longRunLength).Animate(view, seekerTokenSource.Token);
+		await movedTask;
 
 		view.SetValue(translationProperty, appTranslation);
 		seekerTokenSource.Cancel();
@@ -146,16 +146,16 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 	// A PropertyChanged handler that batches the view raises BatchCommitted inside the seeker's own write, which must not count as another writer's
 	[Theory(Timeout = (int)TestDuration.Long)]
 	[MemberData(nameof(SeekersAndWhetherAPropertyChangedHandlerBatchesTheView))]
-	public Task TranslateToAsync_StartedWhileASeekerRuns_ShowsTheSeekersOffsetOnTopOfTheTranslationEveryFrame(string seekerName, bool aPropertyChangedHandlerBatchesTheView) => RunOnSingleThreadAsync(async token =>
+	public Task TranslateToAsync_StartedWhileASeekerRuns_ShowsTheSeekersOffsetOnTopOfTheTranslationEveryFrame(string seekerName, bool doesAPropertyChangedHandlerBatchTheView) => RunOnSingleThreadAsync(async token =>
 	{
 		const int framesBeforeTheTranslation = 3;
 		const uint seekerLength = 320;
 		const uint translationLength = 160;
-		var property = TranslationPropertyOf(seekerName);
+		var property = GetTranslationProperty(seekerName);
 		var seekerOffsets = await RecordSeekerOffsetsAtEachFrameAsync(seekerName, seekerLength, property, token);
 
 		var view = CreateAnimatedViewWithNonDefaultValues();
-		if (aPropertyChangedHandlerBatchesTheView)
+		if (doesAPropertyChangedHandlerBatchTheView)
 		{
 			view.PropertyChanged += (_, e) =>
 			{
@@ -184,7 +184,7 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 			}
 		}))
 		{
-			await Create(seekerName, seekerLength).Animate(view, token).WaitAsync(waitTimeout, token);
+			await CreateSeeker(seekerName, seekerLength).Animate(view, token).WaitAsync(waitTimeout, token);
 		}
 
 		var wasTranslationInterrupted = await (translation ?? throw new InvalidOperationException("No frame started the translation")).WaitAsync(waitTimeout, token);
@@ -213,14 +213,14 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 		await WaitForFramesAsync(view, 2, token);
 
 		var seekerFrames = 0;
-		using var cancelMidHop = view.ObserveAnimationFrames(_ =>
+		using var midRunCancellation = view.ObserveAnimationFrames(_ =>
 		{
 			if (++seekerFrames == seekerFramesBeforeCancelling)
 			{
 				seekerTokenSource.Cancel();
 			}
 		});
-		var seekerRun = Create(seekerName, 2 * longRunLength).Animate(view, seekerTokenSource.Token);
+		var seekerRun = CreateSeeker(seekerName, 2 * longRunLength).Animate(view, seekerTokenSource.Token);
 
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => seekerRun.WaitAsync(waitTimeout, token));
 		var wasTranslationInterrupted = await translation.WaitAsync(waitTimeout, token);
@@ -241,14 +241,14 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 
 		var seekerFrames = 0;
 		Task? retriggeredRun = null;
-		using var retriggerMidHop = view.ObserveAnimationFrames(_ =>
+		using var midRunRetrigger = view.ObserveAnimationFrames(_ =>
 		{
 			if (++seekerFrames == seekerFramesBeforeRetriggering)
 			{
-				retriggeredRun = Create(seekerName, longRunLength).Animate(view, token);
+				retriggeredRun = CreateSeeker(seekerName, longRunLength).Animate(view, token);
 			}
 		});
-		var firstRun = Create(seekerName, longRunLength).Animate(view, token);
+		var firstRun = CreateSeeker(seekerName, longRunLength).Animate(view, token);
 
 		await firstRun.WaitAsync(waitTimeout, token);
 		var wasTranslationInterrupted = await translation.WaitAsync(waitTimeout, token);
@@ -282,25 +282,25 @@ public class SeekerTranslationWithTranslateToAsyncTests : BaseAnimationTest
 
 		using (view.ObserveAnimationFrames(_ => offsets.Add((double)view.GetValue(property) - originalValue)))
 		{
-			await Create(seekerName, seekerLength).Animate(view, token).WaitAsync(waitTimeout, token);
+			await CreateSeeker(seekerName, seekerLength).Animate(view, token).WaitAsync(waitTimeout, token);
 		}
 
 		return offsets;
 	}
 
-	static async Task<(Task Seeker, Task<bool> Translation)> StartSeekerDuringTranslateToAsync(Label view, string seekerName, uint seekerLength, uint translationLength, CancellationToken token, double distance = 30)
+	static async Task<(Task Seeker, Task<bool> Translation)> StartTranslationThenSeekerAsync(Label view, string seekerName, uint seekerLength, uint translationLength, CancellationToken token, double distance = 30)
 	{
 		var startingTranslationX = view.TranslationX;
-		var translating = WaitForPropertyAsync(view, VisualElement.TranslationXProperty, token, translationX => translationX - startingTranslationX > 5);
+		var translatingTask = WaitForPropertyAsync(view, VisualElement.TranslationXProperty, token, translationX => translationX - startingTranslationX > 5);
 		var translation = view.TranslateToAsync(startingTranslationX + translationDistance, view.TranslationY + translationDistance, translationLength, Easing.Linear, token);
-		await translating;
+		await translatingTask;
 
-		return (Create(seekerName, seekerLength, distance).Animate(view, token), translation);
+		return (CreateSeeker(seekerName, seekerLength, distance).Animate(view, token), translation);
 	}
 
-	static BindableProperty TranslationPropertyOf(string seekerName) => seekerName is nameof(BounceAnimation) ? VisualElement.TranslationYProperty : VisualElement.TranslationXProperty;
+	static BindableProperty GetTranslationProperty(string seekerName) => seekerName is nameof(BounceAnimation) ? VisualElement.TranslationYProperty : VisualElement.TranslationXProperty;
 
-	static BaseAnimation Create(string seekerName, uint length, double distance = 30) => seekerName switch
+	static BaseAnimation CreateSeeker(string seekerName, uint length, double distance = 30) => seekerName switch
 	{
 		nameof(BounceAnimation) => new BounceAnimation { Distance = distance, Length = length },
 		nameof(ShakeAnimation) => new ShakeAnimation { Length = length },

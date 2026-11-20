@@ -21,7 +21,7 @@ sealed class SystemAnimationsTickerOverride(Func<bool> areSystemAnimationsOff)
 	ITicker? tickerToRestore;
 
 	/// <returns>The reason the ticker's setting could not be changed, or <see langword="null"/> when it was.</returns>
-	public static string? TrySetSystemEnabled(ITicker ticker, bool isEnabled)
+	public static string? SetSystemEnabledAndGetFailureReason(ITicker ticker, bool isEnabled)
 	{
 		if (ticker is not Ticker || systemEnabledSetter is null)
 		{
@@ -48,7 +48,7 @@ sealed class SystemAnimationsTickerOverride(Func<bool> areSystemAnimationsOff)
 			return null;
 		}
 
-		var error = TrySetSystemEnabled(ticker, true);
+		var error = SetSystemEnabledAndGetFailureReason(ticker, true);
 		if (error is not null)
 		{
 			return error;
