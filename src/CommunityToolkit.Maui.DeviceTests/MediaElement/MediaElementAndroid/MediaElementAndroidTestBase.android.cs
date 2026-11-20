@@ -186,7 +186,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	}
 
 	protected static Notification? FindServiceNotification() =>
-		GetActiveNotifications().FirstOrDefault(n => n.Id == serviceNotificationId)?.Notification;
+		GetActiveNotifications().FirstOrDefault(activeNotification => activeNotification.Id == serviceNotificationId)?.Notification;
 
 	protected static void CancelAllNotifications() =>
 		((NotificationManager)MauiPlatform.AppContext.GetSystemService(Context.NotificationService)!).CancelAll();
@@ -242,7 +242,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	protected static string DescribeServiceNotification()
 	{
-		var statusBarNotification = GetActiveNotifications().FirstOrDefault(n => n.Id == serviceNotificationId);
+		var statusBarNotification = GetActiveNotifications().FirstOrDefault(activeNotification => activeNotification.Id == serviceNotificationId);
 		var notification = statusBarNotification?.Notification;
 		return FormattableString.Invariant($"title: '{GetNotificationExtra(notification, Notification.ExtraTitle)}', text: '{GetNotificationExtra(notification, Notification.ExtraText)}', IsMediaStyle: {IsMediaStyle(notification)}, Flags: {notification?.Flags}, PostTime: {statusBarNotification?.PostTime}");
 	}
