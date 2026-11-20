@@ -34,6 +34,7 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 	async Task FlipAsync(VisualElement view, CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
+		var projectionAtStart = FlipProjection.GetCurrent(view);
 		StopAnimationsOf(view, VisualElement.RotationXProperty, nameof(Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync));
 
 		var rotations = AnimatedPropertyTracker.For(view, VisualElement.RotationXProperty);
@@ -51,7 +52,7 @@ public partial class FlipVerticalAnimation() : RotateAnimation(FlipVerticalAnima
 		finally
 		{
 			rotations.End(flipId, view.RotationX);
-			FlipProjection.RemoveIfStale(view);
+			FlipProjection.RemoveIfStale(view, projectionAtStart);
 		}
 
 		Task<bool> FlipLegAsync(double rotationX) =>

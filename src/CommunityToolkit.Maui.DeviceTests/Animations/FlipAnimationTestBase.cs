@@ -8,13 +8,15 @@ public abstract partial class FlipAnimationTestBase<TAnimation> : ToAnimationTes
 	const double originalRotation = 10;
 	const double originalTranslationX = 5;
 
+	IReadOnlyList<(BindableProperty Property, double Value)> OriginalValuesFromZeroWithOtherTransformsSet =>
+		[(PeakProperty, 0), (VisualElement.RotationProperty, originalRotation), (VisualElement.TranslationXProperty, originalTranslationX)];
+
 	[Fact]
 	public async Task FlipFromZeroWithOtherTransformsSetReturnsThePlatformViewToRest()
 	{
 		SetupBuilder();
 
-		IReadOnlyList<(BindableProperty Property, double Value)> originalValues =
-			[(PeakProperty, 0), (VisualElement.RotationProperty, originalRotation), (VisualElement.TranslationXProperty, originalTranslationX)];
+		var originalValues = OriginalValuesFromZeroWithOtherTransformsSet;
 		var view = CreateAnimatedView(originalValues);
 
 		await RunLoadedAsync(view, async (handler, nativeStateAtRest) =>
