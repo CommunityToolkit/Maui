@@ -1,15 +1,21 @@
+using System.Diagnostics.CodeAnalysis;
 using Android.Animation;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// ValueAnimator.getDurationScale/setDurationScale are on the unsupported-app-usage list (setDurationScale is hidden on every API level,
-// getDurationScale below API 26), so they are reached through Java reflection. Only this process's scale changes, never the global setting.
+// setDurationScale is hidden on every API level and getDurationScale below API 26, so they are reached through Java reflection (from
+// API 26 the public binding reads the scale). Only this process's scale changes, never the global setting.
 static class AnimatorDurationScale
 {
 	public static bool IsEnabled => OperatingSystem.IsAndroidVersionAtLeast(26) ? ValueAnimator.AreAnimatorsEnabled() : Get() > 0f;
 
 	public static float Get()
 	{
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
+		{
+			return ValueAnimator.DurationScale;
+		}
+
 		using var valueAnimatorClass = Java.Lang.Class.FromType(typeof(ValueAnimator));
 		using var getDurationScale = valueAnimatorClass.GetDeclaredMethod("getDurationScale")
 			?? throw new InvalidOperationException("ValueAnimator.getDurationScale was not found.");
@@ -32,30 +38,31 @@ static class AnimatorDurationScale
 		}
 	}
 
-	/// <returns>The error when the scale could not be switched on; <paramref name="scaleToRestore"/> is the earlier scale when this call changed it.</returns>
-	public static string? TryEnable(out float? scaleToRestore)
+	public static bool TryEnable(out float? scaleToRestore, [NotNullWhen(false)] out string? error)
 	{
 		scaleToRestore = null;
+		error = null;
 
 		try
 		{
 			if (IsEnabled)
 			{
-				return null;
+				return true;
 			}
 
 			var previous = Get();
-			var error = TrySet(1f);
+			error = TrySet(1f);
 			if (error is null)
 			{
 				scaleToRestore = previous;
 			}
 
-			return error;
+			return error is null;
 		}
 		catch (Java.Lang.Throwable ex)
 		{
-			return $"{ex.GetType().Name}: {ex.Message}";
+			error = $"{ex.GetType().Name}: {ex.Message}";
+			return false;
 		}
 	}
 }

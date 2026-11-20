@@ -1,5 +1,4 @@
 using Android.AccessibilityServices;
-using Android.Animation;
 using Android.App;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -59,18 +58,18 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	// The pool emulators (like CI's) run with the global animator duration scale at 0, and MAUI then jumps to the end of every animation, so
-	// no timing, easing, cancellation or intermediate step can be observed. The scale is switched on for this process only (see
-	// AnimatorDurationScale), never through the global setting: nothing outlives the test process, so a crash cannot leave animations on for
-	// later runs on a shared emulator. From API 26 MAUI's ticker asks ValueAnimator.AreAnimatorsEnabled and learns about the change through its
-	// duration scale listener (API 33+) or its energy saver callback; below API 26 it only checks battery saver, so the callback alone
-	// refreshes it and the scale is what lets the ValueAnimators run.
+	// The pool emulators (like CI's) run with the global animator duration scale at 0. From API 26 MAUI's ticker then reports animations off
+	// and jumps to the end of every animation; below API 26 it only checks battery saver, so its ValueAnimator stops after one frame and the
+	// animation stalls. Either way no timing, easing, cancellation or intermediate step can be observed. The scale is switched on for this
+	// process only (see AnimatorDurationScale), never through the global setting: nothing outlives the test process, so a crash cannot leave
+	// animations on for later runs on a shared emulator. From API 26 the ticker learns about the change through its duration scale listener
+	// (API 33+) or its energy saver callback; below API 26 the callback only re-reads battery saver.
 	protected async Task EnableAnimationsAsync(IPlatformViewHandler handler)
 	{
 		string? error = null;
 		await InvokeOnMainThreadAsync(() =>
 		{
-			error = AnimatorDurationScale.TryEnable(out var previous);
+			AnimatorDurationScale.TryEnable(out var previous, out error);
 			if (previous is float scale)
 			{
 				animatorScaleToRestore ??= scale;
@@ -79,7 +78,7 @@ public abstract partial class TouchBehaviorTestBase
 			(handler.MauiContext?.Services.GetService(typeof(ITicker)) as IEnergySaverListener)?.OnStatusUpdated(false);
 		});
 
-		Skip.If(error is not null, $"The system's animations are off and could not be switched on for this process ({error}), so MAUI jumps to the end of every animation.");
+		Assert.True(error is null, $"The animator duration scale could not be switched on for this process ({error}).");
 
 		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker;
 		Assert.True(AnimatorDurationScale.IsEnabled, "Animations must be enabled for this process.");
