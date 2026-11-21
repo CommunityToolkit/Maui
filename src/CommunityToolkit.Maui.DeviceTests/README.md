@@ -226,7 +226,13 @@ previous values with `StaticPropertySnapshot` and restores them when the test en
   `CameraAndroidTestBase`: their tests grant CAMERA and RECORD_AUDIO with `pm grant`, and the app keeps a grant until XHarness
   uninstalls it, because revoking one kills the process. `PermanentGrantsLastOrderer`, an assembly-level
   `TestCollectionOrderer`, runs this collection after every other one, so the SpeechToText tests that need RECORD_AUDIO denied run
-  first. The base class's constructor fails a test whose class forgot the attribute.
+  first. The base class's constructor fails a test whose class forgot the attribute. When the cleanup of such a test finds a camera that
+  stays open, it logs every Java stack (logcat tag `CameraWedge`) and sends SIGQUIT (not on Android 7, where it aborts the app), so ART
+  writes the Java and native stacks under `/data/anr` (only root can read them). If a thread is stuck in `CameraDeviceImpl.close`, or
+  CameraX lost its cameras, every later camera test fails at once with that reason. Whether a camera is closed comes from the
+  camera service (Camera2's availability callbacks, `CameraClosedCheck`), never from CameraX's `CameraState`, which CameraX 1.5.3
+  can leave at OPENING after a close: use `WaitForAllCamerasClosedAsync`, `WaitForCameraClosedAsync` or
+  `AssertCameraIsClosedAsync`.
 
 Run one category on every platform that your machine can run, from the repository root (`run.ps1` picks the platforms that build a test
 of the category; see [`eng/devices/LOCAL.md`](../../eng/devices/LOCAL.md)), or on one platform at a time with its
@@ -272,8 +278,22 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
 - Main app, Android only, `SoftKeyboardHelpers` and `VisibleFrame` (app root), for a test that shows the soft keyboard or focuses an input:
   `await VisibleFrame.RecordWithoutKeyboardAsync(platformView)` hides any soft keyboard first and records the frame that
   `ShowsKeyboard` measures against; `frame.WaitUntilTheKeyboardShowsSteadilyAsync(timeout)` waits, before a test types, until the
-  input method has laid the keyboard out; `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
-  opened it can no longer hide, because it has left the window.
+  input method has laid the keyboard out (a keyboard that flashes and hides again fails the wait); `SoftKeyboardHelpers.HideAsync()` and `EnsureHiddenAsync()` hide a keyboard that the view which
+  opened it can no longer hide, because it has left the window. A test that needs the focus but not the keyboard calls
+  `SoftKeyboardHelpers.KeepFocusFromShowingTheKeyboard(input)` first, so the keyboard show that MAUI's focus posts can't land in
+  the next test.
+- Main app, `FocusHelpers.AddClearedFocusTargetAsync` (app root; a no-op off Android): `await using var _ = await FocusHelpers.AddClearedFocusTargetAsync();`
+  before `AttachAndRun` in a test that clears the focus or checks that it was lost. Android 8.1 and earlier give the focus back to the
+  first focusable view, so without it such a test fails only on the API 25 and 27 legs.
+- Android only, `AnimatorDurationScale` (app root): on the UI thread, `TryEnable(out var previous)` switches the animator duration
+  scale on for this process and returns null, or the error. When `previous` has a value, `TrySet(previous.Value)` restores it. Below API
+  26, a test that waits for a .NET MAUI animation to end calls it first (`ColorAnimationTestBase.EnsureAnimationsCanEndAsync`
+  shows how): CI sets the scale to 0, so MAUI's ticker stops after one frame and the test hangs on the API 25 leg.
+- `MediaElementSupport.SkipIfUnsupported()` (`MediaElement/`): first line of a MediaElement test outside the `MediaElementAndroid` category, since
+  the app's Android minimum is 24 and MediaElement needs 26.
+- `WindowSceneRotation.Request(windowScene, mask, onError)` (iOS and Mac Catalyst): rotates a window scene on iOS 15 as on later versions.
+- `AndroidHostContext.Restore(context)` (Android): puts the runner's activity back as `MauiProgramDefaults.DefaultContext` after a test
+  replaced it. `TranslucentPauseActivity` (Camera tests, Android) pauses the runner's activity without stopping it, as the permission dialog does.
 - `[Repeat(n)]` with a `[Theory]` and an `int` parameter repeats a test n times while you hunt flakiness. Do not commit it.
 - `[SkipOnIOSVersion(major, minor, build, reason)]`: Skipped on iOS and Mac Catalyst from that version on.
 - `Skip.If(condition, reason)`, `Skip.IfNot(condition, reason)` and `throw new SkipException(reason)`: run-time skips,
@@ -329,11 +349,15 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   The Mono runtime of Android, iOS and Mac Catalyst scans thread stacks conservatively, so a stale stack slot of the thread that
   hosted the views can, rarely, keep one object alive through every collection that thread runs. The behavior leak tests collect
   from a fresh thread for that reason (`VisualBehaviorHelpers.WaitForGCAsync`); use it for a leak test that has to be deterministic there.
+  On iOS and Mac Catalyst the main thread waits while that thread collects, because finalizers there release UIKit objects off the main
+  thread. A leak test of an object that the library releases after a delay waits for that release first, as the document picker tests
+  do (`FilesApplePicker.WaitUntilReleasedAsync`).
 - **OS-version branches.** Platform code can branch on `OperatingSystem.IsAndroidVersionAtLeast(n)`, `IsIOSVersionAtLeast`,
   `IsMacCatalystVersionAtLeast` or `IsWindowsVersionAtLeast`. Test both sides by asserting what each branch does on the device
   that takes it, e.g. `if (OperatingSystem.IsAndroidVersionAtLeast(30)) { ...new behavior... } else { ...fallback... }`.
-  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Windows 10.0.17763.0) except Android, which is 26,
-    MediaElement's minimum: one app holds every package's tests, so the other packages' Android branches below 26 have no device test.
+  - The app's minimum versions are the library minimums (iOS 15; Mac Catalyst 17.0; Android 24; Windows 10.0.17763.0). MediaElement needs
+    Android 26, so its tests skip below API 26 (`MediaElementSupport`). CI runs the newest release of every Android major from
+    API 25 up; other levels, such as 24, run only on a local AVD.
   - Never `return` early: a test that returns early is reported as Passed.
 - **Run-time skips.** When a test cannot run on this device (no camera, an API that needs a newer OS than the test asserts),
   skip it visibly. A bare `return` is a silent pass and is not allowed.
@@ -345,6 +369,9 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
   - Only this assembly's `[Fact]`/`[Theory]` turn `SkipException` into Skipped. The results then show `result="Skip"` with the
     reason, and the run is not failed.
   - For a skip known at compile time, use `[Fact(Skip = "reason, issue link")]` under `#if`.
+  - A probe skips only for what the machine lacks. When it cannot read back what it set up itself (its own server, its own file), it
+    retries a known transient failure within a bound and then fails, so a flake can never turn tests into skips
+    (`WinMediaProbe.ProbeDisplayUpdaterAsync` is the example).
   - When the missing thing is a machine capability that a CI runner may lack (a camera, a second camera, video rendering, media
     playback, an on-device speech service), guard it with `DeviceTestCapabilities` (in
     `CommunityToolkit.Maui.DeviceTests.Shared`) instead, so that each CI job can declare it missing or required:

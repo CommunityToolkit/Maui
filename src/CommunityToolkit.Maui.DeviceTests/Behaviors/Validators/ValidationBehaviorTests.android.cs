@@ -4,9 +4,11 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class ValidationBehaviorTests
 {
+	static partial void ReplaceSoftwareKeyboard(InputView input) => SoftKeyboardHelpers.KeepFocusFromShowingTheKeyboard(input);
+
 	static Color? GetPlatformTextColor(IPlatformViewHandler handler) => Color.FromInt(((EditText)handler.PlatformView!).CurrentTextColor);
 
-	// Focusing an input asks for its soft keyboard, which neither clearing the focus nor ending the test reliably takes back.
+	// Safety net: a keyboard that something else still brought up must not outlive the test.
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try

@@ -56,10 +56,14 @@ static class AlertsAndroid
 		return true;
 	}
 
-	public static Bitmap Render(View view)
+	// On Android 8.x a focusable snackbar takes the focus outside touch mode, and View.Draw paints the default focus highlight over it.
+	// The background drawable carries the color the toolkit applies.
+	public static Bitmap RenderBackground(View view)
 	{
+		var background = view.Background ?? throw new InvalidOperationException("The view has no background.");
 		var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888!)!;
-		view.Draw(new Canvas(bitmap));
+		background.SetBounds(0, 0, view.Width, view.Height);
+		background.Draw(new Canvas(bitmap));
 		return bitmap;
 	}
 
