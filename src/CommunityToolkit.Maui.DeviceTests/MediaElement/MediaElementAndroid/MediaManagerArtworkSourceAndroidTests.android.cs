@@ -4,6 +4,7 @@ using System.Reflection;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.Logging;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -31,13 +32,13 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 	public async Task ArtworkSourceThatTheServerAnswersWithAnErrorStatusIsLeftOut()
 	{
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)>());
-		using var trace = new TraceCapture();
+		var log = new CapturingLoggerFactory();
 
-		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/missing.png")), mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/missing.png")), mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/missing.png"));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
 
@@ -84,15 +85,15 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task ArtworkSourceFromAMissingFileIsLeftOutAndTraced()
+	public async Task ArtworkSourceFromAMissingFileIsLeftOutAndLogged()
 	{
-		using var trace = new TraceCapture();
+		var log = new CapturingLoggerFactory();
 		var path = Path.Combine(FileSystem.CacheDirectory, $"missing_{Guid.NewGuid():N}.png");
 
-		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromFile(path), mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkSource = MediaSource.FromFile(path), mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.Contains(trace.Messages, message => message.StartsWith($"{unableToRetrieveArtworkSource}File: {path}.", StringComparison.Ordinal));
+			Assert.Contains($"{unableToRetrieveArtworkSource}File: {path}", log.Messages);
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
 	}
@@ -121,14 +122,14 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task ArtworkSourceFromAMissingResourceIsLeftOutAndTraced()
+	public async Task ArtworkSourceFromAMissingResourceIsLeftOutAndLogged()
 	{
-		using var trace = new TraceCapture();
+		var log = new CapturingLoggerFactory();
 
-		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromResource("exoplayer/no_such_artwork.png"), mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkSource = MediaSource.FromResource("exoplayer/no_such_artwork.png"), mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.Contains(trace.Messages, message => message.StartsWith($"{unableToRetrieveArtworkSource}Resource: Assets/exoplayer/no_such_artwork.png.", StringComparison.Ordinal));
+			Assert.Contains($"{unableToRetrieveArtworkSource}Resource: Assets/exoplayer/no_such_artwork.png", log.Messages);
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
 	}
@@ -136,34 +137,31 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task ArtworkSourceFromAnEmptyResourceIsLeftOutWithoutAnError()
 	{
-		using var trace = new TraceCapture();
+		var log = new CapturingLoggerFactory();
 
-		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromResource("exoplayer/empty.png"), mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkSource = MediaSource.FromResource("exoplayer/empty.png"), mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
 
 	[Theory]
 	[InlineData("ftp")]
-	[InlineData("stream")]
 	[InlineData("blankFile")]
-	public async Task ArtworkSourceWithAnUnsupportedSchemeOrAStreamIsIgnored(string kind)
+	public async Task ArtworkSourceWithAnUnsupportedSchemeOrWithoutAFileIsIgnored(string kind)
 	{
-		using var trace = new TraceCapture();
-		using var stream = new MemoryStream(await ReadAssetAsync(artworkAsset));
+		var log = new CapturingLoggerFactory();
 		MediaSource unsupportedSource = kind switch
 		{
 			"ftp" => MediaSource.FromUri("ftp://127.0.0.1/art.png"),
-			"stream" => MediaSource.FromStream(stream),
 			_ => MediaSource.FromFile("   ")
 		};
 
-		await AssertLoadedAsync(element => element.MetadataArtworkSource = unsupportedSource, mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkSource = unsupportedSource, mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
 	}
@@ -321,30 +319,30 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 	[InlineData("content://media/external/images/media/1")]
 	[InlineData("data")]
 	[InlineData("ms-appx:///art.png")]
-	public async Task MetadataArtworkUrlOfAnotherSchemeIsLeftOutWithoutATrace(string metadataArtworkUrl)
+	public async Task MetadataArtworkUrlOfAnotherSchemeIsLeftOutWithoutALog(string metadataArtworkUrl)
 	{
-		using var trace = new TraceCapture();
+		var log = new CapturingLoggerFactory();
 		var artwork = await ReadAssetAsync(artworkAsset);
 		var url = metadataArtworkUrl is "data" ? $"data:image/png;base64,{Convert.ToBase64String(artwork)}" : metadataArtworkUrl;
 
-		await AssertLoadedAsync(element => element.MetadataArtworkUrl = url, mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkUrl = url, mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
 
 	[Theory]
 	[InlineData("http://")]
 	[InlineData("http://[not a host/art.png")]
-	public async Task MetadataArtworkUrlThatIsNeitherAbsoluteNorRelativeIsLeftOutWithoutATrace(string metadataArtworkUrl)
+	public async Task MetadataArtworkUrlThatIsNeitherAbsoluteNorRelativeIsLeftOutWithoutALog(string metadataArtworkUrl)
 	{
-		using var trace = new TraceCapture();
+		var log = new CapturingLoggerFactory();
 
-		await AssertLoadedAsync(element => element.MetadataArtworkUrl = metadataArtworkUrl, mediaElement =>
+		await AssertLoadedAsync(log, element => element.MetadataArtworkUrl = metadataArtworkUrl, mediaElement =>
 		{
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
 
@@ -375,8 +373,8 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		var artwork = await ReadAssetAsync(artworkAsset);
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/stalled.png"] = (artwork, "image/png") });
 		server.HoldBody("/stalled.png");
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync();
 		using var recorder = new MediaElementRecorder(mediaElement);
 
@@ -393,13 +391,240 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 			Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(10), $"The media opened after {stopwatch.Elapsed}.");
 			Assert.True(server.HasRequest("GET", "/stalled.png"));
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.Contains(trace.Messages, message => message.StartsWith(unableToRetrieveArtworkSource, StringComparison.Ordinal));
+			Assert.Contains(log.Messages, message => message.StartsWith(unableToRetrieveArtworkSource, StringComparison.Ordinal));
 		});
 	}
 
-	async Task AssertLoadedAsync(Action<MediaElement> configure, Action<MediaElement> assertWhenLoaded)
+	[Fact]
+	public async Task ArtworkSourceIsReadFromAStreamWhichKeepsItsPositionAndStaysOpen()
 	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		var stream = new MemoryStream(artwork) { Position = 5 };
+
+		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromStream(stream), mediaElement =>
+		{
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
+			Assert.Equal(5, stream.Position);
+			Assert.True(stream.CanRead, "The stream belongs to the app: the artwork does not dispose it.");
+		});
+	}
+
+	[Fact]
+	public async Task ArtworkSourceWithTheStreamOfTheSourceIsLeftOutAndLogged()
+	{
+		var log = new CapturingLoggerFactory();
+		var tone = new MemoryStream(await ReadAssetAsync(toneAsset));
+
+		await AssertLoadedAsync(log, element =>
+		{
+			element.Source = MediaSource.FromStream(tone);
+			element.MetadataArtworkSource = MediaSource.FromStream(tone);
+		}, mediaElement =>
+		{
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
+			Assert.Contains(log.Entries, entry => entry.Level is LogLevel.Warning && entry.Message.Contains("its stream is that of Source", StringComparison.Ordinal));
+		});
+	}
+
+	[Fact]
+	public async Task ArtworkSourceIsDownloadedWithTheHttpHeadersOfItsSource()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (artwork, "image/png") });
+		var artworkSource = (UriMediaSource)MediaSource.FromUri(server.GetUri("/art.png"));
+		artworkSource.HttpHeaders["Authorization"] = "Bearer artwork-token";
+		artworkSource.HttpHeaders["X-Artwork"] = "1";
+
+		await AssertLoadedAsync(element => element.MetadataArtworkSource = artworkSource, mediaElement =>
+		{
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
+			Assert.Equal("Bearer artwork-token", server.GetRequestHeader("GET", "/art.png", "Authorization"));
+			Assert.Equal("1", server.GetRequestHeader("GET", "/art.png", "X-Artwork"));
+		});
+	}
+
+	[Fact]
+	public async Task ChangingTheArtworkSourceUpdatesTheArtworkOfTheLoadedMediaWithoutReloadingIt()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		byte[] newArtwork = [.. artwork, 0];
+		var path = await CopyAssetToCacheAsync(artworkAsset);
 		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataTitle = "A title";
+			element.MetadataArtworkSource = MediaSource.FromFile(path);
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+			var player = GetPlayer(mediaElement);
+			var mediaId = player.CurrentMediaItem!.MediaId;
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromStream(new MemoryStream(newArtwork));
+			await WaitUntilAsync(() => GetArtwork(mediaElement).SequenceEqual(newArtwork), "The loaded media never showed the new artwork.");
+
+			Assert.Equal(mediaId, player.CurrentMediaItem!.MediaId);
+			Assert.Equal("A title", player.CurrentMediaItem.MediaMetadata!.Title?.ToString());
+			Assert.Equal(1, recorder.OpenedCount);
+			Assert.Empty(recorder.FailureMessages);
+		});
+	}
+
+	[Fact]
+	public async Task ChangingAPropertyOfTheArtworkSourceUpdatesTheArtworkOfTheLoadedMedia()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		byte[] newArtwork = [.. artwork, 0];
+		var path = await CopyAssetToCacheAsync(artworkAsset);
+		var newPath = Path.Combine(FileSystem.CacheDirectory, $"{Guid.NewGuid():N}_new_art.png");
+		await File.WriteAllBytesAsync(newPath, newArtwork);
+		var artworkSource = (FileMediaSource)MediaSource.FromFile(path);
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataArtworkSource = artworkSource;
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		try
+		{
+			await HostAsync(mediaElement, async _ =>
+			{
+				await WaitUntilLoadedAsync(mediaElement, recorder);
+				AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
+
+				artworkSource.Path = newPath;
+				await WaitUntilAsync(() => GetArtwork(mediaElement).SequenceEqual(newArtwork), "The loaded media never showed the artwork of the new path.");
+				Assert.Equal(1, recorder.OpenedCount);
+			});
+		}
+		finally
+		{
+			File.Delete(newPath);
+		}
+	}
+
+	[Fact]
+	public async Task ClearingTheArtworkSourceOfTheLoadedMediaRemovesItsArtwork()
+	{
+		var path = await CopyAssetToCacheAsync(artworkAsset);
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataArtworkSource = MediaSource.FromFile(path);
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+			Assert.NotEmpty(GetArtwork(mediaElement));
+
+			mediaElement.MetadataArtworkSource = null;
+			await WaitUntilAsync(() => GetArtwork(mediaElement).Length is 0, "The loaded media kept the artwork that was cleared.");
+		});
+	}
+
+	// The load read the artwork when it started: a change while it downloads is applied once the media has loaded
+	[Fact]
+	public async Task ChangingTheArtworkSourceWhileTheMediaLoadsIsAppliedOnceItHasLoaded()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		byte[] newArtwork = [.. artwork, 0];
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/art.png"] = (artwork, "image/png") });
+		var heldArtworkResponse = server.HoldResponses("/art.png");
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/art.png"));
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			await WaitUntilAsync(() => server.HasRequest("GET", "/art.png"), "The artwork of the source was never requested.");
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromStream(new MemoryStream(newArtwork));
+			heldArtworkResponse.SetResult();
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+
+			await WaitUntilAsync(() => GetArtwork(mediaElement).SequenceEqual(newArtwork), "The artwork set while the media loaded was never applied.");
+			Assert.Equal(1, recorder.OpenedCount);
+		});
+	}
+
+	// 17.0.0 read MetadataArtworkUrl when the media loaded only, which it still does
+	[Fact]
+	public async Task ChangingMetadataArtworkUrlOfTheLoadedMediaKeepsItsArtwork()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		var path = await CopyAssetToCacheAsync(artworkAsset);
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/other.png"] = ([.. artwork, 0], "image/png") });
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.MetadataArtworkUrl = path;
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+
+			mediaElement.MetadataArtworkUrl = server.GetUri("/other.png").ToString();
+			await Task.Delay(500);
+
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
+			Assert.False(server.HasRequest("GET", "/other.png"));
+		});
+	}
+
+	// A change of the artwork that is still loading when the next source loads must not give that source the artwork of the previous change
+	[Fact]
+	public async Task AnArtworkUpdateThatTheNextSourceReplacedAppliesNothing()
+	{
+		var artwork = await ReadAssetAsync(artworkAsset);
+		byte[] staleArtwork = [.. artwork, 0];
+		var path = await CopyAssetToCacheAsync(artworkAsset);
+		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/stale.png"] = (staleArtwork, "image/png") });
+		var heldStaleArtwork = server.HoldResponses("/stale.png");
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async _ =>
+		{
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/stale.png"));
+			await WaitUntilAsync(() => server.HasRequest("GET", "/stale.png"), "The artwork of the change was never requested.");
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromFile(path);
+			mediaElement.Source = MediaSource.FromResource(shortToneAsset);
+			await WaitUntilAsync(() => recorder.OpenedCount >= 2, "The next source never loaded.");
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
+
+			heldStaleArtwork.SetResult();
+			await Task.Delay(500);
+
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
+		});
+	}
+
+	Task AssertLoadedAsync(Action<MediaElement> configure, Action<MediaElement> assertWhenLoaded) =>
+		AssertLoadedAsync(new CapturingLoggerFactory(), configure, assertWhenLoaded);
+
+	async Task AssertLoadedAsync(CapturingLoggerFactory log, Action<MediaElement> configure, Action<MediaElement> assertWhenLoaded)
+	{
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.Source = MediaSource.FromResource(toneAsset);

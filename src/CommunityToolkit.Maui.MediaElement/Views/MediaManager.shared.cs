@@ -133,6 +133,16 @@ public partial class MediaManager
 	public ValueTask UpdateSource() => MediaElement.RunSourceUpdate(PlatformUpdateSource, Logger);
 
 	/// <summary>
+	/// Update the artwork of the loaded media from <see cref="IMediaElement.MetadataArtworkSource"/> (or, while it is <see langword="null"/>,
+	/// <see cref="IMediaElement.MetadataArtworkUrl"/>).
+	/// </summary>
+	/// <remarks>
+	/// Without loaded media it does nothing: media that is loaded later reads its artwork itself. Artwork that cannot be loaded is logged and left out.
+	/// </remarks>
+	/// <returns>A task that completes when the artwork has been updated.</returns>
+	public ValueTask UpdateMetadataArtwork() => PlatformUpdateMetadataArtwork();
+
+	/// <summary>
 	/// Update the media playback speed.
 	/// </summary>
 	public void UpdateSpeed()
@@ -222,6 +232,11 @@ public partial class MediaManager
 	protected virtual partial ValueTask PlatformUpdateSource();
 
 	/// <summary>
+	/// Invokes the platform functionality to update the artwork of the loaded media.
+	/// </summary>
+	protected virtual partial ValueTask PlatformUpdateMetadataArtwork();
+
+	/// <summary>
 	/// Invokes the platform functionality to update the media playback speed.
 	/// </summary>
 	protected virtual partial void PlatformUpdateSpeed();
@@ -271,6 +286,7 @@ partial class MediaManager
 	protected virtual partial void PlatformStop() { }
 	protected virtual partial void PlatformUpdateAspect() { }
 	protected virtual partial ValueTask PlatformUpdateSource() => ValueTask.CompletedTask;
+	protected virtual partial ValueTask PlatformUpdateMetadataArtwork() => ValueTask.CompletedTask;
 	protected virtual partial void PlatformUpdateSpeed() { }
 	protected virtual partial void PlatformUpdateShouldShowPlaybackControls() { }
 	protected virtual partial void PlatformUpdatePosition() { }

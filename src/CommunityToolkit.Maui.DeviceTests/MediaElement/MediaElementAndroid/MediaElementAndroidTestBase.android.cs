@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Reflection;
 using Android.App;
 using Android.Content;
@@ -53,6 +52,10 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	readonly List<MediaElement> hostedElements = [];
 	readonly List<string> temporaryFiles = [];
 	bool usesForegroundService;
+
+	// The manager logs artwork that it cannot load as a warning, which is how the failure branch becomes observable
+	protected void SetupProbeBuilder(CapturingLoggerFactory loggerFactory) =>
+		SetupProbeBuilder(configureBuilder: builder => builder.Services.AddSingleton<ILoggerFactory>(loggerFactory));
 
 	protected void SetupProbeBuilder(bool isAndroidForegroundServiceEnabled = false, Action<MediaElementOptions>? configureMediaElementOptions = null, Action<MauiAppBuilder>? configureBuilder = null)
 	{
@@ -239,51 +242,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	protected static byte[] GetArtwork(MediaElement mediaElement) =>
 		GetPlayer(mediaElement).CurrentMediaItem!.MediaMetadata!.ArtworkData?.ToArray() ?? [];
 
-	// The manager reports an artwork it could not load with Trace.WriteLine, which is how the failure branch becomes observable.
-	protected sealed class TraceCapture : IDisposable
-	{
-		readonly CapturingTraceListener listener = new();
-
-		public TraceCapture() => Trace.Listeners.Add(listener);
-
-		public IReadOnlyList<string> Messages => listener.Messages;
-
-		public void Dispose() => Trace.Listeners.Remove(listener);
-	}
-
-	protected sealed class CapturingTraceListener : TraceListener
-	{
-		readonly object gate = new();
-		readonly List<string> messages = [];
-
-		public IReadOnlyList<string> Messages
-		{
-			get
-			{
-				lock (gate)
-				{
-					return messages.ToArray();
-				}
-			}
-		}
-
-		public override void Write(string? message) => Add(message);
-
-		public override void WriteLine(string? message) => Add(message);
-
-		void Add(string? message)
-		{
-			if (message is null)
-			{
-				return;
-			}
-
-			lock (gate)
-			{
-				messages.Add(message);
-			}
-		}
-	}
 
 	/// <summary>
 	/// Names the survivors itself because AssertionExtensions.WaitForGC describes a survivor with its ToString(), which throws
@@ -503,6 +461,8 @@ public sealed class CapturingLoggerFactory : ILoggerFactory
 			}
 		}
 	}
+
+	public IReadOnlyList<string> Messages => [.. Entries.Select(entry => entry.Message)];
 
 	public ILogger CreateLogger(string categoryName) => new CapturingLogger(this, categoryName);
 

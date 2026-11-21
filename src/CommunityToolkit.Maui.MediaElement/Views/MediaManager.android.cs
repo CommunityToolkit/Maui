@@ -526,6 +526,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		cancellationTokenSource?.Cancel();
 		cancellationTokenSource?.Dispose();
 		cancellationTokenSource = null;
+		CancelMetadataArtworkUpdate();
 
 		if (MediaElement.Source is null)
 		{
@@ -547,7 +548,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		// The load has its token before Opening is raised: a StateChanged handler can set another Source then, whose update replaces this one
-		cancellationTokenSource = new();
+		var sourceCancellationTokenSource = cancellationTokenSource = new();
 		var token = cancellationTokenSource.Token;
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		if (token.IsCancellationRequested)
@@ -662,6 +663,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (isAndroidForegroundServiceEnabled)
 		{
 			UpdateNotifications();
+		}
+
+		// A MediaOpened handler can set another Source, whose update replaces this one
+		if (!token.IsCancellationRequested)
+		{
+			await OnSourceLoaded(sourceCancellationTokenSource).ConfigureAwait(true);
 		}
 	}
 
@@ -818,6 +825,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			cancellationTokenSource?.Cancel();
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
+			CancelMetadataArtworkUpdate();
 
 			if (connection is not null)
 			{

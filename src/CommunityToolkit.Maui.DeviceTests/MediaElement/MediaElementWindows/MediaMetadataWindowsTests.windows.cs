@@ -440,19 +440,124 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 	}
 
 	[Fact]
-	public async Task UpdateMetadataIgnoresAStreamArtworkSource()
+	public async Task UpdateMetadataWithAStreamArtworkSourceSetsTheThumbnailAndThePosterAndKeepsThePositionOfTheStream()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var artwork = WinMediaAssets.ReadArtworkBytes();
+		using var stream = new MemoryStream(artwork) { Position = 3 };
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromStream(stream));
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsAsync(fixture, artwork);
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+		Assert.Equal(3, stream.Position);
+		Assert.True(stream.CanRead, "The stream belongs to the app: the artwork does not dispose it.");
+	}
+
+	[Fact]
+	public async Task UpdateMetadataLeavesOutAnArtworkSourceWithTheStreamOfTheSource()
 	{
 		SetupWindowsBuilder();
 		await RequireMediaPlayerAsync();
 		await RequireDisplayUpdaterAsync();
 		using var stream = new MemoryStream(WinMediaAssets.ReadArtworkBytes());
 		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromStream(stream));
+		await InvokeOnMainThreadAsync(() => fixture.View.Source = MediaSource.FromStream(stream));
 
 		var exception = await Record.ExceptionAsync(() => UpdateMetadataAsync(fixture));
 
 		Assert.Null(exception);
-		await AssertNoArtworkAsync(fixture);
-		Assert.Equal(0, stream.Position);
+		await InvokeOnMainThreadAsync(() => Assert.Null(fixture.Player!.SystemMediaTransportControls.DisplayUpdater.Thumbnail));
+	}
+
+	// The system media controls and BitmapImage cannot send headers: the artwork is downloaded with them, like a Source with headers
+	[Fact]
+	public async Task UpdateMetadataDownloadsAUriArtworkSourceWithItsHttpHeaders()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		await using var server = WinMediaAssets.StartArtworkServer();
+		var artworkSource = (UriMediaSource)MediaSource.FromUri(ArtworkUri(server));
+		artworkSource.HttpHeaders["X-Artwork-Token"] = "7";
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = artworkSource);
+
+		await UpdateMetadataAsync(fixture);
+
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+		Assert.NotEmpty(server.Requests);
+		Assert.All(server.Requests, request => Assert.Equal("7", request.Header("X-Artwork-Token")));
+	}
+
+	[Fact]
+	public async Task UpdateMetadataArtworkReplacesTheThumbnailAndThePosterOfTheOpenedMedia()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var path = CopyArtworkToCacheFolder();
+		byte[] newArtwork = [.. WinMediaAssets.ReadArtworkBytes(), 0];
+		var fixture = await CreateManagerAsync(view =>
+		{
+			view.MetadataTitle = title;
+			view.MetadataArtworkSource = MediaSource.FromFile(path);
+		});
+		await UpdateMetadataAsync(fixture);
+		await AssertThumbnailIsAsync(fixture, WinMediaAssets.ReadArtworkBytes());
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			fixture.View.MetadataArtworkSource = MediaSource.FromStream(new MemoryStream(newArtwork));
+			await fixture.Manager.UpdateMetadataArtwork();
+		});
+
+		await AssertThumbnailIsAsync(fixture, newArtwork);
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+		await InvokeOnMainThreadAsync(() => Assert.Equal(title, fixture.Player!.SystemMediaTransportControls.DisplayUpdater.MusicProperties.Title));
+	}
+
+	[Fact]
+	public async Task UpdateMetadataArtworkWithoutArtworkClearsTheThumbnailAndThePosterOfTheOpenedMedia()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		await RequireDisplayUpdaterAsync();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view =>
+		{
+			view.MetadataTitle = title;
+			view.MetadataArtworkSource = MediaSource.FromFile(path);
+		});
+		await UpdateMetadataAsync(fixture);
+		await AssertPosterIsTheDecodedArtworkAsync(fixture);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			fixture.View.MetadataArtworkSource = null;
+			await fixture.Manager.UpdateMetadataArtwork();
+		});
+
+		await InvokeOnMainThreadAsync(() => Assert.Null(fixture.Player!.SystemMediaTransportControls.DisplayUpdater.Thumbnail));
+		await WaitUntilOnUiAsync(() => fixture.Element!.PosterSource is BitmapImage { PixelWidth: 0, UriSource: null }, "The poster kept the artwork that was cleared.");
+	}
+
+	// Media that has not opened reads its artwork when it opens (MediaOpened): a change before then has nothing to update
+	[Fact]
+	public async Task UpdateMetadataArtworkBeforeTheMediaOpensDoesNothing()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		var path = CopyArtworkToCacheFolder();
+		var fixture = await CreateManagerAsync(view => view.MetadataArtworkSource = MediaSource.FromFile(path));
+
+		await InvokeOnMainThreadAsync(async () => await fixture.Manager.UpdateMetadataArtwork());
+
+		Assert.Null(WinMediaReflection.GetField<object?>(fixture.Manager, "metadata"));
+		await InvokeOnMainThreadAsync(() => Assert.Null(fixture.Element!.PosterSource));
 	}
 
 	// The artwork source wins over MetadataArtworkUrl even when the file is the only one of the two that loads: the url is never read.

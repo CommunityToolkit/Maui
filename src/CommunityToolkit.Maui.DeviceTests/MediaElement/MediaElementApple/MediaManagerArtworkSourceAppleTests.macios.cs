@@ -155,15 +155,46 @@ public class MediaManagerArtworkSourceAppleTests : AppleMediaElementTestBase
 	}
 
 	[Fact]
-	public async Task NowPlayingArtworkOfAStreamArtworkSourceIsTheDefaultImage()
+	public async Task NowPlayingArtworkIsLoadedFromAStreamArtworkSourceWhichKeepsItsPosition()
 	{
 		SetupApple();
-		using var stream = new MemoryStream(File.ReadAllBytes(BundlePath("poster", "png")));
+		using var stream = new MemoryStream(File.ReadAllBytes(BundlePath("poster", "png"))) { Position = 7 };
 		var mediaElement = new MediaElement { MetadataArtworkSource = MediaSource.FromStream(stream) };
 
 		var image = await ReadNowPlayingArtworkAsync(mediaElement);
 
+		Assert.Equal(posterSize, image!.Size);
+		Assert.Equal(7, stream.Position);
+		Assert.True(stream.CanRead, "The stream belongs to the app: the artwork does not dispose it.");
+	}
+
+	[Fact]
+	public async Task NowPlayingArtworkWithTheStreamOfTheSourceIsTheDefaultImage()
+	{
+		SetupApple();
+		using var stream = new MemoryStream(File.ReadAllBytes(BundlePath("poster", "png")));
+		var mediaElement = new MediaElement { Source = MediaSource.FromStream(stream), MetadataArtworkSource = MediaSource.FromStream(stream) };
+
+		var image = await ReadNowPlayingArtworkAsync(mediaElement);
+
 		AssertIsTheDefaultImage(image);
+		Assert.Equal(0, stream.Position);
+	}
+
+	[Fact]
+	public async Task NowPlayingArtworkIsDownloadedWithTheHttpHeadersOfAUriArtworkSource()
+	{
+		SetupApple();
+		using var server = CreateServerWithPoster();
+		var artworkSource = (UriMediaSource)MediaSource.FromUri(server.GetUri("/art.png"));
+		artworkSource.HttpHeaders["X-Artwork-Token"] = "7";
+		var mediaElement = new MediaElement { MetadataArtworkSource = artworkSource };
+
+		var image = await ReadNowPlayingArtworkAsync(mediaElement);
+
+		Assert.Equal(posterSize, image!.Size);
+		var request = Assert.Single(server.Requests, request => request.Method is "GET" && request.Path == "/art.png");
+		Assert.Equal("7", request.Headers.Single(header => string.Equals(header.Key, "X-Artwork-Token", StringComparison.OrdinalIgnoreCase)).Value);
 	}
 
 	[Fact]
@@ -463,6 +494,104 @@ public class MediaManagerArtworkSourceAppleTests : AppleMediaElementTestBase
 			var poster = Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews));
 			Assert.Equal(posterSize, poster.Image!.Size);
 			Assert.Contains(server.Requests, request => request.Method is "GET" && request.Path == "/art.png");
+		});
+	}
+
+	[Fact]
+	public async Task AudioWithAStreamArtworkSourceShowsAPoster()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		mediaElement.MetadataArtworkSource = MediaSource.FromStream(new MemoryStream(File.ReadAllBytes(BundlePath("poster", "png"))));
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await LoadAsync(mediaElement, handler, ResourceSource(AudioResource));
+
+			var poster = Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews));
+			Assert.Equal(posterSize, poster.Image!.Size);
+		});
+	}
+
+	[Fact]
+	public async Task ChangingTheArtworkSourceOfLoadedAudioReplacesItsPosterAndItsNowPlayingArtwork()
+	{
+		SetupApple();
+		var newArtwork = CreateNoisePng(50);
+		var mediaElement = CreateMediaElement();
+		mediaElement.MetadataArtworkSource = MediaSource.FromResource(posterResource);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await LoadAsync(mediaElement, handler, ResourceSource(AudioResource));
+			Assert.Equal(posterSize, Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews)).Image!.Size);
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromStream(new MemoryStream(newArtwork));
+
+			var poster = Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews));
+			Assert.Equal(new CGSize(50, 50), poster.Image!.Size);
+			Assert.Equal(new CGSize(50, 50), MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.Artwork!.ImageWithSize(new CGSize(320, 240))!.Size);
+		});
+	}
+
+	[Fact]
+	public async Task ChangingAPropertyOfTheArtworkSourceOfLoadedAudioReplacesItsPoster()
+	{
+		SetupApple();
+		var path = CopyToCache("noise.png", CreateNoisePng(50));
+		var artworkSource = new FileMediaSource { Path = CopyPosterToCache() };
+		var mediaElement = CreateMediaElement();
+		mediaElement.MetadataArtworkSource = artworkSource;
+		try
+		{
+			await HostAsync(mediaElement, async handler =>
+			{
+				await LoadAsync(mediaElement, handler, ResourceSource(AudioResource));
+				Assert.Equal(posterSize, Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews)).Image!.Size);
+
+				artworkSource.Path = path;
+
+				Assert.Equal(new CGSize(50, 50), Assert.IsType<UIImageView>(Assert.Single(Overlay(handler).Subviews)).Image!.Size);
+			});
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
+	public async Task ClearingTheArtworkSourceOfLoadedAudioRemovesItsPoster()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+		mediaElement.MetadataArtworkSource = MediaSource.FromResource(posterResource);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await LoadAsync(mediaElement, handler, ResourceSource(AudioResource));
+			Assert.Single(Overlay(handler).Subviews);
+
+			mediaElement.MetadataArtworkSource = null;
+
+			Assert.Empty(Overlay(handler).Subviews);
+			AssertIsTheDefaultImage(MPNowPlayingInfoCenter.DefaultCenter.NowPlaying!.Artwork!.ImageWithSize(new CGSize(320, 240)));
+		});
+	}
+
+	[Fact]
+	public async Task ChangingTheArtworkSourceOfLoadedVideoShowsNoPoster()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await LoadAsync(mediaElement, handler, ResourceSource(VideoResource));
+
+			mediaElement.MetadataArtworkSource = MediaSource.FromResource(posterResource);
+
+			Assert.Empty(Overlay(handler).Subviews);
 		});
 	}
 

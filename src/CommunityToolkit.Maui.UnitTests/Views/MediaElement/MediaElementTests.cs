@@ -174,6 +174,99 @@ public class MediaElementTests : BaseViewTest
 		mediaElement.MetadataArtworkSource.Should().BeSameAs(artworkSource);
 	}
 
+	[Fact]
+	public void SettingMetadataArtworkSourceRequestsAnArtworkUpdate()
+	{
+		MediaElement mediaElement = new();
+		var requests = CountArtworkUpdateRequests(mediaElement);
+
+		mediaElement.MetadataArtworkSource = MediaSource.FromUri("https://www.example.com/image.jpg");
+		mediaElement.MetadataArtworkSource = MediaSource.FromResource("image.jpg");
+		mediaElement.MetadataArtworkSource = null;
+
+		requests().Should().Be(3);
+	}
+
+	[Theory]
+	[InlineData("uri")]
+	[InlineData("headers")]
+	[InlineData("file")]
+	[InlineData("resource")]
+	[InlineData("stream")]
+	public void ChangingThePropertyOfTheArtworkSourceRequestsAnArtworkUpdate(string kind)
+	{
+		using var stream = new MemoryStream();
+		MediaElement mediaElement = new();
+		MediaSource artworkSource = kind switch
+		{
+			"uri" or "headers" => MediaSource.FromUri("https://www.example.com/image.jpg"),
+			"file" => MediaSource.FromFile(Path.Combine(Path.GetTempPath(), "image.jpg")),
+			"resource" => MediaSource.FromResource("image.jpg"),
+			_ => MediaSource.FromStream(new MemoryStream())
+		};
+		mediaElement.MetadataArtworkSource = artworkSource;
+		var requests = CountArtworkUpdateRequests(mediaElement);
+
+		switch (artworkSource)
+		{
+			case UriMediaSource uriSource when kind is "headers":
+				uriSource.HttpHeaders["Authorization"] = "Bearer token";
+				break;
+			case UriMediaSource uriSource:
+				uriSource.Uri = new Uri("https://www.example.com/other.jpg");
+				break;
+			case FileMediaSource fileSource:
+				fileSource.Path = Path.Combine(Path.GetTempPath(), "other.jpg");
+				break;
+			case ResourceMediaSource resourceSource:
+				resourceSource.Path = "other.jpg";
+				break;
+			case StreamMediaSource streamSource:
+				streamSource.Stream = stream;
+				break;
+		}
+
+		requests().Should().Be(1);
+	}
+
+	[Fact]
+	public void AReplacedArtworkSourceRequestsNoArtworkUpdate()
+	{
+		MediaElement mediaElement = new();
+		var replaced = (UriMediaSource)MediaSource.FromUri("https://www.example.com/image.jpg");
+		mediaElement.MetadataArtworkSource = replaced;
+		mediaElement.MetadataArtworkSource = MediaSource.FromUri("https://www.example.com/other.jpg");
+		var requests = CountArtworkUpdateRequests(mediaElement);
+
+		replaced.Uri = new Uri("https://www.example.com/changed.jpg");
+
+		requests().Should().Be(0);
+	}
+
+	[Fact]
+	public void SettingMetadataArtworkUrlRequestsNoArtworkUpdate()
+	{
+		MediaElement mediaElement = new();
+		var requests = CountArtworkUpdateRequests(mediaElement);
+
+		mediaElement.MetadataArtworkUrl = "https://www.example.com/image.jpg";
+
+		requests().Should().Be(0);
+	}
+
+	[Fact]
+	public void ArtworkUpdateRequestsGoToTheMetadataArtworkCommandOfTheHandler()
+	{
+		Core.Handlers.MediaElementHandler.CommandMapper.GetCommand(nameof(MediaElement.MetadataArtworkUpdateRequested)).Should().NotBeNull();
+	}
+
+	static Func<int> CountArtworkUpdateRequests(MediaElement mediaElement)
+	{
+		var count = 0;
+		mediaElement.MetadataArtworkUpdateRequested += (_, _) => count++;
+		return () => count;
+	}
+
 	static void SetCurrentCulture(string cultureName)
 	{
 		var culture = CultureInfo.GetCultureInfo(cultureName);

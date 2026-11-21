@@ -26,6 +26,9 @@ public partial class MediaManager : IDisposable
 	bool hasMediaOpened;
 	bool hasMediaFailed;
 
+	// Opened media without a video track shows its artwork as the poster, so a change of the artwork replaces the poster
+	bool showsArtworkPoster;
+
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
 	/// </summary>
@@ -241,7 +244,7 @@ public partial class MediaManager : IDisposable
 		// Metadata is retained for the app's lifetime by the shared MPRemoteCommandCenter, so pass a weak-reference
 		// playback callback. Passing PlayAtSpeed directly would give Metadata a strong reference to this MediaManager and,
 		// through it, its MediaElement and MauiContext, keeping them (and their managed view trees) alive after disposal.
-		metaData ??= new(Player, CreatePlaybackCallback(new WeakReference<MediaManager>(this)));
+		metaData ??= new(Player, CreatePlaybackCallback(new WeakReference<MediaManager>(this)), Logger);
 
 		static Action CreatePlaybackCallback(WeakReference<MediaManager> manager)
 		{
@@ -255,6 +258,7 @@ public partial class MediaManager : IDisposable
 		}
 		Metadata.ClearNowPlaying();
 		PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
+		showsArtworkPoster = false;
 
 		// Only a failure to create the asset or the item of the source is a failure of the source (below: MediaFailed). The events that the update
 		// raises (StateChanged, also from the observers of the player while its item is replaced) are not in this part: the MediaElement catches the
@@ -780,12 +784,10 @@ public partial class MediaManager : IDisposable
 			return;
 		}
 
-		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && Metadata.ResolveArtworkUrl(MediaElement) is NSUrl artworkUrl)
+		if (PlayerViewController?.View is not null && PlayerViewController.ContentOverlayView is not null && metaData.ResolveArtwork(MediaElement) is ResolvedArtwork artwork)
 		{
-			// Artwork that cannot be read or decoded shows no poster (an image without a size has no aspect ratio to keep)
-			var artworkData = NSData.FromUrl(artworkUrl);
-			var image = artworkData is null ? null : UIImage.LoadFromData(artworkData);
-			if (image is null || image.Size.Width <= 0 || image.Size.Height <= 0)
+			// Artwork that cannot be read or decoded shows no poster (an image without a size has no aspect ratio to keep), which is logged
+			if (metaData.LoadImage(artwork) is not UIImage image)
 			{
 				return;
 			}
@@ -810,6 +812,33 @@ public partial class MediaManager : IDisposable
 				imageView.WidthAnchor.ConstraintEqualTo(imageView.HeightAnchor, image.Size.Width / image.Size.Height)
 			]);
 		}
+	}
+
+	protected virtual partial ValueTask PlatformUpdateMetadataArtwork()
+	{
+		// Without an item there is no media: the media that is loaded later reads its artwork itself
+		if (Player is null || metaData is null || PlayerItem is not AVPlayerItem playerItem)
+		{
+			return ValueTask.CompletedTask;
+		}
+
+		// The handler cannot observe a failure, which would end the app: it is logged, and the media keeps the artwork it has
+		try
+		{
+			metaData.SetMetadata(playerItem, MediaElement);
+
+			if (showsArtworkPoster)
+			{
+				PlayerViewController?.ContentOverlayView?.Subviews.FirstOrDefault()?.RemoveFromSuperview();
+				SetPoster(playerItem);
+			}
+		}
+		catch (Exception exception)
+		{
+			Logger.LogWarning(exception, "Unable to update the artwork of the loaded media");
+		}
+
+		return ValueTask.CompletedTask;
 	}
 
 	void VolumeChanged(NSObservedChange e)
@@ -950,6 +979,7 @@ public partial class MediaManager : IDisposable
 
 				if (didLoadTracks && videoTrack is null)
 				{
+					showsArtworkPoster = true;
 					SetPoster(playerItem);
 				}
 

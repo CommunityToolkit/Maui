@@ -34,8 +34,9 @@ sealed partial class Metadata : IDisposable
 	/// <param name="mp">The MediaElement whose metadata is published.</param>
 	/// <param name="artworkSource">The artwork the caller resolved from the MediaElement, so the thumbnail and the poster come from the same artwork.</param>
 	/// <param name="loadedThumbnail">
-	/// The thumbnail loaded from <paramref name="artworkSource"/> (a local file or a file of the app package). Without it, an http, https,
-	/// ms-appx or ms-appdata artwork URI becomes the thumbnail, and any other artwork clears it.
+	/// The thumbnail loaded from <paramref name="artworkSource"/> (a local file, a file of the app package, a stream, or a download with the
+	/// <see cref="UriMediaSource.HttpHeaders"/> of its source). Without it, an http, https, ms-appx or ms-appdata artwork URI without headers
+	/// becomes the thumbnail, and any other artwork clears it.
 	/// </param>
 	public void SetMetadata(IMediaElement mp, MediaSource? artworkSource, RandomAccessStreamReference? loadedThumbnail)
 	{
@@ -66,8 +67,9 @@ sealed partial class Metadata : IDisposable
 
 	// Null clears the thumbnail: the controls are the player's own and outlive the media, so a thumbnail left in place would show the artwork
 	// of the previous media.
+	// A source with HttpHeaders is downloaded with them (MediaManager.LoadMetadataArtwork): the thumbnail never downloads it without them.
 	static RandomAccessStreamReference? CreateThumbnailFromUri(MediaSource? artworkSource) =>
-		artworkSource is UriMediaSource { Uri: Uri artworkUri } && IsSupportedThumbnailUri(artworkUri)
+		artworkSource is UriMediaSource { Uri: Uri artworkUri, HttpHeaders.Count: 0 } && IsSupportedThumbnailUri(artworkUri)
 			? RandomAccessStreamReference.CreateFromUri(artworkUri)
 			: null;
 
