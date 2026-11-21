@@ -105,6 +105,33 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 		});
 	}
 
+	[Fact]
+	public async Task CaptureImageCommandRaisesMediaCaptureFailedOnceWhenAMediaCapturedHandlerThrows()
+	{
+		await RunAsync((view, access, context) =>
+		{
+			var recorder = new AppleMediaRecorder(view);
+			var throwingSubscriber = new AppleThrowingMediaCapturedSubscriber(view);
+			access.PhotoOutput = new FakePhotoOutput
+			{
+				OnCapture = (fakeOutput, completion) => completion.DidFinishProcessingPhoto(fakeOutput, new FakeCapturePhoto(() => NSData.FromArray([1, 2, 3])), null!)
+			};
+
+			using (context.Install())
+			{
+				view.CaptureImageCommand.Execute(CancellationToken.None);
+			}
+
+			Assert.Empty(context.Drain());
+			Assert.Equal([AppleThrowingMediaCapturedSubscriber.FailureMessage], recorder.Failures);
+			Assert.Single(recorder.Captured);
+			GC.KeepAlive(recorder);
+			GC.KeepAlive(throwingSubscriber);
+
+			return Task.CompletedTask;
+		});
+	}
+
 	// MediaCaptureFailed reports the failures of the recording commands as well as the platform's answer to a capture that failed.
 	[Fact]
 	public async Task CaptureImageReturnsThePhotoAlthoughARecordingCommandReportsAFailureWhileItWaits()

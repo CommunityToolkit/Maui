@@ -196,7 +196,8 @@ public abstract partial class StatusBarTestBase
 		InvokeOnMainThreadAsync(() =>
 		{
 			var window = dialog?.DialogWindow ?? AndroidSystemBars.ActivityWindow;
-			Assert.Equal(style is NavigationBarStyle.DarkContent, AndroidSystemBars.IsLightNavigationBars(window));
+			// Android 7 keeps light icons whatever the style.
+			Assert.Equal(style is NavigationBarStyle.DarkContent && AndroidSystemBars.SupportsLightNavigationBars, AndroidSystemBars.IsLightNavigationBars(window));
 			Assert.False(AndroidSystemBars.IsForcedLightNavigationBars(window), "The system forces light navigation bars on the window, whatever its own appearance.");
 		});
 }

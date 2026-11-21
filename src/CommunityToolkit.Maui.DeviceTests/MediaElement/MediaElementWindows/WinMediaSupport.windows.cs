@@ -65,8 +65,19 @@ static class WinMediaAssets
 	// can get null there and dereference it: the access violation at +0x3299d that ended CI runs 38115049024 and 39907681941.
 	public static MediaPlaybackItem NewPlaybackItem(Uri source) => new(WinMediaSource.CreateFromUri(source));
 
-	public static void DisposeSource(MediaPlayer player) =>
-		(player.Source is MediaPlaybackItem item ? item.Source : player.Source as IDisposable)?.Dispose();
+	// A Source assignment starts an engine load whose async error work item races MediaPlayer.Dispose (an MFMediaEngine access violation), so
+	// only a player that has a source gets Source = null.
+	public static IDisposable? TakeSource(MediaPlayer player)
+	{
+		var attachedSource = player.Source;
+		if (attachedSource is null)
+		{
+			return null;
+		}
+
+		player.Source = null;
+		return attachedSource is MediaPlaybackItem item ? item.Source : attachedSource as IDisposable;
+	}
 
 	public static byte[] ReadVideoBytes() => File.ReadAllBytes(VideoPath);
 
@@ -93,10 +104,33 @@ static class WinMediaAssets
 	/// <summary>
 	/// The out-of-process stream behind a thumbnail fails now and then for reasons unrelated to what was published: the process that serves it
 	/// went away (<see cref="IsOutOfProcessServerGone"/>; seen on the Windows Server 2025 runners), or the stream reported its file missing
-	/// (FileNotFoundException, 0x80070002; seen in WinMediaProbe's DisplayUpdater probe on the Windows 11 VM, whose next run read the same artwork).
+	/// (FileNotFoundException, 0x80070002; seen in WinMediaProbe's DisplayUpdater probe on the Windows 11 VM, whose next run read the same artwork). CI runs 43659048173, 43710310626 and 43871375088 hit it too.
+	/// The logs show the system fetches the same URI at the same moment; opening the thumbnail again read it.
 	/// </summary>
 	public static bool IsTransientThumbnailReadFailure(Exception exception) =>
 		IsOutOfProcessServerGone(exception) || exception is FileNotFoundException { HResult: unchecked((int)0x80070002) };
+
+	public const int ThumbnailReadAttempts = 3;
+
+	public static readonly TimeSpan ThumbnailReadTimeout = TimeSpan.FromSeconds(15);
+
+	public static Task<byte[]> ReadThumbnailOnceAsync(IRandomAccessStreamReference thumbnail) => ReadAllBytesAsync(thumbnail).WaitAsync(ThumbnailReadTimeout);
+
+	public static async Task<byte[]> ReadThumbnailAsync(Func<Task<byte[]>> readOnce, Action<int, Exception>? onTransientFailure = null)
+	{
+		for (var attempt = 1; ; attempt++)
+		{
+			try
+			{
+				return await readOnce();
+			}
+			catch (Exception ex) when (attempt < ThumbnailReadAttempts && IsTransientThumbnailReadFailure(ex))
+			{
+				onTransientFailure?.Invoke(attempt, ex);
+				await Task.Delay(TimeSpan.FromMilliseconds(250 * attempt));
+			}
+		}
+	}
 
 	public static async Task<byte[]> ReadAllBytesAsync(IRandomAccessStreamReference reference)
 	{
