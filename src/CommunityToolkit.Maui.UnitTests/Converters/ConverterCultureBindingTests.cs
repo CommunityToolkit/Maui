@@ -71,6 +71,42 @@ public class ConverterCultureBindingTests : BaseViewTest
 		Assert.Equal(1f, source.Color.Blue, 2);
 	}
 
+	[Fact]
+	public void ColorToCmykStringConverter_BindingWithoutConverterCulture_UsesCurrentUICulture()
+	{
+		var label = new Label { BindingContext = new ColorSource(Colors.Red) };
+
+		label.SetBinding(Label.TextProperty, new Binding(nameof(ColorSource.Color), converter: new ColorToCmykStringConverter()));
+
+		Assert.Equal("CMYK(%0,%100,%100,%0)", label.Text);
+	}
+
+	[Fact]
+	public void ColorToCmykStringConverter_BindingWithInvariantConverterCulture_UsesDocumentedFormat()
+	{
+		var label = new Label { BindingContext = new ColorSource(Colors.Red) };
+
+		label.SetBinding(Label.TextProperty, new Binding(nameof(ColorSource.Color), converter: new ColorToCmykStringConverter()) { ConverterCulture = CultureInfo.InvariantCulture });
+
+		Assert.Equal("CMYK(0%,100%,100%,0%)", label.Text);
+	}
+
+	[Fact]
+	public void ColorToRgbaStringConverter_TwoWayBindingWithInvariantConverterCulture_RoundTrips()
+	{
+		var source = new ColorSource(new Color(1f, 0f, 0f, 0.5f));
+		var entry = new Entry { BindingContext = source };
+
+		entry.SetBinding(Entry.TextProperty, new Binding(nameof(ColorSource.Color), BindingMode.TwoWay, new ColorToRgbaStringConverter()) { ConverterCulture = CultureInfo.InvariantCulture });
+
+		Assert.Equal("RGBA(255,0,0,0.5)", entry.Text);
+
+		entry.Text = "RGBA(0,0,255,0.25)";
+
+		Assert.Equal(0.25f, source.Color.Alpha, 2);
+		Assert.Equal(1f, source.Color.Blue, 2);
+	}
+
 	sealed record TextSource(string Text);
 
 	sealed record NumberSource(double Number);

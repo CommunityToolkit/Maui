@@ -196,4 +196,36 @@ public class ColorToHslaStringConverterTests : BaseOneWayConverterTest<ColorToHs
 		Assert.Throws<ArgumentNullException>(() => ((ICommunityToolkitValueConverter)new ColorToHslaStringConverter()).Convert(new Color(), null, null, null));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
+
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
+	[MemberData(nameof(ValidInputData))]
+	public void ColorToHslaStringConverter_ValidInput_NullCulture_IgnoresCurrentCulture(float red, float green, float blue, float alpha, string expectedResult)
+	{
+		var converter = new ColorToHslaStringConverter();
+		var color = new Color(red, green, blue, alpha);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, converter.ConvertFrom(color));
+		Assert.Equal(expectedResult, converter.ConvertFrom(color, null));
+	}
+
+	[Theory]
+	[InlineData("en-US")]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	public void ColorToHslaStringConverter_InvariantCulture_UsesDocumentedFormat(string currentCultureName)
+	{
+		var currentCulture = System.Globalization.CultureInfo.GetCultureInfo(currentCultureName);
+		System.Globalization.CultureInfo.CurrentCulture = currentCulture;
+		System.Globalization.CultureInfo.CurrentUICulture = currentCulture;
+		var converter = new ColorToHslaStringConverter();
+		var color = Colors.Red.WithAlpha(0.5f);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture);
+
+		Assert.Equal("HSLA(360,100%,50%,0.5)", resultConvert);
+		Assert.Equal("HSLA(360,100%,50%,0.5)", converter.ConvertFrom(color, System.Globalization.CultureInfo.InvariantCulture));
+	}
 }

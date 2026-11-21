@@ -11,6 +11,9 @@ public static partial class TestCategory
 	// Shared code, but its animations run on the platform's animation ticker, so its tests run on devices.
 	public const string ColorAnimationExtensions = nameof(ColorAnimationExtensions);
 
+	// Shared code, but each platform ships its own globalization data, so its culture behavior is proven on devices.
+	public const string ColorConversionExtensions = nameof(ColorConversionExtensions);
+
 	public const string KeyboardExtensions = nameof(KeyboardExtensions);
 
 	public const string PlatformViewExtensions = nameof(PlatformViewExtensions);

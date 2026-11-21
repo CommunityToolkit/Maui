@@ -7,6 +7,9 @@ namespace CommunityToolkit.Maui.Core.Extensions;
 /// </summary>
 public static class ColorConversionExtensions
 {
+	// InvariantCulture writes percentages as "100 %", but the documented format is "100%".
+	static readonly NumberFormatInfo invariantNumberFormat = CreateInvariantNumberFormat();
+
 	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green and blue components.
 	/// </summary>
@@ -19,14 +22,14 @@ public static class ColorConversionExtensions
 	public static string ToRgbString(this Color color)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"RGB({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()})";
+		return FormattableString.Invariant($"RGB({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()})");
 	}
 
 	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the red, green, blue and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> that formats the numbers, for example <c>%100</c> in tr-TR or <c>0,5</c> in de-DE. <see langword="null"/> gives the culture-invariant format shown below on every machine, whatever <see cref="CultureInfo.CurrentCulture"/> is. A culture equal to <see cref="CultureInfo.InvariantCulture"/>, including <c>new CultureInfo("")</c>, gives the same documented format (<c>100%</c>, not .NET's <c>100 %</c>).</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>RGBA(red,green,blue,alpha)</c> where <b>red</b>, <b>green</b> and <b>blue</b> will be a value between 0 and 255,
 	/// and <b>alpha</b> is a value between 0 and 1. (e.g. <c>RGBA(255,0,0,1)</c> for <see cref="Colors.Red"/>).
@@ -35,7 +38,7 @@ public static class ColorConversionExtensions
 	public static string ToRgbaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha.ToString(cultureInfo)})";
+		return string.Create(GetNumberFormat(cultureInfo), $"RGBA({color.GetByteRed()},{color.GetByteGreen()},{color.GetByteBlue()},{color.Alpha})");
 	}
 
 	/// <summary>
@@ -44,7 +47,7 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
-	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/> in en-US). The numbers are formatted with <see cref="CultureInfo.CurrentCulture"/>, the same as passing <see langword="null"/> to <see cref="ToCmykString(Color, CultureInfo?)"/>.
+	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/>). The numbers are culture-invariant on every machine, the same as passing <see langword="null"/> to <see cref="ToCmykString(Color, CultureInfo?)"/>.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykString(this Color color) => color.ToCmykString(null);
@@ -53,32 +56,32 @@ public static class ColorConversionExtensions
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow and key components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> that formats the numbers, for example <c>%100</c> in tr-TR or <c>0,5</c> in de-DE. <see langword="null"/> gives the culture-invariant format shown below on every machine, whatever <see cref="CultureInfo.CurrentCulture"/> is. A culture equal to <see cref="CultureInfo.InvariantCulture"/>, including <c>new CultureInfo("")</c>, gives the same documented format (<c>100%</c>, not .NET's <c>100 %</c>).</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYK(cyan,magenta,yellow,key)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow</b> and <b>key</b> will be a value between 0% and 100%.
-	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/> in en-US).
+	/// (e.g. <c>CMYK(0%,100%,100%,0%)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykString(this Color color, CultureInfo? cultureInfo)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYK({color.GetPercentCyan().ToString("P0", cultureInfo)},{color.GetPercentMagenta().ToString("P0", cultureInfo)},{color.GetPercentYellow().ToString("P0", cultureInfo)},{color.GetPercentBlackKey().ToString("P0", cultureInfo)})";
+		return string.Create(GetNumberFormat(cultureInfo), $"CMYK({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0})");
 	}
 
 	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the cyan, magenta, yellow, key and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> that formats the numbers, for example <c>%100</c> in tr-TR or <c>0,5</c> in de-DE. <see langword="null"/> gives the culture-invariant format shown below on every machine, whatever <see cref="CultureInfo.CurrentCulture"/> is. A culture equal to <see cref="CultureInfo.InvariantCulture"/>, including <c>new CultureInfo("")</c>, gives the same documented format (<c>100%</c>, not .NET's <c>100 %</c>).</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>CMYKA(cyan,magenta,yellow,key,alpha)</c> where <b>cyan</b>, <b>magenta</b>, <b>yellow </b>and <b>key</b> will be a value between
-	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(0%,100%,100%,0%,1)</c> for <see cref="Colors.Red"/> in en-US).
+	/// 0% and 100% and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>CMYKA(0%,100%,100%,0%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToCmykaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"CMYKA({color.GetPercentCyan().ToString("P0", cultureInfo)},{color.GetPercentMagenta().ToString("P0", cultureInfo)},{color.GetPercentYellow().ToString("P0", cultureInfo)},{color.GetPercentBlackKey().ToString("P0", cultureInfo)},{color.Alpha.ToString(cultureInfo)})";
+		return string.Create(GetNumberFormat(cultureInfo), $"CMYKA({color.GetPercentCyan():P0},{color.GetPercentMagenta():P0},{color.GetPercentYellow():P0},{color.GetPercentBlackKey():P0},{color.Alpha})");
 	}
 
 	/// <summary>
@@ -87,8 +90,8 @@ public static class ColorConversionExtensions
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/> in en-US).
-	/// The numbers are formatted with <see cref="CultureInfo.CurrentCulture"/>, the same as passing <see langword="null"/> to <see cref="ToHslString(Color, CultureInfo?)"/>.
+	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/>).
+	/// The numbers are culture-invariant on every machine, the same as passing <see langword="null"/> to <see cref="ToHslString(Color, CultureInfo?)"/>.
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslString(this Color color) => color.ToHslString(null);
@@ -97,32 +100,32 @@ public static class ColorConversionExtensions
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation and lightness components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> that formats the numbers, for example <c>%100</c> in tr-TR or <c>0,5</c> in de-DE. <see langword="null"/> gives the culture-invariant format shown below on every machine, whatever <see cref="CultureInfo.CurrentCulture"/> is. A culture equal to <see cref="CultureInfo.InvariantCulture"/>, including <c>new CultureInfo("")</c>, gives the same documented format (<c>100%</c>, not .NET's <c>100 %</c>).</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSL(hue,saturation,lightness)</c> where <b>hue</b> will be a value between 0 and 360, and <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/> in en-US).
+	/// will be a value between 0% and 100%. (e.g. <c>HSL(360,100%,50%)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslString(this Color color, CultureInfo? cultureInfo)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSL({color.GetDegreeHue().ToString("0", cultureInfo)},{color.GetSaturation().ToString("P0", cultureInfo)},{color.GetLuminosity().ToString("P0", cultureInfo)})";
+		return string.Create(GetNumberFormat(cultureInfo), $"HSL({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0})");
 	}
 
 	/// <summary>
 	/// Converts this <see cref="Color"/> to a <see cref="string"/> containing the hue, saturation, lightness and alpha components.
 	/// </summary>
 	/// <param name="color">The <see cref="Color"/> to convert.</param>
-	/// <param name="cultureInfo">The <see cref="CultureInfo"/> used to format the numbers; <see langword="null"/> uses <see cref="CultureInfo.CurrentCulture"/>.</param>
+	/// <param name="cultureInfo">The <see cref="CultureInfo"/> that formats the numbers, for example <c>%100</c> in tr-TR or <c>0,5</c> in de-DE. <see langword="null"/> gives the culture-invariant format shown below on every machine, whatever <see cref="CultureInfo.CurrentCulture"/> is. A culture equal to <see cref="CultureInfo.InvariantCulture"/>, including <c>new CultureInfo("")</c>, gives the same documented format (<c>100%</c>, not .NET's <c>100 %</c>).</param>
 	/// <returns>
 	/// A <see cref="string"/> in the format: <c>HSLA(hue,saturation,lightness,alpha)</c> where <b>hue</b> will be a value between 0 and 360, <b>saturation</b> and <b>lightness</b>
-	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(360,100%,50%,1)</c> for <see cref="Colors.Red"/> in en-US).
+	/// will be a value between 0% and 100%, and <b>alpha</b> will be a value between 0 and 1. (e.g. <c>HSLA(360,100%,50%,1)</c> for <see cref="Colors.Red"/>).
 	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="color"/> is null.</exception>
 	public static string ToHslaString(this Color color, CultureInfo? cultureInfo = null)
 	{
 		ArgumentNullException.ThrowIfNull(color);
-		return $"HSLA({color.GetDegreeHue().ToString("0", cultureInfo)},{color.GetSaturation().ToString("P0", cultureInfo)},{color.GetLuminosity().ToString("P0", cultureInfo)},{color.Alpha.ToString(cultureInfo)})";
+		return string.Create(GetNumberFormat(cultureInfo), $"HSLA({color.GetDegreeHue():0},{color.GetSaturation():P0},{color.GetLuminosity():P0},{color.Alpha})");
 	}
 
 	/// <summary>
@@ -491,5 +494,18 @@ public static class ColorConversionExtensions
 	{
 		var clampedInput = Math.Clamp(input, 0, 255);
 		return (byte)Math.Round(clampedInput);
+	}
+
+	static IFormatProvider GetNumberFormat(CultureInfo? cultureInfo) =>
+		cultureInfo is null || cultureInfo.Equals(CultureInfo.InvariantCulture)
+			? invariantNumberFormat
+			: cultureInfo;
+
+	static NumberFormatInfo CreateInvariantNumberFormat()
+	{
+		var numberFormat = (NumberFormatInfo)NumberFormatInfo.InvariantInfo.Clone();
+		numberFormat.PercentPositivePattern = 1;
+		numberFormat.PercentNegativePattern = 1;
+		return NumberFormatInfo.ReadOnly(numberFormat);
 	}
 }
