@@ -777,6 +777,7 @@ try {
         if ($Packaging -eq 'packaged') {
             $subject = $CertificateSubject
             if (-not $subject) {
+                # One certificate signs every app, which assumes they share a publisher (there is one Windows test app today).
                 $subject = Get-ManifestPublisher -Project $context.Projects[0]
             }
 

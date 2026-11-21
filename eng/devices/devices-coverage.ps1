@@ -104,6 +104,12 @@ function Restore-DeviceTestCoverageAssemblies {
         }
 
         foreach ($extension in @('.dll', '.pdb')) {
+            $intermediate = $null
+            if ($assembly.Intermediate) {
+                $intermediate = [System.IO.Path]::ChangeExtension($assembly.Intermediate, $extension)
+            }
+
+            $hasIntermediate = $intermediate -and (Test-Path -LiteralPath $intermediate -PathType Leaf)
             $original = Join-Path $Session.Originals "$($assembly.Name)$extension"
             if (Test-Path -LiteralPath $original -PathType Leaf) {
                 $destination = [System.IO.Path]::ChangeExtension($assembly.Path, $extension)
@@ -113,15 +119,17 @@ function Restore-DeviceTestCoverageAssemblies {
                 }
                 catch {
                     # A locked file must not turn a passing run into a failure.
-                    Write-DeviceTestWarning "Coverage: could not restore $destination, so the instrumented assembly stays in place; rebuild the library. $($_.Exception.Message)"
+                    $remedy = 'rebuild the library'
+                    if ($hasIntermediate) {
+                        $remedy = "the next build copies the library's intermediate assembly over it"
+                    }
+
+                    Write-DeviceTestWarning "Coverage: could not restore $destination, so the instrumented assembly stays in place; $remedy. $($_.Exception.Message)"
                 }
             }
 
-            if ($assembly.Intermediate) {
-                $intermediate = [System.IO.Path]::ChangeExtension($assembly.Intermediate, $extension)
-                if (Test-Path -LiteralPath $intermediate -PathType Leaf) {
-                    (Get-Item -LiteralPath $intermediate).LastWriteTimeUtc = [System.DateTime]::UtcNow
-                }
+            if ($hasIntermediate) {
+                (Get-Item -LiteralPath $intermediate).LastWriteTimeUtc = [System.DateTime]::UtcNow
             }
         }
 
