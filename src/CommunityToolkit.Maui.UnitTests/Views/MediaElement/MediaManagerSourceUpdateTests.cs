@@ -181,6 +181,52 @@ public class MediaManagerSourceUpdateTests : BaseTest
 		loggerFactory.Errors.Should().ContainSingle().Which.Exception.Should().BeSameAs(handlerException);
 	}
 
+	[Fact]
+	public async Task ExceptionReportedByTheUpdateIsRaisedOnceWhenItEndsWithoutFailingTheSource()
+	{
+		var mediaElement = new MediaElement();
+		RecordFailures(mediaElement);
+		var handlerException = new InvalidOperationException("The StateChanged handler of the app failed.");
+		mediaElement.StateChanged += (_, e) =>
+		{
+			if (e.NewState is MediaElementState.Paused)
+			{
+				throw handlerException;
+			}
+		};
+		var reportedException = new InvalidOperationException("The service did not start.");
+
+		var manager = CreateManager(mediaElement, element =>
+		{
+			element.ReportSourceUpdateException(reportedException, "The service failed", loggerFactory.CreateLogger("test"));
+			failures.Should().BeEmpty();
+			element.CurrentStateChanged(MediaElementState.Opening);
+			element.Duration = TimeSpan.FromSeconds(5);
+			element.CurrentStateChanged(MediaElementState.Paused);
+			return ValueTask.CompletedTask;
+		});
+
+		await manager.UpdateSource();
+
+		failures.Should().Equal("The service failed: System.InvalidOperationException: The service did not start.");
+		mediaElement.CurrentState.Should().Be(MediaElementState.Paused);
+		mediaElement.Duration.Should().Be(TimeSpan.FromSeconds(5));
+		loggerFactory.Errors.Should().HaveCount(2);
+	}
+
+	[Fact]
+	public void ExceptionReportedOutsideAnUpdateIsRaisedAtOnceWithoutFailingTheSource()
+	{
+		var mediaElement = new MediaElement();
+		RecordFailures(mediaElement);
+
+		((IMediaElement)mediaElement).ReportSourceUpdateException(new InvalidOperationException("The service did not start."), "The service failed", loggerFactory.CreateLogger("test"));
+
+		failures.Should().Equal("The service failed: System.InvalidOperationException: The service did not start.");
+		mediaElement.CurrentState.Should().Be(MediaElementState.None);
+		loggerFactory.Errors.Should().ContainSingle();
+	}
+
 	void RecordFailures(MediaElement mediaElement) => mediaElement.MediaFailed += OnMediaFailed;
 
 	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => failures.Add(e.ErrorMessage);

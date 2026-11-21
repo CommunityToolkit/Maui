@@ -44,7 +44,7 @@
     <Error Condition="'$(_CtmDeviceTestsTrimmed)' != 'true'"
            Text="CtmDeviceTestsTrimming='$(CtmDeviceTestsTrimming)' is not none, full or nativeaot." />
     <Error Condition="'$(DEVICE_TEST_COVERAGE)' == 'true'"
-           Text="CtmDeviceTestsTrimming=$(CtmDeviceTestsTrimming) cannot collect coverage: coverlet rewrites the toolkit assemblies, so the app would not trim or compile the IL that ships. Unset DEVICE_TEST_COVERAGE." />
+           Text="CtmDeviceTestsTrimming=$(CtmDeviceTestsTrimming) cannot collect coverage: coverlet rewrites the toolkit assemblies, so the app would not trim or compile the IL that ships. Unset DEVICE_TEST_COVERAGE and do not pass -Coverage." />
     <Error Condition="'$(CtmDeviceTestsTrimming)' == 'nativeaot' and '$(_CtmDeviceTestsPlatform)' == 'windows'"
            Text="NativeAOT does not work for .NET MAUI apps on Windows (https://github.com/dotnet/maui/issues/39053). Use CtmDeviceTestsTrimming=full." />
     <Error Condition="'$(CtmDeviceTestsTrimming)' == 'nativeaot' and ('$(_CtmDeviceTestsPlatform)' == 'ios' or '$(_CtmDeviceTestsPlatform)' == 'maccatalyst') and '$(_UseNativeAot)' != 'true'"

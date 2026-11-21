@@ -280,9 +280,10 @@ public partial class ExpanderTests
 
 			collectionView.ScrollTo(tappedItem, position: ScrollToPosition.Start, animate: false);
 			await AssertionExtensions.AssertEventually(
-				() => native.ContainerFromIndex(tappedItem) is WFrameworkElement { ActualHeight: > 0 } container && Math.Abs(GetTop(container, native)) < headerHeight,
+				() => native.ContainerFromIndex(tappedItem) is WFrameworkElement { ActualHeight: > 0 } container && Math.Abs(GetTop(container, native)) < headerHeight
+					&& expanders.Any(expander => expander.Handler is not null && Equals(expander.BindingContext, $"Item {tappedItem}")),
 				timeout: 5000,
-				message: $"The CollectionView never scrolled item {tappedItem} to its top.");
+				message: $"The CollectionView never scrolled item {tappedItem} to its top and bound its Expander.");
 			var realized = Enumerable.Range(0, itemCount).Where(index => native.ContainerFromIndex(index) is WListViewItem).ToArray();
 			var heightsBefore = realized.ToDictionary(index => index, index => GetItemContainer(native, index).Height);
 			var expander = GetExpanderOfItem(expanders, tappedItem);

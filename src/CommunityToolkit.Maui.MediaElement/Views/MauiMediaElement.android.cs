@@ -25,6 +25,7 @@ public class MauiMediaElement : CoordinatorLayout
 	bool isStatusBarVisible;
 	bool isNavigationBarVisible;
 	bool isFullScreen;
+	bool isDetachingFromWindow;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -82,7 +83,15 @@ public class MauiMediaElement : CoordinatorLayout
 	{
 		if (isFullScreen)
 		{
-			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+			isDetachingFromWindow = true;
+			try
+			{
+				OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+			}
+			finally
+			{
+				isDetachingFromWindow = false;
+			}
 
 			// Full screen was left without the full-screen button: the button must leave its full-screen state too, or its next tap asks to
 			// leave a full screen that the view is no longer in. Media3 reports the new state to the click listener, which ignores it.
@@ -162,7 +171,17 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
-			AddView(relativeLayout);
+			if (isDetachingFromWindow)
+			{
+				// AddView would attach the layout to the window that this view is leaving, orphaning its SurfaceView there.
+				// AttachViewToParent skips the layout-params conversion and the layout request that AddView does.
+				AttachViewToParent(relativeLayout, 0, GenerateLayoutParams(relativeLayout.LayoutParameters));
+				RequestLayout();
+			}
+			else
+			{
+				AddView(relativeLayout);
+			}
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility(saveSystemBarsVisibility: e.P0);
