@@ -16,7 +16,7 @@ Every change to the four packages must keep them fully trim-safe and NativeAOT-s
 
 ## Newest OS versions
 
-Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: when you review or change a device test workflow, check its Android API level, iOS runtime, Xcode and Windows runner against the newest GA releases and recommend a bump. The list is in [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
+Interim, until CommunityToolkit/Maui#3438 (nightly bump bot) lands: when you review or change a device test workflow, check its Android API level, iOS runtime, Xcode and Windows runner against the newest GA releases and recommend a bump. The list is in [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
 
 ## Naming
 
@@ -34,4 +34,5 @@ Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: when you revi
 * [.github/instructions/culture.instructions.md](.github/instructions/culture.instructions.md): culture-safe code and Turkish tests
 * [.github/instructions/device-tests.instructions.md](.github/instructions/device-tests.instructions.md): device tests
 * [.github/instructions/mobile-memory-leaks.instructions.md](.github/instructions/mobile-memory-leaks.instructions.md): memory leaks on mobile
+* [.github/instructions/handler-lifecycle.instructions.md](.github/instructions/handler-lifecycle.instructions.md): handler lifecycle (`CreatePlatformView` runs once per handler)
 * [CONTRIBUTING.md](CONTRIBUTING.md): contribution process

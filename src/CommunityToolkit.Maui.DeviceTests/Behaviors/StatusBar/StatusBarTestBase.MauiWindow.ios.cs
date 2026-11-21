@@ -69,8 +69,9 @@ public abstract partial class StatusBarTestBase
 		Assert.True(preferred == expectedStyle, $"{provider.GetType().Name}, which UIKit asks for the status bar style of the window, returned {IosStatusBarStyle.Name(preferred)} instead of {IosStatusBarStyle.Name(expectedStyle)}{(expected is UIStatusBarStyle.Default ? ", the style of UIKit's own implementation" : string.Empty)}.");
 
 		var statusBarManager = mauiWindow.Scene.StatusBarManager ?? throw new InvalidOperationException("The scene has no status bar.");
-		var isApplied = await AssertHelpers.Wait(() => statusBarManager.StatusBarStyle == expectedStyle, timeout: 3000, interval: 20);
-		Assert.True(isApplied, $"UIKit shows {IosStatusBarStyle.Name(statusBarManager.StatusBarStyle)} in the status bar of the scene instead of {IosStatusBarStyle.Name(expectedStyle)}.");
+		var sceneStyle = IosStatusBarStyle.SceneStyle(expectedStyle, provider.TraitCollection);
+		var isApplied = await AssertHelpers.Wait(() => statusBarManager.StatusBarStyle == sceneStyle, timeout: 3000, interval: 20);
+		Assert.True(isApplied, $"UIKit shows {IosStatusBarStyle.Name(statusBarManager.StatusBarStyle)} in the status bar of the scene instead of {IosStatusBarStyle.Name(sceneStyle)}.");
 
 		// Default is not read from the screen: UIKit chooses its color itself (on iOS 27 the content kept its previous color over the same page).
 		if (expected is UIStatusBarStyle.LightContent or UIStatusBarStyle.DarkContent)

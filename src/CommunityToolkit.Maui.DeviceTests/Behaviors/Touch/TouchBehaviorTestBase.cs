@@ -177,13 +177,6 @@ public abstract partial class TouchBehaviorTestBase : CommunityToolkitHandlerTes
 	private protected static CancellationTokenSource? GetLongPressTokenSource(GestureManager manager) =>
 		(CancellationTokenSource?)GetGestureManagerField(manager, "longPressTokenSource");
 
-	// The behavior gives the element its own colour back when the animation ends, which comes after the animation's last frame.
-	private protected static Task WaitUntilTheBackgroundColorAnimationEndedAsync(TouchBehavior behavior)
-	{
-		var manager = GetGestureManager(behavior);
-		return WaitUntilAsync(() => GetGestureManagerField(manager, "backgroundColorAnimation") is null, "The behavior's background colour animation did not end.");
-	}
-
 	static object? GetGestureManagerField(GestureManager manager, string name) =>
 		(typeof(GestureManager).GetField(name, privateInstance) ?? throw new MissingFieldException(nameof(GestureManager), name)).GetValue(manager);
 
