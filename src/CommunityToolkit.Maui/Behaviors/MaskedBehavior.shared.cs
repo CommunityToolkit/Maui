@@ -18,6 +18,8 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 
 	IReadOnlyDictionary<int, char>? maskPositions;
 
+	string? maskedText;
+
 	/// <summary>
 	/// Finalizer
 	/// </summary>
@@ -171,6 +173,10 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 		{
 			if (!string.IsNullOrWhiteSpace(text) && maskPositions is not null)
 			{
+				// Otherwise backspace could not delete the format characters at the end of the mask: they would be added back right away
+				var isEndOfMaskedTextDeleted = maskedText is not null && maskedText.Length > text.Length && maskedText.StartsWith(text, StringComparison.Ordinal);
+				var lastUnmaskedPosition = Mask?.LastIndexOf(UnmaskedCharacter, StringComparison.Ordinal) ?? -1;
+
 				if (Mask is not null && text.Length > Mask.Length)
 				{
 					text = text.Remove(text.Length - 1);
@@ -179,7 +185,9 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 				text = RemoveMask(text);
 				foreach (var position in maskPositions)
 				{
-					if (text.Length < position.Key + 1)
+					// A format character is added once the text goes past it, but no typed character comes after the ones at the end of the mask, so they are added when the text reaches them
+					var isAddedWhenReached = position.Key > lastUnmaskedPosition && !isEndOfMaskedTextDeleted;
+					if (text.Length < (isAddedWhenReached ? position.Key : position.Key + 1))
 					{
 						continue;
 					}
@@ -187,12 +195,14 @@ public partial class MaskedBehavior : BaseBehavior<InputView>, IDisposable
 					var value = position.Value.ToString();
 
 					// !important - If user types in masked value, don't add masked value
-					if (text.Substring(position.Key, 1) != value)
+					if (text.Length == position.Key || text.Substring(position.Key, 1) != value)
 					{
 						text = text.Insert(position.Key, value);
 					}
 				}
 			}
+
+			maskedText = text;
 
 			if (View is not null)
 			{

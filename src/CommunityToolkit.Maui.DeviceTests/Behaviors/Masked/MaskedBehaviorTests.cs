@@ -34,14 +34,14 @@ public partial class MaskedBehaviorTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	static Entry CreateEntryWithMask() => new()
+	static Entry CreateEntryWithMask(string entryMask = mask) => new()
 	{
 		WidthRequest = 200,
 		Behaviors =
 		{
 			new MaskedBehavior
 			{
-				Mask = mask
+				Mask = entryMask
 			}
 		}
 	};
