@@ -43,7 +43,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await navigation.PopModalAsync(false);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 
 		// CloseAsync of a PopupPage that navigation already removed must not report the result a second time
@@ -74,7 +74,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await shell.GoToAsync("//second");
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Empty(shell.Navigation.ModalStack);
 		Assert.Equal(1, closedCount);
 	}
@@ -177,7 +177,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await navigation.PopModalAsync(false);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Throws<PopupResultException>(() => result.Result);
 	}
 
@@ -190,7 +190,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await navigation.PopModalAsync(false);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Null(result.Result);
 	}
 
@@ -203,7 +203,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await shell.GoToAsync("..");
 		var result = await task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount());
 		Assert.Empty(navigation.ModalStack.OfType<PopupPage>());
 
@@ -274,7 +274,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		}
 
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 	}
 
@@ -336,7 +336,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await Assert.ThrowsAsync<PopupNotFoundException>(() => closeTask);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Same(otherPage, Assert.Single(navigation.ModalStack));
 	}
@@ -349,7 +349,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await popup.CloseAsync(TestContext.Current.CancellationToken);
 		var result = await task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(1, closedCount());
 	}
 
@@ -411,7 +411,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		}
 
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 
 		// The queued second CloseAsync runs after the first one released the semaphore
 		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
@@ -434,7 +434,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		window.Page = new ContentPage();
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 	}
 
@@ -488,7 +488,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await Assert.ThrowsAnyAsync<OperationCanceledException>(() => closeTask);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 	}
 
@@ -573,7 +573,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await lowerPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(lowerResult.WasDismissed);
 		Assert.Equal([1, 1], closedCounts);
 		Assert.Empty(navigation.ModalStack);
 	}
@@ -614,7 +614,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await popup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 	}
 
@@ -664,7 +664,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await shell.ClosePopupAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(lowerResult.WasDismissed);
 		Assert.Equal([1, 1], closedCounts);
 		Assert.Empty(navigation.ModalStack);
 	}
@@ -709,7 +709,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await lowerPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(lowerResult.WasDismissed);
 		Assert.Equal(0, CountPopupPages(navigation, modalNavigationPage));
 		Assert.Same(modalNavigationPage, Assert.Single(navigation.ModalStack));
 	}
@@ -807,7 +807,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(navigation.ModalStack);
 		Assert.Empty(uiThread.UnhandledExceptions);
@@ -852,7 +852,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await popup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(navigation.ModalStack);
 	}
@@ -917,7 +917,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(navigation.ModalStack);
 		Assert.Empty(uiThread.UnhandledExceptions);
@@ -958,7 +958,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		await nextPopup.CloseAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		var result = await nextShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(result.WasDismissed);
 		Assert.Empty(navigation.ModalStack);
 	}
 
@@ -1046,7 +1046,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(window.Navigation.ModalStack);
 		Assert.Empty(uiThread.UnhandledExceptions);
@@ -1104,7 +1104,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		await uiThread.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(window.Navigation.ModalStack);
 		Assert.Empty(uiThread.UnhandledExceptions);

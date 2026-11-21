@@ -76,7 +76,7 @@ static class PopupDismissedByNavigationScenarios
 		await shell.GoToAsync("..");
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.DoesNotContain("PopupPage", shell.CurrentState.Location.OriginalString, StringComparison.Ordinal);
 		Assert.Same(modalNavigationPage, Assert.Single(shell.Navigation.ModalStack));
@@ -98,7 +98,7 @@ static class PopupDismissedByNavigationScenarios
 		await shell.GoToAsync("//second");
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
@@ -118,7 +118,7 @@ static class PopupDismissedByNavigationScenarios
 		await shell.Navigation.PopModalAsync(false);
 		var result = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+		Assert.True(result.WasDismissed);
 		Assert.Equal(1, closedCount);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
@@ -168,7 +168,7 @@ static class PopupDismissedByNavigationScenarios
 		await Close(shell, lowerPopup, closeWithClosePopupAsync: false);
 		var lowerResult = await lowerTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.False(lowerResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.False(lowerResult.WasDismissed);
 		Assert.Equal(0, CountShownPopupPages());
 	}
 

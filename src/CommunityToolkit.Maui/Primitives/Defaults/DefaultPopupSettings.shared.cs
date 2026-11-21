@@ -35,6 +35,9 @@ public record DefaultPopupSettings
 	/// <inheritdoc cref="Views.Popup.CanBeDismissedByTappingOutsideOfPopup" path="/summary"/>
 	public bool CanBeDismissedByTappingOutsideOfPopup { get; init; } = PopupDefaults.CanBeDismissedByTappingOutsideOfPopup;
 
+	/// <inheritdoc cref="Views.Popup.CanBeDismissedByBackButtonPressed"/>
+	public bool CanBeDismissedByBackButtonPressed { get; init; } = PopupDefaults.CanBeDismissedByBackButtonPressed;
+
 	/// <summary>
 	/// Gets the color that fills the background of a <see cref="Popup"/> that has neither a <see cref="VisualElement.BackgroundColor"/> nor a <see cref="VisualElement.Background"/>,
 	/// unless the app uses the dark theme (see <see cref="BackgroundColorDark"/>).
@@ -75,6 +78,11 @@ public record DefaultPopupSettings
 		public const bool CanBeDismissedByTappingOutsideOfPopup = true;
 
 		/// <summary>
+		/// Default value for <see cref="Popup.CanBeDismissedByBackButtonPressed"/>
+		/// </summary>
+		public const bool CanBeDismissedByBackButtonPressed = true;
+
+		/// <summary>
 		/// Default value for <see cref="Popup.Margin"/> 
 		/// </summary>
 		public static Thickness Margin { get; } = new(30);
@@ -108,5 +116,6 @@ public record DefaultPopupSettings
 		/// Default value for <see cref="DefaultPopupSettings.OnInitializing"/>
 		/// </summary>
 		public static Action<Popup>? OnInitializing { get; } = null;
+
 	}
 }
