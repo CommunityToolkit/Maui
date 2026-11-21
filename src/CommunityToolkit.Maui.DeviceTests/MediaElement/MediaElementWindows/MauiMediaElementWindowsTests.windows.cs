@@ -19,7 +19,7 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 {
 	sealed record ViewFixture(WinMediaView View, MediaPlayerElement Element, MediaPlayer Player, Microsoft.UI.Xaml.Controls.MediaTransportControls StockControls);
 
-	Task<ViewFixture> CreateViewAsync() =>
+	Task<ViewFixture> CreateViewAsync(bool releaseInCleanup = true) =>
 		InvokeOnMainThreadAsync(() =>
 		{
 			var player = new MediaPlayer();
@@ -30,14 +30,41 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 
 			// A view whose Dispose(false) ran (the finalizer path) is disposed already: Dispose() then does nothing, so the cleanup releases the
 			// player itself.
-			RegisterCleanup(() =>
+			if (releaseInCleanup)
 			{
-				view.Dispose();
-				ReleasePlayer(player, element);
-			});
+				RegisterCleanup(() =>
+				{
+					view.Dispose();
+					ReleasePlayer(player, element);
+				});
+			}
 
 			return new ViewFixture(view, element, player, stockControls);
 		});
+
+	[Fact]
+	public async Task DisposingViewsWithoutASourceNeverAssignsTheSource()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		const int cycles = 5;
+
+		// A few cycles suffice: the old code failed the first one deterministically. The view disposes its own player,
+		// and a cleanup that paused it again would log a first-chance E_ABORT exception per cycle.
+		for (var i = 0; i < cycles; i++)
+		{
+			var fixture = await CreateViewAsync(releaseInCleanup: false);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var sourceChanges = 0;
+				fixture.Player.SourceChanged += (_, _) => sourceChanges++;
+
+				fixture.View.Dispose();
+
+				Assert.Equal(0, sourceChanges);
+			});
+		}
+	}
 
 	// Leaves the view in the state of every view that was on screen with its controls enabled: OnTemplateLoaded has subscribed it to the
 	// template's FullWindowButton.

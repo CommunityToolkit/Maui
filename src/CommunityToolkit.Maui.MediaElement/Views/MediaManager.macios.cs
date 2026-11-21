@@ -15,6 +15,7 @@ public partial class MediaManager : IDisposable
 {
 	const string playableKey = "playable";
 	const string tracksKey = "tracks";
+	const string noTracksToPlayMessage = "The media has no tracks to play.";
 
 	Metadata? metaData;
 	StreamAssetResourceLoader? streamResourceLoader;
@@ -24,6 +25,7 @@ public partial class MediaManager : IDisposable
 	float? previousSpeed;
 
 	bool hasMediaOpened;
+	bool hasMediaFailed;
 
 	/// <summary>
 	/// The default <see cref="NSKeyValueObservingOptions"/> flags used in the iOS and macOS observers.
@@ -93,9 +95,12 @@ public partial class MediaManager : IDisposable
 	/// <summary>
 	/// Creates the corresponding platform view of <see cref="MediaElement"/> on iOS and macOS.
 	/// </summary>
+	/// <remarks>After a failed source, the next source gets a new <see cref="AVPlayer"/>; <see cref="PlayerViewController"/>.Player always holds the current one. Calling it again disposes the current <see cref="AVPlayer"/>, with its observers, remote-command targets and Now Playing info.</remarks>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	public (PlatformMediaElement Player, AVPlayerViewController PlayerViewController) CreatePlatformView()
 	{
+		ReleasePreviousPlayer();
+
 		Player = new();
 		fullScreenDelegate = new MediaManagerDelegate();
 		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
@@ -126,7 +131,8 @@ public partial class MediaManager : IDisposable
 		avSession.SetCategory(AVAudioSessionCategory.Playback);
 		avSession.SetActive(true);
 
-		AddStatusObservers();
+		AddPlayerObservers(ValueObserverOptions);
+		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
 		AddPlayedToEndObserver();
 		AddErrorObservers();
 
@@ -223,6 +229,13 @@ public partial class MediaManager : IDisposable
 			return ValueTask.CompletedTask;
 		}
 
+		// A failed AVPlayer cannot play again (AVPlayer.status). Before iOS 17 an AVPlayer whose item failed never readies another item either
+		if (Player.Status is AVPlayerStatus.Failed
+			|| (!OperatingSystem.IsIOSVersionAtLeast(17) && Player.CurrentItem?.Status is AVPlayerItemStatus.Failed))
+		{
+			ReplacePlayer(Player);
+		}
+
 		// Clean up previous stream resource loader if switching sources
 		if (MediaElement.Source is not StreamMediaSource)
 		{
@@ -267,6 +280,7 @@ public partial class MediaManager : IDisposable
 		DestroyPlayerItemStatusObserver();
 
 		hasMediaOpened = false;
+		hasMediaFailed = false;
 
 		var playerItem = PlayerItem;
 		Player.ReplaceCurrentItemWithPlayerItem(playerItem);
@@ -468,17 +482,7 @@ public partial class MediaManager : IDisposable
 
 				Player.ReplaceCurrentItemWithPlayerItem(null);
 
-				MutedObserver?.Dispose();
-				MutedObserver = null;
-
-				VolumeObserver?.Dispose();
-				VolumeObserver = null;
-
-				StatusObserver?.Dispose();
-				StatusObserver = null;
-
-				TimeControlStatusObserver?.Dispose();
-				TimeControlStatusObserver = null;
+				RemovePlayerObservers();
 
 				Player.Dispose();
 				Player = null;
@@ -692,30 +696,88 @@ public partial class MediaManager : IDisposable
 
 	static async Task<AVAssetTrack?> GetTrack(AVAsset asset, CancellationToken token)
 	{
-		if (!(OperatingSystem.IsMacCatalystVersionAtLeast(18)
-			  || OperatingSystem.IsIOSVersionAtLeast(18)))
-		{
-			// AVAsset.TracksWithMediaType is Obsolete on iOS 18+ and MacCatalyst 18+
-			return asset.TracksWithMediaType(AVMediaTypes.Video.GetConstant() ?? "0").FirstOrDefault();
-		}
-
 		var tracks = await asset.LoadTracksWithMediaTypeAsync(AVMediaTypes.Video.GetConstant() ?? "0").WaitAsync(token);
 
 		return tracks.Count <= 0 ? null : tracks[0];
 	}
 
-	void AddStatusObservers()
+	void AddPlayerObservers(NSKeyValueObservingOptions options)
 	{
 		if (Player is null)
 		{
 			return;
 		}
 
-		MutedObserver = Player.AddObserver("muted", ValueObserverOptions, MutedChanged);
-		VolumeObserver = Player.AddObserver("volume", ValueObserverOptions, VolumeChanged);
-		StatusObserver = Player.AddObserver("status", ValueObserverOptions, StatusChanged);
-		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", ValueObserverOptions, TimeControlStatusChanged);
-		RateObserver = AVPlayer.Notifications.ObserveRateDidChange(RateChanged);
+		// Overwriting a live observer would only log "observer object was not disposed" and leave its registration on the old player
+		RemovePlayerObservers();
+
+		MutedObserver = Player.AddObserver("muted", options, MutedChanged);
+		VolumeObserver = Player.AddObserver("volume", options, VolumeChanged);
+		StatusObserver = Player.AddObserver("status", options, StatusChanged);
+		TimeControlStatusObserver = Player.AddObserver("timeControlStatus", options, TimeControlStatusChanged);
+	}
+
+	void RemovePlayerObservers()
+	{
+		MutedObserver?.Dispose();
+		MutedObserver = null;
+		VolumeObserver?.Dispose();
+		VolumeObserver = null;
+		StatusObserver?.Dispose();
+		StatusObserver = null;
+		TimeControlStatusObserver?.Dispose();
+		TimeControlStatusObserver = null;
+	}
+
+	void ReleasePreviousPlayer()
+	{
+		RateObserver?.Dispose();
+		RateObserver = null;
+		RemovePlayerObservers();
+
+		// Its remote command handlers target the player that is released below
+		metaData?.Dispose();
+		metaData = null;
+
+		if (Player is null)
+		{
+			return;
+		}
+
+		DestroyPlayerItemStatusObserver();
+		Player.ReplaceCurrentItemWithPlayerItem(null);
+		Player.Dispose();
+		Player = null;
+	}
+
+	void ReplacePlayer(AVPlayer unusablePlayer)
+	{
+		RemovePlayerObservers();
+
+		metaData?.Dispose();
+		metaData = null;
+
+		var player = new AVPlayer
+		{
+			Muted = unusablePlayer.Muted,
+			Volume = unusablePlayer.Volume
+		};
+		if (OperatingSystem.IsIOSVersionAtLeast(16))
+		{
+			player.DefaultRate = unusablePlayer.DefaultRate;
+		}
+
+		Player = player;
+		if (PlayerViewController is not null)
+		{
+			PlayerViewController.Player = player;
+		}
+
+		// The Initial notification of the new player's Unknown status would report Stopped while the source is Opening
+		AddPlayerObservers(NSKeyValueObservingOptions.New);
+
+		unusablePlayer.ReplaceCurrentItemWithPlayerItem(null);
+		unusablePlayer.Dispose();
 	}
 
 	void SetPoster(in AVPlayerItem playerItem)
@@ -834,7 +896,7 @@ public partial class MediaManager : IDisposable
 		switch (playerItem.Status)
 		{
 			case AVPlayerItemStatus.ReadyToPlay:
-				if (hasMediaOpened)
+				if (hasMediaOpened || hasMediaFailed)
 				{
 					return;
 				}
@@ -856,9 +918,18 @@ public partial class MediaManager : IDisposable
 
 				token.ThrowIfCancellationRequested();
 
+				// iOS 16.4 can make the item of media without any track ReadyToPlay, though there is nothing to play
+				var hasNoTracksToPlay = didLoadTracks && videoTrack is null && await HasNoTracksToPlay(playerItem.Asset, token);
+
 				// The item can fail while its tracks are loading
 				if (Player is null || playerItem.Status is not AVPlayerItemStatus.ReadyToPlay)
 				{
+					return;
+				}
+
+				if (hasNoTracksToPlay)
+				{
+					ReportMediaFailure(noTracksToPlayMessage);
 					return;
 				}
 
@@ -907,30 +978,36 @@ public partial class MediaManager : IDisposable
 				break;
 
 			case AVPlayerItemStatus.Unknown:
-				// AVFoundation never makes the item of media without any track (AVAsset.Playable is false) ReadyToPlay or Failed, so such media
+				// Most iOS versions, including 15.5, 17 and 18, leave the item of media without any track Unknown (iOS 16.4 can make it ReadyToPlay), so such media
 				// would be neither opened nor failed. The tracks of media that cannot be read fail to load instead, and its item fails.
-				var asset = playerItem.Asset;
-				await asset.LoadValuesTaskAsync([playableKey, tracksKey]).WaitAsync(token);
-				token.ThrowIfCancellationRequested();
+				var hasNoTracks = await HasNoTracksToPlay(playerItem.Asset, token);
 
-				// Playable is read first: reading Tracks creates the managed wrappers of the tracks, which only an asset that cannot play may get
-				// here (the video track of playable media is loaded with LoadTracksWithMediaTypeAsync once it is ready)
-				if (Player is not null
-					&& playerItem.Status is AVPlayerItemStatus.Unknown
-					&& asset.StatusOfValue(playableKey, out _) is AVKeyValueStatus.Loaded
-					&& asset.StatusOfValue(tracksKey, out _) is AVKeyValueStatus.Loaded
-					&& !asset.Playable
-					&& asset.Tracks.Length is 0)
+				if (Player is not null && playerItem.Status is AVPlayerItemStatus.Unknown && hasNoTracks)
 				{
-					ReportMediaFailure("The media has no tracks to play.");
+					ReportMediaFailure(noTracksToPlayMessage);
 				}
 
 				break;
 		}
 	}
 
+	static async Task<bool> HasNoTracksToPlay(AVAsset asset, CancellationToken token)
+	{
+		await asset.LoadValuesTaskAsync([playableKey, tracksKey]).WaitAsync(token);
+		token.ThrowIfCancellationRequested();
+
+		// Playable is read first: reading Tracks creates the managed wrappers of the tracks, which only an asset that cannot play may get
+		// here (the video track of playable media is loaded with LoadTracksWithMediaTypeAsync once it is ready)
+		return asset.StatusOfValue(playableKey, out _) is AVKeyValueStatus.Loaded
+			&& asset.StatusOfValue(tracksKey, out _) is AVKeyValueStatus.Loaded
+			&& !asset.Playable
+			&& asset.Tracks.Length is 0;
+	}
+
 	void ReportMediaFailure(string message, Exception? exception = null)
 	{
+		hasMediaFailed = true;
+
 		// Only media that opens gets a size: a failed source must not keep the size of the previous media
 		MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
@@ -960,9 +1037,9 @@ public partial class MediaManager : IDisposable
 		{
 			AVPlayerStatus.Unknown => MediaElementState.Stopped,
 
-			// The player can become ready after its item was removed (a cleared source) or while its item cannot be played: only media
-			// that is ready to play is paused
-			AVPlayerStatus.ReadyToPlay when PlayerItem?.Status is AVPlayerItemStatus.ReadyToPlay => MediaElementState.Paused,
+			// The player can become ready after its item was removed (a cleared source) or while its item cannot be played (it failed,
+			// or it has no tracks, which iOS 16.4 reports as ready): only media that is ready to play is paused
+			AVPlayerStatus.ReadyToPlay when PlayerItem?.Status is AVPlayerItemStatus.ReadyToPlay && !hasMediaFailed => MediaElementState.Paused,
 			AVPlayerStatus.Failed => MediaElementState.Failed,
 			_ => MediaElement.CurrentState
 		};
