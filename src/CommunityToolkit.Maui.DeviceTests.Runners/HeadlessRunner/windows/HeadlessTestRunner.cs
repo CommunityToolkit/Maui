@@ -5,6 +5,7 @@
 // Toolkit change: moved from HeadlessRunner/Windows to HeadlessRunner/windows (toolkit platform-folder convention).
 // Toolkit change: UI.Xaml.Application is fully qualified (the enclosing Microsoft namespace no longer resolves it).
 // Toolkit change: the run's log goes to TestRunLog (<results>.log next to the results file) as well, with the test that starts and every unhandled exception.
+// Toolkit change: OnTestsCompleted writes the coverage of the instrumented toolkit assemblies (CoverageRecorder), in coverage runs only.
 // Toolkit change: the assembly path falls back to the base directory when Assembly.Location is empty (NativeAOT).
 #nullable enable
 using System;
@@ -101,6 +102,10 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 				_logger.WriteLine("test-execution-summary" + message);
 				_logger.WriteLine("return-code " + (results.FailedTests == 0 ? 0 : 1));
+
+				var coverage = CoverageRecorder.Flush(CoverageRecorder.ReadDirectoryFile(TestsResultsFinalPath));
+				if (coverage is not null)
+					_logger.WriteLine(coverage);
 			}
 		}
 	}
