@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
@@ -7,6 +8,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 sealed record WinMediaRequest(string Method, string Path, IReadOnlyDictionary<string, string> Headers)
 {
+	public TimeSpan ReceivedAfter { get; init; }
+
 	public string? Header(string name) => Headers.TryGetValue(name, out var value) ? value : null;
 }
 
@@ -71,6 +74,7 @@ sealed class WinMediaHttpServer : IAsyncDisposable
 	readonly Lock gate = new();
 	readonly List<WinMediaRequest> requests = [];
 	readonly List<Task> connections = [];
+	readonly Stopwatch uptime = new();
 	Task? acceptLoop;
 
 	public Func<WinMediaRequest, WinMediaResponse> Handler { get; set; } = _ => WinMediaResponse.NotFound();
@@ -88,11 +92,22 @@ sealed class WinMediaHttpServer : IAsyncDisposable
 		}
 	}
 
+	public TimeSpan Uptime => uptime.Elapsed;
+
+	public string DescribeRequests()
+	{
+		var received = Requests;
+		return received.Count is 0
+			? "no request"
+			: string.Join("; ", received.Select(request => string.Create(CultureInfo.InvariantCulture, $"{request.Method} {request.Path} at {request.ReceivedAfter.TotalMilliseconds:0} ms (User-Agent: {request.Header("User-Agent") ?? "none"})")));
+	}
+
 	public Uri UriFor(string path) => new(BaseUri, path);
 
 	public WinMediaHttpServer Start()
 	{
 		listener.Start();
+		uptime.Start();
 		acceptLoop = Task.Run(AcceptLoopAsync);
 		return this;
 	}
@@ -153,6 +168,7 @@ sealed class WinMediaHttpServer : IAsyncDisposable
 					return;
 				}
 
+				request = request with { ReceivedAfter = uptime.Elapsed };
 				lock (gate)
 				{
 					requests.Add(request);

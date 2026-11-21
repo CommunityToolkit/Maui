@@ -20,12 +20,14 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Follow the project's coding style and best practices as outlined in the [contributing](https://github.com/CommunityToolkit/Maui/blob/main/CONTRIBUTING.md) document.
 
 ### .NET and .NET MAUI Versions
-* The libraries pin the first .NET and .NET MAUI release of each major version (for example the .NET 11.0.100 SDK and `MauiPackageVersion` 11.0.0 in `Directory.Build.props`), so apps can use any later release.
-* Raise a pinned version only when a bug fix or a feature requires it.
+* The libraries pin the first .NET SDK of each major version (11.0.100) and the oldest .NET MAUI release they support (`MauiPackageVersion` in `Directory.Build.props`), so apps can use any later release.
+* Raise a pinned version only when a bug fix or a feature requires it. `MauiPackageVersion` is 11.0.10, not 11.0.0: .NET MAUI 11.0.0 crashes on iOS 17 and earlier when a view with a managed KVO observer is collected (dotnet/maui#38662).
 * The sample app builds with the latest .NET MAUI release in CI: its build step passes `-p:MauiPackageVersion="*"`. Don't pin the sample's `Microsoft.Maui.Controls` to a different version than the libraries: two .NET MAUI versions in one Windows app fail PRI generation (PRI277).
+* The device test app builds with the pinned `MauiPackageVersion`, so the device tests run on the .NET MAUI version that the packages declare.
+* The Build workflow runs the unit tests on the pinned `MauiPackageVersion` and again on the latest .NET MAUI release (`-p:MauiPackageVersion="*"`), because servicing releases change behavior (dotnet/maui#38063). A failure in either run stops the packages.
 
 ### Newest OS versions
-* Interim, until CommunityToolkit/Maui#3438 (weekly bump bot) lands: check the Android API level, iOS runtime, Xcode and Windows runner of the device test workflows against the newest GA releases and recommend a bump; the list is in [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
+* Interim, until CommunityToolkit/Maui#3438 (nightly bump bot) lands: check the Android API level, iOS runtime, Xcode and Windows runner of the device test workflows against the newest GA releases and recommend a bump; the list is in [.github/instructions/trimming-aot.instructions.md](https://github.com/CommunityToolkit/Maui/blob/main/.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
 
 ### Trimming and NativeAOT
 * The four packages must stay fully trim-safe and NativeAOT-safe: every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is a build error. Never add reflection on unannotated types, string-path bindings, or `[RequiresUnreferencedCode]`/`[RequiresDynamicCode]` on a public API. A trim or AOT (`IL`) warning suppression needs maintainer approval and proof; an `eng/trim-audit/allow.tsv` line needs maintainer approval and a reason that names the issue or upstream blocker.
@@ -46,6 +48,7 @@ This document provides guidelines for using GitHub Copilot to contribute to the 
 * Avoid using the **!** null forgiving operator.
 * Follow naming conventions for enums and property names.
 * Code that reads or formats with **CurrentCulture** or takes a **CultureInfo** must be tested in Turkish (tr-TR, az-Latn-AZ) and the other notorious cultures; see `.github/instructions/culture.instructions.md`.
+* Handler lifecycle: confirmed in .NET MAUI 11.0.10, `CreatePlatformView` runs once per handler in a real app; do not ask for guards against a second call; see `.github/instructions/handler-lifecycle.instructions.md`.
 
 ### Element Positioning (enforced as build warnings)
 StyleCop rules SA1201, SA1202, SA1204, SA1214, and SA1215 are reported as **build warnings** via `.editorconfig`. Always write new and modified C# code in the correct order so no warnings are introduced:
@@ -211,7 +214,14 @@ Read and follow our [Pull Request template](https://github.com/CommunityToolkit/
 * Platform code that the `net11.0` unit tests cannot reach is covered by device tests that run inside real apps on Android, iOS, Mac Catalyst and Windows, built like dotnet/maui's device tests (xUnit, dotnet/maui's test runner, XHarness).
 * There is one test app for every shipped package: `src/CommunityToolkit.Maui.DeviceTests` (`CommunityToolkit.Maui`, `.Core`, `.MediaElement` and `.Camera`).
 * Give every test class a `[Category(TestCategory.X)]` and name platform-specific test files with the same suffixes as the libraries (`.android.cs`, `.ios.cs`, `.macos.cs`, `.macios.cs`, `.windows.cs`). How to write them is in [src/CommunityToolkit.Maui.DeviceTests/README.md](https://github.com/CommunityToolkit/Maui/blob/main/src/CommunityToolkit.Maui.DeviceTests/README.md).
+* Device tests run on the newest release of every supported major iOS and Android version (Android 17: 37.2, the newest, on a 16 KB page-size image, and 37.0 with 4 KB pages; `.github/workflows/device-tests.yml`). A PR that raises an OS minimum, adds a supported major version, or changes the device-test CI must keep that true; flag a PR that drops or skips one.
 * `dotnet test` does not run them. Use `eng/devices/run.ps1`, which runs every platform the machine can run and is the command of the `Device Tests` workflow on every pull request (one `-Platform` per job), or one platform's script (`android.ps1`, `ios.ps1`, `catalyst.ps1` or `windows.ps1`), as described in [eng/devices/LOCAL.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/LOCAL.md) and [eng/devices/README.md](https://github.com/CommunityToolkit/Maui/blob/main/eng/devices/README.md).
+
+## Failing and Flaky Tests
+* A failed CI run blocks a release. Keep every unit-test and device-test check green.
+* Fixing a flaky test is welcome: find the race (in the test, the library or the platform), prove it with evidence (logs, stacks, repeated runs) and fix the cause.
+* Never delete, skip, weaken or blanket-retry a valid test to get green. Improve the test instead.
+* Retry only infrastructure failures and proven platform crashes with a narrow signature. `eng/devices` retries a leg once on CI for infrastructure failures and for the three Android platform crashes listed in `eng/devices/README.md`, only when the crash explains every failure, and shows every retry in the run summary and `gate.json`.
 
 ## Submitting Contributions
 1.	Fork the repository and create a new branch for your changes.

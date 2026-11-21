@@ -7,8 +7,8 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// MAUI's BorderHandler always adds the border path first (a Microsoft.UI.Xaml.Shapes.Path, MAUI 10.0.90 BorderHandler.Windows UpdateContent),
-// and wraps every AspectFill image and every label whose VerticalTextAlignment is not Start in a WrapperView.
+// MAUI's BorderHandler adds the border path (a Microsoft.UI.Xaml.Shapes.Path) next to the content, which MAUI 11.0.10 and later put in an internal
+// clip host panel (dotnet/maui#37424). MAUI wraps every AspectFill image and every label whose VerticalTextAlignment is not Start in a WrapperView.
 public partial class AvatarViewTests
 {
 	static bool BuildsFallbackClipGeometry => true;
@@ -25,7 +25,7 @@ public partial class AvatarViewTests
 
 	static NativeContent NativeContentOf(IPlatformViewHandler handler)
 	{
-		var child = ((Panel)handler.PlatformView!).Children.FirstOrDefault(static element => element is not Microsoft.UI.Xaml.Shapes.Path);
+		var child = ContentElementOf((Panel)handler.PlatformView!);
 		if (child is WrapperView wrapper)
 		{
 			child = wrapper.Child;
@@ -37,6 +37,12 @@ public partial class AvatarViewTests
 			TextBlock => NativeContent.Label,
 			_ => NativeContent.None,
 		};
+	}
+
+	static UIElement? ContentElementOf(Panel borderPanel)
+	{
+		var child = borderPanel.Children.FirstOrDefault(static element => element is not Microsoft.UI.Xaml.Shapes.Path);
+		return child is Panel contentClipHost and not WrapperView ? contentClipHost.Children.FirstOrDefault() : child;
 	}
 
 	static void AssertFallbackClip(AvatarView avatar, Microsoft.Maui.Controls.Image image, double imageWidth, double imageHeight)

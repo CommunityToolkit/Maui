@@ -7,13 +7,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // such exceptions, so only a device shows the crash.
 [Category(TestCategory.ColorAnimationExtensions)]
 [Collection(TestCollections.DisableParallelization)]
-public class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
+public class ColorAnimationExtensionsTests : ColorAnimationTestBase
 {
-	// The animation name of the generated TextColorTo: nameof(TextColorTo).
-	const string textColorToAnimationName = "TextColorTo";
-
-	const uint animationLength = 100;
-
 	[Fact]
 	public async Task BackgroundColorToThrowsForAZeroRateAndRunsAtTheSmallestRate()
 	{
@@ -29,8 +24,9 @@ public class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
 			Assert.False(border.AnimationIsRunning(nameof(ColorAnimationExtensions.BackgroundColorTo)), "A rejected call must not start an animation.");
 			Assert.Equal(Colors.Blue, border.BackgroundColor);
 
-			// When Android's animations are off, MAUI ends the animation at once.
-			Assert.True(await border.BackgroundColorTo(Colors.Red, rate: 1, length: animationLength));
+			// From Android 8 on, MAUI ends the animation at once when the system's animations are off.
+			await EnsureAnimationsCanEndAsync();
+			Assert.True(await border.BackgroundColorTo(Colors.Red, rate: 1, length: animationLength).WaitAsync(animationTimeout));
 			Assert.Equal(Colors.Red, border.BackgroundColor);
 		});
 	}
@@ -50,8 +46,9 @@ public class ColorAnimationExtensionsTests : CommunityToolkitHandlerTestBase
 			Assert.False(label.AnimationIsRunning(textColorToAnimationName), "A rejected call must not start an animation.");
 			Assert.Equal(Colors.Blue, label.TextColor);
 
-			// When Android's animations are off, MAUI ends the animation at once.
-			Assert.True(await label.TextColorTo(Colors.Red, rate: 1, length: animationLength));
+			// From Android 8 on, MAUI ends the animation at once when the system's animations are off.
+			await EnsureAnimationsCanEndAsync();
+			Assert.True(await label.TextColorTo(Colors.Red, rate: 1, length: animationLength).WaitAsync(animationTimeout));
 			Assert.Equal(Colors.Red, label.TextColor);
 		});
 	}

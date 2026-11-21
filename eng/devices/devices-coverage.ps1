@@ -289,8 +289,9 @@ function Start-DeviceTestCoverage {
         }
 
         foreach ($entry in $session.Projects) {
+            # The trimming guard in the app's Directory.Build.props only sees this property, and -Coverage sets no environment variable.
             [void](Invoke-DeviceTestBuild -Context $Context -Project $entry.Project -TargetFramework $entry.Framework -BuildArgs $BuildArgs `
-                    -Property ($Property + @('BuildProjectReferences=false')))
+                    -Property ($Property + @('BuildProjectReferences=false', 'DEVICE_TEST_COVERAGE=true')))
         }
 
         $handedOver = $true

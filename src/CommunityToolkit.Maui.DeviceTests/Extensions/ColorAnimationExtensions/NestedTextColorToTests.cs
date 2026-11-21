@@ -6,12 +6,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // nested output compiles. The tests prove that the generated animations run on the platform's animation ticker.
 [Category(TestCategory.ColorAnimationExtensions)]
 [Collection(TestCollections.DisableParallelization)]
-public class NestedTextColorToTests : CommunityToolkitHandlerTestBase
+public class NestedTextColorToTests : ColorAnimationTestBase
 {
-	const string textColorToAnimationName = "TextColorTo";
-
-	const uint animationLength = 100;
-
 	[Fact]
 	public async Task GeneratedTextColorToAnimatesTheTextColorOfATextViewNestedInAnotherClass()
 	{
@@ -63,8 +59,9 @@ public class NestedTextColorToTests : CommunityToolkitHandlerTestBase
 			await view.OnLoadedAsync();
 			Assert.Equal(Colors.Blue, getTextColor());
 
-			// When Android's animations are off, MAUI ends the animation at once.
-			Assert.True(await animateTextColor(Colors.Red));
+			// From Android 8 on, MAUI ends the animation at once when the system's animations are off.
+			await EnsureAnimationsCanEndAsync();
+			Assert.True(await animateTextColor(Colors.Red).WaitAsync(animationTimeout));
 
 			Assert.Equal(Colors.Red, getTextColor());
 			Assert.Equal(Colors.Red, childLabel.TextColor);

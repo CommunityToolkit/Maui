@@ -7,7 +7,7 @@
 //                 plus IsLoadedOnPlatform); keyboard helpers and the internet-connection helpers were dropped.
 // Toolkit change: added OnLoadedAsync/OnUnloadedAsync/WaitForLoaded (from ControlsHandlerTestBase) as extension methods.
 // Toolkit change: Collect first overwrites the unused stack of the main thread (ClearMainThreadStackAsync), which also gives the main
-//                 thread a turn before every collection.
+//                 thread a turn before every collection. ClearStack is public for VisualBehaviorHelpers.
 #nullable enable
 using System;
 using System.Runtime.CompilerServices;
@@ -52,7 +52,7 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		// Volatile writes: an optimizing compiler (LLVM in an iOS Release build) drops plain writes to stack memory that nothing reads again.
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		static void ClearStack()
+		public static void ClearStack()
 		{
 			Span<nint> stack = stackalloc nint[256 * 1024 / IntPtr.Size];
 			for (var i = 0; i < stack.Length; i++)

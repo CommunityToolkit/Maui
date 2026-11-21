@@ -5,7 +5,6 @@ using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The branch of MauiMediaElement for iOS / Mac Catalyst before 16 (no parent view controller at all) cannot run: the oldest runtime is 18.
 [Category(TestCategory.MediaElementApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class MauiMediaElementAppleTests : AppleMediaElementTestBase
