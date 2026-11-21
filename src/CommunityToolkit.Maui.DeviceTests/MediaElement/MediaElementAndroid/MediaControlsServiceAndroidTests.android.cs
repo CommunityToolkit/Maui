@@ -305,7 +305,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataTitle = "A notification title";
+#pragma warning disable CS0618 // The obsolete MetadataArtworkUrl still loads through the artwork pipeline; this test is about the notification
 			element.MetadataArtworkUrl = "exoplayer/art.png";
+#pragma warning restore CS0618
 			element.Source = MediaSource.FromResource(toneAsset);
 		});
 
@@ -1034,7 +1036,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		{
 			element.MetadataTitle = "A notification title";
 			element.MetadataArtist = "A notification artist";
+#pragma warning disable CS0618 // The obsolete MetadataArtworkUrl still loads through the artwork pipeline; this test is about the notification
 			element.MetadataArtworkUrl = "exoplayer/art.png";
+#pragma warning restore CS0618
 			element.Source = MediaSource.FromResource(toneAsset);
 		});
 		DisposeWhenTheTestEnds(disconnectingElement);

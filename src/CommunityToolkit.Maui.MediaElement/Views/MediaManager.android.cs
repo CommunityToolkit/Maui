@@ -526,6 +526,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		cancellationTokenSource?.Cancel();
 		cancellationTokenSource?.Dispose();
 		cancellationTokenSource = null;
+		CancelMetadataArtworkUpdate();
 
 		if (MediaElement.Source is null)
 		{
@@ -547,7 +548,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		// The load has its token before Opening is raised: a StateChanged handler can set another Source then, whose update replaces this one
-		cancellationTokenSource = new();
+		var sourceCancellationTokenSource = cancellationTokenSource = new();
 		var token = cancellationTokenSource.Token;
 		MediaElement.CurrentStateChanged(MediaElementState.Opening);
 		if (token.IsCancellationRequested)
@@ -662,6 +663,12 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		if (isAndroidForegroundServiceEnabled)
 		{
 			UpdateNotifications();
+		}
+
+		// A MediaOpened handler can set another Source, whose update replaces this one
+		if (!token.IsCancellationRequested)
+		{
+			await OnSourceLoaded(sourceCancellationTokenSource).ConfigureAwait(true);
 		}
 	}
 
@@ -818,6 +825,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			cancellationTokenSource?.Cancel();
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
+			CancelMetadataArtworkUpdate();
 
 			if (connection is not null)
 			{
@@ -845,75 +853,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		context.StopService(serviceIntent);
 		context.UnbindService(boundServiceConnection);
 		boundServiceConnection.Dispose();
-	}
-
-	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
-	{
-		if (string.IsNullOrWhiteSpace(url))
-		{
-			return [];
-		}
-
-		Stream? stream = null;
-		Uri.TryCreate(url, UriKind.Absolute, out var uri);
-
-		try
-		{
-			byte[] artworkData = [];
-			long? contentLength = null;
-
-			// HTTP or HTTPS URL
-			if (uri is not null &&
-				(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-			{
-				var request = new HttpRequestMessage(HttpMethod.Head, url);
-				var contentLengthResponse = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-				contentLength = contentLengthResponse.Content.Headers.ContentLength;
-
-				var response = await client.GetAsync(url, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
-				stream = response.IsSuccessStatusCode ? await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false) : null;
-			}
-			else if (uri is not null && uri.Scheme == Uri.UriSchemeFile)
-			{
-				// An absolute path parses as a file URI too: a file URI names its file by its local path, an absolute path is the path itself
-				var normalizedFilePath = url.StartsWith($"{Uri.UriSchemeFile}:", StringComparison.OrdinalIgnoreCase) ? uri.LocalPath : NormalizeFilePath(url);
-
-				stream = File.OpenRead(normalizedFilePath);
-			}
-			// Relative File Path
-			else if (Uri.TryCreate(url, UriKind.Relative, out _))
-			{
-				var normalizedFilePath = NormalizeFilePath(url);
-
-				stream = Platform.AppContext.Assets?.Open(normalizedFilePath) ?? throw new InvalidOperationException("Assets cannot be null");
-			}
-
-			if (stream is not null)
-			{
-				// A length announced by the server only sizes the buffer at first: a server can announce none (a chunked response) or a wrong one,
-				// and the length of an asset stream (which cannot seek) is only known once it has been read
-				using var memoryStream = new MemoryStream(contentLength is > 0 and <= int.MaxValue ? (int)contentLength.Value : 0);
-				await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-				artworkData = memoryStream.ToArray();
-			}
-
-			return artworkData;
-		}
-		catch (Exception e)
-		{
-			Trace.WriteLine($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}.{e}\n");
-			return [];
-		}
-		finally
-		{
-			if (stream is not null)
-			{
-				stream.Close();
-				await stream.DisposeAsync();
-			}
-		}
-
-		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
 
 	void StartService()
@@ -1059,7 +998,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+		var data = await GetMetadataArtworkBytes(cancellationToken).ConfigureAwait(true);
 		if (data is not null && data.Length > 0)
 		{
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);
@@ -1078,7 +1017,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaMetadata.Builder mediaMetaData = new();
 		mediaMetaData.SetArtist(MediaElement.MetadataArtist);
 		mediaMetaData.SetTitle(MediaElement.MetadataTitle);
-		var data = await GetBytesFromMetadataArtworkUrl(MediaElement.MetadataArtworkUrl, cancellationToken).ConfigureAwait(true);
+		var data = await GetMetadataArtworkBytes(cancellationToken).ConfigureAwait(true);
 		if (data is not null && data.Length > 0)
 		{
 			mediaMetaData.SetArtworkData(data, (Java.Lang.Integer)MediaMetadata.PictureTypeFrontCover);

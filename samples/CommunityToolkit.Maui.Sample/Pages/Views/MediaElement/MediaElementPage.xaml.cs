@@ -16,6 +16,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	const string loadLocalResource = "Load Local Resource";
 	const string resetSource = "Reset Source to null";
 	const string loadMusic = "Load Music";
+	const string loadMusicWithArtworkFromFile = "Load Music with Artwork from a File";
 
 	const string botImageUrl = "https://lh3.googleusercontent.com/pw/AP1GczNRrebWCJvfdIau1EbsyyYiwAfwHS0JXjbioXvHqEwYIIdCzuLodQCZmA57GADIo5iB3yMMx3t_vsefbfoHwSg0jfUjIXaI83xpiih6d-oT7qD_slR0VgNtfAwJhDBU09kS5V2T5ZML-WWZn8IrjD4J-g=w1792-h1024-s-no-gm";
 
@@ -258,12 +259,23 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		const string cancel = "Cancel";
 
 		var result = await DisplayActionSheetAsync("Choose a source", cancel, null,
-			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic);
+			loadOnlineMp4, loadHls, loadLocalResource, resetSource, loadMusic, loadMusicWithArtworkFromFile);
 
 		// Cancel, or dismissing the action sheet without a choice, keeps the current source
 		if (result is null or cancel)
 		{
 			return;
+		}
+
+		FileResult? artworkFile = null;
+		if (result is loadMusicWithArtworkFromFile)
+		{
+			artworkFile = await PickArtworkFileAsync();
+
+			if (artworkFile is null)
+			{
+				return;
+			}
 		}
 
 		MediaElement.Stop();
@@ -273,7 +285,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 		{
 			case loadOnlineMp4:
 				MediaElement.MetadataTitle = "Big Buck Bunny";
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = MediaSource.FromUri(botImageUrl);
 				MediaElement.MetadataArtist = "Big Buck Bunny Album";
 				var mp4Source = new UriMediaSource { Uri = new Uri(StreamingUrls.BuckBunny) };
 				MediaElement.Source = mp4Source;
@@ -281,21 +293,21 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 
 			case loadHls:
 				MediaElement.MetadataArtist = "HLS Album";
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = MediaSource.FromUri(botImageUrl);
 				MediaElement.MetadataTitle = "HLS Title";
 				var hlsSource = new UriMediaSource { Uri = new Uri(StreamingUrls.HlsTestStream) };
 				MediaElement.Source = hlsSource;
 				return;
 
 			case resetSource:
-				MediaElement.MetadataArtworkUrl = string.Empty;
+				MediaElement.MetadataArtworkSource = null;
 				MediaElement.MetadataTitle = string.Empty;
 				MediaElement.MetadataArtist = string.Empty;
 				MediaElement.Source = null;
 				return;
 
 			case loadLocalResource:
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = MediaSource.FromResource("dotnet_bot.png");
 				MediaElement.MetadataTitle = "Local Resource Title";
 				MediaElement.MetadataArtist = "Local Resource Album";
 
@@ -318,10 +330,34 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			case loadMusic:
 				MediaElement.MetadataTitle = "HAL 9000";
 				MediaElement.MetadataArtist = "HAL 9000 Album";
-				MediaElement.MetadataArtworkUrl = botImageUrl;
+				MediaElement.MetadataArtworkSource = MediaSource.FromUri(botImageUrl);
 				var musicSource = new UriMediaSource { Uri = new Uri(StreamingUrls.Hal9000Audio) };
 				MediaElement.Source = musicSource;
 				return;
+
+			case loadMusicWithArtworkFromFile when artworkFile is not null:
+				MediaElement.MetadataTitle = "HAL 9000";
+				MediaElement.MetadataArtist = "HAL 9000 Album";
+				MediaElement.MetadataArtworkSource = MediaSource.FromFile(artworkFile.FullPath);
+				MediaElement.Source = new UriMediaSource { Uri = new Uri(StreamingUrls.Hal9000Audio) };
+				return;
+		}
+	}
+
+	async Task<FileResult?> PickArtworkFileAsync()
+	{
+		try
+		{
+			return await FilePicker.Default.PickAsync(new PickOptions
+			{
+				FileTypes = FilePickerFileType.Images,
+				PickerTitle = "Please select an image file"
+			});
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Unable to pick the artwork file");
+			return null;
 		}
 	}
 
@@ -379,7 +415,7 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 			HeightRequest = 400,
 			AndroidViewType = AndroidViewType.SurfaceView,
 			Source = source,
-			MetadataArtworkUrl = botImageUrl,
+			MetadataArtworkSource = MediaSource.FromUri(botImageUrl),
 			ShouldAutoPlay = true,
 			ShouldShowPlaybackControls = true,
 		};

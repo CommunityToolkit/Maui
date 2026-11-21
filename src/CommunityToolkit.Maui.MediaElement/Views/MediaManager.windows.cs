@@ -587,6 +587,9 @@ partial class MediaManager : IDisposable
 			headerHttpClient?.Dispose();
 			headerHttpClient = null;
 
+			artworkHttpClient?.Dispose();
+			artworkHttpClient = null;
+
 			lock (metadataLock)
 			{
 				metadata?.Dispose();
@@ -801,9 +804,35 @@ partial class MediaManager : IDisposable
 
 	async ValueTask UpdateMetadata()
 	{
+		var version = Volatile.Read(ref sourceUpdateVersion);
+
+		// From now on a change of the artwork updates this media (PlatformUpdateMetadataArtwork)
+		Volatile.Write(ref openedSourceUpdateVersion, version);
+		await UpdateMetadataForSourceUpdate(version, CancellationToken.None);
+	}
+
+	// A separate method with its own name: device tests find UpdateMetadata by name, and call this one with a superseded version.
+	ValueTask UpdateMetadataForSourceUpdate(int version, CancellationToken token) =>
+		UpdateMetadataOfTheOpenedMedia(version, isArtworkChange: false, token);
+
+	async ValueTask UpdateMetadataOfTheOpenedMedia(int version, bool isArtworkChange, CancellationToken token)
+	{
 		if (Player is null)
 		{
 			return;
+		}
+
+		var artworkVersion = Interlocked.Increment(ref metadataArtworkVersion);
+		var artworkSource = MetadataArtworkResolver.Resolve(MediaElement).Source;
+		MetadataArtwork? artwork = null;
+		if (artworkSource is not null)
+		{
+			// The versions, not a token, tell whether this artwork is still wanted: a newer source update, a newer artwork or Dispose changes them
+			artwork = await LoadMetadataArtwork(artworkSource, token);
+			if (!IsCurrentSourceUpdate(version) || !IsCurrentMetadataArtwork(artworkVersion))
+			{
+				return;
+			}
 		}
 
 		lock (metadataLock)
@@ -815,32 +844,13 @@ partial class MediaManager : IDisposable
 			}
 
 			metadata ??= new(systemMediaControls, MediaElement, Dispatcher);
-			metadata.SetMetadata(MediaElement);
+			metadata.SetMetadata(MediaElement, artworkSource, artwork?.Thumbnail);
 		}
 
-		if (string.IsNullOrEmpty(MediaElement.MetadataArtworkUrl))
+		// The poster of opening media starts empty (PlatformUpdateSource); a change of the artwork replaces the poster of the previous artwork
+		if (artwork is not null || isArtworkChange)
 		{
-			return;
-		}
-		// BitmapImage needs an absolute URI (a relative one cannot be converted to a Windows.Foundation.Uri)
-		if (!Uri.TryCreate(MediaElement.MetadataArtworkUrl, UriKind.Absolute, out var metadataArtworkUri))
-		{
-			Trace.TraceError($"{nameof(MediaElement)} unable to update artwork because {nameof(MediaElement.MetadataArtworkUrl)} is not a valid URI");
-			return;
-		}
-
-		if (Dispatcher.IsDispatchRequired)
-		{
-			await Dispatcher.DispatchAsync(() => UpdatePosterSource(Player, metadataArtworkUri));
-		}
-		else
-		{
-			UpdatePosterSource(Player, metadataArtworkUri);
-		}
-
-		static void UpdatePosterSource(in MediaPlayerElement player, in Uri metadataArtworkUri)
-		{
-			player.PosterSource = new BitmapImage(metadataArtworkUri);
+			await SetPoster(artwork, version, artworkVersion, token);
 		}
 	}
 

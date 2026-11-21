@@ -1,4 +1,4 @@
-using System.Diagnostics;
+#pragma warning disable CS0618 // These tests pin the obsolete MetadataArtworkUrl, which keeps working
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 
@@ -81,8 +81,8 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 	public async Task ArtworkThatTheServerAnswersWithAnErrorStatusIsLeftOut()
 	{
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)>());
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataArtworkUrl = server.GetUri("/missing.png").ToString();
@@ -96,8 +96,8 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/missing.png"));
-			// A 404 is not an exception, so nothing is traced.
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
+			// A 404 is not an exception, so nothing is logged.
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve"));
 			Assert.Empty(recorder.FailureMessages);
 		});
 	}
@@ -128,8 +128,8 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 	public async Task EmptyArtworkFromAServerThatSendsNoContentLengthIsLeftOutWithoutAnError()
 	{
 		using var server = new LoopbackHttpServer(new Dictionary<string, (byte[], string)> { ["/empty.png"] = ([], "image/png") }, new HashSet<string> { "/empty.png" });
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataArtworkUrl = server.GetUri("/empty.png").ToString();
@@ -144,15 +144,15 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			Assert.True(server.HasRequest("HEAD", "/empty.png"));
 			Assert.True(server.HasRequest("GET", "/empty.png"));
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve"));
 		});
 	}
 
 	[Fact]
-	public async Task ArtworkFromAnHttpsUrlThatCannotBeReachedIsLeftOutAndTraced()
+	public async Task ArtworkFromAnHttpsUrlThatCannotBeReachedIsLeftOutAndLogged()
 	{
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		const string url = "https://127.0.0.1:1/art.png";
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
@@ -166,7 +166,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.Contains(trace.Messages, message => message.StartsWith($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}.", StringComparison.Ordinal));
+			Assert.Contains($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {url}", log.Messages);
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
 	}
@@ -174,8 +174,8 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task ArtworkWithAnUnsupportedSchemeIsLeftOutWithoutAnError()
 	{
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataArtworkUrl = "ftp://127.0.0.1/art.png";
@@ -188,7 +188,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve"));
 			Assert.Empty(recorder.FailureMessages);
 		});
 	}
@@ -239,10 +239,10 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task ArtworkFromAMissingFileIsLeftOutAndTraced()
+	public async Task ArtworkFromAMissingFileIsLeftOutAndLogged()
 	{
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var path = Path.Combine(FileSystem.CacheDirectory, $"missing_{Guid.NewGuid():N}.png");
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
@@ -256,7 +256,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.Contains(trace.Messages, message => message.StartsWith($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {path}.", StringComparison.Ordinal));
+			Assert.Contains($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for {path}", log.Messages);
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
 	}
@@ -309,8 +309,8 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task ArtworkFromAnEmptyAssetIsLeftOutWithoutAnError()
 	{
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataArtworkUrl = "exoplayer/empty.png";
@@ -323,15 +323,15 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve"));
 		});
 	}
 
 	[Fact]
-	public async Task ArtworkFromAMissingAssetIsLeftOutAndTraced()
+	public async Task ArtworkFromAMissingAssetIsLeftOutAndLogged()
 	{
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataArtworkUrl = "exoplayer/no_such_artwork.png";
@@ -344,7 +344,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.Contains(trace.Messages, message => message.StartsWith($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for exoplayer/no_such_artwork.png.", StringComparison.Ordinal));
+			Assert.Contains($"Unable to retrieve {nameof(MediaElement.MetadataArtworkUrl)} for exoplayer/no_such_artwork.png", log.Messages);
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
 	}
@@ -352,10 +352,10 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 	[Theory]
 	[InlineData("")]
 	[InlineData("   ")]
-	public async Task BlankArtworkUrlMeansNoArtworkAndNothingIsTraced(string url)
+	public async Task BlankArtworkUrlMeansNoArtworkAndNothingIsLogged(string url)
 	{
-		using var trace = new TraceCapture();
-		SetupProbeBuilder();
+		var log = new CapturingLoggerFactory();
+		SetupProbeBuilder(log);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.MetadataArtworkUrl = url;
@@ -368,7 +368,7 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 
 			AotSafeAssert.Empty(GetArtwork(mediaElement));
-			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve"));
+			Assert.DoesNotContain(log.Messages, message => message.Contains("Unable to retrieve"));
 		});
 	}
 
@@ -392,71 +392,5 @@ public class MediaManagerMetadataAndroidTests : MediaElementAndroidTestBase
 
 			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
-	}
-
-	static string[] GetOpenFileTargets() =>
-		Directory.GetFiles("/proc/self/fd")
-			.Select(descriptor =>
-			{
-				try
-				{
-					return new FileInfo(descriptor).LinkTarget;
-				}
-				catch (IOException)
-				{
-					// The descriptor was closed while the directory was read.
-					return null;
-				}
-			})
-			.OfType<string>()
-			.ToArray();
-
-	static byte[] GetArtwork(MediaElement mediaElement) =>
-		GetPlayer(mediaElement).CurrentMediaItem!.MediaMetadata!.ArtworkData?.ToArray() ?? [];
-
-	// The manager reports an artwork it could not load with Trace.WriteLine, which is how the failure branch becomes observable.
-	sealed class TraceCapture : IDisposable
-	{
-		readonly CapturingTraceListener listener = new();
-
-		public TraceCapture() => Trace.Listeners.Add(listener);
-
-		public IReadOnlyList<string> Messages => listener.Messages;
-
-		public void Dispose() => Trace.Listeners.Remove(listener);
-	}
-
-	sealed class CapturingTraceListener : TraceListener
-	{
-		readonly object gate = new();
-		readonly List<string> messages = [];
-
-		public IReadOnlyList<string> Messages
-		{
-			get
-			{
-				lock (gate)
-				{
-					return messages.ToArray();
-				}
-			}
-		}
-
-		public override void Write(string? message) => Add(message);
-
-		public override void WriteLine(string? message) => Add(message);
-
-		void Add(string? message)
-		{
-			if (message is null)
-			{
-				return;
-			}
-
-			lock (gate)
-			{
-				messages.Add(message);
-			}
-		}
 	}
 }
