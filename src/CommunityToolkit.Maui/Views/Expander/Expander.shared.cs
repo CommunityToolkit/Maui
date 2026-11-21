@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 
@@ -26,7 +25,6 @@ namespace CommunityToolkit.Maui.Views;
 /// </para>
 /// </remarks>
 [ContentProperty(nameof(Content))]
-[RequiresUnreferencedCode("Calls Microsoft.Maui.Controls.Binding.Binding(String, BindingMode, IValueConverter, Object, String, Object)")]
 public partial class Expander : ContentView, IExpander
 {
 	readonly WeakEventManager expandedChangingEventManager = new();

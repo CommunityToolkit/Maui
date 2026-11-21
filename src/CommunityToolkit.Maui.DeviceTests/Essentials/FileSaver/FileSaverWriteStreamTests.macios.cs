@@ -33,7 +33,7 @@ public partial class FileSaverWriteStreamTests
 		Assert.IsType(calibration.GetType(), thrown);
 		Assert.Equal(calibration.Message, thrown.Message);
 		Assert.Equal(2, stream.ReadsWithData);
-		Assert.Equal(content[..4096], await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(content[..4096], await File.ReadAllBytesAsync(path));
 	}
 
 	[Fact]
@@ -63,7 +63,7 @@ public partial class FileSaverWriteStreamTests
 		Assert.True(limit.WasApplied, "The file size limit was never applied.");
 		Assert.NotNull(thrown);
 		Assert.Equal(3, stream.ReadsWithData);
-		Assert.Equal(sample[..8192], await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(sample[..8192], await File.ReadAllBytesAsync(path));
 		var values = progress.Values;
 		Assert.True(values.Count is 0 || values[^1] < 100, $"A failed copy reported {string.Join(", ", values)}.");
 	}

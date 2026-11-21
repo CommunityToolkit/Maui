@@ -298,7 +298,7 @@ public partial class TouchBehaviorInputTests
 			var view = GetPlatformView(handler);
 			var accessibilityManager = (AccessibilityManager)(view.Context!.GetSystemService(Context.AccessibilityService) ?? throw new InvalidOperationException("No AccessibilityManager."));
 			await ReleaseAccessibilityServiceAsync(accessibilityManager);
-			Skip.If(accessibilityManager.IsEnabled, "An accessibility service runs in this process that this test may not or cannot switch off: before API 33 the instrumentation's UiAutomation can only be disconnected by destroying it (hidden UiAutomation.destroy()), which this area does only for a UiAutomation its own tests connected, never for one another test connected (it would drop that test's accessibility event listener), and the platform may refuse the hidden API.");
+			Skip.If(accessibilityManager.IsEnabled, "An accessibility service runs in this process that this test may not or cannot switch off: before API 35 the instrumentation's UiAutomation can only be disconnected by destroying it (hidden UiAutomation.destroy()), which this area does only for a UiAutomation its own tests connected, never for one another test connected (it would drop that test's accessibility event listener), and the platform may refuse the hidden API.");
 
 			NativePress(handler);
 			NativeRelease(handler);
@@ -374,7 +374,7 @@ public partial class TouchBehaviorInputTests
 			Assert.Equal(HoverStatus.Exited, behavior.CurrentHoverStatus);
 			Assert.Equal(HoverState.Default, behavior.CurrentHoverState);
 
-			Assert.Equal([HoverStatus.Entered, HoverStatus.Exited], statusLog.Items.Select(static args => args.Status));
+			AotSafeAssert.SequenceEqual([HoverStatus.Entered, HoverStatus.Exited], statusLog.Items.Select(static args => args.Status));
 		});
 	}
 
@@ -503,14 +503,14 @@ public partial class TouchBehaviorInputTests
 			try
 			{
 				NativePressOn(child);
-				Assert.Equal([true], parent.DisallowInterceptRequests);
+				AotSafeAssert.SequenceEqual([true], parent.DisallowInterceptRequests);
 
 				NativeReleaseOn(child);
-				Assert.Equal([true, false], parent.DisallowInterceptRequests);
+				AotSafeAssert.SequenceEqual([true, false], parent.DisallowInterceptRequests);
 
 				NativePressOn(child);
 				NativeMoveOn(child, 80, 0);
-				Assert.Equal([true, false, true, false], parent.DisallowInterceptRequests);
+				AotSafeAssert.SequenceEqual([true, false, true, false], parent.DisallowInterceptRequests);
 			}
 			finally
 			{
@@ -546,7 +546,7 @@ public partial class TouchBehaviorInputTests
 				NativePressOn(child);
 				NativeReleaseOn(child);
 
-				Assert.Equal([true, false], parent.DisallowInterceptRequests);
+				AotSafeAssert.SequenceEqual([true, false], parent.DisallowInterceptRequests);
 			}
 			finally
 			{
@@ -612,7 +612,7 @@ public partial class TouchBehaviorInputTests
 				NativePressOn(child);
 				NativeReleaseOn(child);
 
-				Assert.Empty(parent.DisallowInterceptRequests);
+				AotSafeAssert.Empty(parent.DisallowInterceptRequests);
 			}
 			finally
 			{

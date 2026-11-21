@@ -13,7 +13,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public partial class ExpanderTests
 {
 	const string objectiveCLibrary = "/usr/lib/libobjc.dylib";
-	const string accessibilityExpandedStatusNeedsVersion18 = "UIKit has accessibilityExpandedStatus, which VoiceOver reads as expanded or collapsed, since iOS and Mac Catalyst 18; the simulators of the pool run iOS 27.";
+	const string accessibilityExpandedStatusNeedsVersion18 = "UIKit has accessibilityExpandedStatus, which VoiceOver reads as expanded or collapsed, since iOS and Mac Catalyst 18; the iOS legs below 18 skip it.";
 
 	static bool HasAccessibilityExpandedStatus => OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18);
 
@@ -98,7 +98,7 @@ public partial class ExpanderTests
 			expander.IsExpanded = false;
 			Assert.Equal(UIAccessibilityExpandedStatus.Collapsed, GetAccessibilityExpandedStatus(headerElement));
 
-			Assert.Equal<bool>([true, false, true, false], expandedChanges);
+			AotSafeAssert.SequenceEqual<bool>([true, false, true, false], expandedChanges);
 		});
 	}
 
@@ -120,12 +120,12 @@ public partial class ExpanderTests
 
 			var contentView = GetUIView(expander.Content);
 			NativeHandle[] expectedOrder = direction is ExpandDirection.Down ? [headerElement.Handle, contentView.Handle] : [contentView.Handle, headerElement.Handle];
-			Assert.Equal(expectedOrder, (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
+			AotSafeAssert.SequenceEqual(expectedOrder, (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
 
 			expander.IsExpanded = false;
 			await AssertionExtensions.AssertEventually(() => !IsPlatformViewVisible(expander.Content), message: "Collapsing did not hide the content.");
 
-			Assert.Equal<NativeHandle>([headerElement.Handle], (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
+			AotSafeAssert.SequenceEqual<NativeHandle>([headerElement.Handle], (GetAccessibilityElements(expander) ?? []).Select(static element => element.Handle));
 		});
 	}
 

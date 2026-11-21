@@ -1,4 +1,5 @@
 #pragma warning disable CA1422, CS0618 // Window.StatusBarColor / NavigationBarColor / SystemUiVisibility are obsolete from API 30-35 but still readable: the tests read the native state of every API level.
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Android.Views;
 using AndroidX.Core.View;
@@ -41,6 +42,9 @@ static class AndroidSystemBars
 	// Reset puts the window back to this state, so the tests that run later in the same app see the window as the runner set it up (e.g. the
 	// theme's status bar color on API 28, which is not black).
 	public static WindowState OriginalState => originalState ?? throw new InvalidOperationException($"{nameof(CaptureOriginalState)} has not run yet.");
+
+	// SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR is API 26; below it WindowInsetsControllerCompat ignores light navigation bars and reports none.
+	public static bool SupportsLightNavigationBars => OperatingSystem.IsAndroidVersionAtLeast(26);
 
 	public static ViewGroup Decor(AWindow window) => (ViewGroup)window.DecorView;
 
@@ -187,6 +191,9 @@ static class AndroidSystemBars
 
 	// Platform.CurrentActivity is where the toolkit's status bar code takes its window from. MAUI's ActivityStateManager keeps it in a
 	// lifecycle listener; there is no public way to replace it.
+	// NativeAOT keeps no reflection metadata for MAUI's internal types unless told so.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicFields, "Microsoft.Maui.ApplicationModel.ActivityStateManagerImplementation", "Microsoft.Maui.Essentials")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicProperties, "Microsoft.Maui.ApplicationModel.ActivityLifecycleContextListener", "Microsoft.Maui.Essentials")]
 	public static T WithCurrentActivity<T>(Android.App.Activity? activity, Func<T> action)
 	{
 		var manager = ActivityStateManager.Default;

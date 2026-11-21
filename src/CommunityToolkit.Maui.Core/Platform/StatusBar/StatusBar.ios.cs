@@ -21,7 +21,7 @@ static partial class StatusBar
 	{
 		foreach (var window in GetApplicationWindows())
 		{
-			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+			var statusBarFrame = ReadStatusBarFrame(window);
 			if (statusBarFrame is null)
 			{
 				continue;
@@ -42,7 +42,7 @@ static partial class StatusBar
 
 		foreach (var window in GetApplicationWindows())
 		{
-			var statusBarFrame = window.WindowScene?.StatusBarManager?.StatusBarFrame;
+			var statusBarFrame = ReadStatusBarFrame(window);
 			if (statusBarFrame is null)
 			{
 				continue;
@@ -63,6 +63,9 @@ static partial class StatusBar
 			TryUpdateStatusBarAppearance(window);
 		}
 	}
+
+	// The device tests replace it: UIKit gives no way to hand a window a stale status bar frame that later becomes current.
+	internal static Func<UIWindow, CGRect?> ReadStatusBarFrame { get; set; } = static window => window.WindowScene?.StatusBarManager?.StatusBarFrame;
 
 	// Only the app's own windows get a status bar view. UIApplication.Windows also contains
 	// system windows (e.g. UITextEffectsWindow, created after a text input gets focus), which sit
@@ -207,6 +210,9 @@ static partial class StatusBar
 
 		bool isUsingSafeArea;
 		StatusBarGeometry? sizedFor;
+		int settleGeneration;
+
+		static readonly TimeSpan[] settleDelays = [TimeSpan.Zero, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(250), TimeSpan.FromMilliseconds(600)];
 
 		public StatusBarView()
 		{
@@ -228,16 +234,60 @@ static partial class StatusBar
 		{
 			base.LayoutSubviews();
 
-			if (Window is UIWindow window
-				&& window.WindowScene?.StatusBarManager?.StatusBarFrame is CGRect statusBarFrame
-				&& sizedFor != new StatusBarGeometry(window.Bounds.Size, window.SafeAreaInsets, statusBarFrame))
+			if (RefreshFrame())
+			{
+				ScheduleSettleChecks();
+			}
+		}
+
+		// UIKit sends no notification when a scene's status bar frame changes, and it can change after the window's last layout (iOS 26 one turn later;
+		// iOS 15 first reports the old width for up to ~150 ms after a rotation), so the settle checks read the frame themselves.
+		bool RefreshFrame()
+		{
+			if (Window is not UIWindow window || ReadStatusBarFrame(window) is not CGRect statusBarFrame)
+			{
+				return false;
+			}
+
+			var isStale = sizedFor != new StatusBarGeometry(window.Bounds.Size, window.SafeAreaInsets, statusBarFrame);
+
+			if (isStale)
 			{
 				SizeToStatusBar(window, statusBarFrame, isUsingSafeArea);
-
-				// iOS 26 lays out the window of a rotation before it updates the status bar frame (still empty when an iPhone turns back to portrait),
-				// and nothing lays the view out after the update: one more layout once UIKit has finished the current update reads the new frame.
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(SetNeedsLayout);
 			}
+
+			return isStale;
+		}
+
+		// Checks again after each delay and starts over whenever one of them changed the frame, so nothing runs once the frame is stable.
+		void ScheduleSettleChecks()
+		{
+			var generation = ++settleGeneration;
+			RunSettleCheck(generation, 0);
+		}
+
+		void RunSettleCheck(int generation, int delayIndex)
+		{
+			if (delayIndex >= settleDelays.Length)
+			{
+				return;
+			}
+
+			CoreFoundation.DispatchQueue.MainQueue.DispatchAfter(new CoreFoundation.DispatchTime(CoreFoundation.DispatchTime.Now, settleDelays[delayIndex]), () =>
+			{
+				if (generation != settleGeneration)
+				{
+					return;
+				}
+
+				if (RefreshFrame())
+				{
+					ScheduleSettleChecks();
+					return;
+				}
+
+				RunSettleCheck(generation, delayIndex + 1);
+			});
 		}
 	}
 

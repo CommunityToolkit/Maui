@@ -155,9 +155,9 @@ public abstract partial class StatusBarTestBase
 			if (OperatingSystem.IsAndroidVersionAtLeast(35))
 			{
 				var overlay = Assert.Single(AndroidSystemBars.FindTagged(window, AndroidSystemBars.NavigationBarOverlayTag));
-				Assert.Equal(expected, AndroidSystemBars.BackgroundColor(overlay));
+				AotSafeAssert.Equal(expected, AndroidSystemBars.BackgroundColor(overlay));
 				var parameters = Assert.IsType<Android.Widget.FrameLayout.LayoutParams>(overlay.LayoutParameters);
-				Assert.Equal(AndroidSystemBars.NavigationBarLayout(window), (parameters.Width, parameters.Height, parameters.Gravity));
+				AotSafeAssert.Equal(AndroidSystemBars.NavigationBarLayout(window), (parameters.Width, parameters.Height, parameters.Gravity));
 				AndroidSystemBars.AssertDrawnAboveTheContent(window, overlay);
 
 				// The decor view's own navigation bar background (a scrim behind three-button navigation), once the decor view has one.
@@ -196,7 +196,8 @@ public abstract partial class StatusBarTestBase
 		InvokeOnMainThreadAsync(() =>
 		{
 			var window = dialog?.DialogWindow ?? AndroidSystemBars.ActivityWindow;
-			Assert.Equal(style is NavigationBarStyle.DarkContent, AndroidSystemBars.IsLightNavigationBars(window));
+			// Android 7 keeps light icons whatever the style.
+			Assert.Equal(style is NavigationBarStyle.DarkContent && AndroidSystemBars.SupportsLightNavigationBars, AndroidSystemBars.IsLightNavigationBars(window));
 			Assert.False(AndroidSystemBars.IsForcedLightNavigationBars(window), "The system forces light navigation bars on the window, whatever its own appearance.");
 		});
 }

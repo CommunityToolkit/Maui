@@ -4,7 +4,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class DrawingViewServiceTests
 {
-	// The stroke color used to be applied only from Android 10 (API 29) on: this runs on both the API 36 and the API 28 emulators.
+	// The stroke color used to be applied only from Android 10 (API 29) on: every Android leg runs it, API 25 to 37.0.
 	[Fact]
 	public async Task StrokeIsDrawnWithItsColorOnEveryAndroidVersion()
 	{
