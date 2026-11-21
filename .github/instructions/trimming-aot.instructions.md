@@ -96,9 +96,9 @@ Windows, a .NET MAUI issue rather than a toolkit one: under full trimming, a `Co
 
 ## Device tests stay NativeAOT-safe
 
-The `Trimmed Device Tests` workflow (`.github/workflows/device-tests-trimmed.yml`) runs the device tests fully trimmed and with NativeAOT; the `Device Tests` check of every pull request does not.
+The `Trimmed Device Tests` check (`device-tests.yml` with `trimming: full-and-nativeaot`) runs the device tests fully trimmed and with NativeAOT; the `Device Tests` check of every pull request does not.
 
-* It runs the newest Android API level in `device-tests.yml` (full and NativeAOT), the iOS simulator (NativeAOT) and Windows unpackaged (full) on every pull request and push to `main` (`dotnet-build.yml` calls it), and from the Actions tab.
+* It runs the newest Android API level of the 4 KB `google_apis` image in `device-tests.yml` (full and NativeAOT), the iOS simulator (NativeAOT) and Windows unpackaged (full) on every pull request and push to `main` (`dotnet-build.yml` calls it), and from the Actions tab (the `Device Tests` workflow with the `trimming` input).
 * Locally: `pwsh eng/devices/run.ps1 -Platform ios -Configuration Release -BuildArgs '/p:CtmDeviceTestsTrimming=nativeaot'` (see [eng/devices/README.md](../../eng/devices/README.md#trimmed-and-nativeaot-runs)).
 
 A test must reach its product assertions there too:
@@ -109,12 +109,12 @@ A test must reach its product assertions there too:
 
 ## Newest OS versions (interim)
 
-The device test workflows (`device-tests.yml`, `device-tests-trimmed.yml`) should run on the newest GA OS releases. Until CommunityToolkit/Maui#3438 (a weekly bump bot, auto-merged) lands and replaces this list, check these when reviewing a workflow change or a release, and recommend a bump when a newer GA release exists:
+The device test workflow (`device-tests.yml`) should run on the newest GA OS releases. Until CommunityToolkit/Maui#3438 (a nightly bump bot; GitHub Actions approves and auto-merges its pull requests once CI passes) lands and replaces this list, check these when reviewing a workflow change or a release, and recommend a bump when a newer GA release exists:
 
-* Android: the newest level is the highest `api-level` in `device-tests.yml`; the trimmed Android leg follows the level automatically, but its `target`, `ram-size` and `emulator-features` are fixed in `device-tests-trimmed.yml`: a new newest leg with its own values needs the same change in `device-tests-trimmed.yml` (`target` and `ram-size` in the `Run device tests` step, `emulator-features` in the `api` step).
+* Android: the newest level is the highest `api-level` in `device-tests.yml`. From 37.1 on, Android minor releases ship only as 16 KB page-size images: they get a `target: google_apis_ps16k` leg (bump it to the newest GA one), and the `google_apis` leg stays on the newest level that has a 4 KB image. The trimmed Android legs (job `device_tests_android`) follow the highest `google_apis` level automatically (`newest-android-api-level.py` skips entries with another target), but their `ram-size` and `emulator-features` are fixed in that job: a new newest `google_apis` leg with its own values needs the same change there: add `ram-size` to the trimmed entries of its matrix `include` (they have none today, so the `Run device tests` step's 4096M default applies), and change `emulator-features` in its `api` step.
 * iOS: the newest simulator runtime on the Xcode image.
-* Xcode: `CommunityToolkitSample_Xcode_Version` in `.github/workflows/shared.env` (it moves with each .NET and .NET MAUI release, E0191), and the `xcode-NN` runner label in all three workflows (`dotnet-build.yml` `build_sample` and `build_library`, `device-tests.yml`, `device-tests-trimmed.yml`); the image must also have `CommunityToolkitLibrary_Xcode_Version`.
-* Windows: the `windows-2025` runner label in both workflows.
+* Xcode: `CommunityToolkitSample_Xcode_Version` in `.github/workflows/shared.env` (it moves with each .NET and .NET MAUI release, E0191), and the `xcode-NN` runner label in both workflows (`dotnet-build.yml` `build_sample` and `build_library`, `device-tests.yml`); the image must also have `CommunityToolkitLibrary_Xcode_Version`.
+* Windows: the `windows-2025` runner label in `device-tests.yml`.
 
 ## Code review guidance (Copilot and humans)
 
@@ -123,7 +123,7 @@ Flag a change that:
 * adds reflection, a string-path binding, `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or any suppression of an `IL` warning;
 * removes a `[DynamicallyAccessedMembers]` annotation that a MAUI API needs;
 * disables an analyzer, removes an `IL` code from `WarningsAsErrors`, removes `TrimMode` or `IsAotCompatible`, or weakens the `CTMTRIM` guard;
-* adds a line to `eng/trim-audit/allow.tsv`, puts an `IL` code in `NoWarn`, `WarningsNotAsErrors`, `.editorconfig` or `.globalconfig`, or removes or weakens the `Build Library` trim/AOT step, the gate or the trimmed device tests (`device-tests-trimmed.yml`, `CtmDeviceTestsTrimming`);
+* adds a line to `eng/trim-audit/allow.tsv`, puts an `IL` code in `NoWarn`, `WarningsNotAsErrors`, `.editorconfig` or `.globalconfig`, or removes or weakens the `Build Library` trim/AOT step, the gate or the trimmed device tests (the `trimming` input of `device-tests.yml`, `CtmDeviceTestsTrimming`);
 * adds output from `CommunityToolkit.Maui.SourceGenerators` that does not start with `GeneratedCodePragmas.Header`, or formats with the current culture;
 * adds a `Type`-based `Enum` call, or JSON without a source-generated context;
 * adds private reflection or an xunit value-type assert to the device tests that NativeAOT cannot run.

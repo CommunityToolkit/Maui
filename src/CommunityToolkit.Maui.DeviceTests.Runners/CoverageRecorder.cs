@@ -11,14 +11,48 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners;
 
 /// <summary>
 /// coverlet adds a tracker class to every assembly it instruments, and the tracker writes the module's hits file from a
-/// ProcessExit or DomainUnload handler. Those never run in the Android, iOS and Mac Catalyst test apps, which end without a
-/// managed process exit, so the headless runners call <see cref="Flush"/> once the tests have run.
+/// ProcessExit or DomainUnload handler. Those never run in the Android, iOS, Mac Catalyst and Windows test apps, which end without a
+/// managed process exit, so the headless runners call <see cref="Flush"/> once the tests have run. On Windows, the directory comes
+/// from <see cref="ReadDirectoryFile"/>.
 /// </summary>
 public static class CoverageRecorder
 {
 	public const string DirectoryVariable = "CTM_COVERAGE_DIRECTORY";
 
+	/// <summary>
+	/// The file, next to the Windows results file, that names the directory for the hits files. A packaged Windows app does not
+	/// inherit the environment of the script that starts it, so <see cref="DirectoryVariable"/> does not reach it.
+	/// </summary>
+	public const string DirectoryFileName = "devicetestcoverage.txt";
+
 	const string trackerNamespace = "Coverlet.Core.Instrumentation.Tracker";
+
+	/// <summary>
+	/// Returns the directory that <see cref="DirectoryFileName"/>, next to <paramref name="resultsFile"/>, names, or null when there is none.
+	/// </summary>
+	public static string? ReadDirectoryFile(string? resultsFile)
+	{
+		if (string.IsNullOrEmpty(resultsFile))
+		{
+			return null;
+		}
+
+		try
+		{
+			var path = Path.Combine(Path.GetDirectoryName(resultsFile) ?? string.Empty, DirectoryFileName);
+			if (!File.Exists(path))
+			{
+				return null;
+			}
+
+			var directory = File.ReadAllText(path).Trim();
+			return directory.Length == 0 ? null : directory;
+		}
+		catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+		{
+			return null;
+		}
+	}
 
 	/// <summary>
 	/// Call it once, after the tests have run. It never throws: a failure is described in the returned line, and the script that

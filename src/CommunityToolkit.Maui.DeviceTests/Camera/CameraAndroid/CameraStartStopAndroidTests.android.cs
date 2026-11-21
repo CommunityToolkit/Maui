@@ -121,7 +121,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 		{
 			using var errors = new CameraErrorRecorder(host.View);
 			host.View.StopCameraPreviewCommand.Execute(null);
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 			var preview = host.Native<Preview>("cameraPreview") ?? throw new InvalidOperationException("The manager has no Preview.");
 
 			host.View.StartCameraPreviewCommand.Execute(CancellationToken.None);
@@ -163,7 +163,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 
 			await session.Manager.StartCameraPreview(CancellationToken.None).WaitAsync(CameraTimeout);
 
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			Assert.Equal(1, session.LoadedCount);
 			Assert.Empty(errors.Errors);
 		}, provider);
@@ -194,7 +194,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 
 			var preview = session.Native<Preview>("cameraPreview");
 			Assert.True(preview is not null && await IsNativelyBoundAsync(preview), "The StartCameraPreview that followed the StopCameraPreview did not start the preview.");
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."));
+			await WaitUntilCameraIsStreamingAsync(session);
 			Assert.Equal(1, session.LoadedCount);
 			Assert.Empty(errors.Errors);
 		}, provider);
@@ -307,7 +307,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 			await WaitForTheListenersOfCameraXAsync();
 
 			await WaitForNativeCameraStateAsync(cameraB.DeviceId, "OPEN");
-			await WaitForNativeCameraStateAsync(cameraA.DeviceId, "CLOSED");
+			await WaitForCameraClosedAsync(cameraA.DeviceId);
 		});
 	}
 
@@ -315,7 +315,7 @@ public class CameraStartStopAndroidTests : CameraAndroidTestBase
 	{
 		var cameraId = session.View.SelectedCamera?.DeviceId ?? throw new InvalidOperationException("The connected session has no selected camera.");
 		session.Manager.StopCameraPreview();
-		await WaitForNativeCameraStateAsync(cameraId, "CLOSED");
+		await WaitForCameraClosedAsync(cameraId);
 	}
 
 	// Stands in for CameraViewHandler.MapSelectedCamera, which a manager session has no handler to run.
