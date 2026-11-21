@@ -30,7 +30,7 @@ on:
                     - Release
                     - Debug
             trimming:
-                description: 'none, or full-and-nativeaot: only the trimmed legs, built with /p:CtmDeviceTestsTrimming (Android newest API full and NativeAOT, iOS simulator NativeAOT, Windows unpackaged full)'
+                description: 'none, or full-and-nativeaot: only the trimmed legs, built with /p:CtmDeviceTestsTrimming (Android newest google_apis API full and NativeAOT, iOS simulator NativeAOT, Windows unpackaged full)'
                 required: false
                 type: choice
                 default: 'none'
@@ -183,7 +183,8 @@ jobs:
                         echo "leg=android-api$API_LEVEL" | tee -a "$GITHUB_OUTPUT"
                         exit 0
                     fi
-                    # The trimmed legs follow the newest level of device_tests_android_runtime, so adding a level needs no second edit.
+                    # The trimmed legs follow the newest google_apis level of device_tests_android_runtime, the image their Run step boots, so
+                    # adding a level needs no second edit.
                     level=$(python3 -I .github/scripts/newest-android-api-level.py .github/workflows/device-tests.yml)
                     echo "level=$level" | tee -a "$GITHUB_OUTPUT"
                     echo "leg=trimmed-android-api$level-$TRIMMING" | tee -a "$GITHUB_OUTPUT"
@@ -363,8 +364,8 @@ jobs:
                     name: device-tests-android-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_android_app on the newest release of every Android major version from 8.1 (API 27); device_tests_android adds API 36 and
-    # API 25 (7.1).
+    # The app of device_tests_android_app on the newest release of every Android major version from 8.1 (API 27), and on 37.0, the newest
+    # Android 17 with 4 KB pages; device_tests_android adds API 36 and API 25 (7.1).
     # Other levels, such as API 24 (the app's minimum), run only on a local AVD. Quoted api-level values: the emulator action passes them to
     # sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
@@ -403,11 +404,16 @@ jobs:
                     -   api-level: '35'
                     # Android 16 QPR2, the newest Android 16 release.
                     -   api-level: '36.1'
-                    # Android 17. 37.1 and 37.2 ship only 16 KB page-size (ps16k) images, which no leg is proven on.
+                    # Android 17 with 4 KB pages.
                     # The image's goldfish Codec2 H.264 decoder (a HAL in the mediacodec domain) is denied the app's BufferPool memfd by SELinux, so
                     # every video fails to decode (ERROR_CODE_DECODING_FAILED); 36.1 runs the same decoder without a denial. The AOSP software
                     # decoder does not need the memfd, so it decodes with SELinux still enforcing.
                     -   api-level: '37.0'
+                        emulator-features: -feature -HardwareDecoder
+                    # Android 17 QPR2, the newest Android 17 release, ships only as a 16 KB page-size image, where a native library or mmap that
+                    # assumes 4 KB pages breaks (Play requires 16 KB support from target API 35). Software decoder as on 37.0, unprobed without it.
+                    -   api-level: '37.2'
+                        target: google_apis_ps16k
                         emulator-features: -feature -HardwareDecoder
         env:
             DEVICE_TEST_COVERAGE: false
@@ -522,9 +528,11 @@ jobs:
                     # 50 minutes, as device_tests_android. The first script line is the guard against target=android-0: a failing
                     # pre-emulator-launch-script does not stop the action, and a script line that fails skips the lines after it.
                     # The guard stays on one line because the action runs each line in its own shell.
+                    # The second line fails a ps16k leg whose guest does not run 16 KB pages, so that leg cannot pass on 4 KB ones.
                     # -ResultsFolder, not -Results, as device_tests_android.
                     script: |
                         avd="${ANDROID_AVD_HOME:-$HOME/.android/avd}"; grep -s '^target=' "$avd/test.ini" "$avd/test.avd/config.ini"; if [ ! -f "$avd/test.ini" ] || grep -qs '^target=android-0$' "$avd/test.ini" "$avd/test.avd/config.ini"; then echo "::error::The AVD in $avd is missing or has target=android-0 (old cmdline-tools)."; exit 1; fi
+                        case '${{ matrix.target }}' in *ps16k) size=$(adb shell getconf PAGE_SIZE | tr -d '\r'); echo "Guest page size: $size"; if [ "$size" != 16384 ]; then echo "::error::The 16 KB page-size image reports a page size of '$size'."; exit 1; fi ;; esac
                         pwsh ./eng/devices/run.ps1 -Platform android -Target testOnly -Configuration "$DEVICE_TEST_CONFIGURATION" -DeviceId emulator-5554 -Timeout 00:50:00 -ResultsFolder artifacts/device-tests/android-api${{ matrix.api-level }}
 
             -   name: Upload device test results

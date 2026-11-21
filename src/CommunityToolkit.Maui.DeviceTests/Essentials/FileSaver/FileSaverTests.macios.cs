@@ -569,7 +569,7 @@ public partial class FileSaverTests
 		pickerDelegate = null!;
 		operation = null!;
 
-		// The library keeps the picker until it has been off screen for a while, see DocumentPickerRelease
+		await FilesApplePicker.WaitUntilReleasedAsync(references[0]);
 		await VisualBehaviorHelpers.WaitForGCAsync(references);
 	}
 

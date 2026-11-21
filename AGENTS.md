@@ -27,4 +27,5 @@ Interim, until CommunityToolkit/Maui#3438 (nightly bump bot) lands: when you rev
 * [.github/instructions/culture.instructions.md](.github/instructions/culture.instructions.md): culture-safe code and Turkish tests
 * [.github/instructions/device-tests.instructions.md](.github/instructions/device-tests.instructions.md): device tests
 * [.github/instructions/mobile-memory-leaks.instructions.md](.github/instructions/mobile-memory-leaks.instructions.md): memory leaks on mobile
+* [.github/instructions/handler-lifecycle.instructions.md](.github/instructions/handler-lifecycle.instructions.md): handler lifecycle (`CreatePlatformView` runs once per handler)
 * [CONTRIBUTING.md](CONTRIBUTING.md): contribution process

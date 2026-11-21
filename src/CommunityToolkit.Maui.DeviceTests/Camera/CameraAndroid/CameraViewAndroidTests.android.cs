@@ -349,7 +349,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			host.View.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 
 			var exception = await Assert.ThrowsAsync<CameraException>(() => host.View.CaptureImage(CancellationToken.None).WaitAsync(CameraTimeout));
 
@@ -366,7 +366,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			host.View.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 			await Assert.ThrowsAsync<CameraException>(() => host.View.CaptureImage(CancellationToken.None).WaitAsync(CameraTimeout));
 
 			// The failure released the semaphore and unsubscribed the handlers.
@@ -406,7 +406,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			host.View.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 			var imageCallback = host.Native<object>("imageCallback");
 			SetPrivateField(host.Manager, "imageCallback", CreateImageCallbackOf(new CameraView()));
 			try
@@ -505,7 +505,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			host.View.StopCameraPreviewCommand.Execute(null);
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 
 			host.View.StartCameraPreviewCommand.Execute(CancellationToken.None);
 
@@ -625,7 +625,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 		await RunWithCameraViewAsync(async host =>
 		{
 			host.View.StopCameraPreview();
-			await WaitForNativeCameraStateAsync(host.SelectedCameraId, "CLOSED");
+			await WaitForCameraClosedAsync(host.SelectedCameraId);
 
 			// The stopped preview does not follow the selection: only the command starts the camera that cannot be bound.
 			host.View.SelectedCamera = CreateCameraThatCanNotBeBound();
@@ -824,7 +824,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 			await using (await FilesPickerSession.StartAsync())
 			{
-				await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+				await WaitForCameraClosedAsync(camera.DeviceId);
 				await WaitForNativeZoomAsync(camera.DeviceId, 1f, message: $"CameraX did not reset the zoom ratio of camera {camera.DeviceId} when the activity stopped.");
 			}
 
@@ -856,13 +856,13 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 			await using (await FilesPickerSession.StartAsync())
 			{
-				await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+				await WaitForCameraClosedAsync(camera.DeviceId);
 				await host.View.SetExtensionMode(ExtensionMode.None).WaitAsync(CameraTimeout);
 
 				Assert.True(await IsNativelyBoundAsync(host.Native<Preview>("cameraPreview") ?? throw new InvalidOperationException("The manager has no Preview.")),
 					"SetExtensionMode did not bind the use cases again while the activity was stopped.");
 				await WaitForNativeZoomAsync(camera.DeviceId, 1f, message: $"CameraX applied the zoom to camera {camera.DeviceId} while the activity was stopped.");
-				Assert.Equal("CLOSED", await GetNativeCameraStateAsync(camera.DeviceId));
+				await AssertCameraIsClosedAsync(camera.DeviceId);
 			}
 
 			await WaitForNativeCameraStateAsync(camera.DeviceId, "OPEN");
@@ -892,7 +892,7 @@ public class CameraViewAndroidTests : CameraAndroidTestBase
 
 			await using (await FilesPickerSession.StartAsync())
 			{
-				await WaitForNativeCameraStateAsync(camera.DeviceId, "CLOSED");
+				await WaitForCameraClosedAsync(camera.DeviceId);
 				await WaitForNativeTorchAsync(camera.DeviceId, false, message: $"CameraX did not turn the torch of camera {camera.DeviceId} off when the activity stopped.");
 			}
 
