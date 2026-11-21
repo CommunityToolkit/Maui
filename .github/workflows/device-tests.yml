@@ -53,8 +53,8 @@ env:
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
 # The iOS and Android apps are built once, without coverage, for the older iOS versions and the other Android API levels
-# (device_tests_ios_app, device_tests_ios_runtime, device_tests_android_app, device_tests_android_runtime); the iOS 27.2 and Android API 36 jobs
-# build their own, instrumented ones.
+# (device_tests_ios_app, device_tests_ios_runtime, device_tests_android_app, device_tests_android_runtime); the iOS 27.2, Android API 36,
+# Android API 25 and Windows jobs build their own, instrumented ones.
 # Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
 # (eng/devices/LOCAL.md), so this file shows how to run them. -Platform is explicit because without it run.ps1 runs every platform of the
 # machine and, for a Category= filter, skips a platform that has no test of the category instead of failing with 94.
@@ -66,7 +66,7 @@ jobs:
     # tests, and a run started to answer a question does not need the instrumentation. In a called workflow, github.event_name is the
     # caller's event, so != 'workflow_dispatch' is true in a Build run only.
     device_tests_android:
-        name: ${{ matrix.trimming == 'none' && 'Device Tests (Android API 36)' || format('Trimmed Device Tests (Android newest API, {0})', matrix.trimming) }}
+        name: ${{ matrix.trimming == 'none' && format('Device Tests (Android API {0})', matrix.api-level) || format('Trimmed Device Tests (Android newest API, {0})', matrix.trimming) }}
         permissions:
             contents: read
         # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
@@ -77,10 +77,15 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # Android NativeAOT is experimental in .NET 11; full trimming also covers CoreCLR, the runtime Android apps use by default.
-                trimming: ${{ fromJSON(inputs.trimming == 'none' && '["none"]' || '["full","nativeaot"]') }}
+                # Untrimmed: API 36 and API 25 collect coverage. Android 7.1 gets 2048M: with 4096M the emulator maps part of the guest RAM
+                # above 4 GB ("pc_memory_init: above 4g") and the Android 7 guest never finishes booting (adb stays offline); with 2048M it
+                # boots in about 2 minutes (fork probe, 2026-11-13).
+                # Trimmed: Android NativeAOT is experimental in .NET 11; full trimming also covers CoreCLR, the runtime Android apps use by default.
+                include: ${{ fromJSON(inputs.trimming == 'none' && '[{"trimming":"none","api-level":"36"},{"trimming":"none","api-level":"25","ram-size":"2048M"}]' || '[{"trimming":"full"},{"trimming":"nativeaot"}]') }}
         env:
-            # One Android level is enough for the merged coverage report; device_tests_android_runtime runs the others without the instrumented build.
+            # Two Android levels are enough for the merged coverage report: the newest one and API 25, which takes the other side of the OS version checks
+            # (API 25 added 25 lines and 7 branches over API 36). Not API 30: Android 11 blocks adb pull of the app's external files folder (eng/devices/README.md, "Code coverage").
+            # device_tests_android_runtime runs the other levels without the instrumented build.
             # Trimmed legs never collect it: coverlet rewrites the toolkit assemblies, and the trimming guard fails such a build.
             DEVICE_TEST_COVERAGE: ${{ matrix.trimming == 'none' && github.event_name != 'workflow_dispatch' }}
             # OnDeviceSpeech: the emulator image gets no Play updates, so its on-device recognizer may have no language installed or never
@@ -171,10 +176,11 @@ jobs:
                 shell: bash
                 env:
                     TRIMMING: ${{ matrix.trimming }}
+                    API_LEVEL: ${{ matrix.api-level }}
                 run: |
                     if [ "$TRIMMING" = none ]; then
-                        echo 'level=36' | tee -a "$GITHUB_OUTPUT"
-                        echo 'leg=android-api36' | tee -a "$GITHUB_OUTPUT"
+                        echo "level=$API_LEVEL" | tee -a "$GITHUB_OUTPUT"
+                        echo "leg=android-api$API_LEVEL" | tee -a "$GITHUB_OUTPUT"
                         exit 0
                     fi
                     # The trimmed legs follow the newest google_apis level of device_tests_android_runtime, the image their Run step boots, so
@@ -212,7 +218,7 @@ jobs:
                     arch: x86_64
                     profile: pixel_7_pro
                     cores: 4
-                    ram-size: 4096M
+                    ram-size: ${{ matrix.ram-size || '4096M' }}
                     disk-size: 6000M
                     force-avd-creation: false
                     # No snapshot: the action appends the hardware settings (cores, RAM, disk) to the AVD's config.ini each time it starts an
@@ -243,8 +249,8 @@ jobs:
                 if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
                 uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
                 with:
-                    name: coverage-device-tests-android-api36
-                    path: artifacts/device-tests/android-api36/coverage/*.cobertura.xml
+                    name: coverage-device-tests-android-api${{ matrix.api-level }}
+                    path: artifacts/device-tests/android-api${{ matrix.api-level }}/coverage/*.cobertura.xml
                     if-no-files-found: warn
 
     # Builds the Android app once, without coverage, for device_tests_android_runtime. device_tests_android cannot share it: it collects
@@ -358,8 +364,8 @@ jobs:
                     name: device-tests-android-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_android_app on the newest release of every Android major version from 7.1 (API 25), and on 37.0, the newest
-    # Android 17 with 4 KB pages; device_tests_android adds API 36.
+    # The app of device_tests_android_app on the newest release of every Android major version from 8.1 (API 27), and on 37.0, the newest
+    # Android 17 with 4 KB pages; device_tests_android adds API 36 and API 25 (7.1).
     # Other levels, such as API 24 (the app's minimum), run only on a local AVD. Quoted api-level values: the emulator action passes them to
     # sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
@@ -377,10 +383,6 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    # Android 7.1. With 4096M the emulator maps part of the guest RAM above 4 GB ("pc_memory_init: above 4g") and the
-                    # Android 7 guest never finishes booting (adb stays offline); with 2048M it boots in about 2 minutes (fork probe, 2026-11-13).
-                    -   api-level: '25'
-                        ram-size: 2048M
                     # Android 8.1. The only x86_64 image of API 27 is the one without Google APIs.
                     -   api-level: '27'
                         target: default
@@ -517,7 +519,7 @@ jobs:
                     arch: x86_64
                     profile: pixel_7_pro
                     cores: 4
-                    ram-size: ${{ matrix.ram-size || '4096M' }}
+                    ram-size: 4096M
                     disk-size: 6000M
                     force-avd-creation: false
                     # See device_tests_android for the emulator options.
@@ -1059,6 +1061,8 @@ jobs:
                 packaging: ${{ fromJSON(inputs.trimming == 'none' && '["packaged","unpackaged"]' || '["unpackaged"]') }}
                 trimming: ${{ fromJSON(inputs.trimming == 'none' && '["none"]' || '["full"]') }}
         env:
+            # As device_tests_android: a manual run and a trimmed leg collect no coverage.
+            DEVICE_TEST_COVERAGE: ${{ matrix.trimming == 'none' && github.event_name != 'workflow_dispatch' }}
             # VideoRendering: the runner has no GPU (Direct3D on WARP), and no run has shown its MediaPlayer rendering the H.264 test clip, so the
             # 48 MediaElement tests that need rendering are skipped here; local runs keep them. Delete it when a run-everything run shows them
             # passing. Camera: the runner has none; delete it if the job gains one (for example a virtual camera).
@@ -1147,7 +1151,10 @@ jobs:
                     reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
 
             # run.ps1 runs windows.ps1 in the same process, so in Windows PowerShell 5.1, which has the Appx and PKI cmdlets the packaged run needs.
+            # A job that collects coverage builds in its test step instead: the app is built once, with the instrumented toolkit assemblies,
+            # and the coverlet process that instrumented them must still run when the tests have run (eng/devices/README.md, "Code coverage").
             -   name: Build device test apps
+                if: ${{ env.DEVICE_TEST_COVERAGE != 'true' }}
                 shell: powershell
                 run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target buildOnly -Configuration $env:DEVICE_TEST_CONFIGURATION ${{ matrix.trimming != 'none' && format('-BuildArgs ''/p:CtmDeviceTestsTrimming={0}''', matrix.trimming) || '' }}
 
@@ -1160,7 +1167,7 @@ jobs:
             -   name: Run device tests
                 if: ${{ !cancelled() && steps.workload.outcome == 'success' && (matrix.trimming == 'none' || steps.check.outcome == 'success') }}
                 shell: powershell
-                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target testOnly -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00 ${{ matrix.trimming != 'none' && format('-ResultsFolder artifacts/device-tests/windows-{0}-{1}', matrix.packaging, matrix.trimming) || '' }}
+                run: .\eng\devices\run.ps1 -Platform windows-${{ matrix.packaging }} -Target ${{ env.DEVICE_TEST_COVERAGE == 'true' && 'buildAndTest' || 'testOnly' }} -Configuration $env:DEVICE_TEST_CONFIGURATION -Timeout 00:30:00 ${{ matrix.trimming != 'none' && format('-ResultsFolder artifacts/device-tests/windows-{0}-{1}', matrix.packaging, matrix.trimming) || '' }}
 
             -   name: Upload device test results
                 if: always()
@@ -1170,6 +1177,14 @@ jobs:
                     path: |
                         artifacts/device-tests/
                         artifacts/logs/
+
+            -   name: Upload device test coverage
+                if: ${{ !cancelled() && env.DEVICE_TEST_COVERAGE == 'true' }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: coverage-device-tests-windows-${{ matrix.packaging }}
+                    path: artifacts/device-tests/windows-${{ matrix.packaging }}/coverage/*.cobertura.xml
+                    if-no-files-found: warn
 
     # The single status check to require in branch protection: "Device Tests / Device Tests" in a Build run, and
     # "Trimmed Device Tests / Trimmed Device Tests" for the call with `trimming`.
