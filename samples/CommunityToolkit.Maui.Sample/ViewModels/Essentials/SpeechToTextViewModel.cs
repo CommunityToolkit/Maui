@@ -89,6 +89,25 @@ public partial class SpeechToTextViewModel : BaseViewModel
 	static string GetCultureName(Locale locale) => string.IsNullOrEmpty(locale.Country) ? locale.Language : $"{locale.Language}-{locale.Country}";
 
 	[RelayCommand]
+	async Task Recognize(CancellationToken token)
+	{
+		var pickResult = await FilePicker.PickAsync();
+		if (pickResult is null)
+		{
+			return;
+		}
+
+		await using var audioStream = await pickResult.OpenReadAsync();
+		var text = await speechToText.RecognizeAsync(audioStream,
+			new SpeechToTextOptions()
+			{
+				Culture = CultureInfo.GetCultureInfo(CurrentLocale?.Language ?? defaultLanguage),
+				ShouldReportPartialResults = false
+			}, token);
+		await Shell.Current.DisplayAlertAsync("Recognition Result", text.IsSuccessful ? text.Text : text.Exception.Message, "OK");
+	}
+
+	[RelayCommand]
 	async Task SetLocales(CancellationToken token)
 	{
 		Locales.Clear();
