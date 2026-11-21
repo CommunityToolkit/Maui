@@ -4,10 +4,8 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The real-AVFoundation counterpart of CameraManagerAppleRecordingTests, which scripts the same paths. PlatformStartVideoRecording asks for
-// the camera permission first, and asking while it is NotDetermined shows a prompt that blocks a headless run. ios.ps1 grants the camera and
-// the microphone on the simulator it creates ('camera' works although simctl does not list it), and the CI requires both, so a lost grant
-// fails these tests instead of skipping them. None of the tests needs a camera: the session has an audio input and a movie output only.
+// Asking for the camera permission while it is NotDetermined shows a prompt that blocks a headless run, so the CI grants the camera
+// and microphone first (ios.ps1, the Mac Catalyst job) and requires both: a lost grant fails these tests instead of skipping them.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerApplePermissionTests : CameraHandlerTestBase

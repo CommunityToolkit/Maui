@@ -39,7 +39,7 @@ public static class DeviceTestCapabilities
 	/// <summary>Android: an on-device speech recognition service that answers and has a language installed.</summary>
 	public const string OnDeviceSpeech = nameof(OnDeviceSpeech);
 
-	/// <summary>iOS and Mac Catalyst: the app has the camera permission. A headless run cannot answer the prompt, so the CI grants it before the run (ios.ps1, the Mac Catalyst job).</summary>
+	/// <summary>iOS and Mac Catalyst: the app has the camera permission, which the CI grants before the run.</summary>
 	public const string CameraPermission = nameof(CameraPermission);
 
 	/// <summary>iOS and Mac Catalyst: the app has the microphone permission, granted like <see cref="CameraPermission"/>.</summary>

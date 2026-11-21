@@ -684,11 +684,8 @@ function Get-AppBundleIdentifiers {
 function Invoke-SimulatorTccQuery {
     param([string]$Database, [string]$Sql, [switch]$Write)
 
+    # No -readonly: it cannot open a WAL database whose -wal and -shm files are missing.
     $arguments = @('-cmd', '.timeout 5000')
-    if (-not $Write) {
-        $arguments += '-readonly'
-    }
-
     return Invoke-DeviceTestProcess -FilePath 'sqlite3' -ArgumentList ($arguments + @($Database, $Sql)) -TimeoutSeconds 60
 }
 
@@ -717,13 +714,19 @@ function Get-SimulatorTccGrantedServices {
     # An object, not a bare array: PowerShell turns a returned empty array into $null.
     param([string]$Database, [string]$Bundle)
 
-    $result = Invoke-SimulatorTccQuery -Database $Database -Sql "SELECT service FROM access WHERE client='$Bundle' AND client_type=0 AND auth_value=2;"
+    $result = Invoke-SimulatorTccQuery -Database $Database -Sql "SELECT service, auth_value FROM access WHERE client='$Bundle' AND client_type=0;"
     if ($result.ExitCode -ne 0) {
         return [pscustomobject]@{ Services = @(); Error = "Could not read the TCC database: $("$($result.Error)".Trim())" }
     }
 
-    $services = @("$($result.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-    return [pscustomobject]@{ Services = $services; Error = $null }
+    $authValues = @{}
+    foreach ($line in @("$($result.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })) {
+        $fields = $line -split '\|'
+        $authValues[$fields[0]] = $fields[1]
+    }
+
+    $services = @($authValues.Keys | Where-Object { $authValues[$_] -eq '2' })
+    return [pscustomobject]@{ Services = $services; AuthValues = $authValues; Error = $null }
 }
 
 function Add-SimulatorTccGrant {
@@ -794,13 +797,12 @@ function Save-PrivacyGrantEvidence {
 }
 
 function Grant-SimulatorPrivacy {
-    # simctl has no speech service and hung for 120 s in run 44928036772, so what it does not grant goes into TCC.db, and each grant is
-    # read back so a simulator without them is replaced before the run. Grants made before XHarness installs the app survive it;
-    # an erase removes them.
+    # simctl has no speech service and hung for 120 s in run 44928036772, so the rest goes into TCC.db and every grant is read back;
+    # a simulator missing one is replaced. Grants made before XHarness installs the app survive it; an erase removes them.
     param([string]$Identifier, [string[]]$BundleIdentifiers, [int]$GrantTimeoutSeconds = 120, [string]$EvidencePath)
 
     $database = Join-Path $HOME "Library/Developer/CoreSimulator/Devices/$Identifier/data/Library/TCC/TCC.db"
-    $required = @(
+    $requiredGrants = @(
         [pscustomobject]@{ Name = 'camera'; TccService = 'kTCCServiceCamera'; Simctl = $true },
         [pscustomobject]@{ Name = 'microphone'; TccService = 'kTCCServiceMicrophone'; Simctl = $true },
         [pscustomobject]@{ Name = 'speech recognition'; TccService = 'kTCCServiceSpeechRecognition'; Simctl = $false }
@@ -813,7 +815,7 @@ function Grant-SimulatorPrivacy {
             return "'$bundle' is not a valid bundle identifier, so nothing was granted on simulator $Identifier."
         }
 
-        foreach ($service in @($required | Where-Object { $_.Simctl })) {
+        foreach ($service in @($requiredGrants | Where-Object { $_.Simctl })) {
             if (-not $simctlAnswers) {
                 continue
             }
@@ -836,8 +838,9 @@ function Grant-SimulatorPrivacy {
         }
     }
 
-    if (-not (Wait-SimulatorTccDatabase -Database $database)) {
-        return "The TCC database of simulator $Identifier ($database) did not appear with an access table within 60 s, so the camera, microphone and speech recognition grants cannot be checked."
+    $tccTimeoutSeconds = 60
+    if (-not (Wait-SimulatorTccDatabase -Database $database -TimeoutSeconds $tccTimeoutSeconds)) {
+        return "The TCC database of simulator $Identifier ($database) did not appear with an access table within $tccTimeoutSeconds s, so the camera, microphone and speech recognition grants cannot be checked."
     }
 
     $missing = @()
@@ -847,13 +850,21 @@ function Grant-SimulatorPrivacy {
             return $granted.Error
         }
 
-        foreach ($service in $required) {
+        foreach ($service in $requiredGrants) {
             if ($granted.Services -contains $service.TccService) {
                 continue
             }
 
             if ($grantMethods.ContainsKey("$bundle|$($service.Name)")) {
-                Write-DeviceTestWarning "simctl granted $($service.Name) to $bundle, but the TCC database of simulator $Identifier has no such row; writing it."
+                $authValue = $granted.AuthValues[$service.TccService]
+                if ($null -eq $authValue) {
+                    $state = 'has no row for it'
+                }
+                else {
+                    $state = "does not grant it (auth_value $authValue)"
+                }
+
+                Write-DeviceTestWarning "simctl granted $($service.Name) to $bundle, but the TCC database of simulator $Identifier $state; writing it."
                 $grantMethods.Remove("$bundle|$($service.Name)")
             }
 
@@ -870,14 +881,21 @@ function Grant-SimulatorPrivacy {
             return $verified.Error
         }
 
-        $gaps = @($required | Where-Object { $verified.Services -notcontains $_.TccService } | ForEach-Object { $_.Name })
+        $gaps = @($requiredGrants | Where-Object { $verified.Services -notcontains $_.TccService } | ForEach-Object { $_.Name })
         if ($gaps.Count -gt 0) {
             $missing += "$bundle (missing: $($gaps -join ', '))"
             continue
         }
 
-        $how = @($required | ForEach-Object { "$($_.Name) ($($grantMethods["$bundle|$($_.Name)"]))" })
-        Write-Host "Granted to $bundle on simulator $Identifier, found in its TCC database: $($how -join ', ')"
+        $grantDescriptions = @($requiredGrants | ForEach-Object {
+                $method = $grantMethods["$bundle|$($_.Name)"]
+                if (-not $method) {
+                    $method = 'already present'
+                }
+
+                "$($_.Name) ($method)"
+            })
+        Write-Host "Granted to $bundle on simulator $Identifier, found in its TCC database: $($grantDescriptions -join ', ')"
     }
 
     if ($missing.Count -gt 0) {
@@ -978,7 +996,7 @@ try {
                         break
                     }
 
-                    Write-DeviceTestWarning "$simulatorError; replacing the simulator (infrastructure retry)."
+                    Write-DeviceTestWarning "$($simulatorError.TrimEnd('.')); replacing the simulator (infrastructure retry)."
                     if ($null -ne $simulator) {
                         Remove-Simulator -Identifier $simulator.Udid
                         $simulator = $null
