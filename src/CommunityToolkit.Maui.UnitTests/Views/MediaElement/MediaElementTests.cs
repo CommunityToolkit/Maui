@@ -37,6 +37,7 @@ public class MediaElementTests : BaseViewTest
 		Assert.Equal(MediaElementDefaults.Speed, mediaElement.Speed);
 		Assert.Equal(MediaElementDefaults.Volume, mediaElement.Volume);
 		Assert.Equal(MediaElementDefaults.MetadataTitle, mediaElement.MetadataTitle);
+		Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
 	}
 
 	[Fact]
@@ -144,5 +145,93 @@ public class MediaElementTests : BaseViewTest
 				Volume = -double.Epsilon
 			};
 		});
+	}
+
+	[Fact]
+	public void ScreenStateChangeUpdatesScreenStateAndRaisesScreenStateChanged()
+	{
+		// Arrange
+		MediaElement mediaElement = new();
+		List<ScreenStateChangedEventArgs> raisedEvents = [];
+		mediaElement.ScreenStateChanged += (_, e) => raisedEvents.Add(e);
+
+		// Act
+		((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.FullScreen);
+
+		// Assert
+		Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+		var raisedEvent = Assert.Single(raisedEvents);
+		Assert.Equal(MediaElementScreenState.Default, raisedEvent.PreviousState);
+		Assert.Equal(MediaElementScreenState.FullScreen, raisedEvent.NewState);
+	}
+
+	[Fact]
+	public void ScreenStateChangeBackToDefaultRaisesScreenStateChangedWithThePreviousState()
+	{
+		// Arrange
+		MediaElement mediaElement = new();
+		List<ScreenStateChangedEventArgs> raisedEvents = [];
+		((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.FullScreen);
+		mediaElement.ScreenStateChanged += (_, e) => raisedEvents.Add(e);
+
+		// Act
+		((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.Default);
+
+		// Assert
+		Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+		var raisedEvent = Assert.Single(raisedEvents);
+		Assert.Equal(MediaElementScreenState.FullScreen, raisedEvent.PreviousState);
+		Assert.Equal(MediaElementScreenState.Default, raisedEvent.NewState);
+	}
+
+	[Theory]
+	[InlineData(MediaElementScreenState.Default)]
+	[InlineData(MediaElementScreenState.FullScreen)]
+	public void ScreenStateReportedAgainRaisesNoScreenStateChanged(MediaElementScreenState screenState)
+	{
+		// Arrange
+		MediaElement mediaElement = new();
+		List<ScreenStateChangedEventArgs> raisedEvents = [];
+		((IMediaElement)mediaElement).FullScreenChanged(screenState);
+		mediaElement.ScreenStateChanged += (_, e) => raisedEvents.Add(e);
+
+		// Act
+		((IMediaElement)mediaElement).FullScreenChanged(screenState);
+
+		// Assert
+		Assert.Equal(screenState, mediaElement.ScreenState);
+		Assert.Empty(raisedEvents);
+	}
+
+	[Fact]
+	public void ScreenStateChangeRaisesPropertyChangedForScreenState()
+	{
+		// Arrange
+		MediaElement mediaElement = new();
+		List<string?> changedProperties = [];
+		mediaElement.PropertyChanged += (_, e) => changedProperties.Add(e.PropertyName);
+
+		// Act
+		((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.FullScreen);
+
+		// Assert
+		Assert.Contains(nameof(MediaElement.ScreenState), changedProperties);
+	}
+
+	[Fact]
+	public void ScreenStatePropertyIsReadOnly()
+	{
+		// Arrange
+		MediaElement mediaElement = new();
+		List<ScreenStateChangedEventArgs> raisedEvents = [];
+		mediaElement.ScreenStateChanged += (_, e) => raisedEvents.Add(e);
+
+		// Act
+		mediaElement.SetValue(MediaElement.ScreenStateProperty, MediaElementScreenState.FullScreen);
+
+		// Assert
+		Assert.True(MediaElement.ScreenStateProperty.IsReadOnly);
+		Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+		Assert.Empty(raisedEvents);
 	}
 }

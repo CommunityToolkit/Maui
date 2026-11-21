@@ -35,6 +35,15 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </summary>
 	public static readonly BindableProperty DurationProperty = durationPropertyKey.BindableProperty;
 
+	static readonly BindablePropertyKey screenStatePropertyKey =
+		BindableProperty.CreateReadOnly(nameof(ScreenState), typeof(MediaElementScreenState), typeof(MediaElement),
+			MediaElementScreenState.Default, propertyChanged: OnScreenStatePropertyChanged);
+
+	/// <summary>
+	/// Bindable property for the <see cref="ScreenState"/> property.
+	/// </summary>
+	public static readonly BindableProperty ScreenStateProperty = screenStatePropertyKey.BindableProperty;
+
 	/// <summary>
 	/// Bindable property for the <see cref="ShouldAutoPlay"/> property.
 	/// </summary>
@@ -163,6 +172,13 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 	/// <inheritdoc cref="IMediaElement.SeekCompleted"/>
 	public event EventHandler SeekCompleted
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="IMediaElement.ScreenStateChanged"/>
+	public event EventHandler<ScreenStateChangedEventArgs> ScreenStateChanged
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
@@ -399,6 +415,18 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		private set => SetValue(currentStatePropertyKey, value);
 	}
 
+	/// <summary>
+	/// Gets the screen state of the media element: whether it is shown full screen.
+	/// </summary>
+	/// <remarks>
+	/// The state is <see cref="MediaElementScreenState.Default"/> while the media element has no handler.
+	/// </remarks>
+	public MediaElementScreenState ScreenState
+	{
+		get => (MediaElementScreenState)GetValue(ScreenStateProperty);
+		private set => SetValue(screenStatePropertyKey, value);
+	}
+
 	/// <inheritdoc/>
 	TaskCompletionSource IAsynchronousMediaElementHandler.SeekCompletedTCS => seekCompletedTaskCompletionSource;
 
@@ -500,6 +528,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	void IMediaElement.SeekCompleted() => OnSeekCompleted();
 
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
+
+	void IMediaElement.FullScreenChanged(MediaElementScreenState newState) => ScreenState = newState;
 
 	// The code that sets the Source is often MAUI's (XAML, a binding), so the app cannot catch what its event handlers throw during the update. The
 	// exception is caught where the event is raised (RaiseEvent, OnPropertyChanging, OnPropertyChanged), before it can end the update or leave a
@@ -652,6 +682,15 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		oldMediaSource?.SourceChanged -= mediaElement.OnSourceChanged;
 	}
 
+	static void OnScreenStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+		var previousState = (MediaElementScreenState)oldValue;
+		var newState = (MediaElementScreenState)newValue;
+
+		mediaElement.OnScreenStateChanged(new ScreenStateChangedEventArgs(previousState, newState));
+	}
+
 	static void OnCurrentStatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
 		var mediaElement = (MediaElement)bindable;
@@ -712,6 +751,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) => RaiseEvent(mediaPositionChangedEventArgs, nameof(PositionChanged));
 
 	void OnStateChanged(MediaStateChangedEventArgs mediaStateChangedEventArgs) => RaiseEvent(mediaStateChangedEventArgs, nameof(StateChanged));
+
+	void OnScreenStateChanged(ScreenStateChangedEventArgs screenStateChangedEventArgs) => RaiseEvent(screenStateChangedEventArgs, nameof(ScreenStateChanged));
 
 	void OnPauseRequested() => RaiseEvent(EventArgs.Empty, nameof(PauseRequested));
 

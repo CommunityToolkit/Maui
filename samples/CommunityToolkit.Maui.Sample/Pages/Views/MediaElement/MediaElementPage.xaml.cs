@@ -77,6 +77,9 @@ public partial class MediaElementPage : BasePage<MediaElementViewModel>
 	void OnStateChanged(object? sender, MediaStateChangedEventArgs e) =>
 		logger.LogInformation("Media State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
 
+	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e) =>
+		logger.LogInformation("Screen State Changed. Old State: {PreviousState}, New State: {NewState}", e.PreviousState, e.NewState);
+
 	void OnMediaFailed(object? sender, MediaFailedEventArgs e) => logger.LogInformation("Media failed. Error: {ErrorMessage}", e.ErrorMessage);
 
 	void OnMediaEnded(object? sender, EventArgs? e) => logger.LogInformation("Media ended.");

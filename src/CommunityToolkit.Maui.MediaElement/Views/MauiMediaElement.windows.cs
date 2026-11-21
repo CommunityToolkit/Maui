@@ -22,12 +22,14 @@ namespace CommunityToolkit.Maui.Core.Views;
 /// </summary>
 public partial class MauiMediaElement : Grid, IDisposable
 {
+	readonly WeakEventManager fullScreenEventManager = new();
 	readonly Popup popup = new();
 	readonly Grid fullScreenGrid = new();
 	readonly MediaPlayerElement mediaPlayerElement;
 	readonly CustomTransportControls? customTransportControls;
 	bool doesNavigationBarExistBeforeFullScreen;
 	bool isDisposed;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MauiMediaElement"/> class.
 	/// </summary>
@@ -47,6 +49,15 @@ public partial class MauiMediaElement : Grid, IDisposable
 	/// Finalizer
 	/// </summary>
 	~MauiMediaElement() => Dispose(false);
+
+	/// <summary>
+	/// Occurs when the full screen button moved the element into its full screen popup, or back out of it.
+	/// </summary>
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
+	}
 
 	/// <summary>
 	/// Gets the presented page.
@@ -223,6 +234,8 @@ public partial class MauiMediaElement : Grid, IDisposable
 			var parent = mediaPlayerElement.Parent as FrameworkElement;
 			mediaPlayerElement.Width = parent?.Width ?? mediaPlayerElement.Width;
 			mediaPlayerElement.Height = parent?.Height ?? mediaPlayerElement.Height;
+
+			OnFullScreenStateChanged(MediaElementScreenState.FullScreen, MediaElementScreenState.Default);
 		}
 		else
 		{
@@ -257,6 +270,12 @@ public partial class MauiMediaElement : Grid, IDisposable
 			{
 				popup.IsOpen = true;
 			}
+
+			OnFullScreenStateChanged(MediaElementScreenState.Default, MediaElementScreenState.FullScreen);
 		}
 	}
+
+	// Raised only where the element moved: the early returns above change the presenter of the window alone, the element stays where it is
+	void OnFullScreenStateChanged(MediaElementScreenState previousState, MediaElementScreenState newState) =>
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(previousState, newState), nameof(FullScreenStateChanged));
 }

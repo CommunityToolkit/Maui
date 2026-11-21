@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.Primitives;
@@ -547,10 +548,15 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			var windowedKind = context.AppWindow.Presenter.Kind;
 			Assert.NotEqual(AppWindowPresenterKind.FullScreen, windowedKind);
 			Shell.SetNavBarIsVisible(context.Page, navigationBarVisible);
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			context.View.FullScreenStateChanged += (_, e) => screenStateChanges.Add(e);
 
 			context.Click();
 
 			await context.WaitForPresenterAsync(kind => kind is AppWindowPresenterKind.FullScreen, "The window did not enter full screen.");
+			var entered = Assert.Single(screenStateChanges);
+			Assert.Equal(MediaElementScreenState.Default, entered.PreviousState);
+			Assert.Equal(MediaElementScreenState.FullScreen, entered.NewState);
 			Assert.False(Shell.GetNavBarIsVisible(context.Page));
 			Assert.Empty(context.View.Children);
 			var popup = Assert.Single(context.OpenPopups);
@@ -562,6 +568,9 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			context.Click();
 
 			await context.WaitForPresenterAsync(kind => kind == windowedKind, "The window did not leave full screen.");
+			Assert.Equal(2, screenStateChanges.Count);
+			Assert.Equal(MediaElementScreenState.FullScreen, screenStateChanges[1].PreviousState);
+			Assert.Equal(MediaElementScreenState.Default, screenStateChanges[1].NewState);
 			Assert.Equal(navigationBarVisible, Shell.GetNavBarIsVisible(context.Page));
 			Assert.Empty(context.OpenPopups);
 			Assert.Same(context.Element, Assert.Single(context.View.Children));
@@ -604,11 +613,15 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			Shell.SetNavBarIsVisible(context.Page, true);
 			context.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
 			await context.WaitForPresenterAsync(kind => kind is AppWindowPresenterKind.FullScreen, "The window did not enter full screen.");
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			context.View.FullScreenStateChanged += (_, e) => screenStateChanges.Add(e);
 
 			var failure = Record.Exception(context.Click);
 
 			Assert.Null(failure);
 			await context.WaitForPresenterAsync(kind => kind == windowedKind, "The window did not leave full screen.");
+			// The element was never shown full screen, so its screen state did not change
+			Assert.Empty(screenStateChanges);
 			Assert.Same(context.Element, Assert.Single(context.View.Children));
 			Assert.True(Shell.GetNavBarIsVisible(context.Page));
 			Assert.Empty(context.OpenPopups);
@@ -626,17 +639,24 @@ public class MauiMediaElementWindowsTests : WinMediaTestBase
 			await context.WaitForPresenterAsync(kind => kind is AppWindowPresenterKind.FullScreen, "The window did not enter full screen.");
 			context.AppWindow.SetPresenter(AppWindowPresenterKind.Default);
 			await context.WaitForPresenterAsync(kind => kind == windowedKind, "The window did not leave full screen.");
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			context.View.FullScreenStateChanged += (_, e) => screenStateChanges.Add(e);
 
 			var failure = Record.Exception(context.Click);
 
 			Assert.Null(failure);
 			await context.WaitForPresenterAsync(kind => kind is AppWindowPresenterKind.FullScreen, "The window did not enter full screen again.");
+			// The element was in the full screen popup all along, so its screen state did not change
+			Assert.Empty(screenStateChanges);
 			Assert.Same(context.Popup, Assert.Single(context.OpenPopups));
 			Assert.Contains(context.Element, Assert.IsType<WinGrid>(context.Popup.Child).Children);
 
 			context.Click();
 
 			await context.WaitForPresenterAsync(kind => kind == windowedKind, "The window did not leave full screen.");
+			var left = Assert.Single(screenStateChanges);
+			Assert.Equal(MediaElementScreenState.FullScreen, left.PreviousState);
+			Assert.Equal(MediaElementScreenState.Default, left.NewState);
 			Assert.True(Shell.GetNavBarIsVisible(context.Page));
 			Assert.Same(context.Element, Assert.Single(context.View.Children));
 			Assert.Empty(context.OpenPopups);
