@@ -4,11 +4,10 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The real-AVFoundation counterpart of CameraManagerAppleRecordingTests, which scripts the same paths. PlatformStartVideoRecording asks for the
-// camera permission first and a headless run cannot answer the system prompt, so each test skips unless the permission already has the state
-// it needs: asking while it is NotDetermined (the default on a fresh simulator or Mac) would show a prompt that blocks the run. On the iOS 27
-// simulator 'xcrun simctl privacy <udid> grant camera|microphone <bundle id>' grants both, although 'camera' is not in simctl's list of
-// services; the CI job does not do it. None of the tests needs a camera: the session has an audio input and a movie output, but no video input.
+// The real-AVFoundation counterpart of CameraManagerAppleRecordingTests, which scripts the same paths. PlatformStartVideoRecording asks for
+// the camera permission first, and asking while it is NotDetermined shows a prompt that blocks a headless run. ios.ps1 grants the camera and
+// the microphone on the simulator it creates ('camera' works although simctl does not list it), and the CI requires both, so a lost grant
+// fails these tests instead of skipping them. None of the tests needs a camera: the session has an audio input and a movie output only.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerApplePermissionTests : CameraHandlerTestBase
@@ -37,7 +36,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartVideoRecordingAttachesTheMicrophoneInputAndAMovieOutputToTheSession()
 	{
-		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		RequireCameraAndMicrophonePermissions();
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -71,7 +70,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartVideoRecordingTwiceReplacesTheResourcesOfTheEarlierRecording()
 	{
-		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		RequireCameraAndMicrophonePermissions();
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -101,7 +100,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StopVideoRecordingHonoursCancellationWhileTheRecordingHasNotFinished()
 	{
-		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		RequireCameraAndMicrophonePermissions();
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -127,7 +126,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartVideoRecordingOnARealSessionThatDoesNotRunAndHasNoCameraToStartThrowsCameraExceptionInsteadOfWaitingForever()
 	{
-		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		RequireCameraAndMicrophonePermissions();
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -149,7 +148,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartVideoRecordingCancelledWhileTheRealMovieOutputNeverReportsTheStartReturnsAndReleasesTheRecording()
 	{
-		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		RequireCameraAndMicrophonePermissions();
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -172,7 +171,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task DisposeAfterStartingAVideoRecordingReleasesTheInputOutputAndSession()
 	{
-		SkipUnlessCameraAndMicrophoneAreAuthorized();
+		RequireCameraAndMicrophonePermissions();
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
@@ -200,7 +199,7 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartVideoRecordingWithoutMicrophonePermissionContinuesWithoutAnAudioInput()
 	{
-		SkipUnlessCameraIsAuthorized();
+		RequireCameraPermission();
 		var microphoneStatus = AVCaptureDevice.GetAuthorizationStatus(AVAuthorizationMediaType.Audio);
 		Skip.IfNot(microphoneStatus is AVAuthorizationStatus.Denied or AVAuthorizationStatus.Restricted,
 			$"Needs the microphone permission to be denied or restricted (it is {microphoneStatus}); starting a recording would otherwise show a prompt or add the audio input. Deny it with 'xcrun simctl privacy <udid> revoke microphone <bundle id>' on a simulator.");
@@ -229,15 +228,15 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 		});
 	}
 
-	static void SkipUnlessCameraIsAuthorized() =>
-		Skip.IfNot(AppleCameraEnvironment.IsCameraAuthorized,
+	static void RequireCameraPermission() =>
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.CameraPermission, AppleCameraEnvironment.IsCameraAuthorized,
 			$"Needs the camera permission to be granted ({AppleCameraEnvironment.DescribeCameraAccess()}). A headless run cannot answer the system prompt; grant it with 'xcrun simctl privacy <udid> grant camera <bundle id>' on a simulator.");
 
-	static void SkipUnlessCameraAndMicrophoneAreAuthorized()
+	static void RequireCameraAndMicrophonePermissions()
 	{
-		SkipUnlessCameraIsAuthorized();
+		RequireCameraPermission();
 		var microphoneStatus = AVCaptureDevice.GetAuthorizationStatus(AVAuthorizationMediaType.Audio);
-		Skip.IfNot(microphoneStatus is AVAuthorizationStatus.Authorized,
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.MicrophonePermission, microphoneStatus is AVAuthorizationStatus.Authorized,
 			$"Needs the microphone permission to be granted (it is {microphoneStatus}); starting a recording would otherwise show a prompt. Grant it with 'xcrun simctl privacy <udid> grant microphone <bundle id>' on a simulator.");
 		Skip.If(AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio) is null, "Needs an audio capture device.");
 	}

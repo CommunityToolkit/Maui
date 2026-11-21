@@ -120,7 +120,8 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 	[Fact]
 	public async Task StartAndStopVideoRecordingCopiesTheRecordedMovieIntoTheStream()
 	{
-		Skip.If(AVCaptureDevice.GetAuthorizationStatus(AVAuthorizationMediaType.Audio) is AVAuthorizationStatus.NotDetermined,
+		var microphoneStatus = AVCaptureDevice.GetAuthorizationStatus(AVAuthorizationMediaType.Audio);
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.MicrophonePermission, microphoneStatus is not AVAuthorizationStatus.NotDetermined,
 			"Starting a recording creates an audio input, which would show the microphone permission prompt that a headless run cannot answer.");
 
 		await RunWithConnectedCameraAsync(async (scope, _) =>
@@ -168,7 +169,7 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 	[Fact]
 	public async Task TheHandlerConnectsTheCameraByItselfAndCaptureImageReturnsAJpeg()
 	{
-		SkipUnlessACameraIsAuthorized();
+		RequireAnAuthorizedCamera();
 		SetupBuilder();
 		var view = new CameraView { WidthRequest = 320, HeightRequest = 240 };
 
@@ -199,7 +200,7 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 
 	async Task RunWithConnectedCameraAsync(Func<AppleCameraManagerScope, CameraInfo, Task> test)
 	{
-		SkipUnlessACameraIsAuthorized();
+		RequireAnAuthorizedCamera();
 		var cameras = await AppleCameraEnvironment.DiscoverCamerasAsync();
 		Skip.If(cameras.Count is 0, "The camera provider found no camera.");
 		SetupBuilder();
@@ -222,10 +223,10 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 		});
 	}
 
-	static void SkipUnlessACameraIsAuthorized()
+	static void RequireAnAuthorizedCamera()
 	{
 		DeviceTestCapabilities.Require(DeviceTestCapabilities.Camera, AppleCameraEnvironment.HasVideoCaptureDevice, $"Needs a camera ({AppleCameraEnvironment.DescribeCameraAccess()}).");
-		Skip.IfNot(AppleCameraEnvironment.IsCameraAuthorized,
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.CameraPermission, AppleCameraEnvironment.IsCameraAuthorized,
 			$"Needs the camera permission to be granted ({AppleCameraEnvironment.DescribeCameraAccess()}). A headless run cannot answer the system prompt: run CameraAppleUserInteractionTests once from the visual runner and allow the camera.");
 	}
 }
