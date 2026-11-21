@@ -27,16 +27,18 @@
             Spacing="12">
 
             <mct:StateContainer.StateViews>
-                <VerticalStackLayout
+                <ContentView 
                     mct:StateView.StateKey="Loading"
                     mct:StateContainer.CanStateChange="{Binding CanFullPageStateChange}">
-                    <ActivityIndicator
-                        HorizontalOptions="Center"
-                        IsRunning="True"
-                        Color="Fuchsia" />
-                    <Label HorizontalOptions="Center" Text="I'm a state on the whole page!" />
-                    <Label HorizontalOptions="Center" Text="Toggle to go back." />
-                </VerticalStackLayout>
+                    <VerticalStackLayout>
+                        <ActivityIndicator
+                            HorizontalOptions="Center"
+                            IsRunning="True"
+                            Color="Fuchsia" />
+                        <Label HorizontalOptions="Center" Text="I'm a state on the whole page!" />
+                        <Label HorizontalOptions="Center" Text="Toggle to go back." />
+                    </VerticalStackLayout>
+                </ContentView>
             </mct:StateContainer.StateViews>
 
             <Label Text="The StateContainer properties allow any Layout derived element to become state-aware." />
