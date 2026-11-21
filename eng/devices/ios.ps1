@@ -12,8 +12,8 @@
     recognition to the test apps on it (and checks every grant in its TCC database), and deletes it afterwards unless
     -KeepDevice. A simulator that cannot be created, booted or given the permissions is replaced as often as
     infrastructure failures are retried (-InfraRetries). It never resets, shuts down, deletes or grants anything on a
-    simulator it did not create, and never passes --reset-simulator to xharness (that kills every simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a
-    simulator failure (88), never a script error.
+    simulator it did not create, and never passes --reset-simulator to xharness (that kills every simulator on the
+    Mac). Every simctl call has a timeout, and a simctl failure is a simulator failure (88), never a script error.
 
     The device type of the new simulator is always one that its runtime lists as supported, because 'simctl create'
     refuses any other. Without -DeviceType it is the runtime's first iPhone with one built-in screen: the status bar
@@ -730,7 +730,7 @@ function Add-SimulatorTccGrant {
     # The access table's columns differ by iOS version (iOS 15 and 16 have no pid; iOS 27 adds two), so only the columns it has are written.
     param([string]$Database, [string]$Bundle, [string]$TccService)
 
-    if ($Bundle -notmatch '^[A-Za-z0-9.-]+$') {
+    if ($Bundle -cnotmatch '^[A-Za-z0-9.-]+\z') {
         return "'$Bundle' is not a valid bundle identifier."
     }
 
@@ -809,7 +809,7 @@ function Grant-SimulatorPrivacy {
     $simctlAnswers = $true
     $grantMethods = @{}
     foreach ($bundle in $BundleIdentifiers) {
-        if ($bundle -notmatch '^[A-Za-z0-9.-]+$') {
+        if ($bundle -cnotmatch '^[A-Za-z0-9.-]+\z') {
             return "'$bundle' is not a valid bundle identifier, so nothing was granted on simulator $Identifier."
         }
 
@@ -960,7 +960,7 @@ try {
                 $privacyEvidencePath = Join-Path $context.Results 'privacy-grant-evidence.txt'
 
                 # A simulator that cannot be created, booted or given the permissions is replaced as often as infrastructure failures are
-                # retried (once on CI): 1 in 10 simulator starts never finishes (actions/runner-images #12777).
+                # retried (once on CI): about 1 in 10 simulator starts never finishes (actions/runner-images #12777).
                 for ($attempt = 1; $attempt -le (1 + $context.InfraRetries); $attempt++) {
                     $attemptName = $name
                     if ($attempt -gt 1) {

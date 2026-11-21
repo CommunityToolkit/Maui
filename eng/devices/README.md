@@ -197,7 +197,7 @@ The scripts exit with XHarness's exit codes, on every platform:
 | 80 | APP_CRASH | the app crashed (on Android also: the UI-thread watchdog ended a hung app; the summary quotes its line, and the stacks are in the logcat and in `/data/anr`) |
 | 81 | DEVICE_NOT_FOUND | no usable Android device or emulator |
 | 83 | APP_LAUNCH_FAILURE | the app could not be started |
-| 88 | SIMULATOR_FAILURE | the iOS simulator could not be created or booted, or simctl did not answer in time (every simctl call has a timeout; a created simulator that does not boot is replaced once on CI) |
+| 88 | SIMULATOR_FAILURE | the iOS simulator could not be created, booted or given the camera, microphone and speech recognition permissions, or simctl did not answer in time (every simctl call has a timeout; such a simulator is replaced once on CI) |
 | 94 | TEST_RESULTS_MISSING | no results file, an unreadable one, 0 tests, or every test was skipped |
 
 With several apps the script returns the first non-zero code in project order.
