@@ -8,6 +8,8 @@
     rewritten first, so that ReportGenerator merges them line by line:
     * Every file path becomes repository-relative (src/<Project>/...), whatever the checkout folder, the path separator or the
       /_/ prefix of a deterministic (CI) build.
+    * CsWinRT's generated files (obj/generated/WinRT.SourceGenerator/) are left out: no test targets them, and the generator lays them out
+      differently in each Windows build.
     * Generated files (src/<Project>/obj/<Configuration>/<TargetFramework>/...) are merged across target frameworks under
       src/<Project>/obj/generated/, without the checkout path that MAUI's binding source generator puts in its file names.
     * Each source file becomes one class, named after its path, that lists each line once (the most hits, the best branch
@@ -79,6 +81,9 @@ $generatedPathPattern = [regex]'^(src/[^/]+/obj)/[^/]+/net\d+\.\d+(?:-[a-z]+[\d.
 # MAUI's binding source generator names its files after the source file's full path ('-Users-me-repo-src-CommunityToolkit.Maui-...',
 # 'D--a-Maui-Maui-src-CommunityToolkit.Maui-...'); greedy, because the checkout path can contain '-src-CommunityToolkit.Maui' too.
 $checkoutInFileNamePattern = [regex]'(^|/)[^/]*-src-(CommunityToolkit\.Maui)'
+# CsWinRT's generated interop code (Windows builds only): thousands of lines no test targets, and the generator lays its files out differently
+# in the packaged and the unpackaged build, so merging them line by line would add lines that exist in neither.
+$winRtGeneratedPathPattern = [regex]'^src/[^/]+/obj/generated/WinRT\.SourceGenerator/'
 $conditionCoveragePattern = [regex]'\((\d+)/(\d+)\)'
 
 function ConvertTo-RepositoryPath {
@@ -124,6 +129,10 @@ function ConvertTo-FileCobertura {
             $file = ConvertTo-RepositoryPath -FileName $class.GetAttribute('filename') -Sources $sources
             if ($null -eq $file) {
                 [void]$unmapped.Add($class.GetAttribute('filename'))
+                continue
+            }
+
+            if ($winRtGeneratedPathPattern.IsMatch($file)) {
                 continue
             }
 
