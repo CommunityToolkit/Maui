@@ -24,7 +24,7 @@ public class BarcodeAnalyzer(Func<ICommand?> commandProvider) : Java.Lang.Object
 			.Build());
 	}
 	
-	public void Analyze(IImageProxy proxy)
+	public void Analyze(IImageProxy? proxy)
 	{
 		try
 		{

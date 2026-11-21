@@ -16,9 +16,9 @@ public abstract partial class FrameBasedCameraScenario
 
 		OnDetached();
 
-		var builder = new ImageAnalysis.Builder()
-			.SetResolutionSelector(resolutionSelector)
-			.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest);
+		var builder = new ImageAnalysis.Builder();
+		builder.SetResolutionSelector(resolutionSelector);
+		builder.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest);
 
 		if (PreferredFormat == CameraFrameFormat.Yuv420)
 		{
@@ -34,7 +34,7 @@ public abstract partial class FrameBasedCameraScenario
 			builder.SetOutputImageFormat(ImageAnalysis.OutputImageFormatYuv420888);
 		}
 
-		imageAnalysis = builder.Build();
+		imageAnalysis = builder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageAnalysis.");
 
 		imageAnalysis.SetAnalyzer(cameraExecutor, new FrameAnalyzer(this));
 		
@@ -58,10 +58,15 @@ public abstract partial class FrameBasedCameraScenario
 	
 	sealed class FrameAnalyzer(FrameBasedCameraScenario scenario) : Java.Lang.Object, ImageAnalysis.IAnalyzer
 	{
-		public void Analyze(IImageProxy image)
+		public void Analyze(IImageProxy? image)
 		{
+			if (image is null)
+			{
+				return;
+			}
+
 			var planes = image.GetPlanes();
-			if (planes.Length == 0)
+			if (planes is null || planes.Length == 0)
 			{
 				image.Close();
 				return;

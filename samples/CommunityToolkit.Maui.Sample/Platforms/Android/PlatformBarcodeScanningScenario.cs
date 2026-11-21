@@ -22,10 +22,9 @@ public partial class PlatformBarcodeScanningScenario
 	{
 		lazyUseCase = new Lazy<UseCase>(() =>
 		{
-			var imageAnalysis =
-				new ImageAnalysis.Builder()
-					.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest)
-					.Build();
+			var imageAnalysisBuilder = new ImageAnalysis.Builder();
+			imageAnalysisBuilder.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest);
+			var imageAnalysis = imageAnalysisBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageAnalysis.");
 
 			imageAnalysis.SetAnalyzer(ContextCompat.GetMainExecutor(global::Android.App.Application.Context)!, new BarcodeAnalyzer(() => Command));
 		
