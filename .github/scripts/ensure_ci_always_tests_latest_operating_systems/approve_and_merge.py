@@ -10,14 +10,14 @@ import binascii
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
 
 from .change_validator import validate_changes
 from .data_types import SafeChange, ThingToCheck
 from .errors import GitHubApiError
 from .line_editor import apply_changes_to_texts
-from .markers import COMMIT_TRAILER, PIN_FILES
-from .pinned_versions import DEFAULT_ANDROID_TARGET, read_android_legs
+from .markers import COMMIT_TRAILER, PIN_FILES, WORKFLOW_FILE
+from .pinned_versions import DEFAULT_ANDROID_TARGET, DEVICE_TESTS_FILE, read_android_legs
 from .required_checks import read_branch_rules
 from .version_numbers import AndroidLevel, parse_android_level, parse_utc
 
@@ -197,13 +197,19 @@ def _level_problems(changes: List[SafeChange], base_device_tests: str) -> List[s
     return problems
 
 
-def _commit_problems(commits: List[Dict[str, Any]], owner_login: str, base_sha: str) -> Tuple[List[str], List[str]]:
-    """(commits problems, base problems) for the commits of the pull request."""
+class CommitProblems(NamedTuple):
+    about_the_commit: List[str]
+    about_its_base: List[str]
+
+
+def _commit_problems(commits: List[Dict[str, Any]], owner_login: str, base_sha: str, head_sha: str) -> CommitProblems:
     commit_problems: List[str] = []
     base_problems: List[str] = []
     if len(commits) != 1:
-        return ['the pull request has %d commits, not one' % len(commits)], []
+        return CommitProblems(['the pull request has %d commits, not one' % len(commits)], [])
     commit = commits[0]
+    if commit.get('sha') != head_sha:
+        commit_problems.append('the one commit is %r, not the head %r' % (commit.get('sha'), head_sha))
     message_lines = [line.rstrip('\r') for line in str((commit.get('commit') or {}).get('message', '')).split('\n')]
     if COMMIT_TRAILER not in message_lines:
         commit_problems.append('the commit message has no "%s" line' % COMMIT_TRAILER)
@@ -213,7 +219,7 @@ def _commit_problems(commits: List[Dict[str, Any]], owner_login: str, base_sha: 
     parents = [parent.get('sha') for parent in commit.get('parents') or []]
     if parents != [base_sha]:
         base_problems.append('the commit has parents %s, not only %s' % (parents, base_sha))
-    return commit_problems, base_problems
+    return CommitProblems(commit_problems, base_problems)
 
 
 def _last_push_rule_is_on(rules: Dict[str, Any]) -> bool:
@@ -224,7 +230,6 @@ def _last_push_rule_is_on(rules: Dict[str, Any]) -> bool:
 def check_before_approving(github: Any, plan: Any, decision: Any, pull_request: int, head_sha: str, operation: str,
                            base: str, base_sha: str, bot_branch: str,
                            sleep: Callable[[float], None] = time.sleep) -> CheckResult:
-    """pull_request is the number. Reads everything fresh; the result lists one code of REFUSAL_REASONS per failed check."""
     owner_login = decision.token.login if hasattr(decision, 'token') else decision['token']['login']
     repo = github.repo
     refusal_details: Dict[str, List[str]] = {}
@@ -238,14 +243,14 @@ def check_before_approving(github: Any, plan: Any, decision: Any, pull_request: 
     reviews = github.paginate('/repos/%s/pulls/%d/reviews' % (repo, pull_request))
     timeline = github.paginate('/repos/%s/issues/%d/timeline' % (repo, pull_request))
     rules = read_branch_rules(github, base)
-    graph = _read_graphql_facts(github, pull_request)
+    graphql_facts = _read_graphql_facts(github, pull_request)
     base_texts = _read_pin_files(github, base_sha)
     head_texts = _read_pin_files(github, head_sha)
 
     head_repository = ((pull.get('head') or {}).get('repo') or {}).get('full_name')
-    if pull.get('state') != 'open' or graph['is_draft'] or pull.get('draft') or (pull.get('base') or {}).get('ref') != base:
+    if pull.get('state') != 'open' or graphql_facts['is_draft'] or pull.get('draft') or (pull.get('base') or {}).get('ref') != base:
         refuse('state')
-    if ((pull.get('user') or {}).get('login') or '').lower() != owner_login.lower():
+    if not owner_login or ((pull.get('user') or {}).get('login') or '').lower() != owner_login.lower():
         refuse('author', 'the pull request was opened by %r, not by the token owner %r'
                % ((pull.get('user') or {}).get('login'), owner_login))
     if (pull.get('head') or {}).get('ref') != bot_branch or head_repository != repo:
@@ -254,7 +259,7 @@ def check_before_approving(github: Any, plan: Any, decision: Any, pull_request: 
     if (pull.get('head') or {}).get('sha') != head_sha:
         refuse('head', "the pull request's newest commit is %r, not %r" % ((pull.get('head') or {}).get('sha'), head_sha))
 
-    commit_problems, parent_problems = _commit_problems(commits, owner_login, base_sha)
+    commit_problems, parent_problems = _commit_problems(commits, owner_login, base_sha, head_sha)
     if commit_problems:
         refuse('commits', *commit_problems)
     merge_base = (compare.get('merge_base_commit') or {}).get('sha')
@@ -282,17 +287,19 @@ def check_before_approving(github: Any, plan: Any, decision: Any, pull_request: 
         refuse('validator', *validator_problems)
 
     try:
-        level_problems = _level_problems(changes, base_texts['.github/workflows/device-tests.yml'])
+        level_problems = _level_problems(changes, base_texts[DEVICE_TESTS_FILE])
     except ValueError as error:
         level_problems = ['the Android levels can not be read: %s' % error]
     if level_problems:
         refuse('levels-rise', *level_problems)
 
-    if graph['unresolved_threads']:
-        refuse('threads', '%d review conversation(s) are not resolved' % graph['unresolved_threads'])
-    if graph['mergeable'] in (False, 'CONFLICTING'):
+    if graphql_facts['unresolved_threads']:
+        refuse('threads', '%d review conversation(s) are not resolved' % graphql_facts['unresolved_threads'])
+    if graphql_facts['mergeable'] in (False, 'CONFLICTING'):
         refuse('conflicts')
-    if not _last_push_rule_is_on(rules):
+    if rules.get('status') != 'ok':
+        refuse('last-push-rule', 'the branch rules could not be read: %s' % rules.get('error', 'unknown error'))
+    elif not _last_push_rule_is_on(rules):
         refuse('last-push-rule')
     if _latest_auto_merge_event_is_a_persons_turn_off(timeline):
         refuse('hold')
@@ -300,12 +307,13 @@ def check_before_approving(github: Any, plan: Any, decision: Any, pull_request: 
     approved_at_head = any((review.get('user') or {}).get('login') == APPROVER_LOGIN
                            and review.get('state') == 'APPROVED' and review.get('commit_id') == head_sha
                            for review in reviews)
+    # created and updated are older heads by definition; enabledAt is GitHub's clock and committedDate the runner's.
     armed_for_this_head = False
-    if graph['auto_merge_enabled_at'] and graph['head_committed_date']:
-        armed_for_this_head = parse_utc(graph['auto_merge_enabled_at']) > parse_utc(graph['head_committed_date'])
-    facts = dict(graph)
+    if operation == 'none' and graphql_facts['auto_merge_enabled_at'] and graphql_facts['head_committed_date']:
+        armed_for_this_head = parse_utc(graphql_facts['auto_merge_enabled_at']) > parse_utc(graphql_facts['head_committed_date'])
+    facts = dict(graphql_facts)
     facts.update({'number': pull_request, 'head_sha': head_sha, 'operation': operation,
-                  'auto_merge_is_on': graph['auto_merge_enabled_at'] is not None,
+                  'auto_merge_is_on': graphql_facts['auto_merge_enabled_at'] is not None,
                   'auto_merge_armed_for_this_head': armed_for_this_head,
                   'approved_at_head': approved_at_head})
     return CheckResult(refusals=[code for code in REFUSAL_REASONS if code in refusal_details], pull_request_facts=facts,
@@ -317,7 +325,7 @@ def turn_off_auto_merge(github: Any, node_id: str) -> None:
 
 
 def turn_on_auto_merge(github: Any, node_id: str, head_sha: str) -> str:
-    """'turned-on', or 'mergeable-now' when GitHub says the pull request can already merge and so can not be armed."""
+    """'mergeable-now' is GitHub's answer for a pull request that can already merge and so can't be armed."""
     try:
         github.graphql(_TURN_ON_AUTO_MERGE, {'id': node_id, 'sha': head_sha})
     except GitHubApiError as error:
@@ -329,8 +337,8 @@ def turn_on_auto_merge(github: Any, node_id: str, head_sha: str) -> str:
 
 
 def approve(github: Any, number: int, head_sha: str, run_url: str, base: str = 'main', base_sha: str = '') -> None:
-    body = ('Approved by ensure-ci-always-tests-latest-operating-systems.yml: this pull request holds exactly the planned '
-            'version changes, on %s %s. %s' % (base, base_sha[:7], run_url))
+    body = ('Approved by %s: this pull request holds exactly the planned '
+            'version changes, on %s %s. %s' % (WORKFLOW_FILE, base, base_sha[:7], run_url))
     status, _, data = github.post('/repos/%s/pulls/%d/reviews' % (github.repo, number),
                                   {'commit_id': head_sha, 'event': 'APPROVE', 'body': body})
     if not 200 <= status < 300:
@@ -339,7 +347,7 @@ def approve(github: Any, number: int, head_sha: str, run_url: str, base: str = '
 
 
 def merge_now(github: Any, number: int, head_sha: str) -> Tuple[bool, str]:
-    """sha makes GitHub refuse a merge of any commit other than the one the checks vouched for."""
+    """Passing the sha makes GitHub refuse a merge of any commit other than the one the checks vouched for."""
     path = '/repos/%s/pulls/%d/merge' % (github.repo, number)
     status, _, data = github.put(path, {'sha': head_sha, 'merge_method': 'squash'})
     message = str(data.get('message', '')) if isinstance(data, dict) else ''
@@ -356,11 +364,12 @@ def _refusal_things_to_check(number: int, result: CheckResult) -> List[ThingToCh
         things.append(ThingToCheck('pull-request-auto-merge-turned-off:%d' % number,
                                    'A person turned off auto-merge on #%d, so the bot leaves it off. Turn it back on, or close #%d.'
                                    % (number, number)))
-    if 'last-push-rule' in result.refusals:
+    rules_could_not_be_read = any('could not be read' in detail for detail in result.refusal_details.get('last-push-rule', []))
+    if 'last-push-rule' in result.refusals and not rules_could_not_be_read:
         things.append(ThingToCheck('last-push-approval-rule-off',
                                    "The main branch rules no longer require approval of the most recent push, so the bot doesn't "
                                    'approve its own pull requests: a push after its approval could merge without review.'))
-    others = [code for code in result.refusals if code not in ('hold', 'last-push-rule')]
+    others = [code for code in result.refusals if code != 'hold' and not (code == 'last-push-rule' and not rules_could_not_be_read)]
     if others:
         listed = '; '.join('%s: %s' % (code, '; '.join(result.refusal_details[code])) for code in others)
         things.append(ThingToCheck('pull-request-not-approved:%d:%s' % (number, others[0]),
@@ -371,7 +380,6 @@ def _refusal_things_to_check(number: int, result: CheckResult) -> List[ThingToCh
 def approve_and_turn_on_auto_merge(github: Any, plan: Any, decision: Any, pull_request: int, head_sha: str, operation: str,
                                    base: str, base_sha: str, bot_branch: str, run_url: str = '',
                                    sleep: Callable[[float], None] = time.sleep) -> Dict[str, Any]:
-    """Returns the approval.json content. A refusal is reported in it, never raised."""
     result = check_before_approving(github, plan, decision, pull_request, head_sha, operation, base, base_sha, bot_branch,
                                     sleep)
     facts = result.pull_request_facts

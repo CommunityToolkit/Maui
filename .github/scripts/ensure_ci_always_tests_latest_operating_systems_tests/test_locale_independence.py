@@ -105,6 +105,24 @@ class StaticChecksOfThePackageTests(unittest.TestCase):
         self.assertEqual(problems, [])
 
 
+class ForbiddenWordTests(unittest.TestCase):
+    FORBIDDEN_WORD = re.compile(r'\bfl' + r'ags?\b', re.IGNORECASE)
+
+    def test_no_python_or_workflow_text_of_the_bot_uses_the_word_brandon_does_not_want(self) -> None:
+        scripts_folder = os.path.dirname(PACKAGE_FOLDER)
+        files = [os.path.join(scripts_folder, 'ensure-ci-always-tests-latest-operating-systems.py'),
+                 os.path.join(scripts_folder, '..', 'workflows', 'ensure-ci-always-tests-latest-operating-systems.yml')]
+        for folder in (PACKAGE_FOLDER, os.path.dirname(os.path.abspath(__file__))):
+            files.extend(os.path.join(folder, name) for name in sorted(os.listdir(folder)) if name.endswith('.py'))
+        offending = []
+        for path in files:
+            with open(path, encoding='utf-8') as source:
+                for number, line in enumerate(source, start=1):
+                    if self.FORBIDDEN_WORD.search(line):
+                        offending.append('%s:%d' % (os.path.basename(path), number))
+        self.assertEqual([], offending)
+
+
 class StaticCheckDetectsEachProblemTests(unittest.TestCase):
     def problems_of(self, code: str) -> List[str]:
         return find_locale_dependent_code(code, 'example.py')

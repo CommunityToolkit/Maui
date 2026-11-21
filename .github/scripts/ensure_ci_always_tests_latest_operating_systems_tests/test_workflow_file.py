@@ -4,7 +4,7 @@ import json
 import os
 import re
 import unittest
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 from ensure_ci_always_tests_latest_operating_systems_tests import github_expressions
 
@@ -51,7 +51,7 @@ def code_lines() -> List[Tuple[int, str]]:
 
 
 def run_values() -> List[Tuple[int, str]]:
-    """Every `run:` value with its first line number; a block value spans the following lines indented deeper than the key."""
+    """Every `run:` value with its first line number; every value spans the following lines indented deeper than the key, so no style of block or plain multi-line value hides a line."""
     lines = read_workflow_lines()
     found: List[Tuple[int, str]] = []
     for index, line in enumerate(lines):
@@ -60,13 +60,13 @@ def run_values() -> List[Tuple[int, str]]:
             continue
         key_indent = indentation_of(line) + (4 if line.lstrip().startswith("-") else 0)
         text = match.group(2)
-        if text in ("|", ">-", ">", "|-"):
-            block: List[str] = []
-            following = index + 1
-            while following < len(lines) and (lines[following].strip() == "" or indentation_of(lines[following]) > key_indent):
-                block.append(lines[following])
-                following += 1
-            text = "\n".join(block)
+        following = index + 1
+        block: List[str] = []
+        while following < len(lines) and (lines[following].strip() == "" or indentation_of(lines[following]) > key_indent):
+            block.append(lines[following])
+            following += 1
+        first_line_is_only_a_block_indicator = re.fullmatch(r"[|>][+-]?[1-9]?[+-]?", text) is not None
+        text = "\n".join(block if first_line_is_only_a_block_indicator else [text] + block)
         found.append((index + 1, text))
     return found
 
@@ -215,6 +215,32 @@ class WorkflowStaticChecks(unittest.TestCase):
         self.assertEqual(1, len(in_open))
         self.assertRegex(in_open[0], r"^\s+token: \$\{\{ secrets\.%s \}\}$" % TOKEN_NAME)
 
+    def test_run_value_reader_follows_every_block_style_and_plain_multi_line_values(self) -> None:
+        import tempfile
+        samples = ["run: |+\n    echo ${{ github.ref_name }}\n", "run: >+\n    echo ${{ github.ref_name }}\n",
+                   "run: |2\n      echo ${{ github.ref_name }}\n", "run: echo hi\n    ${{ github.ref_name }}\n"]
+        for sample in samples:
+            with self.subTest(sample=sample):
+                with tempfile.TemporaryDirectory() as folder:
+                    path = os.path.join(folder, "workflow.yml")
+                    with open(path, "w", encoding="utf-8") as file:
+                        file.write("jobs:\n    a:\n        steps:\n            -   name: x\n                " + sample.replace("\n    ", "\n                    "))
+                    previous = globals()["WORKFLOW_PATH"]
+                    globals()["WORKFLOW_PATH"] = path
+                    try:
+                        values = run_values()
+                    finally:
+                        globals()["WORKFLOW_PATH"] = previous
+                self.assertEqual(1, len(values))
+                self.assertIn("${{", values[0][1])
+
+    def test_only_the_two_allowed_lines_mention_secrets(self) -> None:
+        allowed = [r"^\s+%s: \$\{\{ secrets\.%s \}\}$" % (TOKEN_NAME, TOKEN_NAME), r"^\s+token: \$\{\{ secrets\.%s \}\}$" % TOKEN_NAME]
+        mentions = [(number, line) for number, line in code_lines() if "secrets" in line.lower()]
+        self.assertEqual(2, len(mentions), mentions)
+        for number, line in mentions:
+            self.assertTrue(any(re.match(pattern, line) for pattern in allowed), "line %d: %s" % (number, line.strip()))
+
     def test_token_is_never_inside_a_run_value(self) -> None:
         self.assertEqual([], [number for number, text in run_values() if TOKEN_NAME in text])
 
@@ -236,6 +262,55 @@ class WorkflowStaticChecks(unittest.TestCase):
             with self.subTest(job=name):
                 self.assertIn("permissions", job)
                 self.assertIn("timeout-minutes", job)
+
+    def read_permissions(self, job_name: str) -> Dict[str, str]:
+        job = read_jobs()[job_name]
+        lines = read_workflow_lines()
+        permissions: Dict[str, str] = {}
+        inside = False
+        for line in lines[job["first_line"]:job["last_line"]]:
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            if indentation_of(line) == 8:
+                inside = line.strip() == "permissions:"
+                continue
+            if inside:
+                key, value = line.strip().split(":", 1)
+                permissions[key] = value.strip()
+        return permissions
+
+    def test_each_job_holds_exactly_the_permissions_of_the_design(self) -> None:
+        expected = {
+            "run-unit-tests": {"contents": "read"},
+            "read-latest-versions": {"contents": "read"},
+            "inspect-macos-runner-image": {"contents": "read"},
+            "plan-changes": {"contents": "read", "pull-requests": "read", "checks": "read", "statuses": "read"},
+            "open-or-update-pull-request": {"contents": "write", "pull-requests": "write", "checks": "read", "statuses": "read",
+                                            "issues": "read"},
+            "update-issue-for-a-person": {"contents": "read", "issues": "write", "actions": "read"},
+        }
+        for name, permissions in expected.items():
+            with self.subTest(job=name):
+                self.assertEqual(permissions, self.read_permissions(name))
+
+    def test_only_the_publish_job_may_write_contents_or_pull_requests_and_only_the_issue_job_may_write_issues(self) -> None:
+        for name in JOB_ORDER:
+            permissions = self.read_permissions(name)
+            writes = {key for key, value in permissions.items() if value == "write"}
+            allowed = {"open-or-update-pull-request": {"contents", "pull-requests"}, "update-issue-for-a-person": {"issues"}}.get(name, set())
+            self.assertEqual(set(), writes - allowed, name)
+
+    def test_the_pull_request_labels_are_the_labels_the_issue_and_the_bot_look_for(self) -> None:
+        from ensure_ci_always_tests_latest_operating_systems import markers
+
+        block = step_with_id("open-or-update")
+        start = next(index for index, line in enumerate(block) if line.strip() == "labels: |")
+        labels = []
+        for line in block[start + 1:]:
+            if indentation_of(line) <= indentation_of(block[start]):
+                break
+            labels.append(line.strip())
+        self.assertEqual(list(markers.LABELS), labels)
 
     def test_environment_is_declared_only_on_the_open_or_update_job(self) -> None:
         with_environment = [name for name, job in read_jobs().items() if "environment" in job]
@@ -269,6 +344,35 @@ class WorkflowStaticChecks(unittest.TestCase):
 
     def test_workflow_name_is_the_display_name_of_the_actions_tab(self) -> None:
         self.assertEqual("name: Ensure CI Always Tests Latest Operating Systems", read_workflow_lines()[0])
+
+
+class PublishStepConditions(unittest.TestCase):
+    """The PAT is used only by create-pull-request, so its `if:` and the steps around it carry the safety argument of DESIGN 3.2."""
+
+    def step_condition_holds(self, step_id: str, decide_open_or_update: Optional[str], created_outcome: str = "success",
+                             operation: str = "created", number: str = "12") -> bool:
+        condition = next(line.split("if:", 1)[1] for line in step_with_id(step_id) if line.strip().startswith("if:"))
+        decide_outputs = {} if decide_open_or_update is None else {"open-or-update": decide_open_or_update}
+        contexts = {"steps": {
+            "decide": {"outputs": decide_outputs, "outcome": "success"},
+            "open-or-update": {"outcome": created_outcome, "outputs": {"pull-request-number": number, "pull-request-operation": operation}},
+        }, "job_status_functions": github_expressions.status_functions()}
+        return github_expressions.is_truthy(github_expressions.evaluate_template(condition.strip(), contexts))
+
+    def test_apply_and_open_or_update_run_only_when_decide_says_true(self) -> None:
+        for step_id in ("apply", "open-or-update"):
+            for decided, runs in (("true", True), ("false", False), ("", False), (None, False)):
+                with self.subTest(step=step_id, decided=decided):
+                    self.assertEqual(runs, self.step_condition_holds(step_id, decided))
+
+    def test_approve_runs_only_for_a_pull_request_that_was_created_updated_or_left_alone(self) -> None:
+        for operation in ("created", "updated", "none"):
+            with self.subTest(operation=operation):
+                self.assertTrue(self.step_condition_holds("approve", "true", operation=operation))
+        for outcome, operation, number in (("success", "closed", "12"), ("failure", "created", "12"), ("skipped", "created", "12"),
+                                           ("success", "created", ""), ("cancelled", "updated", "12")):
+            with self.subTest(outcome=outcome, operation=operation, number=number):
+                self.assertFalse(self.step_condition_holds("approve", "true", outcome, operation, number))
 
 
 class ExpressionEvaluatorChecks(unittest.TestCase):
@@ -320,19 +424,30 @@ class ExpressionEvaluatorChecks(unittest.TestCase):
         )
 
 
-# (event, repository, ref, dry_run, expected jobs that run in order of JOB_ORDER-indexed groups, expected bot branch)
+class Row(NamedTuple):
+    event: str
+    repository: str
+    ref: str
+    dry_run: Optional[bool]
+    unit_tests_run: bool
+    reading_and_planning_run: bool
+    publish_runs: bool
+    issue_runs: bool
+    bot_branch: Optional[str]
+
+
 ROWS = [
-    ("schedule", MAUI, "refs/heads/main", None, True, True, True, True, MAUI_BOT_BRANCH),
-    ("workflow_dispatch", MAUI, "refs/heads/main", False, True, True, True, True, MAUI_BOT_BRANCH),
-    ("workflow_dispatch", MAUI, "refs/heads/main", True, True, True, False, False, MAUI_BOT_BRANCH),
-    ("workflow_dispatch", MAUI, "refs/heads/some-branch", False, True, True, False, False, "some-branch-ensure-ci-always-tests-latest-operating-systems"),
-    ("workflow_dispatch", MAUI, "refs/heads/some-branch", True, True, True, False, False, "some-branch-ensure-ci-always-tests-latest-operating-systems"),
-    ("workflow_dispatch", "TheCodeTraveler/CTM", "refs/heads/e2e", False, True, True, True, True, "e2e-ensure-ci-always-tests-latest-operating-systems"),
-    ("workflow_dispatch", "TheCodeTraveler/CTM", "refs/heads/e2e", True, True, True, False, False, "e2e-ensure-ci-always-tests-latest-operating-systems"),
-    ("workflow_dispatch", "TheCodeTraveler/CTM", "refs/heads/main", False, True, True, True, True, "main-ensure-ci-always-tests-latest-operating-systems"),
-    ("schedule", "TheCodeTraveler/CTM", "refs/heads/main", None, False, False, False, False, None),
-    ("pull_request", MAUI, "refs/pull/1/merge", None, True, False, False, False, None),
-    ("pull_request", "TheCodeTraveler/CTM", "refs/pull/1/merge", None, True, False, False, False, None),
+    Row("schedule", MAUI, "refs/heads/main", None, True, True, True, True, MAUI_BOT_BRANCH),
+    Row("workflow_dispatch", MAUI, "refs/heads/main", False, True, True, True, True, MAUI_BOT_BRANCH),
+    Row("workflow_dispatch", MAUI, "refs/heads/main", True, True, True, False, False, MAUI_BOT_BRANCH),
+    Row("workflow_dispatch", MAUI, "refs/heads/some-branch", False, True, True, False, False, "some-branch-ensure-ci-always-tests-latest-operating-systems"),
+    Row("workflow_dispatch", MAUI, "refs/heads/some-branch", True, True, True, False, False, "some-branch-ensure-ci-always-tests-latest-operating-systems"),
+    Row("workflow_dispatch", "TheCodeTraveler/CTM", "refs/heads/e2e", False, True, True, True, True, "e2e-ensure-ci-always-tests-latest-operating-systems"),
+    Row("workflow_dispatch", "TheCodeTraveler/CTM", "refs/heads/e2e", True, True, True, False, False, "e2e-ensure-ci-always-tests-latest-operating-systems"),
+    Row("workflow_dispatch", "TheCodeTraveler/CTM", "refs/heads/main", False, True, True, True, True, "main-ensure-ci-always-tests-latest-operating-systems"),
+    Row("schedule", "TheCodeTraveler/CTM", "refs/heads/main", None, False, False, False, False, None),
+    Row("pull_request", MAUI, "refs/pull/1/merge", None, True, False, False, False, None),
+    Row("pull_request", "TheCodeTraveler/CTM", "refs/pull/1/merge", None, True, False, False, False, None),
 ]
 
 

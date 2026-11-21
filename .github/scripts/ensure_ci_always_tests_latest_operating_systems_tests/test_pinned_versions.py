@@ -106,7 +106,11 @@ class ErrorTests(unittest.TestCase):
         device_tests = text[:end] + "include: ${{ fromJSON('[]') }}\n" + text[end + len('include:\n'):]
         self.assert_unreadable('include', device_tests=device_tests)
 
-    def test_a_sixth_apple_label_that_differs(self) -> None:
+    def test_a_repeated_required_shared_env_key(self) -> None:
+        shared_env = repo_texts()[2] + 'CommunityToolkitLibrary_Xcode_Version=26.0\n'
+        self.assert_unreadable('appears twice', shared_env=shared_env)
+
+    def test_a_fifth_apple_label_that_differs(self) -> None:
         dotnet_build = replaced_once(repo_texts()[1], 'os: [ windows-latest, xcode-27 ]\n        outputs:',
                                      'os: [ windows-latest, xcode-28 ]\n        outputs:')
         self.assert_unreadable('one label', dotnet_build=dotnet_build)

@@ -40,8 +40,6 @@ def make_applications_folder(applications: str, with_license_for_27_1: bool = Tr
 
 
 class FakeCommands:
-    """Records every argv and answers from a script of (return code, output)."""
-
     def __init__(self, answers: Dict[str, Tuple[int, str]]) -> None:
         self.answers = answers
         self.calls: List[List[str]] = []
@@ -183,6 +181,40 @@ class InspectTests(unittest.TestCase):
         self.assertEqual(listing['status'], 'error')
         self.assertIn('imagedata.json', listing['error'])
         self.assertEqual(len(listing['xcode_apps']), 6)
+        self.assertEqual(len(listing['runtimes']), 3)
+
+    def inspect_with(self, run) -> dict:
+        with open(os.path.join(self.home.name, 'imagedata.json'), 'wb') as file:
+            file.write(fixture('macos-runner-image/imagedata.json'))
+        return macos_runner_image.inspect_macos_runner_image(
+            'xcode-27', run=run, apps_dir=self.applications.name, home=self.home.name, environ={})
+
+    def test_a_simctl_that_exits_non_zero_is_an_error_naming_the_command_and_its_exit_code(self) -> None:
+        run = FakeCommands({SIMCTL: (1, ''), DOTNET: (0, fixture('macos-runner-image/list-sdks.txt').decode('utf-8'))})
+        listing = self.inspect_with(run)
+        self.assertEqual(listing['status'], 'error')
+        self.assertIn('`xcrun simctl list runtimes -j` failed with exit code 1', listing['error'])
+        self.assertEqual(len(listing['xcode_apps']), 6)
+
+    def test_a_simctl_that_timed_out_is_an_error(self) -> None:
+        with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('xcrun', 120)):
+            listing = self.inspect_with(macos_runner_image.run_command)
+        self.assertEqual(listing['status'], 'error')
+        self.assertIn('failed with exit code 127', listing['error'])
+
+    def test_a_simctl_that_prints_text_that_is_not_json_is_an_error(self) -> None:
+        run = FakeCommands({SIMCTL: (0, 'not json'), DOTNET: (0, fixture('macos-runner-image/list-sdks.txt').decode('utf-8'))})
+        listing = self.inspect_with(run)
+        self.assertEqual(listing['status'], 'error')
+        self.assertIn('not JSON', listing['error'])
+
+    def test_an_unreadable_applications_folder_is_an_error(self) -> None:
+        with open(os.path.join(self.home.name, 'imagedata.json'), 'wb') as file:
+            file.write(fixture('macos-runner-image/imagedata.json'))
+        listing = macos_runner_image.inspect_macos_runner_image(
+            'xcode-27', run=self.run, apps_dir=os.path.join(self.applications.name, 'nowhere'), home=self.home.name, environ={})
+        self.assertEqual(listing['status'], 'error')
+        self.assertIn('could not list', listing['error'])
         self.assertEqual(len(listing['runtimes']), 3)
 
     def test_the_listing_survives_a_json_round_trip(self) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import unittest
 
 from ensure_ci_always_tests_latest_operating_systems.data_types import (
@@ -155,6 +156,28 @@ class CheckRunnerLabelsTests(unittest.TestCase):
         self.assertEqual(keys_of(plan), ['ubuntu-label:ubuntu-26.04'])
         self.assertEqual(len(plan.notes), 1)
         self.assertIn('macos-27', plan.notes[0])
+
+    def test_a_newer_xcode_is_a_note_that_says_a_person_moves_the_jobs(self):
+        rows = self.rows + [row('Xcode 28', ['xcode-28'])]
+        plan = check_runner_labels(pinned_versions(), rows)
+        self.assertEqual(keys_of(plan), ['ubuntu-label:ubuntu-26.04'])
+        self.assertEqual(len(plan.notes), 1)
+        self.assertIn('xcode-28', plan.notes[0])
+        self.assertIn('A person moves the Apple jobs', plan.notes[0])
+
+    def test_readme_text_appears_only_inside_code_spans(self):
+        hostile_name = 'macOS 26 @everyone <script>x</script>'
+        hostile_badge = '@octocat see <img src=x onerror=alert(1)> `x`'
+        rows = [row(hostile_name, ['macos-15'], ['deprecated']) if 'macos-15' in r.labels else r for r in self.rows]
+        rows.append(row('Windows', ['windows-2028'], [hostile_badge]))
+        plan = check_runner_labels(pinned_versions(), rows)
+        deprecated = [t.text for t in plan.things_to_check if t.key == 'runner-label-deprecated:macos-15'][0]
+        newer_windows = [t.text for t in plan.things_to_check if t.key == 'windows-label:windows-2028'][0]
+        for text in (deprecated, newer_windows):
+            outside_code_spans = re.sub(r'`[^`]*`', '', text)
+            for dangerous in ('@everyone', '@octocat', '<script>', '<img'):
+                self.assertNotIn(dangerous, outside_code_spans, text)
+        self.assertIn('`macOS 26 @everyone <script>x</script>`', deprecated)
 
     def test_every_key_is_a_valid_item_key(self):
         from ensure_ci_always_tests_latest_operating_systems.markers import is_valid_item_key

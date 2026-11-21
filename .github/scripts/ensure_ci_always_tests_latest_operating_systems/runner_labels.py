@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .data_types import FamilyPlan, PinnedVersions, RolloutState, RunnerImageRow, ThingToCheck
 from .errors import NotFoundError, RunnerImagesReadmeError, UnreadableSourceError
+from .markdown_text import markdown_code
 
 README_URL = 'https://raw.githubusercontent.com/actions/runner-images/main/README.md'
 ROLLOUT_STATE_URL = ('https://gist.githubusercontent.com/hosted-runners-images-bot/'
@@ -17,6 +18,7 @@ _APPLE_LABEL = re.compile(r'(xcode|macos)-\d+', re.ASCII)
 _UBUNTU_LABEL = re.compile(r'ubuntu-(\d+)\.(\d+)', re.ASCII)
 _WINDOWS_LABEL = re.compile(r'windows-(\d{4})', re.ASCII)
 _MACOS_LABEL = re.compile(r'macos-(\d+)', re.ASCII)
+_XCODE_LABEL = re.compile(r'xcode-(\d+)', re.ASCII)
 _LABEL_IN_BACKTICKS = re.compile(r'`([^`]+)`')
 _BADGE_WORD = re.compile(r'!\[([^\]]*)\]\(')
 _ROLLOUT_STATE_KEY = re.compile(r'raw%2F([A-Za-z0-9._-]+)\.json', re.ASCII)
@@ -179,24 +181,29 @@ def check_runner_labels(pinned: PinnedVersions, rows: List[RunnerImageRow]) -> F
         if row is None:
             plan.things_to_check.append(ThingToCheck(
                 key='runner-label-missing:%s' % label,
-                text='The runner images README no longer lists `%s`, which the workflows use.' % label))
+                text='The runner images README no longer lists %s, which the workflows use.' % markdown_code(label)))
         elif 'deprecated' in row.badges:
             plan.things_to_check.append(ThingToCheck(
                 key='runner-label-deprecated:%s' % label,
-                text='The runner images README marks `%s` (%s) as deprecated, and the workflows use it.'
-                     % (label, row.name)))
+                text='The runner images README marks %s (%s) as deprecated, and the workflows use it.'
+                     % (markdown_code(label), markdown_code(row.name))))
     for family, pattern in (('ubuntu', _UBUNTU_LABEL), ('windows', _WINDOWS_LABEL)):
         pinned_in_family = pinned.runner_labels.get(family, [])
         for _, label in _readme_labels_above_every_pinned(rows, pinned_in_family, pattern):
             row = _row_of(rows, label)
-            badge_word = ', '.join(row.badges) if row is not None and row.badges else 'GA'
+            badge_words = ', '.join(markdown_code(badge) for badge in row.badges) if row is not None and row.badges else 'GA'
             plan.things_to_check.append(ThingToCheck(
                 key='%s-label:%s' % (family, label),
-                text='The runner images README lists `%s` (%s), newer than the %s labels the workflows use (%s).'
-                     % (label, badge_word, family, ', '.join(pinned_in_family))))
+                text='The runner images README lists %s (%s), newer than the %s labels the workflows use (%s).'
+                     % (markdown_code(label), badge_words, family, ', '.join(markdown_code(used) for used in pinned_in_family))))
     pinned_macos = pinned.runner_labels.get('macos', [])
     for _, label in _readme_labels_above_every_pinned(rows, pinned_macos, _MACOS_LABEL):
         plan.notes.append('The runner images README lists `%s`, newer than the macos labels the workflows use (%s). '
                           'Those labels exist for older iOS runtimes, so nothing needs to change.'
                           % (label, ', '.join(pinned_macos)))
+    pinned_xcode = pinned.runner_labels.get('xcode', [])
+    for _, label in _readme_labels_above_every_pinned(rows, pinned_xcode, _XCODE_LABEL):
+        plan.notes.append('The runner images README lists `%s`, newer than the xcode labels the workflows use (%s). '
+                          'A person moves the Apple jobs to it; the bot prepares that change when a workload set needs '
+                          'its Xcode.' % (label, ', '.join(pinned_xcode)))
     return plan

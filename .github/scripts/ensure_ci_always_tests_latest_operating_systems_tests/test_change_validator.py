@@ -58,6 +58,10 @@ class AcceptedEditsTests(unittest.TestCase):
         edited = replaced_once(texts[DEVICE_TESTS], "-   api-level: '35'\n", "-   api-level: '35.1'\n")
         self.assertEqual(problems_of_edited_text(DEVICE_TESTS, edited), [])
 
+    def test_a_rising_level_and_an_inserted_leg_in_one_edit(self) -> None:
+        changes = [api_level_change('37.2', '37.3', 415), insert_android_leg('38.0', 'google_apis', 417)]
+        self.assertEqual(problems_after(changes, DEVICE_TESTS), [])
+
     def test_every_editor_output_with_many_changes_passes_the_whole_set_check(self) -> None:
         texts = repo_texts()
         changes = [xcode_change('CommunityToolkitSample_Xcode_Version', 21), api_level_change('36.1', '36.2', 406),
@@ -166,9 +170,15 @@ class RejectedEditsTests(unittest.TestCase):
             with self.subTest(new):
                 self.assert_rejected(self.edit_device_tests("-   api-level: '36.1'\n", "-   api-level: '%s'\n" % new), 'may only rise')
 
+    def test_a_level_that_moves_to_another_major(self) -> None:
+        self.assert_rejected(self.edit_device_tests("-   api-level: '36.1'\n", "-   api-level: '38.0'\n"), 'another major')
+        self.assert_rejected(self.edit_device_tests("-   api-level: '35'\n", "-   api-level: '36'\n"), 'another major')
+
     def test_a_level_equal_to_a_coverage_level(self) -> None:
-        self.assert_rejected(self.edit_device_tests("-   api-level: '35'\n", "-   api-level: '36'\n"), 'Android 36')
         texts = repo_texts()
+        base = replaced_once(texts[DEVICE_TESTS], '"api-level":"36"', '"api-level":"36.2"')
+        head = replaced_once(base, "-   api-level: '36.1'\n", "-   api-level: '36.2'\n")
+        self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, base, head), 'coverage job')
         head = editor.apply_changes_to_texts(texts, [insert_android_leg('36.0', 'google_apis_ps16k', 417)])
         self.assert_rejected(validator.validate_file_change(DEVICE_TESTS, texts[DEVICE_TESTS], head[DEVICE_TESTS]))
 
@@ -178,7 +188,22 @@ class RejectedEditsTests(unittest.TestCase):
     def test_an_insert_outside_the_android_list(self) -> None:
         change_outside = change('insert-android-leg', DEVICE_TESTS, 100,
                                 inserted=editor.android_leg_lines(pinned().android_dash_prefix, '38.0', 'google_apis'))
-        self.assert_rejected(problems_after([change_outside], DEVICE_TESTS), 'inside the Android include list')
+        self.assert_rejected(problems_after([change_outside], DEVICE_TESTS), 'right after the last line of an existing leg')
+
+    def test_an_insert_inside_an_existing_leg_would_move_its_later_keys_to_the_new_leg(self) -> None:
+        for level, target, after_line in (('31', 'google_apis', 396), ('38.0', 'google_apis', 416), ('26', 'google_apis', 387)):
+            with self.subTest(level=level, after_line=after_line):
+                problems = problems_after([insert_android_leg(level, target, after_line)], DEVICE_TESTS)
+                self.assert_rejected(problems, 'right after the last line of an existing leg')
+
+    def test_a_carriage_return_added_to_one_line_of_a_file_that_already_mixes_endings(self) -> None:
+        base = repo_texts()[SHARED_ENV]
+        first, rest = base.split('\n', 1)
+        mixed = first + '\r\n' + rest
+        head = replaced_once(mixed, 'CommunityToolkitSample_Xcode_Version=27.2\n', 'CommunityToolkitSample_Xcode_Version=27.3\r\n')
+        self.assert_rejected(validator.validate_file_change(SHARED_ENV, mixed, head), 'line ending')
+        same_ending = replaced_once(mixed, 'CommunityToolkitSample_Xcode_Version=27.2\n', 'CommunityToolkitSample_Xcode_Version=27.3\n')
+        self.assertEqual(validator.validate_file_change(SHARED_ENV, mixed, same_ending), [])
 
     def test_an_insert_with_another_dash_prefix(self) -> None:
         change_wrong = change('insert-android-leg', DEVICE_TESTS, 417,

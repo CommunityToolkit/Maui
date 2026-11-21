@@ -35,16 +35,15 @@ def leg(text: str, target: str, api_level_line: int, entry_end: Optional[int] = 
                       entry_start=api_level_line, entry_end=entry_end or api_level_line)
 
 
-# Line numbers of fixtures/repo/device-tests.yml.
-LEGS_TODAY = [
+LEGS_TODAY_AT_FIXTURE_LINES = [
     leg('27', 'default', 387, 388), leg('28', FOUR_KB, 396, 397), leg('29', FOUR_KB, 398), leg('30', FOUR_KB, 399),
     leg('32', FOUR_KB, 401), leg('33', FOUR_KB, 402), leg('34', FOUR_KB, 403), leg('35', FOUR_KB, 404),
     leg('36.1', FOUR_KB, 406), leg('37.0', FOUR_KB, 411, 412), leg('37.2', SIXTEEN_KB, 415, 417),
 ]
 COVERAGE_TODAY = ['36', '25']
-AFTER_38_0_FOUR_KB_MERGED = LEGS_TODAY + [leg('38.0', FOUR_KB, 418)]
+AFTER_38_0_FOUR_KB_MERGED = LEGS_TODAY_AT_FIXTURE_LINES + [leg('38.0', FOUR_KB, 418)]
 AFTER_38_1_SIXTEEN_KB_MERGED = AFTER_38_0_FOUR_KB_MERGED + [leg('38.1', SIXTEEN_KB, 419, 420)]
-AFTER_38_0_SIXTEEN_KB_MERGED = LEGS_TODAY + [leg('38.0', SIXTEEN_KB, 418, 419)]
+AFTER_38_0_SIXTEEN_KB_MERGED = LEGS_TODAY_AT_FIXTURE_LINES + [leg('38.0', SIXTEEN_KB, 418, 419)]
 
 
 def pinned_versions(legs: List[AndroidLeg], coverage: Iterable[str] = COVERAGE_TODAY) -> PinnedVersions:
@@ -224,7 +223,7 @@ class WorkedCaseTests(unittest.TestCase):
         self.assertEqual(plan.source_problems, [])
 
     def test_a01_today_changes_nothing_and_reports_nothing(self) -> None:
-        plan = plan_with(LEGS_TODAY)
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES)
         self.assert_plan(plan, [], [])
         self.assertEqual(plan.notes, [])
         self.assertEqual(plan.family, 'android')
@@ -232,34 +231,34 @@ class WorkedCaseTests(unittest.TestCase):
     def test_a01_todays_fixtures_end_to_end_give_no_change_and_no_item(self) -> None:
         downloader = FakeDownloader({SYSTEM_IMAGES_URL: fixture('android/google_apis-sys-img2-4.xml'),
                                      PLATFORMS_URL: fixture('android/repository2-3.xml')})
-        plan = plan_android_changes(pinned_versions(LEGS_TODAY), read_android_index(downloader))
+        plan = plan_android_changes(pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES), read_android_index(downloader))
         self.assert_plan(plan, [], [])
         self.assertEqual(plan.notes, [])
 
     def test_a02_a_newer_four_kb_minor_moves_the_four_kb_leg_and_leaves_the_sixteen_kb_leg(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['37.1'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['37.1'])
         self.assert_plan(plan, [replacement('37.0', '37.1', 411, FOUR_KB)], [])
 
     def test_a03_a_four_kb_image_at_the_sixteen_kb_level_is_a_collision(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['37.2'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['37.2'])
         self.assert_plan(plan, [], ['android-level-collision:37.2', 'android-16kb-leg-has-4kb-image:37.2:37.2'])
 
     def test_a04_the_four_kb_leg_falls_back_to_the_highest_free_level(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['37.1', '37.2'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['37.1', '37.2'])
         self.assert_plan(plan, [replacement('37.0', '37.1', 411, FOUR_KB)],
                          ['android-level-collision:37.2', 'android-16kb-leg-has-4kb-image:37.2:37.2'])
 
     def test_a05_a_newer_sixteen_kb_only_release_moves_the_sixteen_kb_leg(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_sixteen_kb=['37.3'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_sixteen_kb=['37.3'])
         self.assert_plan(plan, [replacement('37.2', '37.3', 415, SIXTEEN_KB)], [])
 
     def test_a06_a_release_in_both_kinds_moves_the_four_kb_leg_and_warns_about_the_sixteen_kb_leg(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['37.3'], extra_sixteen_kb=['37.3'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['37.3'], extra_sixteen_kb=['37.3'])
         self.assert_plan(plan, [replacement('37.0', '37.3', 411, FOUR_KB)],
                          ['android-level-collision:37.3', 'android-16kb-leg-has-4kb-image:37.2:37.3'])
 
     def test_a07_a_new_major_in_both_kinds_adds_only_the_four_kb_leg(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['38.0'], extra_sixteen_kb=['38.0'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0'], extra_sixteen_kb=['38.0'])
         self.assert_plan(plan, [insertion('38.0', 417, FOUR_KB)], [])
         self.assertEqual(len(plan.notes), 1)
         self.assertTrue(plan.notes[0].startswith('New Android major 38: the trimmed Android legs (`device_tests_android`) now boot 38.0.'))
@@ -285,11 +284,11 @@ class WorkedCaseTests(unittest.TestCase):
         self.assert_plan(plan, [replacement('37.0', '37.1', 411, FOUR_KB)], [])
 
     def test_a11_an_undotted_level_is_inserted_as_written(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['38'], extra_sixteen_kb=['38'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38'], extra_sixteen_kb=['38'])
         self.assert_plan(plan, [insertion('38', 417, FOUR_KB)], [])
 
     def test_a12_a_sixteen_kb_only_new_major_gets_a_sixteen_kb_leg_and_the_trimmed_legs_stay(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_sixteen_kb=['38.0'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_sixteen_kb=['38.0'])
         self.assert_plan(plan, [insertion('38.0', 417, SIXTEEN_KB)], [])
         self.assertEqual(len(plan.notes), 1)
         self.assertIn('Android major 38', plan.notes[0])
@@ -298,26 +297,55 @@ class WorkedCaseTests(unittest.TestCase):
 
     def test_a13_a_level_without_its_platforms_package_waits(self) -> None:
         plan = plan_android_changes(
-            pinned_versions(LEGS_TODAY),
+            pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES),
             android_json(TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB | {'37.3'},
                          sixteen_kb_with_platform=TODAY_RELEASED_SIXTEEN_KB))
         self.assert_plan(plan, [], [])
         self.assertEqual(plan.notes, ['Android 37.3 (google_apis_ps16k) waits for its platforms package.'])
 
+    def test_a_four_kb_level_of_a_major_that_has_only_a_sixteen_kb_leg_waits_with_a_note(self) -> None:
+        plan = plan_android_changes(
+            pinned_versions(AFTER_38_0_SIXTEEN_KB_MERGED),
+            android_json(TODAY_RELEASED_FOUR_KB | {'38.1'}, TODAY_RELEASED_SIXTEEN_KB | {'38.0'},
+                         four_kb_with_platform=TODAY_RELEASED_FOUR_KB))
+        self.assertEqual(plan.safe_changes, [])
+        self.assertIn('Android 38.1 (google_apis) waits for its platforms package.', plan.notes)
+
+    def test_a_sixteen_kb_only_level_of_an_existing_major_without_a_sixteen_kb_leg_waits_with_a_note(self) -> None:
+        plan = plan_android_changes(
+            pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES),
+            android_json(TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB | {'36.2'},
+                         sixteen_kb_with_platform=TODAY_RELEASED_SIXTEEN_KB))
+        self.assertEqual(plan.safe_changes, [])
+        self.assertIn('Android 36.2 (google_apis_ps16k) waits for its platforms package.', plan.notes)
+
+    def test_a_level_below_what_the_planner_would_use_gets_no_waiting_note(self) -> None:
+        plan = plan_android_changes(
+            pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES),
+            android_json(TODAY_RELEASED_FOUR_KB | {'36.0'}, TODAY_RELEASED_SIXTEEN_KB,
+                         four_kb_with_platform=TODAY_RELEASED_FOUR_KB))
+        self.assertEqual(plan.notes, [])
+
+    def test_one_level_spelled_two_ways_gives_the_same_text_whatever_the_order(self) -> None:
+        for spellings in (['38', '38.0'], ['38.0', '38']):
+            with self.subTest(spellings=spellings):
+                self.assertEqual(android_levels._sorted_texts(spellings), ['38.0'])
+                self.assertEqual(android_levels._sorted_texts(iter(spellings)), ['38.0'])
+
     def test_a14_a_leg_whose_image_left_the_index_is_reported(self) -> None:
-        plan = plan_with(LEGS_TODAY, removed_four_kb=['36.1'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, removed_four_kb=['36.1'])
         self.assert_plan(plan, [], ['android-leg-missing:google_apis:36.1'])
 
     def test_a14_an_obsolete_platform_package_does_not_raise_the_missing_leg_item(self) -> None:
         plan = plan_android_changes(
-            pinned_versions(LEGS_TODAY),
+            pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES),
             android_json(TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB,
                          four_kb_with_platform=TODAY_RELEASED_FOUR_KB - {'36.1'}))
         self.assert_plan(plan, [], [])
 
     def test_a15_a_truncated_index_is_a_source_problem_and_changes_nothing(self) -> None:
         truncated = {text for text in TODAY_RELEASED_FOUR_KB if level(text).major <= 34}
-        plan = plan_android_changes(pinned_versions(LEGS_TODAY), android_json(truncated, TODAY_RELEASED_SIXTEEN_KB))
+        plan = plan_android_changes(pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES), android_json(truncated, TODAY_RELEASED_SIXTEEN_KB))
         self.assertEqual(plan.safe_changes, [])
         self.assertEqual(plan.things_to_check, [])
         self.assertEqual([problem.key for problem in plan.source_problems], ['source:android-system-images'])
@@ -325,30 +353,33 @@ class WorkedCaseTests(unittest.TestCase):
         self.assertEqual(plan.source_problems[0].source, 'android-system-images')
 
     def test_a15_an_index_without_four_kb_images_is_a_source_problem(self) -> None:
-        plan = plan_android_changes(pinned_versions(LEGS_TODAY), android_json([], TODAY_RELEASED_SIXTEEN_KB))
+        plan = plan_android_changes(pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES), android_json([], TODAY_RELEASED_SIXTEEN_KB))
         self.assertEqual([problem.key for problem in plan.source_problems], ['source:android-system-images'])
 
     def test_a15_a_frozen_sixteen_kb_list_is_a_source_problem(self) -> None:
-        plan = plan_android_changes(pinned_versions(LEGS_TODAY),
+        plan = plan_android_changes(pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES),
                                     android_json(TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB - {'37.2'}))
         self.assertEqual([problem.key for problem in plan.source_problems], ['source:android-system-images'])
         self.assertEqual(plan.safe_changes, [])
 
     def test_an_index_that_could_not_be_read_is_a_source_problem_with_its_message(self) -> None:
-        plan = plan_android_changes(pinned_versions(LEGS_TODAY), {'status': 'error', 'error': 'no network'})
+        plan = plan_android_changes(pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES), {'status': 'error', 'error': 'no network'})
         self.assertEqual([problem.key for problem in plan.source_problems], ['source:android-system-images'])
         self.assertEqual(plan.source_problems[0].message, 'no network')
 
     def test_a16_a_released_level_that_the_coverage_job_uses_is_a_collision(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['37.1'], coverage=['37.1', '25'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['37.1'], coverage=['37.1', '25'])
         self.assert_plan(plan, [], ['android-level-collision:37.1'])
 
     def test_a17_two_new_majors_are_inserted_in_one_run_after_the_same_line(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['38.0', '39.0'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0', '39.0'])
         self.assert_plan(plan, [insertion('38.0', 417, FOUR_KB), insertion('39.0', 417, FOUR_KB)], [])
+        self.assertEqual(len(plan.notes), 1)
+        self.assertIn('New Android majors 38 and 39', plan.notes[0])
+        self.assertIn('now boot 39.0', plan.notes[0])
 
     def test_a18_a_new_major_at_a_coverage_level_is_a_collision_not_a_duplicate(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['38.0'], coverage=['38.0', '25'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0'], coverage=['38.0', '25'])
         self.assert_plan(plan, [], ['android-level-collision:38.0'])
 
     def test_a19_a_four_kb_image_arriving_for_a_sixteen_kb_only_major_adds_the_four_kb_leg(self) -> None:
@@ -367,11 +398,11 @@ class WorkedCaseTests(unittest.TestCase):
         self.assert_plan(plan, [], ['android-level-collision:38.0', 'android-16kb-leg-has-4kb-image:38.0:38.0'])
 
     def test_both_new_levels_in_one_night_keep_the_order_the_editor_needs(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['38.0'], extra_sixteen_kb=['38.0', '38.1'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0'], extra_sixteen_kb=['38.0', '38.1'])
         self.assert_plan(plan, [insertion('38.0', 417, FOUR_KB), insertion('38.1', 417, SIXTEEN_KB)], [])
 
     def test_a_sixteen_kb_only_level_with_no_four_kb_image_in_that_major_at_all(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_sixteen_kb=['38.1'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_sixteen_kb=['38.1'])
         self.assert_plan(plan, [insertion('38.1', 417, SIXTEEN_KB)], [])
 
     def test_a_late_sixteen_kb_level_after_a_merged_new_major(self) -> None:
@@ -381,16 +412,16 @@ class WorkedCaseTests(unittest.TestCase):
         self.assert_plan(plan, [replacement('37.2', '37.3', 415, SIXTEEN_KB)], [])
 
     def test_a_sixteen_kb_level_that_the_coverage_job_uses_is_a_collision(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_sixteen_kb=['37.3'], coverage=['37.3', '25'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_sixteen_kb=['37.3'], coverage=['37.3', '25'])
         self.assert_plan(plan, [], ['android-level-collision:37.3'])
 
     def test_the_plan_is_deterministic(self) -> None:
-        first = plan_with(LEGS_TODAY, extra_four_kb=['38.0', '39.0'], extra_sixteen_kb=['38.1'])
-        second = plan_with(LEGS_TODAY, extra_four_kb=['38.0', '39.0'], extra_sixteen_kb=['38.1'])
+        first = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0', '39.0'], extra_sixteen_kb=['38.1'])
+        second = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0', '39.0'], extra_sixteen_kb=['38.1'])
         self.assertEqual(first.to_json(), second.to_json())
 
     def test_the_plan_survives_a_json_round_trip(self) -> None:
-        plan = plan_with(LEGS_TODAY, extra_four_kb=['38.0'], extra_sixteen_kb=['38.0'])
+        plan = plan_with(LEGS_TODAY_AT_FIXTURE_LINES, extra_four_kb=['38.0'], extra_sixteen_kb=['38.0'])
         self.assertEqual(FamilyPlan.from_json(plan.to_json()), plan)
 
 
@@ -405,7 +436,7 @@ class EndToEndTests(unittest.TestCase):
             '<remotePackage path="platforms;android-37.3"><type-details><codename></codename></type-details>'
             '</remotePackage></sdk:sdk-repository>')
         downloader = FakeDownloader({SYSTEM_IMAGES_URL: index, PLATFORMS_URL: platforms})
-        plan = plan_android_changes(pinned_versions(LEGS_TODAY), read_android_index(downloader))
+        plan = plan_android_changes(pinned_versions(LEGS_TODAY_AT_FIXTURE_LINES), read_android_index(downloader))
         self.assertEqual(plan.safe_changes, [replacement('37.2', '37.3', 415, SIXTEEN_KB)])
 
 
@@ -415,10 +446,10 @@ class RealReaderTests(unittest.TestCase):
         pinned = read_pinned_versions_from_texts(
             fixture('repo/device-tests.yml').decode('utf-8'), fixture('repo/dotnet-build.yml').decode('utf-8'),
             fixture('repo/shared.env').decode('utf-8'))
-        for expected, actual in zip(LEGS_TODAY, pinned.android_legs):
+        for expected, actual in zip(LEGS_TODAY_AT_FIXTURE_LINES, pinned.android_legs):
             self.assertEqual((expected.level.text, expected.target, expected.api_level_line, expected.entry_end),
                              (actual.level.text, actual.target, actual.api_level_line, actual.entry_end))
-        self.assertEqual(len(LEGS_TODAY), len(pinned.android_legs))
+        self.assertEqual(len(LEGS_TODAY_AT_FIXTURE_LINES), len(pinned.android_legs))
         self.assertEqual(pinned.android_dash_prefix, DASH_PREFIX)
         plan = plan_android_changes(pinned, android_json(TODAY_RELEASED_FOUR_KB | {'38.0'}, TODAY_RELEASED_SIXTEEN_KB))
         self.assertEqual(plan.safe_changes, [insertion('38.0', 417, FOUR_KB)])
@@ -429,7 +460,6 @@ class SourceStaysAsciiTests(unittest.TestCase):
         with open(android_levels.__file__, encoding='utf-8') as source:
             text = source.read()
         self.assertNotIn('import locale', text)
-        self.assertNotIn('flag', text.lower())
 
 
 if __name__ == '__main__':

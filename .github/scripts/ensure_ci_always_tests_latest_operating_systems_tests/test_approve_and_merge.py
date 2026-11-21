@@ -12,7 +12,7 @@ from ensure_ci_always_tests_latest_operating_systems.approve_and_merge import (
 from ensure_ci_always_tests_latest_operating_systems.data_types import SafeChange
 from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiError
 from ensure_ci_always_tests_latest_operating_systems.line_editor import apply_changes
-from ensure_ci_always_tests_latest_operating_systems.markers import COMMIT_TRAILER, PIN_FILES
+from ensure_ci_always_tests_latest_operating_systems.markers import COMMIT_TRAILER, PIN_FILES, WORKFLOW_FILE
 from ensure_ci_always_tests_latest_operating_systems.token_owner import TokenStatus
 
 from .helpers import FIXTURES_FOLDER, FakeGitHub, InOrder, fixture
@@ -146,6 +146,17 @@ class HappyPathTests(unittest.TestCase):
         approval, client = scenario.run('none')
         self.assertEqual(client.write_calls(), [])
         self.assertEqual((approval['auto_merge'], approval['approved']), ('already-on', 'existing'))
+
+    def test_updated_with_auto_merge_enabled_after_the_commit_still_turns_it_off_on_and_reviews(self) -> None:
+        scenario = Scenario()
+        scenario.facts = graphql_facts(enabled_at=ARMED_AFTER_COMMIT)
+        approval, client = scenario.run('updated')
+        self.assertEqual(write_names(client), ['TurnOffAutoMerge', 'TurnOnAutoMerge', 'POST %s/reviews' % PULL])
+        self.assertEqual(approval['auto_merge'], 'turned-on-again')
+
+    def test_approval_body_names_the_workflow_file_from_markers(self) -> None:
+        _, client = Scenario().run('created')
+        self.assertIn(WORKFLOW_FILE, client.write_calls()[-1].body['body'])
 
     def test_none_with_auto_merge_armed_before_the_head_disables_enables_and_reviews(self) -> None:
         scenario = Scenario()
@@ -309,6 +320,22 @@ class RefusalTests(unittest.TestCase):
         scenario.commits.append(dict(scenario.commits[0]))
         self.assert_refused(scenario, 'commits')
 
+    def test_refuses_commits_when_the_one_commit_is_not_the_head(self) -> None:
+        scenario = Scenario()
+        scenario.commits[0]['sha'] = 'e' * 40
+        approval = self.assert_refused(scenario, 'commits')
+        self.assertIn('not the head', approval['things_to_check'][0]['text'])
+
+    def test_refuses_author_when_the_token_owner_login_is_empty(self) -> None:
+        scenario = Scenario()
+        scenario.pull['user']['login'] = ''
+        scenario.commits[0]['author'] = {}
+        client = scenario.github()
+        approval = approve_and_turn_on_auto_merge(client, scenario.plan, {'token': {'usable': True, 'login': ''}}, 7, HEAD_SHA,
+                                                  'created', BASE, BASE_SHA, BRANCH, RUN_URL, sleep=lambda _: None)
+        self.assertIn('author', approval['refusals'])
+        self.assertNotIn('POST %s/reviews' % PULL, write_names(client))
+
     def test_refuses_commits_without_the_trailer(self) -> None:
         scenario = Scenario()
         scenario.commits[0]['commit']['message'] = 'Update'
@@ -407,6 +434,17 @@ class RefusalTests(unittest.TestCase):
         approval = self.assert_refused(scenario, 'last-push-rule')
         self.assertEqual(approval['things_to_check'][0]['key'], 'last-push-approval-rule-off')
 
+    def test_refuses_last_push_rule_with_its_own_wording_when_the_rules_could_not_be_read(self) -> None:
+        scenario = Scenario()
+        scenario.rules = {'status': 'error'}
+        scenario.extra['GET /repos/%s/rules/branches/%s' % (REPO, BASE)] = GitHubApiError(
+            'GET', '/repos/%s/rules/branches/%s' % (REPO, BASE), 500, 'Server Error')
+        approval = self.assert_refused(scenario, 'last-push-rule')
+        item = approval['things_to_check'][0]
+        self.assertEqual(item['key'], 'pull-request-not-approved:7:last-push-rule')
+        self.assertIn('could not be read', item['text'])
+        self.assertNotIn('no longer require', item['text'])
+
     def test_refuses_last_push_rule_when_no_approval_is_required(self) -> None:
         scenario = Scenario()
         for rule in scenario.rules:
@@ -481,9 +519,8 @@ class AutoMergeKeepsOrDropsTests(unittest.TestCase):
 
 
 class OnlyTheGithubTokenTests(unittest.TestCase):
-    def test_every_call_of_every_scenario_uses_the_github_token_and_the_pat_client_gets_none(self) -> None:
+    def test_every_call_of_every_scenario_uses_the_github_token(self) -> None:
         journal: List[Any] = []
-        pat_client = FakeGitHub({}, token_name='PAT', journal=journal)
         arrangements = [lambda s: None,
                         lambda s: setattr(s, 'facts', graphql_facts('CLEAN')),
                         lambda s: s.pull['user'].update(login='someone-else')]
@@ -493,7 +530,6 @@ class OnlyTheGithubTokenTests(unittest.TestCase):
             scenario.run(client=scenario.github(journal))
         self.assertTrue(journal)
         self.assertEqual({call.token_name for call in journal}, {'GITHUB_TOKEN'})
-        self.assertEqual(pat_client.calls, [])
 
     def test_every_review_carries_commit_id_and_every_enable_expected_head_oid_and_merge_only_on_direct_path(self) -> None:
         journal: List[Any] = []

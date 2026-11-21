@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 import xml.etree.ElementTree as ElementTree
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from . import markers
 from .data_types import (AndroidLeg, FamilyPlan, PinnedVersions, SafeChange, SourceProblem, SystemImage,
@@ -94,8 +94,14 @@ def stable_levels(images: Iterable[SystemImage], tag: str) -> Set[str]:
 
 
 def _sorted_texts(level_texts: Iterable[str]) -> List[str]:
-    levels = sorted({parse_android_level(text) for text in level_texts}, key=lambda level: (level.major, level.minor))
-    return [level.text for level in levels]
+    """When the index spells one level two ways (38 and 38.0), the dotted spelling wins so a run never depends on set order."""
+    spelling_of: Dict[Tuple[int, int], str] = {}
+    for text in sorted(set(level_texts)):
+        level = parse_android_level(text)
+        key = (level.major, level.minor)
+        if key not in spelling_of or ('.' in text, text) > ('.' in spelling_of[key], spelling_of[key]):
+            spelling_of[key] = text
+    return [spelling_of[key] for key in sorted(spelling_of)]
 
 
 def read_android_index(downloader: Any) -> Dict[str, Any]:
@@ -137,7 +143,7 @@ class _AndroidPlanner:
             target: [leg for leg in pinned.android_legs if leg.target == target]
             for target in (FOUR_KB_TARGET, SIXTEEN_KB_TARGET)}
         self.taken = {leg.level for leg in pinned.android_legs} | set(pinned.coverage_levels)
-        self.planned_levels = {FOUR_KB_TARGET: [], SIXTEEN_KB_TARGET: []}  # levels this run puts on each kind of leg
+        self.levels_planned_for_each_target = {FOUR_KB_TARGET: [], SIXTEEN_KB_TARGET: []}
         self.majors_needing_trimmed_leg_note: List[int] = []
         self.majors_without_four_kb_image: List[int] = []
 
@@ -244,14 +250,17 @@ class _AndroidPlanner:
                         self.majors_without_four_kb_image.append(major)
 
     def _add_trimmed_leg_notes(self) -> None:
-        trimmed_level = _highest(self.planned_levels[FOUR_KB_TARGET] + [leg.level for leg in self.legs_by_target[FOUR_KB_TARGET]])
+        trimmed_level = _highest(self.levels_planned_for_each_target[FOUR_KB_TARGET] + [leg.level for leg in self.legs_by_target[FOUR_KB_TARGET]])
         if trimmed_level is None:
             return
-        for major in self.majors_needing_trimmed_leg_note:
+        if self.majors_needing_trimmed_leg_note:
+            majors = sorted(self.majors_needing_trimmed_leg_note)
+            listed = ' and '.join([', '.join(str(major) for major in majors[:-1]), str(majors[-1])] if len(majors) > 1
+                                  else [str(majors[0])])
             self.plan.notes.append(
-                'New Android major %d: the trimmed Android legs (`device_tests_android`) now boot %s. Their emulator '
+                'New Android major%s %s: the trimmed Android legs (`device_tests_android`) now boot %s. Their emulator '
                 'features (step `api`, `case "$level" in 37|37.*`) and RAM default are set in that job; check them if '
-                'CI fails on the new leg.' % (major, trimmed_level.text))
+                'CI fails on the new leg.' % ('s' if len(majors) > 1 else '', listed, trimmed_level.text))
         for major in self.majors_without_four_kb_image:
             self.plan.notes.append(
                 'New Android major %d has no 4 KB image yet, so the trimmed Android legs (`device_tests_android`) '
@@ -261,10 +270,20 @@ class _AndroidPlanner:
         top_major = max((leg.level.major for leg in self.pinned.android_legs), default=0)
         for target in (FOUR_KB_TARGET, SIXTEEN_KB_TARGET):
             for level in sorted(self.released[target] - self.bootable[target]):
-                leg = self._leg_of(target, level.major)
-                is_a_level_the_bot_would_use = (level > leg.level) if leg is not None else level.major > top_major
-                if is_a_level_the_bot_would_use:
+                if self._planner_would_use(target, level, top_major):
                     self.plan.notes.append('Android %s (%s) waits for its platforms package.' % (level.text, target))
+
+    def _planner_would_use(self, target: str, level: AndroidLevel, top_major: int) -> bool:
+        """The same rules _plan_existing_majors and _plan_new_majors apply once the level has its platforms package."""
+        leg = self._leg_of(target, level.major)
+        if leg is not None:
+            return level > leg.level
+        if level.major > top_major:
+            return True
+        if target == FOUR_KB_TARGET:
+            return True
+        newest_four_kb = _highest(self._bootable_in_major(FOUR_KB_TARGET, level.major))
+        return newest_four_kb is None or level > newest_four_kb
 
     def _report_legs_missing_from_the_index(self) -> None:
         for target in (FOUR_KB_TARGET, SIXTEEN_KB_TARGET):
@@ -308,7 +327,7 @@ class _AndroidPlanner:
             description='Move the %s Android leg from API %s to %s' % (page_size, leg.level.text, new_level.text),
             source=SOURCE_NAME))
         self.taken.add(new_level)
-        self.planned_levels[leg.target].append(new_level)
+        self.levels_planned_for_each_target[leg.target].append(new_level)
 
     def _insert_leg(self, target: str, level: AndroidLevel) -> None:
         after_line = self._line_to_insert_after(level)
@@ -320,7 +339,7 @@ class _AndroidPlanner:
             description='Add a %s Android leg for API %s' % (_PAGE_SIZE_LABEL[target], level.text),
             source=SOURCE_NAME))
         self.taken.add(level)
-        self.planned_levels[target].append(level)
+        self.levels_planned_for_each_target[target].append(level)
 
     def _line_to_insert_after(self, level: AndroidLevel) -> int:
         # Only legs already in the file count: the editor orders several inserts after one line by level.

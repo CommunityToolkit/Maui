@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from .data_types import AndroidLeg, AppleLabel, EnvValue, IosLeg, PinnedVersions
 from .errors import PinnedVersionsFormatError
@@ -65,6 +65,34 @@ class MatrixEntry:
     quoted: Dict[str, bool] = field(default_factory=dict)
 
 
+class JobBlock(NamedTuple):
+    first_line: int
+    last_line: int
+
+
+class ParsedScalar(NamedTuple):
+    value: str
+    was_single_quoted: bool
+
+
+class MatrixInclude(NamedTuple):
+    include_line: int
+    dash_prefix: str
+    entries: List[MatrixEntry]
+
+
+class AndroidLegsRead(NamedTuple):
+    legs: List[AndroidLeg]
+    include_line: int
+    dash_prefix: str
+
+
+class IosLegsRead(NamedTuple):
+    legs: List[IosLeg]
+    include_line: int
+    dash_prefix: str
+
+
 def split_into_lines(text: str) -> List[str]:
     """Lines without their endings; splits on the line feed only, so numbering matches the editor's."""
     lines = [line[:-1] if line.endswith('\r') else line for line in text.split('\n')]
@@ -85,8 +113,8 @@ def _is_comment(line: str) -> bool:
     return line.lstrip().startswith('#')
 
 
-def find_job_block(lines: List[str], job_id: str) -> Tuple[int, int]:
-    """(first line, last line) of the job's block: its header through its last line that isn't blank or a comment of the next job."""
+def find_job_block(lines: List[str], job_id: str) -> JobBlock:
+    """The block ends before blank lines and comments that belong to the next job."""
     jobs_index = None
     for index, line in enumerate(lines):
         if _JOBS_HEADER.match(line):
@@ -115,11 +143,10 @@ def find_job_block(lines: List[str], job_id: str) -> Tuple[int, int]:
     while block_end - 1 > header_index and (
             _is_blank(lines[block_end - 1]) or (_is_comment(lines[block_end - 1]) and _indent_of(lines[block_end - 1]) <= 4)):
         block_end -= 1
-    return header_index + 1, block_end
+    return JobBlock(header_index + 1, block_end)
 
 
-def _parse_scalar(raw: str, line_number: int, where: str) -> Tuple[str, bool]:
-    """(value, was single-quoted) of a plain or single-quoted scalar; anything else is an error."""
+def _parse_scalar(raw: str, line_number: int, where: str) -> ParsedScalar:
     raw = raw.strip()
     if raw == '':
         raise PinnedVersionsFormatError('%s line %d: the value is empty or a nested block' % (where, line_number))
@@ -127,11 +154,11 @@ def _parse_scalar(raw: str, line_number: int, where: str) -> Tuple[str, bool]:
         match = _SINGLE_QUOTED.match(raw)
         if match is None:
             raise PinnedVersionsFormatError('%s line %d: the single-quoted value is malformed' % (where, line_number))
-        return match.group(1).replace("''", "'"), True
+        return ParsedScalar(match.group(1).replace("''", "'"), True)
     if raw[0] in _UNSUPPORTED_SCALAR_START:
         raise PinnedVersionsFormatError(
             '%s line %d: only plain and single-quoted values are supported, found %s' % (where, line_number, raw))
-    return _TRAILING_COMMENT.sub('', raw), False
+    return ParsedScalar(_TRAILING_COMMENT.sub('', raw), False)
 
 
 def _parse_entry_line(entry: MatrixEntry, line: str, line_number: int, where: str) -> None:
@@ -148,9 +175,7 @@ def _parse_entry_line(entry: MatrixEntry, line: str, line_number: int, where: st
     entry.quoted[key] = quoted
 
 
-def read_matrix_include(lines: List[str], block: Tuple[int, int],
-                        where: str = 'the matrix') -> Tuple[int, str, List[MatrixEntry]]:
-    """(line of 'include:', dash prefix, entries) of the one 'include:' list inside the block."""
+def read_matrix_include(lines: List[str], block: Tuple[int, int], where: str = 'the matrix') -> MatrixInclude:
     first, last = block
     include_lines = [number for number in range(first, last + 1) if _INCLUDE_HEADER.match(lines[number - 1])]
     if len(include_lines) != 1:
@@ -158,26 +183,26 @@ def read_matrix_include(lines: List[str], block: Tuple[int, int],
             '%s: expected exactly one "include:" line with a list below it, found %d' % (where, len(include_lines)))
     include_line = include_lines[0]
 
-    index = include_line  # 0-based index of the line after 'include:'
-    while index < last and (_is_blank(lines[index]) or _is_comment(lines[index])):
-        index += 1
-    if index >= last or not lines[index].lstrip().startswith('-'):
+    next_line_index = include_line
+    while next_line_index < last and (_is_blank(lines[next_line_index]) or _is_comment(lines[next_line_index])):
+        next_line_index += 1
+    if next_line_index >= last or not lines[next_line_index].lstrip().startswith('-'):
         raise PinnedVersionsFormatError('%s: the include list has no entries' % where)
-    first_entry_line = lines[index]
+    first_entry_line = lines[next_line_index]
     dash_column = _indent_of(first_entry_line)
     prefix_match = _DASH_PREFIX.match(first_entry_line)
     if prefix_match is None:
-        raise PinnedVersionsFormatError('%s line %d: the entry must start with "- "' % (where, index + 1))
+        raise PinnedVersionsFormatError('%s line %d: the entry must start with "- "' % (where, next_line_index + 1))
     dash_prefix = prefix_match.group(1)
 
     entries: List[MatrixEntry] = []
     current: Optional[MatrixEntry] = None
     pending_comment_start: Optional[int] = None
     last_content_line = 0
-    while index < last:
-        line = lines[index]
-        number = index + 1
-        index += 1
+    while next_line_index < last:
+        line = lines[next_line_index]
+        number = next_line_index + 1
+        next_line_index += 1
         if _is_blank(line):
             continue
         indent = _indent_of(line)
@@ -209,7 +234,7 @@ def read_matrix_include(lines: List[str], block: Tuple[int, int],
         last_content_line = number
     if current is not None:
         current.end = last_content_line
-    return include_line, dash_prefix, entries
+    return MatrixInclude(include_line, dash_prefix, entries)
 
 
 def _android_level_of(entry: MatrixEntry, where: str) -> AndroidLevel:
@@ -225,8 +250,7 @@ def _android_level_of(entry: MatrixEntry, where: str) -> AndroidLevel:
     return parse_android_level(text)
 
 
-def read_android_legs(device_tests_text: str) -> Tuple[List[AndroidLeg], int, str]:
-    """(legs, line of 'include:', dash prefix) of device_tests_android_runtime."""
+def read_android_legs(device_tests_text: str) -> AndroidLegsRead:
     where = '%s job %s' % (DEVICE_TESTS_FILE, ANDROID_RUNTIME_JOB)
     lines = split_into_lines(device_tests_text)
     include_line, dash_prefix, entries = read_matrix_include(lines, find_job_block(lines, ANDROID_RUNTIME_JOB), where)
@@ -239,7 +263,7 @@ def read_android_legs(device_tests_text: str) -> Tuple[List[AndroidLeg], int, st
     if not legs:
         raise PinnedVersionsFormatError('%s: the include list has no entries' % where)
     _reject_duplicate_legs(legs, where)
-    return legs, include_line, dash_prefix
+    return AndroidLegsRead(legs, include_line, dash_prefix)
 
 
 def _reject_duplicate_legs(legs: List[AndroidLeg], where: str) -> None:
@@ -278,7 +302,7 @@ def read_coverage_levels(device_tests_text: str) -> List[AndroidLevel]:
         '%s: job %s has no include line' % (DEVICE_TESTS_FILE, ANDROID_COVERAGE_JOB))
 
 
-def _read_ios_legs(device_tests_text: str) -> Tuple[List[IosLeg], int, str]:
+def _read_ios_legs(device_tests_text: str) -> IosLegsRead:
     where = '%s job %s' % (DEVICE_TESTS_FILE, IOS_RUNTIME_JOB)
     lines = split_into_lines(device_tests_text)
     include_line, dash_prefix, entries = read_matrix_include(lines, find_job_block(lines, IOS_RUNTIME_JOB), where)
@@ -296,7 +320,7 @@ def _read_ios_legs(device_tests_text: str) -> Tuple[List[IosLeg], int, str]:
                            entry_start=entry.start, entry_end=entry.end))
     if not legs:
         raise PinnedVersionsFormatError('%s: the include list has no entries' % where)
-    return legs, include_line, dash_prefix
+    return IosLegsRead(legs, include_line, dash_prefix)
 
 
 def _device_tests_apple_labels(lines: List[str]) -> Tuple[List[Tuple[str, int, str]], List[str]]:
@@ -381,6 +405,9 @@ def _read_shared_env(shared_env_text: str) -> Dict[str, EnvValue]:
         if '=' not in line:
             raise PinnedVersionsFormatError('%s line %d: expected NAME=value' % (SHARED_ENV_FILE, number))
         key, value = line.split('=', 1)
+        if key in REQUIRED_ENV_KEYS and key in values:
+            raise PinnedVersionsFormatError(
+                '%s line %d: %s appears twice (also on line %d)' % (SHARED_ENV_FILE, number, key, values[key].line))
         values[key] = EnvValue(value=value, line=number)
     for key in REQUIRED_ENV_KEYS:
         if key not in values:

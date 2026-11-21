@@ -27,6 +27,33 @@ def _problem(path: str, line: int, reason: str) -> str:
     return '%s line %d: %s' % (path, line, reason)
 
 
+def _carriage_return_of_each_line(text: str) -> List[bool]:
+    raw_lines = text.split('\n')
+    if raw_lines and raw_lines[-1] == '':
+        raw_lines.pop()
+    return [line.endswith('\r') for line in raw_lines]
+
+
+def _line_ending_problems(path: str, base_text: str, head_text: str,
+                          opcodes: List[Tuple[str, int, int, int, int]]) -> List[str]:
+    """A file that already mixes endings could otherwise gain or lose a carriage return on one changed line."""
+    base_ends = _carriage_return_of_each_line(base_text)
+    head_ends = _carriage_return_of_each_line(head_text)
+    problems = []
+    for _, base_start, base_end, head_start, head_end in opcodes:
+        paired = min(base_end - base_start, head_end - head_start)
+        inserted = (head_end - head_start) - paired
+        if inserted > 0:
+            endings_an_insert_may_take = set(base_ends[base_start:base_end]) or {base_ends[max(base_start - 1, 0)]}
+            carriage_returns_gained = sum(head_ends[head_start:head_end]) - sum(base_ends[base_start:base_end])
+            mismatched = carriage_returns_gained not in {inserted * int(ending) for ending in endings_an_insert_may_take}
+        else:
+            mismatched = base_ends[base_start:base_start + paired] != head_ends[head_start:head_start + paired]
+        if mismatched:
+            problems.append(_problem(path, base_start + 1, 'a changed or inserted line has a different line ending than the line it replaces or follows'))
+    return problems
+
+
 def _line_ending_style(text: str) -> str:
     line_feeds = text.count('\n')
     carriage_returns = text.count('\r')
@@ -60,7 +87,7 @@ class _AndroidLegsOfBase:
         self.api_level_lines = {leg.api_level_line: leg for leg in legs}
         self.include_line = include_line
         self.dash_prefix = dash_prefix
-        self.list_end = max(leg.entry_end for leg in legs)
+        self.insertion_points = {leg.entry_end for leg in legs} | {include_line}
 
     def replacement_problem(self, base_number: int, base_line: str, head_line: str) -> Optional[str]:
         if base_number not in self.api_level_lines:
@@ -71,13 +98,18 @@ class _AndroidLegsOfBase:
             return "the line must stay of the form api-level: '<level>' with the level in single quotes"
         if base_match.group(1) != head_match.group(1):
             return 'the indentation of the api-level line changed'
-        if parse_android_level(head_match.group(2)) <= parse_android_level(base_match.group(2)):
+        base_level = parse_android_level(base_match.group(2))
+        head_level = parse_android_level(head_match.group(2))
+        if head_level <= base_level:
             return 'Android levels may only rise (%s to %s)' % (base_match.group(2), head_match.group(2))
+        if head_level.major != base_level.major:
+            return 'an Android level may not move to another major (%s to %s); that drops the leg of Android %d' % (
+                base_match.group(2), head_match.group(2), base_level.major)
         return None
 
     def insertion_problems(self, path: str, after_line: int, inserted: List[str]) -> List[str]:
-        if after_line < self.include_line or after_line > self.list_end:
-            return [_problem(path, after_line + 1, 'lines may only be inserted inside the Android include list')]
+        if after_line not in self.insertion_points:
+            return [_problem(path, after_line + 1, 'a new Android leg may only be inserted right after the last line of an existing leg or after the include: line')]
         problems = []
         index = 0
         while index < len(inserted):
@@ -156,7 +188,6 @@ def _result_problems(path: str, head_text: str) -> List[str]:
 
 
 def validate_file_change(path: str, base_text: str, head_text: str) -> List[str]:
-    """Problems with the edit from base_text to head_text; an empty list means the bot may make it."""
     if path not in PIN_FILES:
         return ['%s is not one of the files the bot may edit (%s)' % (path, ', '.join(PIN_FILES))]
     if _line_ending_style(base_text) != _line_ending_style(head_text):
@@ -169,6 +200,10 @@ def validate_file_change(path: str, base_text: str, head_text: str) -> List[str]
     opcodes = _changed_opcodes(base_lines, head_lines)
     if len(opcodes) > MAX_CHANGED_BLOCKS:
         return [_problem(path, 1, 'the edit has %d changed blocks, more than the %d the bot makes' % (len(opcodes), MAX_CHANGED_BLOCKS))]
+
+    ending_problems = _line_ending_problems(path, base_text, head_text, opcodes)
+    if ending_problems:
+        return ending_problems
 
     if path == DEVICE_TESTS_FILE:
         try:
@@ -192,7 +227,6 @@ def validate_file_change(path: str, base_text: str, head_text: str) -> List[str]
 
 
 def validate_changes(base_texts: Dict[str, str], head_texts: Dict[str, str]) -> List[str]:
-    """validate_file_change over every file, with the block limit counted across all of them."""
     problems: List[str] = []
     total_blocks = 0
     for path in sorted(set(base_texts) | set(head_texts)):

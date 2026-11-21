@@ -219,7 +219,7 @@ class SameLabelBumpTests(unittest.TestCase):
                       the_listings=listings(**{'xcode-27': self.newer_xcode_listing('xcode-27-20261119')}))
         self.assertEqual(result.safe_changes, [])
         self.assertEqual(len(result.deferred), 1)
-        self.assertIn('rollout of xcode-27-arm64 in progress', result.deferred[0])
+        self.assertIn('rollout of `xcode-27-arm64` in progress', result.deferred[0])
         self.assertEqual(result.things_to_check, [])
 
     def test_an_unknown_rollout_state_defers_and_says_so(self) -> None:
@@ -360,7 +360,41 @@ class LabelSwitchTests(unittest.TestCase):
         self.assertNotIn('iOS 26.5', steps)
         self.assertIn('git apply -3', steps)
         self.assertIn('Another maintainer approves', steps)
-        self.assertIn('Workload set', result.changes_for_a_person[0].why.replace('Library', 'Workload set'))
+        self.assertEqual(
+            "Workload set `11.0.100.1` needs Xcode 28.0, which only `xcode-28` has as a GA release. The bot doesn't make this "
+            'change itself: required checks are named after the label.', result.changes_for_a_person[0].why)
+
+    def test_the_why_names_each_sdk_when_the_two_workload_sets_differ(self) -> None:
+        sets = required_xcode('28.0', '28.0')
+        sets['bands']['11.0.200']['set_version'] = '11.0.200.1'
+        result = plan(required=sets, the_listings=self.switch_listings(), images=runner_images(with_xcode_28=True))
+        self.assertEqual(
+            "The library's workload set `11.0.100.1` needs Xcode 28.0 and the sample's workload set `11.0.200.1` needs Xcode 28.0, "
+            "which only `xcode-28` has as a GA release. The bot doesn't make this change itself: required checks are named after "
+            'the label.', result.changes_for_a_person[0].why)
+
+    def test_a_sample_skipped_because_ios_and_mac_catalyst_differ_still_has_to_fit_the_new_label(self) -> None:
+        sets = required_xcode('28.0', '28.0')
+        sets['bands']['11.0.200']['maccatalyst']['xcode'] = '27.2'
+        result = plan(required=sets, the_listings=self.switch_listings(), images=runner_images(with_xcode_28=True))
+        self.assertEqual(result.changes_for_a_person, [])
+        self.assertEqual(result.safe_changes, [])
+        self.assertIn('xcode-label-cannot-host-both:xcode-27:xcode-28', [thing.key for thing in result.things_to_check])
+
+    def test_a_sample_with_no_workload_set_for_its_band_still_has_to_fit_the_new_label(self) -> None:
+        sets = required_xcode('28.0', '28.0')
+        del sets['bands']['11.0.200']
+        result = plan(required=sets, the_listings=self.switch_listings(), images=runner_images(with_xcode_28=True))
+        self.assertEqual(result.changes_for_a_person, [])
+        self.assertEqual(result.safe_changes, [])
+        self.assertEqual([thing.key for thing in result.things_to_check], ['xcode-label-cannot-host-both:xcode-27:xcode-28'])
+
+    def test_an_unknown_rollout_state_of_the_new_label_is_a_thing_to_check(self) -> None:
+        images = runner_images(with_xcode_28=True, states={'xcode-28-arm64': None})
+        result = plan(required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(), images=images)
+        self.assertEqual(result.changes_for_a_person, [])
+        self.assertEqual([thing.key for thing in result.things_to_check], ['rollout-state-unknown:xcode-28-arm64'])
+        self.assertTrue(any('the move to it waits' in reason for reason in result.deferred))
 
     def test_unreadable_branch_rules_still_give_steps(self) -> None:
         result = plan(required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(),
@@ -449,6 +483,14 @@ class SourceProblemTests(unittest.TestCase):
         result = plan(required=required_xcode('28.0', '28.0'), images=images)
         self.assertEqual(result.changes_for_a_person, [])
         self.assertTrue(result.deferred)
+
+    def test_an_unreadable_readme_defers_a_needed_change_without_blaming_a_rollout_state(self) -> None:
+        images = {'status': 'error', 'error': 'bad readme', 'rows': [], 'rollout_states': {}, 'rollout_states_error': None}
+        result = plan(required=required_xcode('27.3', '27.3'),
+                      the_listings=listings(**{'xcode-27': listing('xcode-27-20261104')}), images=images)
+        self.assertEqual(result.deferred, ['the runner images README could not be read; Xcode change waits'])
+        self.assertIn('The runner images README could not be read; Xcode change waits.', result.notes)
+        self.assertEqual(result.things_to_check, [])
 
 
 if __name__ == '__main__':

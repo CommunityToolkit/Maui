@@ -195,8 +195,9 @@ def _bands_from_to(library_pinned_band: str, sample_band: str) -> List[str]:
     if library is None or sample is None or library.group(1, 2) != sample.group(1, 2):
         return [library_pinned_band] if library_pinned_band == sample_band else [library_pinned_band, sample_band]
     prefix = '%s.%s' % library.group(1, 2)
-    first, last = int(library.group(3)), int(sample.group(3))
-    return ['%s.%d' % (prefix, patch) for patch in range(first, last + 1, 100)] or [library_pinned_band]
+    lower, higher = sorted((int(library.group(3)), int(sample.group(3))))
+    patches = sorted(set(range(lower, higher + 1, 100)) | {lower, higher})
+    return ['%s.%d' % (prefix, patch) for patch in patches]
 
 
 def _optional_env_value(pinned: Any, name: str) -> Optional[str]:

@@ -110,11 +110,6 @@ class OutputsTests(unittest.TestCase):
             'open-or-update': 'true', 'identity': USABLE.identity, 'title': 'The title',
             'commit-message': 'The message\n\nGenerated-by: x'})
 
-    def test_no_call_goes_through_a_pat_client(self) -> None:
-        pat_client = FakeGitHub({}, token_name='PAT')
-        decide(plan_with('close', 7))
-        self.assertEqual(pat_client.calls, [])
-
 
 if __name__ == '__main__':
     unittest.main()

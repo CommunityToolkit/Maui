@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from . import markers
 from .data_types import PinnedVersions, SafeChange, ThingToCheck
 from .errors import GitHubApiError
+from .line_editor import android_leg_lines
 from .markdown_text import markdown_code
 from .pinned_versions import XCODE_VERSION_KEYS
 from .version_numbers import parse_android_level
@@ -14,6 +15,7 @@ SOURCE_KEY = 'source:bump-pull-request'
 _ANDROID_FILE = markers.PIN_FILES[1]
 _SHARED_ENV_FILE = markers.PIN_FILES[0]
 _CARRIED_SOURCE = 'carried-forward-from-the-open-pull-request'
+_ANDROID_LEVEL_KINDS = ('replace-api-level', 'insert-android-leg')
 
 _READ_CHECKS_QUERY = """
 query ReadBumpPullRequestChecks($owner: String!, $name: String!, $number: Int!) {
@@ -159,6 +161,8 @@ def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[S
         return None
     old = change.get('old') or None
     inserted_lines = list(change.get('inserted_lines') or [])
+    if kind in _ANDROID_LEVEL_KINDS and not _parse_as_android_levels(new, old):
+        return None
     rebuilders = {
         'set-xcode-version': _rebuild_xcode_version,
         'replace-api-level': _rebuild_api_level,
@@ -170,6 +174,17 @@ def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[S
     if rebuild is None or change.get('file') not in markers.PIN_FILES:
         return None
     return rebuild(pinned, change, pin, old, new, inserted_lines)
+
+
+def _parse_as_android_levels(*texts: Optional[str]) -> bool:
+    """The change list comes out of a pull request body that a person could have edited."""
+    try:
+        for text in texts:
+            if text:
+                parse_android_level(text)
+    except ValueError:
+        return False
+    return True
 
 
 def _carried(change: Dict[str, Any], line: int, old: Optional[str], new: str, inserted_lines: List[str],
@@ -219,15 +234,16 @@ def _rebuild_android_leg_insert(pinned: PinnedVersions, change: Dict[str, Any], 
     parsed = _parse_android_pin(pin)
     if parsed is None or change['file'] != _ANDROID_FILE or not inserted_lines:
         return None
-    if any(leg.level.text == new for leg in pinned.android_legs):
+    target, major = parsed
+    new_level = parse_android_level(new)
+    main_already_has_the_leg = any(leg.level == new_level or (leg.target == target and leg.level.major == major)
+                                   for leg in pinned.android_legs)
+    if main_already_has_the_leg:
         return None
-    lower_legs = [leg for leg in pinned.android_legs if _level_is_below(leg.level.text, new)]
+    lower_legs = [leg for leg in pinned.android_legs if leg.level < new_level]
     line = max(lower_legs, key=lambda leg: leg.level).entry_end if lower_legs else pinned.android_include_line
-    return _carried(change, line, None, new, inserted_lines, pin, 'Add an Android leg for API %s' % new)
-
-
-def _level_is_below(level_text: str, other_text: str) -> bool:
-    return parse_android_level(level_text) < parse_android_level(other_text)
+    return _carried(change, line, None, new, android_leg_lines(pinned.android_dash_prefix, new_level.text, target), pin,
+                    'Add an Android leg for API %s' % new)
 
 
 def _rebuild_ios_leg_insert(pinned: PinnedVersions, change: Dict[str, Any], pin: str, old: Optional[str], new: str,

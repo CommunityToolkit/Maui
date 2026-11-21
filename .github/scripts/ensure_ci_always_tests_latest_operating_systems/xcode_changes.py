@@ -8,12 +8,11 @@ from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 from .data_types import (ChangeForAPerson, FamilyPlan, PinnedVersions, RolloutState, SafeChange, SourceProblem,
                          ThingToCheck)
 from .markdown_text import markdown_code
+from .pinned_versions import DEVICE_TESTS_FILE, SHARED_ENV_FILE
 from .version_numbers import feature_band, major, major_minor, numeric_key, parse_utc
 
 FAMILY = 'xcode'
 GA_XCODE_APP_NAME = re.compile(r'^Xcode_\d+(\.\d+){0,2}\.app$')
-SHARED_ENV_PATH = '.github/workflows/shared.env'
-DEVICE_TESTS_PATH = '.github/workflows/device-tests.yml'
 LIBRARY_XCODE_KEY = 'CommunityToolkitLibrary_Xcode_Version'
 SAMPLE_XCODE_KEY = 'CommunityToolkitSample_Xcode_Version'
 XCODE_KEY_OF_SDK = (('library', LIBRARY_XCODE_KEY), ('sample', SAMPLE_XCODE_KEY))
@@ -22,19 +21,14 @@ NEWEST_SET_WITH_OLDER_XCODE_WAIT = timedelta(hours=24)
 APPLE_LABEL_PATTERN = re.compile(r'^(xcode|macos)-\d+$')
 
 
-def ga_xcode_versions(listing: Mapping[str, Any]) -> Set[str]:
+def _is_ga_xcode_app(app: Mapping[str, Any]) -> bool:
     """Same two rules as setup-xcode: a real GA folder name, and a license type that is present and not a beta."""
-    versions = set()
-    for app in listing.get('xcode_apps', []):
-        license_type = app.get('license_type')
-        if not GA_XCODE_APP_NAME.match(app.get('folder') or ''):
-            continue
-        if not license_type or 'beta' in str(license_type).lower():
-            continue
-        if not app.get('version'):
-            continue
-        versions.add(major_minor(app['version']))
-    return versions
+    license_type = app.get('license_type')
+    return bool(GA_XCODE_APP_NAME.match(app.get('folder') or '') and license_type and 'beta' not in str(license_type).lower())
+
+
+def ga_xcode_versions(listing: Mapping[str, Any]) -> Set[str]:
+    return {major_minor(app['version']) for app in listing.get('xcode_apps', []) if _is_ga_xcode_app(app) and app.get('version')}
 
 
 def _as_rollout_state(value: Any) -> Optional[RolloutState]:
@@ -48,8 +42,7 @@ def _image_build(listing: Mapping[str, Any]) -> str:
     return '.'.join(version.split('.')[:2])
 
 
-def _rollout_status(listing: Mapping[str, Any], rollout_states: Mapping[str, Any]) -> Tuple[str, str]:
-    """Returns ('ready' | 'not-ready' | 'unknown', plain-words reason)."""
+def _rollout_readiness(listing: Mapping[str, Any], rollout_states: Mapping[str, Any]) -> Tuple[str, str]:
     image_name = (listing.get('image') or {}).get('name') or ''
     state = _as_rollout_state((rollout_states or {}).get(image_name))
     if state is None:
@@ -64,7 +57,7 @@ def _rollout_status(listing: Mapping[str, Any], rollout_states: Mapping[str, Any
 def rollout_ready(listing: Mapping[str, Any], rollout_states: Mapping[str, Any]) -> Tuple[bool, str]:
     """A listing on a build that is still deploying counts as ready when it is the deployed build: that build runs wherever
     the new one hasn't replaced it, and a newer build of the same image keeps the GA Xcodes."""
-    status, reason = _rollout_status(listing, rollout_states)
+    status, reason = _rollout_readiness(listing, rollout_states)
     return status == 'ready', reason
 
 
@@ -140,9 +133,7 @@ def _prerelease_apps_of(listings: Mapping[str, Any], wanted: str) -> List[str]:
         for app in listing.get('xcode_apps', []):
             if not app.get('version') or major_minor(app['version']) != wanted:
                 continue
-            is_ga = (GA_XCODE_APP_NAME.match(app.get('folder') or '') and app.get('license_type')
-                     and 'beta' not in str(app['license_type']).lower())
-            if not is_ga:
+            if not _is_ga_xcode_app(app):
                 found.append('%s on %s' % (markdown_code(app['folder']), markdown_code(label)))
     return found
 
@@ -174,7 +165,7 @@ def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[
                               key=numeric_key)
     lines = line_editor.ios_leg_lines(pinned.ios_dash_prefix, newest_of_old_major, old_label, highest_ga_xcode)
     return SafeChange(
-        family=FAMILY, kind='insert-ios-leg', file=DEVICE_TESTS_PATH, line=pinned.ios_include_line, old=None,
+        family=FAMILY, kind='insert-ios-leg', file=DEVICE_TESTS_FILE, line=pinned.ios_include_line, old=None,
         new=newest_of_old_major, inserted_lines=lines, pin='ios-leg:%d' % old_major,
         description='Keep an iOS %s leg on `%s`, whose runtime stays installed there' % (newest_of_old_major, old_label),
         source='macos-runner-image:%s' % old_label)
@@ -244,7 +235,7 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
     rollout_states = (runner_images or {}).get('rollout_states') or {}
     readme_rows = _readme_rows(runner_images)
     apple_ga = ga_xcode_versions(apple_listing)
-    apple_rollout, _ = _rollout_status(apple_listing, rollout_states)
+    apple_rollout, _ = _rollout_readiness(apple_listing, rollout_states)
     apple_image_name = (apple_listing.get('image') or {}).get('name') or apple_label
 
     toolkit_net_version = pinned.shared_env['TOOLKIT_NET_VERSION'].value
@@ -290,9 +281,11 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
                 decision.required = None
                 continue
         if apple_rollout != 'ready':
-            reason = 'rollout of %s in progress; Xcode change waits' % apple_image_name
+            reason = 'rollout of %s in progress; Xcode change waits' % markdown_code(apple_image_name)
             if apple_rollout == 'unknown':
-                reason = 'the rollout state of %s is unknown; Xcode change waits' % apple_image_name
+                reason = 'the rollout state of %s is unknown; Xcode change waits' % markdown_code(apple_image_name)
+                if readme_rows is None:
+                    reason = 'the runner images README could not be read; Xcode change waits'
             rollout_blocked_reasons.append(reason)
             decision.required = None
             continue
@@ -321,13 +314,10 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
     for reason in sorted(set(rollout_blocked_reasons), key=rollout_blocked_reasons.index):
         plan.deferred.append(reason)
         plan.notes.append(reason[0].upper() + reason[1:] + '.')
-    if apple_rollout == 'unknown' and rollout_blocked_reasons:
-        plan.things_to_check.append(ThingToCheck(
-            key='rollout-state-unknown:%s' % apple_image_name,
-            text='The rollout state of %s could not be read, so Xcode changes wait until it can.'
-                 % markdown_code(apple_image_name)))
+    if apple_rollout == 'unknown' and rollout_blocked_reasons and readme_rows is not None:
+        _add_thing_once(plan, _rollout_state_unknown_thing(apple_image_name))
 
-    moved_to_a_new_label = _decide_label_switch(plan, pinned, decisions, listings, rollout_states, branch_rules)
+    moved_to_a_new_label = _plan_label_switch_for_a_person(plan, pinned, decisions, listings, rollout_states, branch_rules)
     if not moved_to_a_new_label:
         for decision in decisions:
             if decision.safe_change_to is not None and decision.safe_change_to != decision.current:
@@ -346,6 +336,12 @@ def _add_thing_once(plan: FamilyPlan, thing: ThingToCheck) -> None:
         plan.things_to_check.append(thing)
 
 
+def _rollout_state_unknown_thing(image_name: str) -> ThingToCheck:
+    return ThingToCheck(
+        key='rollout-state-unknown:%s' % image_name,
+        text='The rollout state of %s could not be read, so Xcode changes wait until it can.' % markdown_code(image_name))
+
+
 def _prerelease_suffix(listings: Mapping[str, Any], required: str) -> str:
     prerelease = _prerelease_apps_of(listings, required)
     return ' Seen only as a beta or release candidate: %s.' % ', '.join(prerelease) if prerelease else ''
@@ -355,16 +351,26 @@ def _set_xcode_version_change(pinned: PinnedVersions, decision: _SdkDecision, so
     value = pinned.shared_env[decision.key]
     new = decision.safe_change_to if decision.safe_change_to is not None else decision.required
     return SafeChange(
-        family=FAMILY, kind='set-xcode-version', file=SHARED_ENV_PATH, line=value.line, old=value.value, new=new,
+        family=FAMILY, kind='set-xcode-version', file=SHARED_ENV_FILE, line=value.line, old=value.value, new=new,
         inserted_lines=[], pin='env:%s' % decision.key,
         description='Use Xcode %s for the %s build (workload set %s)' % (new, decision.name, decision.set_version),
         source='workload-sets+macos-runner-image:%s' % source_label)
 
 
-def _decide_label_switch(plan: FamilyPlan, pinned: PinnedVersions, decisions: List[_SdkDecision],
+def _what_the_workload_sets_need(switching: List[_SdkDecision]) -> str:
+    needs = {(decision.set_version, decision.required) for decision in switching}
+    if len(needs) == 1:
+        set_version, required = next(iter(needs))
+        return 'Workload set %s needs Xcode %s' % (markdown_code(set_version), required)
+    phrases = ["%s's workload set %s needs Xcode %s" % (decision.name, markdown_code(decision.set_version), decision.required)
+               for decision in switching]
+    sentence = ' and the '.join(phrases)
+    return 'The ' + sentence
+
+
+def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, decisions: List[_SdkDecision],
                          listings: Mapping[str, Any], rollout_states: Mapping[str, Any],
                          branch_rules: Optional[Mapping[str, Any]]) -> bool:
-    """Returns True when a change for a person now holds every Xcode change of the night."""
     switching = [decision for decision in decisions if decision.switch_to_label]
     if not switching:
         return False
@@ -380,12 +386,10 @@ def _decide_label_switch(plan: FamilyPlan, pinned: PinnedVersions, decisions: Li
     target_listing = listings[target]
     target_ga = ga_xcode_versions(target_listing)
 
-    final_values = {}
+    final_values = {name: pinned.shared_env[key].value for name, key in XCODE_KEY_OF_SDK}
     for decision in decisions:
         if decision.switch_to_label or decision.safe_change_to is not None:
             final_values[decision.name] = decision.required
-        else:
-            final_values[decision.name] = decision.current
     missing = {name: value for name, value in final_values.items() if value not in target_ga}
     if missing:
         plan.things_to_check.append(ThingToCheck(
@@ -396,12 +400,13 @@ def _decide_label_switch(plan: FamilyPlan, pinned: PinnedVersions, decisions: Li
         for decision in switching:
             decision.switch_to_label = None
         return False
-    target_rollout, _ = _rollout_status(target_listing, rollout_states)
+    target_rollout, _ = _rollout_readiness(target_listing, rollout_states)
     if target_rollout != 'ready':
         image_name = (target_listing.get('image') or {}).get('name') or target
-        reason = 'rollout of %s in progress; the move to it waits' % image_name
+        reason = 'rollout of %s in progress; the move to it waits' % markdown_code(image_name)
         if target_rollout == 'unknown':
-            reason = 'the rollout state of %s is unknown; the move to it waits' % image_name
+            reason = 'the rollout state of %s is unknown; the move to it waits' % markdown_code(image_name)
+            _add_thing_once(plan, _rollout_state_unknown_thing(image_name))
         plan.deferred.append(reason)
         plan.notes.append(reason[0].upper() + reason[1:] + '.')
         for decision in switching:
@@ -425,13 +430,12 @@ def _decide_label_switch(plan: FamilyPlan, pinned: PinnedVersions, decisions: Li
     rules = branch_rules or {}
     rules_readable = rules.get('status') in (None, 'ok') and rules.get('required_checks') is not None
     renames = _checks_to_rename(rules.get('required_checks') or [], apple_label, target) if rules_readable else []
-    needs = ', '.join('%s needs Xcode %s' % (decision.name, decision.required) for decision in switching)
     key = 'xcode-label:%s:%s' % (apple_label, target)
     plan.changes_for_a_person.append(ChangeForAPerson(
         key=key,
         title='Move the Apple jobs from %s to %s' % (markdown_code(apple_label), markdown_code(target)),
-        why='%s. Only %s has that Xcode as a GA release. The bot does not make this change itself: required checks '
-            'are named after the label.' % (needs[0].upper() + needs[1:], markdown_code(target)),
+        why='%s, which only %s has as a GA release. The bot doesn\'t make this change itself: required checks '
+            'are named after the label.' % (_what_the_workload_sets_need(switching), markdown_code(target)),
         steps=_label_switch_steps(apple_label, target, renames, rules_readable),
         changes=changes,
         patch_file='patches/%s.patch' % key.replace(':', '_')))

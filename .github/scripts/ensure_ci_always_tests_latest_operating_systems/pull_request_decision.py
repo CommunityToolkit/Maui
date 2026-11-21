@@ -16,8 +16,6 @@ CLOSED_BY_BOT_NOTE = 'Closed by the bot: main no longer needs these changes.'
 
 @dataclass
 class Decision:
-    """action is the plan's pull_request_action; open_or_update says whether create-pull-request may run."""
-
     status: str
     token: TokenStatus
     action: str
@@ -73,7 +71,7 @@ def _close_pull_request(github: Any, number: int) -> None:
 
 def decide_pull_request_update(plan: Any, token_status: TokenStatus, github: Any, base: str, base_sha: str,
                                now: datetime) -> Decision:
-    """github is the GITHUB_TOKEN client; the maintainer token was already used by check_token and never reaches this code."""
+    """The maintainer token never reaches this code: only check_token uses it, so nothing here can push as the maintainer."""
     plan_fields = _plan_fields(plan)
     action = plan_fields.get('pull_request_action', 'nothing')
     decision = Decision(status='ok', token=token_status, action=action,
@@ -96,7 +94,6 @@ def decide_pull_request_update(plan: Any, token_status: TokenStatus, github: Any
 
 
 def step_outputs(decision: Decision, plan: Any) -> Dict[str, str]:
-    """The values later steps of the job read; create-pull-request takes identity, title and commit message from here."""
     plan_fields = _plan_fields(plan)
     return {
         'open-or-update': 'true' if decision.open_or_update else 'false',

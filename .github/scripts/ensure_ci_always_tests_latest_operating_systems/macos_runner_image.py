@@ -47,11 +47,12 @@ def _symlinks_pointing_at(apps_dir: str, folder: str) -> List[str]:
     return names
 
 
-def list_xcode_apps(apps_dir: str = '/Applications') -> List[Dict[str, Any]]:
+def list_xcode_apps(apps_dir: str = '/Applications', problems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Only real folders count: a beta answers to Xcode_27.3.app through a symlink, and setup-xcode ignores symlinks too."""
     try:
         names = sorted(os.listdir(apps_dir))
-    except OSError:
+    except OSError as error:
+        _report(problems, 'could not list %s: %s' % (apps_dir, error))
         return []
     apps = []
     for folder in names:
@@ -70,13 +71,22 @@ def list_xcode_apps(apps_dir: str = '/Applications') -> List[Dict[str, Any]]:
     return apps
 
 
-def list_simulator_runtimes(run: RunCommand) -> List[Dict[str, Any]]:
-    code, output = run(['xcrun', 'simctl', 'list', 'runtimes', '-j'])
-    if code != 0 or not output.strip():
+def _report(problems: Optional[List[str]], message: str) -> None:
+    """An empty list from a failed command would look like "nothing installed" and drop legs the bot should keep."""
+    if problems is not None:
+        problems.append(message)
+
+
+def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    command = ['xcrun', 'simctl', 'list', 'runtimes', '-j']
+    code, output = run(command)
+    if code != 0:
+        _report(problems, '`%s` failed with exit code %d' % (' '.join(command), code))
         return []
     try:
         data = json.loads(output)
     except ValueError:
+        _report(problems, '`%s` printed text that is not JSON' % ' '.join(command))
         return []
     runtimes = []
     for runtime in data.get('runtimes', []) if isinstance(data, dict) else []:
@@ -90,9 +100,11 @@ def list_simulator_runtimes(run: RunCommand) -> List[Dict[str, Any]]:
     return runtimes
 
 
-def list_dotnet_sdks(run: RunCommand) -> List[str]:
-    code, output = run(['dotnet', '--list-sdks'])
+def list_dotnet_sdks(run: RunCommand, problems: Optional[List[str]] = None) -> List[str]:
+    command = ['dotnet', '--list-sdks']
+    code, output = run(command)
     if code != 0:
+        _report(problems, '`%s` failed with exit code %d' % (' '.join(command), code))
         return []
     return [line.split()[0] for line in output.splitlines() if line.strip()]
 
@@ -128,17 +140,20 @@ def inspect_macos_runner_image(label: str, run: RunCommand = run_command, apps_d
     """Lists everything even when the image information is missing, so a local run still shows what it found."""
     home = home if home is not None else os.path.expanduser('~')
     environ = environ if environ is not None else os.environ
+    problems: List[str] = []
     listing: Dict[str, Any] = {
         'status': 'ok',
         'label': label,
         'image': {'name': None, 'version': None},
-        'xcode_apps': list_xcode_apps(apps_dir),
-        'runtimes': list_simulator_runtimes(run),
-        'dotnet_sdks': list_dotnet_sdks(run),
+        'xcode_apps': list_xcode_apps(apps_dir, problems),
+        'runtimes': list_simulator_runtimes(run, problems),
+        'dotnet_sdks': list_dotnet_sdks(run, problems),
     }
     try:
         listing['image'] = read_runner_image(home, environ)
     except RunnerSoftwareError as error:
+        problems.append(str(error))
+    if problems:
         listing['status'] = 'error'
-        listing['error'] = str(error)
+        listing['error'] = '; '.join(problems)
     return listing

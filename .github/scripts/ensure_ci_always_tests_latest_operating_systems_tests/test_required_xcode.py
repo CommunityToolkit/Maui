@@ -240,10 +240,17 @@ class ReadRequiredXcodeTests(unittest.TestCase):
         mapping[DOTNET_RELEASES_INDEX] = json.dumps(index)
         missing_url = '%s/microsoft.net.workloads.11.0.200/index.json' % NUGET_PACKAGES
         mapping[missing_url] = NotFoundError(missing_url)
-        result = read_required_xcode(FakeDownloader(mapping), pinned_with('11.0.100', '11.0.x'))
+        downloader = FakeDownloader(mapping)
+        result = read_required_xcode(downloader, pinned_with('11.0.100', '11.0.x'))
         self.assertEqual(['11.0.100', '11.0.200'], list(result['bands']))
         self.assertEqual('missing', result['bands']['11.0.200']['status'])
-        self.assertIn(url, mapping)
+        self.assertIn(url, downloader.urls_requested())
+
+    def test_a_sample_band_below_the_library_band_still_resolves_both(self):
+        from ensure_ci_always_tests_latest_operating_systems.required_xcode import _bands_from_to
+        self.assertEqual(['11.0.100', '11.0.200'], _bands_from_to('11.0.200', '11.0.100'))
+        self.assertEqual(['11.0.100', '11.0.200', '11.0.300'], _bands_from_to('11.0.100', '11.0.300'))
+        self.assertEqual(['11.0.100'], _bands_from_to('11.0.100', '11.0.100'))
 
     def test_a_missing_library_band_is_an_error(self):
         url = '%s/microsoft.net.workloads.11.0.100/index.json' % NUGET_PACKAGES

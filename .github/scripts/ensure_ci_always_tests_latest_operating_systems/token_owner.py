@@ -25,8 +25,6 @@ _EXPIRATION = re.compile(r'(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(?: (U
 
 @dataclass
 class TokenStatus:
-    """reason is '' when the token is usable; identity is 'Name <id+login@users.noreply.github.com>' once the owner is known."""
-
     usable: bool
     reason: str
     login: str = ''

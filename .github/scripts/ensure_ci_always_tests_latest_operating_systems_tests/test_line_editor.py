@@ -273,9 +273,9 @@ class UnifiedDiffTests(unittest.TestCase):
         run_git(folder, 'add', '-A')
         run_git(folder, 'commit', '-q', '-m', 'base')
         after = editor.apply_changes(self.texts[SHARED_ENV], [xcode_change('CommunityToolkitSample_Xcode_Version', 21)])
-        patch_path = os.path.join(folder, '..', 'sample-line-%d.patch' % os.getpid())
-        patch_path = os.path.abspath(patch_path)
-        self.addCleanup(lambda: os.path.exists(patch_path) and os.remove(patch_path))
+        patch_folder = tempfile.TemporaryDirectory()
+        self.addCleanup(patch_folder.cleanup)
+        patch_path = os.path.join(patch_folder.name, 'sample-line.patch')
         with open(patch_path, 'w', encoding='utf-8', newline='') as file:
             file.write(editor.unified_diff(SHARED_ENV, self.texts[SHARED_ENV], after))
 
