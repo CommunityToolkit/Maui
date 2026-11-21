@@ -22,6 +22,10 @@ public static partial class TestCategory
 
 	public const string CameraStartStopAndroid = nameof(CameraStartStopAndroid);
 
+	public const string CameraWedgeSignatureAndroid = nameof(CameraWedgeSignatureAndroid);
+
+	public const string CameraClosedCheckAndroid = nameof(CameraClosedCheckAndroid);
+
 	public const string CameraApple = nameof(CameraApple);
 
 	public const string CameraWindows = nameof(CameraWindows);

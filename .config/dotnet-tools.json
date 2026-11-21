@@ -3,14 +3,14 @@
   "isRoot": true,
   "tools": {
     "microsoft.dotnet.xharness.cli": {
-      "version": "11.0.0-prerelease.26556.1",
+      "version": "11.0.0-prerelease.26569.1",
       "commands": [
         "xharness"
       ],
       "rollForward": false
     },
     "coverlet.console": {
-      "version": "10.1.0",
+      "version": "10.1.1",
       "commands": [
         "coverlet"
       ],

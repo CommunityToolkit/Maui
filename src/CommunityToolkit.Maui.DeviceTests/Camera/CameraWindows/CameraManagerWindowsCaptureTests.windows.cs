@@ -93,6 +93,36 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 	}
 
 	[Fact]
+	public async Task TakePictureWhenAMediaCapturedHandlerThrowsReportsItOnceAndTheNextCaptureSucceeds()
+	{
+		const string subscriberFailureMessage = "The subscriber failed.";
+
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			var recorder = new WindowsMediaRecorder(scope.View);
+			scope.View.MediaCaptured += ThrowingSubscriber;
+
+			await scope.Manager.TakePicture(CancellationToken.None);
+			await recorder.FirstCapture.Task.WaitAsync(captureTimeout);
+			scope.View.MediaCaptured -= ThrowingSubscriber;
+
+			Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
+
+			var nextRecorder = new WindowsMediaRecorder(scope.View);
+			await scope.Manager.TakePicture(CancellationToken.None);
+			var next = await nextRecorder.FirstCapture.Task.WaitAsync(captureTimeout);
+
+			Assert.True(next.Length > 1000);
+			Assert.Empty(nextRecorder.Failures);
+			Assert.Single(recorder.Failures);
+			GC.KeepAlive(recorder);
+			GC.KeepAlive(nextRecorder);
+		});
+
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
+	}
+
+	[Fact]
 	public async Task UpdateCaptureResolutionAppliesTheLargestPhotoSizeThatFitsTheRequest()
 	{
 		await RunWithConnectedCameraAsync(async (scope, camera) =>

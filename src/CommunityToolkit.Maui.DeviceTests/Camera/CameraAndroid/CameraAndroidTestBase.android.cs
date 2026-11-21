@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -31,6 +33,13 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// Only an upper bound: reached when a test fails or the machine is overloaded.
 	internal static readonly TimeSpan CameraTimeout = TimeSpan.FromSeconds(45);
 
+	const string cameraWedgeLogTag = "CameraWedge";
+
+	// Process-wide, because the wedge never recovers in this process.
+	static string? wedgedCameraStack;
+	static int artDumpRequested;
+	internal static string? LastDroppedClosedPublication { get; set; }
+
 	readonly List<Action> cleanups = [];
 	readonly AsyncVoidExceptionGuard asyncVoidGuard = new();
 	SynchronizationContext? mainThreadSynchronizationContext;
@@ -43,11 +52,31 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	protected static Context AppContext => MauiProgramDefaults.DefaultContext;
 
+	protected static Task WaitForFutureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
+	{
+		var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		future.AddListener(new Java.Lang.Runnable(() =>
+		{
+			try
+			{
+				future.Get();
+				done.TrySetResult();
+			}
+			catch (Exception ex)
+			{
+				done.TrySetException(ex);
+			}
+		}), AndroidX.Core.Content.ContextCompat.GetMainExecutor(AppContext));
+
+		return done.Task.WaitAsync(CameraTimeout);
+	}
+
 	protected void SetupBuilder(Action<MauiAppBuilder>? configureBuilder = null, [CallerMemberName] string? testName = null)
 	{
 		// The runner only reports results when the whole run ends, so a crash of the app (the camera HAL, the media codec or
 		// the toolkit) loses them all. This marker in the device log tells which test was running.
 		Android.Util.Log.Info("CameraDeviceTests", $"START {GetType().Name}.{testName}");
+		FailIfAnEarlierTestWedgedTheCameraStack();
 
 		base.SetupBuilder(configureBuilder);
 		InstallAsyncVoidGuard();
@@ -167,19 +196,19 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	// CameraState.GetType() is CameraX's getType(), not Object.GetType(): PENDING_OPEN, OPENING, OPEN, CLOSING or CLOSED.
 	protected static string GetNativeCameraState(ICameraInfo nativeInfo) =>
-		(nativeInfo.CameraState.Value as CameraState)?.GetType()?.ToString() ?? "UNKNOWN";
+		(nativeInfo.CameraState!.Value as CameraState)?.GetType()?.ToString() ?? "UNKNOWN";
 
 	protected static async Task<string> GetNativeCameraStateAsync(string cameraId) =>
 		GetNativeCameraState(await GetNativeCameraInfoAsync(cameraId));
 
 	// JavaCast, as CameraProvider reads it: in a trimmed (Release) app the value is a plain Java.Lang.Object, which a cast to IZoomState rejects.
 	protected static IZoomState GetNativeZoomState(ICameraInfo nativeInfo) =>
-		nativeInfo.ZoomState.Value?.JavaCast<IZoomState>() ?? throw new InvalidOperationException("The native camera has no zoom state.");
+		nativeInfo.ZoomState!.Value?.JavaCast<IZoomState>() ?? throw new InvalidOperationException("The native camera has no zoom state.");
 
 	protected static float GetNativeZoomRatio(ICameraInfo nativeInfo) => GetNativeZoomState(nativeInfo).ZoomRatio;
 
 	protected static bool IsNativeTorchOn(ICameraInfo nativeInfo) =>
-		(nativeInfo.TorchState.Value as Java.Lang.Integer)?.IntValue() == 1;
+		(nativeInfo.TorchState!.Value as Java.Lang.Integer)?.IntValue() == 1;
 
 	protected static async Task WaitForNativeCameraStateAsync(string cameraId, string expectedState, int timeoutMilliseconds = 30000)
 	{
@@ -199,7 +228,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		}
 	}
 
-	protected static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000)
+	// The manager reports a failed bind only through ErrorOccurred, so without the recorder "never started streaming" is the only clue.
+	internal static async Task WaitForStreamingAsync(PreviewView previewView, int timeoutMilliseconds = 60000, CameraErrorRecorder? errors = null)
 	{
 		try
 		{
@@ -208,20 +238,96 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		catch (Xunit.Sdk.XunitException ex) when (ex.Message.Contains("never started streaming", StringComparison.Ordinal))
 		{
 			var all = string.Join(", ", (await GetNativeCameraProviderAsync()).AvailableCameraInfos.Select(info => $"{GetNativeCameraId(info)}={GetNativeCameraState(info)}"));
-			throw new Xunit.Sdk.XunitException($"The preview never started streaming (stream state {previewView.PreviewStreamState.Value}; every camera: {all}).");
+			var reported = errors is null || errors.Errors.Count == 0
+				? string.Empty
+				: $" Errors the view reported: {string.Join("; ", errors.Errors.Select(error => $"{error.GetType().FullName}: {error.Message}"))}.";
+			throw new Xunit.Sdk.XunitException($"The preview never started streaming (stream state {previewView.PreviewStreamState!.Value}; every camera: {all}).{reported}");
 		}
 	}
 
 	protected static bool IsStreaming(PreviewView previewView) =>
-		previewView.PreviewStreamState.Value?.ToString() == "STREAMING";
+		previewView.PreviewStreamState!.Value?.ToString() == "STREAMING";
 
-	protected static async Task WaitForAllCamerasClosedAsync(int timeoutMilliseconds = 30000)
+	protected static async Task WaitForAllCamerasClosedAsync(int timeoutMilliseconds = 30000) =>
+		await WaitForClosedAsync(null, timeoutMilliseconds, "A camera is still open");
+
+	protected static Task WaitForCameraClosedAsync(string cameraId, int timeoutMilliseconds = 30000) =>
+		WaitForClosedAsync([cameraId], timeoutMilliseconds, $"Camera {cameraId} is not closed");
+
+	// Waits out the stable window from now: a camera that was freed a moment ago, or is about to be opened, must not pass as closed.
+	protected static async Task AssertCameraIsClosedAsync(string cameraId) =>
+		await AssertClosedNowAsync([cameraId]);
+
+	static async Task WaitForClosedAsync(IReadOnlyCollection<string>? cameraIds, int timeoutMilliseconds, string failureMessage)
 	{
-		await AssertionExtensions.AssertEventuallyAsync(async () =>
+		var monitor = await CameraAvailabilityMonitor.GetAsync();
+		var ids = cameraIds ?? monitor.CameraIds;
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		var result = EvaluateSince(stopwatch, monitor, ids);
+		while (result.Verdict is not CameraClosedVerdict.Closed)
+		{
+			if (stopwatch.ElapsedMilliseconds > timeoutMilliseconds)
+			{
+				throw new Xunit.Sdk.XunitException($"{failureMessage} (camera service: {result.Description}; CameraX: {await DescribeNativeCameraStatesAsync()}).");
+			}
+
+			await Task.Delay(100);
+			result = EvaluateSince(stopwatch, monitor, ids);
+		}
+
+		await LogDroppedClosedPublicationAsync(ids, result);
+	}
+
+	static CameraClosedResult EvaluateSince(System.Diagnostics.Stopwatch checkStarted, CameraAvailabilityMonitor monitor, IReadOnlyCollection<string> cameraIds) =>
+		CameraClosedCheck.Evaluate(cameraIds, monitor.Snapshot(), CameraClosedCheck.StableWindow, checkStarted.Elapsed);
+
+	static async Task AssertClosedNowAsync(IReadOnlyCollection<string>? cameraIds)
+	{
+		var monitor = await CameraAvailabilityMonitor.GetAsync();
+		var ids = cameraIds ?? monitor.CameraIds;
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		var result = EvaluateSince(stopwatch, monitor, ids);
+		while (true)
+		{
+			var canStillBecomeClosed = result.Verdict is CameraClosedVerdict.Settling || (result.Verdict is CameraClosedVerdict.Unknown && stopwatch.Elapsed < TimeSpan.FromSeconds(2));
+			if (!canStillBecomeClosed)
+			{
+				break;
+			}
+
+			await Task.Delay(result.Verdict is CameraClosedVerdict.Settling ? result.RemainingStableTime + TimeSpan.FromMilliseconds(10) : TimeSpan.FromMilliseconds(50));
+			result = EvaluateSince(stopwatch, monitor, ids);
+		}
+
+		if (result.Verdict is not CameraClosedVerdict.Closed)
+		{
+			throw new Xunit.Sdk.XunitException($"A camera is not closed (camera service: {result.Description}; CameraX: {await DescribeNativeCameraStatesAsync()}).");
+		}
+
+		await LogDroppedClosedPublicationAsync(ids, result);
+	}
+
+	// CameraX's public state is only a diagnostic here: it is exactly what drops the CLOSED that these checks must not depend on.
+	static async Task LogDroppedClosedPublicationAsync(IReadOnlyCollection<string> cameraIds, CameraClosedResult closed)
+	{
+		try
 		{
 			var provider = await GetNativeCameraProviderAsync();
-			return provider.AvailableCameraInfos.All(info => GetNativeCameraState(info) is "CLOSED" or "UNKNOWN");
-		}, timeoutMilliseconds, 100, "A camera is still open.");
+			var cameraXStates = provider.AvailableCameraInfos
+				.Select(info => (CameraId: GetNativeCameraId(info), State: GetNativeCameraState(info)))
+				.Where(camera => cameraIds.Contains(camera.CameraId, StringComparer.Ordinal))
+				.ToList();
+
+			if (CameraClosedCheck.DescribeDroppedClosedPublication(closed, cameraXStates) is string dropped)
+			{
+				LastDroppedClosedPublication = dropped;
+				Android.Util.Log.Warn(cameraWedgeLogTag, dropped);
+			}
+		}
+		catch (Exception ex)
+		{
+			Android.Util.Log.Warn(cameraWedgeLogTag, $"CameraX's camera states could not be compared with the camera service: {ex.Message}");
+		}
 	}
 
 	protected static async Task<bool> IsNativelyBoundAsync(UseCase useCase) =>
@@ -233,13 +339,26 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// restarted preview), CameraX's camera thread goes CLOSING, REOPENING and OPENED before the UI thread dispatched the states it
 	// posted, and CameraStateMachine drops the final OPEN because LiveData still holds the OPEN of before (logcat:
 	// "Transitioning camera internal state: REOPENING --> OPENED" without a following "Publishing new public camera state ... OPEN").
-	// The public state then stays OPENING for good while the camera streams. A camera that was closed before (never rebound while open)
+	// The public state then stays OPENING for good while the camera streams. It drops the final CLOSED the same way (see
+	// CameraClosedCheck). A camera that was closed before (never rebound while open)
 	// does publish OPEN: tests that open a camera for the first time assert it with WaitForNativeCameraStateAsync.
+	internal static Task WaitUntilCameraIsStreamingAsync(ManagerSession session) =>
+		WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."), session.Errors);
+
+	internal static Task WaitUntilCameraIsStreamingAsync(HostedView host) =>
+		WaitUntilCameraIsStreamingAsync(host.View, host.PreviewView, host.Errors);
+
+	internal static Task WaitForStreamingAsync(ManagerSession session) =>
+		WaitForStreamingAsync(session.PreviewView ?? throw new InvalidOperationException("The session has no PreviewView."), errors: session.Errors);
+
+	internal static Task WaitForStreamingAsync(HostedView host) =>
+		WaitForStreamingAsync(host.PreviewView, errors: host.Errors);
+
 	// The handler selects a camera only once its camera provider has found the cameras, which takes longest for the first camera of the process
-	protected static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView)
+	static async Task WaitUntilCameraIsStreamingAsync(CameraView view, PreviewView previewView, CameraErrorRecorder errors)
 	{
 		await AssertionExtensions.AssertEventually(() => view.SelectedCamera is not null, 30000, 50, "The handler never selected a camera.");
-		await WaitForStreamingAsync(previewView);
+		await WaitForStreamingAsync(previewView, errors: errors);
 	}
 
 	protected static Task WaitForNativeTorchAsync(string cameraId, bool on, int timeoutMilliseconds = 30000, string? message = null) =>
@@ -253,6 +372,34 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// Simulates another app component that uses CameraX. Must run on the UI thread.
 	protected static async Task UnbindAllNativeAsync() => (await GetNativeCameraProviderAsync()).UnbindAll();
 
+	// CameraX must find the back camera that the device declares, but its camera limiter selects no camera. Without retries it fails at
+	// once, instead of after retrying for 6 seconds.
+	protected Task MakeCameraXFailToInitializeAsync() => ReconfigureCameraXAsync(
+		new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingBack)!.AddCameraFilter(new NoCameraFilter())!.Build()!,
+		RetryPolicy.Never);
+
+	// Shutting down and then configuring is how CameraX's own tests reconfigure it (ProcessCameraProvider.ShutdownAsync, then
+	// ConfigureInstance). The cleanup shuts CameraX down once more, so that the next test starts it with its default configuration again.
+	protected async Task ReconfigureCameraXAsync(CameraSelector availableCamerasLimiter, IRetryPolicy? initializationRetryPolicy = null)
+	{
+		var native = await GetNativeCameraProviderAsync();
+		RegisterCleanup(() => native.ShutdownAsync());
+
+		await InvokeOnMainThreadAsync(() => WaitForFutureAsync(native.ShutdownAsync()));
+		var configuration = CameraXConfig.Builder.FromConfig(AndroidX.Camera.Camera2.Camera2Config.DefaultConfig())!.SetAvailableCamerasLimiter(availableCamerasLimiter)!;
+		if (initializationRetryPolicy is not null)
+		{
+			configuration = configuration.SetCameraProviderInitRetryPolicy(initializationRetryPolicy)!;
+		}
+
+		AndroidX.Camera.Lifecycle.ProcessCameraProvider.ConfigureInstance(configuration.Build()!);
+	}
+
+	protected sealed class NoCameraFilter : Java.Lang.Object, ICameraFilter
+	{
+		public IList<ICameraInfo> Filter(IList<ICameraInfo>? cameraInfos) => [];
+	}
+
 	// A 4:3 capture size that is smaller than what the cameras of the emulators capture by default (the largest 4:3 size: 640x480 on
 	// the Android 9 emulator, 2048x1536 and more on newer ones), so that restricting the capture resolution to it visibly changes the
 	// resolution CameraX negotiates.
@@ -260,7 +407,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	protected static (int Width, int Height) SmallSize => (320, 240);
 
-	protected static string GetBoundCameraId(ICamera camera) => GetNativeCameraId(camera.CameraInfo);
+	protected static string GetBoundCameraId(ICamera camera) => GetNativeCameraId(camera.CameraInfo!);
 
 	protected static (int Width, int Height)? GetNativeResolution(ResolutionInfo? info) =>
 		info?.Resolution is Android.Util.Size size ? (size.Width, size.Height) : null;
@@ -283,7 +430,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// old session. Must be called on the UI thread: LiveData observers are added there.
 	protected static async Task RunAndWaitForANewPreviewStreamAsync(PreviewView previewView, Func<Task> action)
 	{
-		var states = new LiveDataRecorder(previewView.PreviewStreamState);
+		var states = new LiveDataRecorder(previewView.PreviewStreamState!);
 		try
 		{
 			await action();
@@ -303,7 +450,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	// The selector matches no camera of the device, like an external USB camera that is not plugged in or a CameraInfo that outlived its camera.
 	protected static CameraInfo CreateCameraThatCanNotBeBound() =>
 		new("External Camera", "unplugged-camera", CameraPosition.Unknown, false, 1, 1, [],
-			new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingExternal)!.Build());
+			new CameraSelector.Builder().RequireLensFacing(CameraSelector.LensFacingExternal)!.Build()!);
 
 	internal static async Task<Stream> TakePictureAsync(ManagerSession session)
 	{
@@ -353,6 +500,32 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 	protected static IReadOnlyList<string> ListRecordingFiles() =>
 		AppContext.CacheDir?.ListFiles()?.Where(file => file.Name.EndsWith(".mp4", StringComparison.Ordinal)).Select(file => file.AbsolutePath).Order().ToList() ?? [];
+
+	// MediaMuxer writes the MP4 header before any sample, so a file that holds only the header is not a video yet.
+	protected static async Task<string> WaitForRecordedVideoAsync(IReadOnlyCollection<string> before, string message = "The recording never wrote any data into the cache directory.")
+	{
+		string? path = null;
+		long headerLength = 0;
+		await AssertionExtensions.AssertEventually(() =>
+		{
+			path = ListRecordingFiles().Except(before).SingleOrDefault();
+			headerLength = path is null ? 0 : new FileInfo(path).Length;
+			return headerLength > 0;
+		}, 40000, 100, message);
+
+		await AssertionExtensions.AssertEventually(() => new FileInfo(path!).Length > headerLength, 40000, 100, "The recording never wrote a sample after the MP4 header.");
+
+		return path!;
+	}
+
+	protected static void AssertIsAPlayableVideo(byte[] mp4)
+	{
+		Assert.True(mp4.Length > 8 && Encoding.ASCII.GetString(mp4, 4, 4) == "ftyp", "The stream does not start with an MP4 'ftyp' box.");
+		var (hasVideo, durationMilliseconds, width, height) = ReadVideoInfo(mp4);
+		Assert.True(hasVideo, "Android does not find a video track in the recording.");
+		Assert.True(durationMilliseconds > 0, "The recording has no duration.");
+		Assert.True(width > 0 && height > 0, $"The recording has no size ({width}x{height}).");
+	}
 
 	protected static (bool HasVideo, long DurationMilliseconds, int Width, int Height) ReadVideoInfo(byte[] mp4)
 	{
@@ -453,6 +626,8 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	{
 		public required CameraView View { get; init; }
 
+		public required CameraErrorRecorder Errors { get; init; }
+
 		public required CameraManager Manager { get; init; }
 
 		public required ICameraProvider Provider { get; init; }
@@ -492,7 +667,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		await InvokeOnMainThreadAsync(() =>
 		{
 			var manager = new CameraManager(mauiContext ?? MauiContext, view, provider, () => session!.LoadedCount++);
-			session = new ManagerSession { View = view, Manager = manager, Provider = provider };
+			session = new ManagerSession { View = view, Errors = new CameraErrorRecorder(view), Manager = manager, Provider = provider };
 			if (track)
 			{
 				cleanups.Add(() =>
@@ -514,15 +689,33 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return session!;
 	}
 
-	internal async Task RunWithSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, IMauiContext? mauiContext = null, CameraView? view = null)
+	internal async Task RunWithSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, IMauiContext? mauiContext = null, CameraView? view = null, Func<CameraView>? createView = null)
 	{
+		var hostActivity = AppContext;
+		view ??= createView?.Invoke();
 		var session = await CreateSessionAsync(provider, mauiContext, true, view);
-		await HostAsync(() => body(session), session.PreviewView!);
+
+		try
+		{
+			await HostAsync(() => body(session), session.PreviewView!);
+		}
+		// Android can relaunch the runner's activity during a test (new overlays did on a just-booted CI emulator), which closes the camera of
+		// the session for good (TakePictureWhileTheActivityIsDestroyedRaisesMediaCaptureFailed): the test runs once more in the new activity.
+		// Only when this method created the provider and the view (or the caller's createView makes a fresh one): a caller's own view keeps the state the first attempt left on it.
+		catch (Exception exception) when (exception is not SkipException && mauiContext is null && provider is null && (view is null || createView is not null)
+			&& !ReferenceEquals(hostActivity, AppContext))
+		{
+			Android.Util.Log.Warn("CameraAndroidTests", $"The runner's activity was recreated during the test, which runs once more in the new activity. The failure: {exception}");
+			var sessionInTheNewActivity = await CreateSessionAsync(provider, null, true, createView?.Invoke());
+			await HostAsync(() => body(sessionInTheNewActivity), sessionInTheNewActivity.PreviewView!);
+		}
 	}
 
 	internal sealed class HostedView
 	{
 		public required CameraView View { get; init; }
+
+		public required CameraErrorRecorder Errors { get; init; }
 
 		public required CameraViewHandler Handler { get; init; }
 
@@ -539,6 +732,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	{
 		EnsureCameraPermissions(includeRecordAudio);
 		view ??= new CameraView();
+		using var errors = new CameraErrorRecorder(view);
 
 		await AttachAndRun(view, async handler =>
 		{
@@ -554,12 +748,13 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 
 			var previewView = (PreviewView)handler.PlatformView!;
 
+			var host = new HostedView { View = view, Errors = errors, Handler = cameraViewHandler, PreviewView = previewView };
 			if (waitForStreaming)
 			{
-				await WaitUntilCameraIsStreamingAsync(view, previewView);
+				await WaitUntilCameraIsStreamingAsync(host);
 			}
 
-			await body(new HostedView { View = view, Handler = cameraViewHandler, PreviewView = previewView });
+			await body(host);
 		});
 	}
 
@@ -579,16 +774,16 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		RegisterCleanup(() => IPlatformApplication.Current = previous);
 	}
 
-	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false)
+	internal async Task RunWithStreamingSessionAsync(Func<ManagerSession, Task> body, ICameraProvider? provider = null, CameraView? view = null, bool includeRecordAudio = false, IMauiContext? mauiContext = null, Func<CameraView>? createView = null)
 	{
 		EnsureCameraPermissions(includeRecordAudio);
 
 		await RunWithSessionAsync(async session =>
 		{
 			await session.ConnectAsync().WaitAsync(CameraTimeout);
-			await WaitUntilCameraIsStreamingAsync(session.View, session.PreviewView!);
+			await WaitUntilCameraIsStreamingAsync(session);
 			await body(session);
-		}, provider, null, view);
+		}, provider, mauiContext, view, createView);
 	}
 
 	protected static async Task<IReadOnlyList<CameraInfo>> GetRealCamerasAsync()
@@ -598,14 +793,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		return provider.AvailableCameras!;
 	}
 
-	protected static async Task AssertEveryCameraIsClosedAsync()
-	{
-		var provider = await GetNativeCameraProviderAsync();
-		foreach (var info in provider.AvailableCameraInfos)
-		{
-			Assert.Equal("CLOSED", GetNativeCameraState(info));
-		}
-	}
+	protected static async Task AssertEveryCameraIsClosedAsync() => await AssertClosedNowAsync(null);
 
 	protected void MarkCameraSessionUsed() => usedCameraSession = true;
 
@@ -651,6 +839,12 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 				catch (Exception ex)
 				{
 					failures.Add(ex);
+					await DiagnoseACameraThatStaysOpenAsync(failures);
+				}
+
+				if (Volatile.Read(ref wedgedCameraStack) is null)
+				{
+					await DiagnoseCameraXWithoutItsCamerasAsync(failures);
 				}
 			}
 		}
@@ -674,6 +868,133 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		{
 			throw new AggregateException("The test left failures behind (cleanup, or exceptions that escaped from async void code).", failures);
 		}
+	}
+
+	static void FailIfAnEarlierTestWedgedTheCameraStack()
+	{
+		if (Volatile.Read(ref wedgedCameraStack) is string reason)
+		{
+			Assert.Fail($"An earlier camera test left the camera stack of this process wedged, so this camera test can not run. {reason}");
+		}
+	}
+
+	static async Task DiagnoseACameraThatStaysOpenAsync(List<Exception> failures)
+	{
+		try
+		{
+			var states = await DescribeNativeCameraStatesAsync();
+			var first = JavaThreadDump.Capture();
+			JavaThreadDump.Write(cameraWedgeLogTag, "A camera is still open: Java stacks, sample 1", first);
+			var artDump = RequestArtDumpOnce();
+			await Task.Delay(CameraWedgeSignature.ConfirmationDelay);
+			var second = JavaThreadDump.Capture();
+			JavaThreadDump.Write(cameraWedgeLogTag, "A camera is still open: Java stacks, sample 2", second);
+
+			if (CameraWedgeSignature.FindStuckClose(first, second, CameraWedgeSignature.ConfirmationDelay) is string stuck)
+			{
+				MarkTheCameraStackWedged($"{stuck} Camera states: {states}. Java stacks: logcat tag {cameraWedgeLogTag} at {DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture)}. {artDump}", failures);
+			}
+			else
+			{
+				// Not wedged: CameraX can also drop the CLOSED of a camera, so the camera service's view is logged next to CameraX's.
+				var cameraService = await DescribeCameraServiceAsync();
+				Android.Util.Log.Warn(cameraWedgeLogTag, $"No thread is stuck in CameraDeviceImpl.close, so later camera tests run as usual. CameraX: {states}; camera service: {cameraService}.");
+			}
+		}
+		catch (Exception ex)
+		{
+			failures.Add(new Xunit.Sdk.XunitException($"Diagnosing the camera that stays open failed: {ex}"));
+		}
+	}
+
+	static async Task DiagnoseCameraXWithoutItsCamerasAsync(List<Exception> failures)
+	{
+		try
+		{
+			var provider = await GetNativeCameraProviderAsync();
+			var cameraXCamerasFirst = provider.AvailableCameraInfos.Count;
+			if (cameraXCamerasFirst > 0)
+			{
+				return;
+			}
+
+			await Task.Delay(CameraWedgeSignature.ConfirmationDelay);
+			var cameraXCamerasSecond = provider.AvailableCameraInfos.Count;
+			var platformCameraIds = await ReadCamera2CameraIdsAsync();
+
+			if (CameraWedgeSignature.FindLostCameras(cameraXCamerasFirst, cameraXCamerasSecond, platformCameraIds, CameraWedgeSignature.ConfirmationDelay) is string lost)
+			{
+				JavaThreadDump.Write(cameraWedgeLogTag, "CameraX lost its cameras: Java stacks", JavaThreadDump.Capture());
+				// In the failure that this detects the camera thread was still stuck in close, so the ART dump names its native frame.
+				var artDump = RequestArtDumpOnce();
+				MarkTheCameraStackWedged($"{lost} Java stacks: logcat tag {cameraWedgeLogTag}. {artDump}", failures);
+			}
+		}
+		catch (Exception ex)
+		{
+			failures.Add(new Xunit.Sdk.XunitException($"Diagnosing CameraX without its cameras failed: {ex}"));
+		}
+	}
+
+	static async Task<string> DescribeCameraServiceAsync()
+	{
+		try
+		{
+			var monitor = await CameraAvailabilityMonitor.GetAsync();
+			return CameraClosedCheck.Evaluate(monitor.CameraIds, monitor.Snapshot(), CameraClosedCheck.StableWindow).Description;
+		}
+		catch (Exception ex)
+		{
+			return $"unavailable ({ex.Message})";
+		}
+	}
+
+	static async Task<string> DescribeNativeCameraStatesAsync()
+	{
+		var provider = await GetNativeCameraProviderAsync();
+		var states = provider.AvailableCameraInfos.Select(info => $"{GetNativeCameraId(info)}={GetNativeCameraState(info)}").ToList();
+		return states.Count == 0 ? "none" : string.Join(", ", states);
+	}
+
+	static async Task<IReadOnlyList<string>?> ReadCamera2CameraIdsAsync()
+	{
+		try
+		{
+			var manager = (Android.Hardware.Camera2.CameraManager?)AppContext.GetSystemService(Context.CameraService)
+				?? throw new InvalidOperationException("The app has no Camera2 CameraManager.");
+
+			// A hung cameraserver must not hang the cleanup.
+			return await Task.Run(() => (IReadOnlyList<string>)(manager.GetCameraIdList() ?? [])).WaitAsync(TimeSpan.FromSeconds(10));
+		}
+		catch (Exception ex)
+		{
+			Android.Util.Log.Warn(cameraWedgeLogTag, $"Camera2 did not list its cameras: {ex.Message}");
+			return null;
+		}
+	}
+
+	static string RequestArtDumpOnce()
+	{
+		if (!JavaThreadDump.CanRequestArtDump)
+		{
+			return "ART dump: not requested on Android 7, where SIGQUIT aborts the app.";
+		}
+
+		var pid = Android.OS.Process.MyPid();
+		if (Interlocked.Exchange(ref artDumpRequested, 1) != 0)
+		{
+			return $"ART dump: sent once already for pid {pid} by an earlier diagnosis.";
+		}
+
+		JavaThreadDump.RequestArtDump();
+		return $"ART dump of every thread (Java and native): SIGQUIT sent at {DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture)}; ART writes it under /data/anr for pid {pid}; reading it needs adb root.";
+	}
+
+	static void MarkTheCameraStackWedged(string reason, List<Exception> failures)
+	{
+		Interlocked.CompareExchange(ref wedgedCameraStack, reason, null);
+		Android.Util.Log.Error(cameraWedgeLogTag, "WEDGED: " + reason);
+		failures.Add(new Xunit.Sdk.XunitException($"The camera stack of this process is wedged; later camera tests fail at once. {reason}"));
 	}
 
 	sealed class AsyncVoidExceptionGuard : SynchronizationContext

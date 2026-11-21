@@ -31,35 +31,23 @@ public class MediaMetadataWindowsTests : WinMediaTestBase
 		byte[] bytes;
 		try
 		{
-			bytes = await ReadThumbnailAsync(fixture);
+			bytes = await WinMediaAssets.ReadThumbnailAsync(() => ReadThumbnailOnceAsync(fixture));
 		}
-		catch (Exception ex) when (WinMediaAssets.IsTransientThumbnailReadFailure(ex))
+		catch (Exception ex) when (WinMediaAssets.IsOutOfProcessServerGone(ex))
 		{
-			// The stream that the thumbnail opens is served by another process, which fails now and then (RPC_E_SERVER_DIED_DNE on a Windows
-			// Server 2025 runner, after the same read had worked in WinMediaProbe). The overlay would open the thumbnail again; so does the test,
-			// once.
-			try
-			{
-				bytes = await ReadThumbnailAsync(fixture);
-			}
-			catch (Exception again) when (WinMediaAssets.IsOutOfProcessServerGone(again))
-			{
-				// That process can also stay gone for the rest of the app run: the read failed with RPC_E_SERVER_DIED_DNE in the unpackaged leg of
-				// CI run 38089989724, and both reads did in the packaged leg of CI run 38096555799 (never on a Windows 11 machine). What fails then is
-				// the machine's media overlay, not the thumbnail the toolkit published, so the test skips, visibly. A second FileNotFoundException
-				// still fails the test: a thumbnail that points to the wrong place would read as one.
-				throw new SkipException($"The system process that serves this machine's media overlay thumbnails went away (HRESULT 0x{again.HResult:X8}), so the thumbnail the toolkit published cannot be read back.");
-			}
+			// That process can stay gone for the rest of the app run (CI runs 38089989724 and 38096555799): what fails is the machine's media
+			// overlay, not the thumbnail the toolkit published. A FileNotFoundException that persists still fails, as it would for a wrong address.
+			throw new SkipException($"The system process that serves this machine's media overlay thumbnails went away (HRESULT 0x{ex.HResult:X8}), so the thumbnail the toolkit published cannot be read back.");
 		}
 
 		Assert.Equal(WinMediaAssets.ReadArtworkBytes(), bytes);
 		Assert.Contains(server.Requests, request => request.Method is "GET" && request.Path == "/" + WinMediaAssets.ArtworkServerPath);
 
-		static async Task<byte[]> ReadThumbnailAsync(WinMediaManagerFixture fixture)
+		static async Task<byte[]> ReadThumbnailOnceAsync(WinMediaManagerFixture fixture)
 		{
 			var thumbnail = await InvokeOnMainThreadAsync(() => fixture.Player!.SystemMediaTransportControls.DisplayUpdater.Thumbnail);
 			Assert.NotNull(thumbnail);
-			return await WinMediaAssets.ReadAllBytesAsync(thumbnail).WaitAsync(TimeSpan.FromSeconds(15));
+			return await WinMediaAssets.ReadThumbnailOnceAsync(thumbnail);
 		}
 	}
 

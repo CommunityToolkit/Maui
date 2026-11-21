@@ -15,6 +15,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 	[Fact]
 	public void RunnerAppIsThePlatformApplicationWithMediaElement()
 	{
+		MediaElementSupport.SkipIfUnsupported();
 		var platformApplication = IPlatformApplication.Current;
 
 		Assert.NotNull(platformApplication);
@@ -25,6 +26,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 	[Fact]
 	public void MediaElementHandlerResolvesFromTheTestMauiApp()
 	{
+		MediaElementSupport.SkipIfUnsupported();
 		SetupBuilder();
 
 		Assert.Equal(typeof(MediaElementHandler), MauiContext.Handlers.GetHandlerType(typeof(MediaElement)));
@@ -37,6 +39,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 	[InlineData(2)]
 	public void EachTestDisposesItsMauiAppAndRestoresMediaElementOptions(int row)
 	{
+		MediaElementSupport.SkipIfUnsupported();
 		Assert.InRange(row, 1, 2);
 		var original = optionsBeforeFirstRow ??= (MediaElementOptions.IsAndroidForegroundServiceEnabled, MediaElementOptions.DefaultAndroidViewType);
 
@@ -62,6 +65,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 	[Fact]
 	public async Task AttachAndRunHostsMediaElementInTheRealWindow()
 	{
+		MediaElementSupport.SkipIfUnsupported();
 		SetupBuilder();
 
 		var mediaElement = new MediaElement { WidthRequest = 200, HeightRequest = 100 };
@@ -106,6 +110,7 @@ public class MediaElementInfrastructureTests : MediaElementHandlerTestBase
 	[Fact]
 	public async Task PlatformBehaviorAttachesWhileTheViewIsInTheWindow()
 	{
+		MediaElementSupport.SkipIfUnsupported();
 		SetupBuilder();
 
 		var behavior = new CountingPlatformBehavior<MediaElement>();

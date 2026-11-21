@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Behaviors;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using Xunit;
 
 namespace CommunityToolkit.Maui.UnitTests.Behaviors;
@@ -343,16 +344,16 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.DefaultBackgroundColor = defaultColor;
 		touchBehavior.HoveredBackgroundColor = hoverColor;
 
-		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
+		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, ShownBackgroundColor(view));
 
 		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
-		Assert.Equal(defaultColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(hoverColor, view.BackgroundColor);
+		Assert.Equal(hoverColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(defaultColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, ShownBackgroundColor(view));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -367,16 +368,16 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		touchBehavior.DefaultBackgroundColor = defaultColor;
 		touchBehavior.PressedBackgroundColor = pressedColor;
 
-		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, view.BackgroundColor);
+		Assert.Equal(TouchBehaviorDefaults.DefaultBackgroundColor, ShownBackgroundColor(view));
 
 		await touchBehavior.ForceUpdateState(TestContext.Current.CancellationToken, false);
-		Assert.Equal(defaultColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(pressedColor, view.BackgroundColor);
+		Assert.Equal(pressedColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Canceled);
-		Assert.Equal(defaultColor, view.BackgroundColor);
+		Assert.Equal(defaultColor, ShownBackgroundColor(view));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
@@ -1134,22 +1135,22 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		// Verify Default is set when Hover Active but not set
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
+		Assert.Equal(touchBehavior.DefaultBackgroundColor, ShownBackgroundColor(image));
 
 		touchBehavior.HoveredBackgroundColor = Colors.RosyBrown;
 
 		// Verify Pressed is set when Hover + Press simultaneously active
 		touchBehavior.HandleTouch(TouchStatus.Started);
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(touchBehavior.PressedBackgroundColor, image.BackgroundColor);
+		Assert.Equal(touchBehavior.PressedBackgroundColor, ShownBackgroundColor(image));
 
 		// Verify Hovered is set when Hover active
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		Assert.Equal(touchBehavior.HoveredBackgroundColor, image.BackgroundColor);
+		Assert.Equal(touchBehavior.HoveredBackgroundColor, ShownBackgroundColor(image));
 
 		// Verify Default is set when neither active
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(touchBehavior.DefaultBackgroundColor, image.BackgroundColor);
+		Assert.Equal(touchBehavior.DefaultBackgroundColor, ShownBackgroundColor(image));
 	}
 
 	// A colour that the behavior set on the element would take the place of the binding or DynamicResource, and the element would stop
@@ -1175,13 +1176,13 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		}
 
 		AttachTouchBehaviorToVisualElement(view);
-		Assert.Equal(Colors.Red, view.BackgroundColor);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 
 		if (touchFirst)
 		{
 			touchBehavior.HandleTouch(TouchStatus.Started);
 			touchBehavior.HandleTouch(TouchStatus.Completed);
-			Assert.Equal(Colors.Red, view.BackgroundColor);
+			Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 		}
 
 		if (isDynamicResource)
@@ -1193,8 +1194,89 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 			viewModel.Color = Colors.Green;
 		}
 
-		Assert.Equal(Colors.Green, view.BackgroundColor);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 	}
+
+	// A colour that the attach set as a value would hide the app's source for good, also one without a colour yet (a CollectionView item
+	// gets its BindingContext after the attach).
+	[Theory]
+	[InlineData("Binding")]
+	[InlineData("BindingContextAfterTheAttach")]
+	[InlineData("DynamicResource")]
+	[InlineData("Style")]
+	public void VerifyBackgroundColorSourceWithoutAColorAtTheAttachShowsItsLaterColor(string source)
+	{
+		const string colorKey = "TouchBackground";
+		var viewModel = new BackgroundColorViewModel { Color = null };
+		var view = new MockView { Resources = new ResourceDictionary { [colorKey] = null! } };
+
+		switch (source)
+		{
+			case "Binding":
+				view.BindingContext = viewModel;
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "BindingContextAfterTheAttach":
+				view.SetBinding(VisualElement.BackgroundColorProperty, nameof(BackgroundColorViewModel.Color));
+				break;
+			case "DynamicResource":
+				view.SetDynamicResource(VisualElement.BackgroundColorProperty, colorKey);
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(null);
+				break;
+		}
+
+		touchBehavior.PressedScale = 0.9;
+		AttachTouchBehaviorToVisualElement(view);
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Null(view.BackgroundColor);
+
+		switch (source)
+		{
+			case "Binding":
+				viewModel.Color = Colors.Green;
+				break;
+			case "BindingContextAfterTheAttach":
+				viewModel.Color = Colors.Green;
+				view.BindingContext = viewModel;
+				break;
+			case "DynamicResource":
+				view.Resources[colorKey] = Colors.Green;
+				break;
+			case "Style":
+				view.Style = CreateBackgroundStyle(Colors.Green);
+				break;
+		}
+
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
+	}
+
+	[Fact]
+	public void VerifyBackgroundBindingWithoutABrushShowsItsLatestBrushWhenTheStateColorEnds()
+	{
+		var viewModel = new BackgroundColorViewModel();
+		var view = new MockView { BackgroundColor = Colors.Red, BindingContext = viewModel };
+		view.SetBinding(VisualElement.BackgroundProperty, nameof(BackgroundColorViewModel.Brush));
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
+
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		viewModel.Brush = appBrush;
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Same(appBrush, view.Background);
+	}
+
+	static Style CreateBackgroundStyle(Color? color) => new(typeof(MockView))
+	{
+		Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
+	};
 
 	[Theory]
 	[InlineData("Binding")]
@@ -1225,13 +1307,13 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 		touchBehavior.PressedBackgroundColor = Colors.Yellow;
 		AttachTouchBehaviorToVisualElement(view);
-		Assert.Equal(Colors.Red, view.BackgroundColor);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		Assert.Equal(Colors.Red, view.BackgroundColor);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 
 		switch (source)
 		{
@@ -1249,18 +1331,13 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 				break;
 		}
 
-		Assert.Equal(Colors.Green, view.BackgroundColor);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		Assert.Equal(Colors.Green, view.BackgroundColor);
-
-		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
-		{
-			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
-		};
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 	}
 
 	[Theory]
@@ -1285,7 +1362,7 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		if (isDynamicResource)
 		{
@@ -1296,10 +1373,10 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 			viewModel.Color = Colors.Green;
 		}
 
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(Colors.Green, view.BackgroundColor);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 	}
 
 	[Theory]
@@ -1315,22 +1392,22 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		var attachColor = TouchBehaviorDefaults.DefaultBackgroundColor;
 
 		AttachTouchBehaviorToVisualElement(view);
-		Assert.Equal(attachColor, view.BackgroundColor);
+		Assert.Equal(attachColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(hasPressedColor ? Colors.Yellow : attachColor, view.BackgroundColor);
+		Assert.Equal(hasPressedColor ? Colors.Yellow : attachColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		Assert.Equal(attachColor, view.BackgroundColor);
+		Assert.Equal(attachColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(hasHoveredColor ? Colors.Yellow : attachColor, view.BackgroundColor);
+		Assert.Equal(hasHoveredColor ? Colors.Yellow : attachColor, ShownBackgroundColor(view));
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(attachColor, view.BackgroundColor);
+		Assert.Equal(attachColor, ShownBackgroundColor(view));
 
 		touchBehavior.Element = null;
-		Assert.Equal(attachColor, view.BackgroundColor);
+		Assert.Equal(attachColor, ShownBackgroundColor(view));
 	}
 
 	[Theory]
@@ -1364,23 +1441,23 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		touchBehavior.Element = null;
-		Assert.Equal(Colors.Red, view.BackgroundColor);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 
 		ChangeAppColor(Colors.Green);
-		Assert.Equal(Colors.Green, view.BackgroundColor);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 
 		// Attached again while the hover goes on, so the hovered colour shows until the hover ends
 		touchBehavior.Element = view;
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		touchBehavior.HandleHover(HoverStatus.Exited);
-		Assert.Equal(Colors.Green, view.BackgroundColor);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 
 		ChangeAppColor(Colors.Red);
-		Assert.Equal(Colors.Red, view.BackgroundColor);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 
 		void ChangeAppColor(Color color)
 		{
@@ -1400,11 +1477,6 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 					break;
 			}
 		}
-
-		static Style CreateBackgroundStyle(Color color) => new(typeof(MockView))
-		{
-			Setters = { new Setter { Property = VisualElement.BackgroundColorProperty, Value = color } }
-		};
 	}
 
 	[Fact]
@@ -1415,44 +1487,160 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 		AttachTouchBehaviorToVisualElement(view);
 
 		touchBehavior.HandleHover(HoverStatus.Entered);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
 
 		view.BackgroundColor = Colors.Green;
 		touchBehavior.Element = null;
 
-		Assert.Equal(Colors.Green, view.BackgroundColor);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
 	}
 
 	[Fact]
-	public void VerifyAppsOwnColorComesBackInOneChange()
+	public void VerifyStateColorLeavesTheAppsBackgroundColorAlone()
 	{
 		var view = new MockView { BackgroundColor = Colors.Red };
 		touchBehavior.PressedBackgroundColor = Colors.Yellow;
 		AttachTouchBehaviorToVisualElement(view);
 
-		var changes = new List<Color?>();
+		var backgroundColorChanges = new List<Color?>();
 		view.PropertyChanged += (_, e) =>
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 			{
-				changes.Add(view.BackgroundColor);
+				backgroundColorChanges.Add(view.BackgroundColor);
 			}
 		};
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
+		Assert.Equal(Colors.Red, view.BackgroundColor);
 
-		changes.Clear();
 		touchBehavior.HandleTouch(TouchStatus.Completed);
-		Assert.Equal([Colors.Red], changes);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
 
 		touchBehavior.HandleTouch(TouchStatus.Started);
-		Assert.Equal(Colors.Yellow, view.BackgroundColor);
-
-		changes.Clear();
 		touchBehavior.Element = null;
-		Assert.Equal([Colors.Red], changes);
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
+		Assert.Empty(backgroundColorChanges);
+		Assert.True(Brush.IsNullOrEmpty(view.Background));
 	}
+
+	[Fact]
+	public void VerifyColorTheAppSetWhileAStateColorIsShownAppearsWhenTheStateEnds()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		view.BackgroundColor = Colors.Green;
+		Assert.Equal(Colors.Yellow, ShownBackgroundColor(view));
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Equal(Colors.Green, ShownBackgroundColor(view));
+	}
+
+	[Fact]
+	public void VerifyBackgroundTheAppSetWhileAStateColorIsShownStays()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		view.Background = appBrush;
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.Element = null;
+
+		Assert.Same(appBrush, view.Background);
+		Assert.Equal(Colors.Blue, appBrush.Color);
+	}
+
+	[Fact]
+	public void VerifyBackgroundTheAppSetWhileAStateColorIsShownStaysAfterTheDetach()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		view.Background = appBrush;
+		touchBehavior.Element = null;
+
+		Assert.Same(appBrush, view.Background);
+		Assert.Equal(Colors.Blue, appBrush.Color);
+	}
+
+	[Fact]
+	public void VerifyElementWithABackgroundOfItsOwnKeepsIt()
+	{
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		var view = new MockView { Background = appBrush };
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		Assert.Same(appBrush, view.Background);
+		Assert.Equal(Colors.Blue, appBrush.Color);
+
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		Assert.Same(appBrush, view.Background);
+	}
+
+	[Fact]
+	public async Task VerifyAppBackgroundSetDuringTheGiveBackAnimationStays()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		view.EnableAnimations();
+		touchBehavior.PressedBackgroundColor = Colors.Yellow;
+		touchBehavior.PressedAnimationDuration = 0;
+		touchBehavior.DefaultAnimationDuration = 400;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleTouch(TouchStatus.Started);
+		touchBehavior.HandleTouch(TouchStatus.Completed);
+		await Task.Delay(60, TestContext.Current.CancellationToken);
+		var appBrush = new SolidColorBrush(Colors.Blue);
+		view.Background = appBrush;
+		await Task.Delay(1500, TestContext.Current.CancellationToken);
+
+		Assert.Same(appBrush, view.Background);
+	}
+
+	[Fact]
+	public void VerifyVisualStateBackgroundOverTheBehaviorsBrushDoesNotLeaveItBehind()
+	{
+		var view = new MockView { BackgroundColor = Colors.Red };
+		VisualStateManager.SetVisualStateGroups(view,
+		[
+			new VisualStateGroup
+			{
+				Name = "CommonStates",
+				States =
+				{
+					new VisualState { Name = "Normal" },
+					new VisualState { Name = "Disabled", Setters = { new Setter { Property = VisualElement.BackgroundProperty, Value = new SolidColorBrush(Colors.Gray) } } }
+				}
+			}
+		]);
+		touchBehavior.HoveredBackgroundColor = Colors.Blue;
+		AttachTouchBehaviorToVisualElement(view);
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		view.IsEnabled = false;
+		touchBehavior.HandleHover(HoverStatus.Exited);
+		view.IsEnabled = true;
+		Assert.Equal(Colors.Red, ShownBackgroundColor(view));
+
+		touchBehavior.HandleHover(HoverStatus.Entered);
+		Assert.Equal(Colors.Blue, ShownBackgroundColor(view));
+	}
+
+	static Color? ShownBackgroundColor(VisualElement element) => ((IView)element).Background is SolidPaint solidPaint ? solidPaint.Color : null;
 
 	[Fact]
 	public void VerifyOpacityStateMachine()
@@ -1653,17 +1841,28 @@ public class TouchBehaviorTests() : BaseBehaviorTest<TouchBehavior, VisualElemen
 
 	sealed class BackgroundColorViewModel : System.ComponentModel.INotifyPropertyChanged
 	{
-		Color color = Colors.Transparent;
+		Color? color = Colors.Transparent;
+		Brush? brush;
 
 		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
-		public Color Color
+		public Color? Color
 		{
 			get => color;
 			set
 			{
 				color = value;
 				PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Color)));
+			}
+		}
+
+		public Brush? Brush
+		{
+			get => brush;
+			set
+			{
+				brush = value;
+				PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Brush)));
 			}
 		}
 	}
