@@ -11,8 +11,8 @@
     Without -Udid the script creates a dedicated simulator, boots it, grants the camera, the microphone and speech
     recognition to the test apps on it (and checks every grant in its TCC database), and deletes it afterwards unless
     -KeepDevice. A simulator that cannot be created, booted or given the permissions is replaced as often as
-    infrastructure failures are retried (-InfraRetries). It never resets, shuts down, deletes or grants anything on a simulator it did not create, and never passes --reset-simulator to
-    xharness (that kills every simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a
+    infrastructure failures are retried (-InfraRetries). It never resets, shuts down, deletes or grants anything on a
+    simulator it did not create, and never passes --reset-simulator to xharness (that kills every simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a
     simulator failure (88), never a script error.
 
     The device type of the new simulator is always one that its runtime lists as supported, because 'simctl create'
@@ -693,7 +693,7 @@ function Invoke-SimulatorTccQuery {
 }
 
 function Wait-SimulatorTccDatabase {
-    # Test-Path always comes first: sqlite3 creates a missing file, and an empty file where tccd expects its own would break the simulator's permissions.
+    # Test-Path comes first: sqlite3 can create a missing file, and an empty one where tccd expects its own would break the permissions.
     param([string]$Database, [int]$TimeoutSeconds = 60)
 
     $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
@@ -727,7 +727,7 @@ function Get-SimulatorTccGrantedServices {
 }
 
 function Add-SimulatorTccGrant {
-    # The access table has 17 columns on iOS 18 and 19 on iOS 27, so only the columns that this table has are written. Returns an error text or $null.
+    # The access table's columns differ by iOS version (iOS 15 and 16 have no pid; iOS 27 adds two), so only the columns it has are written.
     param([string]$Database, [string]$Bundle, [string]$TccService)
 
     if ($Bundle -notmatch '^[A-Za-z0-9.-]+$') {
@@ -739,7 +739,7 @@ function Add-SimulatorTccGrant {
         return "Could not read the columns of the TCC database's access table: $("$($columns.Error)".Trim())"
     }
 
-    $existing = @("$($columns.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $tableColumns = @("$($columns.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
     $now = [System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $values = [ordered]@{
         service                          = "'$TccService'"
@@ -761,8 +761,8 @@ function Add-SimulatorTccGrant {
         last_reminded                    = "$now"
     }
 
-    $names = @($values.Keys | Where-Object { $existing -contains $_ })
-    $sql = "INSERT OR REPLACE INTO access ($($names -join ', ')) VALUES ($(($names | ForEach-Object { $values[$_] }) -join ', '));"
+    $columnsToWrite = @($values.Keys | Where-Object { $tableColumns -contains $_ })
+    $sql = "INSERT OR REPLACE INTO access ($($columnsToWrite -join ', ')) VALUES ($(($columnsToWrite | ForEach-Object { $values[$_] }) -join ', '));"
     $written = Invoke-SimulatorTccQuery -Database $Database -Sql $sql -Write
     if ($written.ExitCode -ne 0) {
         return "$("$($written.Error)".Trim())"
@@ -794,11 +794,9 @@ function Save-PrivacyGrantEvidence {
 }
 
 function Grant-SimulatorPrivacy {
-    # Without these grants the tests of the camera, microphone and speech recognition paths cannot run, because a headless run cannot answer
-    # the permission prompts. simctl has no speech recognition service, and it did not answer for 120 s in run 44928036772, so whatever it
-    # does not grant goes into the simulator's TCC database, whose columns differ by iOS version. Every grant is read back: a missing one
-    # would only skip tests on a passing leg. Grants made before XHarness installs an app survive the install; erasing the simulator removes them.
-    # Returns $null, or the text of what is missing.
+    # simctl has no speech service and hung for 120 s in run 44928036772, so what it does not grant goes into TCC.db, and each grant is
+    # read back so a simulator without them is replaced before the run. Grants made before XHarness installs the app survive it;
+    # an erase removes them.
     param([string]$Identifier, [string[]]$BundleIdentifiers, [int]$GrantTimeoutSeconds = 120, [string]$EvidencePath)
 
     $database = Join-Path $HOME "Library/Developer/CoreSimulator/Devices/$Identifier/data/Library/TCC/TCC.db"
@@ -809,7 +807,7 @@ function Grant-SimulatorPrivacy {
     )
 
     $simctlAnswers = $true
-    $methods = @{}
+    $grantMethods = @{}
     foreach ($bundle in $BundleIdentifiers) {
         if ($bundle -notmatch '^[A-Za-z0-9.-]+$') {
             return "'$bundle' is not a valid bundle identifier, so nothing was granted on simulator $Identifier."
@@ -824,7 +822,7 @@ function Grant-SimulatorPrivacy {
             $grant = Invoke-Simctl -ArgumentList @('privacy', $Identifier, 'grant', $service.Name, $bundle) -TimeoutSeconds $GrantTimeoutSeconds
             $seconds = [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)
             if ($grant.ExitCode -eq 0) {
-                $methods["$bundle|$($service.Name)"] = "simctl, $seconds s"
+                $grantMethods["$bundle|$($service.Name)"] = "simctl, $seconds s"
                 continue
             }
 
@@ -854,9 +852,9 @@ function Grant-SimulatorPrivacy {
                 continue
             }
 
-            if ($methods.ContainsKey("$bundle|$($service.Name)")) {
+            if ($grantMethods.ContainsKey("$bundle|$($service.Name)")) {
                 Write-DeviceTestWarning "simctl granted $($service.Name) to $bundle, but the TCC database of simulator $Identifier has no such row; writing it."
-                $methods.Remove("$bundle|$($service.Name)")
+                $grantMethods.Remove("$bundle|$($service.Name)")
             }
 
             $failure = Add-SimulatorTccGrant -Database $database -Bundle $bundle -TccService $service.TccService
@@ -864,7 +862,7 @@ function Grant-SimulatorPrivacy {
                 Write-DeviceTestWarning "Could not write the $($service.Name) grant for $bundle into the TCC database of simulator $($Identifier): $failure"
             }
 
-            $methods["$bundle|$($service.Name)"] = 'TCC database'
+            $grantMethods["$bundle|$($service.Name)"] = 'TCC database'
         }
 
         $verified = Get-SimulatorTccGrantedServices -Database $database -Bundle $bundle
@@ -878,7 +876,7 @@ function Grant-SimulatorPrivacy {
             continue
         }
 
-        $how = @($required | ForEach-Object { "$($_.Name) ($($methods["$bundle|$($_.Name)"]))" })
+        $how = @($required | ForEach-Object { "$($_.Name) ($($grantMethods["$bundle|$($_.Name)"]))" })
         Write-Host "Granted to $bundle on simulator $Identifier, found in its TCC database: $($how -join ', ')"
     }
 
@@ -961,8 +959,8 @@ try {
                 $bundleIdentifiers = @(Get-AppBundleIdentifiers -Context $context)
                 $privacyEvidencePath = Join-Path $context.Results 'privacy-grant-evidence.txt'
 
-                # A simulator that cannot be created, booted or given the permissions is replaced by a new one as often as infrastructure failures are retried
-                # (once on CI): on the runners about one simulator start in ten never finishes (actions/runner-images #12777).
+                # A simulator that cannot be created, booted or given the permissions is replaced as often as infrastructure failures are
+                # retried (once on CI): 1 in 10 simulator starts never finishes (actions/runner-images #12777).
                 for ($attempt = 1; $attempt -le (1 + $context.InfraRetries); $attempt++) {
                     $attemptName = $name
                     if ($attempt -gt 1) {
