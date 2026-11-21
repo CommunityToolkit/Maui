@@ -86,10 +86,11 @@ public partial class MaxLengthReachedBehaviorTests
 			{
 				await AssertEventually(() => editText.HasWindowFocus, timeout: 3000, message: "The dialog never got the window focus.");
 
-				// Focused while the dialog has the window focus, so that Focus shows no soft keyboard for it: the tests hide a keyboard that shows
-				// from a view of the activity's window, which would take the focus of that window from the page's Entry.
+				// Focused only after the dialog took the window focus, so that Focus shows no keyboard for it, and after the frame is recorded,
+				// because the helpers hide a leftover keyboard by focusing a view of the activity's window.
+				var frame = await VisibleFrame.RecordWithoutKeyboardAsync(editText);
 				await FocusAsync(pageEntry);
-				var frame = await ShowSoftKeyboardAsync(entry, editText);
+				await ShowSoftKeyboardAsync(entry, frame);
 				Assert.True(pageEntry.IsFocused && IsPlatformViewFocused(GetPlatformView(pageEntry)), "The page's Entry lost the focus of the activity's window.");
 
 				SetPlatformText(editText, "abc");

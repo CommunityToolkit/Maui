@@ -1,6 +1,6 @@
 #pragma warning disable CA1416, CA1422, CS0618, CS0672 // the spy window overrides every abstract Window member, obsolete ones included
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Android.Content;
 using Android.OS;
