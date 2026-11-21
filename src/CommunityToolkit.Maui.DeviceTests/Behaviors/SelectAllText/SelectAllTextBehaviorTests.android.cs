@@ -10,6 +10,8 @@ public partial class SelectAllTextBehaviorTests
 {
 	static bool CanAssertPlatformViewIsCollected => false;
 
+	static partial void ReplaceSoftwareKeyboard(InputView input) => SoftKeyboardHelpers.KeepFocusFromShowingTheKeyboard(input);
+
 	static (int Start, int Length) GetNativeSelection(PlatformView platformView)
 	{
 		var editText = (AEditText)platformView;
@@ -44,7 +46,7 @@ public partial class SelectAllTextBehaviorTests
 		Assert.Equal(0, behavior.DetachedCount);
 	}
 
-	// Focusing an input asks for its soft keyboard, which neither clearing the focus nor ending the test reliably takes back.
+	// Safety net: a keyboard that something else still brought up must not outlive the test.
 	protected override async ValueTask DisposeAsyncCore()
 	{
 		try

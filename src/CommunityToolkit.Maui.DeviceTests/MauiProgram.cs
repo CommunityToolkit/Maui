@@ -26,8 +26,21 @@ public static class MauiProgram
 		return MauiProgramDefaults.CreateMauiApp(_ => new TestOptions
 		{
 			Assemblies = [typeof(MauiProgram).Assembly],
-			SkipCategories = typeof(TestCategory).GetHeadlessSkipCategories(TestCategory.RequiresUserInteraction)
+			SkipCategories = GetSkipCategories()
 		}, ConfigureApp);
+	}
+
+	static List<string> GetSkipCategories()
+	{
+		var skipCategories = typeof(TestCategory).GetHeadlessSkipCategories(TestCategory.RequiresUserInteraction);
+
+		if (!MediaElementSupport.IsSupported)
+		{
+			Console.WriteLine($"Device tests skip Category={TestCategory.MediaElementAndroid}: {MediaElementSupport.UnsupportedReason}");
+			skipCategories.Add($"Category={TestCategory.MediaElementAndroid}");
+		}
+
+		return skipCategories;
 	}
 
 	// IPlatformApplication.Current.Services, Application.Current and the app lifecycle events come from the runner's own MauiApp, so it
@@ -43,7 +56,11 @@ public static class MauiProgram
 		// CameraViewHandler resolves ICameraProvider from IPlatformApplication.Current.Services, which belong to this MauiApp.
 		builder.UseMauiCommunityToolkitCamera();
 
-		// The foreground service stays off app-wide; tests that need it pass isAndroidForegroundServiceEnabled to SetupBuilder.
-		builder.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
+		// MediaElement declares Android 26 as its minimum, so the app registers it only where its tests run.
+		if (MediaElementSupport.IsSupported)
+		{
+			// The foreground service stays off app-wide; tests that need it pass isAndroidForegroundServiceEnabled to SetupBuilder.
+			builder.UseMauiCommunityToolkitMediaElement(isAndroidForegroundServiceEnabled: false);
+		}
 	}
 }

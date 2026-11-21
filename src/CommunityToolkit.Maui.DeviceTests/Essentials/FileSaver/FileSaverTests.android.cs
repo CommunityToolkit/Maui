@@ -18,6 +18,7 @@ public partial class FileSaverTests
 	[InlineData("photo.png", "image/png")]
 	[InlineData("archive.zip", "application/zip")]
 	[InlineData("Report.TXT", "text/plain")]
+	[InlineData("Photo.GIF", "image/gif")]
 	[InlineData("noextension", "*/*")]
 	[InlineData("data.unknownext123", "*/*")]
 	public async Task SaveAsyncAsksForANewOpenableDocumentWithTheFileNameAndItsMimeType(string fileName, string expectedMimeType)
@@ -135,7 +136,7 @@ public partial class FileSaverTests
 	[Fact]
 	public async Task SaveAsyncTracesThatAnInitialPathNeedsAndroid26BeforeThatVersion()
 	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(26), "The branch only runs below Android 26 (the emulators of the pool are API 28 and 36).");
+		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(26), "The branch only runs below Android 26 (CI: API 25).");
 		var session = await StartSessionAsync();
 		using var trace = new FilesTraceCapture();
 
@@ -841,6 +842,8 @@ public partial class FileSaverTests
 
 	static async Task<(Task<FileSaverResult> Operation, FilesFakePickerLaunch Launch)> StartSaveAsync(FilesPickerSession session, string? initialPath, string fileName, Stream stream, IProgress<double>? progress, CancellationToken token)
 	{
+		// The session keeps the launches of the test's earlier saves, so this save's launch is the next one.
+		var launchIndex = session.Launches.Count;
 		var operation = await StartOnMainThreadAsync(() => (initialPath, progress) switch
 		{
 			(null, null) => FileSaver.Default.SaveAsync(fileName, stream, token),
@@ -849,7 +852,7 @@ public partial class FileSaverTests
 			(not null, not null) => FileSaver.Default.SaveAsync(initialPath, fileName, stream, progress, token),
 		});
 
-		return (operation, await session.WaitForLaunchAsync());
+		return (operation, await session.WaitForLaunchAsync(launchIndex));
 	}
 
 	static async Task CancelPickerAsync(FilesPickerSession session, FilesFakePickerLaunch launch, Task<FileSaverResult> operation)

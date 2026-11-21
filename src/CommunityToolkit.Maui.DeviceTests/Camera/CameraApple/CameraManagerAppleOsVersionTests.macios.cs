@@ -4,8 +4,9 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// The branches for iOS 16 and older run through AppleSystemVersionOverride because the pools only offer iOS 27 and Mac Catalyst 27, and the motion
-// manager is a FakeMotionManager with a scripted reading because simulators and Macs have no accelerometer.
+// AppleSystemVersionOverride runs the iOS 16-and-older branches on newer OS versions (natively on real iOS 15 and 16). The iOS 17 tests need
+// the real AVCaptureDeviceRotationCoordinator class, so they skip below iOS 17. Simulators and Macs have no accelerometer, so the motion
+// manager is a FakeMotionManager with a scripted reading.
 [Category(TestCategory.CameraApple)]
 [Collection(TestCollections.DisableParallelization)]
 public class CameraManagerAppleOsVersionTests : CameraHandlerTestBase
@@ -183,6 +184,8 @@ public class CameraManagerAppleOsVersionTests : CameraHandlerTestBase
 	[Fact]
 	public async Task ConnectionOnIos17ItselfFollowsTheRotationCoordinatorAndIgnoresTheAccelerometer()
 	{
+		Skip.IfNot(UIKit.UIDevice.CurrentDevice.CheckSystemVersion(17, 0), "Needs iOS or Mac Catalyst 17 or later (the real OS version): AVCaptureDeviceRotationCoordinator does not exist below it.");
+
 		await RunWithConnectionAsync((scope, output, connection) =>
 		{
 			scope.Access.MotionManager = new FakeMotionManager { Reading = new FakeAccelerometerData(1.0, 0.0) };

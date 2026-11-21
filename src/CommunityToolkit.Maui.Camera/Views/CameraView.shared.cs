@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
@@ -100,7 +101,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	/// <remarks>
 	/// It also reports the failures of <see cref="CaptureImageCommand"/>, <see cref="StartVideoRecordingCommand"/> and
-	/// <see cref="StopVideoRecordingCommand"/>, which let no exception escape.
+	/// <see cref="StopVideoRecordingCommand"/>, which let no exception escape, and an exception that a <see cref="MediaCaptured"/> handler
+	/// throws, with its message; that capture still returns its image from <see cref="CaptureImage(CancellationToken)"/>.
 	/// </remarks>
 	public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
 	{
@@ -113,6 +115,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// </summary>
 	/// <remarks>
 	/// The <see cref="MediaCapturedEventArgs"/> contains the captured image data.
+	/// An exception that a handler throws does not end the capture: the view raises <see cref="MediaCaptureFailed"/> once, with the message of the
+	/// exception, and <see cref="CaptureImage(CancellationToken)"/> still returns the image.
+	/// Handlers that subscribed after the one that threw are not called for that image.
 	/// </remarks>
 	public event EventHandler<MediaCapturedEventArgs> MediaCaptured
 	{
@@ -300,12 +305,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 #endif
 
 	/// <inheritdoc cref="ICameraView.CaptureImage"/>
-	public async Task<Stream> CaptureImage(CancellationToken token)
-	{
-		var picture = await TakePicture(token);
-
-		return picture.Image ?? throw new CameraException(picture.FailureReason);
-	}
+	public Task<Stream> CaptureImage(CancellationToken token) => CaptureImage(TakePlatformPicture, token);
 
 	/// <inheritdoc cref="ICameraView.StartCameraPreview"/>
 	public Task StartCameraPreview(CancellationToken token) =>
@@ -357,7 +357,15 @@ public partial class CameraView : View, ICameraView, IDisposable
 		// TrySetResult: a second answer of the platform must not throw into the platform's callback
 		Volatile.Read(ref pendingPictureTCS)?.TrySetResult(new(imageData, string.Empty));
 
-		weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+		// Caught here, not by each platform: the iOS and Mac Catalyst capture has no catch of its own, and the capture already has its image
+		try
+		{
+			weakEventManager.HandleEvent(this, new MediaCapturedEventArgs(imageData), nameof(MediaCaptured));
+		}
+		catch (Exception exception)
+		{
+			RaiseMediaCaptureFailed(GetHandlerException(exception).Message);
+		}
 	}
 
 	void ICameraView.OnMediaCapturedFailed(string failureReason)
@@ -370,6 +378,14 @@ public partial class CameraView : View, ICameraView, IDisposable
 	void ICameraView.OnErrorOccurred(Exception ex)
 	{
 		weakEventManager.HandleEvent(this, new ErrorOccurredEventArgs(ex), nameof(ErrorOccurred));
+	}
+
+	// The platform's capture is a parameter so that unit tests can answer a capture the way each platform does
+	internal async Task<Stream> CaptureImage(Func<CancellationToken, ValueTask> takePlatformPicture, CancellationToken token)
+	{
+		var picture = await TakePicture(takePlatformPicture, token);
+
+		return picture.Image ?? throw new CameraException(picture.FailureReason);
 	}
 
 	/// <inheritdoc/>
@@ -391,7 +407,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 		var cameraView = (CameraView)bindable;
 
 		// MediaCaptured and MediaCaptureFailed report what the platform answered: the command reports only what failed before
-		return new(async token => await ExecuteCommand(() => cameraView.TakePicture(token), cameraView.ReportMediaCaptureFailure, token));
+		return new(async token => await ExecuteCommand(() => cameraView.TakePicture(cameraView.TakePlatformPicture, token), cameraView.ReportMediaCaptureFailure, token));
 	}
 
 	static Command<CancellationToken> CreateStartCameraPreviewCommand(BindableObject bindable)
@@ -478,8 +494,12 @@ public partial class CameraView : View, ICameraView, IDisposable
 		}
 	}
 
+	// MAUI's WeakEventManager invokes handlers by reflection: a handler's own exception arrives wrapped in a TargetInvocationException
+	static Exception GetHandlerException(Exception exception) =>
+		exception is TargetInvocationException { InnerException: Exception handlerException } ? handlerException : exception;
+
 	// What fails before the platform answered, for example a view without a handler, throws
-	async Task<PictureOutcome> TakePicture(CancellationToken token)
+	async Task<PictureOutcome> TakePicture(Func<CancellationToken, ValueTask> takePlatformPicture, CancellationToken token)
 	{
 		// One capture at a time: the platform's answer completes the pending capture, so a second capture waits until the first one has ended
 		await captureImageSemaphoreSlim.WaitAsync(token);
@@ -489,7 +509,7 @@ public partial class CameraView : View, ICameraView, IDisposable
 
 		try
 		{
-			await Handler.CameraManager.TakePicture(token);
+			await takePlatformPicture(token);
 
 			return await pictureOutcomeTCS.Task.WaitAsync(token);
 		}
@@ -501,6 +521,8 @@ public partial class CameraView : View, ICameraView, IDisposable
 			captureImageSemaphoreSlim.Release();
 		}
 	}
+
+	ValueTask TakePlatformPicture(CancellationToken token) => Handler.CameraManager.TakePicture(token);
 
 	// A failure of a command is reported to the app only: it is not the platform's answer to a capture that is pending
 	void ReportMediaCaptureFailure(Exception exception) => RaiseMediaCaptureFailed(exception.Message);

@@ -321,7 +321,9 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// reach the code that set the source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the
 	/// source, and once the change has ended the first of these exceptions is reported through <see cref="MediaFailed"/>, without setting
 	/// <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/>. The events that the player raises afterwards, for example
-	/// <see cref="MediaOpened"/> on iOS, Mac Catalyst and Windows, are not part of the change.
+	/// <see cref="MediaOpened"/> on iOS, Mac Catalyst and Windows, are not part of the change. On Android, when the system refuses to start the
+	/// foreground service of the media notification (see <see cref="IsAndroidForegroundServiceEnabled"/>) while a source is applied, the
+	/// change reports it the same way: the media plays without the notification, and the next change of the source starts the service again.
 	/// </para>
 	/// </remarks>
 	[TypeConverter(typeof(MediaSourceConverter))]
@@ -516,6 +518,20 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		{
 			sourceUpdate.End();
 		}
+	}
+
+	void IMediaElement.ReportSourceUpdateException(Exception exception, string failure, ILogger logger)
+	{
+		if (RunningSourceUpdate is SourceUpdate sourceUpdate)
+		{
+			sourceUpdate.Report(exception, failure);
+			return;
+		}
+
+		// A subclass can run PlatformUpdateSource outside UpdateSource: with no update to end, the report is raised at once
+		var update = new SourceUpdate(this, logger);
+		update.Report(exception, failure);
+		update.End();
 	}
 
 	internal void OnMediaEnded()
@@ -728,22 +744,24 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 		// Code that captured the flow of the update, such as the continuation of an async event handler, can run after the update has ended: the
 		// update then catches nothing more, and lets go of the MediaElement, which that code must not keep alive.
 		MediaElement? runningFor = mediaElement;
-		Exception? firstException;
+		string? firstFailure;
 
 		public bool IsRunningFor(MediaElement element) => ReferenceEquals(Volatile.Read(ref runningFor), element);
 
-		public void Catch(Exception exception)
+		public void Catch(Exception exception) => Report(Unwrap(exception), handlerExceptionMessage);
+
+		public void Report(Exception exception, string failure)
 		{
-			exception = Unwrap(exception);
-			logger.LogError(exception, "{LogMessage}", Describe(exception));
-			Interlocked.CompareExchange(ref firstException, exception, null);
+			var description = Describe(failure, exception);
+			logger.LogError(exception, "{LogMessage}", description);
+			Interlocked.CompareExchange(ref firstFailure, description, null);
 		}
 
 		public void End()
 		{
 			var element = Interlocked.Exchange(ref runningFor, null);
-			var exception = Interlocked.Exchange(ref firstException, null);
-			if (element is null || exception is null)
+			var failure = Interlocked.Exchange(ref firstFailure, null);
+			if (element is null || failure is null)
 			{
 				return;
 			}
@@ -751,16 +769,26 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			// Not through OnMediaFailed: the source has not failed, so CurrentState, Duration and Position stay as the update set them.
 			try
 			{
-				element.eventManager.HandleEvent(element, new MediaFailedEventArgs(Describe(exception)), nameof(MediaFailed));
+				element.eventManager.HandleEvent(element, new MediaFailedEventArgs(failure), nameof(MediaFailed));
 			}
 			catch (Exception mediaFailedException)
 			{
 				// Reported like the exceptions of the update, it would be reported again, and again.
-				logger.LogError(Unwrap(mediaFailedException), "{LogMessage}", $"A {nameof(MediaFailed)} handler threw an exception while this was reported: {Describe(exception)}");
+				logger.LogError(Unwrap(mediaFailedException), "{LogMessage}", $"A {nameof(MediaFailed)} handler threw an exception while this was reported: {failure}");
 			}
 		}
 
-		static string Describe(Exception exception) => $"{handlerExceptionMessage}: {exception.GetType().FullName}: {exception.Message}";
+		static string Describe(string failure, Exception exception) => $"{failure}: {exception.GetType().FullName}: {GetMessage(exception)}";
+
+		static string GetMessage(Exception exception)
+		{
+#if ANDROID
+			// Java.Lang.Throwable hides Exception.Message, which only holds a generic "was thrown" text.
+			return (exception as Java.Lang.Throwable)?.Message ?? exception.Message;
+#else
+			return exception.Message;
+#endif
+		}
 
 		// MAUI's WeakEventManager invokes the handlers through reflection.
 		static Exception Unwrap(Exception exception) => exception is TargetInvocationException { InnerException: Exception innerException } ? innerException : exception;

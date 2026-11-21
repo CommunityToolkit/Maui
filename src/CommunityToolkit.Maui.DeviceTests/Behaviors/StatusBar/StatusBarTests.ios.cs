@@ -531,6 +531,49 @@ public partial class StatusBarTests
 		}
 	}
 
+	// After a rotation iOS 15 corrects the status bar width up to ~150 ms after the window's last layout, and nothing lays the view out again.
+	// The seam restores the real frame well within the view's ~1 s of settle checks.
+	[Fact]
+	public async Task StatusBarViewFollowsAStatusBarFrameThatChangesAfterItsLastLayout()
+	{
+		SetupBuilder();
+		await ResetNativeStateAsync();
+		var readRealStatusBarFrame = StatusBar.ReadStatusBarFrame;
+
+		try
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				StatusBar.SetColor(Colors.Red);
+				StatusBar.SetBarSize(false);
+			});
+			await AssertStatusBarViewsCoverTheStatusBarAsync(false);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				StatusBar.ReadStatusBarFrame = window => readRealStatusBarFrame(window) is CGRect real && !real.IsEmpty
+					? new CGRect(real.X, real.Y, real.Width + 292, real.Height)
+					: readRealStatusBarFrame(window);
+
+				foreach (var window in IosStatusBarViews.WindowsWithStatusBar())
+				{
+					Assert.Single(IosStatusBarViews.TaggedSubviews(window)).SetNeedsLayout();
+					window.LayoutIfNeeded();
+				}
+			});
+
+			await InvokeOnMainThreadAsync(static () => { });
+			await InvokeOnMainThreadAsync(static () => { });
+
+			await InvokeOnMainThreadAsync(() => StatusBar.ReadStatusBarFrame = readRealStatusBarFrame);
+			await AssertStatusBarViewsCoverTheStatusBarAsync(false);
+		}
+		finally
+		{
+			await InvokeOnMainThreadAsync(() => StatusBar.ReadStatusBarFrame = readRealStatusBarFrame);
+		}
+	}
+
 	// UIKit takes the style from the view controllers: SetStyle sets Window.StatusBarTheme of the app's windows, whose view controllers return the
 	// style of their theme.
 	// Each step sets a style that differs from the one before, so every assertion proves a change.
@@ -778,7 +821,7 @@ public partial class StatusBarTests
 			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.Default);
 
 			Assert.False(StatusBar.TrySetApplicationStatusBarStyle(UIStatusBarStyle.LightContent));
-			AotSafeAssert.Equal(UIStatusBarStyle.Default, mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
+			AotSafeAssert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, IosStatusBarStyle.StyleProvider(mauiWindow.PlatformWindow).TraitCollection), mauiWindow.Scene.StatusBarManager?.StatusBarStyle);
 		});
 	}
 
