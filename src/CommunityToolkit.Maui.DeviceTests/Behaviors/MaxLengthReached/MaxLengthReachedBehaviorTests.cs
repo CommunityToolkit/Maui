@@ -40,6 +40,7 @@ public partial class MaxLengthReachedBehaviorTests : KeyboardDismissalTestBase
 		SetupBuilder();
 		var (entry, maxLengthReached) = CreateEntryWithBehavior(shouldDismissKeyboardAutomatically);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(entry, async handler =>
 		{
 			await entry.OnLoadedAsync();

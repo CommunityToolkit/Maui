@@ -71,6 +71,12 @@ static class IosStatusBarStyle
 
 	static IntPtr UIKitImplementation(IntPtr method) => method_getImplementation(method);
 
+	// iOS 16 and earlier report Default as the content they resolve it to for the user interface style; iOS 17 keeps Default and adapts it.
+	public static UIStatusBarStyle SceneStyle(UIStatusBarStyle style, UITraitCollection traitCollection) =>
+		style is not UIStatusBarStyle.Default || OperatingSystem.IsIOSVersionAtLeast(17)
+			? style
+			: traitCollection.UserInterfaceStyle is UIUserInterfaceStyle.Dark ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
+
 	// UIStatusBarStyle.LightContent has the value of the deprecated BlackTranslucent, whose name Enum.ToString() prints.
 	public static string Name(UIStatusBarStyle style) => style switch
 	{
@@ -88,6 +94,11 @@ static class IosStatusBarStyle
 	public static StatusBarContent CaptureContent(UIWindowScene scene)
 	{
 		var statusBarFrame = scene.StatusBarManager?.StatusBarFrame ?? throw new InvalidOperationException("The scene has no status bar.");
+		if (statusBarFrame.IsEmpty)
+		{
+			throw new InvalidOperationException($"The status bar is hidden: its frame is empty and the scene is in {IosStatusBarViews.SceneOrientation(scene)} (status bar frame {statusBarFrame}), so there are no status bar pixels to read.");
+		}
+
 		var createScreenImage = Dlfcn.dlsym(Dlfcn.RTLD.Default, "_UICreateScreenUIImage");
 		if (createScreenImage == IntPtr.Zero)
 		{
