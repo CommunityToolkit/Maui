@@ -77,11 +77,16 @@ partial class CameraManager
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
+	IExecutorService? focusAndMeteringExecutor;
 	ProcessCameraProvider? processCameraProvider;
 	ImageCapture? imageCapture;
 	ImageCallBack? imageCallback;
 	VideoCapture? videoCapture;
 	Recorder? videoRecorder;
+
+	// CameraX's Recorder runs the source-state changes of a detached VideoCapture only after it finishes the recording it is still ending,
+	// so a recording that it starts in that window is finalized with ERROR_SOURCE_INACTIVE
+	bool hasVideoRecorderRecorded;
 	Recording? videoRecording;
 	ICamera? camera;
 	ICameraControl? cameraControl;
@@ -94,6 +99,8 @@ partial class CameraManager
 	CameraConsumer? videoRecordingConsumer;
 	VideoRecordingState? videoRecordingState;
 	Stream? videoRecordingStream;
+	// A rebuilt use case starts without the sensor rotation, and OrientationEventListener reports only changes
+	int? targetRotation;
 	int extensionMode = ExtensionMode.Auto;
 	bool isDisposed;
 
@@ -174,6 +181,11 @@ partial class CameraManager
 		cameraExecutor?.Dispose();
 		cameraExecutor = null;
 
+		// The interrupt frees a thread that waits for the camera in StartFocusAndMetering
+		focusAndMeteringExecutor?.ShutdownNow();
+		focusAndMeteringExecutor?.Dispose();
+		focusAndMeteringExecutor = null;
+
 		imageCapture?.Dispose();
 		imageCapture = null;
 
@@ -219,6 +231,12 @@ partial class CameraManager
 		if (NativePlatformCameraPreviewView.ScaleType.FitCenter is not null)
 		{
 			platformView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
+		}
+
+		// Android 8.0 and 8.1 can crash natively when a SurfaceView is removed while its position updates run on a render thread (AOSP 2cafd8b44d0b)
+		if (OperatingSystem.IsAndroidVersionAtLeast(26) && !OperatingSystem.IsAndroidVersionAtLeast(28))
+		{
+			platformView.SetImplementationMode(NativePlatformCameraPreviewView.ImplementationMode.Compatible);
 		}
 
 		UsePreviewView(platformView);
@@ -314,6 +332,7 @@ partial class CameraManager
 		previewView = platformView;
 
 		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+		focusAndMeteringExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 		orientationListener = new OrientationListener(OnOrientationChanged, context);
 		orientationListener.Enable();
 
@@ -388,8 +407,15 @@ partial class CameraManager
 			processCameraProvider?.Unbind(cameraPreview);
 			cameraPreview.Dispose();
 		}
-		cameraPreview = new Preview.Builder().SetResolutionSelector(resolutionSelector).Build();
+		var previewBuilder = new Preview.Builder();
+		previewBuilder.SetResolutionSelector(resolutionSelector);
+		cameraPreview = previewBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the Preview.");
 		cameraPreview.SetSurfaceProvider(cameraExecutor, previewView?.SurfaceProvider);
+
+		if (targetRotation is int rotation)
+		{
+			cameraPreview.TargetRotation = rotation;
+		}
 	}
 
 	void RebuildImageCapture() => ReplaceImageCapture(CreateImageCapture(currentSessionMode));
@@ -405,11 +431,18 @@ partial class CameraManager
 		};
 
 		// A new ImageCapture starts with CameraX's default flash mode, not the one of the view
-		return new ImageCapture.Builder()
-			.SetCaptureMode(imageCaptureMode)
-			.SetFlashMode(cameraView.CameraFlashMode.ToPlatform())
-			.SetResolutionSelector(resolutionSelector)
-			.Build();
+		var imageCaptureBuilder = new ImageCapture.Builder();
+		imageCaptureBuilder.SetCaptureMode(imageCaptureMode);
+		imageCaptureBuilder.SetFlashMode(cameraView.CameraFlashMode.ToPlatform());
+		imageCaptureBuilder.SetResolutionSelector(resolutionSelector);
+		var newImageCapture = imageCaptureBuilder.Build() ?? throw new InvalidOperationException("CameraX did not build the ImageCapture.");
+
+		if (targetRotation is int rotation)
+		{
+			newImageCapture.TargetRotation = rotation;
+		}
+
+		return newImageCapture;
 	}
 
 	// The current ImageCapture is released once its replacement exists, so that a failure while creating the replacement (an undefined
@@ -433,6 +466,7 @@ partial class CameraManager
 			videoCapture.Dispose();
 		}
 		videoRecorder?.Dispose();
+		hasVideoRecorderRecorded = false;
 
 		// The Recorder runs on the I/O executor of CameraX (its default), not on the camera executor: it still finalizes recordings
 		// and releases its encoders after its VideoCapture is unbound, which the camera executor that Dispose shuts down would reject
@@ -440,10 +474,15 @@ partial class CameraManager
 
 		if (Quality.Highest is not null)
 		{
-			videoRecorderBuilder = videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
+			videoRecorderBuilder.SetQualitySelector(QualitySelector.From(Quality.Highest));
 		}
 		videoRecorder = videoRecorderBuilder.Build();
 		videoCapture = VideoCapture.WithOutput(videoRecorder);
+
+		if (targetRotation is int rotation)
+		{
+			videoCapture?.TargetRotation = rotation;
+		}
 	}
 
 	Task BindPhotoSessionAsync(CancellationToken token) => BindSessionAsync(CaptureSessionMode.Photo, token);
@@ -694,9 +733,10 @@ partial class CameraManager
 				}
 			}
 
-			var point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+			var meteringPointFactory = previewView.MeteringPointFactory ?? throw new InvalidOperationException("The PreviewView has no MeteringPointFactory.");
+			var point = meteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 			var action = new FocusMeteringAction.Builder(point).Build();
-			camera?.CameraControl?.StartFocusAndMetering(action);
+			StartFocusAndMeteringOffTheUiThread(camera?.CameraControl, action);
 
 			isInitialized = true;
 			onLoaded.Invoke();
@@ -706,6 +746,27 @@ partial class CameraManager
 		{
 			cameraPreviewSemaphoreSlim.Release();
 		}
+	}
+
+	// CameraX 1.5 blocks the caller until its camera thread answers (isRepeatingRequestAvailable), and that thread can hang in CameraDevice.close()
+	void StartFocusAndMeteringOffTheUiThread(ICameraControl? control, FocusMeteringAction? action)
+	{
+		if (control is null || action is null || focusAndMeteringExecutor is null)
+		{
+			return;
+		}
+
+		focusAndMeteringExecutor.Execute(new Runnable(() =>
+		{
+			try
+			{
+				control.StartFocusAndMetering(action);
+			}
+			catch (System.Exception ex)
+			{
+				Trace.TraceWarning($"{nameof(CameraManager)}: unable to start focus and metering: {ex}");
+			}
+		}));
 	}
 
 	// Unbinding the use cases of a recording would make CameraX finalize it, so while a recording runs the switch is deferred until the
@@ -885,6 +946,13 @@ partial class CameraManager
 			token.ThrowIfCancellationRequested();
 			cameraView.SelectedCamera ??= cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
 
+			var bindsTheVideoSession = IsCapturePhotoSession || camera is null || !IsVideoSessionBound();
+
+			if (hasVideoRecorderRecorded && bindsTheVideoSession)
+			{
+				RebuildVideoCapture();
+			}
+
 			// The recording file and the recording (which checks RECORD_AUDIO) are prepared before the session changes, so that a
 			// StartVideoRecording that fails for the permission leaves the photo session as it was
 			videoRecordingFile = new Java.IO.File(context.CacheDir, $"{DateTime.UtcNow.Ticks}.mp4");
@@ -907,7 +975,7 @@ partial class CameraManager
 				// to optimize for latency during video recording sessions
 				await SwitchSessionAsync(CaptureSessionMode.Video, bindSession: true, token);
 			}
-			else if (camera is null || !IsVideoSessionBound())
+			else if (bindsTheVideoSession)
 			{
 				await BindVideoSessionAsync(token);
 			}
@@ -919,6 +987,7 @@ partial class CameraManager
 
 			videoRecordingStream = stream;
 			videoRecordingConsumer = consumer;
+			hasVideoRecorderRecorded = true;
 			videoRecording = pendingRecording.Start(executor, consumer);
 			recordingRequested = true;
 
@@ -1175,27 +1244,40 @@ partial class CameraManager
 		var cameraFutureCts = new TaskCompletionSource();
 		var cameraSelector = selectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context) ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
+		// The listeners run later on the UI thread, outside of this method: an exception that escaped from them would terminate the app, so their
+		// outcome completes the task instead. Get() throws when CameraX cannot initialize
 		cameraProviderFuture.AddListener(new Runnable(() =>
 		{
-			var cameraProviderInstance = cameraProviderFuture.Get().JavaCast<AndroidX.Camera.Core.ICameraProvider>();
-			if (cameraProviderInstance is null)
+			try
 			{
-				return;
-			}
+				var cameraProviderInstance = cameraProviderFuture.Get().JavaCast<AndroidX.Camera.Core.ICameraProvider>()
+											 ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
 
-			var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
-									  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
+				var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
+										  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
 
-			extensionsManagerFuture.AddListener(new Runnable(() =>
-			{
-				var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
-				if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+				extensionsManagerFuture.AddListener(new Runnable(() =>
 				{
-					cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
-				}
+					try
+					{
+						var extensionsManager = (ExtensionsManager?)extensionsManagerFuture.Get();
+						if (extensionsManager is not null && extensionsManager.IsExtensionAvailable(cameraSelector, extensionMode))
+						{
+							cameraSelector = extensionsManager.GetExtensionEnabledCameraSelector(cameraSelector, extensionMode);
+						}
 
-				cameraFutureCts.SetResult();
-			}), ContextCompat.GetMainExecutor(context));
+						cameraFutureCts.SetResult();
+					}
+					catch (System.Exception ex)
+					{
+						cameraFutureCts.TrySetException(ex);
+					}
+				}), ContextCompat.GetMainExecutor(context));
+			}
+			catch (System.Exception ex)
+			{
+				cameraFutureCts.TrySetException(ex);
+			}
 		}), ContextCompat.GetMainExecutor(context));
 
 		await cameraFutureCts.Task.WaitAsync(token);
@@ -1210,16 +1292,17 @@ partial class CameraManager
 
 	void OnOrientationChanged(int orientationDegrees)
 	{
-		var targetRotation = GetSurfaceRotation(orientationDegrees);
+		var rotation = GetSurfaceRotation(orientationDegrees);
+		targetRotation = rotation;
 
-		imageCapture?.TargetRotation = targetRotation;
-		videoCapture?.TargetRotation = targetRotation;
-		cameraPreview?.TargetRotation = targetRotation;
+		imageCapture?.TargetRotation = rotation;
+		videoCapture?.TargetRotation = rotation;
+		cameraPreview?.TargetRotation = rotation;
 	}
 
 	sealed class ImageCallBack(ICameraView cameraView) : ImageCapture.OnImageCapturedCallback
 	{
-		public override void OnCaptureSuccess(IImageProxy image)
+		public override void OnCaptureSuccess(IImageProxy? image)
 		{
 			base.OnCaptureSuccess(image);
 			var img = image?.Image;
@@ -1249,8 +1332,8 @@ partial class CameraManager
 			}
 			catch (System.Exception ex)
 			{
+				// Not rethrown: CameraX calls this on its executor thread, where an exception ends the app after the failure was reported
 				cameraView.OnMediaCapturedFailed(ex.Message);
-				throw;
 			}
 			finally
 			{
@@ -1268,7 +1351,7 @@ partial class CameraManager
 			}
 		}
 
-		public override void OnError(ImageCaptureException exception)
+		public override void OnError(ImageCaptureException? exception)
 		{
 			base.OnError(exception);
 			cameraView.OnMediaCapturedFailed(exception?.Message ?? "An unknown error occurred.");

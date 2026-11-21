@@ -2,6 +2,8 @@ using System.Diagnostics;
 using Xunit.Sdk;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 #if IOS || MACCATALYST
+using System.Runtime.ExceptionServices;
+using CommunityToolkit.Maui.DeviceTests.Runners;
 using PlatformView = UIKit.UIView;
 #elif ANDROID
 using Microsoft.Maui.Platform;
@@ -92,8 +94,8 @@ static class VisualBehaviorHelpers
 		}
 	}
 
-	// A forced collection frees what nothing holds at once; the timeout only keeps a busy machine from turning into a failure. What something
-	// holds stays alive whatever the time, so the wait hides no leak.
+	// A forced collection frees what nothing holds at once; the timeout (for all rounds, and on Apple for one parked pass) only keeps a busy
+	// machine from turning into a failure. What something holds stays alive whatever the time, so the wait hides no leak.
 	static readonly TimeSpan collectionTimeout = TimeSpan.FromSeconds(15);
 
 	// AssertionExtensions.WaitForGC, hardened against two things that are no leak:
@@ -134,6 +136,45 @@ static class VisualBehaviorHelpers
 		await AssertionExtensions.WaitForGC(references);
 	}
 
+#if IOS || MACCATALYST
+	// BaseWrapper finalizers release UIKit objects off the main thread, which raced with a free main thread (NSRangeException in detach),
+	// so the main thread waits; the final WaitForPendingFinalizers keeps the last collection's finalizers inside that window.
+	static Task CollectOnNewThreadAsync() => TestDispatcher.Current.DispatchAsync(() =>
+	{
+		ExceptionDispatchInfo? failure = null;
+
+		var thread = new Thread(() =>
+		{
+			try
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect(2, GCCollectionMode.Forced, true);
+				GC.WaitForPendingFinalizers();
+				GC.Collect(2, GCCollectionMode.Forced, true);
+				GC.WaitForPendingFinalizers();
+			}
+			catch (Exception ex)
+			{
+				failure = ExceptionDispatchInfo.Capture(ex);
+			}
+		})
+		{
+			IsBackground = true,
+			Name = nameof(CollectOnNewThreadAsync)
+		};
+
+		AssertionExtensions.ClearStack();
+		thread.Start();
+
+		if (!thread.Join(collectionTimeout))
+		{
+			throw new TimeoutException($"The forced collection did not finish within {collectionTimeout}.");
+		}
+
+		failure?.Throw();
+	});
+#else
 	// The collections of AssertionExtensions.Collect, on a thread that has run nothing else.
 	static Task CollectOnNewThreadAsync()
 	{
@@ -163,4 +204,5 @@ static class VisualBehaviorHelpers
 
 		return collected.Task;
 	}
+#endif
 }

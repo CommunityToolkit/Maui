@@ -24,6 +24,21 @@ public class MediaManagerSourceWindowsTests : WinMediaTestBase
 	static Task UpdateSourceAsync(WinMediaManagerFixture fixture) => InvokeOnMainThreadAsync(async () => await fixture.Manager.UpdateSource());
 
 	[Fact]
+	public async Task UpdatingAMediaElementWithoutASourceNeverAssignsThePlayerSource()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		var fixture = await CreateManagerAsync();
+		var sourceChanges = 0;
+		await InvokeOnMainThreadAsync(() => fixture.Player!.SourceChanged += (_, _) => Interlocked.Increment(ref sourceChanges));
+
+		await UpdateSourceAsync(fixture);
+		await Task.Delay(500);
+
+		Assert.Equal(0, Volatile.Read(ref sourceChanges));
+	}
+
+	[Fact]
 	public async Task UriSourceWithoutHeadersHandsTheAbsoluteUriToThePlayer()
 	{
 		SetupWindowsBuilder();

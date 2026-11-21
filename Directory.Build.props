@@ -24,7 +24,8 @@ https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitati
 
     <!-- MAUI Specific -->
     <MauiXamlInflator>SourceGen</MauiXamlInflator>
-    <MauiPackageVersion>11.0.0</MauiPackageVersion>
+    <!-- 11.0.10, not the first 11.0 release: 11.0.0 crashes on iOS 17 and earlier (dotnet/maui#38662). -->
+    <MauiPackageVersion>11.0.10</MauiPackageVersion>
     <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
     <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
