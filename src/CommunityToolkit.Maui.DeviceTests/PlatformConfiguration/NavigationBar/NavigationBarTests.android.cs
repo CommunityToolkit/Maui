@@ -1,4 +1,5 @@
 #pragma warning disable CA1422 // Window.NavigationBarColor is obsolete from API 35: the tests still read it on the older APIs that use it.
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
@@ -12,6 +13,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class NavigationBarTests
 {
+	const string lightNavigationBarsSkipReason = "The window cannot have light navigation bars: Android has them from Android 8.0 (API 26) on. StyleChangesNothingOnTheWindowBeforeAndroid8 pins what Style does on older versions.";
+
 	// ResetNativeStateAsync puts the runner's window back without NavigationBar knowing, so what NavigationBar remembered changing in an earlier
 	// test would be wrong for this one: every test starts with NavigationBar remembering nothing.
 	public NavigationBarTests() => ForgetWindowChanges();
@@ -285,7 +288,7 @@ public partial class NavigationBarTests
 		{
 			await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
 
-			await InvokeOnMainThreadAsync(() => Assert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
+			await InvokeOnMainThreadAsync(() => AotSafeAssert.Equal(Colors.Blue.ToPlatform(), AndroidSystemBars.BackgroundColor(appView)));
 			await AssertNavigationBarShowsAsync(Colors.Red);
 		}
 		finally
@@ -339,7 +342,7 @@ public partial class NavigationBarTests
 			return (parameters.Width, parameters.Height, parameters.Gravity);
 		});
 
-		Assert.Equal((expectedWidth, expectedHeight, expectedGravity), layout);
+		AotSafeAssert.Equal((expectedWidth, expectedHeight, expectedGravity), layout);
 	}
 
 	[Fact]
@@ -540,6 +543,7 @@ public partial class NavigationBarTests
 	[InlineData(NavigationBarStyle.Default, false)]
 	public async Task StyleSetBeforeThePageHandlerIsCreatedUsesLightNavigationBarsOnlyForDarkContent(NavigationBarStyle style, bool expectedLightNavigationBars)
 	{
+		Skip.If(!expectedLightNavigationBars && !AndroidSystemBars.SupportsLightNavigationBars, lightNavigationBarsSkipReason);
 		SetupBuilder();
 		await ResetNativeStateAsync();
 		await InvokeOnMainThreadAsync(() => SetLightNavigationBars(!expectedLightNavigationBars));
@@ -548,7 +552,7 @@ public partial class NavigationBarTests
 
 		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
 
-		await InvokeOnMainThreadAsync(() => Assert.Equal(expectedLightNavigationBars, AndroidSystemBars.IsLightNavigationBars(AndroidSystemBars.ActivityWindow)));
+		await AssertNavigationBarStyleAsync(style);
 	}
 
 	[Fact]
@@ -589,6 +593,7 @@ public partial class NavigationBarTests
 	[Fact]
 	public async Task StyleNotSetLeavesTheNavigationBarAlone()
 	{
+		Skip.IfNot(AndroidSystemBars.SupportsLightNavigationBars, lightNavigationBarsSkipReason);
 		SetupBuilder();
 		await ResetNativeStateAsync();
 		await InvokeOnMainThreadAsync(static () => SetLightNavigationBars(true));
@@ -703,6 +708,7 @@ public partial class NavigationBarTests
 	[InlineData(false, NavigationBarStyle.DarkContent)]
 	public async Task StyleClearedAfterItWasAppliedRestoresTheAppearanceTheWindowHadBeforeTheFirstChange(bool windowLightNavigationBars, NavigationBarStyle style)
 	{
+		Skip.If(windowLightNavigationBars && !AndroidSystemBars.SupportsLightNavigationBars, lightNavigationBarsSkipReason);
 		SetupBuilder();
 		await ResetNativeStateAsync();
 		await InvokeOnMainThreadAsync(() => SetLightNavigationBars(windowLightNavigationBars));
@@ -759,6 +765,7 @@ public partial class NavigationBarTests
 	[Fact]
 	public async Task StyleClearedGivesEveryWindowThatShowsItBackItsOwnAppearance()
 	{
+		Skip.IfNot(AndroidSystemBars.SupportsLightNavigationBars, lightNavigationBarsSkipReason);
 		SetupBuilder();
 		await ResetNativeStateAsync();
 		await InvokeOnMainThreadAsync(static () => SetLightNavigationBars(true));
@@ -784,6 +791,32 @@ public partial class NavigationBarTests
 		{
 			await InvokeOnMainThreadAsync(dialog.Remove);
 		}
+	}
+
+	[Theory]
+	[InlineData(NavigationBarStyle.Default)]
+	[InlineData(NavigationBarStyle.LightContent)]
+	[InlineData(NavigationBarStyle.DarkContent)]
+	public async Task StyleChangesNothingOnTheWindowBeforeAndroid8(NavigationBarStyle style)
+	{
+		Skip.If(AndroidSystemBars.SupportsLightNavigationBars, "Only Android 7 (API 24-25) has no light navigation bars (CI: API 25); from Android 8.0 on, the Style tests above assert them.");
+		SetupBuilder();
+		await ResetNativeStateAsync();
+		var before = await InvokeOnMainThreadAsync(static () => AndroidSystemBars.WindowState.Read(AndroidSystemBars.ActivityWindow));
+		var otherStyle = style is NavigationBarStyle.DarkContent ? NavigationBarStyle.LightContent : NavigationBarStyle.DarkContent;
+		var page = CreatePage();
+
+		NavigationBar.SetStyle(page, style);
+		await AssertWindowStateUnchangedAsync(before);
+
+		await InvokeOnMainThreadAsync(() => CreateHandler<PageHandler>(page));
+		await AssertWindowStateUnchangedAsync(before);
+
+		await InvokeOnMainThreadAsync(() => NavigationBar.SetStyle(page, otherStyle));
+		await AssertWindowStateUnchangedAsync(before);
+
+		await InvokeOnMainThreadAsync(() => page.ClearValue(NavigationBar.StyleProperty));
+		await AssertWindowStateUnchangedAsync(before);
 	}
 
 	[Fact]
@@ -922,6 +955,12 @@ public partial class NavigationBarTests
 		return handler;
 	}
 
+	async Task AssertWindowStateUnchangedAsync(AndroidSystemBars.WindowState before)
+	{
+		await InvokeOnMainThreadAsync(() => Assert.Equal(before, AndroidSystemBars.WindowState.Read(AndroidSystemBars.ActivityWindow)));
+		await AssertNavigationBarUntouchedAsync();
+	}
+
 	static void SetLightNavigationBars(bool isLight)
 	{
 		var window = AndroidSystemBars.ActivityWindow;
@@ -1047,6 +1086,8 @@ public partial class NavigationBarTests
 		return new WeakReference(page);
 	}
 
+	// The field names are loop variables, which NativeAOT cannot see through.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicFields, typeof(NavigationBar))]
 	static void ForgetWindowChanges()
 	{
 		foreach (var fieldName in new[] { "colorChanges", "styleChanges" })

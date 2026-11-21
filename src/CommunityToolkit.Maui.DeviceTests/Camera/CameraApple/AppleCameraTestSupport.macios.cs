@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using AVFoundation;
 using CommunityToolkit.Maui.Core;
@@ -100,6 +101,12 @@ static class AppleCameraEnvironment
 			provider.Dispose();
 		}
 	}
+}
+
+static class AppleNativeClasses
+{
+	// New in iOS 17: below it a managed subclass of the class gets no native superclass. Asks the ObjC runtime, so AppleSystemVersionOverride cannot fool it.
+	public static bool HasRotationCoordinator { get; } = ObjCRuntime.Class.GetHandle("AVCaptureDeviceRotationCoordinator") != ObjCRuntime.NativeHandle.Zero;
 }
 
 // Reads and writes the private state of CameraManager (macios) so that branches that a real capture session would reach
@@ -220,6 +227,7 @@ sealed class CameraManagerAccessor(CameraManager manager)
 	public static bool MatchesResolution(AVCaptureDeviceFormat format, Size resolution) =>
 		(bool)GetStaticMethod("MatchesResolution").Invoke(null, [format, resolution])!;
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicConstructors, "CommunityToolkit.Maui.Core.CameraManager.AVCapturePhotoCaptureDelegateWrapper", "CommunityToolkit.Maui.Camera")]
 	public static AVCapturePhotoCaptureDelegate CreatePhotoCaptureDelegateWrapper()
 	{
 		var wrapperType = typeof(CameraManager).GetNestedType("AVCapturePhotoCaptureDelegateWrapper", BindingFlags.NonPublic)
@@ -228,6 +236,10 @@ sealed class CameraManagerAccessor(CameraManager manager)
 		return (AVCapturePhotoCaptureDelegate)Activator.CreateInstance(wrapperType, nonPublic: true)!;
 	}
 
+	// NativeAOT keeps no metadata for the product's private nested types, nor for Task<T>.Result, unless it is told so.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, "CommunityToolkit.Maui.Core.CameraManager.AVCapturePhotoCaptureDelegateWrapper", "CommunityToolkit.Maui.Camera")]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, "CommunityToolkit.Maui.Core.CameraManager.CapturePhotoResult", "CommunityToolkit.Maui.Camera")]
+	[DynamicDependency("Result", typeof(Task<>))]
 	public static Task<(AVCapturePhotoOutput? Output, AVCapturePhoto? Photo, NSError? Error)> GetPhotoCaptureResultAsync(AVCapturePhotoCaptureDelegate wrapper)
 	{
 		var task = (Task)wrapper.GetType().GetProperty("Task", BindingFlags.Public | BindingFlags.Instance)!.GetValue(wrapper)!;
@@ -650,4 +662,14 @@ sealed class AppleMediaRecorder
 		Failures.Add(e.FailureReason);
 		FirstCapture.TrySetException(new CameraException(e.FailureReason));
 	}
+}
+
+// Referenced by the test for the same reason as AppleMediaRecorder: the view holds its subscribers weakly.
+sealed class AppleThrowingMediaCapturedSubscriber
+{
+	public const string FailureMessage = "The subscriber failed.";
+
+	public AppleThrowingMediaCapturedSubscriber(CameraView view) => view.MediaCaptured += OnMediaCaptured;
+
+	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(FailureMessage);
 }

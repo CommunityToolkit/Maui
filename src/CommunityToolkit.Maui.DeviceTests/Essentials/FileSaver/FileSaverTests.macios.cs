@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Maui.Storage;
 using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -19,14 +20,14 @@ public partial class FileSaverTests
 		var (operation, picker, pickerDelegate) = await StartSaveAsync(fileName, new FilesScriptedStream(sample));
 
 		var temporaryFolder = Assert.IsType<string>(folders.FolderWithFile());
-		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
 		await InvokeOnMainThreadAsync(() =>
 		{
 			Assert.Equal(UIDocumentPickerMode.ExportToService, picker.DocumentPickerMode);
 			Assert.Null(picker.DirectoryUrl);
 			Assert.False(picker.AllowsMultipleSelection);
 		});
-		Assert.Equal((1, 1), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((1, 1), FilesApplePicker.CountSubscribers(pickerDelegate));
 
 		const string chosenPath = "/tmp/files-tests-chosen.txt";
 		await FilesApplePicker.SimulateUserPicksAsync(picker, NSUrl.CreateFileUrl(chosenPath, false));
@@ -35,7 +36,7 @@ public partial class FileSaverTests
 		Assert.True(result.IsSuccessful, result.Exception?.ToString());
 		Assert.Equal(chosenPath, result.FilePath);
 		Assert.False(Directory.Exists(temporaryFolder), "The temporary folder was not removed.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Theory]
@@ -50,7 +51,7 @@ public partial class FileSaverTests
 		var (operation, picker, _) = await StartSaveAsync(fileName, new MemoryStream([1, 2, 3]));
 
 		var temporaryFolder = Assert.IsType<string>(folders.FolderWithFile());
-		Assert.Equal([1, 2, 3], await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
+		AotSafeAssert.SequenceEqual<byte>([1, 2, 3], await File.ReadAllBytesAsync(Path.Combine(temporaryFolder, fileName)));
 		await FilesApplePicker.SimulateUserCancelsAsync(picker);
 		Assert.True((await operation.WaitAsync(operationTimeout)).IsCancelled);
 	}
@@ -138,7 +139,7 @@ public partial class FileSaverTests
 
 		var values = progress.Values;
 		Assert.True(values.Count >= 2, $"Expected the progress of each chunk and the final report, got {values.Count} values.");
-		Assert.Equal(values.Order(), values);
+		AotSafeAssert.SequenceEqual(values.Order(), values);
 		Assert.Equal(values.Max(), values[^1]);
 	}
 
@@ -154,12 +155,12 @@ public partial class FileSaverTests
 		var streamed = new FilesScriptedStream(sample, canSeek: false);
 
 		var (seekableOperation, seekablePicker, _) = await StartSaveAsync(seekableName, seekable);
-		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(seekableFolders.FolderWithFile()!, seekableName)));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(Path.Combine(seekableFolders.FolderWithFile()!, seekableName)));
 		await FilesApplePicker.SimulateUserCancelsAsync(seekablePicker);
 		await seekableOperation.WaitAsync(operationTimeout);
 
 		var (streamedOperation, streamedPicker, _) = await StartSaveAsync(streamedName, streamed);
-		Assert.Equal(sample, await File.ReadAllBytesAsync(Path.Combine(streamedFolders.FolderWithFile()!, streamedName)));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(Path.Combine(streamedFolders.FolderWithFile()!, streamedName)));
 		await FilesApplePicker.SimulateUserCancelsAsync(streamedPicker);
 		await streamedOperation.WaitAsync(operationTimeout);
 
@@ -183,7 +184,7 @@ public partial class FileSaverTests
 		Assert.IsType<OperationCanceledException>(result.Exception, exactMatch: false);
 		Assert.NotNull(temporaryFolder);
 		Assert.False(Directory.Exists(temporaryFolder), "The temporary folder was not removed.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Fact]
@@ -202,7 +203,7 @@ public partial class FileSaverTests
 		Assert.Null(result.FilePath);
 		Assert.NotNull(temporaryFolder);
 		Assert.False(Directory.Exists(temporaryFolder), "The temporary folder was not removed.");
-		Assert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
+		AotSafeAssert.Equal((0, 0), FilesApplePicker.CountSubscribers(pickerDelegate));
 	}
 
 	[Fact]
@@ -568,8 +569,66 @@ public partial class FileSaverTests
 		pickerDelegate = null!;
 		operation = null!;
 
-		await AssertionExtensions.WaitForGC(references);
+		await FilesApplePicker.WaitUntilReleasedAsync(references[0]);
+		await VisualBehaviorHelpers.WaitForGCAsync(references);
 	}
+
+	[Fact]
+	public async Task ThePickerIsKeptUntilItHasBeenOffScreenForAWhile()
+	{
+		var fileName = UniqueName("report", ".txt");
+		TrackTemporaryFolders(fileName);
+		var (operation, picker, _) = await StartSaveAsync(fileName, new MemoryStream([1]));
+		await FilesApplePicker.SimulateUserCancelsAsync(picker);
+		await operation.WaitAsync(operationTimeout);
+
+		Assert.NotEqual(NativeHandle.Zero, picker.Handle);
+		await AssertionExtensions.AssertEventuallyAsync(() => Task.FromResult(picker.Handle == NativeHandle.Zero), timeout: 10000, message: "The picker was never released.");
+	}
+
+	// iOS 18 and earlier crash the app when the view service of a picker messages the picker after it was released
+	[Fact]
+	public async Task PickersClosedRightAfterTheyAppearDoNotCrashTheApp()
+	{
+		const int iterations = 10;
+
+		for (var i = 0; i < iterations; i++)
+		{
+			var fileName = UniqueName("report", ".txt");
+			TrackTemporaryFolders(fileName);
+			var (operation, picker, _) = await StartSaveAsync(fileName, new MemoryStream([1]), initialPath: TemporaryRoot);
+			await FilesApplePicker.SimulateUserCancelsAsync(picker);
+			await operation.WaitAsync(operationTimeout);
+			await InvokeOnMainThreadAsync(FilesApplePicker.DismissAnyPickerAsync);
+		}
+
+		for (var i = 0; i < iterations; i++)
+		{
+			var fileName = UniqueName("report", ".txt");
+			TrackTemporaryFolders(fileName);
+			using var cancellation = new CancellationTokenSource();
+			var operation = await StartOnMainThreadAsync(() => FileSaver.Default.SaveAsync(TemporaryRoot, fileName, new MemoryStream([1]), cancellation.Token));
+
+			// The presentation has started once a view controller is presented; every second iteration also lets UIKit finish it
+			await FilesApplePicker.WaitUntilAnyViewControllerIsPresentedAsync();
+			if (i % 2 is 0)
+			{
+				await Task.Delay(viewServiceSettleTime);
+			}
+
+			await cancellation.CancelAsync();
+			await operation.WaitAsync(operationTimeout);
+			await AssertionExtensions.AssertEventuallyAsync(async () => !await FilesApplePicker.IsAnyViewControllerPresentedWithoutWrapperAsync(), timeout: 5000, message: "The document picker is still on screen after the save was canceled.");
+		}
+
+		// Lets the last pickers be released inside this test, where a crash is blamed on it: the library's settle time plus a 1 s margin
+		// (two 500 ms check intervals)
+		GC.Collect();
+		GC.WaitForPendingFinalizers();
+		await Task.Delay(viewServiceSettleTime + TimeSpan.FromSeconds(1));
+	}
+
+	static readonly TimeSpan viewServiceSettleTime = TimeSpan.FromSeconds(3);
 
 	Task PrepareHostAsync() => Task.CompletedTask;
 

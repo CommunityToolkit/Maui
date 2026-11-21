@@ -9,6 +9,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // the keyboard shows from the visible display frame; the AndroidX window insets (what the toolkit reads) only prepare and clean up.
 public abstract partial class KeyboardDismissalTestBase
 {
+	static partial void ReplaceSoftwareKeyboard(InputView input) => SoftKeyboardHelpers.KeepFocusFromShowingTheKeyboard(input);
+
 	protected static PlatformView GetPlatformView(InputView input) =>
 		(input.Handler as IPlatformViewHandler)?.PlatformView ?? throw new InvalidOperationException("The view has no platform view.");
 
@@ -21,12 +23,16 @@ public abstract partial class KeyboardDismissalTestBase
 	protected static async Task<VisibleFrame> ShowSoftKeyboardAsync(InputView input, PlatformView platformView)
 	{
 		var frame = await VisibleFrame.RecordWithoutKeyboardAsync(platformView);
+		await ShowSoftKeyboardAsync(input, frame);
 
+		return frame;
+	}
+
+	protected static async Task ShowSoftKeyboardAsync(InputView input, VisibleFrame frame)
+	{
 		Assert.True(await input.ShowKeyboardAsync(), "ShowKeyboardAsync returned false.");
 		Assert.True(await frame.WaitUntilTheKeyboardShowsSteadilyAsync(SoftKeyboardHelpers.Timeout), $"The soft keyboard did not show steadily: {frame}.");
 		Assert.True(input.IsFocused, "The view does not have the focus while its soft keyboard shows.");
-
-		return frame;
 	}
 
 	protected static async Task AssertSoftKeyboardIsDismissedAsync(VisibleFrame frame, bool isDismissed)

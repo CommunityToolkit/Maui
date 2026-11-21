@@ -377,7 +377,7 @@ public partial class StatusBarBehaviorTests
 		var behavior = await CreateBehaviorAsync(static behavior =>
 		{
 			behavior.ApplyOn = StatusBarApplyOn.OnPageNavigatedTo;
-			behavior.StatusBarStyle = StatusBarStyle.DarkContent;
+			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 		});
 		await ResetNativeStateAsync();
 		page.Behaviors.Add(behavior);
@@ -390,8 +390,8 @@ public partial class StatusBarBehaviorTests
 
 			StatusBarEventRaisers.RaiseNavigatedTo(page);
 
-			Assert.Equal(StatusBarTheme.Light, mauiWindow.Window.StatusBarTheme);
-			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
+			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.LightContent);
 		});
 	}
 
@@ -405,7 +405,7 @@ public partial class StatusBarBehaviorTests
 		var behavior = await CreateBehaviorAsync(static behavior =>
 		{
 			behavior.ApplyOn = StatusBarApplyOn.OnPageNavigatedTo;
-			behavior.StatusBarStyle = StatusBarStyle.DarkContent;
+			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 		});
 		await ResetNativeStateAsync();
 		pushedPage.Behaviors.Add(behavior);
@@ -420,7 +420,7 @@ public partial class StatusBarBehaviorTests
 			await navigatedTo.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
 			Assert.True(behavior.IsAttached);
-			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.DarkContent);
+			await AssertStatusBarStyleAsync(mauiWindow, UIStatusBarStyle.LightContent);
 		});
 	}
 
@@ -492,7 +492,8 @@ public partial class StatusBarBehaviorTests
 
 			behavior.StatusBarStyle = StatusBarStyle.LightContent;
 
-			Assert.Equal(UIStatusBarStyle.Default, IosStatusBarViews.RunnerScene.StatusBarManager?.StatusBarStyle);
+			var runnerScene = IosStatusBarViews.RunnerScene;
+			AotSafeAssert.Equal(IosStatusBarStyle.SceneStyle(UIStatusBarStyle.Default, IosStatusBarStyle.StyleProvider(IosStatusBarViews.RunnerWindow).TraitCollection), runnerScene.StatusBarManager?.StatusBarStyle);
 			return Task.CompletedTask;
 		});
 	}
@@ -552,7 +553,7 @@ public partial class StatusBarBehaviorTests
 			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(viewControllerBasedStatusBarAppearance, isAppliedByUIKit: true, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
 
 			UIStatusBarStyle[] expectedStylesOfTheWholeApp = setsTheStyleOfTheWholeApp ? [UIStatusBarStyle.LightContent] : [];
-			Assert.Equal(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
+			AotSafeAssert.SequenceEqual(expectedStylesOfTheWholeApp, stylesOfTheWholeApp);
 			Assert.Equal(StatusBarTheme.Dark, mauiWindow.Window.StatusBarTheme);
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 			return Task.CompletedTask;
@@ -571,7 +572,7 @@ public partial class StatusBarBehaviorTests
 			var (listener, stylesOfTheWholeApp) = CaptureStylesOfTheWholeApp(false, isAppliedByUIKit: false, () => behavior.StatusBarStyle = StatusBarStyle.LightContent);
 
 			Assert.False(behavior.IsAttached);
-			Assert.Empty(stylesOfTheWholeApp);
+			AotSafeAssert.Empty(stylesOfTheWholeApp);
 			Assert.DoesNotContain(styleIgnoredByUIKitMessage, listener.Messages);
 		});
 	}

@@ -50,7 +50,10 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	// service notification and updates it at once, so back-to-back service tests push the estimate up until a later test loses the media
 	// notification it waits for. After such a test the teardown pauses until the estimate is back at that of an app that posted nothing for a
 	// while: the estimator has no observable state, so there is no event to wait for, only time.
-	const int notificationRatePause = 1500;
+	protected const int notificationRatePause = 1500;
+
+	// The visual runner ignores TestOptions.SkipCategories, which skips this category below API 26 only in the headless runners.
+	protected MediaElementAndroidTestBase() => MediaElementSupport.SkipIfUnsupported();
 
 	readonly List<MediaElement> hostedElements = [];
 	readonly List<string> temporaryFiles = [];
@@ -142,7 +145,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		((IMediaElement)mediaElement).CurrentStateChanged(state);
 
 	/// <summary>
-	/// On the API 28 emulator the media codec service (omx@1.0-service) crashes now and then while it decodes (SIGSEGV,
+	/// On the API 28 emulator (and, by the same skip, API 27) the media codec service (omx@1.0-service) crashes now and then while it decodes (SIGSEGV,
 	/// "&gt;&gt;&gt; media.codec &lt;&lt;&lt;" in logcat) and ExoPlayer fails the load with ERROR_CODE_DECODING_FAILED: 1 of 30 loads of the
 	/// 2 s test video, and it was seen in full runs too. None of the code these tests cover depends on the Android version
 	/// (OnVideoSizeChanged, the resize modes, the TextureView), so they run on API 29 and later and on devices, and skip visibly on the old
@@ -150,7 +153,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	/// </summary>
 	protected static void SkipWhereTheVideoDecoderIsUnreliable() =>
 		Skip.If(!OperatingSystem.IsAndroidVersionAtLeast(29) && IsEmulator(),
-			"The API 28 emulator's media codec service crashes intermittently while decoding H.264 (ERROR_CODE_DECODING_FAILED); the video tests cover no version-specific code and run on API 29+ and on devices.");
+			"The API 28 emulator's media codec service crashes intermittently while decoding H.264 (ERROR_CODE_DECODING_FAILED), and the older emulators (API 27 in CI) are skipped with it; the video tests cover no version-specific code and run on API 29+ and on devices.");
 
 	static bool IsEmulator() => Android.OS.Build.Hardware is "ranchu" or "goldfish";
 
@@ -194,6 +197,9 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		var notificationManager = (NotificationManager)MauiPlatform.AppContext.GetSystemService(Context.NotificationService)!;
 		return notificationManager.GetActiveNotifications() ?? [];
 	}
+
+	protected static void CancelAllNotifications() =>
+		((NotificationManager)MauiPlatform.AppContext.GetSystemService(Context.NotificationService)!).CancelAll();
 
 	protected static bool IsMediaStyle(Notification? notification) => notification?.Extras?.GetString(Notification.ExtraTemplate) == mediaStyleTemplate;
 
@@ -459,6 +465,14 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	protected static Task WaitUntilAsync(Func<bool> condition, string message, int timeout = waitTimeout) =>
 		AssertEventually(condition, timeout, 25, message);
 
+	protected static async Task WaitUntilAsync(Func<bool> condition, Func<string> failureMessage, int timeout = waitTimeout)
+	{
+		if (!await Wait(condition, timeout, 25))
+		{
+			Assert.Fail(failureMessage());
+		}
+	}
+
 	protected static Task WaitForStateAsync(MediaElement mediaElement, MediaElementState state, int timeout = waitTimeout) =>
 		WaitUntilAsync(() => mediaElement.CurrentState == state, $"The MediaElement never reached {state}.", timeout);
 
@@ -519,7 +533,16 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 			});
 
 			// Disconnecting stops MediaControlsService asynchronously: the next test must not start in the middle of that.
-			await WaitForMediaControlsServiceToStopAsync();
+			try
+			{
+				await WaitForMediaControlsServiceToStopAsync();
+			}
+			catch
+			{
+				// A notification that stayed would otherwise fail every later test's teardown too. The exception already names the leftovers.
+				CancelAllNotifications();
+				throw;
+			}
 
 			if (usesForegroundService)
 			{

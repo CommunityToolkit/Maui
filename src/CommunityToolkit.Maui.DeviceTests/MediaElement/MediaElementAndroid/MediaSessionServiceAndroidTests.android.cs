@@ -14,7 +14,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // The service is a MediaSessionService with one registration (ExoPlayer and MediaSession) for every MediaElement connection. These tests reach
 // the running instance through MediaControlsService.Running, because the system creates the service. The notification and foreground-type
-// branches depend on the Android version: each device checks the branch that its version takes (the CI matrix runs API 36 and API 28).
+// branches depend on the Android version: each device checks the branch that its version takes (the CI legs from API 27 to 37.0 run these
+// tests: the MediaElementAndroid category skips below API 26).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase

@@ -27,28 +27,25 @@ public class MauiMediaElement : CoordinatorLayout
 	bool isStatusBarVisible;
 	bool isNavigationBarVisible;
 	bool isFullScreen;
+	bool isDetachingFromWindow;
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0060 // Remove unused parameter
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context) : base(context)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context, IAttributeSet? attrs) : base(context, attrs)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/issues/3114
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public MauiMediaElement(Context? context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 	{
 		// Fixes no constructor found exception: https://github.com/CommunityToolkit/Maui/pull/1692#issuecomment-1955099758
@@ -62,7 +59,8 @@ public class MauiMediaElement : CoordinatorLayout
 	/// <param name="context">The application's <see cref="Context"/>.</param>
 	/// <param name="playerView">The <see cref="PlayerView"/> that acts as the platform media player.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="playerView"/> is <see langword="null"/>.</exception>
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
+	// Keeps MediaElement's constructor when an app inflates it from XAML loaded at run time, where no code names it: https://github.com/CommunityToolkit/Maui/issues/3114
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(MediaElement))]
 	public MauiMediaElement(Context context, PlayerView playerView) : base(context ?? throw new ArgumentNullException(nameof(context)))
 	{
 		ArgumentNullException.ThrowIfNull(playerView);
@@ -112,12 +110,19 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 	}
 
-	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(MediaElement))]
 	public override void OnDetachedFromWindow()
 	{
 		if (isFullScreen)
 		{
-			OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+			isDetachingFromWindow = true;
+			try
+			{
+				OnFullscreenButtonClick(this, new PlayerView.FullscreenButtonClickEventArgs(!isFullScreen));
+			}
+			finally
+			{
+				isDetachingFromWindow = false;
+			}
 
 			// Full screen was left without the full-screen button: the button must leave its full-screen state too, or its next tap asks to
 			// leave a full screen that the view is no longer in. Media3 reports the new state to the click listener, which ignores it.
@@ -209,7 +214,17 @@ public class MauiMediaElement : CoordinatorLayout
 		{
 			isFullScreen = false;
 			layout?.RemoveView(relativeLayout);
-			AddView(relativeLayout);
+			if (isDetachingFromWindow)
+			{
+				// AddView would attach the layout to the window that this view is leaving, orphaning its SurfaceView there.
+				// AttachViewToParent skips the layout-params conversion and the layout request that AddView does.
+				AttachViewToParent(relativeLayout, 0, GenerateLayoutParams(relativeLayout.LayoutParameters));
+				RequestLayout();
+			}
+			else
+			{
+				AddView(relativeLayout);
+			}
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility(saveSystemBarsVisibility: e.P0);

@@ -1,0 +1,31 @@
+# Agent instructions
+
+This is the .NET MAUI Community Toolkit: four NuGet packages (`CommunityToolkit.Maui`, `.Core`, `.Camera`, `.MediaElement`) in `src/`, a sample app in `samples/`, unit tests (`src/CommunityToolkit.Maui.UnitTests`) and device tests (`src/CommunityToolkit.Maui.DeviceTests`).
+
+## Build and test
+
+* Solution: `src/CommunityToolkit.Maui.slnx`. Pinned SDK: `global.json`.
+* Build a library: `dotnet build src/CommunityToolkit.Maui/CommunityToolkit.Maui.csproj -c Release`
+* Unit tests: `dotnet test --project src/CommunityToolkit.Maui.UnitTests -c Release`. For code that touches strings, numbers or cultures also run `-- --culture tr-TR`.
+* Format: `pwsh eng/format.ps1`
+* Device tests: see `eng/devices/README.md`.
+
+## Trimming and NativeAOT are required
+
+Every change to the four packages must keep them fully trim-safe and NativeAOT-safe. The trim, AOT and single-file analyzers run in every library build, every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is an error, and a guard fails the build with `CTMTRIM001-004` if an analyzer is ever off or `IsAotCompatible` is not `true`. Do not use reflection on unannotated types or string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. Read [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md) before changing code, and check your change with `pwsh eng/trim-audit/run.ps1` (packs the libraries, builds the Sample with NativeAOT or full trimming and prints PASS or FAIL).
+
+## Newest OS versions
+
+Interim, until CommunityToolkit/Maui#3438 (nightly bump bot) lands: when you review or change a device test workflow, check its Android API level, iOS runtime, Xcode and Windows runner against the newest GA releases and recommend a bump. The list is in [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md#newest-os-versions-interim).
+
+## Instructions
+
+* [.github/copilot-instructions.md](.github/copilot-instructions.md): general rules for contributors and agents
+* [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md): trimming and NativeAOT
+* [.github/instructions/codestyle.instructions.md](.github/instructions/codestyle.instructions.md): C# style
+* [.github/instructions/async.instructions.md](.github/instructions/async.instructions.md): asynchronous code
+* [.github/instructions/culture.instructions.md](.github/instructions/culture.instructions.md): culture-safe code and Turkish tests
+* [.github/instructions/device-tests.instructions.md](.github/instructions/device-tests.instructions.md): device tests
+* [.github/instructions/mobile-memory-leaks.instructions.md](.github/instructions/mobile-memory-leaks.instructions.md): memory leaks on mobile
+* [.github/instructions/handler-lifecycle.instructions.md](.github/instructions/handler-lifecycle.instructions.md): handler lifecycle (`CreatePlatformView` runs once per handler)
+* [CONTRIBUTING.md](CONTRIBUTING.md): contribution process

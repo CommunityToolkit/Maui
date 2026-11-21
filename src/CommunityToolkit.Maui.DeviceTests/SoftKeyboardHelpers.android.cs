@@ -42,6 +42,10 @@ static class SoftKeyboardHelpers
 	// so the keyboard only counts as hidden once both agree.
 	public static bool IsShowing() => InsetsShowKeyboard(DecorView) || VisibleFrame.KeyboardCoversTheBottomOf(DecorView);
 
+	// MAUI's Focus otherwise posts a keyboard show that can land after the test and break the next test's keyboard-free baseline.
+	public static void KeepFocusFromShowingTheKeyboard(InputView input) =>
+		((EditText)((input.Handler as IPlatformViewHandler)?.PlatformView ?? throw new InvalidOperationException("The view has no platform view."))).ShowSoftInputOnFocus = false;
+
 	// The same AndroidX call as the toolkit: used to prepare and clean up, never as the oracle of a toolkit result.
 	public static bool InsetsShowKeyboard(AView view) =>
 		ViewCompat.GetRootWindowInsets(view)?.IsVisible(WindowInsetsCompat.Type.Ime()) is true;

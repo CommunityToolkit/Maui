@@ -13,7 +13,7 @@ public abstract partial class SpeechImplementationTestsBase
 		await StartOnMainThreadAsync(speech, DefaultOptions);
 
 		Assert.Empty(start.Framework.SetModeCalls);
-		Assert.Empty(start.Framework.SetActiveCalls);
+		AotSafeAssert.Empty(start.Framework.SetActiveCalls);
 		Assert.Equal<string>(["installTap", "prepare", "start"], start.Calls);
 		Assert.Equal(1, start.Framework.RecognitionTaskCalls);
 

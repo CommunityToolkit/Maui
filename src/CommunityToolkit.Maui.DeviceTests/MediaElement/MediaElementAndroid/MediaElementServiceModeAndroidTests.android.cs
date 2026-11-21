@@ -514,7 +514,7 @@ public class MediaElementServiceModeAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilVideoSizeIsKnownAsync(mediaElement, recorder);
 
-			Assert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
+			AotSafeAssert.Equal((64, 48), (mediaElement.MediaWidth, mediaElement.MediaHeight));
 		});
 	}
 }

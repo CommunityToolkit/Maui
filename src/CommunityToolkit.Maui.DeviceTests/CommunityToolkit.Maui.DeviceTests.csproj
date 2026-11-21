@@ -43,12 +43,12 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
-  <!-- The library minimums, so version-gated branches can run on older devices, except Android: 26, MediaElement's minimum,
-       because this one app holds the tests of every package (the other packages' Android branches below 26 have no device test). -->
+  <!-- The library minimums, so version-gated branches can run on older devices. Android is 24, the lowest of the libraries; MediaElement
+       needs 26, so its tests skip below that (MediaElementSupport). CI runs the newest release of every Android major from API 25; API 24 is local only. -->
   <PropertyGroup>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
@@ -61,6 +61,11 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     <!-- Only the Android tests use this 0-byte PNG. The .NET 11 Apple SDK optimizes every PNG of a Release build and fails with a missing file when it is empty. -->
     <MauiAsset Remove="Resources\Raw\exoplayer\empty.png" Condition="'$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <!-- R8 runs in a NativeAOT publish and drops the package-private factories that the camera tests call through JNI, as no Java code calls them. -->
+    <ProguardConfiguration Include="Platforms\Android\proguard.cfg" />
   </ItemGroup>
 
   <ItemGroup>

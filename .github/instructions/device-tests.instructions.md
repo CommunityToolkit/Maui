@@ -46,3 +46,4 @@ The full guide is `src/CommunityToolkit.Maui.DeviceTests/README.md`, and running
 14. **Build every target framework before pushing:** android, ios and maccatalyst on macOS, windows on Windows. Then run the category on each platform:
     - `pwsh eng/devices/run.ps1 -TestFilter 'Category=X'` runs it in the app that declares it, on every platform of the machine that builds a test of it
     - or one platform at a time: `pwsh eng/devices/{android,ios,catalyst}.ps1 -Project Maui -TestFilter 'Category=X'` and `eng\devices\windows.ps1 -Packaging unpackaged -Project Maui -TestFilter 'Category=X'`
+15. **Fix a flaky test; never remove it.** Follow "Failing and Flaky Tests" in `.github/copilot-instructions.md`.
