@@ -56,8 +56,10 @@ path and lists each toolkit change. The authoring guide for the tests is
   `eng/devices/windows.ps1` reads it when an app crashes or hangs; a packaged app has no other log.
 - **Code coverage**: `CoverageRecorder.cs` (toolkit code) writes the hits that coverlet-instrumented toolkit assemblies recorded, for
   the coverage runs of `eng/devices` (`-Coverage`, see `eng/devices/README.md`). coverlet writes them from a process-exit handler, which
-  never runs in these apps, so the Android instrumentation (before `Finish`) and the iOS and Mac Catalyst headless runner (when the
-  tests have completed) call `CoverageRecorder.Flush` with the folder named by `CTM_COVERAGE_DIRECTORY`. Without it they do nothing.
+  never runs in these apps, so the Android instrumentation (before `Finish`) and the iOS, Mac Catalyst and Windows headless runners (when
+  the tests have completed) call `CoverageRecorder.Flush` with the folder named by `CTM_COVERAGE_DIRECTORY`. A packaged Windows app does
+  not inherit that variable, so the Windows runners read the folder from `devicetestcoverage.txt` next to the results file
+  (`CoverageRecorder.ReadDirectoryFile`). Without a folder they do nothing.
 - **UI-thread watchdog (Android)**: `HeadlessRunner/android/UiThreadWatchdog.cs` pings the main looper every 5 s. After 90 s without an
   answer it logs every Java stack (tag `CtmUiThreadWatchdog`, via `JavaThreadDump.android.cs`), sends SIGQUIT (not on Android 7, where it
   aborts the app) and ends the app, so XHarness reports 80 within minutes instead of at its timeout. It is off while a debugger is
