@@ -78,6 +78,8 @@ public interface ICameraView : IView
 	/// <c>CameraViewHandler.CommandMapper.ReplaceMapping(nameof(ICameraView.CaptureImage), ADD YOUR METHOD);</c>.
 	/// The capture ends with the platform's answer to it. A failure that the view reports through its MediaCaptureFailed event while the capture
 	/// waits for that answer, for example of a video recording that its command cannot start, does not end the capture.
+	/// An exception that a handler of the view's MediaCaptured event throws does not end the capture: the view reports it through its
+	/// MediaCaptureFailed event, and the capture returns the image.
 	/// </remarks>
 	/// <exception cref="CameraException">Thrown when the platform reports that the image could not be captured, for example when the camera
 	/// preview has not been started; the view raises its MediaCaptureFailed event with the same reason.</exception>
