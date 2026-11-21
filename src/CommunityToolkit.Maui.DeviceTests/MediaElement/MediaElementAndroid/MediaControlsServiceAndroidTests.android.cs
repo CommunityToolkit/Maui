@@ -19,12 +19,13 @@ using PlayerConsts = AndroidX.Media3.Common.BasePlayer.InterfaceConsts;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // The notification and foreground-type branches depend on the Android version: each device checks the branch that its version takes (the CI
-// matrix runs API 36 and API 28).
+// legs from API 27 to 37.0 run these tests: the MediaElementAndroid category skips below API 26).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
 public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 {
 	static readonly FieldInfo playerNotificationManagerField = typeof(MediaControlsService).GetField("playerNotificationManager", BindingFlags.Instance | BindingFlags.NonPublic)!;
+	static readonly FieldInfo cancelStragglerHandlerField = typeof(MediaControlsService).GetField("cancelStragglerHandler", BindingFlags.Instance | BindingFlags.NonPublic)!;
 	static readonly FieldInfo notificationBuilderField = typeof(MediaControlsService).GetField("notificationBuilder", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
 	async Task HostBoundAsync(MediaElement mediaElement, Func<AndroidMediaElementProbeHandler, BoundServiceConnection, Task> test)
@@ -65,6 +66,85 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			Assert.Equal("1", channel.Name);
 			Assert.Equal(NotificationImportance.Low, channel.Importance);
 		});
+	}
+
+	[Fact]
+	public async Task StoppingTheServiceRightAfterItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// Android 11 delays a post by 200 ms and defers an app's cancel behind it, so the notification of a service that stops this soon
+		// used to stay: the race only shows in some of the repetitions.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+
+			await HostBoundAsync(mediaElement, (_, _) => Task.CompletedTask);
+
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
+	public async Task StoppingTheServiceBeforeItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// The service cannot be created in the UI turn that started it, so the disconnect is always before it was created: Android kills the
+		// app when a service that was started for the foreground is brought down before it called startForeground.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			BoundServiceConnection? connection = null;
+
+			await WithHandlerAsync(mediaElement, handler =>
+			{
+				connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				Assert.False(connection.IsConnected);
+
+				((IElementHandler)handler).DisconnectHandler();
+			});
+
+			await WaitUntilAsync(() => connection!.Handle == IntPtr.Zero, "The connection was never stopped and disposed.");
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
+	public async Task StoppingTheLastManagerBeforeItConnectedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		// The first manager posted the notification: the second one is the last to stop, before its own connection landed.
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var firstElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			var secondElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			BoundServiceConnection? secondConnection = null;
+
+			await HostBoundAsync(firstElement, async (firstHandler, _) =>
+			{
+				await WaitForForegroundNotificationAsync();
+
+				await WithHandlerAsync(secondElement, secondHandler =>
+				{
+					secondConnection = GetServiceConnection(secondHandler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+					Assert.False(secondConnection.IsConnected);
+
+					((IElementHandler)firstHandler).DisconnectHandler();
+					((IElementHandler)secondHandler).DisconnectHandler();
+				});
+			});
+
+			await WaitUntilAsync(() => secondConnection!.Handle == IntPtr.Zero, "The connection was never stopped and disposed.");
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
 	}
 
 	[Fact]
@@ -116,14 +196,15 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 			// The connection refreshes the notification when it connects (UpdateNotifications found no service while the source was loaded).
 			// Before Android 13 the PlayerNotificationManager then posts its own version under the same id, which the system marks as the
 			// foreground notification again some milliseconds later (the flags are missing in between): wait for the settled notification.
-			await WaitUntilAsync(() => FindServiceNotification() is Notification posted && IsMediaStyle(posted) && posted.Flags.HasFlag(NotificationFlags.ForegroundService),
-				"The service never showed a media notification as its foreground notification.");
+			// GetActiveNotifications also returns records that are still queued; Android 13 gives those the foreground flag at once
+			// but adds NoClear only when it posts them, so NoClear is part of the settled state.
+			await WaitUntilAsync(() => FindServiceNotification() is Notification posted && IsMediaStyle(posted) && posted.Flags.HasFlag(NotificationFlags.ForegroundService) && posted.Flags.HasFlag(NotificationFlags.NoClear),
+				"The service never showed a media notification that is its foreground notification and cannot be swiped away.");
 			var notification = FindServiceNotification()!;
 			var session = GetMediaSession(handler.Manager!)!;
 
 			Assert.Equal("1", notification.ChannelId);
 			Assert.Equal(NotificationVisibility.Public, notification.Visibility);
-			Assert.True(notification.Flags.HasFlag(NotificationFlags.NoClear), $"The foreground notification can be swiped away: {notification.Flags}.");
 			Assert.NotNull(notification.SmallIcon);
 			Assert.True(session.PlatformToken!.Equals(notification.Extras!.Get(Notification.ExtraMediaSession)), "The notification is not bound to the MediaSession of the manager.");
 		});
@@ -211,7 +292,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		await HostBoundAsync(mediaElement, async (handler, connection) =>
 		{
 			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && GetServiceNotificationText() == "A notification artist",
-				$"The notification never showed the media's title and artist (title: '{GetServiceNotificationTitle()}', text: '{GetServiceNotificationText()}').");
+				() => $"The notification never showed the media's title and artist ({DescribeServiceNotification()}).");
 
 			Assert.True(IsMediaStyle(FindServiceNotification()));
 		});
@@ -231,7 +312,7 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		await HostBoundAsync(mediaElement, async (handler, connection) =>
 		{
 			await WaitUntilAsync(() => GetServiceNotificationTitle() == "A notification title" && FindServiceNotification()?.GetLargeIcon() is not null,
-				"The notification never showed the media's artwork as its large icon.");
+				() => $"The notification never showed the media's artwork as its large icon ({DescribeServiceNotification()}).");
 
 			Assert.True(IsMediaStyle(FindServiceNotification()));
 		});
@@ -276,7 +357,6 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Null(exception);
 			Assert.Null(FindServiceNotification());
-			// Do not tear the service down before it was created.
 			await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
 		});
 	}
@@ -603,6 +683,208 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
+	static int ManagersBoundToTheService => (int)typeof(MediaManager).GetField("managersBoundToTheService", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+
+	// The failing context must be in place before the handler connects, because that maps the null Source and starts the service.
+	// A failed bind must be unbound and not counted, or nothing would ever decrement the count again.
+	[Fact]
+	public async Task ServiceThatCannotBeBoundLeavesNoConnectionAndKeepsTheManagerCountUnchanged()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		var baseline = ManagersBoundToTheService;
+		var context = new ContextWithoutTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext);
+		MediaManager.ServiceContextOverride = context;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, handler =>
+			{
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.NotNull(context.BoundConnection);
+				Assert.Same(context.BoundConnection, context.UnboundConnection);
+				Assert.Null(FindMediaControlsService());
+
+				var exception = Record.Exception(() => mediaElement.Source = MediaSource.FromResource(toneAsset));
+
+				Assert.Null(exception);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Null(FindMediaControlsService());
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
+
+		Assert.Equal(baseline, ManagersBoundToTheService);
+	}
+
+	[Fact]
+	public async Task ServiceThatAndroidRefusesToStartIsReportedOnceAndTheMediaPlaysWithoutIt()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var baseline = ManagersBoundToTheService;
+		var startFailure = new Java.Lang.SecurityException("Not allowed to start the service.");
+		var unboundContext = new ContextWithoutTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext);
+		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+
+		// The handler maps the null Source while it connects, and that must neither start the service nor report a failure.
+		MediaManager.ServiceContextOverride = unboundContext;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				Assert.Empty(recorder.FailureMessages);
+				MediaManager.ServiceContextOverride = failingContext;
+
+				var source = MediaSource.FromResource(toneAsset);
+				Assert.Null(Record.Exception(() => mediaElement.Source = source));
+				Assert.Same(source, mediaElement.Source);
+
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 1 && recorder.OpenedCount >= 1 && mediaElement.Duration > TimeSpan.Zero, "The refused start was never reported or the media never opened.");
+				var failure = Assert.Single(recorder.FailureMessages);
+				Assert.Contains(typeof(Java.Lang.SecurityException).FullName!, failure, StringComparison.Ordinal);
+				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
+				Assert.Equal(toneDuration, mediaElement.Duration);
+
+				var player = GetPlayer(mediaElement);
+				mediaElement.Play();
+				await WaitUntilAsync(() => player.IsPlaying, "The player never started to play.");
+
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Equal(1, failingContext.StartCount);
+				Assert.Equal(0, failingContext.BindCount);
+				Assert.Null(FindMediaControlsService());
+
+				var laterSource = MediaSource.FromResource(shortToneAsset);
+				Assert.Null(Record.Exception(() => mediaElement.Source = laterSource));
+				Assert.Same(laterSource, mediaElement.Source);
+
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 2 && recorder.OpenedCount >= 2 && mediaElement.Duration == shortToneDuration, "The later source never retried the service or never opened.");
+				Assert.Equal(2, failingContext.StartCount);
+				Assert.EndsWith(shortToneAsset, player.CurrentMediaItem!.MediaId, StringComparison.Ordinal);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+
+				MediaManager.ServiceContextOverride = null;
+				mediaElement.Source = MediaSource.FromResource(toneAsset);
+
+				var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
+				await WaitUntilAsync(() => recorder.OpenedCount >= 3, "The third source never opened.");
+				Assert.Equal(2, recorder.FailureMessages.Count);
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
+
+		await WaitForMediaControlsServiceToStopAsync();
+		await WaitUntilAsync(() => ManagersBoundToTheService == baseline, "The manager count never returned to its baseline.");
+	}
+
+	// The handler connects with no Source and tries to start the service: there is no media to report on, so the refusal stays silent.
+	[Fact]
+	public async Task ServiceThatAndroidRefusesWhileTheHandlerConnectsWithNoSourceIsNotReportedAndTheNextSourceReportsItOnce()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var baseline = ManagersBoundToTheService;
+		var startFailure = new Java.Lang.SecurityException("Not allowed to start the service.");
+		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+		MediaManager.ServiceContextOverride = failingContext;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				Assert.Equal(1, failingContext.StartCount);
+				Assert.Empty(recorder.FailureMessages);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.NotEqual(MediaElementState.Failed, mediaElement.CurrentState);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+
+				mediaElement.Source = MediaSource.FromResource(toneAsset);
+
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 1 && recorder.OpenedCount >= 1 && mediaElement.Duration > TimeSpan.Zero, "The refused start was never reported or the media never opened.");
+				var failure = Assert.Single(recorder.FailureMessages);
+				Assert.Contains(typeof(Java.Lang.SecurityException).FullName!, failure, StringComparison.Ordinal);
+				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.Equal(2, failingContext.StartCount);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+
+				MediaManager.ServiceContextOverride = null;
+				mediaElement.Source = MediaSource.FromResource(shortToneAsset);
+
+				var connection = GetServiceConnection(handler.Manager!) ?? throw new InvalidOperationException("The MediaManager has no service connection.");
+				await WaitUntilAsync(() => connection.IsConnected, "The MediaManager never connected to MediaControlsService.");
+				await WaitUntilAsync(() => recorder.OpenedCount >= 2, "The next source never opened.");
+				Assert.Single(recorder.FailureMessages);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
+
+		await WaitForMediaControlsServiceToStopAsync();
+		await WaitUntilAsync(() => ManagersBoundToTheService == baseline, "The manager count never returned to its baseline.");
+	}
+
+	// From XAML the start runs while MAUI connects the handler, where no app code can catch it.
+	[Fact]
+	public async Task ServiceThatAndroidRefusesWhileTheHandlerConnectsIsReportedOnceAndTheMediaPlays()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element =>
+		{
+			element.ShouldAutoPlay = true;
+			element.Source = MediaSource.FromResource(toneAsset);
+		});
+		using var recorder = new MediaElementRecorder(mediaElement);
+		var baseline = ManagersBoundToTheService;
+		Java.Lang.Throwable startFailure = OperatingSystem.IsAndroidVersionAtLeast(31)
+			? new ForegroundServiceStartNotAllowedException("The app is in the background.")
+			: new Java.Lang.IllegalStateException("The app is in the background.");
+		var failingContext = new ContextThatCannotStartTheService(Microsoft.Maui.ApplicationModel.Platform.AppContext, startFailure);
+		MediaManager.ServiceContextOverride = failingContext;
+
+		try
+		{
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				await WaitUntilAsync(() => recorder.FailureMessages.Count >= 1 && recorder.OpenedCount >= 1 && mediaElement.Duration > TimeSpan.Zero, "The refused start was never reported or the media never opened.");
+				var failure = Assert.Single(recorder.FailureMessages);
+				Assert.Contains(startFailure.GetType().FullName!, failure, StringComparison.Ordinal);
+				Assert.Contains(startFailure.Message!, failure, StringComparison.Ordinal);
+
+				await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+				AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+				Assert.Null(GetServiceConnection(handler.Manager!));
+				Assert.Equal(baseline, ManagersBoundToTheService);
+				Assert.Equal(1, failingContext.StartCount);
+				Assert.Equal(0, failingContext.BindCount);
+			});
+		}
+		finally
+		{
+			MediaManager.ServiceContextOverride = null;
+		}
+	}
+
 	// The manager unsubscribes from TaskRemoved when it is disposed, so the handler cannot normally run without a player; its null-conditional
 	// keeps a late TaskRemoved from touching a player that does not exist.
 	[Fact]
@@ -822,6 +1104,9 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		{
 			var service = connection.Binder!.Service;
 			await WaitForForegroundNotificationAsync();
+			// Before Android 13 the PlayerNotificationManager posts again as the player loads, and Android 11 delays each post by 200 ms:
+			// a post that is still on its way would show the notification again after the service left the foreground.
+			await Task.Delay(notificationRatePause);
 			service.StopForeground(StopForegroundFlags.Remove);
 			await WaitUntilAsync(() => FindMediaControlsService()?.Foreground == false && FindServiceNotification() is null, "The service never left the foreground.");
 
@@ -886,6 +1171,10 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 		// OnDestroy runs on the UI thread and was running when the notification disappeared, so a Dispose posted to the UI thread runs after it
 		// returned. Disposing earlier crashes the app: OnDestroy's StopSelf then throws ObjectDisposedException.
 		Assert.NotNull(service);
+		// Dispose drops the NotificationManager that the Android 11 straggler cancel needs.
+		await WaitForStragglerCancelAsync(service);
+		await WaitUntilAsync(() => GetActiveNotifications().Length == 0, "The straggler cancel left a notification behind.");
+
 		await InvokeOnMainThreadAsync(service.Dispose);
 
 		Assert.Null(service.NotificationManager);
@@ -1046,6 +1335,15 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 	static void DetachLegacyNotificationManager(MediaControlsService service) =>
 		((AndroidX.Media3.UI.PlayerNotificationManager?)playerNotificationManagerField.GetValue(service))?.SetPlayer(null);
 
+	// A message posted with the straggler's delay after the straggler runs after it on the same looper.
+	static async Task WaitForStragglerCancelAsync(MediaControlsService service)
+	{
+		var handler = (Android.OS.Handler)cancelStragglerHandlerField.GetValue(service)!;
+		var reached = new TaskCompletionSource();
+		await InvokeOnMainThreadAsync(() => handler.PostDelayed(() => reached.TrySetResult(), MediaControlsService.StragglerCancelDelayMilliseconds));
+		await reached.Task.WaitAsync(TimeSpan.FromSeconds(10));
+	}
+
 	static StatusBarNotification? FindSentinelNotification() => GetActiveNotifications().FirstOrDefault(notification => notification.Id == sentinelNotificationId);
 
 	static void CancelSentinelNotification() =>
@@ -1084,6 +1382,48 @@ public class MediaControlsServiceAndroidTests : MediaElementAndroidTestBase
 				return () => playerProperty.SetValue(manager, player);
 			default:
 				throw new ArgumentOutOfRangeException(nameof(missing), missing, null);
+		}
+	}
+
+	sealed class ContextWithoutTheService(Context baseContext) : ContextWrapper(baseContext)
+	{
+		public IServiceConnection? BoundConnection { get; private set; }
+
+		public IServiceConnection? UnboundConnection { get; private set; }
+
+		public override ComponentName? StartForegroundService(Intent? service) => base.StartForegroundService(CreateMissingServiceIntent());
+
+		public override bool BindService(Intent? service, IServiceConnection? conn, Bind flags)
+		{
+			BoundConnection = conn;
+			return base.BindService(CreateMissingServiceIntent(), conn, flags);
+		}
+
+		public override void UnbindService(IServiceConnection? conn)
+		{
+			UnboundConnection = conn;
+			base.UnbindService(conn);
+		}
+
+		Intent CreateMissingServiceIntent() => new Intent().SetClassName(PackageName!, "communityToolkit.maui.media.services.missing");
+	}
+
+	sealed class ContextThatCannotStartTheService(Context baseContext, Java.Lang.Throwable startFailure) : ContextWrapper(baseContext)
+	{
+		public int BindCount { get; private set; }
+
+		public int StartCount { get; private set; }
+
+		public override ComponentName? StartForegroundService(Intent? service)
+		{
+			StartCount++;
+			throw startFailure;
+		}
+
+		public override bool BindService(Intent? service, IServiceConnection? conn, Bind flags)
+		{
+			BindCount++;
+			return false;
 		}
 	}
 

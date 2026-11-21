@@ -43,6 +43,7 @@ public sealed class VisibleFrame
 	// The window can count a keyboard as showing before the input method has laid out its own window for this input: the window manager's
 	// show is still pending (API 36 with a slow input method), and the frame loses the keyboard while the input method lays it out. A test
 	// that typed then would read that as a hidden keyboard, so the keyboard only counts as shown once its frame has stayed the same for a while.
+	// That also rejects a keyboard that flashes and is hidden again right away (Android 11 and 12 after a hide).
 	public Task<bool> WaitUntilTheKeyboardShowsSteadilyAsync(int timeout)
 	{
 		var steadyPolls = 0;
