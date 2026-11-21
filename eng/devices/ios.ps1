@@ -682,11 +682,10 @@ function Get-AppBundleIdentifiers {
 }
 
 function Invoke-SimulatorTccQuery {
-    param([string]$Database, [string]$Sql, [switch]$Write)
+    param([string]$Database, [string]$Sql)
 
     # No -readonly: it cannot open a WAL database whose -wal and -shm files are missing.
-    $arguments = @('-cmd', '.timeout 5000')
-    return Invoke-DeviceTestProcess -FilePath 'sqlite3' -ArgumentList ($arguments + @($Database, $Sql)) -TimeoutSeconds 60
+    return Invoke-DeviceTestProcess -FilePath 'sqlite3' -ArgumentList @('-cmd', '.timeout 5000', $Database, $Sql) -TimeoutSeconds 60
 }
 
 function Wait-SimulatorTccDatabase {
@@ -719,14 +718,19 @@ function Get-SimulatorTccGrantedServices {
         return [pscustomobject]@{ Services = @(); Error = "Could not read the TCC database: $("$($result.Error)".Trim())" }
     }
 
-    $authValues = @{}
+    $services = @()
+    $ungrantedAuthValues = @{}
     foreach ($line in @("$($result.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })) {
-        $fields = $line -split '\|'
-        $authValues[$fields[0]] = $fields[1]
+        $tccService, $authValue = $line -split '\|', 2
+        if ($authValue -eq '2') {
+            $services += $tccService
+        }
+        else {
+            $ungrantedAuthValues[$tccService] = $authValue
+        }
     }
 
-    $services = @($authValues.Keys | Where-Object { $authValues[$_] -eq '2' })
-    return [pscustomobject]@{ Services = $services; AuthValues = $authValues; Error = $null }
+    return [pscustomobject]@{ Services = $services; UngrantedAuthValues = $ungrantedAuthValues; Error = $null }
 }
 
 function Add-SimulatorTccGrant {
@@ -766,7 +770,7 @@ function Add-SimulatorTccGrant {
 
     $columnsToWrite = @($values.Keys | Where-Object { $tableColumns -contains $_ })
     $sql = "INSERT OR REPLACE INTO access ($($columnsToWrite -join ', ')) VALUES ($(($columnsToWrite | ForEach-Object { $values[$_] }) -join ', '));"
-    $written = Invoke-SimulatorTccQuery -Database $Database -Sql $sql -Write
+    $written = Invoke-SimulatorTccQuery -Database $Database -Sql $sql
     if ($written.ExitCode -ne 0) {
         return "$("$($written.Error)".Trim())"
     }
@@ -856,7 +860,7 @@ function Grant-SimulatorPrivacy {
             }
 
             if ($grantMethods.ContainsKey("$bundle|$($service.Name)")) {
-                $authValue = $granted.AuthValues[$service.TccService]
+                $authValue = $granted.UngrantedAuthValues[$service.TccService]
                 if ($null -eq $authValue) {
                     $state = 'has no row for it'
                 }
