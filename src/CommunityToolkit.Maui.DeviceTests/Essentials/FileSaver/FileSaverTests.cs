@@ -31,7 +31,7 @@ public partial class FileSaverTests : FilesTestBase
 		Assert.IsType<OperationCanceledException>(result.Exception);
 		Assert.Throws<OperationCanceledException>(result.EnsureSuccess);
 		Assert.Equal(0, stream.ReadCalls);
-		Assert.Empty(progress.Values);
+		AotSafeAssert.Empty(progress.Values);
 		await AssertNoPickerWasStartedAsync();
 	}
 
@@ -58,7 +58,7 @@ public partial class FileSaverTests : FilesTestBase
 
 		AssertArgumentNullException("fileName", result);
 		Assert.Equal(0, stream.ReadCalls);
-		Assert.Empty(progress.Values);
+		AotSafeAssert.Empty(progress.Values);
 		await AssertNoPickerWasStartedAsync();
 	}
 
@@ -82,7 +82,7 @@ public partial class FileSaverTests : FilesTestBase
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
 		AssertArgumentNullException("stream", result);
-		Assert.Empty(progress.Values);
+		AotSafeAssert.Empty(progress.Values);
 		await AssertNoPickerWasStartedAsync();
 	}
 

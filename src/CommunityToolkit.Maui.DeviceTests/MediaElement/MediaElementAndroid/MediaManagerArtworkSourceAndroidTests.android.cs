@@ -21,7 +21,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/art.png")), mediaElement =>
 		{
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/art.png"));
 			Assert.False(server.HasRequest("HEAD", "/art.png"), "The typed path takes the content length from the response of its one GET.");
 		});
@@ -35,7 +35,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/missing.png")), mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/missing.png"));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
@@ -50,7 +50,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromUri(server.GetUri("/art.png")), mediaElement =>
 		{
 			Assert.True(server.HasRequest("GET", "/art.png"));
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -62,7 +62,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromFile(path), mediaElement =>
 		{
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 			// The finally block closes the file again: no file descriptor of the process still points to it.
 			Assert.DoesNotContain(GetOpenFileTargets(), target => target.EndsWith(Path.GetFileName(path), StringComparison.Ordinal));
 		});
@@ -79,7 +79,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		{
 			Assert.StartsWith("file:///", fileUri, StringComparison.Ordinal);
 			Assert.IsType<FileMediaSource>(mediaElement.MetadataArtworkSource);
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -91,7 +91,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromFile(path), mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.Contains(trace.Messages, message => message.StartsWith($"{unableToRetrieveArtworkSource}File: {path}.", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
@@ -105,7 +105,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromResource(artworkAsset), mediaElement =>
 		{
 			Assert.Equal($"Assets/{artworkAsset}", ((ResourceMediaSource)mediaElement.MetadataArtworkSource!).Path);
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -117,7 +117,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		var artwork = await ReadAssetAsync(artworkAsset);
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = new ResourceMediaSource { Path = resourcePath }, mediaElement =>
-			Assert.Equal(artwork, GetArtwork(mediaElement)));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement)));
 	}
 
 	[Fact]
@@ -127,7 +127,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromResource("exoplayer/no_such_artwork.png"), mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.Contains(trace.Messages, message => message.StartsWith($"{unableToRetrieveArtworkSource}Resource: Assets/exoplayer/no_such_artwork.png.", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
@@ -140,7 +140,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = MediaSource.FromResource("exoplayer/empty.png"), mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
@@ -162,7 +162,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkSource = unsupportedSource, mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 			Assert.Equal(toneDuration, mediaElement.Duration);
 		});
@@ -182,7 +182,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 			element.MetadataArtworkUrl = server.GetUri("/other.png").ToString();
 		}, mediaElement =>
 		{
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 			Assert.False(server.HasRequest("GET", "/other.png"), "The legacy URL is not read when a source is set.");
 		});
 	}
@@ -199,7 +199,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		}, mediaElement =>
 		{
 			Assert.Null(mediaElement.MetadataArtworkSource);
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -214,7 +214,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		{
 			element.MetadataArtworkSource = MediaSource.FromFile(path);
 			element.Source = MediaSource.FromStream(new MemoryStream(tone));
-		}, mediaElement => Assert.Equal(artwork, GetArtwork(mediaElement)));
+		}, mediaElement => AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement)));
 	}
 
 	// Every load has a token source of its own, which the next source cancels, and a load that was replaced applies nothing: a source that
@@ -273,7 +273,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		var artwork = await ReadAssetAsync(artworkAsset);
 
 		await AssertLoadedAsync(element => element.MetadataArtworkUrl = "\\exoplayer\\art.png", mediaElement =>
-			Assert.Equal(artwork, GetArtwork(mediaElement)));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement)));
 	}
 
 	[Fact]
@@ -284,8 +284,8 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkUrl = path, mediaElement =>
 		{
-			Assert.Contains('#', Path.GetFileName(path));
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.Contains('#', Path.GetFileName(path));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -299,7 +299,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 		await AssertLoadedAsync(element => element.MetadataArtworkUrl = fileUri, mediaElement =>
 		{
 			Assert.Contains("%23", fileUri, StringComparison.Ordinal);
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -312,8 +312,8 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkUrl = pathWithBackslash, mediaElement =>
 		{
-			Assert.Contains('\\', pathWithBackslash);
-			Assert.Equal(artwork, GetArtwork(mediaElement));
+			AotSafeAssert.Contains('\\', pathWithBackslash);
+			AotSafeAssert.SequenceEqual(artwork, GetArtwork(mediaElement));
 		});
 	}
 
@@ -329,7 +329,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkUrl = url, mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
@@ -343,7 +343,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 		await AssertLoadedAsync(element => element.MetadataArtworkUrl = metadataArtworkUrl, mediaElement =>
 		{
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.DoesNotContain(trace.Messages, message => message.Contains("Unable to retrieve", StringComparison.Ordinal));
 		});
 	}
@@ -363,7 +363,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 			element.MetadataArtworkSource = null;
 		}, mediaElement =>
 		{
-			Assert.Equal(legacyArtwork, GetArtwork(mediaElement));
+			AotSafeAssert.SequenceEqual(legacyArtwork, GetArtwork(mediaElement));
 			Assert.True(server.HasRequest("GET", "/legacy.png"));
 		});
 	}
@@ -392,7 +392,7 @@ public class MediaManagerArtworkSourceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(10), $"The media opened after {stopwatch.Elapsed}.");
 			Assert.True(server.HasRequest("GET", "/stalled.png"));
-			Assert.Empty(GetArtwork(mediaElement));
+			AotSafeAssert.Empty(GetArtwork(mediaElement));
 			Assert.Contains(trace.Messages, message => message.StartsWith(unableToRetrieveArtworkSource, StringComparison.Ordinal));
 		});
 	}

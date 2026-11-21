@@ -77,7 +77,7 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 					Assert.Equal(6f, camera.MaximumZoomFactor);
 					Assert.Same(front, camera.CaptureDevice);
 					Assert.Equal(frontFormats, camera.SupportedFormats);
-					Assert.Equal([new Size(1920, 1080), new Size(640, 480)], camera.SupportedResolutions);
+					AotSafeAssert.SequenceEqual([new Size(1920, 1080), new Size(640, 480)], camera.SupportedResolutions);
 				},
 				camera =>
 				{
@@ -89,7 +89,7 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 					Assert.Equal(15f, camera.MaximumZoomFactor);
 					Assert.Same(back, camera.CaptureDevice);
 					Assert.Equal(backFormats, camera.SupportedFormats);
-					Assert.Equal([new Size(4032, 3024)], camera.SupportedResolutions);
+					AotSafeAssert.SequenceEqual([new Size(4032, 3024)], camera.SupportedResolutions);
 				});
 			GC.KeepAlive(recorder);
 		});
@@ -158,7 +158,7 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 
 			var camera = Assert.Single(provider.AvailableCameras ?? []);
 			Assert.Equal(new AVCaptureDeviceFormat[] { fullRange, jpeg }, camera.SupportedFormats);
-			Assert.Equal([new Size(1920, 1080), new Size(1280, 720)], camera.SupportedResolutions);
+			AotSafeAssert.SequenceEqual([new Size(1920, 1080), new Size(1280, 720)], camera.SupportedResolutions);
 		});
 	}
 
@@ -180,7 +180,7 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 			// Width and height both count: 720x1280 is another resolution than 1280x720.
 			var camera = Assert.Single(provider.AvailableCameras ?? []);
 			Assert.Equal(new AVCaptureDeviceFormat[] { first, otherResolution }, camera.SupportedFormats);
-			Assert.Equal([new Size(1280, 720), new Size(720, 1280)], camera.SupportedResolutions);
+			AotSafeAssert.SequenceEqual([new Size(1280, 720), new Size(720, 1280)], camera.SupportedResolutions);
 		});
 	}
 
@@ -201,7 +201,7 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 			Assert.All(cameras, camera =>
 			{
 				Assert.Empty(camera.SupportedFormats);
-				Assert.Empty(camera.SupportedResolutions);
+				AotSafeAssert.Empty(camera.SupportedResolutions);
 			});
 		});
 	}
@@ -271,7 +271,7 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 
 			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => provider.RefreshAvailableCameras(cancellationTokenSource.Token));
 
-			Assert.Empty(stub.Requests);
+			AotSafeAssert.Empty(stub.Requests);
 			Assert.Null(provider.AvailableCameras);
 		});
 	}
@@ -303,6 +303,6 @@ public class CameraProviderAppleFakeDiscoveryTests : CameraHandlerTestBase
 			return CameraProviderAccessor.InitializeCaptureDevices();
 		});
 
-		Assert.Equal(allTypes.Take(expectedCount), captureDevices);
+		AotSafeAssert.SequenceEqual(allTypes.Take(expectedCount), captureDevices);
 	}
 }

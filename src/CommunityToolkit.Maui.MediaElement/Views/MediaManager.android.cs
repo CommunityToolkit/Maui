@@ -30,6 +30,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int readyState = 3;
 	const int endedState = 4;
 
+	static int managersBoundToTheService;
+
+	const string serviceStartFailure = $"Android refused to start {nameof(MediaControlsService)}, the foreground service of the media notification, so the media plays without the notification";
+
+	// Device tests swap in a context whose start or bind of the service fails, which the application context never does for the declared service
+	internal static Context? ServiceContextOverride { get; set; }
+
+	static Context ServiceContext => ServiceContextOverride ?? global::Android.App.Application.Context;
+
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	bool isAndroidForegroundServiceEnabled = false;
@@ -349,6 +358,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
 	{
+		// The notification carries the title and artist (MediaControlsService.UpdateNotifications), so it must follow every later change of the metadata
+		UpdateNotifications();
 	}
 
 	public void OnMetadata(Metadata? metadata)
@@ -811,7 +822,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			if (connection is not null)
 			{
 				StopService(connection);
-				connection.Dispose();
 				connection = null;
 			}
 
@@ -822,6 +832,21 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 	}
 
+	static void StopAndUnbind(BoundServiceConnection boundServiceConnection)
+	{
+		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
+		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		{
+			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+		}
+
+		var context = ServiceContext;
+		var serviceIntent = new Intent(context, typeof(MediaControlsService));
+		context.StopService(serviceIntent);
+		context.UnbindService(boundServiceConnection);
+		boundServiceConnection.Dispose();
+	}
+
 	void StartService()
 	{
 		if (!isAndroidForegroundServiceEnabled)
@@ -829,15 +854,59 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		var intent = new Intent(global::Android.App.Application.Context, typeof(MediaControlsService));
-		connection = new BoundServiceConnection(this);
-		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
+		var context = ServiceContext;
+		var intent = new Intent(context, typeof(MediaControlsService));
+		var newConnection = new BoundServiceConnection(this);
+		var isBindAttempted = false;
+		var isBound = false;
 
-		global::Android.App.Application.Context.StartForegroundService(intent);
-		global::Android.App.Application.Context.ApplicationContext?.BindService(intent, connection, Bind.AutoCreate);
+		try
+		{
+			context.StartForegroundService(intent);
+			isBindAttempted = true;
+			isBound = context.BindService(intent, newConnection, Bind.AutoCreate);
+		}
+		// Android 12+ refuses a foreground service to an app in the background. Thrown, it would end the update and, from XAML, leave MAUI's
+		// SourceProperty unable to change again. With no source there is no media to report on, and the next source retries
+		catch (Exception exception)
+		{
+			if (MediaElement.Source is not null)
+			{
+				MediaElement.ReportSourceUpdateException(exception, serviceStartFailure, Logger);
+			}
+			else
+			{
+				Trace.WriteLine($"Unable to start {nameof(MediaControlsService)} with no source: {exception.GetType().FullName}: {(exception as Java.Lang.Throwable)?.Message ?? exception.Message}");
+			}
+
+			return;
+		}
+		finally
+		{
+			if (!isBound)
+			{
+				// Android keeps a connection registered from the bind call on, even when the bind fails, until it is unbound
+				if (isBindAttempted)
+				{
+					context.UnbindService(newConnection);
+				}
+
+				newConnection.Dispose();
+			}
+		}
+
+		if (!isBound)
+		{
+			Trace.WriteLine($"Unable to bind {nameof(MediaControlsService)}: the media notification is not shown.");
+			return;
+		}
+
+		connection = newConnection;
+		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
+		Interlocked.Increment(ref managersBoundToTheService);
 	}
 
-	void StopService(in BoundServiceConnection boundServiceConnection)
+	void StopService(BoundServiceConnection boundServiceConnection)
 	{
 		if (!isAndroidForegroundServiceEnabled)
 		{
@@ -846,9 +915,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
 
-		var serviceIntent = new Intent(Platform.AppContext, typeof(MediaControlsService));
-		global::Android.App.Application.Context.StopService(serviceIntent);
-		Platform.AppContext.UnbindService(boundServiceConnection);
+		// Until its connection lands the service may not have called startForeground yet: bringing it down then makes Android kill the app.
+		if (boundServiceConnection.IsConnected)
+		{
+			StopAndUnbind(boundServiceConnection);
+		}
+		else
+		{
+			boundServiceConnection.StopWhenConnected(StopAndUnbind);
+		}
 	}
 
 	void HandleMediaControlsServiceTaskRemoved(object? sender, EventArgs e) => Player?.Stop();

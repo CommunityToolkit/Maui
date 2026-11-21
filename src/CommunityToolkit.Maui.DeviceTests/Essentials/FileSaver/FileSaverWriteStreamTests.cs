@@ -20,7 +20,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(new FilesScriptedStream(sample), path);
 
-		Assert.Equal(sample, await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(path));
 	}
 
 	[Fact]
@@ -32,7 +32,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(new FilesScriptedStream(content), path);
 
-		Assert.Equal(content, await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(content, await File.ReadAllBytesAsync(path));
 	}
 
 	[Fact]
@@ -43,7 +43,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(new FilesScriptedStream(sample), path);
 
-		Assert.Equal(sample, await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(path));
 	}
 
 	[Fact]
@@ -55,7 +55,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(new FilesScriptedStream([]), path, progress);
 
-		Assert.Empty(await File.ReadAllBytesAsync(path));
+		AotSafeAssert.Empty(await File.ReadAllBytesAsync(path));
 		Assert.Single(progress.Values);
 	}
 
@@ -68,7 +68,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(stream, path);
 
-		Assert.Equal(sample, await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(path));
 		Assert.Equal(1, stream.SeekCalls);
 	}
 
@@ -81,7 +81,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(stream, path);
 
-		Assert.Equal(sample[10..], await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(sample[10..], await File.ReadAllBytesAsync(path));
 		Assert.Equal(0, stream.SeekCalls);
 	}
 
@@ -95,9 +95,9 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		var values = progress.Values;
 		Assert.True(values.Count >= 2, $"Expected the progress of each chunk and the final report, got {values.Count} values.");
-		Assert.Equal(values.Order(), values);
+		AotSafeAssert.SequenceEqual(values.Order(), values);
 		Assert.Equal(values.Max(), values[^1]);
-		Assert.All(values, value => Assert.True(value > 0));
+		AotSafeAssert.All(values, value => Assert.True(value > 0));
 	}
 
 	[Fact]
@@ -133,7 +133,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		Assert.Equal(2, stream.ReadCalls);
 		Assert.Equal(2, stream.ReadsWithData);
-		Assert.Equal(content[..4096], await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(content[..4096], await File.ReadAllBytesAsync(path));
 	}
 
 	[Fact]
@@ -151,7 +151,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		Assert.Equal(2, stream.ReadCalls);
 		Assert.Equal(1, stream.ReadsWithData);
-		Assert.Equal(content[..4096], await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(content[..4096], await File.ReadAllBytesAsync(path));
 	}
 
 	[Fact]
@@ -162,7 +162,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		await WriteStream(new FilesScriptedStream(sample, canSeek: false), path, progress);
 
-		Assert.Equal(sample, await File.ReadAllBytesAsync(path));
+		AotSafeAssert.SequenceEqual(sample, await File.ReadAllBytesAsync(path));
 		Assert.Equal(100, progress.Values[^1]);
 	}
 
@@ -177,7 +177,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 		var values = progress.Values;
 		Assert.Equal(40.96, values[0], 2);
 		Assert.Equal(81.92, values[1], 2);
-		Assert.All(values, value => Assert.InRange(value, 0, 100));
+		AotSafeAssert.All(values, value => Assert.InRange(value, 0, 100));
 		Assert.Equal(100, values[^1]);
 	}
 
@@ -190,7 +190,7 @@ public partial class FileSaverWriteStreamTests : FilesTestBase
 
 		var values = progress.Values;
 		Assert.Equal(100, values[^1]);
-		Assert.All(values.SkipLast(1), value => Assert.True(value < 100, $"The copy reported {string.Join(", ", values)}."));
+		AotSafeAssert.All(values.SkipLast(1), value => Assert.True(value < 100, $"The copy reported {string.Join(", ", values)}."));
 	}
 
 	[Theory]

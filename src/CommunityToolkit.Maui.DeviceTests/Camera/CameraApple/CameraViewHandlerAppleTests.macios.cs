@@ -94,8 +94,8 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			List<(CameraViewHandler Handler, float ZoomFactor)> expectedZoomFactors = [(parameterless, 2f), (withNullMappers, 3f)];
 			List<(CameraViewHandler Handler, object? Argument)> expectedCommandArguments = [(parameterless, 1), (withNullMappers, 2)];
-			Assert.Equal(expectedZoomFactors, mappedZoomFactors);
-			Assert.Equal(expectedCommandArguments, commandArguments);
+			AotSafeAssert.SequenceEqual(expectedZoomFactors, mappedZoomFactors);
+			AotSafeAssert.SequenceEqual(expectedCommandArguments, commandArguments);
 			// The probes inherit the default mappings, so the flash mode of the view still reaches the camera manager.
 			Assert.Equal(AVCaptureFlashMode.Auto, new CameraManagerAccessor(withNullMappers.CameraManager).FlashMode);
 			view.CameraFlashMode = CameraFlashMode.On;
@@ -137,7 +137,7 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			// The initialized device shows that the replacement ran instead of CameraViewHandler.MapZoomFactor, which would have zoomed it, and the
 			// flash mode shows that the mappings that the custom mapper inherits still run.
-			Assert.Equal([2.5f], mappedZoomFactors.Skip(mappedBeforeTheChange));
+			AotSafeAssert.SequenceEqual([2.5f], mappedZoomFactors.Skip(mappedBeforeTheChange));
 			Assert.Empty(device.Calls);
 			Assert.Equal(AVCaptureFlashMode.On, access.FlashMode);
 			Assert.Equal([(object?)42], commandArguments);
@@ -758,8 +758,42 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 
 			using var copy = new MemoryStream();
 			stream.CopyTo(copy);
-			Assert.Equal(jpegBytes, copy.ToArray());
+			AotSafeAssert.SequenceEqual(jpegBytes, copy.ToArray());
 			Assert.Equal(1, output.CaptureCount);
+			DisconnectAndRelease(view);
+		});
+	}
+
+	[Fact]
+	public async Task CaptureImageReturnsThePhotoAndRaisesMediaCaptureFailedOnceWhenAMediaCapturedHandlerThrows()
+	{
+		SetupBuilder();
+		byte[] jpegBytes = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0xFF, 0xD9];
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var view = new CameraView();
+			var handler = CreateHandler<AppleNoConnectCameraViewHandler>(view);
+			var access = new CameraManagerAccessor(handler.CameraManager);
+			access.PhotoOutput = new FakePhotoOutput
+			{
+				OnCapture = (fakeOutput, completion) => completion.DidFinishProcessingPhoto(fakeOutput, new FakeCapturePhoto(() => NSData.FromArray(jpegBytes)), null!)
+			};
+			var recorder = new AppleMediaRecorder(view);
+			var throwingSubscriber = new AppleThrowingMediaCapturedSubscriber(view);
+
+			var stream = await view.CaptureImage(CancellationToken.None);
+			var secondStream = await view.CaptureImage(CancellationToken.None);
+
+			using var copy = new MemoryStream();
+			stream.CopyTo(copy);
+			AotSafeAssert.SequenceEqual(jpegBytes, copy.ToArray());
+			Assert.Equal([AppleThrowingMediaCapturedSubscriber.FailureMessage, AppleThrowingMediaCapturedSubscriber.FailureMessage], recorder.Failures);
+			Assert.Equal(2, recorder.Captured.Count);
+			Assert.Same(stream, recorder.Captured[0]);
+			Assert.Same(secondStream, recorder.Captured[1]);
+			GC.KeepAlive(recorder);
+			GC.KeepAlive(throwingSubscriber);
 			DisconnectAndRelease(view);
 		});
 	}

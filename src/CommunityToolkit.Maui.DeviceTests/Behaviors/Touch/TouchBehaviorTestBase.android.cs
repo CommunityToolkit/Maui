@@ -1,5 +1,4 @@
 using Android.AccessibilityServices;
-using Android.Animation;
 using Android.App;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -59,36 +58,27 @@ public abstract partial class TouchBehaviorTestBase
 		}
 	}
 
-	// The pool emulators (like CI's) run with the global animator duration scale at 0, and MAUI then jumps to the end of every animation (it
-	// asks ValueAnimator.AreAnimatorsEnabled), so no timing, easing, cancellation or intermediate step can be observed.
-	// The scale is switched on for this process only, through ValueAnimator.setDurationScale (a hidden API on the unsupported-app-usage list),
-	// and never through the global setting: nothing outlives the test process, so a crash cannot leave animations on for later runs on a
-	// shared emulator. MAUI's ticker learns about the change through its duration scale listener (API 33+) or, before that, through its energy
-	// saver callback, which re-reads the same API.
+	// CI's emulators run with the animator scale at 0: from API 26 MAUI then jumps to the end of every animation, below 26 its ticker stalls.
+	// The scale is switched on for this process only, so a crash cannot leave a shared emulator with animations on.
 	protected async Task EnableAnimationsAsync(IPlatformViewHandler handler)
 	{
-		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(26), "ValueAnimator.DurationScale and AreAnimatorsEnabled need API 26: animations cannot be switched on in-process here.");
-
 		string? error = null;
 		await InvokeOnMainThreadAsync(() =>
 		{
-			if (!ValueAnimator.AreAnimatorsEnabled())
+			error = AnimatorDurationScale.TryEnable(out var previous);
+			if (previous is float scale)
 			{
-				var previous = ValueAnimator.DurationScale;
-				error = TrySetAnimatorDurationScale(1f);
-				if (error is null)
-				{
-					animatorScaleToRestore ??= previous;
-				}
+				animatorScaleToRestore ??= scale;
 			}
 
+			// Before API 33 MAUI's ticker re-reads the animator state only in its energy saver callback.
 			(handler.MauiContext?.Services.GetService(typeof(ITicker)) as IEnergySaverListener)?.OnStatusUpdated(false);
 		});
 
-		Skip.If(error is not null, $"The system's animations are off and could not be switched on for this process ({error}), so MAUI jumps to the end of every animation.");
+		Assert.True(error is null, $"The animator duration scale could not be switched on for this process ({error}).");
 
 		var ticker = handler.MauiContext?.Services.GetService(typeof(ITicker)) as ITicker;
-		Assert.True(ValueAnimator.AreAnimatorsEnabled(), "Animations must be enabled for this process.");
+		Assert.True(AnimatorDurationScale.IsEnabled, "Animations must be enabled for this process.");
 		Assert.True(ticker is null || ticker.SystemEnabled, "MAUI's ticker must see the enabled animations.");
 	}
 
@@ -100,23 +90,7 @@ public abstract partial class TouchBehaviorTestBase
 		}
 
 		animatorScaleToRestore = null;
-		return new ValueTask(InvokeOnMainThreadAsync(() => TrySetAnimatorDurationScale(scale)));
-	}
-
-	static string? TrySetAnimatorDurationScale(float scale)
-	{
-		try
-		{
-			using var valueAnimatorClass = Java.Lang.Class.FromType(typeof(ValueAnimator));
-			using var setDurationScale = valueAnimatorClass.GetDeclaredMethod("setDurationScale", Java.Lang.Float.Type!)
-				?? throw new InvalidOperationException("ValueAnimator.setDurationScale was not found.");
-			setDurationScale.Invoke(null, new Java.Lang.Float(scale));
-			return null;
-		}
-		catch (Java.Lang.Throwable ex)
-		{
-			return $"{ex.GetType().Name}: {ex.Message}";
-		}
+		return new ValueTask(InvokeOnMainThreadAsync(() => AnimatorDurationScale.TrySet(scale)));
 	}
 
 	protected static Aspect GetNativeImageAspect(IPlatformViewHandler handler)
@@ -275,19 +249,20 @@ public abstract partial class TouchBehaviorTestBase
 		return view.DispatchKeyEvent(keyEvent);
 	}
 
-	// Before API 33 (see ReleaseAccessibilityServiceAsync) set while the instrumentation's UiAutomation is one that these helpers connected
+	// Before API 35 (see ReleaseAccessibilityServiceAsync) set while the instrumentation's UiAutomation is one that these helpers connected
 	// themselves: they asked for it while no accessibility service ran in the process, so the instrumentation created it for them. Only such
 	// a UiAutomation may be destroyed again. One that was already connected belongs to somebody else (a real accessibility service of the
 	// device, or a test that is still using it); the Toast tests release the one they connect at the end of each test (ToastObserver).
 	static bool ownsUiAutomation;
 
-	static UiAutomation RequireUiAutomation(AccessibilityManager accessibilityManager)
+	static async Task<UiAutomation> RequireUiAutomationAsync(AccessibilityManager accessibilityManager)
 	{
 		var instrumentation = MauiTestInstrumentation.Current;
 		Skip.If(instrumentation is null, "An accessibility service can only be switched on through the instrumentation's UiAutomation (headless runs).");
 
 		var serviceAlreadyRuns = accessibilityManager.IsEnabled;
-		var uiAutomation = instrumentation.UiAutomation;
+		// Before API 28 the connection callback arrives on the main looper, so connecting on the main thread waits 5 s and fails.
+		var uiAutomation = await Task.Run(() => instrumentation.UiAutomation);
 		Skip.If(uiAutomation is null, "The instrumentation has no UiAutomation, which is the only way to switch an accessibility service on in a test.");
 
 		if (!serviceAlreadyRuns)
@@ -304,7 +279,7 @@ public abstract partial class TouchBehaviorTestBase
 	protected static async Task WithTouchExplorationAsync(AView view, Func<Task> body)
 	{
 		var accessibilityManager = GetAccessibilityManager(view);
-		var uiAutomation = RequireUiAutomation(accessibilityManager);
+		var uiAutomation = await RequireUiAutomationAsync(accessibilityManager);
 		var serviceInfo = uiAutomation.ServiceInfo ?? throw new InvalidOperationException("UiAutomation has no service info");
 		var originalFlags = serviceInfo.Flags;
 
@@ -332,7 +307,7 @@ public abstract partial class TouchBehaviorTestBase
 	protected static async Task WithAccessibilityServiceWithoutTouchExplorationAsync(AView view, Func<Task> body)
 	{
 		var accessibilityManager = GetAccessibilityManager(view);
-		_ = RequireUiAutomation(accessibilityManager);
+		_ = await RequireUiAutomationAsync(accessibilityManager);
 
 		try
 		{
@@ -348,12 +323,13 @@ public abstract partial class TouchBehaviorTestBase
 	}
 
 	// Once connected, the instrumentation's UiAutomation stays registered as an accessibility service for the rest of the process, which would
-	// leave AccessibilityManager.IsEnabled on for every later test of every category. From API 33 the connection is remade without
+	// leave AccessibilityManager.IsEnabled on for every later test of every category. From API 35 the connection is remade without
 	// accessibility (UiAutomationFlags.DontUseAccessibility): the same UiAutomation object stays, with whatever listener another test
-	// installed on it, and the next plain UiAutomation request reconnects it with accessibility. Before API 33 there is no public way: the
-	// hidden UiAutomation.destroy() disconnects it, and the instrumentation creates a new object on the next request, without the listeners of
-	// the old one. So before API 33 only a UiAutomation that these helpers connected themselves is destroyed (see ownsUiAutomation); one that
-	// somebody else connected stays (and with it the accessibility service), and so does one whose destroy the platform refuses.
+	// installed on it, and the next plain UiAutomation request reconnects it with accessibility. On API 33 and 34 a UiAutomation connected
+	// that way still counts as a running UiAutomation and keeps IsEnabled on, so below API 35 the hidden UiAutomation.destroy() disconnects it
+	// and the instrumentation creates a new object on the next request, without the listeners of the old one. So there only a UiAutomation
+	// that these helpers connected themselves is destroyed (see ownsUiAutomation); one that somebody else connected stays (and with it the
+	// accessibility service), and so does one whose destroy the platform refuses.
 	protected static async Task ReleaseAccessibilityServiceAsync(AccessibilityManager accessibilityManager)
 	{
 		if (MauiTestInstrumentation.Current is not MauiTestInstrumentation instrumentation)
@@ -361,15 +337,15 @@ public abstract partial class TouchBehaviorTestBase
 			return;
 		}
 
-		if (OperatingSystem.IsAndroidVersionAtLeast(33))
+		if (OperatingSystem.IsAndroidVersionAtLeast(35))
 		{
-			instrumentation.GetUiAutomation(UiAutomationFlags.DontUseAccessibility);
+			await Task.Run(() => instrumentation.GetUiAutomation(UiAutomationFlags.DontUseAccessibility));
 			await WaitUntilAsync(() => !accessibilityManager.IsEnabled, "The UiAutomation accessibility service did not go away.", 5000);
 			await SettleAsync();
 			return;
 		}
 
-		if (!ownsUiAutomation || !TryDestroyUiAutomation(instrumentation))
+		if (!ownsUiAutomation || !await Task.Run(() => TryDestroyUiAutomation(instrumentation)))
 		{
 			return;
 		}
@@ -422,10 +398,9 @@ public abstract partial class TouchBehaviorTestBase
 	}
 
 	/// <summary>
-	/// A listener that stays registered after its managed peer was disposed crashes the whole process at the next accessibility or touch
-	/// exploration change (NotSupportedException: Unable to activate instance of type AccessibilityListener), so this helper removes it
-	/// again, through JNI references of its own (the dispose drops the behavior's references to the listener and the manager).
-	/// Every test that disposes an attached behavior must use it.
+	/// Disposing an attached behavior removes its listener from the AccessibilityManager; this helper takes JNI references of its own to
+	/// the listener and the manager first (the dispose drops the behavior's references) and reports whether the listener was left registered.
+	/// It unregisters a listener that a regression left registered, so the later tests of the process are not affected.
 	/// </summary>
 	protected static (bool StateListenerLeftRegistered, bool TouchExplorationListenerLeftRegistered) DisposeAttachedBehavior(DirectTouchBehavior behavior)
 	{

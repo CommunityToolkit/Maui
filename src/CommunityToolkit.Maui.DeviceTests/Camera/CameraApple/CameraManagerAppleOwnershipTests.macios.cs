@@ -23,12 +23,10 @@ public class CameraManagerAppleOwnershipTests : CameraHandlerTestBase
 			var session = scope.Access.CaptureSession ?? throw new InvalidOperationException("No capture session.");
 			var captureInput = new FakeCaptureDeviceInput();
 			var photoOutput = new FakePhotoOutput();
-			var rotationCoordinator = new FakeRotationCoordinator(90);
 			var motionManager = new CMMotionManager();
 			using var recordingStream = new MemoryStream();
 			scope.Access.CaptureInput = captureInput;
 			scope.Access.PhotoOutput = photoOutput;
-			scope.Access.RotationCoordinator = rotationCoordinator;
 			scope.Access.MotionManager = motionManager;
 			scope.Access.VideoRecordingStream = recordingStream;
 
@@ -38,17 +36,36 @@ public class CameraManagerAppleOwnershipTests : CameraHandlerTestBase
 			Assert.Equal(NativeHandle.Zero, session.Handle);
 			Assert.True(captureInput.WasDisposed);
 			Assert.Equal(NativeHandle.Zero, photoOutput.Handle);
-			Assert.True(rotationCoordinator.WasDisposed);
 			Assert.Equal(NativeHandle.Zero, motionManager.Handle);
 			Assert.False(recordingStream.CanWrite);
 			Assert.Null(scope.Access.CaptureSession);
 			Assert.Null(scope.Access.CaptureInput);
 			Assert.Null(scope.Access.PhotoOutput);
-			Assert.Null(scope.Access.RotationCoordinator);
 			Assert.Null(scope.Access.MotionManager);
 			Assert.Null(scope.Access.VideoRecordingStream);
 			Assert.Null(scope.Access.CaptureDevice);
 			Assert.Null(scope.Access.OrientationDidChangeObserver);
+		});
+	}
+
+	[Fact]
+	public async Task DisposeReleasesTheRotationCoordinator()
+	{
+		Skip.IfNot(UIKit.UIDevice.CurrentDevice.CheckSystemVersion(17, 0), "AVCaptureDeviceRotationCoordinator exists from iOS 17.");
+
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var scope = new AppleCameraManagerScope(MauiContext);
+			scope.Manager.CreatePlatformView();
+			var rotationCoordinator = new FakeRotationCoordinator(90);
+			scope.Access.RotationCoordinator = rotationCoordinator;
+
+			scope.Manager.Dispose();
+
+			Assert.True(rotationCoordinator.WasDisposed);
+			Assert.Null(scope.Access.RotationCoordinator);
 		});
 	}
 

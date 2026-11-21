@@ -124,7 +124,7 @@ public partial class TouchBehaviorLifecycleTests
 		{
 			using var host = new UIView(new CGRect(0, 0, 100, 100));
 			behavior.AttachDirect(element, host);
-			Assert.Equal(2, host.GestureRecognizers?.Length);
+			AotSafeAssert.Equal(2, host.GestureRecognizers?.Length);
 
 			behavior.DisposeDirect(true);
 			behavior.DetachDirect(element, host);
@@ -243,7 +243,7 @@ public partial class TouchBehaviorLifecycleTests
 			Assert.False(IsDisposed(recognizer), "Dispose(false) must not dispose the recognizer.");
 			Assert.NotNull(GetRecognizerField(behavior, "touchGesture"));
 			Assert.NotNull(GetRecognizerField(behavior, "hoverGesture"));
-			Assert.Equal(2, host.GestureRecognizers?.Length);
+			AotSafeAssert.Equal(2, host.GestureRecognizers?.Length);
 
 			behavior.DetachDirect(element, host);
 			behavior.DisposeDirect(true);
