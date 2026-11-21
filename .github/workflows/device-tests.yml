@@ -53,8 +53,8 @@ env:
 # its own would be the caller's, since github.workflow is the caller's name there, and deadlock with it); a manual run cancels nothing.
 
 # The iOS and Android apps are built once, without coverage, for the older iOS versions and the other Android API levels
-# (device_tests_ios_app, device_tests_ios_runtime, device_tests_android_app, device_tests_android_runtime); the iOS 27.2, Android API 36,
-# Android API 25 and Windows jobs build their own, instrumented ones.
+# (device_tests_ios_app, device_tests_ios_runtime, device_tests_android_app, device_tests_android_runtime); the newest iOS simulator,
+# Android API 36, Android API 25 and Windows jobs build their own, instrumented ones.
 # Every job builds and tests with eng/devices/run.ps1, the command that runs the device tests on a developer's machine too
 # (eng/devices/LOCAL.md), so this file shows how to run them. -Platform is explicit because without it run.ps1 runs every platform of the
 # machine and, for a Category= filter, skips a platform that has no test of the category instead of failing with 94.
@@ -184,7 +184,8 @@ jobs:
                         exit 0
                     fi
                     # The trimmed legs follow the newest google_apis level of device_tests_android_runtime, the image their Run step boots, so
-                    # adding a level needs no second edit.
+                    # adding a level needs no second edit. Their emulator features (below) and RAM (this job's matrix) are set here, though: a
+                    # new level that needs its own values needs them here too.
                     level=$(python3 -I .github/scripts/newest-android-api-level.py .github/workflows/device-tests.yml)
                     echo "level=$level" | tee -a "$GITHUB_OUTPUT"
                     echo "leg=trimmed-android-api$level-$TRIMMING" | tee -a "$GITHUB_OUTPUT"
@@ -364,8 +365,10 @@ jobs:
                     name: device-tests-android-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_android_app on the newest release of every Android major version from 8.1 (API 27), and on 37.0, the newest
-    # Android 17 with 4 KB pages; device_tests_android adds API 36 and API 25 (7.1).
+    # The app of device_tests_android_app on the newest release of every Android major version from 8.1 (API 27), and, where that release
+    # ships only as a 16 KB page-size image, also on the newest release of that major with 4 KB pages; device_tests_android adds API 36 and
+    # API 25 (7.1). ensure-ci-always-tests-latest-operating-systems.yml edits these api-level values each night and adds an entry for a
+    # new major, so keep one quoted api-level line per entry.
     # Other levels, such as API 24 (the app's minimum), run only on a local AVD. Quoted api-level values: the emulator action passes them to
     # sdkmanager as they are, and YAML would turn 37.0 into 37.
     # No coverage: device_tests_android collects the Android coverage.
@@ -402,7 +405,7 @@ jobs:
                     -   api-level: '33'
                     -   api-level: '34'
                     -   api-level: '35'
-                    # Android 16 QPR2, the newest Android 16 release.
+                    # The newest Android 16 release.
                     -   api-level: '36.1'
                     # Android 17 with 4 KB pages.
                     # The image's goldfish Codec2 H.264 decoder (a HAL in the mediacodec domain) is denied the app's BufferPool memfd by SELinux, so
@@ -410,8 +413,8 @@ jobs:
                     # decoder does not need the memfd, so it decodes with SELinux still enforcing.
                     -   api-level: '37.0'
                         emulator-features: -feature -HardwareDecoder
-                    # Android 17 QPR2, the newest Android 17 release, ships only as a 16 KB page-size image, where a native library or mmap that
-                    # assumes 4 KB pages breaks (Play requires 16 KB support from target API 35). Software decoder as on 37.0, unprobed without it.
+                    # The newest Android 17 release ships only as a 16 KB page-size image, where a native library or mmap that assumes 4 KB pages
+                    # breaks (Play requires 16 KB support from target API 35). Software decoder as on the 4 KB Android 17 leg, unprobed without it.
                     -   api-level: '37.2'
                         target: google_apis_ps16k
                         emulator-features: -feature -HardwareDecoder
@@ -573,7 +576,7 @@ jobs:
                 with:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
-            # The app builds against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
+            # The app builds against the SDK of the Xcode that the workload packs of the latest .NET SDK feature band require (as in build_sample).
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
@@ -755,9 +758,9 @@ jobs:
                     name: device-tests-ios-app-logs
                     path: artifacts/logs/
 
-    # The app of device_tests_ios_app on the newest release of every other supported iOS major version (device_tests_ios has 27.2), because
-    # the xcode-27 image has iOS 27.x runtimes only. XHarness brings its own mlaunch, so the app that Xcode 27 built (minimum iOS 15.0)
-    # runs under older Xcode versions. No coverage: device_tests_ios collects the iOS coverage.
+    # The app of device_tests_ios_app on the newest release of every other supported iOS major version (device_tests_ios runs the newest
+    # runtime of the Xcode image), because that image has runtimes of its own iOS major only. XHarness brings its own mlaunch, so the app
+    # that the newest Xcode built (minimum iOS 15.0) runs under older Xcode versions. No coverage: device_tests_ios collects the iOS coverage.
     #   - 26.5: the macos-26 image has it (its readme, "Installed Simulators").
     #   - 18.6: the macos-15 image has it.
     #   - 17.5, 16.4, 15.5: no runner image has them, so the install step downloads the runtime. They run on macos-15 like 18.6.
@@ -922,7 +925,7 @@ jobs:
                 with:
                     xcode-version: ${{ env.CommunityToolkitSample_Xcode_Version }}
 
-            # The app builds against the Xcode 27 SDK, which the workload packs of the latest .NET SDK feature band support (as in build_sample).
+            # The app builds against the SDK of the Xcode that the workload packs of the latest .NET SDK feature band require (as in build_sample).
             -   name: Install Latest .NET SDK, v${{ env.LATEST_NET_VERSION }}
                 uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
