@@ -8,6 +8,7 @@ using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.ExoPlayer.TrackSelection;
 using AndroidX.Media3.Session;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Services;
 
 namespace CommunityToolkit.Maui.Media.Services;
@@ -84,6 +85,8 @@ sealed partial class MediaControlsService : MediaSessionService
 		{
 			runningService = this;
 		}
+
+		SetListener(new ForegroundServiceRefusalListener(this));
 	}
 
 	protected override void Dispose(bool disposing)
@@ -98,6 +101,7 @@ sealed partial class MediaControlsService : MediaSessionService
 
 	public override void OnDestroy()
 	{
+		ClearListener();
 		ForgetRunningService();
 		ReleaseAllPlayers();
 		base.OnDestroy();
@@ -139,6 +143,41 @@ sealed partial class MediaControlsService : MediaSessionService
 		if (shouldStopService)
 		{
 			StopSelf();
+		}
+	}
+
+	// The service creates a registration while the controller of a MediaManager connects, so the MediaManager can only join it afterwards
+	internal void AttachMediaManagerToRegistration(string playerId, MediaManager mediaManager)
+	{
+		lock (syncLock)
+		{
+			if (playerRegistrations.TryGetValue(playerId, out var registration))
+			{
+				registration.MediaManagerReference = new WeakReference<MediaManager>(mediaManager);
+			}
+		}
+	}
+
+	// Media3 does not say which session it was showing when Android refused, so every element checks whether the refusal concerns its playback
+	[SupportedOSPlatform("android31.0")]
+	internal void RelayForegroundServiceRefusalToElements()
+	{
+		List<MediaManager> mediaManagers = [];
+		lock (syncLock)
+		{
+			foreach (var registration in playerRegistrations.Values)
+			{
+				if (registration.MediaManagerReference is WeakReference<MediaManager> reference && reference.TryGetTarget(out var mediaManager))
+				{
+					mediaManagers.Add(mediaManager);
+				}
+			}
+		}
+
+		// Outside the lock: a MediaFailed handler can disconnect an element, whose MediaManager then releases its registration
+		foreach (var mediaManager in mediaManagers)
+		{
+			mediaManager.ReportForegroundServiceRefusalIfPlaybackNeedsTheService();
 		}
 	}
 
@@ -220,6 +259,9 @@ sealed partial class MediaControlsService : MediaSessionService
 		public IExoPlayer ExoPlayer { get; } = exoPlayer;
 		public DefaultTrackSelector TrackSelector { get; } = trackSelector;
 
+		// Weak: the registration outlives its MediaManager until the release command arrives, and must not keep the MediaElement alive meanwhile
+		public WeakReference<MediaManager>? MediaManagerReference { get; set; }
+
 		public void Dispose()
 		{
 			MediaSession.Release();
@@ -227,6 +269,22 @@ sealed partial class MediaControlsService : MediaSessionService
 			ExoPlayer.Release();
 			ExoPlayer.Dispose();
 			TrackSelector.Dispose();
+		}
+	}
+
+	// Media3 catches Android's refusal to start the service in the foreground and only tells this listener, on the main thread: the application
+	// thread of the MediaControllers that the elements read when they decide whether to report it
+	sealed class ForegroundServiceRefusalListener(MediaControlsService mediaControlsService) : Java.Lang.Object, MediaSessionService.IListener
+	{
+		readonly MediaControlsService mediaControlsService = mediaControlsService;
+
+		public void OnForegroundServiceStartNotAllowedException()
+		{
+			// Media3 calls it only from Android 12 (API 31), the first version that refuses to start a foreground service
+			if (OperatingSystem.IsAndroidVersionAtLeast(31))
+			{
+				mediaControlsService.RelayForegroundServiceRefusalToElements();
+			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Util;
 using Android.Views;
@@ -38,12 +39,20 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	const int eventPlaybackStateChanged = 4;
 	const int eventPlayWhenReadyChanged = 5;
 
+	const string foregroundServiceRefusalFailure = $"Android refused to start {nameof(MediaControlsService)}, the foreground service of the media notification";
+
+	// Media3 catches Android's exception and only logs it, so the report carries an equivalent one that points to that log
+	const string foregroundServiceRefusalReason = "Media3 logged Android's reason under the logcat tag MSessionService";
+
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
 	readonly CancellationTokenSource disconnectTokenSource = new();
 	readonly string playerConnectionId = Guid.NewGuid().ToString("N");
 	bool isAndroidForegroundServiceEnabled = false;
 	bool hasPendingSourceUpdate;
+
+	// Media3 tries the start again whenever the notification changes: each Source reports a refusal once
+	bool hasReportedForegroundServiceRefusal;
 	DefaultTrackSelector? localTrackSelector;
 
 	double? previousSpeed;
@@ -308,6 +317,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 				Player = mc;
 				Player.AddListener(this);
+				MediaControlsService.Running?.AttachMediaManagerToRegistration(AndroidPlayerConnectionKey, this);
 				if (PlayerView is null)
 				{
 					throw new InvalidOperationException($"{nameof(PlayerView)} cannot be null");
@@ -522,6 +532,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
+		hasReportedForegroundServiceRefusal = false;
+
 		if (Player is null)
 		{
 			hasPendingSourceUpdate = true;
@@ -811,6 +823,26 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	// The controller learns of an item that was set on the player of the service only once the session has told it
 	bool PlayerHasMediaItems() =>
 		Player?.MediaItemCount > 0 || (TryGetExoPlayer(out var exoPlayer) && exoPlayer.MediaItemCount > 0);
+
+	// Media3 runs the service in the foreground for media that is ready or buffering and plays, and on Android 12 and 12L also for a Play() of
+	// paused media, which it then refuses: the refusal names no session, and the controller has dropped that Play() before it arrives
+	[SupportedOSPlatform("android31.0")]
+	internal void ReportForegroundServiceRefusalIfPlaybackNeedsTheService()
+	{
+		if (hasReportedForegroundServiceRefusal || Player is not MediaController mediaController || !IsAlive(mediaController))
+		{
+			return;
+		}
+
+		var doesPlaybackNeedTheService = mediaController.PlayWhenReady || !OperatingSystem.IsAndroidVersionAtLeast(33);
+		if (!doesPlaybackNeedTheService || mediaController.PlaybackState is not (stateReady or stateBuffering))
+		{
+			return;
+		}
+
+		hasReportedForegroundServiceRefusal = true;
+		MediaElement.ReportSourceUpdateException(new Android.App.ForegroundServiceStartNotAllowedException(foregroundServiceRefusalReason), foregroundServiceRefusalFailure, Logger);
+	}
 
 	protected override void Dispose(bool disposing)
 	{

@@ -226,8 +226,8 @@ public interface IMediaElement : IView, IAsynchronousMediaElementHandler
 	internal ValueTask RunSourceUpdate(Func<ValueTask> updateSource, ILogger logger);
 
 	/// <summary>
-	/// Reports an exception that the update for a change of <see cref="Source"/> caught and that is not a failure of the source: once, through
-	/// MediaFailed when the update ends, without setting <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/> (see <see cref="Source"/>).
+	/// Reports an exception that is not a failure of the source, once, through MediaFailed without setting <see cref="CurrentState"/> to
+	/// <see cref="MediaElementState.Failed"/>: when the running update for a change of <see cref="Source"/> ends, or at once when no update runs.
 	/// </summary>
 	/// <param name="exception">The exception, which is logged and whose type and message end the report.</param>
 	/// <param name="failure">What failed, which starts the report.</param>
