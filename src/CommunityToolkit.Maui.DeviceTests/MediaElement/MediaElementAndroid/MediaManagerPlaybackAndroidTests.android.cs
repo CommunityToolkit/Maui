@@ -147,6 +147,8 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 			await WaitForRegistrationAsync(handler.Manager!);
 			var controller = CreateSystemMediaController(handler.Manager!);
 			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Playing, "The media session never showed the media as playing.");
+			// Below the tolerance the lower bound of the assert is negative, and a session stuck at position 0 would pass
+			await WaitUntilAsync(() => GetServicePlayer(handler.Manager!)!.CurrentPosition > 2 * pauseLagToleranceInMilliseconds, "The player never moved past the pause lag tolerance.");
 
 			mediaElement.Pause();
 

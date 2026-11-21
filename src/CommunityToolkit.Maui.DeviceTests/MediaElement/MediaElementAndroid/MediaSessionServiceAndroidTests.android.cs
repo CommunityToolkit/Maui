@@ -15,7 +15,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // The service is a MediaSessionService with one registration (ExoPlayer and MediaSession) for every MediaElement connection. These tests reach
 // the running instance through MediaControlsService.Running, because the system creates the service. The notification and foreground-type
-// branches depend on the Android version: each device checks the branch that its version takes (the CI legs from API 27 to 37.0 run these
+// branches depend on the Android version: each device checks the branch that its version takes (the CI legs from API 27 to 37.2 run these
 // tests: the MediaElementAndroid category skips below API 26).
 [Category(TestCategory.MediaElementAndroid)]
 [Collection(TestCollections.DisableParallelization)]
@@ -406,6 +406,7 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 			});
 
 			await WaitForMediaControlsServiceToStopAsync();
+			// A post that was still queued when the service stopped lands later; the pause also keeps the next repetition under the rate limit
 			await Task.Delay(notificationRatePause);
 			Assert.Empty(GetActiveNotifications());
 		}
