@@ -298,7 +298,7 @@ public partial class TouchBehaviorInputTests
 			var view = GetPlatformView(handler);
 			var accessibilityManager = (AccessibilityManager)(view.Context!.GetSystemService(Context.AccessibilityService) ?? throw new InvalidOperationException("No AccessibilityManager."));
 			await ReleaseAccessibilityServiceAsync(accessibilityManager);
-			Skip.If(accessibilityManager.IsEnabled, "An accessibility service runs in this process that this test may not or cannot switch off: before API 33 the instrumentation's UiAutomation can only be disconnected by destroying it (hidden UiAutomation.destroy()), which this area does only for a UiAutomation its own tests connected, never for one another test connected (it would drop that test's accessibility event listener), and the platform may refuse the hidden API.");
+			Skip.If(accessibilityManager.IsEnabled, "An accessibility service runs in this process that this test may not or cannot switch off: before API 35 the instrumentation's UiAutomation can only be disconnected by destroying it (hidden UiAutomation.destroy()), which this area does only for a UiAutomation its own tests connected, never for one another test connected (it would drop that test's accessibility event listener), and the platform may refuse the hidden API.");
 
 			NativePress(handler);
 			NativeRelease(handler);

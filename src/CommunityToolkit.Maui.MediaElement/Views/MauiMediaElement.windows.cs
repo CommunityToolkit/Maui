@@ -93,17 +93,21 @@ public partial class MauiMediaElement : Grid, IDisposable
 				customTransportControls.FullScreenButton.Click -= OnFullScreenButtonClick;
 			}
 
-			mediaPlayerElement.MediaPlayer.Pause();
+			var mediaPlayer = mediaPlayerElement.MediaPlayer;
+			mediaPlayer.Pause();
 
-			if (mediaPlayerElement.MediaPlayer.Source is Windows.Media.Core.MediaSource mediaSource)
+			// Assigning Source starts an engine load whose async error work item races MediaPlayer.Dispose, an access violation in MFMediaEngine
+			var attachedSource = mediaPlayer.Source;
+			if (attachedSource is not null)
 			{
-				// Dispose the MediaSource to release the resources
-				// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
-				mediaSource.Dispose();
+				mediaPlayer.Source = null;
 			}
-			mediaPlayerElement.MediaPlayer.Source = null;
-			mediaPlayerElement.MediaPlayer.Dispose();
+
 			mediaPlayerElement.SetMediaPlayer(null);
+
+			// https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/play-audio-and-video-with-mediaplayer Shows how to dispose the MediaSource
+			(attachedSource as Windows.Media.Core.MediaSource)?.Dispose();
+			mediaPlayer.Dispose();
 		}
 
 		isDisposed = true;

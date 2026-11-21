@@ -105,7 +105,7 @@ public partial class FolderPickerTests
 	[Fact]
 	public async Task PickAsyncTracesThatAnInitialPathNeedsAndroid26BeforeThatVersion()
 	{
-		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(26), "The branch only runs below Android 26 (the emulators of the pool are API 28 and 36).");
+		Skip.If(OperatingSystem.IsAndroidVersionAtLeast(26), "The branch only runs below Android 26 (CI: API 25).");
 		var session = await StartSessionAsync();
 		using var trace = new FilesTraceCapture();
 
@@ -335,11 +335,13 @@ public partial class FolderPickerTests
 
 	static async Task<(Task<FolderPickerResult> Operation, FilesFakePickerLaunch Launch)> StartPickAsync(FilesPickerSession session, string? initialPath = null, CancellationToken token = default)
 	{
+		// The session keeps the launches of the test's earlier picks, so this pick's launch is the next one.
+		var launchIndex = session.Launches.Count;
 		var operation = await StartOnMainThreadAsync(() => initialPath is null
 			? FolderPicker.Default.PickAsync(token)
 			: FolderPicker.Default.PickAsync(initialPath, token));
 
-		return (operation, await session.WaitForLaunchAsync());
+		return (operation, await session.WaitForLaunchAsync(launchIndex));
 	}
 
 	static async Task CancelPickerAsync(FilesPickerSession session, FilesFakePickerLaunch launch, Task<FolderPickerResult> operation)
