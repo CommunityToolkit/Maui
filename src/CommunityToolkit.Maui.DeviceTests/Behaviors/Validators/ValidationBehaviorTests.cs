@@ -65,6 +65,7 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 		var entry = new Entry { WidthRequest = 300 };
 		entry.Behaviors.Add(behavior);
 
+		await using var clearedFocusTarget = await FocusHelpers.AddClearedFocusTargetAsync();
 		await AttachAndRun(entry, async handler =>
 		{
 			await entry.OnLoadedAsync();
@@ -85,6 +86,8 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 			await AssertValidationResultAsync(entry, handler, behavior, isValid: false, validStyle, invalidStyle);
 		});
 	}
+
+	static partial void ReplaceSoftwareKeyboard(InputView input);
 
 	// Without DynamicallyAccessedMembers(All) on the validators, the trimmer may remove members that only a run reveals as missing.
 	[Theory]
@@ -217,6 +220,7 @@ public partial class ValidationBehaviorTests : CommunityToolkitHandlerTestBase
 
 	static async Task FocusAsync(Entry entry)
 	{
+		ReplaceSoftwareKeyboard(entry);
 		Assert.True(entry.Focus(), "The Entry did not accept the focus.");
 		await AssertEventually(() => entry.IsFocused, timeout: 3000, message: "The Entry never got the focus.");
 	}

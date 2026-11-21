@@ -181,6 +181,28 @@ sealed class AppleMappedMediaElementHandler : AppleMediaElementHandler
 	public static Microsoft.Maui.CommandMapper? CommandMapperToUse { get; set; }
 }
 
+/// <summary>A player whose rate only changes through <see cref="Play"/>, <see cref="Pause"/> and the <see cref="Rate"/> setter, never through AVFoundation.</summary>
+sealed class AppleScriptedAVPlayer : AVPlayer
+{
+	float rate;
+
+	public int PauseCount { get; private set; }
+
+	public override float Rate
+	{
+		get => rate;
+		set => rate = value;
+	}
+
+	public override void Play() => rate = 1;
+
+	public override void Pause()
+	{
+		PauseCount++;
+		rate = 0;
+	}
+}
+
 sealed class AppleFakeAVPlayer : AVPlayer
 {
 	public AVPlayerStatus? StatusOverride { get; set; }
