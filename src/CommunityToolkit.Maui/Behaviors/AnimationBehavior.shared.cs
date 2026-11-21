@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using CommunityToolkit.Maui.Animations;
+using ToolkitDispatcherExtensions = CommunityToolkit.Maui.Core.Extensions.DispatcherExtensions;
 
 namespace CommunityToolkit.Maui.Behaviors;
 
@@ -30,6 +31,7 @@ public partial class AnimationBehavior : EventToCommandBehavior
 	/// </summary>
 	/// <remarks>
 	/// <see cref="AnimateCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
+	/// Cancelling that token stops the animation, which returns the view to its original values, and the command then ends without an exception.
 	/// </remarks>
 	[BindableProperty(DefaultBindingMode = BindingMode.OneWayToSource, PropertyChangingMethodName = nameof(OnAnimateCommandChanging), DefaultValueCreatorMethodName = nameof(CreateAnimateCommand))]
 	public partial Command<CancellationToken> AnimateCommand
@@ -120,6 +122,17 @@ public partial class AnimationBehavior : EventToCommandBehavior
 		}
 	}
 
+	static Task StopRunningAnimationsAndAnimate(VisualElement view, BaseAnimation animationType, CancellationToken token)
+	{
+		view.CancelAnimations();
+
+		// CancelAnimations stops only .NET MAUI's own animations; a running keyframe animation would keep moving the view this animation starts from
+		view.AbortAnimation(KeyframeAnimationExtensions.AnimationHandle);
+
+		token.ThrowIfCancellationRequested();
+		return animationType.Animate(view, token);
+	}
+
 	void AddTapGestureRecognizer()
 	{
 		if (View is not IGestureRecognizers gestureRecognizers)
@@ -156,14 +169,21 @@ public partial class AnimationBehavior : EventToCommandBehavior
 			return;
 		}
 
-		View.CancelAnimations();
+		var view = View;
+		var animationType = AnimationType;
 
 		try
 		{
-			token.ThrowIfCancellationRequested();
 			// We must `await` `AnimationType.Animate()` here in order to properly implement `Options.ShouldSuppressExceptionsInAnimations`
 			// Returning the `Task` would cause the `OnAnimate()` method to return immediately, before `AnimationType.Animate()` has completed. Returning immediately exits our try/catch block and thus negates our opportunity to handle any Exceptions which breaks `Options.ShouldSuppressExceptionsInAnimations`.
-			await AnimationType.Animate(View, token);
+			Task? animation = null;
+			// From another thread, MAUI would dispatch the aborts and the new run's start separately, letting the view return to rest for a frame in between.
+			await ToolkitDispatcherExtensions.DispatchIfRequiredAsync(view.Dispatcher, () => animation = StopRunningAnimationsAndAnimate(view, animationType, token), CancellationToken.None);
+			await animation!;
+		}
+		catch (OperationCanceledException) when (token.IsCancellationRequested)
+		{
+			// Cancelling its own token is the caller's request to stop, and an exception escaping the async void command would crash the app
 		}
 		catch (Exception ex) when (Options.ShouldSuppressExceptionsInAnimations)
 		{
