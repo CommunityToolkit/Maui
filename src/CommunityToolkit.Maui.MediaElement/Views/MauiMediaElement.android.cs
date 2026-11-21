@@ -20,6 +20,7 @@ public class MauiMediaElement : CoordinatorLayout
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
 	readonly WeakEventManager fullScreenEventManager = new();
+
 	int defaultSystemUiVisibility;
 	int defaultSystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
 	bool isStatusBarVisible;

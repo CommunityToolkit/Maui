@@ -156,6 +156,37 @@ public class MediaManagerLifecycleAppleTests : AppleMediaElementTestBase
 		});
 	}
 
+	// Calling CreatePlatformView again releases what the first call made: the first view controller must not report full screen anymore
+	[Fact]
+	public async Task CreatePlatformViewTwiceReleasesTheFullScreenDelegateOfTheFirstPlayerViewController()
+	{
+		SetupApple();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var mediaElement = CreateMediaElement();
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			mediaElement.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+			using var manager = CreateManager(mediaElement);
+			var (_, firstController) = manager.CreatePlatformView();
+			var firstDelegate = Assert.IsType<MediaManagerDelegate>(firstController.Delegate);
+
+			var (_, secondController) = manager.CreatePlatformView();
+
+			Assert.Null(firstController.Delegate);
+			Assert.Equal(NativeHandle.Zero, firstDelegate.Handle);
+			var secondDelegate = Assert.IsType<MediaManagerDelegate>(secondController.Delegate);
+			Assert.NotSame(firstDelegate, secondDelegate);
+
+			using var coordinator = new AppleFakeTransitionCoordinator();
+			firstDelegate.WillBeginFullScreenPresentation(firstController, coordinator);
+			coordinator.End(cancelled: false);
+
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+			Assert.Empty(screenStateChanges);
+		});
+	}
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]

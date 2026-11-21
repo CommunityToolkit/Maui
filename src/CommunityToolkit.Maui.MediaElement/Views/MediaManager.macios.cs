@@ -101,6 +101,10 @@ public partial class MediaManager : IDisposable
 	{
 		ReleasePreviousPlayer();
 
+		// The view controller of an earlier call is not used anymore: its full screen transitions must not change the state of the MediaElement
+		PlayerViewController?.Delegate = null;
+		ReleaseFullScreenDelegate();
+
 		Player = new();
 		fullScreenDelegate = new MediaManagerDelegate();
 		fullScreenDelegate.ScreenStateChanged += OnScreenStateChanged;
@@ -500,12 +504,7 @@ public partial class MediaManager : IDisposable
 			PlayerViewController = null;
 
 			// After its view controller, which holds it as its delegate
-			if (fullScreenDelegate is not null)
-			{
-				fullScreenDelegate.ScreenStateChanged -= OnScreenStateChanged;
-				fullScreenDelegate.Dispose();
-				fullScreenDelegate = null;
-			}
+			ReleaseFullScreenDelegate();
 		}
 	}
 
@@ -1180,6 +1179,18 @@ public partial class MediaManager : IDisposable
 	void OnScreenStateChanged(object? sender, ScreenStateChangedEventArgs e)
 	{
 		UpdateFullScreenState(e.NewState);
+	}
+
+	void ReleaseFullScreenDelegate()
+	{
+		if (fullScreenDelegate is null)
+		{
+			return;
+		}
+
+		fullScreenDelegate.ScreenStateChanged -= OnScreenStateChanged;
+		fullScreenDelegate.Dispose();
+		fullScreenDelegate = null;
 	}
 }
 
