@@ -8,6 +8,7 @@ using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui;
 using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -35,6 +36,8 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 		var mediaNotifications = GetActiveNotifications().Where(notification => IsMediaStyle(notification.Notification)).ToArray();
 		return mediaNotifications.Length > 0 && mediaNotifications.All(notification => !notification.Notification!.Flags.HasFlag(NotificationFlags.ForegroundService));
 	}
+
+	static string? GetNotificationExtra(Notification? notification, string key) => notification?.Extras?.GetCharSequence(key)?.ToString();
 
 	static Task WaitForForegroundAsync() =>
 		WaitUntilAsync(() => FindMediaControlsService()?.Foreground == true, "MediaControlsService never entered the foreground.");
@@ -236,6 +239,22 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
+	public async Task ArtworkOfTheSourceIsTheLargeIconOfTheNotification()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync(element => element.MetadataArtworkUrl = artworkAsset);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var session = GetMediaSession(handler.Manager!)!;
+
+			await WaitUntilAsync(() => FindMediaNotification(session)?.Notification?.GetLargeIcon() is not null,
+				() => $"The notification never showed the artwork of the source as its large icon. {DescribeMediaControlsService()}");
+		});
+	}
+
+	[Fact]
 	public async Task EachElementGetsItsOwnRegistrationAndSession()
 	{
 		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
@@ -335,6 +354,63 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 		});
 	}
 
+	// Android 11 delays every post by 200 ms and drops a cancel while a newer post of the same notification is queued: a service that stops right
+	// after it posted is where the notification of a stopped service stayed. The race shows only in some of the repetitions.
+	[Fact]
+	public async Task DisconnectingRightAfterTheNotificationAppearedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				await WaitForRegistrationAsync(handler.Manager!);
+				await WaitForMediaNotificationAsync(handler.Manager!);
+			});
+
+			await WaitForMediaControlsServiceToStopAsync();
+			// A post that was still queued when the service stopped lands later; the pause also keeps the next repetition under the rate limit
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	// The first element posted the notification. The second one leaves before its controller connected, so the service can be told to stop while
+	// that controller still connects: its late registration must still go, and the service and the notification with it.
+	[Fact]
+	public async Task DisconnectingTheLastElementWhileItsControllerConnectsStopsTheServiceAndLeavesNoNotification()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var firstElement = await CreatePlayingElementAsync();
+			var secondElement = await CreatePlayingElementAsync();
+			DisposeWhenTheTestEnds(secondElement);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var firstHandler = await ConnectWithServiceAsync(firstElement);
+				await WaitForMediaNotificationAsync(firstHandler.Manager!);
+
+				var secondHandler = CreateHandler<AndroidMediaElementProbeHandler>(secondElement);
+				using var lateRegistration = WatchRegistrationComeAndGo(secondHandler.Manager!.AndroidPlayerConnectionKey);
+				((IElementHandler)firstHandler).DisconnectHandler();
+				firstElement.Handler = null;
+				((IElementHandler)secondHandler).DisconnectHandler();
+				secondElement.Handler = null;
+				await lateRegistration.WaitAsync();
+			});
+
+			await WaitForMediaControlsServiceToStopAsync();
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
 	[Fact]
 	public async Task DisconnectingOneElementLeavesTheOtherRegistrationAndItsSessionWorking()
 	{
@@ -360,6 +436,46 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 			var notification = await WaitForMediaNotificationAsync(remainingHandler.Manager!);
 			Assert.True(IsMediaStyle(notification));
 			Assert.True(IsBoundToSession(notification, GetMediaSession(remainingHandler.Manager!)!));
+		});
+	}
+
+	// Media3 shows one notification for all sessions: the notification of the element that stays must not keep the title, artist or artwork of
+	// the element that left.
+	[Fact]
+	public async Task DisconnectingAnElementTakesItsMetadataOutOfTheNotification()
+	{
+		const string disconnectingTitle = "Title of the disconnecting element";
+		const string disconnectingArtist = "Artist of the disconnecting element";
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var remaining = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			using var remainingRecorder = new MediaElementRecorder(remaining);
+			var remainingHandler = await ConnectWithServiceAsync(remaining);
+			await WaitUntilLoadedAsync(remaining, remainingRecorder);
+			var disconnecting = await CreatePlayingElementAsync(element =>
+			{
+				element.MetadataTitle = disconnectingTitle;
+				element.MetadataArtist = disconnectingArtist;
+				element.MetadataArtworkUrl = artworkAsset;
+			});
+			var disconnectingHandler = await ConnectWithServiceAsync(disconnecting);
+			var disconnectingSession = GetMediaSession(disconnectingHandler.Manager!)!;
+			await WaitUntilAsync(() => FindMediaNotification(disconnectingSession)?.Notification is Notification shown
+					&& GetNotificationExtra(shown, Notification.ExtraTitle) == disconnectingTitle
+					&& shown.GetLargeIcon() is not null,
+				() => $"The notification never showed the title and artwork of the playing element. {DescribeMediaControlsService()}");
+
+			await DisconnectAsync(disconnecting);
+			await WaitUntilAsync(() => GetRegisteredPlayerIds().Count == 1, "The registration of the disconnected element was never released.");
+			remaining.Play();
+			await WaitForStateAsync(remaining, MediaElementState.Playing);
+
+			var notification = await WaitForMediaNotificationAsync(remainingHandler.Manager!);
+			Assert.NotEqual(disconnectingTitle, GetNotificationExtra(notification, Notification.ExtraTitle));
+			Assert.NotEqual(disconnectingArtist, GetNotificationExtra(notification, Notification.ExtraText));
+			Assert.Null(notification.GetLargeIcon());
 		});
 	}
 
