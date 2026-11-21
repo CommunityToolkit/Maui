@@ -52,6 +52,9 @@ partial class MediaManager : IDisposable
 	readonly Lock sourceUpdateLock = new();
 	int sourceUpdateVersion;
 
+	// MediaPlayer.Source stays null for File, Uri and Resource sources, so it cannot tell whether the player was given media
+	bool playerWasGivenMedia;
+
 	// The requests to keep display active are cumulative, this bool makes sure it only gets requested once
 	bool displayActiveRequested;
 
@@ -487,6 +490,8 @@ partial class MediaManager : IDisposable
 
 	async ValueTask<bool> SetPlayerSource(MediaPlayerElement player, MediaSource source, int version)
 	{
+		playerWasGivenMedia = true;
+
 		if (source is UriMediaSource uriMediaSource)
 		{
 			var uri = uriMediaSource.Uri?.AbsoluteUri;
@@ -900,9 +905,14 @@ partial class MediaManager : IDisposable
 	{
 		player.Source = null;
 
-		// File, Uri and Resource sources are given to the MediaPlayer itself (Set*Source), not through MediaPlayerElement.Source. Its Source can
-		// then still be null, and setting null again is not forwarded to the player, so the player's own source is cleared as well.
-		player.MediaPlayer?.Source = null;
+		// Set*Source media bypasses player.Source, so the MediaPlayer is cleared itself; only when it had media, because a null assignment
+		// to a sourceless player starts an engine load that can race a quick Dispose.
+		if (playerWasGivenMedia)
+		{
+			player.MediaPlayer?.Source = null;
+			playerWasGivenMedia = false;
+		}
+
 		MediaElement.MediaWidth = MediaElement.MediaHeight = 0;
 
 		lock (metadataLock)

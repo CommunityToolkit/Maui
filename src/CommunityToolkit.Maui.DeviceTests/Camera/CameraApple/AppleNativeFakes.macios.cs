@@ -403,7 +403,7 @@ sealed class FakeRotationCoordinator : AVCaptureDeviceRotationCoordinator
 {
 	readonly double captureAngle;
 
-	public FakeRotationCoordinator(double captureAngle) : base(NSObjectFlag.Empty)
+	public FakeRotationCoordinator(double captureAngle) : base(RequireNativeClass())
 	{
 		DangerousRetain();
 		this.captureAngle = captureAngle;
@@ -411,6 +411,11 @@ sealed class FakeRotationCoordinator : AVCaptureDeviceRotationCoordinator
 
 	// The extra native retain keeps Handle non-zero after Dispose(), so disposal is recorded here.
 	public bool WasDisposed { get; private set; }
+
+	// Allocating it below iOS 17 aborts the whole test app (a root class without NSObject), so fail the one test instead.
+	static NSObjectFlag RequireNativeClass() => AppleNativeClasses.HasRotationCoordinator
+		? NSObjectFlag.Empty
+		: throw new InvalidOperationException("AVCaptureDeviceRotationCoordinator exists from iOS 17: skip the test below it.");
 
 	protected override void Dispose(bool disposing)
 	{

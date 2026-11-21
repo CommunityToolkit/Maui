@@ -324,8 +324,7 @@ public abstract class WinMediaTestBase : MediaElementHandlerTestBase
 		try
 		{
 			player.Pause();
-			(player.Source as IDisposable)?.Dispose();
-			player.Source = null;
+			WinMediaAssets.TakeSource(player)?.Dispose();
 			player.Dispose();
 		}
 		catch (Exception)
