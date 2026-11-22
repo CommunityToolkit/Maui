@@ -561,9 +561,9 @@ jobs:
         env:
             # Trimmed legs never collect coverage: coverlet rewrites the toolkit assemblies, and the trimming guard fails such a build.
             DEVICE_TEST_COVERAGE: ${{ matrix.trimming == 'none' && github.event_name != 'workflow_dispatch' }}
-            # ios.ps1 grants both and checks them before the app runs; requiring them fails the tests if a grant is still lost, instead of
-            # skipping them on a passing leg (run 44928036772 skipped 6).
-            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission'
+            # ios.ps1 grants all three and checks them before the app runs; requiring them fails the tests if a grant is still lost, instead
+            # of skipping them on a passing leg (run 44928036772 skipped 6).
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission,SpeechRecognitionPermission'
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -799,9 +799,9 @@ jobs:
                         xcode: '16.4'
                         install-runtime: true
         env:
-            # ios.ps1 grants both and checks them before the app runs; requiring them fails the tests if a grant is still lost, instead of
-            # skipping them on a passing leg (run 44928036772 skipped 6).
-            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission'
+            # ios.ps1 grants all three and checks them before the app runs; requiring them fails the tests if a grant is still lost, instead
+            # of skipping them on a passing leg (run 44928036772 skipped 6).
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission,SpeechRecognitionPermission'
             DEVICE_TEST_COVERAGE: false
         steps:
             -   name: Checkout code
@@ -914,8 +914,8 @@ jobs:
             # Camera: the runner VM has no camera and no step can add one (local runs on a Mac run these tests). Delete it if the runner
             # image gains a camera.
             DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'Camera' || '' }}
-            # The grant step below only warns when it cannot write a grant, so requiring both fails the tests instead of skipping them.
-            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission'
+            # The grant step below only warns when it cannot write a grant, so requiring all three fails the tests instead of skipping them.
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission,SpeechRecognitionPermission'
             DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
             HOMEBREW_NO_AUTO_UPDATE: 1
         steps:

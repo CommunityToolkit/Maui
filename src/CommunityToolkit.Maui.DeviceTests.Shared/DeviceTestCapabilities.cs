@@ -45,6 +45,9 @@ public static class DeviceTestCapabilities
 	/// <summary>iOS and Mac Catalyst: the app has the microphone permission, granted like <see cref="CameraPermission"/>.</summary>
 	public const string MicrophonePermission = nameof(MicrophonePermission);
 
+	/// <summary>iOS and Mac Catalyst: the app has the speech recognition permission, granted like <see cref="CameraPermission"/>.</summary>
+	public const string SpeechRecognitionPermission = nameof(SpeechRecognitionPermission);
+
 	const string workflow = ".github/workflows/device-tests.yml";
 	const string skipKey = "SkipCapabilities";
 	const string requireKey = "RequireCapabilities";
