@@ -66,7 +66,7 @@ class CollectItemsTests(unittest.TestCase):
         self.assertEqual(items.changes_for_a_person[0].patch, 'diff --git a b\n')
         self.assertEqual([i.key for i in items.things_to_check], ['ubuntu-label:ubuntu-26.04'])
         self.assertIn("`bad 'xml'`", items.source_problems[0].text)
-        self.assertTrue(items.reports_a_source_problem_or_failure())
+        self.assertTrue(items.reports_a_problem_that_turns_the_run_red())
 
     def test_token_items_from_decision_and_approval_are_merged_without_duplicates(self) -> None:
         decision = {'token': {'usable': True}, 'things_to_check': [thing('token-expires-soon:2026-12-01')]}
@@ -318,6 +318,37 @@ class SyncIssueTests(unittest.TestCase):
         self.assertEqual(read_item_keys(github.write_calls()[0].body['body']),
                          ['source:branch-rules', 'failed-job:plan-changes', 'failed-step:approve'])
         self.assertEqual(result['exit_code'], 1)
+
+    def test_a_closed_issue_does_not_silence_a_token_that_is_still_unusable(self) -> None:
+        closed = issue_entry(4, body_with('token-unusable:malformed', 'a'), state='closed')
+        items = module.Items(things_to_check=[
+            module.IssueItem('token-unusable:malformed', module.SECTION_THINGS_TO_CHECK, 'Token.'),
+            module.IssueItem('a', module.SECTION_THINGS_TO_CHECK, 'A.')])
+        github = fake([closed])
+        result = module.sync_issue(github, items, RUN_URL, NOW)
+        self.assertEqual((result['action'], result['exit_code']), ('created', 1))
+        self.assertEqual(read_item_keys(github.write_calls()[0].body['body']), ['token-unusable:malformed'])
+
+    def test_a_closed_issue_still_dismisses_a_token_that_only_expires_soon(self) -> None:
+        closed = issue_entry(4, body_with('token-expires-soon:2026-12-01'), state='closed')
+        items = module.Items(things_to_check=[
+            module.IssueItem('token-expires-soon:2026-12-01', module.SECTION_THINGS_TO_CHECK, 'Soon.')])
+        github = fake([closed])
+        result = module.sync_issue(github, items, RUN_URL, NOW)
+        self.assertEqual((result['action'], result['exit_code']), ('none', 0))
+        self.assertEqual(github.write_calls(), [])
+
+    def test_an_unusable_token_turns_the_run_red_but_one_expiring_soon_does_not(self) -> None:
+        for key, red in (('token-unusable:missing', True), ('token-expires-soon:2026-12-01', False)):
+            with self.subTest(key=key):
+                items = module.Items(things_to_check=[module.IssueItem(key, module.SECTION_THINGS_TO_CHECK, 'T.')])
+                self.assertEqual(items.reports_a_problem_that_turns_the_run_red(), red)
+                self.assertEqual(module.sync_issue(fake([]), items, RUN_URL, NOW)['exit_code'], int(red))
+
+    def test_the_issue_says_which_items_come_back_while_their_problem_lasts(self) -> None:
+        body = module.render_issue_body(module.Items(things_to_check=[
+            module.IssueItem('a', module.SECTION_THINGS_TO_CHECK, 'A.')]), RUN_URL, NOW)
+        self.assertIn('an unusable token come back while they last', body)
 
     def test_all_clear_resolves_and_closes_the_open_issue(self) -> None:
         github = fake([issue_entry(5, body_with('a'))])

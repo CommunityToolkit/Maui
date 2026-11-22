@@ -16,8 +16,10 @@ from ensure_ci_always_tests_latest_operating_systems.android_levels import PLATF
 from ensure_ci_always_tests_latest_operating_systems.change_plan import Plan
 from ensure_ci_always_tests_latest_operating_systems.commands import Services, format_step_output, main, write_step_outputs
 from ensure_ci_always_tests_latest_operating_systems.errors import NotFoundError
+from ensure_ci_always_tests_latest_operating_systems.data_types import ThingToCheck
 from ensure_ci_always_tests_latest_operating_systems.required_xcode import DOTNET_RELEASES_INDEX
 from ensure_ci_always_tests_latest_operating_systems.runner_labels import README_URL, ROLLOUT_STATE_URL
+from ensure_ci_always_tests_latest_operating_systems.token_owner import TokenStatus
 
 from .helpers import FakeDownloader, FakeGitHub, fixture
 from .test_change_plan import (BASE, BASE_SHA, BOT_BRANCH, NO_PULL_REQUEST, RUN_URL, Night, android_with_sixteen_kb_37_3,
@@ -415,6 +417,38 @@ class DecidePullRequestUpdateTests(CommandTestCase):
         self.assertIn('open-or-update=false\n', self.written_outputs())
         self.assertEqual(services.clients_built_for, [(WORKFLOW_TOKEN, REPO)])
 
+    def run_decide(self, services: Services, **environ: str) -> Tuple[int, str, str]:
+        summary = self.path('summary.md')
+        code, out, _ = self.run_main(self.argv(), services, GITHUB_TOKEN=WORKFLOW_TOKEN, GITHUB_STEP_SUMMARY=summary,
+                                     **environ)
+        return code, out, read_file(summary)
+
+    def test_a_usable_token_is_named_in_the_summary_and_raises_no_error(self) -> None:
+        self.write_plan(decision_plan('nothing'))
+        services = RecordingServices(None, {MAINTAINER_TOKEN: token_github(), WORKFLOW_TOKEN: workflow_github()})
+        _, out, summary = self.run_decide(services, **{markers.TOKEN_SECRET_NAME: MAINTAINER_TOKEN})
+        self.assertEqual(summary, 'Token: usable, it belongs to `maintainer`.\n\n')
+        self.assertNotIn('::error::', out)
+
+    def test_an_unusable_token_is_explained_in_the_summary_and_raises_an_error_annotation(self) -> None:
+        self.write_plan(decision_plan('nothing'))
+        services = RecordingServices(None, {WORKFLOW_TOKEN: workflow_github()})
+        _, out, summary = self.run_decide(services)
+        self.assertIn('Token: unusable', summary)
+        self.assertIn('the secret holding the maintainer token is empty or not set', summary)
+        self.assertIn('gh secret set %s -R %s --env %s' % (markers.TOKEN_SECRET_NAME, REPO, markers.TOKEN_ENVIRONMENT),
+                      summary)
+        self.assertTrue(out.startswith('::error::decide-pull-request-update: Token: unusable'))
+        self.assertEqual(out.count('\n'), 1)
+
+    def test_the_error_annotation_escapes_percent_signs_and_line_breaks(self) -> None:
+        status = TokenStatus(usable=False, reason='x', things_to_check=[ThingToCheck('token-unusable:x', '100%\nbad')])
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            commands._report_token(status, REPO, {})
+        self.assertIn('100%25%0Abad', out.getvalue())
+        self.assertEqual(out.getvalue().count('\n'), 1)
+
     def test_the_maintainer_token_never_reaches_the_workflow_client(self) -> None:
         self.write_plan(decision_plan('nothing'))
         services = RecordingServices(None, {MAINTAINER_TOKEN: token_github(), WORKFLOW_TOKEN: workflow_github()})
@@ -537,6 +571,18 @@ class UpdateIssueForAPersonTests(CommandTestCase):
         self.write_plan(plan)
         code, _ = self.run_issue(issue_github(), JOB_RESULTS='{}')
         self.assertEqual(code, 1)
+
+    def test_an_unusable_token_in_the_decision_turns_the_run_red(self) -> None:
+        self.write_plan(decision_plan('nothing'))
+        os.makedirs(self.path('pull-request'))
+        decision = {'token': {'usable': False, 'reason': 'malformed'}, 'things_to_check': [
+            {'key': 'token-unusable:malformed', 'text': 'The maintainer token can not be used.'}]}
+        with open(self.path('pull-request', 'decision.json'), 'w', encoding='utf-8') as file:
+            json.dump(decision, file)
+        github = issue_github()
+        code, out = self.run_issue(github, JOB_RESULTS='{}')
+        self.assertEqual((code, out), (1, 'Issue created #99.\n'))
+        self.assertIn('token-unusable:malformed', github.calls_to('POST', ISSUES_PATH)[0].body['body'])
 
     def test_a_job_results_value_that_is_not_json_is_ignored(self) -> None:
         self.write_plan(decision_plan('nothing'))

@@ -52,6 +52,8 @@ TOKEN_PROBLEMS = {
     'organization-forbids-classic-tokens': "is a classic token, which CommunityToolkit doesn't accept",
 }
 PATCH_FILE_OF_UNOPENED_BUMP = 'changes.patch'
+# A person's close must never turn the bot off, so these stay listed (and the run red) while the problem lasts.
+KEY_PREFIXES_THAT_COME_BACK = ('source:', 'failed-', 'token-unusable:')
 _UPDATED_BY_LINE = re.compile(r'Updated by \[run [^\]]*\]\([^)]*\) on [^\n]*? UTC\.')
 _FAILURES_SECTION = re.compile(r'\n*### ' + re.escape(SECTION_FAILURES) + r' ###\n.*\Z', re.DOTALL)
 
@@ -101,8 +103,8 @@ class Items:
         return Items(keep(self.changes_for_a_person), keep(self.things_to_check), keep(self.source_problems),
                      keep(self.failures), self.plan_available)
 
-    def reports_a_source_problem_or_failure(self) -> bool:
-        return bool(self.source_problems or self.failures)
+    def reports_a_problem_that_turns_the_run_red(self) -> bool:
+        return any(item.key.startswith(KEY_PREFIXES_THAT_COME_BACK) for item in self.everything())
 
 
 def _text_of(token_status: Mapping[str, Any]) -> str:
@@ -273,7 +275,7 @@ def _render(items: Items, run_url: str, now: datetime, notice_for_keys: Set[str]
             WORKFLOW_FILE, _workflow_url_of(run_url), run_id, run_url, _timestamp(now)),
         '',
         'Closing this issue dismisses the items listed here: the bot won\'t list them again, and opens a new issue '
-        'for anything new. Problems reading sources and failed jobs come back while they last.',
+        'for anything new. Problems reading sources, failed jobs and an unusable token come back while they last.',
     ]
     if items.changes_for_a_person:
         parts.extend(['', '### %s ###' % SECTION_CHANGES])
@@ -340,7 +342,7 @@ def _dismissed_keys(candidates: List[Dict[str, Any]]) -> Set[str]:
         if candidate.get('state') != 'closed' or has_marker(body, CLOSED_BY_BOT_MARKER):
             continue
         for key in read_item_keys(body):
-            if not key.startswith('source:') and not key.startswith('failed-'):
+            if not key.startswith(KEY_PREFIXES_THAT_COME_BACK):
                 dismissed.add(key)
     return dismissed
 
@@ -361,7 +363,7 @@ def _close_older_duplicates(github: Any, older_open_issues: List[Dict[str, Any]]
 
 def sync_issue(github: Any, items: Items, run_url: str, now: datetime) -> Dict[str, Any]:
     result: Dict[str, Any] = {'action': 'none', 'number': None, 'commented': False, 'closed': False,
-                              'exit_code': 1 if items.reports_a_source_problem_or_failure() else 0}
+                              'exit_code': 1 if items.reports_a_problem_that_turns_the_run_red() else 0}
     candidates = _find_candidates(github)
     current = items.without_keys(_dismissed_keys(candidates))
     open_candidates = sorted((entry for entry in candidates if entry.get('state') == 'open'),
