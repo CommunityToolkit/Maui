@@ -239,6 +239,16 @@ class SameLabelBumpTests(unittest.TestCase):
         self.assertIn('lists `xcode-27` twice', result.deferred[0])
         self.assertTrue(any('lists `xcode-27` twice' in note for note in result.notes), result.notes)
 
+    def test_a_duplicated_apple_label_whose_first_row_is_another_image_names_no_unknown_rollout_state(self) -> None:
+        rows_without_the_xcode_image = [row for row in runner_images()['rows'] if 'xcode-27' not in row['labels']]
+        images = dict(runner_images(states={'xcode-27-arm64': None}), rows=rows_without_the_xcode_image,
+                      duplicate_labels=['xcode-27'])
+        result = plan(required=required_xcode('27.3', '27.3'),
+                      the_listings=listings(**{'xcode-27': self.newer_xcode_listing('xcode-27-20261104')}), images=images)
+        self.assertEqual([thing.key for thing in result.things_to_check], [])
+        self.assertEqual(len(result.deferred), 1)
+        self.assertIn('lists `xcode-27` twice', result.deferred[0])
+
     def test_a_duplicated_label_that_is_not_involved_defers_nothing(self) -> None:
         images = dict(runner_images(), duplicate_labels=['macos-15'])
         result = plan(required=required_xcode('27.3', '27.3'),

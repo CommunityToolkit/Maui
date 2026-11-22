@@ -11,6 +11,9 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 from .errors import RunnerSoftwareError
 
 COMMAND_TIMEOUT_SECONDS = 120
+COMMAND_COULD_NOT_START_CODE = 127
+# The exit code of the `timeout` tool, so a person who reads it elsewhere already knows it.
+COMMAND_TIMED_OUT_CODE = 124
 XCODE_APP_NAME = re.compile(r'^Xcode.*\.app$')
 IMAGE_LINE = re.compile(r'^Image:\s*(.+?)\s*$', re.MULTILINE)
 VERSION_LINE = re.compile(r'^Version:\s*(.+?)\s*$', re.MULTILINE)
@@ -22,8 +25,10 @@ def run_command(argv: List[str]) -> Tuple[int, str]:
     try:
         completed = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding='utf-8',
                                    errors='replace', timeout=COMMAND_TIMEOUT_SECONDS, check=False)
-    except (OSError, subprocess.TimeoutExpired):
-        return 127, ''
+    except subprocess.TimeoutExpired:
+        return COMMAND_TIMED_OUT_CODE, ''
+    except OSError:
+        return COMMAND_COULD_NOT_START_CODE, ''
     return completed.returncode, completed.stdout
 
 
@@ -77,19 +82,31 @@ def _report(problems: Optional[List[str]], message: str) -> None:
         problems.append(message)
 
 
+def _command_failure(command: List[str], code: int) -> str:
+    text = ' '.join(command)
+    if code == COMMAND_TIMED_OUT_CODE:
+        return '`%s` timed out after %d s' % (text, COMMAND_TIMEOUT_SECONDS)
+    if code == COMMAND_COULD_NOT_START_CODE:
+        return '`%s` could not be started' % text
+    return '`%s` failed with exit code %d' % (text, code)
+
+
 def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     command = ['xcrun', 'simctl', 'list', 'runtimes', '-j']
     code, output = run(command)
     if code != 0:
-        _report(problems, '`%s` failed with exit code %d' % (' '.join(command), code))
+        _report(problems, _command_failure(command, code))
         return []
     try:
         data = json.loads(output)
     except ValueError:
         _report(problems, '`%s` printed text that is not JSON' % ' '.join(command))
         return []
+    if not isinstance(data, dict) or not isinstance(data.get('runtimes'), list):
+        _report(problems, '`%s` printed JSON without a `runtimes` list' % ' '.join(command))
+        return []
     runtimes = []
-    for runtime in data.get('runtimes', []) if isinstance(data, dict) else []:
+    for runtime in data['runtimes']:
         runtimes.append({
             'platform': runtime.get('platform'),
             'version': runtime.get('version'),
@@ -104,7 +121,7 @@ def list_dotnet_sdks(run: RunCommand, problems: Optional[List[str]] = None) -> L
     command = ['dotnet', '--list-sdks']
     code, output = run(command)
     if code != 0:
-        _report(problems, '`%s` failed with exit code %d' % (' '.join(command), code))
+        _report(problems, _command_failure(command, code))
         return []
     return [line.split()[0] for line in output.splitlines() if line.strip()]
 

@@ -52,7 +52,7 @@ def label_changes(new: str) -> List[SafeChange]:
 
 
 def changed_line_numbers(before: str, after: str) -> List[int]:
-    """1-based numbers, in the before text, of every line the edit replaced or deleted; an insert reports the line before it."""
+    """An insert reports the line before it, because an insert has no line of its own in the before text."""
     matcher = difflib.SequenceMatcher(None, before.split('\n'), after.split('\n'), autojunk=False)
     numbers: List[int] = []
     for tag, start, end, _, _ in matcher.get_opcodes():

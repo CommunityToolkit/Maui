@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from . import markers
-from .data_types import PinnedVersions, SafeChange, ThingToCheck
+from .data_types import PULL_REQUEST_CHANGE_KINDS, PinnedVersions, SafeChange, ThingToCheck
 from .errors import GitHubApiError
 from .line_editor import android_leg_lines
 from .markdown_text import markdown_code
@@ -155,7 +155,7 @@ def _change_pairs(pull: Dict[str, Any]) -> List[Tuple[str, str]]:
 
 
 def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[SafeChange]:
-    """Places a change of the open PR against today's main; None when main moved past the value it replaced."""
+    """The open PR's change is re-placed on today's main, or dropped when it no longer applies."""
     kind = change.get('kind')
     pin = change.get('pin') or ''
     new = change.get('new')
@@ -171,10 +171,8 @@ def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[S
         'set-xcode-version': _rebuild_xcode_version,
         'replace-api-level': _rebuild_api_level,
         'insert-android-leg': _rebuild_android_leg_insert,
-        'insert-ios-leg': _rebuild_ios_leg_insert,
-        'replace-runner-label': _rebuild_runner_label,
     }
-    rebuild = rebuilders.get(kind)
+    rebuild = rebuilders.get(kind) if kind in PULL_REQUEST_CHANGE_KINDS else None
     if rebuild is None or change.get('file') not in markers.PIN_FILES:
         return None
     return rebuild(pinned, change, pin, old, new, inserted_lines)
@@ -213,24 +211,27 @@ def _rebuild_xcode_version(pinned: PinnedVersions, change: Dict[str, Any], pin: 
     return _carried(change, current.line, old, new, [], pin, 'Use Xcode %s for %s' % (new, key))
 
 
-def _parse_android_pin(pin: str) -> Optional[Tuple[str, int]]:
+def parse_android_pin(pin: str) -> Optional[Tuple[str, int]]:
     if not pin.startswith('android-leg:'):
         return None
     target, _, major_text = pin[len('android-leg:'):].rpartition(':')
-    if not target or not major_text.isdigit():
+    if not target or not re.fullmatch(r'\d+', major_text, re.ASCII):
         return None
     return target, int(major_text)
 
 
 def _rebuild_api_level(pinned: PinnedVersions, change: Dict[str, Any], pin: str, old: Optional[str], new: str,
                        inserted_lines: List[str]) -> Optional[SafeChange]:
-    parsed = _parse_android_pin(pin)
+    parsed = parse_android_pin(pin)
     if parsed is None or change['file'] != _ANDROID_FILE or old is None:
         return None
     target, major = parsed
+    new_level = parse_android_level(new)
     for leg in pinned.android_legs:
         if leg.target == target and leg.level.major == major:
             if leg.level.text != old:
+                return None
+            if any(other is not leg and other.level == new_level for other in pinned.android_legs):
                 return None
             return _carried(change, leg.api_level_line, old, new, [], pin,
                             'Move the Android leg from API %s to %s' % (old, new))
@@ -239,7 +240,7 @@ def _rebuild_api_level(pinned: PinnedVersions, change: Dict[str, Any], pin: str,
 
 def _rebuild_android_leg_insert(pinned: PinnedVersions, change: Dict[str, Any], pin: str, old: Optional[str],
                                 new: str, inserted_lines: List[str]) -> Optional[SafeChange]:
-    parsed = _parse_android_pin(pin)
+    parsed = parse_android_pin(pin)
     if parsed is None or change['file'] != _ANDROID_FILE or not inserted_lines:
         return None
     target, major = parsed
@@ -252,23 +253,3 @@ def _rebuild_android_leg_insert(pinned: PinnedVersions, change: Dict[str, Any], 
     line = max(lower_legs, key=lambda leg: leg.level).entry_end if lower_legs else pinned.android_include_line
     return _carried(change, line, None, new, android_leg_lines(pinned.android_dash_prefix, new_level.text, target), pin,
                     'Add an Android leg for API %s' % new)
-
-
-def _rebuild_ios_leg_insert(pinned: PinnedVersions, change: Dict[str, Any], pin: str, old: Optional[str], new: str,
-                            inserted_lines: List[str]) -> Optional[SafeChange]:
-    if not pin.startswith('ios-leg:') or change['file'] != _ANDROID_FILE or not inserted_lines:
-        return None
-    if any(leg.ios_version == new for leg in pinned.ios_legs):
-        return None
-    return _carried(change, pinned.ios_include_line, None, new, inserted_lines, pin,
-                    'Keep an iOS %s leg' % new)
-
-
-def _rebuild_runner_label(pinned: PinnedVersions, change: Dict[str, Any], pin: str, old: Optional[str], new: str,
-                          inserted_lines: List[str]) -> Optional[SafeChange]:
-    if old is None or pinned.apple_label.label != old:
-        return None
-    for file, line, job_id in pinned.apple_label.occurrences:
-        if pin == 'apple-label:%s:%s' % (file, job_id) and file == change['file']:
-            return _carried(change, line, old, new, [], pin, 'Run the Apple job `%s` of %s on `%s`' % (job_id, file, new))
-    return None

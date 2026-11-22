@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import urllib.parse
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .data_types import ThingToCheck
@@ -69,8 +68,7 @@ def _close_pull_request(github: Any, number: int) -> None:
         raise GitHubApiError('PATCH', path, status, message)
 
 
-def decide_pull_request_update(plan: Any, token_status: TokenStatus, github: Any, base: str, base_sha: str,
-                               now: datetime) -> Decision:
+def decide_pull_request_update(plan: Any, token_status: TokenStatus, github: Any, base: str, base_sha: str) -> Decision:
     """The maintainer token never reaches this code: only check_token uses it, so nothing here can push as the maintainer."""
     plan_fields = _plan_fields(plan)
     action = plan_fields.get('pull_request_action', 'nothing')

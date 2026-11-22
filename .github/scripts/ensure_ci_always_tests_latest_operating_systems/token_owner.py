@@ -76,7 +76,6 @@ def _scopes_problem(headers: Any) -> bool:
 
 
 def check_token(token: Optional[str], make_client: Callable[[str], Any], now: datetime) -> TokenStatus:
-    """make_client(token) builds the client that sends the token; exactly two read calls go through it."""
     if not token:
         return _unusable('missing')
     client = make_client(token)

@@ -106,9 +106,10 @@ class StaticChecksOfThePackageTests(unittest.TestCase):
 
 
 class ForbiddenWordTests(unittest.TestCase):
-    FORBIDDEN_WORD = re.compile(r'\bfl' + r'ags?\b', re.IGNORECASE)
+    # The maintainers' plain-words rule: a prefix match, so every inflection of the word is caught.
+    FORBIDDEN_WORD = re.compile(r'\bfl' + r'ag', re.IGNORECASE)
 
-    def test_no_python_or_workflow_text_of_the_bot_uses_the_word_brandon_does_not_want(self) -> None:
+    def test_the_bot_text_never_uses_the_word_the_maintainers_replaced_with_plain_words(self) -> None:
         scripts_folder = os.path.dirname(PACKAGE_FOLDER)
         files = [os.path.join(scripts_folder, 'ensure-ci-always-tests-latest-operating-systems.py'),
                  os.path.join(scripts_folder, '..', 'workflows', 'ensure-ci-always-tests-latest-operating-systems.yml')]
@@ -121,6 +122,11 @@ class ForbiddenWordTests(unittest.TestCase):
                     if self.FORBIDDEN_WORD.search(line):
                         offending.append('%s:%d' % (os.path.basename(path), number))
         self.assertEqual([], offending)
+
+    def test_the_pattern_catches_every_inflection(self) -> None:
+        for word in ('fl' + 'ag', 'fl' + 'ags', 'fl' + 'agged', 'fl' + 'agging', 'Fl' + 'AG'):
+            with self.subTest(word=word):
+                self.assertIsNotNone(self.FORBIDDEN_WORD.search('a %s here' % word))
 
 
 class StaticCheckDetectsEachProblemTests(unittest.TestCase):

@@ -197,10 +197,10 @@ def _label_switch_steps(old_label: str, new_label: str, renames: List[Tuple[str,
     return [
         'Save the patch below as `%s`. On a new branch from `main`, run `git apply %s` (if `main` moved, '
         '`git apply -3 %s`), then commit, push and open a pull request.' % (patch_name, patch_name, patch_name),
-        'Wait for its CI. The checks named after %s will not report, so GitHub lists them as expected.'
+        "Wait for its CI. The checks named after %s won't report, so GitHub lists them as expected."
         % markdown_code(old_label),
         rename_step,
-        'Another maintainer approves the pull request (its author cannot), and it merges.',
+        "Another maintainer approves the pull request (its author can't), and it merges.",
     ]
 
 
@@ -280,7 +280,7 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
             if published and now - parse_utc(published) < NEWEST_SET_WITH_OLDER_XCODE_WAIT:
                 _add_once(plan.deferred, 'The newest workload set %s needs Xcode %s, older than the pinned %s, and was '
                           'published less than 24 hours ago; waiting in case it is replaced.'
-                          % (set_version, required, current))
+                          % (markdown_code(set_version), required, current))
                 plan.notes.append('The %s Xcode change waits: the newest workload set asks for an older Xcode %s.'
                                   % (name, required))
                 decision.required = None
@@ -327,7 +327,8 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
     for reason in sorted(set(rollout_blocked_reasons), key=rollout_blocked_reasons.index):
         plan.deferred.append(reason)
         plan.notes.append(reason[0].upper() + reason[1:] + '.')
-    if apple_rollout == 'unknown' and rollout_blocked_reasons and readme_rows is not None:
+    if (apple_rollout == 'unknown' and rollout_blocked_reasons and readme_rows is not None
+            and apple_label not in duplicated_labels):
         _add_thing_once(plan, _rollout_state_unknown_thing(apple_image_name))
 
     moved_to_a_new_label = _plan_label_switch_for_a_person(plan, pinned, decisions, listings, rollout_states, branch_rules)
@@ -384,8 +385,8 @@ def _what_the_workload_sets_need(switching: List[_SdkDecision]) -> str:
 
 
 def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, decisions: List[_SdkDecision],
-                         listings: Mapping[str, Any], rollout_states: Mapping[str, Any],
-                         branch_rules: Optional[Mapping[str, Any]]) -> bool:
+                                    listings: Mapping[str, Any], rollout_states: Mapping[str, Any],
+                                    branch_rules: Optional[Mapping[str, Any]]) -> bool:
     switching = [decision for decision in decisions if decision.switch_to_label]
     if not switching:
         return False

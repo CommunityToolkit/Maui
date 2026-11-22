@@ -53,7 +53,7 @@ class AcceptedEditsTests(unittest.TestCase):
         changes = [api_level_change('36.1', '36.2', 406), insert_android_leg('36.3', 'google_apis_ps16k', 406)]
         self.assertEqual(problems_after(changes, DEVICE_TESTS), [])
 
-    def test_the_last_entry_rising_next_to_an_inserted_leg(self) -> None:
+    def test_a_one_line_entry_that_rises(self) -> None:
         texts = repo_texts()
         edited = replaced_once(texts[DEVICE_TESTS], "-   api-level: '35'\n", "-   api-level: '35.1'\n")
         self.assertEqual(problems_of_edited_text(DEVICE_TESTS, edited), [])

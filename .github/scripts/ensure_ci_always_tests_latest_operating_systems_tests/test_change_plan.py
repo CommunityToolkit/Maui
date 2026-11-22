@@ -324,6 +324,47 @@ class FamilyIsolationTests(unittest.TestCase):
         self.assertTrue(any('has no android changes to keep' in note for note in plan.notes), plan.notes)
         self.assertEqual(plan.pull_request_action, CLOSE)
 
+    def test_a_carried_level_change_that_collides_with_a_leg_on_main_is_dropped_and_the_bot_does_not_blame_itself(self) -> None:
+        collides = listed_change('android', 'replace-api-level', '.github/workflows/device-tests.yml', SIXTEEN_KB_PIN,
+                                 '37.2', '37.0')
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(open_pull_request([collides]))
+        self.assertNotIn('source:change-validator', keys(plan.source_problems))
+        self.assertEqual(plan.safe_changes, [])
+        self.assertTrue(any('Dropped' in note for note in plan.notes), plan.notes)
+        self.assertFalse(any('keeps its' in note for note in plan.notes), plan.notes)
+
+    def test_a_carried_change_that_only_fails_the_validator_is_dropped_alone(self) -> None:
+        fits = SIXTEEN_KB_37_3_IN_THE_PULL_REQUEST
+        edited_beyond_the_validator = listed_change(
+            'android', 'replace-api-level', '.github/workflows/device-tests.yml', FOUR_KB_PIN, '37.0', '36.0')
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(
+            open_pull_request([fits, edited_beyond_the_validator]))
+        self.assertNotIn('source:change-validator', keys(plan.source_problems))
+        self.assertEqual(pairs(plan), [(SIXTEEN_KB_PIN, '37.2', '37.3')])
+        self.assertTrue(any('it no longer fits main (' in note for note in plan.notes), plan.notes)
+        self.assertTrue(any('keeps its 1 android change.' in note for note in plan.notes), plan.notes)
+
+    def test_the_dropped_note_does_not_blame_main_for_a_value_it_did_not_change(self) -> None:
+        malformed = listed_change('android', 'replace-api-level', '.github/workflows/device-tests.yml', SIXTEEN_KB_PIN,
+                                  '37.2', '37.x')
+        insert = listed_change('android', 'insert-android-leg', '.github/workflows/device-tests.yml',
+                               'android-leg:google_apis:37', '', '37.0', ['x'])
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(open_pull_request([malformed, insert]))
+        dropped = [note for note in plan.notes if note.startswith('Dropped')]
+        self.assertEqual(len(dropped), 2, plan.notes)
+        self.assertIn('it no longer applies to main', dropped[0])
+        self.assertNotIn('main now has', dropped[0])
+        self.assertIn('(new leg `37.0`)', dropped[1])
+
+    def test_the_body_of_a_real_xcode_bump_names_the_set_the_xcode_version_and_the_image_build(self) -> None:
+        ready_build = with_ga_xcode(listing('xcode-27-20261104'), '27.3')
+        night = Night(self, required=required_xcode('27.3', '27.3'), software_lists=listings(**{'xcode-27': ready_build}))
+        plan = night.plan()
+        self.assertIn(('env:' + SAMPLE_KEY, '27.2', '27.3'), pairs(plan))
+        body = pull_request_text.render_pull_request_body(plan)
+        row = [line for line in body.split('\n') if line.startswith('| `Sample Xcode')][0]
+        self.assertRegex(row, r'workload set `[0-9.]+`; Xcode 27\.3 GA on `xcode-27` `[0-9.]+`')
+
     def test_an_android_problem_does_not_carry_the_xcode_change_of_the_open_pull_request(self) -> None:
         night = Night(self, android={'status': 'error', 'error': 'gone'})
         plan = night.plan(open_pull_request([XCODE_27_3_IN_THE_PULL_REQUEST]))

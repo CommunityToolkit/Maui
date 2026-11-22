@@ -101,6 +101,16 @@ class ChangeListTests(unittest.TestCase):
             with self.subTest(payload):
                 self.assertIsNone(markers.read_change_list(prefix + payload + ' -->'))
 
+    def test_a_list_whose_entries_have_the_wrong_types_is_ignored(self) -> None:
+        good = {'family': 'android', 'kind': 'replace-api-level', 'file': 'f', 'pin': 'p', 'old': 'a', 'new': 'b',
+                'inserted_lines': []}
+        wrong = [dict(good, kind=['replace-api-level']), dict(good, old=5), dict(good, inserted_lines=5),
+                 dict(good, inserted_lines='abc'), dict(good, inserted_lines=[1]), dict(good, new={'a': 1})]
+        for entry in wrong:
+            with self.subTest(entry=entry):
+                body = '<!-- ensure-ci-always-tests-latest-operating-systems:changes=%s -->' % json.dumps([good, entry])
+                self.assertIsNone(markers.read_change_list(body))
+
     def test_missing_marker_gives_none(self) -> None:
         self.assertIsNone(markers.read_change_list('no marker here'))
         self.assertIsNone(markers.read_change_list(None))

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional
 
 from .version_numbers import AndroidLevel, parse_android_level
 
@@ -181,10 +181,12 @@ class RolloutState:
         return cls(deployed_build=data['deployed_build'], message=data['message'], deploying_to=data['deploying_to'])
 
 
+# The bot pushes these three. The iOS leg insert and the runner label change exist only inside a change for a person.
+PULL_REQUEST_CHANGE_KINDS = ('set-xcode-version', 'replace-api-level', 'insert-android-leg')
+
+
 @dataclass
 class SafeChange:
-    """kind is set-xcode-version, replace-api-level, insert-android-leg, insert-ios-leg or replace-runner-label."""
-
     family: str
     kind: str
     file: str
@@ -271,8 +273,6 @@ class RunFailure:
 
 @dataclass
 class FamilyPlan:
-    """deferred holds one plain-words reason per change that waits for a later night."""
-
     family: str
     safe_changes: List[SafeChange] = field(default_factory=list)
     changes_for_a_person: List[ChangeForAPerson] = field(default_factory=list)

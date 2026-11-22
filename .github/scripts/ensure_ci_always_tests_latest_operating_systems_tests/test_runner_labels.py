@@ -110,6 +110,18 @@ class ParseReadmeTests(unittest.TestCase):
         self.assertEqual([(row.name, row.labels) for row in rows], [('Foo', ['a']), ('Bar', ['b'])])
         self.assertEqual(duplicates, ['a'])
 
+    def test_two_rows_with_the_same_name_still_keep_a_shared_label_only_in_the_first(self):
+        rows, duplicates = parse_runner_images_readme_and_duplicate_labels(
+            '| Image | YAML Label |\n|---|---|\n| Foo | `a` |\n| Foo | `a`, `b` |\n')
+        self.assertEqual([(row.name, row.labels) for row in rows], [('Foo', ['a']), ('Foo', ['b'])])
+        self.assertEqual(duplicates, ['a'])
+
+    def test_a_label_written_twice_in_one_row_is_not_a_duplicate(self):
+        rows, duplicates = parse_runner_images_readme_and_duplicate_labels(
+            '| Image | YAML Label |\n|---|---|\n| Foo | `macos-26` or `macos-26` |\n')
+        self.assertEqual([row.labels for row in rows], [['macos-26']])
+        self.assertEqual(duplicates, [])
+
     def test_a_duplicate_label_is_a_thing_to_check_and_not_a_source_problem(self):
         rows = parse_runner_images_readme(TODAY_README)
         plan = check_runner_labels(pinned_versions(), rows, ['macos-15'])

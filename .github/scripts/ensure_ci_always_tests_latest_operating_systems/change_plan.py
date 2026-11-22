@@ -8,7 +8,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -160,10 +159,11 @@ def _current_value_of(pinned: PinnedVersions, change: Mapping[str, Any]) -> str:
     if pin.startswith('env:'):
         value = pinned.shared_env.get(pin[len('env:'):])
         return value.value if value is not None else 'no such value'
-    parsed = pin.split(':')
-    if pin.startswith('android-leg:') and len(parsed) == 3 and parsed[2].isdigit():
+    android_pin = bump_pull_request.parse_android_pin(pin)
+    if android_pin is not None:
+        target, major = android_pin
         for leg in pinned.android_legs:
-            if leg.target == parsed[1] and leg.level.major == int(parsed[2]):
+            if leg.target == target and leg.level.major == major:
                 return leg.level.text
     if pin.startswith('apple-label:'):
         return pinned.apple_label.label
@@ -194,8 +194,8 @@ def _freeze_state_of(family_plan: FamilyPlan, reason_for_everything: Optional[st
     return _FamilyState()
 
 
-def _carry_forward(pinned: PinnedVersions, family: str, open_pull_request: Optional[Mapping[str, Any]],
-                   notes: List[str]) -> List[SafeChange]:
+def _carry_forward(pinned: PinnedVersions, base_texts: Mapping[str, str], family: str,
+                   open_pull_request: Optional[Mapping[str, Any]], notes: List[str]) -> List[SafeChange]:
     carried: List[SafeChange] = []
     if not open_pull_request:
         return carried
@@ -204,12 +204,24 @@ def _carry_forward(pinned: PinnedVersions, family: str, open_pull_request: Optio
             continue
         rebuilt = bump_pull_request.rebuild_change(pinned, entry)
         if rebuilt is None:
-            notes.append('Dropped %s (%s to %s) from the open pull request: main now has %s.' % (
-                markdown_code(entry.get('pin')), markdown_code(entry.get('old')), markdown_code(entry.get('new')),
-                markdown_code(_current_value_of(pinned, entry))))
-        else:
-            carried.append(rebuilt)
+            notes.append(_dropped_note(pinned, entry, None))
+            continue
+        problem = _validate_safe_changes(base_texts, [rebuilt])
+        if problem is not None:
+            notes.append(_dropped_note(pinned, entry, 'it no longer fits main (%s)' % problem))
+            continue
+        carried.append(rebuilt)
     return carried
+
+
+def _dropped_note(pinned: PinnedVersions, entry: Mapping[str, Any], reason: Optional[str]) -> str:
+    old, new = entry.get('old'), entry.get('new')
+    change = '(new leg %s)' % markdown_code(new) if entry.get('kind') == 'insert-android-leg' else (
+        '(%s to %s)' % (markdown_code(old), markdown_code(new)))
+    if reason is None:
+        current = _current_value_of(pinned, entry)
+        reason = 'main now has %s' % markdown_code(current) if old and current != old else 'it no longer applies to main'
+    return 'Dropped %s %s from the open pull request: %s.' % (markdown_code(entry.get('pin')), change, reason)
 
 
 def _route_required_check_renames(safe_changes: List[SafeChange], required_checks: List[str]) -> Tuple[List[SafeChange], List[ChangeForAPerson]]:
@@ -223,7 +235,7 @@ def _route_required_check_renames(safe_changes: List[SafeChange], required_check
             continue
         key = 'required-check-rename:%s:%s' % (markers.clean_item_key_part(change.pin), markers.clean_item_key_part(change.new or ''))
         patch_name = 'required-check-rename.patch'
-        renamed_lines = ['`%s` becomes `%s`' % rename for rename in renames]
+        renamed_lines = ['%s becomes %s' % (markdown_code(old), markdown_code(new)) for old, new in renames]
         for_a_person.append(ChangeForAPerson(
             key=key,
             title='Rename the required check%s for %s' % ('s' if len(renames) > 1 else '', markdown_code(change.description)),
@@ -325,11 +337,12 @@ def build_plan(latest_versions_dir: str, macos_runner_images_dir: str, repo_root
     plan.families = {family: {'state': state.state, 'reason': state.reason} for family, state in states.items()}
 
     safe_changes: List[SafeChange] = []
+    carried_pins_of_frozen_families: Dict[str, List[str]] = {}
     for family in CHANGE_FAMILIES:
         if states[family].is_frozen:
-            carried = _carry_forward(pinned, family, open_pull_request, plan.notes)
+            carried = _carry_forward(pinned, base_texts, family, open_pull_request, plan.notes)
             safe_changes.extend(carried)
-            plan.notes.append(_frozen_note(family, states[family], open_pull_request, len(carried)))
+            carried_pins_of_frozen_families[family] = [change.pin for change in carried]
         else:
             safe_changes.extend(family_plans[family].safe_changes)
 
@@ -345,6 +358,11 @@ def build_plan(latest_versions_dir: str, macos_runner_images_dir: str, repo_root
                                                       message=validator_problem, family=''))
             safe_changes = []
     plan.safe_changes = safe_changes
+
+    pins_kept = {change.pin for change in plan.safe_changes}
+    for family, carried_pins in carried_pins_of_frozen_families.items():
+        kept_count = len([pin for pin in carried_pins if pin in pins_kept])
+        plan.notes.append(_frozen_note(family, states[family], open_pull_request, kept_count))
 
     plan.open_pull_request = open_pull_request['number'] if open_pull_request else None
     plan.pull_request_action = _decide_action(plan, open_pull_request)

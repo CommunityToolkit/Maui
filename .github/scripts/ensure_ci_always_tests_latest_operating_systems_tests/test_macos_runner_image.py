@@ -200,13 +200,26 @@ class InspectTests(unittest.TestCase):
         with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('xcrun', 120)):
             listing = self.inspect_with(macos_runner_image.run_command)
         self.assertEqual(listing['status'], 'error')
-        self.assertIn('failed with exit code 127', listing['error'])
+        self.assertIn('`xcrun simctl list runtimes -j` timed out after 120 s', listing['error'])
 
     def test_a_simctl_that_prints_text_that_is_not_json_is_an_error(self) -> None:
         run = FakeCommands({SIMCTL: (0, 'not json'), DOTNET: (0, fixture('macos-runner-image/list-sdks.txt').decode('utf-8'))})
         listing = self.inspect_with(run)
         self.assertEqual(listing['status'], 'error')
         self.assertIn('not JSON', listing['error'])
+
+    def test_a_simctl_that_cannot_be_started_says_so(self) -> None:
+        with mock.patch.object(subprocess, 'run', side_effect=FileNotFoundError('xcrun')):
+            listing = self.inspect_with(macos_runner_image.run_command)
+        self.assertIn('`xcrun simctl list runtimes -j` could not be started', listing['error'])
+
+    def test_a_simctl_json_without_a_runtimes_list_is_an_error(self) -> None:
+        for printed in ('{}', '[]', '{"runtimes": 5}'):
+            with self.subTest(printed=printed):
+                run = FakeCommands({SIMCTL: (0, printed), DOTNET: (0, fixture('macos-runner-image/list-sdks.txt').decode('utf-8'))})
+                listing = self.inspect_with(run)
+                self.assertEqual(listing['status'], 'error')
+                self.assertIn('printed JSON without a `runtimes` list', listing['error'])
 
     def test_an_unreadable_applications_folder_is_an_error(self) -> None:
         with open(os.path.join(self.home.name, 'imagedata.json'), 'wb') as file:
@@ -233,7 +246,7 @@ class InspectTests(unittest.TestCase):
         with mock.patch.object(subprocess, 'run', side_effect=FileNotFoundError('dotnet')):
             self.assertEqual(macos_runner_image.run_command(['dotnet', '--list-sdks']), (127, ''))
         with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('x', 120)):
-            self.assertEqual(macos_runner_image.run_command(['x']), (127, ''))
+            self.assertEqual(macos_runner_image.run_command(['x']), (124, ''))
 
 
 if __name__ == '__main__':

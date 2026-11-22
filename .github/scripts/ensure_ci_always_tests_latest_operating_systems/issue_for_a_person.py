@@ -8,9 +8,8 @@ from typing import Any, Dict, List, Mapping, Optional, Set
 
 from .errors import GitHubApiError
 from .markdown_text import markdown_code
-from .markers import (CLOSED_BY_BOT_MARKER, PULL_REQUEST_JOB_NAME, clean_item_key_part, ISSUE_MARKER, ISSUE_TITLE, LABELS, TOKEN_ENVIRONMENT, TOKEN_SECRET_NAME,
-                      WORKFLOW_FILE, has_marker, item_marker, read_item_keys)
-
+from .markers import (CLOSED_BY_BOT_MARKER, ISSUE_MARKER, ISSUE_TITLE, LABELS, PULL_REQUEST_JOB_NAME, TOKEN_ENVIRONMENT,
+                      TOKEN_SECRET_NAME, WORKFLOW_FILE, clean_item_key_part, has_marker, item_marker, read_item_keys)
 from .pull_request_text import MAX_BODY
 
 SECTION_CHANGES = 'Changes a person must make'
@@ -164,7 +163,6 @@ def collect_items(plan: Optional[Mapping[str, Any]], decision: Optional[Mapping[
                   approval: Optional[Mapping[str, Any]], step_outcomes: Optional[Mapping[str, Any]],
                   job_results: Optional[Mapping[str, Any]], push_error: Optional[str],
                   patches: Optional[Mapping[str, str]] = None) -> Items:
-    """patches maps a patch_file of the plan (and 'changes.patch') to its text; the plan folder holds those files."""
     patches = patches or {}
     items = _items_from_plan(plan, patches) if plan else Items(plan_available=False)
     _add_things_to_check(items, decision)

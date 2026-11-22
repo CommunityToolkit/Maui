@@ -89,6 +89,7 @@ class CheckResult:
     refusals: List[str]
     pull_request_facts: Dict[str, Any]
     refusal_details: Dict[str, List[str]] = field(default_factory=dict)
+    branch_rules_were_read: bool = True
 
 
 def _get_ok(github: Any, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
@@ -317,7 +318,7 @@ def check_before_approving(github: Any, plan: Any, decision: Any, pull_request: 
                   'auto_merge_armed_for_this_head': armed_for_this_head,
                   'approved_at_head': approved_at_head})
     return CheckResult(refusals=[code for code in REFUSAL_REASONS if code in refusal_details], pull_request_facts=facts,
-                       refusal_details=refusal_details)
+                       refusal_details=refusal_details, branch_rules_were_read=rules.get('status') == 'ok')
 
 
 def turn_off_auto_merge(github: Any, node_id: str) -> None:
@@ -336,7 +337,7 @@ def turn_on_auto_merge(github: Any, node_id: str, head_sha: str) -> str:
     return 'turned-on'
 
 
-def approve(github: Any, number: int, head_sha: str, run_url: str, base: str = 'main', base_sha: str = '') -> None:
+def approve(github: Any, number: int, head_sha: str, run_url: str, base: str, base_sha: str) -> None:
     body = ('Approved by %s: this pull request holds exactly the planned '
             'version changes, on %s %s. %s' % (WORKFLOW_FILE, base, base_sha[:7], run_url))
     status, _, data = github.post('/repos/%s/pulls/%d/reviews' % (github.repo, number),
@@ -364,7 +365,7 @@ def _refusal_things_to_check(number: int, result: CheckResult) -> List[ThingToCh
         things.append(ThingToCheck('pull-request-auto-merge-turned-off:%d' % number,
                                    'A person turned off auto-merge on #%d, so the bot leaves it off. Turn it back on, or close #%d.'
                                    % (number, number)))
-    rules_could_not_be_read = any('could not be read' in detail for detail in result.refusal_details.get('last-push-rule', []))
+    rules_could_not_be_read = not result.branch_rules_were_read
     if 'last-push-rule' in result.refusals and not rules_could_not_be_read:
         things.append(ThingToCheck('last-push-approval-rule-off',
                                    "The main branch rules no longer require approval of the most recent push, so the bot doesn't "

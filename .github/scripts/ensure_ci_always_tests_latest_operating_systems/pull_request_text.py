@@ -106,8 +106,8 @@ def _source_cell(change: Any) -> str:
     workload_set_and_image = _WORKLOAD_SET_AND_IMAGE_SOURCE.fullmatch(source)
     if workload_set_and_image is not None:
         set_version, label, image_version = workload_set_and_image.groups()
-        return 'workload set %s; %s image %s' % (
-            markdown_code(set_version, in_table=True), markdown_code(label, in_table=True),
+        return 'workload set %s; Xcode %s GA on %s %s' % (
+            markdown_code(set_version, in_table=True), change.new, markdown_code(label, in_table=True),
             markdown_code(image_version, in_table=True))
     if source.startswith('workload-sets+macos-runner-image:'):
         return 'the .NET workload set and the %s runner image' % markdown_code(source.split(':', 1)[1], in_table=True)

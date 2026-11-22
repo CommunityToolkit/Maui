@@ -250,7 +250,8 @@ class _AndroidPlanner:
                         self.majors_without_four_kb_image.append(major)
 
     def _add_trimmed_leg_notes(self) -> None:
-        trimmed_level = _highest(self.levels_planned_for_each_target[FOUR_KB_TARGET] + [leg.level for leg in self.legs_by_target[FOUR_KB_TARGET]])
+        trimmed_level = _highest(self.levels_planned_for_each_target[FOUR_KB_TARGET]
+                                 + [leg.level for leg in self.legs_by_target[FOUR_KB_TARGET]])
         if trimmed_level is None:
             return
         if self.majors_needing_trimmed_leg_note:

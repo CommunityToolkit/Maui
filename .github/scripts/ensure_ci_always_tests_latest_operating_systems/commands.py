@@ -296,7 +296,7 @@ def decide_pull_request_update_command(args: argparse.Namespace, environ: Mappin
         return services.make_github_client(token, args.repo)
 
     token_status = check_token(_token_from(environ, MAINTAINER_TOKEN_NAME), make_maintainer_client, _now())
-    decision = decide_pull_request_update(plan, token_status, github, args.base, args.base_sha, _now())
+    decision = decide_pull_request_update(plan, token_status, github, args.base, args.base_sha)
     _write_json(os.path.join(args.out, 'decision.json'), decision.to_json())
     write_step_outputs(step_outputs(decision, plan), environ)
     return 0

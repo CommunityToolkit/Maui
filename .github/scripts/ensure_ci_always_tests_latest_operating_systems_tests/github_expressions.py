@@ -226,16 +226,11 @@ class _Parser:
 
 
 def evaluate(expression: str, contexts: Dict[str, Any]) -> Any:
-    """Evaluates one expression (without the surrounding dollar-brace markers).
-
-    `contexts` holds `github`, `inputs`, `needs`, `env`, `steps`, `matrix`. The status functions read
-    `contexts['job_status_functions']`, a dict of `always`, `cancelled`, `failure` and `success` callables.
-    """
+    """The status functions read `contexts['job_status_functions']`, a dict of `always`, `cancelled`, `failure` and `success` callables."""
     return _Parser(_tokenize(expression), contexts, expression).parse_whole()
 
 
 def evaluate_template(text: str, contexts: Dict[str, Any]) -> Any:
-    """Evaluates a YAML value: a lone expression keeps its type, a mix of text and expressions becomes a string."""
     stripped = text.strip()
     matches = list(_EXPRESSION_IN_TEMPLATE.finditer(stripped))
     if not matches:

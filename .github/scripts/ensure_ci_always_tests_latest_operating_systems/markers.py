@@ -95,7 +95,12 @@ def read_change_list(body: Optional[str]) -> Optional[List[Dict[str, Any]]]:
         return None
     if not isinstance(parsed, list) or not all(isinstance(entry, dict) for entry in parsed):
         return None
-    return parsed
+    if not all(isinstance(entry.get('inserted_lines') or [], list) for entry in parsed):
+        return None
+    try:
+        return [_change_as_dict(entry) for entry in parsed]
+    except (ValueError, TypeError):
+        return None
 
 
 def has_marker(body: Optional[str], marker: str) -> bool:

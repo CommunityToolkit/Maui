@@ -115,6 +115,16 @@ class ErrorTests(unittest.TestCase):
                                      'os: [ windows-latest, xcode-28 ]\n        outputs:')
         self.assert_unreadable('one label', dotnet_build=dotnet_build)
 
+    def test_a_sixth_apple_label_that_differs(self) -> None:
+        third_label_in_the_os_list = replaced_once(repo_texts()[1], 'os: [ windows-latest, xcode-27 ]\n        outputs:',
+                                                   'os: [ windows-latest, xcode-27, xcode-28 ]\n        outputs:')
+        self.assert_unreadable('expected one os list with one non-Windows label', dotnet_build=third_label_in_the_os_list)
+        text = repo_texts()[0]
+        index = text.index('    device_tests_ios:\n')
+        line_start = text.index('        runs-on: xcode-27\n', index)
+        duplicated = text[:line_start] + '        runs-on: xcode-28\n' + text[line_start:]
+        self.assert_unreadable('expected one runs-on line, found 2', device_tests=duplicated)
+
     def test_apple_label_that_is_not_a_label(self) -> None:
         text = repo_texts()[0]
         device_tests = text.replace('runs-on: xcode-27', 'runs-on: some-box')

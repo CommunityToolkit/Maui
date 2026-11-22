@@ -311,6 +311,9 @@ class RebuildChangeTests(unittest.TestCase):
     def test_none_when_the_old_value_changed_on_main(self) -> None:
         self.assertIsNone(module.rebuild_change(self.pinned, change('android-leg:google_apis_ps16k:37', '37.4', '37.1')))
 
+    def test_none_when_another_leg_on_main_already_has_the_new_level(self) -> None:
+        self.assertIsNone(module.rebuild_change(self.pinned, change('android-leg:google_apis_ps16k:37', '37.0', '37.2')))
+
     def test_none_when_the_leg_is_gone(self) -> None:
         self.assertIsNone(module.rebuild_change(self.pinned, change('android-leg:google_apis_ps16k:99', '99.1', '99.0')))
 
@@ -340,20 +343,18 @@ class RebuildChangeTests(unittest.TestCase):
     def test_android_leg_insert_without_lines_is_dropped(self) -> None:
         self.assertIsNone(module.rebuild_change(self.pinned, change('android-leg:google_apis:38', '38.0', '', 'insert-android-leg')))
 
-    def test_ios_leg_insert_uses_the_include_line_and_is_dropped_when_present(self) -> None:
+    def test_the_kinds_that_only_a_change_for_a_person_holds_are_dropped_when_read_from_a_body(self) -> None:
         lines = ["            -   ios-version: '27.3'"]
-        listed = change('ios-leg:27', '27.3', '', 'insert-ios-leg', 'xcode', inserted_lines=lines)
-        rebuilt = module.rebuild_change(self.pinned, listed)
-        self.assertEqual((rebuilt.line, rebuilt.new), (776, '27.3'))
-        self.assertIsNone(module.rebuild_change(self.pinned, change('ios-leg:26', '26.5', '', 'insert-ios-leg', 'xcode', inserted_lines=lines)))
-
-    def test_runner_label_follows_its_occurrence_and_needs_the_old_label(self) -> None:
+        ios_leg = change('ios-leg:27', '27.3', '', 'insert-ios-leg', 'xcode', inserted_lines=lines)
         pin = 'apple-label:.github/workflows/dotnet-build.yml:build_library'
-        listed = change(pin, 'xcode-28', 'xcode-27', 'replace-runner-label', 'xcode', '.github/workflows/dotnet-build.yml')
-        rebuilt = module.rebuild_change(self.pinned, listed)
-        self.assertEqual((rebuilt.line, rebuilt.old, rebuilt.new), (101, 'xcode-27', 'xcode-28'))
-        self.assertIsNone(module.rebuild_change(self.pinned, dict(listed, old='macos-26')))
-        self.assertIsNone(module.rebuild_change(self.pinned, dict(listed, pin=pin.replace('build_library', 'gone'))))
+        runner_label = change(pin, 'xcode-28', 'xcode-27', 'replace-runner-label', 'xcode', '.github/workflows/dotnet-build.yml')
+        for listed in (ios_leg, runner_label):
+            with self.subTest(kind=listed['kind']):
+                self.assertIsNone(module.rebuild_change(self.pinned, listed))
+
+    def test_a_pin_whose_major_is_a_digit_that_int_rejects_is_dropped(self) -> None:
+        listed = change('android-leg:google_apis_ps16k:\u00b3', '37.3', '37.2')
+        self.assertIsNone(module.rebuild_change(self.pinned, listed))
 
     def test_unknown_kind_file_or_missing_fields_give_none(self) -> None:
         listed = change('android-leg:google_apis_ps16k:37', '37.3', '37.2')

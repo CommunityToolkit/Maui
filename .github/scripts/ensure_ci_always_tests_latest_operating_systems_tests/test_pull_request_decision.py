@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone
 from typing import Any, Dict
 
 from ensure_ci_always_tests_latest_operating_systems.data_types import ThingToCheck
@@ -13,7 +12,6 @@ from .helpers import FakeGitHub
 
 REPO = 'CommunityToolkit/Maui'
 BASE_SHA = 'a' * 40
-NOW = datetime(2026, 11, 21, 12, 0, 0, tzinfo=timezone.utc)
 USABLE = TokenStatus(usable=True, reason='', login='TheCodeTraveler', user_id=1,
                      identity='TheCodeTraveler <1+TheCodeTraveler@users.noreply.github.com>')
 UNUSABLE = TokenStatus(usable=False, reason='rejected')
@@ -36,7 +34,7 @@ def github_client(newest_commit: str = BASE_SHA) -> FakeGitHub:
 
 def decide(plan: Dict[str, Any], token: TokenStatus = USABLE, newest_commit: str = BASE_SHA):
     client = github_client(newest_commit)
-    return decide_pull_request_update(plan, token, client, 'main', BASE_SHA, NOW), client
+    return decide_pull_request_update(plan, token, client, 'main', BASE_SHA), client
 
 
 class OpenOrUpdateTests(unittest.TestCase):

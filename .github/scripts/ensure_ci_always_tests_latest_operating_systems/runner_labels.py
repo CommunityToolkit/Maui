@@ -58,9 +58,10 @@ def parse_runner_images_readme_and_duplicate_labels(markdown: str) -> Tuple[List
     label_column = header.index('YAML Label')
     architecture_column = header.index('Architecture') if 'Architecture' in header else None
     rows: List[RunnerImageRow] = []
-    seen_labels: Dict[str, str] = {}
+    first_line_of_label: Dict[str, int] = {}
     duplicate_labels: List[str] = []
-    for line in lines[header_at + 2:]:
+    for line_index in range(header_at + 2, len(lines)):
+        line = lines[line_index]
         if not line.startswith('|'):
             break
         cells = _table_cells(line)
@@ -68,14 +69,13 @@ def parse_runner_images_readme_and_duplicate_labels(markdown: str) -> Tuple[List
             raise RunnerImagesReadmeError('a row of the runner images README has too few columns: %s' % line.strip())
         image_cell = cells[image_column]
         name = _BADGE_MARKDOWN.sub('', image_cell.split('<br>')[0]).strip()
-        labels = _LABEL_IN_BACKTICKS.findall(cells[label_column])
+        labels = list(dict.fromkeys(_LABEL_IN_BACKTICKS.findall(cells[label_column])))
         if not labels:
             raise RunnerImagesReadmeError('the runner images README row "%s" has no YAML label' % name)
         for label in labels:
-            if label in seen_labels and label not in duplicate_labels:
+            if first_line_of_label.setdefault(label, line_index) != line_index and label not in duplicate_labels:
                 duplicate_labels.append(label)
-            seen_labels.setdefault(label, name)
-        labels = [label for label in labels if seen_labels[label] == name]
+        labels = [label for label in labels if first_line_of_label[label] == line_index]
         if not labels:
             continue
         badges = [word.strip().lower() for word in _BADGE_WORD.findall(image_cell)

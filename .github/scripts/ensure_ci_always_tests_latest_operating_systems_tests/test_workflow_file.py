@@ -6,6 +6,7 @@ import re
 import unittest
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
+from ensure_ci_always_tests_latest_operating_systems import markers
 from ensure_ci_always_tests_latest_operating_systems_tests import github_expressions
 
 WORKFLOW_PATH = os.path.join(
@@ -50,9 +51,9 @@ def code_lines() -> List[Tuple[int, str]]:
     return [(number, line) for number, line in enumerate(read_workflow_lines(), start=1) if without_comment(line).strip()]
 
 
-def run_values() -> List[Tuple[int, str]]:
-    """Every `run:` value with its first line number; every value spans the following lines indented deeper than the key, so no style of block or plain multi-line value hides a line."""
-    lines = read_workflow_lines()
+def run_values(lines: Optional[List[str]] = None) -> List[Tuple[int, str]]:
+    """Reads every deeper line whatever the first line holds, so no block style hides an expression."""
+    lines = read_workflow_lines() if lines is None else lines
     found: List[Tuple[int, str]] = []
     for index, line in enumerate(lines):
         match = re.match(r"^(\s*)(?:-\s+)?run:\s*(.*)$", line)
@@ -72,7 +73,6 @@ def run_values() -> List[Tuple[int, str]]:
 
 
 def read_jobs() -> Dict[str, Dict[str, Any]]:
-    """Jobs with their `name`, `if`, `needs`, `environment` and the line range, read by indentation (jobs sit at 4 spaces)."""
     lines = read_workflow_lines()
     jobs_start = lines.index("jobs:")
     jobs: Dict[str, Dict[str, Any]] = {}
@@ -104,7 +104,6 @@ def read_bot_branch_expression() -> str:
 
 
 def step_blocks() -> List[Tuple[int, List[str]]]:
-    """Steps as (first line number, their lines): a step starts at `-   name:` and ends before the next step or job."""
     lines = read_workflow_lines()
     blocks: List[Tuple[int, List[str]]] = []
     current: Optional[List[str]] = None
@@ -216,21 +215,13 @@ class WorkflowStaticChecks(unittest.TestCase):
         self.assertRegex(in_open[0], r"^\s+token: \$\{\{ secrets\.%s \}\}$" % TOKEN_NAME)
 
     def test_run_value_reader_follows_every_block_style_and_plain_multi_line_values(self) -> None:
-        import tempfile
         samples = ["run: |+\n    echo ${{ github.ref_name }}\n", "run: >+\n    echo ${{ github.ref_name }}\n",
                    "run: |2\n      echo ${{ github.ref_name }}\n", "run: echo hi\n    ${{ github.ref_name }}\n"]
         for sample in samples:
             with self.subTest(sample=sample):
-                with tempfile.TemporaryDirectory() as folder:
-                    path = os.path.join(folder, "workflow.yml")
-                    with open(path, "w", encoding="utf-8") as file:
-                        file.write("jobs:\n    a:\n        steps:\n            -   name: x\n                " + sample.replace("\n    ", "\n                    "))
-                    previous = globals()["WORKFLOW_PATH"]
-                    globals()["WORKFLOW_PATH"] = path
-                    try:
-                        values = run_values()
-                    finally:
-                        globals()["WORKFLOW_PATH"] = previous
+                lines = ("jobs:\n    a:\n        steps:\n            -   name: x\n                "
+                         + sample.replace("\n    ", "\n                    ")).split("\n")
+                values = run_values(lines)
                 self.assertEqual(1, len(values))
                 self.assertIn("${{", values[0][1])
 
@@ -362,20 +353,46 @@ class PublishStepConditions(unittest.TestCase):
     """The PAT is used only by create-pull-request, so its `if:` and the steps around it carry the safety argument of DESIGN 3.2."""
 
     def step_condition_holds(self, step_id: str, decide_open_or_update: Optional[str], created_outcome: str = "success",
-                             operation: str = "created", number: str = "12") -> bool:
+                             operation: str = "created", number: str = "12", earlier_steps: str = "success", cancelled: bool = False) -> bool:
         condition = next(line.split("if:", 1)[1] for line in step_with_id(step_id) if line.strip().startswith("if:"))
         decide_outputs = {} if decide_open_or_update is None else {"open-or-update": decide_open_or_update}
         contexts = {"steps": {
             "decide": {"outputs": decide_outputs, "outcome": "success"},
             "open-or-update": {"outcome": created_outcome, "outputs": {"pull-request-number": number, "pull-request-operation": operation}},
-        }, "job_status_functions": github_expressions.status_functions()}
-        return github_expressions.is_truthy(github_expressions.evaluate_template(condition.strip(), contexts))
+        }, "job_status_functions": github_expressions.status_functions(cancelled=cancelled, needs_results=[earlier_steps])}
+        holds = github_expressions.is_truthy(github_expressions.evaluate_template(condition.strip(), contexts))
+        names_a_status_function = re.search(r"\b(always|cancelled|failure|success)\(", condition) is not None
+        # GitHub adds success() to a step condition that names no status function.
+        implicitly_successful = names_a_status_function or (earlier_steps == "success" and not cancelled)
+        return holds and implicitly_successful
 
     def test_apply_and_open_or_update_run_only_when_decide_says_true(self) -> None:
         for step_id in ("apply", "open-or-update"):
             for decided, runs in (("true", True), ("false", False), ("", False), (None, False)):
                 with self.subTest(step=step_id, decided=decided):
                     self.assertEqual(runs, self.step_condition_holds(step_id, decided))
+
+    def test_apply_and_open_or_update_never_run_after_a_failed_step_or_a_cancelled_run(self) -> None:
+        for step_id in ("apply", "open-or-update"):
+            for earlier_steps, cancelled in (("failure", False), ("success", True), ("failure", True)):
+                with self.subTest(step=step_id, earlier_steps=earlier_steps, cancelled=cancelled):
+                    self.assertFalse(self.step_condition_holds(step_id, "true", earlier_steps=earlier_steps, cancelled=cancelled))
+
+    def test_the_workflow_starts_only_on_schedule_dispatch_and_pull_request(self) -> None:
+        lines = read_workflow_lines()
+        events_in_on = [line.strip()[:-1] for line in lines[lines.index("on:") + 1:lines.index("jobs:")]
+                        if re.match(r"^    [a-z_]+:\s*$", line)]
+        self.assertEqual({"schedule", "workflow_dispatch", "pull_request"}, set(events_in_on))
+
+    def test_create_pull_request_may_stage_only_the_three_pin_files(self) -> None:
+        block = step_with_id("open-or-update")
+        start = next(index for index, line in enumerate(block) if line.strip() == "add-paths: |")
+        paths = set()
+        for line in block[start + 1:]:
+            if not line.strip() or indentation_of(line) <= indentation_of(block[start]):
+                break
+            paths.add(line.strip())
+        self.assertEqual(set(markers.PIN_FILES), paths)
 
     def test_approve_runs_only_for_a_pull_request_that_was_created_updated_or_left_alone(self) -> None:
         for operation in ("created", "updated", "none"):

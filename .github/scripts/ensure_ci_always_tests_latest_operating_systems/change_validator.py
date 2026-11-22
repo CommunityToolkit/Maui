@@ -172,8 +172,7 @@ def _replace_block_problems(path: str, base_lines: List[str], head_lines: List[s
     return failures
 
 
-def _result_problems(path: str, head_text: str) -> List[str]:
-    """Checks that hold for the whole device-tests.yml after the edit: no collisions between legs, or with the coverage job."""
+def _problems_after_the_edit(path: str, head_text: str) -> List[str]:
     try:
         head_legs, _, _ = read_android_legs(head_text)
         coverage_levels = read_coverage_levels(head_text)
@@ -211,7 +210,7 @@ def validate_file_change(path: str, base_text: str, head_text: str) -> List[str]
         except PinnedVersionsFormatError as error:
             return [_problem(path, 1, 'the file before the edit can\'t be read: %s' % error)]
         problems = _device_tests_opcode_problems(path, base_lines, head_lines, opcodes, base)
-        return problems if problems else _result_problems(path, head_text)
+        return problems if problems else _problems_after_the_edit(path, head_text)
 
     problems = []
     for tag, base_start, base_end, head_start, head_end in opcodes:
