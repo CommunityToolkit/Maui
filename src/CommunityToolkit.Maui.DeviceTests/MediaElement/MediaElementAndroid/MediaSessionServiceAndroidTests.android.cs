@@ -72,10 +72,10 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 	// The main looper runs its messages in order: a runnable posted after Media3's report runs after it
 	static Task RunMainLooperMessagesPostedSoFarAsync()
 	{
-		var ran = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var postedRunnableCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		using var mainLooperHandler = new Handler(Looper.MainLooper!);
-		mainLooperHandler.Post(() => ran.SetResult());
-		return ran.Task.WaitAsync(TimeSpan.FromMilliseconds(waitTimeout));
+		mainLooperHandler.Post(() => postedRunnableCompletion.SetResult());
+		return postedRunnableCompletion.Task.WaitAsync(TimeSpan.FromMilliseconds(waitTimeout));
 	}
 
 	[Fact]
@@ -617,7 +617,7 @@ public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
 
 			Assert.Equal(foregroundServiceRefusalMessage, Assert.Single(recorder.FailureMessages));
 			Assert.Equal(MediaElementState.Playing, mediaElement.CurrentState);
-			Assert.DoesNotContain(MediaElementState.Failed, recorder.States);
+			AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
 			Assert.Equal(duration, mediaElement.Duration);
 			Assert.True(GetServicePlayer(handler.Manager!)!.IsPlaying);
 		});
