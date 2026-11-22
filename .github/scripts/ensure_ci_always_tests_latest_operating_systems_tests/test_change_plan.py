@@ -283,6 +283,8 @@ class FamilyIsolationTests(unittest.TestCase):
         self.assertEqual({plan.families['android']['state'], plan.families['xcode']['state']}, {'frozen'})
         self.assertEqual(keys(plan.source_problems), ['source:branch-rules'])
         self.assertEqual(plan.pull_request_action, OPEN_OR_UPDATE)
+        self.assertTrue(any('keeps its 1 android change.' in note for note in plan.notes), plan.notes)
+        self.assertTrue(any('keeps its 1 xcode change.' in note for note in plan.notes), plan.notes)
 
     def test_a_branch_rules_problem_without_an_open_pull_request_makes_no_change(self) -> None:
         night = Night(self, android=android_with_sixteen_kb_37_3(),
@@ -301,6 +303,16 @@ class FamilyIsolationTests(unittest.TestCase):
         self.assertEqual(plan.safe_changes, [])
         self.assertEqual(plan.families['android']['state'], 'frozen')
 
+    def test_a_carried_insert_that_main_now_has_a_leg_for_is_dropped_and_the_bot_does_not_blame_itself(self) -> None:
+        insert = listed_change('android', 'insert-android-leg', '.github/workflows/device-tests.yml',
+                               'android-leg:google_apis:37', '', '37.1')
+        insert['inserted_lines'] = ['x']
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(open_pull_request([insert]))
+        self.assertNotIn('source:change-validator', keys(plan.source_problems))
+        self.assertNotEqual(plan.pull_request_action, LEAVE_ALONE)
+        self.assertEqual(plan.safe_changes, [])
+        self.assertTrue(any('Dropped' in note for note in plan.notes), plan.notes)
+
     def test_a_carried_change_whose_old_value_moved_on_main_is_dropped_with_a_note(self) -> None:
         moved = listed_change('android', 'replace-api-level', '.github/workflows/device-tests.yml', SIXTEEN_KB_PIN,
                               '37.1', '37.3')
@@ -308,6 +320,8 @@ class FamilyIsolationTests(unittest.TestCase):
         plan = night.plan(open_pull_request([moved]))
         self.assertEqual(plan.safe_changes, [])
         self.assertTrue(any('main now has `37.2`' in note for note in plan.notes), plan.notes)
+        self.assertFalse(any('keeps its' in note for note in plan.notes), plan.notes)
+        self.assertTrue(any('has no android changes to keep' in note for note in plan.notes), plan.notes)
         self.assertEqual(plan.pull_request_action, CLOSE)
 
     def test_an_android_problem_does_not_carry_the_xcode_change_of_the_open_pull_request(self) -> None:
@@ -383,6 +397,18 @@ class RequiredCheckRoutingTests(unittest.TestCase):
         if not GIT_IS_MISSING:
             result = night.git_apply_check(patch_path)
             self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_the_steps_apply_then_replace_the_check_right_before_merging_then_another_maintainer_approves(self) -> None:
+        plan = Night(self, android=android_with_sixteen_kb_37_3(), rules=self.rules_requiring_android_37_2()).plan()
+        apply_step, replace_step, approve_step = plan.changes_for_a_person[0].steps
+        self.assertIn('git apply required-check-rename.patch', apply_step)
+        self.assertIn('git apply -3 required-check-rename.patch', apply_step)
+        self.assertIn('Right before merging', replace_step)
+        self.assertIn('`Device Tests / Device Tests (Android API 37.2)` with `Device Tests / Device Tests (Android API 37.3)`',
+                      replace_step)
+        self.assertIn('other pull requests report only the old name', replace_step)
+        self.assertIn('Another maintainer approves', approve_step)
+        self.assertIn('its author cannot', approve_step)
 
     def test_other_changes_of_the_night_still_go_to_the_pull_request(self) -> None:
         night = Night(self, android=android_json(TODAY_RELEASED_FOUR_KB | {'37.1'}, TODAY_RELEASED_SIXTEEN_KB | {'37.3'}),

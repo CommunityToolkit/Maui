@@ -42,8 +42,6 @@ NOTHING = 'nothing'
 
 CHANGE_LIST_KEY_LENGTH = 12
 MAX_DESCRIPTIONS_IN_A_NOTE = 5
-_KEY_CHARACTERS_TO_REPLACE = re.compile(r'[^a-z0-9._:+-]+')
-_RUN_OF_HYPHENS = re.compile(r'-{2,}')
 
 
 @dataclass
@@ -145,12 +143,6 @@ def _read_base_texts(repo_root: str) -> Dict[str, str]:
     return texts
 
 
-def _key_part(text: str) -> str:
-    """Item keys allow only lower-case letters, digits and . _ : + -, so a pin or a version is cleaned to fit."""
-    cleaned = _KEY_CHARACTERS_TO_REPLACE.sub('-', text.lower())
-    return _RUN_OF_HYPHENS.sub('-', cleaned).strip('-')
-
-
 def _patch_file_of(key: str) -> str:
     return 'patches/%s.patch' % key.replace(':', '_')
 
@@ -229,7 +221,8 @@ def _route_required_check_renames(safe_changes: List[SafeChange], required_check
         if not renames:
             staying.append(change)
             continue
-        key = 'required-check-rename:%s:%s' % (_key_part(change.pin), _key_part(change.new or ''))
+        key = 'required-check-rename:%s:%s' % (markers.clean_item_key_part(change.pin), markers.clean_item_key_part(change.new or ''))
+        patch_name = 'required-check-rename.patch'
         renamed_lines = ['`%s` becomes `%s`' % rename for rename in renames]
         for_a_person.append(ChangeForAPerson(
             key=key,
@@ -237,13 +230,22 @@ def _route_required_check_renames(safe_changes: List[SafeChange], required_check
             why='%s would rename a check that the base branch requires: %s. A pull request that renames it can never '
                 'satisfy the old name, so the bot does not open it.' % (markdown_code(change.description),
                                                                          '; '.join(renamed_lines)),
-            steps=['Add the new check name to the required checks of the ruleset that protects the base branch.',
-                   'Apply the patch below, or the change by hand, and open a pull request.',
-                   'After it merges, remove the old check name from the ruleset: %s.'
-                   % ', '.join(markdown_code(old) for old, _ in renames)],
+            steps=_required_check_rename_steps(renames, patch_name),
             changes=[change],
             patch_file=_patch_file_of(key)))
     return staying, for_a_person
+
+
+def _required_check_rename_steps(renames: List[Tuple[str, str]], patch_name: str) -> List[str]:
+    replacements = ', and '.join('%s with %s' % (markdown_code(old), markdown_code(new)) for old, new in renames)
+    return [
+        'Save the patch below as `%s`. On a new branch from `main`, run `git apply %s` (if `main` moved, '
+        '`git apply -3 %s`), then commit, push and open a pull request.' % (patch_name, patch_name, patch_name),
+        'Right before merging, a repo admin replaces the required check%s in the `main` ruleset: %s. Until the change '
+        'is on `main`, other pull requests report only the old name%s.' % (
+            's' if len(renames) > 1 else '', replacements, 's' if len(renames) > 1 else ''),
+        'Another maintainer approves the pull request (its author cannot), and it merges.',
+    ]
 
 
 def _drop_rejected(safe_changes: List[SafeChange], rejected: List[Mapping[str, Any]], reopen_rejected: bool,
@@ -325,8 +327,9 @@ def build_plan(latest_versions_dir: str, macos_runner_images_dir: str, repo_root
     safe_changes: List[SafeChange] = []
     for family in CHANGE_FAMILIES:
         if states[family].is_frozen:
-            safe_changes.extend(_carry_forward(pinned, family, open_pull_request, plan.notes))
-            plan.notes.append(_frozen_note(family, states[family], open_pull_request))
+            carried = _carry_forward(pinned, family, open_pull_request, plan.notes)
+            safe_changes.extend(carried)
+            plan.notes.append(_frozen_note(family, states[family], open_pull_request, len(carried)))
         else:
             safe_changes.extend(family_plans[family].safe_changes)
 
@@ -375,7 +378,8 @@ def _run_planners(plan: Plan, pinned: PinnedVersions, latest_versions_dir: str, 
     }
     if runner_images.get('status') == 'ok':
         rows = [RunnerImageRow.from_json(row) for row in runner_images.get('rows') or []]
-        family_plans[runner_labels.RUNNER_LABELS_FAMILY] = runner_labels.check_runner_labels(pinned, rows)
+        family_plans[runner_labels.RUNNER_LABELS_FAMILY] = runner_labels.check_runner_labels(
+            pinned, rows, list(runner_images.get('duplicate_labels') or []))
     else:
         unreadable = FamilyPlan(family=runner_labels.RUNNER_LABELS_FAMILY)
         unreadable.source_problems.append(SourceProblem(
@@ -412,9 +416,13 @@ def _collect_problems_and_things(plan: Plan, bump_state: Mapping[str, Any], bran
     _add_once_by_key(plan.things_to_check, things)
 
 
-def _frozen_note(family: str, state: _FamilyState, open_pull_request: Optional[Mapping[str, Any]]) -> str:
+def _frozen_note(family: str, state: _FamilyState, open_pull_request: Optional[Mapping[str, Any]],
+                 carried_count: int) -> str:
+    if open_pull_request and carried_count:
+        return 'The %s changes are on hold tonight (%s); the open pull request keeps its %d %s change%s.' % (
+            family, state.reason, carried_count, family, '' if carried_count == 1 else 's')
     if open_pull_request:
-        return 'The %s changes are on hold tonight (%s); the open pull request keeps its %s changes.' % (
+        return 'The %s changes are on hold tonight (%s); the open pull request has no %s changes to keep.' % (
             family, state.reason, family)
     return 'The %s changes are on hold tonight (%s), and no pull request is open, so none were made.' % (
         family, state.reason)
@@ -442,14 +450,12 @@ def _write_text(path: str, text: str) -> None:
 
 
 def patch_of(changes: List[SafeChange], base_texts: Mapping[str, str]) -> str:
-    """One patch over every file the changes touch, in the order of the pin files."""
     touched = {change.file for change in changes}
     head_texts = apply_changes_to_texts({path: base_texts[path] for path in touched}, changes)
     return ''.join(unified_diff(path, base_texts[path], head_texts[path]) for path in markers.PIN_FILES if path in touched)
 
 
 def write_plan_files(plan: Plan, repo_root: str, out_dir: str) -> Dict[str, str]:
-    """Returns the step outputs the workflow reads."""
     base_texts = _read_base_texts(repo_root)
     changes_patch = patch_of(plan.safe_changes, base_texts) if plan.safe_changes else ''
     body = pull_request_text.render_pull_request_body(plan)

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 from .version_numbers import AndroidLevel, parse_android_level
 
@@ -68,17 +68,23 @@ class IosLeg:
                    entry_end=data['entry_end'])
 
 
+class LabelOccurrence(NamedTuple):
+    file: str
+    line: int
+    job_id: str
+
+
 @dataclass
 class AppleLabel:
     label: str
-    occurrences: List[Tuple[str, int, str]]  # (file, line, job id)
+    occurrences: List[LabelOccurrence]
 
     def to_json(self) -> Dict[str, Any]:
         return {'label': self.label, 'occurrences': [list(entry) for entry in self.occurrences]}
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]) -> 'AppleLabel':
-        return cls(label=data['label'], occurrences=[(entry[0], entry[1], entry[2]) for entry in data['occurrences']])
+        return cls(label=data['label'], occurrences=[LabelOccurrence(entry[0], entry[1], entry[2]) for entry in data['occurrences']])
 
 
 @dataclass
@@ -186,7 +192,7 @@ class SafeChange:
     old: Optional[str]
     new: Optional[str]
     inserted_lines: List[str]
-    pin: str  # a stable id: env:<KEY>, android-leg:<target>:<major>, apple-label:<file>:<job id>, ios-leg:<major>
+    pin: str  # stable across nights so rejections and carried changes match the same change
     description: str
     source: str
 
@@ -209,7 +215,7 @@ class ChangeForAPerson:
     why: str
     steps: List[str]
     changes: List[SafeChange]
-    patch_file: str  # patches/<key with : replaced by _>.patch
+    patch_file: str
 
     def to_json(self) -> Dict[str, Any]:
         return {'key': self.key, 'title': self.title, 'why': self.why, 'steps': list(self.steps),

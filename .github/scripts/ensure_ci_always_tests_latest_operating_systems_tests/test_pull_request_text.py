@@ -133,6 +133,13 @@ class BodyTests(unittest.TestCase):
         change.source = 'x|y'
         self.assertIn('`x\\|y`', render_pull_request_body(plan_with([change])))
 
+    def test_a_xcode_change_shows_the_workload_set_and_the_image_build(self) -> None:
+        change = sample_xcode_change()
+        change.source = 'workload-sets:11.0.100.2+macos-runner-image:xcode-27@20261204.0400'
+        row = [line for line in render_pull_request_body(plan_with([change])).split('\n')
+               if line.startswith('| `Sample Xcode')][0]
+        self.assertIn('workload set `11.0.100.2`; `xcode-27` image `20261204.0400`', row)
+
     def test_a_carried_change_says_where_it_came_from(self) -> None:
         change = sixteen_kb_change()
         change.source = 'carried-forward-from-the-open-pull-request'

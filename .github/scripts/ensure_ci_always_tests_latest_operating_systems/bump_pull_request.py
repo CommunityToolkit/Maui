@@ -1,6 +1,7 @@
 """Reads the bot's own pull requests, so a night's plan knows what is open, what a person touched and what was rejected."""
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from . import markers
@@ -16,6 +17,7 @@ _ANDROID_FILE = markers.PIN_FILES[1]
 _SHARED_ENV_FILE = markers.PIN_FILES[0]
 _CARRIED_SOURCE = 'carried-forward-from-the-open-pull-request'
 _ANDROID_LEVEL_KINDS = ('replace-api-level', 'insert-android-leg')
+_XCODE_VERSION_KINDS = ('set-xcode-version',)
 
 _READ_CHECKS_QUERY = """
 query ReadBumpPullRequestChecks($owner: String!, $name: String!, $number: Int!) {
@@ -163,6 +165,8 @@ def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[S
     inserted_lines = list(change.get('inserted_lines') or [])
     if kind in _ANDROID_LEVEL_KINDS and not _parse_as_android_levels(new, old):
         return None
+    if kind in _XCODE_VERSION_KINDS and not _is_xcode_version_text(new, old):
+        return None
     rebuilders = {
         'set-xcode-version': _rebuild_xcode_version,
         'replace-api-level': _rebuild_api_level,
@@ -174,6 +178,10 @@ def rebuild_change(pinned: PinnedVersions, change: Dict[str, Any]) -> Optional[S
     if rebuild is None or change.get('file') not in markers.PIN_FILES:
         return None
     return rebuild(pinned, change, pin, old, new, inserted_lines)
+
+
+def _is_xcode_version_text(*texts: Optional[str]) -> bool:
+    return all(re.fullmatch(r'\d+\.\d+', text, re.ASCII) for text in texts if text)
 
 
 def _parse_as_android_levels(*texts: Optional[str]) -> bool:

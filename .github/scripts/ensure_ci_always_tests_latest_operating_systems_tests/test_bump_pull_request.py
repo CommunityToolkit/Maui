@@ -8,7 +8,8 @@ from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiErro
 from ensure_ci_always_tests_latest_operating_systems.markers import (CLOSED_BY_BOT_MARKER, COMMIT_TRAILER,
                                                                      PULL_REQUEST_MARKER, change_list_marker)
 from ensure_ci_always_tests_latest_operating_systems_tests.helpers import FakeGitHub
-from ensure_ci_always_tests_latest_operating_systems_tests.test_pinned_versions import read_with
+from ensure_ci_always_tests_latest_operating_systems_tests.helpers import fixture
+from ensure_ci_always_tests_latest_operating_systems_tests.test_pinned_versions import read_with, replaced_once
 
 BRANCH = 'automation/ensure-ci-always-tests-latest-operating-systems'
 PULLS = '/repos/o/r/pulls'
@@ -268,6 +269,40 @@ class RebuildChangeTests(unittest.TestCase):
         self.assertEqual(rebuilt.pin, 'android-leg:google_apis_ps16k:37')
         self.assertEqual(rebuilt.family, 'android')
 
+    def test_a_line_that_moved_on_main_is_found_where_it_is_now(self) -> None:
+        text = fixture('repo/device-tests.yml').decode('utf-8')
+        moved = replaced_once(text, "                    # Android 17 with 4 KB pages.\n",
+                              "                    # a\n                    # b\n                    # c\n"
+                              "                    # Android 17 with 4 KB pages.\n")
+        rebuilt = module.rebuild_change(read_with(device_tests=moved),
+                                        change('android-leg:google_apis_ps16k:37', '37.3', '37.2'))
+        self.assertEqual(rebuilt.line, 415 + 3)
+
+    def test_a_carried_insert_is_dropped_when_main_already_has_a_leg_of_that_major_for_the_target(self) -> None:
+        listed = change('android-leg:google_apis_ps16k:37', '37.5', '', 'insert-android-leg', inserted_lines=['x'])
+        self.assertIsNone(module.rebuild_change(self.pinned, listed))
+
+    def test_a_carried_insert_is_dropped_when_main_has_the_same_level_written_differently(self) -> None:
+        listed = change('android-leg:google_apis:37', '37', '', 'insert-android-leg', inserted_lines=['x'])
+        self.assertIsNone(module.rebuild_change(self.pinned, listed))
+
+    def test_a_carried_insert_gets_its_lines_from_main_not_from_the_pull_request_body(self) -> None:
+        listed = change('android-leg:google_apis_ps16k:38', '38.0', '', 'insert-android-leg',
+                        inserted_lines=['            -   run: rm -rf /'])
+        rebuilt = module.rebuild_change(self.pinned, listed)
+        self.assertNotIn('rm -rf', '\n'.join(rebuilt.inserted_lines))
+        self.assertIn("api-level: '38.0'", '\n'.join(rebuilt.inserted_lines))
+
+    def test_a_malformed_level_or_version_is_dropped_without_a_crash(self) -> None:
+        for kind, pin, old, new in (('replace-api-level', 'android-leg:google_apis_ps16k:37', '37.2', '38.x'),
+                                    ('replace-api-level', 'android-leg:google_apis_ps16k:37', 'x', '37.3'),
+                                    ('insert-android-leg', 'android-leg:google_apis:38', '', '38.x')):
+            with self.subTest(new=new):
+                self.assertIsNone(module.rebuild_change(self.pinned, change(pin, new, old, kind, inserted_lines=['x'])))
+        xcode = change('env:CommunityToolkitLibrary_Xcode_Version', '27.x', '27.2', 'set-xcode-version', 'xcode',
+                       '.github/workflows/shared.env')
+        self.assertIsNone(module.rebuild_change(self.pinned, xcode))
+
     def test_api_level_line_is_read_from_main_not_from_the_pull_request(self) -> None:
         listed = change('android-leg:google_apis:37', '37.1', '37.0')
         listed['line'] = 1
@@ -292,10 +327,11 @@ class RebuildChangeTests(unittest.TestCase):
         self.assertIsNone(module.rebuild_change(self.pinned, listed))
 
     def test_android_leg_insert_goes_after_the_highest_lower_leg(self) -> None:
-        lines = ["            -   api-level: '38.0'"]
-        listed = change('android-leg:google_apis_ps16k:38', '38.0', '', 'insert-android-leg', inserted_lines=lines)
+        listed = change('android-leg:google_apis_ps16k:38', '38.0', '', 'insert-android-leg', inserted_lines=['stale'])
         rebuilt = module.rebuild_change(self.pinned, listed)
-        self.assertEqual((rebuilt.line, rebuilt.old, rebuilt.new, rebuilt.inserted_lines), (417, None, '38.0', lines))
+        self.assertEqual((rebuilt.line, rebuilt.old, rebuilt.new), (417, None, '38.0'))
+        self.assertEqual(rebuilt.inserted_lines, ["                    -   api-level: '38.0'",
+                                                  '                        target: google_apis_ps16k'])
 
     def test_android_leg_insert_is_dropped_once_main_has_that_level(self) -> None:
         listed = change('android-leg:google_apis_ps16k:37', '37.2', '', 'insert-android-leg', inserted_lines=['x'])

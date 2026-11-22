@@ -30,6 +30,16 @@ _CHANGES_MARKER_IN_BODY = re.compile(re.escape('<!-- ' + MARKER_PREFIX + ':chang
 _CHANGE_LIST_FIELDS = ('family', 'kind', 'file', 'pin', 'old', 'new', 'inserted_lines')
 
 
+_KEY_CHARACTERS_TO_REPLACE = re.compile(r'[^a-z0-9._:+-]+')
+_RUN_OF_HYPHENS = re.compile(r'-{2,}')
+
+
+def clean_item_key_part(text: str) -> str:
+    """Item keys allow only lower-case letters, digits and . _ : + -, so a pin, a label or a version is cleaned to fit."""
+    cleaned = _KEY_CHARACTERS_TO_REPLACE.sub('-', text.lower())
+    return _RUN_OF_HYPHENS.sub('-', cleaned).strip('-')
+
+
 def is_valid_item_key(key: str) -> bool:
     return isinstance(key, str) and _ITEM_KEY.fullmatch(key) is not None and '--' not in key
 

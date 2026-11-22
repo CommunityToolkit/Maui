@@ -37,6 +37,11 @@ def _table_cells(line: str) -> List[str]:
 
 
 def parse_runner_images_readme(markdown: str) -> List[RunnerImageRow]:
+    return parse_runner_images_readme_and_duplicate_labels(markdown)[0]
+
+
+def parse_runner_images_readme_and_duplicate_labels(markdown: str) -> Tuple[List[RunnerImageRow], List[str]]:
+    """A label listed in two rows keeps its first row: the README is edited by hand, and one slip must not stop the bot."""
     lines = markdown.splitlines()
     header_at = None
     for index, line in enumerate(lines):
@@ -54,6 +59,7 @@ def parse_runner_images_readme(markdown: str) -> List[RunnerImageRow]:
     architecture_column = header.index('Architecture') if 'Architecture' in header else None
     rows: List[RunnerImageRow] = []
     seen_labels: Dict[str, str] = {}
+    duplicate_labels: List[str] = []
     for line in lines[header_at + 2:]:
         if not line.startswith('|'):
             break
@@ -66,10 +72,12 @@ def parse_runner_images_readme(markdown: str) -> List[RunnerImageRow]:
         if not labels:
             raise RunnerImagesReadmeError('the runner images README row "%s" has no YAML label' % name)
         for label in labels:
-            if label in seen_labels:
-                raise RunnerImagesReadmeError('the runner images README lists the label %s twice (%s and %s)'
-                                              % (label, seen_labels[label], name))
-            seen_labels[label] = name
+            if label in seen_labels and label not in duplicate_labels:
+                duplicate_labels.append(label)
+            seen_labels.setdefault(label, name)
+        labels = [label for label in labels if seen_labels[label] == name]
+        if not labels:
+            continue
         badges = [word.strip().lower() for word in _BADGE_WORD.findall(image_cell)
                   if word.strip() and word.strip().lower() != _NOT_A_BADGE]
         state_key = _ROLLOUT_STATE_KEY.search(image_cell)
@@ -78,7 +86,7 @@ def parse_runner_images_readme(markdown: str) -> List[RunnerImageRow]:
                                    rollout_state_key=state_key.group(1) if state_key else None))
     if not rows:
         raise RunnerImagesReadmeError('the runner images README table has no rows')
-    return rows
+    return rows, duplicate_labels
 
 
 def parse_rollout_state(data: bytes) -> RolloutState:
@@ -104,9 +112,10 @@ def _rows_holding(rows: Iterable[RunnerImageRow], labels: Iterable[str]) -> List
 
 def read_runner_images(downloader: Any, labels: Iterable[str]) -> Dict[str, Any]:
     try:
-        rows = parse_runner_images_readme(downloader.get(README_URL).decode('utf-8-sig'))
+        rows, duplicate_labels = parse_runner_images_readme_and_duplicate_labels(
+            downloader.get(README_URL).decode('utf-8-sig'))
     except UnreadableSourceError as error:
-        return {'status': 'error', 'error': str(error), 'rows': [], 'rollout_states': {},
+        return {'status': 'error', 'error': str(error), 'rows': [], 'duplicate_labels': [], 'rollout_states': {},
                 'rollout_states_error': None}
     state_keys: List[str] = []
     for row in _rows_holding(rows, labels):
@@ -123,7 +132,8 @@ def read_runner_images(downloader: Any, labels: Iterable[str]) -> Dict[str, Any]
             states[key] = None
             failures.append(str(error))
     every_request_failed = bool(state_keys) and len(failures) == len(state_keys)
-    return {'status': 'ok', 'rows': [row.to_json() for row in rows], 'rollout_states': states,
+    return {'status': 'ok', 'rows': [row.to_json() for row in rows], 'duplicate_labels': duplicate_labels,
+            'rollout_states': states,
             'rollout_states_error': '; '.join(failures) if every_request_failed else None}
 
 
@@ -173,8 +183,13 @@ def _readme_labels_above_every_pinned(rows: List[RunnerImageRow], pinned_labels:
     return sorted((number, label) for label, number in higher.items())
 
 
-def check_runner_labels(pinned: PinnedVersions, rows: List[RunnerImageRow]) -> FamilyPlan:
+def check_runner_labels(pinned: PinnedVersions, rows: List[RunnerImageRow],
+                        duplicate_labels: Optional[List[str]] = None) -> FamilyPlan:
     plan = FamilyPlan(family=RUNNER_LABELS_FAMILY)
+    for label in duplicate_labels or []:
+        plan.things_to_check.append(ThingToCheck(
+            key='runner-images-readme-duplicate-label:%s' % label,
+            text='The runner images README lists %s twice; the bot used the first row.' % markdown_code(label)))
     pinned_labels = [label for family in sorted(pinned.runner_labels) for label in pinned.runner_labels[family]]
     for label in pinned_labels:
         row = _row_of(rows, label)

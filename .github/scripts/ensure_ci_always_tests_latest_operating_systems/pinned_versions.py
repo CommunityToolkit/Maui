@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
-from .data_types import AndroidLeg, AppleLabel, EnvValue, IosLeg, PinnedVersions
+from .data_types import AndroidLeg, AppleLabel, EnvValue, IosLeg, LabelOccurrence, PinnedVersions
 from .errors import PinnedVersionsFormatError
 from .markers import PIN_FILES
 from .version_numbers import AndroidLevel, parse_android_level
@@ -323,7 +323,7 @@ def _read_ios_legs(device_tests_text: str) -> IosLegsRead:
     return IosLegsRead(legs, include_line, dash_prefix)
 
 
-def _device_tests_apple_labels(lines: List[str]) -> Tuple[List[Tuple[str, int, str]], List[str]]:
+def _device_tests_apple_labels(lines: List[str]) -> Tuple[List[LabelOccurrence], List[str]]:
     found = []
     for job_id in DEVICE_TESTS_APPLE_JOBS:
         first, last = find_job_block(lines, job_id)
@@ -337,10 +337,10 @@ def _device_tests_apple_labels(lines: List[str]) -> Tuple[List[Tuple[str, int, s
             raise PinnedVersionsFormatError(
                 '%s job %s: expected one runs-on line, found %d' % (DEVICE_TESTS_FILE, job_id, len(matches)))
         found.append((DEVICE_TESTS_FILE, matches[0][0], job_id, matches[0][1]))
-    return [(file, number, job_id) for file, number, job_id, _ in found], [label for *_, label in found]
+    return [LabelOccurrence(file, number, job_id) for file, number, job_id, _ in found], [label for *_, label in found]
 
 
-def _dotnet_build_apple_labels(lines: List[str]) -> Tuple[List[Tuple[str, int, str]], List[str]]:
+def _dotnet_build_apple_labels(lines: List[str]) -> Tuple[List[LabelOccurrence], List[str]]:
     occurrences = []
     labels = []
     for job_id in DOTNET_BUILD_APPLE_JOBS:
@@ -355,7 +355,7 @@ def _dotnet_build_apple_labels(lines: List[str]) -> Tuple[List[Tuple[str, int, s
         if len(matches) != 1 or len(matches[0][1]) != 1:
             raise PinnedVersionsFormatError(
                 '%s job %s: expected one os list with one non-Windows label' % (DOTNET_BUILD_FILE, job_id))
-        occurrences.append((DOTNET_BUILD_FILE, matches[0][0], job_id))
+        occurrences.append(LabelOccurrence(DOTNET_BUILD_FILE, matches[0][0], job_id))
         labels.append(matches[0][1][0])
     return occurrences, labels
 

@@ -8,13 +8,10 @@ from typing import Any, Dict, List, Mapping, Optional, Set
 
 from .errors import GitHubApiError
 from .markdown_text import markdown_code
-from .markers import (CLOSED_BY_BOT_MARKER, ISSUE_MARKER, ISSUE_TITLE, LABELS, TOKEN_ENVIRONMENT, TOKEN_SECRET_NAME,
+from .markers import (CLOSED_BY_BOT_MARKER, PULL_REQUEST_JOB_NAME, clean_item_key_part, ISSUE_MARKER, ISSUE_TITLE, LABELS, TOKEN_ENVIRONMENT, TOKEN_SECRET_NAME,
                       WORKFLOW_FILE, has_marker, item_marker, read_item_keys)
 
-try:
-    from .pull_request_text import MAX_BODY
-except ImportError:  # pull_request_text.py is written by another unit; the design fixes its value
-    MAX_BODY = 60000
+from .pull_request_text import MAX_BODY
 
 SECTION_CHANGES = 'Changes a person must make'
 SECTION_THINGS_TO_CHECK = 'Things to check'
@@ -29,7 +26,7 @@ JOB_NAMES = {
     'read-latest-versions': 'Read the newest Android, Xcode and runner versions',
     'inspect-macos-runner-image': 'Inspect the macOS runner image',
     'plan-changes': 'Plan the version changes',
-    'open-or-update-pull-request': 'Open or update the bump pull request, then turn on auto-merge and approve it',
+    'open-or-update-pull-request': PULL_REQUEST_JOB_NAME,
 }
 STEP_NAMES = {
     'decide': 'Check the token and decide what to do with the pull request',
@@ -59,6 +56,18 @@ _UPDATED_BY_LINE = re.compile(r'Updated by \[run [^\]]*\]\([^)]*\) on [^\n]*? UT
 _FAILURES_SECTION = re.compile(r'\n*### ' + re.escape(SECTION_FAILURES) + r' ###\n.*\Z', re.DOTALL)
 
 
+def _first_sentence_outside_code_spans(text: str) -> str:
+    """Cutting inside a code span would leave it open, and the text after it would render as live Markdown."""
+    inside_code_span = False
+    for position, character in enumerate(text):
+        if character == '`':
+            inside_code_span = not inside_code_span
+        elif (not inside_code_span and character in '.!?' and position + 1 < len(text)
+              and text[position + 1].isspace()):
+            return text[:position + 1]
+    return text
+
+
 @dataclass
 class IssueItem:
     """For a change a person must make, text is the reason and steps are numbered; elsewhere text is the whole bullet."""
@@ -72,8 +81,7 @@ class IssueItem:
 
     def summary(self) -> str:
         words = self.title or self.text
-        first_sentence = re.split(r'(?<=[.!?])\s', words.strip(), maxsplit=1)[0]
-        return first_sentence.replace('\n', ' ')
+        return _first_sentence_outside_code_spans(words.strip()).replace('\n', ' ')
 
 
 @dataclass
@@ -191,6 +199,8 @@ def collect_items(plan: Optional[Mapping[str, Any]], decision: Optional[Mapping[
             items.failures.append(IssueItem(
                 key=_failed_step_key(outcome_name), section=SECTION_FAILURES,
                 text='The step %s of the bump job failed (%%(log)s).' % markdown_code(step_title)))
+    for item in items.everything():
+        item.key = clean_item_key_part(item.key)
     return items
 
 
@@ -342,6 +352,14 @@ def _comment_about_new_items(items: List[IssueItem], run_url: str) -> str:
     return '\n'.join(lines)
 
 
+def _close_older_duplicates(github: Any, older_open_issues: List[Dict[str, Any]], issues_path: str) -> None:
+    """A create that timed out and was retried can leave two open issues; closed by the bot, they dismiss nothing."""
+    for older in older_open_issues:
+        body = (older.get('body') or '').rstrip('\n') + '\n\n' + CLOSED_BY_BOT_MARKER + '\n'
+        github.patch('%s/%s' % (issues_path, older['number']), {'body': body, 'state': 'closed',
+                                                                'state_reason': 'not_planned'})
+
+
 def sync_issue(github: Any, items: Items, run_url: str, now: datetime) -> Dict[str, Any]:
     result: Dict[str, Any] = {'action': 'none', 'number': None, 'commented': False, 'closed': False,
                               'exit_code': 1 if items.reports_a_source_problem_or_failure() else 0}
@@ -359,6 +377,7 @@ def sync_issue(github: Any, items: Items, run_url: str, now: datetime) -> Dict[s
         return result
 
     issue = open_candidates[-1]
+    _close_older_duplicates(github, open_candidates[:-1], issues_path)
     number = issue['number']
     path = '%s/%s' % (issues_path, number)
     old_body = issue.get('body') or ''

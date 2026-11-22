@@ -70,6 +70,10 @@ def _readme_rows(runner_images: Optional[Mapping[str, Any]]) -> Optional[List[Di
     return [row if isinstance(row, dict) else row.to_json() for row in rows]
 
 
+def _ambiguous_rollout_reason(label: str) -> str:
+    return 'the runner images README lists %s twice, so its rollout state is ambiguous; Xcode change waits' % markdown_code(label)
+
+
 def _readme_lists_label(rows: Optional[List[Dict[str, Any]]], label: str) -> bool:
     return any(label in row.get('labels', []) for row in rows or [])
 
@@ -237,6 +241,7 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
     apple_ga = ga_xcode_versions(apple_listing)
     apple_rollout, _ = _rollout_readiness(apple_listing, rollout_states)
     apple_image_name = (apple_listing.get('image') or {}).get('name') or apple_label
+    duplicated_labels = set((runner_images or {}).get('duplicate_labels') or [])
 
     toolkit_net_version = pinned.shared_env['TOOLKIT_NET_VERSION'].value
     library_band = _library_effective_band(required_xcode, toolkit_net_version, apple_listing, plan.notes)
@@ -280,6 +285,10 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
                                   % (name, required))
                 decision.required = None
                 continue
+        if apple_label in duplicated_labels:
+            rollout_blocked_reasons.append(_ambiguous_rollout_reason(apple_label))
+            decision.required = None
+            continue
         if apple_rollout != 'ready':
             reason = 'rollout of %s in progress; Xcode change waits' % markdown_code(apple_image_name)
             if apple_rollout == 'unknown':
@@ -293,6 +302,10 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
             decision.safe_change_to = required
             continue
         target_label = 'xcode-%d' % major(required)
+        if target_label in duplicated_labels:
+            rollout_blocked_reasons.append(_ambiguous_rollout_reason(target_label))
+            decision.required = None
+            continue
         if (target_label != apple_label and _readme_lists_label(readme_rows, target_label)
                 and _usable_listing(listings, target_label) is not None
                 and required in ga_xcode_versions(listings[target_label])):
@@ -321,7 +334,7 @@ def plan_xcode_changes(pinned: PinnedVersions, required_xcode: Mapping[str, Any]
     if not moved_to_a_new_label:
         for decision in decisions:
             if decision.safe_change_to is not None and decision.safe_change_to != decision.current:
-                plan.safe_changes.append(_set_xcode_version_change(pinned, decision, apple_label))
+                plan.safe_changes.append(_set_xcode_version_change(pinned, decision, apple_label, listings[apple_label]))
     return plan
 
 
@@ -347,14 +360,16 @@ def _prerelease_suffix(listings: Mapping[str, Any], required: str) -> str:
     return ' Seen only as a beta or release candidate: %s.' % ', '.join(prerelease) if prerelease else ''
 
 
-def _set_xcode_version_change(pinned: PinnedVersions, decision: _SdkDecision, source_label: str) -> SafeChange:
+def _set_xcode_version_change(pinned: PinnedVersions, decision: _SdkDecision, source_label: str,
+                              source_listing: Mapping[str, Any]) -> SafeChange:
     value = pinned.shared_env[decision.key]
     new = decision.safe_change_to if decision.safe_change_to is not None else decision.required
     return SafeChange(
         family=FAMILY, kind='set-xcode-version', file=SHARED_ENV_FILE, line=value.line, old=value.value, new=new,
         inserted_lines=[], pin='env:%s' % decision.key,
         description='Use Xcode %s for the %s build (workload set %s)' % (new, decision.name, decision.set_version),
-        source='workload-sets+macos-runner-image:%s' % source_label)
+        source='workload-sets:%s+macos-runner-image:%s@%s' % (
+            decision.set_version, source_label, (source_listing.get('image') or {}).get('version') or 'unknown'))
 
 
 def _what_the_workload_sets_need(switching: List[_SdkDecision]) -> str:
@@ -418,7 +433,7 @@ def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, de
     for decision in decisions:
         if (decision.switch_to_label or decision.safe_change_to is not None) and decision.required != decision.current:
             decision.safe_change_to = decision.required
-            changes.append(_set_xcode_version_change(pinned, decision, target))
+            changes.append(_set_xcode_version_change(pinned, decision, target, target_listing))
     changes.extend(_apple_label_changes(pinned, apple_label, target, source))
     apple_listing = listings[apple_label]
     highest_ga = max(ga_xcode_versions(apple_listing), key=numeric_key, default=None)

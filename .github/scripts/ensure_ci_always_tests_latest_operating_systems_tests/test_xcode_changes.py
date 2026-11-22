@@ -230,6 +230,22 @@ class SameLabelBumpTests(unittest.TestCase):
         self.assertEqual([thing.key for thing in result.things_to_check], ['rollout-state-unknown:xcode-27-arm64'])
         self.assertTrue(result.deferred)
 
+    def test_a_duplicated_apple_label_defers_the_xcode_change_with_a_note(self) -> None:
+        images = dict(runner_images(), duplicate_labels=['xcode-27'])
+        result = plan(required=required_xcode('27.3', '27.3'),
+                      the_listings=listings(**{'xcode-27': self.newer_xcode_listing('xcode-27-20261104')}), images=images)
+        self.assertEqual(result.safe_changes, [])
+        self.assertEqual(len(result.deferred), 1)
+        self.assertIn('lists `xcode-27` twice', result.deferred[0])
+        self.assertTrue(any('lists `xcode-27` twice' in note for note in result.notes), result.notes)
+
+    def test_a_duplicated_label_that_is_not_involved_defers_nothing(self) -> None:
+        images = dict(runner_images(), duplicate_labels=['macos-15'])
+        result = plan(required=required_xcode('27.3', '27.3'),
+                      the_listings=listings(**{'xcode-27': self.newer_xcode_listing('xcode-27-20261104')}), images=images)
+        self.assertEqual(len(result.safe_changes), 2)
+        self.assertEqual(result.deferred, [])
+
     def test_a_beta_only_xcode_is_not_on_the_image(self) -> None:
         states = {'xcode-27-arm64': rollout_state('20261119.0378')}
         result = plan(required=required_xcode('27.3', '27.3'),
@@ -321,6 +337,12 @@ class LabelSwitchTests(unittest.TestCase):
         self.assertEqual(change.patch_file, 'patches/xcode-label_xcode-27_xcode-28.patch')
         kinds = sorted(c.kind for c in change.changes)
         self.assertEqual(kinds, ['insert-ios-leg'] + ['replace-runner-label'] * 5 + ['set-xcode-version'] * 2)
+
+    def test_a_duplicated_target_label_defers_the_switch(self) -> None:
+        images = dict(runner_images(with_xcode_28=True), duplicate_labels=['xcode-28'])
+        result = plan(required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(), images=images)
+        self.assertEqual((result.safe_changes, result.changes_for_a_person), ([], []))
+        self.assertTrue(any('lists `xcode-28` twice' in reason for reason in result.deferred), result.deferred)
 
     def test_the_patch_edits_hold_the_values_the_new_label_needs(self) -> None:
         result = plan(required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(),

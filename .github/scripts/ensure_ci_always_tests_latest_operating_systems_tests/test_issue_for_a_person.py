@@ -112,6 +112,26 @@ class CollectItemsTests(unittest.TestCase):
         self.assertFalse(items.plan_available)
 
 
+class ItemKeyAndSummaryTests(unittest.TestCase):
+    def test_an_upper_case_key_is_cleaned_instead_of_crashing_the_render(self) -> None:
+        plan = plan_of(things_to_check=[thing('runner-label-missing:macOS-15'), thing('rollout-state-unknown:Image Name_1')])
+        items = module.collect_items(plan, None, None, None, None, None)
+        self.assertEqual([item.key for item in items.things_to_check],
+                         ['runner-label-missing:macos-15', 'rollout-state-unknown:image-name_1'])
+        body = module.render_issue_body(items, RUN_URL, NOW)
+        self.assertEqual(read_item_keys(body), ['runner-label-missing:macos-15', 'rollout-state-unknown:image-name_1'])
+
+    def test_the_summary_never_cuts_inside_a_code_span(self) -> None:
+        item = module.IssueItem(key='a', section='x', text='A commit `ping @octocat. thanks` was pushed. More.')
+        self.assertEqual(item.summary(), 'A commit `ping @octocat. thanks` was pushed.')
+
+    def test_the_summary_of_a_text_without_a_sentence_end_is_the_whole_text(self) -> None:
+        self.assertEqual(module.IssueItem(key='a', section='x', text='Just `one. two`').summary(), 'Just `one. two`')
+
+    def test_the_summary_of_plain_text_stops_at_the_first_sentence(self) -> None:
+        self.assertEqual(module.IssueItem(key='a', section='x', text='First one. Second one.').summary(), 'First one.')
+
+
 class ReadPushErrorTests(unittest.TestCase):
     JOBS = '/repos/o/r/actions/runs/4242/attempts/2/jobs'
 
@@ -247,7 +267,16 @@ class SyncIssueTests(unittest.TestCase):
     def test_newest_open_issue_is_the_one_updated(self) -> None:
         github = fake([issue_entry(5, body_with('a')), issue_entry(6, body_with('a'))])
         module.sync_issue(github, self.things('a'), RUN_URL, NOW)
-        self.assertEqual([c.path for c in github.write_calls()], ['%s/6' % ISSUES])
+        self.assertIn('%s/6' % ISSUES, [c.path for c in github.write_calls()])
+
+    def test_older_open_duplicates_are_closed_by_the_bot_so_they_dismiss_nothing(self) -> None:
+        github = fake([issue_entry(5, body_with('a')), issue_entry(6, body_with('a'))])
+        module.sync_issue(github, self.things('a'), RUN_URL, NOW)
+        older_patch = [c for c in github.write_calls() if c.path == '%s/5' % ISSUES][0]
+        self.assertEqual(older_patch.body['state'], 'closed')
+        self.assertEqual(older_patch.body['state_reason'], 'not_planned')
+        self.assertIn(CLOSED_BY_BOT_MARKER, older_patch.body['body'])
+        self.assertEqual(module._dismissed_keys([issue_entry(5, older_patch.body['body'], state='closed')]), set())
 
     def test_person_closed_issue_dismisses_its_items(self) -> None:
         github = fake([issue_entry(4, body_with('a'), state='closed')])

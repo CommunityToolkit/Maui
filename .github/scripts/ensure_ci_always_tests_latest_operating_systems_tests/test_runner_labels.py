@@ -10,7 +10,7 @@ from ensure_ci_always_tests_latest_operating_systems.errors import (
     DownloadError, NotFoundError, RunnerImagesReadmeError, UnreadableSourceError)
 from ensure_ci_always_tests_latest_operating_systems.runner_labels import (
     README_URL, ROLLOUT_STATE_URL, check_runner_labels, macos_labels_to_inspect, parse_rollout_state,
-    parse_runner_images_readme, read_runner_images)
+    parse_runner_images_readme, parse_runner_images_readme_and_duplicate_labels, read_runner_images)
 
 from .helpers import FakeDownloader, fixture
 
@@ -77,9 +77,11 @@ class ParseReadmeTests(unittest.TestCase):
         self.assertEqual(by_name['Windows Server 2019'].badges, ['deprecated'])
         self.assertTrue(all(row.arch == '' and row.rollout_state_key is None for row in by_name.values()))
 
-    def test_the_2025_readme_that_gave_macos_15_to_two_rows_is_an_error(self):
-        with self.assertRaises(RunnerImagesReadmeError):
-            parse_runner_images_readme(fixture('runners/README-e812bbc61.md').decode('utf-8'))
+    def test_the_2025_readme_that_gave_macos_15_to_two_rows_keeps_the_first_row_and_names_the_label(self):
+        text = fixture('runners/README-e812bbc61.md').decode('utf-8')
+        rows, duplicates = parse_runner_images_readme_and_duplicate_labels(text)
+        self.assertEqual(duplicates, ['macos-15'])
+        self.assertEqual(sum('macos-15' in row.labels for row in rows), 1)
 
     def test_columns_are_found_by_header_name_not_position(self):
         text = '| YAML Label | Image |\n|---|---|\n| `foo-1` | Foo |\n'
@@ -102,10 +104,28 @@ class ParseReadmeTests(unittest.TestCase):
         with self.assertRaises(RunnerImagesReadmeError):
             parse_runner_images_readme('| Image | YAML Label |\n|---|---|\n| Foo | none |\n')
 
-    def test_a_label_listed_twice_is_an_error(self):
-        with self.assertRaises(RunnerImagesReadmeError) as caught:
-            parse_runner_images_readme('| Image | YAML Label |\n|---|---|\n| Foo | `a` |\n| Bar | `a` |\n')
-        self.assertIn('twice', str(caught.exception))
+    def test_a_label_listed_twice_keeps_its_first_row(self):
+        rows, duplicates = parse_runner_images_readme_and_duplicate_labels(
+            '| Image | YAML Label |\n|---|---|\n| Foo | `a` |\n| Bar | `a`, `b` |\n| Baz | `a` |\n')
+        self.assertEqual([(row.name, row.labels) for row in rows], [('Foo', ['a']), ('Bar', ['b'])])
+        self.assertEqual(duplicates, ['a'])
+
+    def test_a_duplicate_label_is_a_thing_to_check_and_not_a_source_problem(self):
+        rows = parse_runner_images_readme(TODAY_README)
+        plan = check_runner_labels(pinned_versions(), rows, ['macos-15'])
+        thing = [t for t in plan.things_to_check if t.key == 'runner-images-readme-duplicate-label:macos-15'][0]
+        self.assertEqual(thing.text, 'The runner images README lists `macos-15` twice; the bot used the first row.')
+        self.assertEqual(plan.source_problems, [])
+
+    def test_read_runner_images_reports_the_duplicate_labels(self):
+        text = '| Image | YAML Label |\n|---|---|\n| Foo | `xcode-27` |\n| Bar | `xcode-27` |\n'
+        result = read_runner_images(FakeDownloader({README_URL: text.encode('utf-8')}), [])
+        self.assertEqual((result['status'], result['duplicate_labels']), ('ok', ['xcode-27']))
+
+    def test_other_format_errors_stay_errors(self):
+        for text in ('no table', '| Image | YAML Label |\n|---|---|\n', '| Image | YAML Label |\n|---|---|\n| Foo | none |\n'):
+            with self.subTest(text=text):
+                self.assertEqual(read_runner_images(FakeDownloader({README_URL: text.encode('utf-8')}), [])['status'], 'error')
 
     def test_a_short_row_is_an_error(self):
         with self.assertRaises(RunnerImagesReadmeError):

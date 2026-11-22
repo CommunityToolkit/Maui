@@ -342,6 +342,18 @@ class WorkflowStaticChecks(unittest.TestCase):
         pull_request_job_name = read_jobs()["open-or-update-pull-request"]["name"]
         self.assertEqual(markers.PULL_REQUEST_JOB_NAME, pull_request_job_name)
 
+    def test_the_job_and_step_names_the_issue_quotes_are_the_ones_in_the_workflow(self) -> None:
+        from ensure_ci_always_tests_latest_operating_systems import issue_for_a_person
+
+        jobs = read_jobs()
+        for job_id, name in issue_for_a_person.JOB_NAMES.items():
+            with self.subTest(job=job_id):
+                self.assertEqual(name, jobs[job_id]["name"].replace(" ${{ matrix.label }}", ""))
+        for outcome_name, name in issue_for_a_person.STEP_NAMES.items():
+            with self.subTest(step=outcome_name):
+                block = step_with_id(outcome_name.replace("_", "-"))
+                self.assertEqual("            -   name: " + name, block[0].rstrip())
+
     def test_workflow_name_is_the_display_name_of_the_actions_tab(self) -> None:
         self.assertEqual("name: Ensure CI Always Tests Latest Operating Systems", read_workflow_lines()[0])
 
