@@ -326,9 +326,9 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// </para>
 	/// <para>
 	/// On Android 12 and later, the system can refuse to start the foreground service of the media notification (see
-	/// <see cref="IsAndroidForegroundServiceEnabled"/>), for example while the app is in the background. Each MediaElement that uses it and is playing then
-	/// reports it through <see cref="MediaFailed"/>, once for each source and without setting <see cref="CurrentState"/> to
-	/// <see cref="MediaElementState.Failed"/>. Its media plays on without the notification, and Media3 tries to start the service again whenever
+	/// <see cref="IsAndroidForegroundServiceEnabled"/>), for example while the app is in the background. Each MediaElement that uses the service and is
+	/// playing then reports the refusal through <see cref="MediaFailed"/>, once for each source and without setting <see cref="CurrentState"/> to
+	/// <see cref="MediaElementState.Failed"/>. Its media plays on without the notification while Android lets the app run, and Media3 tries to start the service again whenever
 	/// the notification changes. On Android 12 and 12L (API 31-32), Media3 also refuses a <see cref="Play"/> that needs the service, which leaves
 	/// the media paused, so there every such MediaElement with loaded media reports it.
 	/// </para>
