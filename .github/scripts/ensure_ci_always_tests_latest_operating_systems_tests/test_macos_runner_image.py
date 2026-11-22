@@ -43,10 +43,13 @@ class FakeCommands:
     def __init__(self, answers: Dict[str, Tuple[int, str]]) -> None:
         self.answers = answers
         self.calls: List[List[str]] = []
+        self.timeouts: List[int] = []
 
-    def __call__(self, argv: List[str]) -> Tuple[int, str]:
+    def __call__(self, argv: List[str], timeout_seconds: int = 120) -> Tuple[int, str]:
         self.calls.append(list(argv))
-        return self.answers.get(' '.join(argv), (127, ''))
+        self.timeouts.append(timeout_seconds)
+        answer = self.answers.get(' '.join(argv), (127, ''))
+        return answer.pop(0) if isinstance(answer, list) else answer
 
 
 SIMCTL = 'xcrun simctl list runtimes -j'
@@ -200,7 +203,31 @@ class InspectTests(unittest.TestCase):
         with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('xcrun', 120)):
             listing = self.inspect_with(macos_runner_image.run_command)
         self.assertEqual(listing['status'], 'error')
-        self.assertIn('`xcrun simctl list runtimes -j` timed out after 120 s', listing['error'])
+        self.assertIn('`xcrun simctl list runtimes -j` timed out after 120 s and again after 240 s', listing['error'])
+        self.assertEqual(listing['error'].count('simctl'), 1)
+
+    def test_a_simctl_that_times_out_once_is_retried_with_a_longer_timeout_and_is_no_problem(self) -> None:
+        sdks = fixture('macos-runner-image/list-sdks.txt').decode('utf-8')
+        simctl = fixture('macos-runner-image/simctl-runtimes.json').decode('utf-8')
+        run = FakeCommands({SIMCTL: [(124, ''), (0, simctl)], DOTNET: (0, sdks)})
+        listing = self.inspect_with(run)
+        self.assertEqual(listing['status'], 'ok')
+        self.assertEqual(len(listing['runtimes']), 3)
+        self.assertEqual(run.timeouts, [120, 240, 120])
+
+    def test_two_timeouts_make_one_problem_naming_both_attempts(self) -> None:
+        sdks = fixture('macos-runner-image/list-sdks.txt').decode('utf-8')
+        run = FakeCommands({SIMCTL: [(124, ''), (124, '')], DOTNET: (0, sdks)})
+        listing = self.inspect_with(run)
+        self.assertEqual(listing['status'], 'error')
+        self.assertEqual(listing['error'], '`xcrun simctl list runtimes -j` timed out after 120 s and again after 240 s')
+        self.assertEqual(run.calls.count(['xcrun', 'simctl', 'list', 'runtimes', '-j']), 2)
+
+    def test_a_command_that_fails_without_timing_out_is_not_retried(self) -> None:
+        sdks = fixture('macos-runner-image/list-sdks.txt').decode('utf-8')
+        run = FakeCommands({SIMCTL: (1, ''), DOTNET: (0, sdks)})
+        self.inspect_with(run)
+        self.assertEqual(run.calls.count(['xcrun', 'simctl', 'list', 'runtimes', '-j']), 1)
 
     def test_a_simctl_that_prints_text_that_is_not_json_is_an_error(self) -> None:
         run = FakeCommands({SIMCTL: (0, 'not json'), DOTNET: (0, fixture('macos-runner-image/list-sdks.txt').decode('utf-8'))})

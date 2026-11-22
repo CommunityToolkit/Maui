@@ -78,6 +78,22 @@ class RequestTests(unittest.TestCase):
         self.assertEqual(request.unredirected_hdrs.get('Authorization'), 'Bearer secret-token')
         self.assertNotIn('Authorization', request.headers)
 
+    def test_no_header_value_ever_holds_a_line_break(self) -> None:
+        client, opener, _ = make_client([FakeResponse({})])
+        client.get('/user')
+        request = opener.requests[0]
+        values = list(request.headers.values()) + list(request.unredirected_hdrs.values())
+        for value in values:
+            self.assertNotIn('\r', value)
+            self.assertNotIn('\n', value)
+
+    def test_a_token_with_a_line_break_or_space_is_refused_before_any_request(self) -> None:
+        for token in ('s3cr3t\n', 's3cr3t\r\n', 'ab cd', 'ab\ncd', ' s3cr3t'):
+            with self.subTest(token=token):
+                with self.assertRaises(ValueError) as caught:
+                    make_client([], token=token)
+                self.assertNotIn(token.strip(), str(caught.exception))
+
     def test_no_token_means_no_authorization_header(self) -> None:
         client, opener, _ = make_client([FakeResponse({})], token=None)
         client.get('/user')

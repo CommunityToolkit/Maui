@@ -48,6 +48,8 @@ class GitHubClient:
 
     def __init__(self, token: Optional[str], repo: str, api_url: str = 'https://api.github.com',
                  opener: Optional[Any] = None, sleep: Callable[[float], None] = time.sleep) -> None:
+        if token and re.fullmatch(r'[\x21-\x7e]+', token) is None:
+            raise ValueError('the token must hold only visible ASCII characters; a line break or a space would break the request header')
         self._token = token
         self.repo = repo
         self.api_url = api_url.rstrip('/')

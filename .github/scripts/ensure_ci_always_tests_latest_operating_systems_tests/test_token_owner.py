@@ -42,6 +42,33 @@ class UnusableTokenTests(unittest.TestCase):
         self.assertEqual(client.calls, [])
         self.assertEqual([thing.key for thing in status.things_to_check], ['token-unusable:missing'])
 
+    def test_surrounding_whitespace_is_stripped_before_the_client_is_built(self) -> None:
+        for secret in ('tok\n', 'tok\r\n', ' tok ', '\ttok\n\n'):
+            with self.subTest(secret=secret):
+                client = pat_client_answering(classic_user(), pushable_repository())
+                built_with = []
+                status = check_token(secret, lambda token: built_with.append(token) or client, NOW)
+                self.assertTrue(status.usable)
+                self.assertEqual(built_with, ['tok'])
+
+    def test_a_secret_of_only_whitespace_is_missing_with_no_call(self) -> None:
+        client = pat_client_answering(classic_user(), pushable_repository())
+        status = check_token('  \n', lambda _: client, NOW)
+        self.assertEqual(status.reason, 'missing')
+        self.assertEqual(client.calls, [])
+
+    def test_a_line_break_or_space_inside_the_token_is_malformed_with_no_call(self) -> None:
+        for secret in ('ab\ncd', 'ab cd', 'ab\r\ncd', 'ab\u00e9cd'):
+            with self.subTest(secret=secret):
+                client = pat_client_answering(classic_user(), pushable_repository())
+                built_with = []
+                status = check_token(secret, lambda token: built_with.append(token) or client, NOW)
+                self.assertEqual((status.usable, status.reason), (False, 'malformed'))
+                self.assertEqual(client.calls, [])
+                self.assertEqual(built_with, [])
+                self.assertEqual([thing.key for thing in status.things_to_check], ['token-unusable:malformed'])
+                self.assertIn('more than one line or a space', status.things_to_check[0].text)
+
     def test_none_counts_as_missing(self) -> None:
         self.assertEqual(check_token(None, lambda _: None, NOW).reason, 'missing')
 

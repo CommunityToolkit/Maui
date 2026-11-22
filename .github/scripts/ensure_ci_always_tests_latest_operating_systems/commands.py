@@ -179,7 +179,7 @@ def _report_error(source: str, message: str) -> None:
 
 
 def _token_from(environ: Mapping[str, str], name: str) -> Optional[str]:
-    return environ.get(name) or None
+    return (environ.get(name) or '').strip() or None
 
 
 def _read_one_source(source: str, out_file: str, read: Callable[[], Dict[str, Any]]) -> Dict[str, Any]:

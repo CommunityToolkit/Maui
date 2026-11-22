@@ -11,6 +11,8 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 from .errors import RunnerSoftwareError
 
 COMMAND_TIMEOUT_SECONDS = 120
+# A cold CoreSimulator service can need minutes to answer its first request on a fresh runner.
+RETRY_TIMEOUT_SECONDS = 240
 COMMAND_COULD_NOT_START_CODE = 127
 # The exit code of the `timeout` tool, so a person who reads it elsewhere already knows it.
 COMMAND_TIMED_OUT_CODE = 124
@@ -18,13 +20,13 @@ XCODE_APP_NAME = re.compile(r'^Xcode.*\.app$')
 IMAGE_LINE = re.compile(r'^Image:\s*(.+?)\s*$', re.MULTILINE)
 VERSION_LINE = re.compile(r'^Version:\s*(.+?)\s*$', re.MULTILINE)
 
-RunCommand = Callable[[List[str]], Tuple[int, str]]
+RunCommand = Callable[[List[str], int], Tuple[int, str]]
 
 
-def run_command(argv: List[str]) -> Tuple[int, str]:
+def run_command(argv: List[str], timeout_seconds: int = COMMAND_TIMEOUT_SECONDS) -> Tuple[int, str]:
     try:
         completed = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding='utf-8',
-                                   errors='replace', timeout=COMMAND_TIMEOUT_SECONDS, check=False)
+                                   errors='replace', timeout=timeout_seconds, check=False)
     except subprocess.TimeoutExpired:
         return COMMAND_TIMED_OUT_CODE, ''
     except OSError:
@@ -82,10 +84,23 @@ def _report(problems: Optional[List[str]], message: str) -> None:
         problems.append(message)
 
 
-def _command_failure(command: List[str], code: int) -> str:
+def _run_retrying_a_timeout(run: RunCommand, command: List[str]) -> Tuple[int, str, List[int]]:
+    """One slow first answer must not freeze a night; other failures repeat the same way, so they are not retried."""
+    code, output = run(command, COMMAND_TIMEOUT_SECONDS)
+    timeouts = []
+    if code == COMMAND_TIMED_OUT_CODE:
+        timeouts.append(COMMAND_TIMEOUT_SECONDS)
+        code, output = run(command, RETRY_TIMEOUT_SECONDS)
+        if code == COMMAND_TIMED_OUT_CODE:
+            timeouts.append(RETRY_TIMEOUT_SECONDS)
+    return code, output, timeouts
+
+
+def _command_failure(command: List[str], code: int, timeouts: Optional[List[int]] = None) -> str:
     text = ' '.join(command)
     if code == COMMAND_TIMED_OUT_CODE:
-        return '`%s` timed out after %d s' % (text, COMMAND_TIMEOUT_SECONDS)
+        seconds = timeouts or [COMMAND_TIMEOUT_SECONDS]
+        return '`%s` timed out after %s' % (text, ' and again after '.join('%d s' % value for value in seconds))
     if code == COMMAND_COULD_NOT_START_CODE:
         return '`%s` could not be started' % text
     return '`%s` failed with exit code %d' % (text, code)
@@ -93,9 +108,9 @@ def _command_failure(command: List[str], code: int) -> str:
 
 def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     command = ['xcrun', 'simctl', 'list', 'runtimes', '-j']
-    code, output = run(command)
+    code, output, timeouts = _run_retrying_a_timeout(run, command)
     if code != 0:
-        _report(problems, _command_failure(command, code))
+        _report(problems, _command_failure(command, code, timeouts))
         return []
     try:
         data = json.loads(output)
@@ -119,9 +134,9 @@ def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = Non
 
 def list_dotnet_sdks(run: RunCommand, problems: Optional[List[str]] = None) -> List[str]:
     command = ['dotnet', '--list-sdks']
-    code, output = run(command)
+    code, output, timeouts = _run_retrying_a_timeout(run, command)
     if code != 0:
-        _report(problems, _command_failure(command, code))
+        _report(problems, _command_failure(command, code, timeouts))
         return []
     return [line.split()[0] for line in output.splitlines() if line.strip()]
 

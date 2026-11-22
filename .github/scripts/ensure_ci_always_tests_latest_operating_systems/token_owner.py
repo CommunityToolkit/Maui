@@ -14,12 +14,14 @@ SCOPES_HEADER = 'X-OAuth-Scopes'
 
 REASON_TEXTS = {
     'missing': 'the secret holding the maintainer token is empty or not set',
+    'malformed': 'the secret holding the maintainer token has more than one line or a space in it, so set the secret again with only the token',
     'rejected': 'GitHub rejected the maintainer token (expired, revoked or mistyped)',
     'missing-scope': 'the token lacks the `workflow` scope or the `public_repo` scope',
     'no-push-access': 'the token owner can not push to this repository',
     'organization-forbids-classic-tokens': "the organization doesn't accept classic tokens",
 }
 
+_VISIBLE_ASCII = re.compile(r'[\x21-\x7e]+')
 _EXPIRATION = re.compile(r'(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(?: (UTC)|\s*([+-])(\d{2}):?(\d{2}))?', re.ASCII)
 
 
@@ -76,8 +78,11 @@ def _scopes_problem(headers: Any) -> bool:
 
 
 def check_token(token: Optional[str], make_client: Callable[[str], Any], now: datetime) -> TokenStatus:
+    token = (token or '').strip()
     if not token:
         return _unusable('missing')
+    if _VISIBLE_ASCII.fullmatch(token) is None:
+        return _unusable('malformed')
     client = make_client(token)
 
     status, headers, data = client.get('/user')
