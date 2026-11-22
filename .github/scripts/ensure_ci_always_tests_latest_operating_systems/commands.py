@@ -281,16 +281,16 @@ def plan_changes(args: argparse.Namespace, environ: Mapping[str, str], services:
     return 0
 
 
-def _token_summary_line(token_status: TokenStatus, repo: str) -> str:
+def _describe_token_status(token_status: TokenStatus, repo: str) -> str:
     if token_status.usable:
         return 'Token: usable, it belongs to `%s`.' % token_status.login
     cause = token_status.things_to_check[0].text if token_status.things_to_check else 'The maintainer token can not be used.'
-    return ('Token: unusable, so no pull request opens. %s Set it again with `gh secret set %s -R %s --env %s`.' % (
+    return ('Token: unusable, so no pull request opens. %s Store a working token with `gh secret set %s -R %s --env %s`.' % (
         cause, markers.TOKEN_SECRET_NAME, repo, markers.TOKEN_ENVIRONMENT))
 
 
-def _report_token(token_status: TokenStatus, repo: str, environ: Mapping[str, str]) -> None:
-    line = _token_summary_line(token_status, repo)
+def _report_token_status(token_status: TokenStatus, repo: str, environ: Mapping[str, str]) -> None:
+    line = _describe_token_status(token_status, repo)
     summary_path = environ.get('GITHUB_STEP_SUMMARY')
     if summary_path:
         with open(summary_path, 'a', encoding='utf-8', newline='') as file:
@@ -314,7 +314,7 @@ def decide_pull_request_update_command(args: argparse.Namespace, environ: Mappin
         return services.make_github_client(token, args.repo)
 
     token_status = check_token(_token_from(environ, MAINTAINER_TOKEN_NAME), make_maintainer_client, _now())
-    _report_token(token_status, args.repo, environ)
+    _report_token_status(token_status, args.repo, environ)
     decision = decide_pull_request_update(plan, token_status, github, args.base, args.base_sha)
     _write_json(os.path.join(args.out, 'decision.json'), decision.to_json())
     write_step_outputs(step_outputs(decision, plan), environ)

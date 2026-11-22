@@ -445,7 +445,7 @@ class DecidePullRequestUpdateTests(CommandTestCase):
         status = TokenStatus(usable=False, reason='x', things_to_check=[ThingToCheck('token-unusable:x', '100%\nbad')])
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            commands._report_token(status, REPO, {})
+            commands._report_token_status(status, REPO, {})
         self.assertIn('100%25%0Abad', out.getvalue())
         self.assertEqual(out.getvalue().count('\n'), 1)
 

@@ -336,7 +336,7 @@ jobs:
                     name: pull-request
                     path: ${{ runner.temp }}/pull-request
 
-            # Exits 1 after updating the issue when a source couldn't be read or a job or step failed, so the run shows red.
+            # Exits 1 after updating the issue when a source couldn't be read, a job or step failed, or the token is unusable, so the run shows red.
             -   name: Update the issue
                 env:
                     GITHUB_TOKEN: ${{ github.token }}
