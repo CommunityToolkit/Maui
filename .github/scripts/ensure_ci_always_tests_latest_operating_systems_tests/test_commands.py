@@ -395,6 +395,16 @@ class DecidePullRequestUpdateTests(CommandTestCase):
         self.assertIn('title=A title\n', outputs)
         self.assertRegex(outputs, r'commit-message<<EOF_[0-9a-f]{32}\nUpdate the device tests\n\nGenerated-by: x\nEOF_')
 
+    def test_a_secret_pasted_with_a_trailing_line_break_is_trimmed_before_the_clients_are_built(self) -> None:
+        self.write_plan(decision_plan('open-or-update'))
+        services = RecordingServices(None, {MAINTAINER_TOKEN: token_github(), WORKFLOW_TOKEN: workflow_github()})
+        code, _, _ = self.run_main(self.argv(), services, GITHUB_TOKEN=WORKFLOW_TOKEN + '\n',
+                                   **{markers.TOKEN_SECRET_NAME: MAINTAINER_TOKEN + '\r\n'})
+        self.assertEqual(code, 0)
+        self.assertEqual(sorted(services.clients_built_for),
+                         sorted([(WORKFLOW_TOKEN, REPO), (MAINTAINER_TOKEN, REPO)]))
+        self.assertTrue(self.read_json('pull-request', 'decision.json')['open_or_update'])
+
     def test_a_missing_token_stops_the_push_and_builds_no_maintainer_client(self) -> None:
         self.write_plan(decision_plan('open-or-update'))
         services = RecordingServices(None, {WORKFLOW_TOKEN: workflow_github()})

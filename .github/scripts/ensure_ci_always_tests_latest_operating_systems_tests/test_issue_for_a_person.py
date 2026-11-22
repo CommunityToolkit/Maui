@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from ensure_ci_always_tests_latest_operating_systems import issue_for_a_person as module
+from ensure_ci_always_tests_latest_operating_systems import token_owner
 from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiError
 from ensure_ci_always_tests_latest_operating_systems.markers import (CLOSED_BY_BOT_MARKER, ISSUE_MARKER, ISSUE_TITLE,
                                                                      LABELS, PULL_REQUEST_JOB_NAME, item_marker,
@@ -85,6 +86,15 @@ class CollectItemsTests(unittest.TestCase):
         self.assertIn('`Xcode 27.2 -> 27.3`', item.text)
         self.assertEqual(item.patch, 'PATCH')
         self.assertIn('gh secret set ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN', item.steps[0])
+
+    def test_every_reason_a_token_can_be_unusable_has_a_phrase_for_the_issue_item(self) -> None:
+        self.assertEqual(set(token_owner.REASON_TEXTS) - set(module.TOKEN_PROBLEMS), set())
+
+    def test_a_malformed_token_turns_safe_changes_into_bump_not_opened_with_its_own_phrase(self) -> None:
+        plan = plan_of(safe_changes=[{'file': '.github/workflows/shared.env', 'description': 'Xcode 27.2 -> 27.3'}])
+        decision = {'token': {'usable': False, 'reason': 'malformed'}, 'things_to_check': []}
+        items = module.collect_items(plan, decision, None, None, None, None, {'changes.patch': 'PATCH'})
+        self.assertIn('has a line break, a space or another character no token has', items.changes_for_a_person[0].text)
 
     def test_usable_token_and_no_safe_changes_gives_no_bump_item(self) -> None:
         decision = {'token': {'usable': False, 'reason': 'missing'}}

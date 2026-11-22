@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, List, Optional
 
 from .data_types import ThingToCheck
+from .markers import TOKEN_SECRET_NAME
 
 EXPIRES_SOON_WITHIN = timedelta(days=14)
 EXPIRATION_HEADER = 'GitHub-Authentication-Token-Expiration'
@@ -14,7 +15,7 @@ SCOPES_HEADER = 'X-OAuth-Scopes'
 
 REASON_TEXTS = {
     'missing': 'the secret holding the maintainer token is empty or not set',
-    'malformed': 'the secret holding the maintainer token has more than one line or a space in it, so set the secret again with only the token',
+    'malformed': 'the secret `%s` has a line break, a space or another character no token has, so set it again with only the token' % TOKEN_SECRET_NAME,
     'rejected': 'GitHub rejected the maintainer token (expired, revoked or mistyped)',
     'missing-scope': 'the token lacks the `workflow` scope or the `public_repo` scope',
     'no-push-access': 'the token owner can not push to this repository',

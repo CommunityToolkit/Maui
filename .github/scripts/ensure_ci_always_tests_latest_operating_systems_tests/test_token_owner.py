@@ -67,7 +67,8 @@ class UnusableTokenTests(unittest.TestCase):
                 self.assertEqual(client.calls, [])
                 self.assertEqual(built_with, [])
                 self.assertEqual([thing.key for thing in status.things_to_check], ['token-unusable:malformed'])
-                self.assertIn('more than one line or a space', status.things_to_check[0].text)
+                self.assertIn('set it again with only the token', status.things_to_check[0].text)
+                self.assertIn('ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN', status.things_to_check[0].text)
 
     def test_none_counts_as_missing(self) -> None:
         self.assertEqual(check_token(None, lambda _: None, NOW).reason, 'missing')

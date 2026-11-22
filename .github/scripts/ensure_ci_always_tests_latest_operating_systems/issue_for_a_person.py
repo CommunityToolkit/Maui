@@ -45,6 +45,7 @@ SOURCE_NAMES = {
 }
 TOKEN_PROBLEMS = {
     'missing': 'is missing',
+    'malformed': 'has a line break, a space or another character no token has',
     'rejected': 'was rejected',
     'missing-scope': 'lacks the `workflow` or `public_repo` scope',
     'no-push-access': 'has no push access',

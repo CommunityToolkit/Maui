@@ -200,8 +200,10 @@ class InspectTests(unittest.TestCase):
         self.assertEqual(len(listing['xcode_apps']), 6)
 
     def test_a_simctl_that_timed_out_is_an_error(self) -> None:
-        with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('xcrun', 120)):
+        with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('xcrun', 120)) as run:
             listing = self.inspect_with(macos_runner_image.run_command)
+        self.assertEqual([call.kwargs['timeout'] for call in run.call_args_list], [120, 240, 120, 240])
+        self.assertIn('`dotnet --list-sdks` timed out after 120 s and again after 240 s', listing['error'])
         self.assertEqual(listing['status'], 'error')
         self.assertIn('`xcrun simctl list runtimes -j` timed out after 120 s and again after 240 s', listing['error'])
         self.assertEqual(listing['error'].count('simctl'), 1)
