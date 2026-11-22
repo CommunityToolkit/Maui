@@ -9,7 +9,7 @@ from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiErro
 from ensure_ci_always_tests_latest_operating_systems.markers import (CLOSED_BY_BOT_MARKER, ISSUE_MARKER, ISSUE_TITLE,
                                                                      LABELS, PULL_REQUEST_JOB_NAME, item_marker,
                                                                      read_item_keys)
-from ensure_ci_always_tests_latest_operating_systems_tests.helpers import FakeGitHub, InOrder
+from ensure_ci_always_tests_latest_operating_systems_tests.helpers import FakeGitHub
 
 NOW = datetime(2026, 11, 22, 3, 7, tzinfo=timezone.utc)
 RUN_URL = 'https://github.com/CommunityToolkit/Maui/actions/runs/4242'

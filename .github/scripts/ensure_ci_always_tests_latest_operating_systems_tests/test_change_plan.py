@@ -19,7 +19,7 @@ from ensure_ci_always_tests_latest_operating_systems.line_editor import apply_ch
 
 from .helpers import fixture
 from .test_android_levels import TODAY_RELEASED_FOUR_KB, TODAY_RELEASED_SIXTEEN_KB, android_json
-from .test_xcode_changes import (LIBRARY_KEY, NOW, SAMPLE_KEY, branch_rules, listing, listings, required_xcode, runner_images,
+from .test_xcode_changes import (NOW, SAMPLE_KEY, branch_rules, listing, listings, required_xcode, runner_images,
                                  with_ga_xcode, xcode_28_listing)
 
 BASE = 'main'
@@ -356,6 +356,31 @@ class FamilyIsolationTests(unittest.TestCase):
         self.assertNotIn('main now has', dropped[0])
         self.assertIn('(new leg `37.0`)', dropped[1])
 
+    def test_the_dropped_note_for_a_pin_main_no_longer_has_does_not_invent_a_value(self) -> None:
+        unknown_pin = listed_change('android', 'set-xcode-version', '.github/workflows/shared.env', 'env:NoSuchKey', '27.2', '27.3')
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(open_pull_request([unknown_pin]))
+        dropped = [note for note in plan.notes if note.startswith('Dropped')]
+        self.assertEqual(len(dropped), 1, plan.notes)
+        self.assertIn('it no longer applies to main', dropped[0])
+        self.assertNotIn('main now has', dropped[0])
+
+    def test_the_dropped_note_for_an_entry_without_an_old_value_says_new_leg(self) -> None:
+        ios_insert = listed_change('android', 'insert-ios-leg', '.github/workflows/device-tests.yml',
+                                   'ios-leg:27.3', '', '27.3', ['x'])
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(open_pull_request([ios_insert]))
+        dropped = [note for note in plan.notes if note.startswith('Dropped')]
+        self.assertEqual(len(dropped), 1, plan.notes)
+        self.assertIn('(new leg `27.3`)', dropped[0])
+
+    def test_two_carried_changes_that_only_collide_with_each_other_keep_the_first_and_drop_the_second(self) -> None:
+        collides_with_the_first = listed_change(
+            'android', 'replace-api-level', '.github/workflows/device-tests.yml', FOUR_KB_PIN, '37.0', '37.3')
+        plan = Night(self, android={'status': 'error', 'error': 'gone'}).plan(
+            open_pull_request([SIXTEEN_KB_37_3_IN_THE_PULL_REQUEST, collides_with_the_first]))
+        self.assertNotIn('source:change-validator', keys(plan.source_problems))
+        self.assertEqual(pairs(plan), [(SIXTEEN_KB_PIN, '37.2', '37.3')])
+        self.assertTrue(any('it no longer fits main (' in note for note in plan.notes), plan.notes)
+
     def test_the_body_of_a_real_xcode_bump_names_the_set_the_xcode_version_and_the_image_build(self) -> None:
         ready_build = with_ga_xcode(listing('xcode-27-20261104'), '27.3')
         night = Night(self, required=required_xcode('27.3', '27.3'), software_lists=listings(**{'xcode-27': ready_build}))
@@ -449,7 +474,7 @@ class RequiredCheckRoutingTests(unittest.TestCase):
                       replace_step)
         self.assertIn('other pull requests report only the old name', replace_step)
         self.assertIn('Another maintainer approves', approve_step)
-        self.assertIn('its author cannot', approve_step)
+        self.assertIn("its author can't", approve_step)
 
     def test_other_changes_of_the_night_still_go_to_the_pull_request(self) -> None:
         night = Night(self, android=android_json(TODAY_RELEASED_FOUR_KB | {'37.1'}, TODAY_RELEASED_SIXTEEN_KB | {'37.3'}),

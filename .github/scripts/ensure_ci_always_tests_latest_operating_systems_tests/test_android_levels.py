@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional
 
 from ensure_ci_always_tests_latest_operating_systems import android_levels
 from ensure_ci_always_tests_latest_operating_systems.android_levels import (

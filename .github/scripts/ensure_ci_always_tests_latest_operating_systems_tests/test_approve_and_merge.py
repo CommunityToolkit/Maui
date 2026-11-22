@@ -13,9 +13,8 @@ from ensure_ci_always_tests_latest_operating_systems.data_types import SafeChang
 from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiError
 from ensure_ci_always_tests_latest_operating_systems.line_editor import apply_changes
 from ensure_ci_always_tests_latest_operating_systems.markers import COMMIT_TRAILER, PIN_FILES, WORKFLOW_FILE
-from ensure_ci_always_tests_latest_operating_systems.token_owner import TokenStatus
 
-from .helpers import FIXTURES_FOLDER, FakeGitHub, InOrder, fixture
+from .helpers import FakeGitHub, InOrder, fixture
 
 REPO = 'CommunityToolkit/Maui'
 BASE = 'main'

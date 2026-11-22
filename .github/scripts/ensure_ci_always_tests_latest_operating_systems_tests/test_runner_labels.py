@@ -4,7 +4,7 @@ import re
 import unittest
 
 from ensure_ci_always_tests_latest_operating_systems.data_types import (
-    AndroidLeg, AppleLabel, IosLeg, PinnedVersions, RunnerImageRow)
+    AppleLabel, IosLeg, PinnedVersions, RunnerImageRow)
 from ensure_ci_always_tests_latest_operating_systems.downloads import Downloader
 from ensure_ci_always_tests_latest_operating_systems.errors import (
     DownloadError, NotFoundError, RunnerImagesReadmeError, UnreadableSourceError)

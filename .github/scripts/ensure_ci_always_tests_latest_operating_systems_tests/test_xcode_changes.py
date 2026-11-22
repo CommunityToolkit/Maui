@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone

@@ -375,13 +375,17 @@ class PublishStepConditions(unittest.TestCase):
     def test_apply_and_open_or_update_never_run_after_a_failed_step_or_a_cancelled_run(self) -> None:
         for step_id in ("apply", "open-or-update"):
             for earlier_steps, cancelled in (("failure", False), ("success", True), ("failure", True)):
+                with self.subTest(step=step_id, decided="missing", earlier_steps=earlier_steps, cancelled=cancelled):
+                    self.assertFalse(self.step_condition_holds(step_id, None, earlier_steps=earlier_steps, cancelled=cancelled))
+            for earlier_steps, cancelled in (("failure", False), ("success", True), ("failure", True)):
                 with self.subTest(step=step_id, earlier_steps=earlier_steps, cancelled=cancelled):
                     self.assertFalse(self.step_condition_holds(step_id, "true", earlier_steps=earlier_steps, cancelled=cancelled))
 
     def test_the_workflow_starts_only_on_schedule_dispatch_and_pull_request(self) -> None:
         lines = read_workflow_lines()
-        events_in_on = [line.strip()[:-1] for line in lines[lines.index("on:") + 1:lines.index("jobs:")]
-                        if re.match(r"^    [a-z_]+:\s*$", line)]
+        start = lines.index("on:") + 1
+        end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith((" ", "#")))
+        events_in_on = [match.group(1) for match in (re.match(r"^    ([A-Za-z_]+):", line) for line in lines[start:end]) if match]
         self.assertEqual({"schedule", "workflow_dispatch", "pull_request"}, set(events_in_on))
 
     def test_create_pull_request_may_stage_only_the_three_pin_files(self) -> None:

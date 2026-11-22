@@ -154,11 +154,11 @@ def _add_once_by_key(existing: List[Any], additions: List[Any]) -> None:
             existing.append(item)
 
 
-def _current_value_of(pinned: PinnedVersions, change: Mapping[str, Any]) -> str:
+def _current_value_of(pinned: PinnedVersions, change: Mapping[str, Any]) -> Optional[str]:
     pin = str(change.get('pin') or '')
     if pin.startswith('env:'):
         value = pinned.shared_env.get(pin[len('env:'):])
-        return value.value if value is not None else 'no such value'
+        return value.value if value is not None else None
     android_pin = bump_pull_request.parse_android_pin(pin)
     if android_pin is not None:
         target, major = android_pin
@@ -167,7 +167,7 @@ def _current_value_of(pinned: PinnedVersions, change: Mapping[str, Any]) -> str:
                 return leg.level.text
     if pin.startswith('apple-label:'):
         return pinned.apple_label.label
-    return 'a different value'
+    return None
 
 
 @dataclass
@@ -206,7 +206,7 @@ def _carry_forward(pinned: PinnedVersions, base_texts: Mapping[str, str], family
         if rebuilt is None:
             notes.append(_dropped_note(pinned, entry, None))
             continue
-        problem = _validate_safe_changes(base_texts, [rebuilt])
+        problem = _validate_safe_changes(base_texts, carried + [rebuilt])
         if problem is not None:
             notes.append(_dropped_note(pinned, entry, 'it no longer fits main (%s)' % problem))
             continue
@@ -216,11 +216,10 @@ def _carry_forward(pinned: PinnedVersions, base_texts: Mapping[str, str], family
 
 def _dropped_note(pinned: PinnedVersions, entry: Mapping[str, Any], reason: Optional[str]) -> str:
     old, new = entry.get('old'), entry.get('new')
-    change = '(new leg %s)' % markdown_code(new) if entry.get('kind') == 'insert-android-leg' else (
-        '(%s to %s)' % (markdown_code(old), markdown_code(new)))
+    change = '(%s to %s)' % (markdown_code(old), markdown_code(new)) if old else '(new leg %s)' % markdown_code(new)
     if reason is None:
         current = _current_value_of(pinned, entry)
-        reason = 'main now has %s' % markdown_code(current) if old and current != old else 'it no longer applies to main'
+        reason = 'main now has %s' % markdown_code(current) if old and current and current != old else 'it no longer applies to main'
     return 'Dropped %s %s from the open pull request: %s.' % (markdown_code(entry.get('pin')), change, reason)
 
 
@@ -256,7 +255,7 @@ def _required_check_rename_steps(renames: List[Tuple[str, str]], patch_name: str
         'Right before merging, a repo admin replaces the required check%s in the `main` ruleset: %s. Until the change '
         'is on `main`, other pull requests report only the old name%s.' % (
             's' if len(renames) > 1 else '', replacements, 's' if len(renames) > 1 else ''),
-        'Another maintainer approves the pull request (its author cannot), and it merges.',
+        "Another maintainer approves the pull request (its author can't), and it merges.",
     ]
 
 

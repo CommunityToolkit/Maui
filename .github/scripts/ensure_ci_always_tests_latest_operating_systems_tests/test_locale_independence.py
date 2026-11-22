@@ -107,7 +107,7 @@ class StaticChecksOfThePackageTests(unittest.TestCase):
 
 class ForbiddenWordTests(unittest.TestCase):
     # The maintainers' plain-words rule: a prefix match, so every inflection of the word is caught.
-    FORBIDDEN_WORD = re.compile(r'\bfl' + r'ag', re.IGNORECASE)
+    FORBIDDEN_WORD = re.compile(r'fl' + r'ag', re.IGNORECASE)
 
     def test_the_bot_text_never_uses_the_word_the_maintainers_replaced_with_plain_words(self) -> None:
         scripts_folder = os.path.dirname(PACKAGE_FOLDER)
