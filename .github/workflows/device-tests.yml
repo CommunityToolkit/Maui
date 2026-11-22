@@ -1004,7 +1004,7 @@ jobs:
             # CI only (a headless run cannot answer the permission prompts). On macOS 27 the per-user TCC database is under
             # /private/var/containers/Data/ProtectedSystem, found the way the runner image's configure-tccdb-macos-27.sh finds it; writing it
             # needs sudo and SIP off, which the runner VMs have. Without it the app keeps undecided permissions; the step only warns and
-            # the job requires both capabilities, so their tests fail, and the app is still built and tested.
+            # the job requires all three capabilities, so their tests fail, and the app is still built and tested.
             -   name: Grant camera, microphone and speech recognition to the test app
                 run: |
                     db=$(sudo find /private/var/containers/Data/ProtectedSystem -mindepth 6 -maxdepth 6 -type f -path '*/Data/Library/Application Support/com.apple.TCC/TCC.db' 2>/dev/null || true)
