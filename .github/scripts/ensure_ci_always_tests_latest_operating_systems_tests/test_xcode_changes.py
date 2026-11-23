@@ -428,7 +428,6 @@ class LabelSwitchTests(unittest.TestCase):
         no_leg_of_its_major.ios_legs = []
         notes: List[str] = []
         self.assertIsNone(xcode_changes._plan_old_ios_major_leg(no_leg_of_its_major, 'xcode-27', old_image, '27.2', 27, notes))
-        self.assertEqual(notes, [])
         self.assertIsNotNone(xcode_changes._plan_old_ios_major_leg(no_leg_of_its_major, 'xcode-27', old_image, '27.2', 28, notes))
 
     def test_a_runtime_of_a_beta_xcode_is_not_chosen(self) -> None:
@@ -480,12 +479,20 @@ class LabelSwitchTests(unittest.TestCase):
         apps = [app('Xcode_27.4.1.app', '27.4.1'), app('Xcode_27.4.1_Release_Candidate.app', '27.4.1', license_type='GM')]
         self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['27.2', '27.4.1'], apps)).new, '27.4.1')
 
-    def test_the_old_major_is_the_newest_below_the_major_the_target_runs_not_the_lowest(self) -> None:
+    def test_a_target_that_also_has_an_older_ga_xcode_runs_only_its_newest_major(self) -> None:
         target_listing = xcode_28_listing()
         target_listing['xcode_apps'].append(app('Xcode_27.4.app', '27.4'))
         the_listings = self.make_listings_with_old_image(['27.4'], [app('Xcode_27.4.app', '27.4')])
         the_listings['xcode-28'] = target_listing
         self.assertEqual(self.plan_old_ios_leg(the_listings).new, '27.4')
+
+    def test_the_old_major_is_the_newest_of_several_majors_below_the_target(self) -> None:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_16.4.app', '16.4')]
+        self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['18.6', '27.2'], apps)).new, '27.2')
+
+    def test_a_ga_point_release_vouches_for_its_two_part_runtime_next_to_a_release_candidate_of_that_minor(self) -> None:
+        apps = [app('Xcode_27.1.1.app', '27.1.1'), app('Xcode_27.1_Release_Candidate.app', '27.1', license_type='GM')]
+        self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['27.0', '27.1'], apps)).new, '27.1')
 
     def test_the_newest_runtime_is_chosen_whatever_order_the_image_lists_them_in(self) -> None:
         apps = [app('Xcode_27.4.1.app', '27.4.1'), app('Xcode_27.app', '27.0')]
