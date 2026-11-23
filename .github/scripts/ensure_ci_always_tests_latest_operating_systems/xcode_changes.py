@@ -179,14 +179,20 @@ def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
             and not is_beta_runtime(runtime['version'])]
 
 
-def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any],
-                       highest_ga_xcode: str, notes: List[str]) -> Optional[SafeChange]:
-    """The old label keeps its newest iOS major covered by an iOS leg, because the main Apple jobs leave it."""
+def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any], highest_ga_xcode: str,
+                       major_the_target_runs: int, notes: List[str]) -> Optional[SafeChange]:
+    """The old label keeps its newest iOS major covered by an iOS leg, because the main Apple jobs leave it.
+
+    A major the target label runs itself needs no leg, so only majors below it count.
+    """
     from . import line_editor
 
     ios_versions = list_ga_ios_runtime_versions(listing)
     if not ios_versions:
         notes.append('%s lists no GA iOS simulator runtime, so no iOS leg was added for it.' % markdown_code(old_label))
+        return None
+    ios_versions = [version for version in ios_versions if major(version) < major_the_target_runs]
+    if not ios_versions:
         return None
     old_major = max(major(version) for version in ios_versions)
     if any(major(leg.ios_version) == old_major for leg in pinned.ios_legs):
@@ -465,7 +471,8 @@ def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, de
     apple_listing = listings[apple_label]
     highest_ga = max(ga_xcode_versions(apple_listing), key=numeric_key, default=None)
     if highest_ga is not None:
-        leg = _old_ios_major_leg(pinned, apple_label, apple_listing, highest_ga, plan.notes)
+        major_the_target_runs = max(major(version) for version in target_ga)
+        leg = _old_ios_major_leg(pinned, apple_label, apple_listing, highest_ga, major_the_target_runs, plan.notes)
         if leg is not None:
             changes.append(leg)
 

@@ -422,6 +422,14 @@ class LabelSwitchTests(unittest.TestCase):
         self.assertEqual(leg.inserted_lines[0], "                    -   ios-version: '27.4.1'")
         self.assertEqual(leg.inserted_lines[2], "                        xcode: '27.4'")
 
+    def test_a_leg_for_a_major_the_target_label_runs_itself_is_not_added(self) -> None:
+        old_image = self.old_image_with(['27.0', '27.2'], [app('Xcode_27.2.app', '27.2')])['xcode-27']
+        no_leg_of_its_major = pinned_versions(apple_label='xcode-27')
+        no_leg_of_its_major.ios_legs = []
+        notes: List[str] = []
+        self.assertIsNone(xcode_changes._old_ios_major_leg(no_leg_of_its_major, 'xcode-27', old_image, '27.2', 27, notes))
+        self.assertIsNotNone(xcode_changes._old_ios_major_leg(no_leg_of_its_major, 'xcode-27', old_image, '27.2', 28, notes))
+
     def test_a_runtime_of_a_beta_xcode_is_not_chosen(self) -> None:
         leg = self.old_ios_leg_of(self.switch_listings_of_real_beta_image())
         self.assertEqual(leg.new, '27.2')
@@ -445,6 +453,14 @@ class LabelSwitchTests(unittest.TestCase):
     def test_runtimes_are_compared_by_number_not_by_text(self) -> None:
         leg = self.old_ios_leg_of(self.old_image_with(['27.9', '27.10'], [app('Xcode_27.10.app', '27.10')]))
         self.assertEqual(leg.new, '27.10')
+
+    def test_a_beta_xcode_does_not_take_the_three_part_runtime_of_its_number_along(self) -> None:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_27.5_beta.app', '27.5', license_type='Beta')]
+        self.assertEqual(self.old_ios_leg_of(self.old_image_with(['27.2', '27.5.1'], apps)).new, '27.2')
+
+    def test_a_runtime_of_a_ga_named_xcode_whose_license_could_not_be_read_stays(self) -> None:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_27.4.app', '27.4', license_type=None)]
+        self.assertEqual(self.old_ios_leg_of(self.old_image_with(['27.2', '27.4'], apps)).new, '27.4')
 
     def test_a_runtime_whose_number_a_ga_and_a_beta_app_share_stays(self) -> None:
         apps = [app('Xcode_27.3.app', '27.3'), app('Xcode_27.3_beta.app', '27.3', license_type='Beta')]
