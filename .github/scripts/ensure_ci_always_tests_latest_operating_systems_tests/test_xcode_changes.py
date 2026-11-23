@@ -486,9 +486,59 @@ class LabelSwitchTests(unittest.TestCase):
         the_listings['xcode-28'] = target_listing
         self.assertEqual(self.plan_old_ios_leg(the_listings).new, '27.4')
 
-    def test_the_old_major_is_the_newest_of_several_majors_below_the_target(self) -> None:
+    def test_the_old_major_is_the_newest_of_several_majors_below_the_target_in_any_listing_order(self) -> None:
         apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_16.4.app', '16.4')]
-        self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['18.6', '27.2'], apps)).new, '27.2')
+        for versions in (['18.6', '27.2'], ['27.2', '18.6']):
+            with self.subTest(versions=versions):
+                self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(versions, apps)).new, '27.2')
+
+    def make_listings_shaped_like_the_local_mac(self, *extra_runtimes: Dict[str, Any]) -> Dict[str, Any]:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_27.1.app', '27.1'), app('Xcode_27.app', '27.0')]
+        the_listings = self.make_listings_with_old_image(['27.0', '27.1', '27.2'], apps)
+        for runtime, lists_one_screen in zip(the_listings['xcode-27']['runtimes'], (True, False, False)):
+            runtime['lists_iphone_with_one_screen'] = lists_one_screen
+        the_listings['xcode-27']['runtimes'].extend(extra_runtimes)
+        return the_listings
+
+    def test_the_old_major_leg_skips_runtimes_that_list_only_iphone_duo(self) -> None:
+        leg = self.plan_old_ios_leg(self.make_listings_shaped_like_the_local_mac())
+        self.assertEqual(leg.new, '27.0')
+
+    def test_a_generic_runtime_next_to_the_device_specific_one_of_the_same_version_keeps_that_version(self) -> None:
+        generic = {'platform': 'iOS', 'version': '27.2', 'name': 'iOS 27.2', 'available': True, 'lists_iphone_with_one_screen': True,
+                   'identifier': 'com.apple.CoreSimulator.SimRuntime.iOS-27-2'}
+        self.assertEqual(self.plan_old_ios_leg(self.make_listings_shaped_like_the_local_mac(generic)).new, '27.2')
+
+    def test_the_listing_order_of_the_device_specific_and_the_generic_runtime_does_not_matter(self) -> None:
+        generic = {'platform': 'iOS', 'version': '27.2', 'name': 'iOS 27.2', 'available': True, 'lists_iphone_with_one_screen': True,
+                   'identifier': 'com.apple.CoreSimulator.SimRuntime.iOS-27-2'}
+        the_listings = self.make_listings_shaped_like_the_local_mac(generic)
+        the_listings['xcode-27']['runtimes'].reverse()
+        self.assertEqual(self.plan_old_ios_leg(the_listings).new, '27.2')
+
+    def test_runtimes_that_are_not_known_to_lack_a_one_screen_iphone_stay(self) -> None:
+        the_listings = self.make_listings_shaped_like_the_local_mac()
+        for runtime in the_listings['xcode-27']['runtimes']:
+            runtime['lists_iphone_with_one_screen'] = None
+        self.assertEqual(self.plan_old_ios_leg(the_listings).new, '27.2')
+        for runtime in the_listings['xcode-27']['runtimes']:
+            del runtime['lists_iphone_with_one_screen']
+        self.assertEqual(self.plan_old_ios_leg(the_listings).new, '27.2')
+
+    def test_no_leg_and_a_note_when_no_older_runtime_can_run_the_tests(self) -> None:
+        the_listings = self.make_listings_shaped_like_the_local_mac()
+        the_listings['xcode-27']['runtimes'][0]['lists_iphone_with_one_screen'] = False
+        self.assertIsNone(self.plan_old_ios_leg(the_listings))
+        self.assertEqual([note for note in self.last_notes if 'no iOS leg was added' in note],
+                         ['`xcode-27` lists no GA iOS simulator runtime of an older major that has an iPhone with one built-in screen, '
+                          'which the status bar tests need, so no iOS leg was added for it.'])
+
+    def test_a_target_that_runs_the_only_major_with_a_good_runtime_adds_no_note_about_screens(self) -> None:
+        the_listings = self.make_listings_shaped_like_the_local_mac()
+        the_listings['xcode-27']['runtimes'][0]['lists_iphone_with_one_screen'] = False
+        notes: List[str] = []
+        xcode_changes._plan_old_ios_major_leg(pinned_versions(), 'xcode-27', the_listings['xcode-27'], '27.2', 27, notes)
+        self.assertEqual(notes, [])
 
     def test_a_ga_point_release_vouches_for_its_two_part_runtime_next_to_a_release_candidate_of_that_minor(self) -> None:
         apps = [app('Xcode_27.1.1.app', '27.1.1'), app('Xcode_27.1_Release_Candidate.app', '27.1', license_type='GM')]

@@ -5,7 +5,7 @@ import json
 import unittest
 from typing import Any, Dict, List
 
-from ensure_ci_always_tests_latest_operating_systems import older_ios_legs
+from ensure_ci_always_tests_latest_operating_systems import ios_runtimes, older_ios_legs
 from ensure_ci_always_tests_latest_operating_systems.data_types import FamilyPlan
 from ensure_ci_always_tests_latest_operating_systems.pinned_versions import read_pinned_versions_from_texts
 
@@ -31,6 +31,11 @@ def todays_listings() -> Dict[str, Any]:
 def runtime(version: str, platform: str = 'iOS', available: bool = True) -> Dict[str, Any]:
     return {'platform': platform, 'version': version, 'name': '%s %s' % (platform, version), 'identifier': 'x',
             'available': available}
+
+
+def runtime_listing_one_screen_iphone(version: str, identifier: str, lists_iphone_with_one_screen: Any) -> Dict[str, Any]:
+    return dict(runtime(version), identifier='com.apple.CoreSimulator.SimRuntime.' + identifier,
+                lists_iphone_with_one_screen=lists_iphone_with_one_screen)
 
 
 def keys(result: FamilyPlan) -> List[str]:
@@ -153,12 +158,58 @@ class RuntimeCheckTests(unittest.TestCase):
 
     def test_a_runtime_found_by_its_full_identifier_counts(self) -> None:
         identifier = 'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
-        self.assertTrue(older_ios_legs._is_found_by_ios_script(dict(runtime('26.5'), identifier=identifier), identifier))
+        self.assertTrue(ios_runtimes.is_found_by_ios_script(dict(runtime('26.5'), identifier=identifier), identifier))
 
     def test_install_runtime_legs_skip_the_runtime_checks(self) -> None:
         listings = todays_listings()
         listings['macos-15']['runtimes'] = []
         self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
+
+
+class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
+    def listings_where_the_leg_runtime_lists_only_iphone_duo(self) -> Dict[str, Any]:
+        listings = todays_listings()
+        listings['macos-26']['runtimes'] = [runtime_listing_one_screen_iphone('26.5', 'iOS-26-5', False)]
+        return listings
+
+    def test_a_leg_whose_only_matching_runtime_has_no_one_screen_iphone_is_reported(self) -> None:
+        result = older_ios_legs.check_older_ios_legs(pinned_versions(), self.listings_where_the_leg_runtime_lists_only_iphone_duo())
+        self.assertEqual(keys(result), ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+        self.assertIn('No other runtime of its major', result.things_to_check[0].text)
+
+    def test_the_report_names_the_runtime_of_the_same_major_that_can_run_the_tests(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.4', 'iOS-26-4', True))
+        result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
+        self.assertEqual(keys(result), ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+        self.assertIn('`26.4` runtime can run them', result.things_to_check[0].text)
+
+    def test_one_good_runtime_among_two_that_match_is_enough(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.5', 'iOS-26-5-generic', True))
+        self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
+
+    def test_a_runtime_that_is_not_known_to_lack_a_one_screen_iphone_is_not_reported(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'][0]['lists_iphone_with_one_screen'] = None
+        self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
+
+    def test_a_missing_runtime_is_reported_as_missing_only(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'][0]['version'] = '26.6'
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-runtime-missing:macos-26:26.5'])
+
+    def test_a_newer_runtime_that_lists_no_one_screen_iphone_is_not_suggested(self) -> None:
+        listings = todays_listings()
+        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.6', 'iOS-26-6', False))
+        self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
+
+    def test_a_newer_runtime_that_can_run_the_tests_is_still_suggested(self) -> None:
+        listings = todays_listings()
+        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.6', 'iOS-26-6', True))
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-newer-runtime:macos-26:26.5:26.6'])
 
 
 class XcodeCheckTests(unittest.TestCase):

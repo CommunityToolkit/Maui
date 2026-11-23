@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import Any, List, Mapping, Optional
 
 from .data_types import FamilyPlan, SourceProblem, ThingToCheck
+from .ios_runtimes import (can_a_runtime_found_by_ios_script_run_the_tests, is_found_by_ios_script,
+                           list_available_ios_runtimes)
 from .markdown_text import markdown_code
 from .version_numbers import is_dotted_number, major, major_minor, numeric_key
 from .xcode_changes import ga_xcode_versions, list_ga_ios_runtime_versions
@@ -11,25 +13,26 @@ from .xcode_changes import ga_xcode_versions, list_ga_ios_runtime_versions
 FAMILY = 'older-ios-legs'
 
 
-def _list_available_ios_runtimes(listing: Mapping[str, Any]) -> List[Mapping[str, Any]]:
-    return [runtime for runtime in listing.get('runtimes', [])
-            if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')]
-
-
-def _is_found_by_ios_script(runtime: Mapping[str, Any], requested: str) -> bool:
-    """Matches a runtime the way Select-SimulatorRuntime in eng/devices/ios.ps1 does."""
-    return (runtime.get('version') == requested or runtime.get('identifier') == requested or runtime.get('name') == requested
-            or (runtime.get('identifier') or '').endswith('.' + requested))
+def _find_newest_runtime_of_same_major_that_can_run_the_tests(leg_version: str, listing: Mapping[str, Any]) -> Optional[str]:
+    if not is_dotted_number(leg_version):
+        return None
+    same_major = [version for version in list_ga_ios_runtime_versions(listing, only_versions_that_can_run_the_tests=True)
+                  if major(version) == major(leg_version)]
+    return max(same_major, key=numeric_key, default=None)
 
 
 def _find_newer_ga_runtime_of_same_major(leg_version: str, listing: Mapping[str, Any]) -> Optional[str]:
-    if not is_dotted_number(leg_version):
-        return None
-    same_major = [version for version in list_ga_ios_runtime_versions(listing) if major(version) == major(leg_version)]
-    newest = max(same_major, key=numeric_key, default=None)
+    newest = _find_newest_runtime_of_same_major_that_can_run_the_tests(leg_version, listing)
     if newest is not None and numeric_key(newest) > numeric_key(leg_version):
         return newest
     return None
+
+
+def _what_to_do_instead(leg_version: str, listing: Mapping[str, Any]) -> str:
+    instead = _find_newest_runtime_of_same_major_that_can_run_the_tests(leg_version, listing)
+    if instead is None:
+        return 'No other runtime of its major on the image can run them, so the leg needs another image or install-runtime.'
+    return 'The iOS %s runtime can run them; move the leg to it.' % markdown_code(instead)
 
 
 def check_older_ios_legs(pinned: Any, listings: Mapping[str, Any]) -> FamilyPlan:
@@ -58,11 +61,16 @@ def check_older_ios_legs(pinned: Any, listings: Mapping[str, Any]) -> FamilyPlan
                      % (markdown_code(leg.xcode), label)))
         if leg.install_runtime:
             continue
-        if not any(_is_found_by_ios_script(runtime, leg.ios_version) for runtime in _list_available_ios_runtimes(listing)):
+        if not any(is_found_by_ios_script(runtime, leg.ios_version) for runtime in list_available_ios_runtimes(listing)):
             plan.things_to_check.append(ThingToCheck(
                 key='ios-leg-runtime-missing:%s:%s' % (leg.runner, leg.ios_version),
                 text='The iOS %s leg needs its simulator runtime, which %s does not have anymore.'
                      % (markdown_code(leg.ios_version), label)))
+        elif not can_a_runtime_found_by_ios_script_run_the_tests(listing, leg.ios_version):
+            plan.things_to_check.append(ThingToCheck(
+                key='ios-leg-runtime-cannot-run-tests:%s:%s' % (leg.runner, leg.ios_version),
+                text='The iOS %s runtime of %s lists no iPhone with one built-in screen, which the status bar tests need. %s'
+                     % (markdown_code(leg.ios_version), label, _what_to_do_instead(leg.ios_version, listing))))
         newer = _find_newer_ga_runtime_of_same_major(leg.ios_version, listing)
         if newer is not None:
             plan.things_to_check.append(ThingToCheck(

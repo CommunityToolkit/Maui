@@ -1,0 +1,232 @@
+{
+  "runtimes": [
+    {
+      "isAvailable": true,
+      "version": "17.5",
+      "buildversion": "21F79",
+      "name": "iOS 17.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 15 Pro.simdevicetype",
+          "name": "iPhone 15 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 15 Pro Max.simdevicetype",
+          "name": "iPhone 15 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 11-inch (M4) (16GB).simdevicetype",
+          "name": "iPad Pro 11-inch (M4) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "18.6",
+      "buildversion": "22G86",
+      "name": "iOS 18.6",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-18-6",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16 Pro.simdevicetype",
+          "name": "iPhone 16 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 16 Pro Max.simdevicetype",
+          "name": "iPhone 16 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 11-inch (M4) (16GB).simdevicetype",
+          "name": "iPad Pro 11-inch (M4) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "26.2",
+      "buildversion": "23C54",
+      "name": "iOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-2",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro.simdevicetype",
+          "name": "iPhone 17 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro Max.simdevicetype",
+          "name": "iPhone 17 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M5) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "26.4",
+      "buildversion": "23E244",
+      "name": "iOS 26.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-4",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro.simdevicetype",
+          "name": "iPhone 17 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro Max.simdevicetype",
+          "name": "iPhone 17 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M5) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "26.4.1",
+      "buildversion": "23E254a",
+      "name": "iOS 26.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-4",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro.simdevicetype",
+          "name": "iPhone 17 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro Max.simdevicetype",
+          "name": "iPhone 17 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M5) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "26.5",
+      "buildversion": "23F77",
+      "name": "iOS 26.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro.simdevicetype",
+          "name": "iPhone 17 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 17 Pro Max.simdevicetype",
+          "name": "iPhone 17 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M5) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "27.0",
+      "buildversion": "24A434",
+      "name": "iOS 27.0",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 18 Pro.simdevicetype",
+          "name": "iPhone 18 Pro",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone 18 Pro Max.simdevicetype",
+          "name": "iPhone 18 Pro Max",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro-Max"
+        },
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad Pro 13-inch (M5) (16GB).simdevicetype",
+          "name": "iPad Pro 13-inch (M5) (16GB)",
+          "productFamily": "iPad",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "27.1",
+      "buildversion": "24A94425",
+      "name": "iOS 27.1",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone Duo.simdevicetype",
+          "name": "iPhone Duo",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo"
+        }
+      ]
+    },
+    {
+      "isAvailable": true,
+      "version": "27.2",
+      "buildversion": "24B91016s",
+      "name": "iOS 27.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-2-iPhone19-4",
+      "platform": "iOS",
+      "supportedDeviceTypes": [
+        {
+          "bundlePath": "/Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone Duo.simdevicetype",
+          "name": "iPhone Duo",
+          "productFamily": "iPhone",
+          "identifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo"
+        }
+      ]
+    }
+  ]
+}

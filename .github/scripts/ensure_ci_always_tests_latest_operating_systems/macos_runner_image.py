@@ -9,6 +9,7 @@ import subprocess
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 
 from .errors import RunnerSoftwareError
+from .ios_runtimes import LISTS_IPHONE_WITH_ONE_SCREEN
 
 COMMAND_TIMEOUT_SECONDS = 120
 # A cold CoreSimulator service can need minutes to answer its first request on a fresh runner.
@@ -106,7 +107,8 @@ def _command_failure(command: List[str], code: int, timeouts: Optional[List[int]
     return '`%s` failed with exit code %d' % (text, code)
 
 
-def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = None,
+                            count_screens: Optional[Callable[[Any], Optional[int]]] = None) -> List[Dict[str, Any]]:
     command = ['xcrun', 'simctl', 'list', 'runtimes', '-j']
     code, output, timeouts = _run_retrying_a_timeout(run, command)
     if code != 0:
@@ -120,6 +122,8 @@ def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = Non
     if not isinstance(data, dict) or not isinstance(data.get('runtimes'), list):
         _report(problems, '`%s` printed JSON without a `runtimes` list' % ' '.join(command))
         return []
+    count_screens = count_screens or read_built_in_screen_count
+    screen_counts: Dict[str, Optional[int]] = {}
     runtimes = []
     for runtime in data['runtimes']:
         runtimes.append({
@@ -128,8 +132,46 @@ def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = Non
             'name': runtime.get('name'),
             'identifier': runtime.get('identifier'),
             'available': bool(runtime.get('isAvailable')),
+            LISTS_IPHONE_WITH_ONE_SCREEN: _lists_iphone_with_one_screen(runtime, screen_counts, count_screens),
         })
     return runtimes
+
+
+def read_built_in_screen_count(bundle_path: Any) -> Optional[int]:
+    """The same count as Get-SimulatorBuiltInScreenCount in eng/devices/ios.ps1; None when the profile cannot be read."""
+    if not isinstance(bundle_path, str) or not bundle_path:
+        return None
+    capabilities = _read_plist(os.path.join(bundle_path, 'Contents', 'Resources', 'capabilities.plist'))
+    displays = ((capabilities or {}).get('capabilities') or {}).get('displays')
+    if not isinstance(displays, list):
+        return None
+    # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
+    return sum(1 for display in displays if isinstance(display, dict)
+               and (str(display.get('displayType', '')).lower() == 'integrated'
+                                           or str(display.get('deviceName', '')).lower().startswith('primary')))
+
+
+def _lists_iphone_with_one_screen(runtime: Mapping[str, Any], screen_counts: Dict[str, Optional[int]],
+                                  count_screens: Callable[[Any], Optional[int]]) -> Optional[bool]:
+    """True: some iPhone has one screen. False: every iPhone has more or none is listed. None: not known."""
+    device_types = runtime.get('supportedDeviceTypes')
+    if not isinstance(device_types, list):
+        return None
+    iphones = [device_type for device_type in device_types
+               if isinstance(device_type, dict) and device_type.get('productFamily') == 'iPhone']
+    is_any_screen_count_unknown = False
+    for iphone in iphones:
+        identifier = str(iphone.get('identifier'))
+        if identifier not in screen_counts:
+            try:
+                screen_counts[identifier] = count_screens(iphone.get('bundlePath'))
+            except Exception:
+                # A profile that cannot be read is "unknown"; it must never fail the whole inspection.
+                screen_counts[identifier] = None
+        if screen_counts[identifier] == 1:
+            return True
+        is_any_screen_count_unknown = is_any_screen_count_unknown or screen_counts[identifier] is None
+    return None if is_any_screen_count_unknown else False
 
 
 def list_dotnet_sdks(run: RunCommand, problems: Optional[List[str]] = None) -> List[str]:

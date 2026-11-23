@@ -97,13 +97,99 @@ class ListXcodeAppsTests(unittest.TestCase):
         self.assertEqual(macos_runner_image.list_xcode_apps(os.path.join(self.folder.name, 'nowhere')), [])
 
 
+DEVICE_TYPE_BUNDLES = os.path.join(os.path.dirname(__file__), 'fixtures', 'simulator-device-types')
+
+
+def bundle(name: str) -> str:
+    return os.path.join(DEVICE_TYPE_BUNDLES, name + '.simdevicetype')
+
+
+def count_screens_of_the_fake_bundle_by_name(bundle_path: str) -> Optional[int]:
+    """The local simctl fixture names real profile folders; iPhone Duo gets the two-screen profile, every other device the one-screen."""
+    fake = bundle('two-screens' if 'iPhone Duo' in bundle_path else 'one-screen')
+    return macos_runner_image.read_built_in_screen_count(fake)
+
+
+def iphone(name: str, bundle_path: Optional[str]) -> Dict[str, str]:
+    return {'name': name, 'productFamily': 'iPhone', 'identifier': 'id.' + name.replace(' ', '-'), 'bundlePath': bundle_path or ''}
+
+
+def list_runtimes_with_device_types(device_types: object, count_screens: object = None) -> Optional[bool]:
+    runtime = {'platform': 'iOS', 'version': '27.0', 'name': 'iOS 27.0', 'identifier': 'x', 'isAvailable': True}
+    if device_types is not None:
+        runtime['supportedDeviceTypes'] = device_types
+    runtimes = macos_runner_image.list_simulator_runtimes(
+        FakeCommands({SIMCTL: (0, json.dumps({'runtimes': [runtime]}))}), count_screens=count_screens)
+    return runtimes[0]['lists_iphone_with_one_screen']
+
+
+class BuiltInScreenCountTests(unittest.TestCase):
+    def test_a_profile_counts_its_integrated_and_primary_displays_only(self) -> None:
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('one-screen')), 1)
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('one-screen-binary')), 1)
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('two-screens')), 2)
+
+    def test_a_profile_that_cannot_be_read_has_no_count(self) -> None:
+        for path in (bundle('garbage'), bundle('no-displays'), bundle('missing'), '', None):
+            with self.subTest(path=path):
+                self.assertIsNone(macos_runner_image.read_built_in_screen_count(path))
+
+
+class SimulatorRuntimeScreenTests(unittest.TestCase):
+    def test_the_local_mac_lists_iphone_duo_only_on_27_1_and_the_device_specific_27_2(self) -> None:
+        run = FakeCommands({SIMCTL: (0, fixture('macos-runner-image/simctl-runtimes-local-mac.json').decode('utf-8'))})
+        problems: List[str] = []
+        runtimes = macos_runner_image.list_simulator_runtimes(run, problems, count_screens_of_the_fake_bundle_by_name)
+        self.assertEqual(problems, [])
+        self.assertEqual({runtime['identifier'].rsplit('.', 1)[1]: runtime['lists_iphone_with_one_screen'] for runtime in runtimes}, {
+            'iOS-17-5': True, 'iOS-18-6': True, 'iOS-26-2': True, 'iOS-26-4': True, 'iOS-26-5': True, 'iOS-27-0': True,
+            'iOS-27-1': False, 'iOS-27-2-iPhone19-4': False})
+
+    def test_some_iphone_with_one_screen_is_enough(self) -> None:
+        self.assertIs(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens')), iphone('One', bundle('one-screen'))]), True)
+
+    def test_every_iphone_with_more_than_one_screen_is_false(self) -> None:
+        self.assertIs(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens'))]), False)
+
+    def test_no_iphone_listed_is_false(self) -> None:
+        self.assertIs(list_runtimes_with_device_types([]), False)
+        self.assertIs(list_runtimes_with_device_types([{'name': 'iPad', 'productFamily': 'iPad', 'identifier': 'ipad', 'bundlePath': bundle('one-screen')}]), False)
+
+    def test_a_runtime_without_device_types_is_unknown(self) -> None:
+        self.assertIsNone(list_runtimes_with_device_types(None))
+
+    def test_a_profile_that_cannot_be_read_is_unknown_and_never_an_error(self) -> None:
+        self.assertIsNone(list_runtimes_with_device_types([iphone('Broken', bundle('garbage'))]))
+        self.assertIsNone(list_runtimes_with_device_types([iphone('Missing', bundle('missing'))]))
+        self.assertIsNone(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens')), iphone('Broken', bundle('garbage'))]))
+        self.assertIs(list_runtimes_with_device_types([iphone('Broken', bundle('garbage')), iphone('One', bundle('one-screen'))]), True)
+
+    def test_a_reader_that_raises_is_unknown_and_never_an_error(self) -> None:
+        def raises(bundle_path: str) -> Optional[int]:
+            raise OSError('disk gone')
+        self.assertIsNone(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens'))], raises))
+
+    def test_a_device_type_shared_by_runtimes_is_read_once(self) -> None:
+        read: List[str] = []
+
+        def count(bundle_path: str) -> Optional[int]:
+            read.append(bundle_path)
+            return 2
+        device_types = [iphone('Duo', bundle('two-screens'))]
+        runtimes = [{'platform': 'iOS', 'version': version, 'name': version, 'identifier': version, 'isAvailable': True,
+                     'supportedDeviceTypes': device_types} for version in ('27.1', '27.2')]
+        macos_runner_image.list_simulator_runtimes(FakeCommands({SIMCTL: (0, json.dumps({'runtimes': runtimes}))}), count_screens=count)
+        self.assertEqual(len(read), 1)
+
+
 class CommandOutputTests(unittest.TestCase):
     def test_simulator_runtimes_keep_the_readme_version_and_availability(self) -> None:
         run = FakeCommands({SIMCTL: (0, fixture('macos-runner-image/simctl-runtimes.json').decode('utf-8'))})
         runtimes = macos_runner_image.list_simulator_runtimes(run)
         self.assertEqual([runtime['version'] for runtime in runtimes], ['27.0', '27.1', '27.2'])
         self.assertEqual(runtimes[0], {'platform': 'iOS', 'version': '27.0', 'name': 'iOS 27.0',
-                                       'identifier': 'com.apple.CoreSimulator.SimRuntime.iOS-27-0', 'available': True})
+                                       'identifier': 'com.apple.CoreSimulator.SimRuntime.iOS-27-0', 'available': True,
+                                       'lists_iphone_with_one_screen': None})
         self.assertEqual(run.calls, [['xcrun', 'simctl', 'list', 'runtimes', '-j']])
 
     def test_an_unavailable_runtime_is_marked(self) -> None:

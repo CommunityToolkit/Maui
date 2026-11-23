@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 from .data_types import (ChangeForAPerson, FamilyPlan, PinnedVersions, RolloutState, SafeChange, SourceProblem,
                          ThingToCheck)
+from .ios_runtimes import can_a_runtime_found_by_ios_script_run_the_tests
 from .markdown_text import markdown_code
 from .pinned_versions import DEVICE_TESTS_FILE, SHARED_ENV_FILE
 from .version_numbers import feature_band, is_dotted_number, major, major_minor, numeric_key, parse_utc
@@ -157,11 +158,13 @@ def _is_pre_release_xcode_app(app: Mapping[str, Any]) -> bool:
     return not GA_XCODE_APP_NAME.match(app.get('folder') or '') or 'beta' in str(app.get('license_type') or '').lower()
 
 
-def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
+def list_ga_ios_runtime_versions(listing: Mapping[str, Any], only_versions_that_can_run_the_tests: bool = False) -> List[str]:
     """Full versions, as listed, of the available iOS runtimes that are not a beta's.
 
     From iOS 26 on a runtime has its Xcode's number, so a number only a pre-release Xcode has, or a major above every GA Xcode's,
     marks a beta's runtime. Runtimes with no Xcode of their number stay: Xcode 16.4 installs iOS 18.6.
+
+    A leg names its runtime by version, so a caller that names one asks for only the versions that ios.ps1 can run the tests on.
     """
     ga_apps = [app for app in listing.get('xcode_apps', []) if _is_ga_xcode_app(app) and app.get('version')]
     ga_numbers = {major_minor(app['version']) for app in ga_apps}
@@ -180,7 +183,9 @@ def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
 
     return [runtime['version'] for runtime in listing.get('runtimes', [])
             if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')
-            and not is_beta_runtime(runtime['version'])]
+            and not is_beta_runtime(runtime['version'])
+            and (not only_versions_that_can_run_the_tests
+                 or can_a_runtime_found_by_ios_script_run_the_tests(listing, runtime['version']))]
 
 
 def _plan_old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any], highest_ga_xcode: str,
@@ -197,6 +202,12 @@ def _plan_old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Map
         return None
     ios_versions = [version for version in ios_versions if major(version) < major_the_target_runs]
     if not ios_versions:
+        return None
+    runnable_versions = set(list_ga_ios_runtime_versions(listing, only_versions_that_can_run_the_tests=True))
+    ios_versions = [version for version in ios_versions if version in runnable_versions]
+    if not ios_versions:
+        notes.append('%s lists no GA iOS simulator runtime of an older major that has an iPhone with one built-in screen, '
+                     'which the status bar tests need, so no iOS leg was added for it.' % markdown_code(old_label))
         return None
     old_major = max(major(version) for version in ios_versions)
     # A leg named by identifier or name has no major to compare, so it never counts as covering the old major;

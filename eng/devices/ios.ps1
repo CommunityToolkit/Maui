@@ -19,7 +19,8 @@
     refuses any other. Without -DeviceType it is the runtime's first iPhone with one built-in screen: the status bar
     tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge.
     Without -Runtime, the runtime is the newest one that lists such an iPhone (with -DeviceType, the newest one that
-    lists that device type). If the runtime lists no iPhone known to have one built-in screen, the simulator is its
+    lists that device type). When several runtimes match -Runtime (Xcode 27.2 installs two iOS 27.2 runtimes), it is
+    the first that lists such an iPhone (with -DeviceType, that lists that device type), else the first match. If the runtime lists no iPhone known to have one built-in screen, the simulator is its
     first iPhone whose screens could not be counted, else its first iPhone, with a warning; without -Runtime this
     happens only when no runtime lists such an iPhone, and the runtime is then the newest one that lists any iPhone.
 
@@ -180,19 +181,45 @@ function Get-SimulatorRuntimes {
     return $runtimes
 }
 
-function Select-SimulatorRuntime {
+function Find-MatchingSimulatorRuntimes {
     # There is no default runtime here: the newest one may not list the device type that is needed (iOS 27.1 lists only iPhone Duo), so
     # Select-SimulatorRuntimeAndDeviceType chooses the runtime and the device type together, and only a requested runtime is resolved here.
     param([string]$Requested)
 
     $runtimes = @(Get-SimulatorRuntimes)
-    foreach ($candidate in $runtimes) {
-        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.version -eq $Requested -or $candidate.name -eq $Requested) {
-            return $candidate
+    $matching = @($runtimes | Where-Object {
+        $_.identifier -eq $Requested -or $_.identifier.EndsWith(".$Requested") -or $_.version -eq $Requested -or $_.name -eq $Requested
+    })
+    if ($matching.Count -eq 0) {
+        throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
+    }
+
+    return $matching
+}
+
+function Select-MatchingSimulatorRuntime {
+    # Xcode 27.2 installs two iOS 27.2 runtimes: a generic one and iOS-27-2-iPhone19-4, which lists only iPhone Duo. The first match must not
+    # win when another match can run the tests.
+    param([object[]]$Matching, [string]$DeviceType)
+
+    if ($Matching.Count -gt 1) {
+        $screenCounts = @{}
+        foreach ($candidateRuntime in $Matching) {
+            if ($DeviceType) {
+                if ($null -ne (Find-SupportedSimulatorDeviceType -SelectedRuntime $candidateRuntime -Requested $DeviceType)) {
+                    return $candidateRuntime
+                }
+            }
+            else {
+                $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $candidateRuntime -ScreenCounts $screenCounts
+                if (@($candidates.IPhones | Where-Object { $_.Screens -eq 1 }).Count -gt 0) {
+                    return $candidateRuntime
+                }
+            }
         }
     }
 
-    throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
+    return $Matching[0]
 }
 
 function Get-SimulatorBuiltInScreenCount {
@@ -336,7 +363,8 @@ function Select-SimulatorRuntimeAndDeviceType {
     param([string]$Runtime, [string]$DeviceType)
 
     if ($Runtime) {
-        $selectedRuntime = Select-SimulatorRuntime -Requested $Runtime
+        $matching = @(Find-MatchingSimulatorRuntimes -Requested $Runtime)
+        $selectedRuntime = Select-MatchingSimulatorRuntime -Matching $matching -DeviceType $DeviceType
         return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
     }
 
