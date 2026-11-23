@@ -478,7 +478,9 @@ class DecidePullRequestUpdateTests(CommandTestCase):
         self.assertIn('::notice title=Pull request decision::%s\n' % note, out)
 
     def test_a_decision_note_is_escaped_for_the_workflow_command(self) -> None:
-        self.assertEqual(commands._escape_workflow_command_data('100%\r\nnext'), '100%25%0D%0Anext')
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            commands._report_decision_notes(['100%\r\nnext'], {})
+        self.assertEqual(out.getvalue(), '::notice title=Pull request decision::100%25%0D%0Anext\n')
 
     def test_a_decision_note_still_prints_when_there_is_no_run_summary_file(self) -> None:
         code, out, _ = self.run_with_a_moved_main()

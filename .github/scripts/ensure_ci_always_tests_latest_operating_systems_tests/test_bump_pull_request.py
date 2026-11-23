@@ -115,7 +115,7 @@ class PersonCommitTests(unittest.TestCase):
         text = state['things_to_check'][0]['text']
         self.assertIn('`ddddddd`', text)
         self.assertIn('`Fix the thing by hand`', text)
-        self.assertIn('Close #12 and the bot opens a fresh PR next night, or merge it yourself.', text)
+        self.assertIn('Close #12 and run the workflow with `reopen-rejected` for a fresh PR, or merge it yourself.', text)
 
     def test_commit_by_another_login_even_with_the_trailer(self) -> None:
         state = self.read_with_commits([bot_commit(login='someone-else')])

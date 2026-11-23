@@ -303,16 +303,12 @@ def _append_to_run_summary(environ: Mapping[str, str], text: str) -> None:
             file.write(text)
 
 
-def _escape_workflow_command_data(text: str) -> str:
-    return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-
-
 def _report_decision_notes(notes: Sequence[str], environ: Mapping[str, str]) -> None:
     if not notes:
         return
     _append_to_run_summary(environ, ''.join('- Note: %s\n' % note for note in notes) + '\n')
     for note in notes:
-        print('::notice title=Pull request decision::%s' % _escape_workflow_command_data(note))
+        print('::notice title=Pull request decision::%s' % _escape_workflow_command_text(note))
 
 
 def _read_plan(plan_folder: str) -> Dict[str, Any]:

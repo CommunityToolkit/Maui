@@ -82,14 +82,14 @@ def _read_open_pull_request(github: Any, pull: Dict[str, Any]) -> Tuple[Dict[str
         things.append(ThingToCheck(
             key='pull-request-has-a-person-commit:%d' % number,
             text=('#%d has commit %s by %s (%s), which the bot didn\'t make, so it no longer updates #%d. '
-                  'Close #%d and the bot opens a fresh PR next night, or merge it yourself.') % (
+                  'Close #%d and run the workflow with `reopen-rejected` for a fresh PR, or merge it yourself.') % (
                       number, markdown_code(first['sha'][:7]), markdown_code(first['login']),
                       markdown_code(first['subject']), number, number)))
     if checks_failed:
         things.append(ThingToCheck(
             key='pull-request-checks-failed:%d' % number,
-            text=('The checks on #%d failed, so it can\'t auto-merge. Fix the cause, or close #%d and the bot '
-                  'opens a fresh PR next night.') % (number, number)))
+            text=('The checks on #%d failed, so it can\'t auto-merge. Fix the cause on the base branch and the bot '
+                  'rebuilds #%d when it moves, or close #%d to skip these versions until a run with `reopen-rejected`.') % (number, number, number)))
     return state, things
 
 

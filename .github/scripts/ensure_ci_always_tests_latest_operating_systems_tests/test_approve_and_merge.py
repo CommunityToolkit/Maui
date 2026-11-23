@@ -482,14 +482,36 @@ class RefusalTests(unittest.TestCase):
         approval = self.assert_refused(scenario, 'author')
         thing = approval['things_to_check'][0]
         self.assertEqual(thing['key'], 'pull-request-not-approved:7:author')
-        self.assertTrue(thing['text'].startswith('Close #7, or review and merge it yourself. The bot did not approve #7 because author: '))
+        self.assertTrue(thing['text'].startswith('Review and merge #7 yourself, or close it and run the workflow with `reopen-rejected` for a fresh one. The bot did not approve #7 because author: '))
         self.assertIn('branch', thing['text'])
 
     def test_every_other_refusal_code_starts_with_an_action(self) -> None:
-        from ensure_ci_always_tests_latest_operating_systems.approve_and_merge import _REFUSAL_ACTIONS
-        needing_no_action = {'hold', 'last-push-rule'}
-        self.assertEqual(set(REFUSAL_REASONS) - needing_no_action - set(_REFUSAL_ACTIONS), set())
-        self.assertIn('last-push-rule', _REFUSAL_ACTIONS)
+        self.assertEqual(set(approve_and_merge._REFUSAL_ACTIONS), set(REFUSAL_REASONS) - {'hold'})
+
+    def test_threads_and_conflicts_give_both_actions_and_name_only_conflicts(self) -> None:
+        scenario = Scenario()
+        scenario.facts = graphql_facts(threads=[False, False], mergeable='CONFLICTING')
+        approval, _ = scenario.run()
+        text = approval['things_to_check'][0]['text']
+        self.assertIn('threads', approval['refusals'])
+        self.assertIn('conflicts', approval['refusals'])
+        self.assertTrue(text.startswith('Resolve the open review conversations on #7 (2 left). Wait for the bot\'s next run'), text)
+        self.assertNotIn('The bot approves it on its next run.', text)
+        self.assertIn('because conflicts: ', text)
+        self.assertNotIn('because threads', text)
+
+    def test_the_same_action_for_author_and_branch_appears_once(self) -> None:
+        scenario = Scenario()
+        scenario.pull['user']['login'] = 'someone-else'
+        scenario.pull['head']['ref'] = 'a-person-branch'
+        approval, _ = scenario.run()
+        text = approval['things_to_check'][0]['text']
+        self.assertEqual(text.count('Review and merge #7 yourself'), 1)
+
+    def test_no_action_promises_a_fresh_pull_request_without_reopen_rejected(self) -> None:
+        for code, action in approve_and_merge._REFUSAL_ACTIONS.items():
+            if 'fresh' in action:
+                self.assertIn('reopen-rejected', action, code)
 
 
 class AutoMergeKeepsOrDropsTests(unittest.TestCase):

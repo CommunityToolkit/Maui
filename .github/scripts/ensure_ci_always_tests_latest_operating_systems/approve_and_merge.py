@@ -359,29 +359,33 @@ def merge_now(github: Any, number: int, head_sha: str) -> Tuple[bool, str]:
     raise GitHubApiError('PUT', path, status, message)
 
 
+_CLOSE_FOR_A_FRESH_ONE = 'close it and run the workflow with `reopen-rejected` for a fresh one'
+
 _REFUSAL_ACTIONS: Dict[str, str] = {
     'state': 'Mark #%(n)d ready for review and aim it at the base branch, or close it.',
-    'author': 'Close #%(n)d, or review and merge it yourself.',
-    'branch': 'Close #%(n)d, or review and merge it yourself.',
+    'author': 'Review and merge #%(n)d yourself, or ' + _CLOSE_FOR_A_FRESH_ONE + '.',
+    'branch': 'Review and merge #%(n)d yourself, or ' + _CLOSE_FOR_A_FRESH_ONE + '.',
     'head': 'Look at the newest commit on #%(n)d; the bot tries again on its next run.',
-    'commits': 'Check the commits on #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
-    'base': 'Close #%(n)d so the bot opens a fresh one on the current base, or merge it yourself.',
+    'commits': 'Check the commits on #%(n)d, then merge it yourself, or ' + _CLOSE_FOR_A_FRESH_ONE + '.',
+    'base': "Wait for the bot's next run, which checks #%(n)d again on the newest base, or merge it yourself.",
     'files': 'Review the extra file changes on #%(n)d, then merge it yourself or close it.',
-    'exact-changes': 'Review the changes in #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
-    'validator': 'Review the changes in #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
-    'levels-rise': 'Review the Android levels in #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
+    'exact-changes': 'Review the changes in #%(n)d, then merge it yourself, or ' + _CLOSE_FOR_A_FRESH_ONE + '.',
+    'validator': 'Review the changes in #%(n)d, then merge it yourself, or ' + _CLOSE_FOR_A_FRESH_ONE + '.',
+    'levels-rise': 'Review the Android levels in #%(n)d, then merge it yourself, or ' + _CLOSE_FOR_A_FRESH_ONE + '.',
     'threads': 'Resolve the open review conversations on #%(n)d (%(k)d left).',
-    'conflicts': 'Resolve the merge conflicts on #%(n)d, or close it so the bot opens a fresh one.',
+    'conflicts': "Wait for the bot's next run, which rebuilds #%(n)d on the newest base; resolving the conflicts by hand makes the bot stop updating it.",
     'last-push-rule': "Check that the main branch rules can be read and still require approval of the most recent push.",
 }
 
 
-def _refusal_text(number: int, codes: List[str], result: CheckResult) -> str:
+def _describe_refusal(number: int, codes: List[str], result: CheckResult) -> str:
     unresolved = int(result.pull_request_facts.get('unresolved_threads') or 0)
-    if codes == ['threads']:
-        return 'Resolve the open review conversations on #%d (%d left). The bot approves it on its next run.' % (number, unresolved)
     actions = ' '.join(dict.fromkeys(_REFUSAL_ACTIONS[code] % {'n': number, 'k': unresolved} for code in codes))
+    if result.refusals == ['threads']:
+        return actions + ' The bot approves it on its next run.'
     reasons = '; '.join('%s: %s' % (code, '; '.join(result.refusal_details[code])) for code in codes if code != 'threads')
+    if not reasons:
+        return actions
     return '%s The bot did not approve #%d because %s.' % (actions, number, reasons)
 
 
@@ -399,7 +403,7 @@ def _refusal_things_to_check(number: int, result: CheckResult) -> List[ThingToCh
     others = [code for code in result.refusals if code != 'hold' and not (code == 'last-push-rule' and not rules_could_not_be_read)]
     if others:
         things.append(ThingToCheck('pull-request-not-approved:%d:%s' % (number, others[0]),
-                                   _refusal_text(number, others, result)))
+                                   _describe_refusal(number, others, result)))
     return things
 
 
