@@ -398,7 +398,7 @@ class PublishStepConditions(unittest.TestCase):
         events_in_on = [match.group(1) for match in (re.match(r"^    ([A-Za-z_]+):", line) for line in lines[start:end]) if match]
         self.assertEqual({"schedule", "workflow_dispatch", "pull_request"}, set(events_in_on))
 
-    def test_the_pull_request_event_has_no_path_filter_because_a_required_check_that_never_runs_blocks_every_pull_request(self) -> None:
+    def test_the_pull_request_event_has_no_filter_because_a_required_check_that_never_runs_blocks_every_pull_request(self) -> None:
         lines = read_workflow_lines()
         start, end = find_bounds_of_the_on_block(lines)
         event_start = next(index for index in range(start, end) if lines[index].startswith("    pull_request:"))

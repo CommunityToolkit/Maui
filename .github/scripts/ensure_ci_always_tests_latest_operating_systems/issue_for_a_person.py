@@ -278,7 +278,8 @@ def _render(items: Items, run_url: str, now: datetime, notice_for_keys: Set[str]
             WORKFLOW_FILE, _workflow_url_of(run_url), run_id, run_url, _timestamp(now)),
         '',
         'Closing this issue dismisses the items listed here: the bot won\'t list them again, and opens a new issue '
-        'for anything new. Problems reading sources, failed jobs, an unusable token and a pending move to a new Xcode label come back while they last.',
+        'for anything new. Problems reading sources, failed jobs, an unusable token and a pending move to a new Xcode '
+        'label come back while they last.',
     ]
     if items.changes_for_a_person:
         parts.extend(['', '### %s ###' % SECTION_CHANGES])

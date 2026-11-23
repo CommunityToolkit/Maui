@@ -21,7 +21,7 @@ on:
                 required: false
                 type: boolean
                 default: false
-    # No paths filter: this job is a required check, and a required check that never runs blocks the pull request.
+    # No paths filter: the unit-test job is a required check, and a required check that never runs blocks the pull request.
     pull_request:
 
 permissions: {}

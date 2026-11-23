@@ -281,30 +281,31 @@ The scripts only touch devices they create or that you name; `run.ps1` follows t
 The device test jobs, in `.github/workflows/device-tests.yml`, run the app on the newest release of every supported major Android and iOS version, on Mac Catalyst and on Windows. The legs:
 
 * Android: the newest release of every major from API 27 (8.1) in `device_tests_android_runtime`, and, where that release ships only as a 16 KB page-size `google_apis_ps16k` image, also the newest 4 KB release of that major; `device_tests_android` adds API 36 and 25 (Android 7.1). Not API 24. x86_64 emulators on `ubuntu-24.04`.
-* iOS simulator: the newest runtime of the `xcode-NN` image, and the newest release of every older supported major (`device_tests_ios_runtime`, on `macos-26` and `macos-15`; the runtimes before 18 are downloaded with `xcodes`).
+* iOS simulator: the newest runtime of the `xcode-NN` image, and the newest release of every older supported major (`device_tests_ios_runtime`, on `macos-26` and `macos-15`; the `macos-15` runtimes are downloaded with `xcodes`).
 * Mac Catalyst (the `xcode-NN` image).
 * Windows packaged and unpackaged (`windows-2025`).
 * With `trimming: full-and-nativeaot` (the `Trimmed Device Tests` check), only the trimmed legs run; see [Trimmed and NativeAOT runs](#trimmed-and-nativeaot-runs).
 
-The Ensure CI Always Tests Latest Operating Systems workflow (`.github/workflows/ensure-ci-always-tests-latest-operating-systems.yml`) keeps the Android levels and the Xcode versions current every night: it opens one pull request, which GitHub Actions approves and auto-merges when CI passes, and one issue for anything a person must do, such as moving to a new `xcode-NN` label.
+The Ensure CI Always Tests Latest Operating Systems workflow (`.github/workflows/ensure-ci-always-tests-latest-operating-systems.yml`) keeps the Android levels and the Xcode versions current every night: it opens one pull request, which GitHub Actions approves and auto-merges when CI passes, and one issue for anything a person must do, such as moving to a new `xcode-NN` label. Make its `Run the unit tests of the scripts` job a required check: it runs on every pull request and fails one that changes the workflow files in a way the bot can no longer edit.
 
-Who updates which version. Make the `Run the unit tests of the scripts` job a required check; it runs on every pull request.
+Who updates which version:
 
 * **The bot, in its auto-merged pull request:**
-  * `CommunityToolkitLibrary_Xcode_Version` and `CommunityToolkitSample_Xcode_Version` in `shared.env`, while the `xcode-NN` label stays.
-  * The legs of `device_tests_android_runtime`: a leg rises within its major, and a new major gets a leg. When a major's newest release ships only as a 16 KB image, it gets a `google_apis_ps16k` leg, and the 4 KB leg stays on the newest 4 KB release.
+  * `CommunityToolkitLibrary_Xcode_Version` and `CommunityToolkitSample_Xcode_Version` in `shared.env`, when the current `xcode-NN` image has the Xcode that the newest workload set needs. While a move to a newer label waits in the issue, the pull request changes neither.
+  * The `google_apis` and `google_apis_ps16k` legs of `device_tests_android_runtime`: a leg rises within its major, and a new major gets a leg. When a major's newest release ships only as a 16 KB image, it gets a `google_apis_ps16k` leg, and the 4 KB leg stays on the newest 4 KB release.
 * **A person, from the bot's issue:**
-  * A move to a new `xcode-NN` label. The issue has a ready patch, which also keeps a leg for the old iOS major. Right before merging it, a repo admin renames the required checks that the issue lists in the `main` ruleset.
-  * A newer, deprecated or missing `ubuntu-NN.NN` or `windows-NNNN` runner label.
-  * Older iOS legs (`device_tests_ios_runtime`): a newer runtime, a missing runtime or Xcode, or a retired runner label.
-  * Anything that stops a change: a bump pull request whose checks failed or that didn't merge, a source the bot can't read, an Android leg that Google dropped, a level that two jobs would share, an Xcode that the image lacks, or a token that expires soon.
+  * A move to a new `xcode-NN` label. The issue has a ready patch, which also keeps a leg for the old iOS major. Right before merging it, a repo admin renames, in the `main` ruleset, the required checks that the issue lists.
+  * A runner label that GitHub deprecates or drops, and a newer `ubuntu-NN.NN` or `windows-NNNN` label.
+  * Older iOS legs (`device_tests_ios_runtime`): a missing Xcode and, for a leg that uses the image's runtime, a newer or missing runtime.
+  * Anything that stops a change or needs a choice: a bump pull request whose checks failed or that didn't merge, a source the bot can't read, an Android leg that Google dropped, a level that two jobs would share, a 16 KB leg that now has a 4 KB image, an Xcode that the image lacks, or a token that is unusable or expires soon.
 * **A person, with no reminder. Check these at each .NET MAUI release and each new Android major:**
   * The coverage legs `36` and `25` (`device_tests_android`) and the API 27 `default` leg (`device_tests_android_runtime`).
-  * The trimmed legs' emulator settings in `device_tests_android`: the `37|37.*` decoder workaround and the `ram-size` default. A new Android major may need its own; the pull request that adds the major says so.
+  * The trimmed legs' emulator settings in `device_tests_android`: the `37|37.*` decoder workaround and the `ram-size` default, and each leg's `emulator-features` in `device_tests_android_runtime`. A new Android major may need its own; the pull request that adds the major says so.
+  * A newer runtime for the iOS legs that download theirs (`install-runtime: true`).
   * Mac Catalyst's macOS: its jobs run on whatever macOS the `xcode-NN` image has.
   * `java-version` in the workflows, and the `windows-latest` jobs of `dotnet-build.yml`.
   * The Windows SDK (`WindowsSdkPackageVersion` in `Directory.Build.props`) and `MaxVersionTested` in the appxmanifest files.
-  * OS minimums (`SupportedOSPlatformVersion`, `minSdkVersion`, `MinVersion` in the appxmanifest files). They follow .NET MAUI's. When one rises, remove the device test legs below it.
+  * OS minimums: `SupportedOSPlatformVersion` in the csproj files, `minSdkVersion` in the Core `AndroidManifest.xml`, and `MinVersion` in the appxmanifest files. They follow .NET MAUI's (MediaElement needs Android 26). When one rises, remove the device test legs below it.
   * Docs and comments that name versions.
 * **A person, by policy (the bot never changes them):** the .NET and .NET MAUI versions: `TOOLKIT_NET_VERSION`, `LATEST_NET_VERSION`, `global.json`, `NetVersion`, `MauiPackageVersion` and the target frameworks. A new .NET major is a draft pull request that a person stages during the previews and merges after GA. How the versions are pinned: [.NET and .NET MAUI Versions](../../.github/copilot-instructions.md#net-and-net-maui-versions).
 
