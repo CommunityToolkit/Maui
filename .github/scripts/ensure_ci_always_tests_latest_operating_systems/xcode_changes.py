@@ -9,7 +9,7 @@ from .data_types import (ChangeForAPerson, FamilyPlan, PinnedVersions, RolloutSt
                          ThingToCheck)
 from .markdown_text import markdown_code
 from .pinned_versions import DEVICE_TESTS_FILE, SHARED_ENV_FILE
-from .version_numbers import feature_band, major, major_minor, numeric_key, parse_utc
+from .version_numbers import feature_band, is_dotted_number, major, major_minor, numeric_key, parse_utc
 
 FAMILY = 'xcode'
 GA_XCODE_APP_NAME = re.compile(r'^Xcode_\d+(\.\d+){0,2}\.app$')
@@ -166,20 +166,24 @@ def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
     ga_apps = [app for app in listing.get('xcode_apps', []) if _is_ga_xcode_app(app) and app.get('version')]
     ga_numbers = {major_minor(app['version']) for app in ga_apps}
     newest_ga_xcode_major = max((major(app['version']) for app in ga_apps), default=None)
-    pre_release_numbers = {major_minor(app['version']) for app in listing.get('xcode_apps', [])
-                           if _is_pre_release_xcode_app(app) and app.get('version')} - ga_numbers
+    ga_full_versions = {app['version'] for app in ga_apps}
+    pre_release_apps = [app for app in listing.get('xcode_apps', []) if _is_pre_release_xcode_app(app) and app.get('version')]
+    pre_release_numbers = {major_minor(app['version']) for app in pre_release_apps} - ga_numbers
+    # A GA Xcode x.y does not vouch for the runtime of a pre-release x.y.z next to it.
+    pre_release_full_versions = {app['version'] for app in pre_release_apps if len(app['version'].split('.')) > 2} - ga_full_versions
 
     def is_beta_runtime(version: str) -> bool:
-        above_every_ga_xcode = (newest_ga_xcode_major is not None and major(version) >= FIRST_IOS_MAJOR_NUMBERED_LIKE_ITS_XCODE
+        is_above_every_ga_xcode = (newest_ga_xcode_major is not None and major(version) >= FIRST_IOS_MAJOR_NUMBERED_LIKE_ITS_XCODE
                                 and major(version) > newest_ga_xcode_major)
-        return above_every_ga_xcode or major_minor(version) in pre_release_numbers
+        return (is_above_every_ga_xcode or major_minor(version) in pre_release_numbers
+                or version in pre_release_full_versions)
 
     return [runtime['version'] for runtime in listing.get('runtimes', [])
             if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')
             and not is_beta_runtime(runtime['version'])]
 
 
-def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any], highest_ga_xcode: str,
+def _plan_old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any], highest_ga_xcode: str,
                        major_the_target_runs: int, notes: List[str]) -> Optional[SafeChange]:
     """The old label keeps its newest iOS major covered by an iOS leg, because the main Apple jobs leave it.
 
@@ -195,7 +199,8 @@ def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[
     if not ios_versions:
         return None
     old_major = max(major(version) for version in ios_versions)
-    if any(major(leg.ios_version) == old_major for leg in pinned.ios_legs):
+    # A leg named by identifier or name has no number to compare, and ios.ps1 finds its runtime itself.
+    if any(is_dotted_number(leg.ios_version) and major(leg.ios_version) == old_major for leg in pinned.ios_legs):
         return None
     # Exactly as listed: ios.ps1 matches the version string, so '26.4.1' must not become '26.4'.
     newest_of_old_major = max((version for version in ios_versions if major(version) == old_major), key=numeric_key)
@@ -472,7 +477,7 @@ def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, de
     highest_ga = max(ga_xcode_versions(apple_listing), key=numeric_key, default=None)
     if highest_ga is not None:
         major_the_target_runs = max(major(version) for version in target_ga)
-        leg = _old_ios_major_leg(pinned, apple_label, apple_listing, highest_ga, major_the_target_runs, plan.notes)
+        leg = _plan_old_ios_major_leg(pinned, apple_label, apple_listing, highest_ga, major_the_target_runs, plan.notes)
         if leg is not None:
             changes.append(leg)
 

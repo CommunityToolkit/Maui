@@ -5,7 +5,7 @@ from typing import Any, List, Mapping, Optional
 
 from .data_types import FamilyPlan, SourceProblem, ThingToCheck
 from .markdown_text import markdown_code
-from .version_numbers import major, major_minor, numeric_key
+from .version_numbers import is_dotted_number, major, major_minor, numeric_key
 from .xcode_changes import ga_xcode_versions, list_ga_ios_runtime_versions
 
 FAMILY = 'older-ios-legs'
@@ -23,6 +23,8 @@ def _is_found_by_ios_script(runtime: Mapping[str, Any], requested: str) -> bool:
 
 
 def _find_newer_ga_runtime_of_same_major(leg_version: str, listing: Mapping[str, Any]) -> Optional[str]:
+    if not is_dotted_number(leg_version):
+        return None
     same_major = [version for version in list_ga_ios_runtime_versions(listing) if major(version) == major(leg_version)]
     newest = max(same_major, key=numeric_key, default=None)
     if newest is not None and numeric_key(newest) > numeric_key(leg_version):

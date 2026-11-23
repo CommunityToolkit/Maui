@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from collections import namedtuple
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 _LEVEL = re.compile(r'(\d+)(?:\.(\d+))?', re.ASCII)
 _DOTTED_NUMBERS = re.compile(r'\d+(?:\.\d+)*', re.ASCII)
@@ -59,6 +59,10 @@ def numeric_key(version: str) -> Tuple[int, ...]:
     if not isinstance(version, str) or _DOTTED_NUMBERS.fullmatch(version) is None:
         raise ValueError('not a dotted number: %r' % (version,))
     return tuple(int(part) for part in version.split('.'))
+
+
+def is_dotted_number(text: Any) -> bool:
+    return isinstance(text, str) and _DOTTED_NUMBERS.fullmatch(text) is not None
 
 
 def feature_band(sdk_version: str) -> str:
