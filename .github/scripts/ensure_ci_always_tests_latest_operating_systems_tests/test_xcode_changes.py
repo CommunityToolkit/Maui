@@ -7,7 +7,8 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from ensure_ci_always_tests_latest_operating_systems import issue_for_a_person, macos_runner_image, xcode_changes
+from ensure_ci_always_tests_latest_operating_systems import (issue_for_a_person, line_editor, macos_runner_image, older_ios_legs,
+                                                              xcode_changes)
 from ensure_ci_always_tests_latest_operating_systems.data_types import FamilyPlan, PinnedVersions
 from ensure_ci_always_tests_latest_operating_systems.pinned_versions import read_pinned_versions_from_texts
 
@@ -123,6 +124,13 @@ def change_pairs(family_plan: FamilyPlan) -> List[Any]:
 
 
 class GaRuleTests(unittest.TestCase):
+    def test_only_the_runtime_of_a_beta_xcode_is_left_out_of_the_real_listings(self) -> None:
+        def ios_versions(name: str) -> List[str]:
+            return [r['version'] for r in listing(name)['runtimes'] if r['platform'] == 'iOS']
+        for name in ('macos-15', 'macos-26', 'xcode-27-20261104'):
+            self.assertEqual(xcode_changes.ga_ios_runtime_versions(listing(name)), ios_versions(name), name)
+        self.assertEqual(xcode_changes.ga_ios_runtime_versions(listing('xcode-27-20261119')), ['27.0', '27.1', '27.2'])
+
     def test_ga_versions_of_the_real_apps_folder(self) -> None:
         with tempfile.TemporaryDirectory() as applications:
             make_applications_folder(applications)
@@ -387,6 +395,69 @@ class LabelSwitchTests(unittest.TestCase):
             "                    -   ios-version: '27.3'",
             '                        runner: xcode-27',
             "                        xcode: '27.2'"])
+
+    def old_image_with(self, versions: List[str], xcode_apps: List[Dict[str, Any]],
+                       runtime_names: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        old_image = listing('xcode-27-20261104')
+        old_image['xcode_apps'] = xcode_apps
+        old_image['runtimes'] = [{'platform': 'iOS', 'version': version, 'name': (runtime_names or {}).get(version, 'iOS ' + version),
+                                  'identifier': 'com.apple.CoreSimulator.SimRuntime.iOS-' + version.replace('.', '-'), 'available': True}
+                                 for version in versions]
+        return listings(**{'xcode-27': old_image, 'xcode-28': xcode_28_listing()})
+
+    def old_ios_leg_of(self, the_listings: Dict[str, Any]) -> Optional[Any]:
+        build = '.'.join(the_listings['xcode-27']['image']['version'].split('.')[:2])
+        images = runner_images(with_xcode_28=True, states={'xcode-27-arm64': rollout_state(build)})
+        result = plan(required=required_xcode('28.0', '28.0'), the_listings=the_listings, images=images)
+        legs = [c for c in result.changes_for_a_person[0].changes if c.kind == 'insert-ios-leg']
+        self.assertLessEqual(len(legs), 1)
+        self.last_notes = result.notes
+        return legs[0] if legs else None
+
+    def test_the_leg_keeps_the_three_part_version_of_the_newest_runtime(self) -> None:
+        apps = [app('Xcode_27.4.1.app', '27.4.1'), app('Xcode_27.2.app', '27.2'), app('Xcode_27.app', '27.0')]
+        leg = self.old_ios_leg_of(self.old_image_with(['27.0', '27.2', '27.4.1'], apps, {'27.4.1': 'iOS 27.4'}))
+        self.assertEqual((leg.new, leg.pin), ('27.4.1', 'ios-leg:27'))
+        self.assertEqual(leg.inserted_lines[0], "                    -   ios-version: '27.4.1'")
+        self.assertEqual(leg.inserted_lines[2], "                        xcode: '27.4'")
+
+    def test_a_runtime_of_a_beta_xcode_is_not_chosen(self) -> None:
+        leg = self.old_ios_leg_of(self.switch_listings_of_real_beta_image())
+        self.assertEqual(leg.new, '27.2')
+
+    def switch_listings_of_real_beta_image(self) -> Dict[str, Any]:
+        return listings(**{'xcode-27': listing('xcode-27-20261119'), 'xcode-28': xcode_28_listing()})
+
+    def test_a_next_major_beta_runtime_does_not_make_the_old_major_look_like_27(self) -> None:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_28_beta.app', '28.0', license_type='Beta')]
+        leg = self.old_ios_leg_of(self.old_image_with(['27.2', '28.0'], apps))
+        self.assertEqual((leg.new, leg.pin), ('27.2', 'ios-leg:27'))
+
+    def test_no_ga_runtime_adds_no_leg_and_says_so(self) -> None:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_27.3_beta.app', '27.3', license_type='Beta')]
+        leg = self.old_ios_leg_of(self.old_image_with(['27.3'], apps))
+        self.assertIsNone(leg)
+        self.assertIn('`xcode-27` lists no GA iOS simulator runtime, so no iOS leg was added for it.', self.last_notes)
+
+    def test_the_leg_version_is_the_version_field_of_a_listed_runtime(self) -> None:
+        # ios.ps1 -Runtime matches a runtime's version field exactly (or an identifier suffix or name), never a shortened version.
+        for the_listings in (self.old_image_with(['27.2', '27.4.1'], [app('Xcode_27.4.1.app', '27.4.1')], {'27.4.1': 'iOS 27.4'}),
+                             self.switch_listings_of_real_beta_image(), self.switch_listings()):
+            leg = self.old_ios_leg_of(the_listings)
+            self.assertIn(leg.new, [r['version'] for r in the_listings['xcode-27']['runtimes'] if r['platform'] == 'iOS'])
+
+    def test_the_planned_leg_is_read_back_and_checked_against_the_same_image(self) -> None:
+        old_image = self.old_image_with(['27.2', '27.4.1'], [app('Xcode_27.4.1.app', '27.4.1')], {'27.4.1': 'iOS 27.4'})
+        leg = self.old_ios_leg_of(old_image)
+        texts = {'device-tests': repo_text('device-tests.yml')}
+        patched = line_editor.apply_changes(texts['device-tests'], [leg])
+        reread = read_pinned_versions_from_texts(patched, repo_text('dotnet-build.yml'), repo_text('shared.env'))
+        new_leg = reread.ios_legs[0]
+        self.assertEqual((new_leg.ios_version, new_leg.runner, new_leg.xcode, new_leg.install_runtime), ('27.4.1', 'xcode-27', '27.4', False))
+        checked = older_ios_legs.check_older_ios_legs(reread, {'xcode-27': old_image['xcode-27'], 'macos-26': listing('macos-26'),
+                                                               'macos-15': listing('macos-15')})
+        self.assertEqual(checked.things_to_check, [])
+        self.assertEqual(checked.source_problems, [])
 
     def test_the_steps_name_both_required_checks_and_their_new_names(self) -> None:
         result = plan(required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(),

@@ -152,21 +152,36 @@ def _apple_label_changes(pinned: PinnedVersions, old_label: str, new_label: str,
     return changes
 
 
+def ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
+    """Full versions, as listed, of the available iOS runtimes that are not a beta's.
+
+    The listing has no beta field on a runtime, but a runtime carries the number of the Xcode it shipped with
+    (iOS 27.3 with Xcode 27.3 on every image read so far). So it is a beta's when only a non-GA Xcode app has its number.
+    A runtime no Xcode app shares a number with stays: images keep runtimes whose Xcode they dropped (iOS 18.6 on macos-15),
+    and a wrongly kept beta fails its own leg loudly, where a wrongly dropped GA runtime would silently lose coverage.
+    """
+    ga_numbers = ga_xcode_versions(listing)
+    beta_numbers = {major_minor(app['version']) for app in listing.get('xcode_apps', [])
+                    if not _is_ga_xcode_app(app) and app.get('version')} - ga_numbers
+    return [runtime['version'] for runtime in listing.get('runtimes', [])
+            if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')
+            and major_minor(runtime['version']) not in beta_numbers]
+
+
 def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any],
                        highest_ga_xcode: str, notes: List[str]) -> Optional[SafeChange]:
     """The old label keeps its newest iOS major covered by an iOS leg, because the main Apple jobs leave it."""
     from . import line_editor
 
-    ios_versions = [runtime['version'] for runtime in listing.get('runtimes', [])
-                    if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')]
+    ios_versions = ga_ios_runtime_versions(listing)
     if not ios_versions:
-        notes.append('%s lists no iOS simulator runtime, so no iOS leg was added for it.' % markdown_code(old_label))
+        notes.append('%s lists no GA iOS simulator runtime, so no iOS leg was added for it.' % markdown_code(old_label))
         return None
     old_major = max(major(version) for version in ios_versions)
     if any(major(leg.ios_version) == old_major for leg in pinned.ios_legs):
         return None
-    newest_of_old_major = max((major_minor(version) for version in ios_versions if major(version) == old_major),
-                              key=numeric_key)
+    # Exactly as listed: ios.ps1 matches the version string, so '26.4.1' must not become '26.4'.
+    newest_of_old_major = max((version for version in ios_versions if major(version) == old_major), key=numeric_key)
     lines = line_editor.ios_leg_lines(pinned.ios_dash_prefix, newest_of_old_major, old_label, highest_ga_xcode)
     return SafeChange(
         family=FAMILY, kind='insert-ios-leg', file=DEVICE_TESTS_FILE, line=pinned.ios_include_line, old=None,
