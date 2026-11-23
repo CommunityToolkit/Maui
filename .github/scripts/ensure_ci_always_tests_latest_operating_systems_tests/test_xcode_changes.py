@@ -529,9 +529,31 @@ class LabelSwitchTests(unittest.TestCase):
         the_listings = self.make_listings_shaped_like_the_local_mac()
         the_listings['xcode-27']['runtimes'][0]['lists_iphone_with_one_screen'] = False
         self.assertIsNone(self.plan_old_ios_leg(the_listings))
-        self.assertEqual([note for note in self.last_notes if 'no iOS leg was added' in note],
-                         ['`xcode-27` lists no GA iOS simulator runtime of an older major that has an iPhone with one built-in screen, '
-                          'which the status bar tests need, so no iOS leg was added for it.'])
+        self.assertEqual([note for note in self.last_notes if 'no iOS 27 leg was added' in note],
+                         ['`xcode-27` lists no GA iOS 27 simulator runtime that has an iPhone with one built-in screen, '
+                          'which the status bar tests need, so no iOS 27 leg was added for it.'])
+
+    def make_listings_with_a_good_lower_major_and_only_duo_runtimes_in_the_newest_older_major(self) -> Dict[str, Any]:
+        apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_27.app', '27.0'), app('Xcode_16.4.app', '16.4')]
+        the_listings = self.make_listings_with_old_image(['18.6', '27.0', '27.2'], apps)
+        for runtime, lists_one_screen in zip(the_listings['xcode-27']['runtimes'], (True, False, False)):
+            runtime['lists_iphone_with_one_screen'] = lists_one_screen
+        return the_listings
+
+    def test_the_newest_older_major_with_only_duo_runtimes_gets_a_note_and_no_leg_even_when_a_lower_major_is_fine(self) -> None:
+        the_listings = self.make_listings_with_a_good_lower_major_and_only_duo_runtimes_in_the_newest_older_major()
+        self.assertIsNone(self.plan_old_ios_leg(the_listings))
+        self.assertEqual([note for note in self.last_notes if 'no iOS 27 leg was added' in note],
+                         ['`xcode-27` lists no GA iOS 27 simulator runtime that has an iPhone with one built-in screen, '
+                          'which the status bar tests need, so no iOS 27 leg was added for it.'])
+
+    def test_the_newest_older_major_with_only_duo_runtimes_gets_no_note_when_an_ios_leg_covers_it(self) -> None:
+        the_listings = self.make_listings_with_a_good_lower_major_and_only_duo_runtimes_in_the_newest_older_major()
+        pinned = read_pinned_versions_from_texts(repo_text('device-tests.yml').replace("ios-version: '26.5'", "ios-version: '27.2'"),
+                                                 repo_text('dotnet-build.yml'), repo_text('shared.env'))
+        notes: List[str] = []
+        self.assertIsNone(xcode_changes._plan_old_ios_major_leg(pinned, 'xcode-27', the_listings['xcode-27'], '27.2', 28, notes))
+        self.assertEqual(notes, [])
 
     def test_a_target_that_runs_the_only_major_with_a_good_runtime_adds_no_note_about_screens(self) -> None:
         the_listings = self.make_listings_shaped_like_the_local_mac()

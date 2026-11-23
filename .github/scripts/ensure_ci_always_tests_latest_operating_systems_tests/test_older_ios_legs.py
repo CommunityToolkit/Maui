@@ -189,6 +189,37 @@ class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
         listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.5', 'iOS-26-5-generic', True))
         self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
 
+    def test_the_first_match_decides_when_no_match_lists_a_one_screen_iphone_like_ios_ps1_does(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.5', 'iOS-26-5-other', None))
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+        listings['macos-26']['runtimes'].reverse()
+        self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
+
+    def test_a_newer_runtime_that_the_cannot_run_item_names_is_not_offered_a_second_time(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.6', 'iOS-26-6', True))
+        result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
+        self.assertEqual(keys(result), ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+        self.assertIn('`26.6` runtime can run them', result.things_to_check[0].text)
+
+    def test_a_leg_named_by_identifier_or_name_is_told_which_runtime_of_its_major_can_run_the_tests(self) -> None:
+        for named_by in ('com.apple.CoreSimulator.SimRuntime.iOS-27-2-iPhone19-4', 'iOS-27-2-iPhone19-4', 'iOS 27.2'):
+            with self.subTest(named_by=named_by):
+                listings = todays_listings()
+                listings['macos-26']['xcode_apps'] += [
+                    {'folder': 'Xcode_27.2.app', 'version': '27.2', 'build': '0', 'license_type': 'Release', 'symlinks': []},
+                    {'folder': 'Xcode_27.app', 'version': '27.0', 'build': '0', 'license_type': 'Release', 'symlinks': []}]
+                listings['macos-26']['runtimes'] = [
+                    runtime_listing_one_screen_iphone('27.0', 'iOS-27-0', True),
+                    runtime_listing_one_screen_iphone('27.2', 'iOS-27-2-iPhone19-4', False)]
+                result = older_ios_legs.check_older_ios_legs(
+                    pinned_versions(lambda text: text.replace("ios-version: '26.5'", "ios-version: '%s'" % named_by)), listings)
+                cannot_run = [thing for thing in result.things_to_check if thing.key.startswith('ios-leg-runtime-cannot-run-tests')]
+                self.assertEqual(len(cannot_run), 1)
+                self.assertIn('`27.0` runtime can run them', cannot_run[0].text)
+
     def test_a_runtime_that_is_not_known_to_lack_a_one_screen_iphone_is_not_reported(self) -> None:
         listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
         listings['macos-26']['runtimes'][0]['lists_iphone_with_one_screen'] = None

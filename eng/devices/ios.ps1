@@ -19,10 +19,11 @@
     refuses any other. Without -DeviceType it is the runtime's first iPhone with one built-in screen: the status bar
     tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge.
     Without -Runtime, the runtime is the newest one that lists such an iPhone (with -DeviceType, the newest one that
-    lists that device type). When several runtimes match -Runtime (Xcode 27.2 installs two iOS 27.2 runtimes), it is
-    the first that lists such an iPhone (with -DeviceType, that lists that device type), else the first match. If the runtime lists no iPhone known to have one built-in screen, the simulator is its
-    first iPhone whose screens could not be counted, else its first iPhone, with a warning; without -Runtime this
-    happens only when no runtime lists such an iPhone, and the runtime is then the newest one that lists any iPhone.
+    lists that device type). When several runtimes match -Runtime (the xcode-27 runner image has two iOS 27.2 runtimes),
+    it is the first that lists such an iPhone (with -DeviceType, that lists that device type). If no runtime lists such
+    an iPhone, the runtime is the first (newest, without -Runtime) one that lists an iPhone whose screens could not be
+    counted, else any iPhone, else the first match, and the simulator is its first iPhone whose screens could not be
+    counted, else its first iPhone, with a warning.
 
     Exit codes use xharness's vocabulary: 0 passed, 1 test failures, 3 invalid arguments, 4 app not built,
     70 timed out, 71 build or script failure, 80 app crash, 88 simulator failure, 94 no results or no tests ran.
@@ -188,7 +189,7 @@ function Find-MatchingSimulatorRuntimes {
 
     $runtimes = @(Get-SimulatorRuntimes)
     $matching = @($runtimes | Where-Object {
-        $_.identifier -eq $Requested -or $_.identifier.EndsWith(".$Requested") -or $_.version -eq $Requested -or $_.name -eq $Requested
+        $_.identifier -eq $Requested -or $_.identifier.EndsWith(".$Requested", [System.StringComparison]::Ordinal) -or $_.version -eq $Requested -or $_.name -eq $Requested
     })
     if ($matching.Count -eq 0) {
         throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
@@ -197,29 +198,47 @@ function Find-MatchingSimulatorRuntimes {
     return $matching
 }
 
-function Select-MatchingSimulatorRuntime {
-    # Xcode 27.2 installs two iOS 27.2 runtimes: a generic one and iOS-27-2-iPhone19-4, which lists only iPhone Duo. The first match must not
-    # win when another match can run the tests.
+function Select-MatchingSimulatorRuntimeThatListsDeviceType {
+    # The xcode-27 runner image has two iOS 27.2 runtimes, and one lists only iPhone Duo, so the first match must not win when another
+    # match lists the device type.
     param([object[]]$Matching, [string]$DeviceType)
 
-    if ($Matching.Count -gt 1) {
-        $screenCounts = @{}
-        foreach ($candidateRuntime in $Matching) {
-            if ($DeviceType) {
-                if ($null -ne (Find-SupportedSimulatorDeviceType -SelectedRuntime $candidateRuntime -Requested $DeviceType)) {
-                    return $candidateRuntime
-                }
-            }
-            else {
-                $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $candidateRuntime -ScreenCounts $screenCounts
-                if (@($candidates.IPhones | Where-Object { $_.Screens -eq 1 }).Count -gt 0) {
-                    return $candidateRuntime
-                }
-            }
+    foreach ($candidateRuntime in $Matching) {
+        if ($null -ne (Find-SupportedSimulatorDeviceType -SelectedRuntime $candidateRuntime -Requested $DeviceType)) {
+            return $candidateRuntime
         }
     }
 
     return $Matching[0]
+}
+
+function Select-MatchingSimulatorRuntimeCandidates {
+    # The xcode-27 runner image has two iOS 27.2 runtimes, and one lists only iPhone Duo, so the first match must not win when another
+    # match lists an iPhone with one built-in screen.
+    param([object[]]$Matching)
+
+    $screenCounts = @{}
+    $examined = @()
+    foreach ($candidateRuntime in $Matching) {
+        $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $candidateRuntime -ScreenCounts $screenCounts
+        if (@($candidates.IPhones | Where-Object { $_.Screens -eq 1 }).Count -gt 0) {
+            return $candidates
+        }
+
+        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone with one built-in screen."
+        $examined += $candidates
+    }
+
+    return (Select-SimulatorCandidatesToFallBackOn -Examined $examined)
+}
+
+function Select-SimulatorCandidatesToFallBackOn {
+    # An iPhone whose screens could not be counted may have one, so its runtime goes before one whose iPhones are all known to have more.
+    param([object[]]$Examined)
+
+    $withUncountedIPhone = @($Examined | Where-Object { @($_.IPhones | Where-Object { $null -eq $_.Screens }).Count -gt 0 })
+    $withAnyIPhone = @($Examined | Where-Object { $_.IPhones.Count -gt 0 })
+    return ($withUncountedIPhone + $withAnyIPhone + $Examined)[0]
 }
 
 function Get-SimulatorBuiltInScreenCount {
@@ -267,7 +286,7 @@ function Find-SupportedSimulatorDeviceType {
     param($SelectedRuntime, [string]$Requested)
 
     foreach ($candidate in (Get-SimulatorSupportedDeviceTypes -SelectedRuntime $SelectedRuntime)) {
-        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.name -eq $Requested) {
+        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested", [System.StringComparison]::Ordinal) -or $candidate.name -eq $Requested) {
             return $candidate
         }
     }
@@ -364,8 +383,13 @@ function Select-SimulatorRuntimeAndDeviceType {
 
     if ($Runtime) {
         $matching = @(Find-MatchingSimulatorRuntimes -Requested $Runtime)
-        $selectedRuntime = Select-MatchingSimulatorRuntime -Matching $matching -DeviceType $DeviceType
-        return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
+        if ($DeviceType) {
+            $selectedRuntime = Select-MatchingSimulatorRuntimeThatListsDeviceType -Matching $matching -DeviceType $DeviceType
+            return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
+        }
+
+        $candidates = Select-MatchingSimulatorRuntimeCandidates -Matching $matching
+        return New-Object PSObject -Property @{ Runtime = $candidates.Runtime; DeviceType = (Select-SimulatorIPhone -Candidates $candidates) }
     }
 
     $runtimes = @(Get-SimulatorRuntimes | Sort-Object { [version]$_.version } -Descending)
@@ -395,7 +419,7 @@ function Select-SimulatorRuntimeAndDeviceType {
         $examined += $candidates
     }
 
-    $chosen = (@($examined | Where-Object { $_.IPhones.Count -gt 0 }) + $examined)[0]
+    $chosen = Select-SimulatorCandidatesToFallBackOn -Examined $examined
     return New-Object PSObject -Property @{ Runtime = $chosen.Runtime; DeviceType = (Select-SimulatorIPhone -Candidates $chosen) }
 }
 

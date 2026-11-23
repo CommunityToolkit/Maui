@@ -6,6 +6,7 @@ import os
 import plistlib
 import re
 import subprocess
+import xml.parsers.expat
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 
 from .errors import RunnerSoftwareError
@@ -39,7 +40,7 @@ def _read_plist(path: str) -> Optional[Dict[str, Any]]:
     try:
         with open(path, 'rb') as file:
             data = plistlib.load(file)
-    except (OSError, ValueError, plistlib.InvalidFileException):
+    except (OSError, ValueError, plistlib.InvalidFileException, xml.parsers.expat.ExpatError):
         return None
     return data if isinstance(data, dict) else None
 
@@ -148,14 +149,15 @@ def read_built_in_screen_count(bundle_path: Any) -> Optional[int]:
     # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
     return sum(1 for display in displays if isinstance(display, dict)
                and (str(display.get('displayType', '')).lower() == 'integrated'
-                                           or str(display.get('deviceName', '')).lower().startswith('primary')))
+                    or str(display.get('deviceName', '')).lower().startswith('primary')))
 
 
 def _lists_iphone_with_one_screen(runtime: Mapping[str, Any], screen_counts: Dict[str, Optional[int]],
                                   count_screens: Callable[[Any], Optional[int]]) -> Optional[bool]:
-    """True: some iPhone has one screen. False: every iPhone has more or none is listed. None: not known."""
+    """True: some iPhone has one screen. False: every iPhone is known to have another count, or none is listed. None: not known."""
     device_types = runtime.get('supportedDeviceTypes')
     if not isinstance(device_types, list):
+        # ios.ps1 would throw for it, but a wrong False drops a leg silently; simctl always prints the key, so this stays unknown.
         return None
     iphones = [device_type for device_type in device_types
                if isinstance(device_type, dict) and device_type.get('productFamily') == 'iPhone']

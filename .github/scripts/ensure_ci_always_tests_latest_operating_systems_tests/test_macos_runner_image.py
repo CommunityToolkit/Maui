@@ -106,7 +106,7 @@ def bundle(name: str) -> str:
 
 def count_screens_of_the_fake_bundle_by_name(bundle_path: str) -> Optional[int]:
     """The local simctl fixture names real profile folders; iPhone Duo gets the two-screen profile, every other device the one-screen."""
-    fake = bundle('two-screens' if 'iPhone Duo' in bundle_path else 'one-screen')
+    fake = bundle('real-iphone-duo' if 'iPhone Duo' in bundle_path else 'real-iphone')
     return macos_runner_image.read_built_in_screen_count(fake)
 
 
@@ -129,8 +129,16 @@ class BuiltInScreenCountTests(unittest.TestCase):
         self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('one-screen-binary')), 1)
         self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('two-screens')), 2)
 
+    def test_a_real_profile_counts_only_the_built_in_screens_among_the_tv_out_car_play_and_resizable_outputs(self) -> None:
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('real-iphone')), 1)
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('real-iphone-duo')), 2)
+
+    def test_the_names_of_the_displays_are_compared_ignoring_case(self) -> None:
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('capitalized-names')), 1)
+
     def test_a_profile_that_cannot_be_read_has_no_count(self) -> None:
-        for path in (bundle('garbage'), bundle('no-displays'), bundle('missing'), '', None):
+        for path in (bundle('garbage'), bundle('no-displays'), bundle('xcode-26-profile-without-displays'), bundle('truncated-xml'),
+                     bundle('missing'), '', None):
             with self.subTest(path=path):
                 self.assertIsNone(macos_runner_image.read_built_in_screen_count(path))
 
@@ -162,6 +170,8 @@ class SimulatorRuntimeScreenTests(unittest.TestCase):
         self.assertIsNone(list_runtimes_with_device_types([iphone('Broken', bundle('garbage'))]))
         self.assertIsNone(list_runtimes_with_device_types([iphone('Missing', bundle('missing'))]))
         self.assertIsNone(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens')), iphone('Broken', bundle('garbage'))]))
+        self.assertIsNone(list_runtimes_with_device_types([iphone('Broken', bundle('garbage')), iphone('Duo', bundle('two-screens'))]))
+        self.assertIsNone(list_runtimes_with_device_types([iphone('Truncated', bundle('truncated-xml'))]))
         self.assertIs(list_runtimes_with_device_types([iphone('Broken', bundle('garbage')), iphone('One', bundle('one-screen'))]), True)
 
     def test_a_reader_that_raises_is_unknown_and_never_an_error(self) -> None:
