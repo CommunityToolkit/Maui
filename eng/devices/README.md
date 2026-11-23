@@ -294,17 +294,17 @@ Who updates which version:
   * `CommunityToolkitLibrary_Xcode_Version` and `CommunityToolkitSample_Xcode_Version` in `shared.env`, when the current `xcode-NN` image has the Xcode that the newest workload set needs. While a move to a newer label waits in the issue, the pull request changes neither.
   * The `google_apis` and `google_apis_ps16k` legs of `device_tests_android_runtime`: a leg rises within its major, and a new major gets a leg. When a major's newest release ships only as a 16 KB image, it gets a `google_apis_ps16k` leg, and the 4 KB leg stays on the newest 4 KB release.
 * **A person, from the bot's issue:**
-  * A move to a new `xcode-NN` label, once a workload set needs an Xcode that only that image has. The issue has a ready patch, which also keeps a leg for the old iOS major. Right before merging it, a repo admin renames, in the `main` ruleset, the required checks that the issue lists.
+  * A move to a new `xcode-NN` label, once a workload set needs an Xcode that only that image has. The issue has a ready patch, which also keeps a leg for the old iOS major. A repo admin renames the required checks in the `main` ruleset right before the pull request with the patch merges; the issue lists which ones.
   * A runner label that GitHub deprecates or drops, and a newer `ubuntu-NN.NN` or `windows-NNNN` label.
   * Older iOS legs (`device_tests_ios_runtime`): a missing Xcode and, for a leg that uses the image's runtime, a newer or missing runtime.
-  * Anything that stops a change or needs a choice, such as a failed job of the bot, a bump pull request whose checks failed or that didn't merge, a source the bot can't read, an Android leg that Google dropped, a level that two jobs would share, a 16 KB leg that now has a 4 KB image, an Xcode that the image lacks, or a token that is unusable or expires soon.
+  * Problems that stop a change or need a choice, such as a failed job of the bot, a bump pull request whose checks failed or that didn't merge, a source the bot can't read, an Android leg that Google dropped, a level that two jobs would share, a 16 KB leg that now has a 4 KB image, an Xcode that the image lacks, or a token that is unusable or expires soon. A wait, such as a runner image that is still rolling out or an Android level without its platforms package, shows only in the run summary and in the bump pull request when there is one.
 * **A person, with no reminder. Check these at each .NET MAUI release and each new Android major:**
   * The coverage legs `36` and `25` (`device_tests_android`) and the API 27 `default` leg (`device_tests_android_runtime`).
   * Emulator settings: the trimmed legs' `37|37.*` decoder workaround and `ram-size` default (`device_tests_android`), and each leg's `emulator-features` (`device_tests_android_runtime`). A new Android major may need its own. The pull request that adds the major reminds you to check the trimmed legs; a missing setting fails its checks.
   * A new job on the `xcode-NN` label: the label-move patch moves only the five Apple jobs it knows (`pinned_versions.py`).
   * A newer runtime for the iOS legs with `install-runtime: true`.
   * Mac Catalyst's macOS: its jobs run on whatever macOS the `xcode-NN` image has.
-  * `java-version` in the workflows, and the `windows-latest` jobs of `dotnet-build.yml`.
+  * `java-version` in the workflows. The `windows-latest` jobs of `dotnet-build.yml` move to a new Windows image whenever GitHub moves the label.
   * The Windows SDK (`WindowsSdkPackageVersion` in `Directory.Build.props`) and `MaxVersionTested` in the appxmanifest files.
   * OS minimums: `SupportedOSPlatformVersion` in the csproj files, `minSdkVersion` in the Core `AndroidManifest.xml`, and `MinVersion` in the appxmanifest files. They follow .NET MAUI's (MediaElement needs Android 26). When one rises, remove the device test legs below it.
   * Docs and comments that name versions.
