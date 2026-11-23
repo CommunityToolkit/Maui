@@ -829,7 +829,7 @@ jobs:
                     echo "sdk=$(dotnet --version)" | tee -a "$GITHUB_OUTPUT"
                     wv=$(dotnet workload search version --take 1); test -n "$wv" || { echo '::error::No workload set found for this SDK band.'; exit 1; }; echo "workload-version=$wv" | tee -a "$GITHUB_OUTPUT"
 
-            # Same key as the xcode-27 jobs, which run the .NET 11 SDK that setup-dotnet installs, as this job does: it restores their cache.
+            # Same key as the xcode-NN jobs, which run the .NET 11 SDK that setup-dotnet installs, as this job does: it restores their cache.
             -   name: Cache .NET workload packs
                 uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
                 with:
