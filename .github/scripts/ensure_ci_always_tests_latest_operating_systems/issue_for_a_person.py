@@ -53,7 +53,10 @@ TOKEN_PROBLEMS = {
 }
 PATCH_FILE_OF_UNOPENED_BUMP = 'changes.patch'
 # A person's close must never turn the bot off, so these stay listed (and the run red) while the problem lasts.
-KEY_PREFIXES_THAT_COME_BACK = ('source:', 'failed-', 'token-unusable:')
+KEY_PREFIXES_THAT_TURN_THE_RUN_RED = ('source:', 'failed-', 'token-unusable:')
+# A pending move to a new Xcode label holds back every Xcode change, so a close that dismissed it would freeze Xcode
+# silently. It is a reminder, not a failure, so it doesn't turn the run red.
+KEY_PREFIXES_A_CLOSE_NEVER_DISMISSES = KEY_PREFIXES_THAT_TURN_THE_RUN_RED + ('xcode-label:',)
 _UPDATED_BY_LINE = re.compile(r'Updated by \[run [^\]]*\]\([^)]*\) on [^\n]*? UTC\.')
 _FAILURES_SECTION = re.compile(r'\n*### ' + re.escape(SECTION_FAILURES) + r' ###\n.*\Z', re.DOTALL)
 
@@ -104,7 +107,7 @@ class Items:
                      keep(self.failures), self.plan_available)
 
     def reports_a_problem_that_turns_the_run_red(self) -> bool:
-        return any(item.key.startswith(KEY_PREFIXES_THAT_COME_BACK) for item in self.everything())
+        return any(item.key.startswith(KEY_PREFIXES_THAT_TURN_THE_RUN_RED) for item in self.everything())
 
 
 def _text_of(token_status: Mapping[str, Any]) -> str:
@@ -275,7 +278,7 @@ def _render(items: Items, run_url: str, now: datetime, notice_for_keys: Set[str]
             WORKFLOW_FILE, _workflow_url_of(run_url), run_id, run_url, _timestamp(now)),
         '',
         'Closing this issue dismisses the items listed here: the bot won\'t list them again, and opens a new issue '
-        'for anything new. Problems reading sources, failed jobs and an unusable token come back while they last.',
+        'for anything new. Problems reading sources, failed jobs, an unusable token and a pending move to a new Xcode label come back while they last.',
     ]
     if items.changes_for_a_person:
         parts.extend(['', '### %s ###' % SECTION_CHANGES])
@@ -342,7 +345,7 @@ def _dismissed_keys(candidates: List[Dict[str, Any]]) -> Set[str]:
         if candidate.get('state') != 'closed' or has_marker(body, CLOSED_BY_BOT_MARKER):
             continue
         for key in read_item_keys(body):
-            if not key.startswith(KEY_PREFIXES_THAT_COME_BACK):
+            if not key.startswith(KEY_PREFIXES_A_CLOSE_NEVER_DISMISSES):
                 dismissed.add(key)
     return dismissed
 

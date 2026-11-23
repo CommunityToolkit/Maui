@@ -17,11 +17,11 @@ WORKFLOW_PATH = os.environ.get("WORKFLOW_FILE_UNDER_TEST", WORKFLOW_PATH)
 TOKEN_NAME = "ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN"
 MAUI = "CommunityToolkit/Maui"
 MAUI_BOT_BRANCH = "automation/ensure-ci-always-tests-latest-operating-systems"
-PINNED_ACTIONS = {
-    "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-    "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
-    "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333",
-    "peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1",
+ALLOWED_ACTIONS = {
+    "actions/checkout",
+    "actions/upload-artifact",
+    "actions/download-artifact",
+    "peter-evans/create-pull-request",
 }
 JOB_ORDER = [
     "run-unit-tests",
@@ -235,15 +235,20 @@ class WorkflowStaticChecks(unittest.TestCase):
     def test_token_is_never_inside_a_run_value(self) -> None:
         self.assertEqual([], [number for number, text in run_values() if TOKEN_NAME in text])
 
-    def test_every_uses_is_one_of_the_four_pinned_actions(self) -> None:
+    def test_every_uses_is_one_of_the_four_allowed_actions_pinned_by_a_full_commit_sha(self) -> None:
+        # Dependabot bumps the SHAs and auto-merges them, so only the action names and the SHA form are pinned here.
         used = set()
         for number, line in code_lines():
             match = re.match(r"^\s*(?:-\s+)?uses:\s*(\S+)", line)
             if match is not None:
-                used.add(match.group(1))
+                reference = match.group(1)
+                name, separator, revision = reference.partition("@")
+                self.assertEqual("@", separator, "line %d: %s" % (number, reference))
+                self.assertRegex(revision, r"^[0-9a-f]{40}$", "line %d: %s" % (number, reference))
+                used.add(name)
         self.assertTrue(used, "no uses: lines found")
-        self.assertEqual(set(), used - PINNED_ACTIONS)
-        self.assertEqual(PINNED_ACTIONS, used)
+        self.assertEqual(set(), used - ALLOWED_ACTIONS)
+        self.assertEqual(ALLOWED_ACTIONS, used)
 
     def test_top_level_permissions_are_empty(self) -> None:
         self.assertIn("permissions: {}", read_workflow_lines())
@@ -387,6 +392,16 @@ class PublishStepConditions(unittest.TestCase):
         end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith((" ", "#")))
         events_in_on = [match.group(1) for match in (re.match(r"^    ([A-Za-z_]+):", line) for line in lines[start:end]) if match]
         self.assertEqual({"schedule", "workflow_dispatch", "pull_request"}, set(events_in_on))
+
+    def test_the_pull_request_event_has_no_path_filter_because_a_required_check_that_never_runs_blocks_every_pull_request(self) -> None:
+        lines = read_workflow_lines()
+        start = lines.index("on:") + 1
+        end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith((" ", "#")))
+        event_start = next(index for index in range(start, end) if lines[index].startswith("    pull_request:"))
+        event_end = next((index for index in range(event_start + 1, end) if re.match(r"^    [A-Za-z_]+:", lines[index])), end)
+        body = [line for line in lines[event_start + 1:event_end] if line.strip() and not line.lstrip().startswith("#")]
+        self.assertEqual([], body)
+        self.assertEqual("", lines[event_start][len("    pull_request:"):].split("#")[0].strip())
 
     def test_create_pull_request_may_stage_only_the_three_pin_files(self) -> None:
         block = step_with_id("open-or-update")

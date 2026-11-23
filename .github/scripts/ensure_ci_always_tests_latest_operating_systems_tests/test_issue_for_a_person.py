@@ -329,6 +329,30 @@ class SyncIssueTests(unittest.TestCase):
         self.assertEqual((result['action'], result['exit_code']), ('created', 1))
         self.assertEqual(read_item_keys(github.write_calls()[0].body['body']), ['token-unusable:malformed'])
 
+    def test_a_closed_issue_does_not_dismiss_a_pending_move_to_a_new_xcode_label_and_the_run_stays_green(self) -> None:
+        key = 'xcode-label:xcode-27:xcode-28'
+        closed = issue_entry(4, body_with(key), state='closed')
+        github = fake([closed])
+        items = module.collect_items(plan_of(changes_for_a_person=[person_change(key)]), None, None, None, None, None, {})
+        result = module.sync_issue(github, items, RUN_URL, NOW)
+        self.assertEqual((result['action'], result['number'], result['exit_code']), ('created', 77, 0))
+        self.assertEqual(read_item_keys(github.write_calls()[0].body['body']), [key])
+
+    def test_a_closed_issue_dismisses_a_label_that_cannot_host_both_because_it_holds_nothing_back(self) -> None:
+        key = 'xcode-label-cannot-host-both:xcode-27:xcode-28'
+        github = fake([issue_entry(4, body_with(key), state='closed')])
+        items = module.Items(things_to_check=[module.IssueItem(key, module.SECTION_THINGS_TO_CHECK, 'Both.')])
+        result = module.sync_issue(github, items, RUN_URL, NOW)
+        self.assertEqual((result['action'], result['exit_code']), ('none', 0))
+        self.assertEqual(github.write_calls(), [])
+
+    def test_a_closed_issue_brings_back_a_failed_item_and_the_run_turns_red(self) -> None:
+        key = 'failed-job:plan-changes'
+        github = fake([issue_entry(4, body_with(key), state='closed')])
+        items = module.Items(failures=[module.IssueItem(key, module.SECTION_FAILURES, 'J.')])
+        result = module.sync_issue(github, items, RUN_URL, NOW)
+        self.assertEqual((result['action'], result['exit_code']), ('created', 1))
+
     def test_a_closed_issue_still_dismisses_a_token_that_only_expires_soon(self) -> None:
         closed = issue_entry(4, body_with('token-expires-soon:2026-12-01'), state='closed')
         items = module.Items(things_to_check=[
@@ -348,7 +372,7 @@ class SyncIssueTests(unittest.TestCase):
     def test_the_issue_says_which_items_come_back_while_their_problem_lasts(self) -> None:
         body = module.render_issue_body(module.Items(things_to_check=[
             module.IssueItem('a', module.SECTION_THINGS_TO_CHECK, 'A.')]), RUN_URL, NOW)
-        self.assertIn('an unusable token come back while they last', body)
+        self.assertIn('a pending move to a new Xcode label come back while they last', body)
 
     def test_all_clear_resolves_and_closes_the_open_issue(self) -> None:
         github = fake([issue_entry(5, body_with('a'))])

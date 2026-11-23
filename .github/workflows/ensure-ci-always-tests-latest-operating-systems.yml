@@ -21,16 +21,8 @@ on:
                 required: false
                 type: boolean
                 default: false
+    # No paths filter: a required check that never runs would block every pull request that doesn't touch these files.
     pull_request:
-        paths:
-            -   .github/scripts/ensure-ci-always-tests-latest-operating-systems.py
-            -   .github/scripts/ensure_ci_always_tests_latest_operating_systems/**
-            -   .github/scripts/ensure_ci_always_tests_latest_operating_systems_tests/**
-            -   .github/workflows/ensure-ci-always-tests-latest-operating-systems.yml
-            # The unit tests parse these live files, so a format change that the bot could no longer edit fails the PR that makes it.
-            -   .github/workflows/device-tests.yml
-            -   .github/workflows/dotnet-build.yml
-            -   .github/workflows/shared.env
 
 permissions: {}
 

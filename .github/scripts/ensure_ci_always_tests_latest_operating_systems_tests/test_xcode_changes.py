@@ -7,7 +7,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from ensure_ci_always_tests_latest_operating_systems import macos_runner_image, xcode_changes
+from ensure_ci_always_tests_latest_operating_systems import issue_for_a_person, macos_runner_image, xcode_changes
 from ensure_ci_always_tests_latest_operating_systems.data_types import FamilyPlan, PinnedVersions
 from ensure_ci_always_tests_latest_operating_systems.pinned_versions import read_pinned_versions_from_texts
 
@@ -346,6 +346,13 @@ class LabelSwitchTests(unittest.TestCase):
         self.assertEqual(change.patch_file, 'patches/xcode-label_xcode-27_xcode-28.patch')
         kinds = sorted(c.kind for c in change.changes)
         self.assertEqual(kinds, ['insert-ios-leg'] + ['replace-runner-label'] * 5 + ['set-xcode-version'] * 2)
+
+    def test_the_change_that_holds_back_xcode_is_never_dismissed_by_a_close(self) -> None:
+        result = plan(required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(),
+                      images=runner_images(with_xcode_28=True))
+        key = result.changes_for_a_person[0].key
+        self.assertTrue(key.startswith(issue_for_a_person.KEY_PREFIXES_A_CLOSE_NEVER_DISMISSES), key)
+        self.assertFalse(key.startswith(issue_for_a_person.KEY_PREFIXES_THAT_TURN_THE_RUN_RED), key)
 
     def test_a_duplicated_target_label_defers_the_switch(self) -> None:
         images = dict(runner_images(with_xcode_28=True), duplicate_labels=['xcode-28'])
