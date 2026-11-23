@@ -418,6 +418,21 @@ class RefusalTests(unittest.TestCase):
         self.assertEqual(thing['key'], 'pull-request-not-approved:7:threads')
         self.assertEqual(thing['text'], 'Resolve the open review conversations on #7 (2 left). The bot approves it on its next run.')
 
+    def test_refuses_threads_on_a_pull_request_that_is_still_approved_with_text_that_says_it_merges_on_its_own(self) -> None:
+        scenario = Scenario()
+        scenario.facts = graphql_facts(threads=[False], enabled_at=COMMITTED)
+        scenario.reviews.append({'user': {'login': 'github-actions[bot]'}, 'state': 'APPROVED', 'commit_id': HEAD_SHA})
+        approval = self.assert_refused(scenario, 'threads', auto_merge='left-on')
+        self.assertEqual(approval['things_to_check'][0]['text'],
+                         'Resolve the open review conversations on #7 (1 left). It is still approved, so it then merges on its own.')
+
+    def test_refuses_threads_with_the_next_run_text_when_the_approval_is_on_an_older_head(self) -> None:
+        scenario = Scenario()
+        scenario.facts = graphql_facts(threads=[False], enabled_at=COMMITTED)
+        scenario.reviews.append({'user': {'login': 'github-actions[bot]'}, 'state': 'APPROVED', 'commit_id': 'c' * 40})
+        approval = self.assert_refused(scenario, 'threads', auto_merge='left-on')
+        self.assertTrue(approval['things_to_check'][0]['text'].endswith('The bot approves it on its next run.'))
+
     def test_refuses_conflicts(self) -> None:
         scenario = Scenario()
         scenario.facts = graphql_facts(mergeable='CONFLICTING')

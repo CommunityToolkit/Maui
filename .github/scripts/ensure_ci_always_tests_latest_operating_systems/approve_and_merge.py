@@ -382,6 +382,10 @@ def _describe_refusal(number: int, codes: List[str], result: CheckResult) -> str
     unresolved = int(result.pull_request_facts.get('unresolved_threads') or 0)
     actions = ' '.join(dict.fromkeys(_REFUSAL_ACTIONS[code] % {'n': number, 'k': unresolved} for code in codes))
     if result.refusals == ['threads']:
+        facts = result.pull_request_facts
+        if facts.get('approved_at_head') and facts.get('auto_merge_is_on'):
+            # GitHub keeps an approval when a push leaves the diff unchanged, so resolving the conversations merges it.
+            return actions + ' It is still approved, so it then merges on its own.'
         return actions + ' The bot approves it on its next run.'
     reasons = '; '.join('%s: %s' % (code, '; '.join(result.refusal_details[code])) for code in codes if code != 'threads')
     if not reasons:
