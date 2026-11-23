@@ -114,7 +114,7 @@ def iphone(name: str, bundle_path: Optional[str]) -> Dict[str, str]:
     return {'name': name, 'productFamily': 'iPhone', 'identifier': 'id.' + name.replace(' ', '-'), 'bundlePath': bundle_path or ''}
 
 
-def list_runtimes_with_device_types(device_types: object, count_screens: object = None) -> Optional[bool]:
+def read_screen_answer_of_a_runtime_listing(device_types: object, count_screens: object = None) -> Optional[bool]:
     runtime = {'platform': 'iOS', 'version': '27.0', 'name': 'iOS 27.0', 'identifier': 'x', 'isAvailable': True}
     if device_types is not None:
         runtime['supportedDeviceTypes'] = device_types
@@ -134,10 +134,11 @@ class BuiltInScreenCountTests(unittest.TestCase):
         self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('real-iphone-duo')), 2)
 
     def test_the_names_of_the_displays_are_compared_ignoring_case(self) -> None:
-        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('capitalized-names')), 1)
+        self.assertEqual(macos_runner_image.read_built_in_screen_count(bundle('capitalized-names')), 2)
 
     def test_a_profile_that_cannot_be_read_has_no_count(self) -> None:
         for path in (bundle('garbage'), bundle('no-displays'), bundle('xcode-26-profile-without-displays'), bundle('truncated-xml'),
+                     bundle('capabilities-is-a-list'), bundle('malformed-date'),
                      bundle('missing'), '', None):
             with self.subTest(path=path):
                 self.assertIsNone(macos_runner_image.read_built_in_screen_count(path))
@@ -154,30 +155,30 @@ class SimulatorRuntimeScreenTests(unittest.TestCase):
             'iOS-27-1': False, 'iOS-27-2-iPhone19-4': False})
 
     def test_some_iphone_with_one_screen_is_enough(self) -> None:
-        self.assertIs(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens')), iphone('One', bundle('one-screen'))]), True)
+        self.assertIs(read_screen_answer_of_a_runtime_listing([iphone('Duo', bundle('two-screens')), iphone('One', bundle('one-screen'))]), True)
 
     def test_every_iphone_with_more_than_one_screen_is_false(self) -> None:
-        self.assertIs(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens'))]), False)
+        self.assertIs(read_screen_answer_of_a_runtime_listing([iphone('Duo', bundle('two-screens'))]), False)
 
     def test_no_iphone_listed_is_false(self) -> None:
-        self.assertIs(list_runtimes_with_device_types([]), False)
-        self.assertIs(list_runtimes_with_device_types([{'name': 'iPad', 'productFamily': 'iPad', 'identifier': 'ipad', 'bundlePath': bundle('one-screen')}]), False)
+        self.assertIs(read_screen_answer_of_a_runtime_listing([]), False)
+        self.assertIs(read_screen_answer_of_a_runtime_listing([{'name': 'iPad', 'productFamily': 'iPad', 'identifier': 'ipad', 'bundlePath': bundle('one-screen')}]), False)
 
     def test_a_runtime_without_device_types_is_unknown(self) -> None:
-        self.assertIsNone(list_runtimes_with_device_types(None))
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing(None))
 
     def test_a_profile_that_cannot_be_read_is_unknown_and_never_an_error(self) -> None:
-        self.assertIsNone(list_runtimes_with_device_types([iphone('Broken', bundle('garbage'))]))
-        self.assertIsNone(list_runtimes_with_device_types([iphone('Missing', bundle('missing'))]))
-        self.assertIsNone(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens')), iphone('Broken', bundle('garbage'))]))
-        self.assertIsNone(list_runtimes_with_device_types([iphone('Broken', bundle('garbage')), iphone('Duo', bundle('two-screens'))]))
-        self.assertIsNone(list_runtimes_with_device_types([iphone('Truncated', bundle('truncated-xml'))]))
-        self.assertIs(list_runtimes_with_device_types([iphone('Broken', bundle('garbage')), iphone('One', bundle('one-screen'))]), True)
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing([iphone('Broken', bundle('garbage'))]))
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing([iphone('Missing', bundle('missing'))]))
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing([iphone('Duo', bundle('two-screens')), iphone('Broken', bundle('garbage'))]))
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing([iphone('Broken', bundle('garbage')), iphone('Duo', bundle('two-screens'))]))
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing([iphone('Truncated', bundle('truncated-xml'))]))
+        self.assertIs(read_screen_answer_of_a_runtime_listing([iphone('Broken', bundle('garbage')), iphone('One', bundle('one-screen'))]), True)
 
     def test_a_reader_that_raises_is_unknown_and_never_an_error(self) -> None:
         def raises(bundle_path: str) -> Optional[int]:
             raise OSError('disk gone')
-        self.assertIsNone(list_runtimes_with_device_types([iphone('Duo', bundle('two-screens'))], raises))
+        self.assertIsNone(read_screen_answer_of_a_runtime_listing([iphone('Duo', bundle('two-screens'))], raises))
 
     def test_a_device_type_shared_by_runtimes_is_read_once(self) -> None:
         read: List[str] = []

@@ -8,7 +8,7 @@
 		<array>
 			<dict>
 				<key>deviceName</key>
-				<string>Primary</string>
+				<string>LCD</string>
 				<key>displayName</key>
 				<string>LCD</string>
 				<key>displayType</key>
@@ -17,6 +17,18 @@
 				<integer>1</integer>
 				<key>screenID</key>
 				<integer>1</integer>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>Primary-1</string>
+				<key>displayName</key>
+				<string>Second LCD</string>
+				<key>displayType</key>
+				<string>Other</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>3</integer>
 			</dict>
 			<dict>
 				<key>deviceName</key>

@@ -365,17 +365,12 @@ function Select-SimulatorIPhone {
 function Select-SimulatorDeviceType {
     param($SelectedRuntime, [string]$Requested)
 
-    if ($Requested) {
-        $found = Find-SupportedSimulatorDeviceType -SelectedRuntime $SelectedRuntime -Requested $Requested
-        if ($null -eq $found) {
-            throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
-        }
-
-        return $found
+    $found = Find-SupportedSimulatorDeviceType -SelectedRuntime $SelectedRuntime -Requested $Requested
+    if ($null -eq $found) {
+        throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
     }
 
-    $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $SelectedRuntime -ScreenCounts @{}
-    return (Select-SimulatorIPhone -Candidates $candidates)
+    return $found
 }
 
 function Select-SimulatorRuntimeAndDeviceType {

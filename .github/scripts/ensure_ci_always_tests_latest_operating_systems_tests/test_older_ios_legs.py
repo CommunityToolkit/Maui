@@ -33,7 +33,7 @@ def runtime(version: str, platform: str = 'iOS', available: bool = True) -> Dict
             'available': available}
 
 
-def runtime_listing_one_screen_iphone(version: str, identifier: str, lists_iphone_with_one_screen: Any) -> Dict[str, Any]:
+def runtime_with_screen_answer(version: str, identifier: str, lists_iphone_with_one_screen: Any) -> Dict[str, Any]:
     return dict(runtime(version), identifier='com.apple.CoreSimulator.SimRuntime.' + identifier,
                 lists_iphone_with_one_screen=lists_iphone_with_one_screen)
 
@@ -160,6 +160,14 @@ class RuntimeCheckTests(unittest.TestCase):
         identifier = 'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
         self.assertTrue(ios_runtimes.is_found_by_ios_script(dict(runtime('26.5'), identifier=identifier), identifier))
 
+    def test_a_runtime_is_found_ignoring_letter_case_like_powershell_does_but_not_its_identifier_suffix(self) -> None:
+        identifier = 'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
+        found = dict(runtime('26.5'), identifier=identifier)
+        self.assertTrue(ios_runtimes.is_found_by_ios_script(found, 'IOS 26.5'))
+        self.assertTrue(ios_runtimes.is_found_by_ios_script(found, identifier.upper()))
+        self.assertTrue(ios_runtimes.is_found_by_ios_script(found, 'iOS-26-5'))
+        self.assertFalse(ios_runtimes.is_found_by_ios_script(found, 'ios-26-5'))
+
     def test_install_runtime_legs_skip_the_runtime_checks(self) -> None:
         listings = todays_listings()
         listings['macos-15']['runtimes'] = []
@@ -169,7 +177,7 @@ class RuntimeCheckTests(unittest.TestCase):
 class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
     def listings_where_the_leg_runtime_lists_only_iphone_duo(self) -> Dict[str, Any]:
         listings = todays_listings()
-        listings['macos-26']['runtimes'] = [runtime_listing_one_screen_iphone('26.5', 'iOS-26-5', False)]
+        listings['macos-26']['runtimes'] = [runtime_with_screen_answer('26.5', 'iOS-26-5', False)]
         return listings
 
     def test_a_leg_whose_only_matching_runtime_has_no_one_screen_iphone_is_reported(self) -> None:
@@ -179,27 +187,32 @@ class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
 
     def test_the_report_names_the_runtime_of_the_same_major_that_can_run_the_tests(self) -> None:
         listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
-        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.4', 'iOS-26-4', True))
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.4', 'iOS-26-4', True))
         result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
         self.assertEqual(keys(result), ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
         self.assertIn('`26.4` runtime can run them', result.things_to_check[0].text)
 
     def test_one_good_runtime_among_two_that_match_is_enough(self) -> None:
         listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
-        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.5', 'iOS-26-5-generic', True))
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.5', 'iOS-26-5-generic', True))
         self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
 
-    def test_the_first_match_decides_when_no_match_lists_a_one_screen_iphone_like_ios_ps1_does(self) -> None:
+    def test_a_match_not_known_to_lack_a_one_screen_iphone_is_enough_in_either_order_like_ios_ps1(self) -> None:
         listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
-        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.5', 'iOS-26-5-other', None))
-        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
-                         ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.5', 'iOS-26-5-other', None))
+        self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
         listings['macos-26']['runtimes'].reverse()
         self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
 
+    def test_two_matches_that_both_lack_a_one_screen_iphone_are_reported_in_either_order(self) -> None:
+        listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.5', 'iOS-26-5-ipad-only', False))
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+
     def test_a_newer_runtime_that_the_cannot_run_item_names_is_not_offered_a_second_time(self) -> None:
         listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()
-        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.6', 'iOS-26-6', True))
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.6', 'iOS-26-6', True))
         result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
         self.assertEqual(keys(result), ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
         self.assertIn('`26.6` runtime can run them', result.things_to_check[0].text)
@@ -212,8 +225,8 @@ class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
                     {'folder': 'Xcode_27.2.app', 'version': '27.2', 'build': '0', 'license_type': 'Release', 'symlinks': []},
                     {'folder': 'Xcode_27.app', 'version': '27.0', 'build': '0', 'license_type': 'Release', 'symlinks': []}]
                 listings['macos-26']['runtimes'] = [
-                    runtime_listing_one_screen_iphone('27.0', 'iOS-27-0', True),
-                    runtime_listing_one_screen_iphone('27.2', 'iOS-27-2-iPhone19-4', False)]
+                    runtime_with_screen_answer('27.0', 'iOS-27-0', True),
+                    runtime_with_screen_answer('27.2', 'iOS-27-2-iPhone19-4', False)]
                 result = older_ios_legs.check_older_ios_legs(
                     pinned_versions(lambda text: text.replace("ios-version: '26.5'", "ios-version: '%s'" % named_by)), listings)
                 cannot_run = [thing for thing in result.things_to_check if thing.key.startswith('ios-leg-runtime-cannot-run-tests')]
@@ -233,12 +246,12 @@ class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
 
     def test_a_newer_runtime_that_lists_no_one_screen_iphone_is_not_suggested(self) -> None:
         listings = todays_listings()
-        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.6', 'iOS-26-6', False))
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.6', 'iOS-26-6', False))
         self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
 
     def test_a_newer_runtime_that_can_run_the_tests_is_still_suggested(self) -> None:
         listings = todays_listings()
-        listings['macos-26']['runtimes'].append(runtime_listing_one_screen_iphone('26.6', 'iOS-26-6', True))
+        listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.6', 'iOS-26-6', True))
         self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
                          ['ios-leg-newer-runtime:macos-26:26.5:26.6'])
 

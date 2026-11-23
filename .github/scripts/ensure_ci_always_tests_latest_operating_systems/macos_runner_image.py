@@ -40,7 +40,7 @@ def _read_plist(path: str) -> Optional[Dict[str, Any]]:
     try:
         with open(path, 'rb') as file:
             data = plistlib.load(file)
-    except (OSError, ValueError, plistlib.InvalidFileException, xml.parsers.expat.ExpatError):
+    except (OSError, ValueError, AttributeError, TypeError, plistlib.InvalidFileException, xml.parsers.expat.ExpatError):
         return None
     return data if isinstance(data, dict) else None
 
@@ -143,7 +143,8 @@ def read_built_in_screen_count(bundle_path: Any) -> Optional[int]:
     if not isinstance(bundle_path, str) or not bundle_path:
         return None
     capabilities = _read_plist(os.path.join(bundle_path, 'Contents', 'Resources', 'capabilities.plist'))
-    displays = ((capabilities or {}).get('capabilities') or {}).get('displays')
+    capabilities_section = (capabilities or {}).get('capabilities')
+    displays = capabilities_section.get('displays') if isinstance(capabilities_section, dict) else None
     if not isinstance(displays, list):
         return None
     # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
@@ -157,7 +158,7 @@ def _lists_iphone_with_one_screen(runtime: Mapping[str, Any], screen_counts: Dic
     """True: some iPhone has one screen. False: every iPhone is known to have another count, or none is listed. None: not known."""
     device_types = runtime.get('supportedDeviceTypes')
     if not isinstance(device_types, list):
-        # ios.ps1 would throw for it, but a wrong False drops a leg silently; simctl always prints the key, so this stays unknown.
+        # ios.ps1 sees no iPhone in it (and throws when it is the only match), but a wrong False drops a leg silently; simctl always prints the key, so this stays unknown.
         return None
     iphones = [device_type for device_type in device_types
                if isinstance(device_type, dict) and device_type.get('productFamily') == 'iPhone']

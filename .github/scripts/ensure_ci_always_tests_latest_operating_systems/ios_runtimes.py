@@ -11,10 +11,15 @@ def list_available_ios_runtimes(listing: Mapping[str, Any]) -> List[Mapping[str,
             if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')]
 
 
+def _equal_ignoring_case(value: Any, requested: str) -> bool:
+    """PowerShell's -eq, which eng/devices/ios.ps1 uses, ignores letter case; its EndsWith for the identifier suffix does not."""
+    return isinstance(value, str) and value.lower() == requested.lower()
+
+
 def is_found_by_ios_script(runtime: Mapping[str, Any], requested: str) -> bool:
     """Matches a runtime the way Find-MatchingSimulatorRuntimes in eng/devices/ios.ps1 does."""
-    return (runtime.get('version') == requested or runtime.get('identifier') == requested or runtime.get('name') == requested
-            or (runtime.get('identifier') or '').endswith('.' + requested))
+    return (_equal_ignoring_case(runtime.get('version'), requested) or _equal_ignoring_case(runtime.get('identifier'), requested)
+            or _equal_ignoring_case(runtime.get('name'), requested) or (runtime.get('identifier') or '').endswith('.' + requested))
 
 
 def is_known_to_list_no_iphone_with_one_screen(runtime: Mapping[str, Any]) -> bool:
@@ -23,8 +28,6 @@ def is_known_to_list_no_iphone_with_one_screen(runtime: Mapping[str, Any]) -> bo
 
 
 def can_a_runtime_found_by_ios_script_run_the_tests(listing: Mapping[str, Any], requested: str) -> bool:
-    """ios.ps1 takes the first matching runtime that lists an iPhone with one screen, else the first match."""
+    """ios.ps1 takes a match that lists an iPhone with one screen, else one that lists an iPhone whose screens could not be counted."""
     found = [runtime for runtime in list_available_ios_runtimes(listing) if is_found_by_ios_script(runtime, requested)]
-    if any(runtime.get(LISTS_IPHONE_WITH_ONE_SCREEN) is True for runtime in found):
-        return True
-    return bool(found) and not is_known_to_list_no_iphone_with_one_screen(found[0])
+    return any(not is_known_to_list_no_iphone_with_one_screen(runtime) for runtime in found)

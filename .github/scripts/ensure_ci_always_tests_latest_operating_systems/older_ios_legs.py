@@ -39,7 +39,7 @@ def _find_newer_ga_runtime_of_same_major(leg_version: str, listing: Mapping[str,
     return None
 
 
-def _what_to_do_instead(leg_version: str, listing: Mapping[str, Any]) -> str:
+def _describe_what_to_do_instead(leg_version: str, listing: Mapping[str, Any]) -> str:
     instead = _find_newest_runtime_of_same_major_that_can_run_the_tests(leg_version, listing)
     if instead is None:
         return 'No other runtime of its major on the image can run them, so the leg needs another image or install-runtime.'
@@ -84,7 +84,7 @@ def check_older_ios_legs(pinned: Any, listings: Mapping[str, Any]) -> FamilyPlan
             plan.things_to_check.append(ThingToCheck(
                 key='ios-leg-runtime-cannot-run-tests:%s:%s' % (leg.runner, leg.ios_version),
                 text='The iOS %s runtime of %s lists no iPhone with one built-in screen, which the status bar tests need. %s'
-                     % (markdown_code(leg.ios_version), label, _what_to_do_instead(leg.ios_version, listing))))
+                     % (markdown_code(leg.ios_version), label, _describe_what_to_do_instead(leg.ios_version, listing))))
         newer = _find_newer_ga_runtime_of_same_major(leg.ios_version, listing)
         if newer is not None and not is_runtime_unable_to_run_the_tests:
             plan.things_to_check.append(ThingToCheck(
