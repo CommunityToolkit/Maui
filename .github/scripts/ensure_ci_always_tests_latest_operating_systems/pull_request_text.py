@@ -205,6 +205,6 @@ def render_run_summary(plan: Any, changes_patch: Optional[str] = None, pull_requ
     lines.append('')
     if changes_patch:
         lines.extend(_collapsible('changes.patch', 'diff', changes_patch))
-    if pull_request_body:
+    if pull_request_body and plan.pull_request_action == 'open-or-update':
         lines.extend(_collapsible('Pull request body', 'markdown', pull_request_body))
     return '\n'.join(lines)

@@ -291,12 +291,28 @@ def _describe_token_status(token_status: TokenStatus, repo: str) -> str:
 
 def _report_token_status(token_status: TokenStatus, repo: str, environ: Mapping[str, str]) -> None:
     line = _describe_token_status(token_status, repo)
+    _append_to_run_summary(environ, line + '\n\n')
+    if not token_status.usable:
+        _report_error('decide-pull-request-update', line)
+
+
+def _append_to_run_summary(environ: Mapping[str, str], text: str) -> None:
     summary_path = environ.get('GITHUB_STEP_SUMMARY')
     if summary_path:
         with open(summary_path, 'a', encoding='utf-8', newline='') as file:
-            file.write(line + '\n\n')
-    if not token_status.usable:
-        _report_error('decide-pull-request-update', line)
+            file.write(text)
+
+
+def _escape_workflow_command_data(text: str) -> str:
+    return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+
+def _report_decision_notes(notes: Sequence[str], environ: Mapping[str, str]) -> None:
+    if not notes:
+        return
+    _append_to_run_summary(environ, ''.join('- Note: %s\n' % note for note in notes) + '\n')
+    for note in notes:
+        print('::notice title=Pull request decision::%s' % _escape_workflow_command_data(note))
 
 
 def _read_plan(plan_folder: str) -> Dict[str, Any]:
@@ -316,6 +332,7 @@ def decide_pull_request_update_command(args: argparse.Namespace, environ: Mappin
     token_status = check_token(_token_from(environ, MAINTAINER_TOKEN_NAME), make_maintainer_client, _now())
     _report_token_status(token_status, args.repo, environ)
     decision = decide_pull_request_update(plan, token_status, github, args.base, args.base_sha)
+    _report_decision_notes(decision.notes, environ)
     _write_json(os.path.join(args.out, 'decision.json'), decision.to_json())
     write_step_outputs(step_outputs(decision, plan), environ)
     return 0

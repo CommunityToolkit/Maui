@@ -189,6 +189,17 @@ class RunSummaryTests(unittest.TestCase):
         summary = render_run_summary(plan_with([]), changes_patch='before\n```\nafter')
         self.assertIn('````diff', summary)
 
+    def test_a_body_that_is_never_posted_stays_out_of_the_summary(self) -> None:
+        for action in ('leave-alone', 'nothing'):
+            summary = render_run_summary(plan_with([], pull_request_action=action), pull_request_body='body text')
+            self.assertNotIn('Pull request body', summary, action)
+            self.assertNotIn('body text', summary, action)
+
+    def test_a_body_that_is_posted_shows_in_the_summary(self) -> None:
+        summary = render_run_summary(plan_with([], pull_request_action='open-or-update'), pull_request_body='body text')
+        self.assertIn('Pull request body', summary)
+        self.assertIn('body text', summary)
+
     def test_an_empty_plan_says_none_everywhere(self) -> None:
         summary = render_run_summary(plan_with([]))
         self.assertEqual(summary.count('None.'), 5)

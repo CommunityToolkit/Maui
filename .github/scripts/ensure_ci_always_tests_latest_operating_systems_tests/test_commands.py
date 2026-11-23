@@ -464,6 +464,27 @@ class DecidePullRequestUpdateTests(CommandTestCase):
         self.assertTrue(decision['main_moved'])
         self.assertFalse(decision['open_or_update'])
 
+    def run_with_a_moved_main(self, **environ: str) -> Tuple[int, str, str]:
+        self.write_plan(decision_plan('open-or-update'))
+        services = RecordingServices(None, {MAINTAINER_TOKEN: token_github(), WORKFLOW_TOKEN: workflow_github('b' * 40)})
+        return self.run_main(self.argv(), services, GITHUB_TOKEN=WORKFLOW_TOKEN,
+                             **{markers.TOKEN_SECRET_NAME: MAINTAINER_TOKEN}, **environ)
+
+    def test_a_decision_note_reaches_the_run_summary_and_the_job_log(self) -> None:
+        summary = self.path('summary.md')
+        _, out, _ = self.run_with_a_moved_main(GITHUB_STEP_SUMMARY=summary)
+        note = self.read_json('pull-request', 'decision.json')['notes'][0]
+        self.assertIn('- Note: %s\n' % note, read_file(summary))
+        self.assertIn('::notice title=Pull request decision::%s\n' % note, out)
+
+    def test_a_decision_note_is_escaped_for_the_workflow_command(self) -> None:
+        self.assertEqual(commands._escape_workflow_command_data('100%\r\nnext'), '100%25%0D%0Anext')
+
+    def test_a_decision_note_still_prints_when_there_is_no_run_summary_file(self) -> None:
+        code, out, _ = self.run_with_a_moved_main()
+        self.assertEqual(code, 0)
+        self.assertIn('::notice title=Pull request decision::', out)
+
     def test_a_missing_plan_fails_the_step_with_a_workflow_error(self) -> None:
         code, out, _ = self.run_main(self.argv(), RecordingServices(None, {WORKFLOW_TOKEN: workflow_github()}),
                                      GITHUB_TOKEN=WORKFLOW_TOKEN)

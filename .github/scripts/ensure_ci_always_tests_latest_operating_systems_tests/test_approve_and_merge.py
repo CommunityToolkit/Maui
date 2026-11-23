@@ -252,14 +252,15 @@ class DirectMergeTests(unittest.TestCase):
 
 
 class RefusalTests(unittest.TestCase):
-    def assert_refused(self, scenario: Scenario, code: str, operation: str = 'created') -> Dict[str, Any]:
+    def assert_refused(self, scenario: Scenario, code: str, operation: str = 'created',
+                       auto_merge: str = 'not-turned-on') -> Dict[str, Any]:
         approval, client = scenario.run(operation)
         self.assertIn(code, approval['refusals'])
         names = write_names(client)
         self.assertNotIn('TurnOnAutoMerge', names, code)
         self.assertNotIn('POST %s/reviews' % PULL, names, code)
         self.assertNotIn('PUT %s/merge' % PULL, names, code)
-        self.assertEqual(approval['auto_merge'], 'not-turned-on')
+        self.assertEqual(approval['auto_merge'], auto_merge)
         self.assertEqual(approval['approved'], 'no')
         return approval
 
@@ -409,10 +410,13 @@ class RefusalTests(unittest.TestCase):
             description='', source='').to_json()]
         self.assert_refused(scenario, 'levels-rise')
 
-    def test_refuses_threads(self) -> None:
+    def test_refuses_threads_with_text_that_leads_with_what_to_do(self) -> None:
         scenario = Scenario()
-        scenario.facts = graphql_facts(threads=[True, False])
-        self.assert_refused(scenario, 'threads')
+        scenario.facts = graphql_facts(threads=[True, False, False])
+        approval = self.assert_refused(scenario, 'threads')
+        thing = approval['things_to_check'][0]
+        self.assertEqual(thing['key'], 'pull-request-not-approved:7:threads')
+        self.assertEqual(thing['text'], 'Resolve the open review conversations on #7 (2 left). The bot approves it on its next run.')
 
     def test_refuses_conflicts(self) -> None:
         scenario = Scenario()
@@ -478,7 +482,14 @@ class RefusalTests(unittest.TestCase):
         approval = self.assert_refused(scenario, 'author')
         thing = approval['things_to_check'][0]
         self.assertEqual(thing['key'], 'pull-request-not-approved:7:author')
+        self.assertTrue(thing['text'].startswith('Close #7, or review and merge it yourself. The bot did not approve #7 because author: '))
         self.assertIn('branch', thing['text'])
+
+    def test_every_other_refusal_code_starts_with_an_action(self) -> None:
+        from ensure_ci_always_tests_latest_operating_systems.approve_and_merge import _REFUSAL_ACTIONS
+        needing_no_action = {'hold', 'last-push-rule'}
+        self.assertEqual(set(REFUSAL_REASONS) - needing_no_action - set(_REFUSAL_ACTIONS), set())
+        self.assertIn('last-push-rule', _REFUSAL_ACTIONS)
 
 
 class AutoMergeKeepsOrDropsTests(unittest.TestCase):
@@ -486,8 +497,9 @@ class AutoMergeKeepsOrDropsTests(unittest.TestCase):
         scenario = Scenario()
         scenario.facts = graphql_facts(enabled_at=ARMED_AFTER_COMMIT)
         scenario.pull['user']['login'] = 'someone-else'
-        _, client = scenario.run()
+        approval, client = scenario.run()
         self.assertEqual(write_names(client), ['TurnOffAutoMerge'])
+        self.assertEqual(approval['auto_merge'], 'turned-off')
 
     def test_threads_conflicts_and_hold_leave_auto_merge_on(self) -> None:
         cases = {
@@ -502,12 +514,14 @@ class AutoMergeKeepsOrDropsTests(unittest.TestCase):
             approval, client = scenario.run()
             self.assertEqual(approval['refusals'], [code])
             self.assertEqual(client.write_calls(), [], code)
+            self.assertEqual(approval['auto_merge'], 'left-on', code)
 
     def test_a_refusal_with_auto_merge_off_writes_nothing(self) -> None:
         scenario = Scenario()
         scenario.pull['user']['login'] = 'someone-else'
-        _, client = scenario.run()
+        approval, client = scenario.run()
         self.assertEqual(client.write_calls(), [])
+        self.assertEqual(approval['auto_merge'], 'not-turned-on')
 
     def test_threads_with_another_refusal_turns_it_off(self) -> None:
         scenario = Scenario()

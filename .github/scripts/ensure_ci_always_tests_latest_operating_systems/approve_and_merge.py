@@ -359,6 +359,32 @@ def merge_now(github: Any, number: int, head_sha: str) -> Tuple[bool, str]:
     raise GitHubApiError('PUT', path, status, message)
 
 
+_REFUSAL_ACTIONS: Dict[str, str] = {
+    'state': 'Mark #%(n)d ready for review and aim it at the base branch, or close it.',
+    'author': 'Close #%(n)d, or review and merge it yourself.',
+    'branch': 'Close #%(n)d, or review and merge it yourself.',
+    'head': 'Look at the newest commit on #%(n)d; the bot tries again on its next run.',
+    'commits': 'Check the commits on #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
+    'base': 'Close #%(n)d so the bot opens a fresh one on the current base, or merge it yourself.',
+    'files': 'Review the extra file changes on #%(n)d, then merge it yourself or close it.',
+    'exact-changes': 'Review the changes in #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
+    'validator': 'Review the changes in #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
+    'levels-rise': 'Review the Android levels in #%(n)d, then merge it yourself or close it so the bot opens a fresh one.',
+    'threads': 'Resolve the open review conversations on #%(n)d (%(k)d left).',
+    'conflicts': 'Resolve the merge conflicts on #%(n)d, or close it so the bot opens a fresh one.',
+    'last-push-rule': "Check that the main branch rules can be read and still require approval of the most recent push.",
+}
+
+
+def _refusal_text(number: int, codes: List[str], result: CheckResult) -> str:
+    unresolved = int(result.pull_request_facts.get('unresolved_threads') or 0)
+    if codes == ['threads']:
+        return 'Resolve the open review conversations on #%d (%d left). The bot approves it on its next run.' % (number, unresolved)
+    actions = ' '.join(dict.fromkeys(_REFUSAL_ACTIONS[code] % {'n': number, 'k': unresolved} for code in codes))
+    reasons = '; '.join('%s: %s' % (code, '; '.join(result.refusal_details[code])) for code in codes if code != 'threads')
+    return '%s The bot did not approve #%d because %s.' % (actions, number, reasons)
+
+
 def _refusal_things_to_check(number: int, result: CheckResult) -> List[ThingToCheck]:
     things: List[ThingToCheck] = []
     if 'hold' in result.refusals:
@@ -372,9 +398,8 @@ def _refusal_things_to_check(number: int, result: CheckResult) -> List[ThingToCh
                                    'approve its own pull requests: a push after its approval could merge without review.'))
     others = [code for code in result.refusals if code != 'hold' and not (code == 'last-push-rule' and not rules_could_not_be_read)]
     if others:
-        listed = '; '.join('%s: %s' % (code, '; '.join(result.refusal_details[code])) for code in others)
         things.append(ThingToCheck('pull-request-not-approved:%d:%s' % (number, others[0]),
-                                   "The bot did not approve #%d. %s" % (number, listed)))
+                                   _refusal_text(number, others, result)))
     return things
 
 
@@ -393,8 +418,11 @@ def approve_and_turn_on_auto_merge(github: Any, plan: Any, decision: Any, pull_r
 
     if result.refusals:
         keeps_auto_merge_on = all(code in REFUSALS_THAT_KEEP_AUTO_MERGE_ON for code in result.refusals)
-        if facts['auto_merge_is_on'] and not keeps_auto_merge_on:
+        if facts['auto_merge_is_on'] and keeps_auto_merge_on:
+            approval['auto_merge'] = 'left-on'
+        elif facts['auto_merge_is_on']:
             turn_off_auto_merge(github, node_id)
+            approval['auto_merge'] = 'turned-off'
         approval['things_to_check'] = [thing.to_json() for thing in _refusal_things_to_check(pull_request, result)]
         return approval
 
