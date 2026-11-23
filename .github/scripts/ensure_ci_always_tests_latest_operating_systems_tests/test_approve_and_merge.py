@@ -505,8 +505,18 @@ class RefusalTests(unittest.TestCase):
         scenario.pull['user']['login'] = 'someone-else'
         scenario.pull['head']['ref'] = 'a-person-branch'
         approval, _ = scenario.run()
+        self.assertEqual(approval['refusals'][:2], ['author', 'branch'])
         text = approval['things_to_check'][0]['text']
         self.assertEqual(text.count('Review and merge #7 yourself'), 1)
+
+    def test_threads_with_a_hold_gives_only_the_threads_action(self) -> None:
+        scenario = Scenario()
+        scenario.facts = graphql_facts(threads=[False])
+        scenario.timeline.append({'event': 'auto_merge_disabled', 'actor': {'type': 'User'}})
+        approval, _ = scenario.run()
+        self.assertEqual(approval['refusals'], ['threads', 'hold'])
+        texts = [thing['text'] for thing in approval['things_to_check']]
+        self.assertIn('Resolve the open review conversations on #7 (1 left).', texts)
 
     def test_no_action_promises_a_fresh_pull_request_without_reopen_rejected(self) -> None:
         for code, action in approve_and_merge._REFUSAL_ACTIONS.items():

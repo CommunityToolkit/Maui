@@ -474,7 +474,9 @@ class DecidePullRequestUpdateTests(CommandTestCase):
         summary = self.path('summary.md')
         _, out, _ = self.run_with_a_moved_main(GITHUB_STEP_SUMMARY=summary)
         note = self.read_json('pull-request', 'decision.json')['notes'][0]
-        self.assertIn('- Note: %s\n' % note, read_file(summary))
+        written = read_file(summary)
+        self.assertIn('- Note: %s\n' % note, written)
+        self.assertLess(written.index('Token:'), written.index('- Note:'))
         self.assertIn('::notice title=Pull request decision::%s\n' % note, out)
 
     def test_a_decision_note_is_escaped_for_the_workflow_command(self) -> None:
