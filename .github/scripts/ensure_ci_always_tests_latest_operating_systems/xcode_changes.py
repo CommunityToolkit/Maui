@@ -18,6 +18,7 @@ SAMPLE_XCODE_KEY = 'CommunityToolkitSample_Xcode_Version'
 XCODE_KEY_OF_SDK = (('library', LIBRARY_XCODE_KEY), ('sample', SAMPLE_XCODE_KEY))
 # Seen on 2026-05-12: the newest workload set briefly asked for an older Xcode for 50 minutes before it was replaced.
 NEWEST_SET_WITH_OLDER_XCODE_WAIT = timedelta(hours=24)
+FIRST_IOS_MAJOR_NUMBERED_LIKE_ITS_XCODE = 26
 APPLE_LABEL_PATTERN = re.compile(r'^(xcode|macos)-\d+$')
 
 
@@ -152,20 +153,30 @@ def _apple_label_changes(pinned: PinnedVersions, old_label: str, new_label: str,
     return changes
 
 
-def ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
+def _is_pre_release_xcode_app(app: Mapping[str, Any]) -> bool:
+    return not GA_XCODE_APP_NAME.match(app.get('folder') or '') or 'beta' in str(app.get('license_type') or '').lower()
+
+
+def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
     """Full versions, as listed, of the available iOS runtimes that are not a beta's.
 
-    The listing has no beta field on a runtime, but a runtime carries the number of the Xcode it shipped with
-    (iOS 27.3 with Xcode 27.3 on every image read so far). So it is a beta's when only a non-GA Xcode app has its number.
-    A runtime no Xcode app shares a number with stays: images keep runtimes whose Xcode they dropped (iOS 18.6 on macos-15),
-    and a wrongly kept beta fails its own leg loudly, where a wrongly dropped GA runtime would silently lose coverage.
+    From iOS 26 on a runtime has its Xcode's number, so a number only a pre-release Xcode has, or a major above every GA Xcode's,
+    marks a beta's runtime. Runtimes with no Xcode of their number stay: Xcode 16.4 installs iOS 18.6.
     """
-    ga_numbers = ga_xcode_versions(listing)
-    beta_numbers = {major_minor(app['version']) for app in listing.get('xcode_apps', [])
-                    if not _is_ga_xcode_app(app) and app.get('version')} - ga_numbers
+    ga_apps = [app for app in listing.get('xcode_apps', []) if _is_ga_xcode_app(app) and app.get('version')]
+    ga_numbers = {major_minor(app['version']) for app in ga_apps}
+    newest_ga_xcode_major = max((major(app['version']) for app in ga_apps), default=None)
+    pre_release_numbers = {major_minor(app['version']) for app in listing.get('xcode_apps', [])
+                           if _is_pre_release_xcode_app(app) and app.get('version')} - ga_numbers
+
+    def is_beta_runtime(version: str) -> bool:
+        above_every_ga_xcode = (newest_ga_xcode_major is not None and major(version) >= FIRST_IOS_MAJOR_NUMBERED_LIKE_ITS_XCODE
+                                and major(version) > newest_ga_xcode_major)
+        return above_every_ga_xcode or major_minor(version) in pre_release_numbers
+
     return [runtime['version'] for runtime in listing.get('runtimes', [])
             if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')
-            and major_minor(runtime['version']) not in beta_numbers]
+            and not is_beta_runtime(runtime['version'])]
 
 
 def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any],
@@ -173,7 +184,7 @@ def _old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[
     """The old label keeps its newest iOS major covered by an iOS leg, because the main Apple jobs leave it."""
     from . import line_editor
 
-    ios_versions = ga_ios_runtime_versions(listing)
+    ios_versions = list_ga_ios_runtime_versions(listing)
     if not ios_versions:
         notes.append('%s lists no GA iOS simulator runtime, so no iOS leg was added for it.' % markdown_code(old_label))
         return None

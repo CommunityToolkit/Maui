@@ -75,10 +75,50 @@ class RuntimeCheckTests(unittest.TestCase):
         result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
         self.assertEqual(keys(result), ['ios-leg-runtime-missing:macos-26:26.5'])
 
-    def test_a_patch_release_runtime_answers_for_its_major_minor(self) -> None:
+    def test_a_patch_release_runtime_does_not_answer_for_its_major_minor(self) -> None:
         listings = todays_listings()
         listings['macos-26']['runtimes'] = [runtime('26.5.1')]
+        result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
+        self.assertEqual(keys(result), ['ios-leg-runtime-missing:macos-26:26.5'])
+
+    def test_a_point_release_swap_is_missing_and_newer_by_its_full_version(self) -> None:
+        listings = todays_listings()
+        for entry in listings['macos-26']['runtimes']:
+            if entry['version'] == '26.5':
+                entry['version'] = '26.5.1'
+                entry['name'] = 'iOS 26.5'
+                entry['identifier'] = 'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
+        result = older_ios_legs.check_older_ios_legs(pinned_versions(), listings)
+        self.assertEqual(keys(result), ['ios-leg-runtime-missing:macos-26:26.5'])
+
+    def test_a_leg_with_a_three_part_version_is_missing_when_the_image_swaps_the_runtime(self) -> None:
+        edited = pinned_versions(lambda text: text.replace("ios-version: '26.5'", "ios-version: '26.5.1'", 1))
+        listings = todays_listings()
+        listings['macos-26']['runtimes'] = [runtime('26.5.2')]
+        listings['macos-26']['runtimes'][0].update(name='iOS 26.5', identifier='com.apple.CoreSimulator.SimRuntime.iOS-26-5')
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(edited, listings)), ['ios-leg-runtime-missing:macos-26:26.5.1'])
+
+    def test_the_newer_runtime_is_named_by_its_full_version(self) -> None:
+        listings = todays_listings()
+        listings['macos-26']['runtimes'].append(runtime('26.6.1'))
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-newer-runtime:macos-26:26.5:26.6.1'])
+
+    def test_a_beta_runtime_is_not_offered_as_the_newer_runtime(self) -> None:
+        listings = todays_listings()
+        listings['macos-26']['xcode_apps'].append({'folder': 'Xcode_26.7_beta.app', 'version': '26.7', 'build': '0',
+                                                   'license_type': 'Beta', 'symlinks': []})
+        listings['macos-26']['runtimes'].append(runtime('26.7'))
         self.assertEqual(older_ios_legs.check_older_ios_legs(pinned_versions(), listings).things_to_check, [])
+
+    def test_a_runtime_found_by_name_or_identifier_suffix_counts(self) -> None:
+        listings = todays_listings()
+        listings['macos-26']['runtimes'] = [dict(runtime('26.5.1'), name='26.5')]
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-newer-runtime:macos-26:26.5:26.5.1'])
+        listings['macos-26']['runtimes'] = [dict(runtime('26.5.1'), identifier='com.apple.CoreSimulator.SimRuntime.26.5')]
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-newer-runtime:macos-26:26.5:26.5.1'])
 
     def test_install_runtime_legs_skip_the_runtime_checks(self) -> None:
         listings = todays_listings()
