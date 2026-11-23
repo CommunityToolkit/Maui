@@ -38,6 +38,12 @@ def read_workflow_lines() -> List[str]:
         return workflow_file.read().split("\n")
 
 
+def find_bounds_of_the_on_block(lines: List[str]) -> Tuple[int, int]:
+    start = lines.index("on:") + 1
+    end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith((" ", "#")))
+    return start, end
+
+
 def without_comment(line: str) -> str:
     """Drops a whole-line comment; the workflow has no trailing comment that holds an expression, only the SHA version notes."""
     return "" if line.lstrip().startswith("#") else line
@@ -388,15 +394,13 @@ class PublishStepConditions(unittest.TestCase):
 
     def test_the_workflow_starts_only_on_schedule_dispatch_and_pull_request(self) -> None:
         lines = read_workflow_lines()
-        start = lines.index("on:") + 1
-        end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith((" ", "#")))
+        start, end = find_bounds_of_the_on_block(lines)
         events_in_on = [match.group(1) for match in (re.match(r"^    ([A-Za-z_]+):", line) for line in lines[start:end]) if match]
         self.assertEqual({"schedule", "workflow_dispatch", "pull_request"}, set(events_in_on))
 
     def test_the_pull_request_event_has_no_path_filter_because_a_required_check_that_never_runs_blocks_every_pull_request(self) -> None:
         lines = read_workflow_lines()
-        start = lines.index("on:") + 1
-        end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith((" ", "#")))
+        start, end = find_bounds_of_the_on_block(lines)
         event_start = next(index for index in range(start, end) if lines[index].startswith("    pull_request:"))
         event_end = next((index for index in range(event_start + 1, end) if re.match(r"^    [A-Za-z_]+:", lines[index])), end)
         body = [line for line in lines[event_start + 1:event_end] if line.strip() and not line.lstrip().startswith("#")]

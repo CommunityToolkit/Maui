@@ -315,6 +315,7 @@ class SyncIssueTests(unittest.TestCase):
                       module.IssueItem('failed-step:approve', module.SECTION_FAILURES, 'T.')])
         github = fake([closed])
         result = module.sync_issue(github, items, RUN_URL, NOW)
+        self.assertEqual(result['action'], 'created')
         self.assertEqual(read_item_keys(github.write_calls()[0].body['body']),
                          ['source:branch-rules', 'failed-job:plan-changes', 'failed-step:approve'])
         self.assertEqual(result['exit_code'], 1)
@@ -345,13 +346,6 @@ class SyncIssueTests(unittest.TestCase):
         result = module.sync_issue(github, items, RUN_URL, NOW)
         self.assertEqual((result['action'], result['exit_code']), ('none', 0))
         self.assertEqual(github.write_calls(), [])
-
-    def test_a_closed_issue_brings_back_a_failed_item_and_the_run_turns_red(self) -> None:
-        key = 'failed-job:plan-changes'
-        github = fake([issue_entry(4, body_with(key), state='closed')])
-        items = module.Items(failures=[module.IssueItem(key, module.SECTION_FAILURES, 'J.')])
-        result = module.sync_issue(github, items, RUN_URL, NOW)
-        self.assertEqual((result['action'], result['exit_code']), ('created', 1))
 
     def test_a_closed_issue_still_dismisses_a_token_that_only_expires_soon(self) -> None:
         closed = issue_entry(4, body_with('token-expires-soon:2026-12-01'), state='closed')
