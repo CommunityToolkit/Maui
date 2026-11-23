@@ -125,8 +125,7 @@ class RuntimeCheckTests(unittest.TestCase):
         identifier = 'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
         edited = pinned_versions(lambda text: text.replace("ios-version: '26.5'", "ios-version: '%s'" % identifier, 1))
         listings = todays_listings()
-        listings['macos-26']['runtimes'].append(runtime('26.6'))
-        listings['macos-26']['runtimes'] = [dict(runtime('26.5'), identifier=identifier)]
+        listings['macos-26']['runtimes'] = [dict(runtime('26.5'), identifier=identifier), runtime('26.6')]
         self.assertEqual(older_ios_legs.check_older_ios_legs(edited, listings).things_to_check, [])
         listings['macos-26']['runtimes'] = [runtime('26.6')]
         self.assertEqual(keys(older_ios_legs.check_older_ios_legs(edited, listings)), ['ios-leg-runtime-missing:macos-26:%s' % identifier])

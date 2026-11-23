@@ -23,7 +23,7 @@ APPLE_LABEL_PATTERN = re.compile(r'^(xcode|macos)-\d+$')
 
 
 def _is_ga_xcode_app(app: Mapping[str, Any]) -> bool:
-    """Same two rules as setup-xcode: a real GA folder name, and a license type that is present and not a beta."""
+    """Stricter than setup-xcode, which also takes an RC folder: a real GA folder name, and a license type that is present and not a beta."""
     license_type = app.get('license_type')
     return bool(GA_XCODE_APP_NAME.match(app.get('folder') or '') and license_type and 'beta' not in str(license_type).lower())
 
@@ -174,7 +174,7 @@ def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
 
     def is_beta_runtime(version: str) -> bool:
         is_above_every_ga_xcode = (newest_ga_xcode_major is not None and major(version) >= FIRST_IOS_MAJOR_NUMBERED_LIKE_ITS_XCODE
-                                and major(version) > newest_ga_xcode_major)
+                                   and major(version) > newest_ga_xcode_major)
         return (is_above_every_ga_xcode or major_minor(version) in pre_release_numbers
                 or version in pre_release_full_versions)
 
@@ -184,7 +184,7 @@ def list_ga_ios_runtime_versions(listing: Mapping[str, Any]) -> List[str]:
 
 
 def _plan_old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Mapping[str, Any], highest_ga_xcode: str,
-                       major_the_target_runs: int, notes: List[str]) -> Optional[SafeChange]:
+                            major_the_target_runs: int, notes: List[str]) -> Optional[SafeChange]:
     """The old label keeps its newest iOS major covered by an iOS leg, because the main Apple jobs leave it.
 
     A major the target label runs itself needs no leg, so only majors below it count.
@@ -199,7 +199,8 @@ def _plan_old_ios_major_leg(pinned: PinnedVersions, old_label: str, listing: Map
     if not ios_versions:
         return None
     old_major = max(major(version) for version in ios_versions)
-    # A leg named by identifier or name has no number to compare, and ios.ps1 finds its runtime itself.
+    # A leg named by identifier or name has no major to compare, so it never counts as covering the old major;
+    # the patch then adds a numbered leg beside it.
     if any(is_dotted_number(leg.ios_version) and major(leg.ios_version) == old_major for leg in pinned.ios_legs):
         return None
     # Exactly as listed: ios.ps1 matches the version string, so '26.4.1' must not become '26.4'.

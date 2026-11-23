@@ -398,7 +398,7 @@ class LabelSwitchTests(unittest.TestCase):
             "                        xcode: '27.2'"])
 
     def make_listings_with_old_image(self, versions: List[str], xcode_apps: List[Dict[str, Any]],
-                       runtime_names: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+                                     runtime_names: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         old_image = listing('xcode-27-20261104')
         old_image['xcode_apps'] = xcode_apps
         old_image['runtimes'] = [{'platform': 'iOS', 'version': version, 'name': (runtime_names or {}).get(version, 'iOS ' + version),
@@ -428,6 +428,7 @@ class LabelSwitchTests(unittest.TestCase):
         no_leg_of_its_major.ios_legs = []
         notes: List[str] = []
         self.assertIsNone(xcode_changes._plan_old_ios_major_leg(no_leg_of_its_major, 'xcode-27', old_image, '27.2', 27, notes))
+        self.assertEqual(notes, [])
         self.assertIsNotNone(xcode_changes._plan_old_ios_major_leg(no_leg_of_its_major, 'xcode-27', old_image, '27.2', 28, notes))
 
     def test_a_runtime_of_a_beta_xcode_is_not_chosen(self) -> None:
@@ -471,6 +472,44 @@ class LabelSwitchTests(unittest.TestCase):
         kinds = sorted(change.kind for change in result.changes_for_a_person[0].changes)
         self.assertEqual(kinds, ['replace-runner-label'] * 5)
 
+    def test_a_beta_license_on_a_ga_named_folder_leaves_its_runtime_out(self) -> None:
+        apps = [app('Xcode_27.4.app', '27.4'), app('Xcode_27.5.app', '27.5', license_type='Beta')]
+        self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['27.4', '27.5'], apps)).new, '27.4')
+
+    def test_a_ga_point_release_runtime_stays_next_to_its_own_release_candidate(self) -> None:
+        apps = [app('Xcode_27.4.1.app', '27.4.1'), app('Xcode_27.4.1_Release_Candidate.app', '27.4.1', license_type='GM')]
+        self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['27.2', '27.4.1'], apps)).new, '27.4.1')
+
+    def test_the_old_major_is_the_newest_below_the_major_the_target_runs_not_the_lowest(self) -> None:
+        target_listing = xcode_28_listing()
+        target_listing['xcode_apps'].append(app('Xcode_27.4.app', '27.4'))
+        the_listings = self.make_listings_with_old_image(['27.4'], [app('Xcode_27.4.app', '27.4')])
+        the_listings['xcode-28'] = target_listing
+        self.assertEqual(self.plan_old_ios_leg(the_listings).new, '27.4')
+
+    def test_the_newest_runtime_is_chosen_whatever_order_the_image_lists_them_in(self) -> None:
+        apps = [app('Xcode_27.4.1.app', '27.4.1'), app('Xcode_27.app', '27.0')]
+        self.assertEqual(self.plan_old_ios_leg(self.make_listings_with_old_image(['27.4.1', '27.0'], apps)).new, '27.4.1')
+
+    def test_a_leg_named_by_identifier_does_not_stop_the_label_switch_from_adding_a_numbered_leg(self) -> None:
+        identifier = 'com.apple.CoreSimulator.SimRuntime.iOS-26-5'
+        device_tests = repo_text('device-tests.yml').replace("ios-version: '26.5'", "ios-version: '%s'" % identifier, 1)
+        pinned = read_pinned_versions_from_texts(device_tests, repo_text('dotnet-build.yml'), repo_text('shared.env'))
+        self.assertEqual(pinned.ios_legs[0].ios_version, identifier)
+        result = plan(pinned=pinned, required=required_xcode('28.0', '28.0'), the_listings=self.switch_listings(),
+                      images=runner_images(with_xcode_28=True))
+        self.assertEqual([c.new for c in result.changes_for_a_person[0].changes if c.kind == 'insert-ios-leg'], ['27.3'])
+
+    def test_an_image_with_no_ga_xcode_app_cuts_no_runtime_by_major(self) -> None:
+        the_listings = self.make_listings_with_old_image(['27.2', '28.1'], [app('Xcode_28_beta.app', '28.0', license_type='Beta')])
+        self.assertEqual(xcode_changes.list_ga_ios_runtime_versions(the_listings['xcode-27']), ['27.2', '28.1'])
+
+    def test_a_target_that_runs_every_listed_major_adds_no_leg_and_no_note(self) -> None:
+        the_listings = self.make_listings_with_old_image(['27.2'], [app('Xcode_27.2.app', '27.2')])
+        notes: List[str] = []
+        leg = xcode_changes._plan_old_ios_major_leg(pinned_versions(), 'xcode-27', the_listings['xcode-27'], '27.2', 27, notes)
+        self.assertEqual((leg, notes), (None, []))
+
     def test_a_last_minor_runtime_without_an_xcode_of_its_number_stays(self) -> None:
         leg = self.plan_old_ios_leg(self.make_listings_with_old_image(['27.5', '27.6'], [app('Xcode_27.5.app', '27.5')]))
         self.assertEqual(leg.new, '27.6')
@@ -512,8 +551,7 @@ class LabelSwitchTests(unittest.TestCase):
     def test_the_planned_leg_is_read_back_and_checked_against_the_same_image(self) -> None:
         old_image = self.make_listings_with_old_image(['27.2', '27.4.1'], [app('Xcode_27.4.1.app', '27.4.1')], {'27.4.1': 'iOS 27.4'})
         leg = self.plan_old_ios_leg(old_image)
-        texts = {'device-tests': repo_text('device-tests.yml')}
-        patched = line_editor.apply_changes(texts['device-tests'], [leg])
+        patched = line_editor.apply_changes(repo_text('device-tests.yml'), [leg])
         reread = read_pinned_versions_from_texts(patched, repo_text('dotnet-build.yml'), repo_text('shared.env'))
         new_leg = reread.ios_legs[0]
         self.assertEqual((new_leg.ios_version, new_leg.runner, new_leg.xcode, new_leg.install_runtime), ('27.4.1', 'xcode-27', '27.4', False))
