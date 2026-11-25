@@ -142,42 +142,4 @@ public class PopupResultTests : BaseTest
 		Assert.Equal(7, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 	}
-
-	[Fact]
-	public void PopupResult_ShouldReportSuccessful_WhenExceptionIsNull()
-	{
-		// Arrange
-		IResult result = new PopupResult(false);
-
-		// Assert
-		Assert.True(result.IsSuccessful);
-		Assert.False(result.IsCancelled);
-		Assert.Null(result.Exception);
-		result.EnsureSuccess();
-	}
-
-	[Fact]
-	public void PopupResult_ShouldReportCancelled_WhenExceptionIsOperationCanceledException()
-	{
-		// Arrange
-		IResult result = new PopupResult(false, new OperationCanceledException("canceled"));
-
-		// Assert
-		Assert.False(result.IsSuccessful);
-		Assert.True(result.IsCancelled);
-		Assert.Throws<OperationCanceledException>(result.EnsureSuccess);
-	}
-
-	[Fact]
-	public void PopupResultT_ShouldReportFailure_WhenExceptionIsNonCancellationException()
-	{
-		// Arrange
-		var result = new PopupResult<int>(null, false, new InvalidOperationException("failed"));
-
-		// Assert
-		Assert.False(result.IsSuccessful);
-		Assert.False(result.IsCancelled);
-		Assert.Equal(0, result.Result);
-		Assert.Throws<InvalidOperationException>(result.EnsureSuccess);
-	}
 }

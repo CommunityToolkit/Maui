@@ -103,6 +103,26 @@ public partial class PopupDismissedByNavigationTests
 			await (secondShowPopupTask ?? throw new InvalidOperationException("The Closed handler did not show a popup.")).WaitAsync(TimeSpan.FromSeconds(5));
 		});
 
+	[Fact]
+	public Task TryShowPopupAsyncReturnsTheResultOfTryClosePopupAsync() =>
+		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsTheResultOfTryClosePopupAsync(shell));
+
+	[Fact]
+	public Task TryShowPopupAsyncReturnsADismissedResultWhenShellSwitchesToAnotherShellElement() =>
+		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsADismissedResultWhenShellSwitchesToAnotherShellElement(shell));
+
+	[Fact]
+	public Task TryClosePopupAsyncReturnsPopupBlockedExceptionWhenAModalPageIsAboveThePopup() =>
+		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryClosePopupAsyncReturnsPopupBlockedExceptionWhenAModalPageIsAboveThePopup(shell));
+
+	[Fact]
+	public Task TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown() =>
+		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown(shell));
+
+	[Fact]
+	public Task TryShowPopupAsyncReturnsOperationCanceledExceptionAndShowsNoPopupWhenTheTokenIsCanceled() =>
+		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsOperationCanceledExceptionAndShowsNoPopupWhenTheTokenIsCanceled(shell));
+
 	Task RunInShellAsync(Func<Shell, HostedMauiWindow, Task> scenario)
 	{
 		SetupBuilder();

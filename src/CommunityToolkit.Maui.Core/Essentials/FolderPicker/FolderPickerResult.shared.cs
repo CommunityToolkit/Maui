@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Primitives;
 
 namespace CommunityToolkit.Maui.Storage;
@@ -10,17 +9,23 @@ namespace CommunityToolkit.Maui.Storage;
 /// </summary>
 /// <param name="Folder"><see cref="Folder"/></param>
 /// <param name="Exception">Exception if operation failed</param>
-public record FolderPickerResult(Folder? Folder, Exception? Exception) : IResult
+public record FolderPickerResult(Folder? Folder, Exception? Exception)
 {
-	/// <inheritdoc/>
+	/// <summary>
+	/// Check if operation was successful.
+	/// </summary>
 	[MemberNotNullWhen(true, nameof(Folder))]
 	[MemberNotNullWhen(false, nameof(Exception))]
 	public bool IsSuccessful => Exception is null;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Check if the operation was cancelled.
+	/// </summary>
 	public bool IsCancelled => Exception is OperationCanceledException;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Check if operation was successful.
+	/// </summary>
 	[MemberNotNull(nameof(Folder))]
 	public void EnsureSuccess()
 	{

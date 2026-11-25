@@ -80,6 +80,51 @@ public partial class PopupDismissedByNavigationTests
 		});
 	}
 
+	[Fact]
+	public Task TryShowPopupAsyncReturnsTheResultOfTryClosePopupAsync()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsTheResultOfTryClosePopupAsync(shell));
+	}
+
+	[Fact]
+	public Task TryShowPopupAsyncReturnsADismissedResultWhenShellSwitchesToAnotherShellElement()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsADismissedResultWhenShellSwitchesToAnotherShellElement(shell));
+	}
+
+	[Fact]
+	public Task TryClosePopupAsyncReturnsPopupBlockedExceptionWhenAModalPageIsAboveThePopup()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupTryMethodsScenarios.TryClosePopupAsyncReturnsPopupBlockedExceptionWhenAModalPageIsAboveThePopup(shell));
+	}
+
+	[Fact]
+	public Task TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupTryMethodsScenarios.TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown(shell));
+	}
+
+	[Fact]
+	public Task TryShowPopupAsyncReturnsOperationCanceledExceptionAndShowsNoPopupWhenTheTokenIsCanceled()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+
+		return RunInWindowAsync(shell, firstPage, hostShell: true, _ => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsOperationCanceledExceptionAndShowsNoPopupWhenTheTokenIsCanceled(shell));
+	}
+
 	// With hostShell, the Shell has a handler, because the fragments of its renderer look up their container in the activity's view tree: its platform view is attached to the activity first.
 	Task RunInWindowAsync(Page root, ContentPage loadedPage, bool hostShell, Func<Window, Task> scenario) =>
 		InvokeOnMainThreadAsync(async () =>
