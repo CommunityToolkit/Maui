@@ -1695,7 +1695,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var result = await navigation.TryShowPopupAsync<int>(new Grid(), PopupOptions.Empty, cancellationTokenSource.Token);
 
 		// Assert
-		Assert.Equal(default, result.Result);
+		Assert.Equal(0, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.NotNull(result.Exception);
 		Assert.IsType<OperationCanceledException>(result.Exception);
@@ -1720,7 +1720,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var result = await page.TryShowPopupAsync<int>(new Grid(), PopupOptions.Empty, cancellationTokenSource.Token);
 
 		// Assert
-		Assert.Equal(default, result.Result);
+		Assert.Equal(0, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.NotNull(result.Exception);
 		Assert.IsType<OperationCanceledException>(result.Exception);
@@ -1746,7 +1746,7 @@ public class PopupExtensionsTests : BaseViewTest
 		var result = await shell.TryShowPopupAsync<int>(new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable()), PopupOptions.Empty, shellParameters, cancellationTokenSource.Token);
 
 		// Assert
-		Assert.Equal(default, result.Result);
+		Assert.Equal(0, result.Result);
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
 		Assert.NotNull(result.Exception);
 		Assert.IsType<OperationCanceledException>(result.Exception);
@@ -1955,13 +1955,13 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task TryClosePopupAsyncT_ShouldReturnFailedResult_WhenNoPopupExists()
 	{
 		// Arrange
-		const int expectedInputResult = 55;
+		const int inputResult = 55;
 
 		// Act
-		var result = await navigation.TryClosePopupAsync(expectedInputResult, TestContext.Current.CancellationToken);
+		var result = await navigation.TryClosePopupAsync(inputResult, TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Equal(expectedInputResult, result.Result);
+		Assert.Equal(0, result.Result);
 		Assert.NotNull(result.Exception);
 		Assert.IsType<PopupNotFoundException>(result.Exception);
 		Assert.False(result.IsSuccessful);
@@ -1974,15 +1974,15 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task TryClosePopupAsyncT_ShouldReturnCancelledResult_WhenTokenIsCancelled()
 	{
 		// Arrange
-		const int expectedInputResult = 89;
+		const int inputResult = 89;
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
 		await cancellationTokenSource.CancelAsync();
 
 		// Act
-		var result = await navigation.TryClosePopupAsync(expectedInputResult, cancellationTokenSource.Token);
+		var result = await navigation.TryClosePopupAsync(inputResult, cancellationTokenSource.Token);
 
 		// Assert
-		Assert.Equal(expectedInputResult, result.Result);
+		Assert.Equal(0, result.Result);
 		Assert.NotNull(result.Exception);
 		Assert.IsType<OperationCanceledException>(result.Exception);
 		Assert.False(result.IsSuccessful);
@@ -2049,15 +2049,15 @@ public class PopupExtensionsTests : BaseViewTest
 	public async Task TryClosePopupAsyncT_ShouldReturnFailedResult_WhenPopupIsBlocked()
 	{
 		// Arrange
-		const int expectedInputResult = 2;
+		const int inputResult = 2;
 		navigation.ShowPopup(new Button());
 		await navigation.PushModalAsync(new ContentPage());
 
 		// Act
-		var result = await navigation.TryClosePopupAsync(expectedInputResult, TestContext.Current.CancellationToken);
+		var result = await navigation.TryClosePopupAsync(inputResult, TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Equal(expectedInputResult, result.Result);
+		Assert.Equal(0, result.Result);
 		Assert.NotNull(result.Exception);
 		Assert.IsType<PopupBlockedException>(result.Exception);
 		Assert.False(result.IsSuccessful);
@@ -2480,7 +2480,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Assert
 		Assert.False(result.WasDismissedByTappingOutsideOfPopup);
-		Assert.Equal(default, result.Result);
+		Assert.Equal(0, result.Result);
 	}
 
 	[Theory(Timeout = (int)TestDuration.Short)]

@@ -20,6 +20,9 @@ public record FileSaverResult(string? FilePath, Exception? Exception) : IResult
 	public bool IsSuccessful => Exception is null;
 
 	/// <inheritdoc/>
+	public bool IsCancelled => Exception is OperationCanceledException;
+
+	/// <inheritdoc/>
 	[MemberNotNull(nameof(FilePath))]
 	public void EnsureSuccess()
 	{

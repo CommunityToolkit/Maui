@@ -144,22 +144,23 @@ public class PopupResultTests : BaseTest
 	}
 
 	[Fact]
-	public void IResult_DefaultImplementation_ShouldReportSuccessful_WhenExceptionIsNull()
+	public void PopupResult_ShouldReportSuccessful_WhenExceptionIsNull()
 	{
 		// Arrange
-		IResult result = new TestResult(null);
+		IResult result = new PopupResult(false);
 
 		// Assert
 		Assert.True(result.IsSuccessful);
 		Assert.False(result.IsCancelled);
+		Assert.Null(result.Exception);
 		result.EnsureSuccess();
 	}
 
 	[Fact]
-	public void IResult_DefaultImplementation_ShouldReportCancelled_WhenExceptionIsOperationCanceledException()
+	public void PopupResult_ShouldReportCancelled_WhenExceptionIsOperationCanceledException()
 	{
 		// Arrange
-		IResult result = new TestResult(new OperationCanceledException("canceled"));
+		IResult result = new PopupResult(false, new OperationCanceledException("canceled"));
 
 		// Assert
 		Assert.False(result.IsSuccessful);
@@ -168,16 +169,15 @@ public class PopupResultTests : BaseTest
 	}
 
 	[Fact]
-	public void IResult_DefaultImplementation_ShouldReportFailure_WhenExceptionIsNonCancellationException()
+	public void PopupResultT_ShouldReportFailure_WhenExceptionIsNonCancellationException()
 	{
 		// Arrange
-		IResult result = new TestResult(new InvalidOperationException("failed"));
+		var result = new PopupResult<int>(null, false, new InvalidOperationException("failed"));
 
 		// Assert
 		Assert.False(result.IsSuccessful);
 		Assert.False(result.IsCancelled);
+		Assert.Equal(0, result.Result);
 		Assert.Throws<InvalidOperationException>(result.EnsureSuccess);
 	}
-
-	sealed record TestResult(Exception? Exception) : IResult;
 }

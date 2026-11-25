@@ -1,40 +1,30 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// The resulting information from a Try* method in the .NET MAUI Community Toolkit
+/// The result of an operation that reports a failure through <see cref="Exception"/> instead of throwing it, for example the result of a Try* method.
 /// </summary>
 public interface IResult
 {
 	/// <summary>
-	/// Exception if operation failed
+	/// Gets the exception if the operation failed; <see langword="null"/> if the operation was successful.
 	/// </summary>
 	Exception? Exception { get; }
 
 	/// <summary>
-	/// Check if operation was successful.
+	/// Gets whether the operation was successful.
 	/// </summary>
 	[MemberNotNullWhen(false, nameof(Exception))]
-	bool IsSuccessful => Exception is null;
+	bool IsSuccessful { get; }
 
 	/// <summary>
-	/// Check if the operation was cancelled.
+	/// Gets whether the operation was canceled.
 	/// </summary>
-	bool IsCancelled => Exception is OperationCanceledException;
+	bool IsCancelled { get; }
 
 	/// <summary>
-	/// Check if operation was successful.
+	/// Throws <see cref="Exception"/> if the operation was not successful.
 	/// </summary>
-	/// <remarks>
-	/// Throws <see cref="Exception"/> when not <see langword="null"/> 
-	/// </remarks>
-	void EnsureSuccess()
-	{
-		if (!IsSuccessful)
-		{
-			ExceptionDispatchInfo.Throw(Exception);
-		}
-	}
+	void EnsureSuccess();
 }

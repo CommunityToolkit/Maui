@@ -10,7 +10,7 @@ namespace CommunityToolkit.Maui.Storage;
 /// </summary>
 /// <param name="Folder"><see cref="Folder"/></param>
 /// <param name="Exception">Exception if operation failed</param>
-public record FolderPickerResult(Folder? Folder, Exception? Exception): IResult
+public record FolderPickerResult(Folder? Folder, Exception? Exception) : IResult
 {
 	/// <inheritdoc/>
 	[MemberNotNullWhen(true, nameof(Folder))]
