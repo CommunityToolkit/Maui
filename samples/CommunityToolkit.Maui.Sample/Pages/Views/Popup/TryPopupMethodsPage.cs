@@ -40,14 +40,6 @@ public partial class TryPopupMethodsPage : ContentPage
 		};
 	}
 
-	static string Describe(PopupResultOrException<string> resultOrException) => resultOrException switch
-	{
-		IPopupResult<string> { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed: tapped outside, back button or navigation",
-		IPopupResult<string> popupResult => $"Closed with result: {popupResult.Result ?? "null"}",
-		OperationCanceledException => "Canceled: the Popup was not shown",
-		Exception exception => $"{exception.GetType().Name}: {exception.Message}"
-	};
-
 	static string Describe(PopupResultOrException resultOrException) => resultOrException switch
 	{
 		IPopupResult { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed: tapped outside, back button or navigation",
