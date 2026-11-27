@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>capabilities</key>
+	<dict>
+		<key>displays</key>
+		<array>
+			<dict>
+				<key>deviceName</key>
+				<string>main</string>
+				<key>displayType</key>
+				<string>integrated</string>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>tv-out</string>
+				<key>displayType</key>
+				<string>external</string>
+			</dict>
+		</array>
+	</dict>
+</dict>
+</plist>
