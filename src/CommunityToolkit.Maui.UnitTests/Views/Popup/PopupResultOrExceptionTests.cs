@@ -71,6 +71,22 @@ public class PopupResultOrExceptionTests : BaseTest
 	}
 
 	[Fact]
+	public void PopupResultOrExceptionT_Default_ShouldHoldNull()
+	{
+		// Act
+		PopupResultOrException<string> resultOrException = default;
+
+		// Assert
+		Assert.Null(resultOrException.Value);
+		Assert.Equal("Default", resultOrException switch
+		{
+			IPopupResult<string> => "PopupResult",
+			Exception => "Exception",
+			null => "Default"
+		});
+	}
+
+	[Fact]
 	public void PopupResultOrExceptionT_ShouldHoldTypedPopupResult_WhenConvertedFromIPopupResultT()
 	{
 		// Arrange
