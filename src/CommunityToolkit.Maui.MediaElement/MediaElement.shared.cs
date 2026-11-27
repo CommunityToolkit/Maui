@@ -130,6 +130,7 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 	readonly WeakEventManager eventManager = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	readonly string androidPlayerId = Guid.NewGuid().ToString("N");
 
 	bool isDisposed;
 	IDispatcherTimer? timer;
@@ -321,9 +322,15 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	/// reach the code that set the source, which is often MAUI's (XAML, a binding): it is caught and logged, the change goes on and applies the
 	/// source, and once the change has ended the first of these exceptions is reported through <see cref="MediaFailed"/>, without setting
 	/// <see cref="CurrentState"/> to <see cref="MediaElementState.Failed"/>. The events that the player raises afterwards, for example
-	/// <see cref="MediaOpened"/> on iOS, Mac Catalyst and Windows, are not part of the change. On Android, when the system refuses to start the
-	/// foreground service of the media notification (see <see cref="IsAndroidForegroundServiceEnabled"/>) while a source is applied, the
-	/// change reports it the same way: the media plays without the notification, and the next change of the source starts the service again.
+	/// <see cref="MediaOpened"/> on iOS, Mac Catalyst and Windows, are not part of the change.
+	/// </para>
+	/// <para>
+	/// On Android 12 and later, the system can refuse to start the foreground service of the media notification (see
+	/// <see cref="IsAndroidForegroundServiceEnabled"/>), for example while the app is in the background. Each MediaElement that uses the service and is
+	/// playing then reports the refusal through <see cref="MediaFailed"/>, once for each source and without setting <see cref="CurrentState"/> to
+	/// <see cref="MediaElementState.Failed"/>. Its media plays on without the notification while Android lets the app run, and Media3 tries to start the service again whenever
+	/// the notification changes. On Android 12 and 12L (API 31-32), Media3 also refuses a <see cref="Play"/> that needs the service, which leaves
+	/// the media paused, so there every such MediaElement with loaded media reports it.
 	/// </para>
 	/// </remarks>
 	[TypeConverter(typeof(MediaSourceConverter))]
@@ -501,6 +508,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 	void IMediaElement.CurrentStateChanged(MediaElementState newState) => CurrentState = newState;
 
+	string IMediaElement.AndroidPlayerId => androidPlayerId;
+
 	// The code that sets the Source is often MAUI's (XAML, a binding), so the app cannot catch what its event handlers throw during the update. The
 	// exception is caught where the event is raised (RaiseEvent, OnPropertyChanging, OnPropertyChanged), before it can end the update or leave a
 	// property that MAUI was setting unable to change again.
@@ -528,7 +537,8 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			return;
 		}
 
-		// A subclass can run PlatformUpdateSource outside UpdateSource: with no update to end, the report is raised at once
+		// With no update to end (a subclass ran PlatformUpdateSource outside UpdateSource, or Android reported a refused foreground service later),
+		// the report is raised at once
 		var update = new SourceUpdate(this, logger);
 		update.Report(exception, failure);
 		update.End();

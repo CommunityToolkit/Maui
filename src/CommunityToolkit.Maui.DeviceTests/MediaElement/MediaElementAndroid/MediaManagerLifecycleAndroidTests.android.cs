@@ -68,13 +68,12 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task DisposeReleasesTheSessionTheStreamFactoryTheTokenSourceAndTheClient()
+	public async Task DisposeReleasesTheStreamFactoryTheTokenSourceAndTheClient()
 	{
 		SetupProbeBuilder();
 		var tone = await ReadAssetAsync(toneAsset);
 		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromStream(new MemoryStream(tone)));
 		using var recorder = new MediaElementRecorder(mediaElement);
-		string? sessionId = null;
 		StreamDataSourceFactory? factory = null;
 		CancellationTokenSource? tokenSource = null;
 		HttpClient? client = null;
@@ -83,17 +82,14 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 			var manager = handler.Manager!;
-			sessionId = GetMediaSession(manager)!.Id;
 			factory = (StreamDataSourceFactory?)GetPrivateField(manager, "currentStreamDataSourceFactory");
 			tokenSource = (CancellationTokenSource?)GetPrivateField(manager, "cancellationTokenSource");
 			client = (HttpClient?)GetPrivateField(manager, "client");
 			Assert.NotNull(factory);
 			Assert.NotNull(tokenSource);
-			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildAndReleaseSession(sessionId!));
 		});
 		// HostAsync disconnected the handler, which disposed the manager.
 
-		await InvokeOnMainThreadAsync(() => BuildAndReleaseSession(sessionId!));
 		Assert.Equal(IntPtr.Zero, factory!.Handle);
 		Assert.Throws<ObjectDisposedException>(() => tokenSource!.Token);
 		await Assert.ThrowsAsync<ObjectDisposedException>(() => client!.GetAsync("http://127.0.0.1:1/"));
@@ -111,7 +107,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 		{
 			await WaitUntilLoadedAsync(mediaElement, recorder);
 			var manager = handler.Manager!;
-			var sessionId = GetMediaSession(manager)!.Id!;
 			var factory = (StreamDataSourceFactory)GetPrivateField(manager, "currentStreamDataSourceFactory")!;
 			var tokenSource = (CancellationTokenSource)GetPrivateField(manager, "cancellationTokenSource")!;
 			var client = (HttpClient)GetPrivateField(manager, "client")!;
@@ -120,7 +115,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 			// The finalizer path: the managed objects may be finalized already, so nothing may be released.
 			disposeCore.Invoke(manager, [false]);
 
-			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildAndReleaseSession(sessionId));
 			Assert.NotEqual(IntPtr.Zero, factory.Handle);
 			Assert.False(tokenSource.IsCancellationRequested);
 			Assert.Null(Record.Exception(() => tokenSource.Token));
@@ -131,27 +125,78 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task CreatingThePlatformViewAgainKeepsTheOneMediaSession()
+	public async Task DisposeReleasesTheRegistrationOfTheServiceAndAllowsTheSessionIdAgain()
 	{
-		SetupProbeBuilder();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var tone = await ReadAssetAsync(toneAsset);
+		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromStream(new MemoryStream(tone)));
+		using var recorder = new MediaElementRecorder(mediaElement);
+		string? sessionId = null;
+		StreamDataSourceFactory? factory = null;
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+			var manager = handler.Manager!;
+			sessionId = GetMediaSession(manager)!.Id;
+			factory = (StreamDataSourceFactory?)GetPrivateField(manager, "currentStreamDataSourceFactory");
+			Assert.NotNull(factory);
+			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildAndReleaseSession(sessionId!));
+		});
+		// HostAsync disconnected the handler, which sent the release command to the service.
+
+		await WaitUntilAsync(() => !GetRegisteredPlayerIds().Contains(sessionId!), "The service never released the registration of the disconnected MediaElement.");
+		await InvokeOnMainThreadAsync(() => BuildAndReleaseSession(sessionId!));
+		Assert.Equal(IntPtr.Zero, factory!.Handle);
+	}
+
+	[Fact]
+	public async Task DisposeWithoutDisposingReleasesNoRegistrationOfTheService()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+			var manager = handler.Manager!;
+			var sessionId = GetMediaSession(manager)!.Id!;
+			var disposeCore = typeof(MediaManager).GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, [typeof(bool)])!;
+
+			disposeCore.Invoke(manager, [false]);
+
+			Assert.Throws<Java.Lang.IllegalStateException>(() => BuildAndReleaseSession(sessionId));
+			Assert.Contains(sessionId, GetRegisteredPlayerIds());
+		});
+	}
+
+	[Fact]
+	public async Task CreatingThePlatformViewAgainKeepsTheOneControllerAndRegistration()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 		var mediaElement = await CreateMediaElementAsync();
 
-		await WithHandlerAsync(mediaElement, handler =>
+		await WithHandlerAsync(mediaElement, async handler =>
 		{
 			var manager = handler.Manager!;
+			await WaitForRegistrationAsync(manager);
+			await WaitForControllerAsync(mediaElement);
+			var controllerHandle = GetController(mediaElement).Handle;
 			var session = GetMediaSession(manager)!;
 			var sessionId = session.Id;
 
 			var secondPlatformView = handler.CreatePlatformViewDirectly();
 			try
 			{
+				Assert.Equal(controllerHandle, GetController(mediaElement).Handle);
 				Assert.Same(session, GetMediaSession(manager));
-				Assert.Equal(sessionId, session.Id);
+				Assert.Equal(sessionId, Assert.Single(GetRegisteredPlayerIds()));
 			}
 			finally
 			{
-				// The second player has the manager as its listener: release it while the manager still exists (see
-				// MediaElementHandlerAndroidTests.CreatingThePlatformViewAgainReusesTheMediaManager).
 				secondPlatformView.Dispose();
 			}
 		});
@@ -175,9 +220,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 			}
 			finally
 			{
-				// The player was created before the failure and the manager is its listener: release the player before the manager goes.
-				manager.ExposedPlayer?.Release();
-				manager.ExposedPlayer?.Dispose();
 				manager.Dispose();
 			}
 		});
@@ -200,20 +242,6 @@ public class MediaManagerLifecycleAndroidTests : MediaElementAndroidTestBase
 			// MediaOpened is raised synchronously by the source mapping when media is (re)loaded.
 			Assert.Equal(1, recorder.OpenedCount);
 		});
-	}
-
-	// Media3 refuses a second live session with the same id, so building one shows whether the manager's session was released.
-	void BuildAndReleaseSession(string id)
-	{
-		var player = new ExoPlayerBuilder(MauiContext.Context!).Build()!;
-		try
-		{
-			new MediaSession.Builder(MauiContext.Context!, player).SetId(id)!.Build()!.Release();
-		}
-		finally
-		{
-			player.Release();
-		}
 	}
 
 	static object? GetPrivateField(object instance, string name) =>

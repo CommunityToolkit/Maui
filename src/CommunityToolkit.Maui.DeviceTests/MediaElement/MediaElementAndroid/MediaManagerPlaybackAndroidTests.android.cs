@@ -12,6 +12,8 @@ namespace CommunityToolkit.Maui.DeviceTests;
 public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 {
 	const int playerStateReady = 3;
+	const int positionToleranceInMilliseconds = 50;
+	const int pauseLagToleranceInMilliseconds = 500;
 
 	[Fact]
 	public async Task ShouldLoopPlaybackKeepsPlayingPastTheEndOfTheMedia()
@@ -105,7 +107,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task TheMediaSessionPublishesTheSpeedWhileTheMediaPlays()
 	{
-		SetupProbeBuilder();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.ShouldAutoPlay = true;
@@ -116,6 +118,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
+			await WaitForRegistrationAsync(handler.Manager!);
 			var controller = CreateSystemMediaController(handler.Manager!);
 			await WaitUntilAsync(() => controller.PlaybackState is { State: PlaybackStateCode.Playing, PlaybackSpeed: 1.5f }, "The media session never showed the media as playing at a speed of 1.5.");
 
@@ -130,7 +133,7 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 	[Fact]
 	public async Task PauseShowsTheMediaAsPausedInTheMediaSession()
 	{
-		SetupProbeBuilder();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
 		var mediaElement = await CreateMediaElementAsync(element =>
 		{
 			element.ShouldAutoPlay = true;
@@ -141,15 +144,21 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 		await HostAsync(mediaElement, async handler =>
 		{
+			await WaitForRegistrationAsync(handler.Manager!);
 			var controller = CreateSystemMediaController(handler.Manager!);
 			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Playing, "The media session never showed the media as playing.");
+			// Below the tolerance the lower bound of the assert is negative, and a session stuck at position 0 would pass
+			await WaitUntilAsync(() => GetServicePlayer(handler.Manager!)!.CurrentPosition > 2 * pauseLagToleranceInMilliseconds, "The player never moved past the pause lag tolerance.");
 
 			mediaElement.Pause();
 
 			await WaitUntilAsync(() => controller.PlaybackState?.State is PlaybackStateCode.Paused, "The media session never showed the media as paused.");
 			var state = controller.PlaybackState!;
 			Assert.Equal(0f, state.PlaybackSpeed);
-			Assert.Equal(GetPlayer(mediaElement).CurrentPosition, state.Position);
+			// Media3 publishes the paused state with the position known on the main thread when the pause ran, not the position the
+			// playback thread stopped at, so the session can lag behind the player.
+			var servicePlayerPosition = GetServicePlayer(handler.Manager!)!.CurrentPosition;
+			Assert.InRange(state.Position, servicePlayerPosition - pauseLagToleranceInMilliseconds, servicePlayerPosition + positionToleranceInMilliseconds);
 		});
 	}
 
@@ -414,22 +423,6 @@ public class MediaManagerPlaybackAndroidTests : MediaElementAndroidTestBase
 
 			// Duration zero means nothing is loaded: the player's position (0) must not overwrite the position.
 			Assert.Equal(TimeSpan.FromSeconds(3), mediaElement.Position);
-		});
-	}
-
-	[Fact]
-	public async Task UpdatingNotificationsWithoutTheForegroundServiceDoesNothing()
-	{
-		SetupProbeBuilder();
-		var mediaElement = await CreateQuietMediaElementAsync();
-
-		await WithHandlerAsync(mediaElement, handler =>
-		{
-			Assert.False(mediaElement.IsAndroidForegroundServiceEnabled);
-
-			var exception = Record.Exception(() => handler.Manager!.UpdateNotifications());
-
-			Assert.Null(exception);
 		});
 	}
 

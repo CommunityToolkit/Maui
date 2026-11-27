@@ -112,7 +112,7 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public async Task ConstructorAddsThePlayerViewToAWrapContentLayoutOnABlackBackground()
+	public async Task ConstructorLeavesTheLayoutEmptyAndSetViewAddsThePlayerViewToAWrapContentLayoutOnABlackBackground()
 	{
 		SetupProbeBuilder();
 		var context = MauiContext.Context!;
@@ -121,18 +121,54 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		{
 			using var playerView = new PlayerView(context);
 			using var view = new MauiMediaElement(context, playerView);
+			Assert.Equal(0, view.ChildCount);
+			var player = new ExoPlayerBuilder(context).Build()!;
+
+			view.SetView(player);
 
 			Assert.Equal(1, view.ChildCount);
 			var relativeLayout = Assert.IsType<ARelativeLayout>(view.GetChildAt(0));
 			Assert.Equal(1, relativeLayout.ChildCount);
 			Assert.Equal(playerView.Handle, relativeLayout.GetChildAt(0)!.Handle);
 			Assert.Equal(AColor.Black, Assert.IsType<ColorDrawable>(playerView.Background).Color);
+			Assert.Equal(player.Handle, playerView.Player!.Handle);
 
 			// The view is a CoordinatorLayout: AddView replaces the RelativeLayout.LayoutParams that the constructor built (with center-in-parent
 			// rules, which only a RelativeLayout parent applies) by its own LayoutParams. The rules have no visible effect: the match_parent
 			// PlayerView makes the layout as large as the view.
 			var layout = Assert.IsType<CoordinatorLayout.LayoutParams>(relativeLayout.LayoutParameters);
 			AotSafeAssert.Equal((ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent), (layout.Width, layout.Height));
+		});
+	}
+
+	[Fact]
+	public async Task SetViewTwiceKeepsOnePlayerViewInTheLayout()
+	{
+		SetupProbeBuilder();
+		var context = MauiContext.Context!;
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var playerView = new PlayerView(context);
+			using var view = new MauiMediaElement(context, playerView);
+			var firstPlayer = new ExoPlayerBuilder(context).Build()!;
+			var secondPlayer = new ExoPlayerBuilder(context).Build()!;
+
+			try
+			{
+				view.SetView(firstPlayer);
+				view.SetView(secondPlayer);
+
+				Assert.Equal(1, view.ChildCount);
+				var relativeLayout = Assert.IsType<ARelativeLayout>(view.GetChildAt(0));
+				Assert.Equal(1, relativeLayout.ChildCount);
+				Assert.Equal(playerView.Handle, relativeLayout.GetChildAt(0)!.Handle);
+				Assert.Equal(secondPlayer.Handle, playerView.Player!.Handle);
+			}
+			finally
+			{
+				firstPlayer.Release();
+			}
 		});
 	}
 
@@ -546,8 +582,8 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		{
 			var platformView = GetMauiMediaElement(mediaElement);
 			var relativeLayout = platformView.GetChildAt(0)!;
-			// In full screen the player layout lives in the decor view, where GetController cannot find it.
-			var controller = GetController(mediaElement);
+			// In full screen the player layout lives in the decor view, where GetPlaybackControlsView cannot find it.
+			var playbackControls = GetPlaybackControlsView(mediaElement);
 			var host = (ViewGroup)platformView.Parent!;
 			var root = (ViewGroup)host.Parent!;
 			var window = GetActivityWindow();
@@ -556,9 +592,9 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 			await WaitUntilAsync(() => relativeLayout.Width > platformView.Width, "The player layout never got a full-screen layout pass.", 3000);
 			await WaitUntilSystemBarsSettleAsync(window, visible: false);
 
-			// A visible controller requests a layout up the chain when it attaches, which would mask the missing request.
+			// Visible playback controls request a layout up the chain when they attach, which would mask the missing request.
 			mediaElement.ShouldShowPlaybackControls = false;
-			await WaitUntilAsync(() => controller.Visibility != ViewStates.Visible, "The controller never hid.");
+			await WaitUntilAsync(() => playbackControls.Visibility != ViewStates.Visible, "The playback controls never hid.");
 
 			var index = root.IndexOfChild(host);
 			root.RemoveView(host);
@@ -788,11 +824,11 @@ public class MauiMediaElementAndroidTests : MediaElementAndroidTestBase
 		return playerView.FindViewById(id) ?? throw new InvalidOperationException("The PlayerView has no full-screen button.");
 	}
 
-	static AView GetController(MediaElement mediaElement)
+	static AView GetPlaybackControlsView(MediaElement mediaElement)
 	{
 		var playerView = GetPlayerView(mediaElement);
 		var id = playerView.Context!.Resources!.GetIdentifier("exo_controller", "id", playerView.Context.PackageName);
-		return playerView.FindViewById(id) ?? throw new InvalidOperationException("The PlayerView has no controller.");
+		return playerView.FindViewById(id) ?? throw new InvalidOperationException("The PlayerView has no playback controls.");
 	}
 
 	static IntPtr ParentHandle(AView view) => ((Java.Lang.Object)view.Parent!).Handle;

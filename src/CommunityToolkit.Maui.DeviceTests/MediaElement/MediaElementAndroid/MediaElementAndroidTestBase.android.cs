@@ -1,16 +1,22 @@
-using System.Reflection;
+using System.Diagnostics;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
 using Android.Service.Notification;
+using AndroidX.Core.App;
+using AndroidX.Core.Content;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner;
+using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 using static CommunityToolkit.Maui.DeviceTests.AssertHelpers;
 using AViewGroup = Android.Views.ViewGroup;
 using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
@@ -51,6 +57,7 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	readonly List<MediaElement> hostedElements = [];
 	readonly List<string> temporaryFiles = [];
+	readonly List<MediaController> testControllers = [];
 	bool usesForegroundService;
 
 	protected void SetupProbeBuilder(bool isAndroidForegroundServiceEnabled = false, Action<MediaElementOptions>? configureMediaElementOptions = null, Action<MauiAppBuilder>? configureBuilder = null)
@@ -159,13 +166,19 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 
 	protected static PlayerView GetPlayerView(MediaElement mediaElement) => GetPlayerView(GetMauiMediaElement(mediaElement));
 
+	/// <summary>Only for a MediaElement without the service: with the service its player is a MediaController, which is no IExoPlayer.</summary>
 	protected static IExoPlayer GetPlayer(MediaElement mediaElement) => (IExoPlayer)GetPlayerView(mediaElement).Player!;
+
+	/// <summary>The controller of a MediaElement with the service. The handler adds the PlayerView to the layout once the controller is connected.</summary>
+	protected static MediaController GetController(MediaElement mediaElement) => (MediaController)GetPlayerView(mediaElement).Player!;
+
+	protected static Task WaitForControllerAsync(MediaElement mediaElement, int timeout = waitTimeout) =>
+		WaitUntilAsync(() => mediaElement.Handler?.PlatformView is MauiMediaElement { ChildCount: > 0 } platformView
+			&& ((AViewGroup?)platformView.GetChildAt(0))?.ChildCount > 0
+			&& GetPlayerView(platformView).Player is MediaController, "The MediaElement never connected its MediaController.", timeout);
 
 	/// <summary>The class name that the manifest gives the service ([Service(Name = ...)] on MediaControlsService).</summary>
 	protected const string mediaControlsServiceName = "communityToolkit.maui.media.services";
-
-	/// <summary>The id that MediaControlsService gives its notification (foreground service and media notification share it).</summary>
-	protected const int serviceNotificationId = 1;
 
 	const string mediaStyleTemplate = "android.app.Notification$MediaStyle";
 
@@ -185,22 +198,242 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return notificationManager.GetActiveNotifications() ?? [];
 	}
 
-	protected static Notification? FindServiceNotification() =>
-		GetActiveNotifications().FirstOrDefault(activeNotification => activeNotification.Id == serviceNotificationId)?.Notification;
-
 	protected static void CancelAllNotifications() =>
 		((NotificationManager)MauiPlatform.AppContext.GetSystemService(Context.NotificationService)!).CancelAll();
 
 	protected static bool IsMediaStyle(Notification? notification) => notification?.Extras?.GetString(Notification.ExtraTemplate) == mediaStyleTemplate;
 
-	protected static Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout) =>
-		WaitUntilAsync(() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0, "MediaControlsService was never stopped (or its notification stayed).", timeout);
+	/// <summary>The notification that Media3 shows for <paramref name="mediaSession"/>: the one whose MediaStyle holds the token of the session. Its id is Media3's and not part of the contract.</summary>
+	protected static StatusBarNotification? FindMediaNotification(MediaSession mediaSession) =>
+		GetActiveNotifications().FirstOrDefault(statusBarNotification => IsMediaStyle(statusBarNotification.Notification) && IsBoundToSession(statusBarNotification.Notification, mediaSession));
 
-	private protected static BoundServiceConnection? GetServiceConnection(MediaManager manager) =>
-		(BoundServiceConnection?)typeof(MediaManager).GetField("connection", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(manager);
+	protected static bool IsBoundToSession(Notification? notification, MediaSession mediaSession)
+	{
+#pragma warning disable CS0618, CA1422 // GetParcelable(string) is deprecated from API 33; the typed overload does not exist before.
+		var token = notification?.Extras?.GetParcelable(Notification.ExtraMediaSession);
+#pragma warning restore CS0618, CA1422
+		return token is not null && token.Equals(mediaSession.PlatformToken);
+	}
 
+	protected static async Task WaitForMediaControlsServiceToStopAsync(int timeout = waitTimeout)
+	{
+		var remaining = timeout;
+		while (!IsMediaControlsServiceStopped())
+		{
+			if (remaining <= 0)
+			{
+				throw new XunitException($"MediaControlsService was not stopped within {timeout} ms. {DescribeMediaControlsService()}");
+			}
+
+			await Task.Delay(25);
+			remaining -= 25;
+		}
+	}
+
+	static bool IsMediaControlsServiceStopped() => FindMediaControlsService() is null && GetActiveNotifications().Length == 0;
+
+	/// <summary>
+	/// Waits until the media notification has not changed for longer than API 28's NotificationManagerService needs to post it. That service
+	/// posts every update 100 ms after it received it, and strips the foreground flag of a service that detaches only from the records it
+	/// knows at that moment: a detach during that time leaves the notification of a service that is gone flagged as foreground, and the app
+	/// cannot cancel it. Task removal detaches the service on purpose, so it must not come while the last update is still pending.
+	/// </summary>
+	protected static async Task WaitForMediaNotificationToSettleAsync()
+	{
+		const int quietPeriod = 300;
+		var timeout = Stopwatch.StartNew();
+		var quiet = Stopwatch.StartNew();
+		var lastPosts = DescribeMediaNotificationPosts();
+		while (quiet.ElapsedMilliseconds < quietPeriod)
+		{
+			if (timeout.ElapsedMilliseconds > waitTimeout)
+			{
+				throw new XunitException($"The media notification kept changing for {waitTimeout} ms. {DescribeMediaControlsService()}");
+			}
+
+			await Task.Delay(25);
+			var posts = DescribeMediaNotificationPosts();
+			if (posts != lastPosts)
+			{
+				lastPosts = posts;
+				quiet.Restart();
+			}
+		}
+	}
+
+	static string DescribeMediaNotificationPosts() =>
+		string.Join(",", GetActiveNotifications().Where(statusBarNotification => IsMediaStyle(statusBarNotification.Notification)).Select(statusBarNotification => $"{statusBarNotification.Id}@{statusBarNotification.PostTime}"));
+
+	// Names which of the two conditions of the wait still held, because only the exact one tells a service that lingers from a notification that stays
+	protected static string DescribeMediaControlsService()
+	{
+		var service = FindMediaControlsService();
+		var serviceDescription = service is null
+			? "The service is not listed."
+			: $"The service is listed: Started={service.Started}, Foreground={service.Foreground}, ClientCount={service.ClientCount}, ActiveSince={service.ActiveSince}, LastActivityTime={service.LastActivityTime}, Registrations=[{string.Join(", ", GetRegisteredPlayerIds())}].";
+		var notifications = GetActiveNotifications()
+			.Select(statusBarNotification => $"id={statusBarNotification.Id} tag={statusBarNotification.Tag} package={statusBarNotification.PackageName} channel={statusBarNotification.Notification?.ChannelId} ongoing={statusBarNotification.IsOngoing} flags={statusBarNotification.Notification?.Flags} mediaStyle={IsMediaStyle(statusBarNotification.Notification)}");
+		return $"{serviceDescription} Active notifications: [{string.Join("; ", notifications)}].";
+	}
+
+	protected static IReadOnlyCollection<string> GetRegisteredPlayerIds() => MediaControlsService.Running?.RegisteredPlayerIds ?? [];
+
+	/// <summary>The session of the registration that the MediaManager's connection created in the service: null with the service off, or before the controller connected.</summary>
 	protected static MediaSession? GetMediaSession(MediaManager manager) =>
-		(MediaSession?)typeof(MediaManager).GetField("session", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(manager);
+		MediaControlsService.Running is MediaControlsService service && service.TryGetRegistration(manager.AndroidPlayerConnectionKey, out var mediaSession, out _) ? mediaSession : null;
+
+	/// <summary>The ExoPlayer that the service built for the MediaManager's connection: it plays what the MediaElement's controller controls.</summary>
+	protected static IExoPlayer? GetServicePlayer(MediaManager manager) =>
+		MediaControlsService.Running is MediaControlsService service && service.TryGetRegistration(manager.AndroidPlayerConnectionKey, out _, out var exoPlayer) ? exoPlayer : null;
+
+	/// <summary>Hosts the element without a window, like WithHandlerAsync, but leaves the handler connected until the teardown, so that a test can use several.</summary>
+	protected async Task<AndroidMediaElementProbeHandler> ConnectWithServiceAsync(MediaElement mediaElement)
+	{
+		DisposeWhenTheTestEnds(mediaElement);
+		var handler = await InvokeOnMainThreadAsync(() => CreateHandler<AndroidMediaElementProbeHandler>(mediaElement));
+		await WaitForRegistrationAsync(handler.Manager!);
+		await WaitForControllerAsync(mediaElement);
+		return handler;
+	}
+
+	/// <summary>Media3 refuses a second live session with the same id, so building one shows whether the session of that id was released.</summary>
+	protected void BuildAndReleaseSession(string id)
+	{
+		var player = new ExoPlayerBuilder(MauiContext.Context!).Build()!;
+		try
+		{
+			new MediaSession.Builder(MauiContext.Context!, player).SetId(id)!.Build()!.Release();
+		}
+		finally
+		{
+			player.Release();
+		}
+	}
+
+	// Android 13 and later need the POST_NOTIFICATIONS runtime permission for a notification that is not the foreground service's (the paused
+	// media notification is none). The headless runner (XHarness instrumentation) grants it through UiAutomation; the visual runner has no
+	// instrumentation and skips when it is missing.
+	protected static void EnsureNotificationPermission()
+	{
+		var context = MauiPlatform.AppContext;
+		if (OperatingSystem.IsAndroidVersionAtLeast(33) && !NotificationManagerCompat.From(context)!.AreNotificationsEnabled())
+		{
+			MauiTestInstrumentation.Current?.UiAutomation?.GrantRuntimePermission(context.PackageName!, "android.permission.POST_NOTIFICATIONS");
+		}
+
+		Skip.IfNot(NotificationManagerCompat.From(context)!.AreNotificationsEnabled(),
+			"Needs the POST_NOTIFICATIONS permission, which only the headless runner can grant without a person (Android 13 and later).");
+	}
+
+	protected static Task WaitForRegistrationAsync(MediaManager manager, int timeout = waitTimeout) =>
+		WaitUntilAsync(() => GetMediaSession(manager) is not null, "The service never registered the player of the MediaElement.", timeout);
+
+	/// <summary>
+	/// Starts watching the registry before the handler is disconnected. The late controller of a disconnected handler gets its registration
+	/// in one message of the main looper and releases it in a later one, which lives for about two milliseconds: the registry is read after
+	/// every message of the main looper, the only way to see it without a gap.
+	/// </summary>
+	protected static RegistrationWatcher WatchRegistrationComeAndGo(string connectionKey) => new(connectionKey);
+
+	protected sealed class RegistrationWatcher : IDisposable
+	{
+		readonly string connectionKey;
+		readonly TaskCompletionSource comeAndGone = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		readonly MainLooperMessagePrinter printer;
+		bool wasRegistered;
+
+		public RegistrationWatcher(string connectionKey)
+		{
+			this.connectionKey = connectionKey;
+			printer = new MainLooperMessagePrinter(OnMessageFinished);
+			Looper.MainLooper!.SetMessageLogging(printer);
+		}
+
+		/// <summary>Completes once the registration has appeared and is gone again.</summary>
+		public async Task WaitAsync(int timeout = waitTimeout)
+		{
+			try
+			{
+				await comeAndGone.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+			}
+			catch (TimeoutException)
+			{
+				throw new XunitException(wasRegistered
+					? $"The registration {connectionKey} was never released."
+					: $"The controller of {connectionKey} never connected, so there was nothing to release.");
+			}
+		}
+
+		// The printer is not disposed: the looper prints the end of the message that is running now through the printer it read before it was reset
+		public void Dispose() => Looper.MainLooper!.SetMessageLogging(null);
+
+		void OnMessageFinished()
+		{
+			if (GetRegisteredPlayerIds().Contains(connectionKey))
+			{
+				wasRegistered = true;
+			}
+			else if (wasRegistered)
+			{
+				comeAndGone.TrySetResult();
+			}
+		}
+	}
+
+	sealed class MainLooperMessagePrinter(Action onMessageFinished) : Java.Lang.Object, Android.Util.IPrinter
+	{
+		public void Println(string? message)
+		{
+			if (message?.StartsWith("<<<<< Finished", StringComparison.Ordinal) is true)
+			{
+				onMessageFinished();
+			}
+		}
+	}
+
+	/// <summary>A controller that a test owns, like the one of the notification or of a Bluetooth headset: connected to the registration with the given key (none: no hint).</summary>
+	protected async Task<MediaController> ConnectTestControllerAsync(string? connectionKey, int timeout = waitTimeout)
+	{
+		var context = MauiPlatform.AppContext;
+		var connected = new TaskCompletionSource<MediaController>(TaskCreationOptions.RunContinuationsAsynchronously);
+		await InvokeOnMainThreadAsync(() =>
+		{
+			using var hints = new Bundle();
+			if (connectionKey is not null)
+			{
+				hints.PutString(MediaSessionCallback.PlayerIdKey, connectionKey);
+			}
+
+			var sessionToken = new SessionToken(context, new ComponentName(context, Java.Lang.Class.FromType(typeof(MediaControlsService))));
+			var builder = new MediaController.Builder(context, sessionToken);
+			builder.SetConnectionHints(hints);
+			var future = builder.BuildAsync()!;
+			future.AddListener(new Java.Lang.Runnable(() =>
+			{
+				try
+				{
+					connected.SetResult((MediaController)future.Get()!);
+				}
+				catch (Exception exception)
+				{
+					connected.SetException(exception);
+				}
+			}), ContextCompat.GetMainExecutor(context));
+		});
+
+		var controller = await connected.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		testControllers.Add(controller);
+		return controller;
+	}
+
+	/// <summary>Releases a controller that a test connected, and takes it out of the teardown.</summary>
+	protected Task ReleaseTestControllerAsync(MediaController controller) =>
+		InvokeOnMainThreadAsync(() =>
+		{
+			testControllers.Remove(controller);
+			controller.Release();
+			controller.Dispose();
+		});
 
 	protected static async Task<byte[]> ReadAssetAsync(string asset)
 	{
@@ -239,15 +472,6 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 			Assert.Fail(failureMessage());
 		}
 	}
-
-	protected static string DescribeServiceNotification()
-	{
-		var statusBarNotification = GetActiveNotifications().FirstOrDefault(activeNotification => activeNotification.Id == serviceNotificationId);
-		var notification = statusBarNotification?.Notification;
-		return FormattableString.Invariant($"title: '{GetNotificationExtra(notification, Notification.ExtraTitle)}', text: '{GetNotificationExtra(notification, Notification.ExtraText)}', IsMediaStyle: {IsMediaStyle(notification)}, Flags: {notification?.Flags}, PostTime: {statusBarNotification?.PostTime}");
-	}
-
-	static string? GetNotificationExtra(Notification? notification, string key) => notification?.Extras?.GetCharSequence(key)?.ToString();
 
 	protected static Task WaitForStateAsync(MediaElement mediaElement, MediaElementState state, int timeout = waitTimeout) =>
 		WaitUntilAsync(() => mediaElement.CurrentState == state, $"The MediaElement never reached {state}.", timeout);
@@ -296,18 +520,28 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 				await InvokeOnMainThreadAsync(() => mediaElement.Dispose());
 			}
 
+			// A controller keeps the service alive (and bound), so the ones of the test go before the wait for the service to stop.
+			await InvokeOnMainThreadAsync(() =>
+			{
+				foreach (var controller in testControllers)
+				{
+					controller.Release();
+					controller.Dispose();
+				}
+
+				testControllers.Clear();
+			});
+
 			// Disconnecting stops MediaControlsService asynchronously: the next test must not start in the middle of that.
 			try
 			{
 				await WaitForMediaControlsServiceToStopAsync();
 			}
-			catch (Exception ex)
+			catch
 			{
-				var leftovers = string.Join(", ", GetActiveNotifications().Select(notification => $"id {notification.Id} flags {notification.Notification?.Flags}"));
-				var serviceState = FindMediaControlsService() is null ? "gone" : "listed";
-				// A notification that stayed would otherwise fail every later test's teardown too.
+				// A notification that stayed would otherwise fail every later test's teardown too. The exception already names the leftovers.
 				CancelAllNotifications();
-				throw new InvalidOperationException($"{ex.Message} Service {serviceState}; notifications: [{leftovers}].", ex);
+				throw;
 			}
 
 			if (usesForegroundService)

@@ -1,0 +1,908 @@
+using System.Reflection;
+using Android.App;
+using Android.Content.PM;
+using Android.OS;
+using AndroidX.Media3.Session;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Views;
+using CommunityToolkit.Maui.Media.Services;
+using CommunityToolkit.Maui.Services;
+using CommunityToolkit.Maui.Views;
+using Microsoft.Maui;
+using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
+
+namespace CommunityToolkit.Maui.DeviceTests;
+
+// The service is a MediaSessionService with one registration (ExoPlayer and MediaSession) for every MediaElement connection. These tests reach
+// the running instance through MediaControlsService.Running, because the system creates the service. The notification and foreground-type
+// branches depend on the Android version: each device checks the branch that its version takes (the CI legs from API 27 to 37.2 run these
+// tests: the MediaElementAndroid category skips below API 26).
+[Category(TestCategory.MediaElementAndroid)]
+[Collection(TestCollections.DisableParallelization)]
+public class MediaSessionServiceAndroidTests : MediaElementAndroidTestBase
+{
+	// An element that plays for as long as the test needs the foreground service and its notification
+	static Task<MediaElement> CreatePlayingElementAsync(Action<MediaElement>? configure = null) =>
+		CreateMediaElementAsync(element =>
+		{
+			element.ShouldAutoPlay = true;
+			element.ShouldLoopPlayback = true;
+			element.Source = MediaSource.FromResource(toneAsset);
+			configure?.Invoke(element);
+		});
+
+	static bool HasMediaNotificationWithoutForegroundFlag()
+	{
+		var mediaNotifications = GetActiveNotifications().Where(notification => IsMediaStyle(notification.Notification)).ToArray();
+		return mediaNotifications.Length > 0 && mediaNotifications.All(notification => !notification.Notification!.Flags.HasFlag(NotificationFlags.ForegroundService));
+	}
+
+	static string? GetNotificationExtra(Notification? notification, string key) => notification?.Extras?.GetCharSequence(key)?.ToString();
+
+	static Task WaitForForegroundAsync() =>
+		WaitUntilAsync(() => FindMediaControlsService()?.Foreground == true, "MediaControlsService never entered the foreground.");
+
+	static async Task<Notification> WaitForMediaNotificationAsync(MediaManager manager)
+	{
+		var session = GetMediaSession(manager)!;
+		await WaitUntilAsync(() => FindMediaNotification(session) is not null, "Media3 never showed a media notification bound to the session of the MediaElement.");
+
+		return FindMediaNotification(session)!.Notification!;
+	}
+
+	const string foregroundServiceRefusalMessage = $"Android refused to start {nameof(MediaControlsService)}, the foreground service of the media notification: Android.App.ForegroundServiceStartNotAllowedException: Media3 logged Android's reason under the logcat tag MSessionService";
+
+	static void SkipBelowAndroid12() =>
+		Skip.IfNot(OperatingSystem.IsAndroidVersionAtLeast(31), "Android refuses to start a foreground service, and Media3 reports the refusal, only from Android 12 (API 31).");
+
+	// Stands in for Media3's call of the service listener: Android refuses the start only to an app in the background, which a running test is not
+	static void RelayForegroundServiceRefusal() => MediaControlsService.Running!.RelayForegroundServiceRefusalToElements();
+
+	// Media3 reports a refused start through this private method, which posts the call of the service listener to the main looper.
+	// Platforms/Android/proguard.cfg keeps it in the NativeAOT publish.
+	static void ReportForegroundServiceRefusalLikeMedia3(MediaControlsService service)
+	{
+		using var mediaSessionServiceClass = Java.Lang.Class.FromType(typeof(MediaSessionService));
+		using var reportRefusal = mediaSessionServiceClass.GetDeclaredMethod("onForegroundServiceStartNotAllowedException")
+			?? throw new InvalidOperationException("MediaSessionService.onForegroundServiceStartNotAllowedException was not found.");
+		reportRefusal.Accessible = true;
+		reportRefusal.Invoke(service);
+	}
+
+	// The main looper runs its messages in order: a runnable posted after Media3's report runs after it
+	static Task RunMainLooperMessagesPostedSoFarAsync()
+	{
+		var postedRunnableCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var mainLooperHandler = new Handler(Looper.MainLooper!);
+		mainLooperHandler.Post(() => postedRunnableCompletion.SetResult());
+		return postedRunnableCompletion.Task.WaitAsync(TimeSpan.FromMilliseconds(waitTimeout));
+	}
+
+	[Fact]
+	public async Task DefaultOptionsUseALocalExoPlayerAndNeverStartTheService()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+		using var recorder = new MediaElementRecorder(mediaElement);
+		Assert.False(mediaElement.IsAndroidForegroundServiceEnabled);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+
+			Assert.IsType<AndroidX.Media3.ExoPlayer.IExoPlayer>(GetPlayerView(mediaElement).Player, exactMatch: false);
+			Assert.Null(FindMediaControlsService());
+			Assert.Null(MediaControlsService.Running);
+			Assert.Null(GetMediaSession(handler.Manager!));
+			Assert.Empty(GetRegisteredPlayerIds());
+			Assert.Empty(GetActiveNotifications());
+		});
+	}
+
+	[Fact]
+	public async Task ServiceCanBeEnabledWithTheMediaElementOptions()
+	{
+		// A variable, not the literal true: the MediaElement source generator turns a literal into assembly-level manifest permissions and into a
+		// CommunityToolkit.Maui.Android namespace that would hide every Android.* name of this app. The manifest of the test app declares them.
+		var enableForegroundService = true;
+		SetupProbeBuilder(configureMediaElementOptions: options => options.SetIsAndroidForegroundServiceEnabled(enableForegroundService));
+		var mediaElement = await CreateMediaElementAsync();
+		Assert.True(mediaElement.IsAndroidForegroundServiceEnabled);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			await WaitForControllerAsync(mediaElement);
+
+			Assert.IsType<MediaController>(GetPlayerView(mediaElement).Player, exactMatch: false);
+			var sessionId = Assert.Single(GetRegisteredPlayerIds());
+			Assert.StartsWith(((IMediaElement)mediaElement).AndroidPlayerId, sessionId, StringComparison.Ordinal);
+		});
+	}
+
+	// The service used to be started with a plain intent when the controller connected. Media3 ignores that intent, so nothing called
+	// startForeground, and Android ends the app when a service started with startForegroundService does not call it within about 10 seconds.
+	[Fact]
+	public async Task ConnectingWithoutPlaybackDoesNotCrashTheApp()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+
+			Assert.NotNull(MediaControlsService.Running);
+			Assert.Single(GetRegisteredPlayerIds());
+			var service = FindMediaControlsService();
+			Assert.NotNull(service);
+			Assert.False(service.Started, "The service was started although nothing plays: the system would end the app when it does not call startForeground in time.");
+			Assert.False(service.Foreground, "The service is in the foreground although nothing plays.");
+		});
+	}
+
+	[Fact]
+	public async Task PlayingWithTheServiceRunsItInTheForegroundAsAMediaPlaybackService()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			await WaitForForegroundAsync();
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				Assert.True(MediaControlsService.Running!.ForegroundServiceType.HasFlag(ForegroundService.TypeMediaPlayback));
+			}
+
+			var notification = await WaitForMediaNotificationAsync(handler.Manager!);
+			var notificationManager = (NotificationManager)MauiPlatform.AppContext.GetSystemService(Android.Content.Context.NotificationService)!;
+			var channel = notificationManager.GetNotificationChannel(notification.ChannelId);
+			Assert.NotNull(channel);
+			Assert.Equal(NotificationImportance.Low, channel.Importance);
+		});
+	}
+
+	[Fact]
+	public async Task PlayingShowsAMediaNotificationBoundToTheSessionOfThePlayer()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+
+			var notification = await WaitForMediaNotificationAsync(handler.Manager!);
+
+			Assert.True(IsMediaStyle(notification));
+			Assert.Equal(NotificationVisibility.Public, notification.Visibility);
+			Assert.NotNull(notification.SmallIcon);
+		});
+	}
+
+	// Media3's DefaultMediaNotificationProvider adds actions on every Android version. Android 13 and later draw the transport controls of a
+	// MediaStyle notification from the session, so there only the style and the session token are the contract.
+	[Fact]
+	public async Task NotificationMatchesTheAndroidVersion()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+
+			var notification = await WaitForMediaNotificationAsync(handler.Manager!);
+
+			Assert.True(IsMediaStyle(notification));
+			Assert.True(IsBoundToSession(notification, GetMediaSession(handler.Manager!)!));
+			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				Assert.NotEmpty(notification.Actions ?? []);
+			}
+		});
+	}
+
+	[Fact]
+	public async Task NotificationOpensTheAppWhenTapped()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+
+			var notification = await WaitForMediaNotificationAsync(handler.Manager!);
+
+			Assert.NotNull(notification.ContentIntent);
+			Assert.Equal(MauiPlatform.AppContext.PackageName, notification.ContentIntent.CreatorPackage);
+		});
+	}
+
+	[Fact]
+	public async Task MetadataOfTheSourceAppearsInTheNotification()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync(element =>
+		{
+			element.MetadataTitle = "Title of the tone";
+			element.MetadataArtist = "Artist of the tone";
+		});
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var session = GetMediaSession(handler.Manager!)!;
+
+			await WaitUntilAsync(() => FindMediaNotification(session)?.Notification?.Extras?.GetCharSequence(Notification.ExtraTitle)?.ToString() == "Title of the tone",
+				"The notification never showed the title of the source.");
+
+			Assert.Equal("Artist of the tone", FindMediaNotification(session)!.Notification!.Extras!.GetCharSequence(Notification.ExtraText)?.ToString());
+		});
+	}
+
+	[Fact]
+	public async Task ChangingTheSourceUpdatesTheNotificationMetadata()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync(element => element.MetadataTitle = "First title");
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var session = GetMediaSession(handler.Manager!)!;
+			await WaitUntilAsync(() => FindMediaNotification(session)?.Notification?.Extras?.GetCharSequence(Notification.ExtraTitle)?.ToString() == "First title",
+				"The notification never showed the title of the first source.");
+
+			mediaElement.MetadataTitle = "Second title";
+			mediaElement.Source = MediaSource.FromResource(shortToneAsset);
+
+			await WaitUntilAsync(() => FindMediaNotification(session)?.Notification?.Extras?.GetCharSequence(Notification.ExtraTitle)?.ToString() == "Second title",
+				"The notification never showed the title of the new source.");
+		});
+	}
+
+	[Fact]
+	public async Task ArtworkOfTheSourceIsTheLargeIconOfTheNotification()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync(element => element.MetadataArtworkUrl = artworkAsset);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var session = GetMediaSession(handler.Manager!)!;
+
+			await WaitUntilAsync(() => FindMediaNotification(session)?.Notification?.GetLargeIcon() is not null,
+				() => $"The notification never showed the artwork of the source as its large icon. {DescribeMediaControlsService()}");
+		});
+	}
+
+	[Fact]
+	public async Task EachElementGetsItsOwnRegistrationAndSession()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var first = await CreateMediaElementAsync();
+			var second = await CreateMediaElementAsync();
+			var firstHandler = await ConnectWithServiceAsync(first);
+			var secondHandler = await ConnectWithServiceAsync(second);
+
+			Assert.Equal(2, GetRegisteredPlayerIds().Count);
+			var firstSession = GetMediaSession(firstHandler.Manager!)!;
+			var secondSession = GetMediaSession(secondHandler.Manager!)!;
+			Assert.StartsWith(((IMediaElement)first).AndroidPlayerId, firstSession.Id, StringComparison.Ordinal);
+			Assert.StartsWith(((IMediaElement)second).AndroidPlayerId, secondSession.Id, StringComparison.Ordinal);
+			Assert.NotEqual(firstSession.Id, secondSession.Id);
+			Assert.NotEqual(firstSession.Handle, secondSession.Handle);
+			Assert.NotEqual(GetServicePlayer(firstHandler.Manager!)!.Handle, GetServicePlayer(secondHandler.Manager!)!.Handle);
+		});
+	}
+
+	[Fact]
+	public async Task ReleasePlayerCommandReleasesOnlyThatRegistration()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var first = await CreateMediaElementAsync();
+			var second = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			using var secondRecorder = new MediaElementRecorder(second);
+			var firstHandler = await ConnectWithServiceAsync(first);
+			var secondHandler = await ConnectWithServiceAsync(second);
+			var firstKey = firstHandler.Manager!.AndroidPlayerConnectionKey;
+			var secondKey = secondHandler.Manager!.AndroidPlayerConnectionKey;
+			var controller = await ConnectTestControllerAsync(firstKey);
+
+			using var arguments = new Bundle();
+			arguments.PutString(MediaSessionCallback.PlayerIdKey, firstKey);
+			controller.SendCustomCommand(new SessionCommand(MediaSessionCallback.ReleasePlayer, new Bundle()), arguments);
+
+			await WaitUntilAsync(() => !GetRegisteredPlayerIds().Contains(firstKey), "The service never released the registration that the command named.");
+			Assert.Contains(secondKey, GetRegisteredPlayerIds());
+			BuildAndReleaseSession(firstKey);
+			await WaitUntilLoadedAsync(second, secondRecorder);
+			second.Play();
+			await WaitForStateAsync(second, MediaElementState.Playing);
+		});
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("   ")]
+	[InlineData("unknown")]
+	public async Task ReleasePlayerWithABlankOrUnknownIdDoesNothing(string playerId) => await ReleasePlayerDoesNothingAsync(playerId);
+
+	[Fact]
+	public async Task ReleasePlayerWithoutAnIdDoesNothing() => await ReleasePlayerDoesNothingAsync(null);
+
+	async Task ReleasePlayerDoesNothingAsync(string? playerId)
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var service = MediaControlsService.Running!;
+			var registeredBefore = service.RegisteredPlayerIds.ToArray();
+
+			var exception = Record.Exception(() => service.ReleasePlayer(playerId));
+
+			Assert.Null(exception);
+			Assert.Equal(registeredBefore, service.RegisteredPlayerIds);
+			Assert.Same(service, MediaControlsService.Running);
+		});
+	}
+
+	[Fact]
+	public async Task DisconnectingTheLastElementReleasesItsPlayerStopsTheServiceAndRemovesTheNotification()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreatePlayingElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var session = GetMediaSession(handler.Manager!)!;
+			await WaitForMediaNotificationAsync(handler.Manager!);
+
+			await DisconnectAsync(mediaElement);
+
+			await WaitUntilAsync(() => GetRegisteredPlayerIds().Count == 0, "The registration of the disconnected element was never released.");
+			await WaitForMediaControlsServiceToStopAsync();
+			Assert.Null(FindMediaNotification(session));
+		});
+	}
+
+	// Android 11 delays every post by 200 ms and drops a cancel while a newer post of the same notification is queued: a service that stops right
+	// after it posted is where the notification of a stopped service stayed. The race shows only in some of the repetitions.
+	[Fact]
+	public async Task DisconnectingRightAfterTheNotificationAppearedLeavesNoNotificationBehind()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+
+			await WithHandlerAsync(mediaElement, async handler =>
+			{
+				await WaitForRegistrationAsync(handler.Manager!);
+				await WaitForMediaNotificationAsync(handler.Manager!);
+			});
+
+			await WaitForMediaControlsServiceToStopAsync();
+			// A post that was still queued when the service stopped lands later; the pause also keeps the next repetition under the rate limit
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	// The first element posted the notification. The second one leaves before its controller connected, so the service can be told to stop while
+	// that controller still connects: its late registration must still go, and the service and the notification with it.
+	[Fact]
+	public async Task DisconnectingTheLastElementWhileItsControllerConnectsStopsTheServiceAndLeavesNoNotification()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		for (var repetition = 0; repetition < 5; repetition++)
+		{
+			var firstElement = await CreatePlayingElementAsync();
+			var secondElement = await CreatePlayingElementAsync();
+			DisposeWhenTheTestEnds(secondElement);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var firstHandler = await ConnectWithServiceAsync(firstElement);
+				await WaitForMediaNotificationAsync(firstHandler.Manager!);
+
+				var secondHandler = CreateHandler<AndroidMediaElementProbeHandler>(secondElement);
+				using var lateRegistration = WatchRegistrationComeAndGo(secondHandler.Manager!.AndroidPlayerConnectionKey);
+				((IElementHandler)firstHandler).DisconnectHandler();
+				firstElement.Handler = null;
+				((IElementHandler)secondHandler).DisconnectHandler();
+				secondElement.Handler = null;
+				await lateRegistration.WaitAsync();
+			});
+
+			await WaitForMediaControlsServiceToStopAsync();
+			// A post that was still queued when the service stopped lands later; the pause also keeps the next repetition under the rate limit
+			await Task.Delay(notificationRatePause);
+			Assert.Empty(GetActiveNotifications());
+		}
+	}
+
+	[Fact]
+	public async Task DisconnectingOneElementLeavesTheOtherRegistrationAndItsSessionWorking()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var disconnecting = await CreateMediaElementAsync();
+			var remaining = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			using var recorder = new MediaElementRecorder(remaining);
+			await ConnectWithServiceAsync(disconnecting);
+			var remainingHandler = await ConnectWithServiceAsync(remaining);
+			var remainingKey = remainingHandler.Manager!.AndroidPlayerConnectionKey;
+			await WaitUntilLoadedAsync(remaining, recorder);
+			var remainingController = await ConnectTestControllerAsync(remainingKey);
+
+			await DisconnectAsync(disconnecting);
+
+			await WaitUntilAsync(() => GetRegisteredPlayerIds().Count == 1, "The registration of the disconnected element was never released.");
+			Assert.Equal(remainingKey, Assert.Single(GetRegisteredPlayerIds()));
+			remainingController.Play();
+			await WaitForStateAsync(remaining, MediaElementState.Playing);
+			var notification = await WaitForMediaNotificationAsync(remainingHandler.Manager!);
+			Assert.True(IsMediaStyle(notification));
+			Assert.True(IsBoundToSession(notification, GetMediaSession(remainingHandler.Manager!)!));
+		});
+	}
+
+	// Media3 shows one notification for all sessions: the notification of the element that stays must not keep the title, artist or artwork of
+	// the element that left.
+	[Fact]
+	public async Task DisconnectingAnElementTakesItsMetadataOutOfTheNotification()
+	{
+		const string disconnectingTitle = "Title of the disconnecting element";
+		const string disconnectingArtist = "Artist of the disconnecting element";
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var remaining = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			using var remainingRecorder = new MediaElementRecorder(remaining);
+			var remainingHandler = await ConnectWithServiceAsync(remaining);
+			await WaitUntilLoadedAsync(remaining, remainingRecorder);
+			var disconnecting = await CreatePlayingElementAsync(element =>
+			{
+				element.MetadataTitle = disconnectingTitle;
+				element.MetadataArtist = disconnectingArtist;
+				element.MetadataArtworkUrl = artworkAsset;
+			});
+			var disconnectingHandler = await ConnectWithServiceAsync(disconnecting);
+			var disconnectingSession = GetMediaSession(disconnectingHandler.Manager!)!;
+			await WaitUntilAsync(() => FindMediaNotification(disconnectingSession)?.Notification is Notification shown
+					&& GetNotificationExtra(shown, Notification.ExtraTitle) == disconnectingTitle
+					&& shown.GetLargeIcon() is not null,
+				() => $"The notification never showed the title and artwork of the playing element. {DescribeMediaControlsService()}");
+
+			await DisconnectAsync(disconnecting);
+			await WaitUntilAsync(() => GetRegisteredPlayerIds().Count == 1, "The registration of the disconnected element was never released.");
+			remaining.Play();
+			await WaitForStateAsync(remaining, MediaElementState.Playing);
+
+			var notification = await WaitForMediaNotificationAsync(remainingHandler.Manager!);
+			Assert.NotEqual(disconnectingTitle, GetNotificationExtra(notification, Notification.ExtraTitle));
+			Assert.NotEqual(disconnectingArtist, GetNotificationExtra(notification, Notification.ExtraText));
+			Assert.Null(notification.GetLargeIcon());
+		});
+	}
+
+	// Media3 posts the paused notification again with stopForeground(false) after the players are paused, so it stays until its session is
+	// released: it is gone once both elements are disconnected.
+	[Fact]
+	public async Task TaskRemovedPausesEveryPlayerAndLeavesTheForeground()
+	{
+		EnsureNotificationPermission();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var playing = await CreatePlayingElementAsync();
+			var idle = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(shortToneAsset));
+			using var idleRecorder = new MediaElementRecorder(idle);
+			var playingHandler = await ConnectWithServiceAsync(playing);
+			var idleHandler = await ConnectWithServiceAsync(idle);
+			await WaitForStateAsync(playing, MediaElementState.Playing);
+			await WaitUntilLoadedAsync(idle, idleRecorder);
+			await WaitForForegroundAsync();
+			await WaitForMediaNotificationToSettleAsync();
+
+			MediaControlsService.Running!.OnTaskRemoved(null);
+
+			await WaitUntilAsync(() => !GetServicePlayer(playingHandler.Manager!)!.PlayWhenReady && !GetServicePlayer(idleHandler.Manager!)!.PlayWhenReady,
+				"A player was not paused by the removal of the task.");
+			await WaitForStateAsync(playing, MediaElementState.Paused);
+			await WaitUntilAsync(() => FindMediaControlsService()?.Foreground != true, "The service stayed in the foreground.");
+			// Media3 shows one notification for all sessions, and it picks the session that it shows: only its media style is the contract here
+			try
+			{
+				await WaitUntilAsync(HasMediaNotificationWithoutForegroundFlag,
+					"The media notification of the paused players still is the foreground notification (or was never posted again).");
+			}
+			catch (Xunit.Sdk.XunitException exception)
+			{
+				throw new Xunit.Sdk.XunitException($"{exception.Message} {DescribeMediaControlsService()}");
+			}
+
+			await DisconnectAsync(playing);
+			await DisconnectAsync(idle);
+
+			await WaitForMediaControlsServiceToStopAsync();
+		});
+	}
+
+	[Fact]
+	public async Task TaskRemovedWithoutRegistrationsDoesNotThrow()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			var service = MediaControlsService.Running!;
+			service.ReleasePlayer(handler.Manager!.AndroidPlayerConnectionKey);
+			Assert.Empty(service.RegisteredPlayerIds);
+
+			var exception = Record.Exception(() => service.OnTaskRemoved(null));
+
+			Assert.Null(exception);
+		});
+	}
+
+	[Fact]
+	public async Task Media3ReportOfARefusedForegroundServiceReachesThePlayingElementFromAndroid12()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+			using var recorder = new MediaElementRecorder(mediaElement);
+			await ConnectWithServiceAsync(mediaElement);
+			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+
+			ReportForegroundServiceRefusalLikeMedia3(MediaControlsService.Running!);
+			await RunMainLooperMessagesPostedSoFarAsync();
+
+			// Media3 calls the listener only from Android 12
+			if (OperatingSystem.IsAndroidVersionAtLeast(31))
+			{
+				Assert.Equal(foregroundServiceRefusalMessage, Assert.Single(recorder.FailureMessages));
+			}
+			else
+			{
+				Assert.Empty(recorder.FailureMessages);
+			}
+		});
+	}
+
+	[Fact]
+	public async Task ForegroundServiceRefusalIsReportedThroughMediaFailedWithoutChangingThePlayback()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+			using var recorder = new MediaElementRecorder(mediaElement);
+			var handler = await ConnectWithServiceAsync(mediaElement);
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+			var duration = mediaElement.Duration;
+
+			RelayForegroundServiceRefusal();
+
+			Assert.Equal(foregroundServiceRefusalMessage, Assert.Single(recorder.FailureMessages));
+			Assert.Equal(MediaElementState.Playing, mediaElement.CurrentState);
+			AotSafeAssert.DoesNotContain(MediaElementState.Failed, recorder.States);
+			Assert.Equal(duration, mediaElement.Duration);
+			Assert.True(GetServicePlayer(handler.Manager!)!.IsPlaying);
+		});
+	}
+
+	[Fact]
+	public async Task RepeatedForegroundServiceRefusalsForTheSameSourceAreReportedOnce()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+			using var recorder = new MediaElementRecorder(mediaElement);
+			await ConnectWithServiceAsync(mediaElement);
+			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+
+			// Media3 tries the start on every notification change while the app stays in the background
+			RelayForegroundServiceRefusal();
+			RelayForegroundServiceRefusal();
+			RelayForegroundServiceRefusal();
+
+			Assert.Single(recorder.FailureMessages);
+		});
+	}
+
+	[Fact]
+	public async Task NewSourceReportsTheNextForegroundServiceRefusalAgain()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+			using var recorder = new MediaElementRecorder(mediaElement);
+			await ConnectWithServiceAsync(mediaElement);
+			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+			RelayForegroundServiceRefusal();
+			Assert.Single(recorder.FailureMessages);
+
+			mediaElement.Source = MediaSource.FromResource(shortToneAsset);
+			await WaitUntilAsync(() => recorder.OpenedCount >= 2 && mediaElement.CurrentState is MediaElementState.Playing, "The new source never played.");
+			RelayForegroundServiceRefusal();
+			RelayForegroundServiceRefusal();
+
+			Assert.Equal(2, recorder.FailureMessages.Count);
+		});
+	}
+
+	[Fact]
+	public async Task ForegroundServiceRefusalIsReportedOnlyByElementsWhosePlaybackNeedsTheService()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var playing = await CreatePlayingElementAsync();
+			var paused = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			var empty = await CreateMediaElementAsync();
+			using var playingRecorder = new MediaElementRecorder(playing);
+			using var pausedRecorder = new MediaElementRecorder(paused);
+			using var emptyRecorder = new MediaElementRecorder(empty);
+			await ConnectWithServiceAsync(playing);
+			await ConnectWithServiceAsync(paused);
+			await ConnectWithServiceAsync(empty);
+			await WaitForStateAsync(playing, MediaElementState.Playing);
+			await WaitUntilLoadedAsync(paused, pausedRecorder);
+			await WaitForStateAsync(paused, MediaElementState.Paused);
+
+			// Media3 names no session; on Android 12 and 12L it also refuses a Play() of paused media, so a paused element reports there
+			RelayForegroundServiceRefusal();
+
+			Assert.Single(playingRecorder.FailureMessages);
+			Assert.Empty(emptyRecorder.FailureMessages);
+			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				Assert.Empty(pausedRecorder.FailureMessages);
+
+				paused.Play();
+				await WaitForStateAsync(paused, MediaElementState.Playing);
+				RelayForegroundServiceRefusal();
+			}
+
+			Assert.Single(pausedRecorder.FailureMessages);
+			Assert.Single(playingRecorder.FailureMessages);
+			Assert.Empty(emptyRecorder.FailureMessages);
+		});
+	}
+
+	[Fact]
+	public async Task ForegroundServiceRefusalWithoutAnElementDoesNothing()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		const string connectionKey = "registration-without-an-element";
+		var controller = await ConnectTestControllerAsync(connectionKey);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var service = MediaControlsService.Running!;
+			Assert.Contains(connectionKey, service.RegisteredPlayerIds);
+			Assert.Null(Record.Exception(service.RelayForegroundServiceRefusalToElements));
+
+			service.ReleasePlayer(connectionKey);
+
+			Assert.Empty(service.RegisteredPlayerIds);
+			Assert.Null(Record.Exception(service.RelayForegroundServiceRefusalToElements));
+		});
+
+		await ReleaseTestControllerAsync(controller);
+	}
+
+	[Fact]
+	public async Task ElementDisconnectedBeforeTheRelayReportsNothing()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var mediaElement = await CreatePlayingElementAsync();
+			using var recorder = new MediaElementRecorder(mediaElement);
+			var handler = await ConnectWithServiceAsync(mediaElement);
+			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+			var manager = handler.Manager!;
+			var service = MediaControlsService.Running!;
+
+			// The registration lives until the release command arrives, so the relay still reaches the disconnected element
+			mediaElement.Handler!.DisconnectHandler();
+
+			Assert.Null(Record.Exception(manager.ReportForegroundServiceRefusalIfPlaybackNeedsTheService));
+			Assert.Null(Record.Exception(service.RelayForegroundServiceRefusalToElements));
+			Assert.Empty(recorder.FailureMessages);
+		});
+	}
+
+	[Fact]
+	public async Task ElementThatAnotherElementsMediaFailedHandlerDisconnectsDuringTheRelayReportsNothing()
+	{
+		SkipBelowAndroid12();
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			// Only one element plays at a time: the players ask for the audio focus. The paused one reports on Android 12 and 12L only
+			var first = await CreatePlayingElementAsync();
+			var second = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+			using var firstRecorder = new MediaElementRecorder(first);
+			using var secondRecorder = new MediaElementRecorder(second);
+			await ConnectWithServiceAsync(first);
+			await ConnectWithServiceAsync(second);
+			await WaitForStateAsync(first, MediaElementState.Playing);
+			await WaitUntilLoadedAsync(second, secondRecorder);
+			await WaitForStateAsync(second, MediaElementState.Paused);
+
+			// MediaElement keeps its event handlers weakly: these locals keep them alive until they are removed
+			EventHandler<MediaFailedEventArgs> disconnectSecond = (_, _) => second.Handler?.DisconnectHandler();
+			EventHandler<MediaFailedEventArgs> disconnectFirst = (_, _) => first.Handler?.DisconnectHandler();
+			first.MediaFailed += disconnectSecond;
+			second.MediaFailed += disconnectFirst;
+
+			Assert.Null(Record.Exception(RelayForegroundServiceRefusal));
+			first.MediaFailed -= disconnectSecond;
+			second.MediaFailed -= disconnectFirst;
+
+			Assert.Equal(1, firstRecorder.FailureMessages.Count + secondRecorder.FailureMessages.Count);
+			Assert.NotEqual(first.Handler is null, second.Handler is null);
+		});
+	}
+
+	// The system destroys the service once its last controller is gone, and the service releases what it still holds. OnDestroy is never
+	// called by the test: Media3's own onDestroy, which the system calls later, throws for a service that was destroyed twice.
+	[Fact]
+	public async Task DestroyingTheServiceReleasesEveryRegistration()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		const string connectionKey = "destroyed-with-the-service";
+		var controller = await ConnectTestControllerAsync(connectionKey);
+		using var playerReference = await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.True(MediaControlsService.TryGetExoPlayer(connectionKey, out var exoPlayer));
+			return new JavaObjectReference((Java.Lang.Object)exoPlayer);
+		});
+
+		await ReleaseTestControllerAsync(controller);
+		await WaitUntilAsync(() => FindMediaControlsService() is null, "The system never destroyed the service after its last controller was released.");
+		// The system lists the service as gone before it calls onDestroy on the main thread
+		await WaitUntilAsync(() => MediaControlsService.Running is null, "The service never ran its OnDestroy.");
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.True(playerReference.GetPeer<AndroidX.Media3.ExoPlayer.IExoPlayer>().IsReleased);
+			BuildAndReleaseSession(connectionKey);
+		});
+	}
+
+	[Fact]
+	public async Task DisposingTheServiceAfterTheSystemDestroyedItIsSafe()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync();
+		MediaControlsService? service = null;
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			service = MediaControlsService.Running;
+			await DisconnectAsync(mediaElement);
+			await WaitForMediaControlsServiceToStopAsync();
+		});
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			Assert.NotNull(service);
+			Assert.Null(Record.Exception(service.Dispose));
+			Assert.Null(Record.Exception(service.Dispose));
+		});
+	}
+
+	[Fact]
+	public async Task DisposingAServiceThatNeverStartedDoesNotThrow()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var service = new MediaControlsService();
+
+			Assert.Null(Record.Exception(service.Dispose));
+		});
+	}
+
+	// Dispose(bool) is protected on a sealed class: reflection is the only way to run the finalizer path, which must leave the registrations alone.
+	[Fact]
+	public async Task DisposeWithoutDisposingReleasesNoRegistration()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+		var mediaElement = await CreateMediaElementAsync(element => element.Source = MediaSource.FromResource(toneAsset));
+		using var recorder = new MediaElementRecorder(mediaElement);
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await WaitForRegistrationAsync(handler.Manager!);
+			await WaitUntilLoadedAsync(mediaElement, recorder);
+			var disposeCore = typeof(MediaControlsService).GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly, [typeof(bool)])!;
+
+			disposeCore.Invoke(MediaControlsService.Running, [false]);
+
+			Assert.Single(GetRegisteredPlayerIds());
+			Assert.False(GetServicePlayer(handler.Manager!)!.IsReleased);
+			mediaElement.Play();
+			await WaitForStateAsync(mediaElement, MediaElementState.Playing);
+		});
+	}
+
+	[Fact]
+	public async Task ControllerWithoutAPlayerIdIsRejected()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await Assert.ThrowsAnyAsync<Exception>(() => ConnectTestControllerAsync(connectionKey: null));
+
+		Assert.Empty(GetRegisteredPlayerIds());
+	}
+
+	[Fact]
+	public async Task ServiceStartsInTheForegroundAgainForANewElementAfterItStopped()
+	{
+		SetupProbeBuilder(isAndroidForegroundServiceEnabled: true);
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var first = await CreatePlayingElementAsync();
+			await ConnectWithServiceAsync(first);
+			await WaitForForegroundAsync();
+			await DisconnectAsync(first);
+			await WaitForMediaControlsServiceToStopAsync();
+
+			var second = await CreatePlayingElementAsync();
+			var secondHandler = await ConnectWithServiceAsync(second);
+
+			await WaitForForegroundAsync();
+			var notification = await WaitForMediaNotificationAsync(secondHandler.Manager!);
+			Assert.True(IsMediaStyle(notification));
+		});
+	}
+}

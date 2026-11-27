@@ -1,61 +1,74 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Android.App;
+using System.Runtime.Versioning;
 using Android.Content;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.Content;
 using AndroidX.Media3.Common;
 using AndroidX.Media3.Common.Text;
 using AndroidX.Media3.Common.Util;
 using AndroidX.Media3.DataSource;
 using AndroidX.Media3.ExoPlayer;
 using AndroidX.Media3.ExoPlayer.Source;
+using AndroidX.Media3.ExoPlayer.TrackSelection;
 using AndroidX.Media3.Session;
 using AndroidX.Media3.UI;
 using CommunityToolkit.Maui.Media.Services;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.Views;
+using Java.Lang;
 using Microsoft.Extensions.Logging;
 using AudioAttributes = AndroidX.Media3.Common.AudioAttributes;
 using DeviceInfo = AndroidX.Media3.Common.DeviceInfo;
+using Exception = System.Exception;
+using MediaController = AndroidX.Media3.Session.MediaController;
 using MediaMetadata = AndroidX.Media3.Common.MediaMetadata;
 
 namespace CommunityToolkit.Maui.Core.Views;
 
 public partial class MediaManager : Java.Lang.Object, IPlayerListener
 {
-	const int idleState = 1;
-	const int bufferState = 2;
-	const int readyState = 3;
-	const int endedState = 4;
+	const int stateIdle = 1;
+	const int stateBuffering = 2;
+	const int stateReady = 3;
+	const int stateEnded = 4;
 
-	static int managersBoundToTheService;
+	// Media3's Player.EVENT_PLAYBACK_STATE_CHANGED and Player.EVENT_PLAY_WHEN_READY_CHANGED, which the binding does not expose as constants
+	const int eventPlaybackStateChanged = 4;
+	const int eventPlayWhenReadyChanged = 5;
 
-	const string serviceStartFailure = $"Android refused to start {nameof(MediaControlsService)}, the foreground service of the media notification, so the media plays without the notification";
+	const string foregroundServiceRefusalFailure = $"Android refused to start {nameof(MediaControlsService)}, the foreground service of the media notification";
 
-	// Device tests swap in a context whose start or bind of the service fails, which the application context never does for the declared service
-	internal static Context? ServiceContextOverride { get; set; }
-
-	static Context ServiceContext => ServiceContextOverride ?? global::Android.App.Application.Context;
+	// Media3 catches Android's exception and only logs it, so the report carries an equivalent one that points to that log
+	const string foregroundServiceRefusalReason = "Media3 logged Android's reason under the logcat tag MSessionService";
 
 	readonly HttpClient client = new();
 	readonly SemaphoreSlim seekToSemaphoreSlim = new(1, 1);
+	readonly CancellationTokenSource disconnectTokenSource = new();
+	readonly string playerConnectionId = Guid.NewGuid().ToString("N");
 	bool isAndroidForegroundServiceEnabled = false;
+	bool hasPendingSourceUpdate;
+
+	// Media3 tries the start again whenever the notification changes: each Source reports a refusal once
+	bool hasReportedForegroundServiceRefusal;
+	DefaultTrackSelector? localTrackSelector;
 
 	double? previousSpeed;
 	float volumeBeforeMute = 1;
-
 	TaskCompletionSource? seekToTaskCompletionSource;
 	CancellationTokenSource? cancellationTokenSource;
-	MediaSession? session;
-	BoundServiceConnection? connection;
 	StreamDataSourceFactory? currentStreamDataSourceFactory;
 
 	/// <summary>
 	/// The platform native counterpart of <see cref="MediaElement"/>.
 	/// </summary>
 	protected PlayerView? PlayerView { get; set; }
+
+	// Per connection, not per element: the registration of a connection that was disconnected must not be taken for that of the same element
+	// when it is hosted again right away (the late release of the old controller would release the new player)
+	internal string AndroidPlayerConnectionKey => $"{MediaElement.AndroidPlayerId}:{playerConnectionId}";
 
 	/// <summary>
 	/// Occurs when ExoPlayer changes the playback parameters.
@@ -75,18 +88,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Speed = playbackParameters.Speed;
 	}
 
-	public void UpdateNotifications()
-	{
-		if (connection?.Binder?.Service is null || !isAndroidForegroundServiceEnabled)
-		{
-			return;
-		}
-
-		if (session is not null && Player is not null)
-		{
-			connection.Binder.Service.UpdateNotifications(session, Player);
-		}
-	}
 
 	/// <summary>
 	/// Occurs when ExoPlayer changes the player state.
@@ -104,22 +105,22 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		// ExoPlayer reports Media3's Player.STATE_* values (idleState to endedState), not android.media.session.PlaybackState values: the
+		// ExoPlayer reports Media3's Player.STATE_* values (stateIdle to stateEnded), not android.media.session.PlaybackState values: the
 		// PlaybackState arms only map the values that are not Media3 states.
 		var newState = playbackState switch
 		{
 			// ExoPlayer is idle until a source is prepared: a source that is opening has not stopped, and a failed one stays failed
-			idleState => MediaElement.CurrentState is MediaElementState.Opening or MediaElementState.Failed
+			stateIdle => MediaElement.CurrentState is MediaElementState.Opening or MediaElementState.Failed
 				? MediaElement.CurrentState
 				: MediaElementState.Stopped,
 
-			bufferState => MediaElementState.Buffering,
+			stateBuffering => MediaElementState.Buffering,
 
-			readyState => playWhenReady
+			stateReady => playWhenReady
 				? MediaElementState.Playing
 				: MediaElementState.Paused,
 
-			endedState => MediaElementState.Stopped,
+			stateEnded => MediaElementState.Stopped,
 
 			PlaybackState.StateRewinding
 				or PlaybackState.StateSkippingToNext
@@ -139,10 +140,48 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		};
 
 		MediaElement.CurrentStateChanged(newState);
-		if (playbackState is readyState)
+		if (playbackState is stateReady)
 		{
 			MediaElement.Duration = TimeSpan.FromMilliseconds(Player.Duration < 0 ? 0 : Player.Duration);
 			MediaElement.Position = TimeSpan.FromMilliseconds(Player.CurrentPosition < 0 ? 0 : Player.CurrentPosition);
+		}
+	}
+
+	/// <summary>
+	/// Occurs when a player reports that some of its state changed, after the callbacks of the individual changes.
+	/// </summary>
+	/// <remarks>
+	/// This is part of the <see cref="IPlayerListener"/> implementation.
+	/// While this method does not seem to have any references, it's invoked at runtime.
+	/// </remarks>
+	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
+	{
+		// A MediaController reports the state through the individual callbacks and OnEvents only, never through OnPlayerStateChanged,
+		// which ExoPlayer calls itself
+		if (player is null or IExoPlayer || playerEvents is null)
+		{
+			return;
+		}
+
+		if (playerEvents.ContainsAny(eventPlaybackStateChanged, eventPlayWhenReadyChanged))
+		{
+			OnPlayerStateChanged(player.PlayWhenReady, player.PlaybackState);
+		}
+	}
+
+	public void OnTracksChanged(Tracks? tracks)
+	{
+		if (tracks is null || tracks.IsEmpty)
+		{
+			return;
+		}
+		if (tracks.IsTypeSupported(C.TrackTypeText))
+		{
+			PlayerView?.SetShowSubtitleButton(true);
+		}
+		else
+		{
+			PlayerView?.SetShowSubtitleButton(false);
 		}
 	}
 
@@ -151,17 +190,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	/// </summary>
 	/// <returns>The platform native counterpart of <see cref="MediaElement"/>.</returns>
 	/// <exception cref="NullReferenceException">Thrown when <see cref="Context"/> is <see langword="null"/> or when the platform view could not be created.</exception>
-	[MemberNotNull(nameof(Player), nameof(PlayerView), nameof(session))]
-	public (PlatformMediaElement platformView, PlayerView PlayerView) CreatePlatformView(AndroidViewType androidViewType, bool isAndroidServiceEnabled)
+	[MemberNotNull(nameof(PlayerView))]
+	public PlayerView CreatePlatformView(AndroidViewType androidViewType, bool isAndroidServiceEnabled)
 	{
-		Player = new ExoPlayerBuilder(MauiContext.Context).Build() ?? throw new InvalidOperationException("Player cannot be null");
-		Player.AddListener(this);
 		this.isAndroidForegroundServiceEnabled = isAndroidServiceEnabled;
 		if (androidViewType is AndroidViewType.SurfaceView)
 		{
 			PlayerView = new PlayerView(MauiContext.Context)
 			{
-				Player = Player,
 				UseController = false,
 				ControllerAutoShow = false,
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
@@ -182,7 +218,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 			PlayerView = new PlayerView(MauiContext.Context, attributes)
 			{
-				Player = Player,
 				UseController = false,
 				ControllerAutoShow = false,
 				LayoutParameters = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
@@ -193,13 +228,118 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			throw new NotSupportedException($"{androidViewType} is not yet supported");
 		}
 
-		var mediaSession = new MediaSession.Builder(Platform.AppContext, Player);
-		mediaSession.SetId(Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..8]);
+		return PlayerView;
+	}
 
-		session ??= mediaSession.Build() ?? throw new InvalidOperationException("Session cannot be null");
-		ArgumentNullException.ThrowIfNull(session.Id);
+	public async Task<PlatformMediaElement> CreatePlatformPlayer(CancellationToken cancellationToken = default)
+	{
+		PlatformMediaElement player = isAndroidForegroundServiceEnabled
+			? await CreateMediaController(cancellationToken)
+			: CreateLocalPlayer();
 
-		return (Player, PlayerView);
+		disconnectTokenSource.Token.ThrowIfCancellationRequested();
+		return player;
+	}
+
+	internal ValueTask SynchronizePlayerStateAsync()
+	{
+		PlatformUpdateAspect();
+		PlatformUpdateShouldShowPlaybackControls();
+		PlatformUpdateShouldKeepScreenOn();
+		PlatformUpdateVolume();
+		PlatformUpdateShouldMute();
+		PlatformUpdateShouldLoopPlayback();
+		PlatformUpdateSpeed();
+
+		// A Source set before the player exists was only noted: the mapper has already run, which is not the case for a Source of the
+		// MediaElement that the handler connects to, whose mapper runs right after this and loads it
+		return hasPendingSourceUpdate ? UpdateSource() : ValueTask.CompletedTask;
+	}
+
+	IExoPlayer CreateLocalPlayer()
+	{
+		if (Player is IExoPlayer existingPlayer)
+		{
+			return existingPlayer;
+		}
+
+		if (PlayerView is null)
+		{
+			throw new InvalidOperationException($"{nameof(PlayerView)} cannot be null");
+		}
+
+		var (exoPlayer, trackSelector) = ExoPlayerFactory.Create(Platform.AppContext);
+		localTrackSelector = trackSelector;
+
+		Player = exoPlayer;
+		Player.AddListener(this);
+		PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
+		PlayerView.Player = Player;
+
+		return exoPlayer;
+	}
+	public async Task<MediaController> CreateMediaController(CancellationToken cancellationToken = default)
+	{
+		if (Player is MediaController mediaController)
+		{
+			return mediaController;
+		}
+
+		var disconnectToken = disconnectTokenSource.Token;
+		disconnectToken.ThrowIfCancellationRequested();
+
+		var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var connectionHints = new Android.OS.Bundle();
+		connectionHints.PutString(MediaSessionCallback.PlayerIdKey, AndroidPlayerConnectionKey);
+
+		var builder = new MediaController.Builder(Platform.AppContext, new SessionToken(Platform.AppContext, new ComponentName(Platform.AppContext, Java.Lang.Class.FromType(typeof(MediaControlsService)))));
+		builder.SetConnectionHints(connectionHints);
+		var future = builder.BuildAsync();
+		future?.AddListener(new Runnable(() =>
+		{
+			try
+			{
+				var result = future.Get() ?? throw new InvalidOperationException("MediaController.Builder.BuildAsync().Get() returned null");
+				if (result is not MediaController mc)
+				{
+					tcs.SetException(new InvalidOperationException("MediaController.Builder.BuildAsync().Get() did not return a MediaController"));
+					return;
+				}
+
+				// The service created the registration of this connection while the controller connected: it is released again, because
+				// the handler was disconnected in the meantime and nothing else would release it
+				if (disconnectToken.IsCancellationRequested)
+				{
+					ReleaseControllerAndItsPlayerRegistration(mc);
+					tcs.SetCanceled(disconnectToken);
+					return;
+				}
+
+				Player = mc;
+				Player.AddListener(this);
+				MediaControlsService.Running?.AttachMediaManagerToRegistration(AndroidPlayerConnectionKey, this);
+				if (PlayerView is null)
+				{
+					throw new InvalidOperationException($"{nameof(PlayerView)} cannot be null");
+				}
+
+				PlayerView.SetBackgroundColor(Android.Graphics.Color.Black);
+				PlayerView.Player = Player;
+
+				tcs.SetResult();
+			}
+			catch (Exception ex)
+			{
+				Trace.WriteLine($"Error creating MediaController: {ex}");
+				tcs.SetException(ex);
+			}
+		}), ContextCompat.GetMainExecutor(Platform.AppContext));
+
+		using var waitTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken);
+		await tcs.Task.WaitAsync(waitTokenSource.Token);
+
+		disconnectToken.ThrowIfCancellationRequested();
+		return Player as MediaController ?? throw new InvalidOperationException("MediaController is null");
 	}
 
 	/// <summary>
@@ -220,14 +360,14 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElementState newState = MediaElement.CurrentState;
 		switch (playbackState)
 		{
-			case bufferState:
+			case stateBuffering:
 				newState = MediaElementState.Buffering;
 				break;
-			case endedState:
+			case stateEnded:
 				newState = MediaElementState.Stopped;
 				MediaElement.MediaEnded();
 				break;
-			case readyState:
+			case stateReady:
 				seekToTaskCompletionSource?.TrySetResult();
 				break;
 		}
@@ -306,126 +446,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		MediaElement.Volume = volume;
 	}
 
-	#region PlayerListener implementation method stubs
-
-	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes)
-	{
-	}
-
-	public void OnAudioSessionIdChanged(int audioSessionId)
-	{
-	}
-
-	public void OnAvailableCommandsChanged(PlayerCommands? player)
-	{
-	}
-
-	public void OnCues(CueGroup? cues)
-	{
-	}
-
-	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo)
-	{
-	}
-
-	public void OnDeviceVolumeChanged(int volume, bool muted)
-	{
-	}
-
-	public void OnEvents(IPlayer? player, PlayerEvents? playerEvents)
-	{
-	}
-
-	public void OnIsLoadingChanged(bool isLoading)
-	{
-	}
-
-	public void OnIsPlayingChanged(bool isPlaying)
-	{
-	}
-
-	public void OnLoadingChanged(bool isLoading)
-	{
-	}
-
-	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs)
-	{
-	}
-
-	public void OnMediaItemTransition(MediaItem? mediaItem, int reason)
-	{
-	}
-
-	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata)
-	{
-		// The notification carries the title and artist (MediaControlsService.UpdateNotifications), so it must follow every later change of the metadata
-		UpdateNotifications();
-	}
-
-	public void OnMetadata(Metadata? metadata)
-	{
-	}
-
-	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason)
-	{
-	}
-
-	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason)
-	{
-	}
-
-	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason)
-	{
-	}
-
-	public void OnPlayerErrorChanged(PlaybackException? error)
-	{
-	}
-
-	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata)
-	{
-	}
-
-	public void OnRenderedFirstFrame()
-	{
-	}
-
-	public void OnRepeatModeChanged(int repeatMode)
-	{
-	}
-
-	public void OnSeekBackIncrementChanged(long seekBackIncrementMs)
-	{
-	}
-
-	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs)
-	{
-	}
-
-	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled)
-	{
-	}
-
-	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled)
-	{
-	}
-
-	public void OnSurfaceSizeChanged(int width, int height)
-	{
-	}
-
-	public void OnTimelineChanged(Timeline? timeline, int reason)
-	{
-	}
-
-	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters)
-	{
-	}
-
-	public void OnTracksChanged(Tracks? tracks)
-	{
-	}
-
 	protected virtual partial void PlatformPlay()
 	{
 		if (Player is null || MediaElement.Source is null)
@@ -434,7 +454,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		}
 
 		// The player has no media: prepared, it would end at once and report MediaEnded for a media that never played
-		if (Player.MediaItemCount is 0)
+		if (!PlayerHasMediaItems())
 		{
 			// A source that is still loading (its artwork downloads) plays once it is loaded. A source without data, or one that could not be
 			// applied, has nothing to play, like a null Source.
@@ -448,7 +468,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		// Media that played to its end stays there on play() (ExoPlayer's ended state). Like the play button of Media3's own controls
 		// (Util.handlePlayButtonAction), Play() first seeks to the default position: the start of the media, or the live edge of a live stream
-		if (Player.PlaybackState is endedState)
+		if (Player.PlaybackState is stateEnded)
 		{
 			Player.SeekToDefaultPosition();
 		}
@@ -472,7 +492,7 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 	{
 		if (Player is null)
 		{
-			throw new InvalidOperationException($"{nameof(IExoPlayer)} is not yet initialized");
+			throw new InvalidOperationException($"{nameof(Player)} is not yet initialized");
 		}
 
 		await seekToSemaphoreSlim.WaitAsync(token);
@@ -501,8 +521,8 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			return;
 		}
 
-		Player.SeekTo(0);
 		Player.Stop();
+		Player.SeekTo(0);
 		MediaElement.Position = TimeSpan.Zero;
 
 		// The stopped player is idle: it reports no ready state for a seek that Stop() interrupted, which has ended all the same. SeekTo completes
@@ -512,15 +532,15 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 	protected virtual async partial ValueTask PlatformUpdateSource()
 	{
+		hasReportedForegroundServiceRefusal = false;
+
 		if (Player is null)
 		{
+			hasPendingSourceUpdate = true;
 			return;
 		}
 
-		if (connection is null && isAndroidForegroundServiceEnabled)
-		{
-			StartService();
-		}
+		hasPendingSourceUpdate = false;
 
 		// This source replaces one that may still be loading (its artwork can take a while to download): that load must not finish
 		cancellationTokenSource?.Cancel();
@@ -594,12 +614,18 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 					mediaSource = mediaSourceFactory.CreateMediaSource(item);
 				}
 
+				IExoPlayer? mediaSourcePlayer = null;
+				if (mediaSource is not null && !TryGetExoPlayer(out mediaSourcePlayer))
+				{
+					throw new InvalidOperationException($"The {nameof(MediaElement.Source)} needs the ExoPlayer of the {nameof(MediaElement)}, which is not available yet or any more.");
+				}
+
 				// The player raises its events synchronously while it takes the source (StateChanged for Buffering, for example): from here on, only
 				// an exception of the player itself, a Java exception, is a failure of the source
 				isPlayerTakingTheSource = true;
 				if (mediaSource is not null)
 				{
-					Player.SetMediaSource(mediaSource);
+					mediaSourcePlayer?.SetMediaSource(mediaSource);
 				}
 				else
 				{
@@ -659,10 +685,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			MediaElement.MediaOpened();
 		}
 
-		if (isAndroidForegroundServiceEnabled)
-		{
-			UpdateNotifications();
-		}
 	}
 
 	protected virtual partial void PlatformUpdateAspect()
@@ -746,7 +768,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 			volumeBeforeMute = (float)MediaElement.Volume;
 			return;
 		}
-
 		Player.Volume = (float)MediaElement.Volume;
 	}
 
@@ -791,12 +812,52 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		Player.RepeatMode = MediaElement.ShouldLoopPlayback ? RepeatModeUtil.RepeatToggleModeOne : RepeatModeUtil.RepeatToggleModeNone;
 	}
 
+	// A MediaController cannot carry a MediaSource (a stream, or a source with HTTP headers): it is set on the ExoPlayer of the service, which is
+	// the player the controller controls. Both run on the main thread, which is the application thread of that player.
+	bool TryGetExoPlayer([NotNullWhen(true)] out IExoPlayer? exoPlayer)
+	{
+		exoPlayer = Player as IExoPlayer;
+		return exoPlayer is not null || MediaControlsService.TryGetExoPlayer(AndroidPlayerConnectionKey, out exoPlayer);
+	}
+
+	// The controller learns of an item that was set on the player of the service only once the session has told it
+	bool PlayerHasMediaItems() =>
+		Player?.MediaItemCount > 0 || (TryGetExoPlayer(out var exoPlayer) && exoPlayer.MediaItemCount > 0);
+
+	// Media3 runs the service in the foreground for media that is ready or buffering and plays, and on Android 12 and 12L also for a Play() of
+	// paused media, which it then refuses: the refusal names no session, and the controller has dropped that Play() before it arrives
+	[SupportedOSPlatform("android31.0")]
+	internal void ReportForegroundServiceRefusalIfPlaybackNeedsTheService()
+	{
+		if (hasReportedForegroundServiceRefusal || Player is not MediaController mediaController || !IsAlive(mediaController))
+		{
+			return;
+		}
+
+		var doesPlaybackNeedTheService = mediaController.PlayWhenReady || !OperatingSystem.IsAndroidVersionAtLeast(33);
+		if (!doesPlaybackNeedTheService || mediaController.PlaybackState is not (stateReady or stateBuffering))
+		{
+			return;
+		}
+
+		hasReportedForegroundServiceRefusal = true;
+		MediaElement.ReportSourceUpdateException(new Android.App.ForegroundServiceStartNotAllowedException(foregroundServiceRefusalReason), foregroundServiceRefusalFailure, Logger);
+	}
+
 	protected override void Dispose(bool disposing)
 	{
-		base.Dispose(disposing);
-
 		if (disposing)
 		{
+			disconnectTokenSource.Cancel();
+
+			// MauiMediaElement.Dispose releases and disposes the player of its PlayerView, which can run before this does
+			var isPlayerAlive = IsAlive(Player);
+			if (isPlayerAlive)
+			{
+				Player?.Stop();
+				Player?.RemoveListener(this);
+			}
+
 			// A seek that waits for the ready state of the released player would only end after its two minute timeout. It ends like a cancelled
 			// seek, once the handler has finished disconnecting: no continuation of SeekTo may run in the middle of the disconnection
 			if (seekToTaskCompletionSource is { Task.IsCompleted: false } pendingSeek)
@@ -804,47 +865,96 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 				Dispatcher.Dispatch(() => pendingSeek.TrySetCanceled());
 			}
 
-			// The service keeps running while another MediaElement is bound to it: its notification must forget this session and player
-			if (session is not null && Player is not null)
-			{
-				connection?.Binder?.Service.ForgetSession(session, Player);
-			}
-
-			session?.Release();
-			session?.Dispose();
-			session = null;
-
 			// A source that is still loading must not finish loading into the released player
 			cancellationTokenSource?.Cancel();
 			cancellationTokenSource?.Dispose();
 			cancellationTokenSource = null;
 
-			if (connection is not null)
+			if (isPlayerAlive && Player is IExoPlayer exoPlayer)
 			{
-				StopService(connection);
-				connection = null;
+				exoPlayer.Release();
+				exoPlayer.Dispose();
 			}
+			else if (Player is MediaController mediaController)
+			{
+				if (isPlayerAlive)
+				{
+					ReleaseControllerAndItsPlayerRegistration(mediaController);
+				}
+				else if (isAndroidForegroundServiceEnabled)
+				{
+					// The PlayerView released the controller first: no release command can be sent, and another MediaElement can keep the service alive
+					MediaControlsService.Running?.ReleasePlayer(AndroidPlayerConnectionKey);
+				}
+			}
+
+			if (IsAlive(PlayerView))
+			{
+				PlayerView?.Player = null;
+			}
+
+			Player = null;
+			PlayerView = null;
+			localTrackSelector?.Dispose();
+			localTrackSelector = null;
 
 			currentStreamDataSourceFactory?.Dispose();
 			currentStreamDataSourceFactory = null;
 
 			client.Dispose();
 		}
+
+		base.Dispose(disposing);
 	}
 
-	static void StopAndUnbind(BoundServiceConnection boundServiceConnection)
+	// A disposed Java peer has no handle left, and every call on it throws ObjectDisposedException
+	static bool IsAlive(Android.Runtime.IJavaObject? javaObject) => javaObject is not null && javaObject.Handle != IntPtr.Zero;
+
+	// Media3 unbinds a released controller from the service only once every command it sent was answered, or after 30 seconds: releasing the
+	// controller right after the release command would keep the service bound, and so alive, for that long.
+	void ReleaseControllerAndItsPlayerRegistration(MediaController mediaController)
 	{
-		var isLastManagerOfTheService = Interlocked.Decrement(ref managersBoundToTheService) == 0;
-		if (isLastManagerOfTheService && OperatingSystem.IsAndroidVersionAtLeast(30) && !OperatingSystem.IsAndroidVersionAtLeast(31))
+		if (!isAndroidForegroundServiceEnabled)
 		{
-			boundServiceConnection.Binder?.Service.LeaveForegroundBeforeStopping();
+			mediaController.Release();
+			mediaController.Dispose();
+			return;
 		}
 
-		var context = ServiceContext;
-		var serviceIntent = new Intent(context, typeof(MediaControlsService));
-		context.StopService(serviceIntent);
-		context.UnbindService(boundServiceConnection);
-		boundServiceConnection.Dispose();
+		using var args = new Android.OS.Bundle();
+		args.PutString(MediaSessionCallback.PlayerIdKey, AndroidPlayerConnectionKey);
+
+		var commandResult = mediaController.SendCustomCommand(new SessionCommand(MediaSessionCallback.ReleasePlayer, new Android.OS.Bundle()), args);
+		if (commandResult is null)
+		{
+			mediaController.Release();
+			mediaController.Dispose();
+			return;
+		}
+
+		commandResult.AddListener(new Runnable(() =>
+		{
+			try
+			{
+				if (commandResult.Get() is null)
+				{
+					throw new InvalidOperationException("MediaController.SendCustomCommand().Get() cannot be null");
+				}
+			}
+			catch (Exception ex)
+			{
+				Trace.WriteLine($"Error releasing Android MediaElement player registration: {ex}");
+			}
+			finally
+			{
+				// MauiMediaElement.Dispose releases and disposes the controller of its PlayerView too, which can run before the answer arrives
+				if (IsAlive(mediaController))
+				{
+					mediaController.Release();
+					mediaController.Dispose();
+				}
+			}
+		}), ContextCompat.GetMainExecutor(Platform.AppContext));
 	}
 
 	async Task<byte[]> GetBytesFromMetadataArtworkUrl(string url, CancellationToken cancellationToken = default)
@@ -915,87 +1025,6 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 
 		static string NormalizeFilePath(string filePath) => filePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 	}
-
-	void StartService()
-	{
-		if (!isAndroidForegroundServiceEnabled)
-		{
-			return;
-		}
-
-		var context = ServiceContext;
-		var intent = new Intent(context, typeof(MediaControlsService));
-		var newConnection = new BoundServiceConnection(this);
-		var isBindAttempted = false;
-		var isBound = false;
-
-		try
-		{
-			context.StartForegroundService(intent);
-			isBindAttempted = true;
-			isBound = context.BindService(intent, newConnection, Bind.AutoCreate);
-		}
-		// Android 12+ refuses a foreground service to an app in the background. Thrown, it would end the update and, from XAML, leave MAUI's
-		// SourceProperty unable to change again. With no source there is no media to report on, and the next source retries
-		catch (Exception exception)
-		{
-			if (MediaElement.Source is not null)
-			{
-				MediaElement.ReportSourceUpdateException(exception, serviceStartFailure, Logger);
-			}
-			else
-			{
-				Trace.WriteLine($"Unable to start {nameof(MediaControlsService)} with no source: {exception.GetType().FullName}: {(exception as Java.Lang.Throwable)?.Message ?? exception.Message}");
-			}
-
-			return;
-		}
-		finally
-		{
-			if (!isBound)
-			{
-				// Android keeps a connection registered from the bind call on, even when the bind fails, until it is unbound
-				if (isBindAttempted)
-				{
-					context.UnbindService(newConnection);
-				}
-
-				newConnection.Dispose();
-			}
-		}
-
-		if (!isBound)
-		{
-			Trace.WriteLine($"Unable to bind {nameof(MediaControlsService)}: the media notification is not shown.");
-			return;
-		}
-
-		connection = newConnection;
-		connection.MediaControlsServiceTaskRemoved += HandleMediaControlsServiceTaskRemoved;
-		Interlocked.Increment(ref managersBoundToTheService);
-	}
-
-	void StopService(BoundServiceConnection boundServiceConnection)
-	{
-		if (!isAndroidForegroundServiceEnabled)
-		{
-			return;
-		}
-
-		boundServiceConnection.MediaControlsServiceTaskRemoved -= HandleMediaControlsServiceTaskRemoved;
-
-		// Until its connection lands the service may not have called startForeground yet: bringing it down then makes Android kill the app.
-		if (boundServiceConnection.IsConnected)
-		{
-			StopAndUnbind(boundServiceConnection);
-		}
-		else
-		{
-			boundServiceConnection.StopWhenConnected(StopAndUnbind);
-		}
-	}
-
-	void HandleMediaControlsServiceTaskRemoved(object? sender, EventArgs e) => Player?.Stop();
 
 	async Task<MediaItem.Builder?> SetPlayerData(CancellationToken cancellationToken = default)
 	{
@@ -1104,6 +1133,34 @@ public partial class MediaManager : Java.Lang.Object, IPlayerListener
 		return mediaItem;
 	}
 
+	#region PlayerListener implementation method stubs
+	public void OnAudioAttributesChanged(AudioAttributes? audioAttributes) { }
+	public void OnAudioSessionIdChanged(int audioSessionId) { }
+	public void OnAvailableCommandsChanged(PlayerCommands? player) { }
+	public void OnCues(CueGroup? cues) { }
+	public void OnDeviceInfoChanged(DeviceInfo? deviceInfo) { }
+	public void OnDeviceVolumeChanged(int volume, bool muted) { }
+	public void OnIsLoadingChanged(bool isLoading) { }
+	public void OnIsPlayingChanged(bool isPlaying) { }
+	public void OnLoadingChanged(bool isLoading) { }
+	public void OnMaxSeekToPreviousPositionChanged(long maxSeekToPreviousPositionMs) { }
+	public void OnMediaItemTransition(MediaItem? mediaItem, int reason) { }
+	public void OnMediaMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnMetadata(Metadata? metadata) { }
+	public void OnPlayWhenReadyChanged(bool playWhenReady, int reason) { }
+	public void OnPositionDiscontinuity(PlayerPositionInfo? oldPosition, PlayerPositionInfo? newPosition, int reason) { }
+	public void OnPlaybackSuppressionReasonChanged(int playbackSuppressionReason) { }
+	public void OnPlayerErrorChanged(PlaybackException? error) { }
+	public void OnPlaylistMetadataChanged(MediaMetadata? mediaMetadata) { }
+	public void OnRenderedFirstFrame() { }
+	public void OnRepeatModeChanged(int repeatMode) { }
+	public void OnSeekBackIncrementChanged(long seekBackIncrementMs) { }
+	public void OnSeekForwardIncrementChanged(long seekForwardIncrementMs) { }
+	public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled) { }
+	public void OnSkipSilenceEnabledChanged(bool skipSilenceEnabled) { }
+	public void OnSurfaceSizeChanged(int width, int height) { }
+	public void OnTimelineChanged(Timeline? timeline, int reason) { }
+	public void OnTrackSelectionParametersChanged(TrackSelectionParameters? trackSelectionParameters) { }
 	#endregion
 
 	static class PlaybackState

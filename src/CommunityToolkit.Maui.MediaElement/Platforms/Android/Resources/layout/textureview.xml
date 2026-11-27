@@ -4,8 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/texture_view_media_element"
     app:surface_type="texture_view"
-    app:shutter_background_color="#FFFFFF"
+    app:shutter_background_color="#000000"
     android:layout_width= "match_parent"
     android:layout_height= "match_parent"
-    android:background="@android:color/transparent"
+    android:background="@android:color/black"
 />

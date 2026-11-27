@@ -1,7 +1,7 @@
 ﻿#if !(ANDROID || IOS || WINDOWS || MACCATALYST)
 global using PlatformMediaElement = System.Object;
 #elif ANDROID
-global using PlatformMediaElement = AndroidX.Media3.ExoPlayer.IExoPlayer;
+global using PlatformMediaElement = AndroidX.Media3.Common.IPlayer;
 #elif IOS || MACCATALYST
 global using PlatformMediaElement = AVFoundation.AVPlayer;
 #elif WINDOWS
@@ -126,8 +126,8 @@ public partial class MediaManager
 	/// <remarks>
 	/// An exception thrown by a handler of an event that the update raises, PropertyChanging and PropertyChanged included, neither ends the update
 	/// nor is thrown by it: it is logged, and reported through MediaFailed once the update has ended (see <see cref="IMediaElement.Source"/>).
-	/// On Android, so is a refusal of the system to start the foreground service of the media notification while a source is applied.
-	/// Other exceptions of the update are thrown.
+	/// Other exceptions of the update are thrown. On Android, the update does not start the foreground service of the media notification: Media3
+	/// starts it for playback, and a refusal is reported apart from the update (see <see cref="CommunityToolkit.Maui.Views.MediaElement.Source"/>).
 	/// </remarks>
 	/// <returns>A task that completes when the update has ended.</returns>
 	public ValueTask UpdateSource() => MediaElement.RunSourceUpdate(PlatformUpdateSource, Logger);

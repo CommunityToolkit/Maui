@@ -589,9 +589,9 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			var player = new ExoPlayerBuilder(MauiContext.Context!).Build()!;
-			try
+			using var playerReference = new JavaObjectReference((Java.Lang.Object)player);
+			using (var manager = new AndroidMediaManagerProbe(MauiContext, mediaElement, TestDispatcher.Current))
 			{
-				using var manager = new AndroidMediaManagerProbe(MauiContext, mediaElement, TestDispatcher.Current);
 				manager.AttachPlayer(player);
 				Assert.Null(manager.ExposedPlayerView);
 
@@ -600,11 +600,9 @@ public class MediaManagerSourceAndroidTests : MediaElementAndroidTestBase
 				Assert.Equal(1, player.MediaItemCount);
 				Assert.Equal($"asset://{Path.PathSeparator}Assets/{toneAsset}", player.CurrentMediaItem!.MediaId);
 			}
-			finally
-			{
-				// The manager is not the player's listener here (it did not create the player), so the player can simply be released.
-				player.Release();
-			}
+
+			// The manager owns the player it holds and released it, which disposed this peer: a new peer shows the state
+			Assert.True(playerReference.GetPeer<IExoPlayer>().IsReleased);
 		});
 	}
 

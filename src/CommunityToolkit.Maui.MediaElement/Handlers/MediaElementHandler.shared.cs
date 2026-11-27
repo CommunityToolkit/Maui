@@ -102,10 +102,10 @@ public partial class MediaElementHandler
 	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
 	/// <remarks>
 	/// The platform's <see cref="Views.MediaManager"/> reports a source that it cannot apply through <see cref="MediaElement.MediaFailed"/>, and so
-	/// does its <see cref="Views.MediaManager.UpdateSource"/> for an exception of an event handler that the update raises or, on Android,
-	/// a refusal to start the foreground service of the media notification while a source is applied
+	/// does its <see cref="Views.MediaManager.UpdateSource"/> for an exception of an event handler that the update raises
 	/// (see <see cref="MediaElement.Source"/>). Any other exception of the update propagates: to the caller while the update runs
-	/// synchronously, and on the dispatcher once the update continues asynchronously.
+	/// synchronously, and on the dispatcher once the update continues asynchronously. On Android, a refusal to start the foreground service of
+	/// the media notification is not part of the update (see <see cref="MediaElement.Source"/>).
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
 	public static void MapSource(MediaElementHandler handler, MediaElement mediaElement)

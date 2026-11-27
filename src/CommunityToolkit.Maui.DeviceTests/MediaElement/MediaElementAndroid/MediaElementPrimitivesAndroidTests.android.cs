@@ -37,16 +37,14 @@ public class MediaElementPrimitivesAndroidTests : MediaElementAndroidTestBase
 	}
 
 	[Fact]
-	public void MediaControlsServiceIsRegisteredAsASingletonService()
+	public void MediaControlsServiceIsNotRegisteredInTheContainer()
 	{
 		IServiceCollection? services = null;
 		SetupProbeBuilder(configureBuilder: builder => services = builder.Services);
 
-		// The container is not asked for the service: a MediaControlsService made by the container would be a service object that the
-		// system never attached.
-		var descriptor = Assert.Single(services!, registration => registration.ServiceType == typeof(MediaControlsService));
-		Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
-		Assert.Equal(typeof(MediaControlsService), descriptor.ImplementationType);
+		// The container is not asked for the service: the system creates and attaches it, and one that the container made would be a
+		// second service object that nothing attached.
+		Assert.DoesNotContain(services!, registration => registration.ServiceType == typeof(MediaControlsService) || registration.ImplementationType == typeof(MediaControlsService));
 	}
 
 	[Fact]

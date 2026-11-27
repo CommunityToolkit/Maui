@@ -1,269 +1,290 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Graphics;
-using Android.OS;
-using AndroidX.Core.App;
+using AndroidX.Media3.Common;
+using AndroidX.Media3.DataSource;
+using AndroidX.Media3.ExoPlayer;
+using AndroidX.Media3.ExoPlayer.TrackSelection;
 using AndroidX.Media3.Session;
-using AndroidX.Media3.UI;
+using CommunityToolkit.Maui.Core.Views;
 using CommunityToolkit.Maui.Services;
-using Resource = Microsoft.Maui.Controls.Resource;
 
 namespace CommunityToolkit.Maui.Media.Services;
 
+[SupportedOSPlatform("Android26.0")]
 [IntentFilter(["androidx.media3.session.MediaSessionService"])]
 [Service(Exported = false, Enabled = true, Name = "communityToolkit.maui.media.services", ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-sealed partial class MediaControlsService : Service
+sealed partial class MediaControlsService : MediaSessionService
 {
-	const int mediaNotificationId = 1;
-	internal const int StragglerCancelDelayMilliseconds = 500;
+	static readonly Lock runningServiceLock = new();
+	static MediaControlsService? runningService;
 
-	readonly WeakEventManager taskRemovedEventManager = new();
-	readonly Handler cancelStragglerHandler = new(Looper.MainLooper ?? throw new InvalidOperationException("The main looper cannot be null"));
+	readonly Dictionary<string, PlayerRegistration> playerRegistrations = [];
+	readonly Lock syncLock = new();
 
-	readonly NotificationArtworkCache artworkCache = new();
-
-	bool isDisposed;
-
-	PlayerNotificationManager? playerNotificationManager;
-	NotificationCompat.Builder? notificationBuilder;
-
-	MediaSession? notificationSession;
-	PlatformMediaElement? legacyNotificationPlayer;
-
-	public event EventHandler TaskRemoved
+	// The system creates the service, so a MediaElement and the tests can only reach the running instance through the process
+	internal static MediaControlsService? Running
 	{
-		add => taskRemovedEventManager.AddEventHandler(value);
-		remove => taskRemovedEventManager.RemoveEventHandler(value);
+		get
+		{
+			lock (runningServiceLock)
+			{
+				return runningService;
+			}
+		}
 	}
 
-	public BoundServiceBinder? Binder { get; private set; }
-	public NotificationManager? NotificationManager { get; private set; }
-
-	public override IBinder? OnBind(Intent? intent)
+	internal IReadOnlyCollection<string> RegisteredPlayerIds
 	{
-		Binder = new BoundServiceBinder(this);
-		return Binder;
+		get
+		{
+			lock (syncLock)
+			{
+				return [.. playerRegistrations.Keys];
+			}
+		}
+	}
+
+	// A MediaController cannot carry a custom MediaSource (a stream, or a source with HTTP headers), so MediaManager hands it to the player of the service
+	internal static bool TryGetExoPlayer(string playerId, [NotNullWhen(true)] out IExoPlayer? exoPlayer)
+	{
+		exoPlayer = null;
+		return Running?.TryGetRegistration(playerId, out _, out exoPlayer) is true;
+	}
+
+	internal bool TryGetRegistration(string playerId, [NotNullWhen(true)] out MediaSession? mediaSession, [NotNullWhen(true)] out IExoPlayer? exoPlayer)
+	{
+		lock (syncLock)
+		{
+			if (playerRegistrations.TryGetValue(playerId, out var registration))
+			{
+				mediaSession = registration.MediaSession;
+				exoPlayer = registration.ExoPlayer;
+				return true;
+			}
+		}
+
+		mediaSession = null;
+		exoPlayer = null;
+		return false;
+	}
+
+	public override void OnTaskRemoved(Intent? rootIntent)
+	{
+		PauseAllPlayersAndStopSelf();
+		base.OnTaskRemoved(rootIntent);
 	}
 
 	public override void OnCreate()
 	{
 		base.OnCreate();
-		StartForegroundServices();
-	}
 
-	public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
-		=> StartCommandResult.NotSticky;
-
-	public override void OnTaskRemoved(Intent? rootIntent)
-	{
-		base.OnTaskRemoved(rootIntent);
-		taskRemovedEventManager.HandleEvent(this, EventArgs.Empty, nameof(TaskRemoved));
-
-		playerNotificationManager?.SetPlayer(null);
-		legacyNotificationPlayer = null;
-		NotificationManager?.CancelAll();
-	}
-
-	public override void OnDestroy()
-	{
-		base.OnDestroy();
-
-		playerNotificationManager?.SetPlayer(null);
-		legacyNotificationPlayer = null;
-		// The binder of a former binding can keep the destroyed service alive: the MediaStyle of its notification must not keep the media
-		// session alive with it (and, through the session's player, the MediaElement's platform view)
-		notificationBuilder?.SetStyle(null);
-		notificationBuilder?.SetContentTitle((string?)null);
-		notificationBuilder?.SetContentText((string?)null);
-		notificationBuilder?.SetLargeIcon((Bitmap?)null);
-		artworkCache.Clear();
-		notificationSession = null;
-		NotificationManager?.CancelAll();
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+		lock (runningServiceLock)
 		{
-			StopForeground(true);
+			runningService = this;
 		}
 
-		StopSelf();
-	}
-
-	public override void OnRebind(Intent? intent)
-	{
-		base.OnRebind(intent);
-		StartForegroundServices();
-	}
-
-	[MemberNotNull(nameof(NotificationManager), nameof(notificationBuilder))]
-	public void UpdateNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
-	{
-		ArgumentNullException.ThrowIfNull(notificationBuilder);
-		ArgumentNullException.ThrowIfNull(NotificationManager);
-
-		var style = new MediaStyleNotificationHelper.MediaStyle(session);
-		if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-		{
-			SetLegacyNotifications(session, mediaElement);
-		}
-
-		// SystemUI's media card falls back to "<app> is running..." when neither the notification nor the session has a title at the moment
-		// it reads them, and it does not re-read the session when the metadata arrives later.
-		notificationBuilder.SetContentTitle(mediaElement.MediaMetadata?.Title);
-		notificationBuilder.SetContentText(mediaElement.MediaMetadata?.Artist);
-		// SystemUI takes the artwork of its card from the notification's large icon while the session has none yet
-		notificationBuilder.SetLargeIcon(artworkCache.GetOrDecode(mediaElement.MediaMetadata?.ArtworkData));
-		notificationBuilder.SetStyle(style);
-		notificationSession = session;
-		var notification = notificationBuilder.Build() ?? throw new InvalidOperationException("The notification cannot be null");
-
-		// StartForeground's notification reaches the NotificationManager later from a system queue, so a Notify can be overtaken by it.
-		// Below Android 13 the PlayerNotificationManager posts under the same id with Notify, which a queued StartForeground update could overtake.
-		if (OperatingSystem.IsAndroidVersionAtLeast(33) && ForegroundServiceType is not ForegroundService.TypeNone)
-		{
-			StartForeground(mediaNotificationId, notification, ForegroundService.TypeMediaPlayback);
-		}
-		else
-		{
-			NotificationManagerCompat.From(Platform.AppContext)?.Notify(mediaNotificationId, notification);
-		}
-	}
-
-	[MemberNotNull(nameof(playerNotificationManager))]
-	public void SetLegacyNotifications(in MediaSession session, in PlatformMediaElement mediaElement)
-	{
-		ArgumentNullException.ThrowIfNull(session);
-		// Its notification replaces the one of the service (same id): like that one, it opens the app when it is tapped
-		playerNotificationManager ??= new PlayerNotificationManager.Builder(Platform.AppContext, mediaNotificationId, "1")
-			.SetMediaDescriptionAdapter(new DefaultMediaDescriptionAdapter(CreateActivityPendingIntent()))
-			?.Build()
-			?? throw new InvalidOperationException("PlayerNotificationManager cannot be null");
-
-		playerNotificationManager.SetUseFastForwardAction(true);
-		playerNotificationManager.SetUseFastForwardActionInCompactView(true);
-		playerNotificationManager.SetUseRewindAction(true);
-		playerNotificationManager.SetUseRewindActionInCompactView(true);
-		playerNotificationManager.SetUseNextAction(true);
-		playerNotificationManager.SetUseNextActionInCompactView(true);
-		playerNotificationManager.SetUsePlayPauseActions(true);
-		playerNotificationManager.SetUsePreviousAction(true);
-		playerNotificationManager.SetColor(Resource.Color.abc_primary_text_material_dark);
-		playerNotificationManager.SetUsePreviousActionInCompactView(true);
-		playerNotificationManager.SetVisibility(NotificationCompat.VisibilityPublic);
-		playerNotificationManager.SetMediaSessionToken(session.PlatformToken);
-		playerNotificationManager.SetPlayer(mediaElement);
-		legacyNotificationPlayer = mediaElement;
-		playerNotificationManager.SetColorized(true);
-		playerNotificationManager.SetShowPlayButtonIfPlaybackIsSuppressed(true);
-		playerNotificationManager.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
-		playerNotificationManager.SetPriority(NotificationCompat.PriorityDefault);
-		playerNotificationManager.SetUseChronometer(true);
-	}
-
-	// The service keeps running while another MediaElement is bound to it, so OnDestroy does not run when one of them goes away: the
-	// notification must then forget the session and the player of that MediaElement, or it keeps them (and, through the player, the
-	// MediaElement's platform view) alive. The notification of another MediaElement is left alone.
-	public void ForgetSession(in MediaSession session, in PlatformMediaElement mediaElement)
-	{
-		if (ReferenceEquals(notificationSession, session))
-		{
-			notificationBuilder?.SetStyle(null);
-			notificationBuilder?.SetContentTitle((string?)null);
-			notificationBuilder?.SetContentText((string?)null);
-			notificationBuilder?.SetLargeIcon((Bitmap?)null);
-			artworkCache.Clear();
-			notificationSession = null;
-		}
-
-		if (ReferenceEquals(legacyNotificationPlayer, mediaElement))
-		{
-			playerNotificationManager?.SetPlayer(null);
-			legacyNotificationPlayer = null;
-		}
-	}
-
-	// Android 11 defers a cancel while a post of the same notification is queued, leaving the notification behind; leaving the foreground
-	// first lets the cancels win.
-	public void LeaveForegroundBeforeStopping()
-	{
-		playerNotificationManager?.SetPlayer(null);
-		legacyNotificationPlayer = null;
-		StopForeground(StopForegroundFlags.Detach);
-		NotificationManager?.Cancel(mediaNotificationId);
-		cancelStragglerHandler.PostDelayed(() => NotificationManager?.Cancel(mediaNotificationId), StragglerCancelDelayMilliseconds);
+		SetListener(new ForegroundServiceRefusalListener(this));
 	}
 
 	protected override void Dispose(bool disposing)
 	{
-		if (!isDisposed)
+		if (disposing)
 		{
-			if (disposing)
-			{
-				artworkCache.Clear();
-				NotificationManager?.Dispose();
-				NotificationManager = null;
-
-				playerNotificationManager?.Dispose();
-				playerNotificationManager = null;
-				legacyNotificationPlayer = null;
-
-				if (!OperatingSystem.IsAndroidVersionAtLeast(33))
-				{
-					StopForeground(true);
-				}
-
-				StopSelf();
-			}
-
-			isDisposed = true;
+			ForgetRunningService();
+			ReleaseAllPlayers();
 		}
-
 		base.Dispose(disposing);
 	}
 
-	static void CreateNotificationChannel(in NotificationManager notificationMnaManager)
+	public override void OnDestroy()
 	{
-		var channel = new NotificationChannel("1", "1", NotificationImportance.Low);
-		notificationMnaManager.CreateNotificationChannel(channel);
+		ClearListener();
+		ForgetRunningService();
+		ReleaseAllPlayers();
+		base.OnDestroy();
 	}
 
-	static PendingIntent CreateActivityPendingIntent()
+	public override MediaSession? OnGetSession(MediaSession.ControllerInfo? p0)
 	{
-		var packageName = Platform.AppContext.PackageName ?? throw new InvalidOperationException("PackageName cannot be null");
-		var packageManager = Platform.AppContext.PackageManager ?? throw new InvalidOperationException("PackageManager cannot be null");
-		var launchIntent = packageManager.GetLaunchIntentForPackage(packageName) ?? throw new InvalidOperationException("Launch intent cannot be null");
+		var playerId = p0?.ConnectionHints?.GetString(MediaSessionCallback.PlayerIdKey);
 
-		launchIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
-
-		var flags = PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable;
-		return PendingIntent.GetActivity(Platform.AppContext, 0, launchIntent, flags)
-			   ?? throw new InvalidOperationException("PendingIntent cannot be null");
-	}
-
-	[MemberNotNull(nameof(notificationBuilder), nameof(NotificationManager))]
-	void StartForegroundServices()
-	{
-		NotificationManager ??= GetSystemService(NotificationService) as NotificationManager ?? throw new InvalidOperationException($"{nameof(NotificationManager)} cannot be null");
-		notificationBuilder ??= new NotificationCompat.Builder(Platform.AppContext, "1");
-		var pendingIntent = CreateActivityPendingIntent();
-		notificationBuilder.SetSmallIcon(Resource.Drawable.media3_notification_small_icon);
-		notificationBuilder.SetAutoCancel(false);
-		notificationBuilder.SetForegroundServiceBehavior(NotificationCompat.ForegroundServiceImmediate);
-		notificationBuilder.SetVisibility(NotificationCompat.VisibilityPublic);
-		notificationBuilder.SetContentIntent(pendingIntent);
-
-		CreateNotificationChannel(NotificationManager);
-
-		if (OperatingSystem.IsAndroidVersionAtLeast(29))
+		if (string.IsNullOrWhiteSpace(playerId))
 		{
-			if (notificationBuilder.Build() is Notification notification)
+			return null;
+		}
+
+		return GetOrCreatePlayerRegistration(playerId).MediaSession;
+	}
+
+	internal void ReleasePlayer(string? playerId)
+	{
+		if (string.IsNullOrWhiteSpace(playerId))
+		{
+			return;
+		}
+
+		PlayerRegistration? registration;
+		bool shouldStopService;
+		lock (syncLock)
+		{
+			if (!playerRegistrations.Remove(playerId, out registration))
 			{
-				StartForeground(mediaNotificationId, notification, ForegroundService.TypeMediaPlayback);
+				return;
+			}
+
+			shouldStopService = playerRegistrations.Count is 0;
+		}
+
+		registration.Dispose();
+
+		if (shouldStopService)
+		{
+			StopSelf();
+		}
+	}
+
+	// The service creates a registration while the controller of a MediaManager connects, so the MediaManager can only join it afterwards
+	internal void AttachMediaManagerToRegistration(string playerId, MediaManager mediaManager)
+	{
+		lock (syncLock)
+		{
+			if (playerRegistrations.TryGetValue(playerId, out var registration))
+			{
+				registration.MediaManagerReference = new WeakReference<MediaManager>(mediaManager);
 			}
 		}
-		else
+	}
+
+	// Media3 does not say which session it was showing when Android refused, so every element checks whether the refusal concerns its playback
+	[SupportedOSPlatform("android31.0")]
+	internal void RelayForegroundServiceRefusalToElements()
+	{
+		List<MediaManager> mediaManagers = [];
+		lock (syncLock)
 		{
-			StartForeground(mediaNotificationId, notificationBuilder.Build());
+			foreach (var registration in playerRegistrations.Values)
+			{
+				if (registration.MediaManagerReference is WeakReference<MediaManager> reference && reference.TryGetTarget(out var mediaManager))
+				{
+					mediaManagers.Add(mediaManager);
+				}
+			}
+		}
+
+		// Outside the lock: a MediaFailed handler can disconnect an element, whose MediaManager then releases its registration
+		foreach (var mediaManager in mediaManagers)
+		{
+			mediaManager.ReportForegroundServiceRefusalIfPlaybackNeedsTheService();
+		}
+	}
+
+	PlayerRegistration GetOrCreatePlayerRegistration(string playerId)
+	{
+		lock (syncLock)
+		{
+			if (playerRegistrations.TryGetValue(playerId, out var registration))
+			{
+				return registration;
+			}
+
+			registration = CreatePlayerRegistration(playerId);
+			playerRegistrations.Add(playerId, registration);
+			return registration;
+		}
+	}
+
+	void ForgetRunningService()
+	{
+		lock (runningServiceLock)
+		{
+			if (ReferenceEquals(runningService, this))
+			{
+				runningService = null;
+			}
+		}
+	}
+
+	void ReleaseAllPlayers()
+	{
+		PlayerRegistration[] registrations;
+
+		lock (syncLock)
+		{
+			registrations = [.. playerRegistrations.Values];
+			playerRegistrations.Clear();
+		}
+
+		foreach (var registration in registrations)
+		{
+			registration.Dispose();
+		}
+	}
+
+	PlayerRegistration CreatePlayerRegistration(string playerId)
+	{
+		var (exoPlayer, trackSelector) = ExoPlayerFactory.Create(this);
+
+		var mediaSessionBuilder = new MediaSession.Builder(this, exoPlayer);
+		mediaSessionBuilder.SetId(playerId);
+		mediaSessionBuilder.SetBitmapLoader(new DataSourceBitmapLoader(this));
+		mediaSessionBuilder.SetCallback(new MediaSessionCallback(this));
+		if (CreateLaunchAppPendingIntent() is PendingIntent sessionActivity)
+		{
+			mediaSessionBuilder.SetSessionActivity(sessionActivity);
+		}
+
+		var mediaSession = mediaSessionBuilder.Build() ?? throw new InvalidOperationException("MediaSession.Builder.Build() returned null");
+
+		return new PlayerRegistration(mediaSession, exoPlayer, trackSelector);
+	}
+
+	PendingIntent? CreateLaunchAppPendingIntent()
+	{
+		var launchIntent = PackageManager?.GetLaunchIntentForPackage(PackageName ?? string.Empty);
+		if (launchIntent is null)
+		{
+			return null;
+		}
+
+		launchIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+		return PendingIntent.GetActivity(this, 0, launchIntent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+	}
+
+	sealed class PlayerRegistration(MediaSession mediaSession, IExoPlayer exoPlayer, DefaultTrackSelector trackSelector) : IDisposable
+	{
+		public MediaSession MediaSession { get; } = mediaSession;
+		public IExoPlayer ExoPlayer { get; } = exoPlayer;
+		public DefaultTrackSelector TrackSelector { get; } = trackSelector;
+
+		// Weak: the registration outlives its MediaManager until the release command arrives, and must not keep the MediaElement alive meanwhile
+		public WeakReference<MediaManager>? MediaManagerReference { get; set; }
+
+		public void Dispose()
+		{
+			MediaSession.Release();
+			MediaSession.Dispose();
+			ExoPlayer.Release();
+			ExoPlayer.Dispose();
+			TrackSelector.Dispose();
+		}
+	}
+
+	// Media3 catches Android's refusal to start the service in the foreground and only tells this listener, on the main thread: the application
+	// thread of the MediaControllers that the elements read when they decide whether to report it
+	sealed class ForegroundServiceRefusalListener(MediaControlsService mediaControlsService) : Java.Lang.Object, MediaSessionService.IListener
+	{
+		readonly MediaControlsService mediaControlsService = mediaControlsService;
+
+		public void OnForegroundServiceStartNotAllowedException()
+		{
+			// Media3 calls it only from Android 12 (API 31), the first version that refuses to start a foreground service
+			if (OperatingSystem.IsAndroidVersionAtLeast(31))
+			{
+				mediaControlsService.RelayForegroundServiceRefusalToElements();
+			}
 		}
 	}
 }
