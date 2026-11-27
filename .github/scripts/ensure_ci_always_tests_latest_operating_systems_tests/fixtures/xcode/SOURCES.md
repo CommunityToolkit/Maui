@@ -1,0 +1,15 @@
+# Fixture sources (xcode)
+
+Fetched 2026-11-21. The sha256 is of the original file, before trimming.
+
+| Fixture | Source | sha256 of the original | What was kept |
+|---|---|---|---|
+| `releases-index.json` | https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json (copy in research/xcode/review/dotnet-releases/releases-index.json) | `4bf95cfbeb14b5cca97f35c99ec41e11c658796c13435b0d76ec81dda22e9da7` | first 3 channel entries (11.0, 10.0, 9.0); re-serialised with indent 2 |
+| `idx-microsoft.net.workloads.11.0.100.json` | https://api.nuget.org/v3-flatcontainer/microsoft.net.workloads.11.0.100/index.json (copy in research/xcode/review/nuget/idx-microsoft.net.workloads.11.0.100.json) | `666c6de56e9afc923eb79b3071e10a9622ce67931e56514604198ba982b68886` | as is |
+| `idx-microsoft.net.workloads.10.0.100.json` | https://api.nuget.org/v3-flatcontainer/microsoft.net.workloads.10.0.100/index.json (copy in research/xcode/review/nuget/idx-microsoft.net.workloads.10.0.100.json) | `fbcc7e8db0f50d49586fb4b615d3239093bb418cde8a7917446370b4af42424d` | as is |
+| `reg-microsoft.net.workloads.11.0.100.json` | https://api.nuget.org/v3/registration5-gz-semver2/microsoft.net.workloads.11.0.100/index.json (gzip, decompressed; copy in research/xcode/review/registration/reg-microsoft.net.workloads.11.0.100.json) | `642edbe0de1e05cfd0064d89605a1dfe385079acf9c778e8e2cc1be4c35f3a69` | as is |
+| `workloadset-11.100.1.json` | workloadset.json inside the microsoft.net.workloads.11.0.100 11.100.1 nupkg (copy in research/xcode/review/nuget/ws-microsoft.net.workloads.11.0.100-11.100.1/workloadset.json) | `513cd978e91c1abe7af82c6a24c51ad955761ae204020f4c9e662b6d258f78ae` | as is |
+| `workloadset-10.204.1.json` | workloadset.json inside the microsoft.net.workloads.10.0.200 10.204.1 nupkg (copy in research/xcode/review/nuget/ws-microsoft.net.workloads.10.0.200-10.204.1/workloadset.json) | `6399a8bdef1713f003b1858560d57d7233378e3cc56fb9bf99d2ccee11f51816` | as is |
+| `deps-ios-27.2.11039.json` | WorkloadDependencies.json inside the microsoft.net.sdk.ios.manifest-11.0.100-27.2.11039 nupkg (copy in research/xcode/review/nuget/man-microsoft.net.sdk.ios.manifest-11.0.100-27.2.11039/WorkloadDependencies.json) | `3ae0a893d779493063810c6eef34455a02cffbf3cdc2773055fc1a9d25f6e1df` | as is |
+| `deps-maccatalyst-27.2.11039.json` | WorkloadDependencies.json inside the microsoft.net.sdk.maccatalyst.manifest-11.0.100-27.2.11039 nupkg (copy in research/xcode/review/nuget/man-microsoft.net.sdk.maccatalyst.manifest-11.0.100-27.2.11039/WorkloadDependencies.json) | `ff21f976db59037ce3700550b850cc8763291a7f2f29b4c7e92af373906e06ff` | as is |
+| `deps-ios-26.5.10315.json` | WorkloadDependencies.json inside the microsoft.net.sdk.ios.manifest-10.0.100-26.5.10315 nupkg (copy in research/xcode/review/nuget/man-microsoft.net.sdk.ios.manifest-10.0.100-26.5.10315/WorkloadDependencies.json) | `7613ada76edfcd2d724784cda9f21abed0ef01c44677c60a09be8fd6b7a198d7` | as is (recommends Xcode 26.6: the opt-in pack case) |

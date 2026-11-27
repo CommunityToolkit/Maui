@@ -1,0 +1,1212 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<sdk:sdk-repository xmlns:sdk="http://schemas.android.com/sdk/android/repo/repository2/03" xmlns:common="http://schemas.android.com/repository/android/common/02" xmlns:sdk-common="http://schemas.android.com/sdk/android/repo/common/03" xmlns:generic="http://schemas.android.com/repository/android/generic/02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <license id="android-sdk-license" type="text">License text cut to one line for the fixture.</license>
+  <channel id="channel-0">stable</channel>
+  <channel id="channel-1">beta</channel>
+  <channel id="channel-2">dev</channel>
+  <channel id="channel-3">canary</channel>
+  <remotePackage path="platforms;android-canary-20261104">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.2</api-level>
+      <codename>CANARY</codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>18</major>
+    </revision>
+    <display-name>Android SDK Platform canary-20261104</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>69985126</size>
+          <checksum type="sha1">ef36a4735e1ec29aa1e3ee42580d1913b7092c1b</checksum>
+          <url>platform-canary-20261104_r18.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-canary-20261007">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.2</api-level>
+      <codename>CANARY</codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>17</major>
+    </revision>
+    <display-name>Android SDK Platform canary-20261007</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>68483627</size>
+          <checksum type="sha1">4b35a23636fa4a691e5ec1616241d297956fe58c</checksum>
+          <url>platform-canary-20261007_r17.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-canary-20260909">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.2</api-level>
+      <codename>CANARY</codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>16</major>
+    </revision>
+    <display-name>Android SDK Platform canary-20260909</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>68344992</size>
+          <checksum type="sha1">55333e3a8621df53c06e93b09334dd545e060136</checksum>
+          <url>platform-canary-20260909_r16.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-37.2">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.2</api-level>
+      <codename></codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 37.2</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>68094624</size>
+          <checksum type="sha1">d52b3062af96f7c4dfdca5a479cd1db33ae83762</checksum>
+          <url>platform-37.2_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-37.2-beta3">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.1</api-level>
+      <codename>DEV</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 37.2-beta3</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>68038752</size>
+          <checksum type="sha1">4c0757f614d3455cac21fe5317a9fccf322127f6</checksum>
+          <url>platform-37.2-beta3_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-37.2-beta2">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.1</api-level>
+      <codename>DEV</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 37.2-beta2</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67757684</size>
+          <checksum type="sha1">e27443b95492f41c4ef8fea7ec69f6fd6c662204</checksum>
+          <url>platform-37.2-beta2_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-37.2-beta1">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.1</api-level>
+      <codename>CinnamonBun</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 37.2-beta1</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67734125</size>
+          <checksum type="sha1">ea5c02c184a299263943047fb6b83fa21654ce60</checksum>
+          <url>platform-37.2-beta1_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-37.1">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.1</api-level>
+      <codename></codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 37.1</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67500655</size>
+          <checksum type="sha1">62aeba1ec09c2b1fdf888e79549daf678fa0d75f</checksum>
+          <url>platform-37.1_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-37.0">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.0</api-level>
+      <codename></codename>
+      <extension-level>22</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 37.0</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67281901</size>
+          <checksum type="sha1">ed8ebf7f8822a4de5686d427f237d2fa30ff7410</checksum>
+          <url>platform-37.0_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-CANARY">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>37.1</api-level>
+      <codename>CANARY</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>15</major>
+    </revision>
+    <display-name>Android SDK Platform CANARY</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67921587</size>
+          <checksum type="sha1">f67f277643ae1aebc7971e7f81d2a3cd99cc0a7f</checksum>
+          <url>platform-CANARY_r15.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-36.1">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>36.1</api-level>
+      <extension-level>20</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 36.1</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>66270841</size>
+          <checksum type="sha1">f87dc23b7ddba6934908da6cfb58fd5b258077ce</checksum>
+          <url>platform-36.1_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-36-ext19">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>36x</api-level>
+      <extension-level>19</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 36-ext19</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>66057671</size>
+          <checksum type="sha1">52e240c229cf2ad561ee262ebdfff266e180c585</checksum>
+          <url>platform-36-ext19_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-36-ext18">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>36x</api-level>
+      <extension-level>18</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 36-ext18</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>66044874</size>
+          <checksum type="sha1">33a7af9f531f6ce67b3ec357f619e69aa0a95c8a</checksum>
+          <url>platform-36-ext18_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-35-ext15">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>35x</api-level>
+      <extension-level>15</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 35-ext15</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>64492044</size>
+          <checksum type="sha1">ce757091f933b7ac646bf197ce8957cc73b95614</checksum>
+          <url>platform-35-ext15_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-36">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>36</api-level>
+      <extension-level>17</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 36</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>65878410</size>
+          <checksum type="sha1">2c1a80dd4d9f7d0e6dd336ec603d9b5c55a6f576</checksum>
+          <url>platform-36_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-35-ext14">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>35x</api-level>
+      <extension-level>14</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 35-ext14</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>64330898</size>
+          <checksum type="sha1">c0e5b5511562fc8b8a61b3b3f17f6ffa811e4971</checksum>
+          <url>platform-35-ext14_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-35">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>35</api-level>
+      <extension-level>13</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 35</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>64273788</size>
+          <checksum type="sha1">0bb560a90a7a2cbd0dd8348224d518b638fe7949</checksum>
+          <url>platform-35_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-34-ext12">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>34x</api-level>
+      <extension-level>12</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 34-ext12</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63559957</size>
+          <checksum type="sha1">ba80ccbcc29b29f25ac926a08c0b2777f0bce842</checksum>
+          <url>platform-34-ext12_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-34-ext11">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>34x</api-level>
+      <extension-level>11</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 34-ext11</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63446827</size>
+          <checksum type="sha1">dfb498e3d0d97769aef5e1eb9ddff5b001e65829</checksum>
+          <url>platform-34-ext11_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-34-ext10">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>34x</api-level>
+      <codename></codename>
+      <extension-level>10</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 34-ext10</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63393972</size>
+          <checksum type="sha1">068496419fb4f4987374fdb2989d4f13acc62377</checksum>
+          <url>platform-34-ext10_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-34-ext8">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>34x</api-level>
+      <codename></codename>
+      <extension-level>8</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 34-ext8</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63201407</size>
+          <checksum type="sha1">71877402d579127b19158f9f170f05bcd805f686</checksum>
+          <url>platform-34-ext8_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-34">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>34</api-level>
+      <codename></codename>
+      <extension-level>7</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 34</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63180081</size>
+          <checksum type="sha1">1f2e9478d6a7601425ceaa553311dc43191f103d</checksum>
+          <url>platform-34-ext7_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-33-ext5">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>33x</api-level>
+      <codename></codename>
+      <extension-level>5</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 33-ext5</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67581187</size>
+          <checksum type="sha1">a6499e158fdd7140e3e466314b273016281fefcc</checksum>
+          <url>platform-33-ext5_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-33-ext4">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>33x</api-level>
+      <codename></codename>
+      <extension-level>4</extension-level>
+      <base-extension>false</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 33-ext4</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67564453</size>
+          <checksum type="sha1">422f50033523c5f934f38df520699080b59bbc7e</checksum>
+          <url>platform-33-ext4_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-33">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>33</api-level>
+      <codename></codename>
+      <extension-level>3</extension-level>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 33</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>67334237</size>
+          <checksum type="sha1">394bc86d8d3452aa4d419b67743025a6fb2cd9d0</checksum>
+          <url>platform-33-ext3_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-32">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>32</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 32</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>66108299</size>
+          <checksum type="sha1">afae86ed55d29733d50996ffed832f2d1bd75b9a</checksum>
+          <url>platform-32_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-31">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>31</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 31</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>56475526</size>
+          <checksum type="sha1">ca5bcaa565cb37e9d287051d6dd0e49a5426ec29</checksum>
+          <url>platform-31_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-30">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>30</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 30</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>52328361</size>
+          <checksum type="sha1">e7c6280901dcfa511af098d67dd88c4dfcbc6ea2</checksum>
+          <url>platform-30_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-29">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>29</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>5</major>
+    </revision>
+    <display-name>Android SDK Platform 29</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>78293913</size>
+          <checksum type="sha1">9d8a7e0ffa5168dbca6c60355b9129c6c7572aff</checksum>
+          <url>platform-29_r05.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-28">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>28</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>6</major>
+    </revision>
+    <display-name>Android SDK Platform 28</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>75565084</size>
+          <checksum type="sha1">9a4e52b1d55bd2e24216b150aafae2503d3efba6</checksum>
+          <url>platform-28_r06.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-27">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>27</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 27</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>65635348</size>
+          <checksum type="sha1">35f747e7e70b2d16e0e4246876be28d15ea1c353</checksum>
+          <url>platform-27_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-26">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>26</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="15"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 26</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63623734</size>
+          <checksum type="sha1">e4ae5d7aa557a3c827135838ee400da8443ac4ef</checksum>
+          <url>platform-26_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-25">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>25</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="16"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 25</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>85424763</size>
+          <checksum type="sha1">00c2c5765e8988504be10a1eb66ed71fcdbd7fe8</checksum>
+          <url>platform-25_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-24">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>24</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="16"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 24</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>82648154</size>
+          <checksum type="sha1">8912da3d4bfe7a9f28f0e5ce92d3a8dc96342aee</checksum>
+          <url>platform-24_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-23">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>23</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="16"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 23</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>70433421</size>
+          <checksum type="sha1">027fede3de6aa1649115bbd0bffff30ccd51c9a0</checksum>
+          <url>platform-23_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-22">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>22</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="14"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 22</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>66852371</size>
+          <checksum type="sha1">5d1bd10fea962b216a0dece1247070164760a9fc</checksum>
+          <url>android-22_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-21">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>21</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 21</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>65897960</size>
+          <checksum type="sha1">53536556059bb29ae82f414fd2e14bc335a4eb4c</checksum>
+          <url>android-21_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-20">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>20</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 20</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63567784</size>
+          <checksum type="sha1">a9251f8a3f313ab05834a07a963000927637e01d</checksum>
+          <url>android-20_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-19">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>19</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>4</major>
+    </revision>
+    <display-name>Android SDK Platform 19</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>63871092</size>
+          <checksum type="sha1">2ff20d89e68f2f5390981342e009db5a2d456aaa</checksum>
+          <url>android-19_r04.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-18">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>18</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 18</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>57771739</size>
+          <checksum type="sha1">e6b09b3505754cbbeb4a5622008b907262ee91cb</checksum>
+          <url>android-18_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-17">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>17</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 17</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>57030216</size>
+          <checksum type="sha1">dbe14101c06e6cdb34e300393e64e64f8c92168a</checksum>
+          <url>android-17_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-16">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>16</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>5</major>
+    </revision>
+    <display-name>Android SDK Platform 16</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>48128695</size>
+          <checksum type="sha1">12a5ce6235a76bc30f62c26bda1b680e336abd07</checksum>
+          <url>android-16_r05.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-15">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>15</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>5</major>
+    </revision>
+    <display-name>Android SDK Platform 15</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>44533475</size>
+          <checksum type="sha1">69ab4c443b37184b2883af1fd38cc20cbeffd0f3</checksum>
+          <url>android-15_r05.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-14">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>14</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="12"/>
+    </type-details>
+    <revision>
+      <major>4</major>
+    </revision>
+    <display-name>Android SDK Platform 14</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>46038082</size>
+          <checksum type="sha1">d4f1d8fbca25225b5f0e7a0adf0d39c3d6e60b3c</checksum>
+          <url>android-14_r04.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-13">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>13</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Android SDK Platform 13</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>108426536</size>
+          <checksum type="sha1">6189a500a8c44ae73a439604363de93591163cd9</checksum>
+          <url>android-3.2_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-12">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>12</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 12</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>106472351</size>
+          <checksum type="sha1">4a50a6679cd95bb68bb5fc032e754cd7c5e2b1bf</checksum>
+          <url>android-3.1_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-11">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>11</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 11</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>104513908</size>
+          <checksum type="sha1">2c7d4bd13f276e76f6bbd87315fe27aba351dd37</checksum>
+          <url>android-3.0_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-10">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>10</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 10</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>85470907</size>
+          <checksum type="sha1">887e37783ec32f541ea33c2c649dda648e8e6fb3</checksum>
+          <url>android-2.3.3_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-9">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>9</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>Android SDK Platform 9</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>78732563</size>
+          <checksum type="sha1">209f8a7a8b2cb093fce858b8b55fed3ba5206773</checksum>
+          <url>android-2.3.1_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-8">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>8</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 8</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>74652366</size>
+          <checksum type="sha1">231262c63eefdff8fd0386e9ccfefeb27a8f9202</checksum>
+          <url>android-2.2_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="platforms;android-7">
+    <type-details xsi:type="sdk:platformDetailsType">
+      <api-level>7</api-level>
+      <codename></codename>
+      <base-extension>true</base-extension>
+      <layoutlib api="4"/>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>Android SDK Platform 7</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>70142829</size>
+          <checksum type="sha1">5ce51b023ac19f8738500b1007a1da5de2349a1e</checksum>
+          <url>android-2.1_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+</sdk:sdk-repository>
