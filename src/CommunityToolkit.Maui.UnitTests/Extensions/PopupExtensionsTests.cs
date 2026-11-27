@@ -1726,43 +1726,55 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_NullNavigation_ShouldThrowArgumentNullException()
+	public void TryShowPopupAsync_NullNavigation_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryShowPopupAsync((INavigation?)null, new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryShowPopupAsync((INavigation?)null, new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_NullView_ShouldThrowArgumentNullException()
+	public void TryShowPopupAsync_NullView_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => navigation.TryShowPopupAsync((View?)null, PopupOptions.Empty, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = navigation.TryShowPopupAsync((View?)null, PopupOptions.Empty, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_Page_NullPage_ShouldThrowArgumentNullException()
+	public void TryShowPopupAsync_Page_NullPage_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryShowPopupAsync((Page?)null, new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryShowPopupAsync((Page?)null, new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_Shell_NullShell_ShouldThrowArgumentNullException()
+	public void TryShowPopupAsync_Page_NullView_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Arrange
+		var page = GetWindowPage();
+
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryShowPopupAsync((Shell?)null, new Popup(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = page.TryShowPopupAsync((View?)null, PopupOptions.Empty, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_Shell_NullView_ShouldThrowArgumentNullException()
+	public void TryShowPopupAsync_Shell_NullShell_ShouldThrowArgumentNullException()
+	{
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryShowPopupAsync((Shell?)null, new Popup(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsync_Shell_NullView_ShouldThrowArgumentNullException()
 	{
 		// Arrange
 		var shell = new Shell();
@@ -1773,7 +1785,71 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => shell.TryShowPopupAsync((View?)null, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = shell.TryShowPopupAsync((View?)null, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_NullNavigation_ShouldThrowArgumentNullException()
+	{
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryShowPopupAsync<int>((INavigation?)null, new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_NullView_ShouldThrowArgumentNullException()
+	{
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = navigation.TryShowPopupAsync<int>((View?)null, PopupOptions.Empty, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_Page_NullPage_ShouldThrowArgumentNullException()
+	{
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryShowPopupAsync<int>((Page?)null, new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_Page_NullView_ShouldThrowArgumentNullException()
+	{
+		// Arrange
+		var page = GetWindowPage();
+
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = page.TryShowPopupAsync<int>((View?)null, PopupOptions.Empty, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_Shell_NullShell_ShouldThrowArgumentNullException()
+	{
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryShowPopupAsync<int>((Shell?)null, new Popup(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken); });
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_Shell_NullView_ShouldThrowArgumentNullException()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		// Act / Assert
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		Assert.Throws<ArgumentNullException>(() => { _ = shell.TryShowPopupAsync<int>((View?)null, PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -1923,38 +1999,38 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryClosePopupAsync_NullNavigation_ShouldThrowArgumentNullException()
+	public void TryClosePopupAsync_NullNavigation_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryClosePopupAsync((INavigation?)null, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryClosePopupAsync((INavigation?)null, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryClosePopupAsync_Page_NullPage_ShouldThrowArgumentNullException()
+	public void TryClosePopupAsync_Page_NullPage_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryClosePopupAsync((Page?)null, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryClosePopupAsync((Page?)null, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryClosePopupAsyncT_NullNavigation_ShouldThrowArgumentNullException()
+	public void TryClosePopupAsyncT_NullNavigation_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryClosePopupAsync((INavigation?)null, 5, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryClosePopupAsync((INavigation?)null, 5, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryClosePopupAsyncT_Page_NullPage_ShouldThrowArgumentNullException()
+	public void TryClosePopupAsyncT_Page_NullPage_ShouldThrowArgumentNullException()
 	{
-		// Arrange / Act / Assert
+		// Act / Assert
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-		await Assert.ThrowsAsync<ArgumentNullException>(() => PopupExtensions.TryClosePopupAsync((Page?)null, 5, TestContext.Current.CancellationToken));
+		Assert.Throws<ArgumentNullException>(() => { _ = PopupExtensions.TryClosePopupAsync((Page?)null, 5, TestContext.Current.CancellationToken); });
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
@@ -2490,6 +2566,11 @@ public class PopupExtensionsTests : BaseViewTest
 			Assert.Equal(expectedResult, popupResult.Result);
 			Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
 		});
+	}
+
+	static Page GetWindowPage()
+	{
+		return Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Page cannot be null");
 	}
 
 	// Like the Sample's PopupOnDisappearingPage: a page pushed on the navigation stack of the root page (the root page itself for a ContentPage
