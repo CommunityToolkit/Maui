@@ -1,0 +1,1482 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+ * Copyright (C) 2009 The Android Open Source Project
+ *
+ * Licensed under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<sys-img:sdk-sys-img xmlns:sys-img="http://schemas.android.com/sdk/android/repo/sys-img2/04" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <license id="android-sdk-license" type="text">License text cut to one line for the fixture.</license>
+  <channel id="channel-0">stable</channel>
+  <channel id="channel-1">beta</channel>
+  <channel id="channel-2">dev</channel>
+  <channel id="channel-3">canary</channel>
+  <remotePackage path="system-images;android-canary-20261104;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.2</api-level>
+      <codename>CANARY</codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <tag>
+        <id>ai_glasses_compatible</id>
+        <display>AI Glasses Compatible</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>18</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2403542166</size>
+          <checksum type="sha1">c70a1ca109f4018b126810532b79a32894359791</checksum>
+          <url>x86_64-ps16k-canary-20261104_r18.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-canary-20261007;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.2</api-level>
+      <codename>CANARY</codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <tag>
+        <id>ai_glasses_compatible</id>
+        <display>AI Glasses Compatible</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>17</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2309979559</size>
+          <checksum type="sha1">96555f32725b71e02078e3fdd71944404bd6665e</checksum>
+          <url>x86_64-ps16k-canary-20261007_r17.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-canary-20260909;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.2</api-level>
+      <codename>CANARY</codename>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <tag>
+        <id>ai_glasses_compatible</id>
+        <display>AI Glasses Compatible</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>16</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2312531033</size>
+          <checksum type="sha1">57f53265916243fa5bafa9ecee3526b11b55721b</checksum>
+          <url>x86_64-ps16k-canary-20260909_r16.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.2;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.2</api-level>
+      <extension-level>24</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>7</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2433862944</size>
+          <checksum type="sha1">19653fc402b2bafb02d1619006970318820e3431</checksum>
+          <url>x86_64-ps16k-37.2_r07.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.2-beta3;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.1</api-level>
+      <codename>DEV</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>3</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2421404738</size>
+          <checksum type="sha1">2a4f408deb1dd8dca80e5f352019ebc79caf127c</checksum>
+          <url>x86_64-ps16k-37.2-beta3_r03.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.2-beta2;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.1</api-level>
+      <codename>DEV</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>2</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2411488936</size>
+          <checksum type="sha1">c2ece4bc0dc42d33d1c725c661ff8a344d457150</checksum>
+          <url>x86_64-ps16k-37.2-beta2_r02.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.0;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.0</api-level>
+      <extension-level>22</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>8</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>37</major>
+          <minor>2</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2143899425</size>
+          <checksum type="sha1">a266cfbcf4d6c769b166c0af4d68eff0e4f4a5e3</checksum>
+          <url>x86_64-37.0_r08.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.2-beta1;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.1</api-level>
+      <codename>CinnamonBun</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2404586110</size>
+          <checksum type="sha1">12ad6acabf3ab7a51f618776b94713665f5a3e18</checksum>
+          <url>x86_64-ps16k-37.2-beta1_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.1;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.1</api-level>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>9</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2178012675</size>
+          <checksum type="sha1">35c0da1cd298f3426a5b48233f59515097446a28</checksum>
+          <url>x86_64-ps16k-37.1_r09.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-37.0;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.0</api-level>
+      <extension-level>22</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>8</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>37</major>
+          <minor>2</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2081411720</size>
+          <checksum type="sha1">3e04f6c168a573640e63fdd8afd71a3c4d947f64</checksum>
+          <url>x86_64-ps16k-37.0_r08.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-CANARY;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>37.1</api-level>
+      <codename>CANARY</codename>
+      <extension-level>23</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <tag>
+        <id>ai_glasses_compatible</id>
+        <display>AI Glasses Compatible</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>15</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>36</major>
+          <minor>5</minor>
+          <micro>11</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>2285596027</size>
+          <checksum type="sha1">79b3559e3d6e129177495ce717151bc7dca8bee5</checksum>
+          <url>x86_64-ps16k-CANARY_r15.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-36.1;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>36.1</api-level>
+      <extension-level>20</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>4</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>35</major>
+          <minor>4</minor>
+          <micro>9</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1913923004</size>
+          <checksum type="sha1">d812164d3704c2d5846d34e0a4d2c61cb1224a02</checksum>
+          <url>x86_64-ps16k-36.1_r04.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-36.1;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>36.1</api-level>
+      <extension-level>20</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>4</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>35</major>
+          <minor>4</minor>
+          <micro>9</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1960532087</size>
+          <checksum type="sha1">15261872d5f0ae4b5728faefd0380d51b61a5b23</checksum>
+          <url>x86_64-36.1_r04.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-36-ext19;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>36x</api-level>
+      <extension-level>19</extension-level>
+      <base-extension>false</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>35</major>
+          <minor>4</minor>
+          <micro>9</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1891037723</size>
+          <checksum type="sha1">a641ca5992fef209c23e36a999cd7b3c12758ff6</checksum>
+          <url>x86_64-36-ext19_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-36-ext18;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>36x</api-level>
+      <extension-level>18</extension-level>
+      <base-extension>false</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>35</major>
+          <minor>4</minor>
+          <micro>9</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1888216599</size>
+          <checksum type="sha1">a630fc642602137e6b00201b1ae343d54bc408dc</checksum>
+          <url>x86_64-36-ext18_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-35-ext15;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>35x</api-level>
+      <extension-level>15</extension-level>
+      <base-extension>false</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>1</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>30</major>
+          <minor>8</minor>
+          <micro>2</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1742908646</size>
+          <checksum type="sha1">5e359834781e52fefcccd922a15f04bef5bade76</checksum>
+          <url>x86_64-35-ext15_r01.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-36;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>36</api-level>
+      <extension-level>17</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>7</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>35</major>
+          <minor>4</minor>
+          <micro>9</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1895447397</size>
+          <checksum type="sha1">c6bf44bdcd885bb902b4ba752d111a073ad7a817</checksum>
+          <url>x86_64-36_r07.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-36;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>36</api-level>
+      <extension-level>17</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>7</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>35</major>
+          <minor>4</minor>
+          <micro>9</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1849428145</size>
+          <checksum type="sha1">dd783282e84bf475a02eba6777c79fc5695e1583</checksum>
+          <url>x86_64-ps16k-36_r07.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-35;google_apis_ps16k;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>35</api-level>
+      <extension-level>13</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>page_size_16kb</id>
+        <display>16 KB Page Size</display>
+      </tag>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>5</major>
+    </revision>
+    <display-name>16 KB Page Size Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>33</major>
+          <minor>1</minor>
+          <micro>24</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1696342085</size>
+          <checksum type="sha1">d709cf26b375abecfbbf5803afd20749ddfa2865</checksum>
+          <url>x86_64-ps16k-35_r05.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-35;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>35</api-level>
+      <extension-level>13</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>9</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>33</major>
+          <minor>1</minor>
+          <micro>24</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1738815903</size>
+          <checksum type="sha1">0103e6dab21290c4b9d16550a3ce99476f884eef</checksum>
+          <url>x86_64-35_r09.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-21;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>21</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>32</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>415495987</size>
+          <checksum type="sha1">e98ba60a0fc88d9a81a768e62db5850b6610baa4</checksum>
+          <url>x86_64-21_r32.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-22;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>22</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>26</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>579197399</size>
+          <checksum type="sha1">f99714383c5459d747ac7cdd8043419c6adafe60</checksum>
+          <url>x86_64-22_r26.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-23;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>23</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>33</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>667471680</size>
+          <checksum type="sha1">4d80dd38edb565641b3b34e713fe0ec6d1d77698</checksum>
+          <url>x86_64-23_r33.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-24;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>24</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>27</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1119800108</size>
+          <checksum type="sha1">46d09c0723b77ddba00f2281099a2c44a88ac971</checksum>
+          <url>x86_64-24_r27.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-24;google_apis;arm64-v8a">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>24</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>arm64-v8a</abi>
+      <abis>arm64-v8a</abis>
+    </type-details>
+    <revision>
+      <major>27</major>
+    </revision>
+    <display-name>Google APIs ARM 64 v8a System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1058251660</size>
+          <checksum type="sha1">dbb21f5d464a8d5f012bf3cac1c173496c666330</checksum>
+          <url>arm64-v8a-24_r27.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-25;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>25</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>18</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1298264628</size>
+          <checksum type="sha1">0da7b5bca8ff5deff45b942f61f081e038271ba6</checksum>
+          <url>x86_64-25_r18.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-24;google_apis;arm64-v8a">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>24</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>arm64-v8a</abi>
+      <abis>arm64-v8a</abis>
+    </type-details>
+    <revision>
+      <major>29</major>
+    </revision>
+    <display-name>Google APIs ARM 64 v8a System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>709604485</size>
+          <checksum type="sha1">d264adca13330b5e50665ab44726e4fecc1ddd1f</checksum>
+          <url>arm64-v8a-24_r29.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-26;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>26</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>16</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>26</major>
+          <minor>1</minor>
+          <micro>3</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>980740438</size>
+          <checksum type="sha1">0eb13cc91cf164b617eaf85e4030289cb18189de</checksum>
+          <url>x86_64-26_r16.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-28;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>28</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>11</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>29</major>
+          <minor>1</minor>
+          <micro>12</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1102721597</size>
+          <checksum type="sha1">1d93bd994e29c4e9bbe71fd9c278addc5418cbee</checksum>
+          <url>x86_64-28_r11.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-29;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>29</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <abis>x86</abis>
+    </type-details>
+    <revision>
+      <major>13</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>30</major>
+          <minor>8</minor>
+          <micro>2</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1314706136</size>
+          <checksum type="sha1">50c2953ab13f312ed797a961577ee74a911d087d</checksum>
+          <url>x86_64-29_r13.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-30;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>30</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <abis>x86</abis>
+      <abis>arm64-v8a</abis>
+      <abis>armeabi-v7a</abis>
+      <abis>armeabi</abis>
+    </type-details>
+    <revision>
+      <major>16</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>30</major>
+          <minor>8</minor>
+          <micro>0</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1438186618</size>
+          <checksum type="sha1">6ae21030eaadc041078444d3798e4b399f3e787d</checksum>
+          <url>x86_64-30_r16.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-31;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>31</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>14</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-preview-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>31</major>
+          <minor>2</minor>
+          <micro>7</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1470822277</size>
+          <checksum type="sha1">9aedd3e85cad7a479146f6858f4a94840c2a3f29</checksum>
+          <url>x86_64-31_r14.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-32;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>32</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>8</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-preview-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>30</major>
+          <minor>7</minor>
+          <micro>3</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1538792859</size>
+          <checksum type="sha1">1b52794699c6889a2fd155bf235b67a592eb8f1d</checksum>
+          <url>x86_64-32_r08.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-33;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>33</api-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+    </type-details>
+    <revision>
+      <major>17</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>30</major>
+          <minor>7</minor>
+          <micro>3</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1707857511</size>
+          <checksum type="sha1">2b96f5bd5c79bfe1cc645e70b3e630b5755d9711</checksum>
+          <url>x86_64-33_r17.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+  <remotePackage path="system-images;android-34;google_apis;x86_64">
+    <type-details xsi:type="sys-img:sysImgDetailsType">
+      <api-level>34</api-level>
+      <extension-level>7</extension-level>
+      <base-extension>true</base-extension>
+      <tag>
+        <id>google_apis</id>
+        <display>Google APIs</display>
+      </tag>
+      <vendor>
+        <id>google</id>
+        <display>Google Inc.</display>
+      </vendor>
+      <abi>x86_64</abi>
+      <abis>x86_64</abis>
+      <translatedAbis>arm64-v8a</translatedAbis>
+    </type-details>
+    <revision>
+      <major>14</major>
+    </revision>
+    <display-name>Google APIs Intel x86_64 Atom System Image</display-name>
+    <uses-license ref="android-sdk-license"/>
+    <dependencies>
+      <dependency path="emulator">
+        <min-revision>
+          <major>34</major>
+          <minor>2</minor>
+          <micro>16</micro>
+        </min-revision>
+      </dependency>
+    </dependencies>
+    <channelRef ref="channel-0"/>
+    <archives>
+      <archive>
+        <complete>
+          <size>1563721130</size>
+          <checksum type="sha1">e0f6c9a0691aa27bd597d0deb1bcfdc943ac8ca7</checksum>
+          <url>x86_64-34_r14.zip</url>
+        </complete>
+      </archive>
+    </archives>
+  </remotePackage>
+</sys-img:sdk-sys-img>

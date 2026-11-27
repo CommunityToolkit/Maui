@@ -93,6 +93,44 @@ public class CameraManagerWindowsCaptureTests : CameraHandlerTestBase
 	}
 
 	[Fact]
+	public async Task TakePictureWhenBothTheMediaCapturedAndTheMediaCaptureFailedHandlersThrowRaisesMediaCaptureFailedOnceReportsTheHandlersExceptionAndTheNextCaptureSucceeds()
+	{
+		const string subscriberFailureMessage = "The subscriber failed.";
+		var failureHandlerException = new InvalidOperationException("The failure handler failed.");
+
+		await RunWithConnectedCameraAsync(async (scope, _) =>
+		{
+			using var errors = new CameraErrorRecorder(scope.View);
+			var recorder = new WindowsMediaRecorder(scope.View);
+			EventHandler<CommunityToolkit.Maui.Core.MediaCaptureFailedEventArgs> throwingFailureHandler = (_, _) => throw failureHandlerException;
+			scope.View.MediaCaptured += ThrowingSubscriber;
+			scope.View.MediaCaptureFailed += throwingFailureHandler;
+
+			await scope.Manager.TakePicture(CancellationToken.None);
+			await recorder.FirstCapture.Task.WaitAsync(captureTimeout);
+			scope.View.MediaCaptured -= ThrowingSubscriber;
+			scope.View.MediaCaptureFailed -= throwingFailureHandler;
+
+			Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
+			Assert.Same(failureHandlerException, Assert.Single(errors.Errors));
+
+			var nextRecorder = new WindowsMediaRecorder(scope.View);
+			await scope.Manager.TakePicture(CancellationToken.None);
+			var next = await nextRecorder.FirstCapture.Task.WaitAsync(captureTimeout);
+
+			Assert.True(next.Length > 1000);
+			Assert.Empty(nextRecorder.Failures);
+			Assert.Single(recorder.Failures);
+			Assert.Single(errors.Errors);
+			GC.KeepAlive(recorder);
+			GC.KeepAlive(nextRecorder);
+			GC.KeepAlive(throwingFailureHandler);
+		});
+
+		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
+	}
+
+	[Fact]
 	public async Task TakePictureWhenAMediaCapturedHandlerThrowsReportsItOnceAndTheNextCaptureSucceeds()
 	{
 		const string subscriberFailureMessage = "The subscriber failed.";
