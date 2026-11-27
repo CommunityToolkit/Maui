@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views.Popup;
 
-// TryShowPopupAsync and TryClosePopupAsync never throw for a popup failure: they return a PopupResultOrException that holds either the IPopupResult of the closed popup or the Exception that the operation failed with
 public partial class TryPopupMethodsPage : ContentPage
 {
 	const string popupResultText = "Hello from the Popup";
@@ -42,7 +41,6 @@ public partial class TryPopupMethodsPage : ContentPage
 
 	static string Describe(PopupResultOrException<string> resultOrException) => resultOrException switch
 	{
-		// Read Result only when the popup was not dismissed by tapping outside of it
 		IPopupResult<string> { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed by tapping outside of the Popup",
 		IPopupResult<string> popupResult => $"Closed with result: {popupResult.Result ?? "null"}",
 		OperationCanceledException => "Canceled: the Popup was not shown",
