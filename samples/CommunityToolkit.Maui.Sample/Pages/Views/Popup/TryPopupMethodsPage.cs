@@ -26,6 +26,7 @@ public partial class TryPopupMethodsPage : ContentPage
 					new Label().Text("TryShowPopupAsync and TryClosePopupAsync return a PopupResultOrException that holds either the IPopupResult of the closed popup or the Exception that the operation failed with, so one switch handles every case without catching exceptions."),
 
 					new Button { Command = new AsyncRelayCommand(ShowPopup) }.Text("TryShowPopupAsync"),
+					new Button { Command = new AsyncRelayCommand(ShowPopupWithoutResultType) }.Text("TryShowPopupAsync without a Result Type"),
 					new Button { Command = new AsyncRelayCommand(ShowPopupWithCanceledToken) }.Text("TryShowPopupAsync with a Canceled Token"),
 					new Button { Command = new AsyncRelayCommand(ClosePopupWhenNoneIsShown) }.Text("TryClosePopupAsync without a Popup"),
 
@@ -41,7 +42,7 @@ public partial class TryPopupMethodsPage : ContentPage
 
 	static string Describe(PopupResultOrException<string> resultOrException) => resultOrException switch
 	{
-		IPopupResult<string> { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed by tapping outside of the Popup",
+		IPopupResult<string> { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed: tapped outside, back button or navigation",
 		IPopupResult<string> popupResult => $"Closed with result: {popupResult.Result ?? "null"}",
 		OperationCanceledException => "Canceled: the Popup was not shown",
 		Exception exception => $"{exception.GetType().Name}: {exception.Message}"
@@ -49,24 +50,55 @@ public partial class TryPopupMethodsPage : ContentPage
 
 	static string Describe(PopupResultOrException resultOrException) => resultOrException switch
 	{
+		IPopupResult { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed: tapped outside, back button or navigation",
 		IPopupResult => "Popup closed",
+		OperationCanceledException => "Canceled: the Popup was not shown",
 		Exception exception => $"{exception.GetType().Name}: {exception.Message}"
 	};
 
 	async Task ShowPopup()
 	{
-		var popupContent = new VerticalStackLayout
+		var popupContent = CreatePopupContent();
+		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
+	}
+
+	async Task ShowPopupWithoutResultType()
+	{
+		var popupContent = CreatePopupContent();
+		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync(popupContent));
+	}
+
+	VerticalStackLayout CreatePopupContent() => new()
+	{
+		Spacing = 12,
+		Children =
+		{
+			new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
+			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
+			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result"),
+			new Button { Command = new AsyncRelayCommand(ShowPageAbovePopup) }.Text("Show a Page Above the Popup")
+		}
+	};
+
+	async Task ShowPageAbovePopup()
+	{
+		var pageAbovePopup = new ContentPage
+		{
+			Title = "Page Above the Popup",
+			Padding = 12
+		};
+
+		pageAbovePopup.Content = new VerticalStackLayout
 		{
 			Spacing = 12,
 			Children =
 			{
-				new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
-				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
-				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result")
+				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("TryClosePopupAsync (Blocked)"),
+				new Button { Command = new AsyncRelayCommand(() => pageAbovePopup.Navigation.PopModalAsync()) }.Text("Back to the Popup")
 			}
 		};
 
-		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
+		await Navigation.PushModalAsync(pageAbovePopup);
 	}
 
 	async Task ShowPopupWithCanceledToken()
