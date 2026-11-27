@@ -15,6 +15,8 @@ namespace CommunityToolkit.Maui.Core;
 ///     Exception exception => $"Failed: {exception.Message}"
 /// };
 /// </code>
+/// <para>The Try methods never return a default value. A default <see cref="PopupResultOrException"/> holds a <see langword="null"/> <c>Value</c>, so add a <see langword="null"/> arm when a value can be default, such as an unassigned field.</para>
+/// <para>Pattern matching on the union needs C# 15, the default for net11.0. On an older <c>LangVersion</c>, switch on <c>Value</c> and add a discard (<c>_</c>) arm.</para>
 /// </remarks>
 public union PopupResultOrException(IPopupResult, Exception);
 
@@ -34,5 +36,7 @@ public union PopupResultOrException(IPopupResult, Exception);
 ///     Exception exception => $"Failed: {exception.Message}"
 /// };
 /// </code>
+/// <para>The Try methods never return a default value. A default <see cref="PopupResultOrException{T}"/> holds a <see langword="null"/> <c>Value</c>, so add a <see langword="null"/> arm when a value can be default, such as an unassigned field.</para>
+/// <para>Pattern matching on the union needs C# 15, the default for net11.0. On an older <c>LangVersion</c>, switch on <c>Value</c> and add a discard (<c>_</c>) arm.</para>
 /// </remarks>
 public union PopupResultOrException<T>(IPopupResult<T>, Exception);
