@@ -61,7 +61,9 @@ public partial class ExpanderTests : CommunityToolkitHandlerTestBase
 			expander.Content = newContent;
 
 			await AssertionExtensions.AssertEventually(() => IsPlatformViewVisible(newContent), message: "The replaced content should be visible while the expander is expanded.");
-			Assert.DoesNotContain(oldContent, ((Grid)((ContentView)expander).Content!).Children);
+			var expanderGrid = (Grid)((ContentView)expander).Content!;
+			AotSafeAssert.DoesNotContain<View?>(oldContent, expanderGrid.Children.OfType<ContentView>().Select(static contentHost => contentHost.Content));
+			Assert.Same(newContent, expander.ContentHost?.Content);
 
 			expander.IsExpanded = false;
 
