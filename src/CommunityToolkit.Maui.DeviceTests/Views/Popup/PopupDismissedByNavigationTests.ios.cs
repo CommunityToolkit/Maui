@@ -103,34 +103,6 @@ public partial class PopupDismissedByNavigationTests
 			await (secondShowPopupTask ?? throw new InvalidOperationException("The Closed handler did not show a popup.")).WaitAsync(TimeSpan.FromSeconds(5));
 		});
 
-	[Fact]
-	public Task TryShowPopupAsyncReturnsTheResultOfTryClosePopupAsync() =>
-		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsTheResultOfTryClosePopupAsync(shell));
-
-	[Fact]
-	public Task TryShowPopupAsyncReturnsADismissedResultWhenShellSwitchesToAnotherShellElement() =>
-		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsADismissedResultWhenShellSwitchesToAnotherShellElement(shell));
-
-	[Fact]
-	public Task TryClosePopupAsyncReturnsPopupBlockedExceptionWhenAModalPageIsAboveThePopup() =>
-		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryClosePopupAsyncReturnsPopupBlockedExceptionWhenAModalPageIsAboveThePopup(shell));
-
-	[Fact]
-	public Task TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown() =>
-		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown(shell));
-
-	[Fact]
-	public Task TryShowPopupAsyncReturnsOperationCanceledExceptionAndShowsNoPopupWhenTheTokenIsCanceled() =>
-		RunInShellAsync((shell, _) => PopupTryMethodsScenarios.TryShowPopupAsyncReturnsOperationCanceledExceptionAndShowsNoPopupWhenTheTokenIsCanceled(shell));
-
-	Task RunInShellAsync(Func<Shell, HostedMauiWindow, Task> scenario)
-	{
-		SetupBuilder();
-		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
-
-		return RunInMauiWindowAsync(shell, isPagePresentedModally: false, firstPage, host => scenario(shell, host));
-	}
-
 	static UINavigationController? FindNavigationController(UIViewController? viewController)
 	{
 		if (viewController is UINavigationController navigationController)
@@ -139,16 +111,5 @@ public partial class PopupDismissedByNavigationTests
 		}
 
 		return viewController?.ChildViewControllers.Select(FindNavigationController).FirstOrDefault(static found => found is not null);
-	}
-
-	static UIViewController GetDeepestPresentedViewController(UIWindow platformWindow)
-	{
-		var viewController = platformWindow.RootViewController ?? throw new InvalidOperationException("The window has no root view controller.");
-		while (viewController.PresentedViewController is UIViewController presented)
-		{
-			viewController = presented;
-		}
-
-		return viewController;
 	}
 }

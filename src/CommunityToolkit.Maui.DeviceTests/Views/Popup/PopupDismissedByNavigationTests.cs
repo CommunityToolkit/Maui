@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 // modal stack. The platform files of this class show the PopupPage in a Window of its own and navigate with .NET MAUI's own navigation.
 [Category(TestCategory.Popup)]
 [Collection(TestCollections.DisableParallelization)]
-public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
+public partial class PopupDismissedByNavigationTests : PopupWindowHostTestBase
 {
 	[Fact]
 	public Task PopupClosedIsRaisedOnceWhenNavigationRemovesThePopupPageWithoutCloseAsync()
@@ -63,28 +63,6 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 
 			Assert.Equal(0, popupPageClosedCount);
 		});
-	}
-
-	protected override async ValueTask DisposeAsyncCore()
-	{
-		try
-		{
-			await base.DisposeAsyncCore();
-		}
-		finally
-		{
-			ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted();
-		}
-	}
-
-	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
-	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
-	{
-		var navigationSemaphore = PopupDismissedByNavigationScenarios.GetNavigationSemaphore();
-		if (navigationSemaphore.CurrentCount == 0)
-		{
-			navigationSemaphore.Release();
-		}
 	}
 
 	// Window.OnModalPopped is internal to .NET MAUI
