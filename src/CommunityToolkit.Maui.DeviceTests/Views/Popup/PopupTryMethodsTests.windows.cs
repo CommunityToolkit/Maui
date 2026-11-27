@@ -119,7 +119,7 @@ public partial class PopupTryMethodsTests
 		AppDomain.CurrentDomain.FirstChanceException += HandleFirstChanceException;
 		try
 		{
-			await RunInWindowAsync(shell, firstPage, async _ =>
+			await RunInWindowAsync(shell, firstPage, async window =>
 			{
 				var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
 				var popupOpenedTaskCompletionSource = new TaskCompletionSource();
