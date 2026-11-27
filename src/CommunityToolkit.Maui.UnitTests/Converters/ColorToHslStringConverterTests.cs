@@ -178,4 +178,36 @@ public class ColorToHslStringConverterTests : BaseOneWayConverterTest<ColorToHsl
 			CultureInfo.CurrentCulture = originalCulture;
 		}
 	}
+
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
+	[MemberData(nameof(ValidInputData))]
+	public void ColorToHslStringConverter_ValidInput_NullCulture_IgnoresCurrentCulture(float red, float green, float blue, float alpha, string expectedResult)
+	{
+		var converter = new ColorToHslStringConverter();
+		var color = new Color(red, green, blue, alpha);
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, null);
+
+		Assert.Equal(expectedResult, resultConvert);
+		Assert.Equal(expectedResult, converter.ConvertFrom(color));
+		Assert.Equal(expectedResult, converter.ConvertFrom(color, null));
+	}
+
+	[Theory]
+	[InlineData("en-US")]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	public void ColorToHslStringConverter_InvariantCulture_UsesDocumentedFormat(string currentCultureName)
+	{
+		var currentCulture = CultureInfo.GetCultureInfo(currentCultureName);
+		CultureInfo.CurrentCulture = currentCulture;
+		CultureInfo.CurrentUICulture = currentCulture;
+		var converter = new ColorToHslStringConverter();
+		var color = Colors.Red;
+
+		var resultConvert = ((ICommunityToolkitValueConverter)converter).Convert(color, typeof(string), null, CultureInfo.InvariantCulture);
+
+		Assert.Equal("HSL(360,100%,50%)", resultConvert);
+		Assert.Equal("HSL(360,100%,50%)", converter.ConvertFrom(color, CultureInfo.InvariantCulture));
+	}
 }

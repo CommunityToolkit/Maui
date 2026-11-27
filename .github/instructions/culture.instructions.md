@@ -15,7 +15,8 @@ Any code that reads or formats with `CurrentCulture`/`CurrentUICulture`, or take
 
 ## The toolkit's converter culture rules
 * A converter honors the `CultureInfo` it is passed, not `CurrentCulture`.
-* When a direct caller passes `null`, the converter falls back to `CurrentCulture`. The exception is `TextCaseConverter`, where `null` means `InvariantCulture`.
+* When a direct caller passes `null`, the converter falls back to `CurrentCulture`. The exceptions, where `null` means `InvariantCulture`, are `TextCaseConverter` and the color string converters (`ColorToRgbaStringConverter`, `ColorToCmykStringConverter`, `ColorToCmykaStringConverter`, `ColorToHslStringConverter`, `ColorToHslaStringConverter`) with the matching `ColorConversionExtensions` methods.
+* For the color strings, `null` and `InvariantCulture` both give the documented format (`100%`, `0.5`), not .NET's `100 %`.
 * In a binding, .NET MAUI 11 passes `CurrentUICulture` unless `ConverterCulture` is set.
 * `EventToCommandBehavior` converts event arguments with the invariant culture by default; an `EventArgsConverterCulture` opts in to another culture.
 * `MathExpressionConverter` keeps number literals in the expression invariant (`3.5`) and honors the culture for string inputs and string results (`"3,5"` in de-DE and tr-TR).

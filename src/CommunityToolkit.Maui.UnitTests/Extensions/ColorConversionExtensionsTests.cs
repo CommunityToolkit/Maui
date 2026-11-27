@@ -7,6 +7,15 @@ public class ColorConversionExtensionsTests : BaseTest
 {
 	const double tolerance = 0.000001;
 
+	const string documentedRgb = "RGB(255,0,0)";
+	const string documentedRgba = "RGBA(255,0,0,0.5)";
+	const string documentedCmyk = "CMYK(0%,100%,100%,0%)";
+	const string documentedCmyka = "CMYKA(0%,100%,100%,0%,0.5)";
+	const string documentedHsl = "HSL(360,100%,50%)";
+	const string documentedHsla = "HSLA(360,100%,50%,0.5)";
+
+	static readonly Color halfTransparentRed = Colors.Red.WithAlpha(0.5f);
+
 	public static TheoryData<ColorTestDefinition> ColorTestData { get; } =
 	[
 		new ColorTestDefinition((float)0.5019608, 0, 0, 0, 128, 0, 0, 0, (float)0.498039186000824, 0, 1, 1, (float)0.498039215686, 1, 1, (float)0.167320261, true, true, Colors.Black, Colors.White),
@@ -301,7 +310,7 @@ public class ColorConversionExtensionsTests : BaseTest
 		Assert.Equal("HSL(360,%100,%50)", Colors.Red.ToHslString(new CultureInfo("tr-TR")));
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToRgbString(ColorTestDefinition testDef)
 	{
@@ -318,7 +327,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToRgbaString(ColorTestDefinition testDef)
 	{
@@ -335,7 +344,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToCmykString(ColorTestDefinition testDef)
 	{
@@ -352,7 +361,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToCmykaString(ColorTestDefinition testDef)
 	{
@@ -369,7 +378,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToHslString(ColorTestDefinition testDef)
 	{
@@ -386,7 +395,7 @@ public class ColorConversionExtensionsTests : BaseTest
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 	}
 
-	[Theory]
+	[CulturedTheory(cultures: ["en-US", "de-DE", "tr-TR", "ar-SA"])]
 	[MemberData(nameof(ColorTestData))]
 	public void ToHslaString(ColorTestDefinition testDef)
 	{
@@ -944,11 +953,167 @@ public class ColorConversionExtensionsTests : BaseTest
 	}
 
 	[Fact]
-	public void ToRgbaString_NullCulture_UsesTurkishCurrentCulture()
+	public void ToRgbaString_NullCulture_IgnoresTurkishCurrentCulture()
 	{
-		Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+		SetCurrentCultures("tr-TR");
 
-		Assert.Equal("RGBA(255,0,0,0,5)", new Color(1f, 0f, 0f, 0.5f).ToRgbaString(null));
+		Assert.Equal("RGBA(255,0,0,0.5)", new Color(1f, 0f, 0f, 0.5f).ToRgbaString(null));
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	[InlineData("uk-UA")]
+	[InlineData("sv-SE")]
+	[InlineData("fr-FR")]
+	[InlineData("ar-SA")]
+	public void StringMethods_NoOrNullCulture_IgnoreCurrentCulture(string cultureName)
+	{
+		SetCurrentCultures(cultureName);
+
+		Assert.Equal(documentedRgb, halfTransparentRed.ToRgbString());
+		Assert.Equal(documentedRgba, halfTransparentRed.ToRgbaString());
+		Assert.Equal(documentedRgba, halfTransparentRed.ToRgbaString(null));
+		Assert.Equal(documentedCmyk, halfTransparentRed.ToCmykString());
+		Assert.Equal(documentedCmyk, halfTransparentRed.ToCmykString(null));
+		Assert.Equal(documentedCmyka, halfTransparentRed.ToCmykaString());
+		Assert.Equal(documentedCmyka, halfTransparentRed.ToCmykaString(null));
+		Assert.Equal(documentedHsl, halfTransparentRed.ToHslString());
+		Assert.Equal(documentedHsl, halfTransparentRed.ToHslString(null));
+		Assert.Equal(documentedHsla, halfTransparentRed.ToHslaString());
+		Assert.Equal(documentedHsla, halfTransparentRed.ToHslaString(null));
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	[InlineData("uk-UA")]
+	[InlineData("sv-SE")]
+	[InlineData("fr-FR")]
+	[InlineData("ar-SA")]
+	public void StringMethods_ExplicitCulture_WinsOverCurrentCulture(string cultureName)
+	{
+		SetCurrentCultures("en-US");
+		var culture = CultureInfo.GetCultureInfo(cultureName);
+
+		Assert.Equal($"RGBA(255,0,0,{0.5f.ToString(culture)})", halfTransparentRed.ToRgbaString(culture));
+		Assert.Equal($"CMYK({0f.ToString("P0", culture)},{1f.ToString("P0", culture)},{1f.ToString("P0", culture)},{0f.ToString("P0", culture)})", halfTransparentRed.ToCmykString(culture));
+		Assert.Equal($"CMYKA({0f.ToString("P0", culture)},{1f.ToString("P0", culture)},{1f.ToString("P0", culture)},{0f.ToString("P0", culture)},{0.5f.ToString(culture)})", halfTransparentRed.ToCmykaString(culture));
+		Assert.Equal($"HSL(360,{1f.ToString("P0", culture)},{0.5f.ToString("P0", culture)})", halfTransparentRed.ToHslString(culture));
+		Assert.Equal($"HSLA(360,{1f.ToString("P0", culture)},{0.5f.ToString("P0", culture)},{0.5f.ToString(culture)})", halfTransparentRed.ToHslaString(culture));
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("az-Latn-AZ")]
+	[InlineData("de-DE")]
+	[InlineData("uk-UA")]
+	[InlineData("sv-SE")]
+	[InlineData("fr-FR")]
+	public void StringMethods_ExplicitCommaDecimalCulture_WritesCommaAlpha(string cultureName)
+	{
+		SetCurrentCultures("en-US");
+		var culture = CultureInfo.GetCultureInfo(cultureName);
+
+		Assert.Equal("RGBA(255,0,0,0,5)", halfTransparentRed.ToRgbaString(culture));
+		Assert.EndsWith(",0,5)", halfTransparentRed.ToCmykaString(culture), StringComparison.Ordinal);
+		Assert.EndsWith(",0,5)", halfTransparentRed.ToHslaString(culture), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void StringMethods_ExplicitTurkishCulture_PutsPercentBeforeNumber()
+	{
+		SetCurrentCultures("en-US");
+		var turkish = CultureInfo.GetCultureInfo("tr-TR");
+
+		Assert.Equal("CMYK(%0,%100,%100,%0)", halfTransparentRed.ToCmykString(turkish));
+		Assert.Equal("CMYKA(%0,%100,%100,%0,0,5)", halfTransparentRed.ToCmykaString(turkish));
+		Assert.Equal("HSL(360,%100,%50)", halfTransparentRed.ToHslString(turkish));
+		Assert.Equal("HSLA(360,%100,%50,0,5)", halfTransparentRed.ToHslaString(turkish));
+	}
+
+	[Fact]
+	public void StringMethods_ExplicitEnglishCulture_WinsOverTurkishCurrentCulture()
+	{
+		SetCurrentCultures("tr-TR");
+		var english = CultureInfo.GetCultureInfo("en-US");
+
+		Assert.Equal(documentedRgba, halfTransparentRed.ToRgbaString(english));
+		Assert.Equal(documentedCmyk, halfTransparentRed.ToCmykString(english));
+		Assert.Equal(documentedCmyka, halfTransparentRed.ToCmykaString(english));
+		Assert.Equal(documentedHsl, halfTransparentRed.ToHslString(english));
+		Assert.Equal(documentedHsla, halfTransparentRed.ToHslaString(english));
+	}
+
+	[Fact]
+	public void StringMethods_ArabicCulture_UseArabicSymbols()
+	{
+		var arabic = CultureInfo.GetCultureInfo("ar-SA");
+
+		var cmyk = halfTransparentRed.ToCmykString(arabic);
+		var rgba = halfTransparentRed.ToRgbaString(arabic);
+
+		Assert.Contains(arabic.NumberFormat.PercentSymbol, cmyk, StringComparison.Ordinal);
+		Assert.Contains(arabic.NumberFormat.NumberDecimalSeparator, rgba, StringComparison.Ordinal);
+		Assert.Equal($"CMYK({0f.ToString("P0", arabic)},{1f.ToString("P0", arabic)},{1f.ToString("P0", arabic)},{0f.ToString("P0", arabic)})", cmyk);
+	}
+
+	[Theory]
+	[InlineData("")]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	public void StringMethods_InvariantCulture_UseDocumentedFormat(string currentCultureName)
+	{
+		SetCurrentCultures(currentCultureName);
+		var cultures = new[] { CultureInfo.InvariantCulture, new CultureInfo(string.Empty), CultureInfo.GetCultureInfo(string.Empty) };
+
+		foreach (var culture in cultures)
+		{
+			Assert.Equal(documentedRgba, halfTransparentRed.ToRgbaString(culture));
+			Assert.Equal(documentedCmyk, halfTransparentRed.ToCmykString(culture));
+			Assert.Equal(documentedCmyka, halfTransparentRed.ToCmykaString(culture));
+			Assert.Equal(documentedHsl, halfTransparentRed.ToHslString(culture));
+			Assert.Equal(documentedHsla, halfTransparentRed.ToHslaString(culture));
+		}
+	}
+
+	[Fact]
+	public void StringMethods_CustomizedCloneOfInvariantCulture_UseDocumentedFormat()
+	{
+		var customizedInvariantCulture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+		customizedInvariantCulture.NumberFormat.NumberDecimalSeparator = ",";
+		customizedInvariantCulture.NumberFormat.PercentSymbol = "pct";
+
+		Assert.Equal(documentedRgba, halfTransparentRed.ToRgbaString(customizedInvariantCulture));
+		Assert.Equal(documentedCmyk, halfTransparentRed.ToCmykString(customizedInvariantCulture));
+		Assert.Equal(documentedHsla, halfTransparentRed.ToHslaString(customizedInvariantCulture));
+	}
+
+	[Theory]
+	[InlineData("tr-TR")]
+	[InlineData("de-DE")]
+	[InlineData("en-US")]
+	public void ToHslString_DefaultRoundingMatchesExplicitEnglish(string currentCultureName)
+	{
+		SetCurrentCultures(currentCultureName);
+		var english = CultureInfo.GetCultureInfo("en-US");
+		var lightBlue = new Color(0.25f, 0.25f, 1f);
+		var lightRed = new Color(1f, 0.15f, 0.15f);
+
+		Assert.Equal("HSL(240,100%,62%)", lightBlue.ToHslString());
+		Assert.Equal("HSL(360,100%,57%)", lightRed.ToHslString());
+		Assert.Equal(lightBlue.ToHslString(english), lightBlue.ToHslString());
+		Assert.Equal(lightRed.ToHslString(english), lightRed.ToHslString());
+		Assert.Equal(lightRed.ToHslaString(english), lightRed.ToHslaString(null));
+	}
+
+	static void SetCurrentCultures(string cultureName)
+	{
+		var culture = CultureInfo.GetCultureInfo(cultureName);
+		CultureInfo.CurrentCulture = culture;
+		CultureInfo.CurrentUICulture = culture;
 	}
 
 	public class ColorTestDefinition
@@ -960,6 +1125,8 @@ public class ColorConversionExtensionsTests : BaseTest
 			float expectedAvgColor, bool expectedIsDark, bool expectedIsDarkForEye,
 			Color expectedToBlackOrWhite, Color expectedToBlackOrWhiteForText)
 		{
+			var culture = CultureInfo.GetCultureInfo("en-US");
+
 			R = r;
 			G = g;
 			B = b;
@@ -984,17 +1151,17 @@ public class ColorConversionExtensionsTests : BaseTest
 			ExpectedGreyScale = new Color(expectedAvgColor, expectedAvgColor, expectedAvgColor);
 			ExpectedInverse = new Color(expectedInverseR, expectedInverseG, expectedInverseB);
 			ExpectedRgb = $"RGB({expectedByteR},{expectedByteG},{expectedByteB})";
-			ExpectedRgba = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A})";
+			ExpectedRgba = $"RGBA({expectedByteR},{expectedByteG},{expectedByteB},{A.ToString(culture)})";
 			ExpectedHexrgb = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
 			ExpectedHexrgba = $"#{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}{expectedByteA:X2}";
 			ExpectedHexargb = $"#{expectedByteA:X2}{expectedByteR:X2}{expectedByteG:X2}{expectedByteB:X2}";
-			ExpectedCmyk = $"CMYK({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0})";
-			ExpectedCmyka = $"CMYKA({expectedPctCyan:P0},{expectedPctMagenta:P0},{expectedPctYellow:P0},{expectedPctBlack:P0},{a})";
+			ExpectedCmyk = $"CMYK({expectedPctCyan.ToString("P0", culture)},{expectedPctMagenta.ToString("P0", culture)},{expectedPctYellow.ToString("P0", culture)},{expectedPctBlack.ToString("P0", culture)})";
+			ExpectedCmyka = $"CMYKA({expectedPctCyan.ToString("P0", culture)},{expectedPctMagenta.ToString("P0", culture)},{expectedPctYellow.ToString("P0", culture)},{expectedPctBlack.ToString("P0", culture)},{a.ToString(culture)})";
 
 			Color = new Color(r, g, b, a);
 			ExpectedDegreeHue = Color.GetHue() * 360;
-			ExpectedHslString = $"HSL({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0})";
-			ExpectedHslaString = $"HSLA({ExpectedDegreeHue:0},{Color.GetSaturation():P0},{Color.GetLuminosity():P0},{a})";
+			ExpectedHslString = $"HSL({ExpectedDegreeHue.ToString("0", culture)},{Color.GetSaturation().ToString("P0", culture)},{Color.GetLuminosity().ToString("P0", culture)})";
+			ExpectedHslaString = $"HSLA({ExpectedDegreeHue.ToString("0", culture)},{Color.GetSaturation().ToString("P0", culture)},{Color.GetLuminosity().ToString("P0", culture)},{a.ToString(culture)})";
 		}
 
 		internal float R { get; }
