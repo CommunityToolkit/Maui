@@ -104,10 +104,10 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 		});
 	}
 
-	// Without this premise the tests would pass vacuously in a window that the popup fits into.
+	// In a window the popup fits into, the Border check fails and blames PopupPageLayout; this names the host window instead.
 	static void AssertPopupIsLargerThanThePage(Rect layoutArea, bool checkHeight)
 	{
-		Assert.True(layoutArea.Width < largePopupLength, $"The test needs a page narrower than its {largePopupLength}x{largePopupLength} popup, but PopupPageLayout arranges it in {layoutArea}. The host window is larger than the test assumes (a test that ran before may have resized it).");
+		Assert.True(layoutArea.Width < largePopupLength, $"The test needs a page narrower than its {largePopupLength}-wide popup, but PopupPageLayout arranges it in {layoutArea}. The host window is larger than the test assumes (a test that ran before may have resized it).");
 
 		if (checkHeight)
 		{

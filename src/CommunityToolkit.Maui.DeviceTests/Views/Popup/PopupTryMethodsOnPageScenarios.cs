@@ -5,7 +5,7 @@ using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // A ContentPage is the root page of the Window: PopupTryMethodsTests hosts that Window. The Shell scenarios never reach the Page and INavigation overloads of TryShowPopupAsync.
-static class PopupTryMethodsOnPageScenarios
+static partial class PopupTryMethodsOnPageScenarios
 {
 	// IPopupService creates the popup from the service provider, so its type must be registered: PopupTryMethodsTests does it with RegisterPopup.
 	public sealed partial class RegisteredPopup : Popup
