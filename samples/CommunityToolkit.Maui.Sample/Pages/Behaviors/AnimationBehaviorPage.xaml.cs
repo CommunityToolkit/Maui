@@ -9,6 +9,15 @@ public partial class AnimationBehaviorPage : BasePage<AnimationBehaviorViewModel
 	{
 		InitializeComponent();
 	}
+
+	protected override void OnDisappearing()
+	{
+		base.OnDisappearing();
+
+		BindingContext.StopSpin();
+	}
+
+	void OnStopSpinClicked(object? sender, EventArgs e) => SpinningBorder.CancelAnimations();
 }
 
 partial class SampleScaleAnimation : BaseAnimation

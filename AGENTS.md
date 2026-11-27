@@ -14,6 +14,13 @@ This is the .NET MAUI Community Toolkit: four NuGet packages (`CommunityToolkit.
 
 Every change to the four packages must keep them fully trim-safe and NativeAOT-safe. The trim, AOT and single-file analyzers run in every library build, every `IL2xxx`, `IL3xxx` and `IL4xxx` warning is an error, and a guard fails the build with `CTMTRIM001-004` if an analyzer is ever off or `IsAotCompatible` is not `true`. Do not use reflection on unannotated types or string-path bindings, and do not add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` or trim or AOT (`IL`) warning suppressions. Read [.github/instructions/trimming-aot.instructions.md](.github/instructions/trimming-aot.instructions.md) before changing code, and check your change with `pwsh eng/trim-audit/run.ps1` (packs the libraries, builds the Sample with NativeAOT or full trimming and prints PASS or FAIL).
 
+## Naming
+
+* Methods, `Action`s and `Func`s are verbs that say the action and the result: `GetOrCreate`, not `For`. Past tense is only for events. A method that handles an event keeps the .NET `On<EventName>` form (`OnRegexPropertyChanged`); a callback parameter is a verb (`handleFrame`).
+* A method that returns a `bool` to say whether it succeeded starts with `Try` and returns any other result through a `[NotNullWhen(true)] out` parameter. A method that only answers a question, such as `IsLatest`, is not a `Try` method.
+* Properties, fields and locals are nouns; a `bool` is a question (`DidAnimationComplete`). A `Task` ends with `Task` and a `TaskCompletionSource` with `Source` (`peakReachedTask`, `animationEndedSource`).
+* Apply this to code you add or change. Don't rename code you aren't otherwise changing. Full rules: [CONTRIBUTING.md](CONTRIBUTING.md#naming-conventions).
+
 ## Instructions
 
 * [.github/copilot-instructions.md](.github/copilot-instructions.md): general rules for contributors and agents
