@@ -48,9 +48,15 @@ public abstract partial class PopupWindowHostTestBase
 			}
 			finally
 			{
-				application.CloseWindow(window);
+				// Modal pages are not under window.Page; a live handler would arrange against the window's service scope after CloseWindow disposes it
+				foreach (var modalPage in window.Navigation.ModalStack.ToArray())
+				{
+					modalPage.DisconnectHandlers();
+				}
+
 				window.Page?.DisconnectHandlers();
 				root.DisconnectHandlers();
+				application.CloseWindow(window);
 			}
 		});
 
