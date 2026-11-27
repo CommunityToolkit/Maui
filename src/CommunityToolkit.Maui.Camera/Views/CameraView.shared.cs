@@ -103,6 +103,10 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// It also reports the failures of <see cref="CaptureImageCommand"/>, <see cref="StartVideoRecordingCommand"/> and
 	/// <see cref="StopVideoRecordingCommand"/>, which let no exception escape, and an exception that a <see cref="MediaCaptured"/> handler
 	/// throws, with its message; that capture still returns its image from <see cref="CaptureImage(CancellationToken)"/>.
+	/// An exception that a handler of this event throws does not end the capture or the app: it is written to <see cref="System.Diagnostics.Trace"/> and
+	/// reported through <see cref="ErrorOccurred"/>, and this event is not raised again for it. Handlers that subscribed after the one that threw are not
+	/// called for that failure. <see cref="ErrorOccurred"/> is raised on the same thread, which on Android is CameraX's executor thread for the platform's
+	/// answer to a capture, so an <see cref="ErrorOccurred"/> handler that updates the UI must dispatch to the main thread.
 	/// </remarks>
 	public event EventHandler<MediaCaptureFailedEventArgs> MediaCaptureFailed
 	{
@@ -139,6 +143,9 @@ public partial class CameraView : View, ICameraView, IDisposable
 	/// connection reported, and the failures of <see cref="StartCameraPreviewCommand"/> and <see cref="StopCameraPreviewCommand"/>, which
 	/// let no exception escape. A start that <see cref="StopCameraPreview"/> cancels before the preview started is not a failure and is not
 	/// reported.
+	/// It also reports an exception that a <see cref="MediaCaptureFailed"/> handler throws, with the exception of the handler. An exception that an
+	/// <see cref="ErrorOccurred"/> handler throws while it reports that is written to <see cref="System.Diagnostics.Trace"/> and ignored; handlers that
+	/// subscribed after the one that threw are not called for that report.
 	/// </remarks>
 	public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred
 	{
@@ -527,8 +534,33 @@ public partial class CameraView : View, ICameraView, IDisposable
 	// A failure of a command is reported to the app only: it is not the platform's answer to a capture that is pending
 	void ReportMediaCaptureFailure(Exception exception) => RaiseMediaCaptureFailed(exception.Message);
 
-	void RaiseMediaCaptureFailed(string failureReason) =>
-		weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+	// Callers include CameraX's executor thread and async commands, where an escaping exception ends the app
+	void RaiseMediaCaptureFailed(string failureReason)
+	{
+		try
+		{
+			weakEventManager.HandleEvent(this, new MediaCaptureFailedEventArgs(failureReason), nameof(MediaCaptureFailed));
+		}
+		catch (Exception exception)
+		{
+			ReportMediaCaptureFailedHandlerException(GetHandlerException(exception));
+		}
+	}
+
+	// Traced as well: without an ErrorOccurred subscriber the app would never see its own handler's exception
+	void ReportMediaCaptureFailedHandlerException(Exception handlerException)
+	{
+		System.Diagnostics.Trace.TraceError($"{nameof(CameraView)}: a {nameof(MediaCaptureFailed)} handler threw: {handlerException}");
+
+		try
+		{
+			ReportError(handlerException);
+		}
+		catch (Exception errorOccurredHandlerException)
+		{
+			System.Diagnostics.Trace.TraceError($"{nameof(CameraView)}: an {nameof(ErrorOccurred)} handler threw while reporting the exception of a {nameof(MediaCaptureFailed)} handler: {GetHandlerException(errorOccurredHandlerException)}");
+		}
+	}
 
 	void ReportError(Exception exception) => ((ICameraView)this).OnErrorOccurred(exception);
 

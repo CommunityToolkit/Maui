@@ -373,7 +373,7 @@ All of these are in the `CommunityToolkit.Maui.DeviceTests` namespace.
     retries a known transient failure within a bound and then fails, so a flake can never turn tests into skips
     (`WinMediaProbe.ProbeDisplayUpdaterAsync` is the example).
   - When the missing thing is a machine capability that a CI runner may lack (a camera, a second camera, video rendering, media
-    playback, an on-device speech service), guard it with `DeviceTestCapabilities` (in
+    playback, an on-device speech service, a permission the CI grants before the run), guard it with `DeviceTestCapabilities` (in
     `CommunityToolkit.Maui.DeviceTests.Shared`) instead, so that each CI job can declare it missing or required:
 
     ```csharp

@@ -6,6 +6,7 @@
 // Toolkit change: the scene-manifest check is no longer Mac Catalyst only: apps linked against the iOS 27 SDK are killed at launch without the UIScene life cycle.
 // Toolkit change: implements IPlatformApplication and sets IPlatformApplication.Current, as MauiUIApplicationDelegate does on a real app (toolkit code resolves services through it).
 // Toolkit change: the Runtime.MarshalManagedException and MarshalObjectiveCException handlers let the compiler infer their parameter types: .NET 10 declares the sender as object and .NET 11 as object?, so explicit types fail one of them (CS8622, nullable warnings are errors).
+// Toolkit change: FinishedLaunching hands MauiTestViewController WaitForWindowReadyAsync, a wait for the scene to become active that gives up after 120 s, and records the scene's activation state when the tests start (WindowSceneActivationStateAtTestStart).
 #nullable enable
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,8 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 	public abstract class MauiTestApplicationDelegate : UIApplicationDelegate, IPlatformApplication
 	{
 		readonly TaskCompletionSource _windowReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		static readonly TimeSpan windowReadyTimeout = TimeSpan.FromSeconds(120);
 
 		// TODO: https://github.com/xamarin/xamarin-macios/issues/12555
 		readonly static string[] EnvVarNames = {
@@ -94,10 +97,25 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 		internal Task WindowReady => _windowReady.Task;
 
+		internal UISceneActivationState? WindowSceneActivationStateAtTestStart { get; private set; }
+
 		protected abstract MauiApp CreateMauiApp();
 
 		internal void SetWindowReady() =>
 			_windowReady.TrySetResult();
+
+		async Task WaitForWindowReadyAsync()
+		{
+			var windowReadyOrTimeout = await Task.WhenAny(WindowReady, Task.Delay(windowReadyTimeout));
+
+			WindowSceneActivationStateAtTestStart = Window?.WindowScene?.ActivationState;
+
+			if (windowReadyOrTimeout != WindowReady)
+			{
+				// Starting anyway fails only the tests that need an active scene, instead of hanging until XHarness's launch timeout.
+				Console.WriteLine(FormattableString.Invariant($"The test window's scene was not active after {windowReadyTimeout.TotalSeconds} s (activation state: {WindowSceneActivationStateAtTestStart?.ToString() ?? "no scene connected"}). Starting the tests anyway."));
+			}
+		}
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary? launchOptions)
 		{
@@ -132,7 +150,7 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 		{
 			var window = new UIWindow(UIScreen.MainScreen.Bounds)
 			{
-				RootViewController = new MauiTestViewController(WindowReady)
+				RootViewController = new MauiTestViewController(WaitForWindowReadyAsync())
 			};
 
 			Window = window;

@@ -1,0 +1,14 @@
+# Fixture sources (runners)
+
+Fetched 2026-11-21. The sha256 is of the original file, before trimming.
+
+| Fixture | Source | sha256 of the original | What was kept |
+|---|---|---|---|
+| `README-0e63d4f9d.md` | https://github.com/actions/runner-images/blob/0e63d4f9d2c29043b4cf1d2f40d1812a7cde1369/README.md (copy in research/runners/fixtures/README.md) | `49a421dc7368312cdc183d5a7626335fa89d2110ef4bf3b29e3c637c72d10801` | "Available Images" heading through the table end (L19-L38) |
+| `README-e812bbc61.md` | https://github.com/actions/runner-images/blob/e812bbc61/README.md (copy in research/runners/review-fetch/history/readmes/README-e812bbc61.md) | `45e40fd80018e1fb11c97c85be6cc05846fb6ccb33ff9429fd91de533b5fca4e` | its "Available Images" heading and 3-column 2025 table (L19-L34) |
+| `rollout-state-xcode-27-arm64.json` | https://gist.githubusercontent.com/hosted-runners-images-bot/79267492faab096d04cdd25ce7014cec/raw/xcode-27-arm64.json (content string in research/runners/review-fetch/gist/gist.json) | `fa91d3bee9056fa63428041c4e8971418003895365fb1d4fdc393fee8eb22c3c` | the content string of that gist file |
+| `rollout-state-macos-26-arm64.json` | https://gist.githubusercontent.com/hosted-runners-images-bot/79267492faab096d04cdd25ce7014cec/raw/macos-26-arm64.json (content string in research/runners/review-fetch/gist/gist.json) | `74043b98d5a71a91e3bd53af2c086176c7624f2acc7894c032db0470d7fb7e00` | the content string of that gist file |
+| `rollout-state-macos-15-arm64.json` | https://gist.githubusercontent.com/hosted-runners-images-bot/79267492faab096d04cdd25ce7014cec/raw/macos-15-arm64.json (content string in research/runners/review-fetch/gist/gist.json) | `c3f6e1ed1797d8a3fa69ab6eaafcc201e9ce43e1e6de286fc112229cb4331cb6` | the content string of that gist file |
+| `rollout-state-ubuntu24.json` | https://gist.githubusercontent.com/hosted-runners-images-bot/79267492faab096d04cdd25ce7014cec/raw/ubuntu24.json (content string in research/runners/review-fetch/gist/gist.json) | `fd3789722daee5108a7bcaa063a41b4bdeff5c68bbf5880385a6b76ec748e05a` | the content string of that gist file |
+| `rollout-state-ubuntu26.json` | https://gist.githubusercontent.com/hosted-runners-images-bot/79267492faab096d04cdd25ce7014cec/raw/ubuntu26.json (content string in research/runners/review-fetch/gist/gist.json) | `41751f26ba50261c13e506898f3c54b99db994ca1b9a1bfa9736198c635fb7ca` | the content string of that gist file |
+| `rollout-state-win25-vs2026.json` | https://gist.githubusercontent.com/hosted-runners-images-bot/79267492faab096d04cdd25ce7014cec/raw/win25-vs2026.json (content string in research/runners/review-fetch/gist/gist.json) | `b0b77dafe9ef9d41001ff5c3666132fd08e45e006ab26121813bd5ae2f2fbec2` | the content string of that gist file |
