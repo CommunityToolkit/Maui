@@ -1,0 +1,20 @@
+{
+  "Microsoft.NET.Workload.Emscripten.Current": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Emscripten.net6": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Emscripten.net7": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Emscripten.net8": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Emscripten.net9": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Emscripten.net10": "11.0.100/11.0.100",
+  "Microsoft.NET.Sdk.Android": "37.2.31/11.0.100",
+  "Microsoft.NET.Sdk.iOS": "27.2.11039/11.0.100",
+  "Microsoft.NET.Sdk.MacCatalyst": "27.2.11039/11.0.100",
+  "Microsoft.NET.Sdk.macOS": "27.2.11039/11.0.100",
+  "Microsoft.NET.Sdk.Maui": "11.0.0/11.0.100",
+  "Microsoft.NET.Sdk.tvOS": "27.2.11039/11.0.100",
+  "Microsoft.NET.Workload.Mono.ToolChain.Current": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Mono.ToolChain.net6": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Mono.ToolChain.net7": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Mono.ToolChain.net8": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Mono.ToolChain.net9": "11.0.100/11.0.100",
+  "Microsoft.NET.Workload.Mono.ToolChain.net10": "11.0.100/11.0.100"
+}

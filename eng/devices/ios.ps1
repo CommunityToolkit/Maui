@@ -9,19 +9,21 @@
     because xharness reports SUCCESS when the app dies before its test runner starts.
 
     Without -Udid the script creates a dedicated simulator, boots it, grants the camera, the microphone and speech
-    recognition to the test apps on it, and deletes it afterwards unless -KeepDevice. A simulator that cannot be
-    created or booted is replaced as often as infrastructure failures are retried (-InfraRetries). It never resets,
-    shuts down, deletes or grants anything on a simulator it did not create, and never passes --reset-simulator to
-    xharness (that kills every simulator on the Mac). Every simctl call has a timeout, and a simctl failure is a
-    simulator failure (88), never a script error.
+    recognition to the test apps on it (and checks every grant in its TCC database), and deletes it afterwards unless
+    -KeepDevice. A simulator that cannot be created, booted or given the permissions is replaced as often as
+    infrastructure failures are retried (-InfraRetries). It never resets, shuts down, deletes or grants anything on a
+    simulator it did not create, and never passes --reset-simulator to xharness (that kills every simulator on the
+    Mac). Every simctl call has a timeout, and a simctl failure is a simulator failure (88), never a script error.
 
     The device type of the new simulator is always one that its runtime lists as supported, because 'simctl create'
     refuses any other. Without -DeviceType it is the runtime's first iPhone with one built-in screen: the status bar
     tests read the status bar from the top of the screen, and iPhone Duo (two screens) shows it on their right edge.
     Without -Runtime, the runtime is the newest one that lists such an iPhone (with -DeviceType, the newest one that
-    lists that device type). If the runtime lists no iPhone known to have one built-in screen, the simulator is its
-    first iPhone whose screens could not be counted, else its first iPhone, with a warning; without -Runtime this
-    happens only when no runtime lists such an iPhone, and the runtime is then the newest one that lists any iPhone.
+    lists that device type). When several runtimes match -Runtime (the xcode-27 runner image has two iOS 27.2 runtimes),
+    it is the first that lists such an iPhone (with -DeviceType, that lists that device type). If no runtime lists such
+    an iPhone, the runtime is the first (newest, without -Runtime) one that lists an iPhone whose screens could not be
+    counted, else any iPhone, else the first match, and the simulator is its first iPhone whose screens could not be
+    counted, else its first iPhone, with a warning.
 
     Exit codes use xharness's vocabulary: 0 passed, 1 test failures, 3 invalid arguments, 4 app not built,
     70 timed out, 71 build or script failure, 80 app crash, 88 simulator failure, 94 no results or no tests ran.
@@ -180,19 +182,63 @@ function Get-SimulatorRuntimes {
     return $runtimes
 }
 
-function Select-SimulatorRuntime {
+function Get-MatchingSimulatorRuntimes {
     # There is no default runtime here: the newest one may not list the device type that is needed (iOS 27.1 lists only iPhone Duo), so
     # Select-SimulatorRuntimeAndDeviceType chooses the runtime and the device type together, and only a requested runtime is resolved here.
     param([string]$Requested)
 
     $runtimes = @(Get-SimulatorRuntimes)
-    foreach ($candidate in $runtimes) {
-        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.version -eq $Requested -or $candidate.name -eq $Requested) {
-            return $candidate
+    $matching = @($runtimes | Where-Object {
+        $_.identifier -eq $Requested -or $_.identifier.EndsWith(".$Requested", [System.StringComparison]::Ordinal) -or $_.version -eq $Requested -or $_.name -eq $Requested
+    })
+    if ($matching.Count -eq 0) {
+        throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
+    }
+
+    return $matching
+}
+
+function Select-MatchingSimulatorRuntimeThatListsDeviceType {
+    # The xcode-27 runner image has two iOS 27.2 runtimes, and one lists only iPhone Duo, so the first match must not win when another
+    # match lists the device type.
+    param([object[]]$Matching, [string]$DeviceType)
+
+    foreach ($candidateRuntime in $Matching) {
+        if ($null -ne (Find-SupportedSimulatorDeviceType -SelectedRuntime $candidateRuntime -Requested $DeviceType)) {
+            return $candidateRuntime
         }
     }
 
-    throw "iOS runtime '$Requested' is not available. Available: $(($runtimes | ForEach-Object { $_.identifier }) -join ', ')."
+    return $Matching[0]
+}
+
+function Select-MatchingSimulatorRuntimeCandidates {
+    # The xcode-27 runner image has two iOS 27.2 runtimes, and one lists only iPhone Duo, so the first match must not win when another
+    # match lists an iPhone with one built-in screen.
+    param([object[]]$Matching)
+
+    $screenCounts = @{}
+    $examined = @()
+    foreach ($candidateRuntime in $Matching) {
+        $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $candidateRuntime -ScreenCounts $screenCounts
+        if (@($candidates.IPhones | Where-Object { $_.Screens -eq 1 }).Count -gt 0) {
+            return $candidates
+        }
+
+        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone known to have one built-in screen."
+        $examined += $candidates
+    }
+
+    return (Select-SimulatorCandidatesToFallBackOn -Examined $examined)
+}
+
+function Select-SimulatorCandidatesToFallBackOn {
+    # An iPhone whose screens could not be counted may have one, so its runtime goes before one whose iPhones are all known to have more.
+    param([object[]]$Examined)
+
+    $withUncountedIPhone = @($Examined | Where-Object { @($_.IPhones | Where-Object { $null -eq $_.Screens }).Count -gt 0 })
+    $withAnyIPhone = @($Examined | Where-Object { $_.IPhones.Count -gt 0 })
+    return ($withUncountedIPhone + $withAnyIPhone + $Examined)[0]
 }
 
 function Get-SimulatorBuiltInScreenCount {
@@ -224,7 +270,10 @@ function Get-SimulatorBuiltInScreenCount {
     }
 
     # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
-    return @($displays | Where-Object { $_['displayType'] -eq 'integrated' -or "$($_['deviceName'])" -like 'primary*' }).Count
+    # Ordinal: -like folds case with the current culture, and Turkish maps I to dotless ı.
+    return @($displays | Where-Object {
+        [string]::Equals([string]$_['displayType'], 'integrated', [System.StringComparison]::OrdinalIgnoreCase) -or ([string]$_['deviceName']).StartsWith('primary', [System.StringComparison]::OrdinalIgnoreCase)
+    }).Count
 }
 
 function Get-SimulatorSupportedDeviceTypes {
@@ -240,7 +289,7 @@ function Find-SupportedSimulatorDeviceType {
     param($SelectedRuntime, [string]$Requested)
 
     foreach ($candidate in (Get-SimulatorSupportedDeviceTypes -SelectedRuntime $SelectedRuntime)) {
-        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested") -or $candidate.name -eq $Requested) {
+        if ($candidate.identifier -eq $Requested -or $candidate.identifier.EndsWith(".$Requested", [System.StringComparison]::Ordinal) -or $candidate.name -eq $Requested) {
             return $candidate
         }
     }
@@ -319,25 +368,26 @@ function Select-SimulatorIPhone {
 function Select-SimulatorDeviceType {
     param($SelectedRuntime, [string]$Requested)
 
-    if ($Requested) {
-        $found = Find-SupportedSimulatorDeviceType -SelectedRuntime $SelectedRuntime -Requested $Requested
-        if ($null -eq $found) {
-            throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
-        }
-
-        return $found
+    $found = Find-SupportedSimulatorDeviceType -SelectedRuntime $SelectedRuntime -Requested $Requested
+    if ($null -eq $found) {
+        throw "Device type '$Requested' is not supported by $($SelectedRuntime.identifier)."
     }
 
-    $candidates = Get-SimulatorIPhoneCandidates -SelectedRuntime $SelectedRuntime -ScreenCounts @{}
-    return (Select-SimulatorIPhone -Candidates $candidates)
+    return $found
 }
 
 function Select-SimulatorRuntimeAndDeviceType {
     param([string]$Runtime, [string]$DeviceType)
 
     if ($Runtime) {
-        $selectedRuntime = Select-SimulatorRuntime -Requested $Runtime
-        return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
+        $matching = @(Get-MatchingSimulatorRuntimes -Requested $Runtime)
+        if ($DeviceType) {
+            $selectedRuntime = Select-MatchingSimulatorRuntimeThatListsDeviceType -Matching $matching -DeviceType $DeviceType
+            return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
+        }
+
+        $candidates = Select-MatchingSimulatorRuntimeCandidates -Matching $matching
+        return New-Object PSObject -Property @{ Runtime = $candidates.Runtime; DeviceType = (Select-SimulatorIPhone -Candidates $candidates) }
     }
 
     $runtimes = @(Get-SimulatorRuntimes | Sort-Object { [version]$_.version } -Descending)
@@ -363,11 +413,11 @@ function Select-SimulatorRuntimeAndDeviceType {
             return New-Object PSObject -Property @{ Runtime = $candidateRuntime; DeviceType = (Select-SimulatorIPhone -Candidates $candidates) }
         }
 
-        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone with one built-in screen."
+        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone known to have one built-in screen."
         $examined += $candidates
     }
 
-    $chosen = (@($examined | Where-Object { $_.IPhones.Count -gt 0 }) + $examined)[0]
+    $chosen = Select-SimulatorCandidatesToFallBackOn -Examined $examined
     return New-Object PSObject -Property @{ Runtime = $chosen.Runtime; DeviceType = (Select-SimulatorIPhone -Candidates $chosen) }
 }
 
@@ -681,41 +731,232 @@ function Get-AppBundleIdentifiers {
     }
 }
 
+function Invoke-SimulatorTccQuery {
+    param([string]$Database, [string]$Sql)
+
+    # No -readonly: it cannot open a WAL database whose -wal and -shm files are missing.
+    return Invoke-DeviceTestProcess -FilePath 'sqlite3' -ArgumentList @('-cmd', '.timeout 5000', $Database, $Sql) -TimeoutSeconds 60
+}
+
+function Wait-SimulatorTccDatabase {
+    # Test-Path comes first: sqlite3 can create a missing file, and an empty one where tccd expects its own would break the permissions.
+    param([string]$Database, [int]$TimeoutSeconds = 60)
+
+    $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ($true) {
+        if (Test-Path -LiteralPath $Database -PathType Leaf) {
+            $tables = Invoke-SimulatorTccQuery -Database $Database -Sql "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='access';"
+            if ($tables.ExitCode -eq 0 -and "$($tables.Output)".Trim() -eq '1') {
+                return $true
+            }
+        }
+
+        if ([datetime]::UtcNow -ge $deadline) {
+            return $false
+        }
+
+        Start-Sleep -Seconds 2
+    }
+}
+
+function Get-SimulatorTccGrantedServices {
+    # An object, not a bare array: PowerShell turns a returned empty array into $null.
+    param([string]$Database, [string]$Bundle)
+
+    $result = Invoke-SimulatorTccQuery -Database $Database -Sql "SELECT service, auth_value FROM access WHERE client='$Bundle' AND client_type=0;"
+    if ($result.ExitCode -ne 0) {
+        return [pscustomobject]@{ Services = @(); Error = "Could not read the TCC database: $("$($result.Error)".Trim())" }
+    }
+
+    $services = @()
+    $ungrantedAuthValues = @{}
+    foreach ($line in @("$($result.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })) {
+        $tccService, $authValue = $line -split '\|', 2
+        if ($authValue -eq '2') {
+            $services += $tccService
+        }
+        else {
+            $ungrantedAuthValues[$tccService] = $authValue
+        }
+    }
+
+    return [pscustomobject]@{ Services = $services; UngrantedAuthValues = $ungrantedAuthValues; Error = $null }
+}
+
+function Add-SimulatorTccGrant {
+    # The access table's columns differ by iOS version (iOS 15 and 16 have no pid; iOS 27 adds two), so only the columns it has are written.
+    param([string]$Database, [string]$Bundle, [string]$TccService)
+
+    if ($Bundle -cnotmatch '^[A-Za-z0-9.-]+\z') {
+        return "'$Bundle' is not a valid bundle identifier."
+    }
+
+    $columns = Invoke-SimulatorTccQuery -Database $Database -Sql "SELECT name FROM pragma_table_info('access');"
+    if ($columns.ExitCode -ne 0) {
+        return "Could not read the columns of the TCC database's access table: $("$($columns.Error)".Trim())"
+    }
+
+    $tableColumns = @("$($columns.Output)" -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $now = [System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $values = [ordered]@{
+        service                          = "'$TccService'"
+        client                           = "'$Bundle'"
+        client_type                      = '0'
+        auth_value                       = '2'
+        auth_reason                      = '4'
+        auth_version                     = '1'
+        csreq                            = 'NULL'
+        policy_id                        = 'NULL'
+        indirect_object_identifier_type  = '0'
+        indirect_object_identifier       = "'UNUSED'"
+        indirect_object_code_identity    = 'NULL'
+        flags                            = '0'
+        last_modified                    = "$now"
+        pid                              = 'NULL'
+        pid_version                      = 'NULL'
+        boot_uuid                        = "'UNUSED'"
+        last_reminded                    = "$now"
+    }
+
+    $columnsToWrite = @($values.Keys | Where-Object { $tableColumns -contains $_ })
+    $sql = "INSERT OR REPLACE INTO access ($($columnsToWrite -join ', ')) VALUES ($(($columnsToWrite | ForEach-Object { $values[$_] }) -join ', '));"
+    $written = Invoke-SimulatorTccQuery -Database $Database -Sql $sql
+    if ($written.ExitCode -ne 0) {
+        return "$("$($written.Error)".Trim())"
+    }
+
+    return $null
+}
+
+function Save-PrivacyGrantEvidence {
+    # Best effort: why simctl privacy stops answering is unknown, so a timeout keeps what the host and the simulator were doing.
+    param([string]$Udid, [string]$Path)
+
+    try {
+        $processes = Invoke-DeviceTestProcess -FilePath 'ps' -ArgumentList @('-axo', 'pid,ppid,etime,command') -TimeoutSeconds 30
+        if ($processes.TimedOut -or $processes.ExitCode -ne 0) {
+            return
+        }
+
+        $lines = @("$($processes.Output)" -split "`r?`n")
+        $hostLines = @($lines | Where-Object { $_ -match 'simctl|CoreSimulatorService' })
+        $owned = @(Get-SimulatorProcessLines -PsOutput $processes.Output -Udid $Udid | ForEach-Object { $_.Line })
+        $text = "Host simctl and CoreSimulatorService processes:`n$($hostLines -join "`n")`n`nProcesses of simulator $($Udid):`n$($owned -join "`n")`n"
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path) | Out-Null
+        [System.IO.File]::AppendAllText($Path, $text, (New-Object System.Text.UTF8Encoding($false)))
+    }
+    catch {
+        Write-Verbose "Could not save the privacy grant evidence: $($_.Exception.Message)"
+    }
+}
+
 function Grant-SimulatorPrivacy {
-    # Without these grants, the tests of the camera, microphone and speech recognition paths would skip, because a headless run cannot
-    # answer the permission prompts. 'simctl privacy' has no speech recognition service, so that grant goes straight into the simulator's
-    # TCC database. Grants made before XHarness installs an app survive the install (seen with Xcode 27.0); erasing the simulator removes
-    # them. A grant that is not made only skips the tests that need it, so once simctl stops answering, the remaining simctl grants are
-    # left out instead of waiting for each of them.
-    param([string]$Identifier, [string[]]$BundleIdentifiers, [int]$GrantTimeoutSeconds = 120)
+    # simctl has no speech service and hung for 120 s in run 44928036772, so the rest goes into TCC.db and every grant is read back;
+    # a simulator missing one is replaced. Grants made before XHarness installs the app survive it; an erase removes them.
+    param([string]$Identifier, [string[]]$BundleIdentifiers, [int]$GrantTimeoutSeconds = 120, [string]$EvidencePath)
 
     $database = Join-Path $HOME "Library/Developer/CoreSimulator/Devices/$Identifier/data/Library/TCC/TCC.db"
+    $requiredGrants = @(
+        [pscustomobject]@{ Name = 'camera'; TccService = 'kTCCServiceCamera'; Simctl = $true },
+        [pscustomobject]@{ Name = 'microphone'; TccService = 'kTCCServiceMicrophone'; Simctl = $true },
+        [pscustomobject]@{ Name = 'speech recognition'; TccService = 'kTCCServiceSpeechRecognition'; Simctl = $false }
+    )
+
     $simctlAnswers = $true
+    $grantMethods = @{}
     foreach ($bundle in $BundleIdentifiers) {
-        foreach ($service in @('camera', 'microphone')) {
+        if ($bundle -cnotmatch '^[A-Za-z0-9.-]+\z') {
+            return "'$bundle' is not a valid bundle identifier, so nothing was granted on simulator $Identifier."
+        }
+
+        foreach ($service in @($requiredGrants | Where-Object { $_.Simctl })) {
             if (-not $simctlAnswers) {
                 continue
             }
 
-            $grant = Invoke-Simctl -ArgumentList @('privacy', $Identifier, 'grant', $service, $bundle) -TimeoutSeconds $GrantTimeoutSeconds
-            if ($grant.ExitCode -ne 0) {
-                Write-DeviceTestWarning "Could not grant $service to $bundle on simulator $($Identifier): $(Format-SimctlFailure -Command "privacy $Identifier grant $service $bundle" -Result $grant -TimeoutSeconds $GrantTimeoutSeconds)"
-                if ($grant.TimedOut) {
-                    $simctlAnswers = $false
-                    Write-DeviceTestWarning 'simctl does not answer: the remaining camera and microphone grants are left out, and the tests that need them skip.'
+            $started = [datetime]::UtcNow
+            $grant = Invoke-Simctl -ArgumentList @('privacy', $Identifier, 'grant', $service.Name, $bundle) -TimeoutSeconds $GrantTimeoutSeconds
+            $seconds = [int][Math]::Round(([datetime]::UtcNow - $started).TotalSeconds)
+            if ($grant.ExitCode -eq 0) {
+                $grantMethods["$bundle|$($service.Name)"] = "simctl, $seconds s"
+                continue
+            }
+
+            Write-DeviceTestWarning "Could not grant $($service.Name) to $bundle with simctl on simulator $($Identifier): $(Format-SimctlFailure -Command "privacy $Identifier grant $($service.Name) $bundle" -Result $grant -TimeoutSeconds $GrantTimeoutSeconds); writing it into the simulator's TCC database instead."
+            if ($grant.TimedOut) {
+                $simctlAnswers = $false
+                if ($EvidencePath) {
+                    Save-PrivacyGrantEvidence -Udid $Identifier -Path $EvidencePath
                 }
             }
         }
-
-        $now = [System.DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-        $row = "INSERT OR REPLACE INTO access (service, client, client_type, auth_value, auth_reason, auth_version, csreq, policy_id, indirect_object_identifier_type, indirect_object_identifier, indirect_object_code_identity, flags, last_modified, pid, pid_version, boot_uuid, last_reminded) VALUES ('kTCCServiceSpeechRecognition', '$bundle', 0, 2, 4, 1, NULL, NULL, 0, 'UNUSED', NULL, 0, $now, NULL, NULL, 'UNUSED', $now);"
-        $speech = Invoke-DeviceTestProcess -FilePath 'sqlite3' -ArgumentList @('-cmd', '.timeout 5000', $database, $row) -TimeoutSeconds 60
-        if ($speech.ExitCode -ne 0) {
-            Write-DeviceTestWarning "Could not grant speech recognition to $bundle on simulator $($Identifier): $("$($speech.Error)".Trim())"
-        }
     }
 
-    Write-Host "Granted the camera, the microphone and speech recognition to $($BundleIdentifiers -join ', ') on simulator $Identifier (except where a warning says otherwise)"
+    $tccTimeoutSeconds = 60
+    if (-not (Wait-SimulatorTccDatabase -Database $database -TimeoutSeconds $tccTimeoutSeconds)) {
+        return "The TCC database of simulator $Identifier ($database) did not appear with an access table within $tccTimeoutSeconds s, so the camera, microphone and speech recognition grants cannot be checked."
+    }
+
+    $missing = @()
+    foreach ($bundle in $BundleIdentifiers) {
+        $granted = Get-SimulatorTccGrantedServices -Database $database -Bundle $bundle
+        if ($granted.Error) {
+            return $granted.Error
+        }
+
+        foreach ($service in $requiredGrants) {
+            if ($granted.Services -contains $service.TccService) {
+                continue
+            }
+
+            if ($grantMethods.ContainsKey("$bundle|$($service.Name)")) {
+                $authValue = $granted.UngrantedAuthValues[$service.TccService]
+                if ($null -eq $authValue) {
+                    $state = 'has no row for it'
+                }
+                else {
+                    $state = "does not grant it (auth_value $authValue)"
+                }
+
+                Write-DeviceTestWarning "simctl granted $($service.Name) to $bundle, but the TCC database of simulator $Identifier $state; writing it."
+                $grantMethods.Remove("$bundle|$($service.Name)")
+            }
+
+            $failure = Add-SimulatorTccGrant -Database $database -Bundle $bundle -TccService $service.TccService
+            if ($failure) {
+                Write-DeviceTestWarning "Could not write the $($service.Name) grant for $bundle into the TCC database of simulator $($Identifier): $failure"
+            }
+
+            $grantMethods["$bundle|$($service.Name)"] = 'TCC database'
+        }
+
+        $verified = Get-SimulatorTccGrantedServices -Database $database -Bundle $bundle
+        if ($verified.Error) {
+            return $verified.Error
+        }
+
+        $gaps = @($requiredGrants | Where-Object { $verified.Services -notcontains $_.TccService } | ForEach-Object { $_.Name })
+        if ($gaps.Count -gt 0) {
+            $missing += "$bundle (missing: $($gaps -join ', '))"
+            continue
+        }
+
+        $grantDescriptions = @($requiredGrants | ForEach-Object {
+                $method = $grantMethods["$bundle|$($_.Name)"]
+                if (-not $method) {
+                    $method = 'already present'
+                }
+
+                "$($_.Name) ($method)"
+            })
+        Write-Host "Granted to $bundle on simulator $Identifier, found in its TCC database: $($grantDescriptions -join ', ')"
+    }
+
+    if ($missing.Count -gt 0) {
+        return "Simulator $Identifier could not be given the camera, microphone and speech recognition permissions: $($missing -join '; ')."
+    }
+
+    return $null
 }
 
 $exitCode = 71
@@ -787,8 +1028,11 @@ try {
                     $name = "CTM DeviceTests $(Get-Date -Format 'yyyyMMdd-HHmmss')"
                 }
 
-                # A simulator that cannot be created or booted is replaced by a new one as often as infrastructure failures are retried
-                # (once on CI): on the runners about one simulator start in ten never finishes (actions/runner-images #12777).
+                $bundleIdentifiers = @(Get-AppBundleIdentifiers -Context $context)
+                $privacyEvidencePath = Join-Path $context.Results 'privacy-grant-evidence.txt'
+
+                # A simulator that cannot be created, booted or given the permissions is replaced as often as infrastructure failures are
+                # retried (once on CI): about 1 in 10 simulator starts never finishes (actions/runner-images #12777).
                 for ($attempt = 1; $attempt -le (1 + $context.InfraRetries); $attempt++) {
                     $attemptName = $name
                     if ($attempt -gt 1) {
@@ -798,20 +1042,19 @@ try {
                     $prepared = New-TestSimulator -Name $attemptName -DeviceType $selectedDeviceType -Runtime $selectedRuntime -BootTimeoutSeconds $BootTimeoutSeconds
                     $simulator = $prepared.Simulator
                     $simulatorError = $prepared.Error
+                    if (-not $simulatorError) {
+                        $simulatorError = Grant-SimulatorPrivacy -Identifier $simulator.Udid -BundleIdentifiers $bundleIdentifiers -EvidencePath $privacyEvidencePath
+                    }
+
                     if (-not $simulatorError -or $attempt -gt $context.InfraRetries) {
                         break
                     }
 
-                    Write-DeviceTestWarning "$simulatorError; replacing the simulator (infrastructure retry)."
+                    Write-DeviceTestWarning "$($simulatorError.TrimEnd('.')); replacing the simulator (infrastructure retry)."
                     if ($null -ne $simulator) {
                         Remove-Simulator -Identifier $simulator.Udid
                         $simulator = $null
                     }
-                }
-
-                if (-not $simulatorError) {
-                    $bundleIdentifiers = @(Get-AppBundleIdentifiers -Context $context)
-                    Grant-SimulatorPrivacy -Identifier $simulator.Udid -BundleIdentifiers $bundleIdentifiers
                 }
             }
         }
@@ -848,7 +1091,10 @@ try {
                         }
                         elseif ($simulator.Created) {
                             # The erase removed the grants.
-                            Grant-SimulatorPrivacy -Identifier $simulator.Udid -BundleIdentifiers $bundleIdentifiers
+                            $grantError = Grant-SimulatorPrivacy -Identifier $simulator.Udid -BundleIdentifiers $bundleIdentifiers -EvidencePath $privacyEvidencePath
+                            if ($grantError) {
+                                Write-DeviceTestWarning $grantError
+                            }
                         }
                     } `
                     -OnFailure {

@@ -673,3 +673,13 @@ sealed class AppleThrowingMediaCapturedSubscriber
 
 	void OnMediaCaptured(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(FailureMessage);
 }
+
+// Referenced by the test for the same reason as AppleMediaRecorder: the view holds its subscribers weakly.
+sealed class AppleThrowingMediaCaptureFailedSubscriber
+{
+	public static readonly InvalidOperationException ThrownException = new("The failure handler failed.");
+
+	public AppleThrowingMediaCaptureFailedSubscriber(CameraView view) => view.MediaCaptureFailed += OnMediaCaptureFailed;
+
+	void OnMediaCaptureFailed(object? sender, MediaCaptureFailedEventArgs e) => throw ThrownException;
+}
