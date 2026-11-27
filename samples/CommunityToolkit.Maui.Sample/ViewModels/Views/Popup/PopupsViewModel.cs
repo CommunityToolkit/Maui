@@ -70,5 +70,5 @@ public partial class PopupsViewModel(IPopupService popupService) : BaseViewModel
 		}
 	}
 
-	sealed class UnregisteredPopupView : ContentView;
+	sealed partial class UnregisteredPopupView : ContentView;
 }

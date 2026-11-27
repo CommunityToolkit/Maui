@@ -8,7 +8,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 static class PopupTryMethodsOnPageScenarios
 {
 	// IPopupService creates the popup from the service provider, so its type must be registered: PopupTryMethodsTests does it with RegisterPopup.
-	public sealed class RegisteredPopup : Popup
+	public sealed partial class RegisteredPopup : Popup
 	{
 		public RegisteredPopup()
 		{
