@@ -203,12 +203,14 @@ public class CameraManagerApplePermissionTests : CameraHandlerTestBase
 		var microphoneStatus = AVCaptureDevice.GetAuthorizationStatus(AVAuthorizationMediaType.Audio);
 		Skip.IfNot(microphoneStatus is AVAuthorizationStatus.Denied or AVAuthorizationStatus.Restricted,
 			$"Needs the microphone permission to be denied or restricted (it is {microphoneStatus}); starting a recording would otherwise show a prompt or add the audio input. Deny it with 'xcrun simctl privacy <udid> revoke microphone <bundle id>' on a simulator.");
+		Skip.If(AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Audio) is null, "Needs an audio capture device.");
 		SetupBuilder();
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			using var scope = new AppleCameraManagerScope(MauiContext);
-			var session = new FakeCaptureSession { CanAddOutputResult = false };
+			// A stopped session makes the start turn the camera on first, and this scope's fake provider has none.
+			var session = new FakeCaptureSession { CanAddOutputResult = false, IsRunning = true };
 			scope.Access.CaptureSession = session;
 
 			try
