@@ -4,7 +4,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
-// Scenarios for TryShowPopupAsync and TryClosePopupAsync, which return a PopupOutcome union instead of throwing. They use .NET MAUI's own navigation of a Shell
+// Scenarios for TryShowPopupAsync and TryClosePopupAsync, which return a PopupResultOrException instead of throwing. They use .NET MAUI's own navigation of a Shell
 // that is the root page of a Window: the platform files of PopupDismissedByNavigationTests host that Window. Opened is not awaited, because a Window without a
 // handler (Android) never raises it.
 static class PopupTryMethodsScenarios
@@ -18,14 +18,14 @@ static class PopupTryMethodsScenarios
 		var showPopupTask = shell.TryShowPopupAsync<string>(CreatePopup(), CreateOptions(), token: CancellationToken.None);
 		await WaitForPopupPages(shell, 1, "The popup was never shown.");
 
-		var closeOutcome = await shell.TryClosePopupAsync(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var showOutcome = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var closePopupResultOrException = await shell.TryClosePopupAsync(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showPopupResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		var closeResult = Assert.IsType<IPopupResult<string>>(closeOutcome.Value, exactMatch: false);
+		var closeResult = Assert.IsType<IPopupResult<string>>(closePopupResultOrException.Value, exactMatch: false);
 		Assert.Equal(expectedResult, closeResult.Result);
 		Assert.False(closeResult.WasDismissedByTappingOutsideOfPopup);
 
-		var showResult = Assert.IsType<IPopupResult<string>>(showOutcome.Value, exactMatch: false);
+		var showResult = Assert.IsType<IPopupResult<string>>(showPopupResultOrException.Value, exactMatch: false);
 		Assert.Equal(expectedResult, showResult.Result);
 		Assert.False(showResult.WasDismissedByTappingOutsideOfPopup);
 		Assert.Empty(shell.Navigation.ModalStack);
@@ -37,9 +37,9 @@ static class PopupTryMethodsScenarios
 		await WaitForPopupPages(shell, 1, "The popup was never shown.");
 
 		await shell.GoToAsync("//second");
-		var outcome = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var resultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		var message = outcome switch
+		var message = resultOrException switch
 		{
 			IPopupResult { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed",
 			IPopupResult => "Closed",
@@ -56,32 +56,32 @@ static class PopupTryMethodsScenarios
 		var blockingPage = new ContentPage { Title = "Blocking" };
 		await shell.Navigation.PushModalAsync(blockingPage, false);
 
-		var blockedOutcome = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var genericBlockedOutcome = await shell.TryClosePopupAsync(1).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var blockedResultOrException = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var genericBlockedResultOrException = await shell.TryClosePopupAsync(1).WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		var exception = Assert.IsType<PopupBlockedException>(blockedOutcome.Value);
-		Assert.IsType<PopupBlockedException>(genericBlockedOutcome.Value);
+		var exception = Assert.IsType<PopupBlockedException>(blockedResultOrException.Value);
+		Assert.IsType<PopupBlockedException>(genericBlockedResultOrException.Value);
 		Assert.Contains(nameof(ContentPage), exception.Message, StringComparison.Ordinal);
 		Assert.False(showPopupTask.IsCompleted);
 		Assert.Same(blockingPage, shell.Navigation.ModalStack[^1]);
 
 		// Once the blocking page is gone, the same popup can be closed
 		await shell.Navigation.PopModalAsync(false);
-		var closeOutcome = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var showOutcome = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var closePopupResultOrException = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showPopupResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.False(Assert.IsType<IPopupResult>(closeOutcome.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
-		Assert.False(Assert.IsType<IPopupResult>(showOutcome.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(closePopupResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(showPopupResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
 
 	public static async Task TryClosePopupAsyncReturnsPopupNotFoundExceptionWhenNoPopupIsShown(Shell shell)
 	{
-		var outcome = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var genericOutcome = await shell.TryClosePopupAsync("Unused").WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var resultOrException = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var genericResultOrException = await shell.TryClosePopupAsync("Unused").WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.IsType<PopupNotFoundException>(outcome.Value);
-		Assert.IsType<PopupNotFoundException>(genericOutcome.Value);
+		Assert.IsType<PopupNotFoundException>(resultOrException.Value);
+		Assert.IsType<PopupNotFoundException>(genericResultOrException.Value);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
 
@@ -90,11 +90,11 @@ static class PopupTryMethodsScenarios
 		using var cancellationTokenSource = new CancellationTokenSource();
 		await cancellationTokenSource.CancelAsync();
 
-		var outcome = await shell.TryShowPopupAsync(CreatePopup(), CreateOptions(), token: cancellationTokenSource.Token).WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var genericOutcome = await shell.TryShowPopupAsync<int>(CreatePopup(), CreateOptions(), token: cancellationTokenSource.Token).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var resultOrException = await shell.TryShowPopupAsync(CreatePopup(), CreateOptions(), token: cancellationTokenSource.Token).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var genericResultOrException = await shell.TryShowPopupAsync<int>(CreatePopup(), CreateOptions(), token: cancellationTokenSource.Token).WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.IsType<OperationCanceledException>(outcome.Value, exactMatch: false);
-		Assert.IsType<OperationCanceledException>(genericOutcome.Value, exactMatch: false);
+		Assert.IsType<OperationCanceledException>(resultOrException.Value, exactMatch: false);
+		Assert.IsType<OperationCanceledException>(genericResultOrException.Value, exactMatch: false);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
 

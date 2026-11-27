@@ -1,7 +1,7 @@
 namespace CommunityToolkit.Maui.Core;
 
 /// <summary>
-/// The outcome of showing or closing a popup with a Try* method, such as <c>TryShowPopupAsync</c> or <c>TryClosePopupAsync</c>:
+/// The result or exception of showing or closing a popup with a Try* method, such as <c>TryShowPopupAsync</c> or <c>TryClosePopupAsync</c>:
 /// either the <see cref="IPopupResult"/> of the closed popup, or the <see cref="System.Exception"/> that the operation failed with.
 /// </summary>
 /// <remarks>
@@ -16,10 +16,10 @@ namespace CommunityToolkit.Maui.Core;
 /// };
 /// </code>
 /// </remarks>
-public union PopupOutcome(IPopupResult, Exception);
+public union PopupResultOrException(IPopupResult, Exception);
 
 /// <summary>
-/// The outcome of showing or closing a popup that returns a value of type <typeparamref name="T"/> with a Try* method, such as <c>TryShowPopupAsync&lt;T&gt;</c> or <c>TryClosePopupAsync&lt;T&gt;</c>:
+/// The result or exception of showing or closing a popup that returns a value of type <typeparamref name="T"/> with a Try* method, such as <c>TryShowPopupAsync&lt;T&gt;</c> or <c>TryClosePopupAsync&lt;T&gt;</c>:
 /// either the <see cref="IPopupResult{T}"/> of the closed popup, or the <see cref="System.Exception"/> that the operation failed with.
 /// </summary>
 /// <typeparam name="T">The type of the value that the popup returns.</typeparam>
@@ -35,4 +35,4 @@ public union PopupOutcome(IPopupResult, Exception);
 /// };
 /// </code>
 /// </remarks>
-public union PopupOutcome<T>(IPopupResult<T>, Exception);
+public union PopupResultOrException<T>(IPopupResult<T>, Exception);

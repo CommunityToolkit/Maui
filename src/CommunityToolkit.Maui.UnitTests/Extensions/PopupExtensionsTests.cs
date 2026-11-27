@@ -1495,7 +1495,7 @@ public class PopupExtensionsTests : BaseViewTest
 
 		// Act
 		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
-		var outcome = await showPopupTask switch
+		var message = await showPopupTask switch
 		{
 			IPopupResult<string> { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed",
 			IPopupResult<string> popupResult => $"Closed with {popupResult.Result}",
@@ -1504,7 +1504,7 @@ public class PopupExtensionsTests : BaseViewTest
 		};
 
 		// Assert
-		Assert.Equal("Dismissed", outcome);
+		Assert.Equal("Dismissed", message);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
