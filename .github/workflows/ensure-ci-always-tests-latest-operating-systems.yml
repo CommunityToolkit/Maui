@@ -1,0 +1,339 @@
+name: Ensure CI Always Tests Latest Operating Systems
+
+# Keeps the device tests on the newest Android and Xcode releases (CommunityToolkit/Maui#3438). Changes that CI can judge go to one pull
+# request, which GitHub Actions approves and auto-merges when the required checks pass; anything else goes to one issue for a person.
+# The pull request is pushed with ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN, a maintainer's token: GITHUB_TOKEN can't push files
+# under .github/workflows, and pull requests that it opens start no CI.
+on:
+    schedule:
+        # 02:17 UTC: new workload sets usually publish 18:00-20:00 UTC, and the bump PR's CI (32-107 minutes) ends before Dependabot's daily
+        # PRs (about 06:00 UTC) move main, which the strict up-to-date rule would make the bump PR wait for.
+        -   cron: '17 2 * * *'
+    workflow_dispatch:
+        inputs:
+            dry-run:
+                description: 'Only show the plan in the run summary: open, update, approve, merge and report nothing'
+                required: false
+                type: boolean
+                default: false
+            reopen-rejected:
+                description: 'Propose again the changes of bump pull requests that a person closed'
+                required: false
+                type: boolean
+                default: false
+    # No paths filter: the unit-test job is a required check, and a required check that never runs blocks the pull request.
+    pull_request:
+
+permissions: {}
+
+# Queued, not cancelled: a cancelled run could leave a pushed branch without its approval, or the issue out of date.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+env:
+    PYTHONDONTWRITEBYTECODE: 1
+    # A scheduled run has no event payload, so this reads github.ref and github.repository, never the payload.
+    BOT_BRANCH: ${{ github.repository == 'CommunityToolkit/Maui' && github.ref == 'refs/heads/main' && 'automation/ensure-ci-always-tests-latest-operating-systems' || format('{0}-ensure-ci-always-tests-latest-operating-systems', github.ref_name) }}
+
+jobs:
+    run-unit-tests:
+        name: Run the unit tests of the scripts
+        # Forks keep a copy of this file; only CommunityToolkit/Maui runs it on a schedule.
+        if: ${{ github.repository == 'CommunityToolkit/Maui' || github.event_name != 'schedule' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        timeout-minutes: 10
+        steps:
+            -   name: Checkout the scripts and workflows
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+                with:
+                    sparse-checkout: .github
+                    persist-credentials: false
+
+            -   name: Generate the Turkish locale
+                run: sudo locale-gen tr_TR.UTF-8
+
+            # The scripts parse machine data, which must not depend on the locale; Turkish case mapping breaks the most code.
+            -   name: Run the unit tests in the default, C and Turkish locales
+                run: |
+                    set -e
+                    run_unit_tests() { python3 -I -m unittest discover -s .github/scripts -t .github/scripts -p 'test_*.py' "$@"; }
+                    run_unit_tests -v
+                    LANG=C LC_ALL=C run_unit_tests
+                    LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8 run_unit_tests
+
+    read-latest-versions:
+        name: Read the newest Android, Xcode and runner versions
+        needs: run-unit-tests
+        if: ${{ github.event_name != 'pull_request' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        timeout-minutes: 15
+        outputs:
+            macos-labels-to-inspect: ${{ steps.read.outputs.macos-labels-to-inspect }}
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+                with:
+                    ref: ${{ github.sha }}
+                    persist-credentials: false
+
+            -   name: Read the Android index, the workload sets, the runner images and the branch rules
+                id: read
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                run: python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py read-latest-versions --repo-root . --base "$GITHUB_REF_NAME" --out "$RUNNER_TEMP/latest-versions"
+
+            -   name: Upload what was read
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: latest-versions
+                    path: ${{ runner.temp }}/latest-versions
+                    retention-days: 14
+
+    inspect-macos-runner-image:
+        name: Inspect the macOS runner image ${{ matrix.label }}
+        needs: read-latest-versions
+        if: ${{ needs.read-latest-versions.outputs.macos-labels-to-inspect != '' && needs.read-latest-versions.outputs.macos-labels-to-inspect != '[]' }}
+        strategy:
+            fail-fast: false
+            matrix:
+                label: ${{ fromJSON(needs.read-latest-versions.outputs.macos-labels-to-inspect) }}
+        runs-on: ${{ matrix.label }}
+        permissions:
+            contents: read
+        timeout-minutes: 20
+        steps:
+            -   name: Checkout the scripts
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+                with:
+                    ref: ${{ github.sha }}
+                    sparse-checkout: .github/scripts
+                    persist-credentials: false
+
+            -   name: List the Xcode apps, simulator runtimes and .NET SDKs
+                env:
+                    LABEL: ${{ matrix.label }}
+                run: python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py inspect-macos-runner-image --label "$LABEL" --out "$RUNNER_TEMP/macos-runner-images/$LABEL.json"
+
+            -   name: Upload the list
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: macos-runner-image-${{ matrix.label }}
+                    path: ${{ runner.temp }}/macos-runner-images
+                    retention-days: 14
+
+    plan-changes:
+        name: Plan the version changes
+        needs: [ read-latest-versions, inspect-macos-runner-image ]
+        # A label whose list job failed is reported as a problem reading that source; the other families still plan.
+        if: ${{ !cancelled() && needs.read-latest-versions.result == 'success' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+            checks: read
+            statuses: read
+        timeout-minutes: 10
+        outputs:
+            has-source-problems: ${{ steps.plan.outputs.has-source-problems }}
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+                with:
+                    ref: ${{ github.sha }}
+                    persist-credentials: false
+
+            -   name: Download what was read
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    name: latest-versions
+                    path: ${{ runner.temp }}/latest-versions
+
+            # A list job that never ran leaves no artifact, and the planner reports that runner's list as missing.
+            -   name: Download the runner software lists
+                continue-on-error: true
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    pattern: macos-runner-image-*
+                    merge-multiple: true
+                    path: ${{ runner.temp }}/macos-runner-images
+
+            -   name: Plan the changes
+                id: plan
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                    REOPEN_REJECTED: ${{ inputs.reopen-rejected == true }}
+                    RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                run: >-
+                    python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py plan-changes --repo-root . --base "$GITHUB_REF_NAME" --base-sha "$GITHUB_SHA"
+                    --bot-branch "$BOT_BRANCH" --latest-versions "$RUNNER_TEMP/latest-versions" --macos-runner-images "$RUNNER_TEMP/macos-runner-images"
+                    --reopen-rejected "$REOPEN_REJECTED" --run-url "$RUN_URL" --out "$RUNNER_TEMP/plan"
+
+            -   name: Show the plan in the run summary
+                run: cat "$RUNNER_TEMP/plan/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+            -   name: Upload the plan
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: plan
+                    path: ${{ runner.temp }}/plan
+                    retention-days: 14
+
+            # In other runs update-issue-for-a-person reports the problem and fails the run after updating the issue.
+            -   name: Fail a dry run that hit a problem reading a source
+                if: ${{ inputs.dry-run && steps.plan.outputs.has-source-problems == 'true' }}
+                run: exit 1
+
+    open-or-update-pull-request:
+        name: Open or update the bump pull request, then turn on auto-merge and approve it
+        needs: plan-changes
+        # On CommunityToolkit/Maui only main publishes: a dispatch from another branch runs that branch's copy of this file. Forks publish
+        # from any branch, which is how the fork end-to-end test runs it. inputs.dry-run is empty on a schedule.
+        if: ${{ !cancelled() && needs.plan-changes.result == 'success' && github.event_name != 'pull_request' && !inputs.dry-run && (github.repository != 'CommunityToolkit/Maui' || github.ref == 'refs/heads/main') }}
+        runs-on: ubuntu-latest
+        # Holds ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN; only main may use this environment.
+        environment: ensure-ci-always-tests-latest-operating-systems
+        permissions:
+            # contents: write lets GitHub Actions turn on auto-merge and merge a pull request that is already approved and green.
+            contents: write
+            pull-requests: write
+            checks: read
+            statuses: read
+            # The pull request's timeline shows whether a person turned auto-merge off.
+            issues: read
+        timeout-minutes: 20
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+                with:
+                    ref: ${{ github.sha }}
+                    # create-pull-request sets its own credentials from its token input.
+                    persist-credentials: false
+
+            -   name: Download the plan
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    name: plan
+                    path: ${{ runner.temp }}/plan
+
+            # The maintainer's token is used here only to read its owner, scopes, push access and expiry date.
+            -   name: Check the token and decide what to do with the pull request
+                id: decide
+                env:
+                    ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN: ${{ secrets.ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN }}
+                    GITHUB_TOKEN: ${{ github.token }}
+                run: >-
+                    python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py decide-pull-request-update --plan "$RUNNER_TEMP/plan" --base "$GITHUB_REF_NAME"
+                    --base-sha "$GITHUB_SHA" --bot-branch "$BOT_BRANCH" --out "$RUNNER_TEMP/pull-request"
+
+            -   name: Apply the planned changes
+                id: apply
+                if: ${{ steps.decide.outputs.open-or-update == 'true' }}
+                run: |
+                    # An empty patch means the open pull request is no longer needed: create-pull-request then deletes its branch.
+                    if [ -s "$RUNNER_TEMP/plan/changes.patch" ]; then git apply "$RUNNER_TEMP/plan/changes.patch"; fi
+
+            # Not sign-commits: with a maintainer's token it makes unsigned commits anyway and updates the branch without a lease.
+            -   name: Open or update the pull request
+                id: open-or-update
+                if: ${{ steps.decide.outputs.open-or-update == 'true' }}
+                uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
+                with:
+                    token: ${{ secrets.ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN }}
+                    # Required: the checkout is a commit, not a branch.
+                    base: ${{ github.ref_name }}
+                    branch: ${{ env.BOT_BRANCH }}
+                    delete-branch: true
+                    add-paths: |
+                        .github/workflows/shared.env
+                        .github/workflows/device-tests.yml
+                        .github/workflows/dotnet-build.yml
+                    # Explicit: the default author is github.actor, which for a schedule is whoever last edited the cron.
+                    author: ${{ steps.decide.outputs.identity }}
+                    committer: ${{ steps.decide.outputs.identity }}
+                    commit-message: ${{ steps.decide.outputs.commit-message }}
+                    title: ${{ steps.decide.outputs.title }}
+                    body-path: ${{ runner.temp }}/plan/pull-request-body.md
+                    labels: |
+                        requirements updated
+                        ♻ housekeeping
+
+            -   name: Check the pull request, turn on auto-merge and approve it
+                id: approve
+                if: ${{ steps.open-or-update.outcome == 'success' && steps.open-or-update.outputs.pull-request-number != '' && steps.open-or-update.outputs.pull-request-operation != 'closed' }}
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                    PULL_REQUEST_NUMBER: ${{ steps.open-or-update.outputs.pull-request-number }}
+                    PULL_REQUEST_HEAD_SHA: ${{ steps.open-or-update.outputs.pull-request-head-sha }}
+                    PULL_REQUEST_OPERATION: ${{ steps.open-or-update.outputs.pull-request-operation }}
+                run: >-
+                    python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py approve-and-turn-on-auto-merge --plan "$RUNNER_TEMP/plan"
+                    --decision "$RUNNER_TEMP/pull-request/decision.json" --base "$GITHUB_REF_NAME" --base-sha "$GITHUB_SHA" --bot-branch "$BOT_BRANCH"
+                    --pull-request "$PULL_REQUEST_NUMBER" --head-sha "$PULL_REQUEST_HEAD_SHA" --operation "$PULL_REQUEST_OPERATION"
+                    --out "$RUNNER_TEMP/pull-request"
+
+            -   name: Record the step outcomes for the issue
+                if: ${{ always() }}
+                env:
+                    DECIDE_OUTCOME: ${{ steps.decide.outcome }}
+                    APPLY_OUTCOME: ${{ steps.apply.outcome }}
+                    OPEN_OR_UPDATE_OUTCOME: ${{ steps.open-or-update.outcome }}
+                    APPROVE_OUTCOME: ${{ steps.approve.outcome }}
+                run: python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py record-step-outcomes --out "$RUNNER_TEMP/pull-request"
+
+            -   name: Upload the pull request results
+                if: ${{ always() }}
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+                with:
+                    name: pull-request
+                    path: ${{ runner.temp }}/pull-request
+                    retention-days: 14
+
+    update-issue-for-a-person:
+        name: Update the issue for a person
+        needs: [ run-unit-tests, read-latest-versions, inspect-macos-runner-image, plan-changes, open-or-update-pull-request ]
+        # Runs after failures too, so a broken run is reported. Same branch rule as open-or-update-pull-request.
+        if: ${{ always() && github.event_name != 'pull_request' && !inputs.dry-run && (github.repository == 'CommunityToolkit/Maui' || github.event_name != 'schedule') && (github.repository != 'CommunityToolkit/Maui' || github.ref == 'refs/heads/main') }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            issues: write
+            # Reads the open-or-update-pull-request job's log to quote why create-pull-request failed.
+            actions: read
+        timeout-minutes: 10
+        steps:
+            -   name: Checkout the scripts
+                uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+                with:
+                    ref: ${{ github.sha }}
+                    sparse-checkout: .github/scripts
+                    persist-credentials: false
+
+            # Missing when an earlier job failed; the issue then reports that job.
+            -   name: Download the plan
+                continue-on-error: true
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    name: plan
+                    path: ${{ runner.temp }}/plan
+
+            -   name: Download the pull request results
+                continue-on-error: true
+                uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+                with:
+                    name: pull-request
+                    path: ${{ runner.temp }}/pull-request
+
+            # Exits 1 after updating the issue when a source couldn't be read, a job or step failed, or the token is unusable, so the run shows red.
+            -   name: Update the issue
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                    JOB_RESULTS: ${{ toJSON(needs) }}
+                    RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                run: >-
+                    python3 -I .github/scripts/ensure-ci-always-tests-latest-operating-systems.py update-issue-for-a-person --plan "$RUNNER_TEMP/plan" --pull-request "$RUNNER_TEMP/pull-request"
+                    --run-url "$RUN_URL"
