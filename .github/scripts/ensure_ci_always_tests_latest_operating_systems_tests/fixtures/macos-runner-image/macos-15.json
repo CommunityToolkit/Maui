@@ -1,0 +1,221 @@
+{
+  "status": "ok",
+  "label": "macos-15",
+  "image": {
+    "name": "macos-15-arm64",
+    "version": "20261118.0550.1"
+  },
+  "xcode_apps": [
+    {
+      "folder": "Xcode_26.3.app",
+      "version": "26.3",
+      "build": "17C529",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.3.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.2.app",
+      "version": "26.2",
+      "build": "17C52",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.2.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.1.1.app",
+      "version": "26.1.1",
+      "build": "17B100",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.1.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.0.1.app",
+      "version": "26.0.1",
+      "build": "17A400",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_16.4.app",
+      "version": "16.4",
+      "build": "16F6",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_16.4.0.app",
+        "Xcode.app"
+      ]
+    },
+    {
+      "folder": "Xcode_16.3.app",
+      "version": "16.3",
+      "build": "16E140",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_16.3.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_16.2.app",
+      "version": "16.2",
+      "build": "16C5032a",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_16.2.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_16.1.app",
+      "version": "16.1",
+      "build": "16B40",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_16.1.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_16.app",
+      "version": "16.0",
+      "build": "16A242d",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_16.0.0.app",
+        "Xcode_16.0.app"
+      ]
+    }
+  ],
+  "runtimes": [
+    {
+      "platform": "iOS",
+      "version": "18.5",
+      "name": "iOS 18.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-18-5",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "18.6",
+      "name": "iOS 18.6",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-18-6",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "26.0.1",
+      "name": "iOS 26.0",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-0",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "26.1",
+      "name": "iOS 26.1",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-1",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "26.2",
+      "name": "iOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "18.5",
+      "name": "tvOS 18.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-18-5",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "26.1",
+      "name": "tvOS 26.1",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-1",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "26.2",
+      "name": "tvOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "11.5",
+      "name": "watchOS 11.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-11-5",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "26.1",
+      "name": "watchOS 26.1",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-26-1",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "26.2",
+      "name": "watchOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "2.3",
+      "name": "visionOS 2.3",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-2-3",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "2.4",
+      "name": "visionOS 2.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-2-4",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "2.5",
+      "name": "visionOS 2.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-2-5",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "26.1",
+      "name": "visionOS 26.1",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-26-1",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "26.2",
+      "name": "visionOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-26-2",
+      "available": true
+    }
+  ],
+  "dotnet_sdks": [
+    "8.0.101",
+    "8.0.204",
+    "8.0.303",
+    "8.0.428",
+    "9.0.102",
+    "9.0.203",
+    "9.0.321",
+    "10.0.103",
+    "10.0.203",
+    "10.0.302",
+    "10.0.404",
+    "11.0.100"
+  ]
+}

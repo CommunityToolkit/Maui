@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>capabilities</key>
+	<dict>
+		<key>displays</key>
+		<array>
+			<dict>
+				<key>deviceName</key>
+				<string>primary</string>
+				<key>displayName</key>
+				<string>LCD</string>
+				<key>displayType</key>
+				<string>integrated</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>1</integer>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>external-0</string>
+				<key>displayName</key>
+				<string>TVOut</string>
+				<key>displayType</key>
+				<string>tvOut</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>2</integer>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>wireless0</string>
+				<key>displayName</key>
+				<string>Wireless</string>
+				<key>displayType</key>
+				<string>carPlay</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>3</integer>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>resizable</string>
+				<key>displayName</key>
+				<string>Resizable</string>
+				<key>displayType</key>
+				<string>scene</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>4</integer>
+			</dict>
+		</array>
+	</dict>
+</dict>
+</plist>

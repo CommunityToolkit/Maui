@@ -1,0 +1,240 @@
+"""Lists what a macOS runner image has installed, discovering Xcode the way maxim-lobanov/setup-xcode does so the bot and CI agree."""
+from __future__ import annotations
+
+import json
+import os
+import plistlib
+import re
+import subprocess
+import xml.parsers.expat
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
+
+from .errors import RunnerSoftwareError
+from .ios_runtimes import LISTS_IPHONE_WITH_ONE_SCREEN
+
+COMMAND_TIMEOUT_SECONDS = 120
+# A cold CoreSimulator service can need minutes to answer its first request on a fresh runner.
+RETRY_TIMEOUT_SECONDS = 240
+COMMAND_COULD_NOT_START_CODE = 127
+# The exit code of the `timeout` tool, so a person who reads it elsewhere already knows it.
+COMMAND_TIMED_OUT_CODE = 124
+XCODE_APP_NAME = re.compile(r'^Xcode.*\.app$')
+IMAGE_LINE = re.compile(r'^Image:\s*(.+?)\s*$', re.MULTILINE)
+VERSION_LINE = re.compile(r'^Version:\s*(.+?)\s*$', re.MULTILINE)
+
+RunCommand = Callable[[List[str], int], Tuple[int, str]]
+
+
+def run_command(argv: List[str], timeout_seconds: int = COMMAND_TIMEOUT_SECONDS) -> Tuple[int, str]:
+    try:
+        completed = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding='utf-8',
+                                   errors='replace', timeout=timeout_seconds, check=False)
+    except subprocess.TimeoutExpired:
+        return COMMAND_TIMED_OUT_CODE, ''
+    except OSError:
+        return COMMAND_COULD_NOT_START_CODE, ''
+    return completed.returncode, completed.stdout
+
+
+def _read_plist(path: str) -> Optional[Dict[str, Any]]:
+    try:
+        with open(path, 'rb') as file:
+            data = plistlib.load(file)
+    except (OSError, ValueError, AttributeError, TypeError, plistlib.InvalidFileException, xml.parsers.expat.ExpatError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _symlinks_pointing_at(apps_dir: str, folder: str) -> List[str]:
+    names = []
+    for name in sorted(os.listdir(apps_dir)):
+        path = os.path.join(apps_dir, name)
+        if not os.path.islink(path):
+            continue
+        if os.path.basename(os.path.realpath(path)) == folder:
+            names.append(name)
+    return names
+
+
+def list_xcode_apps(apps_dir: str = '/Applications', problems: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    """Only real folders count: a beta answers to Xcode_27.3.app through a symlink, and setup-xcode ignores symlinks too."""
+    try:
+        names = sorted(os.listdir(apps_dir))
+    except OSError as error:
+        _report(problems, 'could not list %s: %s' % (apps_dir, error))
+        return []
+    apps = []
+    for folder in names:
+        path = os.path.join(apps_dir, folder)
+        if not XCODE_APP_NAME.match(folder) or os.path.islink(path) or not os.path.isdir(path):
+            continue
+        version_plist = _read_plist(os.path.join(path, 'Contents', 'version.plist')) or {}
+        license_plist = _read_plist(os.path.join(path, 'Contents', 'Resources', 'LicenseInfo.plist')) or {}
+        apps.append({
+            'folder': folder,
+            'version': version_plist.get('CFBundleShortVersionString'),
+            'build': version_plist.get('ProductBuildVersion'),
+            'license_type': license_plist.get('licenseType'),
+            'symlinks': _symlinks_pointing_at(apps_dir, folder),
+        })
+    return apps
+
+
+def _report(problems: Optional[List[str]], message: str) -> None:
+    """An empty list from a failed command would look like "nothing installed" and drop legs the bot should keep."""
+    if problems is not None:
+        problems.append(message)
+
+
+def _run_retrying_a_timeout(run: RunCommand, command: List[str]) -> Tuple[int, str, List[int]]:
+    """One slow first answer must not freeze a night; other failures repeat the same way, so they are not retried."""
+    code, output = run(command, COMMAND_TIMEOUT_SECONDS)
+    timeouts = []
+    if code == COMMAND_TIMED_OUT_CODE:
+        timeouts.append(COMMAND_TIMEOUT_SECONDS)
+        code, output = run(command, RETRY_TIMEOUT_SECONDS)
+        if code == COMMAND_TIMED_OUT_CODE:
+            timeouts.append(RETRY_TIMEOUT_SECONDS)
+    return code, output, timeouts
+
+
+def _command_failure(command: List[str], code: int, timeouts: Optional[List[int]] = None) -> str:
+    text = ' '.join(command)
+    if code == COMMAND_TIMED_OUT_CODE:
+        seconds = timeouts or [COMMAND_TIMEOUT_SECONDS]
+        return '`%s` timed out after %s' % (text, ' and again after '.join('%d s' % value for value in seconds))
+    if code == COMMAND_COULD_NOT_START_CODE:
+        return '`%s` could not be started' % text
+    return '`%s` failed with exit code %d' % (text, code)
+
+
+def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = None,
+                            count_screens: Optional[Callable[[Any], Optional[int]]] = None) -> List[Dict[str, Any]]:
+    command = ['xcrun', 'simctl', 'list', 'runtimes', '-j']
+    code, output, timeouts = _run_retrying_a_timeout(run, command)
+    if code != 0:
+        _report(problems, _command_failure(command, code, timeouts))
+        return []
+    try:
+        data = json.loads(output)
+    except ValueError:
+        _report(problems, '`%s` printed text that is not JSON' % ' '.join(command))
+        return []
+    if not isinstance(data, dict) or not isinstance(data.get('runtimes'), list):
+        _report(problems, '`%s` printed JSON without a `runtimes` list' % ' '.join(command))
+        return []
+    count_screens = count_screens or read_built_in_screen_count
+    screen_counts: Dict[str, Optional[int]] = {}
+    runtimes = []
+    for runtime in data['runtimes']:
+        runtimes.append({
+            'platform': runtime.get('platform'),
+            'version': runtime.get('version'),
+            'name': runtime.get('name'),
+            'identifier': runtime.get('identifier'),
+            'available': bool(runtime.get('isAvailable')),
+            LISTS_IPHONE_WITH_ONE_SCREEN: _lists_iphone_with_one_screen(runtime, screen_counts, count_screens),
+        })
+    return runtimes
+
+
+def read_built_in_screen_count(bundle_path: Any) -> Optional[int]:
+    """The same count as Get-SimulatorBuiltInScreenCount in eng/devices/ios.ps1; None when the profile cannot be read.
+
+    Except a profile with a date or data value: plutil cannot convert it to JSON, so ios.ps1 does not count it.
+    """
+    if not isinstance(bundle_path, str) or not bundle_path:
+        return None
+    capabilities = _read_plist(os.path.join(bundle_path, 'Contents', 'Resources', 'capabilities.plist'))
+    capabilities_section = (capabilities or {}).get('capabilities')
+    displays = capabilities_section.get('displays') if isinstance(capabilities_section, dict) else None
+    if not isinstance(displays, list):
+        return None
+    # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
+    return sum(1 for display in displays if isinstance(display, dict)
+               and (str(display.get('displayType', '')).lower() == 'integrated'
+                    or str(display.get('deviceName', '')).lower().startswith('primary')))
+
+
+def _lists_iphone_with_one_screen(runtime: Mapping[str, Any], screen_counts: Dict[str, Optional[int]],
+                                  count_screens: Callable[[Any], Optional[int]]) -> Optional[bool]:
+    """True: some iPhone has one screen. False: every iPhone is known to have another count, or none is listed. None: not known."""
+    device_types = runtime.get('supportedDeviceTypes')
+    if not isinstance(device_types, list):
+        # ios.ps1 sees no iPhone in it (and throws when it is the only match), but a wrong False drops a leg silently;
+        # simctl always prints the key, so this stays unknown.
+        return None
+    iphones = [device_type for device_type in device_types
+               if isinstance(device_type, dict) and device_type.get('productFamily') == 'iPhone']
+    is_any_screen_count_unknown = False
+    for iphone in iphones:
+        identifier = str(iphone.get('identifier'))
+        if identifier not in screen_counts:
+            try:
+                screen_counts[identifier] = count_screens(iphone.get('bundlePath'))
+            except Exception:
+                # A profile that cannot be read is "unknown"; it must never fail the whole inspection.
+                screen_counts[identifier] = None
+        if screen_counts[identifier] == 1:
+            return True
+        is_any_screen_count_unknown = is_any_screen_count_unknown or screen_counts[identifier] is None
+    return None if is_any_screen_count_unknown else False
+
+
+def list_dotnet_sdks(run: RunCommand, problems: Optional[List[str]] = None) -> List[str]:
+    command = ['dotnet', '--list-sdks']
+    code, output, timeouts = _run_retrying_a_timeout(run, command)
+    if code != 0:
+        _report(problems, _command_failure(command, code, timeouts))
+        return []
+    return [line.split()[0] for line in output.splitlines() if line.strip()]
+
+
+def read_runner_image(home: str, environ: Mapping[str, str]) -> Dict[str, str]:
+    """The image name is the key of the rollout state, so only imagedata.json can give it."""
+    imagedata_path = os.path.join(home, 'imagedata.json')
+    try:
+        with open(imagedata_path, 'r', encoding='utf-8') as file:
+            groups = json.load(file)
+    except (OSError, ValueError):
+        groups = None
+    if isinstance(groups, list):
+        for group in groups:
+            if not isinstance(group, dict) or group.get('group') != 'Runner Image':
+                continue
+            detail = str(group.get('detail', ''))
+            name = IMAGE_LINE.search(detail)
+            version = VERSION_LINE.search(detail)
+            if name and version:
+                return {'name': name.group(1), 'version': version.group(1)}
+    environment_version = environ.get('ImageVersion')
+    if environment_version:
+        return {'name': environ.get('ImageOS', ''), 'version': environment_version}
+    raise RunnerSoftwareError(
+        'no runner image information: %s is missing or has no "Runner Image" group, and ImageVersion is not set'
+        % imagedata_path)
+
+
+def inspect_macos_runner_image(label: str, run: RunCommand = run_command, apps_dir: str = '/Applications',
+                               home: Optional[str] = None,
+                               environ: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
+    """Lists everything even when the image information is missing, so a local run still shows what it found."""
+    home = home if home is not None else os.path.expanduser('~')
+    environ = environ if environ is not None else os.environ
+    problems: List[str] = []
+    listing: Dict[str, Any] = {
+        'status': 'ok',
+        'label': label,
+        'image': {'name': None, 'version': None},
+        'xcode_apps': list_xcode_apps(apps_dir, problems),
+        'runtimes': list_simulator_runtimes(run, problems),
+        'dotnet_sdks': list_dotnet_sdks(run, problems),
+    }
+    try:
+        listing['image'] = read_runner_image(home, environ)
+    except RunnerSoftwareError as error:
+        problems.append(str(error))
+    if problems:
+        listing['status'] = 'error'
+        listing['error'] = '; '.join(problems)
+    return listing
