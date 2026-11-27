@@ -86,7 +86,8 @@ public partial class PopupTryMethodsTests
 	public Task TryShowPopupAsyncWithAResultThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync() =>
 		RunInShellAsync(shell => PopupTryMethodsScenarios.TryShowPopupAsyncWithAResultThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync(shell, MauiContext.Services.GetRequiredService<IPopupService>()), PopupTryMethodsOnPageScenarios.RegisterPopup);
 
-	// Every popup shows the same default Shadow; the Border of a closed popup must not keep mapping it against the service scope of a window that was closed
+	// Every popup shows the same default Shadow; the Border of a closed popup must not keep mapping it against the service scope of a window that was closed.
+	// This window closes the popup with TryClosePopupAsync, where .NET MAUI disconnects on pop, so it is likely a regression check, not a proof of the Window.Destroying disconnect.
 	[Fact]
 	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheWindowThatShowedAPopupWasClosed()
 	{
@@ -160,7 +161,7 @@ public partial class PopupTryMethodsTests
 		ShellSwitchesToAnotherShellElement
 	}
 
-	// A Shell window is one of the places where .NET MAUI leaves a removed PopupPage and its Popup connected; the same popup is then shown in a new window after the first one closed.
+	// .NET MAUI disconnects a page popped by CloseAsync or PopModalAsync itself, so only the ShellPopsThePopupFromAModalNavigationPage, PageOfTheWindowIsReplaced and ShellSwitchesToAnotherShellElement rows prove the product disconnects the PopupPage and the Popup at Window.Destroying; CloseAsync and OtherCodePopsTheModalPage are regression checks.
 	[Theory]
 	[InlineData(PopupRemoval.CloseAsync)]
 	[InlineData(PopupRemoval.OtherCodePopsTheModalPage)]

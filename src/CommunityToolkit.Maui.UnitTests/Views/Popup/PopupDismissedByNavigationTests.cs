@@ -1272,7 +1272,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task WindowDestroying_ShouldDisconnectThePopupPageAndThePopup_WhenThePageOfTheWindowReplacedThePopup()
+	public async Task WindowDestroying_ShouldDisconnectThePopupBorderAndThePopup_WhenThePageOfTheWindowReplacedThePopup()
 	{
 		var navigation = SetRootPage(RootPageType.ContentPage);
 		var window = GetFirstWindow();
@@ -1295,7 +1295,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task WindowDestroying_ShouldDisconnectThePopupPageAndThePopup_WhenShellSwitchesToAnotherShellElement()
+	public async Task WindowDestroying_ShouldDisconnectThePopupBorderAndThePopup_WhenShellSwitchesToAnotherShellElement()
 	{
 		var shell = SetRootPageToShellWithTwoItems();
 		var window = GetFirstWindow();
@@ -1318,7 +1318,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task CloseAsync_ShouldKeepThePopupBorderUnchanged_WhenShellThrowsArgumentExceptionAndThePopupStaysOnTheModalStack()
+	public async Task CloseAsync_ShouldKeepThePopupUnchanged_WhenShellThrowsArgumentExceptionAndThePopupStaysOnTheModalStack()
 	{
 		var navigation = SetRootPage(RootPageType.Shell);
 		var window = GetFirstWindow();
@@ -1358,7 +1358,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task WindowDestroying_ShouldNotDisconnectThePopupBorder_WhenTheAppCanceledThePush()
+	public async Task WindowDestroying_ShouldNotDisconnectThePopup_WhenTheAppCanceledThePush()
 	{
 		SetRootPage(RootPageType.Shell);
 		var window = GetFirstWindow();
@@ -1411,7 +1411,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 	[InlineData(RootPageType.Shell)]
 	[InlineData(RootPageType.ContentPage)]
 	[InlineData(RootPageType.NavigationPage)]
-	public async Task WindowDestroying_ShouldDisconnectThePopupBorder_WhenModalIsPoppedWithoutCloseAsync(RootPageType rootPageType)
+	public async Task WindowDestroying_ShouldDisconnectThePopup_WhenModalIsPoppedWithoutCloseAsync(RootPageType rootPageType)
 	{
 		var navigation = SetRootPage(rootPageType);
 		var window = GetFirstWindow();
