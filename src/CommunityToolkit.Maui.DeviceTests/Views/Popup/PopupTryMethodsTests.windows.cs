@@ -3,6 +3,7 @@ using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Maui.Controls.Shapes;
 using Window = Microsoft.Maui.Controls.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
@@ -99,7 +100,8 @@ public partial class PopupTryMethodsTests
 		await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
 	}
 
-	// Here the popup is still open when its window closes, so only the product can disconnect the PopupPage and the Popup that .NET MAUI leaves connected
+	// The popup is still open when its window closes, so only the product can disconnect the PopupPage and the Popup that .NET MAUI leaves connected.
+	// Its first show has a Shadow and Shape of its own: a Border that another test left connected is re-mapped only through the shared defaults, so that test cannot break this show.
 	[Fact]
 	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheShellWindowWasClosedWhileItsPopupWasOpen()
 	{
@@ -107,6 +109,11 @@ public partial class PopupTryMethodsTests
 		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
 		var pageOfOtherWindow = new ContentPage();
 		var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
+		var popupOptionsThatNoOtherPopupShares = new PopupOptions
+		{
+			Shadow = new Shadow(),
+			Shape = new RoundRectangle { CornerRadius = 4, Stroke = new SolidColorBrush(Colors.Gray), StrokeThickness = 1 }
+		};
 		Border? popupBorder = null;
 		var objectDisposedExceptions = new ConcurrentQueue<string>();
 
@@ -126,8 +133,14 @@ public partial class PopupTryMethodsTests
 				// Popup.Opened is raised inside .NET MAUI's NavigatedTo, and the host must not close the window inside that callback
 				var popupOpenedTaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				popup.Opened += (_, _) => popupOpenedTaskCompletionSource.TrySetResult();
-				_ = shell.TryShowPopupAsync(popup, new PopupOptions(), token: CancellationToken.None);
-				await AssertionExtensions.AssertEventually(() => shell.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
+				var showPopupTask = shell.TryShowPopupAsync(popup, popupOptionsThatNoOtherPopupShares, token: CancellationToken.None);
+				// TryShowPopupAsync returns a failed show as its result instead of throwing, so the test reads that result rather than waiting for a popup that never comes
+				await AssertionExtensions.AssertEventually(() => showPopupTask.IsCompleted || shell.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown and its show never finished.");
+				if (showPopupTask.IsCompleted)
+				{
+					Assert.Fail($"The show finished before the popup was shown: {(await showPopupTask).Value}");
+				}
+
 				// The PopupPage is registered for Window.Destroying only once the popup is opened, which can come after the page is on the modal stack.
 				await popupOpenedTaskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
@@ -158,16 +171,19 @@ public partial class PopupTryMethodsTests
 		OtherCodePopsTheModalPage,
 		ShellPopsThePopupFromAModalNavigationPage,
 		PageOfTheWindowIsReplaced,
-		ShellSwitchesToAnotherShellElement
+		ShellSwitchesToAnotherShellElement,
+		ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage
 	}
 
-	// .NET MAUI disconnects a page popped by CloseAsync or PopModalAsync itself, so only the ShellPopsThePopupFromAModalNavigationPage, PageOfTheWindowIsReplaced and ShellSwitchesToAnotherShellElement rows prove the product disconnects the PopupPage and the Popup at Window.Destroying; CloseAsync and OtherCodePopsTheModalPage are regression checks.
+	// .NET MAUI never disconnects the PopupPage and the Popup of the PageOfTheWindowIsReplaced and ShellSwitchesToAnotherShellElement rows, so only they prove the product disconnects them at Window.Destroying.
+	// The other rows are regression checks: .NET MAUI disconnects a page that CloseAsync or PopModalAsync pops at once, and one that Shell pops from a NavigationPage when WinUI unloads it, which can come before the window closes.
 	[Theory]
 	[InlineData(PopupRemoval.CloseAsync)]
 	[InlineData(PopupRemoval.OtherCodePopsTheModalPage)]
 	[InlineData(PopupRemoval.ShellPopsThePopupFromAModalNavigationPage)]
 	[InlineData(PopupRemoval.PageOfTheWindowIsReplaced)]
 	[InlineData(PopupRemoval.ShellSwitchesToAnotherShellElement)]
+	[InlineData(PopupRemoval.ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage)]
 	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheShellWindowThatRemovedAPopupWasClosed(PopupRemoval removal)
 	{
 		SetupBuilder();
@@ -205,7 +221,7 @@ public partial class PopupTryMethodsTests
 	static async Task ShowAndRemoveAPopupInAShellWindow(Shell shell, Window window, Popup popup, PopupRemoval removal)
 	{
 		const int timeout = 5000;
-		var modalNavigationPage = removal is PopupRemoval.ShellPopsThePopupFromAModalNavigationPage ? new NavigationPage(new ContentPage { Title = "Modal" }) : null;
+		var modalNavigationPage = IsThePopupShownOnAModalNavigationPage(removal) ? new NavigationPage(new ContentPage { Title = "Modal" }) : null;
 		if (modalNavigationPage is not null)
 		{
 			await shell.Navigation.PushModalAsync(modalNavigationPage, false);
@@ -234,6 +250,7 @@ public partial class PopupTryMethodsTests
 				window.Page = new ContentPage();
 				break;
 			case PopupRemoval.ShellSwitchesToAnotherShellElement:
+			case PopupRemoval.ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage:
 				await shell.GoToAsync("//second");
 				break;
 			default:
@@ -241,5 +258,14 @@ public partial class PopupTryMethodsTests
 		}
 
 		await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		// The host disconnects only the pages still on the modal stack, and Shell drops this NavigationPage without disconnecting the page below the popup
+		if (modalNavigationPage is not null && !window.Navigation.ModalStack.Contains(modalNavigationPage))
+		{
+			modalNavigationPage.RootPage.DisconnectHandlers();
+		}
 	}
+
+	static bool IsThePopupShownOnAModalNavigationPage(PopupRemoval removal) =>
+		removal is PopupRemoval.ShellPopsThePopupFromAModalNavigationPage or PopupRemoval.ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage;
 }
