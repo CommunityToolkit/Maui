@@ -10,12 +10,17 @@ public abstract partial class MauiWindowHostTestBase
 {
 	static readonly TimeSpan pageLoadTimeout = TimeSpan.FromSeconds(10);
 
+	// The runner's own window is the only one that has a scene before a test opens a window of its own
+	static UIWindowScene RunnerScene =>
+		UIApplication.SharedApplication.Windows.FirstOrDefault(static window => window.WindowScene is not null)?.WindowScene
+		?? throw new InvalidOperationException("The runner has no window with a scene.");
+
 	// page is root or one of its pages, or with isPagePresentedModally the page that the window presents modally over root.
 	protected Task RunInMauiWindowAsync(Page root, bool isPagePresentedModally, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
 			var previousApplication = Application.Current;
-			var scene = IosStatusBarViews.RunnerScene;
+			var scene = RunnerScene;
 			var platformWindow = new UIWindow(scene) { Frame = scene.CoordinateSpace.Bounds };
 			Window? window = null;
 			bool isCreated = false, isActivated = false;

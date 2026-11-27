@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Core;
+
 namespace CommunityToolkit.Maui.DeviceTests;
 
 public partial class PopupTryMethodsTests
@@ -57,5 +59,15 @@ public partial class PopupTryMethodsTests
 		var page = new ContentPage();
 
 		return RunInWindowAsync(page, page, hostShell: false, _ => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnINavigationReturnsADismissedResultWhenOtherCodePopsTheModalPage(page));
+	}
+
+	[Fact]
+	public Task TryShowPopupAsyncThroughIPopupServiceReturnsTheResultOfTryClosePopupAsync()
+	{
+		SetupBuilder(PopupTryMethodsOnPageScenarios.RegisterPopup);
+		var page = new ContentPage();
+
+		return RunInWindowAsync(page, page, hostShell: false, _ =>
+			PopupTryMethodsOnPageScenarios.TryShowPopupAsyncThroughIPopupServiceReturnsTheResultOfTryClosePopupAsync(page, MauiContext.Services.GetRequiredService<IPopupService>()));
 	}
 }
