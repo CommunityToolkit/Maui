@@ -10,6 +10,7 @@ public sealed partial class ViewsGalleryViewModel() : BaseGalleryViewModel(
 	SectionModel.Create<ExpanderViewModel>("Expander Page", Colors.Red, "Expander allows collapse and expand content."),
 	SectionModel.Create<LazyViewViewModel>("LazyView", Colors.Red, "LazyView is a view that allows you to load its children in a delayed manner."),
 	SectionModel.Create<MediaElementsViewModel>("MediaElements Page", Colors.Red, "A page demonstrating multiple different MediaElements"),
+	SectionModel.Create<RangeSliderViewModel>("RangeSlider Page", Colors.Red, "A page demonstrating RangeSlider in various styles."),
 	SectionModel.Create<RatingViewsViewModel>("RatingViews Page", Colors.Red, "A page demonstrating multiple different RatingViews"),
 	SectionModel.Create<SemanticOrderViewPageViewModel>("Semantic Order View", Colors.Red, "SemanticOrderView allows developers to indicate the focus order of visible controls when a user is navigating via TalkBack (Android), VoiceOver (iOS) or the Tab key (Windows)."),
 	SectionModel.Create<PopupsViewModel>("Popups Page", Colors.Red, "A page demonstrating multiple different Popups")
