@@ -122,9 +122,11 @@ static class PopupTryMethodsOnPageScenarios
 		Assert.Empty(pageOfFirstWindow.Navigation.ModalStack);
 	}
 
-	public static async Task ShowAndCloseAPopupOnAPage(ContentPage page)
+	public static Task ShowAndCloseAPopupOnAPage(ContentPage page) => ShowAndCloseAPopupOnAPage(page, CreatePopup());
+
+	public static async Task ShowAndCloseAPopupOnAPage(ContentPage page, Popup popup)
 	{
-		var showPopupTask = page.TryShowPopupAsync<string>(CreatePopup(), new PopupOptions(), token: CancellationToken.None);
+		var showPopupTask = page.TryShowPopupAsync<string>(popup, new PopupOptions(), token: CancellationToken.None);
 		await WaitForPopupPages(page, 1);
 
 		var closeResultOrException = await page.TryClosePopupAsync("Closed").WaitAsync(TimeSpan.FromMilliseconds(timeout));

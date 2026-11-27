@@ -32,6 +32,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	/// </summary>
 	static readonly SemaphoreSlim navigationSemaphoreSlim = new(1, 1);
 
+#if !ANDROID
+	// Every PopupPage Border shows the same default Shadow, Shape and Stroke, so each new popup re-maps the Borders of earlier popups that .NET MAUI left connected.
+	// Destroying a window disposes the services those handlers use, so the Borders it showed are disconnected first; Android keeps the services for the next activity.
+	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, List<WeakReference<Border>>> popupBordersShownByWindow = new();
+#endif
+
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
@@ -404,7 +410,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	void ReleasePopupResources()
 	{
 		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
-		Content.ReleaseSharedPopupOptionValues();
 		popup.PropertyChanged -= HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
 		{
@@ -479,6 +484,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		windowObservedForDismissal = Window;
 		windowObservedForDismissal.ModalPopped += HandleModalPoppedWithoutCloseAsync;
 		windowObservedForDismissal.PropertyChanged += HandleWindowPropertyChangedWithoutCloseAsync;
+#if !ANDROID
+		DisconnectPopupBorderWhenWindowIsDestroyed(windowObservedForDismissal);
+#endif
 
 		// Removing a page from a NavigationPage (PopAsync, PopToRootAsync, RemovePage, or Shell popping it) raises neither ModalPopped nor PropertyChanged of the Window
 		if (Parent is NavigationPage containingNavigationPage)
@@ -545,6 +553,43 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			RaisePopupClosedForDismissalByNavigation();
 		}
 	}
+
+#if !ANDROID
+	void DisconnectPopupBorderWhenWindowIsDestroyed(Window window)
+	{
+		var popupBorders = popupBordersShownByWindow.GetValue(window, static windowToObserve =>
+		{
+			windowToObserve.Destroying += HandleWindowDestroying;
+			return [];
+		});
+
+		popupBorders.RemoveAll(static popupBorder => !popupBorder.TryGetTarget(out _));
+
+		if (!popupBorders.Exists(popupBorder => popupBorder.TryGetTarget(out var shownPopupBorder) && shownPopupBorder == Content.PopupBorder))
+		{
+			popupBorders.Add(new WeakReference<Border>(Content.PopupBorder));
+		}
+	}
+
+	static void HandleWindowDestroying(object? sender, EventArgs e)
+	{
+		if (sender is not Window window || !popupBordersShownByWindow.TryGetValue(window, out var popupBorders))
+		{
+			return;
+		}
+
+		window.Destroying -= HandleWindowDestroying;
+		popupBordersShownByWindow.Remove(window);
+
+		foreach (var popupBorder in popupBorders)
+		{
+			if (popupBorder.TryGetTarget(out var shownPopupBorder))
+			{
+				shownPopupBorder.Handler?.DisconnectHandler();
+			}
+		}
+	}
+#endif
 
 	// A PopupPage that is the only page of a modal NavigationPage is on the ModalStack through that NavigationPage
 	bool IsOnModalStack(Window window) => window.Navigation.ModalStack.Any(modalPage => modalPage == this
@@ -733,17 +778,6 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		public Border PopupBorder { get; }
 		public PopupGestureOverlay TapGestureGestureOverlay { get; }
-
-		// The default Shadow and Shape are single static instances shared by every PopupPage. While this Border holds them, they notify its handler for as long as the Border lives.
-		// .NET MAUI on Windows disconnects only the handler of a popped modal page, not its children, so that handler could map a later PopupPage's shadow against a disposed window service scope.
-		public void ReleaseSharedPopupOptionValues()
-		{
-			PopupBorder.RemoveBinding(Border.ShadowProperty);
-			PopupBorder.RemoveBinding(Border.StrokeShapeProperty);
-			// ClearValue leaves the value of a removed binding set, so the values are replaced explicitly
-			PopupBorder.SetValue(Border.ShadowProperty, null);
-			PopupBorder.SetValue(Border.StrokeShapeProperty, null);
-		}
 
 		protected override ILayoutManager CreateLayoutManager() => new PopupPageLayoutManager(this);
 

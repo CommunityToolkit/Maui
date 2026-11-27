@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using FluentAssertions;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -77,26 +78,32 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task Close_ShouldReleaseTheSharedShadowAndShapeFromTheBorder()
+	public async Task CloseAsync_ShouldKeepTheShadowAndShapeOfThePopupBorder()
 	{
 		// Arrange
 		var popupOptions = new PopupOptions();
 		var popupPage = new PopupPage(new ContentView(), popupOptions);
 		var border = popupPage.Content.PopupBorder;
-		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
-		{
-			throw new InvalidOperationException("Unable to locate Navigation page");
-		}
-
-		await navigation.PushModalAsync(popupPage);
-		Assert.Same(popupOptions.Shadow, border.Shadow);
+		var window = Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
+		var navigation = window.Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation page");
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		CreateViewHandler<MockPageHandler>(border);
+		var shadow = border.Shadow;
+		var shape = border.StrokeShape;
+		var stroke = border.Stroke;
+		Assert.Same(popupOptions.Shadow, shadow);
 
 		// Act
 		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Null(border.Shadow);
-		Assert.Null(border.StrokeShape);
+		Assert.Same(shadow, border.Shadow);
+		Assert.Same(shape, border.StrokeShape);
+		Assert.Same(stroke, border.Stroke);
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(border.Handler);
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]

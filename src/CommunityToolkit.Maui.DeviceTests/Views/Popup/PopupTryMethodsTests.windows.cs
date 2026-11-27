@@ -1,4 +1,9 @@
+using System.Collections.Concurrent;
+using System.Runtime.ExceptionServices;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
+using Window = Microsoft.Maui.Controls.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -52,5 +57,93 @@ public partial class PopupTryMethodsTests
 
 		await RunInWindowAsync(pageOfClosedWindow, pageOfClosedWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfClosedWindow));
 		await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
+	}
+
+	public enum PopupRemoval
+	{
+		CloseAsync,
+		OtherCodePopsTheModalPage,
+		ShellPopsThePopupFromAModalNavigationPage,
+		PageOfTheWindowIsReplaced,
+		ShellSwitchesToAnotherShellElement
+	}
+
+	// A Shell window is one of the places where .NET MAUI leaves the Border of a removed PopupPage connected; the same popup is then shown in a window that outlives the first one.
+	[Theory]
+	[InlineData(PopupRemoval.CloseAsync)]
+	[InlineData(PopupRemoval.OtherCodePopsTheModalPage)]
+	[InlineData(PopupRemoval.ShellPopsThePopupFromAModalNavigationPage)]
+	[InlineData(PopupRemoval.PageOfTheWindowIsReplaced)]
+	[InlineData(PopupRemoval.ShellSwitchesToAnotherShellElement)]
+	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheShellWindowThatRemovedAPopupWasClosed(PopupRemoval removal)
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+		var pageOfOtherWindow = new ContentPage();
+		var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
+		var objectDisposedExceptions = new ConcurrentQueue<string>();
+
+		void HandleFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
+		{
+			if (e.Exception is ObjectDisposedException objectDisposedException)
+			{
+				objectDisposedExceptions.Enqueue(objectDisposedException.ToString());
+			}
+		}
+
+		AppDomain.CurrentDomain.FirstChanceException += HandleFirstChanceException;
+		try
+		{
+			await RunInWindowAsync(shell, firstPage, window => ShowAndRemoveAPopupInAShellWindow(shell, window, popup, removal));
+			await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow, popup));
+			await Task.Delay(TimeSpan.FromSeconds(1));
+		}
+		finally
+		{
+			AppDomain.CurrentDomain.FirstChanceException -= HandleFirstChanceException;
+		}
+
+		Assert.Empty(objectDisposedExceptions);
+	}
+
+	static async Task ShowAndRemoveAPopupInAShellWindow(Shell shell, Window window, Popup popup, PopupRemoval removal)
+	{
+		const int timeout = 5000;
+		var modalNavigationPage = removal is PopupRemoval.ShellPopsThePopupFromAModalNavigationPage ? new NavigationPage(new ContentPage { Title = "Modal" }) : null;
+		if (modalNavigationPage is not null)
+		{
+			await shell.Navigation.PushModalAsync(modalNavigationPage, false);
+		}
+
+		var hasOpened = false;
+		void HandlePopupOpened(object? sender, EventArgs e) => hasOpened = true;
+		popup.Opened += HandlePopupOpened;
+
+		var showPopupTask = shell.ShowPopupAsync(popup, new PopupOptions(), token: CancellationToken.None);
+		await AssertionExtensions.AssertEventually(() => hasOpened && (modalNavigationPage?.Navigation.NavigationStack ?? shell.Navigation.ModalStack).OfType<PopupPage>().Any(), timeout: timeout, message: "The popup was never shown.");
+		popup.Opened -= HandlePopupOpened;
+
+		switch (removal)
+		{
+			case PopupRemoval.CloseAsync:
+				await shell.ClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+				break;
+			case PopupRemoval.OtherCodePopsTheModalPage:
+				await shell.Navigation.PopModalAsync(false);
+				break;
+			case PopupRemoval.ShellPopsThePopupFromAModalNavigationPage:
+				await shell.GoToAsync("..");
+				break;
+			case PopupRemoval.PageOfTheWindowIsReplaced:
+				window.Page = new ContentPage();
+				break;
+			case PopupRemoval.ShellSwitchesToAnotherShellElement:
+				await shell.GoToAsync("//second");
+				break;
+			default:
+				throw new NotSupportedException($"{removal} is not a supported removal.");
+		}
+
+		await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 	}
 }
