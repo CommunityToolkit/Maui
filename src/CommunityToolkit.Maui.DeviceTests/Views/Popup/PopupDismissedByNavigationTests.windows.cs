@@ -1,6 +1,6 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
-using Window = Microsoft.Maui.Controls.Window;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 

@@ -26,6 +26,10 @@ public partial class PopupTryMethodsTests
 		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnAPageReturnsTheResultOfTryClosePopupAsync(page));
 
 	[Fact]
+	public Task TryShowPopupAsyncOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped(page));
+
+	[Fact]
 	public Task TryShowPopupAsyncOnINavigationReturnsADismissedResultWhenOtherCodePopsTheModalPage() =>
 		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnINavigationReturnsADismissedResultWhenOtherCodePopsTheModalPage(page));
 
@@ -34,7 +38,7 @@ public partial class PopupTryMethodsTests
 		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncThroughIPopupServiceReturnsTheResultOfTryClosePopupAsync(page, MauiContext.Services.GetRequiredService<IPopupService>()),
 			PopupTryMethodsOnPageScenarios.RegisterPopup);
 
-	// Mac Catalyst shows every window of a test in the one scene of the runner, but each .NET MAUI Window keeps its own modal stack, which is what the lookup of the popup uses
+	// iOS and Mac Catalyst show every window of a test in the one scene of the runner, but each .NET MAUI Window keeps its own modal stack, which is what the lookup of the popup uses
 	[Fact]
 	public Task TryClosePopupAsyncClosesOnlyThePopupOfItsOwnWindow()
 	{

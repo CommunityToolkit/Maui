@@ -38,6 +38,31 @@ static class PopupTryMethodsOnPageScenarios
 		Assert.Empty(page.Navigation.ModalStack);
 	}
 
+	// A modal page that is being popped has already left the modal stack when OnDisappearing runs, so only a wait for the pop shows the popup on the page below it.
+	public static async Task TryShowPopupAsyncOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped(ContentPage page)
+	{
+		const string expectedResult = "Closed";
+		Task<PopupResultOrException<string>>? showPopupTask = null;
+		var modalPage = new ContentPage();
+		modalPage.Disappearing += (_, _) => showPopupTask = modalPage.TryShowPopupAsync<string>(CreatePopup(), CreateOptions(), token: CancellationToken.None);
+
+		await page.Navigation.PushModalAsync(modalPage, false);
+		await page.Navigation.PopModalAsync(false);
+		await WaitForPopupPages(page, 1);
+
+		Assert.NotNull(showPopupTask);
+		Assert.False(showPopupTask.IsCompleted);
+
+		var closeResultOrException = await page.TryClosePopupAsync(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.Equal(expectedResult, Assert.IsType<IPopupResult<string>>(closeResultOrException.Value, exactMatch: false).Result);
+		var showResult = Assert.IsType<IPopupResult<string>>(showResultOrException.Value, exactMatch: false);
+		Assert.Equal(expectedResult, showResult.Result);
+		Assert.False(showResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(page.Navigation.ModalStack);
+	}
+
 	public static async Task TryShowPopupAsyncOnINavigationReturnsADismissedResultWhenOtherCodePopsTheModalPage(ContentPage page)
 	{
 		var popup = CreatePopup();

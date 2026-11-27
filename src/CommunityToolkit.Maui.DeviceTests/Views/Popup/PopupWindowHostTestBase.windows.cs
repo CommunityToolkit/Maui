@@ -49,6 +49,8 @@ public abstract partial class PopupWindowHostTestBase
 			finally
 			{
 				application.CloseWindow(window);
+				window.Page?.DisconnectHandlers();
+				root.DisconnectHandlers();
 			}
 		});
 

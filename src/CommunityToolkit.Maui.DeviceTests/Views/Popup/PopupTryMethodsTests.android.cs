@@ -53,6 +53,15 @@ public partial class PopupTryMethodsTests
 	}
 
 	[Fact]
+	public Task TryShowPopupAsyncOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped()
+	{
+		SetupBuilder();
+		var page = new ContentPage();
+
+		return RunInWindowAsync(page, page, hostShell: false, _ => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped(page));
+	}
+
+	[Fact]
 	public Task TryShowPopupAsyncOnINavigationReturnsADismissedResultWhenOtherCodePopsTheModalPage()
 	{
 		SetupBuilder();

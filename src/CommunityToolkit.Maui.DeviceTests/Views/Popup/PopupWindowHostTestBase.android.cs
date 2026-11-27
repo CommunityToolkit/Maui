@@ -7,7 +7,7 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 // The headless runner has no .NET MAUI Window and its activity cannot host a Window handler, so the tests run against a test-owned application whose Window
 // has no handler (the way the Alerts tests do). .NET MAUI's own navigation runs, but a Window without a handler makes a Shell raise no NavigatedTo on the pages it
-// pushes, so Opened is never raised here. Replacing the page of the Window is only covered on iOS, because .NET MAUI cannot do it without a Window handler.
+// pushes, so Opened is never raised here. Replacing the page of the Window is only covered on iOS, Mac Catalyst and Windows, because .NET MAUI cannot do it without a Window handler.
 public abstract partial class PopupWindowHostTestBase
 {
 	// With hostShell, the Shell has a handler, because the fragments of its renderer look up their container in the activity's view tree: its platform view is attached to the activity first.

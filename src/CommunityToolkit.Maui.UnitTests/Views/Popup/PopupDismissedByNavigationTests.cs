@@ -1134,9 +1134,9 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
 
 		await navigation.PopModalAsync(false);
-		var outcome = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		var resultOrException = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.True(Assert.IsType<IPopupResult<string>>(outcome.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.True(Assert.IsType<IPopupResult<string>>(resultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
 	}
 
 	[Theory(Timeout = (int)TestDuration.Long)]
@@ -1147,16 +1147,16 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var navigation = SetRootPage(RootPageType.Shell);
 		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
 
-		PopupResultOrException outcome;
+		PopupResultOrException resultOrException;
 		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
 		{
 			var showPopupTask = showWithShellRoute
 				? shell.TryShowPopupAsync(new Popup(), PopupOptions.Empty, token: TestContext.Current.CancellationToken)
 				: navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
-			outcome = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+			resultOrException = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		}
 
-		Assert.IsType<OperationCanceledException>(outcome.Value, exactMatch: false);
+		Assert.IsType<OperationCanceledException>(resultOrException.Value, exactMatch: false);
 		Assert.Empty(navigation.ModalStack);
 		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
 	}
@@ -1170,13 +1170,13 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
 		var popupPage = await WaitForSinglePopupPageAsync(navigation);
 
-		PopupResultOrException closeOutcome;
+		PopupResultOrException closeResultOrException;
 		using (new NavigationCanceler(cancellation))
 		{
-			closeOutcome = await navigation.TryClosePopupAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+			closeResultOrException = await navigation.TryClosePopupAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 		}
 
-		Assert.IsType<OperationCanceledException>(closeOutcome.Value, exactMatch: false);
+		Assert.IsType<OperationCanceledException>(closeResultOrException.Value, exactMatch: false);
 		Assert.Same(popupPage, Assert.Single(navigation.ModalStack));
 		Assert.False(showPopupTask.IsCompleted);
 
@@ -1209,12 +1209,12 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
 		await WaitForSinglePopupPageAsync(navigation);
 
-		var outcomes = await Task.WhenAll(
+		var resultsOrExceptions = await Task.WhenAll(
 			navigation.TryClosePopupAsync(TestContext.Current.CancellationToken),
 			navigation.TryClosePopupAsync(TestContext.Current.CancellationToken)).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-		Assert.Single(outcomes, static outcome => outcome.Value is IPopupResult);
-		Assert.Single(outcomes, static outcome => outcome.Value is PopupNotFoundException);
+		Assert.Single(resultsOrExceptions, static resultOrException => resultOrException.Value is IPopupResult);
+		Assert.Single(resultsOrExceptions, static resultOrException => resultOrException.Value is PopupNotFoundException);
 		Assert.Empty(navigation.ModalStack);
 		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
 	}
