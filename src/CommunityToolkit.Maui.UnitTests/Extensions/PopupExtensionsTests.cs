@@ -2568,6 +2568,71 @@ public class PopupExtensionsTests : BaseViewTest
 		});
 	}
 
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public void TryShowPopupAsync_Page_DisplaysPopupOnPageBelow_WhenCalledInOnDisappearingOfModalPageBeingPopped(RootPageType rootPageType)
+	{
+		// AsyncContext is single-threaded, like the UI thread of an app.
+		AsyncContext.Run(async () =>
+		{
+			var token = TestContext.Current.CancellationToken;
+			var popup = new Popup();
+			var popupOpenedTask = GetOpenedTask(popup);
+
+			Task<PopupResultOrException>? showPopupTask = null;
+			var (window, modalPage) = await PushModalPageThatShowsPopupWhenItDisappearsAsync(rootPageType, page => showPopupTask = page.TryShowPopupAsync(popup, PopupOptions.Empty, token));
+
+			await modalPage.Navigation.PopModalAsync();
+			await WaitForPopupToOpenAsync(popupOpenedTask, token);
+
+			var popupPage = Assert.IsType<PopupPage>(Assert.Single(window.Navigation.ModalStack));
+			Assert.Same(popup, popupPage.Content.PopupBorder.Content);
+			Assert.NotNull(showPopupTask);
+			Assert.False(showPopupTask.IsCompleted);
+
+			await popup.CloseAsync(token);
+			var result = await showPopupTask.WaitAsync(token);
+
+			Assert.Empty(window.Navigation.ModalStack);
+			var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+			Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		});
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public void TryShowPopupAsyncT_Page_DisplaysPopupOnPageBelow_WhenCalledInOnDisappearingOfModalPageBeingPopped()
+	{
+		// AsyncContext is single-threaded, like the UI thread of an app.
+		AsyncContext.Run(async () =>
+		{
+			const string expectedResult = "Closed";
+			var token = TestContext.Current.CancellationToken;
+			var popup = new Popup<string>();
+			var popupOpenedTask = GetOpenedTask(popup);
+
+			Task<PopupResultOrException<string>>? showPopupTask = null;
+			var (window, modalPage) = await PushModalPageThatShowsPopupWhenItDisappearsAsync(RootPageType.Shell, page => showPopupTask = page.TryShowPopupAsync<string>(popup, PopupOptions.Empty, token));
+
+			await modalPage.Navigation.PopModalAsync();
+			await WaitForPopupToOpenAsync(popupOpenedTask, token);
+
+			var popupPage = Assert.IsType<PopupPage>(Assert.Single(window.Navigation.ModalStack));
+			Assert.Same(popup, popupPage.Content.PopupBorder.Content);
+			Assert.NotNull(showPopupTask);
+			Assert.False(showPopupTask.IsCompleted);
+
+			await popup.CloseAsync(expectedResult, token);
+			var result = await showPopupTask.WaitAsync(token);
+
+			Assert.Empty(window.Navigation.ModalStack);
+			var popupResult = Assert.IsType<IPopupResult<string>>(result.Value, exactMatch: false);
+			Assert.Equal(expectedResult, popupResult.Result);
+			Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		});
+	}
+
 	static Page GetWindowPage()
 	{
 		return Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Page cannot be null");
