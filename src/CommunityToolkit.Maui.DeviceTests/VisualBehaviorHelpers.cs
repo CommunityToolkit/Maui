@@ -137,8 +137,8 @@ static class VisualBehaviorHelpers
 	}
 
 #if IOS || MACCATALYST
-	// BaseWrapper finalizers release UIKit objects off the main thread, which raced with a free main thread (NSRangeException in detach),
-	// so the main thread waits; the final WaitForPendingFinalizers keeps the last collection's finalizers inside that window.
+	// BaseWrapper finalizers release UIKit objects off the main thread (NSRangeException in detach; dotnet/macios#27420), so the main thread
+	// waits until that is fixed; the final WaitForPendingFinalizers keeps the last collection's finalizers inside that window.
 	static Task CollectOnNewThreadAsync() => TestDispatcher.Current.DispatchAsync(() =>
 	{
 		ExceptionDispatchInfo? failure = null;

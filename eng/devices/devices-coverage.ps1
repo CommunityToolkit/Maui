@@ -129,7 +129,12 @@ function Restore-DeviceTestCoverageAssemblies {
             }
 
             if ($hasIntermediate) {
-                (Get-Item -LiteralPath $intermediate).LastWriteTimeUtc = [System.DateTime]::UtcNow
+                try {
+                    (Get-Item -LiteralPath $intermediate).LastWriteTimeUtc = [System.DateTime]::UtcNow
+                }
+                catch {
+                    Write-DeviceTestWarning "Coverage: could not update the time of $intermediate, so the next build may keep the instrumented assembly; rebuild the library. $($_.Exception.Message)"
+                }
             }
         }
 
