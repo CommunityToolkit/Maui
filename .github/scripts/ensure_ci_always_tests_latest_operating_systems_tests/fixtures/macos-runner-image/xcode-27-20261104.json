@@ -1,0 +1,117 @@
+{
+  "status": "ok",
+  "label": "xcode-27",
+  "image": {
+    "name": "xcode-27-arm64",
+    "version": "20261104.0337.1"
+  },
+  "xcode_apps": [
+    {
+      "folder": "Xcode_27.2.app",
+      "version": "27.2",
+      "build": "27B52",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_27.2.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_27.1.app",
+      "version": "27.1",
+      "build": "27A9275",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_27.1.0.app",
+        "Xcode.app"
+      ]
+    },
+    {
+      "folder": "Xcode_27.app",
+      "version": "27.0",
+      "build": "27A266a",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_27.0.0.app",
+        "Xcode_27.0.app"
+      ]
+    }
+  ],
+  "runtimes": [
+    {
+      "platform": "iOS",
+      "version": "27.0",
+      "name": "iOS 27.0",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "27.1",
+      "name": "iOS 27.1",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "27.2",
+      "name": "iOS 27.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-2",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "27.0",
+      "name": "tvOS 27.0",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-27-0",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "27.2",
+      "name": "tvOS 27.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-27-2",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "27.0",
+      "name": "watchOS 27.0",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-27-0",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "27.2",
+      "name": "watchOS 27.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-27-2",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "27.0",
+      "name": "visionOS 27.0",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-27-0",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "27.2",
+      "name": "visionOS 27.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-27-2",
+      "available": true
+    }
+  ],
+  "dotnet_sdks": [
+    "8.0.101",
+    "8.0.204",
+    "8.0.303",
+    "8.0.427",
+    "9.0.102",
+    "9.0.203",
+    "9.0.320",
+    "10.0.103",
+    "10.0.203",
+    "10.0.302",
+    "10.0.403"
+  ]
+}
