@@ -5,7 +5,7 @@ using CommunityToolkit.Maui.Views;
 namespace CommunityToolkit.Maui.DeviceTests;
 
 // These use .NET MAUI's own navigation of a Shell that is the root page of a Window: PopupTryMethodsTests hosts that Window.
-// Opened is not awaited, because a Window without a handler (Android) never raises it.
+// Opened is awaited only where it is raised: a Window without a handler (Android) never raises it.
 static class PopupTryMethodsScenarios
 {
 	const int timeout = 5000;
@@ -101,6 +101,36 @@ static class PopupTryMethodsScenarios
 		Assert.IsType<IPopupResult>(closeResultOrException.Value, exactMatch: false);
 		Assert.Empty(shell.Navigation.ModalStack);
 		await assertPopupIsPresentedNatively(false);
+	}
+
+	public static async Task TryShowPopupAsyncThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync(Shell shell, IPopupService popupService)
+	{
+		var showPopupTask = popupService.TryShowPopupAsync<PopupTryMethodsOnPageScenarios.RegisteredPopup>(shell, CreateOptions(), cancellationToken: CancellationToken.None);
+		await WaitForPopupPages(shell, 1, "The popup was never shown.");
+
+		var closeResultOrException = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.False(Assert.IsType<IPopupResult>(closeResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(showResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(shell.Navigation.ModalStack);
+	}
+
+	public static async Task TryShowPopupAsyncWithAResultThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync(Shell shell, IPopupService popupService)
+	{
+		const string expectedResult = "Closed";
+
+		var showPopupTask = popupService.TryShowPopupAsync<PopupTryMethodsOnPageScenarios.RegisteredPopup, string>(shell, CreateOptions(), cancellationToken: CancellationToken.None);
+		await WaitForPopupPages(shell, 1, "The popup was never shown.");
+
+		var closeResultOrException = await shell.TryClosePopupAsync(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.Equal(expectedResult, Assert.IsType<IPopupResult<string>>(closeResultOrException.Value, exactMatch: false).Result);
+		var showResult = Assert.IsType<IPopupResult<string>>(showResultOrException.Value, exactMatch: false);
+		Assert.Equal(expectedResult, showResult.Result);
+		Assert.False(showResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(shell.Navigation.ModalStack);
 	}
 
 	static Task WaitForPopupPages(Shell shell, int count, string message) =>

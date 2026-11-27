@@ -4,9 +4,9 @@ namespace CommunityToolkit.Maui.DeviceTests;
 
 public abstract partial class PopupWindowHostTestBase
 {
-	protected Task RunInShellAsync(Func<Shell, HostedMauiWindow, Task> scenario)
+	protected Task RunInShellAsync(Func<Shell, HostedMauiWindow, Task> scenario, Action<MauiAppBuilder>? configureBuilder = null)
 	{
-		SetupBuilder();
+		SetupBuilder(configureBuilder);
 		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
 
 		return RunInMauiWindowAsync(shell, isPagePresentedModally: false, firstPage, host => scenario(shell, host));

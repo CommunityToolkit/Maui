@@ -46,6 +46,9 @@ public abstract partial class PopupWindowHostTestBase
 			}
 		});
 
+	// Android has no native state to compare: the popup is a .NET MAUI modal page there, which the scenarios already assert through the modal stack
+	protected static Task NoNativeStateToAssertAsync(bool isPresented) => Task.CompletedTask;
+
 	sealed class TestApplication(Page mainPage) : Application
 	{
 		protected override Window CreateWindow(IActivationState? activationState) => new(mainPage);

@@ -118,8 +118,8 @@ public interface IPopupService
 	/// <param name="page">The current visible page</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
-	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no popup, including a stale <see cref="INavigation"/> or one of another window.</exception>
-	/// <exception cref="Views.PopupBlockedException">Thrown when another page is above the popup.</exception>
+	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no modal page, including a stale <see cref="INavigation"/>.</exception>
+	/// <exception cref="Views.PopupBlockedException">Thrown when the top modal page is not a popup, for example when another page is above the popup.</exception>
 	Task<IPopupResult> ClosePopupAsync(Page page, CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -129,8 +129,8 @@ public interface IPopupService
 	/// <param name="result">The result that will be returned to the caller of <c>ShowPopupAsync</c>.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
-	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no popup, including a stale <see cref="INavigation"/> or one of another window.</exception>
-	/// <exception cref="Views.PopupBlockedException">Thrown when another page is above the popup.</exception>
+	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no modal page, including a stale <see cref="INavigation"/>.</exception>
+	/// <exception cref="Views.PopupBlockedException">Thrown when the top modal page is not a popup, for example when another page is above the popup.</exception>
 	Task<IPopupResult<T>> ClosePopupAsync<T>(Page page, T result, CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -139,8 +139,8 @@ public interface IPopupService
 	/// <param name="navigation">The active <see cref="INavigation"/>, a property commonly found in <see cref="Microsoft.Maui.Controls.VisualElement"/></param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
-	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no popup, including a stale <see cref="INavigation"/> or one of another window.</exception>
-	/// <exception cref="Views.PopupBlockedException">Thrown when another page is above the popup.</exception>
+	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no modal page, including a stale <see cref="INavigation"/>.</exception>
+	/// <exception cref="Views.PopupBlockedException">Thrown when the top modal page is not a popup, for example when another page is above the popup.</exception>
 	Task<IPopupResult> ClosePopupAsync(INavigation navigation, CancellationToken cancellationToken = default);
 
 	/// <summary>
@@ -150,7 +150,7 @@ public interface IPopupService
 	/// <param name="result">The result that will be returned to the caller of <c>ShowPopupAsync</c>.</param>
 	/// <param name="cancellationToken">A <see cref="CancellationToken"/> providing support for canceling the close of the current popup.</param>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is canceled, or when the app cancels the navigation that removes the popup, for example in a <see cref="Window.ModalPopping"/>, <see cref="Microsoft.Maui.Controls.Application.ModalPopping"/> or <see cref="Shell.Navigating"/> handler. The popup stays open.</exception>
-	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no popup, including a stale <see cref="INavigation"/> or one of another window.</exception>
-	/// <exception cref="Views.PopupBlockedException">Thrown when another page is above the popup.</exception>
+	/// <exception cref="Views.PopupNotFoundException">Thrown when the navigation shows no modal page, including a stale <see cref="INavigation"/>.</exception>
+	/// <exception cref="Views.PopupBlockedException">Thrown when the top modal page is not a popup, for example when another page is above the popup.</exception>
 	Task<IPopupResult<T>> ClosePopupAsync<T>(INavigation navigation, T result, CancellationToken cancellationToken = default);
 }

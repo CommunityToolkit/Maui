@@ -63,6 +63,58 @@ static class PopupTryMethodsOnPageScenarios
 		Assert.Empty(page.Navigation.ModalStack);
 	}
 
+	public static Task TryShowPopupAsyncOnINavigationReturnsTheResultOfTryClosePopupAsync(ContentPage page) =>
+		ShowAndCloseWithResult(page,
+			() => page.Navigation.TryShowPopupAsync<string>(CreatePopup(), CreateOptions(), token: CancellationToken.None),
+			result => page.Navigation.TryClosePopupAsync(result));
+
+	public static Task TryShowPopupAsyncOnAPageWithoutAResultReturnsTheResultOfTryClosePopupAsync(ContentPage page) =>
+		ShowAndCloseWithoutResult(page,
+			() => page.TryShowPopupAsync(CreatePopup(), CreateOptions(), token: CancellationToken.None),
+			() => page.TryClosePopupAsync());
+
+	public static Task TryShowPopupAsyncOnINavigationWithoutAResultReturnsTheResultOfTryClosePopupAsync(ContentPage page) =>
+		ShowAndCloseWithoutResult(page,
+			() => page.Navigation.TryShowPopupAsync(CreatePopup(), CreateOptions(), token: CancellationToken.None),
+			() => page.Navigation.TryClosePopupAsync());
+
+	public static Task TryShowPopupAsyncThroughIPopupServiceOnAPageReturnsTheResultOfTryClosePopupAsync(ContentPage page, IPopupService popupService) =>
+		ShowAndCloseWithoutResult(page,
+			() => popupService.TryShowPopupAsync<RegisteredPopup>(page, CreateOptions(), CancellationToken.None),
+			() => popupService.TryClosePopupAsync(page));
+
+	public static Task TryShowPopupAsyncThroughIPopupServiceOnINavigationReturnsTheResultOfTryClosePopupAsync(ContentPage page, IPopupService popupService) =>
+		ShowAndCloseWithoutResult(page,
+			() => popupService.TryShowPopupAsync<RegisteredPopup>(page.Navigation, CreateOptions(), CancellationToken.None),
+			() => popupService.TryClosePopupAsync(page.Navigation));
+
+	public static Task TryShowPopupAsyncWithAResultThroughIPopupServiceOnINavigationReturnsTheResultOfTryClosePopupAsync(ContentPage page, IPopupService popupService) =>
+		ShowAndCloseWithResult(page,
+			() => popupService.TryShowPopupAsync<RegisteredPopup, string>(page.Navigation, CreateOptions(), CancellationToken.None),
+			result => popupService.TryClosePopupAsync(page.Navigation, result));
+
+	// Same wait as the generic scenario above: only a wait for the pop shows the popup on the page below the modal page that is being popped.
+	public static async Task TryShowPopupAsyncWithoutAResultOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped(ContentPage page)
+	{
+		Task<PopupResultOrException>? showPopupTask = null;
+		var modalPage = new ContentPage();
+		modalPage.Disappearing += (_, _) => showPopupTask = modalPage.TryShowPopupAsync(CreatePopup(), CreateOptions(), token: CancellationToken.None);
+
+		await page.Navigation.PushModalAsync(modalPage, false);
+		await page.Navigation.PopModalAsync(false);
+		await WaitForPopupPages(page, 1);
+
+		Assert.NotNull(showPopupTask);
+		Assert.False(showPopupTask.IsCompleted);
+
+		var closeResultOrException = await page.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.False(Assert.IsType<IPopupResult>(closeResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(showResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(page.Navigation.ModalStack);
+	}
+
 	public static async Task TryShowPopupAsyncOnINavigationReturnsADismissedResultWhenOtherCodePopsTheModalPage(ContentPage page)
 	{
 		var popup = CreatePopup();
@@ -134,6 +186,36 @@ static class PopupTryMethodsOnPageScenarios
 
 		Assert.IsType<IPopupResult<string>>(closeResultOrException.Value, exactMatch: false);
 		Assert.IsType<IPopupResult<string>>(showResultOrException.Value, exactMatch: false);
+	}
+
+	static async Task ShowAndCloseWithResult(ContentPage page, Func<Task<PopupResultOrException<string>>> showPopup, Func<string, Task<PopupResultOrException<string>>> closePopup)
+	{
+		const string expectedResult = "Closed";
+
+		var showPopupTask = showPopup();
+		await WaitForPopupPages(page, 1);
+
+		var closeResultOrException = await closePopup(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.Equal(expectedResult, Assert.IsType<IPopupResult<string>>(closeResultOrException.Value, exactMatch: false).Result);
+		var showResult = Assert.IsType<IPopupResult<string>>(showResultOrException.Value, exactMatch: false);
+		Assert.Equal(expectedResult, showResult.Result);
+		Assert.False(showResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(page.Navigation.ModalStack);
+	}
+
+	static async Task ShowAndCloseWithoutResult(ContentPage page, Func<Task<PopupResultOrException>> showPopup, Func<Task<PopupResultOrException>> closePopup)
+	{
+		var showPopupTask = showPopup();
+		await WaitForPopupPages(page, 1);
+
+		var closeResultOrException = await closePopup().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.False(Assert.IsType<IPopupResult>(closeResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(showResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(page.Navigation.ModalStack);
 	}
 
 	static Task WaitForPopupPages(ContentPage page, int count) =>

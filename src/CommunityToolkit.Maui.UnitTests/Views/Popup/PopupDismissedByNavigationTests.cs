@@ -1220,39 +1220,6 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
 	}
 
-	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
-	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
-	{
-		var navigationSemaphore = GetNavigationSemaphore();
-		if (navigationSemaphore.CurrentCount == 0)
-		{
-			navigationSemaphore.Release();
-		}
-	}
-
-	static SemaphoreSlim GetNavigationSemaphore() =>
-		(SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
-		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
-
-	// The async void command lambda captures the SynchronizationContext that is current when the command executes
-	static void TapOutsideOfPopupOn(SynchronizationContext uiThread, PopupPage popupPage) => RunOn(uiThread, () => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
-
-	// An async void method captures the SynchronizationContext that is current when it starts, and posts its exception there
-	static void RunOn(SynchronizationContext uiThread, Action action)
-	{
-		var originalSynchronizationContext = SynchronizationContext.Current;
-		SynchronizationContext.SetSynchronizationContext(uiThread);
-		try
-		{
-			action();
-		}
-		finally
-		{
-			SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
-		}
-	}
-
-	// A Shell pushes a popup only after awaiting, so the PopupPage is not on the ModalStack yet when ShowPopupAsync returns its Task
 	// MAUI leaves a PopupPage Border connected on some paths, and destroying its window disposes the services that Border maps its Shadow against
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task WindowDestroying_ShouldDisconnectOnlyThePopupBorder_WhenThePopupIsOpen()
@@ -1328,7 +1295,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		((IWindow)window).Destroying();
 
 		Assert.Null(border.Handler);
-		Assert.True(showPopupTask.IsCompleted);
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
 		static void ThrowArgumentException(object? sender, ShellNavigatingEventArgs e) => throw new ArgumentException("Shell cannot navigate");
 	}
@@ -1422,8 +1389,41 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Same(popup, secondPopupPage.Content.PopupBorder.Content);
 	}
 
+	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
+	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
+	{
+		var navigationSemaphore = GetNavigationSemaphore();
+		if (navigationSemaphore.CurrentCount == 0)
+		{
+			navigationSemaphore.Release();
+		}
+	}
+
+	static SemaphoreSlim GetNavigationSemaphore() =>
+		(SemaphoreSlim?)typeof(PopupPage).GetField("navigationSemaphoreSlim", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null)
+		?? throw new InvalidOperationException("PopupPage.navigationSemaphoreSlim was not found");
+
+	// The async void command lambda captures the SynchronizationContext that is current when the command executes
+	static void TapOutsideOfPopupOn(SynchronizationContext uiThread, PopupPage popupPage) => RunOn(uiThread, () => Assert.True(popupPage.TryExecuteTapOutsideOfPopupCommand()));
+
+	// An async void method captures the SynchronizationContext that is current when it starts, and posts its exception there
+	static void RunOn(SynchronizationContext uiThread, Action action)
+	{
+		var originalSynchronizationContext = SynchronizationContext.Current;
+		SynchronizationContext.SetSynchronizationContext(uiThread);
+		try
+		{
+			action();
+		}
+		finally
+		{
+			SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
+		}
+	}
+
 	static Window GetFirstWindow() => Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
 
+	// A Shell pushes a popup only after awaiting, so the PopupPage is not on the ModalStack yet when ShowPopupAsync returns its Task
 	static async Task<PopupPage> WaitForSinglePopupPageAsync(INavigation navigation)
 	{
 		for (var i = 0; i < 200 && navigation.ModalStack.Count == 0; i++)

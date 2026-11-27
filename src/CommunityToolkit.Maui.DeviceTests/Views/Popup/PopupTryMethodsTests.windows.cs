@@ -47,6 +47,45 @@ public partial class PopupTryMethodsTests
 	public Task TryClosePopupAsyncClosesOnlyThePopupOfItsOwnWindow() =>
 		RunInTwoWindowsAsync(PopupTryMethodsOnPageScenarios.TryClosePopupAsyncClosesOnlyThePopupOfItsOwnWindow);
 
+	[Fact]
+	public Task TryShowPopupAsyncOnINavigationReturnsTheResultOfTryClosePopupAsync() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnINavigationReturnsTheResultOfTryClosePopupAsync(page));
+
+	[Fact]
+	public Task TryShowPopupAsyncOnAPageWithoutAResultReturnsTheResultOfTryClosePopupAsync() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnAPageWithoutAResultReturnsTheResultOfTryClosePopupAsync(page));
+
+	[Fact]
+	public Task TryShowPopupAsyncOnINavigationWithoutAResultReturnsTheResultOfTryClosePopupAsync() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncOnINavigationWithoutAResultReturnsTheResultOfTryClosePopupAsync(page));
+
+	[Fact]
+	public Task TryShowPopupAsyncWithoutAResultOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncWithoutAResultOnAPageShowsThePopupOnThePageBelowWhenCalledInOnDisappearingOfAModalPageBeingPopped(page));
+
+	[Fact]
+	public Task TryShowPopupAsyncThroughIPopupServiceOnAPageReturnsTheResultOfTryClosePopupAsync() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncThroughIPopupServiceOnAPageReturnsTheResultOfTryClosePopupAsync(page, MauiContext.Services.GetRequiredService<IPopupService>()),
+			PopupTryMethodsOnPageScenarios.RegisterPopup);
+
+	[Fact]
+	public Task TryShowPopupAsyncThroughIPopupServiceOnINavigationReturnsTheResultOfTryClosePopupAsync() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncThroughIPopupServiceOnINavigationReturnsTheResultOfTryClosePopupAsync(page, MauiContext.Services.GetRequiredService<IPopupService>()),
+			PopupTryMethodsOnPageScenarios.RegisterPopup);
+
+	[Fact]
+	public Task TryShowPopupAsyncWithAResultThroughIPopupServiceOnINavigationReturnsTheResultOfTryClosePopupAsync() =>
+		RunInContentPageAsync(page => PopupTryMethodsOnPageScenarios.TryShowPopupAsyncWithAResultThroughIPopupServiceOnINavigationReturnsTheResultOfTryClosePopupAsync(page, MauiContext.Services.GetRequiredService<IPopupService>()),
+			PopupTryMethodsOnPageScenarios.RegisterPopup);
+
+	[Fact]
+	public Task TryShowPopupAsyncThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync() =>
+		RunInShellAsync(shell => PopupTryMethodsScenarios.TryShowPopupAsyncThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync(shell, MauiContext.Services.GetRequiredService<IPopupService>()), PopupTryMethodsOnPageScenarios.RegisterPopup);
+
+	[Fact]
+	public Task TryShowPopupAsyncWithAResultThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync() =>
+		RunInShellAsync(shell => PopupTryMethodsScenarios.TryShowPopupAsyncWithAResultThroughIPopupServiceOnAShellReturnsTheResultOfTryClosePopupAsync(shell, MauiContext.Services.GetRequiredService<IPopupService>()), PopupTryMethodsOnPageScenarios.RegisterPopup);
+
 	// Every popup shows the same default Shadow; the Border of a closed popup must not keep mapping it against the service scope of a window that was closed
 	[Fact]
 	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheWindowThatShowedAPopupWasClosed()
@@ -59,6 +98,51 @@ public partial class PopupTryMethodsTests
 		await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
 	}
 
+	// Here the popup is still open when its window closes, so only the product can disconnect the Border that .NET MAUI leaves connected
+	[Fact]
+	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheShellWindowWasClosedWhileItsPopupWasOpen()
+	{
+		SetupBuilder();
+		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
+		var pageOfOtherWindow = new ContentPage();
+		Border? popupBorder = null;
+		var objectDisposedExceptions = new ConcurrentQueue<string>();
+
+		void HandleFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
+		{
+			if (e.Exception is ObjectDisposedException objectDisposedException)
+			{
+				objectDisposedExceptions.Enqueue(objectDisposedException.ToString());
+			}
+		}
+
+		AppDomain.CurrentDomain.FirstChanceException += HandleFirstChanceException;
+		try
+		{
+			await RunInWindowAsync(shell, firstPage, async _ =>
+			{
+				_ = shell.TryShowPopupAsync(new Popup { Padding = 0, Content = new Label { Text = "Popup" } }, new PopupOptions(), token: CancellationToken.None);
+				await AssertionExtensions.AssertEventually(() => shell.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
+
+				popupBorder = shell.Navigation.ModalStack.OfType<PopupPage>().Single().Content.PopupBorder;
+				Assert.NotNull(popupBorder.Handler);
+			}, leavePopupPagesConnected: true);
+
+			Assert.NotNull(popupBorder);
+			Assert.Null(popupBorder.Handler);
+
+			await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
+			// No event signals that the fire-and-forget shadow updates are done, so the test waits a fixed time to catch their late exceptions
+			await Task.Delay(TimeSpan.FromSeconds(1));
+		}
+		finally
+		{
+			AppDomain.CurrentDomain.FirstChanceException -= HandleFirstChanceException;
+		}
+
+		Assert.Empty(objectDisposedExceptions);
+	}
+
 	public enum PopupRemoval
 	{
 		CloseAsync,
@@ -68,7 +152,7 @@ public partial class PopupTryMethodsTests
 		ShellSwitchesToAnotherShellElement
 	}
 
-	// A Shell window is one of the places where .NET MAUI leaves the Border of a removed PopupPage connected; the same popup is then shown in a window that outlives the first one.
+	// A Shell window is one of the places where .NET MAUI leaves the Border of a removed PopupPage connected; the same popup is then shown in a new window after the first one closed.
 	[Theory]
 	[InlineData(PopupRemoval.CloseAsync)]
 	[InlineData(PopupRemoval.OtherCodePopsTheModalPage)]
@@ -96,6 +180,7 @@ public partial class PopupTryMethodsTests
 		{
 			await RunInWindowAsync(shell, firstPage, window => ShowAndRemoveAPopupInAShellWindow(shell, window, popup, removal));
 			await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow, popup));
+			// No event signals that the fire-and-forget shadow updates are done, so the test waits a fixed time to catch their late exceptions
 			await Task.Delay(TimeSpan.FromSeconds(1));
 		}
 		finally

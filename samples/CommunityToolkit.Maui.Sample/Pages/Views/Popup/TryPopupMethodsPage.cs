@@ -27,6 +27,8 @@ public partial class TryPopupMethodsPage : ContentPage
 
 					new Button { Command = new AsyncRelayCommand(ShowPopup) }.Text("TryShowPopupAsync"),
 					new Button { Command = new AsyncRelayCommand(ShowPopupWithoutResultType) }.Text("TryShowPopupAsync without a Result Type"),
+					new Button { Command = new AsyncRelayCommand(ShowPopupOnNavigation) }.Text("INavigation.TryShowPopupAsync"),
+					new Button { Command = new AsyncRelayCommand(ShowPopupOnShell) }.Text("Shell.TryShowPopupAsync"),
 					new Button { Command = new AsyncRelayCommand(ShowPopupWithCanceledToken) }.Text("TryShowPopupAsync with a Canceled Token"),
 					new Button { Command = new AsyncRelayCommand(ClosePopupWhenNoneIsShown) }.Text("TryClosePopupAsync without a Popup"),
 
@@ -52,6 +54,18 @@ public partial class TryPopupMethodsPage : ContentPage
 		showResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryShowPopupAsync(popupContent));
 	}
 
+	async Task ShowPopupOnNavigation()
+	{
+		var popupContent = CreatePopupContent();
+		showResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await Navigation.TryShowPopupAsync<string>(popupContent));
+	}
+
+	async Task ShowPopupOnShell()
+	{
+		var popupContent = CreatePopupContent();
+		showResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await (Shell.Current ?? throw new InvalidOperationException("The app has no Shell")).TryShowPopupAsync<string>(popupContent));
+	}
+
 	VerticalStackLayout CreatePopupContent() => new()
 	{
 		Spacing = 12,
@@ -60,6 +74,7 @@ public partial class TryPopupMethodsPage : ContentPage
 			new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
 			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
 			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result"),
+			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await Navigation.TryClosePopupAsync(popupResultText))) }.Text("Close with INavigation"),
 			new Button { Command = new AsyncRelayCommand(ShowPageAbovePopup) }.Text("Show a Page Above the Popup")
 		}
 	};

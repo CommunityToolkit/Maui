@@ -2049,6 +2049,29 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ClosePopupAsync_ShouldThrowPopupBlockedException_WhenTheTopModalPageIsAContentPageAndNoPopupExists()
+	{
+		// Arrange
+		await navigation.PushModalAsync(new ContentPage());
+
+		// Act and Assert
+		await Assert.ThrowsAsync<PopupBlockedException>(() => navigation.ClosePopupAsync(TestContext.Current.CancellationToken));
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsync_ShouldReturnPopupBlockedException_WhenTheTopModalPageIsAContentPageAndNoPopupExists()
+	{
+		// Arrange
+		await navigation.PushModalAsync(new ContentPage());
+
+		// Act
+		var result = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupBlockedException>(result.Value);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task TryClosePopupAsyncT_ShouldReturnPopupBlockedException_WhenPopupIsBlocked()
 	{
 		// Arrange
