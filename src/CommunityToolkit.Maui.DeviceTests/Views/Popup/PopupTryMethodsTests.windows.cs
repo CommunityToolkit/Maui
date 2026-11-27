@@ -127,7 +127,7 @@ public partial class PopupTryMethodsTests
 				popup.Opened += (_, _) => popupOpenedTaskCompletionSource.TrySetResult();
 				_ = shell.TryShowPopupAsync(popup, new PopupOptions(), token: CancellationToken.None);
 				await AssertionExtensions.AssertEventually(() => shell.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
-				// The Border is registered for Window.Destroying only once the popup is opened, which can come after the page is on the modal stack.
+				// The PopupPage is registered for Window.Destroying only once the popup is opened, which can come after the page is on the modal stack.
 				await popupOpenedTaskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
 
 				popupBorder = shell.Navigation.ModalStack.OfType<PopupPage>().Single().Content.PopupBorder;

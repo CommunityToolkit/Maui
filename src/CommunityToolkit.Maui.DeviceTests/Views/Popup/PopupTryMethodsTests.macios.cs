@@ -87,7 +87,7 @@ public partial class PopupTryMethodsTests
 	}
 
 	// .NET MAUI disconnects the handlers of a popped modal page itself on iOS and Mac Catalyst, so only the StillOpen row proves the product disconnects the PopupPage and the Popup at Destroying.
-	// The window of the host is built on the MauiContext of the test, so Destroying does not dispose anything here: only the handler of the Border shows it.
+	// The window of the host is built on the MauiContext of the test, so Destroying does not dispose anything here: only the handlers of the PopupPage and the Popup show it.
 	[Theory]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.ClosedWithTryClosePopupAsync)]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.PoppedWithPopModalAsync)]
@@ -107,7 +107,7 @@ public partial class PopupTryMethodsTests
 			popup.Opened += (_, _) => popupOpenedTaskCompletionSource.TrySetResult();
 			var showPopupTask = page.TryShowPopupAsync<string>(popup, new PopupOptions(), token: CancellationToken.None);
 			await AssertionExtensions.AssertEventually(() => page.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
-			// The Border is registered for Window.Destroying only once the popup is opened, which iOS reports after the modal presentation finished.
+			// The PopupPage is registered for Window.Destroying only once the popup is opened, which iOS reports after the modal presentation finished.
 			await popupOpenedTaskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
 			popupBorder = page.Navigation.ModalStack.OfType<PopupPage>().Single().Content.PopupBorder;
 
