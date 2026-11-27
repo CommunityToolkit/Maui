@@ -135,6 +135,88 @@ public class PopupResultOrExceptionTests : BaseTest
 		Assert.Equal("Canceled", Describe(resultOrException));
 	}
 
+	[Fact]
+	public void PopupResultOrException_ShouldHoldSamePopupResult_WhenConvertedFromPopupResultOrExceptionT()
+	{
+		// Arrange
+		PopupResultOrException<int> genericResultOrException = new PopupResult<int>(42, false);
+
+		// Act
+		PopupResultOrException resultOrException = genericResultOrException;
+
+		// Assert
+		Assert.Same(genericResultOrException.Value, resultOrException.Value);
+		Assert.Equal("Closed", Describe(resultOrException));
+	}
+
+	[Fact]
+	public void PopupResultOrException_ShouldHoldSameException_WhenConvertedFromPopupResultOrExceptionT()
+	{
+		// Arrange
+		PopupResultOrException<int> genericResultOrException = new PopupNotFoundException();
+
+		// Act
+		PopupResultOrException resultOrException = genericResultOrException;
+
+		// Assert
+		Assert.Same(genericResultOrException.Value, resultOrException.Value);
+		Assert.Equal($"Failed: {new PopupNotFoundException().Message}", Describe(resultOrException));
+	}
+
+	[Fact]
+	public void PopupResultOrException_ShouldMatchDismissed_WhenConvertedFromDismissedPopupResultOrExceptionT()
+	{
+		// Arrange
+		PopupResultOrException<int> genericResultOrException = new PopupResult<int>(null, true);
+
+		// Act
+		PopupResultOrException resultOrException = genericResultOrException;
+
+		// Assert
+		Assert.Equal("Dismissed", Describe(resultOrException));
+	}
+
+	[Fact]
+	public void PopupResultOrException_ShouldMatchOperationCanceledException_WhenConvertedFromPopupResultOrExceptionT()
+	{
+		// Arrange
+		PopupResultOrException<int> genericResultOrException = new OperationCanceledException();
+
+		// Act
+		PopupResultOrException resultOrException = genericResultOrException;
+
+		// Assert
+		Assert.Equal("Canceled", Describe(resultOrException));
+	}
+
+	[Fact]
+	public void PopupResultOrException_ShouldHoldNull_WhenConvertedFromDefaultPopupResultOrExceptionT()
+	{
+		// Arrange
+		PopupResultOrException<int> genericResultOrException = default;
+
+		// Act
+		PopupResultOrException resultOrException = genericResultOrException;
+
+		// Assert
+		Assert.Null(resultOrException.Value);
+	}
+
+	[Fact]
+	public void Describe_ShouldMatchNonGenericArm_WhenPassedPopupResultOrExceptionTAsPopupResultOrException()
+	{
+		// Arrange
+		PopupResultOrException<int> genericResultOrException = new PopupResult<int>(42, false);
+
+		// Act
+		var nonGenericDescription = Describe((PopupResultOrException)genericResultOrException);
+		var genericDescription = Describe(genericResultOrException);
+
+		// Assert
+		Assert.Equal("Closed", nonGenericDescription);
+		Assert.Equal("Closed with 42", genericDescription);
+	}
+
 	// No discard: the build reports CS8509 if these switches stop covering every case of PopupResultOrException
 	static string Describe(PopupResultOrException resultOrException) => resultOrException switch
 	{
