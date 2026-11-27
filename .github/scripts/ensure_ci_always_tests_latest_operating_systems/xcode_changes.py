@@ -489,11 +489,13 @@ def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, de
     changes.extend(_apple_label_changes(pinned, apple_label, target, source))
     apple_listing = listings[apple_label]
     highest_ga = max(ga_xcode_versions(apple_listing), key=numeric_key, default=None)
+    old_ios_leg_notes: List[str] = []
     if highest_ga is not None:
         major_the_target_runs = max(major(version) for version in target_ga)
-        leg = _plan_old_ios_major_leg(pinned, apple_label, apple_listing, highest_ga, major_the_target_runs, plan.notes)
+        leg = _plan_old_ios_major_leg(pinned, apple_label, apple_listing, highest_ga, major_the_target_runs, old_ios_leg_notes)
         if leg is not None:
             changes.append(leg)
+    plan.notes.extend(old_ios_leg_notes)
 
     rules = branch_rules or {}
     rules_readable = rules.get('status') in (None, 'ok') and rules.get('required_checks') is not None
@@ -502,8 +504,10 @@ def _plan_label_switch_for_a_person(plan: FamilyPlan, pinned: PinnedVersions, de
     plan.changes_for_a_person.append(ChangeForAPerson(
         key=key,
         title='Move the Apple jobs from %s to %s' % (markdown_code(apple_label), markdown_code(target)),
+        # The person applies this patch from the issue, so a leg it leaves out must be said there, not only in the run summary.
         why='%s, which only %s has as a GA release. The bot doesn\'t make this change itself: required checks '
-            'are named after the label.' % (_what_the_workload_sets_need(switching), markdown_code(target)),
+            'are named after the label.' % (_what_the_workload_sets_need(switching), markdown_code(target))
+            + ''.join(' ' + note for note in old_ios_leg_notes),
         steps=_label_switch_steps(apple_label, target, renames, rules_readable),
         changes=changes,
         patch_file='patches/%s.patch' % key.replace(':', '_')))

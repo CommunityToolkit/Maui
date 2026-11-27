@@ -413,6 +413,7 @@ class LabelSwitchTests(unittest.TestCase):
         legs = [c for c in result.changes_for_a_person[0].changes if c.kind == 'insert-ios-leg']
         self.assertLessEqual(len(legs), 1)
         self.last_notes = result.notes
+        self.last_why = result.changes_for_a_person[0].why
         return legs[0] if legs else None
 
     def test_the_leg_keeps_the_three_part_version_of_the_newest_runtime(self) -> None:
@@ -532,6 +533,7 @@ class LabelSwitchTests(unittest.TestCase):
         self.assertEqual([note for note in self.last_notes if 'no iOS 27 leg was added' in note],
                          ['`xcode-27` lists no GA iOS 27 simulator runtime that has an iPhone with one built-in screen, '
                           'which the status bar tests need, so no iOS 27 leg was added for it.'])
+        self.assertTrue(self.last_why.endswith(' so no iOS 27 leg was added for it.'), self.last_why)
 
     def make_listings_with_a_good_lower_major_and_only_duo_runtimes_in_the_newest_older_major(self) -> Dict[str, Any]:
         apps = [app('Xcode_27.2.app', '27.2'), app('Xcode_27.app', '27.0'), app('Xcode_16.4.app', '16.4')]
@@ -546,6 +548,7 @@ class LabelSwitchTests(unittest.TestCase):
         self.assertEqual([note for note in self.last_notes if 'no iOS 27 leg was added' in note],
                          ['`xcode-27` lists no GA iOS 27 simulator runtime that has an iPhone with one built-in screen, '
                           'which the status bar tests need, so no iOS 27 leg was added for it.'])
+        self.assertTrue(self.last_why.endswith(' so no iOS 27 leg was added for it.'), self.last_why)
 
     def test_the_newest_older_major_with_only_duo_runtimes_gets_no_note_when_an_ios_leg_covers_it(self) -> None:
         the_listings = self.make_listings_with_a_good_lower_major_and_only_duo_runtimes_in_the_newest_older_major()
@@ -619,6 +622,7 @@ class LabelSwitchTests(unittest.TestCase):
         leg = self.plan_old_ios_leg(self.make_listings_with_old_image(['27.3'], apps))
         self.assertIsNone(leg)
         self.assertIn('`xcode-27` lists no GA iOS simulator runtime, so no iOS leg was added for it.', self.last_notes)
+        self.assertIn('`xcode-27` lists no GA iOS simulator runtime, so no iOS leg was added for it.', self.last_why)
 
     def test_the_leg_version_is_the_version_field_of_a_listed_runtime(self) -> None:
         # ios.ps1 -Runtime matches a runtime's version field exactly (or an identifier suffix or name), never a shortened version.
