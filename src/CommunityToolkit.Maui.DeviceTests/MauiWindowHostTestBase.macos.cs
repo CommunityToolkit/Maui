@@ -1,7 +1,6 @@
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CoreGraphics;
 using Microsoft.Maui.Handlers;
-using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
