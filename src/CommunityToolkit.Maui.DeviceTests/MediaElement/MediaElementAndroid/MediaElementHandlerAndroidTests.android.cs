@@ -301,6 +301,29 @@ public class MediaElementHandlerAndroidTests : MediaElementAndroidTestBase
 		}
 	}
 
+	// A handler that is disconnected while its view is shown full screen is not told when the view leaves it: without the reset the
+	// MediaElement would stay in FullScreen, and the first full screen of its next handler would raise no ScreenStateChanged.
+	[Fact]
+	public async Task DisconnectHandlerSetsTheScreenStateOfTheMediaElementBackToDefault()
+	{
+		SetupProbeBuilder();
+		var mediaElement = await CreateMediaElementAsync();
+		List<ScreenStateChangedEventArgs> screenStateChanges = [];
+		mediaElement.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+
+		await HostAsync(mediaElement, _ =>
+		{
+			((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.FullScreen);
+			Assert.Equal(MediaElementScreenState.FullScreen, mediaElement.ScreenState);
+		});
+		// HostAsync disconnected the handler.
+
+		Assert.Equal(MediaElementScreenState.Default, await InvokeOnMainThreadAsync(() => mediaElement.ScreenState));
+		Assert.Equal(2, screenStateChanges.Count);
+		Assert.Equal(MediaElementScreenState.FullScreen, screenStateChanges[1].PreviousState);
+		Assert.Equal(MediaElementScreenState.Default, screenStateChanges[1].NewState);
+	}
+
 	// MAUI's IElementHandler.DisconnectHandler calls the toolkit's DisconnectHandler(platformView) only while the handler has a platform view,
 	// so it never runs twice through MAUI: the test calls it twice directly.
 	[Fact]

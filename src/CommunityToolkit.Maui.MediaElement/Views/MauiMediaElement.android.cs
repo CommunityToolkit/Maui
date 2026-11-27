@@ -19,6 +19,7 @@ public class MauiMediaElement : CoordinatorLayout
 {
 	readonly RelativeLayout relativeLayout;
 	readonly PlayerView playerView;
+	readonly WeakEventManager fullScreenEventManager = new();
 
 	int defaultSystemUiVisibility;
 	int defaultSystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
@@ -77,6 +78,15 @@ public class MauiMediaElement : CoordinatorLayout
 		relativeLayout.AddView(playerView);
 
 		AddView(relativeLayout);
+	}
+
+	/// <summary>
+	/// Occurs when the view entered or left full screen.
+	/// </summary>
+	internal event EventHandler<ScreenStateChangedEventArgs> FullScreenStateChanged
+	{
+		add => fullScreenEventManager.AddEventHandler(value);
+		remove => fullScreenEventManager.RemoveEventHandler(value);
 	}
 
 	public override void OnDetachedFromWindow()
@@ -185,6 +195,11 @@ public class MauiMediaElement : CoordinatorLayout
 		}
 		// Hide/Show the SystemBars and Status bar
 		SetSystemBarsVisibility(saveSystemBarsVisibility: e.P0);
+
+		var (previousState, newState) = isFullScreen
+			? (MediaElementScreenState.Default, MediaElementScreenState.FullScreen)
+			: (MediaElementScreenState.FullScreen, MediaElementScreenState.Default);
+		fullScreenEventManager.HandleEvent(this, new ScreenStateChangedEventArgs(previousState, newState), nameof(FullScreenStateChanged));
 	}
 
 	void SetSystemBarsVisibility(bool saveSystemBarsVisibility)

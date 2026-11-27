@@ -190,6 +190,15 @@ public partial class MediaManager
 	}
 
 	/// <summary>
+	/// Update the screen state of the associated <see cref="IMediaElement"/>.
+	/// </summary>
+	/// <param name="newState">The screen state that the platform view entered.</param>
+	internal void UpdateFullScreenState(MediaElementScreenState newState)
+	{
+		MediaElement.FullScreenChanged(newState);
+	}
+
+	/// <summary>
 	/// Invokes the platform play functionality and starts media playback.
 	/// </summary>
 	protected virtual partial void PlatformPlay();

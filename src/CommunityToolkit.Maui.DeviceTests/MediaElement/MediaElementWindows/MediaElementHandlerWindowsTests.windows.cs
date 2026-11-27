@@ -759,6 +759,31 @@ public class MediaElementHandlerWindowsTests : WinMediaTestBase
 		});
 	}
 
+	// A handler that is disconnected while its view is shown full screen reports nothing more: without the reset the MediaElement would stay
+	// in FullScreen, and the first full screen of its next handler would raise no ScreenStateChanged.
+	[Fact]
+	public async Task DisconnectingSetsTheScreenStateOfTheMediaElementBackToDefault()
+	{
+		SetupWindowsBuilder();
+		await RequireMediaPlayerAsync();
+		var view = NewMediaElement();
+		var handler = await ConnectAsync(view);
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			((IMediaElement)view).FullScreenChanged(MediaElementScreenState.FullScreen);
+			view.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+
+			((IElementHandler)handler).DisconnectHandler();
+
+			Assert.Equal(MediaElementScreenState.Default, view.ScreenState);
+			var change = Assert.Single(screenStateChanges);
+			Assert.Equal(MediaElementScreenState.FullScreen, change.PreviousState);
+			Assert.Equal(MediaElementScreenState.Default, change.NewState);
+		});
+	}
+
 	// Dispose leaves the handler as the view's handler, so property changes still reach the toolkit's mappers, which must find no manager and do
 	// nothing. After DisconnectHandler, by contrast, MAUI has already cleared view.Handler, so a property change reaches no toolkit code at all.
 	[Fact]

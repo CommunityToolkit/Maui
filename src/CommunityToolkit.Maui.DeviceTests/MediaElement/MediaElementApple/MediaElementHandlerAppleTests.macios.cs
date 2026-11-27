@@ -178,6 +178,30 @@ public class MediaElementHandlerAppleTests : AppleMediaElementTestBase
 		});
 	}
 
+	// A handler that is disconnected while its player is shown full screen reports nothing more: without the reset the MediaElement would
+	// stay in FullScreen, and the first full screen of its next handler would raise no ScreenStateChanged.
+	[Fact]
+	public async Task DisconnectHandlerSetsTheScreenStateOfTheMediaElementBackToDefault()
+	{
+		SetupApple();
+		var mediaElement = CreateMediaElement();
+
+		await HostAsync(mediaElement, async handler =>
+		{
+			await handler.Manager!.TakeSourceUpdates();
+			List<ScreenStateChangedEventArgs> screenStateChanges = [];
+			((IMediaElement)mediaElement).FullScreenChanged(MediaElementScreenState.FullScreen);
+			mediaElement.ScreenStateChanged += (_, e) => screenStateChanges.Add(e);
+
+			handler.Disconnect();
+
+			Assert.Equal(MediaElementScreenState.Default, mediaElement.ScreenState);
+			var change = Assert.Single(screenStateChanges);
+			Assert.Equal(MediaElementScreenState.FullScreen, change.PreviousState);
+			Assert.Equal(MediaElementScreenState.Default, change.NewState);
+		});
+	}
+
 	[Fact]
 	public async Task DisconnectHandlerRemovesThePlayerViewControllerFromItsParentViewController()
 	{
