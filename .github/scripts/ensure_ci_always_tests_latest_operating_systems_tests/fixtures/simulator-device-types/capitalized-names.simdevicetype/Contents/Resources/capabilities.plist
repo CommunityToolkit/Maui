@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>capabilities</key>
+	<dict>
+		<key>displays</key>
+		<array>
+			<dict>
+				<key>deviceName</key>
+				<string>LCD</string>
+				<key>displayName</key>
+				<string>LCD</string>
+				<key>displayType</key>
+				<string>Integrated</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>1</integer>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>Primary-1</string>
+				<key>displayName</key>
+				<string>Second LCD</string>
+				<key>displayType</key>
+				<string>Other</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>3</integer>
+			</dict>
+			<dict>
+				<key>deviceName</key>
+				<string>External-0</string>
+				<key>displayName</key>
+				<string>TVOut</string>
+				<key>displayType</key>
+				<string>TVOut</string>
+				<key>powerState</key>
+				<integer>1</integer>
+				<key>screenID</key>
+				<integer>2</integer>
+			</dict>
+		</array>
+	</dict>
+</dict>
+</plist>

@@ -54,6 +54,9 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
+                # Required checks are named after this xcode-NN label (and build_library's), so
+                # ensure-ci-always-tests-latest-operating-systems.yml doesn't move it to the next Xcode major itself: it puts a ready patch in
+                # its issue for a person.
                 os: [ windows-latest, xcode-27 ]
         steps:
             -   name: Checkout code
@@ -370,7 +373,7 @@ jobs:
                 run: |
                     ./eng/coverage-report.ps1 -Report artifacts/coverage -Output artifacts/coverage-report -Note @(
                         'Reports: `ut` is the toolkit''s unit tests (Release), `ut-*` the analyzer and source generator unit tests; the others are the device tests of Windows (packaged and unpackaged), Android API 36 and 25, the iOS simulator and Mac Catalyst.',
-                        'Not included: CsWinRT generated code, and the device tests of the other Android API levels and iOS versions (only Android API 36 and 25 and iOS 27.2 collect coverage).',
+                        'Not included: CsWinRT generated code, and the device tests of the other Android API levels and iOS versions (only Android API 36 and 25 and the newest iOS simulator collect coverage).',
                         'Branches of one line are not added up across reports (the best report counts), so an OS version check that two legs take both ways still shows half its branches.')
 
             -   name: Upload coverage report

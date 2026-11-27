@@ -11,17 +11,16 @@ using Android.Widget;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.View;
-using AndroidX.Core.Content;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Handlers;
 using CommunityToolkit.Maui.DeviceTests.Runners;
 using CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.DependencyInjection;
 using AView = Android.Views.View;
 using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 using ICameraProvider = CommunityToolkit.Maui.Core.ICameraProvider;
-using Runnable = Java.Lang.Runnable;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -55,7 +54,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 	protected static Task WaitForFutureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
 	{
 		var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		future.AddListener(new Java.Lang.Runnable(() =>
+		future.AddListenerOnMainThread(AppContext, () =>
 		{
 			try
 			{
@@ -66,7 +65,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			{
 				done.TrySetException(ex);
 			}
-		}), AndroidX.Core.Content.ContextCompat.GetMainExecutor(AppContext));
+		});
 
 		return done.Task.WaitAsync(CameraTimeout);
 	}
@@ -169,7 +168,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 		var context = AppContext;
 		var completion = new TaskCompletionSource<ProcessCameraProvider>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var future = ProcessCameraProvider.GetInstance(context);
-		future.AddListener(new Runnable(() =>
+		future.AddListenerOnMainThread(context, () =>
 		{
 			try
 			{
@@ -179,7 +178,7 @@ public abstract class CameraAndroidTestBase : CameraHandlerTestBase
 			{
 				completion.TrySetException(ex);
 			}
-		}), ContextCompat.GetMainExecutor(context));
+		});
 
 		return await completion.Task.WaitAsync(CameraTimeout);
 	}

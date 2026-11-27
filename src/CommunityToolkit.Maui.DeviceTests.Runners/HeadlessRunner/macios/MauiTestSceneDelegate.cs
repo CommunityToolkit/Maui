@@ -3,6 +3,7 @@
 // Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License (see LICENSE-dotnet-maui.txt).
 // Toolkit change: namespaces renamed from Microsoft.Maui.TestUtils.DeviceTests.Runners* to CommunityToolkit.Maui.DeviceTests.Runners*.
 // Toolkit change: moved from HeadlessRunner/MacCatalyst to HeadlessRunner/macios: iOS apps need the scene delegate too (iOS 27 SDK UIScene requirement).
+// Toolkit change: tests start on sceneDidBecomeActive, not right after MakeKeyAndVisible: while SpringBoard is still running the launch transition the scene is ForegroundInactive and AttachAndRun finds no window.
 #nullable enable
 using System;
 using UIKit;
@@ -10,7 +11,7 @@ using UIKit;
 namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner;
 
 /// <summary>
-/// Attaches the headless runner's window to its Mac Catalyst scene before starting tests.
+/// Attaches the headless runner's window to its window scene; the tests start once that scene is active.
 /// </summary>
 public class MauiTestSceneDelegate : MauiUISceneDelegate
 {
@@ -37,6 +38,20 @@ public class MauiTestSceneDelegate : MauiUISceneDelegate
 		headlessWindow.WindowScene = windowScene;
 		Window = headlessWindow;
 		headlessWindow.MakeKeyAndVisible();
-		applicationDelegate.SetWindowReady();
+
+		if (windowScene.ActivationState is UISceneActivationState.ForegroundActive)
+		{
+			applicationDelegate.SetWindowReady();
+		}
+	}
+
+	public override void OnActivated(UIScene scene)
+	{
+		base.OnActivated(scene);
+
+		if (UIApplication.SharedApplication.Delegate is MauiTestApplicationDelegate applicationDelegate)
+		{
+			applicationDelegate.SetWindowReady();
+		}
 	}
 }
