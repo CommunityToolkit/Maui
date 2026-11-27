@@ -12,8 +12,6 @@ public partial class TryPopupMethodsPage : ContentPage
 
 	readonly Label showResultOrExceptionLabel, closeResultOrExceptionLabel;
 
-	bool isOpenInProgress;
-
 	public TryPopupMethodsPage()
 	{
 		Title = "Try Popup Methods";
@@ -59,33 +57,18 @@ public partial class TryPopupMethodsPage : ContentPage
 
 	async Task ShowPopup()
 	{
-		// A popup covers this page only once its push is done, so a quick second tap would open a second popup
-		if (isOpenInProgress)
+		var popupContent = new VerticalStackLayout
 		{
-			return;
-		}
-
-		isOpenInProgress = true;
-
-		try
-		{
-			var popupContent = new VerticalStackLayout
+			Spacing = 12,
+			Children =
 			{
-				Spacing = 12,
-				Children =
-				{
-					new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
-					new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
-					new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result")
-				}
-			};
+				new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
+				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
+				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result")
+			}
+		};
 
-			showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
-		}
-		finally
-		{
-			isOpenInProgress = false;
-		}
+		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
 	}
 
 	async Task ShowPopupWithCanceledToken()
