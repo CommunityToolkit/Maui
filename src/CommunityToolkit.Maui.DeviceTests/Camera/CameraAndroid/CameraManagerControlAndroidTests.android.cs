@@ -4,11 +4,10 @@ using Android.Views;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Extensions;
 using AndroidX.Camera.View;
-using AndroidX.Core.Content;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
-using Runnable = Java.Lang.Runnable;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
@@ -30,7 +29,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 		var nativeProvider = (await GetNativeCameraProviderAsync()).JavaCast<AndroidX.Camera.Core.ICameraProvider>();
 		var future = ExtensionsManager.GetInstanceAsync(context, nativeProvider) ?? throw new InvalidOperationException("CameraX has no extensions manager.");
 
-		future.AddListener(new Runnable(() =>
+		future.AddListenerOnMainThread(context, () =>
 		{
 			try
 			{
@@ -41,7 +40,7 @@ public class CameraManagerControlAndroidTests : CameraAndroidTestBase
 			{
 				completion.TrySetException(ex);
 			}
-		}), ContextCompat.GetMainExecutor(context));
+		});
 
 		return await completion.Task.WaitAsync(CameraTimeout);
 	}

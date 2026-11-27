@@ -42,6 +42,11 @@ path and lists each toolkit change. The authoring guide for the tests is
 - **UIScene life cycle (iOS 27 SDK)**: apps linked against the iOS 27 SDK are killed at launch unless they adopt UIScene.
   `MauiTestApplicationDelegate` therefore checks the scene manifest on iOS too, where upstream checks it on Mac Catalyst only,
   and `MauiTestSceneDelegate` is compiled for iOS as well. Each app declares a `UIApplicationSceneManifest` and a `SceneDelegate`.
+- **Tests start once the scene is active**: `MauiTestSceneDelegate` calls `SetWindowReady` from `OnActivated` (sceneDidBecomeActive), or from
+  `WillConnect` when the scene is already `ForegroundActive`, instead of right after `MakeKeyAndVisible`. `MauiTestApplicationDelegate`
+  waits for it in `WaitForWindowReadyAsync` (at most 120 s, then it logs one line and starts anyway), and records the activation state in
+  `WindowSceneActivationStateAtTestStart`. Why: on a slow launch SpringBoard keeps the scene `ForegroundInactive` for tens of seconds, and
+  `AttachAndRun` (`FindContentView`) only accepts a `ForegroundActive` window and gives up after 5 s.
 - **`IPlatformApplication`**: `MauiTestApplicationDelegate` implements `IPlatformApplication` and sets
   `IPlatformApplication.Current`, as `MauiUIApplicationDelegate` does. Toolkit code such as `CameraViewHandler` and
   `PopupService` resolves services through it. Android (`MauiApplication`) and Windows already set it.
