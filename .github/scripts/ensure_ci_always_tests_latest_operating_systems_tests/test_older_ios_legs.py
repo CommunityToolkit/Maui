@@ -209,6 +209,9 @@ class RuntimeThatCannotRunTheTestsTests(unittest.TestCase):
         listings['macos-26']['runtimes'].append(runtime_with_screen_answer('26.5', 'iOS-26-5-ipad-only', False))
         self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
                          ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
+        listings['macos-26']['runtimes'].reverse()
+        self.assertEqual(keys(older_ios_legs.check_older_ios_legs(pinned_versions(), listings)),
+                         ['ios-leg-runtime-cannot-run-tests:macos-26:26.5'])
 
     def test_a_newer_runtime_that_the_cannot_run_item_names_is_not_offered_a_second_time(self) -> None:
         listings = self.listings_where_the_leg_runtime_lists_only_iphone_duo()

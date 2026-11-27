@@ -11,15 +11,15 @@ def list_available_ios_runtimes(listing: Mapping[str, Any]) -> List[Mapping[str,
             if runtime.get('platform') == 'iOS' and runtime.get('available') and runtime.get('version')]
 
 
-def _equal_ignoring_case(value: Any, requested: str) -> bool:
+def _is_equal_ignoring_case(value: Any, requested: str) -> bool:
     """PowerShell's -eq, which eng/devices/ios.ps1 uses, ignores letter case; its EndsWith for the identifier suffix does not."""
     return isinstance(value, str) and value.lower() == requested.lower()
 
 
 def is_found_by_ios_script(runtime: Mapping[str, Any], requested: str) -> bool:
-    """Matches a runtime the way Find-MatchingSimulatorRuntimes in eng/devices/ios.ps1 does."""
-    return (_equal_ignoring_case(runtime.get('version'), requested) or _equal_ignoring_case(runtime.get('identifier'), requested)
-            or _equal_ignoring_case(runtime.get('name'), requested) or (runtime.get('identifier') or '').endswith('.' + requested))
+    """Matches a runtime the way Get-MatchingSimulatorRuntimes in eng/devices/ios.ps1 does."""
+    return (_is_equal_ignoring_case(runtime.get('version'), requested) or _is_equal_ignoring_case(runtime.get('identifier'), requested)
+            or _is_equal_ignoring_case(runtime.get('name'), requested) or (runtime.get('identifier') or '').endswith('.' + requested))
 
 
 def is_known_to_list_no_iphone_with_one_screen(runtime: Mapping[str, Any]) -> bool:

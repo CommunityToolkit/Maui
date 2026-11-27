@@ -158,7 +158,8 @@ def _lists_iphone_with_one_screen(runtime: Mapping[str, Any], screen_counts: Dic
     """True: some iPhone has one screen. False: every iPhone is known to have another count, or none is listed. None: not known."""
     device_types = runtime.get('supportedDeviceTypes')
     if not isinstance(device_types, list):
-        # ios.ps1 sees no iPhone in it (and throws when it is the only match), but a wrong False drops a leg silently; simctl always prints the key, so this stays unknown.
+        # ios.ps1 sees no iPhone in it (and throws when it is the only match), but a wrong False drops a leg silently;
+        # simctl always prints the key, so this stays unknown.
         return None
     iphones = [device_type for device_type in device_types
                if isinstance(device_type, dict) and device_type.get('productFamily') == 'iPhone']

@@ -182,7 +182,7 @@ function Get-SimulatorRuntimes {
     return $runtimes
 }
 
-function Find-MatchingSimulatorRuntimes {
+function Get-MatchingSimulatorRuntimes {
     # There is no default runtime here: the newest one may not list the device type that is needed (iOS 27.1 lists only iPhone Duo), so
     # Select-SimulatorRuntimeAndDeviceType chooses the runtime and the device type together, and only a requested runtime is resolved here.
     param([string]$Requested)
@@ -270,7 +270,10 @@ function Get-SimulatorBuiltInScreenCount {
     }
 
     # The list also has the TV out, CarPlay and resizable scene outputs. iPhone Duo's profile names its screens primary and primary-1.
-    return @($displays | Where-Object { $_['displayType'] -eq 'integrated' -or "$($_['deviceName'])" -like 'primary*' }).Count
+    # Ordinal: -like folds case with the current culture, and Turkish maps I to dotless ı.
+    return @($displays | Where-Object {
+        [string]::Equals([string]$_['displayType'], 'integrated', [System.StringComparison]::OrdinalIgnoreCase) -or ([string]$_['deviceName']).StartsWith('primary', [System.StringComparison]::OrdinalIgnoreCase)
+    }).Count
 }
 
 function Get-SimulatorSupportedDeviceTypes {
@@ -377,7 +380,7 @@ function Select-SimulatorRuntimeAndDeviceType {
     param([string]$Runtime, [string]$DeviceType)
 
     if ($Runtime) {
-        $matching = @(Find-MatchingSimulatorRuntimes -Requested $Runtime)
+        $matching = @(Get-MatchingSimulatorRuntimes -Requested $Runtime)
         if ($DeviceType) {
             $selectedRuntime = Select-MatchingSimulatorRuntimeThatListsDeviceType -Matching $matching -DeviceType $DeviceType
             return New-Object PSObject -Property @{ Runtime = $selectedRuntime; DeviceType = (Select-SimulatorDeviceType -SelectedRuntime $selectedRuntime -Requested $DeviceType) }
