@@ -86,23 +86,24 @@ public partial class PopupTryMethodsTests
 		StillOpen
 	}
 
-	// .NET MAUI disconnects the handlers of a popped modal page itself on iOS and Mac Catalyst, so only the StillOpen row proves the product disconnects the Border at Destroying.
+	// .NET MAUI disconnects the handlers of a popped modal page itself on iOS and Mac Catalyst, so only the StillOpen row proves the product disconnects the PopupPage and the Popup at Destroying.
 	// The window of the host is built on the MauiContext of the test, so Destroying does not dispose anything here: only the handler of the Border shows it.
 	[Theory]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.ClosedWithTryClosePopupAsync)]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.PoppedWithPopModalAsync)]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.StillOpen)]
-	public async Task DestroyingTheWindowDisconnectsTheBorderOfThePopupAndThePopupCanBeShownInAnotherWindow(PopupStateWhenTheWindowIsDestroyed popupState)
+	public async Task DestroyingTheWindowDisconnectsThePopupAndTheSamePopupCanBeShownInAnotherWindow(PopupStateWhenTheWindowIsDestroyed popupState)
 	{
 		SetupBuilder();
 		var page = new ContentPage();
 		var pageOfOtherWindow = new ContentPage();
+		var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
 		Border? popupBorder = null;
 
 		await RunInMauiWindowAsync(page, isPagePresentedModally: false, page, async _ =>
 		{
-			var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
-			var popupOpenedTaskCompletionSource = new TaskCompletionSource();
+			// Popup.Opened is raised inside .NET MAUI's NavigatedTo, and the scenario must not go on inside that callback
+			var popupOpenedTaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			popup.Opened += (_, _) => popupOpenedTaskCompletionSource.TrySetResult();
 			var showPopupTask = page.TryShowPopupAsync<string>(popup, new PopupOptions(), token: CancellationToken.None);
 			await AssertionExtensions.AssertEventually(() => page.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
@@ -129,13 +130,15 @@ public partial class PopupTryMethodsTests
 			if (popupState is PopupStateWhenTheWindowIsDestroyed.StillOpen)
 			{
 				Assert.NotNull(popupBorder.Handler);
+				Assert.NotNull(popup.Handler);
 			}
 		});
 
 		Assert.NotNull(popupBorder);
 		Assert.Null(popupBorder.Handler);
+		Assert.Null(popup.Handler);
 
-		await RunInMauiWindowAsync(pageOfOtherWindow, isPagePresentedModally: false, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
+		await RunInMauiWindowAsync(pageOfOtherWindow, isPagePresentedModally: false, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow, popup));
 	}
 
 	// iOS and Mac Catalyst show every window of a test in the one scene of the runner, but each .NET MAUI Window keeps its own modal stack, which is what the lookup of the popup uses

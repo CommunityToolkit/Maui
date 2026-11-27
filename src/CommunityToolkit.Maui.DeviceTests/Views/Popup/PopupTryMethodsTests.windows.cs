@@ -98,13 +98,14 @@ public partial class PopupTryMethodsTests
 		await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
 	}
 
-	// Here the popup is still open when its window closes, so only the product can disconnect the Border that .NET MAUI leaves connected
+	// Here the popup is still open when its window closes, so only the product can disconnect the PopupPage and the Popup that .NET MAUI leaves connected
 	[Fact]
 	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheShellWindowWasClosedWhileItsPopupWasOpen()
 	{
 		SetupBuilder();
 		var shell = PopupDismissedByNavigationScenarios.CreateShell(out var firstPage);
 		var pageOfOtherWindow = new ContentPage();
+		var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
 		Border? popupBorder = null;
 		var objectDisposedExceptions = new ConcurrentQueue<string>();
 
@@ -121,8 +122,8 @@ public partial class PopupTryMethodsTests
 		{
 			await RunInWindowAsync(shell, firstPage, async window =>
 			{
-				var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
-				var popupOpenedTaskCompletionSource = new TaskCompletionSource();
+				// Popup.Opened is raised inside .NET MAUI's NavigatedTo, and the host must not close the window inside that callback
+				var popupOpenedTaskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				popup.Opened += (_, _) => popupOpenedTaskCompletionSource.TrySetResult();
 				_ = shell.TryShowPopupAsync(popup, new PopupOptions(), token: CancellationToken.None);
 				await AssertionExtensions.AssertEventually(() => shell.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
@@ -131,12 +132,14 @@ public partial class PopupTryMethodsTests
 
 				popupBorder = shell.Navigation.ModalStack.OfType<PopupPage>().Single().Content.PopupBorder;
 				Assert.NotNull(popupBorder.Handler);
+				Assert.NotNull(popup.Handler);
 			}, leavePopupPagesConnected: true);
 
 			Assert.NotNull(popupBorder);
 			Assert.Null(popupBorder.Handler);
+			Assert.Null(popup.Handler);
 
-			await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
+			await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow, popup));
 			// No event signals that the fire-and-forget shadow updates are done, so the test waits a fixed time to catch their late exceptions
 			await Task.Delay(TimeSpan.FromSeconds(1));
 		}
@@ -157,7 +160,7 @@ public partial class PopupTryMethodsTests
 		ShellSwitchesToAnotherShellElement
 	}
 
-	// A Shell window is one of the places where .NET MAUI leaves the Border of a removed PopupPage connected; the same popup is then shown in a new window after the first one closed.
+	// A Shell window is one of the places where .NET MAUI leaves a removed PopupPage and its Popup connected; the same popup is then shown in a new window after the first one closed.
 	[Theory]
 	[InlineData(PopupRemoval.CloseAsync)]
 	[InlineData(PopupRemoval.OtherCodePopsTheModalPage)]
@@ -184,6 +187,8 @@ public partial class PopupTryMethodsTests
 		try
 		{
 			await RunInWindowAsync(shell, firstPage, window => ShowAndRemoveAPopupInAShellWindow(shell, window, popup, removal));
+			Assert.Null(popup.Handler);
+
 			await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow, popup));
 			// No event signals that the fire-and-forget shadow updates are done, so the test waits a fixed time to catch their late exceptions
 			await Task.Delay(TimeSpan.FromSeconds(1));
