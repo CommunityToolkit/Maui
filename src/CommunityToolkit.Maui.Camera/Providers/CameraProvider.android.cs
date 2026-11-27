@@ -6,7 +6,7 @@ using Android.Runtime;
 using AndroidX.Camera.Camera2.InterOp;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Lifecycle;
-using AndroidX.Core.Content;
+using CommunityToolkit.Maui.Extensions;
 using Java.Lang;
 
 namespace CommunityToolkit.Maui.Core;
@@ -24,7 +24,7 @@ partial class CameraProvider
 		// The listener runs later on the UI thread, outside of this method: an exception that escaped from it would terminate the app, so its
 		// outcome completes the refresh instead. Get() throws when CameraX cannot initialize, for example when the camera service lists fewer
 		// cameras than the device declares
-		cameraProviderFuture.AddListener(new Runnable(() =>
+		cameraProviderFuture.AddListenerOnMainThread(context, () =>
 		{
 			try
 			{
@@ -101,7 +101,7 @@ partial class CameraProvider
 			{
 				cameraFutureTCS.TrySetException(ex);
 			}
-		}), ContextCompat.GetMainExecutor(context));
+		});
 
 		await cameraFutureTCS.Task.WaitAsync(token);
 	}

@@ -4,6 +4,7 @@ using AndroidX.Camera.Core;
 using AndroidX.Camera.Extensions;
 using AndroidX.Camera.View;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using CameraInfo = CommunityToolkit.Maui.Core.CameraInfo;
 using ICameraProvider = CommunityToolkit.Maui.Core.ICameraProvider;
@@ -805,7 +806,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 	static Task<Java.Lang.Throwable?> ObserveFailureAsync(Google.Common.Util.Concurrent.IListenableFuture future)
 	{
 		var outcome = new TaskCompletionSource<Java.Lang.Throwable?>(TaskCreationOptions.RunContinuationsAsynchronously);
-		future.AddListener(new Java.Lang.Runnable(() =>
+		future.AddListenerOnMainThread(AppContext, () =>
 		{
 			try
 			{
@@ -820,7 +821,7 @@ public class CameraManagerConnectionAndroidTests : CameraAndroidTestBase
 			{
 				outcome.TrySetException(ex);
 			}
-		}), AndroidX.Core.Content.ContextCompat.GetMainExecutor(AppContext));
+		});
 
 		return outcome.Task;
 	}

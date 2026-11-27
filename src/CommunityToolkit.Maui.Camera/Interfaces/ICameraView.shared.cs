@@ -80,6 +80,8 @@ public interface ICameraView : IView
 	/// waits for that answer, for example of a video recording that its command cannot start, does not end the capture.
 	/// An exception that a handler of the view's MediaCaptured event throws does not end the capture: the view reports it through its
 	/// MediaCaptureFailed event, and the capture returns the image.
+	/// An exception that a handler of the view's MediaCaptureFailed event throws is written to the trace output and reported through its
+	/// ErrorOccurred event, and does not change the result.
 	/// </remarks>
 	/// <exception cref="CameraException">Thrown when the platform reports that the image could not be captured, for example when the camera
 	/// preview has not been started; the view raises its MediaCaptureFailed event with the same reason.</exception>
