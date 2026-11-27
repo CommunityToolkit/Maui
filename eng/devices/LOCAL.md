@@ -187,7 +187,7 @@ Answer a prompt when one shows. To run the permission-gated tests, give the app 
 
 ### iOS simulator: your own simulator gets no grants
 
-Without `-Udid`, `ios.ps1` creates a simulator, grants the camera, the microphone and speech recognition to the test app on it, and deletes it afterwards. With `-Udid <simulator>` it grants nothing on your simulator, so the tests that need these permissions skip until the app has them. Grant them yourself before the run, once per simulator:
+Without `-Udid`, `ios.ps1` creates a simulator, grants the camera, the microphone and speech recognition to the test app on it, checks every grant in the simulator's TCC database (a missing one fails the run with 88), and deletes it afterwards. With `-Udid <simulator>` it grants nothing on your simulator, so the tests that need these permissions skip until the app has them. Grant them yourself before the run, once per simulator:
 
 ```bash
 xcrun simctl privacy <udid> grant camera com.communitytoolkit.maui.devicetests
