@@ -4,6 +4,8 @@ using ObjCRuntime;
 
 namespace CommunityToolkit.Maui.DeviceTests;
 
+// The real-AVFoundation counterpart of CameraManagerAppleRecordingTests. None of these tests needs a camera (the session gets an audio input and a
+// movie output, but no video input), so they run on the iOS simulator and in the Mac Catalyst job, which declares Camera missing.
 // Asking for the camera permission while it is NotDetermined shows a prompt that blocks a headless run, so the CI grants the camera
 // and microphone first (ios.ps1, the Mac Catalyst job) and requires both: a lost grant fails these tests instead of skipping them.
 [Category(TestCategory.CameraApple)]

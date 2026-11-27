@@ -121,8 +121,8 @@ public class CameraManagerAppleCaptureTests : CameraHandlerTestBase
 	public async Task StartAndStopVideoRecordingCopiesTheRecordedMovieIntoTheStream()
 	{
 		var microphoneStatus = AVCaptureDevice.GetAuthorizationStatus(AVAuthorizationMediaType.Audio);
-		DeviceTestCapabilities.Require(DeviceTestCapabilities.MicrophonePermission, microphoneStatus is not AVAuthorizationStatus.NotDetermined,
-			"Starting a recording creates an audio input, which would show the microphone permission prompt that a headless run cannot answer.");
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.MicrophonePermission, microphoneStatus is AVAuthorizationStatus.Authorized,
+			$"Needs the microphone permission to be granted (it is {microphoneStatus}); starting a recording would otherwise show a prompt or record without audio. Grant it with 'xcrun simctl privacy <udid> grant microphone <bundle id>' on a simulator.");
 
 		await RunWithConnectedCameraAsync(async (scope, _) =>
 		{

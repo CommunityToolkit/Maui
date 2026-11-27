@@ -1495,16 +1495,16 @@ public abstract partial class SpeechImplementationTestsBase
 	}
 
 	[Fact]
-	public async Task RequestPermissionsReportsTheDecidedAuthorizationStatusOfTheSystem()
+	public async Task RequestPermissionsReturnsTrueWhenTheRealSystemAlreadyAuthorizedSpeechRecognition()
 	{
 		var status = SFSpeechRecognizer.AuthorizationStatus;
-		DeviceTestCapabilities.Require(DeviceTestCapabilities.SpeechRecognitionPermission, status is not SFSpeechRecognizerAuthorizationStatus.NotDetermined,
-			"The speech recognition authorization of this app is not decided yet: asking the real system would show a prompt that a headless run cannot answer (and that stays on a simulator). The mapping of every status is tested against the stubbed system.");
+		DeviceTestCapabilities.Require(DeviceTestCapabilities.SpeechRecognitionPermission, status is SFSpeechRecognizerAuthorizationStatus.Authorized,
+			$"Needs the speech recognition permission to be granted (it is {status}); while it is undecided, asking the real system shows a prompt that a headless run cannot answer (and that stays on a simulator). The mapping of every status is tested against the stubbed system.");
 		var speech = CreateSpeech();
 
 		var granted = await speech.RequestPermissions();
 
-		Assert.Equal(status is SFSpeechRecognizerAuthorizationStatus.Authorized, granted);
+		Assert.True(granted);
 
 		await speech.DisposeAsync();
 	}

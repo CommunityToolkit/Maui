@@ -22,6 +22,7 @@ static class ListenableFutureExtensions
 			}
 			finally
 			{
+				// For the listener's own Get(), which has the same defect: capturing the future is not enough, since the closure can be dead during that JNI call
 				GC.KeepAlive(future);
 			}
 		});
