@@ -396,6 +396,18 @@ partial class CameraManager
 		RebuildImageCapture();
 		RebuildVideoCapture();
 	}
+	
+	partial void AddPlatformScenario(PlatformCameraScenario scenario)
+	{
+		scenarios.Add(scenario);
+		InitializeUseCases();
+	}
+
+	partial void RemovePlatformScenario(PlatformCameraScenario scenario)
+	{
+		scenarios.Remove(scenario);
+		InitializeUseCases();
+	}
 
 	void RebuildCameraPreview()
 	{
@@ -520,11 +532,20 @@ partial class CameraManager
 
 		if (sessionMode is CaptureSessionMode.Photo)
 		{
-			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture));
+			var useCases = scenarios.OfType<PlatformCameraScenario>().Select(s => s.UseCase).ToList();
+			useCases.Add(cameraPreview);
+			useCases.Add(imageCapture);
+
+			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, [..useCases]));
 		}
 		else if (videoCapture is not null)
 		{
-			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, cameraPreview, imageCapture, videoCapture));
+			var useCases = scenarios.OfType<PlatformCameraScenario>().Select(s => s.UseCase).ToList();
+			useCases.Add(cameraPreview);
+			useCases.Add(imageCapture);
+			useCases.Add(videoCapture);
+
+			OnCameraBound(BindCamera(processCameraProvider, cameraSelector, [..useCases]));
 		}
 	}
 
