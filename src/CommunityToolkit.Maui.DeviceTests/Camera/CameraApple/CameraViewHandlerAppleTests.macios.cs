@@ -765,6 +765,41 @@ public class CameraViewHandlerAppleTests : CameraHandlerTestBase
 	}
 
 	[Fact]
+	public async Task CaptureImageReturnsThePhotoAndRaisesMediaCaptureFailedAndErrorOccurredOnceWhenBothTheMediaCapturedAndTheMediaCaptureFailedHandlersThrow()
+	{
+		SetupBuilder();
+		byte[] jpegBytes = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0xFF, 0xD9];
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var view = new CameraView();
+			var handler = CreateHandler<AppleNoConnectCameraViewHandler>(view);
+			var access = new CameraManagerAccessor(handler.CameraManager);
+			access.PhotoOutput = new FakePhotoOutput
+			{
+				OnCapture = (fakeOutput, completion) => completion.DidFinishProcessingPhoto(fakeOutput, new FakeCapturePhoto(() => NSData.FromArray(jpegBytes)), null!)
+			};
+			using var errors = new CameraErrorRecorder(view);
+			var recorder = new AppleMediaRecorder(view);
+			var throwingSubscriber = new AppleThrowingMediaCapturedSubscriber(view);
+			var throwingFailureSubscriber = new AppleThrowingMediaCaptureFailedSubscriber(view);
+
+			var stream = await view.CaptureImage(CancellationToken.None);
+
+			using var copy = new MemoryStream();
+			stream.CopyTo(copy);
+			AotSafeAssert.SequenceEqual(jpegBytes, copy.ToArray());
+			Assert.Equal([AppleThrowingMediaCapturedSubscriber.FailureMessage], recorder.Failures);
+			Assert.Same(AppleThrowingMediaCaptureFailedSubscriber.ThrownException, Assert.Single(errors.Errors));
+			Assert.Same(stream, Assert.Single(recorder.Captured));
+			GC.KeepAlive(recorder);
+			GC.KeepAlive(throwingSubscriber);
+			GC.KeepAlive(throwingFailureSubscriber);
+			DisconnectAndRelease(view);
+		});
+	}
+
+	[Fact]
 	public async Task CaptureImageReturnsThePhotoAndRaisesMediaCaptureFailedOnceWhenAMediaCapturedHandlerThrows()
 	{
 		SetupBuilder();
