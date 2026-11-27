@@ -53,6 +53,10 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 	readonly List<string> temporaryFiles = [];
 	bool usesForegroundService;
 
+	// The manager logs artwork that it cannot load as a warning, which is how the failure branch becomes observable
+	protected void SetupProbeBuilder(CapturingLoggerFactory loggerFactory) =>
+		SetupProbeBuilder(configureBuilder: builder => builder.Services.AddSingleton<ILoggerFactory>(loggerFactory));
+
 	protected void SetupProbeBuilder(bool isAndroidForegroundServiceEnabled = false, Action<MediaElementOptions>? configureMediaElementOptions = null, Action<MauiAppBuilder>? configureBuilder = null)
 	{
 		usesForegroundService = isAndroidForegroundServiceEnabled || configureMediaElementOptions is not null;
@@ -210,13 +214,34 @@ public abstract class MediaElementAndroidTestBase : MediaElementHandlerTestBase
 		return output.ToArray();
 	}
 
-	protected async Task<string> CopyAssetToCacheAsync(string asset)
+	protected async Task<string> CopyAssetToCacheAsync(string asset, string? fileNamePrefix = null)
 	{
-		var path = Path.Combine(FileSystem.CacheDirectory, $"{Guid.NewGuid():N}_{Path.GetFileName(asset)}");
+		var path = Path.Combine(FileSystem.CacheDirectory, $"{fileNamePrefix ?? Guid.NewGuid().ToString("N")}_{Path.GetFileName(asset)}");
 		await File.WriteAllBytesAsync(path, await ReadAssetAsync(asset));
 		temporaryFiles.Add(path);
 		return path;
 	}
+
+	protected static string[] GetOpenFileTargets() =>
+		Directory.GetFiles("/proc/self/fd")
+			.Select(descriptor =>
+			{
+				try
+				{
+					return new FileInfo(descriptor).LinkTarget;
+				}
+				catch (IOException)
+				{
+					// The descriptor was closed while the directory was read.
+					return null;
+				}
+			})
+			.OfType<string>()
+			.ToArray();
+
+	protected static byte[] GetArtwork(MediaElement mediaElement) =>
+		GetPlayer(mediaElement).CurrentMediaItem!.MediaMetadata!.ArtworkData?.ToArray() ?? [];
+
 
 	/// <summary>
 	/// Names the survivors itself because AssertionExtensions.WaitForGC describes a survivor with its ToString(), which throws
@@ -436,6 +461,8 @@ public sealed class CapturingLoggerFactory : ILoggerFactory
 			}
 		}
 	}
+
+	public IReadOnlyList<string> Messages => [.. Entries.Select(entry => entry.Message)];
 
 	public ILogger CreateLogger(string categoryName) => new CapturingLogger(this, categoryName);
 

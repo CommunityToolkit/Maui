@@ -35,7 +35,8 @@ public partial class MediaElementHandler
 		[nameof(MediaElement.PlayRequested)] = MapPlayRequested,
 		[nameof(MediaElement.PauseRequested)] = MapPauseRequested,
 		[nameof(MediaElement.SeekRequested)] = MapSeekRequested,
-		[nameof(MediaElement.StopRequested)] = MapStopRequested
+		[nameof(MediaElement.StopRequested)] = MapStopRequested,
+		[nameof(MediaElement.MetadataArtworkUpdateRequested)] = MapMetadataArtworkUpdateRequested
 	};
 
 	/// <summary>
@@ -270,6 +271,25 @@ public partial class MediaElementHandler
 		ArgumentNullException.ThrowIfNull(handler);
 
 		handler.MediaManager?.Stop();
+	}
+
+	/// <summary>
+	/// Maps a change of <see cref="MediaElement.MetadataArtworkSource"/>, or of a property of its <see cref="MediaSource"/>, between the abstract
+	/// <see cref="MediaElement"/> and platform counterpart: the loaded media shows the new artwork.
+	/// </summary>
+	/// <param name="handler">The associated handler.</param>
+	/// <param name="mediaElement">The associated <see cref="MediaElement"/> instance.</param>
+	/// <param name="args">The associated event arguments for this request.</param>
+	/// <remarks><paramref name="args"/> is not used. Artwork that cannot be loaded is logged and left out, so the update throws nothing.</remarks>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
+	public static void MapMetadataArtworkUpdateRequested(MediaElementHandler handler, MediaElement mediaElement, object? args)
+	{
+		ArgumentNullException.ThrowIfNull(handler);
+
+		if (handler.MediaManager is not null)
+		{
+			UpdateSource(handler.MediaManager.UpdateMetadataArtwork());
+		}
 	}
 
 	// A property mapper cannot await MediaManager.UpdateSource. The update reports a source that it cannot apply, and the exceptions of the event

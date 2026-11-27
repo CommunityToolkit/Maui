@@ -120,8 +120,15 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	public static readonly BindableProperty MetadataArtistProperty = BindableProperty.Create(nameof(MetadataArtist), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtist);
 
 	/// <summary>
+	/// Bindable property for the <see cref="MetadataArtworkSource"/> property.
+	/// </summary>
+	public static readonly BindableProperty MetadataArtworkSourceProperty = BindableProperty.Create(nameof(MetadataArtworkSource), typeof(MediaSource), typeof(MediaElement), MediaElementDefaults.MetadataArtworkSource,
+		propertyChanging: OnMetadataArtworkSourcePropertyChanging, propertyChanged: OnMetadataArtworkSourcePropertyChanged);
+
+	/// <summary>
 	/// Bindable property for the <see cref="MetadataArtworkUrl"/> property.
 	/// </summary>
+	[Obsolete(MetadataArtworkResolver.MetadataArtworkUrlObsoleteMessage)]
 	public static readonly BindableProperty MetadataArtworkUrlProperty = BindableProperty.Create(nameof(MetadataArtworkUrl), typeof(string), typeof(MediaElement), MediaElementDefaults.MetadataArtworkUrl);
 
 	// An AsyncLocal follows the source update through its awaits (Android and Windows), and does not reach what runs outside of it: the events that
@@ -213,6 +220,12 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	internal event EventHandler StopRequested
+	{
+		add => eventManager.AddEventHandler(value);
+		remove => eventManager.RemoveEventHandler(value);
+	}
+
+	internal event EventHandler MetadataArtworkUpdateRequested
 	{
 		add => eventManager.AddEventHandler(value);
 		remove => eventManager.RemoveEventHandler(value);
@@ -361,8 +374,56 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	}
 
 	/// <summary>
-	/// Gets or sets the <see cref="MetadataArtworkUrl"/> of the media.
+	/// Gets or sets the artwork of the media: the image that the system media controls show (the media notification on Android,
+	/// Now Playing on iOS and Mac Catalyst, the system media transport controls on Windows) and the poster shown for audio.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// It takes the same sources as <see cref="Source"/>: a <see cref="UriMediaSource"/> with an <c>http</c> or <c>https</c> URI (its
+	/// <see cref="UriMediaSource.HttpHeaders"/> are sent with the download), a <see cref="FileMediaSource"/> with the full path (or file URI)
+	/// of a local file, a <see cref="ResourceMediaSource"/> for a file of the app package, for example <c>MediaSource.FromResource("artwork.png")</c>
+	/// for <c>Resources/Raw/artwork.png</c>, or a <see cref="StreamMediaSource"/> with the image. In XAML a string converts as for
+	/// <see cref="Source"/>: <c>embed://</c> for a file of the app package, <c>filesystem://</c> for a file, otherwise an absolute URI.
+	/// Any other string is read as a file path, so write a file of the app package as <c>embed://</c>
+	/// (<see cref="MetadataArtworkUrl"/> reads such a relative path as a file of the app package).
+	/// </para>
+	/// <para>
+	/// A <see cref="StreamMediaSource"/> that can seek is read from its start each time the artwork is loaded, and its position is left as it was;
+	/// one that cannot seek is read from its position to its end, so it gives the artwork once. The stream must not be that of
+	/// <see cref="Source"/>, which the player reads: such an artwork is left out.
+	/// </para>
+	/// <para>
+	/// When it is not <see langword="null"/>, it is used and <see cref="MetadataArtworkUrl"/> is ignored, whichever of the two was set
+	/// first; set it back to <see langword="null"/> to use <see cref="MetadataArtworkUrl"/> again. Artwork that cannot be loaded is left
+	/// out, logged as a warning, and never makes the media fail. The artwork is loaded with the media, and loaded again when this property,
+	/// or a property of its <see cref="MediaSource"/>, changes while the media is loaded: set it before <see cref="Source"/> to give the
+	/// next media its artwork.
+	/// </para>
+	/// </remarks>
+	[TypeConverter(typeof(MediaSourceConverter))]
+	public MediaSource? MetadataArtworkSource
+	{
+		get => (MediaSource?)GetValue(MetadataArtworkSourceProperty);
+		set => SetValue(MetadataArtworkSourceProperty, value);
+	}
+
+	/// <summary>
+	/// Gets or sets the URL of the artwork of the media.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// Use <see cref="MetadataArtworkSource"/> instead. This property still works: it is used while <see cref="MetadataArtworkSource"/>
+	/// is <see langword="null"/>, and setting it never changes <see cref="MetadataArtworkSource"/>.
+	/// </para>
+	/// <para>
+	/// The URL is read as in earlier releases: an <c>http</c> or <c>https</c> URL, a file URI or the full path of a local file, a path
+	/// relative to the app package (<c>images/cover.png</c> for <c>Resources/Raw/images/cover.png</c>), and on Windows an <c>ms-appx</c>
+	/// or <c>ms-appdata</c> URI. It is loaded like <see cref="MetadataArtworkSource"/>, so local files and files of the app package
+	/// work on every platform. As in earlier releases, it is read when the media is loaded: unlike a change of
+	/// <see cref="MetadataArtworkSource"/>, a change of this property does not load the artwork of the loaded media again.
+	/// </para>
+	/// </remarks>
+	[Obsolete(MetadataArtworkResolver.MetadataArtworkUrlObsoleteMessage)]
 	public string MetadataArtworkUrl
 	{
 		get => (string)GetValue(MetadataArtworkUrlProperty);
@@ -607,6 +668,11 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 			SetInheritedBindingContext(Source, BindingContext);
 		}
 
+		if (MetadataArtworkSource is not null)
+		{
+			SetInheritedBindingContext(MetadataArtworkSource, BindingContext);
+		}
+
 		base.OnBindingContextChanged();
 	}
 
@@ -642,6 +708,26 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 
 		mediaElement.InvalidateMeasure();
 		mediaElement.InitializeTimer();
+	}
+
+	static void OnMetadataArtworkSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+
+		((MediaSource?)oldValue)?.SourceChanged -= mediaElement.OnMetadataArtworkSourceChanged;
+	}
+
+	static void OnMetadataArtworkSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var mediaElement = (MediaElement)bindable;
+
+		if (newValue is MediaSource artworkSource)
+		{
+			artworkSource.SourceChanged += mediaElement.OnMetadataArtworkSourceChanged;
+			SetInheritedBindingContext(artworkSource, mediaElement.BindingContext);
+		}
+
+		mediaElement.RequestMetadataArtworkUpdate();
 	}
 
 	static void OnSourcePropertyChanging(BindableObject bindable, object oldValue, object newValue)
@@ -707,6 +793,17 @@ public partial class MediaElement : View, IMediaElement, IDisposable
 	{
 		OnPropertyChanged(SourceProperty.PropertyName);
 		InvalidateMeasure();
+	}
+
+	// A property of the artwork's MediaSource changed (the Uri of a UriMediaSource, for example): the loaded media shows the new artwork
+	void OnMetadataArtworkSourceChanged(object? sender, EventArgs eventArgs) => RequestMetadataArtworkUpdate();
+
+	// A command, not a property mapping: the handler maps every property when it connects, while the media that it then loads reads its artwork
+	// itself, so a mapping would load the same artwork twice
+	void RequestMetadataArtworkUpdate()
+	{
+		RaiseEvent(EventArgs.Empty, nameof(MetadataArtworkUpdateRequested));
+		Handler?.Invoke(nameof(MetadataArtworkUpdateRequested));
 	}
 
 	void OnPositionChanged(MediaPositionChangedEventArgs mediaPositionChangedEventArgs) => RaiseEvent(mediaPositionChangedEventArgs, nameof(PositionChanged));

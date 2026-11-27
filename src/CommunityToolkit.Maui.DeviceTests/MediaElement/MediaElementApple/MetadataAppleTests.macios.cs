@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // These tests pin the obsolete MetadataArtworkUrl, which keeps working
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -22,14 +23,16 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 	const string longAudioName = "long";
 	const string longAudioResource = "avplayer/long.m4a";
 
-	static readonly MethodInfo getImage = typeof(Metadata).GetMethod("GetImage", BindingFlags.NonPublic | BindingFlags.Static)!;
+	static readonly MethodInfo loadArtworkImage = typeof(Metadata).GetMethod("LoadArtworkImage", BindingFlags.NonPublic | BindingFlags.Static)!;
 
 	static UIImage DefaultImage => (UIImage)typeof(Metadata).GetField("defaultUIImage", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
 
 	static MPRemoteCommandHandlerStatus Invoke(Metadata metadata, string handlerName, MPRemoteCommandEvent? commandEvent) =>
 		(MPRemoteCommandHandlerStatus)typeof(Metadata).GetMethod(handlerName, BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(metadata, [commandEvent])!;
 
-	static UIImage InvokeGetImage(string? url) => (UIImage)getImage.Invoke(null, [url])!;
+	// The MediaElement is created on the calling thread, so callers run this on the main thread
+	static UIImage LoadArtworkFromUrl(string? url) =>
+		(UIImage)loadArtworkImage.Invoke(null, [Metadata.ResolveArtworkUrl(new MediaElement { MetadataArtworkUrl = url! })])!;
 
 	static void AssertDefaultNowPlayingInfo(MPNowPlayingInfo? info)
 	{
@@ -358,7 +361,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		using var server = new AppleLoopbackHttpServer();
 		server.Add("/art.png", File.ReadAllBytes(BundlePath("poster", "png")), "image/png");
 
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(server.GetUri("/art.png").AbsoluteUri));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(server.GetUri("/art.png").AbsoluteUri));
 
 		Assert.Equal(new CGSize(40, 30), image.Size);
 		Assert.NotSame(DefaultImage, image);
@@ -372,7 +375,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		server.Add("/art.png", File.ReadAllBytes(BundlePath("poster", "png")), "image/png");
 		var url = server.GetUri("/art.png").AbsoluteUri.Replace("http://", "HTTP://", StringComparison.Ordinal);
 
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(url));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(url));
 
 		Assert.Equal(new CGSize(40, 30), image.Size);
 	}
@@ -383,33 +386,27 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 	[InlineData("file:///art.png")]
 	[InlineData("ftp://127.0.0.1/art.png")]
 	[InlineData("ht://127.0.0.1/art.png")]
-	public async Task ArtworkWithoutAnHttpUrlIsNotLoaded(string url)
+	public async Task ArtworkUrlThatCannotBeLoadedIsTheDefaultImage(string url)
 	{
 		SetupApple();
 
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(url));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(url));
 
 		Assert.Same(DefaultImage, image);
 	}
 
+	// 17.0.0 loaded only http(s) artwork in Now Playing: a local file now loads like it does through MetadataArtworkSource
 	[Fact]
-	public async Task ArtworkOfALoadableFileUrlIsNotLoaded()
+	public async Task ArtworkOfALoadableFileUrlIsLoaded()
 	{
 		SetupApple();
 
-		// The rows above cannot be loaded anyway; this file URL can (NSData reads it and UIImage decodes the 40x30 poster), so only the
-		// http(s) scheme check keeps GetImage from loading it.
 		var url = BundleFileUrl("poster", "png");
-		var (loadable, image) = await InvokeOnMainThreadAsync(() =>
-		{
-			using var data = NSData.FromUrl(new NSUrl(url));
-			using var decoded = data is null ? null : UIImage.LoadFromData(data);
-			return (decoded?.Size, InvokeGetImage(url));
-		});
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(url));
 
 		Assert.StartsWith("file://", url, StringComparison.Ordinal);
-		AotSafeAssert.Equal(new CGSize(40, 30), loadable);
-		Assert.Same(DefaultImage, image);
+		Assert.Equal(new CGSize(40, 30), image.Size);
+		Assert.NotSame(DefaultImage, image);
 	}
 
 	[Fact]
@@ -417,7 +414,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 	{
 		SetupApple();
 
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(null));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(null));
 
 		Assert.Same(DefaultImage, image);
 	}
@@ -428,7 +425,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		SetupApple();
 
 		// Nothing listens on the port: NSData.FromUrl returns null and UIImage.LoadFromData(null) throws.
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(UnreachableUrl()));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(UnreachableUrl()));
 
 		Assert.Same(DefaultImage, image);
 	}
@@ -440,7 +437,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		using var server = new AppleLoopbackHttpServer();
 
 		// The server answers 404 with an empty body, which UIImage cannot decode: LoadFromData returns null.
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(server.GetUri("/missing.png").AbsoluteUri));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(server.GetUri("/missing.png").AbsoluteUri));
 
 		Assert.Same(DefaultImage, image);
 		Assert.Contains(server.Requests, request => request.Path == "/missing.png");
@@ -453,7 +450,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 		using var server = new AppleLoopbackHttpServer();
 		server.Add("/art.png", "This is not an image."u8.ToArray(), "image/png");
 
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage(server.GetUri("/art.png").AbsoluteUri));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl(server.GetUri("/art.png").AbsoluteUri));
 
 		Assert.Same(DefaultImage, image);
 		Assert.Contains(server.Requests, request => request.Path == "/art.png");
@@ -464,7 +461,7 @@ public class MetadataAppleTests : AppleMediaElementTestBase
 	{
 		SetupApple();
 
-		var image = await InvokeOnMainThreadAsync(() => InvokeGetImage("http://[not a host/art.png"));
+		var image = await InvokeOnMainThreadAsync(() => LoadArtworkFromUrl("http://[not a host/art.png"));
 
 		Assert.Same(DefaultImage, image);
 	}
