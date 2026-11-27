@@ -39,4 +39,19 @@ public union PopupResultOrException(IPopupResult, Exception);
 /// <para>The Try methods never return a default value. A default <see cref="PopupResultOrException{T}"/> holds a <see langword="null"/> <c>Value</c>, so add a <see langword="null"/> arm when a value can be default, such as an unassigned field.</para>
 /// <para>Pattern matching on the union needs C# 15, the default for net11.0. On an older <c>LangVersion</c>, switch on <c>Value</c> and add a discard (<c>_</c>) arm.</para>
 /// </remarks>
-public union PopupResultOrException<T>(IPopupResult<T>, Exception);
+public union PopupResultOrException<T>(IPopupResult<T>, Exception)
+{
+	/// <summary>
+	/// Converts a <see cref="PopupResultOrException{T}"/> to a <see cref="PopupResultOrException"/>, so a method that returns the non-generic union can return the generic one.
+	/// </summary>
+	/// <param name="resultOrException">The generic union to convert.</param>
+	public static implicit operator PopupResultOrException(PopupResultOrException<T> resultOrException)
+	{
+		return resultOrException.Value switch
+		{
+			IPopupResult popupResult => popupResult,
+			Exception exception => exception,
+			_ => default
+		};
+	}
+}
