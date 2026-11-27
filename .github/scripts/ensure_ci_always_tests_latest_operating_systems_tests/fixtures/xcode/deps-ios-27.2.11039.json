@@ -1,0 +1,15 @@
+{
+  "microsoft.net.sdk.ios": {
+    "workload": {
+      "alias": [ "ios" ],
+      "version": "27.2.11039"
+    },
+    "xcode": {
+      "version": "[27.2,)",
+      "recommendedVersion": "27.2"
+    },
+    "sdk": {
+      "version": "27.2"
+    }
+  }
+}
