@@ -122,6 +122,18 @@ static class PopupTryMethodsOnPageScenarios
 		Assert.Empty(pageOfFirstWindow.Navigation.ModalStack);
 	}
 
+	public static async Task ShowAndCloseAPopupOnAPage(ContentPage page)
+	{
+		var showPopupTask = page.TryShowPopupAsync<string>(CreatePopup(), new PopupOptions(), token: CancellationToken.None);
+		await WaitForPopupPages(page, 1);
+
+		var closeResultOrException = await page.TryClosePopupAsync("Closed").WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+		Assert.IsType<IPopupResult<string>>(closeResultOrException.Value, exactMatch: false);
+		Assert.IsType<IPopupResult<string>>(showResultOrException.Value, exactMatch: false);
+	}
+
 	static Task WaitForPopupPages(ContentPage page, int count) =>
 		AssertionExtensions.AssertEventually(() => page.Navigation.ModalStack.OfType<PopupPage>().Count() == count, timeout: timeout, message: "The popup was never shown.");
 

@@ -41,4 +41,16 @@ public partial class PopupTryMethodsTests
 	[Fact]
 	public Task TryClosePopupAsyncClosesOnlyThePopupOfItsOwnWindow() =>
 		RunInTwoWindowsAsync(PopupTryMethodsOnPageScenarios.TryClosePopupAsyncClosesOnlyThePopupOfItsOwnWindow);
+
+	// Every popup shows the same default Shadow; the Border of a closed popup must not keep mapping it against the service scope of a window that was closed
+	[Fact]
+	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheWindowThatShowedAPopupWasClosed()
+	{
+		SetupBuilder();
+		var pageOfClosedWindow = new ContentPage();
+		var pageOfOtherWindow = new ContentPage();
+
+		await RunInWindowAsync(pageOfClosedWindow, pageOfClosedWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfClosedWindow));
+		await RunInWindowAsync(pageOfOtherWindow, pageOfOtherWindow, _ => PopupTryMethodsOnPageScenarios.ShowAndCloseAPopupOnAPage(pageOfOtherWindow));
+	}
 }

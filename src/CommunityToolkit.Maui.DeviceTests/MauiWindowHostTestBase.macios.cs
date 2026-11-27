@@ -10,7 +10,7 @@ public abstract partial class MauiWindowHostTestBase
 {
 	static readonly TimeSpan pageLoadTimeout = TimeSpan.FromSeconds(10);
 
-	// The runner's own window is the only one that has a scene before a test opens a window of its own
+	// The scene of the runner is the only connected scene; the windows of the tests are created in it
 	static UIWindowScene RunnerScene =>
 		UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>().FirstOrDefault()
 		?? throw new InvalidOperationException("The runner has no connected window scene.");
@@ -21,7 +21,7 @@ public abstract partial class MauiWindowHostTestBase
 		{
 			var previousApplication = Application.Current;
 			var scene = RunnerScene;
-			var platformWindow = new UIWindow(scene) { Frame = scene.CoordinateSpace.Bounds };
+			var platformWindow = new UIWindow(scene);
 			Window? window = null;
 			bool isCreated = false, isActivated = false;
 

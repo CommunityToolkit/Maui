@@ -77,6 +77,29 @@ public class PopupPageTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task Close_ShouldReleaseTheSharedShadowAndShapeFromTheBorder()
+	{
+		// Arrange
+		var popupOptions = new PopupOptions();
+		var popupPage = new PopupPage(new ContentView(), popupOptions);
+		var border = popupPage.Content.PopupBorder;
+		if (Application.Current?.Windows[0].Page?.Navigation is not INavigation navigation)
+		{
+			throw new InvalidOperationException("Unable to locate Navigation page");
+		}
+
+		await navigation.PushModalAsync(popupPage);
+		Assert.Same(popupOptions.Shadow, border.Shadow);
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Null(border.Shadow);
+		Assert.Null(border.StrokeShape);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task Close_ShouldThrowOperationCanceledException_WhenTokenIsCancelled_NavigationModalStackShouldStillContainPopupPage()
 	{
 		// Arrange

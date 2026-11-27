@@ -404,6 +404,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	void ReleasePopupResources()
 	{
 		Content.TapGestureGestureOverlay.GestureRecognizers.Clear();
+		Content.ReleaseSharedPopupOptionValues();
 		popup.PropertyChanged -= HandlePopupPropertyChanged;
 		if (popupOptions is BindableObject bindablePopupOptions)
 		{
@@ -732,6 +733,17 @@ partial class PopupPage : ContentPage, IQueryAttributable
 
 		public Border PopupBorder { get; }
 		public PopupGestureOverlay TapGestureGestureOverlay { get; }
+
+		// The default Shadow and Shape are single static instances shared by every PopupPage. While this Border holds them, they notify its handler for as long as the Border lives.
+		// .NET MAUI on Windows disconnects only the handler of a popped modal page, not its children, so that handler could map a later PopupPage's shadow against a disposed window service scope.
+		public void ReleaseSharedPopupOptionValues()
+		{
+			PopupBorder.RemoveBinding(Border.ShadowProperty);
+			PopupBorder.RemoveBinding(Border.StrokeShapeProperty);
+			// ClearValue leaves the value of a removed binding set, so the values are replaced explicitly
+			PopupBorder.SetValue(Border.ShadowProperty, null);
+			PopupBorder.SetValue(Border.StrokeShapeProperty, null);
+		}
 
 		protected override ILayoutManager CreateLayoutManager() => new PopupPageLayoutManager(this);
 
