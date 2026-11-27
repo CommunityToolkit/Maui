@@ -69,7 +69,7 @@ public partial class PopupDismissedByNavigationTests
 			host.Window.Page = new ContentPage();
 			var result = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5));
 
-			Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+			Assert.True(result.WasDismissed);
 			Assert.Equal(1, closedCount);
 		});
 

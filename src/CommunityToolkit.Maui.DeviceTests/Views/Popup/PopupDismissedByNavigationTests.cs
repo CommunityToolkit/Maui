@@ -25,7 +25,7 @@ public partial class PopupDismissedByNavigationTests : MauiWindowHostTestBase
 			popupPage.PopupClosed += (_, result) =>
 			{
 				popupPageClosedCount++;
-				Assert.True(result.WasDismissedByTappingOutsideOfPopup);
+				Assert.True(result.WasDismissed);
 			};
 			var window = new Window(popupPage);
 
