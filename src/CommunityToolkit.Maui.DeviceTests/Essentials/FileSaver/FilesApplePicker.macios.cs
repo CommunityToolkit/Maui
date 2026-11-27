@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Foundation;
-using ObjCRuntime;
 using Microsoft.Maui.ApplicationModel;
+using ObjCRuntime;
 using UIKit;
 
 namespace CommunityToolkit.Maui.DeviceTests;
