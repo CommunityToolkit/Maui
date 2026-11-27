@@ -113,7 +113,7 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 			if (windowReadyOrTimeout != WindowReady)
 			{
 				// Starting anyway fails only the tests that need an active scene, instead of hanging until XHarness's launch timeout.
-				Console.WriteLine(FormattableString.Invariant($"The test window's scene was not active after {windowReadyTimeout.TotalSeconds} s (activation state: {WindowSceneActivationStateAtTestStart}). Starting the tests anyway."));
+				Console.WriteLine(FormattableString.Invariant($"The test window's scene was not active after {windowReadyTimeout.TotalSeconds} s (activation state: {WindowSceneActivationStateAtTestStart?.ToString() ?? "no scene connected"}). Starting the tests anyway."));
 			}
 		}
 
