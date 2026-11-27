@@ -213,10 +213,10 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.IsType<PopupPage>(modalPage);
 
 		// Act
-		await navigation.ClosePopupAsync(TestContext.Current.CancellationToken);
+		await shellNavigation.ClosePopupAsync(TestContext.Current.CancellationToken);
 
 		// Assert
-		Assert.Empty(navigation.ModalStack);
+		Assert.Empty(shellNavigation.ModalStack);
 	}
 
 	[Fact]

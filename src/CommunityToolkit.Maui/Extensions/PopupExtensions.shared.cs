@@ -748,9 +748,7 @@ public static class PopupExtensions
 
 	static PopupPage GetMostRecentPopupPage(in INavigation navigation)
 	{
-		var currentVisibleModalPage = Shell.Current is null
-			? navigation.ModalStack.LastOrDefault()
-			: Shell.Current.Navigation.ModalStack.LastOrDefault();
+		var currentVisibleModalPage = navigation.ModalStack.LastOrDefault();
 
 		if (currentVisibleModalPage is null)
 		{
