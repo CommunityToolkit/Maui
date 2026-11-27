@@ -489,13 +489,16 @@ public class PopupServiceTests : BaseViewTest
 	}
 
 	[Fact]
-	public void Constructor_Default_ShouldCreateInstance_WhenPlatformServicesAvailable()
+	public void Constructor_Default_ShouldResolvePopupsFromPlatformApplicationServices()
 	{
-		// Act
+		// Arrange
 		var popupService = new PopupService();
 
+		// Act
+		popupService.ShowPopup<MockPopup>(navigation);
+
 		// Assert
-		Assert.NotNull(popupService);
+		Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
