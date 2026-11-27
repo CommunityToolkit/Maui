@@ -35,7 +35,7 @@ public abstract partial class PopupWindowHostTestBase
 			RunInWindowAsync(pageOfSecondWindow, pageOfSecondWindow, _ => scenario(pageOfFirstWindow, pageOfSecondWindow)));
 	}
 
-	// With leavePopupPagesConnected, the product is the only one that disconnects the handlers of a PopupPage that is still open when the window closes.
+	// With leavePopupPagesConnected, the host does not disconnect a PopupPage that is still open when the window closes, so only the product disconnects the Border of the popup.
 	protected Task RunInWindowAsync(Page root, ContentPage loadedPage, Func<Window, Task> scenario, bool leavePopupPagesConnected = false) =>
 		InvokeOnMainThreadAsync(async () =>
 		{

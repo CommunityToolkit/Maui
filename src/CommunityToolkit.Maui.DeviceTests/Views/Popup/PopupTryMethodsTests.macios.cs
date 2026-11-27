@@ -86,7 +86,8 @@ public partial class PopupTryMethodsTests
 		StillOpen
 	}
 
-	// The window of the host is built on the MauiContext of the test, so Destroying does not dispose anything here: only the handler of the Border shows that the product disconnected it.
+	// .NET MAUI disconnects the handlers of a popped modal page itself on iOS and Mac Catalyst, so only the StillOpen row proves the product disconnects the Border at Destroying.
+	// The window of the host is built on the MauiContext of the test, so Destroying does not dispose anything here: only the handler of the Border shows it.
 	[Theory]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.ClosedWithTryClosePopupAsync)]
 	[InlineData(PopupStateWhenTheWindowIsDestroyed.PoppedWithPopModalAsync)]
@@ -100,8 +101,13 @@ public partial class PopupTryMethodsTests
 
 		await RunInMauiWindowAsync(page, isPagePresentedModally: false, page, async _ =>
 		{
-			var showPopupTask = page.TryShowPopupAsync<string>(new Popup { Padding = 0, Content = new Label { Text = "Popup" } }, new PopupOptions(), token: CancellationToken.None);
+			var popup = new Popup { Padding = 0, Content = new Label { Text = "Popup" } };
+			var popupOpenedTaskCompletionSource = new TaskCompletionSource();
+			popup.Opened += (_, _) => popupOpenedTaskCompletionSource.TrySetResult();
+			var showPopupTask = page.TryShowPopupAsync<string>(popup, new PopupOptions(), token: CancellationToken.None);
 			await AssertionExtensions.AssertEventually(() => page.Navigation.ModalStack.OfType<PopupPage>().Any(), timeout: 5000, message: "The popup was never shown.");
+			// The Border is registered for Window.Destroying only once the popup is opened, which iOS reports after the modal presentation finished.
+			await popupOpenedTaskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(10));
 			popupBorder = page.Navigation.ModalStack.OfType<PopupPage>().Single().Content.PopupBorder;
 
 			switch (popupState)
@@ -120,7 +126,10 @@ public partial class PopupTryMethodsTests
 					throw new NotSupportedException($"{popupState} is not a supported state.");
 			}
 
-			Assert.NotNull(popupBorder.Handler);
+			if (popupState is PopupStateWhenTheWindowIsDestroyed.StillOpen)
+			{
+				Assert.NotNull(popupBorder.Handler);
+			}
 		});
 
 		Assert.NotNull(popupBorder);
