@@ -135,7 +135,7 @@ public class PopupResultOrExceptionTests : BaseTest
 		Assert.Equal("Canceled", Describe(resultOrException));
 	}
 
-	// The switch expressions have no discard: they compile only because the compiler knows that a PopupResultOrException is either an IPopupResult or an Exception
+	// No discard: the build reports CS8509 if these switches stop covering every case of PopupResultOrException
 	static string Describe(PopupResultOrException resultOrException) => resultOrException switch
 	{
 		IPopupResult { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed",
