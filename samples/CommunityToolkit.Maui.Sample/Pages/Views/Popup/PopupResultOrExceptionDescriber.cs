@@ -9,7 +9,7 @@ static class PopupResultOrExceptionDescriber
 		IPopupResult { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed: tapped outside, back button or navigation",
 		IPopupResult<string> popupResult => $"Closed with result: {popupResult.Result ?? "null"}",
 		IPopupResult => "Popup closed",
-		OperationCanceledException => "Canceled: the Popup was not shown",
+		OperationCanceledException => "Canceled",
 		Exception exception => $"{exception.GetType().Name}: {exception.Message}"
 	};
 }

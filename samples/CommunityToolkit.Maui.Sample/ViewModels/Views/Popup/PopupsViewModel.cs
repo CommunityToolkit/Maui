@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Sample.Pages.Views.Popup;
-using CommunityToolkit.Maui.Sample.Views.Popups;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -36,7 +35,7 @@ public partial class PopupsViewModel(IPopupService popupService) : BaseViewModel
 	[RelayCommand]
 	async Task OnTryShowPopupWithPopupService(CancellationToken token)
 	{
-		var resultOrException = await popupService.TryShowPopupAsync<ReturnResultPopup, string>(currentNavigation, cancellationToken: token);
+		var resultOrException = await popupService.TryShowPopupAsync<CollectionViewPopupViewModel, string>(currentNavigation, cancellationToken: token);
 		TryPopupServiceResultText = PopupResultOrExceptionDescriber.Describe(resultOrException);
 	}
 
