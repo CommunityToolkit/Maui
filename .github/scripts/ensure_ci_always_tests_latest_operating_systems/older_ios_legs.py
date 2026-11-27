@@ -1,7 +1,7 @@
 """Checks that each iOS leg of device-tests.yml still has its Xcode and simulator runtime on its runner image (things to check only)."""
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from .data_types import FamilyPlan, SourceProblem, ThingToCheck
 from .ios_runtimes import (can_a_runtime_found_by_ios_script_run_the_tests, is_found_by_ios_script,

@@ -139,7 +139,10 @@ def list_simulator_runtimes(run: RunCommand, problems: Optional[List[str]] = Non
 
 
 def read_built_in_screen_count(bundle_path: Any) -> Optional[int]:
-    """The same count as Get-SimulatorBuiltInScreenCount in eng/devices/ios.ps1; None when the profile cannot be read."""
+    """The same count as Get-SimulatorBuiltInScreenCount in eng/devices/ios.ps1; None when the profile cannot be read.
+
+    Except a profile with a date or data value: plutil cannot convert it to JSON, so ios.ps1 does not count it.
+    """
     if not isinstance(bundle_path, str) or not bundle_path:
         return None
     capabilities = _read_plist(os.path.join(bundle_path, 'Contents', 'Resources', 'capabilities.plist'))

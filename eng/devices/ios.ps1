@@ -225,7 +225,7 @@ function Select-MatchingSimulatorRuntimeCandidates {
             return $candidates
         }
 
-        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone with one built-in screen."
+        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone known to have one built-in screen."
         $examined += $candidates
     }
 
@@ -413,7 +413,7 @@ function Select-SimulatorRuntimeAndDeviceType {
             return New-Object PSObject -Property @{ Runtime = $candidateRuntime; DeviceType = (Select-SimulatorIPhone -Candidates $candidates) }
         }
 
-        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone with one built-in screen."
+        Write-Host "$($candidateRuntime.name) ($($candidateRuntime.buildversion)) lists no iPhone known to have one built-in screen."
         $examined += $candidates
     }
 
