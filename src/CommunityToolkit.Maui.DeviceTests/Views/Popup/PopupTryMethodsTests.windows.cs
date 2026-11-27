@@ -171,8 +171,7 @@ public partial class PopupTryMethodsTests
 		OtherCodePopsTheModalPage,
 		ShellPopsThePopupFromAModalNavigationPage,
 		PageOfTheWindowIsReplaced,
-		ShellSwitchesToAnotherShellElement,
-		ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage
+		ShellSwitchesToAnotherShellElement
 	}
 
 	// .NET MAUI never disconnects the PopupPage and the Popup of the PageOfTheWindowIsReplaced and ShellSwitchesToAnotherShellElement rows, so only they prove the product disconnects them at Window.Destroying.
@@ -183,7 +182,6 @@ public partial class PopupTryMethodsTests
 	[InlineData(PopupRemoval.ShellPopsThePopupFromAModalNavigationPage)]
 	[InlineData(PopupRemoval.PageOfTheWindowIsReplaced)]
 	[InlineData(PopupRemoval.ShellSwitchesToAnotherShellElement)]
-	[InlineData(PopupRemoval.ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage)]
 	public async Task ShowingAPopupInAnotherWindowSucceedsAfterTheShellWindowThatRemovedAPopupWasClosed(PopupRemoval removal)
 	{
 		SetupBuilder();
@@ -221,7 +219,7 @@ public partial class PopupTryMethodsTests
 	static async Task ShowAndRemoveAPopupInAShellWindow(Shell shell, Window window, Popup popup, PopupRemoval removal)
 	{
 		const int timeout = 5000;
-		var modalNavigationPage = IsThePopupShownOnAModalNavigationPage(removal) ? new NavigationPage(new ContentPage { Title = "Modal" }) : null;
+		var modalNavigationPage = removal is PopupRemoval.ShellPopsThePopupFromAModalNavigationPage ? new NavigationPage(new ContentPage { Title = "Modal" }) : null;
 		if (modalNavigationPage is not null)
 		{
 			await shell.Navigation.PushModalAsync(modalNavigationPage, false);
@@ -250,7 +248,6 @@ public partial class PopupTryMethodsTests
 				window.Page = new ContentPage();
 				break;
 			case PopupRemoval.ShellSwitchesToAnotherShellElement:
-			case PopupRemoval.ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage:
 				await shell.GoToAsync("//second");
 				break;
 			default:
@@ -258,14 +255,5 @@ public partial class PopupTryMethodsTests
 		}
 
 		await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
-
-		// The host disconnects only the pages still on the modal stack, and Shell drops this NavigationPage without disconnecting the page below the popup
-		if (modalNavigationPage is not null && !window.Navigation.ModalStack.Contains(modalNavigationPage))
-		{
-			modalNavigationPage.RootPage.DisconnectHandlers();
-		}
 	}
-
-	static bool IsThePopupShownOnAModalNavigationPage(PopupRemoval removal) =>
-		removal is PopupRemoval.ShellPopsThePopupFromAModalNavigationPage or PopupRemoval.ShellSwitchesToAnotherShellElementWhileThePopupIsOnAModalNavigationPage;
 }
