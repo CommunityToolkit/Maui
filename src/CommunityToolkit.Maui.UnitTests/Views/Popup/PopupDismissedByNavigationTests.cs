@@ -1407,6 +1407,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Null(popup.Handler);
 	}
 
+	// A regression check, not a proof of the Window.Destroying hook: .NET MAUI disconnects a page when PopModalAsync pops it, so this passes without the hook too
 	[Theory(Timeout = (int)TestDuration.Short)]
 	[InlineData(RootPageType.Shell)]
 	[InlineData(RootPageType.ContentPage)]
@@ -1430,6 +1431,7 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		Assert.Null(popup.Handler);
 	}
 
+	// A regression check, not a proof of the Window.Destroying hook: .NET MAUI disconnects a page when CloseAsync pops it, so this passes without the hook too
 	[Fact(Timeout = (int)TestDuration.Short)]
 	public async Task WindowDestroying_ShouldLetTheSamePopupBeShownInAnotherWindow()
 	{
