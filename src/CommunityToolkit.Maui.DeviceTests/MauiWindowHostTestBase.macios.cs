@@ -1,4 +1,6 @@
 using CommunityToolkit.Maui.DeviceTests.Runners;
+using CoreGraphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -22,6 +24,9 @@ public abstract partial class MauiWindowHostTestBase
 			var previousApplication = Application.Current;
 			var scene = RunnerScene;
 			var platformWindow = new UIWindow(scene);
+#if MACCATALYST
+			var runnerGeometryBefore = RunnerWindowGeometry.Capture();
+#endif
 			Window? window = null;
 			bool isCreated = false, isActivated = false;
 
@@ -29,7 +34,14 @@ public abstract partial class MauiWindowHostTestBase
 			{
 				var application = new MauiWindowTestApplication();
 				window = application.CreateWindowFor(root);
-				platformWindow.SetWindowHandler(window, new PlatformWindowMauiContext(MauiContext, platformWindow));
+				var windowContext = new PlatformWindowMauiContext(MauiContext, platformWindow);
+#if MACCATALYST
+				// The window of the test is a guest in the scene of the runner. WindowHandler would send its frame (iPad points) as the scene's
+				// frame (Mac points), which moves and widens the runner's window, and it would lift the scene's size limits.
+				window.Handler = new GuestWindowHandler(windowContext);
+#else
+				platformWindow.SetWindowHandler(window, windowContext);
+#endif
 				((IWindow)window).Created();
 				isCreated = true;
 				platformWindow.MakeKeyAndVisible();
@@ -77,7 +89,47 @@ public abstract partial class MauiWindowHostTestBase
 				root.DisconnectHandlers();
 				page.DisconnectHandlers();
 			}
+
+#if MACCATALYST
+			var runnerGeometryAfter = RunnerWindowGeometry.Capture();
+			Assert.True(runnerGeometryBefore == runnerGeometryAfter,
+				$"Hosting a window changed the window of the runner from {runnerGeometryBefore} to {runnerGeometryAfter}. AttachAndRun lays out later tests in the runner's window.");
+#endif
 		});
+
+	protected readonly record struct RunnerWindowGeometry(CGRect Frame, CGSize MinimumSize, CGSize MaximumSize)
+	{
+		public static RunnerWindowGeometry Capture()
+		{
+			var restrictions = RunnerScene.SizeRestrictions ?? throw new InvalidOperationException("The scene of the runner has no size restrictions.");
+			return new(TestWindow.PlatformWindow.Frame, restrictions.MinimumSize, restrictions.MaximumSize);
+		}
+
+		public override string ToString() => $"frame {Frame}, minimum size {MinimumSize}, maximum size {MaximumSize}";
+	}
+
+#if MACCATALYST
+	sealed class GuestWindowHandler : WindowHandler
+	{
+		static readonly IPropertyMapper<IWindow, IWindowHandler> guestMapper = new PropertyMapper<IWindow, IWindowHandler>(Mapper)
+		{
+			[nameof(IWindow.X)] = static (_, _) => { },
+			[nameof(IWindow.Y)] = static (_, _) => { },
+			[nameof(IWindow.Width)] = static (_, _) => { },
+			[nameof(IWindow.Height)] = static (_, _) => { },
+			[nameof(IWindow.MinimumWidth)] = static (_, _) => { },
+			[nameof(IWindow.MinimumHeight)] = static (_, _) => { },
+			[nameof(IWindow.MaximumWidth)] = static (_, _) => { },
+			[nameof(IWindow.MaximumHeight)] = static (_, _) => { }
+		};
+
+		public GuestWindowHandler(IMauiContext windowContext)
+			: base(guestMapper)
+		{
+			SetMauiContext(windowContext);
+		}
+	}
+#endif
 
 	protected sealed record HostedMauiWindow(MauiWindowTestApplication Application, Window Window, UIWindow PlatformWindow)
 	{
