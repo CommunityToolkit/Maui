@@ -40,24 +40,16 @@ public partial class TryPopupMethodsPage : ContentPage
 		};
 	}
 
-	static string Describe(PopupResultOrException resultOrException) => resultOrException switch
-	{
-		IPopupResult { WasDismissedByTappingOutsideOfPopup: true } => "Dismissed: tapped outside, back button or navigation",
-		IPopupResult => "Popup closed",
-		OperationCanceledException => "Canceled: the Popup was not shown",
-		Exception exception => $"{exception.GetType().Name}: {exception.Message}"
-	};
-
 	async Task ShowPopup()
 	{
 		var popupContent = CreatePopupContent();
-		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
+		showResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryShowPopupAsync<string>(popupContent));
 	}
 
 	async Task ShowPopupWithoutResultType()
 	{
 		var popupContent = CreatePopupContent();
-		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync(popupContent));
+		showResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryShowPopupAsync(popupContent));
 	}
 
 	VerticalStackLayout CreatePopupContent() => new()
@@ -66,8 +58,8 @@ public partial class TryPopupMethodsPage : ContentPage
 		Children =
 		{
 			new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
-			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
-			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result"),
+			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
+			new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result"),
 			new Button { Command = new AsyncRelayCommand(ShowPageAbovePopup) }.Text("Show a Page Above the Popup")
 		}
 	};
@@ -85,7 +77,7 @@ public partial class TryPopupMethodsPage : ContentPage
 			Spacing = 12,
 			Children =
 			{
-				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("TryClosePopupAsync (Blocked)"),
+				new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryClosePopupAsync())) }.Text("TryClosePopupAsync (Blocked)"),
 				new Button { Command = new AsyncRelayCommand(() => pageAbovePopup.Navigation.PopModalAsync()) }.Text("Back to the Popup")
 			}
 		};
@@ -98,11 +90,11 @@ public partial class TryPopupMethodsPage : ContentPage
 		using var cancellationTokenSource = new CancellationTokenSource();
 		await cancellationTokenSource.CancelAsync();
 
-		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(new Label().Text("This Popup is never shown"), token: cancellationTokenSource.Token));
+		showResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryShowPopupAsync<string>(new Label().Text("This Popup is never shown"), token: cancellationTokenSource.Token));
 	}
 
 	async Task ClosePopupWhenNoneIsShown()
 	{
-		closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync());
+		closeResultOrExceptionLabel.Text = PopupResultOrExceptionDescriber.Describe(await this.TryClosePopupAsync());
 	}
 }

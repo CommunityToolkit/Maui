@@ -59,6 +59,16 @@
                 <Button Text="Popup App Theme Initialization" Clicked="HandlePopupAppThemeButtonClicked" />
 
                 <Button Text="Try Popup Methods Page" Clicked="HandleTryPopupMethodsButtonClicked" />
+
+                <Label Text="IPopupService Try Methods" FontAttributes="Bold" />
+
+                <Button Text="IPopupService.TryShowPopupAsync" Command="{Binding TryShowPopupWithPopupServiceCommand}" />
+
+                <Button Text="IPopupService.TryShowPopupAsync (Unregistered Popup)" Command="{Binding TryShowUnregisteredPopupWithPopupServiceCommand}" />
+
+                <Button Text="IPopupService.TryClosePopupAsync" Command="{Binding TryClosePopupWithPopupServiceCommand}" />
+
+                <Label Text="{Binding TryPopupServiceResultText}" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
