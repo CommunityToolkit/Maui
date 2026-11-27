@@ -356,7 +356,7 @@ partial class CameraManager
 		var cameraProviderTCS = new TaskCompletionSource();
 
 		// The listener runs later on the UI thread, outside of this method: its outcome completes ConnectCamera, nothing escapes from it
-		cameraProviderFuture.AddListener(new Runnable(async () =>
+		cameraProviderFuture.AddListenerOnMainThread(context, async () =>
 		{
 			try
 			{
@@ -383,7 +383,7 @@ partial class CameraManager
 			{
 				cameraProviderTCS.TrySetException(ex);
 			}
-		}), ContextCompat.GetMainExecutor(context));
+		});
 
 		// Not cancelled by the token, which only cancels the start of the preview: a StartCameraPreview while the view connects waits for this
 		// connection, which must have prepared the use cases by then
@@ -641,7 +641,7 @@ partial class CameraManager
 	// CameraX's camera thread publishes zoom ratio 1 when it detaches the use cases, which can come after this zoom request was published (the
 	// request itself still reaches the camera), so the zoom of the view is requested again once CameraX answered
 	void RequestZoomOfTheView() =>
-		cameraControl?.SetZoomRatio(cameraView.ZoomFactor)?.AddListener(new Runnable(() => UpdateZoom(cameraView.ZoomFactor)), ContextCompat.GetMainExecutor(context));
+		cameraControl?.SetZoomRatio(cameraView.ZoomFactor)?.AddListenerOnMainThread(context, () => UpdateZoom(cameraView.ZoomFactor));
 
 	Task RebindCurrentSessionAsync(CancellationToken token) => BindSessionAsync(null, token);
 
@@ -1267,7 +1267,7 @@ partial class CameraManager
 		var cameraProviderFuture = ProcessCameraProvider.GetInstance(context) ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}");
 		// The listeners run later on the UI thread, outside of this method: an exception that escaped from them would terminate the app, so their
 		// outcome completes the task instead. Get() throws when CameraX cannot initialize
-		cameraProviderFuture.AddListener(new Runnable(() =>
+		cameraProviderFuture.AddListenerOnMainThread(context, () =>
 		{
 			try
 			{
@@ -1277,7 +1277,7 @@ partial class CameraManager
 				var extensionsManagerFuture = ExtensionsManager.GetInstanceAsync(context, cameraProviderInstance)
 										  ?? throw new InvalidOperationException("Unable to get listenable future for camera provider");
 
-				extensionsManagerFuture.AddListener(new Runnable(() =>
+				extensionsManagerFuture.AddListenerOnMainThread(context, () =>
 				{
 					try
 					{
@@ -1293,13 +1293,13 @@ partial class CameraManager
 					{
 						cameraFutureCts.TrySetException(ex);
 					}
-				}), ContextCompat.GetMainExecutor(context));
+				});
 			}
 			catch (System.Exception ex)
 			{
 				cameraFutureCts.TrySetException(ex);
 			}
-		}), ContextCompat.GetMainExecutor(context));
+		});
 
 		await cameraFutureCts.Task.WaitAsync(token);
 		return cameraSelector;

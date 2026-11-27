@@ -26,6 +26,8 @@ public static partial class TestCategory
 
 	public const string CameraClosedCheckAndroid = nameof(CameraClosedCheckAndroid);
 
+	public const string ListenableFutureExtensionsAndroid = nameof(ListenableFutureExtensionsAndroid);
+
 	public const string CameraApple = nameof(CameraApple);
 
 	public const string CameraWindows = nameof(CameraWindows);
