@@ -1122,6 +1122,103 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		}
 	}
 
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task TryShowPopupAsync_ShouldReturnDismissedPopupResult_WhenModalIsPoppedWithoutCloseAsync(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+
+		var showPopupTask = navigation.TryShowPopupAsync<string>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+
+		await navigation.PopModalAsync(false);
+		var outcome = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.True(Assert.IsType<IPopupResult<string>>(outcome.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task TryShowPopupAsync_ShouldReturnOperationCanceledExceptionAndShowNothing_WhenShellNavigatingCancelsThePush(bool showWithShellRoute)
+	{
+		var navigation = SetRootPage(RootPageType.Shell);
+		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
+
+		PopupResultOrException outcome;
+		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
+		{
+			var showPopupTask = showWithShellRoute
+				? shell.TryShowPopupAsync(new Popup(), PopupOptions.Empty, token: TestContext.Current.CancellationToken)
+				: navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+			outcome = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		}
+
+		Assert.IsType<OperationCanceledException>(outcome.Value, exactMatch: false);
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.WindowModalPopping)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.ShellNavigating)]
+	public async Task TryClosePopupAsync_ShouldReturnOperationCanceledExceptionAndKeepThePopupOpen_WhenTheAppCancelsThePop(RootPageType rootPageType, NavigationCancellation cancellation)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+
+		PopupResultOrException closeOutcome;
+		using (new NavigationCanceler(cancellation))
+		{
+			closeOutcome = await navigation.TryClosePopupAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		}
+
+		Assert.IsType<OperationCanceledException>(closeOutcome.Value, exactMatch: false);
+		Assert.Same(popupPage, Assert.Single(navigation.ModalStack));
+		Assert.False(showPopupTask.IsCompleted);
+
+		var finalClose = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.IsType<IPopupResult>(finalClose.Value, exactMatch: false);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsync_ShouldReturnPopupNotFoundException_WhenPopupIsAlreadyClosed()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(navigation);
+
+		var firstClose = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken);
+		var secondClose = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken);
+
+		Assert.IsType<IPopupResult>(firstClose.Value, exactMatch: false);
+		Assert.IsType<PopupNotFoundException>(secondClose.Value);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.Shell)]
+	public async Task TryClosePopupAsync_ShouldReturnOnePopupResultAndOnePopupNotFoundException_WhenCalledTwiceConcurrently(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(navigation);
+
+		var outcomes = await Task.WhenAll(
+			navigation.TryClosePopupAsync(TestContext.Current.CancellationToken),
+			navigation.TryClosePopupAsync(TestContext.Current.CancellationToken)).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.Single(outcomes, static outcome => outcome.Value is IPopupResult);
+		Assert.Single(outcomes, static outcome => outcome.Value is PopupNotFoundException);
+		Assert.Empty(navigation.ModalStack);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
 	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
 	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
 	{

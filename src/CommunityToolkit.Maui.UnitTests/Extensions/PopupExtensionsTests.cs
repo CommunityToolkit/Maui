@@ -2843,6 +2843,173 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.DoesNotContain("PopupPage", shell.CurrentState.Location.OriginalString, StringComparison.Ordinal);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsync_Page_ShouldReturnPopupBlockedException_WhenPopupIsBlocked()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		page.ShowPopup(new Button());
+		await page.Navigation.PushModalAsync(new ContentPage());
+
+		// Act
+		var result = await page.TryClosePopupAsync(TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupBlockedException>(result.Value);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsync_Page_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		await cancellationTokenSource.CancelAsync();
+
+		// Act
+		var result = await page.TryClosePopupAsync(cancellationTokenSource.Token);
+
+		// Assert
+		Assert.IsType<OperationCanceledException>(result.Value, exactMatch: false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsyncT_Page_ShouldReturnPopupNotFoundException_WhenNoPopupExists()
+	{
+		// Arrange
+		var page = GetWindowPage();
+
+		// Act
+		var result = await page.TryClosePopupAsync(1, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupNotFoundException>(result.Value);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsyncT_Page_ShouldReturnPopupBlockedException_WhenPopupIsBlocked()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		page.ShowPopup(new Button());
+		await page.Navigation.PushModalAsync(new ContentPage());
+
+		// Act
+		var result = await page.TryClosePopupAsync(1, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupBlockedException>(result.Value);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsyncT_Page_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		await cancellationTokenSource.CancelAsync();
+
+		// Act
+		var result = await page.TryClosePopupAsync(1, cancellationTokenSource.Token);
+
+		// Assert
+		Assert.IsType<OperationCanceledException>(result.Value, exactMatch: false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_ShouldReturnDismissedResult_WhenPopupIsDismissedByTappingOutsideOfPopup()
+	{
+		// Arrange
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.True(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Page_ShouldReturnDismissedResult_WhenPopupIsDismissedByTappingOutsideOfPopup()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		var showPopupTask = page.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)page.Navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.True(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Shell_ShouldReturnDismissedResult_WhenPopupIsDismissedByTappingOutsideOfPopup()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var showPopupTask = shell.TryShowPopupAsync(new Popup(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)shell.Navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.True(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsyncT_Page_ShouldReturnDismissedResult_WhenPopupIsDismissedByTappingOutsideOfPopup()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		var showPopupTask = page.TryShowPopupAsync<string>(new Popup<string>(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)page.Navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult<string>>(result.Value, exactMatch: false);
+		Assert.True(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsyncT_Shell_ShouldReturnDismissedResult_WhenPopupIsDismissedByTappingOutsideOfPopup()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		var showPopupTask = shell.TryShowPopupAsync<string>(new Popup<string>(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)shell.Navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult<string>>(result.Value, exactMatch: false);
+		Assert.True(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
 	static Page GetWindowPage()
 	{
 		return Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Page cannot be null");
