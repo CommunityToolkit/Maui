@@ -18,14 +18,14 @@ static class PopupTryMethodsScenarios
 		var showPopupTask = shell.TryShowPopupAsync<string>(CreatePopup(), CreateOptions(), token: CancellationToken.None);
 		await WaitForPopupPages(shell, 1, "The popup was never shown.");
 
-		var closePopupResultOrException = await shell.TryClosePopupAsync(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var showPopupResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var closeResultOrException = await shell.TryClosePopupAsync(expectedResult).WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		var closeResult = Assert.IsType<IPopupResult<string>>(closePopupResultOrException.Value, exactMatch: false);
+		var closeResult = Assert.IsType<IPopupResult<string>>(closeResultOrException.Value, exactMatch: false);
 		Assert.Equal(expectedResult, closeResult.Result);
 		Assert.False(closeResult.WasDismissedByTappingOutsideOfPopup);
 
-		var showResult = Assert.IsType<IPopupResult<string>>(showPopupResultOrException.Value, exactMatch: false);
+		var showResult = Assert.IsType<IPopupResult<string>>(showResultOrException.Value, exactMatch: false);
 		Assert.Equal(expectedResult, showResult.Result);
 		Assert.False(showResult.WasDismissedByTappingOutsideOfPopup);
 		Assert.Empty(shell.Navigation.ModalStack);
@@ -67,11 +67,11 @@ static class PopupTryMethodsScenarios
 
 		// Once the blocking page is gone, the same popup can be closed
 		await shell.Navigation.PopModalAsync(false);
-		var closePopupResultOrException = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
-		var showPopupResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var closeResultOrException = await shell.TryClosePopupAsync().WaitAsync(TimeSpan.FromMilliseconds(timeout));
+		var showResultOrException = await showPopupTask.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-		Assert.False(Assert.IsType<IPopupResult>(closePopupResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
-		Assert.False(Assert.IsType<IPopupResult>(showPopupResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(closeResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+		Assert.False(Assert.IsType<IPopupResult>(showResultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
 		Assert.Empty(shell.Navigation.ModalStack);
 	}
 

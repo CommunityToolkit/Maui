@@ -5,12 +5,12 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommunityToolkit.Maui.Sample.Pages.Views.Popup;
 
-// TryShowPopupAsync and TryClosePopupAsync never throw for a popup failure: they return a PopupResultOrException: either the IPopupResult of the closed popup or the Exception that the operation failed with
+// TryShowPopupAsync and TryClosePopupAsync never throw for a popup failure: they return a PopupResultOrException that holds either the IPopupResult of the closed popup or the Exception that the operation failed with
 public partial class TryPopupMethodsPage : ContentPage
 {
 	const string popupResultText = "Hello from the Popup";
 
-	readonly Label showResultLabel, closeResultLabel;
+	readonly Label showResultOrExceptionLabel, closeResultOrExceptionLabel;
 
 	bool isOpenInProgress;
 
@@ -26,17 +26,17 @@ public partial class TryPopupMethodsPage : ContentPage
 				Spacing = 12,
 				Children =
 				{
-					new Label().Text("TryShowPopupAsync and TryClosePopupAsync return a PopupResultOrException: either the IPopupResult of the closed popup or the Exception that the operation failed with, so a switch over the result handles every case without catching exceptions."),
+					new Label().Text("TryShowPopupAsync and TryClosePopupAsync return a PopupResultOrException that holds either the IPopupResult of the closed popup or the Exception that the operation failed with, so one switch handles every case without catching exceptions."),
 
 					new Button { Command = new AsyncRelayCommand(ShowPopup) }.Text("TryShowPopupAsync"),
 					new Button { Command = new AsyncRelayCommand(ShowPopupWithCanceledToken) }.Text("TryShowPopupAsync with a Canceled Token"),
 					new Button { Command = new AsyncRelayCommand(ClosePopupWhenNoneIsShown) }.Text("TryClosePopupAsync without a Popup"),
 
-					new Label().Text("TryShowPopupAsync Result").Font(bold: true),
-					new Label().Text("None yet").Assign(out showResultLabel),
+					new Label().Text("TryShowPopupAsync Result or Exception").Font(bold: true),
+					new Label().Text("None yet").Assign(out showResultOrExceptionLabel),
 
-					new Label().Text("TryClosePopupAsync Result").Font(bold: true),
-					new Label().Text("None yet").Assign(out closeResultLabel)
+					new Label().Text("TryClosePopupAsync Result or Exception").Font(bold: true),
+					new Label().Text("None yet").Assign(out closeResultOrExceptionLabel)
 				}
 			}
 		};
@@ -75,12 +75,12 @@ public partial class TryPopupMethodsPage : ContentPage
 				Children =
 				{
 					new Label().Text("Close this Popup with a result, without one, or tap outside of it to dismiss it."),
-					new Button { Command = new AsyncRelayCommand(async () => closeResultLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
-					new Button { Command = new AsyncRelayCommand(async () => closeResultLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result")
+					new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync(popupResultText))) }.Text("Close with a Result"),
+					new Button { Command = new AsyncRelayCommand(async () => closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync())) }.Text("Close without a Result")
 				}
 			};
 
-			showResultLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
+			showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(popupContent));
 		}
 		finally
 		{
@@ -93,11 +93,11 @@ public partial class TryPopupMethodsPage : ContentPage
 		using var cancellationTokenSource = new CancellationTokenSource();
 		await cancellationTokenSource.CancelAsync();
 
-		showResultLabel.Text = Describe(await this.TryShowPopupAsync<string>(new Label().Text("This Popup is never shown"), token: cancellationTokenSource.Token));
+		showResultOrExceptionLabel.Text = Describe(await this.TryShowPopupAsync<string>(new Label().Text("This Popup is never shown"), token: cancellationTokenSource.Token));
 	}
 
 	async Task ClosePopupWhenNoneIsShown()
 	{
-		closeResultLabel.Text = Describe(await this.TryClosePopupAsync());
+		closeResultOrExceptionLabel.Text = Describe(await this.TryClosePopupAsync());
 	}
 }
