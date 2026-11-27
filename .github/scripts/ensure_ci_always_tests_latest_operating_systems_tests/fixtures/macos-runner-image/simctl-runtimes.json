@@ -1,0 +1,46 @@
+{
+  "runtimes": [
+    {
+      "bundlePath": "/Library/Developer/CoreSimulator/Volumes/iOS_27.0/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime",
+      "buildversion": "24A100",
+      "platform": "iOS",
+      "runtimeRoot": "/",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "version": "27.0",
+      "isInternal": false,
+      "isAvailable": true,
+      "name": "iOS 27.0",
+      "supportedArchitectures": [
+        "arm64"
+      ]
+    },
+    {
+      "bundlePath": "/Library/Developer/CoreSimulator/Volumes/iOS_27.1/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.1.simruntime",
+      "buildversion": "24A101",
+      "platform": "iOS",
+      "runtimeRoot": "/",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+      "version": "27.1",
+      "isInternal": false,
+      "isAvailable": true,
+      "name": "iOS 27.1",
+      "supportedArchitectures": [
+        "arm64"
+      ]
+    },
+    {
+      "bundlePath": "/Library/Developer/CoreSimulator/Volumes/iOS_27.2/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.2.simruntime",
+      "buildversion": "24A102",
+      "platform": "iOS",
+      "runtimeRoot": "/",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-2",
+      "version": "27.2",
+      "isInternal": false,
+      "isAvailable": true,
+      "name": "iOS 27.2",
+      "supportedArchitectures": [
+        "arm64"
+      ]
+    }
+  ]
+}

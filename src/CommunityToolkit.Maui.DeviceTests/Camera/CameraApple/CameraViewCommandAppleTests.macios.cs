@@ -106,6 +106,37 @@ public class CameraViewCommandAppleTests : CameraHandlerTestBase
 	}
 
 	[Fact]
+	public async Task CaptureImageCommandLetsNothingEscapeAndReportsTheHandlersExceptionOnceWhenBothTheMediaCapturedAndTheMediaCaptureFailedHandlersThrow()
+	{
+		await RunAsync((view, access, context) =>
+		{
+			using var errors = new CameraErrorRecorder(view);
+			var recorder = new AppleMediaRecorder(view);
+			var throwingSubscriber = new AppleThrowingMediaCapturedSubscriber(view);
+			var throwingFailureSubscriber = new AppleThrowingMediaCaptureFailedSubscriber(view);
+			access.PhotoOutput = new FakePhotoOutput
+			{
+				OnCapture = (fakeOutput, completion) => completion.DidFinishProcessingPhoto(fakeOutput, new FakeCapturePhoto(() => NSData.FromArray([1, 2, 3])), null!)
+			};
+
+			using (context.Install())
+			{
+				view.CaptureImageCommand.Execute(CancellationToken.None);
+			}
+
+			Assert.Empty(context.Drain());
+			Assert.Equal([AppleThrowingMediaCapturedSubscriber.FailureMessage], recorder.Failures);
+			Assert.Same(AppleThrowingMediaCaptureFailedSubscriber.ThrownException, Assert.Single(errors.Errors));
+			Assert.Single(recorder.Captured);
+			GC.KeepAlive(recorder);
+			GC.KeepAlive(throwingSubscriber);
+			GC.KeepAlive(throwingFailureSubscriber);
+
+			return Task.CompletedTask;
+		});
+	}
+
+	[Fact]
 	public async Task CaptureImageCommandRaisesMediaCaptureFailedOnceWhenAMediaCapturedHandlerThrows()
 	{
 		await RunAsync((view, access, context) =>
