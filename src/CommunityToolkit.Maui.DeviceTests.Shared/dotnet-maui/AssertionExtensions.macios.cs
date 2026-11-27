@@ -526,7 +526,7 @@ namespace CommunityToolkit.Maui.DeviceTests
 
 		static string DescribeConnectedScenes(UIApplication application)
 		{
-			var descriptions = new List<string>();
+			List<string> descriptions = [];
 
 			foreach (var scene in application.ConnectedScenes)
 			{

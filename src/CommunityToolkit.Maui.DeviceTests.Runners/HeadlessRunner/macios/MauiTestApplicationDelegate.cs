@@ -25,6 +25,8 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 	{
 		readonly TaskCompletionSource _windowReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+		static readonly TimeSpan windowReadyTimeout = TimeSpan.FromSeconds(120);
+
 		// TODO: https://github.com/xamarin/xamarin-macios/issues/12555
 		readonly static string[] EnvVarNames = {
 			"NUNIT_AUTOSTART",
@@ -93,12 +95,9 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 		public override UIWindow? Window { get; set; }
 
-		static readonly TimeSpan windowReadyTimeout = TimeSpan.FromSeconds(120);
-
 		internal Task WindowReady => _windowReady.Task;
 
-		// Public so that the device tests can read it without an InternalsVisibleTo from this project.
-		public UISceneActivationState? WindowSceneActivationStateAtTestStart { get; private set; }
+		internal UISceneActivationState? WindowSceneActivationStateAtTestStart { get; private set; }
 
 		protected abstract MauiApp CreateMauiApp();
 
@@ -107,11 +106,11 @@ namespace CommunityToolkit.Maui.DeviceTests.Runners.HeadlessRunner
 
 		async Task WaitForWindowReadyAsync()
 		{
-			var windowReadyOrTimeout = await Task.WhenAny(_windowReady.Task, Task.Delay(windowReadyTimeout));
+			var windowReadyOrTimeout = await Task.WhenAny(WindowReady, Task.Delay(windowReadyTimeout));
 
 			WindowSceneActivationStateAtTestStart = Window?.WindowScene?.ActivationState;
 
-			if (windowReadyOrTimeout != _windowReady.Task)
+			if (windowReadyOrTimeout != WindowReady)
 			{
 				// Starting anyway fails only the tests that need an active scene, instead of hanging until XHarness's launch timeout.
 				Console.WriteLine(FormattableString.Invariant($"The test window's scene was not active after {windowReadyTimeout.TotalSeconds} s (activation state: {WindowSceneActivationStateAtTestStart}). Starting the tests anyway."));

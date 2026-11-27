@@ -47,12 +47,11 @@ public class MauiTestSceneDelegate : MauiUISceneDelegate
 
 	public override void OnActivated(UIScene scene)
 	{
-		if (UIApplication.SharedApplication.Delegate is not MauiTestApplicationDelegate applicationDelegate)
-		{
-			base.OnActivated(scene);
-			return;
-		}
+		base.OnActivated(scene);
 
-		applicationDelegate.SetWindowReady();
+		if (UIApplication.SharedApplication.Delegate is MauiTestApplicationDelegate applicationDelegate)
+		{
+			applicationDelegate.SetWindowReady();
+		}
 	}
 }

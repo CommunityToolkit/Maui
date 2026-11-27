@@ -189,9 +189,10 @@ public class DeviceTestsInfrastructureTests : CommunityToolkitHandlerTestBase
 	[Fact]
 	public void TestsStartOnlyOnceTheWindowSceneIsForegroundActive()
 	{
-		var activationStateAtTestStart = Runners.HeadlessRunner.MauiTestApplicationDelegate.Current.WindowSceneActivationStateAtTestStart;
+		var headlessApplicationDelegate = Runners.HeadlessRunner.MauiTestApplicationDelegate.Current;
+		Skip.If(headlessApplicationDelegate is null, "Only the headless runner waits for the scene to become active before it starts the tests.");
 
-		Assert.Equal(UIKit.UISceneActivationState.ForegroundActive, activationStateAtTestStart);
+		AotSafeAssert.Equal(UIKit.UISceneActivationState.ForegroundActive, headlessApplicationDelegate.WindowSceneActivationStateAtTestStart);
 	}
 #endif
 
