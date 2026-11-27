@@ -1,0 +1,36 @@
+using Android.Content;
+using AndroidX.Core.Content;
+using Google.Common.Util.Concurrent;
+using Java.Util.Concurrent;
+
+namespace CommunityToolkit.Maui.Extensions;
+
+static class ListenableFutureExtensions
+{
+	public static void AddListenerOnMainThread(this IListenableFuture future, Context context, Action listener) =>
+		future.AddListenerOnExecutor(ContextCompat.GetMainExecutor(context), listener);
+
+	// Guava 33 (brought by Media3, so by MediaElement) resolves the 2022 ListenableFuture binding 9999.0.0, whose AddListener and Get keep neither
+	// the future nor their arguments alive during the JNI call, so a GC there can delete their JNI references (NativeAOT, CoreCLR; dotnet/android-libraries#1585)
+	public static void AddListenerOnExecutor(this IListenableFuture future, IExecutor? executor, Action listener)
+	{
+		var runnable = new Java.Lang.Runnable(() =>
+		{
+			try
+			{
+				listener();
+			}
+			finally
+			{
+				// For the listener's own Get(), which has the same defect: capturing the future is not enough, since the closure can be dead during that JNI call
+				GC.KeepAlive(future);
+			}
+		});
+
+		future.AddListener(runnable, executor);
+
+		GC.KeepAlive(future);
+		GC.KeepAlive(runnable);
+		GC.KeepAlive(executor);
+	}
+}

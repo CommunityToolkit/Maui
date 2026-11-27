@@ -320,7 +320,7 @@ public class CameraViewTests : BaseViewTest
 
 	// An async void command posts its exceptions to the SynchronizationContext that was current when it started, which rethrows them in an
 	// app, and the app ends.
-	static IReadOnlyList<Exception> ExecuteRecordingEscapedExceptions(Action execute)
+	internal static IReadOnlyList<Exception> ExecuteRecordingEscapedExceptions(Action execute)
 	{
 		var recorder = new AsyncVoidExceptionRecorder();
 		var previous = SynchronizationContext.Current;

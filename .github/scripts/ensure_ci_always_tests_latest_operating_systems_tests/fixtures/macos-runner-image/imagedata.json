@@ -1,0 +1,10 @@
+[
+  {
+    "group": "Operating System",
+    "detail": "macOS\n27.0.1\n26A434"
+  },
+  {
+    "group": "Runner Image",
+    "detail": "Image: xcode-27-arm64\nVersion: 20261104.0337.1\nIncluded Software: https://github.com/actions/runner-images/blob/xcode-27-arm64/20261104.0337/images/macos/xcode-27-arm64-Readme.md\nImage Release: https://github.com/actions/runner-images/releases/tag/xcode-27-arm64%2F20261104.0337"
+  }
+]

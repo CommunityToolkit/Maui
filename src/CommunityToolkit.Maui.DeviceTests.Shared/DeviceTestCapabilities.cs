@@ -39,6 +39,15 @@ public static class DeviceTestCapabilities
 	/// <summary>Android: an on-device speech recognition service that answers and has a language installed.</summary>
 	public const string OnDeviceSpeech = nameof(OnDeviceSpeech);
 
+	/// <summary>iOS and Mac Catalyst: the app has the camera permission, which the CI grants before the run.</summary>
+	public const string CameraPermission = nameof(CameraPermission);
+
+	/// <summary>iOS and Mac Catalyst: the app has the microphone permission, granted like <see cref="CameraPermission"/>.</summary>
+	public const string MicrophonePermission = nameof(MicrophonePermission);
+
+	/// <summary>iOS and Mac Catalyst: the app has the speech recognition permission, granted like <see cref="CameraPermission"/>.</summary>
+	public const string SpeechRecognitionPermission = nameof(SpeechRecognitionPermission);
+
 	const string workflow = ".github/workflows/device-tests.yml";
 	const string skipKey = "SkipCapabilities";
 	const string requireKey = "RequireCapabilities";
