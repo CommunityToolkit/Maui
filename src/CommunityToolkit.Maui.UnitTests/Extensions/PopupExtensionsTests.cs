@@ -33,7 +33,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task ClosePopup_TokenExpired_ShouldThrowOperationCancelledException()
+	public async Task ClosePopup_TokenExpired_ShouldThrowOperationCanceledException()
 	{
 		// Arrange
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -1620,7 +1620,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryShowPopupAsync_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -1634,7 +1634,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_Page_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryShowPopupAsync_Page_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		if (Application.Current?.Windows[0].Page is not Page page)
@@ -1653,7 +1653,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsync_Shell_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryShowPopupAsync_Shell_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		var shell = new Shell();
@@ -1673,7 +1673,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsyncT_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryShowPopupAsyncT_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -1687,7 +1687,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsyncT_Page_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryShowPopupAsyncT_Page_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		if (Application.Current?.Windows[0].Page is not Page page)
@@ -1706,7 +1706,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryShowPopupAsyncT_Shell_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryShowPopupAsyncT_Shell_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		var shell = new Shell();
@@ -1957,7 +1957,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryClosePopupAsync_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryClosePopupAsync_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -1984,7 +1984,7 @@ public class PopupExtensionsTests : BaseViewTest
 	}
 
 	[Fact(Timeout = (int)TestDuration.Short)]
-	public async Task TryClosePopupAsyncT_ShouldReturnOperationCanceledException_WhenTokenIsCancelled()
+	public async Task TryClosePopupAsyncT_ShouldReturnOperationCanceledException_WhenTokenIsCanceled()
 	{
 		// Arrange
 		const int inputResult = 89;
