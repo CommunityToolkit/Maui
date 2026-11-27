@@ -3126,6 +3126,84 @@ public class PopupExtensionsTests : BaseViewTest
 		Assert.Null(result.Result);
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Shell_WithoutOptions_ShouldUseShellRoute()
+	{
+		// Arrange
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		// Act
+		var showPopupTask = shell.TryShowPopupAsync(new Popup(), token: TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupPage>(Assert.Single(shell.Navigation.ModalStack));
+		Assert.Matches("/PopupPage[0-9a-f-]{36}$", shell.CurrentState.Location.OriginalString);
+
+		var closeResult = await shell.TryClosePopupAsync(TestContext.Current.CancellationToken);
+		Assert.IsType<IPopupResult>(closeResult.Value, exactMatch: false);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Shell_WithShellParametersAndWithoutOptions_ShouldApplyShellParameters()
+	{
+		// Arrange
+		var viewWithQueryable = new ViewWithIQueryAttributable(new ViewModelWithIQueryAttributable());
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		// Act
+		var showPopupTask = shell.TryShowPopupAsync(viewWithQueryable, shellParameters: shellParameters, token: TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupPage>(Assert.Single(shell.Navigation.ModalStack));
+		Assert.Equal(shellParameterBackgroundColorValue, viewWithQueryable.BackgroundColor);
+		Assert.Equal(shellParameterViewModelTextValue, viewWithQueryable.BindingContext.Text);
+
+		await shell.TryClosePopupAsync(TestContext.Current.CancellationToken);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Navigation_WithoutOptions_ShouldReturnPopupResult()
+	{
+		// Arrange
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), token: TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Page_WithoutOptions_ShouldReturnPopupResult()
+	{
+		// Arrange
+		var page = GetWindowPage();
+		var showPopupTask = page.TryShowPopupAsync(new Popup(), token: TestContext.Current.CancellationToken);
+		var popupPage = (PopupPage)page.Navigation.ModalStack.Last();
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(false), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
 	static Page GetWindowPage()
 	{
 		return Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Page cannot be null");
