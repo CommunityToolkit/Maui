@@ -2633,6 +2633,108 @@ public class PopupExtensionsTests : BaseViewTest
 		});
 	}
 
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_ShouldReturnException_WhenPopupInitializationThrows()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings { OnInitializing = _ => throw expectedException });
+
+		// Act
+		var result = await navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(expectedException, result.Value);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Page_ShouldReturnException_WhenPopupInitializationThrows()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings { OnInitializing = _ => throw expectedException });
+		var page = GetWindowPage();
+
+		// Act
+		var result = await page.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(expectedException, result.Value);
+		Assert.Empty(page.Navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsync_Shell_ShouldReturnException_WhenPopupInitializationThrows()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings { OnInitializing = _ => throw expectedException });
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		// Act
+		var result = await shell.TryShowPopupAsync(new Popup(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(expectedException, result.Value);
+		Assert.Empty(shell.Navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsyncT_ShouldReturnException_WhenPopupInitializationThrows()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings { OnInitializing = _ => throw expectedException });
+
+		// Act
+		var result = await navigation.TryShowPopupAsync<int>(new Grid(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(expectedException, result.Value);
+		Assert.Empty(navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsyncT_Page_ShouldReturnException_WhenPopupInitializationThrows()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings { OnInitializing = _ => throw expectedException });
+		var page = GetWindowPage();
+
+		// Act
+		var result = await page.TryShowPopupAsync<int>(new Grid(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(expectedException, result.Value);
+		Assert.Empty(page.Navigation.ModalStack);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryShowPopupAsyncT_Shell_ShouldReturnException_WhenPopupInitializationThrows()
+	{
+		// Arrange
+		var expectedException = new InvalidOperationException("Popup initialization failed");
+		new Options().SetPopupDefaults(new DefaultPopupSettings { OnInitializing = _ => throw expectedException });
+		var shell = new Shell();
+		shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+		Assert.NotNull(Application.Current);
+		Application.Current.Windows[0].Page = shell;
+
+		// Act
+		var result = await shell.TryShowPopupAsync<int>(new Grid(), PopupOptions.Empty, shellParameters, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.Same(expectedException, result.Value);
+		Assert.Empty(shell.Navigation.ModalStack);
+	}
+
 	static Page GetWindowPage()
 	{
 		return Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Page cannot be null");
