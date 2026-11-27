@@ -9,6 +9,7 @@
 // Toolkit change: when the attached view belongs to a view controller that has no parent (e.g. a Page's PageViewController),
 //                 AttachAndRun attaches that controller's view as a child view controller of the window's root view controller,
 //                 so UIKit view-controller containment stays consistent.
+// Toolkit change: the "unable to find UIWindow" message names each connected scene's activation state and whether it has a key window.
 // Toolkit change: ToBitmap throws when there is no current graphics context or image: UIGraphics.GetCurrentContext and
 //                 GetImageFromCurrentImageContext return nullable types in the iOS and Mac Catalyst bindings of .NET 11 and of
 //                 26.4 or later on .NET 10 (the 26.0 bindings that net10.0-ios and net10.0-maccatalyst compile against return
@@ -20,6 +21,8 @@
 //                 (dotnet/maui#36121); GetPixel and GetPixelData are its code, except that a missing CGImage throws.
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -238,7 +241,7 @@ namespace CommunityToolkit.Maui.DeviceTests
 				{
 					if (window is null)
 					{
-						throw new InvalidOperationException($"Could not attach view - unable to find UIWindow.");
+						throw new InvalidOperationException($"Could not attach view - unable to find UIWindow. {DescribeConnectedScenes(UIApplication.SharedApplication)}");
 					}
 
 					if (window?.RootViewController is not UIViewController viewController)
@@ -519,6 +522,19 @@ namespace CommunityToolkit.Maui.DeviceTests
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
 			else
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
+		}
+
+		static string DescribeConnectedScenes(UIApplication application)
+		{
+			List<string> descriptions = [];
+
+			foreach (var scene in application.ConnectedScenes)
+			{
+				var hasKeyWindow = scene is UIWindowScene windowScene && windowScene.Windows.Any(window => window.IsKeyWindow);
+				descriptions.Add(FormattableString.Invariant($"{scene.GetType().Name} (activation state: {scene.ActivationState}, has key window: {hasKeyWindow})"));
+			}
+
+			return descriptions.Count is 0 ? "No scene is connected." : $"Connected scenes: {string.Join(", ", descriptions)}.";
 		}
 
 		static UIWindow? GetKeyWindow(UIApplication application)

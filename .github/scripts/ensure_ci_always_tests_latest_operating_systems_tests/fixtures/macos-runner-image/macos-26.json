@@ -1,0 +1,174 @@
+{
+  "status": "ok",
+  "label": "macos-26",
+  "image": {
+    "name": "macos-26-arm64",
+    "version": "20261117.0516.1"
+  },
+  "xcode_apps": [
+    {
+      "folder": "Xcode_26.6.app",
+      "version": "26.6",
+      "build": "17F113",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.6.0.app",
+        "Xcode.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.5.app",
+      "version": "26.5",
+      "build": "17F42",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.5.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.4.1.app",
+      "version": "26.4.1",
+      "build": "17E202",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.4.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.3.app",
+      "version": "26.3",
+      "build": "17C529",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.3.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.2.app",
+      "version": "26.2",
+      "build": "17C52",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.2.0.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.1.1.app",
+      "version": "26.1.1",
+      "build": "17B100",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.1.app"
+      ]
+    },
+    {
+      "folder": "Xcode_26.0.1.app",
+      "version": "26.0.1",
+      "build": "17A400",
+      "license_type": "Release",
+      "symlinks": [
+        "Xcode_26.0.app"
+      ]
+    }
+  ],
+  "runtimes": [
+    {
+      "platform": "iOS",
+      "version": "26.2",
+      "name": "iOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "26.4.1",
+      "name": "iOS 26.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-4",
+      "available": true
+    },
+    {
+      "platform": "iOS",
+      "version": "26.5",
+      "name": "iOS 26.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "26.2",
+      "name": "tvOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "26.4",
+      "name": "tvOS 26.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-4",
+      "available": true
+    },
+    {
+      "platform": "tvOS",
+      "version": "26.5",
+      "name": "tvOS 26.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-5",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "26.2",
+      "name": "watchOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "26.4",
+      "name": "watchOS 26.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-26-4",
+      "available": true
+    },
+    {
+      "platform": "watchOS",
+      "version": "26.5",
+      "name": "watchOS 26.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-26-5",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "26.2",
+      "name": "visionOS 26.2",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-26-2",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "26.4.1",
+      "name": "visionOS 26.4",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-26-4",
+      "available": true
+    },
+    {
+      "platform": "visionOS",
+      "version": "26.5",
+      "name": "visionOS 26.5",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.visionOS-26-5",
+      "available": true
+    }
+  ],
+  "dotnet_sdks": [
+    "8.0.101",
+    "8.0.204",
+    "8.0.303",
+    "8.0.428",
+    "9.0.102",
+    "9.0.203",
+    "9.0.321",
+    "10.0.103",
+    "10.0.203",
+    "10.0.302",
+    "10.0.404",
+    "11.0.100"
+  ]
+}

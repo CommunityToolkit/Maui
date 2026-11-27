@@ -185,6 +185,17 @@ public class DeviceTestsInfrastructureTests : CommunityToolkitHandlerTestBase
 		Assert.Equal(1, behavior.DetachedCount);
 	}
 
+#if IOS || MACCATALYST
+	[Fact]
+	public void TestsStartOnlyOnceTheWindowSceneIsForegroundActive()
+	{
+		var headlessApplicationDelegate = Runners.HeadlessRunner.MauiTestApplicationDelegate.Current;
+		Skip.If(headlessApplicationDelegate is null, "Only the headless runner waits for the scene to become active before it starts the tests.");
+
+		AotSafeAssert.Equal(UIKit.UISceneActivationState.ForegroundActive, headlessApplicationDelegate.WindowSceneActivationStateAtTestStart);
+	}
+#endif
+
 	[Fact]
 	public void RuntimeSkipIsReportedAsSkipped() =>
 		Skip.If(true, "Expected skip: proves that a run-time skip is reported as Skipped, not Passed.");
