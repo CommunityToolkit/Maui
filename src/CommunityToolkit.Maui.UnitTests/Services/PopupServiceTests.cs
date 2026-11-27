@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Services;
 using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
@@ -10,6 +12,8 @@ namespace CommunityToolkit.Maui.UnitTests.Services;
 
 public class PopupServiceTests : BaseViewTest
 {
+	const string closeResult = "closed";
+
 	readonly INavigation navigation;
 	readonly ReadOnlyDictionary<string, object> shellParameters = new Dictionary<string, object>
 	{
@@ -778,6 +782,315 @@ public class PopupServiceTests : BaseViewTest
 
 		// Assert
 		Assert.Equal(1, SingleConstructionViewModel.ConstructorCallCount);
+	}
+
+	public enum TryShowPopupMethod
+	{
+		Page,
+		Navigation,
+		Shell,
+		PageWithResult,
+		NavigationWithResult,
+		ShellWithResult
+	}
+
+	public enum TryClosePopupMethod
+	{
+		Page,
+		PageWithResult,
+		Navigation,
+		NavigationWithResult
+	}
+
+	public static TheoryData<TryShowPopupMethod> TryShowPopupMethods { get; } = [.. Enum.GetValues<TryShowPopupMethod>()];
+
+	public static TheoryData<TryClosePopupMethod> TryClosePopupMethods { get; } = [.. Enum.GetValues<TryClosePopupMethod>()];
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public async Task TryShowPopupAsync_ShouldReturnPopupResult_WhenPopupIsClosed(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var (target, targetNavigation) = GetTarget(tryShowPopupMethod);
+		var showPopupTask = TryShowPopupAsync<MockPopup>(tryShowPopupMethod, popupService, target, TestContext.Current.CancellationToken);
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(targetNavigation.ModalStack));
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult<string>("done", false), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		if (ReturnsResult(tryShowPopupMethod))
+		{
+			Assert.Equal("done", Assert.IsType<IPopupResult<string>>(result.Value, exactMatch: false).Result);
+		}
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public async Task TryShowPopupAsync_ShouldReturnDismissedResult_WhenPopupIsDismissedByTappingOutsideOfPopup(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var (target, targetNavigation) = GetTarget(tryShowPopupMethod);
+		var showPopupTask = TryShowPopupAsync<MockPopup>(tryShowPopupMethod, popupService, target, TestContext.Current.CancellationToken);
+		var popupPage = Assert.IsType<PopupPage>(Assert.Single(targetNavigation.ModalStack));
+
+		// Act
+		await popupPage.CloseAsync(new PopupResult(true), TestContext.Current.CancellationToken);
+		var result = await showPopupTask;
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.True(popupResult.WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public async Task TryShowPopupAsync_ShouldReturnInvalidOperationException_WhenPopupTypeIsNotRegistered(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var (target, targetNavigation) = GetTarget(tryShowPopupMethod);
+
+		// Act
+		var result = await TryShowPopupAsync<INotifyPropertyChanged>(tryShowPopupMethod, popupService, target, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<InvalidOperationException>(result.Value);
+		Assert.Empty(targetNavigation.ModalStack);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public async Task TryShowPopupAsync_ShouldReturnOperationCanceledException_WhenTokenIsCanceledBeforeShowing(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var (target, targetNavigation) = GetTarget(tryShowPopupMethod);
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		await cancellationTokenSource.CancelAsync();
+
+		// Act
+		var result = await TryShowPopupAsync<MockPopup>(tryShowPopupMethod, popupService, target, cancellationTokenSource.Token);
+
+		// Assert
+		Assert.IsType<OperationCanceledException>(result.Value, exactMatch: false);
+		Assert.Empty(targetNavigation.ModalStack);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public async Task TryShowPopupAsync_ShouldReturnOperationCanceledExceptionAndKeepPopupOpen_WhenTokenIsCanceledWhilePopupIsOpen(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var (target, targetNavigation) = GetTarget(tryShowPopupMethod);
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		var showPopupTask = TryShowPopupAsync<MockPopup>(tryShowPopupMethod, popupService, target, cancellationTokenSource.Token);
+		Assert.IsType<PopupPage>(Assert.Single(targetNavigation.ModalStack));
+		Assert.False(showPopupTask.IsCompleted);
+
+		// Act
+		await cancellationTokenSource.CancelAsync();
+		var result = await showPopupTask;
+
+		// Assert
+		Assert.IsType<OperationCanceledException>(result.Value, exactMatch: false);
+		Assert.IsType<PopupPage>(Assert.Single(targetNavigation.ModalStack));
+
+		var closeResult = await popupService.TryClosePopupAsync(targetNavigation, TestContext.Current.CancellationToken);
+		Assert.IsType<IPopupResult>(closeResult.Value, exactMatch: false);
+		Assert.Empty(targetNavigation.ModalStack);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public void TryShowPopupAsync_ShouldThrowArgumentNullException_WhenPopupServiceIsNull(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var (target, _) = GetTarget(tryShowPopupMethod);
+
+		// Act / Assert
+		Assert.Throws<ArgumentNullException>(() =>
+		{
+			_ = TryShowPopupAsync<MockPopup>(tryShowPopupMethod, null!, target, TestContext.Current.CancellationToken);
+		});
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryShowPopupMethods))]
+	public void TryShowPopupAsync_ShouldThrowArgumentNullException_WhenTargetIsNull(TryShowPopupMethod tryShowPopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act / Assert
+		Assert.Throws<ArgumentNullException>(() =>
+		{
+			_ = TryShowPopupAsync<MockPopup>(tryShowPopupMethod, popupService, null!, TestContext.Current.CancellationToken);
+		});
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryClosePopupMethods))]
+	public async Task TryClosePopupAsync_ShouldReturnPopupResult_WhenPopupIsShown(TryClosePopupMethod tryClosePopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var page = GetWindowPage();
+		popupService.ShowPopup<MockPopup>(page);
+		Assert.IsType<PopupPage>(Assert.Single(page.Navigation.ModalStack));
+
+		// Act
+		var result = await TryClosePopupAsync(tryClosePopupMethod, popupService, page, TestContext.Current.CancellationToken);
+
+		// Assert
+		var popupResult = Assert.IsType<IPopupResult>(result.Value, exactMatch: false);
+		Assert.False(popupResult.WasDismissedByTappingOutsideOfPopup);
+		Assert.Empty(page.Navigation.ModalStack);
+		if (ClosesWithResult(tryClosePopupMethod))
+		{
+			Assert.Equal(closeResult, Assert.IsType<IPopupResult<string>>(result.Value, exactMatch: false).Result);
+		}
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryClosePopupMethods))]
+	public async Task TryClosePopupAsync_ShouldReturnPopupNotFoundException_WhenNoPopupIsShown(TryClosePopupMethod tryClosePopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var page = GetWindowPage();
+
+		// Act
+		var result = await TryClosePopupAsync(tryClosePopupMethod, popupService, page, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupNotFoundException>(result.Value);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryClosePopupMethods))]
+	public async Task TryClosePopupAsync_ShouldReturnPopupBlockedException_WhenPopupIsBlocked(TryClosePopupMethod tryClosePopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var page = GetWindowPage();
+		popupService.ShowPopup<MockPopup>(page);
+		await page.Navigation.PushModalAsync(new ContentPage());
+
+		// Act
+		var result = await TryClosePopupAsync(tryClosePopupMethod, popupService, page, TestContext.Current.CancellationToken);
+
+		// Assert
+		Assert.IsType<PopupBlockedException>(result.Value);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryClosePopupMethods))]
+	public async Task TryClosePopupAsync_ShouldReturnOperationCanceledException_WhenTokenIsCanceled(TryClosePopupMethod tryClosePopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+		var page = GetWindowPage();
+		popupService.ShowPopup<MockPopup>(page);
+		using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+		await cancellationTokenSource.CancelAsync();
+
+		// Act
+		var result = await TryClosePopupAsync(tryClosePopupMethod, popupService, page, cancellationTokenSource.Token);
+
+		// Assert
+		Assert.IsType<OperationCanceledException>(result.Value, exactMatch: false);
+		Assert.IsType<PopupPage>(Assert.Single(page.Navigation.ModalStack));
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryClosePopupMethods))]
+	public void TryClosePopupAsync_ShouldThrowArgumentNullException_WhenPopupServiceIsNull(TryClosePopupMethod tryClosePopupMethod)
+	{
+		// Arrange
+		var page = GetWindowPage();
+
+		// Act / Assert
+		Assert.Throws<ArgumentNullException>(() =>
+		{
+			_ = TryClosePopupAsync(tryClosePopupMethod, null!, page, TestContext.Current.CancellationToken);
+		});
+	}
+
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[MemberData(nameof(TryClosePopupMethods))]
+	public void TryClosePopupAsync_ShouldThrowArgumentNullException_WhenPageOrNavigationIsNull(TryClosePopupMethod tryClosePopupMethod)
+	{
+		// Arrange
+		var popupService = ServiceProvider.GetRequiredService<IPopupService>();
+
+		// Act / Assert
+		Assert.Throws<ArgumentNullException>(() =>
+		{
+			_ = TryClosePopupAsync(tryClosePopupMethod, popupService, null!, TestContext.Current.CancellationToken);
+		});
+	}
+
+	static bool ReturnsResult(TryShowPopupMethod tryShowPopupMethod) => tryShowPopupMethod is TryShowPopupMethod.PageWithResult or TryShowPopupMethod.NavigationWithResult or TryShowPopupMethod.ShellWithResult;
+
+	static bool ClosesWithResult(TryClosePopupMethod tryClosePopupMethod) => tryClosePopupMethod is TryClosePopupMethod.PageWithResult or TryClosePopupMethod.NavigationWithResult;
+
+	static Page GetWindowPage()
+	{
+		return Application.Current?.Windows[0].Page ?? throw new InvalidOperationException("Page cannot be null");
+	}
+
+	static Task<PopupResultOrException> TryShowPopupAsync<TPopup>(TryShowPopupMethod tryShowPopupMethod, IPopupService popupService, object target, CancellationToken cancellationToken) where TPopup : notnull
+	{
+		return tryShowPopupMethod switch
+		{
+			TryShowPopupMethod.Page => popupService.TryShowPopupAsync<TPopup>((Page)target, PopupOptions.Empty, cancellationToken),
+			TryShowPopupMethod.Navigation => popupService.TryShowPopupAsync<TPopup>((INavigation)target, PopupOptions.Empty, cancellationToken),
+			TryShowPopupMethod.Shell => popupService.TryShowPopupAsync<TPopup>((Shell)target, PopupOptions.Empty, null, cancellationToken),
+			TryShowPopupMethod.PageWithResult => ConvertAsync(popupService.TryShowPopupAsync<TPopup, string>((Page)target, PopupOptions.Empty, cancellationToken)),
+			TryShowPopupMethod.NavigationWithResult => ConvertAsync(popupService.TryShowPopupAsync<TPopup, string>((INavigation)target, PopupOptions.Empty, cancellationToken)),
+			TryShowPopupMethod.ShellWithResult => ConvertAsync(popupService.TryShowPopupAsync<TPopup, string>((Shell)target, PopupOptions.Empty, null, cancellationToken)),
+			_ => throw new NotSupportedException($"{tryShowPopupMethod} is not supported")
+		};
+	}
+
+	static Task<PopupResultOrException> TryClosePopupAsync(TryClosePopupMethod tryClosePopupMethod, IPopupService popupService, Page page, CancellationToken cancellationToken)
+	{
+		return tryClosePopupMethod switch
+		{
+			TryClosePopupMethod.Page => popupService.TryClosePopupAsync(page, cancellationToken),
+			TryClosePopupMethod.PageWithResult => ConvertAsync(popupService.TryClosePopupAsync(page, closeResult, cancellationToken)),
+			TryClosePopupMethod.Navigation => popupService.TryClosePopupAsync(page?.Navigation!, cancellationToken),
+			TryClosePopupMethod.NavigationWithResult => ConvertAsync(popupService.TryClosePopupAsync(page?.Navigation!, closeResult, cancellationToken)),
+			_ => throw new NotSupportedException($"{tryClosePopupMethod} is not supported")
+		};
+	}
+
+	static async Task<PopupResultOrException> ConvertAsync<T>(Task<PopupResultOrException<T>> resultOrExceptionTask)
+	{
+		return await resultOrExceptionTask;
+	}
+
+	(object Target, INavigation Navigation) GetTarget(TryShowPopupMethod tryShowPopupMethod)
+	{
+		if (tryShowPopupMethod is TryShowPopupMethod.Shell or TryShowPopupMethod.ShellWithResult)
+		{
+			var shell = new Shell();
+			shell.Items.Add(new MockPage(new MockPageViewModel()));
+
+			Assert.NotNull(Application.Current);
+			Application.Current.Windows[0].Page = shell;
+			return (shell, shell.Navigation);
+		}
+
+		var page = GetWindowPage();
+		return tryShowPopupMethod is TryShowPopupMethod.Navigation or TryShowPopupMethod.NavigationWithResult ? (page.Navigation, page.Navigation) : (page, page.Navigation);
 	}
 }
 
