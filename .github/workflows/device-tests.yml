@@ -561,6 +561,9 @@ jobs:
         env:
             # Trimmed legs never collect coverage: coverlet rewrites the toolkit assemblies, and the trimming guard fails such a build.
             DEVICE_TEST_COVERAGE: ${{ matrix.trimming == 'none' && github.event_name != 'workflow_dispatch' }}
+            # ios.ps1 grants all three and checks them before the app runs; requiring them fails the tests if a grant is still lost, instead
+            # of skipping them on a passing leg (run 44928036772 skipped 6).
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission,SpeechRecognitionPermission'
         steps:
             -   name: Checkout code
                 uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -796,6 +799,9 @@ jobs:
                         xcode: '16.4'
                         install-runtime: true
         env:
+            # ios.ps1 grants all three and checks them before the app runs; requiring them fails the tests if a grant is still lost, instead
+            # of skipping them on a passing leg (run 44928036772 skipped 6).
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission,SpeechRecognitionPermission'
             DEVICE_TEST_COVERAGE: false
         steps:
             -   name: Checkout code
@@ -908,6 +914,8 @@ jobs:
             # Camera: the runner VM has no camera and no step can add one (local runs on a Mac run these tests). Delete it if the runner
             # image gains a camera.
             DEVICE_TEST_SKIP_CAPABILITIES: ${{ !inputs.run-everything && 'Camera' || '' }}
+            # The grant step below only warns when it cannot write a grant, so requiring all three fails the tests instead of skipping them.
+            DEVICE_TEST_REQUIRE_CAPABILITIES: 'CameraPermission,MicrophonePermission,SpeechRecognitionPermission'
             DEVICE_TEST_COVERAGE: ${{ github.event_name != 'workflow_dispatch' }}
             HOMEBREW_NO_AUTO_UPDATE: 1
         steps:
@@ -995,8 +1003,8 @@ jobs:
 
             # CI only (a headless run cannot answer the permission prompts). On macOS 27 the per-user TCC database is under
             # /private/var/containers/Data/ProtectedSystem, found the way the runner image's configure-tccdb-macos-27.sh finds it; writing it
-            # needs sudo and SIP off, which the runner VMs have. Without it the app keeps undecided permissions and those tests skip, so a
-            # grant that cannot be written only warns, as on the iOS simulator (ios.ps1), and the app is still built and tested.
+            # needs sudo and SIP off, which the runner VMs have. Without it the app keeps undecided permissions; the step only warns and
+            # the job requires all three capabilities, so their tests fail, and the app is still built and tested.
             -   name: Grant camera, microphone and speech recognition to the test app
                 run: |
                     db=$(sudo find /private/var/containers/Data/ProtectedSystem -mindepth 6 -maxdepth 6 -type f -path '*/Data/Library/Application Support/com.apple.TCC/TCC.db' 2>/dev/null || true)

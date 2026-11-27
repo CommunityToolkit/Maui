@@ -282,21 +282,15 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		Assert.Equal(1, proxy.CloseCount);
 	}
 
-	[Fact]
-	public async Task ImageCallbackWithAnImageWithoutPlanesRaisesMediaCaptureFailedAndClosesTheImageProxy()
+	static async Task<(ImageReader Reader, AImage Image)> CreateImageWithoutPlanesAsync()
 	{
-		SetupBuilder();
 		if (!OperatingSystem.IsAndroidVersionAtLeast(29))
 		{
 			throw new SkipException("Needs Android 10 (API 29): an android.media.Image without planes (ImageFormat.PRIVATE) is produced by an ImageReader with GPU usage flags, which older versions do not offer (ImageWriter can not fill a PRIVATE image on the emulators).");
 		}
 
-		var view = new CameraView();
-		var recorder = new CaptureRecorder(view);
-		var callback = CreateImageCallback(view);
-
 		// A PRIVATE image is filled by a GPU producer, hence the hardware canvas.
-		using var reader = ImageReader.NewInstance(64, 64, ImageFormatType.Private, 2, HardwareBuffer.UsageGpuColorOutput | HardwareBuffer.UsageGpuSampledImage);
+		var reader = ImageReader.NewInstance(64, 64, ImageFormatType.Private, 2, HardwareBuffer.UsageGpuColorOutput | HardwareBuffer.UsageGpuSampledImage);
 		var available = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		reader.SetOnImageAvailableListener(new ImageAvailableListener(available), new Android.OS.Handler(Android.OS.Looper.MainLooper!));
 		var surface = reader.Surface!;
@@ -304,9 +298,23 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		canvas.DrawColor(Android.Graphics.Color.Red);
 		surface.UnlockCanvasAndPost(canvas);
 		await available.Task.WaitAsync(CameraTimeout);
-		using var image = reader.AcquireNextImage()!;
+		var image = reader.AcquireNextImage()!;
 		Assert.Equal(ImageFormatType.Private, (ImageFormatType)image.Format);
 		Assert.Empty(image.GetPlanes() ?? []);
+
+		return (reader, image);
+	}
+
+	[Fact]
+	public async Task ImageCallbackWithAnImageWithoutPlanesRaisesMediaCaptureFailedAndClosesTheImageProxy()
+	{
+		SetupBuilder();
+		var view = new CameraView();
+		var recorder = new CaptureRecorder(view);
+		var callback = CreateImageCallback(view);
+		var (reader, image) = await CreateImageWithoutPlanesAsync();
+		using var readerScope = reader;
+		using var imageScope = image;
 		var proxy = new FakeImageProxy(image);
 
 		callback.OnCaptureSuccess(proxy);
@@ -327,6 +335,28 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var type = typeof(CameraManager).GetNestedType("ImageCallBack", BindingFlags.NonPublic)!;
 		var method = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(method => method.Name.Contains("GetFirstPlane", StringComparison.Ordinal));
 		return (AImage.Plane?)method.Invoke(null, [planes]);
+	}
+
+	[Fact]
+	public async Task ImageCallbackWithAnImageWithoutPlanesWhenTheMediaCaptureFailedHandlerThrowsRethrowsNothingReportsTheHandlersExceptionAndClosesTheImageProxy()
+	{
+		SetupBuilder();
+		var view = new CameraView();
+		var recorder = new CaptureRecorder(view);
+		using var errors = new CameraErrorRecorder(view);
+		var callback = CreateImageCallback(view);
+		view.MediaCaptureFailed += ThrowingFailureHandler;
+		var (reader, image) = await CreateImageWithoutPlanesAsync();
+		using var readerScope = reader;
+		using var imageScope = image;
+		var proxy = new FakeImageProxy(image);
+
+		var exception = Record.Exception(() => callback.OnCaptureSuccess(proxy));
+
+		Assert.Null(exception);
+		Assert.Equal("Unable to obtain a buffer for the image plane.", Assert.Single(recorder.Failures));
+		Assert.Same(failureHandlerException, Assert.Single(errors.Errors));
+		Assert.Equal(1, proxy.CloseCount);
 	}
 
 	[Fact]
@@ -378,6 +408,12 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 
 	const string subscriberFailureMessage = "The subscriber failed.";
 
+	static readonly InvalidOperationException failureHandlerException = new("The failure handler failed.");
+
+	static void ThrowingFailureHandler(object? sender, MediaCaptureFailedEventArgs e) => throw failureHandlerException;
+
+	static void ThrowingMediaCapturedSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
+
 	[Fact]
 	public async Task ImageCallbackReportsAThrowingSubscriberOnceWithoutRethrowingAndClosesTheImageProxy()
 	{
@@ -385,7 +421,7 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		var view = new CameraView();
 		var recorder = new CaptureRecorder(view);
 		var callback = CreateImageCallback(view);
-		view.MediaCaptured += ThrowingSubscriber;
+		view.MediaCaptured += ThrowingMediaCapturedSubscriber;
 		using var source = CameraImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
 		using var image = await source.NextAsync(1);
 		var proxy = new FakeImageProxy(image);
@@ -396,8 +432,6 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
 		Assert.Single(recorder.Captured);
 		Assert.Equal(1, proxy.CloseCount);
-
-		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
 	}
 
 	// CameraX calls the image callback on its executor thread, where an exception that escaped the callback would end the app
@@ -410,11 +444,11 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 		await RunWithStreamingSessionAsync(async session =>
 		{
 			var recorder = new CaptureRecorder(session.View);
-			session.View.MediaCaptured += ThrowingSubscriber;
+			session.View.MediaCaptured += ThrowingMediaCapturedSubscriber;
 
 			await session.Manager.TakePicture(CancellationToken.None);
 			await recorder.WaitForFailureAsync();
-			session.View.MediaCaptured -= ThrowingSubscriber;
+			session.View.MediaCaptured -= ThrowingMediaCapturedSubscriber;
 
 			Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
 			Assert.Single(recorder.Captured);
@@ -427,8 +461,98 @@ public class CameraManagerCaptureAndroidTests : CameraAndroidTestBase
 			Assert.Empty(nextRecorder.Failures);
 			Assert.Single(recorder.Failures);
 		});
+	}
 
-		static void ThrowingSubscriber(object? sender, MediaCapturedEventArgs e) => throw new InvalidOperationException(subscriberFailureMessage);
+	// CameraX calls the image callback on its executor thread: a MediaCaptureFailed handler that throws must not end the app
+	[Fact]
+	public async Task TakePictureWhenBothTheMediaCapturedAndTheMediaCaptureFailedHandlersThrowRaisesMediaCaptureFailedOnceReportsTheHandlersExceptionAndTheNextCaptureSucceeds()
+	{
+		SetupBuilder();
+		RequireStillCapture();
+
+		await RunWithStreamingSessionAsync(async session =>
+		{
+			var recorder = new CaptureRecorder(session.View);
+			using var errors = new CameraErrorRecorder(session.View);
+			session.View.MediaCaptured += ThrowingMediaCapturedSubscriber;
+			session.View.MediaCaptureFailed += ThrowingFailureHandler;
+
+			await session.Manager.TakePicture(CancellationToken.None);
+			await AssertionExtensions.AssertEventually(() => errors.Errors.Count > 0, 40000, 50, "The camera did not raise ErrorOccurred.");
+			session.View.MediaCaptured -= ThrowingMediaCapturedSubscriber;
+			session.View.MediaCaptureFailed -= ThrowingFailureHandler;
+
+			Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
+			Assert.Same(failureHandlerException, Assert.Single(errors.Errors));
+			Assert.Single(recorder.Captured);
+
+			var nextRecorder = new CaptureRecorder(session.View);
+			await session.Manager.TakePicture(CancellationToken.None);
+			await nextRecorder.WaitForCaptureAsync();
+
+			Assert.True(IsJpeg(await ReadAllBytesAsync(nextRecorder.Captured[0])), "The capture after the failed one is not a JPEG.");
+			Assert.Empty(nextRecorder.Failures);
+			Assert.Single(recorder.Failures);
+			Assert.Single(errors.Errors);
+		});
+	}
+
+	[Fact]
+	public async Task ImageCallbackWhenBothTheMediaCapturedAndTheMediaCaptureFailedHandlersThrowRethrowsNothingAndRaisesMediaCaptureFailedOnce()
+	{
+		SetupBuilder();
+		var view = new CameraView();
+		var recorder = new CaptureRecorder(view);
+		using var errors = new CameraErrorRecorder(view);
+		var callback = CreateImageCallback(view);
+		view.MediaCaptured += ThrowingMediaCapturedSubscriber;
+		view.MediaCaptureFailed += ThrowingFailureHandler;
+		using var source = CameraImageSource.Create(Android.Graphics.ImageFormatType.Yuv420888);
+		using var image = await source.NextAsync(1);
+		var proxy = new FakeImageProxy(image);
+
+		var exception = Record.Exception(() => callback.OnCaptureSuccess(proxy));
+
+		Assert.Null(exception);
+		Assert.Equal(subscriberFailureMessage, Assert.Single(recorder.Failures));
+		Assert.Same(failureHandlerException, Assert.Single(errors.Errors));
+		Assert.Equal(1, proxy.CloseCount);
+	}
+
+	[Fact]
+	public void ImageCallbackOnErrorWhenTheMediaCaptureFailedHandlerThrowsRethrowsNothingAndReportsTheHandlersException()
+	{
+		SetupBuilder();
+		var view = new CameraView();
+		var recorder = new CaptureRecorder(view);
+		using var errors = new CameraErrorRecorder(view);
+		var callback = CreateImageCallback(view);
+		view.MediaCaptureFailed += ThrowingFailureHandler;
+
+		var exception = Record.Exception(() => callback.OnError(new ImageCaptureException(ImageCapture.ErrorCaptureFailed, "The sensor failed.", null!)));
+
+		Assert.Null(exception);
+		Assert.Equal("The sensor failed.", Assert.Single(recorder.Failures));
+		Assert.Same(failureHandlerException, Assert.Single(errors.Errors));
+	}
+
+	[Fact]
+	public void ImageCallbackWithAnImageProxyWithoutAnImageWhenTheMediaCaptureFailedHandlerThrowsRethrowsNothingReportsTheHandlersExceptionAndClosesTheImageProxy()
+	{
+		SetupBuilder();
+		var view = new CameraView();
+		var recorder = new CaptureRecorder(view);
+		using var errors = new CameraErrorRecorder(view);
+		var callback = CreateImageCallback(view);
+		var proxy = new FakeImageProxy(null);
+		view.MediaCaptureFailed += ThrowingFailureHandler;
+
+		var exception = Record.Exception(() => callback.OnCaptureSuccess(proxy));
+
+		Assert.Null(exception);
+		Assert.Equal("Unable to obtain Image data.", Assert.Single(recorder.Failures));
+		Assert.Equal(1, proxy.CloseCount);
+		Assert.Same(failureHandlerException, Assert.Single(errors.Errors));
 	}
 
 	[Fact]
