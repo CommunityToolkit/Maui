@@ -69,7 +69,7 @@ jobs:
         name: ${{ matrix.trimming == 'none' && format('Device Tests (Android API {0})', matrix.api-level) || format('Trimmed Device Tests (Android newest API, {0})', matrix.trimming) }}
         permissions:
             contents: read
-        # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
+        # Pinned, not ubuntu-latest: a new Ubuntu reaches this job only through the nightly bump pull request, whose CI tests it first.
         runs-on: ubuntu-24.04
         # 110 minutes: this job also builds the app in its test step (coverage), with the emulator running. A trimmed leg gets 120: its
         # build step runs before the emulator, and a known platform crash gets one retry.
@@ -261,7 +261,7 @@ jobs:
         if: ${{ inputs.trimming == 'none' }}
         permissions:
             contents: read
-        # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
+        # Pinned, not ubuntu-latest: a new Ubuntu reaches this job only through the nightly bump pull request, whose CI tests it first.
         runs-on: ubuntu-24.04
         timeout-minutes: 60
         env:
@@ -378,7 +378,7 @@ jobs:
         needs: [ device_tests_android_app ]
         permissions:
             contents: read
-        # Pinned: ubuntu-latest moves to Ubuntu 26.04 from 2026-10-19 (actions/runner-images #14748).
+        # Pinned, not ubuntu-latest: a new Ubuntu reaches this job only through the nightly bump pull request, whose CI tests it first.
         runs-on: ubuntu-24.04
         # Room for the one retry of a known platform crash, which runs a second attempt of up to 53 minutes (50 plus the evidence grace).
         timeout-minutes: 120
@@ -1060,8 +1060,7 @@ jobs:
         name: ${{ matrix.trimming == 'none' && format('Device Tests (Windows {0})', matrix.packaging) || format('Trimmed Device Tests (Windows {0}, {1})', matrix.packaging, matrix.trimming) }}
         permissions:
             contents: read
-        # Pinned: windows-latest, windows-2025 and windows-2025-vs2026 run the same image today (Windows Server 2025, x64), but windows-latest
-        # moves on.
+        # Pinned, not windows-latest: a new Windows Server reaches this job only through the nightly bump pull request, whose CI tests it first.
         runs-on: windows-2025
         timeout-minutes: 100
         strategy:

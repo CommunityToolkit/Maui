@@ -128,6 +128,18 @@ class EachKindChangesOnlyTheIntendedLinesTests(unittest.TestCase):
         self.assertEqual(after[DEVICE_TESTS].count('windows-2025'), texts[DEVICE_TESTS].count('windows-2025'))
         self.assertEqual(after[SHARED_ENV], texts[SHARED_ENV])
 
+    def test_a_runner_move_changes_only_the_label_token_and_keeps_the_line_ending(self) -> None:
+        texts = repo_texts()
+        move = change('replace-runner-label', DEVICE_TESTS, 73, 'ubuntu-24.04', 'ubuntu-26.04', pin='runner-label:x:y')
+        after = editor.apply_changes(texts[DEVICE_TESTS], [move])
+        self.assertEqual(changed_line_numbers(texts[DEVICE_TESTS], after), [73])
+        self.assertEqual(after.split('\n')[72], '        runs-on: ubuntu-26.04')
+        self.assertEqual(after.replace('ubuntu-26.04', 'ubuntu-24.04', 1), texts[DEVICE_TESTS])
+        carriage = texts[DEVICE_TESTS].replace('\n', '\r\n')
+        after_carriage = editor.apply_changes(carriage, [move])
+        self.assertEqual(after_carriage.split('\n')[72], '        runs-on: ubuntu-26.04\r')
+        self.assertEqual(after_carriage.replace('ubuntu-26.04', 'ubuntu-24.04', 1), carriage)
+
     def test_label_that_only_contains_the_old_one_is_not_replaced(self) -> None:
         text = 'x: [ a, xcode-270, xcode-27.1, xcode-27 ]\n'
         after = editor.apply_changes(text, [change('replace-runner-label', 'f', 1, 'xcode-27', 'xcode-28')])

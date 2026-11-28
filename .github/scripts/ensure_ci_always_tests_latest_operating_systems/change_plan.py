@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -16,16 +17,16 @@ from . import android_levels, bump_pull_request, markers, older_ios_legs, pull_r
 from .change_validator import validate_changes
 from .data_types import (ChangeForAPerson, FamilyPlan, PinnedVersions, RunnerImageRow, SafeChange, SourceProblem,
                          ThingToCheck)
-from .errors import UnreadableSourceError
+from .errors import PinnedVersionsFormatError, UnreadableSourceError
 from .line_editor import apply_changes_to_texts, unified_diff
 from .markdown_text import markdown_code
-from .pinned_versions import read_pinned_versions
-from .required_checks import renamed_required_checks
+from .pinned_versions import find_job_block, read_pinned_versions, split_into_lines
+from .required_checks import is_value_standing_alone_in, renamed_required_checks
 
 ANDROID_FAMILY = android_levels.FAMILY
 XCODE_FAMILY = xcode_changes.FAMILY
-CHANGE_FAMILIES = (ANDROID_FAMILY, XCODE_FAMILY)
-INFORMATIONAL_FAMILIES = (runner_labels.RUNNER_LABELS_FAMILY, older_ios_legs.FAMILY)
+CHANGE_FAMILIES = (ANDROID_FAMILY, XCODE_FAMILY, runner_labels.RUNNER_LABELS_FAMILY)
+INFORMATIONAL_FAMILIES = (older_ios_legs.FAMILY,)
 
 PINNED_VERSIONS_PROBLEM_KEY = 'source:pinned-versions'
 BRANCH_RULES_PROBLEM_KEY = 'source:branch-rules'
@@ -167,6 +168,11 @@ def _current_value_of(pinned: PinnedVersions, change: Mapping[str, Any]) -> Opti
                 return leg.level.text
     if pin.startswith('apple-label:'):
         return pinned.apple_label.label
+    runner_label_place = runner_labels.parse_runner_label_pin(pin)
+    if runner_label_place is not None:
+        for occurrence in pinned.ubuntu_and_windows_label_occurrences:
+            if occurrence.is_movable and (occurrence.file, occurrence.job_id) == runner_label_place:
+                return occurrence.label
     return None
 
 
@@ -223,12 +229,46 @@ def _dropped_note(pinned: PinnedVersions, entry: Mapping[str, Any], reason: Opti
     return 'Dropped %s %s from the open pull request: %s.' % (markdown_code(entry.get('pin')), change, reason)
 
 
-def _route_required_check_renames(safe_changes: List[SafeChange], required_checks: List[str]) -> Tuple[List[SafeChange], List[ChangeForAPerson]]:
+_JOB_NAME_LINE = re.compile(r' {8}name:(.*)', re.ASCII)
+_NAME_CONTINUATION_LINE = re.compile(r' {9,}.*|\s*', re.ASCII)
+
+
+def _does_the_moved_job_name_hold_its_old_label(change: SafeChange, base_texts: Mapping[str, str]) -> bool:
+    """A runs-on move renames a check only through the moved job's own name: other jobs' checks never change with it."""
+    job = runner_labels.parse_runner_label_pin(change.pin)
+    if job is None or change.file not in base_texts:
+        return True
+    file, job_id = job
+    lines = split_into_lines(base_texts[file])
+    try:
+        first, last = find_job_block(lines, job_id)
+    except PinnedVersionsFormatError:
+        return True
+    for number in range(first, last + 1):
+        match = _JOB_NAME_LINE.fullmatch(lines[number - 1])
+        if match is None:
+            continue
+        name_text = match.group(1)
+        for continuation in lines[number:last]:
+            if not _NAME_CONTINUATION_LINE.fullmatch(continuation):
+                break
+            name_text += '\n' + continuation
+        if is_value_standing_alone_in(name_text, change.old or ''):
+            return True
+    return False
+
+
+def _route_required_check_renames(safe_changes: List[SafeChange], required_checks: List[str],
+                                  base_texts: Mapping[str, str]) -> Tuple[List[SafeChange], List[ChangeForAPerson]]:
     """A change that renames a required check can't merge itself: the rule that requires the old name would wait forever."""
     staying: List[SafeChange] = []
     for_a_person: List[ChangeForAPerson] = []
     for change in safe_changes:
-        renames = renamed_required_checks(change, required_checks)
+        is_a_runner_label_move = change.kind == 'replace-runner-label'
+        if is_a_runner_label_move and not _does_the_moved_job_name_hold_its_old_label(change, base_texts):
+            renames = []
+        else:
+            renames = renamed_required_checks(change, required_checks)
         if not renames:
             staying.append(change)
             continue
@@ -346,7 +386,7 @@ def build_plan(latest_versions_dir: str, macos_runner_images_dir: str, repo_root
             safe_changes.extend(family_plans[family].safe_changes)
 
     required_checks = (branch_rules.get('required_checks') or []) if branch_rules.get('status') == 'ok' else []
-    safe_changes, renames_for_a_person = _route_required_check_renames(safe_changes, required_checks)
+    safe_changes, renames_for_a_person = _route_required_check_renames(safe_changes, required_checks, base_texts)
     _add_once_by_key(plan.changes_for_a_person, renames_for_a_person)
     safe_changes = _drop_rejected(safe_changes, bump_state.get('rejected') or [], reopen_rejected, plan.notes)
 
@@ -365,9 +405,13 @@ def build_plan(latest_versions_dir: str, macos_runner_images_dir: str, repo_root
 
     plan.open_pull_request = open_pull_request['number'] if open_pull_request else None
     plan.pull_request_action = _decide_action(plan, open_pull_request)
+    changes_that_fix_items = plan.safe_changes
     if plan.pull_request_action == LEAVE_ALONE and plan.safe_changes:
         _note_findings_not_pushed(plan)
+        changes_that_fix_items = _keep_changes_for_pins_the_open_pull_request_holds(
+            plan.safe_changes, open_pull_request, pinned)
         plan.safe_changes = []
+    plan.things_to_check = runner_labels.drop_items_that_the_planned_moves_fix(plan.things_to_check, changes_that_fix_items, pinned)
     return _finish(plan)
 
 
@@ -395,12 +439,12 @@ def _run_planners(plan: Plan, pinned: PinnedVersions, latest_versions_dir: str, 
     }
     if runner_images.get('status') == 'ok':
         rows = [RunnerImageRow.from_json(row) for row in runner_images.get('rows') or []]
-        family_plans[runner_labels.RUNNER_LABELS_FAMILY] = runner_labels.check_runner_labels(
+        family_plans[runner_labels.RUNNER_LABELS_FAMILY] = runner_labels.plan_runner_label_changes(
             pinned, rows, list(runner_images.get('duplicate_labels') or []))
     else:
         unreadable = FamilyPlan(family=runner_labels.RUNNER_LABELS_FAMILY)
         unreadable.source_problems.append(SourceProblem(
-            key=RUNNER_IMAGES_README_PROBLEM_KEY, source='runner-images-readme',
+            key=RUNNER_IMAGES_README_PROBLEM_KEY, source=runner_labels.RUNNER_IMAGES_README_SOURCE,
             message=str(runner_images.get('error') or 'the runner images README was not read'),
             family=runner_labels.RUNNER_LABELS_FAMILY))
         family_plans[runner_labels.RUNNER_LABELS_FAMILY] = unreadable
@@ -443,6 +487,14 @@ def _frozen_note(family: str, state: _FamilyState, open_pull_request: Optional[M
             family, state.reason, family)
     return 'The %s changes are on hold tonight (%s), and no pull request is open, so none were made.' % (
         family, state.reason)
+
+
+def _keep_changes_for_pins_the_open_pull_request_holds(changes: List[SafeChange], open_pull_request: Optional[Mapping[str, Any]],
+                                                       pinned: PinnedVersions) -> List[SafeChange]:
+    # A held move still fixes its item while it applies to main, even when tonight's target is newer.
+    held_pins = {entry.get('pin') for entry in (open_pull_request or {}).get('change_list') or []
+                 if bump_pull_request.rebuild_change(pinned, entry) is not None}
+    return [change for change in changes if change.pin in held_pins]
 
 
 def _note_findings_not_pushed(plan: Plan) -> None:

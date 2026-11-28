@@ -1,7 +1,8 @@
 name: Ensure CI Always Tests Latest Operating Systems
 
-# Keeps the device tests on the newest Android and Xcode releases (CommunityToolkit/Maui#3438). Changes that CI can judge go to one pull
-# request, which GitHub Actions approves and auto-merges when the required checks pass; anything else goes to one issue for a person.
+# Keeps the device tests on the newest Android, Xcode, Ubuntu and Windows releases (CommunityToolkit/Maui#3438).
+# Changes that CI can judge go to one pull request, which GitHub Actions approves and auto-merges when the required checks pass;
+# anything else goes to one issue for a person.
 # The pull request is pushed with ENSURE_CI_ALWAYS_TESTS_LATEST_OPERATING_SYSTEMS_TOKEN, a maintainer's token: GITHUB_TOKEN can't push files
 # under .github/workflows, and pull requests that it opens start no CI.
 on:

@@ -1,22 +1,29 @@
-"""Reads the GitHub runner images README and its rollout states, and checks the repo's runner labels against them."""
+"""Reads the GitHub runner images README and its rollout states.
+
+Moves the device test jobs to the newest GA Ubuntu and Windows labels and checks the other runner labels against the README.
+"""
 from __future__ import annotations
 
 import json
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from .data_types import FamilyPlan, PinnedVersions, RolloutState, RunnerImageRow, ThingToCheck
+from .data_types import (FamilyPlan, PinnedVersions, RolloutState, RunnerImageRow, RunnerLabelOccurrence, SafeChange,
+                         ThingToCheck)
 from .errors import NotFoundError, RunnerImagesReadmeError, UnreadableSourceError
 from .markdown_text import markdown_code
+from .markers import PIN_FILES, read_file_name
+from .pinned_versions import JOB_ID, parse_ubuntu_or_windows_label
 
 README_URL = 'https://raw.githubusercontent.com/actions/runner-images/main/README.md'
 ROLLOUT_STATE_URL = ('https://gist.githubusercontent.com/hosted-runners-images-bot/'
                      '79267492faab096d04cdd25ce7014cec/raw/{key}.json')
 
 RUNNER_LABELS_FAMILY = 'runner-labels'
+RUNNER_LABEL_PIN_PREFIX = 'runner-label:'
+RUNNER_IMAGES_README_SOURCE = 'runner-images-readme'
+README_PAGE_URL = 'https://github.com/actions/runner-images#available-images'
 _APPLE_LABEL = re.compile(r'(xcode|macos)-\d+', re.ASCII)
-_UBUNTU_LABEL = re.compile(r'ubuntu-(\d+)\.(\d+)', re.ASCII)
-_WINDOWS_LABEL = re.compile(r'windows-(\d{4})', re.ASCII)
 _MACOS_LABEL = re.compile(r'macos-(\d+)', re.ASCII)
 _XCODE_LABEL = re.compile(r'xcode-(\d+)', re.ASCII)
 _LABEL_IN_BACKTICKS = re.compile(r'`([^`]+)`')
@@ -25,6 +32,20 @@ _ROLLOUT_STATE_KEY = re.compile(r'raw%2F([A-Za-z0-9._-]+)\.json', re.ASCII)
 _DEPLOYING_TO = re.compile(r'Deploying to (\S+)')
 _BADGE_MARKDOWN = re.compile(r'\[?!\[[^\]]*\]\([^)]*\)(?:\]\([^)]*\))?')
 _NOT_A_BADGE = 'endpoint badge'
+_ARM_ARCHITECTURE = re.compile(r'arm', re.IGNORECASE | re.ASCII)
+_MOVABLE_FAMILIES = ('ubuntu', 'windows')
+
+DUPLICATE_UBUNTU_OR_WINDOWS_LABEL_NOTE = ("The runner images README lists %s twice, so the bot doesn't move a job to it until it is "
+                                          'listed once.')
+DUPLICATE_OTHER_LABEL_NOTE = 'The runner images README lists %s twice; the bot used the first row.'
+UNMOVED_PLACES_NOTE = ("The bot doesn't move %s to %s: it moves only the runs-on line of a job that `device_tests` needs, "
+                       'which the required Device Tests check runs.')
+NOT_GA_YET_NOTE = "The runner images README lists %s (%s), so the bot doesn't move the %s jobs to it: it moves only to GA labels."
+ARM_IMAGE_NOTE = "The runner images README lists %s on an %s image, so the bot doesn't move the x64 %s jobs to it."
+NO_TARGET_REASON = ' The README lists no newer GA %s label that the bot can move to yet; the bot moves the jobs once it does.'
+UNMOVABLE_REASON = ' The bot moves only the runs-on line of a job that `device_tests` needs; move %s yourself.'
+NOT_IN_TONIGHTS_PULL_REQUEST_REASON = (" The bot isn't moving the jobs to %s tonight: a person closed the bump pull request that held the move "
+                                       "(run the workflow with `reopen-rejected` to bring it back), or another item here holds it back.")
 
 
 def _table_cells(line: str) -> List[str]:
@@ -183,34 +204,151 @@ def _readme_labels_above_every_pinned(rows: List[RunnerImageRow], pinned_labels:
     return sorted((number, label) for label, number in higher.items())
 
 
-def check_runner_labels(pinned: PinnedVersions, rows: List[RunnerImageRow],
-                        duplicate_labels: Optional[List[str]] = None) -> FamilyPlan:
+def make_runner_label_pin(file: str, job_id: str) -> str:
+    return '%s%s:%s' % (RUNNER_LABEL_PIN_PREFIX, file, job_id)
+
+
+def parse_runner_label_pin(pin: str) -> Optional[Tuple[str, str]]:
+    if not pin.startswith(RUNNER_LABEL_PIN_PREFIX):
+        return None
+    file, _, job_id = pin[len(RUNNER_LABEL_PIN_PREFIX):].rpartition(':')
+    if file not in PIN_FILES or JOB_ID.fullmatch(job_id) is None:
+        return None
+    return file, job_id
+
+
+def describe_runner_label_move(job_id: str, old: str, new: str) -> str:
+    return 'Move the job %s from %s to %s' % (job_id, old, new)
+
+
+def build_runner_label_move(occurrence: RunnerLabelOccurrence, new: str) -> SafeChange:
+    return SafeChange(
+        family=RUNNER_LABELS_FAMILY, kind='replace-runner-label', file=occurrence.file, line=occurrence.line,
+        old=occurrence.label, new=new, inserted_lines=[], pin=make_runner_label_pin(occurrence.file, occurrence.job_id),
+        description=describe_runner_label_move(occurrence.job_id, occurrence.label, new), source=RUNNER_IMAGES_README_SOURCE)
+
+
+def _is_a_ga_x64_row(row: RunnerImageRow) -> bool:
+    return not row.badges and '`' not in row.name and _ARM_ARCHITECTURE.search(row.arch) is None
+
+
+def _read_label_number(label: str) -> Tuple[int, ...]:
+    parsed = parse_ubuntu_or_windows_label(label)
+    return parsed.number if parsed is not None else ()
+
+
+def find_newest_move_target(rows: List[RunnerImageRow], family: str, duplicate_labels: Iterable[str]) -> Optional[str]:
+    duplicates = set(duplicate_labels)
+    best: Optional[str] = None
+    for row in rows:
+        if not _is_a_ga_x64_row(row):
+            continue
+        for label in row.labels:
+            parsed = parse_ubuntu_or_windows_label(label)
+            if parsed is None or parsed.family != family or label in duplicates:
+                continue
+            if best is None or parsed.number > _read_label_number(best):
+                best = label
+    return best
+
+
+def _describe_places(occurrences: List[RunnerLabelOccurrence]) -> str:
+    return ', '.join('%s on %s (%s)' % (markdown_code(occurrence.job_id) if occurrence.job_id else 'line %d' % occurrence.line,
+                                        markdown_code(occurrence.label), markdown_code(read_file_name(occurrence.file)))
+                     for occurrence in occurrences)
+
+
+def _is_below(label: str, target: Optional[str]) -> bool:
+    return target is not None and _read_label_number(label) < _read_label_number(target)
+
+
+def _note_duplicates(plan: FamilyPlan, duplicate_labels: List[str]) -> None:
+    for label in duplicate_labels:
+        if _APPLE_LABEL.fullmatch(label) is not None:
+            plan.things_to_check.append(ThingToCheck(
+                key='runner-images-readme-duplicate-label:%s' % label,
+                text=DUPLICATE_OTHER_LABEL_NOTE % markdown_code(label)))
+        elif parse_ubuntu_or_windows_label(label) is not None:
+            plan.notes.append(DUPLICATE_UBUNTU_OR_WINDOWS_LABEL_NOTE % markdown_code(label))
+        else:
+            plan.notes.append(DUPLICATE_OTHER_LABEL_NOTE % markdown_code(label))
+
+
+def _note_newer_labels_that_are_not_targets(plan: FamilyPlan, rows: List[RunnerImageRow], family: str,
+                                            occurrences: List[RunnerLabelOccurrence], target: Optional[str],
+                                            duplicates: List[str]) -> None:
+    ceiling = max([_read_label_number(occurrence.label) for occurrence in occurrences] + ([_read_label_number(target)] if target else []))
+    newer: Dict[str, RunnerImageRow] = {}
+    for row in rows:
+        for label in row.labels:
+            parsed = parse_ubuntu_or_windows_label(label)
+            if parsed is not None and parsed.family == family and parsed.number > ceiling and label not in duplicates:
+                newer.setdefault(label, row)
+    for label in sorted(newer, key=_read_label_number):
+        row = newer[label]
+        if row.badges or '`' in row.name:
+            words = ', '.join(markdown_code(badge) for badge in row.badges) if row.badges else markdown_code(row.name)
+            plan.notes.append(NOT_GA_YET_NOTE % (markdown_code(label), words, family))
+        elif _ARM_ARCHITECTURE.search(row.arch) is not None:
+            plan.notes.append(ARM_IMAGE_NOTE % (markdown_code(label), markdown_code(row.arch), family))
+
+
+def _read_family_of_label(label: str) -> Optional[str]:
+    parsed = parse_ubuntu_or_windows_label(label)
+    return parsed.family if parsed is not None else None
+
+
+def _find_move_targets(pinned: PinnedVersions, rows: List[RunnerImageRow], duplicates: List[str]) -> Dict[str, Optional[str]]:
+    families_in_use = {_read_family_of_label(occurrence.label) for occurrence in pinned.ubuntu_and_windows_label_occurrences}
+    return {family: find_newest_move_target(rows, family, duplicates) for family in _MOVABLE_FAMILIES if family in families_in_use}
+
+
+def _plan_moves_and_notes_for_ubuntu_and_windows(plan: FamilyPlan, pinned: PinnedVersions, rows: List[RunnerImageRow],
+                                                 duplicates: List[str], targets: Dict[str, Optional[str]]) -> None:
+    for family, target in targets.items():
+        occurrences = [occurrence for occurrence in pinned.ubuntu_and_windows_label_occurrences
+                       if _read_family_of_label(occurrence.label) == family]
+        for occurrence in occurrences:
+            if occurrence.is_movable and target is not None and _is_below(occurrence.label, target):
+                plan.safe_changes.append(build_runner_label_move(occurrence, target))
+        unmoved = [occurrence for occurrence in occurrences if not occurrence.is_movable and _is_below(occurrence.label, target)]
+        if unmoved and target is not None:
+            plan.notes.append(UNMOVED_PLACES_NOTE % (_describe_places(unmoved), markdown_code(target)))
+        _note_newer_labels_that_are_not_targets(plan, rows, family, occurrences, target, duplicates)
+
+
+def _explain_why_a_pinned_label_is_not_moved(pinned: PinnedVersions, family: str, label: str, targets: Dict[str, Optional[str]]) -> str:
+    target = targets.get(family)
+    if target is None or not _is_below(label, target):
+        return NO_TARGET_REASON % family
+    unmovable = [occurrence for occurrence in pinned.ubuntu_and_windows_label_occurrences
+                 if occurrence.label == label and not occurrence.is_movable]
+    if unmovable:
+        return UNMOVABLE_REASON % _describe_places(unmovable)
+    return NOT_IN_TONIGHTS_PULL_REQUEST_REASON % markdown_code(target)
+
+
+def plan_runner_label_changes(pinned: PinnedVersions, rows: List[RunnerImageRow],
+                              duplicate_labels: Optional[List[str]] = None) -> FamilyPlan:
     plan = FamilyPlan(family=RUNNER_LABELS_FAMILY)
-    for label in duplicate_labels or []:
-        plan.things_to_check.append(ThingToCheck(
-            key='runner-images-readme-duplicate-label:%s' % label,
-            text='The runner images README lists %s twice; the bot used the first row.' % markdown_code(label)))
+    duplicates = list(duplicate_labels or [])
+    _note_duplicates(plan, duplicates)
+    targets = _find_move_targets(pinned, rows, duplicates)
+    _plan_moves_and_notes_for_ubuntu_and_windows(plan, pinned, rows, duplicates, targets)
     pinned_labels = [label for family in sorted(pinned.runner_labels) for label in pinned.runner_labels[family]]
     for label in pinned_labels:
         row = _row_of(rows, label)
+        parsed = parse_ubuntu_or_windows_label(label)
+        reason = _explain_why_a_pinned_label_is_not_moved(pinned, parsed.family, label, targets) if parsed is not None else ''
         if row is None:
             plan.things_to_check.append(ThingToCheck(
                 key='runner-label-missing:%s' % label,
-                text='The runner images README no longer lists %s, which the workflows use.' % markdown_code(label)))
+                text='The runner images README no longer lists %s, which the workflows use.' % markdown_code(label) + reason))
         elif 'deprecated' in row.badges:
             plan.things_to_check.append(ThingToCheck(
                 key='runner-label-deprecated:%s' % label,
                 text='The runner images README marks %s (%s) as deprecated, and the workflows use it.'
-                     % (markdown_code(label), markdown_code(row.name))))
-    for family, pattern in (('ubuntu', _UBUNTU_LABEL), ('windows', _WINDOWS_LABEL)):
-        pinned_in_family = pinned.runner_labels.get(family, [])
-        for _, label in _readme_labels_above_every_pinned(rows, pinned_in_family, pattern):
-            row = _row_of(rows, label)
-            badge_words = ', '.join(markdown_code(badge) for badge in row.badges) if row is not None and row.badges else 'GA'
-            plan.things_to_check.append(ThingToCheck(
-                key='%s-label:%s' % (family, label),
-                text='The runner images README lists %s (%s), newer than the %s labels the workflows use (%s).'
-                     % (markdown_code(label), badge_words, family, ', '.join(markdown_code(used) for used in pinned_in_family))))
+                     % (markdown_code(label), markdown_code(row.name)) + reason))
     pinned_macos = pinned.runner_labels.get('macos', [])
     for _, label in _readme_labels_above_every_pinned(rows, pinned_macos, _MACOS_LABEL):
         plan.notes.append('The runner images README lists `%s`, newer than the macos labels the workflows use (%s). '
@@ -222,3 +360,18 @@ def check_runner_labels(pinned: PinnedVersions, rows: List[RunnerImageRow],
                           'A person moves the Apple jobs to it; the bot prepares that change when a workload set needs '
                           'its Xcode.' % (label, ', '.join(pinned_xcode)))
     return plan
+
+
+def drop_items_that_the_planned_moves_fix(things: List[ThingToCheck], safe_changes: List[SafeChange],
+                                          pinned: PinnedVersions) -> List[ThingToCheck]:
+    moved = {(change.file, change.line, change.old) for change in safe_changes
+             if change.family == RUNNER_LABELS_FAMILY and change.kind == 'replace-runner-label'
+             and change.pin.startswith(RUNNER_LABEL_PIN_PREFIX)}
+    fixed_labels = set()
+    for label in {occurrence.label for occurrence in pinned.ubuntu_and_windows_label_occurrences}:
+        uses = [occurrence for occurrence in pinned.ubuntu_and_windows_label_occurrences if occurrence.label == label]
+        if all((use.file, use.line, use.label) in moved for use in uses):
+            fixed_labels.add(label)
+    dropped_keys = {'%s:%s' % (prefix, label) for label in fixed_labels
+                    for prefix in ('runner-label-deprecated', 'runner-label-missing')}
+    return [thing for thing in things if thing.key not in dropped_keys]

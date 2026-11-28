@@ -57,14 +57,14 @@ def fake(candidates: List[Dict[str, Any]]) -> FakeRepoGitHub:
 
 class CollectItemsTests(unittest.TestCase):
     def test_plan_items_land_in_their_sections(self) -> None:
-        plan = plan_of(changes_for_a_person=[person_change()], things_to_check=[thing('ubuntu-label:ubuntu-26.04')],
+        plan = plan_of(changes_for_a_person=[person_change()], things_to_check=[thing('runner-label-deprecated:macos-15')],
                        source_problems=[{'key': 'source:android-system-images', 'source': 'android-system-images',
                                          'message': 'bad `xml`', 'family': 'android'}])
         patches = {'patches/xcode-label_xcode-27_xcode-28.patch': 'diff --git a b\n'}
         items = module.collect_items(plan, None, None, None, None, None, patches)
         self.assertEqual([i.key for i in items.changes_for_a_person], ['xcode-label:xcode-27:xcode-28'])
         self.assertEqual(items.changes_for_a_person[0].patch, 'diff --git a b\n')
-        self.assertEqual([i.key for i in items.things_to_check], ['ubuntu-label:ubuntu-26.04'])
+        self.assertEqual([item.key for item in items.things_to_check], ['runner-label-deprecated:macos-15'])
         self.assertIn("`bad 'xml'`", items.source_problems[0].text)
         self.assertTrue(items.reports_a_problem_that_turns_the_run_red())
 
@@ -179,7 +179,7 @@ class ReadPushErrorTests(unittest.TestCase):
 
 class RenderIssueBodyTests(unittest.TestCase):
     def items(self) -> module.Items:
-        plan = plan_of(changes_for_a_person=[person_change()], things_to_check=[thing('ubuntu-label:ubuntu-26.04')],
+        plan = plan_of(changes_for_a_person=[person_change()], things_to_check=[thing('runner-label-deprecated:macos-15')],
                        source_problems=[{'key': 'source:branch-rules', 'source': 'branch-rules', 'message': 'boom',
                                          'family': 'x'}])
         return module.collect_items(plan, None, None, None, {'plan-changes': {'result': 'failure'}}, None,
@@ -192,7 +192,7 @@ class RenderIssueBodyTests(unittest.TestCase):
         positions = [body.index('### %s ###' % name) for name in (
             'Changes a person must make', 'Things to check', 'Problems reading sources', 'Jobs that failed')]
         self.assertEqual(positions, sorted(positions))
-        self.assertEqual(read_item_keys(body), ['xcode-label:xcode-27:xcode-28', 'ubuntu-label:ubuntu-26.04',
+        self.assertEqual(read_item_keys(body), ['xcode-label:xcode-27:xcode-28', 'runner-label-deprecated:macos-15',
                                                 'source:branch-rules', 'failed-job:plan-changes'])
         self.assertIn('1. Save the patch.\n2. Wait for CI.', body)
         self.assertIn('<details><summary>Patch</summary>\n\n```diff\ndiff --git a/x b/x', body)
@@ -378,6 +378,16 @@ class SyncIssueTests(unittest.TestCase):
         self.assertIn(CLOSED_BY_BOT_MARKER, patch.body['body'])
         self.assertIn(ISSUE_MARKER, patch.body['body'])
         self.assertEqual((result['action'], result['closed'], result['exit_code']), ('resolved', True, 0))
+
+    def test_the_issue_that_listed_only_the_newer_ubuntu_label_closes_itself_once_the_bot_stops_listing_it(self) -> None:
+        github = fake([issue_entry(5, body_with('ubuntu-label:ubuntu-26.04'))])
+        items = module.collect_items(plan_of(), None, None, None, None, None)
+        result = module.sync_issue(github, items, RUN_URL, NOW)
+        patch = github.write_calls()[0]
+        self.assertEqual((patch.body['state'], patch.body['state_reason']), ('closed', 'completed'))
+        self.assertIn(CLOSED_BY_BOT_MARKER, patch.body['body'])
+        self.assertEqual((result['action'], result['closed'], result['exit_code']), ('resolved', True, 0))
+        self.assertEqual(module._dismissed_keys([issue_entry(5, patch.body['body'], state='closed')]), set())
 
     def test_without_a_plan_the_old_items_stay_and_only_failures_change(self) -> None:
         old = module.render_issue_body(self.things('a'), 'https://github.com/o/r/actions/runs/1', NOW)
