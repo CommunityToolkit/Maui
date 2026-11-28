@@ -10,13 +10,21 @@ public abstract partial class MauiWindowHostTestBase
 {
 	static readonly TimeSpan pageLoadTimeout = TimeSpan.FromSeconds(10);
 
+	// The scene of the runner is the only connected scene; the windows of the tests are created in it
+	static UIWindowScene RunnerScene =>
+		UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>().FirstOrDefault()
+		?? throw new InvalidOperationException("The runner has no connected window scene.");
+
 	// page is root or one of its pages, or with isPagePresentedModally the page that the window presents modally over root.
 	protected Task RunInMauiWindowAsync(Page root, bool isPagePresentedModally, ContentPage page, Func<HostedMauiWindow, Task> action) =>
 		InvokeOnMainThreadAsync(async () =>
 		{
 			var previousApplication = Application.Current;
-			var scene = IosStatusBarViews.RunnerScene;
-			var platformWindow = new UIWindow(scene) { Frame = scene.CoordinateSpace.Bounds };
+			var scene = RunnerScene;
+			var platformWindow = new UIWindow(scene);
+#if MACCATALYST
+			var runnerGeometryBefore = RunnerWindowGeometry.Capture();
+#endif
 			Window? window = null;
 			bool isCreated = false, isActivated = false;
 
@@ -24,7 +32,14 @@ public abstract partial class MauiWindowHostTestBase
 			{
 				var application = new MauiWindowTestApplication();
 				window = application.CreateWindowFor(root);
-				platformWindow.SetWindowHandler(window, new PlatformWindowMauiContext(MauiContext, platformWindow));
+				var windowContext = new PlatformWindowMauiContext(MauiContext, platformWindow);
+#if MACCATALYST
+				// The window of the test is a guest in the scene of the runner. WindowHandler would send its frame (iPad points) as the scene's
+				// frame (Mac points), which moves and widens the runner's window, and it would lift the scene's size limits.
+				window.Handler = new GuestWindowHandler(windowContext);
+#else
+				platformWindow.SetWindowHandler(window, windowContext);
+#endif
 				((IWindow)window).Created();
 				isCreated = true;
 				platformWindow.MakeKeyAndVisible();
@@ -72,6 +87,12 @@ public abstract partial class MauiWindowHostTestBase
 				root.DisconnectHandlers();
 				page.DisconnectHandlers();
 			}
+
+#if MACCATALYST
+			var runnerGeometryAfter = RunnerWindowGeometry.Capture();
+			Assert.True(runnerGeometryBefore == runnerGeometryAfter,
+				$"Hosting a window changed the window of the runner from {runnerGeometryBefore} to {runnerGeometryAfter}. AttachAndRun lays out later tests in the runner's window.");
+#endif
 		});
 
 	protected sealed record HostedMauiWindow(MauiWindowTestApplication Application, Window Window, UIWindow PlatformWindow)

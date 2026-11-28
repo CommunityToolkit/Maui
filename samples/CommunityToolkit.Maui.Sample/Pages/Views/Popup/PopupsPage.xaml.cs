@@ -178,6 +178,11 @@ public partial class PopupsPage : BasePage<PopupsViewModel>
 		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new StylePopupPage(new StylePopupViewModel())));
 	}
 
+	async void HandleTryPopupMethodsButtonClicked(object? sender, EventArgs e)
+	{
+		await OpenOneAtATimeAsync(() => Navigation.PushAsync(new TryPopupMethodsPage()));
+	}
+
 	async void HandleOnDisappearingPopupClicked(object? sender, EventArgs e)
 	{
 		await OpenOneAtATimeAsync(() => Navigation.PushModalAsync(new PopupOnDisappearingPage()));

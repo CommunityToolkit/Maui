@@ -10,6 +10,7 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 {
 	const double defaultMargin = 30; // DefaultPopupSettings.Margin
 	const double tolerance = 1;
+	const double largePopupLength = 2000;
 
 	public enum PopupAlignment
 	{
@@ -25,12 +26,13 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 	public async Task PopupLargerThanThePageIsLimitedToThePageMinusItsMargin(PopupAlignment alignment)
 	{
 		SetupBuilder();
-		var popup = CreatePopup(2000, 2000, alignment);
+		var popup = CreatePopup(largePopupLength, largePopupLength, alignment);
 		var popupPage = new PopupPage(popup, new PopupOptions { Shape = null });
 
 		await AttachAndRun(popupPage, async _ =>
 		{
 			var layoutArea = await WaitForLayout(popupPage);
+			AssertPopupIsLargerThanThePage(layoutArea, checkHeight: true);
 			var expectedBorderFrame = Inset(layoutArea, defaultMargin);
 
 			await AssertBorderFrame(popupPage, expectedBorderFrame);
@@ -45,13 +47,14 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 		SetupBuilder();
 		const double margin = 12;
 		const double strokeThickness = 4;
-		var popup = CreatePopup(2000, 2000, PopupAlignment.Center);
+		var popup = CreatePopup(largePopupLength, largePopupLength, PopupAlignment.Center);
 		popup.Margin = new Thickness(margin);
 		var popupPage = new PopupPage(popup, new PopupOptions { Shape = new Microsoft.Maui.Controls.Shapes.Rectangle { StrokeThickness = strokeThickness, Stroke = Colors.Black } });
 
 		await AttachAndRun(popupPage, async _ =>
 		{
 			var layoutArea = await WaitForLayout(popupPage);
+			AssertPopupIsLargerThanThePage(layoutArea, checkHeight: true);
 			var expectedBorderFrame = Inset(layoutArea, margin);
 
 			await AssertBorderFrame(popupPage, expectedBorderFrame);
@@ -65,12 +68,13 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 	{
 		SetupBuilder();
 		const double popupHeight = 100;
-		var popup = CreatePopup(2000, popupHeight, PopupAlignment.Center);
+		var popup = CreatePopup(largePopupLength, popupHeight, PopupAlignment.Center);
 		var popupPage = new PopupPage(popup, new PopupOptions { Shape = null });
 
 		await AttachAndRun(popupPage, async _ =>
 		{
 			var layoutArea = await WaitForLayout(popupPage);
+			AssertPopupIsLargerThanThePage(layoutArea, checkHeight: false);
 			var expectedBorderFrame = new Rect(layoutArea.X + defaultMargin, layoutArea.Y + (layoutArea.Height - popupHeight) / 2, layoutArea.Width - 2 * defaultMargin, popupHeight);
 
 			await AssertBorderFrame(popupPage, expectedBorderFrame);
@@ -98,6 +102,17 @@ public partial class PopupPageLayoutTests : CommunityToolkitHandlerTestBase
 			await AssertBorderFrame(popupPage, new Rect(expectedX, expectedY, popupSize, popupSize));
 			await AssertPopupSize(popup, new Size(popupSize, popupSize));
 		});
+	}
+
+	// In a window the popup fits into, the Border check fails and blames PopupPageLayout; this names the host window instead.
+	static void AssertPopupIsLargerThanThePage(Rect layoutArea, bool checkHeight)
+	{
+		Assert.True(layoutArea.Width < largePopupLength, $"The test needs a page narrower than its {largePopupLength}-wide popup, but PopupPageLayout arranges it in {layoutArea}. The host window is larger than the test assumes (a test that ran before may have resized it).");
+
+		if (checkHeight)
+		{
+			Assert.True(layoutArea.Height < largePopupLength, $"The test needs a page shorter than its {largePopupLength}x{largePopupLength} popup, but PopupPageLayout arranges it in {layoutArea}. The host window is larger than the test assumes (a test that ran before may have resized it).");
+		}
 	}
 
 	static Popup CreatePopup(double widthRequest, double heightRequest, PopupAlignment alignment) => new()

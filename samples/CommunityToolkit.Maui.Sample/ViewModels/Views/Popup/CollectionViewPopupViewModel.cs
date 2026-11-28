@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -15,6 +17,10 @@ public partial class CollectionViewPopupViewModel(IPopupService popupService) : 
 	[RelayCommand(CanExecute = nameof(CanReturnButtonExecute))]
 	async Task OnReturnButtonTapped(CancellationToken token)
 	{
-		await popupService.ClosePopupAsync<string>(navigation, SelectedTitle ?? string.Empty, token);
+		var resultOrException = await popupService.TryClosePopupAsync<string>(navigation, SelectedTitle ?? string.Empty, token);
+		if (resultOrException.Value is Exception exception)
+		{
+			await Toast.Make(exception.Message).Show(token);
+		}
 	}
 }

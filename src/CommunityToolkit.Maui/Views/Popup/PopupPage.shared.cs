@@ -32,6 +32,12 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	/// </summary>
 	static readonly SemaphoreSlim navigationSemaphoreSlim = new(1, 1);
 
+#if !ANDROID
+	// .NET MAUI leaves some removed PopupPages connected, and destroying their window disposes the services their handlers use: a later popup re-maps the old Borders through the
+	// shared default Shadow, Shape and Stroke, and the same Popup shown again sets up its gestures with its old handler. Android keeps the services for the next activity.
+	static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, PopupsShownInWindow> popupsShownByWindow = new();
+#endif
+
 	readonly Popup popup;
 	readonly IPopupOptions popupOptions;
 	readonly Command tapOutsideOfPopupCommand;
@@ -123,7 +129,7 @@ partial class PopupPage : ContentPage, IQueryAttributable
 	public async Task ShowAsync(Shell shell, string shellRoute, IDictionary<string, object>? shellParameters = null, CancellationToken token = default)
 	{
 		ArgumentNullException.ThrowIfNull(shell);
-		ArgumentException.ThrowIfNullOrEmpty(shellRoute, nameof(shellRoute));
+		ArgumentException.ThrowIfNullOrEmpty(shellRoute);
 		await navigationSemaphoreSlim.WaitAsync(token);
 
 		try
@@ -478,6 +484,9 @@ partial class PopupPage : ContentPage, IQueryAttributable
 		windowObservedForDismissal = Window;
 		windowObservedForDismissal.ModalPopped += HandleModalPoppedWithoutCloseAsync;
 		windowObservedForDismissal.PropertyChanged += HandleWindowPropertyChangedWithoutCloseAsync;
+#if !ANDROID
+		DisconnectHandlersWhenWindowIsDestroyed(windowObservedForDismissal);
+#endif
 
 		// Removing a page from a NavigationPage (PopAsync, PopToRootAsync, RemovePage, or Shell popping it) raises neither ModalPopped nor PropertyChanged of the Window
 		if (Parent is NavigationPage containingNavigationPage)
@@ -544,6 +553,84 @@ partial class PopupPage : ContentPage, IQueryAttributable
 			RaisePopupClosedForDismissalByNavigation();
 		}
 	}
+
+#if !ANDROID
+	void DisconnectHandlersWhenWindowIsDestroyed(Window window)
+	{
+		var popupsShownInWindow = popupsShownByWindow.GetValue(window, static windowToObserve =>
+		{
+			windowToObserve.Destroying += HandleWindowDestroying;
+			return new PopupsShownInWindow();
+		});
+
+		popupsShownInWindow.Add(this, popup);
+	}
+
+	static void HandleWindowDestroying(object? sender, EventArgs e)
+	{
+		if (sender is not Window window || !popupsShownByWindow.TryGetValue(window, out var popupsShownInWindow))
+		{
+			return;
+		}
+
+		window.Destroying -= HandleWindowDestroying;
+		popupsShownByWindow.Remove(window);
+		popupsShownInWindow.DisconnectHandlers(window);
+	}
+
+	// Not this.DisconnectHandlers(): the Border keeps the Popup as a logical child after the app shows that Popup again with a new PopupPage
+	void DisconnectHandlersExceptThePopup()
+	{
+		Handler?.DisconnectHandler();
+		Content.Handler?.DisconnectHandler();
+		Content.TapGestureGestureOverlay.Handler?.DisconnectHandler();
+		Content.PopupBorder.Handler?.DisconnectHandler();
+	}
+
+	// Weak references, so a window keeps neither a closed PopupPage nor the app's Popup alive.
+	// The Popups are tracked on their own because an Element holds its Parent weakly, so a Popup that the app keeps can outlive its PopupPage
+	sealed class PopupsShownInWindow
+	{
+		readonly List<WeakReference<PopupPage>> popupPages = [];
+		readonly List<WeakReference<Popup>> popups = [];
+
+		public void Add(PopupPage popupPage, Popup popup)
+		{
+			RemoveCollectedAndAddIfMissing(popupPages, popupPage);
+			RemoveCollectedAndAddIfMissing(popups, popup);
+		}
+
+		public void DisconnectHandlers(Window destroyedWindow)
+		{
+			foreach (var popupPageReference in popupPages)
+			{
+				if (popupPageReference.TryGetTarget(out var popupPage))
+				{
+					popupPage.DisconnectHandlersExceptThePopup();
+				}
+			}
+
+			foreach (var popupReference in popups)
+			{
+				// The app may show this Popup in another window by now, where its handler is live
+				if (popupReference.TryGetTarget(out var popup) && (popup.Window is null || popup.Window == destroyedWindow))
+				{
+					popup.DisconnectHandlers();
+				}
+			}
+		}
+
+		static void RemoveCollectedAndAddIfMissing<T>(List<WeakReference<T>> references, T target) where T : class
+		{
+			references.RemoveAll(static reference => !reference.TryGetTarget(out _));
+
+			if (!references.Exists(reference => reference.TryGetTarget(out var existingTarget) && existingTarget == target))
+			{
+				references.Add(new WeakReference<T>(target));
+			}
+		}
+	}
+#endif
 
 	// A PopupPage that is the only page of a modal NavigationPage is on the ModalStack through that NavigationPage
 	bool IsOnModalStack(Window window) => window.Navigation.ModalStack.Any(modalPage => modalPage == this

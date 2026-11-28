@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.UnitTests.Mocks;
 using CommunityToolkit.Maui.Views;
 using Xunit;
 using Application = Microsoft.Maui.Controls.Application;
@@ -1122,6 +1123,450 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 		}
 	}
 
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task TryShowPopupAsync_ShouldReturnDismissedPopupResult_WhenModalIsPoppedWithoutCloseAsync(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+
+		var showPopupTask = navigation.TryShowPopupAsync<string>(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		Assert.IsType<PopupPage>(Assert.Single(navigation.ModalStack));
+
+		await navigation.PopModalAsync(false);
+		var resultOrException = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.True(Assert.IsType<IPopupResult<string>>(resultOrException.Value, exactMatch: false).WasDismissedByTappingOutsideOfPopup);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(false)]
+	[InlineData(true)]
+	public async Task TryShowPopupAsync_ShouldReturnOperationCanceledExceptionAndShowNothing_WhenShellNavigatingCancelsThePush(bool showWithShellRoute)
+	{
+		var navigation = SetRootPage(RootPageType.Shell);
+		var shell = Assert.IsType<Shell>(Application.Current?.Windows[0].Page);
+
+		PopupResultOrException resultOrException;
+		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
+		{
+			var showPopupTask = showWithShellRoute
+				? shell.TryShowPopupAsync(new Popup(), PopupOptions.Empty, token: TestContext.Current.CancellationToken)
+				: navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+			resultOrException = await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		}
+
+		Assert.IsType<OperationCanceledException>(resultOrException.Value, exactMatch: false);
+		Assert.Empty(navigation.ModalStack);
+		Assert.Equal(1, GetNavigationSemaphore().CurrentCount);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage, NavigationCancellation.WindowModalPopping)]
+	[InlineData(RootPageType.Shell, NavigationCancellation.ShellNavigating)]
+	public async Task TryClosePopupAsync_ShouldReturnOperationCanceledExceptionAndKeepThePopupOpen_WhenTheAppCancelsThePop(RootPageType rootPageType, NavigationCancellation cancellation)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+
+		PopupResultOrException closeResultOrException;
+		using (new NavigationCanceler(cancellation))
+		{
+			closeResultOrException = await navigation.TryClosePopupAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		}
+
+		Assert.IsType<OperationCanceledException>(closeResultOrException.Value, exactMatch: false);
+		Assert.Same(popupPage, Assert.Single(navigation.ModalStack));
+		Assert.False(showPopupTask.IsCompleted);
+
+		var finalClose = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.IsType<IPopupResult>(finalClose.Value, exactMatch: false);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task TryClosePopupAsync_ShouldReturnPopupNotFoundException_WhenPopupIsAlreadyClosed()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(navigation);
+
+		var firstClose = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken);
+		var secondClose = await navigation.TryClosePopupAsync(TestContext.Current.CancellationToken);
+
+		Assert.IsType<IPopupResult>(firstClose.Value, exactMatch: false);
+		Assert.IsType<PopupNotFoundException>(secondClose.Value);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	[Theory(Timeout = (int)TestDuration.Long)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.Shell)]
+	public async Task TryClosePopupAsync_ShouldReturnOnePopupResultAndOnePopupNotFoundException_WhenCalledTwiceConcurrently(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var showPopupTask = navigation.TryShowPopupAsync(new Popup(), PopupOptions.Empty, TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(navigation);
+
+		var resultsOrExceptions = await Task.WhenAll(
+			navigation.TryClosePopupAsync(TestContext.Current.CancellationToken),
+			navigation.TryClosePopupAsync(TestContext.Current.CancellationToken)).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.Single(resultsOrExceptions, static resultOrException => resultOrException.Value is IPopupResult);
+		Assert.Single(resultsOrExceptions, static resultOrException => resultOrException.Value is PopupNotFoundException);
+		Assert.Empty(navigation.ModalStack);
+		Assert.IsType<IPopupResult>((await showPopupTask).Value, exactMatch: false);
+	}
+
+	// MAUI leaves a removed PopupPage connected on some paths, and destroying its window disposes the services that its handlers and the Popup's handlers use
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldDisconnectThePopupPageAndThePopup_WhenThePopupIsOpen()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var window = GetFirstWindow();
+		var popupContent = new ContentView();
+		var popup = new Popup { Content = popupContent };
+		var popupPage = new PopupPage(popup, new PopupOptions());
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		var border = popupPage.Content.PopupBorder;
+		CreateViewHandler<MockPageHandler>(popupPage);
+		CreateViewHandler<MockPageHandler>(popupPage.Content);
+		CreateViewHandler<MockPageHandler>(popupPage.Content.TapGestureGestureOverlay);
+		CreateViewHandler<MockPageHandler>(border);
+		CreateViewHandler<MockPageHandler>(popup);
+		CreateViewHandler<MockPageHandler>(popupContent);
+		var shadow = border.Shadow;
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(popupPage.Handler);
+		Assert.Null(popupPage.Content.Handler);
+		Assert.Null(popupPage.Content.TapGestureGestureOverlay.Handler);
+		Assert.Null(border.Handler);
+		Assert.Null(popup.Handler);
+		Assert.Null(popupContent.Handler);
+		Assert.Same(shadow, border.Shadow);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldKeepTheHandlersOfThePopup_WhenItsDisconnectPolicyIsManual()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var window = GetFirstWindow();
+		var popupContent = new ContentView();
+		var popup = new Popup { Content = popupContent };
+		HandlerProperties.SetDisconnectPolicy(popup, HandlerDisconnectPolicy.Manual);
+		var popupPage = new PopupPage(popup, new PopupOptions());
+		await popupPage.ShowAsync(navigation, TestContext.Current.CancellationToken);
+		CreateViewHandler<MockPageHandler>(popupPage.Content.PopupBorder);
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+		var popupContentHandler = CreateViewHandler<MockPageHandler>(popupContent);
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(popupPage.Content.PopupBorder.Handler);
+		Assert.Same(popupHandler, popup.Handler);
+		Assert.Same(popupContentHandler, popupContent.Handler);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldDisconnectThePopupBorderAndThePopup_WhenThePageOfTheWindowReplacedThePopup()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var window = GetFirstWindow();
+		var popup = new Popup();
+		var showPopupTask = navigation.ShowPopupAsync(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+		var border = popupPage.Content.PopupBorder;
+		var borderHandler = CreateViewHandler<MockPageHandler>(border);
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+
+		window.Page = new ContentPage();
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.Same(borderHandler, border.Handler);
+		Assert.Same(popupHandler, popup.Handler);
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(border.Handler);
+		Assert.Null(popup.Handler);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldDisconnectThePopupBorderAndThePopup_WhenShellSwitchesToAnotherShellElement()
+	{
+		var shell = SetRootPageToShellWithTwoItems();
+		var window = GetFirstWindow();
+		var popup = new Popup();
+		var showPopupTask = shell.ShowPopupAsync(popup, new PopupOptions(), token: TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(shell.Navigation);
+		var border = popupPage.Content.PopupBorder;
+		var borderHandler = CreateViewHandler<MockPageHandler>(border);
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+
+		await shell.GoToAsync("//second");
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		Assert.Same(borderHandler, border.Handler);
+		Assert.Same(popupHandler, popup.Handler);
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(border.Handler);
+		Assert.Null(popup.Handler);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task CloseAsync_ShouldKeepThePopupUnchanged_WhenShellThrowsArgumentExceptionAndThePopupStaysOnTheModalStack()
+	{
+		var navigation = SetRootPage(RootPageType.Shell);
+		var window = GetFirstWindow();
+		var shell = Assert.IsType<Shell>(window.Page);
+		var popup = new Popup();
+		var showPopupTask = navigation.ShowPopupAsync(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+		var border = popupPage.Content.PopupBorder;
+		var borderHandler = CreateViewHandler<MockPageHandler>(border);
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+		var shadow = border.Shadow;
+		var shape = border.StrokeShape;
+
+		shell.Navigating += ThrowArgumentException;
+		try
+		{
+			await popup.CloseAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		}
+		finally
+		{
+			shell.Navigating -= ThrowArgumentException;
+		}
+
+		Assert.Contains(popupPage, navigation.ModalStack);
+		Assert.Same(borderHandler, border.Handler);
+		Assert.Same(popupHandler, popup.Handler);
+		Assert.Same(shadow, border.Shadow);
+		Assert.Same(shape, border.StrokeShape);
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(border.Handler);
+		Assert.Null(popup.Handler);
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		static void ThrowArgumentException(object? sender, ShellNavigatingEventArgs e) => throw new ArgumentException("Shell cannot navigate");
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldNotDisconnectThePopup_WhenTheAppCanceledThePush()
+	{
+		SetRootPage(RootPageType.Shell);
+		var window = GetFirstWindow();
+		var shell = Assert.IsType<Shell>(window.Page);
+		var popup = new Popup();
+		var popupPage = new PopupPage(popup, new PopupOptions());
+
+		using (new NavigationCanceler(NavigationCancellation.ShellNavigating))
+		{
+			await Assert.ThrowsAsync<OperationCanceledException>(() => popupPage.ShowAsync(shell.Navigation, TestContext.Current.CancellationToken));
+		}
+
+		var border = popupPage.Content.PopupBorder;
+		var borderHandler = CreateViewHandler<MockPageHandler>(border);
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+
+		((IWindow)window).Destroying();
+
+		Assert.Same(borderHandler, border.Handler);
+		Assert.Same(popupHandler, popup.Handler);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldOnlyDisconnectThePopupsOfThatWindow()
+	{
+		SetRootPage(RootPageType.ContentPage);
+		var application = Application.Current ?? throw new InvalidOperationException("Unable to locate Application");
+		var firstWindow = GetFirstWindow();
+		var secondWindow = new Window(new ContentPage());
+		application.OpenWindow(secondWindow);
+		var popup = new Popup();
+		var popupPage = new PopupPage(popup, new PopupOptions());
+		await popupPage.ShowAsync(secondWindow.Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation page"), TestContext.Current.CancellationToken);
+		var border = popupPage.Content.PopupBorder;
+		var borderHandler = CreateViewHandler<MockPageHandler>(border);
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+
+		((IWindow)firstWindow).Destroying();
+
+		Assert.Same(borderHandler, border.Handler);
+		Assert.Same(popupHandler, popup.Handler);
+
+		((IWindow)secondWindow).Destroying();
+
+		Assert.Null(border.Handler);
+		Assert.Null(popup.Handler);
+	}
+
+	// A regression check, not a proof of the Window.Destroying hook: .NET MAUI disconnects a page when PopModalAsync pops it, so this passes without the hook too
+	[Theory(Timeout = (int)TestDuration.Short)]
+	[InlineData(RootPageType.Shell)]
+	[InlineData(RootPageType.ContentPage)]
+	[InlineData(RootPageType.NavigationPage)]
+	public async Task WindowDestroying_ShouldDisconnectThePopup_WhenModalIsPoppedWithoutCloseAsync(RootPageType rootPageType)
+	{
+		var navigation = SetRootPage(rootPageType);
+		var window = GetFirstWindow();
+		var popup = new Popup();
+		var showPopupTask = navigation.ShowPopupAsync(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		var popupPage = await WaitForSinglePopupPageAsync(navigation);
+		var border = popupPage.Content.PopupBorder;
+		CreateViewHandler<MockPageHandler>(border);
+		CreateViewHandler<MockPageHandler>(popup);
+
+		await navigation.PopModalAsync();
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		((IWindow)window).Destroying();
+
+		Assert.Null(border.Handler);
+		Assert.Null(popup.Handler);
+	}
+
+	// A regression check for showing the Popup again, not a proof of the Window.Destroying hook: it creates no handlers, so it passes without the hook too
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldLetTheSamePopupBeShownInAnotherWindow()
+	{
+		const string expectedResult = "Closed";
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var application = Application.Current ?? throw new InvalidOperationException("Unable to locate Application");
+		var firstWindow = GetFirstWindow();
+		var popup = new Popup<string>();
+		var firstShowPopupTask = navigation.ShowPopupAsync<string>(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(navigation);
+		await popup.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
+		await firstShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		((IWindow)firstWindow).Destroying();
+
+		var secondWindow = new Window(new ContentPage());
+		application.OpenWindow(secondWindow);
+		var secondNavigation = secondWindow.Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation page");
+		var secondShowPopupTask = secondNavigation.ShowPopupAsync<string>(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		var secondPopupPage = await WaitForSinglePopupPageAsync(secondNavigation);
+		await popup.CloseAsync(expectedResult, TestContext.Current.CancellationToken);
+		var result = await secondShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		Assert.Equal(expectedResult, result.Result);
+		Assert.Same(popup, secondPopupPage.Content.PopupBorder.Content);
+	}
+
+	// The first window's Border still lists the Popup as a logical child, but the Popup's handler belongs to the window that shows it now
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldKeepTheHandlerOfThePopup_WhenAnotherWindowShowsTheSamePopup()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+		var application = Application.Current ?? throw new InvalidOperationException("Unable to locate Application");
+		var firstWindow = GetFirstWindow();
+		var popup = new Popup();
+		var firstShowPopupTask = navigation.ShowPopupAsync(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		var firstPopupPage = await WaitForSinglePopupPageAsync(navigation);
+		CreateViewHandler<MockPageHandler>(firstPopupPage.Content.PopupBorder);
+		CreateViewHandler<MockPageHandler>(popup);
+		firstWindow.Page = new ContentPage();
+		await firstShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+		var secondWindow = new Window(new ContentPage());
+		application.OpenWindow(secondWindow);
+		var secondNavigation = secondWindow.Page?.Navigation ?? throw new InvalidOperationException("Unable to locate Navigation page");
+		var secondShowPopupTask = secondNavigation.ShowPopupAsync(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		await WaitForSinglePopupPageAsync(secondNavigation);
+		var popupHandlerOfSecondWindow = CreateViewHandler<MockPageHandler>(popup);
+
+		((IWindow)firstWindow).Destroying();
+
+		Assert.Null(firstPopupPage.Content.PopupBorder.Handler);
+		Assert.Same(popupHandlerOfSecondWindow, popup.Handler);
+
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
+		await secondShowPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task WindowDestroying_ShouldDisconnectThePopup_WhenItsPopupPageWasCollected()
+	{
+		var shell = SetRootPageToShellWithTwoItems();
+		var window = GetFirstWindow();
+		var popup = new Popup();
+		var popupHandler = CreateViewHandler<MockPageHandler>(popup);
+
+		var popupPageReference = await ShowAndSwitchShellItemWithoutKeepingThePopupPageAsync(shell, popup);
+
+		for (var i = 0; i < 10 && popupPageReference.IsAlive; i++)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+
+		Assert.False(popupPageReference.IsAlive);
+		Assert.Same(popupHandler, popup.Handler);
+
+		((IWindow)window).Destroying();
+
+		Assert.Null(popup.Handler);
+	}
+
+	[Fact(Timeout = (int)TestDuration.Short)]
+	public async Task ShowPopupAsync_ShouldReleasePopupPageAndPopup_WhenThePopupIsClosedAndItsWindowStaysOpen()
+	{
+		var navigation = SetRootPage(RootPageType.ContentPage);
+
+		var (popupReference, popupPageReference) = await ShowAndCloseWithoutKeepingReferencesAsync(navigation);
+
+		for (var i = 0; i < 10 && (popupReference.IsAlive || popupPageReference.IsAlive); i++)
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Delay(10, TestContext.Current.CancellationToken);
+		}
+
+		Assert.False(popupPageReference.IsAlive);
+		Assert.False(popupReference.IsAlive);
+	}
+
+	// Not inlined, so that no local of the test keeps the PopupPage alive
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static async Task<WeakReference> ShowAndSwitchShellItemWithoutKeepingThePopupPageAsync(Shell shell, Popup popup)
+	{
+		var showPopupTask = shell.ShowPopupAsync(popup, new PopupOptions(), token: TestContext.Current.CancellationToken);
+		var popupPageReference = new WeakReference(await WaitForSinglePopupPageAsync(shell.Navigation));
+
+		await shell.GoToAsync("//second");
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		return popupPageReference;
+	}
+
+	// Not inlined, so that no local of the test keeps the PopupPage or the Popup alive
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	static async Task<(WeakReference PopupReference, WeakReference PopupPageReference)> ShowAndCloseWithoutKeepingReferencesAsync(INavigation navigation)
+	{
+		var popup = new Popup();
+		var showPopupTask = navigation.ShowPopupAsync(popup, new PopupOptions(), TestContext.Current.CancellationToken);
+		var popupPageReference = new WeakReference(await WaitForSinglePopupPageAsync(navigation));
+		CreateViewHandler<MockPageHandler>(popup);
+
+		await popup.CloseAsync(TestContext.Current.CancellationToken);
+		await showPopupTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+		return (new WeakReference(popup), popupPageReference);
+	}
+
+	static Shell SetRootPageToShellWithTwoItems()
+	{
+		var shell = new Shell();
+		shell.Items.Add(new ShellContent { Route = "first", Content = new ContentPage() });
+		shell.Items.Add(new ShellContent { Route = "second", Content = new ContentPage() });
+		GetFirstWindow().Page = shell;
+		return shell;
+	}
+
 	// A CloseAsync that never completes keeps the static semaphore of PopupPage, so every popup test that ran after a failed one would fail in its own arrange step
 	static void ReleaseNavigationSemaphoreHeldByCloseAsyncThatNeverCompleted()
 	{
@@ -1153,6 +1598,8 @@ public class PopupDismissedByNavigationTests : BaseViewTest
 			SynchronizationContext.SetSynchronizationContext(originalSynchronizationContext);
 		}
 	}
+
+	static Window GetFirstWindow() => Application.Current?.Windows[0] ?? throw new InvalidOperationException("Unable to locate Window");
 
 	// A Shell pushes a popup only after awaiting, so the PopupPage is not on the ModalStack yet when ShowPopupAsync returns its Task
 	static async Task<PopupPage> WaitForSinglePopupPageAsync(INavigation navigation)
