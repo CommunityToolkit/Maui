@@ -15,7 +15,7 @@ from ensure_ci_always_tests_latest_operating_systems.pinned_versions import read
 from ensure_ci_always_tests_latest_operating_systems.version_numbers import feature_band, parse_android_level, parse_utc
 
 from .helpers import FakeDownloader, fixture
-from .test_change_plan import Night, android_with_sixteen_kb_37_3
+from .test_change_plan import Night, android_with_sixteen_kb_37_3, todays_runner_images
 from .test_required_xcode import downloads_for_band_11, pinned_with
 from .test_runner_labels import pinned_versions as pinned_versions_with_labels
 from .test_xcode_changes import repo_text
@@ -175,7 +175,7 @@ def parse_every_machine_text() -> Dict[str, Any]:
     readme = fixture('runners/README-0e63d4f9d.md').decode('utf-8')
     rows = runner_labels.parse_runner_images_readme(readme)
     results['readme'] = [row.to_json() for row in rows]
-    results['labels-today'] = runner_labels.check_runner_labels(pinned_versions_with_labels(), rows).to_json()
+    results['labels-today'] = runner_labels.plan_runner_label_changes(pinned_versions_with_labels(), rows).to_json()
     for key in ('macos-26-arm64', 'xcode-27-arm64', 'ubuntu26'):
         results['rollout-' + key] = runner_labels.parse_rollout_state(
             fixture('runners/rollout-state-%s.json' % key)).to_json()
@@ -206,7 +206,7 @@ def plan_and_text_of_an_android_change(test: unittest.TestCase) -> Dict[str, Any
 
 def snapshot(test: unittest.TestCase) -> str:
     combined = {'machine-texts': parse_every_machine_text(), 'android-change': plan_and_text_of_an_android_change(test),
-                'night-today': Night(test).plan().to_json()}
+                'night-today': Night(test, images=todays_runner_images()).plan().to_json()}
     return json.dumps(combined, sort_keys=True, indent=1, default=str)
 
 
@@ -242,7 +242,8 @@ class SameResultsInEveryLocaleTests(unittest.TestCase):
     def test_the_snapshot_covers_every_parser_and_the_planner(self) -> None:
         text = snapshot(self)
         for expected in ('"readme"', '"images"', '"platforms"', '"pinned"', '"required-xcode"', '"night-today"',
-                         '"android-change"', 'ubuntu-label:ubuntu-26.04'):
+                         '"android-change"', '"replace-runner-label"',
+                         'runner-label:.github/workflows/device-tests.yml:device_tests_android'):
             self.assertIn(expected, text)
 
     def test_the_turkish_dotted_capital_i_stays_inside_the_code_span_unchanged(self) -> None:

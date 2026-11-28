@@ -11,7 +11,7 @@ from ensure_ci_always_tests_latest_operating_systems.approve_and_merge import (
     REFUSAL_REASONS, approve_and_turn_on_auto_merge, check_before_approving, merge_now, turn_on_auto_merge)
 from ensure_ci_always_tests_latest_operating_systems.data_types import SafeChange
 from ensure_ci_always_tests_latest_operating_systems.errors import GitHubApiError
-from ensure_ci_always_tests_latest_operating_systems.line_editor import apply_changes
+from ensure_ci_always_tests_latest_operating_systems.line_editor import apply_changes, apply_changes_to_texts
 from ensure_ci_always_tests_latest_operating_systems.markers import COMMIT_TRAILER, PIN_FILES, WORKFLOW_FILE
 
 from .helpers import FakeGitHub, InOrder, fixture
@@ -108,6 +108,26 @@ class Scenario:
         client = self.github()
         return check_before_approving(client, self.plan, DECISION, 7, HEAD_SHA, 'created', BASE, BASE_SHA, BRANCH,
                                       sleep=lambda _: None), client
+
+
+DEVICE_TESTS = '.github/workflows/device-tests.yml'
+DOTNET_BUILD = '.github/workflows/dotnet-build.yml'
+
+
+def runner_move(file: str, line: int, job: str, old: str, new: str, family: str = 'runner-labels',
+                pin_prefix: str = 'runner-label:') -> SafeChange:
+    return SafeChange(family=family, kind='replace-runner-label', file=file, line=line, old=old, new=new, inserted_lines=[],
+                      pin='%s%s:%s' % (pin_prefix, file, job), description='', source='runner-images-readme')
+
+
+def scenario_with(changes: List[SafeChange], base_texts: Optional[Dict[str, str]] = None) -> Scenario:
+    scenario = Scenario()
+    scenario.base_texts = dict(base_texts or SHA_PINNED_TEXT)
+    scenario.plan = {'safe_changes': [change.to_json() for change in changes]}
+    scenario.head_texts = apply_changes_to_texts(scenario.base_texts, changes)
+    scenario.compare['files'] = [{'filename': path, 'status': 'modified'} for path in PIN_FILES
+                                 if scenario.head_texts[path] != scenario.base_texts[path]]
+    return scenario
 
 
 def write_names(client: FakeGitHub) -> List[str]:
@@ -394,6 +414,30 @@ class RefusalTests(unittest.TestCase):
         scenario.head_texts[SHARED_ENV] = text
         approval = self.assert_refused(scenario, 'validator')
         self.assertIn('exact-changes', approval['refusals'])
+
+    def test_the_three_runner_label_moves_are_approved(self) -> None:
+        moves = [runner_move(DEVICE_TESTS, line, job, 'ubuntu-24.04', 'ubuntu-26.04') for line, job in (
+            (73, 'device_tests_android'), (264, 'device_tests_android_app'), (379, 'device_tests_android_runtime'))]
+        approval, client = scenario_with(moves).run('created')
+        self.assertEqual(approval['refusals'], [])
+        self.assertEqual(write_names(client), ['TurnOnAutoMerge', 'POST %s/reviews' % PULL])
+
+    def test_refuses_validator_for_a_plan_with_an_apple_label_move_even_when_the_head_matches(self) -> None:
+        move = runner_move(DEVICE_TESTS, 551, 'device_tests_ios', 'xcode-27', 'xcode-28', 'xcode', 'apple-label:')
+        self.assert_refused(scenario_with([move]), 'validator')
+
+    def test_refuses_validator_for_a_move_of_a_job_in_dotnet_build(self) -> None:
+        texts = dict(SHA_PINNED_TEXT)
+        texts[DOTNET_BUILD] = texts[DOTNET_BUILD] + '\n    sign:\n        runs-on: windows-2025\n'
+        line = len(texts[DOTNET_BUILD].split('\n')) - 1
+        move = runner_move(DOTNET_BUILD, line, 'sign', 'windows-2025', 'windows-2028')
+        self.assert_refused(scenario_with([move], texts), 'validator')
+
+    def test_refuses_exact_changes_for_a_head_that_moves_to_another_label_than_planned(self) -> None:
+        move = runner_move(DEVICE_TESTS, 73, 'device_tests_android', 'ubuntu-24.04', 'ubuntu-26.04')
+        scenario = scenario_with([move])
+        scenario.head_texts[DEVICE_TESTS] = scenario.head_texts[DEVICE_TESTS].replace('runs-on: ubuntu-26.04', 'runs-on: ubuntu-28.04', 1)
+        self.assert_refused(scenario, 'exact-changes')
 
     def test_refuses_levels_rise_for_a_replacement_that_does_not_rise(self) -> None:
         scenario = Scenario()

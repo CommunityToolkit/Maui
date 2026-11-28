@@ -33,7 +33,7 @@ class ConstantTests(unittest.TestCase):
 
 class ItemMarkerTests(unittest.TestCase):
     def test_round_trip(self) -> None:
-        keys = ['ubuntu-label:ubuntu-26.04', 'source:pinned-versions', 'xcode-label:xcode-27:xcode-28', 'a+b_c']
+        keys = ['runner-label-deprecated:macos-15', 'source:pinned-versions', 'xcode-label:xcode-27:xcode-28', 'a+b_c']
         body = '\n'.join(markers.item_marker(key) + '\ntext' for key in keys)
         self.assertEqual(markers.read_item_keys(body), keys)
 

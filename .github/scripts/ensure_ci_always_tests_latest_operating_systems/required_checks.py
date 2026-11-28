@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 import urllib.parse
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Pattern, Tuple
 
 from .data_types import SafeChange
 from .errors import GitHubApiError
@@ -35,11 +35,19 @@ def read_branch_rules(github: Any, base: str) -> Dict[str, Any]:
             'required_approving_review_count': required_approving_review_count}
 
 
+def _compile_standing_alone_pattern(value: str) -> Pattern[str]:
+    return re.compile(r'(?<![\w.])' + re.escape(value) + r'(?![\w.])', re.ASCII)
+
+
+def is_value_standing_alone_in(text: str, value: str) -> bool:
+    return bool(value) and _compile_standing_alone_pattern(value).search(text) is not None
+
+
 def renamed_required_checks(change: SafeChange, required_checks: Iterable[str]) -> List[Tuple[str, str]]:
     """The old value must stand alone, so 27.2 never matches inside 27.20 or 127.2."""
     if not change.old or not change.new or change.old == change.new:
         return []
-    standing_alone = re.compile(r'(?<![\w.])' + re.escape(change.old) + r'(?![\w.])')
+    standing_alone = _compile_standing_alone_pattern(change.old)
     renamed: List[Tuple[str, str]] = []
     for context in required_checks:
         if standing_alone.search(context) is None:

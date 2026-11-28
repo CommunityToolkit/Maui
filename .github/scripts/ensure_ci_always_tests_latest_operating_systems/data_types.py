@@ -74,6 +74,14 @@ class LabelOccurrence(NamedTuple):
     job_id: str
 
 
+class RunnerLabelOccurrence(NamedTuple):
+    file: str
+    line: int
+    job_id: str
+    label: str
+    is_movable: bool
+
+
 @dataclass
 class AppleLabel:
     label: str
@@ -99,6 +107,7 @@ class PinnedVersions:
     ios_include_line: int
     android_dash_prefix: str
     ios_dash_prefix: str
+    ubuntu_and_windows_label_occurrences: List[RunnerLabelOccurrence] = field(default_factory=list)
 
     def to_json(self) -> Dict[str, Any]:
         return {
@@ -112,6 +121,7 @@ class PinnedVersions:
             'ios_include_line': self.ios_include_line,
             'android_dash_prefix': self.android_dash_prefix,
             'ios_dash_prefix': self.ios_dash_prefix,
+            'ubuntu_and_windows_label_occurrences': [list(occurrence) for occurrence in self.ubuntu_and_windows_label_occurrences],
         }
 
     @classmethod
@@ -127,6 +137,9 @@ class PinnedVersions:
             ios_include_line=data['ios_include_line'],
             android_dash_prefix=data['android_dash_prefix'],
             ios_dash_prefix=data['ios_dash_prefix'],
+            ubuntu_and_windows_label_occurrences=[
+                RunnerLabelOccurrence(entry[0], entry[1], entry[2], entry[3], entry[4])
+                for entry in data.get('ubuntu_and_windows_label_occurrences', [])],
         )
 
 
@@ -181,8 +194,9 @@ class RolloutState:
         return cls(deployed_build=data['deployed_build'], message=data['message'], deploying_to=data['deploying_to'])
 
 
-# The bot pushes these three. The iOS leg insert and the runner label change exist only inside a change for a person.
-PULL_REQUEST_CHANGE_KINDS = ('set-xcode-version', 'replace-api-level', 'insert-android-leg')
+# The bot pushes these. The validator passes a runner label change only for an ubuntu or windows label; an iOS leg insert
+# and a move to a new xcode-NN label exist only inside a change for a person.
+PULL_REQUEST_CHANGE_KINDS = ('set-xcode-version', 'replace-api-level', 'insert-android-leg', 'replace-runner-label')
 
 
 @dataclass
